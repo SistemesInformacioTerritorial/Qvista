@@ -2,7 +2,6 @@
 
 # Inici del cronòmetre
 import time
-
 startGlobal = time.time()
 
 # Fitxer principal de importació de llibreries
