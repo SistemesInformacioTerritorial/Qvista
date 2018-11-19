@@ -4,7 +4,11 @@ from qgis.PyQt.QtGui import QStandardItemModel, QStandardItem
 from qgis.core import QgsRectangle
 
 projecteInicial='../dades/projectes/bcn11.qgs'
+
+
+# Cambios de CPC
 # Cambios JNB
+
 class QvUbicacions(QtWidgets.QWidget):
     """Una classe del tipus QWidget que mostra i gestiona un arbre d'ubicacions.
 
