@@ -5,8 +5,11 @@ from qgis.core import QgsRectangle
 
 projecteInicial='../dades/projectes/bcn11.qgs'
 
+
 # Cambios de CPC
-# Otros cambios CPC
+# Cambios JNB
+# Cambios de CPC por error en master
+
 class QvUbicacions(QtWidgets.QWidget):
     """Una classe del tipus QWidget que mostra i gestiona un arbre d'ubicacions.
 
