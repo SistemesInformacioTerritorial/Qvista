@@ -409,7 +409,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         """
         self.taulesAtributs = QvAtributs(self.canvas)
         # self.twAtributs=QTableWidget()
-        self.dwTaulaAtributs = QDockWidget( "Taula d'atributs", self )
+        self.dwTaulaAtributs = QDockWidget( "Taula de dades", self )
         self.dwTaulaAtributs.hide()
         self.dwTaulaAtributs.setObjectName( "taulaAtributs" )
         self.dwTaulaAtributs.setAllowedAreas( Qt.TopDockWidgetArea | Qt.BottomDockWidgetArea )
