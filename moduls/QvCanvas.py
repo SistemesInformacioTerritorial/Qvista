@@ -167,7 +167,7 @@ class QvCanvas(QgsMapCanvas):
             self.layoutBotoneraMapa.addWidget(self.bPanning)     
             self.bPanning.clicked.connect(self.panCanvas)
         if "centrar" in self.llistaBotons:
-            self.bCentrar = self._botoMapa('imatges/ic_zoom_out_map_black_48dp.png')
+            self.bCentrar = self._botoMapa('imatges/fit.png')
             self.layoutBotoneraMapa.addWidget(self.bCentrar)     
             self.bCentrar.clicked.connect(self.centrarMapa)
         if "zoomIn" in self.llistaBotons:
