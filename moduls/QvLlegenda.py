@@ -201,7 +201,7 @@ class QvLlegenda(QgsLayerTreeView):
 
         self.iconaFiltre = QgsLayerTreeViewIndicator()
         # self.iconaFiltre.setIcon(QIcon(':/Icones/ic_file_upload_black_48dp.png'))
-        self.iconaFiltre.setIcon(QIcon('Imatges/filter.png'))
+        self.iconaFiltre.setIcon(QIcon('../dades/Imatges/filter.png'))
         self.iconaFiltre.setToolTip('Filtre actiu')
 
         if self.atributs is not None:
@@ -547,7 +547,7 @@ if __name__ == "__main__":
         atributs = QvAtributs(canvas)
 
         llegenda = QvLlegenda(canvas, atributs, printCapaActiva)
-        llegenda.project.read('projectes/bcn11.qgs')
+        llegenda.project.read('../dades/projectes/bcn11.qgs')
 
         canvas.setWindowTitle('Canvas')
         canvas.show()

@@ -20,7 +20,7 @@ class Ui_Wizard(object):
         self.label = QtWidgets.QLabel(self.wizardPage_2)
         self.label.setGeometry(QtCore.QRect(50, 60, 831, 511))
         self.label.setText("")
-        self.label.setPixmap(QtGui.QPixmap("../dades/imatges/capturaQVista.PNG"))
+        self.label.setPixmap(QtGui.QPixmap("../dades/../dades/imatges/capturaQVista.PNG"))
         self.label.setScaledContents(True)
         self.label.setObjectName("label")
         Wizard.addPage(self.wizardPage_2)

@@ -8,8 +8,8 @@ import collections
 
 class QCercadorAdreca(QObject):
 
-    __carrersCSV = 'DadesBCN\CARRERER.csv'
-    __numerosCSV = 'DadesBCN\TAULA_DIRELE.csv'
+    __carrersCSV = '..\dades\dadesBcn\CARRERER.csv'
+    __numerosCSV = '..\dades\dadesBcn\TAULA_DIRELE.csv'
     sHanTrobatCoordenades = pyqtSignal()
 
     def __init__(self, lineEditCarrer, lineEditNumero, origen = 'CSV'):

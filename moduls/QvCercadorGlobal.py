@@ -10,8 +10,8 @@ from qgis.core.contextmanagers import qgisapp
 
 class QvCercadorGlobal(QWidget):
 
-    __carrersCSV = 'moduls\DadesBCN\CARRERER.csv'
-    __numerosCSV = 'moduls\DadesBCN\TAULA_DIRELE.csv'
+    __carrersCSV = 'moduls\..\dades\dadesBcn\CARRERER.csv'
+    __numerosCSV = 'moduls\..\dades\dadesBcn\TAULA_DIRELE.csv'
     sHanTrobatCoordenades = pyqtSignal()
 
     def __init__(self):

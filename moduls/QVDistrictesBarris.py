@@ -11,7 +11,7 @@ from  moduls.QvImports import *
 
 class QVDistrictesBarris(QObject):
 
-    __distBarrisCSV = 'DadesBCN\DIST_BARRIS.csv'
+    __distBarrisCSV = '..\dades\dadesBcn\DIST_BARRIS.csv'
 
     def __init__(self):
         super().__init__()

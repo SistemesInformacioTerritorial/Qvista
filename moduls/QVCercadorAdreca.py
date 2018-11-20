@@ -12,8 +12,8 @@ import collections
 
 class QCercadorAdreca(QObject):
 
-    __carrersCSV = 'DadesBCN\CARRERER.csv'
-    __numerosCSV = 'DadesBCN\TAULA_DIRELE.csv'
+    __carrersCSV = '..\dades\dadesBcn\CARRERER.csv'
+    __numerosCSV = '..\dades\dadesBcn\TAULA_DIRELE.csv'
     sHanTrobatCoordenades = pyqtSignal(int, 'QString')  # atencion
 
     def __init__(self, lineEditCarrer, lineEditNumero, origen = 'CSV'):
@@ -163,7 +163,7 @@ class QCercadorAdreca(QObject):
         self.leNumero.setCompleter(None)
 
 
-from importaciones import *
+from moduls.QvImports import *
 if __name__ == "__main__":
     projecteInicial='projectes/BCN11_nord.qgs'
 

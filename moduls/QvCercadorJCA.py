@@ -8,8 +8,8 @@ import collections
 
 class QvCercadorJCA(QObject):
 
-    __carrersCSV = 'moduls\DadesBCN\CARRERER.csv'
-    __numerosCSV = 'moduls\DadesBCN\TAULA_DIRELE.csv'
+    __carrersCSV = 'moduls\..\dades\dadesBcn\CARRERER.csv'
+    __numerosCSV = 'moduls\..\dades\dadesBcn\TAULA_DIRELE.csv'
     sHanTrobatCoordenades = pyqtSignal()
 
     def __init__(self, lineEditCarrer, lineEditNumero, origen = 'CSV'):
