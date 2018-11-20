@@ -5,8 +5,8 @@ class DockPavim(QDockWidget):
         super().__init__("Pavimentació")
         
         fPavim = QFrame()
-        fPavim.setStyleSheet("QFrame {background-image: url('c:/qvistaProd/../dades/imatges/pavim.jpg');}")
-        # fPavim.setStyleSheet("QFrame {background-color: #010101 'd:/dropbox/qvistaProd/../dades/imatges/pavim.jpg'}")
+        fPavim.setStyleSheet("QFrame {background-image: url('c:/qvistaProd/imatges//pavim.jpg');}")
+        # fPavim.setStyleSheet("QFrame {background-color: #010101 'd:/dropbox/qvistaProd/imatges//pavim.jpg'}")
         lytPavim = QVBoxLayout(fPavim)
         lytPavim.setAlignment(Qt.AlignTop)
 

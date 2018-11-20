@@ -201,7 +201,7 @@ class QvLlegenda(QgsLayerTreeView):
 
         self.iconaFiltre = QgsLayerTreeViewIndicator()
         # self.iconaFiltre.setIcon(QIcon(':/Icones/ic_file_upload_black_48dp.png'))
-        self.iconaFiltre.setIcon(QIcon('../dades/Imatges/filter.png'))
+        self.iconaFiltre.setIcon(QIcon('imatges//filter.png'))
         self.iconaFiltre.setToolTip('Filtre actiu')
 
         if self.atributs is not None:

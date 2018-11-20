@@ -163,7 +163,7 @@ class QvCanvas(QgsMapCanvas):
 
 
         if "panning" in self.llistaBotons:
-            self.bPanning = self._botoMapa('../dades/imatges/pan_tool_black_24x24.png')
+            self.bPanning = self._botoMapa('imatges//pan_tool_black_24x24.png')
             self.layoutBotoneraMapa.addWidget(self.bPanning)     
             self.bPanning.clicked.connect(self.panCanvas)
         if "centrar" in self.llistaBotons:
@@ -179,7 +179,7 @@ class QvCanvas(QgsMapCanvas):
             self.layoutBotoneraMapa.addWidget(self.bZoomOut)     
             self.bZoomOut.clicked.connect(self.zoomOut)
         if "apuntar" in self.llistaBotons:
-            self.bApuntar = self._botoMapa('../dades/imatges/apuntar.png')
+            self.bApuntar = self._botoMapa('imatges//apuntar.png')
             self.layoutBotoneraMapa.addWidget(self.bApuntar)        
             self.bApuntar.clicked.connect(self.seleccioClick)
 
@@ -192,7 +192,7 @@ class QvCanvas(QgsMapCanvas):
         self.butoMostra.setMaximumWidth(80)
         self.butoMostra.setMinimumWidth(80)
 
-        icon=QIcon('../dades/imatges/mapeta1.png')
+        icon=QIcon('imatges//mapeta1.png')
         self.butoMostra.setIconSize(QSize(80,80))
         self.butoMostra.setIcon(icon)
 
@@ -201,7 +201,7 @@ class QvCanvas(QgsMapCanvas):
         self.butoMostra2.setMinimumHeight(80)
         self.butoMostra2.setMaximumWidth(80)
         self.butoMostra2.setMinimumWidth(80)
-        icon=QIcon('../dades/imatges/mapeta2.png')
+        icon=QIcon('imatges//mapeta2.png')
         self.butoMostra2.setIconSize(QSize(80,80))
         self.butoMostra2.setIcon(icon)
         self.botoneraMostres = QFrame()

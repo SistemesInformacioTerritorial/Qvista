@@ -309,7 +309,7 @@ color: rgb(255, 255, 255);
              <string/>
             </property>
             <property name="pixmap">
-             <pixmap>../dades/imatges/gats.png</pixmap>
+             <pixmap>imatges//gats.png</pixmap>
             </property>
            </widget>
           </item>
@@ -430,7 +430,7 @@ p, li { white-space: pre-wrap; }
             </property>
             <property name="icon">
              <iconset>
-              <normaloff>../dades/imatges/qgis3.png</normaloff>../dades/imatges/qgis3.png</iconset>
+              <normaloff>imatges//qgis3.png</normaloff>imatges//qgis3.png</iconset>
             </property>
             <property name="iconSize">
              <size>
@@ -478,7 +478,7 @@ p, li { white-space: pre-wrap; }
             </property>
             <property name="icon">
              <iconset>
-              <normaloff>../dades/imatges/information-outline.png</normaloff>../dades/imatges/information-outline.png</iconset>
+              <normaloff>imatges//information-outline.png</normaloff>imatges//information-outline.png</iconset>
             </property>
             <property name="iconSize">
              <size>

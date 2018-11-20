@@ -274,7 +274,7 @@ color: #FFFFFF</string>
                </property>
                <property name="icon">
                 <iconset>
-                 <normaloff>../dades/imatges/arrow-left.png</normaloff>../dades/imatges/arrow-left.png</iconset>
+                 <normaloff>imatges//arrow-left.png</normaloff>imatges//arrow-left.png</iconset>
                </property>
                <property name="iconSize">
                 <size>
@@ -306,7 +306,7 @@ color: #FFFFFF</string>
                </property>
                <property name="icon">
                 <iconset>
-                 <normaloff>../dades/imatges/arrow-right.png</normaloff>../dades/imatges/arrow-right.png</iconset>
+                 <normaloff>imatges//arrow-right.png</normaloff>imatges//arrow-right.png</iconset>
                </property>
                <property name="iconSize">
                 <size>
