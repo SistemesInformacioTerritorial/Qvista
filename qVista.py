@@ -909,7 +909,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.actTest2 = QAction("actTest2", self)
         self.actTest2.setStatusTip("actTest2")
         self.actTest2.triggered.connect(self.testProva)
-self.actPavimentacio = QAction("Pavimentació", self)
+        self.actPavimentacio = QAction("Pavimentació", self)
         self.actPavimentacio.setStatusTip("Pavimentació")
         self.actPavimentacio.triggered.connect(self.pavimentacio)
         self.actPropietatsLayer = QAction("Propietats de la capa", self)
