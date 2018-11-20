@@ -16,6 +16,7 @@ from qgis.gui import (QgsGui,
                       QgsSearchQueryBuilder,
                       QgsBusyIndicatorDialog)
 from moduls.QvAccions import QvAccions
+from moduls.QvApp import QvApp
 import images_rc
 import recursos
 import csv
@@ -34,6 +35,8 @@ class QvAtributs(QTabWidget):
         self.setUsesScrollButtons(True)
         self.setTabsClosable(True)
         self.tabCloseRequested.connect(self.tancarTab)
+
+        self.setWhatsThis(QvApp().carregaAjuda(self))
 
         # Conjunto de acciones de usuario
         self.accions = QvAccions()
@@ -106,6 +109,19 @@ class QvAtributs(QTabWidget):
             taula.deleteLater()
             self.removeTab(i)
 
+    def filtrarCapa(self, layer, on = True):
+        try:
+            if on:
+                dlgFiltre = QgsSearchQueryBuilder(layer)
+                dlgFiltre.setSearchString(layer.subsetString())
+                dlgFiltre.exec_()
+                layer.setSubsetString(dlgFiltre.searchString())
+            else:
+                layer.setSubsetString('')
+            self.modificatFiltreCapa.emit(layer)
+        except Exception as e:
+            print(str(e))
+
 class QvTaulaAtributs(QgsAttributeTableView):
 
     canviNomTaula = pyqtSignal(int, str)
@@ -116,8 +132,6 @@ class QvTaulaAtributs(QgsAttributeTableView):
         super().__init__()
         self.parent = parent
         self.init(layer, canvas, numCache)
-        self.dlgFitxa = None
-        self.dlgFiltre = None
 
         # Conjunto de acciones predefinidas
         self.accions = QvAccions()
@@ -222,7 +236,8 @@ class QvTaulaAtributs(QgsAttributeTableView):
             self.parent.setMenuAccions(self.layer)
             self.parent.clicatMenuContexte.emit(self.layer)
             menu = self.accions.menuAccions(self.parent.menuAccions, self.parent.accions.accions)
-            menu.exec_(QCursor.pos())
+            if menu is not None:
+                menu.exec_(QCursor.pos())
 
     def crearDialog(self, filtre = False):
         dialog = None
@@ -244,9 +259,9 @@ class QvTaulaAtributs(QgsAttributeTableView):
         return dialog
 
     def showFeature(self):
-        self.dlgFitxa = self.crearDialog()
-        if self.dlgFitxa is not None:
-            self.dlgFitxa.show()
+        dlgFitxa = self.crearDialog()
+        if dlgFitxa is not None:
+            dlgFitxa.exec_()
 
     def flashSelection(self):
         features = self.layer.selectedFeatureIds()
@@ -259,19 +274,26 @@ class QvTaulaAtributs(QgsAttributeTableView):
         self.canvas.zoomToSelected(self.layer)
 
     def filterElements(self):
-        # self.dlgFiltre = self.crearDialog(True)
-        try:
-            self.dlgFiltre = QgsSearchQueryBuilder(self.layer)
-            self.dlgFiltre.setSearchString(self.layer.subsetString())
-            self.dlgFiltre.exec_()
-            self.layer.setSubsetString(self.dlgFiltre.searchString())
-            self.parent.modificatFiltreCapa.emit(self.layer)
-        except Exception as e:
-            print(str(e))
+        self.parent.filtrarCapa(self.layer, True)
+        # global llegenda
+        # llegenda.actIconaFiltre(self.layer)
+
+        # # self.dlgFiltre = self.crearDialog(True)
+        # try:
+        #     self.dlgFiltre = QgsSearchQueryBuilder(self.layer)
+        #     self.dlgFiltre.setSearchString(self.layer.subsetString())
+        #     self.dlgFiltre.exec_()
+        #     self.layer.setSubsetString(self.dlgFiltre.searchString())
+        #     self.parent.modificatFiltreCapa.emit(self.layer)
+        # except Exception as e:
+        #     print(str(e))
 
     def removeFilter(self):
-        self.layer.setSubsetString('')
-        self.parent.modificatFiltreCapa.emit(self.layer)
+        self.parent.filtrarCapa(self.layer, False)
+        # global llegenda
+        # llegenda.actIconaFiltre(self.layer)
+        # self.layer.setSubsetString('')
+        # self.parent.modificatFiltreCapa.emit(self.layer)
 
     def selectElement(self):
         modelIndex = self.currentIndex()
@@ -341,9 +363,8 @@ if __name__ == "__main__":
     from qgis.core import QgsProject
     from qgis.core.contextmanagers import qgisapp
     from qgis.gui import QgsMapCanvas
-    from qgis.PyQt.QtWidgets import QMessageBox
+    from qgis.PyQt.QtWidgets import QMessageBox, QWhatsThis
     from moduls.QvLlegenda import QvLlegenda
-    from moduls.QvApp import QvApp
     from qgis.PyQt.QtCore import QTranslator, QLocale, QLibraryInfo
     
     with qgisapp() as app:
@@ -357,8 +378,8 @@ if __name__ == "__main__":
 
         llegenda = QvLlegenda(canvas, atributs)
 
-        # llegenda.project.read('../dades/projectes/Illes.qgs')
-        llegenda.project.read('../dades/projectes/bcn11.qgs')
+        # llegenda.project.read('projectes/Illes.qgs')
+        llegenda.project.read('projectes/bcn11.qgs')
 
         llegenda.setWindowTitle('Llegenda')
         llegenda.setGeometry(50, 50, 300, 400)
@@ -396,6 +417,11 @@ if __name__ == "__main__":
         act.triggered.connect(lambda: salutacions(capa))
         atributs.accions.afegirAccio('salutacions', act)
 
+        act = QAction()
+        act.setText("Help mode")
+        act.triggered.connect(QWhatsThis.enterWhatsThisMode)
+        atributs.accions.afegirAccio('helpmode', act)
+
         capa = ''
 
         def menuContexte(layer):
@@ -403,7 +429,10 @@ if __name__ == "__main__":
             capa = layer.name()
             atributs.menuAccions.append('separator')
             atributs.menuAccions.append('salutacions')
+            atributs.menuAccions.append('helpmode')
 
         atributs.clicatMenuContexte.connect(menuContexte)
+
+        # QWhatsThis.enterWhatsThisMode()
 
 

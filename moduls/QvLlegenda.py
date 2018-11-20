@@ -8,6 +8,7 @@ from qgis.PyQt.QtWidgets import QMenu, QAction, QFileDialog, QWidget, QPushButto
 from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtCore import Qt, pyqtSignal, QSortFilterProxyModel
 from moduls.QvAccions import QvAccions
+from moduls.QvAtributs import QvAtributs
 from moduls.QvApp import QvApp
 
 import images_rc
@@ -173,6 +174,8 @@ class QvLlegenda(QgsLayerTreeView):
         self.editable = True
         self.project.readProject.connect(self.nouProjecte)
 
+        self.setWhatsThis(QvApp().carregaAjuda(self))
+
         # Asociar canvas y bridges
         self.mapBridge(canvas)
 
@@ -196,9 +199,9 @@ class QvLlegenda(QgsLayerTreeView):
         # self.setAcceptDrops(True)
         # self.setDropIndicatorShown(True)
 
-        self.iconaFiltre = QgsLayerTreeViewIndicator(self)
+        self.iconaFiltre = QgsLayerTreeViewIndicator()
         # self.iconaFiltre.setIcon(QIcon(':/Icones/ic_file_upload_black_48dp.png'))
-        self.iconaFiltre.setIcon(QIcon('../dades/imatges/filter.png'))
+        self.iconaFiltre.setIcon(QIcon('Imatges/filter.png'))
         self.iconaFiltre.setToolTip('Filtre actiu')
 
         if self.atributs is not None:
@@ -209,8 +212,12 @@ class QvLlegenda(QgsLayerTreeView):
         if node is not None:
             if capa.subsetString() == '':
                 self.removeIndicator(node, self.iconaFiltre)
+
             else:
                 self.addIndicator(node, self.iconaFiltre)
+            # self.setFocus()
+            # self.repaint()
+            # self.resize(self.size())
             if QvApp().appQgis is not None:
                 QvApp().appQgis.processEvents()
 
@@ -400,9 +407,9 @@ class QvLlegenda(QgsLayerTreeView):
             if self.editable:
                 self.menuAccions += ['addGroup', 'renameGroupOrLayer', 'removeGroupOrLayer',
                                     'separator']
-            self.menuAccions += ['showFeatureCount', 'filterElements']
+            self.menuAccions += ['showFeatureCount']
             if self.atributs is not None:
-                self.menuAccions += ['showFeatureTable']
+                self.menuAccions += ['filterElements', 'showFeatureTable']
             if self.canvas is not None:
                 self.menuAccions += ['showLayerMap']
         elif tipo == 'group':
@@ -446,21 +453,26 @@ class QvLlegenda(QgsLayerTreeView):
 
     def filterElements(self):
         layer = self.currentLayer()
-        if layer is not None:
-            try:
-                dlgFiltre = QgsSearchQueryBuilder(layer)
-                dlgFiltre.setSearchString(layer.subsetString())
-                dlgFiltre.exec_()
-                layer.setSubsetString(dlgFiltre.searchString())
-                self.actIconaFiltre(layer)
-            except Exception as e:
-                print(str(e))
+        if layer is not None and self.atributs is not None:
+            self.atributs.filtrarCapa(layer, True)
+            # self.actIconaFiltre(layer)
+            # try:
+            #     dlgFiltre = QgsSearchQueryBuilder(layer)
+            #     dlgFiltre.setSearchString(layer.subsetString())
+            #     dlgFiltre.exec_()
+            #     layer.setSubsetString(dlgFiltre.searchString())
+            #     self.actIconaFiltre(layer)
+            # except Exception as e:
+            #     print(str(e))
 
     def removeFilter(self):
         layer = self.currentLayer()
-        if layer is not None:
-            layer.setSubsetString('')
-            self.actIconaFiltre(layer)
+        if layer is not None and self.atributs is not None:
+            self.atributs.filtrarCapa(layer, False)
+            # self.actIconaFiltre(layer)
+        # if layer is not None:
+        #     layer.setSubsetString('')
+        #     self.actIconaFiltre(layer)
 
     def nodes(self):
         def recurse(parent):
@@ -532,8 +544,10 @@ if __name__ == "__main__":
 
         canvas = QgsMapCanvas()
 
-        llegenda = QvLlegenda(canvas, canviCapaActiva = printCapaActiva)
-        llegenda.project.read('../dades/projectes/bcn11.qgs')
+        atributs = QvAtributs(canvas)
+
+        llegenda = QvLlegenda(canvas, atributs, printCapaActiva)
+        llegenda.project.read('projectes/bcn11.qgs')
 
         canvas.setWindowTitle('Canvas')
         canvas.show()

@@ -1,8 +1,8 @@
 # coding:utf-8
 
-from  QvImports import *
+from  moduls.QvImports import *
 # from Bicis import Bicis
-
+from moduls.QvPavimentacio import DockPavim
 global qV
 
 
@@ -26,7 +26,6 @@ class QVista(QMainWindow, Ui_MainWindow):
     Aquesta és la classe principal del QVista. 
 
     La finestra te com a widget central un frame sobre el que carreguerem el canvas.
-    A més, a la part superior conté una botonera de funcions.
 
     Des de programa definirem la status bar, sobre la que indicarem escala, projecte i coordenades, 
             així com un tip de les accions que s'executen.
@@ -104,7 +103,6 @@ class QVista(QMainWindow, Ui_MainWindow):
         # self.preparacioMapTips()
         self.preparacioImpressio()
         self.preparacioGrafiques()
-
         # tool = QvSeleccioElement(self.canvas, self.llegenda)
         # self.canvas.setMapTool(tool)
         self.canvas.panCanvas()
@@ -117,7 +115,11 @@ class QVista(QMainWindow, Ui_MainWindow):
             QgsGui.editorWidgetRegistry().initEditors()
 
   # Fins aquí teniem la inicialització de la classe. Ara venen les funcions, o métodes, de la classe. 
-    
+    def pavimentacio(self):        
+        self.dwPavim = DockPavim()
+        self.addDockWidget( Qt.RightDockWidgetArea, self.dwPavim)
+        self.dwPavim.show()
+        
     def bicing(self):
         bicing=Bicis(self)
         bicing.show()
@@ -132,6 +134,7 @@ class QVista(QMainWindow, Ui_MainWindow):
             print('Cercar')
         if event.key() == Qt.Key_F11:
             self.ferGran()
+
 
     def botoLateral(self, text = None, tamany = 40, imatge = None, accio=None):
         """Crea un boto per a la botonera lateral.
@@ -256,7 +259,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.project = QgsProject.instance()
         self.root = QgsProject.instance().layerTreeRoot()
 
-        # self.bridbridge = QgsLayerTreeMapCanvasBridge(self.root, self.canvas)
+        self.bridge = QgsLayerTreeMapCanvasBridge(self.root, self.canvas)
         # self.bridge.setCanvasLayers()
 
     def preparacioCalculadora(self):
@@ -320,7 +323,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         """
         Un frame suelto, de prova, sobre el que van dos lineEdits, pel carrer i el número.
         Després instanciem el cercador d'adreces. 
-        Connectem la senyal sHanTrobatCoordenades a trobatNumero_oNo.
+        Connectem la senyal sHanTrobatCoordenades a trobatNumero.
         """
 
         # instanciamos clases necesarias    
@@ -337,25 +340,22 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.lblCercadorCarrer = QLabel('    Carrer:')    #etiqueta Carrer
         self.lblCercadorNum = QLabel('Num:')              #etiqueta Num        
         self.leCarrer=QLineEdit()                           #Edit calle
-        self.leCarrer.setToolTip('Introdueix adreça, selecciona de la llista i prem RETURN')
         self.leCarrer.setMinimumWidth(200) 
         self.leNumero=QLineEdit()                           #Edit numero
-        self.leNumero.setToolTip('Introdueix número, selecciona de la llista i prem RETURN')
-        self.leNumero.setMaximumWidth(50)                   #Tamaño numero
-        self.leNumero.setMinimumWidth(50)
-        # self.leNumero.setDisabled(True)
+        self.leNumero.setMaximumWidth(30)                   #Tamaño numero
+        self.leNumero.setMinimumWidth(30)
 
 
 
         # atencion 
         self.boton_bajar= QPushButton()
         self.boton_bajar.clicked.connect(self.CopiarA_Ubicacions)
-        self.boton_bajar.setIcon(QIcon('imatges/down3-512.png'))
+        self.boton_bajar.setIcon(QIcon('../dades/imatges/down3-512.png'))
         self.boton_bajar.setMinimumHeight(25)
         self.boton_bajar.setMaximumHeight(25)
         self.boton_bajar.setMinimumWidth(25)
         self.boton_bajar.setMaximumWidth(25)
-        self.boton_bajar.setToolTip("Copiar aquest carrer i aquest número a l'arbre d'ubicacións")
+        self.boton_bajar.setToolTip('Copiar adreça i número com a ubicació')
 
         self.layoutbottom.addWidget(QHLine())
         self.layoutbottom.addWidget(self.distBarris.view)
@@ -385,8 +385,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.setTabOrder(self.leCarrer, self.leNumero)
         # Activem la clase de cerca d'adreces
         self.cAdrec=QCercadorAdreca(self.leCarrer, self.leNumero)
-        self.cAdrec.sHanTrobatCoordenades.connect(self.trobatNumero_oNo) 
-
+        self.cAdrec.sHanTrobatCoordenades.connect(self.trobatNumero) 
         self.dwCercador = QDockWidget( "Cercador", self )
         self.dwCercador.setStyleSheet("QDockWidget {background-color: #DDDDDD; border: 0px solid red;}")
         self.dwCercador.hide()
@@ -590,26 +589,10 @@ class QVista(QMainWindow, Ui_MainWindow):
         else:
             pass
 
-    
-        
-    def trobatNumero_oNo(self,rsc,info_rsc):
-        
-        if rsc==0:
-            self.canvas.setCenter(self.cAdrec.coordAdreca)
-            self.canvas.zoomScale(1000)
-            self.canvas.refresh()
-        else:
-            msg = QMessageBox()
-            msg.setIcon(QMessageBox.Warning)
-            
-            msg.setText(info_rsc)
-            # msg.setInformativeText("OK para salir del programa \nCANCEL para seguir en el programa")
-            msg.setWindowTitle("qVista ERROR")
-            msg.setDetailedText("Posa el cursor sobre els camps d'edició i segueix les instruccions.")
-            msg.setStandardButtons(QMessageBox.Close)
-            retval = msg.exec_()
-
-
+    def trobatNumero(self):
+        self.canvas.setCenter(self.cAdrec.coordAdreca)
+        self.canvas.zoomScale(1000)
+        self.canvas.refresh()
 
     def adreces(self):
         self.dwCercador.show()
@@ -679,13 +662,13 @@ class QVista(QMainWindow, Ui_MainWindow):
         
         self.actImprimir = QAction("Imprimir", self)
         self.actImprimir.setStatusTip("Imprimir")
-        icon=QIcon('imatges/printer.png')
+        icon=QIcon('../dades/imatges/printer.png')
         self.actImprimir.setIcon(icon)
         self.actImprimir.triggered.connect(self.imprimir)
 
         self.actCloudUpload = QAction("Pujar al núvol", self)
         self.actCloudUpload.setStatusTip("Pujar al núvol")
-        icon=QIcon('imatges/cloud-upload.png')
+        icon=QIcon('../dades/imatges/cloud-upload.png')
         self.actCloudUpload.setIcon(icon)
         self.actCloudUpload.triggered.connect(self.cloudUpload)
 
@@ -720,7 +703,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.actObrirBotonera.triggered.connect(self.obrirBotonera)
 
         self.actObrirUbicacions= QAction("Les meves ubicacions", self)
-        icon=QIcon('imatges/map-marker.png')
+        icon=QIcon('../dades/imatges/map-marker.png')
         self.actObrirUbicacions.setIcon(icon)
         self.actObrirUbicacions.setStatusTip("Obrir eina ubicacions")
         self.actObrirUbicacions.triggered.connect(self.obrirUbicacions)
@@ -764,7 +747,7 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         self.actTissores = QAction("Eina per retallar pantalla", self)
         self.actTissores.setStatusTip("Eina per retallar pantalla")
-        icon=QIcon('imatges/tissores.png')
+        icon=QIcon('../dades/imatges/tissores.png')
         self.actTissores.setIcon(icon)
         self.actTissores.triggered.connect(self.tissores)
         
@@ -803,14 +786,14 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.actSeleccioLliure.triggered.connect(seleccioLliure)
 
         self.actInfo = QAction("Informació ", self)
-        icon=QIcon('imatges/information.png')
+        icon=QIcon('../dades/imatges/information.png')
         self.actInfo.setIcon(icon)
         self.actInfo.triggered.connect(self.infoQVista)
 
         self.actHelp = QAction("Ajuda ", self)
-        icon=QIcon('imatges/help-circle.png')
+        icon=QIcon('../dades/imatges/help-circle.png')
         self.actHelp.setIcon(icon)
-        self.actHelp.triggered.connect(self.helpQVista)
+        self.actInfo.triggered.connect(self.helpQVista)
                 
         self.actPintaLabels = QAction("pintaLabels", self)
         self.actPintaLabels.setStatusTip("pintaLabels")
@@ -818,7 +801,7 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         self.actObrirCataleg = QAction("GIS Point", self)
         self.actObrirCataleg.setStatusTip("Catàleg d'Informació Territorial")
-        self.actObrirCataleg.setIcon(QIcon('imatges/map-plus.png'))
+        self.actObrirCataleg.setIcon(QIcon('../dades/imatges/map-plus.png'))
         self.actObrirCataleg.triggered.connect(self.obrirCataleg)
 
         self.actObrirMapeta = QAction("Mapeta", self)
@@ -830,27 +813,27 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.actMapTip.triggered.connect(self.preparacioMapTips)
         
         self.actFerGran = QAction("Ampliar àrea de treball", self)
-        self.actFerGran.setIcon(QIcon('imatges/arrow-expand.png'))
+        self.actFerGran.setIcon(QIcon('../dades/imatges/arrow-expand.png'))
         self.actFerGran.setStatusTip("Ampliar àrea de treball")
         self.actFerGran.triggered.connect(self.ferGran)
 
         self.actObrirEnQgis = QAction("Obrir en Qgis", self)
-        self.actObrirEnQgis.setIcon(QIcon('imatges/qgis3.png'))
+        self.actObrirEnQgis.setIcon(QIcon('../dades/imatges/qgis3.png'))
         self.actObrirEnQgis.setStatusTip("Obrir en Qgis")
         self.actObrirEnQgis.triggered.connect(self.obrirEnQgis)
 
         self.actGrafiques = QAction("Gràfiques", self)
-        self.actGrafiques.setIcon(QIcon('imatges/chart-bar.png'))
+        self.actGrafiques.setIcon(QIcon('../dades/imatges/chart-bar.png'))
         self.actGrafiques.setStatusTip("Gràfiques")
         self.actGrafiques.triggered.connect(self.obrirBrowserGrafiques)
 
         self.actCanvasImg = QAction("Guardar imatge del canvas", self)
-        self.actCanvasImg.setIcon(QIcon('imatges/camera.png'))
+        self.actCanvasImg.setIcon(QIcon('../dades/imatges/camera.png'))
         self.actCanvasImg.setStatusTip("Imatge del canvas")
         self.actCanvasImg.triggered.connect(self.canvasImg)
 
         self.actFavorit = QAction("Favorit", self)
-        self.actFavorit.setIcon(QIcon('imatges/star.png'))
+        self.actFavorit.setIcon(QIcon('../dades/imatges/star.png'))
         self.actFavorit.setStatusTip("Favorit")
         self.actFavorit.triggered.connect(self.favorit)
 
@@ -859,12 +842,12 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.actCataleg.triggered.connect(self.catalegCool)
         
         self.actEnrera = QAction("Retrocedir mapa", self)
-        self.actEnrera.setIcon(QIcon('imatges/arrow-left.png'))
+        self.actEnrera.setIcon(QIcon('../dades/imatges/arrow-left.png'))
         self.actEnrera.setStatusTip("Retrocedir mapa")
         self.actEnrera.triggered.connect(self.canvas.zoomToPreviousExtent)
 
         self.actEndevant = QAction("Avançar mapa", self)
-        self.actEndevant.setIcon(QIcon('imatges/arrow-right.png'))
+        self.actEndevant.setIcon(QIcon('../dades/imatges/arrow-right.png'))
         self.actEndevant.setStatusTip("Avançar mapa")
         self.actEndevant.triggered.connect(self.canvas.zoomToNextExtent)
 
@@ -894,12 +877,12 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.actEntorns.triggered.connect(self.preparacioEntorns)
     
         self.actDashStandard = QAction("Restaurar", self)
-        self.actDashStandard.setIcon(QIcon('imatges/auto-fix.png'))
+        self.actDashStandard.setIcon(QIcon('../dades/imatges/auto-fix.png'))
         self.actDashStandard.setStatusTip("Restaurar")
         self.actDashStandard.triggered.connect(self.dashStandard)
 
         self.actAdreces = QAction("Cerca per adreça", self)
-        self.actAdreces.setIcon(QIcon('imatges/map-marker.png'))
+        self.actAdreces.setIcon(QIcon('../dades/imatges/map-marker.png'))
         self.actAdreces.setStatusTip("Adreces")
         self.actAdreces.triggered.connect(self.adreces)
 
@@ -907,12 +890,17 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.actTest2.setStatusTip("actTest2")
         self.actTest2.triggered.connect(self.testProva)
 
+        self.actPavimentacio = QAction("Pavimentació", self)
+        self.actPavimentacio.setStatusTip("Pavimentació")
+        self.actPavimentacio.triggered.connect(self.pavimentacio)
+
         self.actPropietatsLayer = QAction("Propietats de la capa", self)
         self.actPropietatsLayer.setStatusTip("Propietats de la capa")
         self.actPropietatsLayer.triggered.connect(self.propietatsLayer)
 
     def helpQVista(self):
-        QWhatsThis.enterWhatsThisMode()
+        # whatsThis = QWhatsThis(self)
+        # whatsThis.enterWhatsThisMode()
         pass
 
     def activarDashboard(self,nom):
@@ -1063,7 +1051,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         
         self.botoMaxim = QPushButton()
         self.botoMaxim.clicked.connect(self.ferGran)
-        self.botoMaxim.setIcon(QIcon('imatges/arrow-expand.png'))
+        self.botoMaxim.setIcon(QIcon('../dades/imatges/arrow-expand.png'))
         self.botoMaxim.setMinimumHeight(40)
         self.botoMaxim.setMaximumHeight(40)
         self.botoMaxim.setMinimumWidth(40)
@@ -1128,6 +1116,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.menuFuncions.addAction(self.actObrirCalculadora)
         self.menuFuncions.addAction(self.actObrirBrowserGrafiques)
         self.menuFuncions.addAction(self.actBicing)
+        self.menuFuncions.addAction(self.actPavimentacio)
         
     def test(self):
         self.handleSave()
@@ -1266,7 +1255,7 @@ class QVista(QMainWindow, Ui_MainWindow):
             self.dwLlegenda.hide()
             self.layoutFrameLlegenda.addWidget(self.llegenda)
             self._menuBarShadow.setEnabled(True)
-            self.botoMaxim.setIcon(QIcon('imatges/arrow-expand.png'))
+            self.botoMaxim.setIcon(QIcon('../dades/imatges/arrow-expand.png'))
             
         else:
             self.frameLlegenda.hide()
@@ -1286,7 +1275,7 @@ class QVista(QMainWindow, Ui_MainWindow):
             # self.dwLlegenda.show()
 
             self._menuBarShadow.setEnabled(False)
-            self.botoMaxim.setIcon(QIcon('imatges/arrow-collapse.png'))
+            self.botoMaxim.setIcon(QIcon('../dades/imatges/arrow-collapse.png'))
             # self.bar.setGraphicsEffect(_menuBarShadow)
 
     def obrirProjecte(self, projecte):
@@ -1428,10 +1417,10 @@ class QVista(QMainWindow, Ui_MainWindow):
         """
         Obtenim una imatge a partir del canvas en el moment en que la funció es cridada.
         
-        Un dialeg demana on guardar-la.
-       """    
+        Un dialeg demana on guardar-la."""
+
         dialegFitxer=QFileDialog()
-        dialegFitxer.setDirectoryUrl(QUrl('d:/dropbox/repsqv/qvista/projectes/'))
+        dialegFitxer.setDirectoryUrl(QUrl('d:/dropbox/repsqv/qvista/../dades/projectes/'))
 
         nfile,_ = dialegFitxer.getSaveFileName(None,"Guardar imatge", ".", "(*.png)")
 
@@ -1457,7 +1446,10 @@ class QVista(QMainWindow, Ui_MainWindow):
         'Esborra les seleccions (no els elements) de qualsevol layer del canvas.'
         layers = self.canvas.layers()
         for layer in layers:
-            layer.removeSelection()
+            try:
+                layer.removeSelection()
+            except:
+                pass
         # taulaAtributs('Total',layer)
 
     def filtreCanvas(self):
@@ -1578,7 +1570,7 @@ class QVista(QMainWindow, Ui_MainWindow):
 
     def obrirDialegProjecte(self):
         dialegObertura=QFileDialog()
-        dialegObertura.setDirectoryUrl(QUrl('d:/dropbox/repsqv/qvista/projectes/'))
+        dialegObertura.setDirectoryUrl(QUrl('d:/dropbox/repsqv/qvista/../dades/projectes/'))
         rect = self.canvas.extent()
         nfile,_ = dialegObertura.getOpenFileName(None,"Obrir mapa Qgis", ".", "Tots els mapes acceptats (*.qgs *.qgz);; Mapes Qgis (*.qgs);;Mapes Qgis comprimits (*.qgz)")
 
@@ -1676,6 +1668,11 @@ class QVista(QMainWindow, Ui_MainWindow):
                             rowdata.append('')
                     writer.writerow(rowdata)
 # Altres clases -------------------------------------------------------------------
+
+
+        # self.dwSV.visibilityChanged.connect(self.streetViewTancat)
+        # self.addDockWidget( Qt.RightDockWidgetArea, self.dwSV)
+
 
 class DialegCSV(QDialog):
     def __init__(self, llistaCamps=None):
@@ -1960,6 +1957,14 @@ def sortir():
     sys.exit()
 
 with qgisapp() as app: # Internacionalización
+    
+    # Splash image al començar el programa. La tancarem amb splash.finish(qV)
+    splash_pix = QPixmap('qvistaLogo2.png')
+    splash = QSplashScreen(splash_pix, Qt.WindowStaysOnTopHint)
+    splash.setWindowFlags(Qt.WindowStaysOnTopHint | Qt.FramelessWindowHint)
+    splash.setEnabled(True)
+    splash.show()
+    
     qVapp = QvApp()
     ok = qVapp.logInici()            # Por defecto: family='QVISTA', logname='DESKTOP'
     if not ok:
@@ -1967,7 +1972,7 @@ with qgisapp() as app: # Internacionalización
         ok = qVapp.logRegistre('Capa1')
         ok = qVapp.logRegistre('Atributs')
 
-    qVapp.carregaIdioma(app, 'ca')
+    qVapp.carregaIdioma(app, 'es')
 
     app.setStyle(QStyleFactory.create('fusion'))
 
@@ -1975,12 +1980,6 @@ with qgisapp() as app: # Internacionalización
     app.setStyle('fusion')
     
 
-    # Splash image al començar el programa. La tancarem amb splash.finish(qV)
-    splash_pix = QPixmap('qvistaLogo2.png')
-    splash = QSplashScreen(splash_pix, Qt.WindowStaysOnTopHint)
-    splash.setWindowFlags(Qt.WindowStaysOnTopHint | Qt.FramelessWindowHint)
-    splash.setEnabled(True)
-    splash.show()
 
     # Prova d'escriure sobre la imatge
     # splash.showMessage("<h1><font color='black'>Versió 0.1 - Work in progress</font></h1>", Qt.AlignTop | Qt.AlignCenter, Qt.white)

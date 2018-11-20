@@ -2,7 +2,7 @@
 
 from qgis.PyQt.QtGui import QCursor, QIcon
 from qgis.PyQt.QtWidgets import QMenu, QAction
-from qgis.PyQt.QtWidgets import QMessageBox
+from qgis.PyQt.QtWidgets import QMessageBox, QWhatsThis
 import images_rc
 import recursos
 
@@ -33,6 +33,8 @@ class QvAccions:
         self.afegirAccio('about', act)
 
     def menuAccions(self, llistaAccions, accions = None):
+        if QWhatsThis.inWhatsThisMode():
+            return None
         if accions == None:
             accions = self.accions
         else:

@@ -1,5 +1,3 @@
-
-from moduls.QvImports import *
 from qgis.core import QgsPointXY
 from qgis.PyQt import QtCore
 from qgis.PyQt.QtCore import QObject, pyqtSignal
@@ -8,11 +6,15 @@ import sys
 import csv
 import collections
 
+
+
+
+
 class QCercadorAdreca(QObject):
 
     __carrersCSV = 'DadesBCN\CARRERER.csv'
     __numerosCSV = 'DadesBCN\TAULA_DIRELE.csv'
-    sHanTrobatCoordenades = pyqtSignal()
+    sHanTrobatCoordenades = pyqtSignal(int, 'QString')  # atencion
 
     def __init__(self, lineEditCarrer, lineEditNumero, origen = 'CSV'):
         super().__init__()
@@ -42,10 +44,13 @@ class QCercadorAdreca(QObject):
         self.infoAdreca = None
 
     def connectarLineEdits(self):
-        self.leCarrer.editingFinished.connect(self.trobatCarrer)
-        self.leCarrer.returnPressed.connect(self.focusANumero)
+        # self.leCarrer.editingFinished.connect(self.trobatCarrer)
+        self.leCarrer.returnPressed.connect(self.trobatCarrer)
+
+        # self.leCarrer.returnPressed.connect(self.focusANumero)
         self.leCarrer.textChanged.connect(self.esborrarNumero)
-        self.leNumero.editingFinished.connect(self.trobatNumero)
+        # self.leNumero.editingFinished.connect(self.trobatNumero)
+        self.leNumero.returnPressed.connect(self.trobatNumero)
 
     def llegirAdreces(self):
         if self.origen == 'CSV':
@@ -86,12 +91,30 @@ class QCercadorAdreca(QObject):
 
     def trobatCarrer(self):
         txt = self.leCarrer.text()
-        if txt != '' and txt != self.nomCarrer:
+        if txt != '':
             self.iniAdreca()
-            if txt in self.dictCarrers:
-                self.nomCarrer = txt
-                self.codiCarrer = self.dictCarrers[self.nomCarrer]
-                self.completarNumero()
+            if txt != self.nomCarrer:
+                # self.iniAdreca()
+                if txt in self.dictCarrers:
+                    self.nomCarrer = txt
+                    self.codiCarrer = self.dictCarrers[self.nomCarrer]
+                    self.completarNumero()
+                    self.focusANumero()
+                else:
+                    info="\""+txt+"\""
+                    info="Has introduït: "+info+ "\nCarrer incorrecte [4]"
+                    self.sHanTrobatCoordenades.emit(4,info) #direccion no está en diccicionario
+                    self.iniAdreca()
+            else:
+                info="\""+txt+"\""
+                info="Oops! \nTorna a introduir l'adreça i després el número [5]"
+                self.sHanTrobatCoordenades.emit(5,info)    #nunca
+        else:
+            info="\""+txt+"\""
+            info= "Has introduït: "+info+ " \nCarrer en blanc [6]" 
+            self.sHanTrobatCoordenades.emit(6,info) #adreça vacia
+                
+   
 
     def completarNumero(self):
         self.dictNumerosFiltre = self.dictNumeros[self.codiCarrer]
@@ -100,30 +123,49 @@ class QCercadorAdreca(QObject):
         completer.setCaseSensitivity(QtCore.Qt.CaseInsensitive)
         self.leNumero.setCompleter(completer)  
 
+
     def trobatNumero(self):
         txt = self.leNumero.text()
         if txt != '': # and txt != self.numeroCarrer:
             self.iniAdrecaNumero()
-            if self.nomCarrer != '' and txt in self.dictNumerosFiltre:
-                self.numeroCarrer = txt
-                self.infoAdreca = self.dictNumerosFiltre[self.numeroCarrer]
-                self.coordAdreca = QgsPointXY(float(self.infoAdreca['ETRS89_COORD_X']), \
-                                            float(self.infoAdreca['ETRS89_COORD_Y']))
-                self.leNumero.clearFocus()
-                self.sHanTrobatCoordenades.emit
+            if self.nomCarrer != '':
+                if  txt in self.dictNumerosFiltre:
+                    self.numeroCarrer = txt
+                    self.infoAdreca = self.dictNumerosFiltre[self.numeroCarrer]
+                    self.coordAdreca = QgsPointXY(float(self.infoAdreca['ETRS89_COORD_X']), \
+                                                float(self.infoAdreca['ETRS89_COORD_Y']))
+                    self.leNumero.clearFocus()
+                    
+                    info="\""+self.nomCarrer+"\"  \"" +txt  +"\""
+                    self.sHanTrobatCoordenades.emit(0,info)                
+                else:
+                    info="\""+self.nomCarrer+"\"  \"" +txt  +"\""
+                    info="Has introduït: "+info+ " \nNúmero inexistent/incorrecte [1]"
+                    self.sHanTrobatCoordenades.emit(1,info)  #numero no está en diccicionario
             else:
-                print ("no encontrado") #     self.sHanTrobatCoordenades.emit 
+                info="\""+self.nomCarrer+"\"  \"" +txt  +"\""
+                info= "Oops! \nTorna a introduir l'adreça i després el número [2]"
+                self.sHanTrobatCoordenades.emit(2,info) #adreça vacia  nunca
+        else:
+            info="\""+self.nomCarrer+"\"  \"" +txt  +"\""
+            info= literal= "Has introduït: "+info+ " \nNúmero en blanc [3]"
+            self.sHanTrobatCoordenades.emit(3,info)   #numero en blanco
+            
 
     def focusANumero(self):
         self.leNumero.setFocus()
+
+
+        
 
     def esborrarNumero(self):
         self.leNumero.clear()
         self.leNumero.setCompleter(None)
 
 
+from importaciones import *
 if __name__ == "__main__":
-    projecteInicial='../dades/projectes/BCN11_nord.qgs'
+    projecteInicial='projectes/BCN11_nord.qgs'
 
     with qgisapp() as app:
         app.setStyle(QStyleFactory.create('fusion'))

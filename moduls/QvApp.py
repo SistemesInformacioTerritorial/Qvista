@@ -3,11 +3,13 @@
 from qgis.PyQt.QtSql import QSqlDatabase, QSqlQuery
 from qgis.PyQt.QtCore import QTranslator, QLibraryInfo
 from moduls.QvSingleton import Singleton
+from pathlib import Path
 import sys
 import getpass
 import uuid
 
 _DB_QVISTA = dict()
+
 
 _DB_QVISTA['DSV'] = {
     'Database': 'QOCISPATIAL',
@@ -27,7 +29,9 @@ _DB_QVISTA['PRO'] = {
     'Password': 'QVISTA_CONS'
 }
 
-_PATH_PRO = 'N:\\SITEB\\APL\\PYQGIS\\'
+_PATH_PRO = ['N:\\SITEB\\APL\\PYQGIS\\']
+
+_PATH_HELP = 'help/'
 
 class QvApp(Singleton):
 
@@ -50,14 +54,16 @@ class QvApp(Singleton):
     def calcEntorn(self):
         entorn = 'DSV'
         if len(sys.argv) > 0:
-            prog = sys.argv[0].upper()
-            progL = len(sys.argv[0])
-            path = _PATH_PRO.upper()
-            pathL = len(_PATH_PRO)
-            if progL > pathL:
-                pref = prog[:pathL]
-                if pref == path:
-                    entorn = 'PRO'
+            for pathPro in _PATH_PRO:
+                prog = sys.argv[0].upper()
+                progL = len(sys.argv[0])
+                path = pathPro.upper()
+                pathL = len(pathPro)
+                if progL > pathL:
+                    pref = prog[:pathL]
+                    if pref == path:
+                        entorn = 'PRO'
+                        break
         return entorn
 
     def carregaIdioma(self, app, idioma = 'ca'):
@@ -76,6 +82,32 @@ class QvApp(Singleton):
         path = path.replace('/./', '/')
         self.qgisTranslator.load("qgis_" + idioma, path)
         app.installTranslator(self.qgisTranslator)
+
+    def llegirFitxerText(self, nomFich):
+        try:
+            txt = ''
+            file = Path(nomFich)
+            if file.is_file():
+                file.open() 
+                txt = file.read_text() 
+            return txt
+        except:
+            return ''
+
+    def carregaAjuda(self, objecte):
+        try: 
+            nom = type(objecte).__name__
+            if self.idioma is not None and self.idioma != '':
+                nomFich = nom + '_' + self.idioma + '.html'
+            else:
+                nomFich = nom + '.html'
+            txt = self.llegirFitxerText(_PATH_HELP + nomFich)
+            if txt == '':
+                txt = self.llegirFitxerText(_PATH_HELP + 'WorkInProgress.html')
+            return txt
+        except Exception as e:
+            print(str(e))
+            return ''
 
     def logConnexio(self):
         try:
