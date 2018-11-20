@@ -157,7 +157,7 @@ class QvStreetView(QWidget):
         self.rp = PointTool(self, self.canvas)
         self.canvas.setMapTool(self.rp)
         self.boto = QPushButton(self.canvas)
-        self.icon=QIcon('imatges//littleMan.png')
+        self.icon=QIcon('imatges/littleMan.png')
         self.boto.setIcon(self.icon)
         self.boto.clicked.connect(self.segueixBoto)
         self.boto.setGeometry(40,5,25,25)

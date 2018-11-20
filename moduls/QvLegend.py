@@ -4,7 +4,7 @@ from qgis.core import QgsProject, QgsLegendModel, QgsLayerDefinition
 from qgis.gui import QgsLayerTreeView, QgsLayerTreeViewMenuProvider, QgsLayerTreeMapCanvasBridge
 from qgis.PyQt.QtWidgets import QMenu, QAction, QFileDialog
 from qgis.PyQt.QtGui import QIcon
-import recursos
+# import recursos
 
 class QvLegend(QgsLayerTreeView):
 
@@ -106,27 +106,27 @@ class QvLegend(QgsLayerTreeView):
     def setActions(self):
         act = QAction()
         act.setText("Afegir grup")
-        act.setIcon(QIcon(':/Icones/ic_file_upload_black_48dp.png'))
+        act.setIcon(QIcon('imatges/ic_file_upload_black_48dp.png'))
         act.triggered.connect(self.defaultActions().addGroup)
         self.addAction('addGroup', act)
         act = QAction()
         act.setText("Afegir capes")
-        act.setIcon(QIcon(':/Icones/ic_file_upload_black_48dp.png'))
+        act.setIcon(QIcon('imatges/ic_file_upload_black_48dp.png'))
         act.triggered.connect(self.addLayersFromFile)
         self.addAction('addLayersFromFile', act)
         act = QAction()
         act.setText("Renombrar capa o grup")
-        act.setIcon(QIcon(':/Icones/ic_file_upload_black_48dp.png'))
+        act.setIcon(QIcon('imatges/ic_file_upload_black_48dp.png'))
         act.triggered.connect(self.defaultActions().renameGroupOrLayer)
         self.addAction('renameGroupOrLayer', act)
         act = QAction()
         act.setText("Esborrar capa o grup")
-        act.setIcon(QIcon(':/Icones/ic_file_upload_black_48dp.png'))
+        act.setIcon(QIcon('imatges/ic_file_upload_black_48dp.png'))
         act.triggered.connect(self.defaultActions().removeGroupOrLayer)
         self.addAction('removeGroupOrLayer', act)
         act = QAction()
         act.setText("Contador elements")
-        act.setIcon(QIcon(':/Icones/ic_file_upload_black_48dp.png'))
+        act.setIcon(QIcon('imatges/ic_file_upload_black_48dp.png'))
         act.triggered.connect(self.defaultActions().showFeatureCount)
         self.addAction('showFeatureCount', act)
 
@@ -214,7 +214,7 @@ if __name__ == "__main__":
 
         act = QAction()
         act.setText("Salutacions")
-        act.setIcon(QIcon(':/Icones/ic_file_upload_black_48dp.png'))
+        act.setIcon(QIcon('imatges/ic_file_upload_black_48dp.png'))
         act.triggered.connect(salutacions)
 
         legend.addAction('salutacions', act)
@@ -229,7 +229,7 @@ if __name__ == "__main__":
 
         act = QAction()
         act.setText("Veure Capa Activa")
-        act.setIcon(QIcon(':/Icones/ic_file_upload_black_48dp.png'))
+        act.setIcon(QIcon('imatges/ic_file_upload_black_48dp.png'))
         act.triggered.connect(lambda: veureCapaActiva(legend, canvas))
 
         legend.addAction('veureCapaActiva', act)
@@ -242,7 +242,7 @@ if __name__ == "__main__":
 
         act = QAction()
         act.setText("Menú per defecte")
-        act.setIcon(QIcon(':/Icones/ic_file_upload_black_48dp.png'))
+        act.setIcon(QIcon('imatges/ic_file_upload_black_48dp.png'))
         act.triggered.connect(lambda: defaultMenu(legend))
 
         legend.addAction('defaultMenu', act)
@@ -257,7 +257,7 @@ if __name__ == "__main__":
 
         act = QAction()
         act.setText("Menú ampliat")
-        act.setIcon(QIcon(':/Icones/ic_file_upload_black_48dp.png'))
+        act.setIcon(QIcon('imatges/ic_file_upload_black_48dp.png'))
         act.triggered.connect(lambda: menuExtended(legend))
 
         legend.addAction('menuExtended', act)

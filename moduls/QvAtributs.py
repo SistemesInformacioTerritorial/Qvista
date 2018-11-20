@@ -17,8 +17,8 @@ from qgis.gui import (QgsGui,
                       QgsBusyIndicatorDialog)
 from moduls.QvAccions import QvAccions
 from moduls.QvApp import QvApp
-import images_rc
-import recursos
+# import images_rc
+# import recursos
 import csv
 # import xlwt - .xls
 

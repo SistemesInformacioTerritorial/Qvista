@@ -3,8 +3,8 @@
 from qgis.PyQt.QtGui import QCursor, QIcon
 from qgis.PyQt.QtWidgets import QMenu, QAction
 from qgis.PyQt.QtWidgets import QMessageBox, QWhatsThis
-import images_rc
-import recursos
+# import images_rc
+# import recursos
 
 class QvAccions:
     def __init__(self):

@@ -70,4 +70,4 @@ from cataleg_ui import Ui_Cataleg
 
 # Eines de dibuix
 # Icones SVG
-import images_rc
+# import images_rc

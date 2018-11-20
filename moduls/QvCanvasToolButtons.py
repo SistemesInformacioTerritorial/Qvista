@@ -1,7 +1,7 @@
 # coding:utf-8
 
 from importaciones import *
-import recursos
+# import recursos
 from configuracioQvista import *
 from plantillaQvista_3 import Ui_MainWindow
 from QvUbicacions import QvUbicacions
@@ -134,20 +134,20 @@ class QvCanvas(QgsMapCanvas):
             self.layoutBotoneraMapa.addWidget(self.bApuntar)        
             self.bApuntar.clicked.connect(self.seleccioClick)
         if "centrar" in self.llistaBotons:
-            self.bCentrar = self._botoMapa(':/Icones/Icones/ic_zoom_out_map_black_48dp.png')
+            self.bCentrar = self._botoMapa('imatges/ic_zoom_out_map_black_48dp.png')
             self.layoutBotoneraMapa.addWidget(self.bCentrar)     
             self.bCentrar.clicked.connect(self.centrarMapa)
         if "zoomIn" in self.llistaBotons:
-            self.bZoomIn = self._botoMapa(':/Icones/Icones/zoom_in.png')
+            self.bZoomIn = self._botoMapa('imatges/zoom_in.png')
             self.bZoomIn.setCheckable(True)
             self.layoutBotoneraMapa.addWidget(self.bZoomIn)     
             self.bZoomIn.clicked.connect(self.zoomIn)
         if "zoomOut" in self.llistaBotons:
-            self.bZoomOut = self._botoMapa(':/Icones/Icones/zoom_out.png')
+            self.bZoomOut = self._botoMapa('imatges/zoom_out.png')
             self.layoutBotoneraMapa.addWidget(self.bZoomOut)     
             self.bZoomOut.clicked.connect(self.zoomOut)
         if "panning" in self.llistaBotons:
-            self.bPanning = self._botoMapa('pan_tool_black_24x24.png')
+            self.bPanning = self._botoMapa('imatges/pan_tool_black_24x24.png')
             self.layoutBotoneraMapa.addWidget(self.bPanning)     
             self.bPanning.clicked.connect(self.panCanvas)
 

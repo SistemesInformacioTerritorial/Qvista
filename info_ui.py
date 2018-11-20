@@ -80,7 +80,7 @@ class Ui_Informacio(object):
 "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:12pt;\">Podeu trobar una llista complerta amb les funcionalitats pendents d\'incorporar en la següent adreça: www.bcn.cat</span></p>\n"
 "<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:12pt;\"><br /></p></body></html>"))
 
-import recursos_rc
+# import recursos_rc
 
 if __name__ == "__main__":
     import sys

@@ -38,11 +38,11 @@ class QvMapeta(QFrame):
         if self.tamanyPetit:
             self.xTamany = 179
             self.yTamany = 180
-            self.setStyleSheet('QFrame {opacity: 50; background-image: url("imatges//MapetaPetit.jpg");}')
+            self.setStyleSheet('QFrame {opacity: 50; background-image: url("imatges/MapetaPetit.jpg");}')
         else:
             self.xTamany = 267
             self.yTamany = 284
-            self.setStyleSheet('QFrame {background-image: url("imatges//MAPETA_SITUACIO_267x284.bmp");}')
+            self.setStyleSheet('QFrame {background-image: url("imatges/MAPETA_SITUACIO_267x284.bmp");}')
 
         # Definim la geometria del frame del mapeta
         self.setGeometry(0,0,self.xTamany,self.yTamany)
@@ -61,7 +61,7 @@ class QvMapeta(QFrame):
 
         # El botó per minimitzar el mapa
         self.botoFerPetit = QPushButton(self)
-        icon = QIcon('imatges//mapeta-collapse.png')
+        icon = QIcon('imatges/mapeta-collapse.png')
         self.botoFerPetit.setIcon(icon)
         self.botoFerPetit.setGeometry(0,0,25,25)
         self.botoFerPetit.show()
@@ -84,12 +84,12 @@ class QvMapeta(QFrame):
         if self.petit:
             self.setGeometry(0,0,self.xTamany,self.yTamany)
             self.petit = False
-            icon = QIcon('imatges//arrow-collapse.png')
+            icon = QIcon('imatges/arrow-collapse.png')
             self.botoFerPetit.setIcon(icon)
         else:
             self.setGeometry(0,0,25,25)
             self.petit = True
-            icon = QIcon('imatges//mapetaPetit.jpg')
+            icon = QIcon('imatges/mapetaPetit.jpg')
             self.botoFerPetit.setIcon(icon)
 
     def pintarMapeta(self):

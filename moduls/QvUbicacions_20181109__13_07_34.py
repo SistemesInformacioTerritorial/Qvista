@@ -257,11 +257,11 @@ class QvUbicacions(QtWidgets.QWidget):
        
         #Definimos un boton para guardar las ubicaciones
         icon = QIcon()
-        fichero= './imatges//guardar.png'
+        fichero= './imatges/guardar.png'
 
 
         icon.addPixmap(QPixmap(fichero))  
-        # icon.addPixmap(QPixmap("D:/projectes_py/qVista/imatges//guardar.png"))  
+        # icon.addPixmap(QPixmap("D:/projectes_py/qVista/imatges/guardar.png"))  
 
         self.boton_1 = QtWidgets.QPushButton(icon,'')       
         self.boton_1.setToolTip("Desar ubicacions")

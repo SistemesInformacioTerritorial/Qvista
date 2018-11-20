@@ -11,8 +11,8 @@ from moduls.QvAccions import QvAccions
 from moduls.QvAtributs import QvAtributs
 from moduls.QvApp import QvApp
 
-import images_rc
-import recursos
+# import images_rc
+# import recursos
 
 class QvBotoneraLlegenda(QWidget):
 
@@ -201,7 +201,7 @@ class QvLlegenda(QgsLayerTreeView):
 
         self.iconaFiltre = QgsLayerTreeViewIndicator()
         # self.iconaFiltre.setIcon(QIcon(':/Icones/ic_file_upload_black_48dp.png'))
-        self.iconaFiltre.setIcon(QIcon('imatges//filter.png'))
+        self.iconaFiltre.setIcon(QIcon('imatges/filter.png'))
         self.iconaFiltre.setToolTip('Filtre actiu')
 
         if self.atributs is not None:

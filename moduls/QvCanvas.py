@@ -163,23 +163,23 @@ class QvCanvas(QgsMapCanvas):
 
 
         if "panning" in self.llistaBotons:
-            self.bPanning = self._botoMapa('imatges//pan_tool_black_24x24.png')
+            self.bPanning = self._botoMapa('imatges/pan_tool_black_24x24.png')
             self.layoutBotoneraMapa.addWidget(self.bPanning)     
             self.bPanning.clicked.connect(self.panCanvas)
         if "centrar" in self.llistaBotons:
-            self.bCentrar = self._botoMapa(':/Icones/Icones/ic_zoom_out_map_black_48dp.png')
+            self.bCentrar = self._botoMapa('imatges/ic_zoom_out_map_black_48dp.png')
             self.layoutBotoneraMapa.addWidget(self.bCentrar)     
             self.bCentrar.clicked.connect(self.centrarMapa)
         if "zoomIn" in self.llistaBotons:
-            self.bZoomIn = self._botoMapa(':/Icones/Icones/zoom_in.png')
+            self.bZoomIn = self._botoMapa('imatges/zoom_in.png')
             self.layoutBotoneraMapa.addWidget(self.bZoomIn)     
             self.bZoomIn.clicked.connect(self.zoomIn)
         if "zoomOut" in self.llistaBotons:
-            self.bZoomOut = self._botoMapa(':/Icones/Icones/zoom_out.png')
+            self.bZoomOut = self._botoMapa('imatges/zoom_out.png')
             self.layoutBotoneraMapa.addWidget(self.bZoomOut)     
             self.bZoomOut.clicked.connect(self.zoomOut)
         if "apuntar" in self.llistaBotons:
-            self.bApuntar = self._botoMapa('imatges//apuntar.png')
+            self.bApuntar = self._botoMapa('imatges/apuntar.png')
             self.layoutBotoneraMapa.addWidget(self.bApuntar)        
             self.bApuntar.clicked.connect(self.seleccioClick)
 
@@ -192,7 +192,7 @@ class QvCanvas(QgsMapCanvas):
         self.butoMostra.setMaximumWidth(80)
         self.butoMostra.setMinimumWidth(80)
 
-        icon=QIcon('imatges//mapeta1.png')
+        icon=QIcon('imatges/mapeta1.png')
         self.butoMostra.setIconSize(QSize(80,80))
         self.butoMostra.setIcon(icon)
 
@@ -201,7 +201,7 @@ class QvCanvas(QgsMapCanvas):
         self.butoMostra2.setMinimumHeight(80)
         self.butoMostra2.setMaximumWidth(80)
         self.butoMostra2.setMinimumWidth(80)
-        icon=QIcon('imatges//mapeta2.png')
+        icon=QIcon('imatges/mapeta2.png')
         self.butoMostra2.setIconSize(QSize(80,80))
         self.butoMostra2.setIcon(icon)
         self.botoneraMostres = QFrame()

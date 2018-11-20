@@ -353,7 +353,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         # atencion 
         self.boton_bajar= QPushButton()
         self.boton_bajar.clicked.connect(self.CopiarA_Ubicacions)
-        self.boton_bajar.setIcon(QIcon('imatges//down3-512.png'))
+        self.boton_bajar.setIcon(QIcon('imatges/down3-512.png'))
         self.boton_bajar.setMinimumHeight(25)
         self.boton_bajar.setMaximumHeight(25)
         self.boton_bajar.setMinimumWidth(25)
@@ -682,13 +682,13 @@ class QVista(QMainWindow, Ui_MainWindow):
         
         self.actImprimir = QAction("Imprimir", self)
         self.actImprimir.setStatusTip("Imprimir")
-        icon=QIcon('imatges//printer.png')
+        icon=QIcon('imatges/printer.png')
         self.actImprimir.setIcon(icon)
         self.actImprimir.triggered.connect(self.imprimir)
 
         self.actCloudUpload = QAction("Pujar al núvol", self)
         self.actCloudUpload.setStatusTip("Pujar al núvol")
-        icon=QIcon('imatges//cloud-upload.png')
+        icon=QIcon('imatges/cloud-upload.png')
         self.actCloudUpload.setIcon(icon)
         self.actCloudUpload.triggered.connect(self.cloudUpload)
 
@@ -723,7 +723,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.actObrirBotonera.triggered.connect(self.obrirBotonera)
 
         self.actObrirUbicacions= QAction("Les meves ubicacions", self)
-        icon=QIcon('imatges//map-marker.png')
+        icon=QIcon('imatges/map-marker.png')
         self.actObrirUbicacions.setIcon(icon)
         self.actObrirUbicacions.setStatusTip("Obrir eina ubicacions")
         self.actObrirUbicacions.triggered.connect(self.obrirUbicacions)
@@ -767,7 +767,7 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         self.actTissores = QAction("Eina per retallar pantalla", self)
         self.actTissores.setStatusTip("Eina per retallar pantalla")
-        icon=QIcon('imatges//tissores.png')
+        icon=QIcon('imatges/tissores.png')
         self.actTissores.setIcon(icon)
         self.actTissores.triggered.connect(self.tissores)
         
@@ -806,12 +806,12 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.actSeleccioLliure.triggered.connect(seleccioLliure)
 
         self.actInfo = QAction("Informació ", self)
-        icon=QIcon('imatges//information.png')
+        icon=QIcon('imatges/information.png')
         self.actInfo.setIcon(icon)
         self.actInfo.triggered.connect(self.infoQVista)
 
         self.actHelp = QAction("Ajuda ", self)
-        icon=QIcon('imatges//help-circle.png')
+        icon=QIcon('imatges/help-circle.png')
         self.actHelp.setIcon(icon)
         self.actHelp.triggered.connect(self.helpQVista)
                 
@@ -821,7 +821,7 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         self.actObrirCataleg = QAction("GIS Point", self)
         self.actObrirCataleg.setStatusTip("Catàleg d'Informació Territorial")
-        self.actObrirCataleg.setIcon(QIcon('imatges//map-plus.png'))
+        self.actObrirCataleg.setIcon(QIcon('imatges/map-plus.png'))
         self.actObrirCataleg.triggered.connect(self.obrirCataleg)
 
         self.actObrirMapeta = QAction("Mapeta", self)
@@ -833,27 +833,27 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.actMapTip.triggered.connect(self.preparacioMapTips)
         
         self.actFerGran = QAction("Ampliar àrea de treball", self)
-        self.actFerGran.setIcon(QIcon('imatges//arrow-expand.png'))
+        self.actFerGran.setIcon(QIcon('imatges/arrow-expand.png'))
         self.actFerGran.setStatusTip("Ampliar àrea de treball")
         self.actFerGran.triggered.connect(self.ferGran)
 
         self.actObrirEnQgis = QAction("Obrir en Qgis", self)
-        self.actObrirEnQgis.setIcon(QIcon('imatges//qgis3.png'))
+        self.actObrirEnQgis.setIcon(QIcon('imatges/qgis3.png'))
         self.actObrirEnQgis.setStatusTip("Obrir en Qgis")
         self.actObrirEnQgis.triggered.connect(self.obrirEnQgis)
 
         self.actGrafiques = QAction("Gràfiques", self)
-        self.actGrafiques.setIcon(QIcon('imatges//chart-bar.png'))
+        self.actGrafiques.setIcon(QIcon('imatges/chart-bar.png'))
         self.actGrafiques.setStatusTip("Gràfiques")
         self.actGrafiques.triggered.connect(self.obrirBrowserGrafiques)
 
         self.actCanvasImg = QAction("Guardar imatge del canvas", self)
-        self.actCanvasImg.setIcon(QIcon('imatges//camera.png'))
+        self.actCanvasImg.setIcon(QIcon('imatges/camera.png'))
         self.actCanvasImg.setStatusTip("Imatge del canvas")
         self.actCanvasImg.triggered.connect(self.canvasImg)
 
         self.actFavorit = QAction("Favorit", self)
-        self.actFavorit.setIcon(QIcon('imatges//star.png'))
+        self.actFavorit.setIcon(QIcon('imatges/star.png'))
         self.actFavorit.setStatusTip("Favorit")
         self.actFavorit.triggered.connect(self.favorit)
 
@@ -862,12 +862,12 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.actCataleg.triggered.connect(self.catalegCool)
         
         self.actEnrera = QAction("Retrocedir mapa", self)
-        self.actEnrera.setIcon(QIcon('imatges//arrow-left.png'))
+        self.actEnrera.setIcon(QIcon('imatges/arrow-left.png'))
         self.actEnrera.setStatusTip("Retrocedir mapa")
         self.actEnrera.triggered.connect(self.canvas.zoomToPreviousExtent)
 
         self.actEndevant = QAction("Avançar mapa", self)
-        self.actEndevant.setIcon(QIcon('imatges//arrow-right.png'))
+        self.actEndevant.setIcon(QIcon('imatges/arrow-right.png'))
         self.actEndevant.setStatusTip("Avançar mapa")
         self.actEndevant.triggered.connect(self.canvas.zoomToNextExtent)
 
@@ -897,12 +897,12 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.actEntorns.triggered.connect(self.preparacioEntorns)
     
         self.actDashStandard = QAction("Restaurar", self)
-        self.actDashStandard.setIcon(QIcon('imatges//auto-fix.png'))
+        self.actDashStandard.setIcon(QIcon('imatges/auto-fix.png'))
         self.actDashStandard.setStatusTip("Restaurar")
         self.actDashStandard.triggered.connect(self.dashStandard)
 
         self.actAdreces = QAction("Cerca per adreça", self)
-        self.actAdreces.setIcon(QIcon('imatges//map-marker.png'))
+        self.actAdreces.setIcon(QIcon('imatges/map-marker.png'))
         self.actAdreces.setStatusTip("Adreces")
         self.actAdreces.triggered.connect(self.adreces)
 
@@ -1068,7 +1068,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         
         self.botoMaxim = QPushButton()
         self.botoMaxim.clicked.connect(self.ferGran)
-        self.botoMaxim.setIcon(QIcon('imatges//arrow-expand.png'))
+        self.botoMaxim.setIcon(QIcon('imatges/arrow-expand.png'))
         self.botoMaxim.setMinimumHeight(40)
         self.botoMaxim.setMaximumHeight(40)
         self.botoMaxim.setMinimumWidth(40)
@@ -1272,7 +1272,7 @@ class QVista(QMainWindow, Ui_MainWindow):
             self.dwLlegenda.hide()
             self.layoutFrameLlegenda.addWidget(self.llegenda)
             self._menuBarShadow.setEnabled(True)
-            self.botoMaxim.setIcon(QIcon('imatges//arrow-expand.png'))
+            self.botoMaxim.setIcon(QIcon('imatges/arrow-expand.png'))
             
         else:
             self.frameLlegenda.hide()
@@ -1292,7 +1292,7 @@ class QVista(QMainWindow, Ui_MainWindow):
             # self.dwLlegenda.show()
 
             self._menuBarShadow.setEnabled(False)
-            self.botoMaxim.setIcon(QIcon('imatges//arrow-collapse.png'))
+            self.botoMaxim.setIcon(QIcon('imatges/arrow-collapse.png'))
             # self.bar.setGraphicsEffect(_menuBarShadow)
 
     def obrirProjecte(self, projecte):
