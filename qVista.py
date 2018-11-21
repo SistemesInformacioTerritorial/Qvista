@@ -5,6 +5,7 @@ from moduls.QvPavimentacio import DockPavim
 global qV
 
 
+"""Comentarios paraq master"""
 
 class QHLine(QFrame):
     def __init__(self):
