@@ -52,6 +52,7 @@ class PointTool(QgsMapTool):
             try:
                 layer.selectByIds(self.qV.idsElementsSeleccionats)
                 nombreElements = len(self.qV.idsElementsSeleccionats)
+                
                 self.qV.lblNombreElementsSeleccionats.setText('Elements seleccionats: '+str(nombreElements))
             except:
                 pass
