@@ -1849,6 +1849,7 @@ def seleccioClick():
     # taulaAtributsSeleccionats()
 
 def seleccioClicks():
+    seleccioClick()
     layer=qV.llegenda.currentLayer()  
     try:
         qV.canvas.scene().removeItem(qV.toolSelect.rubberband)
