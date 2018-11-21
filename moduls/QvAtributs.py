@@ -379,7 +379,7 @@ if __name__ == "__main__":
         llegenda = QvLlegenda(canvas, atributs)
 
         # llegenda.project.read('projectes/Illes.qgs')
-        llegenda.project.read('projectes/bcn11.qgs')
+        llegenda.project.read('../Dades/Projectes/BCN11.qgs')
 
         llegenda.setWindowTitle('Llegenda')
         llegenda.setGeometry(50, 50, 300, 400)
