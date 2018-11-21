@@ -62,18 +62,6 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.definirLabelsStatus()   
         self.preparacioEntornGrafic()
         
-        # Carrega del projecte inicial
-        self.project.read(projecteInicial)
-        # self.metadata = self.project.metadata()
-        # print ('Author: '+self.metadata.author())
-        self.lblProjeccio.setText(self.project.crs().description())
-        self.lblProjecte.setText(self.project.fileName())
-
-        # Titol del projecte 
-        fnt = QFont("Segoe UI", 18, weight=QFont.Normal)
-        self.lblTitolProjecte.setFont(fnt)
-        self.lblTitolProjecte.setText(self.project.title())
-
         # Inicialitzacions
         self.printActiu = False
         self.qvPrint=0
@@ -101,7 +89,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.preparacioCercadorPostal()
         # self.preparacioMapTips()
         self.preparacioImpressio()
-        self.preparacioGrafiques()
+        # self.preparacioGrafiques()
 
         # tool = QvSeleccioElement(self.canvas, self.llegenda)
         # self.canvas.setMapTool(tool)
@@ -113,6 +101,20 @@ class QVista(QMainWindow, Ui_MainWindow):
         # Aquestes línies son necesaries per que funcionin bé els widgets de qGis, com ara la fitza d'atributs
         if len(QgsGui.editorWidgetRegistry().factories()) == 0:
             QgsGui.editorWidgetRegistry().initEditors()
+        
+        
+        # Carrega del projecte inicial
+        self.project.read(projecteInicial)
+        # self.metadata = self.project.metadata()
+        # print ('Author: '+self.metadata.author())
+        self.lblProjeccio.setText(self.project.crs().description())
+        self.lblProjecte.setText(self.project.fileName())
+
+        # Titol del projecte 
+        fnt = QFont("Segoe UI", 18, weight=QFont.Normal)
+        self.lblTitolProjecte.setFont(fnt)
+        self.lblTitolProjecte.setText(self.project.title())
+
 
   # Fins aquí teniem la inicialització de la classe. Ara venen les funcions, o métodes, de la classe. 
     def pavimentacio(self):        
