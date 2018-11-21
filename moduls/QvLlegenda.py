@@ -404,14 +404,14 @@ class QvLlegenda(QgsLayerTreeView):
         self.menuAccions = []
         tipo = self.calcTipusMenu()
         if tipo == 'layer':
-            if self.editable:
-                self.menuAccions += ['addGroup', 'renameGroupOrLayer', 'removeGroupOrLayer',
-                                    'separator']
-            self.menuAccions += ['showFeatureCount']
             if self.atributs is not None:
-                self.menuAccions += ['filterElements', 'showFeatureTable']
+                self.menuAccions += ['showFeatureTable', 'filterElements' ]
+            self.menuAccions += ['showFeatureCount']
             if self.canvas is not None:
                 self.menuAccions += ['showLayerMap']
+            if self.editable:
+                self.menuAccions += ['separator',
+                                     'addGroup', 'renameGroupOrLayer', 'removeGroupOrLayer']
         elif tipo == 'group':
             if self.editable:
                 self.menuAccions += ['addGroup', 'renameGroupOrLayer', 'removeGroupOrLayer']

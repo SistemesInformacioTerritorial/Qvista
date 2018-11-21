@@ -1,10 +1,8 @@
 # coding:utf-8
 
 from  moduls.QvImports import *
-# from Bicis import Bicis
 from moduls.QvPavimentacio import DockPavim
 global qV
-
 
 
 class QHLine(QFrame):
@@ -147,7 +145,9 @@ class QVista(QMainWindow, Ui_MainWindow):
         # self.preparacioMapTips()
         self.preparacioImpressio()
         # self.preparacioGrafiques()
+
         self.preparacioSeleccio()
+
 
         # tool = QvSeleccioElement(self.canvas, self.llegenda)
         # self.canvas.setMapTool(tool)
@@ -172,6 +172,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         fnt = QFont("Segoe UI", 18, weight=QFont.Normal)
         self.lblTitolProjecte.setFont(fnt)
         self.lblTitolProjecte.setText(self.project.title())
+
 
   # Fins aquí teniem la inicialització de la classe. Ara venen les funcions, o métodes, de la classe. 
     def pavimentacio(self):        
