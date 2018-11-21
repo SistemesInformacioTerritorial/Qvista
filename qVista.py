@@ -5,13 +5,6 @@ from moduls.QvPavimentacio import DockPavim
 global qV
 
 
-"""
-muchas cosas de JNB escritas aqui"""
-"""fj jasflkj jasfl jasfkljas """
-
-"""Comentarios paraq master"""
-
-
 class QHLine(QFrame):
     def __init__(self):
         super(QHLine, self).__init__()
