@@ -4,7 +4,8 @@ from  moduls.QvImports import *
 from moduls.QvPavimentacio import DockPavim
 global qV
 
-
+"""
+muchas cosas de JNB escritas aqui"""
 
 class QHLine(QFrame):
     def __init__(self):
