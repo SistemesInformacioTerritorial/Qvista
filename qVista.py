@@ -1566,7 +1566,12 @@ class QVista(QMainWindow, Ui_MainWindow):
         for layer in layers:
             layer.removeSelection()
         self.lblNombreElementsSeleccionats.setText('No hi ha elements seleccionats.')
-        # taulaAtributs('Total',layer)
+        self.canvas.panCanvas()
+        try:
+            qV.canvas.scene().removeItem(qV.toolSelect.rubberband)
+            # taulaAtributs('Total',layer)
+        except:
+            pass
 
     def filtreCanvas(self):
         areaDInteres=self.canvas.extent()
