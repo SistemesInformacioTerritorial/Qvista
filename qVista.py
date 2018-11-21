@@ -855,7 +855,7 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         self.actEsborrarSeleccio = QAction("Esborrar seleccio", self)
         self.actEsborrarSeleccio.setStatusTip("Esborrar seleccio")
-        self.actEsborrarSeleccio.triggered.connect(self.esborrarSeleccio)
+        self.actEsborrarSeleccio.triggered.connect(lambda: self.esborrarSeleccio(True))
 
         self.actCentrar = QAction(self)
         self.actCentrar.setStatusTip("Centrar mapa")
@@ -995,7 +995,7 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         self.bs1.clicked.connect(seleccioClicks)
         self.bs2.clicked.connect(seleccioLliure)
-        self.bs3.clicked.connect(self.esborrarSeleccio)
+        self.bs3.clicked.connect(lambda: self.esborrarSeleccio(True))
         self.lytBotonsSeleccio.addWidget(self.bs1)
         self.lytBotonsSeleccio.addWidget(self.bs2)
         self.lytBotonsSeleccio.addWidget(self.bs3)
@@ -1560,13 +1560,15 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.dlgProperties = LayerProperties( self, layer)
         self.dlgProperties.show()
 
-    def esborrarSeleccio(self):
+    def esborrarSeleccio(self, tambePanCanvas = True):
         'Esborra les seleccions (no els elements) de qualsevol layer del canvas.'
         layers = self.canvas.layers()
         for layer in layers:
             layer.removeSelection()
         self.lblNombreElementsSeleccionats.setText('No hi ha elements seleccionats.')
-        self.canvas.panCanvas()
+        if tambePanCanvas:
+            self.canvas.panCanvas()
+
         try:
             qV.canvas.scene().removeItem(qV.toolSelect.rubberband)
             # taulaAtributs('Total',layer)
