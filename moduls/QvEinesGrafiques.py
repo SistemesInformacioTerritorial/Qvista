@@ -47,11 +47,11 @@ class QvSeleccioPerPoligon(QgsMapToolEmitPoint):
                 if self.overlap:
                     if featPnt.geometry().intersects(poligono):
                         self.layer.select(featPnt.id())
-                        # self.qV.idsSeleccionatsPerPoligon.add(featPnt.id())
+                        self.qV.idsElementsSeleccionats.add(featPnt.id())
                 else:
                     if featPnt.geometry().within(poligono):
                         self.layer.select(featPnt.id())
-                        # self.qV.idsSeleccionatsPerPoligon.add(featPnt.id())
+                        self.qV.idsElementsSeleccionats.append(featPnt.id())
 
 class QvSeleccioElement(QgsMapTool):
     """Aquesta clase és un QgsMapTool que selecciona l'element clickat. 

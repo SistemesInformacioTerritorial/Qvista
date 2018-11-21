@@ -20,10 +20,10 @@ class QHLine(QFrame):
 #         self.setFrameShadow(QFrame.Sunken)
 
 class PointTool(QgsMapTool):
-    def __init__(self, canvas):
+    def __init__(self, qV, canvas):
         QgsMapTool.__init__(self, canvas)
         self.canvas = canvas
-        self.idsElementsSeleccionats = []
+        self.qV = qV
 
     def canvasPressEvent(self, event):
         pass
@@ -48,9 +48,11 @@ class PointTool(QgsMapTool):
         if layer:
             it = layer.getFeatures(QgsFeatureRequest().setFilterRect(rect))
             ids = [i.id() for i in it]
-            self.idsElementsSeleccionats.extend(ids)
+            self.qV.idsElementsSeleccionats.extend(ids)
             try:
-                layer.selectByIds(self.idsElementsSeleccionats)
+                layer.selectByIds(self.qV.idsElementsSeleccionats)
+                nombreElements = self.qV.idsElementsSeleccionats.count()
+                self.qV.lblNombreElementsSeleccionats.setText('Elements seleccionats: '+str(nombreElements))
             except:
                 pass
         else:
@@ -115,17 +117,6 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.definirLabelsStatus()   
         self.preparacioEntornGrafic()
         
-        # Carrega del projecte inicial
-        self.project.read(projecteInicial)
-        # self.metadata = self.project.metadata()
-        # print ('Author: '+self.metadata.author())
-        self.lblProjeccio.setText(self.project.crs().description())
-        self.lblProjecte.setText(self.project.fileName())
-
-        # Titol del projecte 
-        fnt = QFont("Segoe UI", 18, weight=QFont.Normal)
-        self.lblTitolProjecte.setFont(fnt)
-        self.lblTitolProjecte.setText(self.project.title())
 
         # Inicialitzacions
         self.printActiu = False
@@ -154,7 +145,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.preparacioCercadorPostal()
         # self.preparacioMapTips()
         self.preparacioImpressio()
-        self.preparacioGrafiques()
+        # self.preparacioGrafiques()
         self.preparacioSeleccio()
 
         # tool = QvSeleccioElement(self.canvas, self.llegenda)
@@ -167,6 +158,19 @@ class QVista(QMainWindow, Ui_MainWindow):
         # Aquestes línies son necesaries per que funcionin bé els widgets de qGis, com ara la fitza d'atributs
         if len(QgsGui.editorWidgetRegistry().factories()) == 0:
             QgsGui.editorWidgetRegistry().initEditors()
+        
+        
+        # Carrega del projecte inicial
+        self.project.read(projecteInicial)
+        # self.metadata = self.project.metadata()
+        # print ('Author: '+self.metadata.author())
+        self.lblProjeccio.setText(self.project.crs().description())
+        self.lblProjecte.setText(self.project.fileName())
+
+        # Titol del projecte 
+        fnt = QFont("Segoe UI", 18, weight=QFont.Normal)
+        self.lblTitolProjecte.setFont(fnt)
+        self.lblTitolProjecte.setText(self.project.title())
 
   # Fins aquí teniem la inicialització de la classe. Ara venen les funcions, o métodes, de la classe. 
     def pavimentacio(self):        
@@ -987,6 +991,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.bs1 = QPushButton('Click')
         self.bs2 = QPushButton('Poligon')
         self.bs3 = QPushButton('Neteja')
+        self.lblNombreElementsSeleccionats = QLabel('Elements seleccionats: ')
 
         self.bs1.clicked.connect(seleccioClicks)
         self.bs2.clicked.connect(seleccioLliure)
@@ -994,6 +999,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.lytBotonsSeleccio.addWidget(self.bs1)
         self.lytBotonsSeleccio.addWidget(self.bs2)
         self.lytBotonsSeleccio.addWidget(self.bs3)
+        self.lytBotonsSeleccio.addWidget(self.lblNombreElementsSeleccionats)
 
         
         self.dwSeleccioGrafica = QDockWidget("Selecció gràfica", self)
@@ -1004,6 +1010,8 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.addDockWidget( Qt.RightDockWidgetArea, self.dwSeleccioGrafica )
         self.dwSeleccioGrafica.setStyleSheet('QDockWidget {background-color: #909090;}')
         self.dwSeleccioGrafica.hide()
+
+        self.idsElementsSeleccionats = []
 
 
     def seleccioGrafica(self):
@@ -1839,7 +1847,7 @@ def seleccioClicks():
     except:
         pass
 
-    tool = PointTool(qV.canvas)
+    tool = PointTool(qV, qV.canvas)
     qV.canvas.setMapTool(tool)
     # taulaAtributsSeleccionats()
 
