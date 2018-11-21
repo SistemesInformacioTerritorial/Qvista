@@ -11,12 +11,66 @@ class QHLine(QFrame):
         self.setFrameShape(QFrame.HLine)
         self.setFrameShadow(QFrame.Raised)
 
-
 # class QVLine(QFrame):
 #     def __init__(self):
 #         super(QVLine, self).__init__()
 #         self.setFrameShape(QFrame.VLine)
 #         self.setFrameShadow(QFrame.Sunken)
+
+class PointTool(QgsMapTool):
+    def __init__(self, qV, canvas):
+        QgsMapTool.__init__(self, canvas)
+        self.canvas = canvas
+        self.qV = qV
+
+    def canvasPressEvent(self, event):
+        pass
+
+    def canvasMoveEvent(self, event):
+        x = event.pos().x()
+        y = event.pos().y()
+
+        point = self.canvas.getCoordinateTransform().toMapCoordinates(x, y)
+
+    def canvasReleaseEvent(self, event):
+        #Get the click
+        x = event.pos().x()
+        y = event.pos().y()
+        layer = qV.llegenda.currentLayer()
+        # layerList = QgsMapLayerRegistry.instance().mapLayersByName("Illes")
+        # if layerList: 
+        #     layer = layerList[0]
+        point = self.canvas.getCoordinateTransform().toMapCoordinates(x, y)
+        radius = 20
+        rect = QgsRectangle(point.x() - radius, point.y() - radius, point.x() + radius, point.y() + radius)
+        if layer:
+            it = layer.getFeatures(QgsFeatureRequest().setFilterRect(rect))
+            ids = [i.id() for i in it]
+            self.qV.idsElementsSeleccionats.extend(ids)
+            try:
+                layer.selectByIds(self.qV.idsElementsSeleccionats)
+                nombreElements = len(self.qV.idsElementsSeleccionats)
+                
+                self.qV.lblNombreElementsSeleccionats.setText('Elements seleccionats: '+str(nombreElements))
+            except:
+                pass
+        else:
+          missatgeCaixa('Cal tenir seleccionat un nivell per poder fer una selecció.','Marqueu un nivell a la llegenda sobre el que aplicar la consulta.')
+
+    def activate(self):
+        pass
+
+    def deactivate(self):
+        pass
+
+    def isZoomTool(self):
+        return False
+
+    def isTransient(self):
+        return False
+
+    def isEditTool(self):
+        return True
 
 
 class QVista(QMainWindow, Ui_MainWindow):
@@ -62,6 +116,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.definirLabelsStatus()   
         self.preparacioEntornGrafic()
         
+
         # Inicialitzacions
         self.printActiu = False
         self.qvPrint=0
@@ -90,6 +145,9 @@ class QVista(QMainWindow, Ui_MainWindow):
         # self.preparacioMapTips()
         self.preparacioImpressio()
         # self.preparacioGrafiques()
+
+        self.preparacioSeleccio()
+
 
         # tool = QvSeleccioElement(self.canvas, self.llegenda)
         # self.canvas.setMapTool(tool)
@@ -185,6 +243,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.bFoto =  self.botoLateral(tamany = 25, accio=self.actCanvasImg)
         self.bImprimir =  self.botoLateral(tamany = 25, accio=self.actImprimir)
         self.bTissores = self.botoLateral(tamany = 25, accio=self.actTissores)
+        self.bTissores = self.botoLateral(tamany = 25, accio=self.actSeleccioGrafica)
 
         spacer2 = QSpacerItem(1000, 1000, QSizePolicy.Expanding,QSizePolicy.Maximum)
         self.lytBotoneraLateral.addItem(spacer2)
@@ -770,6 +829,13 @@ class QVista(QMainWindow, Ui_MainWindow):
         icon=QIcon('imatges/tissores.png')
         self.actTissores.setIcon(icon)
         self.actTissores.triggered.connect(self.tissores)
+
+        self.actSeleccioGrafica = QAction("Eina per retallar pantalla", self)
+        self.actSeleccioGrafica.setStatusTip("Eina per retallar pantalla")
+        icon=QIcon('imatges/select.png')
+        self.actSeleccioGrafica.setIcon(icon)
+        self.actSeleccioGrafica.triggered.connect(self.seleccioGrafica)
+
         
         self.actPanSelected = QAction("Pan selected", self)
         self.actPanSelected.setStatusTip("Pan selected")
@@ -791,7 +857,7 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         self.actEsborrarSeleccio = QAction("Esborrar seleccio", self)
         self.actEsborrarSeleccio.setStatusTip("Esborrar seleccio")
-        self.actEsborrarSeleccio.triggered.connect(self.esborrarSeleccio)
+        self.actEsborrarSeleccio.triggered.connect(lambda: self.esborrarSeleccio(True))
 
         self.actCentrar = QAction(self)
         self.actCentrar.setStatusTip("Centrar mapa")
@@ -915,6 +981,43 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.actPropietatsLayer = QAction("Propietats de la capa", self)
         self.actPropietatsLayer.setStatusTip("Propietats de la capa")
         self.actPropietatsLayer.triggered.connect(self.propietatsLayer)
+
+    def preparacioSeleccio(self):
+        self.wSeleccioGrafica = QWidget()
+        self.lytSeleccioGrafica = QVBoxLayout()
+        self.lytSeleccioGrafica.setAlignment(Qt.AlignTop)
+        self.wSeleccioGrafica.setLayout(self.lytSeleccioGrafica)
+        self.lytBotonsSeleccio = QHBoxLayout()
+        self.lytSeleccioGrafica.addLayout(self.lytBotonsSeleccio)
+
+        self.bs1 = QPushButton('Click')
+        self.bs2 = QPushButton('Poligon')
+        self.bs3 = QPushButton('Neteja')
+        self.lblNombreElementsSeleccionats = QLabel('No hi ha elements seleccionats.')
+
+        self.bs1.clicked.connect(seleccioClicks)
+        self.bs2.clicked.connect(seleccioLliure)
+        self.bs3.clicked.connect(lambda: self.esborrarSeleccio(True))
+        self.lytBotonsSeleccio.addWidget(self.bs1)
+        self.lytBotonsSeleccio.addWidget(self.bs2)
+        self.lytBotonsSeleccio.addWidget(self.bs3)
+        self.lytSeleccioGrafica.addWidget(self.lblNombreElementsSeleccionats)
+
+        
+        self.dwSeleccioGrafica = QDockWidget("Selecció gràfica", self)
+        self.dwSeleccioGrafica.hide()
+        self.dwSeleccioGrafica.setAllowedAreas( Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea )
+        self.dwSeleccioGrafica.setWidget( self.wSeleccioGrafica)
+        self.dwSeleccioGrafica.setContentsMargins ( 2, 2, 2, 2 )
+        self.addDockWidget( Qt.RightDockWidgetArea, self.dwSeleccioGrafica )
+        self.dwSeleccioGrafica.setStyleSheet('QDockWidget {background-color: #909090;}')
+        self.dwSeleccioGrafica.hide()
+
+        self.idsElementsSeleccionats = []
+
+
+    def seleccioGrafica(self):
+        self.dwSeleccioGrafica.show()
 
     def helpQVista(self):
         QWhatsThis.enterWhatsThisMode()
@@ -1459,12 +1562,20 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.dlgProperties = LayerProperties( self, layer)
         self.dlgProperties.show()
 
-    def esborrarSeleccio(self):
+    def esborrarSeleccio(self, tambePanCanvas = True):
         'Esborra les seleccions (no els elements) de qualsevol layer del canvas.'
         layers = self.canvas.layers()
         for layer in layers:
             layer.removeSelection()
-        # taulaAtributs('Total',layer)
+        self.lblNombreElementsSeleccionats.setText('No hi ha elements seleccionats.')
+        if tambePanCanvas:
+            self.canvas.panCanvas()
+
+        try:
+            qV.canvas.scene().removeItem(qV.toolSelect.rubberband)
+            # taulaAtributs('Total',layer)
+        except:
+            pass
 
     def filtreCanvas(self):
         areaDInteres=self.canvas.extent()
@@ -1713,16 +1824,19 @@ class DialegCSV(QDialog):
 
 def seleccioLliure():
     layer=qV.llegenda.currentLayer()
-    qV.canvas.scene().removeItem(qV.rubberband)
     qV.markers.hide()
+    try:
+        qV.canvas.scene().removeItem(qV.toolSelect.rubberband)
+    except:
+        pass
 
     # layerList = QgsMapLayerRegistry.instance().mapLayersByName("Illes")
-    # if layerList: 
+    # if layerList:
     #     lyr = layerList[0]
 
     if layer is not None:
         qV.actionMapSelect = QAction('Seleccionar dibuixant', qV)
-        qV.toolSelect = QvSeleccioPerPoligon(qV.canvas, layer)
+        qV.toolSelect = QvSeleccioPerPoligon(qV,qV.canvas, layer)
         qV.toolSelect.setAction(qV.actionMapSelect)
         qV.canvas.setMapTool(qV.toolSelect)
         # taulaAtributs('Seleccionats', layer)
@@ -1734,6 +1848,18 @@ def seleccioClick():
     qV.canvas.setMapTool(tool)
     # qV.taulesAtributs.taula.toggleSelection(True)
     # taulaAtributs('Seleccionats', layer)
+    # taulaAtributsSeleccionats()
+
+def seleccioClicks():
+    seleccioClick()
+    layer=qV.llegenda.currentLayer()  
+    try:
+        qV.canvas.scene().removeItem(qV.toolSelect.rubberband)
+    except:
+        pass
+
+    tool = PointTool(qV, qV.canvas)
+    qV.canvas.setMapTool(tool)
     # taulaAtributsSeleccionats()
 
 # def plotMapa():
