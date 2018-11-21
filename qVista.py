@@ -51,7 +51,7 @@ class PointTool(QgsMapTool):
             self.qV.idsElementsSeleccionats.extend(ids)
             try:
                 layer.selectByIds(self.qV.idsElementsSeleccionats)
-                nombreElements = self.qV.idsElementsSeleccionats.count()
+                nombreElements = len(self.qV.idsElementsSeleccionats)
                 self.qV.lblNombreElementsSeleccionats.setText('Elements seleccionats: '+str(nombreElements))
             except:
                 pass
@@ -991,7 +991,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.bs1 = QPushButton('Click')
         self.bs2 = QPushButton('Poligon')
         self.bs3 = QPushButton('Neteja')
-        self.lblNombreElementsSeleccionats = QLabel('Elements seleccionats: ')
+        self.lblNombreElementsSeleccionats = QLabel('No hi ha elements seleccionats.')
 
         self.bs1.clicked.connect(seleccioClicks)
         self.bs2.clicked.connect(seleccioLliure)
@@ -999,7 +999,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.lytBotonsSeleccio.addWidget(self.bs1)
         self.lytBotonsSeleccio.addWidget(self.bs2)
         self.lytBotonsSeleccio.addWidget(self.bs3)
-        self.lytBotonsSeleccio.addWidget(self.lblNombreElementsSeleccionats)
+        self.lytSeleccioGrafica.addWidget(self.lblNombreElementsSeleccionats)
 
         
         self.dwSeleccioGrafica = QDockWidget("Selecció gràfica", self)
@@ -1565,6 +1565,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         layers = self.canvas.layers()
         for layer in layers:
             layer.removeSelection()
+        self.lblNombreElementsSeleccionats.setText('No hi ha elements seleccionats.')
         # taulaAtributs('Total',layer)
 
     def filtreCanvas(self):
