@@ -1,7 +1,6 @@
 # coding:utf-8
 
 from  moduls.QvImports import *
-# from Bicis import Bicis
 from moduls.QvPavimentacio import DockPavim
 global qV
 
