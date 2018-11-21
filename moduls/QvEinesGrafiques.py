@@ -3,7 +3,7 @@
 from moduls.QvImports import *
 
 class QvSeleccioPerPoligon(QgsMapToolEmitPoint):
-    def __init__(self, canvas, layer):
+    def __init__(self, qV, canvas, layer):
         self.canvas = canvas
         self.layer = layer
         QgsMapToolEmitPoint.__init__(self, self.canvas)
@@ -40,7 +40,7 @@ class QvSeleccioPerPoligon(QgsMapToolEmitPoint):
         self.rubberband.show()
         if (len(self.points) > 1):
             # g = self.rubberband.asGeometry()
-            self.layer.removeSelection()
+            # self.layer.removeSelection()
             featsPnt = self.layer.getFeatures(QgsFeatureRequest().setFilterRect(poligono.boundingBox()))
             for featPnt in featsPnt:
                 if self.overlap:
