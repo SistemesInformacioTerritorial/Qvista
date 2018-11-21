@@ -984,13 +984,16 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.lytBotonsSeleccio = QHBoxLayout()
         self.lytSeleccioGrafica.addLayout(self.lytBotonsSeleccio)
 
-        self.bs1 = QPushButton('S1')
-        self.bs2 = QPushButton('S2')
+        self.bs1 = QPushButton('Click')
+        self.bs2 = QPushButton('Poligon')
+        self.bs3 = QPushButton('Neteja')
 
         self.bs1.clicked.connect(seleccioClicks)
         self.bs2.clicked.connect(seleccioLliure)
+        self.bs3.clicked.connect(self.esborrarSeleccio)
         self.lytBotonsSeleccio.addWidget(self.bs1)
         self.lytBotonsSeleccio.addWidget(self.bs2)
+        self.lytBotonsSeleccio.addWidget(self.bs3)
 
         
         self.dwSeleccioGrafica = QDockWidget("Selecció gràfica", self)

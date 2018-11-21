@@ -6,6 +6,7 @@ class QvSeleccioPerPoligon(QgsMapToolEmitPoint):
     def __init__(self, qV, canvas, layer):
         self.canvas = canvas
         self.layer = layer
+        self.qV = qV
         QgsMapToolEmitPoint.__init__(self, self.canvas)
         self.rubberband = QgsRubberBand(self.canvas)
         self.rubberband.setColor(QColor(0,0,0,50))
@@ -46,9 +47,11 @@ class QvSeleccioPerPoligon(QgsMapToolEmitPoint):
                 if self.overlap:
                     if featPnt.geometry().intersects(poligono):
                         self.layer.select(featPnt.id())
+                        # self.qV.idsSeleccionatsPerPoligon.add(featPnt.id())
                 else:
                     if featPnt.geometry().within(poligono):
                         self.layer.select(featPnt.id())
+                        # self.qV.idsSeleccionatsPerPoligon.add(featPnt.id())
 
 class QvSeleccioElement(QgsMapTool):
     """Aquesta clase és un QgsMapTool que selecciona l'element clickat. 
