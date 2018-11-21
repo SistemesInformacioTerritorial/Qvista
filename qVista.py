@@ -7,7 +7,7 @@ global qV
 
 """
 muchas cosas de JNB escritas aqui"""
-
+"""fj jasflkj jasfl jasfkljas """
 
 """Comentarios paraq master"""
 
