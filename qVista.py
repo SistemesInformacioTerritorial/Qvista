@@ -2,6 +2,7 @@
 
 from  moduls.QvImports import *
 from moduls.QvPavimentacio import DockPavim
+import math
 global qV
 
 
@@ -72,6 +73,73 @@ class PointTool(QgsMapTool):
 
     def isEditTool(self):
         return True
+
+class SelectCircle(QgsMapTool):
+    def __init__(self, qV, color, radi, numeroSegmentsCercle):
+        self.canvas = pare.canvas
+        QgsMapTool.__init__(self, self.canvas)
+        self.qV = qV
+        self.status = 0
+        self.numeroSegmentsCercle = numeroSegmentsCercle
+
+        self.rb=QgsRubberBand(self.canvas,True)
+        self.rb.setColor( QColor("red") )
+        self.rb.setWidth( 2 )
+
+
+    def canvasPressEvent(self,e):
+        if not e.button() == Qt.LeftButton:
+            return
+        self.status = 1
+        self.centre = self.toMapCoordinates(e.pos())
+
+        # self.rbcircle(self.rb, self.centre, self.centre, self.numeroSegmentsCercle)
+        return
+
+    def canvasMoveEvent(self,e):
+        if not self.status == 1:
+                return
+        cp = self.toMapCoordinates(e.pos())
+        self.rbcircle(self.rb, self.centre, cp, self.numeroSegmentsCercle)
+        r = math.sqrt(self.centre.sqrDist(cp))
+
+        self.rb.show()
+        layer = self.llegenda.currentLayer()
+        #convertir rubberband apoligon
+        featsPnt = self.layer.getFeatures(QgsFeatureRequest().setFilterRect(poligon)
+        for featPnt in featsPnt:
+            if self.overlap:
+                if featPnt.geometry().intersects(poligono):
+                    self.layer.select(featPnt.id())
+                    self.qV.idsElementsSeleccionats.add(featPnt.id())
+            else:
+                if featPnt.geometry().within(poligono):
+                    self.layer.select(featPnt.id())
+                    self.qV.idsElementsSeleccionats.append(featPnt.id())
+
+    def rbcircle(self, rb,center,edgePoint,segments):
+        r = math.sqrt(center.sqrDist(edgePoint))
+        rb.reset( True )
+        pi =3.1416
+        for itheta in range(segments+1):
+            theta = itheta*(2.0 * pi/segments)
+            # You see that only the QgsRubberband geometry is modified
+            rb.addPoint(QgsPointXY(center.x()+r*math.cos(theta),center.y()+r*math.sin(theta)))
+        return
+
+    def canvasReleaseEvent(self,e):
+        if not e.button() == Qt.LeftButton:
+            return
+        # self.emit( SIGNAL("selectionDone()") )
+
+    def reset(self):
+        self.status = 0
+        self.rb.reset( True )
+
+    def deactivate(self):
+        QgsMapTool.deactivate(self)
+        self.emit(SIGNAL("deactivated()"))
+
 
 
 class QVista(QMainWindow, Ui_MainWindow):
@@ -1860,7 +1928,8 @@ def seleccioClicks():
     except:
         pass
 
-    tool = PointTool(qV, qV.canvas)
+    # tool = PointTool(qV, qV.canvas)
+    tool = SelectCircle(qV, 10, 10, 30)
     qV.canvas.setMapTool(tool)
     # taulaAtributsSeleccionats()
 
