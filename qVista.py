@@ -76,15 +76,17 @@ class PointTool(QgsMapTool):
 
 class SelectCircle(QgsMapTool):
     def __init__(self, qV, color, radi, numeroSegmentsCercle):
-        self.canvas = pare.canvas
+        self.canvas = qV.canvas
         QgsMapTool.__init__(self, self.canvas)
         self.qV = qV
         self.status = 0
         self.numeroSegmentsCercle = numeroSegmentsCercle
 
-        self.rb=QgsRubberBand(self.canvas,True)
-        self.rb.setColor( QColor("red") )
-        self.rb.setWidth( 2 )
+        self.rubberband=QgsRubberBand(self.canvas,True)
+        self.rubberband.setColor( QColor("red") )
+        self.rubberband.setWidth( 2 )
+        self.overlap = False
+        
 
 
     def canvasPressEvent(self,e):
@@ -100,37 +102,42 @@ class SelectCircle(QgsMapTool):
         if not self.status == 1:
                 return
         cp = self.toMapCoordinates(e.pos())
-        self.rbcircle(self.rb, self.centre, cp, self.numeroSegmentsCercle)
+        self.rbcircle(self.rubberband, self.centre, cp, self.numeroSegmentsCercle)
         r = math.sqrt(self.centre.sqrDist(cp))
 
-        self.rb.show()
-        layer = self.llegenda.currentLayer()
-        #convertir rubberband apoligon
-        featsPnt = self.layer.getFeatures(QgsFeatureRequest().setFilterRect(poligon)
-        for featPnt in featsPnt:
-            if self.overlap:
-                if featPnt.geometry().intersects(poligono):
-                    self.layer.select(featPnt.id())
-                    self.qV.idsElementsSeleccionats.add(featPnt.id())
-            else:
-                if featPnt.geometry().within(poligono):
-                    self.layer.select(featPnt.id())
-                    self.qV.idsElementsSeleccionats.append(featPnt.id())
+        self.rubberband.show()
+  
 
     def rbcircle(self, rb,center,edgePoint,segments):
         r = math.sqrt(center.sqrDist(edgePoint))
         rb.reset( True )
         pi =3.1416
+        llistaPunts=[]
         for itheta in range(segments+1):
             theta = itheta*(2.0 * pi/segments)
-            # You see that only the QgsRubberband geometry is modified
             rb.addPoint(QgsPointXY(center.x()+r*math.cos(theta),center.y()+r*math.sin(theta)))
+            llistaPunts.append(QgsPointXY(center.x()+r*math.cos(theta),center.y()+r*math.sin(theta)))
+        self.poligono=QgsGeometry.fromPolygonXY([llistaPunts])
         return
 
     def canvasReleaseEvent(self,e):
         if not e.button() == Qt.LeftButton:
             return
+        layer = self.qV.llegenda.currentLayer()
+        #convertir rubberband apoligon
+        featsPnt = layer.getFeatures(QgsFeatureRequest().setFilterRect(self.poligono.boundingBox()))
+        for featPnt in featsPnt:
+            if self.overlap:
+                if featPnt.geometry().intersects(self.poligon):
+                    layer.select(featPnt.id())
+                    self.qV.idsElementsSeleccionats.add(featPnt.id())
+            else:
+                if featPnt.geometry().within(self.poligono):
+                    layer.select(featPnt.id())
+                    self.qV.idsElementsSeleccionats.append(featPnt.id())
         # self.emit( SIGNAL("selectionDone()") )
+        self.status = 0
+        self.qV.lblNombreElementsSeleccionats.setText('Elements seleccionats: '+str(len(set(self.qV.idsElementsSeleccionats))))
 
     def reset(self):
         self.status = 0
@@ -138,7 +145,7 @@ class SelectCircle(QgsMapTool):
 
     def deactivate(self):
         QgsMapTool.deactivate(self)
-        self.emit(SIGNAL("deactivated()"))
+        # self.emit(SIGNAL("deactivated()"))
 
 
 
@@ -1061,15 +1068,18 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         self.bs1 = QPushButton('Click')
         self.bs2 = QPushButton('Poligon')
-        self.bs3 = QPushButton('Neteja')
+        self.bs3 = QPushButton('Cercle')
+        self.bs4 = QPushButton('Neteja')
         self.lblNombreElementsSeleccionats = QLabel('No hi ha elements seleccionats.')
 
         self.bs1.clicked.connect(seleccioClicks)
         self.bs2.clicked.connect(seleccioLliure)
-        self.bs3.clicked.connect(lambda: self.esborrarSeleccio(True))
+        self.bs3.clicked.connect(seleccioCercle)
+        self.bs4.clicked.connect(lambda: self.esborrarSeleccio(True))
         self.lytBotonsSeleccio.addWidget(self.bs1)
         self.lytBotonsSeleccio.addWidget(self.bs2)
         self.lytBotonsSeleccio.addWidget(self.bs3)
+        self.lytBotonsSeleccio.addWidget(self.bs4)
         self.lytSeleccioGrafica.addWidget(self.lblNombreElementsSeleccionats)
 
         
@@ -1920,6 +1930,16 @@ def seleccioClick():
     # taulaAtributs('Seleccionats', layer)
     # taulaAtributsSeleccionats()
 
+def seleccioCercle():
+    seleccioClick()
+    layer=qV.llegenda.currentLayer()  
+    try:
+        qV.canvas.scene().removeItem(qV.toolSelect.rubberband)
+    except:
+        pass
+    qV.toolSelect = SelectCircle(qV, 10, 10, 30)
+    qV.canvas.setMapTool(qV.toolSelect)
+
 def seleccioClicks():
     seleccioClick()
     layer=qV.llegenda.currentLayer()  
@@ -1927,9 +1947,7 @@ def seleccioClicks():
         qV.canvas.scene().removeItem(qV.toolSelect.rubberband)
     except:
         pass
-
-    # tool = PointTool(qV, qV.canvas)
-    tool = SelectCircle(qV, 10, 10, 30)
+    tool = PointTool(qV, qV.canvas)
     qV.canvas.setMapTool(tool)
     # taulaAtributsSeleccionats()
 
