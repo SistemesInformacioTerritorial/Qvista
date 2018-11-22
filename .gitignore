@@ -32,3 +32,4 @@ _ReSharper*/
 packages/
 *.pyc
 __pycache__/
+.vscode/
