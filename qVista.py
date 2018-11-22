@@ -12,12 +12,13 @@ class QHLine(QFrame):
         self.setFrameShape(QFrame.HLine)
         self.setFrameShadow(QFrame.Raised)
 
-# class QVLine(QFrame):
-#     def __init__(self):
-#         super(QVLine, self).__init__()
-#         self.setFrameShape(QFrame.VLine)
 
-#         self.setFrameShadow(QFrame.Sunken)
+class QVLine(QFrame):
+    def __init__(self):
+        super(QVLine, self).__init__()
+        self.setFrameShape(QFrame.VLine)
+        self.setFrameShadow(QFrame.Sunken)
+
 
 class PointTool(QgsMapTool):
     def __init__(self, qV, canvas):
