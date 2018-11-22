@@ -1,6 +1,4 @@
 ### Python ###
 __pycache__/
 *.pyc
-.vscode/
-*.json
-
+.vscode/settings.json
