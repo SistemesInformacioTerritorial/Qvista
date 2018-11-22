@@ -29,7 +29,7 @@ _ReSharper*/
 .vs/
 #Nuget packages folder
 packages/
-### Python ###
-__pycache__/
 *.pyc
+__pycache__/
 .vscode/
+*.json
