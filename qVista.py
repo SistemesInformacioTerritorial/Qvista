@@ -50,7 +50,7 @@ class PointTool(QgsMapTool):
             self.qV.idsElementsSeleccionats.extend(ids)
             try:
                 layer.selectByIds(self.qV.idsElementsSeleccionats)
-                nombreElements = len(self.qV.idsElementsSeleccionats)
+                nombreElements = len(set(self.qV.idsElementsSeleccionats))
                 
                 self.qV.lblNombreElementsSeleccionats.setText('Elements seleccionats: '+str(nombreElements))
             except:
@@ -1569,6 +1569,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         for layer in layers:
             layer.removeSelection()
         self.lblNombreElementsSeleccionats.setText('No hi ha elements seleccionats.')
+        self.idsElementsSeleccionats = []
         if tambePanCanvas:
             self.canvas.panCanvas()
 
