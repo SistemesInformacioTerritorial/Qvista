@@ -89,7 +89,8 @@ class SelectCircle(QgsMapTool):
         self.rubberband.setWidth( 2 )
         self.overlap = False
         
-
+    def setOverlap(self,overlap):
+        self.overlap = overlap
 
     def canvasPressEvent(self,e):
         if not e.button() == Qt.LeftButton:
@@ -130,9 +131,9 @@ class SelectCircle(QgsMapTool):
         featsPnt = layer.getFeatures(QgsFeatureRequest().setFilterRect(self.poligono.boundingBox()))
         for featPnt in featsPnt:
             if self.overlap:
-                if featPnt.geometry().intersects(self.poligon):
+                if featPnt.geometry().intersects(self.poligono):
                     layer.select(featPnt.id())
-                    self.qV.idsElementsSeleccionats.add(featPnt.id())
+                    self.qV.idsElementsSeleccionats.append(featPnt.id())
             else:
                 if featPnt.geometry().within(self.poligono):
                     layer.select(featPnt.id())
@@ -1074,9 +1075,9 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.bs4 = QPushButton('Neteja')
         self.lblNombreElementsSeleccionats = QLabel('No hi ha elements seleccionats.')
         self.cbFieldsSelect = QComboBox()
-        self.cbFieldsSelect.
         self.bs5 = QPushButton('Calcular')
 
+        self.checkOverlap = QCheckBox('Overlap')
         self.bs1.clicked.connect(seleccioClicks)
         self.bs2.clicked.connect(seleccioLliure)
         self.bs3.clicked.connect(seleccioCercle)
@@ -1086,9 +1087,10 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.lytBotonsSeleccio.addWidget(self.bs2)
         self.lytBotonsSeleccio.addWidget(self.bs3)
         self.lytBotonsSeleccio.addWidget(self.bs4)
+        
+        self.lytSeleccioGrafica.addWidget(self.checkOverlap)
         self.lytSeleccioGrafica.addWidget(self.lblNombreElementsSeleccionats)
         self.lytSeleccioGrafica.addWidget(self.cbFieldsSelect)
-        self.lytSeleccioGrafica.addWidget(self.b5)
 
         
         self.dwSeleccioGrafica = QDockWidget("Selecció gràfica", self)
@@ -1937,6 +1939,7 @@ def seleccioLliure():
     if layer is not None:
         qV.actionMapSelect = QAction('Seleccionar dibuixant', qV)
         qV.toolSelect = QvSeleccioPerPoligon(qV,qV.canvas, layer)
+        qV.toolSelect.setOverlap(qV.checkOverlap.checkState())
         qV.toolSelect.setAction(qV.actionMapSelect)
         qV.canvas.setMapTool(qV.toolSelect)
         # taulaAtributs('Seleccionats', layer)
@@ -1958,6 +1961,7 @@ def seleccioCercle():
     except:
         pass
     qV.toolSelect = SelectCircle(qV, 10, 10, 30)
+    qV.toolSelect.setOverlap(qV.checkOverlap.checkState())
     qV.canvas.setMapTool(qV.toolSelect)
 
 def seleccioClicks():

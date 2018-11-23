@@ -15,7 +15,7 @@ class QvSeleccioPerPoligon(QgsMapToolEmitPoint):
         self.points = []
         self.overlap = False
 
-    def setOverlap(overlap):
+    def setOverlap(self,overlap):
         """
         overlap = True: Selecció amb overlap | False: Selecció sense overlap
         Es a dir, si overlap es True, es suficient amb que un apart del element estigui dins del poligon per ser seleccionat.
@@ -47,7 +47,7 @@ class QvSeleccioPerPoligon(QgsMapToolEmitPoint):
                 if self.overlap:
                     if featPnt.geometry().intersects(poligono):
                         self.layer.select(featPnt.id())
-                        self.qV.idsElementsSeleccionats.add(featPnt.id())
+                        self.qV.idsElementsSeleccionats.append(featPnt.id())
                 else:
                     if featPnt.geometry().within(poligono):
                         self.layer.select(featPnt.id())
