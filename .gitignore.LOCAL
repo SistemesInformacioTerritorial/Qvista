@@ -33,3 +33,4 @@ packages/
 *.pyc
 __pycache__/
 .vscode/
+moduls/__pycache__/
