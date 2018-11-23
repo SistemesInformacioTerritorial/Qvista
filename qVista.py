@@ -76,6 +76,7 @@ class PointTool(QgsMapTool):
         return True
 
 class SelectCircle(QgsMapTool):
+    """ Dibuixa un cercle i selecciona els elements."""
     def __init__(self, qV, color, radi, numeroSegmentsCercle):
         self.canvas = qV.canvas
         QgsMapTool.__init__(self, self.canvas)
