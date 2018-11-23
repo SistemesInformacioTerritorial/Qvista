@@ -34,5 +34,4 @@ packages/
 __pycache__/
 .vscode/
 *.json
-moduls/__pycache__/
-
+moduls/__pycache__/*.pyc
