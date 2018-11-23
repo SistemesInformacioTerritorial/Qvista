@@ -34,3 +34,4 @@ packages/
 __pycache__/
 .vscode/
 *.json
+moduls/__pycache__/
