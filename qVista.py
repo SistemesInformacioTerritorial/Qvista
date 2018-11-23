@@ -1072,16 +1072,22 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.bs3 = QPushButton('Cercle')
         self.bs4 = QPushButton('Neteja')
         self.lblNombreElementsSeleccionats = QLabel('No hi ha elements seleccionats.')
+        self.cbFieldsSelect = QComboBox()
+        self.cbFieldsSelect.
+        self.bs5 = QPushButton('Calcular')
 
         self.bs1.clicked.connect(seleccioClicks)
         self.bs2.clicked.connect(seleccioLliure)
         self.bs3.clicked.connect(seleccioCercle)
         self.bs4.clicked.connect(lambda: self.esborrarSeleccio(True))
+
         self.lytBotonsSeleccio.addWidget(self.bs1)
         self.lytBotonsSeleccio.addWidget(self.bs2)
         self.lytBotonsSeleccio.addWidget(self.bs3)
         self.lytBotonsSeleccio.addWidget(self.bs4)
         self.lytSeleccioGrafica.addWidget(self.lblNombreElementsSeleccionats)
+        self.lytSeleccioGrafica.addWidget(self.cbFieldsSelect)
+        self.lytSeleccioGrafica.addWidget(self.b5)
 
         
         self.dwSeleccioGrafica = QDockWidget("Selecció gràfica", self)
@@ -1098,6 +1104,18 @@ class QVista(QMainWindow, Ui_MainWindow):
 
     def seleccioGrafica(self):
         self.dwSeleccioGrafica.show()
+        layer = self.llegenda.currentLayer()
+        self.cbFieldsSelect.clear()
+        if layer is not None:
+            fields = layer.fields()
+            for field in fields:
+                if (field.typeName()!='String' and field.typeName()!='Date' and field.typeName()!='Date'):
+                    # print (field.typeName())
+                    self.cbFieldsSelect.addItem(field.name())
+                    # fieldNames = [field.name() for field in fields]
+                    # self.lwFields.addItems(fieldNames)
+                else:
+                    pass
 
     def helpQVista(self):
         QWhatsThis.enterWhatsThisMode()
