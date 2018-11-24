@@ -259,6 +259,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.mapesOberts = False
         self.primerCop = True
         self.mapaMaxim = False
+        self.layerActiu = None
 
         # # Connectors i accions
         self.definicioAccions()
@@ -699,7 +700,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         """
         self.layoutFrameLlegenda = QVBoxLayout(self.frameLlegenda)
         self.llegenda = QvLlegenda(self.canvas, self.taulesAtributs)
-        self.llegenda.currentLayerChanged.connect(self.carregarCamps)
+        self.llegenda.currentLayerChanged.connect(self.canviLayer)
         self.canvas.setLlegenda(self.llegenda)
         self.layoutFrameLlegenda.setContentsMargins ( 0, 0, 0, 0 )
         self.llegenda.setStyleSheet("QvLlegenda {background-color: #DDDDDD; border: 0px solid red;}")
@@ -1216,23 +1217,18 @@ class QVista(QMainWindow, Ui_MainWindow):
         taula.setItem(0,1,item)
         taula.resizeColumnsToContents()
 
-    def carregarCamps(self):        
-        layer = self.llegenda.currentLayer()
+    def canviLayer(self):
+        self.layerActiu = self.llegenda.currentLayer()        
         self.lwFieldsSelect.clear()
-        if layer is not None:
-            fields = layer.fields()
+        if self.layerActiu is not None:
+            fields = self.layerActiu.fields()
             for field in fields:
                 if (field.typeName()!='String' and field.typeName()!='Date' and field.typeName()!='Date'):
-                    # print (field.typeName())
                     self.lwFieldsSelect.addItem(field.name())
-                    # fieldNames = [field.name() for field in fields]
-                    # self.lwFields.addItems(fieldNames)
-                else:
-                    pass
 
     def seleccioGrafica(self):
         self.dwSeleccioGrafica.show()
-        self.carregarCamps()
+        self.canviLayer()
 
 
 
