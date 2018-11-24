@@ -1119,8 +1119,8 @@ class QVista(QMainWindow, Ui_MainWindow):
         numeroFields=0
         fila=0
         columna=0
-        taula.setColumnCount(2)
-        taula.setHorizontalHeaderLabels(['','Total'])
+        taula.setColumnCount(3)
+        taula.setHorizontalHeaderLabels(['','Total', 'Mitjana'])
         nombreFieldsSeleccionats=0
         for a in self.lwFieldsSelect.selectedItems():
             nombreFieldsSeleccionats=nombreFieldsSeleccionats+1
@@ -1136,8 +1136,14 @@ class QVista(QMainWindow, Ui_MainWindow):
                 calcul=feature.attributes()[layer.fields().lookupField(a.text())]
                 total=total+calcul
                 nombreElements=nombreElements+1
+            if nombreElements>0:
+                mitjana = total/nombreElements
+            else:
+                mitjana = 0
             item = QTableWidgetItem(str(total))
             taula.setItem(fila+1,1,item)
+            item = QTableWidgetItem(str(mitjana))
+            taula.setItem(fila+1,2,item)
             # print('Total: '+a.text()+": ",total)
             fila=fila+1
         item = QTableWidgetItem('Nombre elements')
