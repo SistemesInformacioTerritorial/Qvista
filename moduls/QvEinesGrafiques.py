@@ -53,7 +53,9 @@ class QvSeleccioPerPoligon(QgsMapToolEmitPoint):
                         self.layer.select(featPnt.id())
                         self.qV.idsElementsSeleccionats.append(featPnt.id())
             
+
             self.qV.lblNombreElementsSeleccionats.setText('Elements seleccionats: '+str(len(set(self.qV.idsElementsSeleccionats))))
+
 
 class QvSeleccioElement(QgsMapTool):
     """Aquesta clase és un QgsMapTool que selecciona l'element clickat. 
