@@ -127,20 +127,23 @@ class SelectCircle(QgsMapTool):
         if not e.button() == Qt.LeftButton:
             return
         layer = self.qV.llegenda.currentLayer()
-        #convertir rubberband apoligon
-        featsPnt = layer.getFeatures(QgsFeatureRequest().setFilterRect(self.poligono.boundingBox()))
-        for featPnt in featsPnt:
-            if self.overlap:
-                if featPnt.geometry().intersects(self.poligono):
-                    layer.select(featPnt.id())
-                    self.qV.idsElementsSeleccionats.append(featPnt.id())
-            else:
-                if featPnt.geometry().within(self.poligono):
-                    layer.select(featPnt.id())
-                    self.qV.idsElementsSeleccionats.append(featPnt.id())
-        # self.emit( SIGNAL("selectionDone()") )
-        self.status = 0
-        self.qV.lblNombreElementsSeleccionats.setText('Elements seleccionats: '+str(len(set(self.qV.idsElementsSeleccionats))))
+        if layer is not None:
+            #convertir rubberband apoligon
+            featsPnt = layer.getFeatures(QgsFeatureRequest().setFilterRect(self.poligono.boundingBox()))
+            for featPnt in featsPnt:
+                if self.overlap:
+                    if featPnt.geometry().intersects(self.poligono):
+                        layer.select(featPnt.id())
+                        self.qV.idsElementsSeleccionats.append(featPnt.id())
+                else:
+                    if featPnt.geometry().within(self.poligono):
+                        layer.select(featPnt.id())
+                        self.qV.idsElementsSeleccionats.append(featPnt.id())
+            # self.emit( SIGNAL("selectionDone()") )
+            self.status = 0
+            self.qV.lblNombreElementsSeleccionats.setText('Elements seleccionats: '+str(len(set(self.qV.idsElementsSeleccionats))))
+        else: 
+            missatgeCaixa('Cal tenir seleccionat un nivell per poder fer una selecció.','Marqueu un nivell a la llegenda sobre el que aplicar la consulta.')
 
     def reset(self):
         self.status = 0
@@ -258,6 +261,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.dwPavim = DockPavim()
         self.addDockWidget( Qt.RightDockWidgetArea, self.dwPavim)
         self.dwPavim.show()    
+
     def bicing(self):
         bicing=Bicis(self)
         bicing.show()
@@ -1074,8 +1078,11 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.bs3 = QPushButton('Cercle')
         self.bs4 = QPushButton('Neteja')
         self.lblNombreElementsSeleccionats = QLabel('No hi ha elements seleccionats.')
-        self.cbFieldsSelect = QComboBox()
+        # self.cbFieldsSelect = QComboBox()
+        self.lwFieldsSelect = QListWidget()
         self.bs5 = QPushButton('Calcular')
+        self.bs5.clicked.connect(self.calcularSeleccio)
+        self.twResultats = QTableWidget()
 
         self.checkOverlap = QCheckBox('Overlap')
         self.bs1.clicked.connect(seleccioClicks)
@@ -1090,7 +1097,9 @@ class QVista(QMainWindow, Ui_MainWindow):
         
         self.lytSeleccioGrafica.addWidget(self.checkOverlap)
         self.lytSeleccioGrafica.addWidget(self.lblNombreElementsSeleccionats)
-        self.lytSeleccioGrafica.addWidget(self.cbFieldsSelect)
+        self.lytSeleccioGrafica.addWidget(self.lwFieldsSelect)
+        self.lytSeleccioGrafica.addWidget(self.bs5)
+        self.lytSeleccioGrafica.addWidget(self.twResultats)
 
         
         self.dwSeleccioGrafica = QDockWidget("Selecció gràfica", self)
@@ -1104,17 +1113,49 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         self.idsElementsSeleccionats = []
 
+    def calcularSeleccio(self):
+        layer = self.llegenda.currentLayer()
+        taula=self.twResultats
+        numeroFields=0
+        fila=0
+        columna=0
+        taula.setColumnCount(2)
+        taula.setHorizontalHeaderLabels(['','Total'])
+        nombreFieldsSeleccionats=0
+        for a in self.lwFieldsSelect.selectedItems():
+            nombreFieldsSeleccionats=nombreFieldsSeleccionats+1
+        taula.setRowCount(nombreFieldsSeleccionats+1)
+        for a in self.lwFieldsSelect.selectedItems():
+            total=0
+            item = QTableWidgetItem(a.text())
+            taula.setItem(fila+1,0,item)
+            nombreElements=0
+            field=layer.fields().lookupField(a.text())
+            # print (field)
+            for feature in layer.selectedFeatures():
+                calcul=feature.attributes()[layer.fields().lookupField(a.text())]
+                total=total+calcul
+                nombreElements=nombreElements+1
+            item = QTableWidgetItem(str(total))
+            taula.setItem(fila+1,1,item)
+            # print('Total: '+a.text()+": ",total)
+            fila=fila+1
+        item = QTableWidgetItem('Nombre elements')
+        taula.setItem(0,0,item)
+        item = QTableWidgetItem(str(nombreElements))
+        taula.setItem(0,1,item)
+        taula.resizeColumnsToContents()
 
     def seleccioGrafica(self):
         self.dwSeleccioGrafica.show()
         layer = self.llegenda.currentLayer()
-        self.cbFieldsSelect.clear()
+        self.lwFieldsSelect.clear()
         if layer is not None:
             fields = layer.fields()
             for field in fields:
                 if (field.typeName()!='String' and field.typeName()!='Date' and field.typeName()!='Date'):
                     # print (field.typeName())
-                    self.cbFieldsSelect.addItem(field.name())
+                    self.lwFieldsSelect.addItem(field.name())
                     # fieldNames = [field.name() for field in fields]
                     # self.lwFields.addItems(fieldNames)
                 else:
