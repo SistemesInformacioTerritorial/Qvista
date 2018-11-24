@@ -699,6 +699,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         """
         self.layoutFrameLlegenda = QVBoxLayout(self.frameLlegenda)
         self.llegenda = QvLlegenda(self.canvas, self.taulesAtributs)
+        self.llegenda.currentLayerChanged.connect(self.carregarCamps)
         self.canvas.setLlegenda(self.llegenda)
         self.layoutFrameLlegenda.setContentsMargins ( 0, 0, 0, 0 )
         self.llegenda.setStyleSheet("QvLlegenda {background-color: #DDDDDD; border: 0px solid red;}")
@@ -1215,8 +1216,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         taula.setItem(0,1,item)
         taula.resizeColumnsToContents()
 
-    def seleccioGrafica(self):
-        self.dwSeleccioGrafica.show()
+    def carregarCamps(self):        
         layer = self.llegenda.currentLayer()
         self.lwFieldsSelect.clear()
         if layer is not None:
@@ -1229,6 +1229,11 @@ class QVista(QMainWindow, Ui_MainWindow):
                     # self.lwFields.addItems(fieldNames)
                 else:
                     pass
+
+    def seleccioGrafica(self):
+        self.dwSeleccioGrafica.show()
+        self.carregarCamps()
+
 
 
     def helpQVista(self):
