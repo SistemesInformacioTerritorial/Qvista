@@ -1073,10 +1073,14 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.lytBotonsSeleccio = QHBoxLayout()
         self.lytSeleccioGrafica.addLayout(self.lytBotonsSeleccio)
 
-        self.bs1 = QPushButton('Click')
-        self.bs2 = QPushButton('Poligon')
-        self.bs3 = QPushButton('Cercle')
-        self.bs4 = QPushButton('Neteja')
+        self.bs1 = QPushButton()
+        self.bs1.setIcon(QIcon('imatges/cursor-pointer.png'))
+        self.bs2 = QPushButton()
+        self.bs2.setIcon(QIcon('imatges/shape-polygon-plus.png'))
+        self.bs3 = QPushButton()
+        self.bs3.setIcon(QIcon('imatges/vector-circle-variant.png'))
+        self.bs4 = QPushButton()
+        self.bs4.setIcon(QIcon('imatges/trash-can-outline.png'))
         self.lblNombreElementsSeleccionats = QLabel('No hi ha elements seleccionats.')
         # self.cbFieldsSelect = QComboBox()
         self.lwFieldsSelect = QListWidget()
@@ -1140,9 +1144,10 @@ class QVista(QMainWindow, Ui_MainWindow):
                 mitjana = total/nombreElements
             else:
                 mitjana = 0
-            item = QTableWidgetItem(str(total))
+                ('% 12.1f' % v)
+            item = QTableWidgetItem(str('% 12.2f' % total))
             taula.setItem(fila+1,1,item)
-            item = QTableWidgetItem(str(mitjana))
+            item = QTableWidgetItem(str('% 12.2f' % mitjana))
             taula.setItem(fila+1,2,item)
             # print('Total: '+a.text()+": ",total)
             fila=fila+1
