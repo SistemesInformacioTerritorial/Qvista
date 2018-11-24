@@ -1139,6 +1139,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.lblNombreElementsSeleccionats = QLabel('No hi ha elements seleccionats.')
         # self.cbFieldsSelect = QComboBox()
         self.lwFieldsSelect = QListWidget()
+        self.lwFieldsSelect.setSelectionMode(QAbstractItemView.ExtendedSelection)
         self.bs5 = QPushButton('Calcular')
         self.bs5.clicked.connect(self.calcularSeleccio)
         self.twResultats = QTableWidget()
