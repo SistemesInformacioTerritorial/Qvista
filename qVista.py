@@ -211,7 +211,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.bFoto =  self.botoLateral(tamany = 25, accio=self.actCanvasImg)
         self.bImprimir =  self.botoLateral(tamany = 25, accio=self.actImprimir)
         self.bTissores = self.botoLateral(tamany = 25, accio=self.actTissores)
-        self.bTissores = self.botoLateral(tamany = 25, accio=self.actSeleccioGrafica)
+        self.bSeleccioGrafica = self.botoLateral(tamany = 25, accio=self.actSeleccioGrafica)
 
         spacer2 = QSpacerItem(1000, 1000, QSizePolicy.Expanding,QSizePolicy.Maximum)
         self.lytBotoneraLateral.addItem(spacer2)
@@ -428,7 +428,6 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.ubicacions.leUbicacions.setText(self.leCarrer.text()+"  "+self.leNumero.text())
         self.ubicacions._novaUbicacio()
         
-
     def preparacioTaulaAtributs(self):
         """ 
         Es prepara la taula d'Atributs sobre un dockWidget.
@@ -916,7 +915,13 @@ class QVista(QMainWindow, Ui_MainWindow):
     def preparacioSeleccio(self):
 
         # Disseny del interface
-        self.wSeleccioGrafica = QWidget()
+        class QvSeleccioGrafica(QWidget):
+            def __init__(self):
+                QWidget.__init__(self)
+
+        self.wSeleccioGrafica = QvSeleccioGrafica()
+        
+        self.wSeleccioGrafica.setWhatsThis(QvApp().carregaAjuda(self))
         self.lytSeleccioGrafica = QVBoxLayout()
         self.lytSeleccioGrafica.setAlignment(Qt.AlignTop)
         self.wSeleccioGrafica.setLayout(self.lytSeleccioGrafica)
@@ -2033,7 +2038,7 @@ def sortir():
 
 def main(argv):
     global qV
-    with qgisapp() as app: # Internacionalización
+    with qgisapp() as app: 
         qVapp = QvApp()
         ok = qVapp.logInici()            # Por defecto: family='QVISTA', logname='DESKTOP'
         if not ok:
@@ -2041,6 +2046,7 @@ def main(argv):
             ok = qVapp.logRegistre('Capa1')
             ok = qVapp.logRegistre('Atributs')
 
+        # Idioma
         qVapp.carregaIdioma(app, 'ca')
 
         app.setStyle(QStyleFactory.create('fusion'))
