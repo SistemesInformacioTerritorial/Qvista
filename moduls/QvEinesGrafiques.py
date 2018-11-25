@@ -40,10 +40,11 @@ class QvSeleccioPunt(QgsMapTool):
                 nombreElements = len(set(self.qV.idsElementsSeleccionats))
                 
                 self.qV.lblNombreElementsSeleccionats.setText('Elements seleccionats: '+str(nombreElements))
+                self.qV.calcularSeleccio()
             except:
                 pass
         else:
-          missatgeCaixa('Cal tenir seleccionat un nivell per poder fer una selecció.','Marqueu un nivell a la llegenda sobre el que aplicar la consulta.')
+          self.missatgeCaixa('Cal tenir seleccionat un nivell per poder fer una selecció.','Marqueu un nivell a la llegenda sobre el que aplicar la consulta.')
 
     def activate(self):
         pass
@@ -60,12 +61,12 @@ class QvSeleccioPunt(QgsMapTool):
     def isEditTool(self):
         return True
 
-    def missatgeCaixa(textTitol,textInformacio):
+    def missatgeCaixa(self, textTitol,textInformacio):
         msgBox=QMessageBox()
         msgBox.setText(textTitol)
         msgBox.setInformativeText(textInformacio)
         ret = msgBox.exec()
-        
+
 class QvSeleccioCercle(QgsMapTool):
     """ Dibuixa un cercle i selecciona els elements."""
     def __init__(self, qV, color, radi, numeroSegmentsCercle):
@@ -130,11 +131,13 @@ class QvSeleccioCercle(QgsMapTool):
                     if featPnt.geometry().within(self.poligono):
                         layer.select(featPnt.id())
                         self.qV.idsElementsSeleccionats.append(featPnt.id())
+            
+            self.qV.calcularSeleccio()
             # self.emit( SIGNAL("selectionDone()") )
             self.status = 0
             self.qV.lblNombreElementsSeleccionats.setText('Elements seleccionats: '+str(len(set(self.qV.idsElementsSeleccionats))))
         else: 
-            missatgeCaixa('Cal tenir seleccionat un nivell per poder fer una selecció.','Marqueu un nivell a la llegenda sobre el que aplicar la consulta.')
+            self.missatgeCaixa('Cal tenir seleccionat un nivell per poder fer una selecció.','Marqueu un nivell a la llegenda sobre el que aplicar la consulta.')
 
     def reset(self):
         self.status = 0
@@ -143,6 +146,12 @@ class QvSeleccioCercle(QgsMapTool):
     def deactivate(self):
         QgsMapTool.deactivate(self)
         # self.emit(SIGNAL("deactivated()"))
+    
+    def missatgeCaixa(self,textTitol,textInformacio):
+        msgBox=QMessageBox()
+        msgBox.setText(textTitol)
+        msgBox.setInformativeText(textInformacio)
+        ret = msgBox.exec()
 
 
 
@@ -197,6 +206,8 @@ class QvSeleccioPerPoligon(QgsMapToolEmitPoint):
                         self.layer.select(featPnt.id())
                         self.qV.idsElementsSeleccionats.append(featPnt.id())
             
+            self.qV.calcularSeleccio()
+            
 
             self.qV.lblNombreElementsSeleccionats.setText('Elements seleccionats: '+str(len(set(self.qV.idsElementsSeleccionats))))
 
@@ -232,6 +243,12 @@ class QvSeleccioElement(QgsMapTool):
         # y = event.pos().y()
         # point = self.canvas.getCoordinateTransform().toMapCoordinates(x, y)
 
+    def missatgeCaixa(self,textTitol,textInformacio):
+        msgBox=QMessageBox()
+        msgBox.setText(textTitol)
+        msgBox.setInformativeText(textInformacio)
+        ret = msgBox.exec()
+
     def canvasReleaseEvent(self, event):
         # Lllegim posició del mouse
         x = event.pos().x()
@@ -255,7 +272,7 @@ class QvSeleccioElement(QgsMapTool):
                 # ids = [i.id() for i in it]
                 layer.selectByIds(ids)
             else:
-                missatgeCaixa('Cal tenir seleccionat un nivell per poder fer una selecció.','Marqueu un nivell a la llegenda sobre el que aplicar la consulta.')
+                self.missatgeCaixa('Cal tenir seleccionat un nivell per poder fer una selecció.','Marqueu un nivell a la llegenda sobre el que aplicar la consulta.')
         except:
             pass
        

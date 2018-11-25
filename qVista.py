@@ -930,12 +930,16 @@ class QVista(QMainWindow, Ui_MainWindow):
 
 
         self.bs1 = QPushButton()
+        # self.bs1.setCheckable(True)
         self.bs1.setIcon(QIcon('imatges/cursor-pointer.png'))
         self.bs2 = QPushButton()
+        # self.bs2.setCheckable(True)
         self.bs2.setIcon(QIcon('imatges/shape-polygon-plus.png'))
         self.bs3 = QPushButton()
+        # self.bs3.setCheckable(True)
         self.bs3.setIcon(QIcon('imatges/vector-circle-variant.png'))
         self.bs4 = QPushButton()
+        # self.bs4.setCheckable(True)
         self.bs4.setIcon(QIcon('imatges/trash-can-outline.png'))
 
         self.lblNombreElementsSeleccionats = QLabel('No hi ha elements seleccionats.')
@@ -1013,7 +1017,7 @@ class QVista(QMainWindow, Ui_MainWindow):
             taula.setItem(fila+1,2,item)
             # print('Total: '+a.text()+": ",total)
             fila=fila+1
-        item = QTableWidgetItem('Nombre elements')
+        item = QTableWidgetItem("Elements seleccionats:")
         taula.setItem(0,0,item)
         item = QTableWidgetItem(str(nombreElements))
         taula.setItem(0,1,item)
@@ -1022,6 +1026,7 @@ class QVista(QMainWindow, Ui_MainWindow):
     def canviLayer(self):
         self.layerActiu = self.llegenda.currentLayer()        
         self.lwFieldsSelect.clear()
+        self.esborrarSeleccio(True)
         if self.layerActiu is not None:
             self.lblCapaSeleccionada.setText("Capa activa: "+ self.layerActiu.name())
             fields = self.layerActiu.fields()

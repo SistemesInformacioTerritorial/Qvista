@@ -48,7 +48,7 @@ class QvPrint(QWidget):
         QWidget.__init__(self)
 
         # Creating a memory layer to draw later the rubberband.
-        self.layer = QgsVectorLayer('Point?crs=epsg:25831', "RectanglePrint","memory")
+        self.layer = QgsVectorLayer('Point?crs=epsg:25831', "Capa temporal d'impressió","memory")
         project.addMapLayer(self.layer)
 
         # We store safely the parameters as class variables.
@@ -232,7 +232,7 @@ class QvPrint(QWidget):
             QDesktopServices().openUrl(QUrl(fitxerSortida))
             
             segonsEmprats=round(time.time()-tInicial,1)
-            layersTemporals = self.project.mapLayersByName('RectanglePrint')
+            layersTemporals = self.project.mapLayersByName("Capa temporal d'impressió")
             for layer in layersTemporals:
                 self.project.removeMapLayer(layer.id())
 
