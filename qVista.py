@@ -89,7 +89,6 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         # # Connectors i accions
         self.definicioAccions()
-        # self.assignacioAccions()
         
         # # Menus i preparació labels statusBar
         self.definirMenus()
@@ -101,44 +100,58 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.preparacioMapeta()
         self.preparacioTaulaAtributs()
         self.preparacioLlegenda()
-        self.preparacioArbreDistrictes()
+        # self.preparacioArbreDistrictes()
         self.preparacioCataleg()
         self.preparacioStreetView()
         # self.preparacioMapTips()
         self.preparacioImpressio()
         # self.preparacioGrafiques()
-
         self.preparacioSeleccio()
-
         self.prepararCercador = True
 
-
-        # tool = QvSeleccioElement(self.canvas, self.llegenda)
-        # self.canvas.setMapTool(tool)
+        # 
         self.canvas.panCanvas()
         
         # Guardem el dashboard actiu per poder activar/desactivar després els dashboards
         self.dashboardActiu = [self.canvas, self.frameLlegenda, self.mapeta]
 
-        # Aquestes línies son necesaries per que funcionin bé els widgets de qGis, com ara la fitza d'atributs
+        # Aquestes línies son necesaries per que funcionin bé els widgets de qGis, com ara la fitxa d'atributs
         if len(QgsGui.editorWidgetRegistry().factories()) == 0:
             QgsGui.editorWidgetRegistry().initEditors()
         
         
         # Carrega del projecte inicial
-        self.project.read(projecteInicial)
-        # self.metadata = self.project.metadata()
-        # print ('Author: '+self.metadata.author())
+        self.obrirProjecte(projecteInicial)
+
+
+    # Fins aquí teniem la inicialització de la classe. Ara venen les funcions, o métodes, de la classe. 
+    
+    def obrirProjecte(self, projecte, rang = None):
+        self.project.read(projecte)
+        if rang is not None:
+            self.canvas.setExtent(rang)
+
         self.lblProjeccio.setText(self.project.crs().description())
         self.lblProjecte.setText(self.project.fileName())
 
         # Titol del projecte 
+
         fnt = QFont("Segoe UI", 18, weight=QFont.Normal)
         self.lblTitolProjecte.setFont(fnt)
         self.lblTitolProjecte.setText(self.project.title())
 
+        # self.metadata = self.project.metadata()
+        # print ('Author: '+self.metadata.author())
 
-  # Fins aquí teniem la inicialització de la classe. Ara venen les funcions, o métodes, de la classe. 
+        # dashboard = QgsExpressionContextUtils.projectScope(self.project).variable('qV_dashboard')
+        # titolEntorn = QgsExpressionContextUtils.projectScope(self.project).variable('qV_titolEntorn')
+
+        # if dashboard is not None:
+        #     exec("self.act{}.trigger()".format(dashboard))
+
+        # if titolEntorn is not None:
+        #     self.lblTitolProjecte.setText(titolEntorn)
+
     def pavimentacio(self):        
         self.dwPavim = DockPavim()
         self.addDockWidget( Qt.RightDockWidgetArea, self.dwPavim)
@@ -481,41 +494,41 @@ class QVista(QMainWindow, Ui_MainWindow):
         # # self.lblMapeta.show()
         # self.dwMapeta.show()
    
-    def preparacioArbreDistrictes(self):
-        """Es genera un dockWidget a la dreta, amb un arbre posicionador Districte-Barri.
+    # def preparacioArbreDistrictes(self):
+    #     """Es genera un dockWidget a la dreta, amb un arbre posicionador Districte-Barri.
 
-        Ho fem instanciant la classe QVDistrictesBarris. 
-        També connectem un click al arbre amb la funció clickArbre.
-        """
+    #     Ho fem instanciant la classe QVDistrictesBarris. 
+    #     També connectem un click al arbre amb la funció clickArbre.
+    #     """
 
-        self.distBarris = QVDistrictesBarris()
-        self.distBarris.view.clicked.connect(self.clickArbre)
+    #     self.distBarris = QVDistrictesBarris()
+    #     self.distBarris.view.clicked.connect(self.clickArbre)
         
-        # self.dwArbreDistrictes = QDockWidget("Districtes - Barris", self)
-        # self.dwArbreDistrictes.hide()
-        # self.dwArbreDistrictes.setAllowedAreas( Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea )
-        # self.dwArbreDistrictes.setWidget( self.distBarris.view )
-        # self.dwArbreDistrictes.setContentsMargins ( 2, 2, 2, 2 )
-        # self.addDockWidget( Qt.RightDockWidgetArea, self.dwArbreDistrictes )
-        # self.dwArbreDistrictes.setStyleSheet('QDockWidget {background-color: #909090;}')
+    #     # self.dwArbreDistrictes = QDockWidget("Districtes - Barris", self)
+    #     # self.dwArbreDistrictes.hide()
+    #     # self.dwArbreDistrictes.setAllowedAreas( Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea )
+    #     # self.dwArbreDistrictes.setWidget( self.distBarris.view )
+    #     # self.dwArbreDistrictes.setContentsMargins ( 2, 2, 2, 2 )
+    #     # self.addDockWidget( Qt.RightDockWidgetArea, self.dwArbreDistrictes )
+    #     # self.dwArbreDistrictes.setStyleSheet('QDockWidget {background-color: #909090;}')
 
-    def preparacioArbreDistrictes_old(self):
-        """Es genera un dockWidget a la dreta, amb un arbre posicionador Districte-Barri.
+    # def preparacioArbreDistrictes_old(self):
+    #     """Es genera un dockWidget a la dreta, amb un arbre posicionador Districte-Barri.
 
-        Ho fem instanciant la classe QVDistrictesBarris. 
-        També connectem un click al arbre amb la funció clickArbre.
-        """
+    #     Ho fem instanciant la classe QVDistrictesBarris. 
+    #     També connectem un click al arbre amb la funció clickArbre.
+    #     """
 
-        self.distBarris = QVDistrictesBarris()
-        self.distBarris.view.clicked.connect(self.clickArbre)
+    #     self.distBarris = QVDistrictesBarris()
+    #     self.distBarris.view.clicked.connect(self.clickArbre)
         
-        self.dwArbreDistrictes = QDockWidget("Districtes - Barris", self)
-        self.dwArbreDistrictes.hide()
-        self.dwArbreDistrictes.setAllowedAreas( Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea )
-        self.dwArbreDistrictes.setWidget( self.distBarris.view )
-        self.dwArbreDistrictes.setContentsMargins ( 2, 2, 2, 2 )
-        self.addDockWidget( Qt.RightDockWidgetArea, self.dwArbreDistrictes )
-        self.dwArbreDistrictes.setStyleSheet('QDockWidget {background-color: #909090;}')
+    #     self.dwArbreDistrictes = QDockWidget("Districtes - Barris", self)
+    #     self.dwArbreDistrictes.hide()
+    #     self.dwArbreDistrictes.setAllowedAreas( Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea )
+    #     self.dwArbreDistrictes.setWidget( self.distBarris.view )
+    #     self.dwArbreDistrictes.setContentsMargins ( 2, 2, 2, 2 )
+    #     self.addDockWidget( Qt.RightDockWidgetArea, self.dwArbreDistrictes )
+    #     self.dwArbreDistrictes.setStyleSheet('QDockWidget {background-color: #909090;}')
 
     def preparacioLlegenda(self):
         """Es genera un dockWidget a la dreta, amb la llegenda del projecte.
@@ -1348,7 +1361,7 @@ class QVista(QMainWindow, Ui_MainWindow):
 
 
     def catalegCool(self):
-        self.catalegCool = QvCataleg(self.project, self.lblTitolProjecte)
+        self.catalegCool = QvCataleg(self, self.project, self.lblTitolProjecte)
         self.catalegCool.showMaximized()
 
     def ferGran(self):
@@ -1386,15 +1399,6 @@ class QVista(QMainWindow, Ui_MainWindow):
             self._menuBarShadow.setEnabled(False)
             self.botoMaxim.setIcon(QIcon('imatges/arrow-collapse.png'))
             # self.bar.setGraphicsEffect(_menuBarShadow)
-
-    def obrirProjecte(self, projecte):
-        self.project.read(projecte)
-        self.lblProjeccio.setText(self.project.crs().description())
-        self.lblProjecte.setText(self.project.fileName())
-    #     self.lblTitolProjecte.setText(qV.project.title())
-
-    # def keyPressEvent(self, a0):   
-    #         print(a0.key())   
 
 
     def clickArbre(self):
@@ -1692,21 +1696,8 @@ class QVista(QMainWindow, Ui_MainWindow):
         nfile,_ = dialegObertura.getOpenFileName(None,"Obrir mapa Qgis", ".", "Tots els mapes acceptats (*.qgs *.qgz);; Mapes Qgis (*.qgs);;Mapes Qgis comprimits (*.qgz)")
 
         if nfile is not None:
-            self.project.read(nfile)
-            self.lblProjeccio.setText(self.project.crs().description())
-            self.lblProjecte.setText(self.project.fileName())
-            self.lblTitolProjecte.setText(self.project.title())
-
-            self.canvas.setExtent(rect)
-            
-            dashboard = QgsExpressionContextUtils.projectScope(self.project).variable('qV_dashboard')
-            titolEntorn = QgsExpressionContextUtils.projectScope(self.project).variable('qV_titolEntorn')
-
-            if dashboard is not None:
-                exec("self.act{}.trigger()".format(dashboard))
-
-            if titolEntorn is not None:
-                self.lblTitolProjecte.setText(titolEntorn)
+            self.obrirProjecte(nfile, rect)
+           
 
     def obrirDialegNovaCapa(self):
         dialegObertura=QFileDialog()
