@@ -27,8 +27,6 @@ class QvColumnaCataleg(QWidget):
         self.labelProjecte = labelProjecte
         self.textCerca = textCerca
 
-        print('Cercare: '+textCerca)
-
         self.scroll = QScrollArea()
         self.frame1 = QFrame()
 
@@ -182,7 +180,6 @@ class QvCataleg(QWidget):
                 for fitxer in carpeta[2]:
                     projectes.append(fitxer[0:-4])
                 self.dictProjectes[tema] = set(projectes)
-        print (self.dictProjectes)
         
         self.columnes = []
         for tema in self.dictProjectes:
@@ -208,20 +205,19 @@ class QvCataleg(QWidget):
         self.show()
 
 
-    def filtra(self):
-        print("Filtra: "+self.liniaCerca.text())        
-        
-        # Maravilloses dues línies
+    def filtra(self): 
+        # Maravilloses dues línies que esborren columnes i botons
         for i in reversed(range(self.layoutFrame.count())): 
             self.layoutFrame.itemAt(i).widget().setParent(None)
-        self.qvColumnaCataleg = QvColumnaCataleg('Mapes generals', self.projectes, self.projectQgis, self.labelProjecte, textCerca=self.liniaCerca.text())
-        self.qvColumnaCataleg2 = QvColumnaCataleg('Urbanisme', self.projectesUrb, self.projectQgis, self.labelProjecte, textCerca=self.liniaCerca.text())
-        self.qvColumnaCataleg3 = QvColumnaCataleg('Infraestructures', self.projectesInf, self.projectQgis, self.labelProjecte, textCerca=self.liniaCerca.text())
-        self.qvColumnaCataleg4 = QvColumnaCataleg('AMB', self.projectesAMB, self.projectQgis, self.labelProjecte, textCerca=self.liniaCerca.text())
-        self.layoutFrame.addWidget(self.qvColumnaCataleg)
-        self.layoutFrame.addWidget(self.qvColumnaCataleg2)
-        self.layoutFrame.addWidget(self.qvColumnaCataleg3)
-        self.layoutFrame.addWidget(self.qvColumnaCataleg4)
+
+        self.columnes=[]
+        for tema in self.dictProjectes:
+            columna = QvColumnaCataleg(self.qV,tema, self.dictProjectes[tema], self.projectQgis, self.labelProjecte, textCerca=self.liniaCerca.text())
+            self.columnes.append(columna)
+        
+        for columna in self.columnes:
+            self.layoutFrame.addWidget(columna)
+
 
 
 if __name__ == "__main__":
