@@ -35,3 +35,4 @@ __pycache__/
 .vscode/
 *.json
 moduls/__pycache__/
+moduls/__pycache__/*.*
