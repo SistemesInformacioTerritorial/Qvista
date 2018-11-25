@@ -14,10 +14,11 @@ class QvColumnaCataleg(QWidget):
     Es un widget amb el que és pot fer el que és vulgui, sempre que sigui legal.
     """
 
-    def __init__(self, titol, projectes, projectQgis = None, labelProjecte = None, textCerca = ''):
+    def __init__(self, qV, titol, projectes, projectQgis = None, labelProjecte = None, textCerca = ''):
 
         QWidget.__init__(self)
 
+        self.qV = qV
         self.titol = titol
         self.projectes = projectes
         self.projectQgis = projectQgis
@@ -112,7 +113,10 @@ class QvColumnaCataleg(QWidget):
     def obrirEnQVista(self, projecte):
         def obertura():
             try:
+                rang = self.qV.canvas.extent()
                 self.projectQgis.read(projecte)
+                if rang is not None:
+                    self.qV.canvas.setExtent(rang)
                 self.labelProjecte.setText(self.projectQgis.title())
                 self.parent().parent().parent().parent().hide()
             except:
@@ -124,8 +128,9 @@ class QvColumnaCataleg(QWidget):
 
 class QvCataleg(QWidget):
     
-    def __init__(self, projectQgis = None, labelProjecte = None):
+    def __init__(self, qV, projectQgis = None, labelProjecte = None):
         self.projectQgis = projectQgis
+        self.qV = qV
         self.labelProjecte = labelProjecte
         QWidget.__init__(self)
         layoutWidgetPrincipal = QVBoxLayout(self)
@@ -193,10 +198,10 @@ class QvCataleg(QWidget):
                     'Vol 1965 AMB',
                     'Imatge satel·lit 2011 AMB',
                     'OpenStreetMap']
-        self.qvColumnaCataleg = QvColumnaCataleg('Mapes generals', self.projectes, self.projectQgis, self.labelProjecte)
-        self.qvColumnaCataleg2 = QvColumnaCataleg('Urbanisme', self.projectesUrb, self.projectQgis, self.labelProjecte)
-        self.qvColumnaCataleg3 = QvColumnaCataleg('Infraestructures', self.projectesInf, self.projectQgis, self.labelProjecte)
-        self.qvColumnaCataleg4 = QvColumnaCataleg('AMB', self.projectesAMB, self.projectQgis, self.labelProjecte)
+        self.qvColumnaCataleg = QvColumnaCataleg(self.qV,'Mapes generals', self.projectes, self.projectQgis, self.labelProjecte)
+        self.qvColumnaCataleg2 = QvColumnaCataleg(self.qV,'Urbanisme', self.projectesUrb, self.projectQgis, self.labelProjecte)
+        self.qvColumnaCataleg3 = QvColumnaCataleg(self.qV,'Infraestructures', self.projectesInf, self.projectQgis, self.labelProjecte)
+        self.qvColumnaCataleg4 = QvColumnaCataleg(self.qV,'AMB', self.projectesAMB, self.projectQgis, self.labelProjecte)
         # qvColumnaCataleg82 = QvColumnaCataleg('Animals, gats i fures', projectes)
         # qvColumnaCataleg83 = QvColumnaCataleg('Obres de ciutat', projectes)
         # qvColumnaCataleg9 = QvColumnaCataleg('Topografia', projectes)
@@ -236,6 +241,6 @@ class QvCataleg(QWidget):
 if __name__ == "__main__":
     with qgisapp() as app:
 
-        cataleg = QvCataleg()
+        cataleg = QvCataleg(None)
         cataleg.showMaximized()
 
