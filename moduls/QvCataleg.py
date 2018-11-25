@@ -5,6 +5,8 @@ from qgis.core import QgsRectangle
 from botoinfomapa import Ui_BotoInfoMapa
 
 
+carpetaCataleg = "..\dades\CatalegProjectes"
+longitudPathCataleg = len(carpetaCataleg)
 
 class QvColumnaCataleg(QWidget):
     """
@@ -168,55 +170,38 @@ class QvCataleg(QWidget):
         frame.setMinimumHeight(900)
 
         # frame.show()
+        self.temesCataleg = []
+        temes = []
+        self.dictProjectes = {}
+        contingutCarpetes = os.walk(carpetaCataleg)
+        for carpeta in contingutCarpetes:
+            tema = carpeta[0][longitudPathCataleg+1:]
+            if tema !='':
+                self.temesCataleg.append(tema)
+                projectes = []
+                for fitxer in carpeta[2]:
+                    projectes.append(fitxer[0:-4])
+                self.dictProjectes[tema] = set(projectes)
+        print (self.dictProjectes)
+        
+        self.columnes = []
+        for tema in self.dictProjectes:
+            columna = QvColumnaCataleg(self.qV,tema, self.dictProjectes[tema], self.projectQgis, self.labelProjecte)
+            self.columnes.append(columna)
 
-        self.projectes = ['fotos', 
-                    'bcn11_nord',
-                    'gats'
-                    'equipaments',
-                    'MarxesCiutat'
-                    ]
-
-        self.projectesUrb = ['Sentencies',
-                    'Projectes_urbanitzacio',
-                    'Ambits_planejament',
-                    'Ambits_gestio',
-                    'PECAB 2015',
-                    'PECAB (no vigent)',
-                    'Suspensions de Llicències',
-                    'Parceles DAP',
-                    'Alineacions vigents',
-                    'piu',
-                    'Catàleg de Patrimoni Protegit']
-                    
-        self.projectesInf = ['NombreAparcaments',
-                    'Carrils bici i zones 30',
-                    'CoberturaVegetal',
-                    'obres',
-                    'cams_VideoVigilancia_v01',
-                    'pavimentacioGeo'] 
-        self.projectesAMB = ['Vol 1961 AMB',
-                    'Vol 1965 AMB',
-                    'Imatge satel·lit 2011 AMB',
-                    'OpenStreetMap']
-        self.qvColumnaCataleg = QvColumnaCataleg(self.qV,'Mapes generals', self.projectes, self.projectQgis, self.labelProjecte)
-        self.qvColumnaCataleg2 = QvColumnaCataleg(self.qV,'Urbanisme', self.projectesUrb, self.projectQgis, self.labelProjecte)
-        self.qvColumnaCataleg3 = QvColumnaCataleg(self.qV,'Infraestructures', self.projectesInf, self.projectQgis, self.labelProjecte)
-        self.qvColumnaCataleg4 = QvColumnaCataleg(self.qV,'AMB', self.projectesAMB, self.projectQgis, self.labelProjecte)
+        # self.qvColumnaCataleg = QvColumnaCataleg(self.qV,'Mapes generals', self.projectes, self.projectQgis, self.labelProjecte)
+        # self.qvColumnaCataleg2 = QvColumnaCataleg(self.qV,'Urbanisme', self.projectesUrb, self.projectQgis, self.labelProjecte)
+        # self.qvColumnaCataleg3 = QvColumnaCataleg(self.qV,'Infraestructures', self.projectesInf, self.projectQgis, self.labelProjecte)
+        # self.qvColumnaCataleg4 = QvColumnaCataleg(self.qV,'AMB', self.projectesAMB, self.projectQgis, self.labelProjecte)
         # qvColumnaCataleg82 = QvColumnaCataleg('Animals, gats i fures', projectes)
         # qvColumnaCataleg83 = QvColumnaCataleg('Obres de ciutat', projectes)
         # qvColumnaCataleg9 = QvColumnaCataleg('Topografia', projectes)
         # qvColumnaCataleg92 = QvColumnaCataleg('Cosmologiade ciutat', projectes)
-        self.layoutFrame.addWidget(self.qvColumnaCataleg)
-        self.layoutFrame.addWidget(self.qvColumnaCataleg2)
-        self.layoutFrame.addWidget(self.qvColumnaCataleg3)
-        self.layoutFrame.addWidget(self.qvColumnaCataleg4)
-        # layoutFrame.addWidget(qvColumnaCataleg9)
-        # layoutFrame.addWidget(qvColumnaCataleg92)
-        # layoutFrame.addWidget(qvColumnaCataleg82)
-        # layoutFrame.addWidget(qvColumnaCataleg83)
+
+        for columna in self.columnes:
+            self.layoutFrame.addWidget(columna)
 
 
-        # qvColumnaCataleg.show()
 
         layoutWidgetPrincipal.addWidget(frameCapcalera)
         layoutWidgetPrincipal.addWidget(scrollFull)
@@ -236,6 +221,7 @@ class QvCataleg(QWidget):
         self.layoutFrame.addWidget(self.qvColumnaCataleg)
         self.layoutFrame.addWidget(self.qvColumnaCataleg2)
         self.layoutFrame.addWidget(self.qvColumnaCataleg3)
+        self.layoutFrame.addWidget(self.qvColumnaCataleg4)
 
 
 if __name__ == "__main__":
