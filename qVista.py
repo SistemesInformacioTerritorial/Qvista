@@ -1634,7 +1634,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         dialegObertura=QFileDialog()
         dialegObertura.setDirectoryUrl(QUrl('../dades/projectes/'))
         rect = self.canvas.extent()
-        nfile,_ = dialegObertura.getOpenFileName(None,"Obrir mapa Qgis", ".", "Tots els mapes acceptats (*.qgs *.qgz);; Mapes Qgis (*.qgs);;Mapes Qgis comprimits (*.qgz)")
+        nfile,_ = dialegObertura.getOpenFileName(None,"Obrir mapa Qgis", "../dades/projectes/", "Tots els mapes acceptats (*.qgs *.qgz);; Mapes Qgis (*.qgs);;Mapes Qgis comprimits (*.qgz)")
 
         if nfile is not None:
             self.obrirProjecte(nfile, rect)
