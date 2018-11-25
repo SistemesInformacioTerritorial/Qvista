@@ -100,7 +100,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.preparacioMapeta()
         self.preparacioTaulaAtributs()
         self.preparacioLlegenda()
-        # self.preparacioArbreDistrictes()
+        self.preparacioArbreDistrictes()
         self.preparacioCataleg()
         self.preparacioStreetView()
         # self.preparacioMapTips()
@@ -314,7 +314,24 @@ class QVista(QMainWindow, Ui_MainWindow):
     def preparacioAnotacions(self):
         self.an = QvAnotacions(self.canvas)
         self.an.show()
+    
+    def preparacioArbreDistrictes(self):
+        """Es genera un dockWidget a la dreta, amb un arbre posicionador Districte-Barri.
+
+        Ho fem instanciant la classe QVDistrictesBarris. 
+        També connectem un click al arbre amb la funció clickArbre.
+        """
+
+        self.distBarris = QVDistrictesBarris()
+        self.distBarris.view.clicked.connect(self.clickArbre)
         
+        # self.dwArbreDistrictes = QDockWidget("Districtes - Barris", self)
+        # self.dwArbreDistrictes.hide()
+        # self.dwArbreDistrictes.setAllowedAreas( Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea )
+        # self.dwArbreDistrictes.setWidget( self.distBarris.view )
+        # self.dwArbreDistrictes.setContentsMargins ( 2, 2, 2, 2 )
+        # self.addDockWidget( Qt.RightDockWidgetArea, self.dwArbreDistrictes )
+        # self.dwArbreDistrictes.setStyleSheet('QDockWidget {background-color: #909090;}')
     def preparacioCataleg(self):
         """ 
         Genera el cataleg del qVista i l'incorpora a un docWidget.
