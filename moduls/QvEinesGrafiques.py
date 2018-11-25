@@ -24,7 +24,7 @@ class QvSeleccioPunt(QgsMapTool):
         #Get the click
         x = event.pos().x()
         y = event.pos().y()
-        layer = qV.llegenda.currentLayer()
+        layer = self.qV.llegenda.currentLayer()
         # layerList = QgsMapLayerRegistry.instance().mapLayersByName("Illes")
         # if layerList: 
         #     layer = layerList[0]
@@ -60,6 +60,12 @@ class QvSeleccioPunt(QgsMapTool):
     def isEditTool(self):
         return True
 
+    def missatgeCaixa(textTitol,textInformacio):
+        msgBox=QMessageBox()
+        msgBox.setText(textTitol)
+        msgBox.setInformativeText(textInformacio)
+        ret = msgBox.exec()
+        
 class QvSeleccioCercle(QgsMapTool):
     """ Dibuixa un cercle i selecciona els elements."""
     def __init__(self, qV, color, radi, numeroSegmentsCercle):
