@@ -1,8 +1,25 @@
 # coding:utf-8
 
 from  moduls.QvImports import *
+
+from moduls.QvUbicacions import QvUbicacions
+from moduls.QvPrint import QvPrint
+from moduls.QvAnotacions import QvAnotacions
+from moduls.QvCanvas import QvCanvas
+from moduls.QvToolTip import QvToolTip
+from moduls.QvEinesGrafiques import QvSeleccioElement, QvSeleccioPerPoligon, QvSeleccioCercle, QvSeleccioPunt
+from moduls.QvStreetView import QvStreetView
+from moduls.QvLlegenda import QvLlegenda
+from moduls.QvAtributs import QvAtributs
+from moduls.QvMapeta import QvMapeta
+from moduls.QVCercadorAdreca import QCercadorAdreca
+from moduls.QVDistrictesBarris import QVDistrictesBarris
+from moduls.QvCataleg import QvCataleg
+from moduls.QvVistaMapa import QvVistaMapa
+from moduls.QvWizard import QvWizard
+from moduls.QvApp import QvApp
+
 from moduls.QvPavimentacio import DockPavim
-import math
 global qV
 
 
@@ -17,197 +34,6 @@ class QVLine(QFrame):
         super(QVLine, self).__init__()
         self.setFrameShape(QFrame.VLine)
         self.setFrameShadow(QFrame.Sunken)
-
-class PointTool(QgsMapTool):
-    def __init__(self, qV, canvas):
-        QgsMapTool.__init__(self, canvas)
-        self.canvas = canvas
-        self.qV = qV
-
-    def canvasPressEvent(self, event):
-        pass
-
-    def canvasMoveEvent(self, event):
-        x = event.pos().x()
-        y = event.pos().y()
-
-        point = self.canvas.getCoordinateTransform().toMapCoordinates(x, y)
-
-    def canvasReleaseEvent(self, event):
-        #Get the click
-        x = event.pos().x()
-        y = event.pos().y()
-        layer = qV.llegenda.currentLayer()
-        # layerList = QgsMapLayerRegistry.instance().mapLayersByName("Illes")
-        # if layerList: 
-        #     layer = layerList[0]
-        point = self.canvas.getCoordinateTransform().toMapCoordinates(x, y)
-        radius = 20
-        rect = QgsRectangle(point.x() - radius, point.y() - radius, point.x() + radius, point.y() + radius)
-        if layer:
-            it = layer.getFeatures(QgsFeatureRequest().setFilterRect(rect))
-            ids = [i.id() for i in it]
-            self.qV.idsElementsSeleccionats.extend(ids)
-            try:
-                layer.selectByIds(self.qV.idsElementsSeleccionats)
-                nombreElements = len(self.qV.idsElementsSeleccionats)
-                
-                self.qV.lblNombreElementsSeleccionats.setText('Elements seleccionats: '+str(nombreElements))
-            except:
-                pass
-        else:
-          missatgeCaixa('Cal tenir seleccionat un nivell per poder fer una selecció.','Marqueu un nivell a la llegenda sobre el que aplicar la consulta.')
-
-    def activate(self):
-        pass
-
-    def deactivate(self):
-        pass
-
-    def isZoomTool(self):
-        return False
-
-    def isTransient(self):
-        return False
-
-    def isEditTool(self):
-        return True
-
-
-class PointTool(QgsMapTool):
-    def __init__(self, qV, canvas):
-        QgsMapTool.__init__(self, canvas)
-        self.canvas = canvas
-        self.qV = qV
-
-    def canvasPressEvent(self, event):
-        pass
-
-    def canvasMoveEvent(self, event):
-        x = event.pos().x()
-        y = event.pos().y()
-
-        point = self.canvas.getCoordinateTransform().toMapCoordinates(x, y)
-
-    def canvasReleaseEvent(self, event):
-        #Get the click
-        x = event.pos().x()
-        y = event.pos().y()
-        layer = qV.llegenda.currentLayer()
-        # layerList = QgsMapLayerRegistry.instance().mapLayersByName("Illes")
-        # if layerList: 
-        #     layer = layerList[0]
-        point = self.canvas.getCoordinateTransform().toMapCoordinates(x, y)
-        radius = 20
-        rect = QgsRectangle(point.x() - radius, point.y() - radius, point.x() + radius, point.y() + radius)
-        if layer:
-            it = layer.getFeatures(QgsFeatureRequest().setFilterRect(rect))
-            ids = [i.id() for i in it]
-            self.qV.idsElementsSeleccionats.extend(ids)
-            try:
-                layer.selectByIds(self.qV.idsElementsSeleccionats)
-                nombreElements = len(set(self.qV.idsElementsSeleccionats))
-                
-                self.qV.lblNombreElementsSeleccionats.setText('Elements seleccionats: '+str(nombreElements))
-            except:
-                pass
-        else:
-          missatgeCaixa('Cal tenir seleccionat un nivell per poder fer una selecció.','Marqueu un nivell a la llegenda sobre el que aplicar la consulta.')
-
-    def activate(self):
-        pass
-
-    def deactivate(self):
-        pass
-
-    def isZoomTool(self):
-        return False
-
-    def isTransient(self):
-        return False
-
-    def isEditTool(self):
-        return True
-
-class SelectCircle(QgsMapTool):
-    """ Dibuixa un cercle i selecciona els elements."""
-    def __init__(self, qV, color, radi, numeroSegmentsCercle):
-        self.canvas = qV.canvas
-        QgsMapTool.__init__(self, self.canvas)
-        self.qV = qV
-        self.status = 0
-        self.numeroSegmentsCercle = numeroSegmentsCercle
-
-        self.rubberband=QgsRubberBand(self.canvas,True)
-        self.rubberband.setColor( QColor("red") )
-        self.rubberband.setWidth( 2 )
-        self.overlap = False
-        
-    def setOverlap(self,overlap):
-        self.overlap = overlap
-
-    def canvasPressEvent(self,e):
-        if not e.button() == Qt.LeftButton:
-            return
-        self.status = 1
-        self.centre = self.toMapCoordinates(e.pos())
-
-        # self.rbcircle(self.rb, self.centre, self.centre, self.numeroSegmentsCercle)
-        return
-
-    def canvasMoveEvent(self,e):
-        if not self.status == 1:
-                return
-        cp = self.toMapCoordinates(e.pos())
-        self.rbcircle(self.rubberband, self.centre, cp, self.numeroSegmentsCercle)
-        r = math.sqrt(self.centre.sqrDist(cp))
-
-        self.rubberband.show()
-  
-
-    def rbcircle(self, rb,center,edgePoint,segments):
-        r = math.sqrt(center.sqrDist(edgePoint))
-        rb.reset( True )
-        pi =3.1416
-        llistaPunts=[]
-        for itheta in range(segments+1):
-            theta = itheta*(2.0 * pi/segments)
-            rb.addPoint(QgsPointXY(center.x()+r*math.cos(theta),center.y()+r*math.sin(theta)))
-            llistaPunts.append(QgsPointXY(center.x()+r*math.cos(theta),center.y()+r*math.sin(theta)))
-        self.poligono=QgsGeometry.fromPolygonXY([llistaPunts])
-        return
-
-    def canvasReleaseEvent(self,e):
-        if not e.button() == Qt.LeftButton:
-            return
-        layer = self.qV.llegenda.currentLayer()
-        if layer is not None:
-            #convertir rubberband apoligon
-            featsPnt = layer.getFeatures(QgsFeatureRequest().setFilterRect(self.poligono.boundingBox()))
-            for featPnt in featsPnt:
-                if self.overlap:
-                    if featPnt.geometry().intersects(self.poligono):
-                        layer.select(featPnt.id())
-                        self.qV.idsElementsSeleccionats.append(featPnt.id())
-                else:
-                    if featPnt.geometry().within(self.poligono):
-                        layer.select(featPnt.id())
-                        self.qV.idsElementsSeleccionats.append(featPnt.id())
-            # self.emit( SIGNAL("selectionDone()") )
-            self.status = 0
-            self.qV.lblNombreElementsSeleccionats.setText('Elements seleccionats: '+str(len(set(self.qV.idsElementsSeleccionats))))
-        else: 
-            missatgeCaixa('Cal tenir seleccionat un nivell per poder fer una selecció.','Marqueu un nivell a la llegenda sobre el que aplicar la consulta.')
-
-    def reset(self):
-        self.status = 0
-        self.rb.reset( True )
-
-    def deactivate(self):
-        QgsMapTool.deactivate(self)
-        # self.emit(SIGNAL("deactivated()"))
-
-
 
 class QVista(QMainWindow, Ui_MainWindow):
     """
@@ -259,6 +85,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.mapesOberts = False
         self.primerCop = True
         self.mapaMaxim = False
+        self.layerActiu = None
 
         # # Connectors i accions
         self.definicioAccions()
@@ -277,12 +104,13 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.preparacioArbreDistrictes()
         self.preparacioCataleg()
         self.preparacioStreetView()
-        self.preparacioCercadorPostal()
         # self.preparacioMapTips()
         self.preparacioImpressio()
         # self.preparacioGrafiques()
 
         self.preparacioSeleccio()
+
+        self.prepararCercador = True
 
 
         # tool = QvSeleccioElement(self.canvas, self.llegenda)
@@ -699,7 +527,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         """
         self.layoutFrameLlegenda = QVBoxLayout(self.frameLlegenda)
         self.llegenda = QvLlegenda(self.canvas, self.taulesAtributs)
-        self.llegenda.currentLayerChanged.connect(self.carregarCamps)
+        self.llegenda.currentLayerChanged.connect(self.canviLayer)
         self.canvas.setLlegenda(self.llegenda)
         self.layoutFrameLlegenda.setContentsMargins ( 0, 0, 0, 0 )
         self.llegenda.setStyleSheet("QvLlegenda {background-color: #DDDDDD; border: 0px solid red;}")
@@ -812,6 +640,9 @@ class QVista(QMainWindow, Ui_MainWindow):
 
 
     def adreces(self):
+        if self.prepararCercador:
+            self.preparacioCercadorPostal()
+            self.prepararCercador = False
         self.dwCercador.show()
 
     def menuLlegenda(self, tipus):
@@ -1121,6 +952,8 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.actPropietatsLayer.triggered.connect(self.propietatsLayer)
 
     def preparacioSeleccio(self):
+
+        # Disseny del interface
         self.wSeleccioGrafica = QWidget()
         self.lytSeleccioGrafica = QVBoxLayout()
         self.lytSeleccioGrafica.setAlignment(Qt.AlignTop)
@@ -1137,12 +970,16 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.bs3.setIcon(QIcon('imatges/vector-circle-variant.png'))
         self.bs4 = QPushButton()
         self.bs4.setIcon(QIcon('imatges/trash-can-outline.png'))
+
         self.lblNombreElementsSeleccionats = QLabel('No hi ha elements seleccionats.')
-        # self.cbFieldsSelect = QComboBox()
+        self.lblCapaSeleccionada = QLabel('No hi capa seleccionada.')
+        
         self.lwFieldsSelect = QListWidget()
         self.lwFieldsSelect.setSelectionMode(QAbstractItemView.ExtendedSelection)
+
         self.bs5 = QPushButton('Calcular')
         self.bs5.clicked.connect(self.calcularSeleccio)
+
         self.twResultats = QTableWidget()
 
         self.checkOverlap = QCheckBox('Overlap')
@@ -1158,6 +995,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         
         self.lytSeleccioGrafica.addWidget(self.checkOverlap)
         self.lytSeleccioGrafica.addWidget(self.lblNombreElementsSeleccionats)
+        self.lytSeleccioGrafica.addWidget(self.lblCapaSeleccionada)
         self.lytSeleccioGrafica.addWidget(self.lwFieldsSelect)
         self.lytSeleccioGrafica.addWidget(self.bs5)
         self.lytSeleccioGrafica.addWidget(self.twResultats)
@@ -1216,23 +1054,21 @@ class QVista(QMainWindow, Ui_MainWindow):
         taula.setItem(0,1,item)
         taula.resizeColumnsToContents()
 
-    def carregarCamps(self):        
-        layer = self.llegenda.currentLayer()
+    def canviLayer(self):
+        self.layerActiu = self.llegenda.currentLayer()        
         self.lwFieldsSelect.clear()
-        if layer is not None:
-            fields = layer.fields()
+        if self.layerActiu is not None:
+            self.lblCapaSeleccionada.setText("Capa activa: "+ self.layerActiu.name())
+            fields = self.layerActiu.fields()
             for field in fields:
                 if (field.typeName()!='String' and field.typeName()!='Date' and field.typeName()!='Date'):
-                    # print (field.typeName())
                     self.lwFieldsSelect.addItem(field.name())
-                    # fieldNames = [field.name() for field in fields]
-                    # self.lwFields.addItems(fieldNames)
-                else:
-                    pass
+        else:
+            self.lblCapaSeleccionada.setText("No hi ha capa activa.")
 
     def seleccioGrafica(self):
         self.dwSeleccioGrafica.show()
-        self.carregarCamps()
+        self.canviLayer()
 
 
 
@@ -1259,70 +1095,6 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.frameTranspInfo.setGeometry(5,5,100,100)
         # self.frameTranspInfo.setStyleSheet('QFrame {opacity:50;}')
         self.frameTranspInfo.show()
-
-    # def layersLlegenda(self):
-    #     self.widgetTest = QFrame()
-    #     layoutTest = QVBoxLayout(self.widgetTest)
-    #     self.widgetTest.setLayout(layoutTest)
-    #     self.widgetTest.show()
-
-
-    #     for layer in self.llegenda.capes():
-    #         print (layer.name())
-    #         boto = QPushButton(layer.name())
-    #         boto.setCheckable(True)
-    #         exec('boto.clicked.connect(self.activaCapa("{}"))'.format(layer.name()) )
-    #         layoutTest.addWidget(boto)
-
-    #     layerActiu = self.llegenda.currentLayer()
-    #     barris = []
-    #     dades = []
-    #     dades2 = []
-
-    #     for feature in layerActiu.getFeatures():
-    #         barris.append(feature.attributes()[layerActiu.fields().lookupField('N_Barri')])
-    #         dades.append(feature.attributes()[layerActiu.fields().lookupField('Homes')])
-    #         dades2.append(feature.attributes()[layerActiu.fields().lookupField('Dones')])
-
-        
-    #     data1 = go.Bar(
-    #                 y=barris,
-    #                 x=dades,
-    #                 name='Homes',
-    #                 orientation='h'
-    #         )        
-    #     data2 = go.Bar(
-    #                 y=barris,
-    #                 x=dades2,
-    #                 name='Dones',
-    #                 orientation='h'
-    #         )
-
-    #     dades = [data1, data2]
-    #     layout = go.Layout(barmode='group')
-
-    #     fig = go.Figure(data=dades, layout=layout)
-    #     plotly.offline.plot(fig, filename='c:/temp/grouped-bar', auto_open=False)
-    #     self.browserGrafiques.setUrl(QUrl('file:///c:/temp/grouped-bar.html'))
-    #     self.browserGrafiques.show()
-    #         # ltl = QgsProject.instance().layerTreeRoot().findLayer(layer.id())
-    #         # root = QgsProject.instance().layerTreeRoot()
-    #         # model = QgsLayerTreeModel(self.root)
-
-    #         # self.testView = self.llegenda.layerTreeView()
-    #         # self.testView.setModel(model)
-            
-    #         # treeview = QgsLayerTreeView().model()
-    #         # self.testView.show()
-    #         # ltm = iface.layerTreeView().model()
-    #         #               legendNodes = ltm.layerLegendNodes( ltl )
-    #         # Now you can make a particular category invisible (e.g., 'cat_A'):
-
-    #         # legendNode = [ln for ln in legendNodes if ln.data( Qt.DisplayRole ) == 'cat_A']
-    #         # if legendNode:
-    #         #     legendNode[0].setData( Qt.Unchecked, Qt.CheckStateRole )
-
-    #         # QvApp().logRegistre('Obrir projecte', qV.project.fileName())
 
 
     def activaCapa(self,capa):
@@ -2081,7 +1853,7 @@ def seleccioCercle():
         qV.canvas.scene().removeItem(qV.toolSelect.rubberband)
     except:
         pass
-    qV.toolSelect = SelectCircle(qV, 10, 10, 30)
+    qV.toolSelect = QvSeleccioCercle(qV, 10, 10, 30)
     qV.toolSelect.setOverlap(qV.checkOverlap.checkState())
     qV.canvas.setMapTool(qV.toolSelect)
 
@@ -2093,7 +1865,7 @@ def seleccioClicks():
     except:
         pass
 
-    tool = PointTool(qV, qV.canvas)
+    tool = QvSeleccioPunt(qV, qV.canvas)
     qV.canvas.setMapTool(tool)
     # taulaAtributsSeleccionats()
 
@@ -2354,6 +2126,7 @@ with qgisapp() as app: # Internacionalización
     
     # Instanciem la classe QVista i fem qV global per poder ser utilitzada arreu
     qV = QVista()
+
     # qV.showFullScreen()
     qV.showMaximized()
 
