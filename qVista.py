@@ -20,6 +20,8 @@ from moduls.QvWizard import QvWizard
 from moduls.QvApp import QvApp
 
 from moduls.QvPavimentacio import DockPavim
+
+from csvs import *
 global qV
 
 
@@ -967,6 +969,9 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         self.bs5 = QPushButton('Calcular')
         self.bs5.clicked.connect(self.calcularSeleccio)
+        
+        self.bs6 = QPushButton('Crear CSV')
+        self.bs6.clicked.connect(self.crearCsv)
 
         self.twResultats = QTableWidget()
 
@@ -986,6 +991,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.lytSeleccioGrafica.addWidget(self.lblCapaSeleccionada)
         self.lytSeleccioGrafica.addWidget(self.lwFieldsSelect)
         self.lytSeleccioGrafica.addWidget(self.bs5)
+        self.lytSeleccioGrafica.addWidget(self.bs6)
         self.lytSeleccioGrafica.addWidget(self.twResultats)
 
 
@@ -1000,6 +1006,11 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.dwSeleccioGrafica.hide()
 
         self.idsElementsSeleccionats = []
+
+    def crearCsv(self):
+        self.taulesAtributs.desarCSV(self.llegenda.currentLayer(), selected = True)
+        self.finestraCSV = MyWindow('c:\QVISTA\districtes.csv')
+        self.finestraCSV.show()
 
     def calcularSeleccio(self):
         layer = self.llegenda.currentLayer()
