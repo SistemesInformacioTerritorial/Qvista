@@ -87,6 +87,7 @@ class Ui_MainWindow(object):
         self.frame_15.setLineWidth(0)
         self.frame_15.setObjectName("frame_15")
         self.horizontalLayout_4 = QtWidgets.QHBoxLayout(self.frame_15)
+        self.horizontalLayout_4.setContentsMargins(2, 2, 2, 2)
         self.horizontalLayout_4.setObjectName("horizontalLayout_4")
         self.lblTitolProjecte = QtWidgets.QLabel(self.frame_15)
         font = QtGui.QFont()
