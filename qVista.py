@@ -1048,7 +1048,9 @@ class QVista(QMainWindow, Ui_MainWindow):
             self.lblCapaSeleccionada.setText("Capa activa: "+ self.layerActiu.name())
             fields = self.layerActiu.fields()
             for field in fields:
-                if (field.typeName()!='String' and field.typeName()!='Date' and field.typeName()!='Date'):
+                print(field.typeName())
+                # if (field.typeName()!='String' and field.typeName()!='Date' and field.typeName()!='Date'):
+                if (field.typeName()=='Real' or field.typeName()=='Integer64'):
                     self.lwFieldsSelect.addItem(field.name())
         else:
             self.lblCapaSeleccionada.setText("No hi ha capa activa.")
