@@ -1034,7 +1034,7 @@ class QVista(QMainWindow, Ui_MainWindow):
             taula.setItem(fila+1,2,item)
             # print('Total: '+a.text()+": ",total)
             fila=fila+1
-        item = QTableWidgetItem("Elements seleccionats:")
+        item = QTableWidgetItem("Seleccionats:")
         taula.setItem(0,0,item)
         item = QTableWidgetItem(str(nombreElements))
         taula.setItem(0,1,item)
