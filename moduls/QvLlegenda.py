@@ -404,9 +404,10 @@ class QvLlegenda(QgsLayerTreeView):
         self.menuAccions = []
         tipo = self.calcTipusMenu()
         if tipo == 'layer':
-            if self.atributs is not None:
-                self.menuAccions += ['showFeatureTable', 'filterElements' ]
-            self.menuAccions += ['showFeatureCount']
+            if self.currentLayer().type() == QgsMapLayer.VectorLayer:
+                if self.atributs is not None:
+                    self.menuAccions += ['showFeatureTable', 'filterElements' ]
+                self.menuAccions += ['showFeatureCount']
             if self.canvas is not None:
                 self.menuAccions += ['showLayerMap']
             if self.editable:
