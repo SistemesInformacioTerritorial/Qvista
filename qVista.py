@@ -1007,6 +1007,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         numeroFields=0
         fila=0
         columna=0
+        nombreElements = 0
         taula.setColumnCount(3)
         taula.setHorizontalHeaderLabels(['','Total', 'Mitjana'])
         nombreFieldsSeleccionats=0
@@ -1017,7 +1018,6 @@ class QVista(QMainWindow, Ui_MainWindow):
             total=0
             item = QTableWidgetItem(a.text())
             taula.setItem(fila+1,0,item)
-            nombreElements=0
             field=layer.fields().lookupField(a.text())
             # print (field)
             for feature in layer.selectedFeatures():

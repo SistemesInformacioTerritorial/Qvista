@@ -28,7 +28,7 @@ from time import sleep
 from configuracioQvista import *
 
 # Plantilla del qVista
-from cubista2 import Ui_MainWindow
+from cubista3 import Ui_MainWindow
 
 import plotly
 import plotly.graph_objs as go
