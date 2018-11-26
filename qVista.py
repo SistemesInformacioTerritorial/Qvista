@@ -14,7 +14,7 @@ from moduls.QvAtributs import QvAtributs
 from moduls.QvMapeta import QvMapeta
 from moduls.QVCercadorAdreca import QCercadorAdreca
 from moduls.QVDistrictesBarris import QVDistrictesBarris
-from moduls.QvCataleg import QvCataleg
+from moduls.QvCatalegPetit import QvCataleg
 from moduls.QvVistaMapa import QvVistaMapa
 from moduls.QvWizard import QvWizard
 from moduls.QvApp import QvApp
@@ -1334,7 +1334,6 @@ class QVista(QMainWindow, Ui_MainWindow):
     def ferGran(self):
         # print('JOLA')
 
-
         if self.mapaMaxim:
             self.frameLlegenda.show()
             # self.frame_19.show()
@@ -1345,7 +1344,6 @@ class QVista(QMainWindow, Ui_MainWindow):
             self.layoutFrameLlegenda.addWidget(self.llegenda)
             self._menuBarShadow.setEnabled(True)
             self.botoMaxim.setIcon(QIcon('imatges/arrow-expand.png'))
-            
         else:
             self.frameLlegenda.hide()
             # self.frame_19.hide()
