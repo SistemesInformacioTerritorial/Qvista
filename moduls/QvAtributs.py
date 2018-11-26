@@ -50,7 +50,7 @@ class QvAtributs(QTabWidget):
                                 'flashSelection', 'zoomToSelection', 'showSelection',
                                 'invertSelection', 'removeSelection']
         self.menuAccions += ['separator', 
-                             'filterElements']
+                            'filterElements']
         if layer.subsetString() != '':
             self.menuAccions += ['removeFilter']
         self.menuAccions += ['saveToCSV']

@@ -2,6 +2,7 @@
 
 from qgis.PyQt.QtSql import QSqlDatabase, QSqlQuery
 from qgis.PyQt.QtCore import QTranslator, QLibraryInfo
+from qgis.PyQt.QtNetwork import QNetworkProxy
 from moduls.QvSingleton import Singleton
 from pathlib import Path
 import sys
@@ -9,7 +10,6 @@ import getpass
 import uuid
 
 _DB_QVISTA = dict()
-
 
 _DB_QVISTA['DSV'] = {
     'Database': 'QOCISPATIAL',
@@ -33,6 +33,11 @@ _PATH_PRO = ['N:\\SITEB\\APL\\PYQGIS\\']
 
 _PATH_HELP = 'help/'
 
+_PROXY = {
+    'HostName': 'iprx.imi.bcn',
+    'Port': 8080
+}
+
 class QvApp(Singleton):
 
     def __init__(self):
@@ -42,6 +47,7 @@ class QvApp(Singleton):
         self.dbQvista = _DB_QVISTA[self.entorn] # Conexión a Oracle según entorno
         self.usuari = getpass.getuser().upper() # Usuario de red
         self.sessio = str(uuid.uuid1())         # Id único de sesión
+        self.proxy = self.setProxy()
         self.dbLog = None
         self.queryLog = None
         self.familyLog = None
@@ -51,6 +57,21 @@ class QvApp(Singleton):
         self.qtTranslator = None
         self.qgisTranslator = None
 
+    def setProxy(self):
+        try:
+            if self.usuari is not None and len(self.usuari) > 0:
+                proxy = QNetworkProxy()
+                proxy.setType(QNetworkProxy.DefaultProxy)
+                proxy.setHostName = _PROXY['HostName']
+                proxy.setPort = _PROXY['Port']
+                proxy.setApplicationProxy(proxy)
+                return proxy
+            else:
+                return None
+        except Exception as e:
+            print(str(e))
+            return None
+        
     def calcEntorn(self):
         entorn = 'DSV'
         if len(sys.argv) > 0:
