@@ -2,7 +2,7 @@
 from moduls.QvImports import * 
 
 from qgis.core import QgsRectangle
-from botoinfomapa import Ui_BotoInfoMapa
+from botoInfoMapaPetit import Ui_BotoInfoMapa
 
 
 carpetaCataleg = "..\dades\CatalegProjectes"
@@ -30,8 +30,8 @@ class QvColumnaCataleg(QWidget):
         self.scroll = QScrollArea()
         self.frame1 = QFrame()
 
-        self.frame1.setMinimumWidth(520)
-        self.frame1.setMaximumWidth(520)
+        self.frame1.setMinimumWidth(250)
+        self.frame1.setMaximumWidth(250)
 
         self.layoutScroll = QVBoxLayout(self.frame1)
         self.layoutScroll.setContentsMargins(8,8,8,8)
@@ -39,7 +39,7 @@ class QvColumnaCataleg(QWidget):
 
         self.numeroBotons = 0
         
-        fnt = QFont("Segoe UI", 22, weight=QFont.Normal)
+        fnt = QFont("Segoe UI", 18, weight=QFont.Normal)
 
         lblTitol = QLabel(self.titol)
         lblTitol.setFont(fnt)
@@ -72,10 +72,10 @@ class QvColumnaCataleg(QWidget):
                 # botoInfoMapa.ui.label_3.setText('Autor: '+project.metadata().author())
                 botoInfoMapa.ui.b1.clicked.connect(self.obrirEnQVista(nomProjecte))
                 botoInfoMapa.ui.b2.clicked.connect(self.obrirEnQgis(nomProjecte))    
-                doc=QTextDocument()
-                doc.setHtml('../dades/projectes/'+projecte+'.htm')
-                botoInfoMapa.ui.textEdit.setDocument(doc)
-                botoInfoMapa.ui.label_3.hide()
+                # doc=QTextDocument()
+                # doc.setHtml('../dades/projectes/'+projecte+'.htm')
+                # botoInfoMapa.ui.textEdit.setDocument(doc)
+                # botoInfoMapa.ui.label_3.hide()
                 # try:
                 #     text=open('../dades/projectes/'+projecte+'.htm').read()
                 #     botoInfoMapa.ui.textEdit.setHtml(text)
@@ -97,10 +97,10 @@ class QvColumnaCataleg(QWidget):
         self.layoutWidget.addWidget(lblTitol)
         self.layoutWidget.addWidget(self.scroll)
         # self.viewport().installEventFilter(self.frame1)
-        self.scroll.setMaximumWidth(540)
-        self.scroll.setMinimumWidth(540)
-        self.setMaximumWidth(540)
-        self.setMinimumWidth(540)
+        self.scroll.setMaximumWidth(270)
+        self.scroll.setMinimumWidth(270)
+        self.setMaximumWidth(270)
+        self.setMinimumWidth(270)
         if self.numeroBotons == 0:
         #     self.show()
         # else:

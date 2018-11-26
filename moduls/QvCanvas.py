@@ -2,6 +2,7 @@
 
 from moduls.QvImports import *
 from moduls.QvEinesGrafiques import QvSeleccioElement
+from moduls.QvApp import QvApp
 
 
 class QvCanvas(QgsMapCanvas):
@@ -12,6 +13,7 @@ class QvCanvas(QgsMapCanvas):
         self.posicioBotonera = posicioBotonera
         self.llegenda = llegenda
         self.pare = pare
+        self.setWhatsThis(QvApp().carregaAjuda(self))
 
         self._preparacioBotonsCanvas()
         self.panCanvas()
