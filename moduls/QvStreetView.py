@@ -100,6 +100,25 @@ class PointTool(QgsMapTool):
         if self.moureBoto:
             self.parent.boto.move(event.x()-30,event.y()-30)
 
+
+
+    def llevame(self,xx,yy):
+        try:
+            point= QgsPointXY(xx, yy)
+
+            self.transformacio = QgsCoordinateTransform(QgsCoordinateReferenceSystem("EPSG:25831"), 
+                                QgsCoordinateReferenceSystem("EPSG:4326"), 
+                                QgsProject.instance())
+
+            self.puntTransformat=self.transformacio.transform(point) 
+            self.parent.urlStreetView = "https://maps.google.com/maps?layer=c&cbll={},{}".format(self.puntTransformat.y(), self.puntTransformat.x())
+
+            self.parent.qbrowser.browser.setUrl(QUrl(self.parent.urlStreetView))
+            self.parent.qbrowser.show()
+            self.parent.show()
+        except:
+            pass  
+
     def canvasReleaseEvent(self, event):
         
         self.point = self.toMapCoordinates(event.pos())
@@ -182,6 +201,37 @@ class QvStreetView(QWidget):
         self.qbrowser.show()
 
         self.layoutH.addWidget(self.qbrowser)
+
+
+
+    def llevame_old(self,xx,yy):
+      
+        try:
+            point= QgsPointXY(xx, yy)
+
+            self.transformacio = QgsCoordinateTransform(QgsCoordinateReferenceSystem("EPSG:25831"), 
+                                QgsCoordinateReferenceSystem("EPSG:4326"), 
+                                QgsProject.instance())
+
+            self.puntTransformat=self.transformacio.transform(point) 
+            self.parent.urlStreetView = "https://maps.google.com/maps?layer=c&cbll={},{}".format(self.puntTransformat.y(), self.puntTransformat.x())
+
+            # self.parent.qbrowser = QvBrowser(self)
+          
+
+            qbrowser.browser.setUrl(QUrl(self.parent.urlStreetView))
+            
+            self.show()
+            
+            self.parent.show()
+        except:
+            pass        
+     
+
+
+
+
+
 
 if __name__ == "__main__":
     projecteInicial='../dades/projectes/BCN11_nord.qgs'
