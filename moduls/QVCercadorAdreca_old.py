@@ -103,13 +103,13 @@ class QCercadorAdreca(QObject):
 
     def completarNumero(self):
         self.dictNumerosFiltre = self.dictNumeros[self.codiCarrer]
-        completer = QCompleter(self.dictNumerosFiltre, self.leNumero)
-        completer.setFilterMode(QtCore.Qt.MatchStartsWith)
-        completer.setCaseSensitivity(QtCore.Qt.CaseInsensitive)
-        self.leNumero.setCompleter(completer)  
+        self.completerNumero = QCompleter(self.dictNumerosFiltre, self.leNumero)
+        self.completerNumero.setFilterMode(QtCore.Qt.MatchStartsWith)
+        self.completerNumero.setCaseSensitivity(QtCore.Qt.CaseInsensitive)
+        self.leNumero.setCompleter(self.completerNumero)  
 
     def trobatNumero(self):
-        txt = self.completer.currentCompletion()
+        txt = self.completerNumero.currentCompletion()
         self.leNumero.setText(txt)
         if txt != '': # and txt != self.numeroCarrer:
             self.iniAdrecaNumero()

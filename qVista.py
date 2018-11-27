@@ -105,7 +105,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.preparacioLlegenda()
         self.preparacioArbreDistrictes()
         self.preparacioCataleg()
-        # self.preparacioStreetView()
+        self.preparacioStreetView()
         # self.preparacioMapTips()
         self.preparacioImpressio()
         # self.preparacioGrafiques()
