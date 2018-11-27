@@ -138,6 +138,7 @@ class QvAtributs(QTabWidget):
             return path                        
         except Exception as e:
             print(str(e))
+            return None
 
 class QvTaulaAtributs(QgsAttributeTableView):
 
