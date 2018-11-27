@@ -6,7 +6,7 @@ from moduls.QvUbicacions import QvUbicacions
 from moduls.QvPrint import QvPrint
 from moduls.QvAnotacions import QvAnotacions
 from moduls.QvCanvas import QvCanvas
-from moduls.QvToolTip import QvToolTip
+# from moduls.QvToolTip import QvToolTip
 from moduls.QvEinesGrafiques import QvSeleccioElement, QvSeleccioPerPoligon, QvSeleccioCercle, QvSeleccioPunt
 from moduls.QvStreetView import QvStreetView
 from moduls.QvLlegenda import QvLlegenda
@@ -15,14 +15,15 @@ from moduls.QvMapeta import QvMapeta
 from moduls.QVCercadorAdreca import QCercadorAdreca
 from moduls.QVDistrictesBarris import QVDistrictesBarris
 from moduls.QvCatalegPetit import QvCataleg
-from moduls.QvVistaMapa import QvVistaMapa
-from moduls.QvWizard import QvWizard
+# from moduls.QvVistaMapa import QvVistaMapa
+# from moduls.QvWizard import QvWizard
 from moduls.QvApp import QvApp
 
-from moduls.QvPavimentacio import DockPavim
+# from moduls.QvPavimentacio import DockPavim
 
 from moduls.QvLectorCsv import QvLectorCsv
 global qV
+print ("Primer print")
 
 
 class QHLine(QFrame):
@@ -552,19 +553,19 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.llegenda.accions.afegirAccio('actTot', self.actFerGran)
         self.llegenda.clicatMenuContexte.connect(self.menuLlegenda)
 
-        self.vistaMapa1 = QvVistaMapa(self.llegenda)
-        self.vistaMapa2 = QvVistaMapa(self.llegenda)
-        self.vistaMapa3 = QvVistaMapa(self.llegenda)
+        # self.vistaMapa1 = QvVistaMapa(self.llegenda)
+        # self.vistaMapa2 = QvVistaMapa(self.llegenda)
+        # self.vistaMapa3 = QvVistaMapa(self.llegenda)
 
-        self.frameTemes = QFrame()
-        self.layoutFrameTemes = QHBoxLayout(self.frameTemes)
-        self.frameTemes.setLayout(self.layoutFrameTemes)
+        # self.frameTemes = QFrame()
+        # self.layoutFrameTemes = QHBoxLayout(self.frameTemes)
+        # self.frameTemes.setLayout(self.layoutFrameTemes)
 
-        self.layoutFrameTemes.addWidget(self.vistaMapa1)
-        self.layoutFrameTemes.addWidget(self.vistaMapa2)
-        self.layoutFrameTemes.addWidget(self.vistaMapa3)
-        self.layoutDelsCanvasExtra.addWidget(self.frameTemes)
-        self.frameTemes.hide()
+        # self.layoutFrameTemes.addWidget(self.vistaMapa1)
+        # self.layoutFrameTemes.addWidget(self.vistaMapa2)
+        # self.layoutFrameTemes.addWidget(self.vistaMapa3)
+        # self.layoutDelsCanvasExtra.addWidget(self.frameTemes)
+        # self.frameTemes.hide()
 
         # print(self.llegenda.temes())
         
@@ -2111,10 +2112,10 @@ def main(argv):
         # Idioma
         qVapp.carregaIdioma(app, 'ca')
 
-        app.setStyle(QStyleFactory.create('fusion'))
+        # app.setStyle(QStyleFactory.create('fusion'))
 
         # estil = EstilPropi('Fusion')   
-        app.setStyle('fusion')
+        # app.setStyle('fusion')
         
 
         # Splash image al començar el programa. La tancarem amb splash.finish(qV)

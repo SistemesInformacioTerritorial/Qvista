@@ -23,7 +23,7 @@ class QvBrowser(QWidget):
         self.parent = parent
         self.browser = QWebView()
         self.browser.setContentsMargins(0,0,0,0)
-        self.browser.setUrl(QUrl("http://www.qt.io"))
+        # self.browser.setUrl(QUrl("http://www.qt.io"))
         self.browser.resize(512, 375)
         self.browser.show()
         self.setContentsMargins(0,0,0,0)

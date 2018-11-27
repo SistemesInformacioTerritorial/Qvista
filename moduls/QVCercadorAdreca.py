@@ -73,7 +73,7 @@ class QCercadorAdreca(QObject):
                 reader = csv.DictReader(csvFile, delimiter=',')
                 for row in reader:
                     self.dictCarrers[row['NOM_OFICIAL']] = row['CODI_VIA']
-                    pass
+                    # pass
 
 
 
@@ -99,7 +99,7 @@ class QCercadorAdreca(QObject):
                 reader = csv.DictReader(csvFile, delimiter=',')
                 for row in reader:
                     self.dictNumeros[row['CODI_CARRER']][row['NUMPOST']] = row
-                    pass
+                    # pass
 
                 # splash_1.destroy()
                 return True
@@ -108,13 +108,16 @@ class QCercadorAdreca(QObject):
             return False
 
     def completarCarrer(self):
-        completer = QCompleter(self.dictCarrers, self.leCarrer)
-        completer.setFilterMode(QtCore.Qt.MatchContains)
-        completer.setCaseSensitivity(QtCore.Qt.CaseInsensitive)
-        self.leCarrer.setCompleter(completer)   
+        self.completerCarrer = QCompleter(self.dictCarrers, self.leCarrer)
+        self.completerCarrer.setFilterMode(QtCore.Qt.MatchContains)
+        self.completerCarrer.setCaseSensitivity(QtCore.Qt.CaseInsensitive)
+        self.leCarrer.setCompleter(self.completerCarrer)   
 
     def trobatCarrer(self):
+        txt = self.completerCarrer.currentCompletion()
+        self.leCarrer.setText(txt)
         txt = self.leCarrer.text()
+
         if txt != '':
             self.iniAdreca()
             if txt != self.nomCarrer:
@@ -142,14 +145,15 @@ class QCercadorAdreca(QObject):
 
     def completarNumero(self):
         self.dictNumerosFiltre = self.dictNumeros[self.codiCarrer]
-        completer = QCompleter(self.dictNumerosFiltre, self.leNumero)
-        completer.setFilterMode(QtCore.Qt.MatchStartsWith)
-        completer.setCaseSensitivity(QtCore.Qt.CaseInsensitive)
-        self.leNumero.setCompleter(completer)  
+        self.completerNumero = QCompleter(self.dictNumerosFiltre, self.leNumero)
+        self.completerNumero.setFilterMode(QtCore.Qt.MatchStartsWith)
+        self.completerNumero.setCaseSensitivity(QtCore.Qt.CaseInsensitive)
+        self.leNumero.setCompleter(self.completerNumero)  
 
 
     def trobatNumero(self):
-        txt = self.leNumero.text()
+        txt = self.completerNumero.currentCompletion()
+        self.leNumero.setText(txt)
         if txt != '': # and txt != self.numeroCarrer:
             self.iniAdrecaNumero()
             if self.nomCarrer != '':
