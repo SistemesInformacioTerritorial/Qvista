@@ -12,7 +12,7 @@ from moduls.QvStreetView import QvStreetView
 from moduls.QvLlegenda import QvLlegenda
 from moduls.QvAtributs import QvAtributs
 from moduls.QvMapeta import QvMapeta
-from moduls.QVCercadorAdreca import QCercadorAdreca
+from moduls.QVCercadorAdreca_old import QCercadorAdreca
 from moduls.QVDistrictesBarris import QVDistrictesBarris
 from moduls.QvCatalegPetit import QvCataleg
 from moduls.QvVistaMapa import QvVistaMapa
