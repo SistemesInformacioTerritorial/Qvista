@@ -77,13 +77,23 @@ class QCercadorAdreca(QObject):
             return False
 
     def completarCarrer(self):
-        completer = QCompleter(self.dictCarrers, self.leCarrer)
-        completer.setFilterMode(QtCore.Qt.MatchContains)
-        completer.setCaseSensitivity(QtCore.Qt.CaseInsensitive)
-        self.leCarrer.setCompleter(completer)   
+        self.completer = QCompleter(self.dictCarrers, self.leCarrer)
+        self.completer.setFilterMode(QtCore.Qt.MatchContains)
+        self.completer.setCaseSensitivity(QtCore.Qt.CaseInsensitive)
+        self.leCarrer.setCompleter(self.completer)   
+
+    def completarNumero(self):
+        self.dictNumerosFiltre = self.dictNumeros[self.codiCarrer]
+        self.completer = QCompleter(self.dictNumerosFiltre, self.leNumero)
+        self.completer.setFilterMode(QtCore.Qt.MatchStartsWith)
+        self.completer.setCaseSensitivity(QtCore.Qt.CaseInsensitive)
+        self.leNumero.setCompleter(self.completer)  
 
     def trobatCarrer(self):
-        txt = self.leCarrer.text()
+        print (self.completer.currentCompletion())
+        # txt = self.leCarrer.text()
+        txt = self.completer.currentCompletion()
+        self.leCarrer.setText(txt)
         if txt != '' and txt != self.nomCarrer:
             self.iniAdreca()
             if txt in self.dictCarrers:
@@ -99,7 +109,8 @@ class QCercadorAdreca(QObject):
         self.leNumero.setCompleter(completer)  
 
     def trobatNumero(self):
-        txt = self.leNumero.text()
+        txt = self.completer.currentCompletion()
+        self.leNumero.setText(txt)
         if txt != '': # and txt != self.numeroCarrer:
             self.iniAdrecaNumero()
             if self.nomCarrer != '' and txt in self.dictNumerosFiltre:
