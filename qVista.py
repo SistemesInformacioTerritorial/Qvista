@@ -393,7 +393,6 @@ class QVista(QMainWindow, Ui_MainWindow):
 
 
 
-        # atencion 
         self.boton_bajar= QPushButton()
         self.boton_bajar.clicked.connect(self.CopiarA_Ubicacions)
         self.boton_bajar.setIcon(QIcon('imatges/down3-512.png'))
@@ -402,6 +401,17 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.boton_bajar.setMinimumWidth(25)
         self.boton_bajar.setMaximumWidth(25)
         self.boton_bajar.setToolTip("Copiar aquest carrer i aquest número a l'arbre d'ubicacións")
+
+        #boton invoc_streer
+        self.boton_invocarStreetView= QPushButton()
+        self.boton_invocarStreetView.clicked.connect(self.invocarStreetView)
+        self.boton_invocarStreetView.setIcon(QIcon('imatges/littleMan.png'))
+        self.boton_invocarStreetView.setMinimumHeight(25)
+        self.boton_invocarStreetView.setMaximumHeight(25)
+        self.boton_invocarStreetView.setMinimumWidth(25)
+        self.boton_invocarStreetView.setMaximumWidth(25)
+        self.boton_invocarStreetView.setToolTip("Mostrar aquest carrer i aquest número en StreetView")
+
 
         self.layoutbottom.addWidget(QHLine())
         self.layoutbottom.addWidget(self.distBarris.view)
@@ -414,6 +424,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.layoutAdreca.addWidget(self.lblCercadorNum)
         self.layoutAdreca.addWidget(self.leNumero)
         self.layoutAdreca.addWidget(self.boton_bajar)
+        self.layoutAdreca.addWidget(self.boton_invocarStreetView)
 
 
         # llenamos splitter        
@@ -444,6 +455,24 @@ class QVista(QMainWindow, Ui_MainWindow):
     def CopiarA_Ubicacions(self):
         self.ubicacions.leUbicacions.setText(self.leCarrer.text()+"  "+self.leNumero.text())
         self.ubicacions._novaUbicacio()
+
+
+    # pillar las coordenadas y mandarlas a stretView
+    def invocarStreetView(self):
+        
+        xx=self.cAdrec.coordAdreca[0]
+        yy=self.cAdrec.coordAdreca[1]
+
+        # xx=430537.623
+        # yy=4583274.049
+        
+        if self.qvSv.qbrowser.isHidden():
+            self.qvSv.qbrowser.show()
+
+        if self.dwSV.isHidden():
+            self.dwSV.show()
+        self.qvSv.rp.llevame(xx,yy)
+        
         
     def preparacioTaulaAtributs(self):
         """ 
@@ -2083,6 +2112,7 @@ def main(argv):
         splash.setWindowFlags(Qt.WindowStaysOnTopHint | Qt.FramelessWindowHint)
         splash.setEnabled(True)
         splash.show()
+        app.processEvents()
 
         # Prova d'escriure sobre la imatge
         # splash.showMessage("<h1><font color='black'>Versió 0.1 - Work in progress</font></h1>", Qt.AlignTop | Qt.AlignCenter, Qt.white)

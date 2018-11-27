@@ -73,12 +73,36 @@ class QCercadorAdreca(QObject):
                 reader = csv.DictReader(csvFile, delimiter=',')
                 for row in reader:
                     self.dictCarrers[row['NOM_OFICIAL']] = row['CODI_VIA']
+                    pass
+
+
+
+
+
+            # try:
+            #     # Splash image al començar el programa. La tancarem amb splash.finish(qV)
+            #     # splash_pix_1 = QPixmap('cargandoDirecciones.png')
+            #     splash_pix_1 = QPixmap('qvistaLogo2.png')
+            #     splash_1 = QSplashScreen(splash_pix_1, Qt.WindowStaysOnTopHint)
+            #     splash_1.setWindowFlags(Qt.WindowStaysOnTopHint | Qt.FramelessWindowHint)
+            #     splash_1.setEnabled(True)
+            #     splash_1.showMessage('Cargando direcciones...')
+            #     splash_1.show()                
+            #     QApplication.processEvents()
+            # except:
+            #     pass
+
+            
+
 
             with open(self.__numerosCSV, encoding='utf-8', newline='') as csvFile:
                 reader = csv.DictReader(csvFile, delimiter=',')
                 for row in reader:
                     self.dictNumeros[row['CODI_CARRER']][row['NUMPOST']] = row
-            return True
+                    pass
+
+                # splash_1.destroy()
+                return True
         except:
             print('QCercadorAdreca.llegirAdrecesCSV(): ', sys.exc_info()[0], sys.exc_info()[1])
             return False
