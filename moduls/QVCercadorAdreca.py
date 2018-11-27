@@ -73,7 +73,7 @@ class QCercadorAdreca(QObject):
                 reader = csv.DictReader(csvFile, delimiter=',')
                 for row in reader:
                     self.dictCarrers[row['NOM_OFICIAL']] = row['CODI_VIA']
-                    pass
+                    # pass
 
 
 
@@ -99,7 +99,7 @@ class QCercadorAdreca(QObject):
                 reader = csv.DictReader(csvFile, delimiter=',')
                 for row in reader:
                     self.dictNumeros[row['CODI_CARRER']][row['NUMPOST']] = row
-                    pass
+                    # pass
 
                 # splash_1.destroy()
                 return True
