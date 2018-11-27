@@ -21,7 +21,7 @@ from moduls.QvApp import QvApp
 
 from moduls.QvPavimentacio import DockPavim
 
-from csvs import *
+from moduls.QvLectorCsv import QvLectorCsv
 global qV
 
 
@@ -990,7 +990,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.lytSeleccioGrafica.addWidget(self.lblNombreElementsSeleccionats)
         self.lytSeleccioGrafica.addWidget(self.lblCapaSeleccionada)
         self.lytSeleccioGrafica.addWidget(self.lwFieldsSelect)
-        self.lytSeleccioGrafica.addWidget(self.bs5)
+        # self.lytSeleccioGrafica.addWidget(self.bs5)
         self.lytSeleccioGrafica.addWidget(self.bs6)
         self.lytSeleccioGrafica.addWidget(self.twResultats)
 
@@ -1008,8 +1008,8 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.idsElementsSeleccionats = []
 
     def crearCsv(self):
-        self.taulesAtributs.desarCSV(self.llegenda.currentLayer(), selected = True)
-        self.finestraCSV = MyWindow('c:\QVISTA\districtes.csv')
+        nomTriat = self.taulesAtributs.desarCSV(self.llegenda.currentLayer(), selected = True)
+        self.finestraCSV = QvLectorCsv(nomTriat)
         self.finestraCSV.show()
 
     def calcularSeleccio(self):

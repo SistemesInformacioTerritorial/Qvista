@@ -134,7 +134,8 @@ class QvAtributs(QTabWidget):
                     else:
                         iterator = layer.getFeatures
                     for feature in iterator():
-                        writer.writerow(feature.attributes())                        
+                        writer.writerow(feature.attributes())
+            return path                        
         except Exception as e:
             print(str(e))
 
