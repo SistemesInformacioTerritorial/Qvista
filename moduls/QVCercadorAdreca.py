@@ -74,25 +74,7 @@ class QCercadorAdreca(QObject):
                 for row in reader:
                     self.dictCarrers[row['NOM_OFICIAL']] = row['CODI_VIA']
                     # pass
-
-
-
-
-
-            # try:
-            #     # Splash image al començar el programa. La tancarem amb splash.finish(qV)
-            #     # splash_pix_1 = QPixmap('cargandoDirecciones.png')
-            #     splash_pix_1 = QPixmap('qvistaLogo2.png')
-            #     splash_1 = QSplashScreen(splash_pix_1, Qt.WindowStaysOnTopHint)
-            #     splash_1.setWindowFlags(Qt.WindowStaysOnTopHint | Qt.FramelessWindowHint)
-            #     splash_1.setEnabled(True)
-            #     splash_1.showMessage('Cargando direcciones...')
-            #     splash_1.show()                
-            #     QApplication.processEvents()
-            # except:
-            #     pass
-
-            
+          
 
 
             with open(self.__numerosCSV, encoding='utf-8', newline='') as csvFile:
@@ -116,7 +98,7 @@ class QCercadorAdreca(QObject):
     def trobatCarrer(self):
         txt = self.completerCarrer.currentCompletion()
         self.leCarrer.setText(txt)
-        txt = self.leCarrer.text()
+        # txt = self.leCarrer.text()
 
         if txt != '':
             self.iniAdreca()
