@@ -1761,8 +1761,8 @@ class QVista(QMainWindow, Ui_MainWindow):
         pass
 
     def gestioSortida(self):
-        pass
- 
+        QvApp().logFi()
+
     def handleSave(self):
         self.table = self.taulesAtributs.widget(0)
         path,_ = QFileDialog.getSaveFileName(self, 'Guardar archivo', '', 'CSV(*.csv)')
@@ -2138,8 +2138,7 @@ def main(argv):
         # Tanquem la imatge splash.
         splash.finish(qV)
         
-        # TODO: Dona problemes
-        # app.aboutToQuit.connect(qV.gestioSortida())
+        app.aboutToQuit.connect(qV.gestioSortida)
 
 if __name__ == "__main__":
     main(sys.argv)
