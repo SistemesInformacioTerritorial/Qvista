@@ -2112,7 +2112,7 @@ def main(argv):
         # Idioma
         qVapp.carregaIdioma(app, 'ca')
 
-        # app.setStyle(QStyleFactory.create('fusion'))
+        app.setStyle(QStyleFactory.create('fusion'))
 
         # estil = EstilPropi('Fusion')   
         # app.setStyle('fusion')
