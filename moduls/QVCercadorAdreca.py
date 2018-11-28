@@ -128,6 +128,7 @@ class QCercadorAdreca(QObject):
                 for row in reader:
                     self.dictCarrers[row['NOM_OFICIAL']] = row['CODI_VIA']
                     # pass
+
             with open(self.__numerosCSV, encoding='utf-8', newline='') as csvFile:
                 reader = csv.DictReader(csvFile, delimiter=',')
                 for row in reader:
@@ -139,6 +140,7 @@ class QCercadorAdreca(QObject):
         except:
             print('QCercadorAdreca.llegirAdrecesCSV(): ', sys.exc_info()[0], sys.exc_info()[1])
             return False
+
 
 
     def activatNumero(self,txt):
@@ -153,6 +155,7 @@ class QCercadorAdreca(QObject):
             
             info="\""+self.nomCarrer+"\"  \"" +txt  +"\""
             self.sHanTrobatCoordenades.emit(0,info)                
+
 
 
     def trobatNumero(self):
