@@ -292,11 +292,11 @@ class QVista(QMainWindow, Ui_MainWindow):
         # self.bridge.setCanvasLayers()
 
     def canvasRefrescat(self):
-        print ('ara')
         if self.marcaLlocPosada:
             self.marcaLlocPosada = False
         else:
             self.canvas.scene().removeItem(self.marcaLloc)
+            
     def preparacioCalculadora(self):
         self.calculadora = QWidget()
 
