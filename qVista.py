@@ -643,6 +643,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         if rsc==0:
             self.canvas.setCenter(self.cAdrec.coordAdreca)
             self.canvas.zoomScale(1000)
+            self.canvas.scene().removeItem(self.marcaLloc)
             self.marcaLloc = QgsVertexMarker(self.canvas)
             self.marcaLloc.setCenter( self.cAdrec.coordAdreca )
             self.marcaLloc.setColor(QColor(255, 0, 0))
