@@ -50,7 +50,7 @@ class QvAtributs(QTabWidget):
                                 'flashSelection', 'zoomToSelection', 'showSelection',
                                 'invertSelection', 'removeSelection']
         self.menuAccions += ['separator', 
-                             'filterElements']
+                            'filterElements']
         if layer.subsetString() != '':
             self.menuAccions += ['removeFilter']
         self.menuAccions += ['saveToCSV']
@@ -80,7 +80,7 @@ class QvAtributs(QTabWidget):
             return
         # Si no se ha encontrado la tabla, añadirla
         taula = QvTaulaAtributs(self, layer, self.canvas)
-        i = self.addTab(taula, layer.name())
+        i = self.addTab(taula, taula.layerNom())
         taula.canviNomTaula.connect(self.setTabText)
         self.setCurrentIndex(i)
     
@@ -121,6 +121,24 @@ class QvAtributs(QTabWidget):
             self.modificatFiltreCapa.emit(layer)
         except Exception as e:
             print(str(e))
+
+    def desarCSV(self, layer, selected = False):
+        try:
+            path,_ = QtWidgets.QFileDialog.getSaveFileName(self, 'Desa dades a arxiu', '', 'CSV (*.csv)')
+            if path is not None:
+                with open(path, 'w', newline='') as stream:
+                    writer = csv.writer(stream, delimiter=';', quotechar='¨', quoting=csv.QUOTE_MINIMAL)
+                    writer.writerow(layer.fields().names())
+                    if selected:
+                        iterator = layer.getSelectedFeatures
+                    else:
+                        iterator = layer.getFeatures
+                    for feature in iterator():
+                        writer.writerow(feature.attributes())
+            return path                        
+        except Exception as e:
+            print(str(e))
+            return None
 
 class QvTaulaAtributs(QgsAttributeTableView):
 
@@ -342,21 +360,23 @@ class QvTaulaAtributs(QgsAttributeTableView):
             self.layerTab()
 
     def saveToCSV(self):
+        self.parent.desarCSV(self.layer, self.filter.filterMode() == QgsAttributeTableFilterModel.ShowSelected)
+
         # print('Num features/selected:', self.layer.featureCount(), self.layer.selectedFeatureCount())
-        try:
-            path,_ = QtWidgets.QFileDialog.getSaveFileName(self, 'Desa dades a arxiu', '', 'CSV (*.csv)')
-            if path is not None:
-                with open(path, 'w', newline='') as stream:
-                    writer = csv.writer(stream, delimiter=';', quotechar='¨', quoting=csv.QUOTE_MINIMAL)
-                    writer.writerow(self.layer.fields().names())
-                    if self.filter.filterMode() == QgsAttributeTableFilterModel.ShowSelected:
-                        iterator = self.layer.getSelectedFeatures
-                    else:
-                        iterator = self.layer.getFeatures
-                    for feature in iterator():
-                        writer.writerow(feature.attributes())                        
-        except Exception as e:
-            print(str(e))
+        # try:
+        #     path,_ = QtWidgets.QFileDialog.getSaveFileName(self, 'Desa dades a arxiu', '', 'CSV (*.csv)')
+        #     if path is not None:
+        #         with open(path, 'w', newline='') as stream:
+        #             writer = csv.writer(stream, delimiter=';', quotechar='¨', quoting=csv.QUOTE_MINIMAL)
+        #             writer.writerow(self.layer.fields().names())
+        #             if  self.filter.filterMode() == QgsAttributeTableFilterModel.ShowSelected:
+        #                 iterator = self.layer.getSelectedFeatures
+        #             else:
+        #                 iterator = self.layer.getFeatures
+        #             for feature in iterator():
+        #                 writer.writerow(feature.attributes())                        
+        # except Exception as e:
+        #     print(str(e))
 
 if __name__ == "__main__":
 

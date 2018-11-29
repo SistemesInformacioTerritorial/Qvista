@@ -1,12 +1,11 @@
 # coding:utf-8
-
 from  moduls.QvImports import *
 
 from moduls.QvUbicacions import QvUbicacions
 from moduls.QvPrint import QvPrint
 from moduls.QvAnotacions import QvAnotacions
 from moduls.QvCanvas import QvCanvas
-from moduls.QvToolTip import QvToolTip
+# from moduls.QvToolTip import QvToolTip
 from moduls.QvEinesGrafiques import QvSeleccioElement, QvSeleccioPerPoligon, QvSeleccioCercle, QvSeleccioPunt
 from moduls.QvStreetView import QvStreetView
 from moduls.QvLlegenda import QvLlegenda
@@ -14,12 +13,14 @@ from moduls.QvAtributs import QvAtributs
 from moduls.QvMapeta import QvMapeta
 from moduls.QVCercadorAdreca import QCercadorAdreca
 from moduls.QVDistrictesBarris import QVDistrictesBarris
-from moduls.QvCataleg import QvCataleg
-from moduls.QvVistaMapa import QvVistaMapa
-from moduls.QvWizard import QvWizard
+from moduls.QvCatalegPetit import QvCataleg
+# from moduls.QvVistaMapa import QvVistaMapa
+# from moduls.QvWizard import QvWizard
 from moduls.QvApp import QvApp
 
-from moduls.QvPavimentacio import DockPavim
+# from moduls.QvPavimentacio import DockPavim
+
+from moduls.QvLectorCsv import QvLectorCsv
 global qV
 
 
@@ -393,7 +394,6 @@ class QVista(QMainWindow, Ui_MainWindow):
 
 
 
-        # atencion 
         self.boton_bajar= QPushButton()
         self.boton_bajar.clicked.connect(self.CopiarA_Ubicacions)
         self.boton_bajar.setIcon(QIcon('imatges/down3-512.png'))
@@ -402,6 +402,17 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.boton_bajar.setMinimumWidth(25)
         self.boton_bajar.setMaximumWidth(25)
         self.boton_bajar.setToolTip("Copiar aquest carrer i aquest número a l'arbre d'ubicacións")
+
+        #boton invoc_streer
+        self.boton_invocarStreetView= QPushButton()
+        self.boton_invocarStreetView.clicked.connect(self.invocarStreetView)
+        self.boton_invocarStreetView.setIcon(QIcon('imatges/littleMan.png'))
+        self.boton_invocarStreetView.setMinimumHeight(25)
+        self.boton_invocarStreetView.setMaximumHeight(25)
+        self.boton_invocarStreetView.setMinimumWidth(25)
+        self.boton_invocarStreetView.setMaximumWidth(25)
+        self.boton_invocarStreetView.setToolTip("Mostrar aquest carrer i aquest número en StreetView")
+
 
         self.layoutbottom.addWidget(QHLine())
         self.layoutbottom.addWidget(self.distBarris.view)
@@ -414,6 +425,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.layoutAdreca.addWidget(self.lblCercadorNum)
         self.layoutAdreca.addWidget(self.leNumero)
         self.layoutAdreca.addWidget(self.boton_bajar)
+        self.layoutAdreca.addWidget(self.boton_invocarStreetView)
 
 
         # llenamos splitter        
@@ -444,6 +456,24 @@ class QVista(QMainWindow, Ui_MainWindow):
     def CopiarA_Ubicacions(self):
         self.ubicacions.leUbicacions.setText(self.leCarrer.text()+"  "+self.leNumero.text())
         self.ubicacions._novaUbicacio()
+
+
+    # pillar las coordenadas y mandarlas a stretView
+    def invocarStreetView(self):
+        
+        xx=self.cAdrec.coordAdreca[0]
+        yy=self.cAdrec.coordAdreca[1]
+
+        # xx=430537.623
+        # yy=4583274.049
+        
+        if self.qvSv.qbrowser.isHidden():
+            self.qvSv.qbrowser.show()
+
+        if self.dwSV.isHidden():
+            self.dwSV.show()
+        self.qvSv.rp.llevame(xx,yy)
+        
         
     def preparacioTaulaAtributs(self):
         """ 
@@ -521,19 +551,19 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.llegenda.accions.afegirAccio('actTot', self.actFerGran)
         self.llegenda.clicatMenuContexte.connect(self.menuLlegenda)
 
-        self.vistaMapa1 = QvVistaMapa(self.llegenda)
-        self.vistaMapa2 = QvVistaMapa(self.llegenda)
-        self.vistaMapa3 = QvVistaMapa(self.llegenda)
+        # self.vistaMapa1 = QvVistaMapa(self.llegenda)
+        # self.vistaMapa2 = QvVistaMapa(self.llegenda)
+        # self.vistaMapa3 = QvVistaMapa(self.llegenda)
 
-        self.frameTemes = QFrame()
-        self.layoutFrameTemes = QHBoxLayout(self.frameTemes)
-        self.frameTemes.setLayout(self.layoutFrameTemes)
+        # self.frameTemes = QFrame()
+        # self.layoutFrameTemes = QHBoxLayout(self.frameTemes)
+        # self.frameTemes.setLayout(self.layoutFrameTemes)
 
-        self.layoutFrameTemes.addWidget(self.vistaMapa1)
-        self.layoutFrameTemes.addWidget(self.vistaMapa2)
-        self.layoutFrameTemes.addWidget(self.vistaMapa3)
-        self.layoutDelsCanvasExtra.addWidget(self.frameTemes)
-        self.frameTemes.hide()
+        # self.layoutFrameTemes.addWidget(self.vistaMapa1)
+        # self.layoutFrameTemes.addWidget(self.vistaMapa2)
+        # self.layoutFrameTemes.addWidget(self.vistaMapa3)
+        # self.layoutDelsCanvasExtra.addWidget(self.frameTemes)
+        # self.frameTemes.hide()
 
         # print(self.llegenda.temes())
         
@@ -967,6 +997,9 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         self.bs5 = QPushButton('Calcular')
         self.bs5.clicked.connect(self.calcularSeleccio)
+        
+        self.bs6 = QPushButton('Crear CSV')
+        self.bs6.clicked.connect(self.crearCsv)
 
         self.twResultats = QTableWidget()
 
@@ -985,7 +1018,8 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.lytSeleccioGrafica.addWidget(self.lblNombreElementsSeleccionats)
         self.lytSeleccioGrafica.addWidget(self.lblCapaSeleccionada)
         self.lytSeleccioGrafica.addWidget(self.lwFieldsSelect)
-        self.lytSeleccioGrafica.addWidget(self.bs5)
+        # self.lytSeleccioGrafica.addWidget(self.bs5)
+        self.lytSeleccioGrafica.addWidget(self.bs6)
         self.lytSeleccioGrafica.addWidget(self.twResultats)
 
 
@@ -1001,12 +1035,18 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         self.idsElementsSeleccionats = []
 
+    def crearCsv(self):
+        nomTriat = self.taulesAtributs.desarCSV(self.llegenda.currentLayer(), selected = True)
+        self.finestraCSV = QvLectorCsv(nomTriat)
+        self.finestraCSV.show()
+
     def calcularSeleccio(self):
         layer = self.llegenda.currentLayer()
         taula=self.twResultats
         numeroFields=0
         fila=0
         columna=0
+        nombreElements = 0
         taula.setColumnCount(3)
         taula.setHorizontalHeaderLabels(['','Total', 'Mitjana'])
         nombreFieldsSeleccionats=0
@@ -1017,7 +1057,6 @@ class QVista(QMainWindow, Ui_MainWindow):
             total=0
             item = QTableWidgetItem(a.text())
             taula.setItem(fila+1,0,item)
-            nombreElements=0
             field=layer.fields().lookupField(a.text())
             # print (field)
             for feature in layer.selectedFeatures():
@@ -1034,7 +1073,7 @@ class QVista(QMainWindow, Ui_MainWindow):
             taula.setItem(fila+1,2,item)
             # print('Total: '+a.text()+": ",total)
             fila=fila+1
-        item = QTableWidgetItem("Elements seleccionats:")
+        item = QTableWidgetItem("Seleccionats:")
         taula.setItem(0,0,item)
         item = QTableWidgetItem(str(nombreElements))
         taula.setItem(0,1,item)
@@ -1048,7 +1087,9 @@ class QVista(QMainWindow, Ui_MainWindow):
             self.lblCapaSeleccionada.setText("Capa activa: "+ self.layerActiu.name())
             fields = self.layerActiu.fields()
             for field in fields:
-                if (field.typeName()!='String' and field.typeName()!='Date' and field.typeName()!='Date'):
+                print(field.typeName())
+                # if (field.typeName()!='String' and field.typeName()!='Date' and field.typeName()!='Date'):
+                if (field.typeName()=='Real' or field.typeName()=='Integer64'):
                     self.lwFieldsSelect.addItem(field.name())
         else:
             self.lblCapaSeleccionada.setText("No hi ha capa activa.")
@@ -1332,7 +1373,6 @@ class QVista(QMainWindow, Ui_MainWindow):
     def ferGran(self):
         # print('JOLA')
 
-
         if self.mapaMaxim:
             self.frameLlegenda.show()
             # self.frame_19.show()
@@ -1343,7 +1383,6 @@ class QVista(QMainWindow, Ui_MainWindow):
             self.layoutFrameLlegenda.addWidget(self.llegenda)
             self._menuBarShadow.setEnabled(True)
             self.botoMaxim.setIcon(QIcon('imatges/arrow-expand.png'))
-            
         else:
             self.frameLlegenda.hide()
             # self.frame_19.hide()
@@ -1720,8 +1759,8 @@ class QVista(QMainWindow, Ui_MainWindow):
         pass
 
     def gestioSortida(self):
-        pass
- 
+        QvApp().logFi()
+
     def handleSave(self):
         self.table = self.taulesAtributs.widget(0)
         path,_ = QFileDialog.getSaveFileName(self, 'Guardar archivo', '', 'CSV(*.csv)')
@@ -2074,7 +2113,7 @@ def main(argv):
         app.setStyle(QStyleFactory.create('fusion'))
 
         # estil = EstilPropi('Fusion')   
-        app.setStyle('fusion')
+        # app.setStyle('fusion')
         
 
         # Splash image al començar el programa. La tancarem amb splash.finish(qV)
@@ -2083,6 +2122,7 @@ def main(argv):
         splash.setWindowFlags(Qt.WindowStaysOnTopHint | Qt.FramelessWindowHint)
         splash.setEnabled(True)
         splash.show()
+        app.processEvents()
 
         # Prova d'escriure sobre la imatge
         # splash.showMessage("<h1><font color='black'>Versió 0.1 - Work in progress</font></h1>", Qt.AlignTop | Qt.AlignCenter, Qt.white)
@@ -2096,8 +2136,7 @@ def main(argv):
         # Tanquem la imatge splash.
         splash.finish(qV)
         
-        # TODO: Dona problemes
-        # app.aboutToQuit.connect(qV.gestioSortida())
+        app.aboutToQuit.connect(qV.gestioSortida)
 
 if __name__ == "__main__":
     main(sys.argv)
