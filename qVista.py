@@ -112,7 +112,8 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         # Eina inicial del mapa
         self.canvas.panCanvas()
-        
+        self.marcaLloc = QgsVertexMarker(self.canvas)
+        self.marcaLlocPosada = False
         # Guardem el dashboard actiu per poder activar/desactivar després els dashboards
         self.dashboardActiu = [self.canvas, self.frameLlegenda, self.mapeta]
 
@@ -250,6 +251,7 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         self.canvas.xyCoordinates.connect(self.showXY)     
         self.canvas.scaleChanged.connect(self.showScale)   
+        self.canvas.mapCanvasRefreshed.connect(self.canvasRefrescat)
 
         # self.layoutCanvas = QVBoxLayout(self.canvas)
         # self.layoutCanvas.setContentsMargins(0,0,0,0)
@@ -289,6 +291,12 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.bridge = QgsLayerTreeMapCanvasBridge(self.root, self.canvas)
         # self.bridge.setCanvasLayers()
 
+    def canvasRefrescat(self):
+        print ('ara')
+        if self.marcaLlocPosada:
+            self.marcaLlocPosada = False
+        else:
+            self.canvas.scene().removeItem(self.marcaLloc)
     def preparacioCalculadora(self):
         self.calculadora = QWidget()
 
@@ -635,7 +643,14 @@ class QVista(QMainWindow, Ui_MainWindow):
         if rsc==0:
             self.canvas.setCenter(self.cAdrec.coordAdreca)
             self.canvas.zoomScale(1000)
-            self.canvas.refresh()
+            self.marcaLloc = QgsVertexMarker(self.canvas)
+            self.marcaLloc.setCenter( self.cAdrec.coordAdreca )
+            self.marcaLloc.setColor(QColor(255, 0, 0))
+            self.marcaLloc.setIconSize(15)
+            self.marcaLloc.setIconType(QgsVertexMarker.ICON_BOX) # or ICON_CROSS, ICON_X
+            self.marcaLloc.setPenWidth(3)
+            self.marcaLloc.show()
+            self.marcaLlocPosada = True
         else:
             msg = QMessageBox()
             msg.setIcon(QMessageBox.Warning)
