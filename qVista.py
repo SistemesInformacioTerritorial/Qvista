@@ -1,5 +1,4 @@
 # coding:utf-8
-
 from  moduls.QvImports import *
 
 from moduls.QvUbicacions import QvUbicacions
