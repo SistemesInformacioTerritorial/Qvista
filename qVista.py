@@ -1,6 +1,5 @@
 # coding:utf-8
 
-print ("Primer print")
 from  moduls.QvImports import *
 
 from moduls.QvUbicacions import QvUbicacions
@@ -24,8 +23,6 @@ from moduls.QvApp import QvApp
 
 from moduls.QvLectorCsv import QvLectorCsv
 global qV
-
-print ("Primer print")
 
 
 class QHLine(QFrame):
