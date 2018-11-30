@@ -481,6 +481,21 @@ class QVista(QMainWindow, Ui_MainWindow):
         if self.dwSV.isHidden():
             self.dwSV.show()
         self.qvSv.rp.llevame(xx,yy)
+
+
+        self.canvas.scene().removeItem(self.marcaLloc)
+
+        self.marcaLloc = QgsVertexMarker(self.canvas)
+        self.marcaLloc.setCenter( self.cAdrec.coordAdreca )
+        self.marcaLloc.setColor(QColor(255, 0, 0))
+        self.marcaLloc.setIconSize(15)
+        self.marcaLloc.setIconType(QgsVertexMarker.ICON_BOX) # or ICON_CROSS, ICON_X
+        self.marcaLloc.setPenWidth(3)
+        self.marcaLloc.show()
+
+        self.marcaLlocPosada = True
+
+
         
         
     def preparacioTaulaAtributs(self):
@@ -637,13 +652,15 @@ class QVista(QMainWindow, Ui_MainWindow):
             self.canvas.scene().removeItem(self.qvSv.m)
         else:
             pass
-     
+
     def trobatNumero_oNo(self,rsc,info_rsc):
         
         if rsc==0:
             self.canvas.setCenter(self.cAdrec.coordAdreca)
             self.canvas.zoomScale(1000)
+            # colocación de marca (cuadradito) en lugar de ubicacion
             self.canvas.scene().removeItem(self.marcaLloc)
+
             self.marcaLloc = QgsVertexMarker(self.canvas)
             self.marcaLloc.setCenter( self.cAdrec.coordAdreca )
             self.marcaLloc.setColor(QColor(255, 0, 0))
@@ -651,6 +668,7 @@ class QVista(QMainWindow, Ui_MainWindow):
             self.marcaLloc.setIconType(QgsVertexMarker.ICON_BOX) # or ICON_CROSS, ICON_X
             self.marcaLloc.setPenWidth(3)
             self.marcaLloc.show()
+
             self.marcaLlocPosada = True
         else:
             msg = QMessageBox()

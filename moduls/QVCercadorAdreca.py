@@ -68,7 +68,7 @@ class QCercadorAdreca(QObject):
 
     def activatCarrer(self, carrer):
         self.carrerActivat = True
-        print(carrer)
+        # print(carrer)
         self.leCarrer.setText(carrer)
         self.iniAdreca()
         if carrer in self.dictCarrers:
@@ -76,6 +76,10 @@ class QCercadorAdreca(QObject):
             self.codiCarrer = self.dictCarrers[self.nomCarrer]
             self.prepararCompleterNumero()
             self.focusANumero()
+        else:
+            # info="\""+txt+"\""
+            info= "ERROR >> [1]" 
+            self.sHanTrobatCoordenades.emit(1,info) #adreça vacia
 
     def trobatCarrer(self):
         self.carrerActivat = False
@@ -93,19 +97,21 @@ class QCercadorAdreca(QObject):
                         self.prepararCompleterNumero()
                         self.focusANumero()
                     else:
-                        info="\""+txt+"\""
-                        info="Has introduït: "+info+ "\nCarrer incorrecte [4]"
-                        self.sHanTrobatCoordenades.emit(4,info) #direccion no está en diccicionario
+                         # info="\""+txt+"\""
+                        info="ERROR >> [2]"
+                        self.sHanTrobatCoordenades.emit(2,info) #direccion no está en diccicionario
                         self.iniAdreca()
                 else:
-                    info="\""+txt+"\""
-                    info="Oops! \nTorna a introduir l'adreça i després el número [5]"
-                    self.sHanTrobatCoordenades.emit(5,info)    #nunca
+                     # info="\""+txt+"\""
+                    # info="Oops! \nTorna a introduir l'adreça i després el número [5]"
+                    info="ERROR >> [3]"
+                    self.sHanTrobatCoordenades.emit(3,info)    #nunca
             else:
-                info="\""+txt+"\""
-                info= "No s'ha trobat el carrer" 
-                self.sHanTrobatCoordenades.emit(6,info) #adreça vacia
-                
+                # info="\""+txt+"\""
+                # info= "No s'ha trobat el carrer" 
+                info="ERROR >> [4]"
+                self.sHanTrobatCoordenades.emit(4,info) #adreça vac       
+                         
     def llegirAdreces(self):
         if self.origen == 'CSV':
             ok = self.llegirAdrecesCSV()
@@ -141,8 +147,6 @@ class QCercadorAdreca(QObject):
             print('QCercadorAdreca.llegirAdrecesCSV(): ', sys.exc_info()[0], sys.exc_info()[1])
             return False
 
-
-
     def activatNumero(self,txt):
         self.leNumero.setText(txt)
         self.iniAdrecaNumero()
@@ -154,54 +158,69 @@ class QCercadorAdreca(QObject):
                                             float(self.infoAdreca['ETRS89_COORD_Y']))
                 self.leNumero.clearFocus()
                 
-                info="\""+self.nomCarrer+"\"  \"" +txt  +"\""
+                # info="\""+self.nomCarrer+"\"  \"" +txt  +"\""
+                info="[0]"
                 self.sHanTrobatCoordenades.emit(0,info)  
         else :
-            # mensaje error
-            pass             
-
-
+            # info="\""+self.nomCarrer+"\"  \"" +txt  +"\""
+            # info="Has introduït: "+info+ " \nNúmero inexistent/incorrecte [9]"
+            info="ERROR >> [5]"
+            self.sHanTrobatCoordenades.emit(5,info)  #numero          
 
     def trobatNumero(self):
         
-        if self.leCarrer.text() in self.dictCarrers:
-            txt = self.completerNumero.currentCompletion()
-            self.leNumero.setText(txt)
-            if txt != '': # and txt != self.numeroCarrer:
-                self.iniAdrecaNumero()
-                if self.nomCarrer != '':
-                    if  txt in self.dictNumerosFiltre:
-                        self.numeroCarrer = txt
-                        self.infoAdreca = self.dictNumerosFiltre[self.numeroCarrer]
-                        self.coordAdreca = QgsPointXY(float(self.infoAdreca['ETRS89_COORD_X']), \
-                                                    float(self.infoAdreca['ETRS89_COORD_Y']))
-                        self.leNumero.clearFocus()
-                        
-                        info="\""+self.nomCarrer+"\"  \"" +txt  +"\""
-                        self.sHanTrobatCoordenades.emit(0,info)                
+        try:
+            if self.leCarrer.text() in self.dictCarrers:
+                
+                txt = self.completerNumero.currentCompletion()
+                self.leNumero.setText(txt)
+                if txt != '': # and txt != self.numeroCarrer:
+                    self.iniAdrecaNumero()
+                    if self.nomCarrer != '':
+                        if  txt in self.dictNumerosFiltre:
+                            self.numeroCarrer = txt
+                            self.infoAdreca = self.dictNumerosFiltre[self.numeroCarrer]
+                            self.coordAdreca = QgsPointXY(float(self.infoAdreca['ETRS89_COORD_X']), \
+                                                        float(self.infoAdreca['ETRS89_COORD_Y']))
+                            self.leNumero.clearFocus()
+                            info="[0]"
+                            # info="\""+self.nomCarrer+"\"  \"" +txt  +"\""
+                            self.sHanTrobatCoordenades.emit(0,info)                
+                        else:
+                            # info="\""+self.nomCarrer+"\"  \"" +txt  +"\""
+                            # info="Has introduït: "+info+ " \nNúmero inexistent/incorrecte [1]"
+                            info="ERROR >> [6]"
+                            self.sHanTrobatCoordenades.emit(6,info)  #numero no está en diccicionario
                     else:
-                        info="\""+self.nomCarrer+"\"  \"" +txt  +"\""
-                        info="Has introduït: "+info+ " \nNúmero inexistent/incorrecte [1]"
-                        self.sHanTrobatCoordenades.emit(1,info)  #numero no está en diccicionario
+                        # info="\""+self.nomCarrer+"\"  \"" +txt  +"\""
+                        # info= "Oops! \nTorna a introduir l'adreça i després el número [2]"
+                        info="ERROR >> [7]"
+                        self.sHanTrobatCoordenades.emit(7,info) #adreça vacia  nunca
                 else:
-                    info="\""+self.nomCarrer+"\"  \"" +txt  +"\""
-                    info= "Oops! \nTorna a introduir l'adreça i després el número [2]"
-                    self.sHanTrobatCoordenades.emit(2,info) #adreça vacia  nunca
+                    # info="\""+self.nomCarrer+"\"  \"" +txt  +"\""
+                    # info= literal= "Has introduït: "+info+ " \nNúmero en blanc [3]"
+                    info="ERROR >> [8]"
+                    self.sHanTrobatCoordenades.emit(8,info)   #numero en blanco
             else:
-                info="\""+self.nomCarrer+"\"  \"" +txt  +"\""
-                info= literal= "Has introduït: "+info+ " \nNúmero en blanc [3]"
-                self.sHanTrobatCoordenades.emit(3,info)   #numero en blanco
-        else:
-            self.leNumero.clear()
-            #mostrar error
-            pass
+                self.leNumero.clear()
+                # info="\""+self.nomCarrer+"\"  \"" +txt  +"\""
+                # info= literal= "Has introduït: "+info+ " \nNúmero en blanc [7]"
+                info="ERROR >> [9]"
+                self.sHanTrobatCoordenades.emit(9,info)   #numero en blanco
+        except: 
             
+            msg = QMessageBox()
+            msg.setIcon(QMessageBox.Warning)
+            info_rsc= 'ERROR: '+ str(sys.exc_info()[0])
+            msg.setText(info_rsc)
+            # msg.setInformativeText("OK para salir del programa \nCANCEL para seguir en el programa")
+            msg.setWindowTitle("qVista >> QVCercadorAdreca>> trobatNumero")
+            
+            msg.setStandardButtons(QMessageBox.Close)
+            retval = msg.exec_()
 
     def focusANumero(self):
         self.leNumero.setFocus()
-
-
-        
 
     def esborrarNumero(self):
         self.leNumero.clear()
