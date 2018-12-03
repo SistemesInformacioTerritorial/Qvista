@@ -8,7 +8,6 @@ from pathlib import Path
 import sys
 import getpass
 import uuid
-import lib
 
 _DB_QVISTA = dict()
 
@@ -39,18 +38,11 @@ _PROXY = {
     'Port': 8080
 }
 
-def _fatalError(type, value, tb):    
-    # QvApp().logRegistre('LOG_ERROR', traceback.print_tb(tb, limit=1000))
-    print('Error:', type, value)
-
-sys.excepthook = _fatalError
-
 class QvApp(Singleton):
 
     def __init__(self):
         if hasattr(self, 'entorn'): # Solo se inicializa una vez
             return
-        
         self.entorn = self.calcEntorn()         # 'DSV' o 'PRO'
         self.dbQvista = _DB_QVISTA[self.entorn] # Conexión a Oracle según entorno
         self.usuari = getpass.getuser().upper() # Usuario de red

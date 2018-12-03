@@ -1,4 +1,5 @@
 # coding:utf-8
+
 from  moduls.QvImports import *
 
 from moduls.QvUbicacions import QvUbicacions
@@ -22,6 +23,7 @@ from moduls.QvApp import QvApp
 
 from moduls.QvLectorCsv import QvLectorCsv
 global qV
+print ("Primer print")
 
 
 class QHLine(QFrame):
@@ -112,8 +114,7 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         # Eina inicial del mapa
         self.canvas.panCanvas()
-        self.marcaLloc = QgsVertexMarker(self.canvas)
-        self.marcaLlocPosada = False
+        
         # Guardem el dashboard actiu per poder activar/desactivar després els dashboards
         self.dashboardActiu = [self.canvas, self.frameLlegenda, self.mapeta]
 
@@ -251,7 +252,6 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         self.canvas.xyCoordinates.connect(self.showXY)     
         self.canvas.scaleChanged.connect(self.showScale)   
-        self.canvas.mapCanvasRefreshed.connect(self.canvasRefrescat)
 
         # self.layoutCanvas = QVBoxLayout(self.canvas)
         # self.layoutCanvas.setContentsMargins(0,0,0,0)
@@ -291,12 +291,6 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.bridge = QgsLayerTreeMapCanvasBridge(self.root, self.canvas)
         # self.bridge.setCanvasLayers()
 
-    def canvasRefrescat(self):
-        if self.marcaLlocPosada:
-            self.marcaLlocPosada = False
-        else:
-            self.canvas.scene().removeItem(self.marcaLloc)
-            
     def preparacioCalculadora(self):
         self.calculadora = QWidget()
 
@@ -481,21 +475,6 @@ class QVista(QMainWindow, Ui_MainWindow):
         if self.dwSV.isHidden():
             self.dwSV.show()
         self.qvSv.rp.llevame(xx,yy)
-
-
-        self.canvas.scene().removeItem(self.marcaLloc)
-
-        self.marcaLloc = QgsVertexMarker(self.canvas)
-        self.marcaLloc.setCenter( self.cAdrec.coordAdreca )
-        self.marcaLloc.setColor(QColor(255, 0, 0))
-        self.marcaLloc.setIconSize(15)
-        self.marcaLloc.setIconType(QgsVertexMarker.ICON_BOX) # or ICON_CROSS, ICON_X
-        self.marcaLloc.setPenWidth(3)
-        self.marcaLloc.show()
-
-        self.marcaLlocPosada = True
-
-
         
         
     def preparacioTaulaAtributs(self):
@@ -652,24 +631,13 @@ class QVista(QMainWindow, Ui_MainWindow):
             self.canvas.scene().removeItem(self.qvSv.m)
         else:
             pass
-
+     
     def trobatNumero_oNo(self,rsc,info_rsc):
         
         if rsc==0:
             self.canvas.setCenter(self.cAdrec.coordAdreca)
             self.canvas.zoomScale(1000)
-            # colocación de marca (cuadradito) en lugar de ubicacion
-            self.canvas.scene().removeItem(self.marcaLloc)
-
-            self.marcaLloc = QgsVertexMarker(self.canvas)
-            self.marcaLloc.setCenter( self.cAdrec.coordAdreca )
-            self.marcaLloc.setColor(QColor(255, 0, 0))
-            self.marcaLloc.setIconSize(15)
-            self.marcaLloc.setIconType(QgsVertexMarker.ICON_BOX) # or ICON_CROSS, ICON_X
-            self.marcaLloc.setPenWidth(3)
-            self.marcaLloc.show()
-
-            self.marcaLlocPosada = True
+            self.canvas.refresh()
         else:
             msg = QMessageBox()
             msg.setIcon(QMessageBox.Warning)
@@ -1793,8 +1761,8 @@ class QVista(QMainWindow, Ui_MainWindow):
         pass
 
     def gestioSortida(self):
-        QvApp().logFi()
-
+        pass
+ 
     def handleSave(self):
         self.table = self.taulesAtributs.widget(0)
         path,_ = QFileDialog.getSaveFileName(self, 'Guardar archivo', '', 'CSV(*.csv)')
@@ -2170,7 +2138,8 @@ def main(argv):
         # Tanquem la imatge splash.
         splash.finish(qV)
         
-        app.aboutToQuit.connect(qV.gestioSortida)
+        # TODO: Dona problemes
+        # app.aboutToQuit.connect(qV.gestioSortida())
 
 if __name__ == "__main__":
     main(sys.argv)
