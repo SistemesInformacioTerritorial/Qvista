@@ -29,7 +29,7 @@ class QvSeleccioPunt(QgsMapTool):
         # if layerList: 
         #     layer = layerList[0]
         point = self.canvas.getCoordinateTransform().toMapCoordinates(x, y)
-        radius = 20
+        radius = 10
         rect = QgsRectangle(point.x() - radius, point.y() - radius, point.x() + radius, point.y() + radius)
         if layer:
             it = layer.getFeatures(QgsFeatureRequest().setFilterRect(rect))
