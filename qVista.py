@@ -392,7 +392,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.lblCercadorCarrer = QLabel('    Carrer:')    #etiqueta Carrer
         self.lblCercadorNum = QLabel('Num:')              #etiqueta Num        
         self.leCarrer=QLineEdit()                           #Edit calle
-        self.leCarrer.setToolTip('Introdueix adreça, selecciona de la llista i prem RETURN')
+        self.leCarrer.setToolTip('Introdueix adreça i selecciona de la llista')
         self.leCarrer.setMinimumWidth(200) 
         self.leNumero=QLineEdit()                           #Edit numero
         self.leNumero.setToolTip('Introdueix número, selecciona de la llista i prem RETURN')
