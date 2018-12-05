@@ -14,6 +14,7 @@ from moduls.QvMapeta import QvMapeta
 from moduls.QVCercadorAdreca import QCercadorAdreca
 from moduls.QVDistrictesBarris import QVDistrictesBarris
 from moduls.QvCatalegPetit import QvCataleg
+from moduls.QvPlatges import QvPlatges
 # from moduls.QvVistaMapa import QvVistaMapa
 # from moduls.QvWizard import QvWizard
 from moduls.QvApp import QvApp
@@ -108,6 +109,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.preparacioImpressio()
         # self.preparacioGrafiques()
         self.preparacioSeleccio()
+        self.preparacioEntorns()
         self.prepararCercador = True
 
         # Eina inicial del mapa
@@ -989,9 +991,17 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.actPavimentacio = QAction("Pavimentació", self)
         self.actPavimentacio.setStatusTip("Pavimentació")
         self.actPavimentacio.triggered.connect(self.pavimentacio)
+        self.actPlatges = QAction("Pavimentació", self)
+        self.actPlatges.setStatusTip("Pavimentació")
+        self.actPlatges.triggered.connect(self.platges)
+
         self.actPropietatsLayer = QAction("Propietats de la capa", self)
         self.actPropietatsLayer.setStatusTip("Propietats de la capa")
         self.actPropietatsLayer.triggered.connect(self.propietatsLayer)
+
+    def platges(self):
+        self.platges = QvPlatges()
+        self.platges.show()
 
     def preparacioSeleccio(self):
 
@@ -1283,6 +1293,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.menuFuncions.addAction(self.actObrirBrowserGrafiques)
         self.menuFuncions.addAction(self.actBicing)
         self.menuFuncions.addAction(self.actPavimentacio)
+        self.menuFuncions.addAction(self.actPlatges)
         
     def test(self):
         self.handleSave()
@@ -2160,7 +2171,7 @@ def main(argv):
         splash.setWindowFlags(Qt.WindowStaysOnTopHint | Qt.FramelessWindowHint)
         splash.setEnabled(True)
         splash.show()
-        app.processEvents()
+        # app.processEvents()
 
         # Prova d'escriure sobre la imatge
         # splash.showMessage("<h1><font color='black'>Versió 0.1 - Work in progress</font></h1>", Qt.AlignTop | Qt.AlignCenter, Qt.white)
