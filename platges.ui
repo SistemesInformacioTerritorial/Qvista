@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1128</width>
-    <height>722</height>
+    <width>1644</width>
+    <height>889</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -18,8 +18,8 @@
     <rect>
      <x>-10</x>
      <y>90</y>
-     <width>1151</width>
-     <height>281</height>
+     <width>1651</width>
+     <height>481</height>
     </rect>
    </property>
    <property name="text">
@@ -35,8 +35,8 @@
   <widget class="QPushButton" name="pbSomorrostro1">
    <property name="geometry">
     <rect>
-     <x>320</x>
-     <y>220</y>
+     <x>480</x>
+     <y>260</y>
      <width>51</width>
      <height>31</height>
     </rect>
@@ -58,8 +58,8 @@
   <widget class="QPushButton" name="pbSomorrostro2">
    <property name="geometry">
     <rect>
-     <x>260</x>
-     <y>220</y>
+     <x>420</x>
+     <y>310</y>
      <width>51</width>
      <height>31</height>
     </rect>
@@ -81,8 +81,8 @@
   <widget class="QPushButton" name="pbPort2">
    <property name="geometry">
     <rect>
-     <x>440</x>
-     <y>240</y>
+     <x>630</x>
+     <y>330</y>
      <width>51</width>
      <height>31</height>
     </rect>
@@ -104,8 +104,8 @@
   <widget class="QPushButton" name="pbMarBella">
    <property name="geometry">
     <rect>
-     <x>720</x>
-     <y>190</y>
+     <x>1050</x>
+     <y>260</y>
      <width>51</width>
      <height>31</height>
     </rect>
@@ -127,8 +127,8 @@
   <widget class="QPushButton" name="pbPort1">
    <property name="geometry">
     <rect>
-     <x>380</x>
-     <y>240</y>
+     <x>540</x>
+     <y>340</y>
      <width>51</width>
      <height>31</height>
     </rect>
@@ -168,10 +168,10 @@
   <widget class="QLabel" name="lblCamera">
    <property name="geometry">
     <rect>
-     <x>530</x>
-     <y>260</y>
-     <width>571</width>
-     <height>431</height>
+     <x>790</x>
+     <y>300</y>
+     <width>831</width>
+     <height>571</height>
     </rect>
    </property>
    <property name="text">
@@ -184,8 +184,8 @@
   <widget class="QPushButton" name="pbNovaIcaria">
    <property name="geometry">
     <rect>
-     <x>490</x>
-     <y>200</y>
+     <x>710</x>
+     <y>280</y>
      <width>51</width>
      <height>31</height>
     </rect>

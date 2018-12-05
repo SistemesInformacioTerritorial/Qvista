@@ -1,8 +1,11 @@
 # coding:utf-8
 
 from moduls.QvImports import *
-from moduls.QvEinesGrafiques import QvSeleccioElement
+# from moduls.QvEinesGrafiques import QvSeleccioElement
+from qgis.gui import QgsMapCanvas
+from qgis.PyQt.QtWidgets import QFrame
 from moduls.QvApp import QvApp
+from qgis.core.contextmanagers import qgisapp
 
 
 class QvCanvas(QgsMapCanvas):
@@ -238,10 +241,15 @@ class Marc(QFrame):
         # painter.end()
 
 if __name__ == "__main__":
+    from qgis.core import QgsProject
+    from qgis.gui import  QgsLayerTreeMapCanvasBridge
+    from qgis.PyQt.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QSpacerItem, QSizePolicy
+   
+
     projecteInicial='../dades/projectes/BCN11_nord.qgs'
 
     with qgisapp() as app:
-        app.setStyle(QStyleFactory.create('fusion'))
+        # app.setStyle(QStyleFactory.create('fusion'))
 
         llistaBotons = ['centrar', 'zoomIn', 'zoomOut', 'panning']
         widget = QWidget()

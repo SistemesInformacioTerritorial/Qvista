@@ -1,13 +1,20 @@
 
+print ('Inici')
 from qgis.core import *
+print ('core')
 from qgis.gui import *
+print ('gui')
 
 from qgis.core.contextmanagers import qgisapp
 
 from qgis.PyQt.QtCore import *
+print ('qtcore')
 from qgis.PyQt.QtGui import *
+print ('qtgui')
 from qgis.PyQt.QtWidgets import *
+print ('qtwidgets')
 from qgis.PyQt import QtSql
+print ('qtsql')
 from qgis.PyQt.QtXml import QDomDocument, QDomElement, QDomAttr, QDomText    
 from qgis.PyQt.QtCore import pyqtSignal
 
@@ -30,8 +37,8 @@ from configuracioQvista import *
 # Plantilla del qVista
 from cubista3 import Ui_MainWindow
 
-import plotly
-import plotly.graph_objs as go
+# import plotly
+# import plotly.graph_objs as go
 
 
 

@@ -11,6 +11,7 @@ import urllib.request
 class QvPlatges(QFrame):
     def __init__(self, qV = None):
         QFrame.__init__(self)
+        self.qV = qV
         self.ui = Ui_Form()
         self.ui.setupUi(self)
         self.ui.pbMarBella.clicked.connect(self.mostraMarBella)
@@ -19,6 +20,8 @@ class QvPlatges(QFrame):
         self.ui.pbSomorrostro1.clicked.connect(self.mostraSomorrostro1)
         self.ui.pbSomorrostro2.clicked.connect(self.mostraSomorrostro2)
         self.ui.pbNovaIcaria.clicked.connect(self.mostraNovaIcaria)
+        if self.qV is not None:
+            self.qV.lblTitolProjecte.setText('Estat de les platges de la ciutat')
 
     def mostraMarBella(self):
         # self.ui.browser.setUrl(QUrl('http://www.bcn.cat/dades/platges/images/webcam_5.jpg'))

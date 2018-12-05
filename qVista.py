@@ -1,29 +1,46 @@
 # coding:utf-8
+print ('abans moduls')
 from  moduls.QvImports import *
+print ('imports')
 
 from moduls.QvUbicacions import QvUbicacions
+print ('ubi')
 from moduls.QvPrint import QvPrint
-from moduls.QvAnotacions import QvAnotacions
+print ('print')
+# from moduls.QvAnotacions import QvAnotacions
+# print ('anot')
 from moduls.QvCanvas import QvCanvas
+print ('canvas')
 # from moduls.QvToolTip import QvToolTip
 from moduls.QvEinesGrafiques import QvSeleccioElement, QvSeleccioPerPoligon, QvSeleccioCercle, QvSeleccioPunt
+
+print ('graf')
 from moduls.QvStreetView import QvStreetView
+print ('sv')
 from moduls.QvLlegenda import QvLlegenda
+print ('lleg')
 from moduls.QvAtributs import QvAtributs
+print ('atr')
 from moduls.QvMapeta import QvMapeta
+print ('mapeta')
 from moduls.QVCercadorAdreca import QCercadorAdreca
+print ('cerc')
 from moduls.QVDistrictesBarris import QVDistrictesBarris
+print ('distbar')
 from moduls.QvCatalegPetit import QvCataleg
+print ('cat')
 # from entorns.QvPlatges import QvPlatges
 # from moduls.QvVistaMapa import QvVistaMapa
 # from moduls.QvWizard import QvWizard
 from moduls.QvApp import QvApp
+print ('app')
 
 # from moduls.QvPavimentacio import DockPavim
 
 from moduls.QvLectorCsv import QvLectorCsv
+print ('csv')
 global qV
-
+print ('despres moduls')
 
 class QHLine(QFrame):
     def __init__(self):
@@ -99,17 +116,27 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         # Preparació botonera, mapeta, llegenda, taula d'atributs, etc.
         self.botoneraLateral()
+        print('lateral')
         self.preparacioMapeta()
+        print('mapeta')
         self.preparacioTaulaAtributs()
+        print('atrib')
         self.preparacioLlegenda()
+        print('llegn')
         self.preparacioArbreDistrictes()
+        print('arbre')
         self.preparacioCataleg()
+        print('cat')
         self.preparacioStreetView()
+        print('sv')
         # self.preparacioMapTips()
         self.preparacioImpressio()
+        print('imp')
         # self.preparacioGrafiques()
         self.preparacioSeleccio()
+        print('sel')
         self.preparacioEntorns()
+        print('ent')
         self.prepararCercador = True
 
         # Eina inicial del mapa

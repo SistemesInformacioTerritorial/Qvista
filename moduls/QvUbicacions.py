@@ -1,4 +1,4 @@
-from moduls.QvImports import *
+# from moduls.QvImports import *
 from qgis.PyQt.QtGui import QStandardItemModel, QStandardItem
 from qgis.core import QgsRectangle
 import sys

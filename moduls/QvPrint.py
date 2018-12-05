@@ -1,9 +1,11 @@
 
-from moduls.QvImports import *
+# from moduls.QvImports import *
 
 from qgis.PyQt.QtGui import QStandardItemModel, QStandardItem
 from qgis.core import QgsRectangle
+from qgis.gui import QgsMapTool
 
+from qgis.PyQt.QtWidgets import QWidget
 from PyQt5.QtWebKitWidgets import QWebView , QWebPage
 from PyQt5.QtWebKit import QWebSettings
 projecteInicial='../dades/projectes/BCN11_nord.qgs'
