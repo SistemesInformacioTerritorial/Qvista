@@ -189,7 +189,7 @@ class QvCataleg(QWidget):
                 projectes = []
                 for fitxer in carpeta[2]:
                     projectes.append(fitxer[0:-4])
-                self.dictProjectes[tema] = set(projectes)
+                self.dictProjectes[tema] = sorted(set(projectes))
         
         self.columnes = []
         for tema in self.dictProjectes:

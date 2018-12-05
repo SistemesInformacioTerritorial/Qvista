@@ -73,7 +73,7 @@ class QvColumnaCataleg(QWidget):
                 botoInfoMapa.ui.b1.clicked.connect(self.obrirEnQVista(nomProjecte))
                 botoInfoMapa.ui.b2.clicked.connect(self.obrirEnQgis(nomProjecte))    
                 # doc=QTextDocument()
-                # doc.setHtml('../dades/projectes/'+projecte+'.htm')
+                # doc.setHtml('../dades/'+projecte+'.htm')
                 # botoInfoMapa.ui.textEdit.setDocument(doc)
                 # botoInfoMapa.ui.label_3.hide()
                 # try:
@@ -189,7 +189,7 @@ class QvCataleg(QWidget):
                 projectes = []
                 for fitxer in carpeta[2]:
                     projectes.append(fitxer[0:-4])
-                self.dictProjectes[tema] = set(projectes)
+                self.dictProjectes[tema] = sorted(set(projectes))
         
         self.columnes = []
         for tema in self.dictProjectes:
