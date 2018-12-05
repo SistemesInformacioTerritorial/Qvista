@@ -9,6 +9,7 @@ import sys
 import getpass
 import uuid
 import lib
+import os
 
 _DB_QVISTA = dict()
 
@@ -208,6 +209,76 @@ if __name__ == "__main__":
     from qgis.core.contextmanagers import qgisapp
 
     gui = False
+
+    # for param in os.environ.keys():
+    #     print(param, '->', os.environ[param])
+
+# ALLUSERSPROFILE -> C:\ProgramData
+# APPDATA -> C:\Users\cpret\AppData\Roaming
+# COMMONPROGRAMFILES -> C:\Program Files\Common Files
+# COMMONPROGRAMFILES(X86) -> C:\Program Files (x86)\Common Files
+# COMMONPROGRAMW6432 -> C:\Program Files\Common Files
+# COMPUTERNAME -> DELL-CARLOS
+# COMSPEC -> C:\WINDOWS\system32\cmd.exe
+# DRIVERDATA -> C:\Windows\System32\Drivers\DriverData
+# GDAL_DATA -> D:\QGIS34\share\gdal
+# GDAL_DRIVER_PATH -> D:\QGIS34\bin\gdalplugins
+# GDAL_FILENAME_IS_UTF8 -> YES
+# GEOTIFF_CSV -> D:\QGIS34\share\epsg_csv
+# HOMEDRIVE -> C:
+# HOMEPATH -> \Users\cpret
+# JAVA_HOME -> C:\Program Files (x86)\Java\jre1.8.0_91
+# JPEGMEM -> 1000000
+# LOCALAPPDATA -> C:\Users\cpret\AppData\Local
+# LOGONSERVER -> \\DELL-CARLOS
+# NUMBER_OF_PROCESSORS -> 4
+# O4W_QT_BINARIES -> D:/QGIS34/apps/Qt5/bin
+# O4W_QT_DOC -> D:/QGIS34/apps/Qt5/doc
+# O4W_QT_HEADERS -> D:/QGIS34/apps/Qt5/include
+# O4W_QT_LIBRARIES -> D:/QGIS34/apps/Qt5/lib
+# O4W_QT_PLUGINS -> D:/QGIS34/apps/Qt5/plugins
+# O4W_QT_PREFIX -> D:/QGIS34/apps/Qt5
+# O4W_QT_TRANSLATIONS -> D:/QGIS34/apps/Qt5/translations
+# ONEDRIVE -> C:\Users\cpret\OneDrive
+# OS -> Windows_NT
+# OSGEO4W_ROOT -> D:\QGIS34
+# PATH -> D:\QGIS34\apps\qgis\bin;D:\QGIS34\apps\Python37;D:\QGIS34\apps\Python37\Scripts;D:\QGIS34\apps\qt5\bin;D:\QGIS34\apps\Python27\Scripts;D:\QGIS34\bin;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\system32\WBem;D:\QGIS34\apps\Python37\lib\site-packages\pywin32_system32
+# PATHEXT -> .COM;.EXE;.BAT;.CMD;.VBS;.VBE;.JS;.JSE;.WSF;.WSH;.MSC;.CPL
+# PROCESSOR_ARCHITECTURE -> AMD64
+# PROCESSOR_IDENTIFIER -> Intel64 Family 6 Model 78 Stepping 3, GenuineIntel
+# PROCESSOR_LEVEL -> 6
+# PROCESSOR_REVISION -> 4e03
+# PROGRAMDATA -> C:\ProgramData
+# PROGRAMFILES -> C:\Program Files
+# PROGRAMFILES(X86) -> C:\Program Files (x86)
+# PROGRAMW6432 -> C:\Program Files
+# PROJ_LIB -> D:\QGIS34\share\proj
+# PROMPT -> $P$G
+# PSMODULEPATH -> C:\Users\cpret\Documents\WindowsPowerShell\Modules;C:\Program Files\WindowsPowerShell\Modules;C:\WINDOWS\system32\WindowsPowerShell\v1.0\Modules
+# PUBLIC -> C:\Users\Public
+# PYTHONHOME -> D:\QGIS34\apps\Python37
+# PYTHONIOENCODING -> UTF-8
+# PYTHONPATH -> D:\QGIS34\apps\qgis\python;
+# PYTHONUNBUFFERED -> 1
+# QGIS_PREFIX_PATH -> D:/QGIS34/apps/qgis
+# QT_PLUGIN_PATH -> D:\QGIS34\apps\qgis\qtplugins;D:\QGIS34\apps\qt5\plugins
+# SESSIONNAME -> Console
+# SYSTEMDRIVE -> C:
+# SYSTEMROOT -> C:\WINDOWS
+# TEMP -> C:\Users\cpret\AppData\Local\Temp
+# TMP -> C:\Users\cpret\AppData\Local\Temp
+# USERDOMAIN -> DELL-CARLOS
+# USERDOMAIN_ROAMINGPROFILE -> DELL-CARLOS
+# USERNAME -> cpret
+# USERPROFILE -> C:\Users\cpret
+# VSCODE_CWD -> C:\Program Files\Microsoft VS Code
+# VSCODE_NODE_CACHED_DATA_DIR_14248 -> C:\Users\cpret\AppData\Roaming\Code\CachedData\1dfc5e557209371715f655691b1235b6b26a06be
+# VSI_CACHE -> TRUE
+# VSI_CACHE_SIZE -> 1000000
+# WINDIR -> C:\WINDOWS
+# TERM_PROGRAM -> vscode
+# TERM_PROGRAM_VERSION -> 1.29.1
+# LANG -> en_US.UTF-8
 
     with qgisapp(guienabled = gui) as app:
 
