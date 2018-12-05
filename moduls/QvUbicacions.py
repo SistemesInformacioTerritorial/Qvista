@@ -4,7 +4,8 @@ from qgis.core import QgsRectangle
 import sys
 from PyQt5 import QtGui, QtCore, QtWidgets
 from PyQt5.QtCore import QAbstractItemModel, QFile, QIODevice, QModelIndex, Qt
-from PyQt5.QtWidgets import QApplication, QTreeView
+from PyQt5.QtWidgets import QApplication, QTreeView, QAction, QAbstractItemView
+from PyQt5.QtGui import QIcon
 import pickle
 from collections import deque
 import os.path
@@ -22,9 +23,6 @@ class StandardItemModel_mio(QtGui.QStandardItemModel):
         super(StandardItemModel_mio, self).__init__(parent)
         self.importData(data)    
         self.ubicacions = ubicacions   
-
-
-           
 
 
     def exportData(self):
