@@ -1,5 +1,5 @@
 
-from PyQt5.QtWidgets import QWidget, QApplication, QLabel
+from PyQt5.QtWidgets import QWidget, QFrame,QApplication, QLabel
 from PyQt5.QtGui import QPixmap
 from qgis.core.contextmanagers import qgisapp
 from PyQt5.QtWebKitWidgets import QWebView , QWebPage
@@ -8,9 +8,9 @@ from PyQt5.QtCore import QUrl
 from platges import Ui_Form
 import urllib.request
 
-class QvPlatges(QWidget):
-    def __init__(self):
-        QWidget.__init__(self)
+class QvPlatges(QFrame):
+    def __init__(self, qV = None):
+        QFrame.__init__(self)
         self.ui = Ui_Form()
         self.ui.setupUi(self)
         self.ui.pbMarBella.clicked.connect(self.mostraMarBella)

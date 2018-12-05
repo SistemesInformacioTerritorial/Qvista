@@ -14,7 +14,7 @@ from moduls.QvMapeta import QvMapeta
 from moduls.QVCercadorAdreca import QCercadorAdreca
 from moduls.QVDistrictesBarris import QVDistrictesBarris
 from moduls.QvCatalegPetit import QvCataleg
-from moduls.QvPlatges import QvPlatges
+# from entorns.QvPlatges import QvPlatges
 # from moduls.QvVistaMapa import QvVistaMapa
 # from moduls.QvWizard import QvWizard
 from moduls.QvApp import QvApp
@@ -635,12 +635,12 @@ class QVista(QMainWindow, Ui_MainWindow):
 
     def preparacioEntorns(self):
         self.menuEntorns = self.bar.addMenu(5*' '+'Entorns')
-        for entorn in os.listdir(os.path.dirname('dashboards/')):          
+        for entorn in os.listdir(os.path.dirname('entorns/')):          
             if entorn == '__init__.py' or entorn[-3:] != '.py':
                 pass
             else:
                 nom = entorn[:-3]
-                exec('from dashboards.{} import {}'.format(nom,nom))
+                exec('from entorns.{} import {}'.format(nom,nom))
                 exec('self.act{} = QAction("{}", self)'.format(nom, nom))
                 exec('self.act{}.setStatusTip("{}")'.format(nom, nom))   
                 exec('self.act{}.triggered.connect(self.prepararDash({}))'.format(nom, nom))
@@ -1385,7 +1385,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         def obertura():
             for objecte in self.dashboardActiu:
                 objecte.hide() 
-                dashboard = nom(self)
+            dashboard = nom(self)
 
             self.dashboardActiu = [dashboard]
             self.layout.addWidget(dashboard)
