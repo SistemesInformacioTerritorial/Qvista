@@ -249,7 +249,7 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         self.bInfo = self.botoLateral(tamany = 25, accio=self.actInfo)
         self.bHelp = self.botoLateral(tamany = 25, accio=self.actHelp)
-        # self.bDashStandard = self.botoLateral(tamany = 25, accio=self.actDashStandard)
+        self.bDashStandard = self.botoLateral(tamany = 25, accio=self.actDashStandard)
     
     # Funcions de preparació d'entorns 
     def preparacioStreetView(self):
