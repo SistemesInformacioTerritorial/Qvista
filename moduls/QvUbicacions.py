@@ -1,11 +1,9 @@
 # from moduls.QvImports import *
-from qgis.PyQt.QtGui import QStandardItemModel, QStandardItem
+from qgis.PyQt.QtGui import QStandardItemModel, QStandardItem, QPixmap, QIcon
 from qgis.core import QgsRectangle
 import sys
-from PyQt5 import QtGui, QtCore, QtWidgets
-from PyQt5.QtCore import QAbstractItemModel, QFile, QIODevice, QModelIndex, Qt
-from PyQt5.QtWidgets import QApplication, QTreeView, QAction, QAbstractItemView
-from PyQt5.QtGui import QIcon
+from PyQt5.QtCore import QAbstractItemModel, QFile, QIODevice, QModelIndex, Qt, QSize
+from PyQt5.QtWidgets import QApplication, QLineEdit, QLabel, QVBoxLayout, QHBoxLayout, QPushButton,QTreeView, QAction, QAbstractItemView, QWidget, QTreeView, QMainWindow, QSpacerItem
 import pickle
 from collections import deque
 import os.path
@@ -13,7 +11,7 @@ import os.path
 projecteInicial='../dades/projectes/BCN11.qgs'
 fic_guardar_arbre='C:/Temp/QvUbicacions.p'  #Fichero para la lectura/escritura de ubicaciones (serializadas)
 
-class StandardItemModel_mio(QtGui.QStandardItemModel):
+class StandardItemModel_mio(QStandardItemModel):
     """ Subclase de QStandardItemModel en el que implemento metodos de importacion de datos y de 
         exportacion de datos
     """
@@ -32,14 +30,14 @@ class StandardItemModel_mio(QtGui.QStandardItemModel):
         # import os
         # os.system('D:/projectes_py/qVista/kk.chm')
 
-        def crear__listaDatos(self, parent = QtCore.QModelIndex()):
+        def crear__listaDatos(self, parent = QModelIndex()):
             """ Creamos array de diccionarios que es un objeto serializable
             """
             datos=[]
             n_linea= -1
             raiz=0
             
-            def itemList_2(self, n_linea,datos,raiz, parent = QtCore.QModelIndex()):
+            def itemList_2(self, n_linea,datos,raiz, parent = QModelIndex()):
                 """ Función recursiva para la lectura de todos los nodos del arbol. Una vez obtenidos se
                     formatean adecuadamente y se añaden a la lista
                 """
@@ -149,21 +147,21 @@ class StandardItemModel_mio(QtGui.QStandardItemModel):
             ymax = value['ymax']
             visto = value['id_']
 
-            item1= QtGui.QStandardItem(value['mi_ubi'])
+            item1= QStandardItem(value['mi_ubi'])
             item1.setToolTip('')
 
             parent.appendRow([
                 item1,
-                QtGui.QStandardItem(str(xmin)),
-                QtGui.QStandardItem(str(ymin)),
-                QtGui.QStandardItem(str(xmax)),
-                QtGui.QStandardItem(str(ymax)),
+                QStandardItem(str(xmin)),
+                QStandardItem(str(ymin)),
+                QStandardItem(str(xmax)),
+                QStandardItem(str(ymax)),
                 ])
             seen[visto] = parent.child(parent.rowCount() - 1)
 
 
 
-class QvUbicacions(QtWidgets.QWidget):
+class QvUbicacions(QWidget):
     """Una classe del tipus QWidget que mostra i gestiona un arbre d'ubicacions.
     Poden afegir-se noves ubicacions i guardar-hi una descripció. 
     Un click sobre una ubicació ens situa en el rang guardat previament.
@@ -178,7 +176,7 @@ class QvUbicacions(QtWidgets.QWidget):
         """
 
         self.canvas = canvas
-        QtWidgets.QWidget.__init__(self)
+        QWidget.__init__(self)
 
         
         # Leemos un fichero serializado para cargar sus ubicaciones en data
@@ -190,7 +188,7 @@ class QvUbicacions(QtWidgets.QWidget):
             data=[]
   
         # Instanciamos ARBOL ************************************************************+*****
-        self.arbre = QtWidgets.QTreeView()
+        self.arbre = QTreeView()
 
         # Ponemos menu contextual l arbol
         self.arbre.setContextMenuPolicy(Qt.ActionsContextMenu)
@@ -255,7 +253,7 @@ class QvUbicacions(QtWidgets.QWidget):
  
         # ELEMENTOS GRAFICOS DE LA CLASE
         # Definim un lineEdit, li afegim un tooltip i el connectem a una funció quan es premi Return   
-        self.leUbicacions = QtWidgets.QLineEdit()
+        self.leUbicacions = QLineEdit()
         self.leUbicacions.setToolTip('Escriu el nom de la ubicació i prem Return')
         self.leUbicacions.returnPressed.connect(self._novaUbicacio)
 
@@ -268,9 +266,9 @@ class QvUbicacions(QtWidgets.QWidget):
         icon.addPixmap(QPixmap(fichero))  
         # icon.addPixmap(QPixmap("D:/projectes_py/qVista/imatges/guardar.png"))  
 
-        self.boton_1 = QtWidgets.QPushButton(icon,'')       
+        self.boton_1 = QPushButton(icon,'')       
         self.boton_1.setToolTip("Desar ubicacions")
-        self.boton_1.setMaximumSize(QtCore.QSize(20,20))
+        self.boton_1.setMaximumSize(QSize(20,20))
         self.boton_1.show()
         self.boton_1.clicked.connect(self.model.exportData)
 
@@ -303,7 +301,7 @@ class QvUbicacions(QtWidgets.QWidget):
     def expand_all(self):
         """Expandir o contraer todo el arbol, dependiendo de si detecta que esta extendido o contraido
         """
-        if self.arbre.isExpanded(self.model.index(0, 0, QtCore.QModelIndex())):
+        if self.arbre.isExpanded(self.model.index(0, 0, QModelIndex())):
             self.arbre.collapseAll()
         else:
             self.arbre.expandAll()
@@ -391,13 +389,13 @@ class QvUbicacions(QtWidgets.QWidget):
         """
         self.botoneraArbre = ['Nou']
         for text in self.botoneraArbre:
-            boto = QtWidgets.QPushButton()
+            boto = QPushButton()
             boto.setText(text)
             boto.setMaximumWidth(50)
             boto.clicked.connect(self.novaUbicacio)
             self.layBotonera.addWidget(boto)
         self.fBotonera.show()
-        spacer = QtWidgets.QSpacerItem(0, 0, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+        spacer = QSpacerItem(0, 0, QSizePolicy.Expanding, QSizePolicy.Minimum)
         self.layBotonera.addSpacerItem(spacer)
 
 
@@ -405,6 +403,10 @@ class QvUbicacions(QtWidgets.QWidget):
 # Demo d'ús quan es crida el fitxer de la classe per separat
 if __name__ == "__main__":
     
+    from qgis.core.contextmanagers import qgisapp
+    from qgis.gui import QgsMapCanvas,QgsLayerTreeMapCanvasBridge
+    from qgis.core import QgsProject
+
     with qgisapp() as app:
         # Canvas, projecte i bridge
         canvas=QgsMapCanvas()
@@ -427,7 +429,7 @@ if __name__ == "__main__":
         Les següents línies mostren com integrar el widget 'ubicacions' com a dockWidget.
         """
         
-        windowTest = QtWidgets.QMainWindow()
+        windowTest = QMainWindow()
 
         # Posem el canvas com a element central
         windowTest.setCentralWidget(canvas)
