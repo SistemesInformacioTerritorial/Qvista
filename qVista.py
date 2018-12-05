@@ -1743,14 +1743,18 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         if nfile is not None:
             extensio = nfile[-3:]
+            print (extensio)
             if extensio.lower() == 'shp' or extensio.lower() =='gpx':
                 layer = QgsVectorLayer(nfile, nfile, "ogr")
                 if not layer.isValid():
                     return
                 renderer=layer.renderer()
                 self.project.addMapLayer(layer)
-            elif extensio.lower == 'qlr':
-                QgsLayerDefinition().loadLayerDefinition(nfile, self.project, self.root)
+            else:
+                if extensio.lower() == 'qlr':
+                    print(nfile)
+                    afegirQlr(nfile)
+                # QgsLayerDefinition().loadLayerDefinition(nfile, self.project, self.root)
 
     def recorrerFields(self):
         if self.potsRecorrer:
