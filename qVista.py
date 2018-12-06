@@ -144,7 +144,10 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         # self.keyPressed.connect(self.fesMapaMaxim)
 
-        self.iniciServer()
+        # self.iniciServer()
+
+    
+
         # Preparació botonera, mapeta, llegenda, taula d'atributs, etc.
         self.botoneraLateral()
         print('lateral')
@@ -1074,9 +1077,13 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.actPlatges.setStatusTip("Pavimentació")
         self.actPlatges.triggered.connect(self.platges)
 
-        self.actTestComm = QAction("Comm", self)
-        self.actTestComm.setStatusTip("comm")
-        self.actTestComm.triggered.connect(self.testComm)
+        self.actTestComm1 = QAction("Comm", self)
+        self.actTestComm1.setStatusTip("comm")
+        self.actTestComm1.triggered.connect(self.testComm)
+
+        self.actTestComm2 = QAction("Comm2", self)
+        self.actTestComm2.setStatusTip("comm")
+        self.actTestComm2.triggered.connect(self.testComm2)
 
         self.actPropietatsLayer = QAction("Propietats de la capa", self)
         self.actPropietatsLayer.setStatusTip("Propietats de la capa")
@@ -1084,14 +1091,41 @@ class QVista(QMainWindow, Ui_MainWindow):
 
     def testComm(self):
 
-        HOST = '127.0.0.1'  # Standard loopback interface address (localhost)
-        PORT = 65432        # Port to listen on (non-privileged ports are > 1023)
+        # HOST = '127.0.0.1'  # Standard loopback interface address (localhost)
+        # PORT = 65432        # Port to listen on (non-privileged ports are > 1023)
 
-        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as self.sck:
-            self.sck.bind((HOST, PORT))
-            self.sck.listen()
-            self.conn, self.addr = self.sck.accept()
-            self.sck.sendall(b'Hello, world')
+        # with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as self.sck:
+        #     self.sck.bind((HOST, PORT))
+        #     self.sck.listen()
+        #     self.conn, self.addr = self.sck.accept()
+        #     self.sck.sendall(b'Hello, world')
+
+        from multiprocessing import Process,Queue,Pipe
+        from testPipe1 import f
+
+        self.parent_conn,self.child_conn = Pipe()
+        self.p = Process(target=f, args=(self.child_conn,))
+        self.p.start()
+        msg = "Hello"
+        self.parent_conn.send(msg)
+
+    def testComm2(self):
+
+        # HOST = '127.0.0.1'  # Standard loopback interface address (localhost)
+        # PORT = 65432        # Port to listen on (non-privileged ports are > 1023)
+
+        # with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as self.sck:
+        #     self.sck.bind((HOST, PORT))
+        #     self.sck.listen()
+        #     self.conn, self.addr = self.sck.accept()
+        #     self.sck.sendall(b'Hello, world')
+
+        from multiprocessing import Process,Queue,Pipe
+        from testPipe1 import f
+
+        self.p.start()
+        msg = "Hello2"
+        self.parent_conn.send(msg)
 
     def platges(self):
         self.platges = QvPlatges()
@@ -1380,14 +1414,15 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.menuFuncions.addAction(self.actObrirTaulaAtributs)
         self.menuFuncions.addAction(self.actTest)
         self.menuFuncions.addAction(self.actInfo)
-        self.menuFuncions.addAction(self.actDashStandard)
+        # self.menuFuncions.addAction(self.actDashStandard)
         self.menuFuncions.addAction(self.actWizard)
         self.menuFuncions.addAction(self.actTest2)
-        self.menuFuncions.addAction(self.actObrirCalculadora)
+        # self.menuFuncions.addAction(self.actObrirCalculadora)
         self.menuFuncions.addAction(self.actObrirBrowserGrafiques)
         self.menuFuncions.addAction(self.actBicing)
         self.menuFuncions.addAction(self.actPavimentacio)
-        self.menuFuncions.addAction(self.actTestComm)
+        self.menuFuncions.addAction(self.actTestComm1)
+        self.menuFuncions.addAction(self.actTestComm2)
         
     def test(self):
         self.handleSave()
