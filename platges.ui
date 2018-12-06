@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1644</width>
-    <height>889</height>
+    <width>1869</width>
+    <height>912</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -16,10 +16,10 @@
   <widget class="QLabel" name="label">
    <property name="geometry">
     <rect>
-     <x>-10</x>
-     <y>90</y>
-     <width>1651</width>
-     <height>481</height>
+     <x>0</x>
+     <y>0</y>
+     <width>1871</width>
+     <height>521</height>
     </rect>
    </property>
    <property name="text">
@@ -147,29 +147,11 @@
     </size>
    </property>
   </widget>
-  <widget class="QLabel" name="label_2">
-   <property name="geometry">
-    <rect>
-     <x>40</x>
-     <y>10</y>
-     <width>721</width>
-     <height>71</height>
-    </rect>
-   </property>
-   <property name="font">
-    <font>
-     <pointsize>37</pointsize>
-    </font>
-   </property>
-   <property name="text">
-    <string>Platges de Barcelona</string>
-   </property>
-  </widget>
   <widget class="QLabel" name="lblCamera">
    <property name="geometry">
     <rect>
-     <x>790</x>
-     <y>300</y>
+     <x>1040</x>
+     <y>340</y>
      <width>831</width>
      <height>571</height>
     </rect>

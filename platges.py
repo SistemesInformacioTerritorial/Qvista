@@ -11,9 +11,9 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_Form(object):
     def setupUi(self, Form):
         Form.setObjectName("Form")
-        Form.resize(1644, 889)
+        Form.resize(1869, 912)
         self.label = QtWidgets.QLabel(Form)
-        self.label.setGeometry(QtCore.QRect(-10, 90, 1651, 481))
+        self.label.setGeometry(QtCore.QRect(0, 0, 1871, 521))
         self.label.setText("")
         self.label.setPixmap(QtGui.QPixmap("Imatges/FotoAeriaPlatges_1900px.jpg"))
         self.label.setScaledContents(True)
@@ -50,14 +50,8 @@ class Ui_Form(object):
         self.pbPort1.setIcon(icon)
         self.pbPort1.setIconSize(QtCore.QSize(32, 32))
         self.pbPort1.setObjectName("pbPort1")
-        self.label_2 = QtWidgets.QLabel(Form)
-        self.label_2.setGeometry(QtCore.QRect(40, 10, 721, 71))
-        font = QtGui.QFont()
-        font.setPointSize(37)
-        self.label_2.setFont(font)
-        self.label_2.setObjectName("label_2")
         self.lblCamera = QtWidgets.QLabel(Form)
-        self.lblCamera.setGeometry(QtCore.QRect(790, 300, 831, 571))
+        self.lblCamera.setGeometry(QtCore.QRect(1040, 340, 831, 571))
         self.lblCamera.setText("")
         self.lblCamera.setScaledContents(True)
         self.lblCamera.setObjectName("lblCamera")
@@ -74,7 +68,6 @@ class Ui_Form(object):
     def retranslateUi(self, Form):
         _translate = QtCore.QCoreApplication.translate
         Form.setWindowTitle(_translate("Form", "Form"))
-        self.label_2.setText(_translate("Form", "Platges de Barcelona"))
 
 
 if __name__ == "__main__":
