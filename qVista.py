@@ -60,6 +60,8 @@ start = time.time()
 # from moduls.QvWizard import QvWizard
 from moduls.QvApp import QvApp
 end = time.time()
+
+import socket
 print ('app', end-start)
 
 # from moduls.QvPavimentacio import DockPavim
@@ -116,6 +118,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         """
         QMainWindow.__init__(self)
 
+
         self.setupUi(self)
         # self.frame.setStyleSheet("QFrame {background-color : #52489C}")
 
@@ -141,6 +144,7 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         # self.keyPressed.connect(self.fesMapaMaxim)
 
+        self.iniciServer()
         # Preparació botonera, mapeta, llegenda, taula d'atributs, etc.
         self.botoneraLateral()
         print('lateral')
@@ -186,6 +190,23 @@ class QVista(QMainWindow, Ui_MainWindow):
 
     # Fins aquí teniem la inicialització de la classe. Ara venen les funcions, o métodes, de la classe. 
     
+    def iniciServer(self):
+
+        HOST = '127.0.0.1'  # Standard loopback interface address (localhost)
+        PORT = 65432        # Port to listen on (non-privileged ports are > 1023)
+
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as self.sck:
+            self.sck.bind((HOST, PORT))
+            self.sck.listen()
+            self.conn, self.addr = self.sck.accept()
+            # with self.conn:
+            #     print('Connected by', self.addr)
+            #     while True:
+            #         data = self.conn.recv(1024)
+            #         if not data:
+            #             break
+            #         self.conn.sendall(data)
+
     def obrirProjecte(self, projecte, rang = None):
         self.project.read(projecte)
         if rang is not None:
@@ -1048,13 +1069,29 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.actPavimentacio = QAction("Pavimentació", self)
         self.actPavimentacio.setStatusTip("Pavimentació")
         self.actPavimentacio.triggered.connect(self.pavimentacio)
-        self.actPlatges = QAction("Pavimentació", self)
+
+        self.actPlatges = QAction("Platges", self)
         self.actPlatges.setStatusTip("Pavimentació")
         self.actPlatges.triggered.connect(self.platges)
+
+        self.actTestComm = QAction("Comm", self)
+        self.actTestComm.setStatusTip("comm")
+        self.actTestComm.triggered.connect(self.testComm)
 
         self.actPropietatsLayer = QAction("Propietats de la capa", self)
         self.actPropietatsLayer.setStatusTip("Propietats de la capa")
         self.actPropietatsLayer.triggered.connect(self.propietatsLayer)
+
+    def testComm(self):
+
+        HOST = '127.0.0.1'  # Standard loopback interface address (localhost)
+        PORT = 65432        # Port to listen on (non-privileged ports are > 1023)
+
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as self.sck:
+            self.sck.bind((HOST, PORT))
+            self.sck.listen()
+            self.conn, self.addr = self.sck.accept()
+            self.sck.sendall(b'Hello, world')
 
     def platges(self):
         self.platges = QvPlatges()
@@ -1350,7 +1387,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.menuFuncions.addAction(self.actObrirBrowserGrafiques)
         self.menuFuncions.addAction(self.actBicing)
         self.menuFuncions.addAction(self.actPavimentacio)
-        self.menuFuncions.addAction(self.actPlatges)
+        self.menuFuncions.addAction(self.actTestComm)
         
     def test(self):
         self.handleSave()
@@ -2208,6 +2245,8 @@ def main(argv):
     global qV
     with qgisapp() as app: 
         # subprocess.Popen('python-qgis.bat qvista.py')
+        #!/usr/bin/env python3
+
         start = time.time()
         qVapp = QvApp()
         # ok = qVapp.logInici()            # Por defecto: family='QVISTA', logname='DESKTOP'
