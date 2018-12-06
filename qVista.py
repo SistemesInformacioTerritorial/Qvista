@@ -1,39 +1,66 @@
 # coding:utf-8
+import time
 print ('abans moduls')
+startGlobal = time.time()
+start = time.time()
 from  moduls.QvImports import *
-print ('imports')
-
+end = time.time()
+print ('imports', end-start)
+start = time.time()
 from moduls.QvUbicacions import QvUbicacions
-print ('ubi')
+end = time.time()
+print ('ubi', end-start)
+start = time.time()
 from moduls.QvPrint import QvPrint
-print ('print')
+end = time.time()
+print ('print', end-start)
+start = time.time()
 # from moduls.QvAnotacions import QvAnotacions
 # print ('anot')
 from moduls.QvCanvas import QvCanvas
-print ('canvas')
+end = time.time()
+print ('canvas', end-start)
+start = time.time()
 # from moduls.QvToolTip import QvToolTip
 from moduls.QvEinesGrafiques import QvSeleccioElement, QvSeleccioPerPoligon, QvSeleccioCercle, QvSeleccioPunt
 
-print ('graf')
+end = time.time()
+print ('graf', end-start)
+start = time.time()
 from moduls.QvStreetView import QvStreetView
-print ('sv')
+end = time.time()
+print ('sv', end-start)
+start = time.time()
 from moduls.QvLlegenda import QvLlegenda
-print ('lleg')
+end = time.time()
+print ('lleg', end-start)
+start = time.time()
 from moduls.QvAtributs import QvAtributs
-print ('atr')
+end = time.time()
+print ('atr', end-start)
+start = time.time()
 from moduls.QvMapeta import QvMapeta
-print ('mapeta')
+end = time.time()
+print ('mapeta', end-start)
+start = time.time()
 from moduls.QVCercadorAdreca import QCercadorAdreca
-print ('cerc')
+end = time.time()
+print ('cerc', end-start)
+start = time.time()
 from moduls.QVDistrictesBarris import QVDistrictesBarris
-print ('distbar')
+end = time.time()
+print ('distbar', end-start)
+start = time.time()
 from moduls.QvCatalegPetit import QvCataleg
-print ('cat')
+end = time.time()
+print ('cat', end-start)
+start = time.time()
 # from entorns.QvPlatges import QvPlatges
 # from moduls.QvVistaMapa import QvVistaMapa
 # from moduls.QvWizard import QvWizard
 from moduls.QvApp import QvApp
-print ('app')
+end = time.time()
+print ('app', end-start)
 
 # from moduls.QvPavimentacio import DockPavim
 
@@ -152,6 +179,9 @@ class QVista(QMainWindow, Ui_MainWindow):
         
         # Carrega del projecte inicial
         self.obrirProjecte(projecteInicial)
+
+        endGlobal = time.time()
+        print ('Total: ', endGlobal - startGlobal)
 
 
     # Fins aquí teniem la inicialització de la classe. Ara venen les funcions, o métodes, de la classe. 
@@ -2176,12 +2206,14 @@ def sortir():
 def main(argv):
     global qV
     with qgisapp() as app: 
+        start = time.time()
         qVapp = QvApp()
-        ok = qVapp.logInici()            # Por defecto: family='QVISTA', logname='DESKTOP'
-        if not ok:
-            print('ERROR LOG >>', qVapp.logError())
-            ok = qVapp.logRegistre('Capa1')
-            ok = qVapp.logRegistre('Atributs')
+        # ok = qVapp.logInici()            # Por defecto: family='QVISTA', logname='DESKTOP'
+        print ( time.time()-start)
+        # if not ok:
+        #     print('ERROR LOG >>', qVapp.logError())
+        #     ok = qVapp.logRegistre('Capa1')
+        #     ok = qVapp.logRegistre('Atributs')
 
         # Idioma
         qVapp.carregaIdioma(app, 'ca')

@@ -1,20 +1,24 @@
-
+import time
+start = time.time()
 print ('Inici')
 from qgis.core import *
-print ('core')
+end = time.time()
+print ('core', end-start)
 from qgis.gui import *
-print ('gui')
+print ('gui', end-start)
 
 from qgis.core.contextmanagers import qgisapp
 
 from qgis.PyQt.QtCore import *
-print ('qtcore')
+print ('qtcore', end-start)
 from qgis.PyQt.QtGui import *
-print ('qtgui')
+print ('qtgui', end-start)
 from qgis.PyQt.QtWidgets import *
-print ('qtwidgets')
+print ('qtwidgets', end-start)
 from qgis.PyQt import QtSql
-print ('qtsql')
+end = time.time()
+print ('qtsql', end-start)
+
 from qgis.PyQt.QtXml import QDomDocument, QDomElement, QDomAttr, QDomText    
 from qgis.PyQt.QtCore import pyqtSignal
 

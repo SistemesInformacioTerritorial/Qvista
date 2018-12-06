@@ -1,7 +1,7 @@
 # coding:utf-8
 
 from moduls.QvImports import *
-# from moduls.QvEinesGrafiques import QvSeleccioElement
+from moduls.QvEinesGrafiques import QvSeleccioElement
 from qgis.gui import QgsMapCanvas
 from qgis.PyQt.QtWidgets import QFrame
 from moduls.QvApp import QvApp
