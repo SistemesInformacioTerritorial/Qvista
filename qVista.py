@@ -2204,8 +2204,10 @@ def sortir():
     sys.exit()
 
 def main(argv):
+    # import subprocess
     global qV
     with qgisapp() as app: 
+        # subprocess.Popen('python-qgis.bat qvista.py')
         start = time.time()
         qVapp = QvApp()
         # ok = qVapp.logInici()            # Por defecto: family='QVISTA', logname='DESKTOP'
