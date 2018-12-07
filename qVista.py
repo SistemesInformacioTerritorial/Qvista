@@ -62,6 +62,8 @@ from moduls.QvApp import QvApp
 end = time.time()
 
 import socket
+import pickle
+
 print ('app', end-start)
 
 # from moduls.QvPavimentacio import DockPavim
@@ -1104,13 +1106,18 @@ class QVista(QMainWindow, Ui_MainWindow):
         from testPipe1 import f
 
         self.parent_conn,self.child_conn = Pipe()
-        self.p = Process(target=f, args=(self.child_conn,))
+        self.p = Process(target=f, args=(self.child_conn,'c:/qvista/dades/projectes/PavimentacioDemo.qgs',))
         self.p.start()
+        self.p.join()
         msg = "Hello"
         self.parent_conn.send(msg)
 
     def testComm2(self):
-
+        outfile = open('ordres','wb')
+        fesAixo = 'c:/qvista/dades/projectes/Bcn11_nord.qgs'
+        pickle.dump(fesAixo,outfile)
+        outfile.close()
+        
         # HOST = '127.0.0.1'  # Standard loopback interface address (localhost)
         # PORT = 65432        # Port to listen on (non-privileged ports are > 1023)
 
@@ -1120,12 +1127,12 @@ class QVista(QMainWindow, Ui_MainWindow):
         #     self.conn, self.addr = self.sck.accept()
         #     self.sck.sendall(b'Hello, world')
 
-        from multiprocessing import Process,Queue,Pipe
-        from testPipe1 import f
+        # from multiprocessing import Process,Queue,Pipe
+        # from testPipe1 import f
 
-        self.p.start()
-        msg = "Hello2"
-        self.parent_conn.send(msg)
+        # self.p.start()
+        # msg = "Hello2"
+        # self.parent_conn.send(msg)
 
     def platges(self):
         self.platges = QvPlatges()
