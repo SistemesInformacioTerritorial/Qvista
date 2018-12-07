@@ -82,7 +82,11 @@ class QCercadorAdreca(QObject):
             self.sHanTrobatCoordenades.emit(1,info) #adreça vacia
 
     def trobatCarrer(self):
-        __path_disgregados= 'C:\qVista\Dades\DadesBcn\dir_ele\\'        
+        __path_disgregados= '..\Dades\DadesBcn\dir_ele\\'   
+
+        # __carrersCSV = '..\dades\dadesBcn\CARRERER.csv'
+        # __numerosCSV = '..\dades\dadesBcn\TAULA_DIRELE.csv'
+
         self.carrerActivat = False
         if not self.carrerActivat:
             txt = self.completerCarrer.currentCompletion()

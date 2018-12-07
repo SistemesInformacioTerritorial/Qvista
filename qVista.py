@@ -1896,9 +1896,12 @@ def seleccioClick():
 
 
 def DisgregarDirele():
+    
+# ATENCION, debe existir subcarpeta dir_ele, para colocar los ficheros disgregados
+
 # __numerosCSV = 'C:\qVista\Dades\dadesBcn\TDE.csv'
-    __numerosCSV = 'C:\qVista\Dades\dadesBcn\TAULA_DIRELE.csv'
-    __path_disgregados= 'C:\qVista\Dades\DadesBcn\dir_ele\\'
+    __numerosCSV = '..\Dades\dadesBcn\TAULA_DIRELE.csv'
+    __path_disgregados= '..\Dades\DadesBcn\dir_ele\\'
     """
 
     """
@@ -1972,6 +1975,9 @@ def seleccioExpressio():
     if qV.leSeleccioExpressio.text().lower() == 'help':
         qV.infoQVista()
         return
+
+    if qV.leSeleccioExpressio.text().lower() == 'd':
+        DisgregarDirele()
 
 
     if (qV.leSeleccioExpressio.text().lower() == 'qvdebug') :
@@ -2234,6 +2240,3 @@ def main(argv):
 
 if __name__ == "__main__":
     main(sys.argv)
-
-
-    #20181205_1513
