@@ -6,7 +6,7 @@ from botoInfoMapaPetit import Ui_BotoInfoMapa
 
 
 carpetaCataleg = "c:/qVista/dades/CatalegProjectes/"
-longitudPathCataleg = len(carpetaCataleg)
+longitudPathCataleg = len(carpetaCataleg)-1
 
 class QvColumnaCataleg(QWidget):
     """
