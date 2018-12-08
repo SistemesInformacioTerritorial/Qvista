@@ -144,6 +144,7 @@ class QVista(QMainWindow, Ui_MainWindow):
     
     def obrirProjecte(self, projecte, rang = None):
         self.project.read(projecte)
+        self.canvas.refresh()
         if rang is not None:
             self.canvas.setExtent(rang)
 
@@ -652,6 +653,8 @@ class QVista(QMainWindow, Ui_MainWindow):
             if entorn == '__init__.py' or entorn[-3:] != '.py':
                 pass
             else:
+                # TODO: canviar el nom pel titol de la clase com a descripcio de l'acció
+                tmpClass = None
                 nom = entorn[:-3]
                 exec('from entorns.{} import {}'.format(nom,nom))
                 exec('self.act{} = QAction("{}", self)'.format(nom, nom))
