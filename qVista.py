@@ -128,7 +128,16 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.obrirProjecte(projecteInicial)
 
         endGlobal = time.time()
-        print ('Total carrega: ', endGlobal - startGlobal)
+        tempsTotal = endGlobal - startGlobal
+        print ('Total carrega: ', tempsTotal)   
+        self.lblTempsArrencada = QLabel()
+
+        self.lblTempsArrencada.setFrameStyle( QFrame.StyledPanel )
+        self.lblTempsArrencada.setMinimumWidth( 170 )
+        self.lblTempsArrencada.setAlignment( Qt.AlignCenter )
+        self.statusbar.setSizeGripEnabled( False )
+        self.statusbar.addPermanentWidget( self.lblTempsArrencada, 0 )
+        self.lblTempsArrencada.setText ("Segons per arrancar: "+str('%.1f'%tempsTotal))
 
 
     # Fins aquí teniem la inicialització de la classe. Ara venen les funcions, o métodes, de la classe. 
@@ -1644,7 +1653,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         #     return
 
     def showScale(self,scale ):
-        self.lblScale.setText( "Scale 1:" + str(int(scale) ))  
+        self.lblScale.setText( "Escala 1:" + str(int(scale) ))  
 
     def definirLabelsStatus(self):
         self.lblXY = QLabel()
@@ -2155,14 +2164,12 @@ def main(argv):
     global qV
     with qgisapp() as app: 
         # subprocess.Popen('python-qgis.bat qvista.py')
-        start = time.time()
         qVapp = QvApp()
-        # ok = qVapp.logInici()            # Por defecto: family='QVISTA', logname='DESKTOP'
-        print ( time.time()-start)
-        # if not ok:
-        #     print('ERROR LOG >>', qVapp.logError())
-        #     ok = qVapp.logRegistre('Capa1')
-        #     ok = qVapp.logRegistre('Atributs')
+        ok = qVapp.logInici()            # Por defecto: family='QVISTA', logname='DESKTOP'
+        if not ok:
+            print('ERROR LOG >>', qVapp.logError())
+            ok = qVapp.logRegistre('Capa1')
+            ok = qVapp.logRegistre('Atributs')
 
         # Idioma
         qVapp.carregaIdioma(app, 'ca')
