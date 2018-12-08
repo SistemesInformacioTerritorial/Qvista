@@ -53,7 +53,7 @@ from info_ui import Ui_Informacio
 
 # Cataleg de layers
 from cataleg_ui import Ui_Cataleg
-print ('QvImports: ',start-time.time())
+print ('QvImports: ',time.time()-start)
 # Eines de dibuix
 # Icones SVG
 # import images_rc

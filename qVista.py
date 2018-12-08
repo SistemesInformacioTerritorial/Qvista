@@ -1,73 +1,30 @@
 # coding:utf-8
 import time
-print ('abans moduls')
 startGlobal = time.time()
-start = time.time()
 from  moduls.QvImports import *
-end = time.time()
-print ('imports', end-start)
-start = time.time()
 from moduls.QvUbicacions import QvUbicacions
-end = time.time()
-print ('ubi', end-start)
-start = time.time()
 from moduls.QvPrint import QvPrint
-end = time.time()
-print ('print', end-start)
-start = time.time()
 # from moduls.QvAnotacions import QvAnotacions
-# print ('anot')
 from moduls.QvCanvas import QvCanvas
-end = time.time()
-print ('canvas', end-start)
-start = time.time()
 # from moduls.QvToolTip import QvToolTip
 from moduls.QvEinesGrafiques import QvSeleccioElement, QvSeleccioPerPoligon, QvSeleccioCercle, QvSeleccioPunt
 
-end = time.time()
-print ('graf', end-start)
-start = time.time()
 from moduls.QvStreetView import QvStreetView
-end = time.time()
-print ('sv', end-start)
-start = time.time()
 from moduls.QvLlegenda import QvLlegenda
-end = time.time()
-print ('lleg', end-start)
-start = time.time()
 from moduls.QvAtributs import QvAtributs
-end = time.time()
-print ('atr', end-start)
-start = time.time()
 from moduls.QvMapeta import QvMapeta
-end = time.time()
-print ('mapeta', end-start)
-start = time.time()
 from moduls.QVCercadorAdreca import QCercadorAdreca
-end = time.time()
-print ('cerc', end-start)
-start = time.time()
 from moduls.QVDistrictesBarris import QVDistrictesBarris
-end = time.time()
-print ('distbar', end-start)
-start = time.time()
 from moduls.QvCatalegPetit import QvCataleg
-end = time.time()
-print ('cat', end-start)
-start = time.time()
 # from entorns.QvPlatges import QvPlatges
 # from moduls.QvVistaMapa import QvVistaMapa
 # from moduls.QvWizard import QvWizard
 from moduls.QvApp import QvApp
-end = time.time()
-print ('app', end-start)
 
 # from moduls.QvPavimentacio import DockPavim
 
 from moduls.QvLectorCsv import QvLectorCsv
-print ('csv')
 global qV
-print ('despres moduls')
 
 class QHLine(QFrame):
     def __init__(self):
@@ -143,27 +100,17 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         # Preparació botonera, mapeta, llegenda, taula d'atributs, etc.
         self.botoneraLateral()
-        print('lateral')
         self.preparacioMapeta()
-        print('mapeta')
         self.preparacioTaulaAtributs()
-        print('atrib')
         self.preparacioLlegenda()
-        print('llegn')
         self.preparacioArbreDistrictes()
-        print('arbre')
         self.preparacioCataleg()
-        print('cat')
         self.preparacioStreetView()
-        print('sv')
         # self.preparacioMapTips()
         self.preparacioImpressio()
-        print('imp')
         # self.preparacioGrafiques()
         self.preparacioSeleccio()
-        print('sel')
         self.preparacioEntorns()
-        print('ent')
         self.prepararCercador = True
 
         # Eina inicial del mapa
@@ -181,7 +128,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.obrirProjecte(projecteInicial)
 
         endGlobal = time.time()
-        print ('Total: ', endGlobal - startGlobal)
+        print ('Total carrega: ', endGlobal - startGlobal)
 
 
     # Fins aquí teniem la inicialització de la classe. Ara venen les funcions, o métodes, de la classe. 
@@ -1188,7 +1135,7 @@ class QVista(QMainWindow, Ui_MainWindow):
             self.lblCapaSeleccionada.setText("Capa activa: "+ self.layerActiu.name())
             fields = self.layerActiu.fields()
             for field in fields:
-                print(field.typeName())
+                # print(field.typeName())
                 # if (field.typeName()!='String' and field.typeName()!='Date' and field.typeName()!='Date'):
                 if (field.typeName()=='Real' or field.typeName()=='Integer64'):
                     self.lwFieldsSelect.addItem(field.name())
@@ -1811,7 +1758,7 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         if nfile is not None:
             extensio = nfile[-3:]
-            print (extensio)
+            # print (extensio)
             if extensio.lower() == 'shp' or extensio.lower() =='gpx':
                 layer = QgsVectorLayer(nfile, nfile, "ogr")
                 if not layer.isValid():
@@ -1820,7 +1767,7 @@ class QVista(QMainWindow, Ui_MainWindow):
                 self.project.addMapLayer(layer)
             else:
                 if extensio.lower() == 'qlr':
-                    print(nfile)
+                    # print(nfile)
                     afegirQlr(nfile)
                 # QgsLayerDefinition().loadLayerDefinition(nfile, self.project, self.root)
 
