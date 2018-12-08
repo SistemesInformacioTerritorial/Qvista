@@ -2163,7 +2163,6 @@ def main(argv):
     # import subprocess
     global qV
     with qgisapp() as app: 
-        # subprocess.Popen('python-qgis.bat qvista.py')
         qVapp = QvApp()
         ok = qVapp.logInici()            # Por defecto: family='QVISTA', logname='DESKTOP'
         if not ok:
