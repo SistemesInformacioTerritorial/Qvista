@@ -163,7 +163,19 @@ class QCercadorAdreca(QObject):
             #     # splash_1.destroy()
             return True
         except:
-            print('QCercadorAdreca.llegirAdrecesCSV(): ', sys.exc_info()[0], sys.exc_info()[1])
+            msg = QMessageBox()
+            msg.setIcon(QMessageBox.Warning)
+            
+            msg.setText(str(sys.exc_info()[1]))
+            # msg.setInformativeText("OK para salir del programa \nCANCEL para seguir en el programa")
+            msg.setWindowTitle("qVista ERROR")
+            msg.setStandardButtons(QMessageBox.Close)
+            retval = msg.exec_()
+
+
+
+
+            # print('QCercadorAdreca.llegirAdrecesCSV(): ', sys.exc_info()[0], sys.exc_info()[1])
             return False
 
     def activatNumero(self,txt):
