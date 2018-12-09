@@ -1,14 +1,14 @@
 # coding:utf-8
+
+# Inici del cronòmetre
 import time
 startGlobal = time.time()
-from  moduls.QvImports import *
+
+from moduls.QvImports import *
 from moduls.QvUbicacions import QvUbicacions
 from moduls.QvPrint import QvPrint
-# from moduls.QvAnotacions import QvAnotacions
 from moduls.QvCanvas import QvCanvas
-# from moduls.QvToolTip import QvToolTip
 from moduls.QvEinesGrafiques import QvSeleccioElement, QvSeleccioPerPoligon, QvSeleccioCercle, QvSeleccioPunt
-
 from moduls.QvStreetView import QvStreetView
 from moduls.QvLlegenda import QvLlegenda
 from moduls.QvAtributs import QvAtributs
@@ -16,16 +16,14 @@ from moduls.QvMapeta import QvMapeta
 from moduls.QVCercadorAdreca import QCercadorAdreca
 from moduls.QVDistrictesBarris import QVDistrictesBarris
 from moduls.QvCatalegPetit import QvCataleg
-# from entorns.QvPlatges import QvPlatges
-# from moduls.QvVistaMapa import QvVistaMapa
-# from moduls.QvWizard import QvWizard
 from moduls.QvApp import QvApp
-
+from moduls.QvLectorCsv import QvLectorCsv
 # from moduls.QvPavimentacio import DockPavim
 
-from moduls.QvLectorCsv import QvLectorCsv
+# Variable global sobre la que instanciarem la classe qVista
 global qV
 
+# Classes auxiliars 
 class QHLine(QFrame):
     def __init__(self):
         super(QHLine, self).__init__()
@@ -78,7 +76,11 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         #Afegim títol a la finestra
         self.setWindowTitle(titolFinestra)
+
+        # Definició dels labels de la statusBar 
         self.definirLabelsStatus()   
+
+        # Preparació deprojecte i canvas
         self.preparacioEntornGrafic()
         
 
@@ -89,6 +91,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.primerCop = True
         self.mapaMaxim = False
         self.layerActiu = None
+        self.prepararCercador = True
 
         # # Connectors i accions
         self.definicioAccions()
@@ -111,12 +114,15 @@ class QVista(QMainWindow, Ui_MainWindow):
         # self.preparacioGrafiques()
         self.preparacioSeleccio()
         self.preparacioEntorns()
-        self.prepararCercador = True
+        
 
         # Eina inicial del mapa
         self.canvas.panCanvas()
+
+        # Preparació d'una marca sobre el mapa. S'utilitzarà per cerca d'adreces i street view
         self.marcaLloc = QgsVertexMarker(self.canvas)
         self.marcaLlocPosada = False
+
         # Guardem el dashboard actiu per poder activar/desactivar després els dashboards
         self.dashboardActiu = [self.canvas, self.frameLlegenda, self.mapeta]
 
@@ -127,11 +133,13 @@ class QVista(QMainWindow, Ui_MainWindow):
         # Carrega del projecte inicial
         self.obrirProjecte(projecteInicial)
 
+        # Final del cronomatratge d'arrancada
         endGlobal = time.time()
         tempsTotal = endGlobal - startGlobal
-        print ('Total carrega: ', tempsTotal)   
-        self.lblTempsArrencada = QLabel()
+        print ('Total carrega: ', tempsTotal)
 
+        # S'escriu el temps calculat d'arrencada sobre la label de la status bar
+        self.lblTempsArrencada = QLabel()
         self.lblTempsArrencada.setFrameStyle( QFrame.StyledPanel )
         self.lblTempsArrencada.setMinimumWidth( 170 )
         self.lblTempsArrencada.setAlignment( Qt.AlignCenter )
@@ -269,19 +277,13 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.canvas.scaleChanged.connect(self.showScale)   
         self.canvas.mapCanvasRefreshed.connect(self.canvasRefrescat)
 
-        # self.layoutCanvas = QVBoxLayout(self.canvas)
-        # self.layoutCanvas.setContentsMargins(0,0,0,0)
-        # self.canvas.setLayout(self.layoutCanvas)
-
-
         self.layout = QVBoxLayout(self.frameCentral)
         self._menuBarShadow = QGraphicsDropShadowEffect()
         self._menuBarShadow.setXOffset(10)
         self._menuBarShadow.setYOffset(10)
         self._menuBarShadow.setColor(QColor(170,170,170))
         self._menuBarShadow.setBlurRadius(10)
-        # self.canvas.setGraphicsEffect(self._menuBarShadow)
-        # self.frameCentral.setGraphicsEffect(self._menuBarShadow)
+
         self.layout.setContentsMargins(0,0,0,0)
         # self.layout.addWidget(self.botonera1)
 
@@ -313,14 +315,14 @@ class QVista(QMainWindow, Ui_MainWindow):
         else:
             self.canvas.scene().removeItem(self.marcaLloc)
             
-    def preparacioCalculadora(self):
-        self.calculadora = QWidget()
+    # def preparacioCalculadora(self):
+    #     self.calculadora = QWidget()
 
-        self.calculadora.ui = Ui_Calculadora()
-        self.calculadora.ui.setupUi(self.calculadora)
-        self.calculadora.show()
-        self.calculadora.ui.bLayersFields.clicked.connect(recorrerLayersFields)
-        self.calculadora.ui.bFieldsCalculadora.clicked.connect(carregarFieldsCalculadora)
+    #     self.calculadora.ui = Ui_Calculadora()
+    #     self.calculadora.ui.setupUi(self.calculadora)
+    #     self.calculadora.show()
+    #     self.calculadora.ui.bLayersFields.clicked.connect(recorrerLayersFields)
+    #     self.calculadora.ui.bFieldsCalculadora.clicked.connect(carregarFieldsCalculadora)
 
     def preparacioUbicacions(self):
         """
@@ -357,6 +359,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         # self.dwArbreDistrictes.setContentsMargins ( 2, 2, 2, 2 )
         # self.addDockWidget( Qt.RightDockWidgetArea, self.dwArbreDistrictes )
         # self.dwArbreDistrictes.setStyleSheet('QDockWidget {background-color: #909090;}')
+
     def preparacioCataleg(self):
         """ 
         Genera el cataleg del qVista i l'incorpora a un docWidget.
@@ -508,12 +511,8 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.marcaLloc.setIconType(QgsVertexMarker.ICON_BOX) # or ICON_CROSS, ICON_X
         self.marcaLloc.setPenWidth(3)
         self.marcaLloc.show()
-
         self.marcaLlocPosada = True
 
-
-        
-        
     def preparacioTaulaAtributs(self):
         """ 
         Es prepara la taula d'Atributs sobre un dockWidget.
