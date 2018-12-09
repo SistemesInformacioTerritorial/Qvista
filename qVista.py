@@ -1763,10 +1763,10 @@ class QVista(QMainWindow, Ui_MainWindow):
            
     def obrirDialegNovaCapa(self):
         dialegObertura=QFileDialog()
-        dialegObertura.setDirectoryUrl(QUrl('d:/dropbox/qvistaProd/capes/'))
+        dialegObertura.setDirectoryUrl(QUrl('../Dades/Capes/'))
         dialegObertura.setSupportedSchemes(["Projectes Qgis (*.qgs)", "Otro esquema"])
 
-        nfile,_ = dialegObertura.getOpenFileName(None,"Nova capa", ".", "Totes les capes acceptats (*.csv *.shp *.gpx *.qlr );; CSV (*.csv);; Shapes (*.shp);; Geopackage (*.gpx);;  Layers Qgis(*.qlr)")
+        nfile,_ = dialegObertura.getOpenFileName(None,"Nova capa", '../Dades/Capes/', "Totes les capes acceptats (*.csv *.shp *.gpx *.qlr );; CSV (*.csv);; Shapes (*.shp);; Geopackage (*.gpx);;  Layers Qgis(*.qlr)")
 
         if nfile is not None:
             extensio = nfile[-3:]
