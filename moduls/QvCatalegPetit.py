@@ -5,8 +5,8 @@ from qgis.core import QgsRectangle
 from botoInfoMapaPetit import Ui_BotoInfoMapa
 
 
-carpetaCataleg = "..\dades\CatalegProjectes"
-longitudPathCataleg = len(carpetaCataleg)
+carpetaCataleg = "c:/qVista/dades/CatalegProjectes/"
+longitudPathCataleg = len(carpetaCataleg)-1
 
 class QvColumnaCataleg(QWidget):
     """
@@ -57,27 +57,28 @@ class QvColumnaCataleg(QWidget):
                 self.layoutScroll.addWidget(botoInfoMapa)
 
                 botoInfoMapa.ui.lblTitol.setText(projecte)
-                imatge = QPixmap('../dades/projectes/'+projecte+".png")
+                imatge = QPixmap(carpetaCataleg+self.titol+'/'+projecte+".png")
                 imatge = imatge.scaledToWidth(200)
                 imatge = imatge.scaledToHeight(200)
                 
                 botoInfoMapa.ui.lblImatge.setPixmap(imatge)
 
-                # botoInfoMapa.ui.b4.clicked.connect(lambda: self.obrirEnQgis('../dades/projectes/'+projecte+'.qgs'))
+                # botoInfoMapa.ui.b4.clicked.connect(lambda: self.obrirEnQgis('c:/qVista/dades/projectes/'+projecte+'.qgs'))
 
-                nomProjecte='../dades/projectes/'+projecte+'.qgs'
+                nomProjecte=carpetaCataleg+self.titol+'/'+projecte+'.qgs'
                 # project = QgsProject()
                 # project.read(nomProjecte)
+                print (nomProjecte)
 
                 # botoInfoMapa.ui.label_3.setText('Autor: '+project.metadata().author())
                 botoInfoMapa.ui.b1.clicked.connect(self.obrirEnQVista(nomProjecte))
                 botoInfoMapa.ui.b2.clicked.connect(self.obrirEnQgis(nomProjecte))    
                 # doc=QTextDocument()
-                # doc.setHtml('../dades/projectes/'+projecte+'.htm')
+                # doc.setHtml('c:/qVista/dades/'+projecte+'.htm')
                 # botoInfoMapa.ui.textEdit.setDocument(doc)
                 # botoInfoMapa.ui.label_3.hide()
                 # try:
-                #     text=open('../dades/projectes/'+projecte+'.htm').read()
+                #     text=open('c:/qVista/dades/projectes/'+projecte+'.htm').read()
                 #     botoInfoMapa.ui.textEdit.setHtml(text)
                 # except:
                 #     # print ('Error carrega HTML')
@@ -189,7 +190,7 @@ class QvCataleg(QWidget):
                 projectes = []
                 for fitxer in carpeta[2]:
                     projectes.append(fitxer[0:-4])
-                self.dictProjectes[tema] = set(projectes)
+                self.dictProjectes[tema] = sorted(set(projectes))
         
         self.columnes = []
         for tema in self.dictProjectes:

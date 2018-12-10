@@ -1,4 +1,5 @@
-
+import time
+start = time.time()
 from qgis.core import *
 from qgis.gui import *
 
@@ -8,6 +9,7 @@ from qgis.PyQt.QtCore import *
 from qgis.PyQt.QtGui import *
 from qgis.PyQt.QtWidgets import *
 from qgis.PyQt import QtSql
+
 from qgis.PyQt.QtXml import QDomDocument, QDomElement, QDomAttr, QDomText    
 from qgis.PyQt.QtCore import pyqtSignal
 
@@ -30,8 +32,8 @@ from configuracioQvista import *
 # Plantilla del qVista
 from cubista3 import Ui_MainWindow
 
-import plotly
-import plotly.graph_objs as go
+# import plotly
+# import plotly.graph_objs as go
 
 
 
@@ -51,7 +53,7 @@ from info_ui import Ui_Informacio
 
 # Cataleg de layers
 from cataleg_ui import Ui_Cataleg
-
+print ('QvImports: ',time.time()-start)
 # Eines de dibuix
 # Icones SVG
 # import images_rc

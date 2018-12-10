@@ -57,7 +57,7 @@ class QvColumnaCataleg(QWidget):
                 self.layoutScroll.addWidget(botoInfoMapa)
 
                 botoInfoMapa.ui.lblTitol.setText(projecte)
-                imatge = QPixmap('../dades/projectes/'+projecte+".png")
+                imatge = QPixmap(carpetaCataleg+projecte+".png")
                 imatge = imatge.scaledToWidth(200)
                 imatge = imatge.scaledToHeight(200)
                 
@@ -189,7 +189,7 @@ class QvCataleg(QWidget):
                 projectes = []
                 for fitxer in carpeta[2]:
                     projectes.append(fitxer[0:-4])
-                self.dictProjectes[tema] = set(projectes)
+                self.dictProjectes[tema] = sorted(set(projectes))
         
         self.columnes = []
         for tema in self.dictProjectes:
