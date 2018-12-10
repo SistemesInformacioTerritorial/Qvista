@@ -883,6 +883,15 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.actSeleccioClick.setStatusTip("Selecció per click")
         self.actSeleccioClick.triggered.connect(seleccioClick)
 
+        self.actDisgregarDirele = QAction("Disgregar Fichero Direcciones", self)
+        # icon=QIcon(':/Icones/Icones/if_Map_-_Location_Solid_Style_07_2216351.png')
+        # self.actSeleccioClick.setIcon(icon)
+        self.actDisgregarDirele.setStatusTip("Disgregar Fichero Direcciones")
+        self.actDisgregarDirele.triggered.connect(DisgregarDirele)
+
+
+
+
         self.actEsborrarSeleccio = QAction("Esborrar seleccio", self)
         self.actEsborrarSeleccio.setStatusTip("Esborrar seleccio")
         self.actEsborrarSeleccio.triggered.connect(lambda: self.esborrarSeleccio(True))
@@ -1293,6 +1302,9 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.menuFuncions.addAction(self.actEsborrarSeleccio)
         self.menuFuncions.addAction(self.actSeleccioLliure)
         self.menuFuncions.addAction(self.actSeleccioClick)
+        self.menuFuncions.addAction(self.actDisgregarDirele)
+        
+
         self.menuFuncions.addAction(self.actFerGran)
         self.menuFuncions.addAction(self.actMapTip)
         self.menuFuncions.addAction(self.actTemes)
@@ -1912,6 +1924,54 @@ def seleccioClick():
     # taulaAtributsSeleccionats()
 
 
+def DisgregarDirele():
+    
+# ATENCION, debe existir subcarpeta dir_ele, para colocar los ficheros disgregados
+
+# __numerosCSV = 'C:\qVista\Dades\dadesBcn\TDE.csv'
+    __numerosCSV = '..\Dades\dadesBcn\TAULA_DIRELE.csv'
+    __path_disgregados= '..\Dades\DadesBcn\dir_ele\\'
+    """
+
+    """
+
+    if __numerosCSV:
+        f_read = open(__numerosCSV, 'r')
+        with f_read:
+            reader = csv.reader(f_read, delimiter = ',')
+            count=0
+            codi_carrer_old=''
+            for row in reader:    
+                if count==0:
+                    cabecera=row
+                else:
+                    codi_carrer=row[0]
+                    if codi_carrer != codi_carrer_old:
+                        path= __path_disgregados+str(codi_carrer)+'.csv'
+                        try:
+                            f_write.close()
+                        except:
+                            pass
+
+                        f_write = open(path, 'a')
+                        writer = csv.writer(f_write)
+                        writer.writerow(cabecera)
+                        writer.writerow(row)
+                    else:
+                        writer.writerow(row)
+                        
+                    codi_carrer_old= codi_carrer
+                count += 1
+            f_write.close()
+
+
+
+
+    pass
+
+
+
+
 def seleccioCercle():
     seleccioClick()
     layer=qV.llegenda.currentLayer()  
@@ -1944,7 +2004,12 @@ def seleccioExpressio():
     if qV.leSeleccioExpressio.text().lower() == 'help':
         qV.infoQVista()
         return
-    if qV.leSeleccioExpressio.text().lower() == 'qvdebug':
+
+    if qV.leSeleccioExpressio.text().lower() == 'd':
+        DisgregarDirele()
+
+
+    if (qV.leSeleccioExpressio.text().lower() == 'qvdebug') :
         qV.modeDebug()
         return
     layer=qV.llegenda.currentLayer()
