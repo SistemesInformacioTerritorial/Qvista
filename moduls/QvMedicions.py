@@ -13,17 +13,16 @@ projecteInicial='../dades/projectes/BCN11_nord.qgs'
 
 
 class PointTool(QgsMapTool):
-    
-    line_complete = pyqtSignal(QgsPointXY, QgsPointXY)
-    start_point = None
-    end_point = None
-    rubberband = None
-
+ 
 
     def __init__(self, canvas):
         self.canvas = canvas
         self.punts = []
-        QgsMapTool.__init__(self, canvas)
+        QgsMapTool.__init__(self, canvas)    
+        self.line_complete = pyqtSignal(QgsPointXY, QgsPointXY)
+        self.start_point = None
+        self.end_point = None
+        self.rubberband = None
 
     def canvasPressEvent(self, event):
         print ('press')
@@ -41,7 +40,7 @@ class PointTool(QgsMapTool):
             self.rubberband.setToGeometry(QgsGeometry.fromPolylineXY(self.points),None)
             self.rubberband.reset()
             # line is done, emit a signal
-            self.line_complete.emit(self.start_point, self.end_point)
+            # self.line_complete.emit(self.start_point, self.end_point)
             # reset the points
             # self.start_point = None
             self.end_point = None
@@ -60,7 +59,6 @@ class PointTool(QgsMapTool):
 
                 # self.rubberband.setColor(QColor(Qt.red))
                 # set the geometry for the rubberband
-            self.points = [self.start_point, self.point]
             self.rubberband.setToGeometry(QgsGeometry.fromPolylineXY(self.points),None)
             # self.label.move(event.pos())
             # self.label.adjustSize()
@@ -104,12 +102,6 @@ class QvMedicions(QWidget):
         self.rp = PointTool(self.canvas)
         self.canvas.setMapTool(self.rp)
         
-        self.setupUI()
-        # self.canvas.xyCoordinates.connect(self.mocMouse)
-
-    def setupUI(self):
-        self.boto = QPushButton(self)
-
 
 if __name__ == "__main__":
     with qgisapp():
