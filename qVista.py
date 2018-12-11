@@ -1027,6 +1027,8 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.platges = QvPlatges()
         self.platges.show()
 
+
+
     def preparacioSeleccio(self):
 
         # Disseny del interface
