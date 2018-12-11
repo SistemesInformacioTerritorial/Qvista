@@ -6,6 +6,9 @@ from botoInfoMapaPetit import Ui_BotoInfoMapa
 
 
 carpetaCataleg = "N:/9SITEB/Publicacions/qVista/CATALEG/Projectes/"
+if not os.path.isdir(carpetaCataleg):
+    carpetaCataleg = "../dades/CarpetaProjectes/"
+
 longitudPathCataleg = len(carpetaCataleg)-1
 
 class QvColumnaCataleg(QWidget):
@@ -68,7 +71,6 @@ class QvColumnaCataleg(QWidget):
                 nomProjecte=carpetaCataleg+self.titol+'/'+projecte+'.qgs'
                 # project = QgsProject()
                 # project.read(nomProjecte)
-                print (nomProjecte)
 
                 # botoInfoMapa.ui.label_3.setText('Autor: '+project.metadata().author())
                 botoInfoMapa.ui.b1.clicked.connect(self.obrirEnQVista(nomProjecte))
