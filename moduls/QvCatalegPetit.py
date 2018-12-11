@@ -147,23 +147,23 @@ class QvColumnaCataleg(QWidget):
         return obertura
 
 
-    def obrirCanvasTemp(child_conn, prj):
+    def obrirCanvasTemp(self, child_conn, prj):
         with qgisapp() as app:         
 
-            canvas = QgsMapCanvas()
-            project = QgsProject.instance()
-            root = QgsProject.instance().layerTreeRoot()
+            self.tcanvas = QgsMapCanvas()
+            self.tproject = QgsProject.instance()
+            self.troot = QgsProject.instance().layerTreeRoot()
 
-            bridge = QgsLayerTreeMapCanvasBridge(root, canvas)
-            canvas.show()
-            project.read(prj)
+            bridge = QgsLayerTreeMapCanvasBridge(self.troot, self.tcanvas)
+            self.tcanvas.show()
+            self.tproject.read(prj)
 
     def canvasProvisional(self, projecte):
         
         def obertura():
             try:
                 self.parent_conn,self.child_conn = Pipe()
-                self.p = Process(target=obrirCanvasTemp, args=(self.child_conn,projecte,))
+                self.p = Process(target=self.obrirCanvasTemp, args=(self.child_conn,projecte,))
                 self.p.start()
             except:
                 pass
