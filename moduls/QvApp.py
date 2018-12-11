@@ -32,8 +32,7 @@ _DB_QVISTA['PRO'] = {
     'Password': 'QVISTA_CONS'
 }
 
-_PATH_PRO = ['']
-# 'N:\\SITEB\\APL\\PYQGIS\\'
+_PATH_PRO = ['N:\\SITEB\\APL\\PYQGIS\\CODI']
 
 _PATH_HELP = 'help/'
 
@@ -58,7 +57,8 @@ class QvApp(Singleton):
         if hasattr(self, 'entorn'): # Solo se inicializa una vez
             return
         
-        self.entorn = self.calcEntorn()         # 'DSV' o 'PRO'
+        # self.entorn = self.calcEntorn()         # 'DSV' o 'PRO'
+        self.entorn = 'DSV'
         self.dbQvista = _DB_QVISTA[self.entorn] # Conexión a Oracle según entorno
         self.usuari = getpass.getuser().upper() # Usuario de red
         self.sessio = str(uuid.uuid1())         # Id único de sesión
