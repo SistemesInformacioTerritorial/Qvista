@@ -1924,8 +1924,6 @@ def seleccioClick():
     # taulaAtributsSeleccionats()
 
 
-<<<<<<< HEAD
-
 def createFolder(directory):
     try:
         if not os.path.exists(directory):
@@ -1941,14 +1939,13 @@ def createFolder(directory):
 
 
 import shutil
-def DisgregarDirele():
-=======
+
+
 def disgregarDirele():
     
 # ATENCION, debe existir subcarpeta dir_ele, para colocar los ficheros disgregados
 
 # __numerosCSV = 'C:\qVista\Dades\dadesBcn\TDE.csv6'
->>>>>>> 37f62a0a9d3e67e996b090cdebe653b225ce9c09
     __numerosCSV = '..\Dades\dadesBcn\TAULA_DIRELE.csv'
     __path_disgregados= '..\Dades\DadesBcn\dir_ele\\'
     """
