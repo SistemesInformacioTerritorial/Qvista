@@ -4,6 +4,17 @@ from moduls.QvImports import *
 from qgis.core import QgsRectangle
 from botoInfoMapaPetit import Ui_BotoInfoMapa
 
+from multiprocessing import Process,Queue,Pipe
+
+
+from  moduls.QvImports import *
+from multiprocessing import Process,Pipe
+
+from qgis.core.contextmanagers import qgisapp
+
+import threading
+import pickle
+
 
 carpetaCataleg = "c:/qVista/dades/CatalegProjectes/"
 longitudPathCataleg = len(carpetaCataleg)-1
@@ -136,12 +147,23 @@ class QvColumnaCataleg(QWidget):
         return obertura
 
 
+    def obrirCanvasTemp(child_conn, prj):
+        with qgisapp() as app:         
+
+            canvas = QgsMapCanvas()
+            project = QgsProject.instance()
+            root = QgsProject.instance().layerTreeRoot()
+
+            bridge = QgsLayerTreeMapCanvasBridge(root, canvas)
+            canvas.show()
+            project.read(prj)
+
     def canvasProvisional(self, projecte):
         
         def obertura():
             try:
                 self.parent_conn,self.child_conn = Pipe()
-                self.p = Process(target=f, args=(self.child_conn,'c:/qvista/dades/projectes/PavimentacioDemo.qgs',))
+                self.p = Process(target=obrirCanvasTemp, args=(self.child_conn,projecte,))
                 self.p.start()
             except:
                 pass
