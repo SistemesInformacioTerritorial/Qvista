@@ -73,6 +73,7 @@ class QvColumnaCataleg(QWidget):
                 # botoInfoMapa.ui.label_3.setText('Autor: '+project.metadata().author())
                 botoInfoMapa.ui.b1.clicked.connect(self.obrirEnQVista(nomProjecte))
                 botoInfoMapa.ui.b2.clicked.connect(self.obrirEnQgis(nomProjecte))    
+                botoInfoMapa.ui.b3.clicked.connect(self.canvasProvisional(nomProjecte))    
                 # doc=QTextDocument()
                 # doc.setHtml('c:/qVista/dades/'+projecte+'.htm')
                 # botoInfoMapa.ui.textEdit.setDocument(doc)
@@ -130,6 +131,17 @@ class QvColumnaCataleg(QWidget):
                     self.qV.canvas.setExtent(rang)
                 self.labelProjecte.setText(self.projectQgis.title())
                 self.parent().parent().parent().parent().hide()
+            except:
+                pass
+        return obertura
+
+
+    def canvasProvisional(self, projecte):
+        
+        def obertura():
+            try:
+                
+                QDesktopServices().openUrl(QUrl(projecte)) 
             except:
                 pass
         return obertura
