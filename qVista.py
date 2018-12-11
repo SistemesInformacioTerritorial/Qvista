@@ -244,6 +244,7 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         self.bInfo = self.botoLateral(tamany = 25, accio=self.actInfo)
         self.bHelp = self.botoLateral(tamany = 25, accio=self.actHelp)
+        self.bBug = self.botoLateral(tamany = 25, accio=self.actBug)
         self.bDashStandard = self.botoLateral(tamany = 25, accio=self.actDashStandard)
     
     # Funcions de preparació d'entorns 
@@ -918,6 +919,11 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.actHelp.setIcon(icon)
         self.actHelp.triggered.connect(self.helpQVista)
                 
+        self.actBug = QAction("Ajuda ", self)
+        icon=QIcon('imatges/bug.png')
+        self.actBug.setIcon(icon)
+        self.actBug.triggered.connect(self.reportarBug)
+                
         self.actPintaLabels = QAction("pintaLabels", self)
         self.actPintaLabels.setStatusTip("pintaLabels")
         self.actPintaLabels.triggered.connect(self.pintaLabels)
@@ -1027,7 +1033,22 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.platges = QvPlatges()
         self.platges.show()
 
-
+    def reportarBug(self):
+        self.fitxaError = QWidget()
+        self.lytFitxaError = QVBoxLayout(self.fitxaError)
+        self.fitxaError.setLayout(self.lytFitxaError)
+        leTitol = QLineEdit()
+        leTitol.setPlaceholderText('Escriu aquí el titol del sugeriment')
+        leDescripcio = QLineEdit()
+        leDescripcio.setPlaceholderText('Escriu.ne aquí una breu descripció')
+        bEnviar = QPushButton('Enviar')
+        self.lblResultat = QLabel()
+        bEnviar.clicked.connect(lambda: reportarProblema(leTitol.text(), leDescripcio.text()))
+        self.lytFitxaError.addWidget(leTitol)
+        self.lytFitxaError.addWidget(leDescripcio)
+        self.lytFitxaError.addWidget(bEnviar)
+        self.lytFitxaError.addWidget(self.lblResultat)
+        self.fitxaError.show()
 
     def preparacioSeleccio(self):
 
@@ -2253,6 +2274,35 @@ def missatgeCaixa(textTitol,textInformacio):
 
 def sortir():
     sys.exit()
+# Funcio per carregar problemes a GITHUB
+
+
+def reportarProblema(titol, descripcio=None, labels=None):
+    '''Crea un "issue" a github'''
+    USUARI = 'JCAIMI'
+    REPOSITORI = 'Qvista'
+    PASSWORD = 'qVista123'
+
+    # url per crear issues
+    url = 'https://api.github.com/repos/%s/%s/issues' % (USUARI, REPOSITORI)
+    print (url)
+    # Creem una sessió
+    session = requests.Session()
+    session.auth = (USUARI, PASSWORD)
+
+    # creem el problema
+    problema = {"title": titol,
+            "body": descripcio}
+
+    # Afegim el problema
+    r = session.post(url, json.dumps(problema))
+
+    if r.status_code == 201:
+        print ('Creat el problema {0:s}'.format(titol))
+        qV.lblResultat.setText("S'ha enviat correctament.")
+    else:
+        print ('Error al crear el problema {0:s}'.format(titol))
+        qV.lblResultat.setText('Error al crear el problema {0:s}'.format(titol))
 
 def main(argv):
     # import subprocess
