@@ -10,7 +10,6 @@ import getpass
 import uuid
 import lib
 import os
-from lib import traceback
 
 _DB_QVISTA = dict()
 
