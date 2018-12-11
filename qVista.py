@@ -887,7 +887,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         # icon=QIcon(':/Icones/Icones/if_Map_-_Location_Solid_Style_07_2216351.png')
         # self.actSeleccioClick.setIcon(icon)
         self.actDisgregarDirele.setStatusTip("Disgregar Fichero Direcciones")
-        self.actDisgregarDirele.triggered.connect(DisgregarDirele)
+        self.actDisgregarDirele.triggered.connect(disgregarDirele)
 
 
 
@@ -1924,6 +1924,7 @@ def seleccioClick():
     # taulaAtributsSeleccionats()
 
 
+<<<<<<< HEAD
 
 def createFolder(directory):
     try:
@@ -1941,6 +1942,13 @@ def createFolder(directory):
 
 import shutil
 def DisgregarDirele():
+=======
+def disgregarDirele():
+    
+# ATENCION, debe existir subcarpeta dir_ele, para colocar los ficheros disgregados
+
+# __numerosCSV = 'C:\qVista\Dades\dadesBcn\TDE.csv6'
+>>>>>>> 37f62a0a9d3e67e996b090cdebe653b225ce9c09
     __numerosCSV = '..\Dades\dadesBcn\TAULA_DIRELE.csv'
     __path_disgregados= '..\Dades\DadesBcn\dir_ele\\'
     """
@@ -2027,7 +2035,7 @@ def seleccioExpressio():
         return
 
     if qV.leSeleccioExpressio.text().lower() == 'd':
-        DisgregarDirele()
+        disgregarDirele()
 
 
     if (qV.leSeleccioExpressio.text().lower() == 'qvdebug') :
@@ -2253,12 +2261,12 @@ def main(argv):
     with qgisapp() as app: 
         qVapp = QvApp()
         ok = qVapp.logInici()            # Por defecto: family='QVISTA', logname='DESKTOP'
-        if not ok:
-            print('ERROR LOG >>', qVapp.logError())
-            ok = qVapp.logRegistre('Capa1')
-            ok = qVapp.logRegistre('Atributs')
+        # if not ok:
+        #     print('ERROR LOG >>', qVapp.logError())
+        #     ok = qVapp.logRegistre('Capa1')
+        #     ok = qVapp.logRegistre('Atributs')
 
-        # Idioma
+        # # Idioma
         qVapp.carregaIdioma(app, 'ca')
 
         app.setStyle(QStyleFactory.create('fusion'))
