@@ -1926,6 +1926,23 @@ def seleccioClick():
     # taulaAtributsSeleccionats()
 
 
+def createFolder(directory):
+    try:
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+    except OSError:
+        print ('Error: Creating directory. ' +  directory)
+        
+
+
+
+
+
+
+
+import shutil
+
+
 def disgregarDirele():
     
 # ATENCION, debe existir subcarpeta dir_ele, para colocar los ficheros disgregados
@@ -1936,6 +1953,15 @@ def disgregarDirele():
     """
 
     """
+
+
+    if os.path.isdir(__path_disgregados):
+        shutil.rmtree(__path_disgregados)
+        # os.rmdir(__path_disgregados)
+    
+    createFolder(__path_disgregados)
+
+
 
     if __numerosCSV:
         f_read = open(__numerosCSV, 'r')

@@ -16,7 +16,7 @@ import threading
 import pickle
 
 
-carpetaCataleg = "c:/qVista/dades/CatalegProjectes/"
+carpetaCataleg = "N:/9SITEB/Publicacions/qVista/CATALEG/Projectes/"
 longitudPathCataleg = len(carpetaCataleg)-1
 
 class QvColumnaCataleg(QWidget):

@@ -9,6 +9,8 @@ import sys
 import getpass
 import uuid
 import lib
+import os
+from lib import traceback
 
 _DB_QVISTA = dict()
 
@@ -30,7 +32,7 @@ _DB_QVISTA['PRO'] = {
     'Password': 'QVISTA_CONS'
 }
 
-_PATH_PRO = ['N:\\SITEB\\APL\\PYQGIS\\']
+_PATH_PRO = ['N:\\SITEB\\APL\\PYQGIS\\CODI']
 
 _PATH_HELP = 'help/'
 
@@ -39,9 +41,13 @@ _PROXY = {
     'Port': 8080
 }
 
+_VAR_INTRANET = 'USERDNSDOMAIN'
+
 def _fatalError(type, value, tb):    
-    # QvApp().logRegistre('LOG_ERROR', traceback.print_tb(tb, limit=1000))
-    print('Error:', type, value)
+    error = repr(traceback.format_tb(tb))
+    error = error[-1000:]
+    print('ERROR -', error)
+    QvApp().logRegistre('LOG_ERROR', error[-1000:])
 
 sys.excepthook = _fatalError
 
@@ -51,10 +57,12 @@ class QvApp(Singleton):
         if hasattr(self, 'entorn'): # Solo se inicializa una vez
             return
         
-        self.entorn = self.calcEntorn()         # 'DSV' o 'PRO'
+        # self.entorn = self.calcEntorn()         # 'DSV' o 'PRO'
+        self.entorn = 'DSV'
         self.dbQvista = _DB_QVISTA[self.entorn] # Conexión a Oracle según entorno
         self.usuari = getpass.getuser().upper() # Usuario de red
         self.sessio = str(uuid.uuid1())         # Id único de sesión
+        self.intranet = self.calcIntranet()
         self.proxy = self.setProxy()
         self.dbLog = None
         self.queryLog = None
@@ -67,7 +75,7 @@ class QvApp(Singleton):
 
     def setProxy(self):
         try:
-            if self.usuari is not None and len(self.usuari) > 0:
+            if self.intranet:
                 proxy = QNetworkProxy()
                 proxy.setType(QNetworkProxy.DefaultProxy)
                 proxy.setHostName = _PROXY['HostName']
@@ -94,6 +102,9 @@ class QvApp(Singleton):
                         entorn = 'PRO'
                         break
         return entorn
+
+    def calcIntranet(self):
+        return _VAR_INTRANET in os.environ.keys()
 
     def carregaIdioma(self, app, idioma = 'ca'):
         if app is None:
@@ -140,15 +151,17 @@ class QvApp(Singleton):
 
     def logConnexio(self):
         try:
-            db = QSqlDatabase.addDatabase(self.dbQvista['Database'])
-            if db.isValid():
-                db.setHostName(self.dbQvista['HostName'])
-                db.setPort(self.dbQvista['Port'])
-                db.setDatabaseName(self.dbQvista['DatabaseName'])
-                db.setUserName(self.dbQvista['UserName'])
-                db.setPassword(self.dbQvista['Password'])
-                if db.open():
-                    return db
+            if self.intranet:
+                db = QSqlDatabase.addDatabase(self.dbQvista['Database'])
+                if db.isValid():
+                    db.setHostName(self.dbQvista['HostName'])
+                    db.setPort(self.dbQvista['Port'])
+                    db.setDatabaseName(self.dbQvista['DatabaseName'])
+                    db.setUserName(self.dbQvista['UserName'])
+                    db.setPassword(self.dbQvista['Password'])
+                    if db.open():
+                        print('DBLog conectada')
+                        return db
             return None
         except:
             return None
