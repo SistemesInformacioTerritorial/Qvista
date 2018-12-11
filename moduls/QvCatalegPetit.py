@@ -140,8 +140,9 @@ class QvColumnaCataleg(QWidget):
         
         def obertura():
             try:
-                
-                QDesktopServices().openUrl(QUrl(projecte)) 
+                self.parent_conn,self.child_conn = Pipe()
+                self.p = Process(target=f, args=(self.child_conn,'c:/qvista/dades/projectes/PavimentacioDemo.qgs',))
+                self.p.start()
             except:
                 pass
         return obertura
