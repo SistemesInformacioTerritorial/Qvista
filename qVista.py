@@ -662,6 +662,11 @@ class QVista(QMainWindow, Ui_MainWindow):
         
     def preparacioEntorns(self):
         self.menuEntorns = self.bar.addMenu(5*' '+'Entorns')
+        
+        fnt = QFont("Segoe UI", 16, weight=QFont.Normal)
+        self.menuEntorns.setStyleSheet("QMenu {background-color: #dddddd; selection-background-color : #79909B;}")
+        self.menuEntorns.setFont(fnt)
+        self.menuEntorns.styleStrategy = QFont.PreferAntialias or QFont.PreferQuality
         for entorn in os.listdir(os.path.dirname('entorns/')):          
             if entorn == '__init__.py' or entorn[-3:] != '.py':
                 pass
@@ -674,6 +679,7 @@ class QVista(QMainWindow, Ui_MainWindow):
                 exec('self.act{}.setStatusTip("{}")'.format(nom, nom))   
                 exec('self.act{}.triggered.connect(self.prepararDash({}))'.format(nom, nom))
                 exec('self.menuEntorns.addAction(self.act{})'.format(nom))
+        self.menuEntorns.addAction(self.actPavimentacio)
     
     def streetViewTancat(self):
         if self.dwSV.isHidden():
@@ -1900,8 +1906,12 @@ class QVista(QMainWindow, Ui_MainWindow):
                             rowdata.append('')
                     writer.writerow(rowdata)
 
-    def pavimentacio(self):        
-        self.dwPavim = DockPavim()
+    def pavimentacio(self): 
+        self.project.read('C:/qVista/Dades/CatalegProjectes/Via pública/PavimentacioGeo.qgs')       
+        fnt = QFont("Segoe UI", 20, weight=QFont.Normal)
+        self.lblTitolProjecte.setFont(fnt)
+        self.lblTitolProjecte.setText(self.project.title())
+        self.dwPavim = DockPavim(self)
         self.addDockWidget( Qt.RightDockWidgetArea, self.dwPavim)
         self.dwPavim.show()    
 
