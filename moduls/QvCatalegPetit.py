@@ -4,8 +4,22 @@ from moduls.QvImports import *
 from qgis.core import QgsRectangle
 from botoInfoMapaPetit import Ui_BotoInfoMapa
 
+from multiprocessing import Process,Queue,Pipe
 
-carpetaCataleg = "c:/qVista/dades/CatalegProjectes/"
+
+from  moduls.QvImports import *
+from multiprocessing import Process,Pipe
+
+from qgis.core.contextmanagers import qgisapp
+
+import threading
+import pickle
+
+
+carpetaCataleg = "N:/9SITEB/Publicacions/qVista/CATALEG/Projectes/"
+if not os.path.isdir(carpetaCataleg):
+    carpetaCataleg = "../dades/CatalegProjectes/"
+
 longitudPathCataleg = len(carpetaCataleg)-1
 
 class QvColumnaCataleg(QWidget):
@@ -68,11 +82,11 @@ class QvColumnaCataleg(QWidget):
                 nomProjecte=carpetaCataleg+self.titol+'/'+projecte+'.qgs'
                 # project = QgsProject()
                 # project.read(nomProjecte)
-                print (nomProjecte)
 
                 # botoInfoMapa.ui.label_3.setText('Autor: '+project.metadata().author())
                 botoInfoMapa.ui.b1.clicked.connect(self.obrirEnQVista(nomProjecte))
                 botoInfoMapa.ui.b2.clicked.connect(self.obrirEnQgis(nomProjecte))    
+                botoInfoMapa.ui.b3.clicked.connect(self.miniCanvas(nomProjecte))    
                 # doc=QTextDocument()
                 # doc.setHtml('c:/qVista/dades/'+projecte+'.htm')
                 # botoInfoMapa.ui.textEdit.setDocument(doc)
@@ -120,6 +134,16 @@ class QvColumnaCataleg(QWidget):
                 pass
         return obertura
 
+    
+    def miniCanvas(self, projecte):
+        print (projecte)
+        def obertura():
+            try:
+                instruccio = "python-qgis.bat miniCanvas.py {}".format(projecte)
+                os.system(instruccio)
+            except:
+                pass
+        return obertura
 
     def obrirEnQVista(self, projecte):
         def obertura():
@@ -130,6 +154,27 @@ class QvColumnaCataleg(QWidget):
                     self.qV.canvas.setExtent(rang)
                 self.labelProjecte.setText(self.projectQgis.title())
                 self.parent().parent().parent().parent().hide()
+            except:
+                pass
+        return obertura
+
+
+    def obrirCanvasTemp(self, child_conn, prj):
+        with qgisapp() as app:      
+            self.tcanvas = QgsMapCanvas()
+            self.tproject = QgsProject.instance()
+            self.troot = QgsProject.instance().layerTreeRoot()
+            bridge = QgsLayerTreeMapCanvasBridge(self.troot, self.tcanvas)
+            self.tcanvas.show()
+            self.tproject.read(prj)
+
+    def canvasProvisional(self, projecte):
+        
+        def obertura():
+            try:
+                self.parent_conn,self.child_conn = Pipe()
+                self.p = Process(target=self.obrirCanvasTemp, args=(self.child_conn,projecte,))
+                self.p.start()
             except:
                 pass
         return obertura
