@@ -1,3 +1,9 @@
+"""
+20181210
+Mirar cosas de plotly
+
+"""
+
 # coding:utf-8
 
 # Inici del cronòmetre
@@ -111,7 +117,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.preparacioStreetView()
         # self.preparacioMapTips()
         self.preparacioImpressio()
-        # self.preparacioGrafiques()
+        self.preparacioGrafiques()
         self.preparacioSeleccio()
         self.preparacioEntorns()
         
@@ -616,37 +622,50 @@ class QVista(QMainWindow, Ui_MainWindow):
         # self.dwLlegenda.setContentsMargins ( 2, 2, 2, 2 )
         # self.addDockWidget( Qt.LeftDockWidgetArea, self.dwLlegenda )
 
-    def preparacioGrafiques(self):    
-        self.fGrafiques = QFrame()
-        self.lyGrafiques = QVBoxLayout(self.fGrafiques)
-        self.fGrafiques.setLayout(self.lyGrafiques)
+    def preparacioGrafiques(self):
+        try:
+            self.fGrafiques = QFrame()
+            self.lyGrafiques = QVBoxLayout(self.fGrafiques)
+            self.fGrafiques.setLayout(self.lyGrafiques)
 
-        self.calculadora = QWidget()
-        self.calculadora.ui = Ui_Calculadora()
-        self.calculadora.ui.setupUi(self.calculadora)
-        # self.calculadora.ui.bLayersFields.clicked.connect(self.recorrerLayersFields)
-        # self.calculadora.ui.bFieldsCalculadora.clicked.connect(carregarFieldsCalculadora)
-        self.calculadora.ui.bFieldsCalculadora.clicked.connect(self.ferGrafica)
-        self.calculadora.ui.cbLayers.currentIndexChanged.connect(self.recorrerFields)
+            self.calculadora = QWidget()
+            self.calculadora.ui = Ui_Calculadora()
+            self.calculadora.ui.setupUi(self.calculadora)
+            # self.calculadora.ui.bLayersFields.clicked.connect(self.recorrerLayersFields)
+            # self.calculadora.ui.bFieldsCalculadora.clicked.connect(carregarFieldsCalculadora)
+            self.calculadora.ui.bFieldsCalculadora.clicked.connect(self.ferGrafica)
+            self.calculadora.ui.cbLayers.currentIndexChanged.connect(self.recorrerFields)
+            
+            self.calculadora.ui.lwFields.setSelectionMode(QAbstractItemView.ExtendedSelection)
+
+            self.browserGrafiques = QWebView()
+
+            self.dwBrowserGrafiques = QDockWidget( "Gràfiques", self )
+            self.dwBrowserGrafiques.setStyleSheet("QDockWidget {background-color: #000000;}")
+            self.dwBrowserGrafiques.hide()
+
+            self.dwBrowserGrafiques.setObjectName( "Gràfiques" )
+            self.dwBrowserGrafiques.setAllowedAreas( Qt.TopDockWidgetArea |Qt.RightDockWidgetArea| Qt.BottomDockWidgetArea )
+            self.dwBrowserGrafiques.setWidget( self.fGrafiques)
+            self.dwBrowserGrafiques.setContentsMargins ( 0,0,0,0 )
+
+            self.lyGrafiques.addWidget(self.calculadora)
+            self.lyGrafiques.addWidget(self.browserGrafiques)
+            self.addDockWidget( Qt.RightDockWidgetArea, self.dwBrowserGrafiques)
+            
+            self.recorrerLayersFields()
+        except:
+            msg = QMessageBox()
+            msg.setIcon(QMessageBox.Warning)
+            
+            msg.setText(str(sys.exc_info()[1]))
+            # msg.setInformativeText("OK para salir del programa \nCANCEL para seguir en el programa")
+            msg.setWindowTitle("ERROR: qVista> preparacioGrafiques")
+            msg.setStandardButtons(QMessageBox.Close)
+            retval = msg.exec_()
+
+
         
-        self.calculadora.ui.lwFields.setSelectionMode(QAbstractItemView.ExtendedSelection)
-
-        self.browserGrafiques = QWebView()
-
-        self.dwBrowserGrafiques = QDockWidget( "Gràfiques", self )
-        self.dwBrowserGrafiques.setStyleSheet("QDockWidget {background-color: #000000;}")
-        self.dwBrowserGrafiques.hide()
-
-        self.dwBrowserGrafiques.setObjectName( "Gràfiques" )
-        self.dwBrowserGrafiques.setAllowedAreas( Qt.TopDockWidgetArea |Qt.RightDockWidgetArea| Qt.BottomDockWidgetArea )
-        self.dwBrowserGrafiques.setWidget( self.fGrafiques)
-        self.dwBrowserGrafiques.setContentsMargins ( 0,0,0,0 )
-
-        self.lyGrafiques.addWidget(self.calculadora)
-        self.lyGrafiques.addWidget(self.browserGrafiques)
-        self.addDockWidget( Qt.RightDockWidgetArea, self.dwBrowserGrafiques)
-        self.recorrerLayersFields()
-
     def preparacioEntorns(self):
         self.menuEntorns = self.bar.addMenu(5*' '+'Entorns')
         for entorn in os.listdir(os.path.dirname('entorns/')):          
@@ -694,7 +713,7 @@ class QVista(QMainWindow, Ui_MainWindow):
             
             msg.setText(info_rsc)
             # msg.setInformativeText("OK para salir del programa \nCANCEL para seguir en el programa")
-            msg.setWindowTitle("qVista ERROR")
+            msg.setWindowTitle("ERROR: qVista")
             msg.setDetailedText("Posa el cursor sobre els camps d'edició i segueix les instruccions.")
             msg.setStandardButtons(QMessageBox.Close)
             retval = msg.exec_()
@@ -1832,19 +1851,32 @@ class QVista(QMainWindow, Ui_MainWindow):
                     pass
     
     def recorrerLayersFields(self):
-        self.llegenda.setCurrentLayer(self.llegenda.capaPerNom(self.calculadora.ui.cbLayers.currentText()))
-        self.calculadora.ui.cbLayers.clear()
-        self.potsRecorrer=False
-        layers = self.canvas.layers()
-        layerList = []
-        for layer in layers:
-            layerList.append(layer.name())
-        self.calculadora.ui.cbLayers.addItems(layerList)
-        selectedLayerIndex = self.calculadora.ui.cbLayers.currentIndex()
-        self.selectedLayer = layers[selectedLayerIndex]
-        
-        self.potsRecorrer=True
-        self.recorrerFields()
+        try:
+            self.llegenda.setCurrentLayer(self.llegenda.capaPerNom(self.calculadora.ui.cbLayers.currentText()))
+            self.calculadora.ui.cbLayers.clear()
+            self.potsRecorrer=False
+            layers = self.canvas.layers()
+            layerList = []
+            for layer in layers:
+                layerList.append(layer.name())
+            self.calculadora.ui.cbLayers.addItems(layerList)
+            selectedLayerIndex = self.calculadora.ui.cbLayers.currentIndex()
+
+            self.selectedLayer = layers[selectedLayerIndex]
+            
+            self.potsRecorrer=True
+            self.recorrerFields()
+        except:
+            pass
+            # msg = QMessageBox()
+            # msg.setIcon(QMessageBox.Warning)
+            
+            # msg.setText(str(sys.exc_info()[1]))
+            # # msg.setInformativeText("OK para salir del programa \nCANCEL para seguir en el programa")
+            # msg.setWindowTitle("ERROR: qVista >> recorrerLayersFields")
+            # msg.setStandardButtons(QMessageBox.Close)
+            # retval = msg.exec_()
+
 
     def modeDebug(self):
         self.menuFuncions.show()
@@ -1954,19 +1986,10 @@ def createFolder(directory):
         
 
 
-
-
-
-
-
 import shutil
 
-
 def disgregarDirele():
-    
-# ATENCION, debe existir subcarpeta dir_ele, para colocar los ficheros disgregados
 
-# __numerosCSV = 'C:\qVista\Dades\dadesBcn\TDE.csv6'
     __numerosCSV = '..\Dades\dadesBcn\TAULA_DIRELE.csv'
     __path_disgregados= '..\Dades\DadesBcn\dir_ele\\'
     """
@@ -2289,7 +2312,7 @@ def reportarProblema(titol, descripcio=None, labels=None):
     session.auth = (USUARI, PASSWORD)
 
     # creem el problema
-    problema = {"title": titol,
+    problema = {"title": QvApp().usuari+": "+titol,
             "body": descripcio}
 
     # Afegim el problema
@@ -2306,12 +2329,21 @@ def main(argv):
     # import subprocess
     global qV
     with qgisapp() as app: 
+        
+        # Splash image al començar el programa. La tancarem amb splash.finish(qV)
+        splash_pix = QPixmap('qvistaLogo2.png')
+        splash = QSplashScreen(splash_pix, Qt.WindowStaysOnTopHint)
+        splash.setWindowFlags(Qt.WindowStaysOnTopHint | Qt.FramelessWindowHint)
+        splash.setEnabled(True)
+        splash.show()
+        app.processEvents()
+
         qVapp = QvApp()
         ok = qVapp.logInici()            # Por defecto: family='QVISTA', logname='DESKTOP'
-        # if not ok:
-        #     print('ERROR LOG >>', qVapp.logError())
-        #     ok = qVapp.logRegistre('Capa1')
-        #     ok = qVapp.logRegistre('Atributs')
+        if not ok:
+            print('ERROR LOG >>', qVapp.logError())
+            ok = qVapp.logRegistre('Capa1')
+            ok = qVapp.logRegistre('Atributs')
 
         # # Idioma
         qVapp.carregaIdioma(app, 'ca')
@@ -2322,13 +2354,6 @@ def main(argv):
         # app.setStyle('fusion')
         
 
-        # Splash image al començar el programa. La tancarem amb splash.finish(qV)
-        splash_pix = QPixmap('qvistaLogo2.png')
-        splash = QSplashScreen(splash_pix, Qt.WindowStaysOnTopHint)
-        splash.setWindowFlags(Qt.WindowStaysOnTopHint | Qt.FramelessWindowHint)
-        splash.setEnabled(True)
-        splash.show()
-        app.processEvents()
 
         # Prova d'escriure sobre la imatge
         # splash.showMessage("<h1><font color='black'>Versió 0.1 - Work in progress</font></h1>", Qt.AlignTop | Qt.AlignCenter, Qt.white)
@@ -2341,7 +2366,7 @@ def main(argv):
 
         # Tanquem la imatge splash.
         splash.finish(qV)
-        
+        qVapp.logRegistre('LOG_TEMPS', qV.lblTempsArrencada.text())
         app.aboutToQuit.connect(qV.gestioSortida)
 
 if __name__ == "__main__":
