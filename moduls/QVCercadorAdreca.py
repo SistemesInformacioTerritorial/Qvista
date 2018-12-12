@@ -13,7 +13,7 @@ import collections
 class QCercadorAdreca(QObject):
 
     __carrersCSV = '..\dades\dadesBcn\CARRERER.csv'
-    __numerosCSV = '..\dades\dadesBcn\TAULA_DIRELE.csv'
+    __path_disgregados= '..\Dades\DadesBcn\dir_ele\\' 
     sHanTrobatCoordenades = pyqtSignal(int, 'QString')  # atencion
 
     def __init__(self, lineEditCarrer, lineEditNumero, origen = 'CSV'):
@@ -74,6 +74,13 @@ class QCercadorAdreca(QObject):
         if carrer in self.dictCarrers:
             self.nomCarrer = carrer
             self.codiCarrer = self.dictCarrers[self.nomCarrer]
+
+            path= self.__path_disgregados+str(self.codiCarrer)+'.csv'
+            with open(path, encoding='utf-8', newline='') as csvFile:
+                reader = csv.DictReader(csvFile, delimiter=',')
+                for row in reader:
+                    self.dictNumeros[row['CODI_CARRER']][row['NUMPOST']] = row
+
             self.prepararCompleterNumero()
             self.focusANumero()
         else:
@@ -82,11 +89,6 @@ class QCercadorAdreca(QObject):
             self.sHanTrobatCoordenades.emit(1,info) #adreça vacia
 
     def trobatCarrer(self):
-        __path_disgregados= '..\Dades\DadesBcn\dir_ele\\'   
-
-        # __carrersCSV = '..\dades\dadesBcn\CARRERER.csv'
-        # __numerosCSV = '..\dades\dadesBcn\TAULA_DIRELE.csv'
-
         self.carrerActivat = False
         if not self.carrerActivat:
             txt = self.completerCarrer.currentCompletion()
@@ -100,19 +102,13 @@ class QCercadorAdreca(QObject):
                         self.nomCarrer = txt
                         self.codiCarrer = self.dictCarrers[self.nomCarrer]
 
-                        # una vez tenemos una calle validada, cargamos sus numeros. 
-                        # los 4110 ficheros están en la subcarpeta dir_ele
-                        # estos ficheros los puede generar qVista
-                        path= __path_disgregados+str(self.codiCarrer)+'.csv'
+                        path= self.__path_disgregados__path_disgregados+str(self.codiCarrer)+'.csv'
                         with open(path, encoding='utf-8', newline='') as csvFile:
                             reader = csv.DictReader(csvFile, delimiter=',')
                             for row in reader:
                                 self.dictNumeros[row['CODI_CARRER']][row['NUMPOST']] = row
 
-
-
                         self.prepararCompleterNumero()
-                        
                         self.focusANumero()
 
                     else:
@@ -153,14 +149,6 @@ class QCercadorAdreca(QObject):
                 for row in reader:
                     self.dictCarrers[row['NOM_OFICIAL']] = row['CODI_VIA']
                     # pass
-
-            # with open(self.__numerosCSV, encoding='utf-8', newline='') as csvFile:
-            #     reader = csv.DictReader(csvFile, delimiter=',')
-            #     for row in reader:
-            #         self.dictNumeros[row['CODI_CARRER']][row['NUMPOST']] = row
-            #         # pass
-
-            #     # splash_1.destroy()
             return True
         except:
             msg = QMessageBox()
