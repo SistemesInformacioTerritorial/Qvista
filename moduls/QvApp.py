@@ -8,7 +8,7 @@ from pathlib import Path
 import sys
 import getpass
 import uuid
-from lib import traceback
+import traceback
 import os
 
 _PATH_PRO = 'N:\\SITEB\\APL\\PYQGIS\\QVISTA\\CODI\\'
