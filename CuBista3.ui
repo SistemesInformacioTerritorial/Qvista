@@ -35,13 +35,13 @@
       <property name="minimumSize">
        <size>
         <width>0</width>
-        <height>70</height>
+        <height>85</height>
        </size>
       </property>
       <property name="maximumSize">
        <size>
         <width>16777215</width>
-        <height>70</height>
+        <height>85</height>
        </size>
       </property>
       <property name="frameShape">
@@ -98,17 +98,17 @@
          <widget class="QLabel" name="label">
           <property name="geometry">
            <rect>
-            <x>50</x>
-            <y>0</y>
-            <width>141</width>
-            <height>51</height>
+            <x>30</x>
+            <y>10</y>
+            <width>191</width>
+            <height>61</height>
            </rect>
           </property>
           <property name="text">
            <string/>
           </property>
           <property name="pixmap">
-           <pixmap>../../Users/Jo/Dropbox/qVistaProd/qVistaLogo.png</pixmap>
+           <pixmap>N:/SITEB/APL/PyQgis/qVista/Codi/Imatges/qVistaLogo.png</pixmap>
           </property>
           <property name="scaledContents">
            <bool>true</bool>
@@ -117,8 +117,8 @@
          <widget class="QLabel" name="label_3">
           <property name="geometry">
            <rect>
-            <x>-5</x>
-            <y>40</y>
+            <x>0</x>
+            <y>60</y>
             <width>261</width>
             <height>31</height>
            </rect>
@@ -606,7 +606,7 @@ color: #FFFFFF</string>
      <x>0</x>
      <y>0</y>
      <width>1233</width>
-     <height>34</height>
+     <height>33</height>
     </rect>
    </property>
    <property name="minimumSize">
