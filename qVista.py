@@ -2329,12 +2329,21 @@ def main(argv):
     # import subprocess
     global qV
     with qgisapp() as app: 
+        
+        # Splash image al començar el programa. La tancarem amb splash.finish(qV)
+        splash_pix = QPixmap('qvistaLogo2.png')
+        splash = QSplashScreen(splash_pix, Qt.WindowStaysOnTopHint)
+        splash.setWindowFlags(Qt.WindowStaysOnTopHint | Qt.FramelessWindowHint)
+        splash.setEnabled(True)
+        splash.show()
+        app.processEvents()
+
         qVapp = QvApp()
-        # ok = qVapp.logInici()            # Por defecto: family='QVISTA', logname='DESKTOP'
-        # if not ok:
-        #     print('ERROR LOG >>', qVapp.logError())
-        #     ok = qVapp.logRegistre('Capa1')
-        #     ok = qVapp.logRegistre('Atributs')
+        ok = qVapp.logInici()            # Por defecto: family='QVISTA', logname='DESKTOP'
+        if not ok:
+            print('ERROR LOG >>', qVapp.logError())
+            ok = qVapp.logRegistre('Capa1')
+            ok = qVapp.logRegistre('Atributs')
 
         # # Idioma
         qVapp.carregaIdioma(app, 'ca')
@@ -2345,13 +2354,6 @@ def main(argv):
         # app.setStyle('fusion')
         
 
-        # Splash image al començar el programa. La tancarem amb splash.finish(qV)
-        # splash_pix = QPixmap('qvistaLogo2.png')
-        # splash = QSplashScreen(splash_pix, Qt.WindowStaysOnTopHint)
-        # splash.setWindowFlags(Qt.WindowStaysOnTopHint | Qt.FramelessWindowHint)
-        # splash.setEnabled(True)
-        # splash.show()
-        app.processEvents()
 
         # Prova d'escriure sobre la imatge
         # splash.showMessage("<h1><font color='black'>Versió 0.1 - Work in progress</font></h1>", Qt.AlignTop | Qt.AlignCenter, Qt.white)
@@ -2363,8 +2365,8 @@ def main(argv):
         qV.showMaximized()
 
         # Tanquem la imatge splash.
-        # splash.finish(qV)
-        
+        splash.finish(qV)
+        qVapp.logRegistre('LOG_TEMPS', qV.lblTempsArrencada.text())
         app.aboutToQuit.connect(qV.gestioSortida)
 
 if __name__ == "__main__":
