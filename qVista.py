@@ -1,9 +1,3 @@
-"""
-20181210
-Mirar cosas de plotly
-
-"""
-
 # coding:utf-8
 
 # Inici del cronòmetre
@@ -24,7 +18,7 @@ from moduls.QVDistrictesBarris import QVDistrictesBarris
 from moduls.QvCatalegPetit import QvCataleg
 from moduls.QvApp import QvApp
 from moduls.QvLectorCsv import QvLectorCsv
-# from moduls.QvPavimentacio import DockPavim
+from moduls.QvPavimentacio import DockPavim
 
 # Variable global sobre la que instanciarem la classe qVista
 global qV
