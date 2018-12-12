@@ -18,7 +18,7 @@ import pickle
 
 carpetaCataleg = "N:/9SITEB/Publicacions/qVista/CATALEG/Projectes/"
 if not os.path.isdir(carpetaCataleg):
-    carpetaCataleg = "../dades/CarpetaProjectes/"
+    carpetaCataleg = "../dades/CatalegProjectes/"
 
 longitudPathCataleg = len(carpetaCataleg)-1
 

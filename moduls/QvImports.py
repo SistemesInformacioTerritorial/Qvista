@@ -20,6 +20,7 @@ import csv, codecs
 import os
 import sys
 import time
+import requests
 import sqlite3
 from threading import Thread
 import urllib.request, json 
