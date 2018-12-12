@@ -2289,7 +2289,7 @@ def reportarProblema(titol, descripcio=None, labels=None):
     session.auth = (USUARI, PASSWORD)
 
     # creem el problema
-    problema = {"title": titol,
+    problema = {"title": QvApp().usuari+": "+titol,
             "body": descripcio}
 
     # Afegim el problema
