@@ -86,7 +86,7 @@ class QvColumnaCataleg(QWidget):
                 # botoInfoMapa.ui.label_3.setText('Autor: '+project.metadata().author())
                 botoInfoMapa.ui.b1.clicked.connect(self.obrirEnQVista(nomProjecte))
                 botoInfoMapa.ui.b2.clicked.connect(self.obrirEnQgis(nomProjecte))    
-                botoInfoMapa.ui.b3.clicked.connect(self.canvasProvisional(nomProjecte))    
+                botoInfoMapa.ui.b3.clicked.connect(self.miniCanvas(nomProjecte))    
                 # doc=QTextDocument()
                 # doc.setHtml('c:/qVista/dades/'+projecte+'.htm')
                 # botoInfoMapa.ui.textEdit.setDocument(doc)
@@ -134,6 +134,16 @@ class QvColumnaCataleg(QWidget):
                 pass
         return obertura
 
+    
+    def miniCanvas(self, projecte):
+        print (projecte)
+        def obertura():
+            try:
+                instruccio = "python-qgis.bat miniCanvas.py {}".format(projecte)
+                os.system(instruccio)
+            except:
+                pass
+        return obertura
 
     def obrirEnQVista(self, projecte):
         def obertura():
@@ -150,12 +160,10 @@ class QvColumnaCataleg(QWidget):
 
 
     def obrirCanvasTemp(self, child_conn, prj):
-        with qgisapp() as app:         
-
+        with qgisapp() as app:      
             self.tcanvas = QgsMapCanvas()
             self.tproject = QgsProject.instance()
             self.troot = QgsProject.instance().layerTreeRoot()
-
             bridge = QgsLayerTreeMapCanvasBridge(self.troot, self.tcanvas)
             self.tcanvas.show()
             self.tproject.read(prj)

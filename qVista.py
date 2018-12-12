@@ -1594,9 +1594,7 @@ class QVista(QMainWindow, Ui_MainWindow):
             pass
 
     def martorellUTM(self):
-        """
-        Don't pay attention.
-        """
+ 
 
         extent=self.canvas.extent()
         self.canvas.rotate(45)
