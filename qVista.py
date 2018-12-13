@@ -1271,7 +1271,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         lblLogoAjb.setMinimumHeight(40)
         lblLogoAjb.setMaximumWidth(150)
         lblLogoAjb.setMinimumWidth(150)
-        imatge = QPixmap('logoBcnPetit.jpg')
+        imatge = QPixmap('imatges/logoBcnPetit.jpg')
         lblLogoAjb.setPixmap(imatge)
         lblLogoAjb.setScaledContents(True)
 

@@ -108,7 +108,7 @@
            <string/>
           </property>
           <property name="pixmap">
-           <pixmap>N:/SITEB/APL/PyQgis/qVista/Codi/Imatges/qVistaLogo.png</pixmap>
+           <pixmap>Imatges/qVistaLogo.png</pixmap>
           </property>
           <property name="scaledContents">
            <bool>true</bool>
@@ -606,7 +606,7 @@ color: #FFFFFF</string>
      <x>0</x>
      <y>0</y>
      <width>1233</width>
-     <height>33</height>
+     <height>34</height>
     </rect>
    </property>
    <property name="minimumSize">
