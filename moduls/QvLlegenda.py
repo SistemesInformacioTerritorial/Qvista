@@ -184,10 +184,12 @@ class QvLlegenda(QgsLayerTreeView):
 
         # Model
         self.model = QgsLegendModel(self.root)
-        self.model.setFlag(QgsLegendModel.ShowLegend)
+        self.model.setFlag(QgsLegendModel.ShowLegend, True)
         self.editarLlegenda(True)
 
         self.setModel(self.model)
+        if self.canvas is not None:
+            self.canvas.scaleChanged.connect(self.connectaEscala)
 
         # Acciones disponibles
         self.accions = QvAccions()
@@ -207,6 +209,22 @@ class QvLlegenda(QgsLayerTreeView):
         if self.atributs is not None:
             self.atributs.modificatFiltreCapa.connect(self.actIconaFiltre)
 
+    def editarLlegenda(self, on = True):
+        self.editable = on
+        self.model.setFlag(QgsLegendModel.AllowNodeReorder, on)
+        self.model.setFlag(QgsLegendModel.AllowNodeRename, on)
+        self.model.setFlag(QgsLegendModel.AllowLegendChangeState, on)
+        self.model.setFlag(QgsLegendModel.AllowNodeChangeVisibility, on)
+        # self.model.setFlag(QgsLegendModel.DeferredLegendInvalidation, on)
+
+    def connectaEscala(self, escala):
+        print('Cambio escala:', escala)
+        self.model.setLegendFilterByScale(escala)
+        # self.model.refreshScaleBasedLayers()
+
+        # for node in self.nodes():
+        #     self.model.refreshLayerLegend(node)
+
     def actIconaFiltre(self, capa):
         node = self.root.findLayer(capa.id())
         if node is not None:
@@ -220,13 +238,6 @@ class QvLlegenda(QgsLayerTreeView):
             # self.resize(self.size())
             if QvApp().appQgis is not None:
                 QvApp().appQgis.processEvents()
-
-    def editarLlegenda(self, on = True):
-        self.editable = on
-        self.model.setFlag(QgsLegendModel.AllowNodeReorder, on)
-        self.model.setFlag(QgsLegendModel.AllowNodeRename, on)
-        self.model.setFlag(QgsLegendModel.AllowLegendChangeState, on)
-        self.model.setFlag(QgsLegendModel.AllowNodeChangeVisibility, on)
 
     def nouProjecte(self):
         if self.atributs is not None:
@@ -531,7 +542,7 @@ if __name__ == "__main__":
     from qgis.gui import QgsMapCanvas
     from qgis.PyQt.QtWidgets import QMessageBox
 
-    with qgisapp() as app:
+    with qgisapp(sysexit=False) as app:
 
         QvApp().carregaIdioma(app, 'ca')
         # QvApp().logInici()
@@ -568,11 +579,12 @@ if __name__ == "__main__":
         print('Capes Llegenda:')
         for layer in llegenda.capes():
             print('-', layer.name(), ', Visible:', llegenda.capaVisible(layer),
-                                     ', Marcada:', llegenda.capaMarcada(layer))
+                                     ', Marcada:', llegenda.capaMarcada(layer),
+                                     ', Fitro escala:', layer.hasScaleBasedVisibility())
 
         llegenda.veureCapa(llegenda.capaPerNom('BCN_Barri_ETRS89_SHP'), True)
-        llegenda.veureCapa(llegenda.capaPerNom('BCN_Districte_ETRS89_SHP'), True)
-        llegenda.veureCapa(llegenda.capaPerNom('BCN_Illes_ETRS89_SHP'), False)
+        llegenda.veureCapa(llegenda.capaPerNom('BCN_Districte_ETRS89_SHP'), False)
+        llegenda.veureCapa(llegenda.capaPerNom('BCN_Illes_ETRS89_SHP'), True)
 
         llegenda.setCurrentLayer(llegenda.capaPerNom('BCN_Barri_ETRS89_SHP'))
 
