@@ -8,8 +8,12 @@ from pathlib import Path
 import sys
 import getpass
 import uuid
-import lib
+import traceback
 import os
+
+_PATH_PRO = 'N:\\SITEB\\APL\\PYQGIS\\QVISTA\\CODI\\'
+
+_PATH_HELP = 'help/'
 
 _DB_QVISTA = dict()
 
@@ -31,18 +35,16 @@ _DB_QVISTA['PRO'] = {
     'Password': 'QVISTA_CONS'
 }
 
-_PATH_PRO = ['N:\\SITEB\\APL\\PYQGIS\\']
-
-_PATH_HELP = 'help/'
-
 _PROXY = {
     'HostName': 'iprx.imi.bcn',
     'Port': 8080
 }
 
-def _fatalError(type, value, tb):    
-    # QvApp().logRegistre('LOG_ERROR', traceback.print_tb(tb, limit=1000))
-    print('Error:', type, value)
+def _fatalError(type, value, tb):
+    error = repr(traceback.format_tb(tb))
+    error = error[-1000:]
+    print('ERROR -', error)
+    QvApp().logRegistre('LOG_ERROR', error[-1000:])
 
 sys.excepthook = _fatalError
 
@@ -52,10 +54,12 @@ class QvApp(Singleton):
         if hasattr(self, 'entorn'): # Solo se inicializa una vez
             return
         
-        self.entorn = self.calcEntorn()         # 'DSV' o 'PRO'
+        # self.entorn = self.calcEntorn()         # 'DSV' o 'PRO'
+        self.entorn = 'DSV'
         self.dbQvista = _DB_QVISTA[self.entorn] # Conexión a Oracle según entorno
         self.usuari = getpass.getuser().upper() # Usuario de red
         self.sessio = str(uuid.uuid1())         # Id único de sesión
+        self.intranet = self.calcIntranet()     # True si estamos conectados a la intranet
         self.proxy = self.setProxy()
         self.dbLog = None
         self.queryLog = None
@@ -68,7 +72,7 @@ class QvApp(Singleton):
 
     def setProxy(self):
         try:
-            if self.usuari is not None and len(self.usuari) > 0:
+            if self.intranet:
                 proxy = QNetworkProxy()
                 proxy.setType(QNetworkProxy.DefaultProxy)
                 proxy.setHostName = _PROXY['HostName']
@@ -82,19 +86,19 @@ class QvApp(Singleton):
             return None
         
     def calcEntorn(self):
-        entorn = 'DSV'
         if len(sys.argv) > 0:
-            for pathPro in _PATH_PRO:
-                prog = sys.argv[0].upper()
-                progL = len(sys.argv[0])
-                path = pathPro.upper()
-                pathL = len(pathPro)
-                if progL > pathL:
-                    pref = prog[:pathL]
-                    if pref == path:
-                        entorn = 'PRO'
-                        break
-        return entorn
+            prog = sys.argv[0].upper()
+            progL = len(sys.argv[0])
+            path = _PATH_PRO.upper()
+            pathL = len(path)
+            if progL > pathL:
+                pref = prog[:pathL]
+                if pref == path:
+                    return 'PRO'
+        return 'DSV'
+
+    def calcIntranet(self):
+        return os.path.isdir(_PATH_PRO)
 
     def carregaIdioma(self, app, idioma = 'ca'):
         if app is None:
@@ -141,15 +145,16 @@ class QvApp(Singleton):
 
     def logConnexio(self):
         try:
-            db = QSqlDatabase.addDatabase(self.dbQvista['Database'])
-            if db.isValid():
-                db.setHostName(self.dbQvista['HostName'])
-                db.setPort(self.dbQvista['Port'])
-                db.setDatabaseName(self.dbQvista['DatabaseName'])
-                db.setUserName(self.dbQvista['UserName'])
-                db.setPassword(self.dbQvista['Password'])
-                if db.open():
-                    return db
+            if self.intranet:
+                db = QSqlDatabase.addDatabase(self.dbQvista['Database'])
+                if db.isValid():
+                    db.setHostName(self.dbQvista['HostName'])
+                    db.setPort(self.dbQvista['Port'])
+                    db.setDatabaseName(self.dbQvista['DatabaseName'])
+                    db.setUserName(self.dbQvista['UserName'])
+                    db.setPassword(self.dbQvista['Password'])
+                    if db.open():
+                        return db
             return None
         except:
             return None
@@ -181,7 +186,7 @@ class QvApp(Singleton):
         except:
             return False
 
-    def logInici(self, family = 'QVISTA', logname = 'DESKTOP'):
+    def logInici(self, family = 'QVISTA', logname = 'DESKTOP', params = None):
         self.familyLog = family.upper()
         self.nameLog = logname.upper()
         self.dbLog = self.logConnexio()
@@ -189,10 +194,10 @@ class QvApp(Singleton):
             return False
         else:
             self.queryLog = QSqlQuery()
-            return self.logRegistre('LOG_INICI')
+            return self.logRegistre('LOG_INICI', params)
 
-    def logFi(self):
-        ok = self.logRegistre('LOG_FI')
+    def logFi(self, params = None):
+        ok = self.logRegistre('LOG_FI', params)
         self.logDesconnexio()
         return ok
 
@@ -210,79 +215,9 @@ if __name__ == "__main__":
 
     gui = False
 
-    # for param in os.environ.keys():
-    #     print(param, '->', os.environ[param])
-
-# ALLUSERSPROFILE -> C:\ProgramData
-# APPDATA -> C:\Users\cpret\AppData\Roaming
-# COMMONPROGRAMFILES -> C:\Program Files\Common Files
-# COMMONPROGRAMFILES(X86) -> C:\Program Files (x86)\Common Files
-# COMMONPROGRAMW6432 -> C:\Program Files\Common Files
-# COMPUTERNAME -> DELL-CARLOS
-# COMSPEC -> C:\WINDOWS\system32\cmd.exe
-# DRIVERDATA -> C:\Windows\System32\Drivers\DriverData
-# GDAL_DATA -> D:\QGIS34\share\gdal
-# GDAL_DRIVER_PATH -> D:\QGIS34\bin\gdalplugins
-# GDAL_FILENAME_IS_UTF8 -> YES
-# GEOTIFF_CSV -> D:\QGIS34\share\epsg_csv
-# HOMEDRIVE -> C:
-# HOMEPATH -> \Users\cpret
-# JAVA_HOME -> C:\Program Files (x86)\Java\jre1.8.0_91
-# JPEGMEM -> 1000000
-# LOCALAPPDATA -> C:\Users\cpret\AppData\Local
-# LOGONSERVER -> \\DELL-CARLOS
-# NUMBER_OF_PROCESSORS -> 4
-# O4W_QT_BINARIES -> D:/QGIS34/apps/Qt5/bin
-# O4W_QT_DOC -> D:/QGIS34/apps/Qt5/doc
-# O4W_QT_HEADERS -> D:/QGIS34/apps/Qt5/include
-# O4W_QT_LIBRARIES -> D:/QGIS34/apps/Qt5/lib
-# O4W_QT_PLUGINS -> D:/QGIS34/apps/Qt5/plugins
-# O4W_QT_PREFIX -> D:/QGIS34/apps/Qt5
-# O4W_QT_TRANSLATIONS -> D:/QGIS34/apps/Qt5/translations
-# ONEDRIVE -> C:\Users\cpret\OneDrive
-# OS -> Windows_NT
-# OSGEO4W_ROOT -> D:\QGIS34
-# PATH -> D:\QGIS34\apps\qgis\bin;D:\QGIS34\apps\Python37;D:\QGIS34\apps\Python37\Scripts;D:\QGIS34\apps\qt5\bin;D:\QGIS34\apps\Python27\Scripts;D:\QGIS34\bin;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\system32\WBem;D:\QGIS34\apps\Python37\lib\site-packages\pywin32_system32
-# PATHEXT -> .COM;.EXE;.BAT;.CMD;.VBS;.VBE;.JS;.JSE;.WSF;.WSH;.MSC;.CPL
-# PROCESSOR_ARCHITECTURE -> AMD64
-# PROCESSOR_IDENTIFIER -> Intel64 Family 6 Model 78 Stepping 3, GenuineIntel
-# PROCESSOR_LEVEL -> 6
-# PROCESSOR_REVISION -> 4e03
-# PROGRAMDATA -> C:\ProgramData
-# PROGRAMFILES -> C:\Program Files
-# PROGRAMFILES(X86) -> C:\Program Files (x86)
-# PROGRAMW6432 -> C:\Program Files
-# PROJ_LIB -> D:\QGIS34\share\proj
-# PROMPT -> $P$G
-# PSMODULEPATH -> C:\Users\cpret\Documents\WindowsPowerShell\Modules;C:\Program Files\WindowsPowerShell\Modules;C:\WINDOWS\system32\WindowsPowerShell\v1.0\Modules
-# PUBLIC -> C:\Users\Public
-# PYTHONHOME -> D:\QGIS34\apps\Python37
-# PYTHONIOENCODING -> UTF-8
-# PYTHONPATH -> D:\QGIS34\apps\qgis\python;
-# PYTHONUNBUFFERED -> 1
-# QGIS_PREFIX_PATH -> D:/QGIS34/apps/qgis
-# QT_PLUGIN_PATH -> D:\QGIS34\apps\qgis\qtplugins;D:\QGIS34\apps\qt5\plugins
-# SESSIONNAME -> Console
-# SYSTEMDRIVE -> C:
-# SYSTEMROOT -> C:\WINDOWS
-# TEMP -> C:\Users\cpret\AppData\Local\Temp
-# TMP -> C:\Users\cpret\AppData\Local\Temp
-# USERDOMAIN -> DELL-CARLOS
-# USERDOMAIN_ROAMINGPROFILE -> DELL-CARLOS
-# USERNAME -> cpret
-# USERPROFILE -> C:\Users\cpret
-# VSCODE_CWD -> C:\Program Files\Microsoft VS Code
-# VSCODE_NODE_CACHED_DATA_DIR_14248 -> C:\Users\cpret\AppData\Roaming\Code\CachedData\1dfc5e557209371715f655691b1235b6b26a06be
-# VSI_CACHE -> TRUE
-# VSI_CACHE_SIZE -> 1000000
-# WINDIR -> C:\WINDOWS
-# TERM_PROGRAM -> vscode
-# TERM_PROGRAM_VERSION -> 1.29.1
-# LANG -> en_US.UTF-8
-
     with qgisapp(guienabled = gui) as app:
 
-        print(QSqlDatabase.drivers())
+        # print(QSqlDatabase.drivers())
 
         qApp = QvApp()                  # Singleton
         
@@ -307,6 +242,8 @@ if __name__ == "__main__":
         ###########
 
         ok = QvApp().logRegistre('Capa2')
+
+        aux = 3 / 0
 
         #
         # FIN LOG: Por evento si es un programa online, o por método si es un batch
