@@ -1,5 +1,3 @@
-
-
 from moduls.QvImports import *
 import math
 

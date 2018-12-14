@@ -228,12 +228,6 @@ class QvUbicacions(QtWidgets.QWidget):
         # asignamos al arbol el modelo
         self.arbre.setModel(self.model)
 
-        # PARA QUE HAGA CASO HA DE PONERSE ESTAS LINEAS POST .SETMODEL
-        self.arbre.setHeaderHidden(True)  #aqui
-        self.arbre.setColumnWidth(0,8000)
-        self.arbre.setHorizontalScrollBarPolicy(1)  
-
-
         #Amaguem totes les columnes menys la primera
         for i in range(self.model.columnCount()):
             if i!=0:
@@ -293,6 +287,14 @@ class QvUbicacions(QtWidgets.QWidget):
 
         # Podriem afegir un frame (fBotonera), sobre el que carregar botons
         # self.layUbicacions.addWidget(self.fBotonera)
+
+        # PARA QUE HAGA CASO HA DE PONERSE ESTAS LINEAS POST .SETMODEL
+        self.arbre.setHeaderHidden(True)  #aqui
+        self.arbre.setColumnWidth(0,8000)
+        self.arbre.setHorizontalScrollBarPolicy(1)  
+
+
+
 
 
     def esborrarNode(self):

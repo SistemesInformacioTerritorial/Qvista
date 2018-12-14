@@ -4,9 +4,23 @@ from moduls.QvImports import *
 from qgis.core import QgsRectangle
 from botoInfoMapaPetit import Ui_BotoInfoMapa
 
+from multiprocessing import Process,Queue,Pipe
 
-carpetaCataleg = "..\dades\CatalegProjectes"
-longitudPathCataleg = len(carpetaCataleg)
+
+from  moduls.QvImports import *
+from multiprocessing import Process,Pipe
+
+from qgis.core.contextmanagers import qgisapp
+
+import threading
+import pickle
+
+
+carpetaCataleg = "N:/9SITEB/Publicacions/qVista/CATALEG/Projectes/"
+if not os.path.isdir(carpetaCataleg):
+    carpetaCataleg = "../dades/CatalegProjectes/"
+
+longitudPathCataleg = len(carpetaCataleg)-1
 
 class QvColumnaCataleg(QWidget):
     """
@@ -57,27 +71,28 @@ class QvColumnaCataleg(QWidget):
                 self.layoutScroll.addWidget(botoInfoMapa)
 
                 botoInfoMapa.ui.lblTitol.setText(projecte)
-                imatge = QPixmap('../dades/projectes/'+projecte+".png")
+                imatge = QPixmap(carpetaCataleg+self.titol+'/'+projecte+".png")
                 imatge = imatge.scaledToWidth(200)
                 imatge = imatge.scaledToHeight(200)
                 
                 botoInfoMapa.ui.lblImatge.setPixmap(imatge)
 
-                # botoInfoMapa.ui.b4.clicked.connect(lambda: self.obrirEnQgis('../dades/projectes/'+projecte+'.qgs'))
+                # botoInfoMapa.ui.b4.clicked.connect(lambda: self.obrirEnQgis('c:/qVista/dades/projectes/'+projecte+'.qgs'))
 
-                nomProjecte='../dades/projectes/'+projecte+'.qgs'
+                nomProjecte=carpetaCataleg+self.titol+'/'+projecte+'.qgs'
                 # project = QgsProject()
                 # project.read(nomProjecte)
 
                 # botoInfoMapa.ui.label_3.setText('Autor: '+project.metadata().author())
                 botoInfoMapa.ui.b1.clicked.connect(self.obrirEnQVista(nomProjecte))
                 botoInfoMapa.ui.b2.clicked.connect(self.obrirEnQgis(nomProjecte))    
+                botoInfoMapa.ui.b3.clicked.connect(self.miniCanvas(nomProjecte))    
                 # doc=QTextDocument()
-                # doc.setHtml('../dades/projectes/'+projecte+'.htm')
+                # doc.setHtml('c:/qVista/dades/'+projecte+'.htm')
                 # botoInfoMapa.ui.textEdit.setDocument(doc)
                 # botoInfoMapa.ui.label_3.hide()
                 # try:
-                #     text=open('../dades/projectes/'+projecte+'.htm').read()
+                #     text=open('c:/qVista/dades/projectes/'+projecte+'.htm').read()
                 #     botoInfoMapa.ui.textEdit.setHtml(text)
                 # except:
                 #     # print ('Error carrega HTML')
@@ -119,6 +134,16 @@ class QvColumnaCataleg(QWidget):
                 pass
         return obertura
 
+    
+    def miniCanvas(self, projecte):
+        print (projecte)
+        def obertura():
+            try:
+                instruccio = "python-qgis.bat miniCanvas.py {}".format(projecte)
+                os.system(instruccio)
+            except:
+                pass
+        return obertura
 
     def obrirEnQVista(self, projecte):
         def obertura():
@@ -129,6 +154,27 @@ class QvColumnaCataleg(QWidget):
                     self.qV.canvas.setExtent(rang)
                 self.labelProjecte.setText(self.projectQgis.title())
                 self.parent().parent().parent().parent().hide()
+            except:
+                pass
+        return obertura
+
+
+    def obrirCanvasTemp(self, child_conn, prj):
+        with qgisapp() as app:      
+            self.tcanvas = QgsMapCanvas()
+            self.tproject = QgsProject.instance()
+            self.troot = QgsProject.instance().layerTreeRoot()
+            bridge = QgsLayerTreeMapCanvasBridge(self.troot, self.tcanvas)
+            self.tcanvas.show()
+            self.tproject.read(prj)
+
+    def canvasProvisional(self, projecte):
+        
+        def obertura():
+            try:
+                self.parent_conn,self.child_conn = Pipe()
+                self.p = Process(target=self.obrirCanvasTemp, args=(self.child_conn,projecte,))
+                self.p.start()
             except:
                 pass
         return obertura
@@ -189,7 +235,7 @@ class QvCataleg(QWidget):
                 projectes = []
                 for fitxer in carpeta[2]:
                     projectes.append(fitxer[0:-4])
-                self.dictProjectes[tema] = set(projectes)
+                self.dictProjectes[tema] = sorted(set(projectes))
         
         self.columnes = []
         for tema in self.dictProjectes:
