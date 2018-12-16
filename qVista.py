@@ -16,7 +16,7 @@ from moduls.QvMapeta import QvMapeta
 from moduls.QVCercadorAdreca import QCercadorAdreca
 from moduls.QVDistrictesBarris import QVDistrictesBarris
 from moduls.QvCatalegPetit import QvCataleg
-from moduls.QvAnotacions import QvAnotacions
+# from moduls.QvAnotacions import QvAnotacions
 from moduls.QvApp import QvApp
 from moduls.QvLectorCsv import QvLectorCsv
 # from moduls.QvPavimentacio import DockPavim
@@ -238,7 +238,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.bImprimir =  self.botoLateral(tamany = 25, accio=self.actImprimir)
         self.bTissores = self.botoLateral(tamany = 25, accio=self.actTissores)
         self.bSeleccioGrafica = self.botoLateral(tamany = 25, accio=self.actSeleccioGrafica)
-        self.bAnotacions = self.botoLateral(tamany = 25, accio=self.actAnotacions)
+        # self.bAnotacions = self.botoLateral(tamany = 25, accio=self.actAnotacions)
 
         spacer2 = QSpacerItem(1000, 1000, QSizePolicy.Expanding,QSizePolicy.Maximum)
         self.lytBotoneraLateral.addItem(spacer2)
