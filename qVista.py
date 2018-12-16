@@ -153,7 +153,6 @@ class QVista(QMainWindow, Ui_MainWindow):
     
     def obrirProjecte(self, projecte, rang = None):
         self.project.read(projecte)
-        self.canvas.refresh()
         if rang is not None:
             self.canvas.setExtent(rang)
 
@@ -1717,8 +1716,16 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.lblScale.setText( "Escala 1:" + str(int(scale) ))  
 
     def definirLabelsStatus(self):
-        self.lblXY = QLabel()
 
+        
+        self.lblConnexio = QLabel()
+        self.lblConnexio.setFrameStyle(QFrame.StyledPanel )
+        self.lblConnexio.setMinimumWidth( 140 )
+        self.statusbar.addPermanentWidget( self.lblConnexio, 0 )
+        self.lblConnexio.setText(estatConnexio)
+
+
+        self.lblXY = QLabel()
         self.lblXY.setFrameStyle( QFrame.StyledPanel )
         self.lblXY.setMinimumWidth( 170 )
         self.lblXY.setAlignment( Qt.AlignCenter )
