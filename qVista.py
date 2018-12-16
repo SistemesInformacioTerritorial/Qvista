@@ -1,9 +1,3 @@
-"""
-20181210
-Mirar cosas de plotly
-
-"""
-
 # coding:utf-8
 
 # Inici del cronòmetre
@@ -22,6 +16,7 @@ from moduls.QvMapeta import QvMapeta
 from moduls.QVCercadorAdreca import QCercadorAdreca
 from moduls.QVDistrictesBarris import QVDistrictesBarris
 from moduls.QvCatalegPetit import QvCataleg
+from moduls.QvAnotacions import QvAnotacions
 from moduls.QvApp import QvApp
 from moduls.QvLectorCsv import QvLectorCsv
 # from moduls.QvPavimentacio import DockPavim
@@ -244,6 +239,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.bImprimir =  self.botoLateral(tamany = 25, accio=self.actImprimir)
         self.bTissores = self.botoLateral(tamany = 25, accio=self.actTissores)
         self.bSeleccioGrafica = self.botoLateral(tamany = 25, accio=self.actSeleccioGrafica)
+        self.bAnotacions = self.botoLateral(tamany = 25, accio=self.actAnotacions)
 
         spacer2 = QSpacerItem(1000, 1000, QSizePolicy.Expanding,QSizePolicy.Maximum)
         self.lytBotoneraLateral.addItem(spacer2)
@@ -890,6 +886,12 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.actSeleccioGrafica.triggered.connect(self.seleccioGrafica)
 
         
+        self.actAnotacions = QAction("Eina per retallar pantalla", self)
+        self.actAnotacions.setStatusTip("Eina per retallar pantalla")
+        icon=QIcon('imatges/select.png')
+        self.actAnotacions.setIcon(icon)
+        self.actAnotacions.triggered.connect(self.preparacioAnotacions)
+
         self.actPanSelected = QAction("Pan selected", self)
         self.actPanSelected.setStatusTip("Pan selected")
         self.actPanSelected.triggered.connect(self.panSelected)
@@ -2375,7 +2377,7 @@ def main(argv):
         app.aboutToQuit.connect(qV.gestioSortida)
 
 if __name__ == "__main__":
-    try:
+    # try:
         main(sys.argv)
-    except:
-        print ('Ha petado en el main principal')
+    # except:
+    #     print ('Ha petado en el main principal')
