@@ -684,6 +684,7 @@ class QVista(QMainWindow, Ui_MainWindow):
                 exec('self.act{}.setStatusTip("{}")'.format(nom, nom))   
                 exec('self.act{}.triggered.connect(self.prepararDash({}))'.format(nom, nom))
                 exec('self.menuEntorns.addAction(self.act{})'.format(nom))
+        self.menuEntorns.addAction(self.actPavimentacio)
     
     def streetViewTancat(self):
         if self.dwSV.isHidden():
