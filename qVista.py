@@ -668,6 +668,10 @@ class QVista(QMainWindow, Ui_MainWindow):
         
     def preparacioEntorns(self):
         self.menuEntorns = self.bar.addMenu(5*' '+'Entorns')
+        fnt = QFont("Segoe UI", 16, weight=QFont.Normal)
+        self.menuEntorns.setStyleSheet("QMenu {background-color: #dddddd; selection-background-color : #79909B;}")
+        self.menuEntorns.setFont(fnt)
+        self.menuEntorns.styleStrategy = QFont.PreferAntialias or QFont.PreferQuality
         for entorn in os.listdir(os.path.dirname('entorns/')):          
             if entorn == '__init__.py' or entorn[-3:] != '.py':
                 pass
