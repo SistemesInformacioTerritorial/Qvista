@@ -8,7 +8,12 @@ from pathlib import Path
 import sys
 import getpass
 import uuid
-import lib
+import traceback
+import os
+
+_PATH_PRO = 'N:\\SITEB\\APL\\PYQGIS\\QVISTA\\CODI\\'
+
+_PATH_HELP = 'help/'
 
 _DB_QVISTA = dict()
 
@@ -30,18 +35,16 @@ _DB_QVISTA['PRO'] = {
     'Password': 'QVISTA_CONS'
 }
 
-_PATH_PRO = ['N:\\SITEB\\APL\\PYQGIS\\']
-
-_PATH_HELP = 'help/'
-
 _PROXY = {
     'HostName': 'iprx.imi.bcn',
     'Port': 8080
 }
 
-def _fatalError(type, value, tb):    
-    # QvApp().logRegistre('LOG_ERROR', traceback.print_tb(tb, limit=1000))
-    print('Error:', type, value)
+def _fatalError(type, value, tb):
+    error = repr(traceback.format_tb(tb))
+    error = error[-1000:]
+    print('ERROR -', error)
+    QvApp().logRegistre('LOG_ERROR', error[-1000:])
 
 sys.excepthook = _fatalError
 
@@ -51,10 +54,12 @@ class QvApp(Singleton):
         if hasattr(self, 'entorn'): # Solo se inicializa una vez
             return
         
-        self.entorn = self.calcEntorn()         # 'DSV' o 'PRO'
+        # self.entorn = self.calcEntorn()         # 'DSV' o 'PRO'
+        self.entorn = 'DSV'
         self.dbQvista = _DB_QVISTA[self.entorn] # Conexión a Oracle según entorno
         self.usuari = getpass.getuser().upper() # Usuario de red
         self.sessio = str(uuid.uuid1())         # Id único de sesión
+        self.intranet = self.calcIntranet()     # True si estamos conectados a la intranet
         self.proxy = self.setProxy()
         self.dbLog = None
         self.queryLog = None
@@ -67,7 +72,7 @@ class QvApp(Singleton):
 
     def setProxy(self):
         try:
-            if self.usuari is not None and len(self.usuari) > 0:
+            if self.intranet:
                 proxy = QNetworkProxy()
                 proxy.setType(QNetworkProxy.DefaultProxy)
                 proxy.setHostName = _PROXY['HostName']
@@ -81,19 +86,19 @@ class QvApp(Singleton):
             return None
         
     def calcEntorn(self):
-        entorn = 'DSV'
         if len(sys.argv) > 0:
-            for pathPro in _PATH_PRO:
-                prog = sys.argv[0].upper()
-                progL = len(sys.argv[0])
-                path = pathPro.upper()
-                pathL = len(pathPro)
-                if progL > pathL:
-                    pref = prog[:pathL]
-                    if pref == path:
-                        entorn = 'PRO'
-                        break
-        return entorn
+            prog = sys.argv[0].upper()
+            progL = len(sys.argv[0])
+            path = _PATH_PRO.upper()
+            pathL = len(path)
+            if progL > pathL:
+                pref = prog[:pathL]
+                if pref == path:
+                    return 'PRO'
+        return 'DSV'
+
+    def calcIntranet(self):
+        return os.path.isdir(_PATH_PRO)
 
     def carregaIdioma(self, app, idioma = 'ca'):
         if app is None:
@@ -140,15 +145,16 @@ class QvApp(Singleton):
 
     def logConnexio(self):
         try:
-            db = QSqlDatabase.addDatabase(self.dbQvista['Database'])
-            if db.isValid():
-                db.setHostName(self.dbQvista['HostName'])
-                db.setPort(self.dbQvista['Port'])
-                db.setDatabaseName(self.dbQvista['DatabaseName'])
-                db.setUserName(self.dbQvista['UserName'])
-                db.setPassword(self.dbQvista['Password'])
-                if db.open():
-                    return db
+            if self.intranet:
+                db = QSqlDatabase.addDatabase(self.dbQvista['Database'])
+                if db.isValid():
+                    db.setHostName(self.dbQvista['HostName'])
+                    db.setPort(self.dbQvista['Port'])
+                    db.setDatabaseName(self.dbQvista['DatabaseName'])
+                    db.setUserName(self.dbQvista['UserName'])
+                    db.setPassword(self.dbQvista['Password'])
+                    if db.open():
+                        return db
             return None
         except:
             return None
@@ -180,7 +186,7 @@ class QvApp(Singleton):
         except:
             return False
 
-    def logInici(self, family = 'QVISTA', logname = 'DESKTOP'):
+    def logInici(self, family = 'QVISTA', logname = 'DESKTOP', params = None):
         self.familyLog = family.upper()
         self.nameLog = logname.upper()
         self.dbLog = self.logConnexio()
@@ -188,10 +194,10 @@ class QvApp(Singleton):
             return False
         else:
             self.queryLog = QSqlQuery()
-            return self.logRegistre('LOG_INICI')
+            return self.logRegistre('LOG_INICI', params)
 
-    def logFi(self):
-        ok = self.logRegistre('LOG_FI')
+    def logFi(self, params = None):
+        ok = self.logRegistre('LOG_FI', params)
         self.logDesconnexio()
         return ok
 
@@ -211,7 +217,7 @@ if __name__ == "__main__":
 
     with qgisapp(guienabled = gui) as app:
 
-        print(QSqlDatabase.drivers())
+        # print(QSqlDatabase.drivers())
 
         qApp = QvApp()                  # Singleton
         
@@ -236,6 +242,8 @@ if __name__ == "__main__":
         ###########
 
         ok = QvApp().logRegistre('Capa2')
+
+        aux = 3 / 0
 
         #
         # FIN LOG: Por evento si es un programa online, o por método si es un batch

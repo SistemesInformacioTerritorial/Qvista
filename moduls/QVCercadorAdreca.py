@@ -13,7 +13,7 @@ import collections
 class QCercadorAdreca(QObject):
 
     __carrersCSV = '..\dades\dadesBcn\CARRERER.csv'
-    __numerosCSV = '..\dades\dadesBcn\TAULA_DIRELE.csv'
+    __path_disgregados= '..\Dades\DadesBcn\dir_ele\\' 
     sHanTrobatCoordenades = pyqtSignal(int, 'QString')  # atencion
 
     def __init__(self, lineEditCarrer, lineEditNumero, origen = 'CSV'):
@@ -74,6 +74,13 @@ class QCercadorAdreca(QObject):
         if carrer in self.dictCarrers:
             self.nomCarrer = carrer
             self.codiCarrer = self.dictCarrers[self.nomCarrer]
+
+            path= self.__path_disgregados+str(self.codiCarrer)+'.csv'
+            with open(path, encoding='utf-8', newline='') as csvFile:
+                reader = csv.DictReader(csvFile, delimiter=',')
+                for row in reader:
+                    self.dictNumeros[row['CODI_CARRER']][row['NUMPOST']] = row
+
             self.prepararCompleterNumero()
             self.focusANumero()
         else:
@@ -94,8 +101,16 @@ class QCercadorAdreca(QObject):
                     if txt in self.dictCarrers:
                         self.nomCarrer = txt
                         self.codiCarrer = self.dictCarrers[self.nomCarrer]
+
+                        path= self.__path_disgregados__path_disgregados+str(self.codiCarrer)+'.csv'
+                        with open(path, encoding='utf-8', newline='') as csvFile:
+                            reader = csv.DictReader(csvFile, delimiter=',')
+                            for row in reader:
+                                self.dictNumeros[row['CODI_CARRER']][row['NUMPOST']] = row
+
                         self.prepararCompleterNumero()
                         self.focusANumero()
+
                     else:
                          # info="\""+txt+"\""
                         info="ERROR >> [2]"
@@ -134,17 +149,21 @@ class QCercadorAdreca(QObject):
                 for row in reader:
                     self.dictCarrers[row['NOM_OFICIAL']] = row['CODI_VIA']
                     # pass
-
-            with open(self.__numerosCSV, encoding='utf-8', newline='') as csvFile:
-                reader = csv.DictReader(csvFile, delimiter=',')
-                for row in reader:
-                    self.dictNumeros[row['CODI_CARRER']][row['NUMPOST']] = row
-                    # pass
-
-                # splash_1.destroy()
-                return True
+            return True
         except:
-            print('QCercadorAdreca.llegirAdrecesCSV(): ', sys.exc_info()[0], sys.exc_info()[1])
+            msg = QMessageBox()
+            msg.setIcon(QMessageBox.Warning)
+            
+            msg.setText(str(sys.exc_info()[1]))
+            # msg.setInformativeText("OK para salir del programa \nCANCEL para seguir en el programa")
+            msg.setWindowTitle("qVista ERROR")
+            msg.setStandardButtons(QMessageBox.Close)
+            retval = msg.exec_()
+
+
+
+
+            # print('QCercadorAdreca.llegirAdrecesCSV(): ', sys.exc_info()[0], sys.exc_info()[1])
             return False
 
     def activatNumero(self,txt):

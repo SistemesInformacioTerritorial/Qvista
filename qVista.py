@@ -1,74 +1,30 @@
 # coding:utf-8
+
+# Inici del cronòmetre
 import time
-print ('abans moduls')
 startGlobal = time.time()
-start = time.time()
-from  moduls.QvImports import *
-end = time.time()
-print ('imports', end-start)
-start = time.time()
+
+from moduls.QvImports import *
 from moduls.QvUbicacions import QvUbicacions
-end = time.time()
-print ('ubi', end-start)
-start = time.time()
 from moduls.QvPrint import QvPrint
-end = time.time()
-print ('print', end-start)
-start = time.time()
-# from moduls.QvAnotacions import QvAnotacions
-# print ('anot')
 from moduls.QvCanvas import QvCanvas
-end = time.time()
-print ('canvas', end-start)
-start = time.time()
-# from moduls.QvToolTip import QvToolTip
 from moduls.QvEinesGrafiques import QvSeleccioElement, QvSeleccioPerPoligon, QvSeleccioCercle, QvSeleccioPunt
-
-end = time.time()
-print ('graf', end-start)
-start = time.time()
 from moduls.QvStreetView import QvStreetView
-end = time.time()
-print ('sv', end-start)
-start = time.time()
 from moduls.QvLlegenda import QvLlegenda
-end = time.time()
-print ('lleg', end-start)
-start = time.time()
 from moduls.QvAtributs import QvAtributs
-end = time.time()
-print ('atr', end-start)
-start = time.time()
 from moduls.QvMapeta import QvMapeta
-end = time.time()
-print ('mapeta', end-start)
-start = time.time()
 from moduls.QVCercadorAdreca import QCercadorAdreca
-end = time.time()
-print ('cerc', end-start)
-start = time.time()
 from moduls.QVDistrictesBarris import QVDistrictesBarris
-end = time.time()
-print ('distbar', end-start)
-start = time.time()
 from moduls.QvCatalegPetit import QvCataleg
-end = time.time()
-print ('cat', end-start)
-start = time.time()
-# from entorns.QvPlatges import QvPlatges
-# from moduls.QvVistaMapa import QvVistaMapa
-# from moduls.QvWizard import QvWizard
+from moduls.QvAnotacions import QvAnotacions
 from moduls.QvApp import QvApp
-end = time.time()
-print ('app', end-start)
-
+from moduls.QvLectorCsv import QvLectorCsv
 # from moduls.QvPavimentacio import DockPavim
 
-from moduls.QvLectorCsv import QvLectorCsv
-print ('csv')
+# Variable global sobre la que instanciarem la classe qVista
 global qV
-print ('despres moduls')
 
+# Classes auxiliars 
 class QHLine(QFrame):
     def __init__(self):
         super(QHLine, self).__init__()
@@ -121,7 +77,11 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         #Afegim títol a la finestra
         self.setWindowTitle(titolFinestra)
+
+        # Definició dels labels de la statusBar 
         self.definirLabelsStatus()   
+
+        # Preparació deprojecte i canvas
         self.preparacioEntornGrafic()
         
 
@@ -132,6 +92,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.primerCop = True
         self.mapaMaxim = False
         self.layerActiu = None
+        self.prepararCercador = True
 
         # # Connectors i accions
         self.definicioAccions()
@@ -143,33 +104,26 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         # Preparació botonera, mapeta, llegenda, taula d'atributs, etc.
         self.botoneraLateral()
-        print('lateral')
         self.preparacioMapeta()
-        print('mapeta')
         self.preparacioTaulaAtributs()
-        print('atrib')
         self.preparacioLlegenda()
-        print('llegn')
         self.preparacioArbreDistrictes()
-        print('arbre')
         self.preparacioCataleg()
-        print('cat')
         self.preparacioStreetView()
-        print('sv')
         # self.preparacioMapTips()
         self.preparacioImpressio()
-        print('imp')
-        # self.preparacioGrafiques()
+        self.preparacioGrafiques()
         self.preparacioSeleccio()
-        print('sel')
         self.preparacioEntorns()
-        print('ent')
-        self.prepararCercador = True
+        
 
         # Eina inicial del mapa
         self.canvas.panCanvas()
+
+        # Preparació d'una marca sobre el mapa. S'utilitzarà per cerca d'adreces i street view
         self.marcaLloc = QgsVertexMarker(self.canvas)
         self.marcaLlocPosada = False
+
         # Guardem el dashboard actiu per poder activar/desactivar després els dashboards
         self.dashboardActiu = [self.canvas, self.frameLlegenda, self.mapeta]
 
@@ -180,14 +134,26 @@ class QVista(QMainWindow, Ui_MainWindow):
         # Carrega del projecte inicial
         self.obrirProjecte(projecteInicial)
 
+        # Final del cronomatratge d'arrancada
         endGlobal = time.time()
-        print ('Total: ', endGlobal - startGlobal)
+        tempsTotal = endGlobal - startGlobal
+        print ('Total carrega: ', tempsTotal)
+
+        # S'escriu el temps calculat d'arrencada sobre la label de la status bar
+        self.lblTempsArrencada = QLabel()
+        self.lblTempsArrencada.setFrameStyle( QFrame.StyledPanel )
+        self.lblTempsArrencada.setMinimumWidth( 170 )
+        self.lblTempsArrencada.setAlignment( Qt.AlignCenter )
+        self.statusbar.setSizeGripEnabled( False )
+        self.statusbar.addPermanentWidget( self.lblTempsArrencada, 0 )
+        self.lblTempsArrencada.setText ("Segons per arrancar: "+str('%.1f'%tempsTotal))
 
 
     # Fins aquí teniem la inicialització de la classe. Ara venen les funcions, o métodes, de la classe. 
     
     def obrirProjecte(self, projecte, rang = None):
         self.project.read(projecte)
+        self.canvas.refresh()
         if rang is not None:
             self.canvas.setExtent(rang)
 
@@ -273,12 +239,14 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.bImprimir =  self.botoLateral(tamany = 25, accio=self.actImprimir)
         self.bTissores = self.botoLateral(tamany = 25, accio=self.actTissores)
         self.bSeleccioGrafica = self.botoLateral(tamany = 25, accio=self.actSeleccioGrafica)
+        self.bAnotacions = self.botoLateral(tamany = 25, accio=self.actAnotacions)
 
         spacer2 = QSpacerItem(1000, 1000, QSizePolicy.Expanding,QSizePolicy.Maximum)
         self.lytBotoneraLateral.addItem(spacer2)
 
         self.bInfo = self.botoLateral(tamany = 25, accio=self.actInfo)
         self.bHelp = self.botoLateral(tamany = 25, accio=self.actHelp)
+        self.bBug = self.botoLateral(tamany = 25, accio=self.actBug)
         self.bDashStandard = self.botoLateral(tamany = 25, accio=self.actDashStandard)
     
     # Funcions de preparació d'entorns 
@@ -312,19 +280,13 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.canvas.scaleChanged.connect(self.showScale)   
         self.canvas.mapCanvasRefreshed.connect(self.canvasRefrescat)
 
-        # self.layoutCanvas = QVBoxLayout(self.canvas)
-        # self.layoutCanvas.setContentsMargins(0,0,0,0)
-        # self.canvas.setLayout(self.layoutCanvas)
-
-
         self.layout = QVBoxLayout(self.frameCentral)
         self._menuBarShadow = QGraphicsDropShadowEffect()
         self._menuBarShadow.setXOffset(10)
         self._menuBarShadow.setYOffset(10)
         self._menuBarShadow.setColor(QColor(170,170,170))
         self._menuBarShadow.setBlurRadius(10)
-        # self.canvas.setGraphicsEffect(self._menuBarShadow)
-        # self.frameCentral.setGraphicsEffect(self._menuBarShadow)
+
         self.layout.setContentsMargins(0,0,0,0)
         # self.layout.addWidget(self.botonera1)
 
@@ -356,14 +318,14 @@ class QVista(QMainWindow, Ui_MainWindow):
         else:
             self.canvas.scene().removeItem(self.marcaLloc)
             
-    def preparacioCalculadora(self):
-        self.calculadora = QWidget()
+    # def preparacioCalculadora(self):
+    #     self.calculadora = QWidget()
 
-        self.calculadora.ui = Ui_Calculadora()
-        self.calculadora.ui.setupUi(self.calculadora)
-        self.calculadora.show()
-        self.calculadora.ui.bLayersFields.clicked.connect(recorrerLayersFields)
-        self.calculadora.ui.bFieldsCalculadora.clicked.connect(carregarFieldsCalculadora)
+    #     self.calculadora.ui = Ui_Calculadora()
+    #     self.calculadora.ui.setupUi(self.calculadora)
+    #     self.calculadora.show()
+    #     self.calculadora.ui.bLayersFields.clicked.connect(recorrerLayersFields)
+    #     self.calculadora.ui.bFieldsCalculadora.clicked.connect(carregarFieldsCalculadora)
 
     def preparacioUbicacions(self):
         """
@@ -400,6 +362,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         # self.dwArbreDistrictes.setContentsMargins ( 2, 2, 2, 2 )
         # self.addDockWidget( Qt.RightDockWidgetArea, self.dwArbreDistrictes )
         # self.dwArbreDistrictes.setStyleSheet('QDockWidget {background-color: #909090;}')
+
     def preparacioCataleg(self):
         """ 
         Genera el cataleg del qVista i l'incorpora a un docWidget.
@@ -551,12 +514,8 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.marcaLloc.setIconType(QgsVertexMarker.ICON_BOX) # or ICON_CROSS, ICON_X
         self.marcaLloc.setPenWidth(3)
         self.marcaLloc.show()
-
         self.marcaLlocPosada = True
 
-
-        
-        
     def preparacioTaulaAtributs(self):
         """ 
         Es prepara la taula d'Atributs sobre un dockWidget.
@@ -659,43 +618,58 @@ class QVista(QMainWindow, Ui_MainWindow):
         # self.dwLlegenda.setContentsMargins ( 2, 2, 2, 2 )
         # self.addDockWidget( Qt.LeftDockWidgetArea, self.dwLlegenda )
 
-    def preparacioGrafiques(self):    
-        self.fGrafiques = QFrame()
-        self.lyGrafiques = QVBoxLayout(self.fGrafiques)
-        self.fGrafiques.setLayout(self.lyGrafiques)
+    def preparacioGrafiques(self):
+        try:
+            self.fGrafiques = QFrame()
+            self.lyGrafiques = QVBoxLayout(self.fGrafiques)
+            self.fGrafiques.setLayout(self.lyGrafiques)
 
-        self.calculadora = QWidget()
-        self.calculadora.ui = Ui_Calculadora()
-        self.calculadora.ui.setupUi(self.calculadora)
-        # self.calculadora.ui.bLayersFields.clicked.connect(self.recorrerLayersFields)
-        # self.calculadora.ui.bFieldsCalculadora.clicked.connect(carregarFieldsCalculadora)
-        self.calculadora.ui.bFieldsCalculadora.clicked.connect(self.ferGrafica)
-        self.calculadora.ui.cbLayers.currentIndexChanged.connect(self.recorrerFields)
+            self.calculadora = QWidget()
+            self.calculadora.ui = Ui_Calculadora()
+            self.calculadora.ui.setupUi(self.calculadora)
+            # self.calculadora.ui.bLayersFields.clicked.connect(self.recorrerLayersFields)
+            # self.calculadora.ui.bFieldsCalculadora.clicked.connect(carregarFieldsCalculadora)
+            self.calculadora.ui.bFieldsCalculadora.clicked.connect(self.ferGrafica)
+            self.calculadora.ui.cbLayers.currentIndexChanged.connect(self.recorrerFields)
+            
+            self.calculadora.ui.lwFields.setSelectionMode(QAbstractItemView.ExtendedSelection)
+
+            self.browserGrafiques = QWebView()
+
+            self.dwBrowserGrafiques = QDockWidget( "Gràfiques", self )
+            self.dwBrowserGrafiques.setStyleSheet("QDockWidget {background-color: #000000;}")
+            self.dwBrowserGrafiques.hide()
+
+            self.dwBrowserGrafiques.setObjectName( "Gràfiques" )
+            self.dwBrowserGrafiques.setAllowedAreas( Qt.TopDockWidgetArea |Qt.RightDockWidgetArea| Qt.BottomDockWidgetArea )
+            self.dwBrowserGrafiques.setWidget( self.fGrafiques)
+            self.dwBrowserGrafiques.setContentsMargins ( 0,0,0,0 )
+
+            self.lyGrafiques.addWidget(self.calculadora)
+            self.lyGrafiques.addWidget(self.browserGrafiques)
+            self.addDockWidget( Qt.RightDockWidgetArea, self.dwBrowserGrafiques)
+            
+            self.recorrerLayersFields()
+        except:
+            msg = QMessageBox()
+            msg.setIcon(QMessageBox.Warning)
+            
+            msg.setText(str(sys.exc_info()[1]))
+            # msg.setInformativeText("OK para salir del programa \nCANCEL para seguir en el programa")
+            msg.setWindowTitle("ERROR: qVista> preparacioGrafiques")
+            msg.setStandardButtons(QMessageBox.Close)
+            retval = msg.exec_()
+
+
         
-        self.calculadora.ui.lwFields.setSelectionMode(QAbstractItemView.ExtendedSelection)
-
-        self.browserGrafiques = QWebView()
-
-        self.dwBrowserGrafiques = QDockWidget( "Gràfiques", self )
-        self.dwBrowserGrafiques.setStyleSheet("QDockWidget {background-color: #000000;}")
-        self.dwBrowserGrafiques.hide()
-
-        self.dwBrowserGrafiques.setObjectName( "Gràfiques" )
-        self.dwBrowserGrafiques.setAllowedAreas( Qt.TopDockWidgetArea |Qt.RightDockWidgetArea| Qt.BottomDockWidgetArea )
-        self.dwBrowserGrafiques.setWidget( self.fGrafiques)
-        self.dwBrowserGrafiques.setContentsMargins ( 0,0,0,0 )
-
-        self.lyGrafiques.addWidget(self.calculadora)
-        self.lyGrafiques.addWidget(self.browserGrafiques)
-        self.addDockWidget( Qt.RightDockWidgetArea, self.dwBrowserGrafiques)
-        self.recorrerLayersFields()
-
     def preparacioEntorns(self):
         self.menuEntorns = self.bar.addMenu(5*' '+'Entorns')
         for entorn in os.listdir(os.path.dirname('entorns/')):          
             if entorn == '__init__.py' or entorn[-3:] != '.py':
                 pass
             else:
+                # TODO: canviar el nom pel titol de la clase com a descripcio de l'acció
+                tmpClass = None
                 nom = entorn[:-3]
                 exec('from entorns.{} import {}'.format(nom,nom))
                 exec('self.act{} = QAction("{}", self)'.format(nom, nom))
@@ -735,7 +709,7 @@ class QVista(QMainWindow, Ui_MainWindow):
             
             msg.setText(info_rsc)
             # msg.setInformativeText("OK para salir del programa \nCANCEL para seguir en el programa")
-            msg.setWindowTitle("qVista ERROR")
+            msg.setWindowTitle("ERROR: qVista")
             msg.setDetailedText("Posa el cursor sobre els camps d'edició i segueix les instruccions.")
             msg.setStandardButtons(QMessageBox.Close)
             retval = msg.exec_()
@@ -907,6 +881,12 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.actSeleccioGrafica.triggered.connect(self.seleccioGrafica)
 
         
+        self.actAnotacions = QAction("Eina per retallar pantalla", self)
+        self.actAnotacions.setStatusTip("Eina per retallar pantalla")
+        icon=QIcon('imatges/select.png')
+        self.actAnotacions.setIcon(icon)
+        self.actAnotacions.triggered.connect(self.preparacioAnotacions)
+
         self.actPanSelected = QAction("Pan selected", self)
         self.actPanSelected.setStatusTip("Pan selected")
         self.actPanSelected.triggered.connect(self.panSelected)
@@ -924,6 +904,15 @@ class QVista(QMainWindow, Ui_MainWindow):
         # self.actSeleccioClick.setIcon(icon)
         self.actSeleccioClick.setStatusTip("Selecció per click")
         self.actSeleccioClick.triggered.connect(seleccioClick)
+
+        self.actDisgregarDirele = QAction("Disgregar Fichero Direcciones", self)
+        # icon=QIcon(':/Icones/Icones/if_Map_-_Location_Solid_Style_07_2216351.png')
+        # self.actSeleccioClick.setIcon(icon)
+        self.actDisgregarDirele.setStatusTip("Disgregar Fichero Direcciones")
+        self.actDisgregarDirele.triggered.connect(disgregarDirele)
+
+
+
 
         self.actEsborrarSeleccio = QAction("Esborrar seleccio", self)
         self.actEsborrarSeleccio.setStatusTip("Esborrar seleccio")
@@ -950,6 +939,11 @@ class QVista(QMainWindow, Ui_MainWindow):
         icon=QIcon('imatges/help-circle.png')
         self.actHelp.setIcon(icon)
         self.actHelp.triggered.connect(self.helpQVista)
+                
+        self.actBug = QAction("Ajuda ", self)
+        icon=QIcon('imatges/bug.png')
+        self.actBug.setIcon(icon)
+        self.actBug.triggered.connect(self.reportarBug)
                 
         self.actPintaLabels = QAction("pintaLabels", self)
         self.actPintaLabels.setStatusTip("pintaLabels")
@@ -1059,6 +1053,23 @@ class QVista(QMainWindow, Ui_MainWindow):
     def platges(self):
         self.platges = QvPlatges()
         self.platges.show()
+
+    def reportarBug(self):
+        self.fitxaError = QWidget()
+        self.lytFitxaError = QVBoxLayout(self.fitxaError)
+        self.fitxaError.setLayout(self.lytFitxaError)
+        leTitol = QLineEdit()
+        leTitol.setPlaceholderText('Escriu aquí el titol del sugeriment')
+        leDescripcio = QLineEdit()
+        leDescripcio.setPlaceholderText('Escriu.ne aquí una breu descripció')
+        bEnviar = QPushButton('Enviar')
+        self.lblResultat = QLabel()
+        bEnviar.clicked.connect(lambda: reportarProblema(leTitol.text(), leDescripcio.text()))
+        self.lytFitxaError.addWidget(leTitol)
+        self.lytFitxaError.addWidget(leDescripcio)
+        self.lytFitxaError.addWidget(bEnviar)
+        self.lytFitxaError.addWidget(self.lblResultat)
+        self.fitxaError.show()
 
     def preparacioSeleccio(self):
 
@@ -1188,7 +1199,7 @@ class QVista(QMainWindow, Ui_MainWindow):
             self.lblCapaSeleccionada.setText("Capa activa: "+ self.layerActiu.name())
             fields = self.layerActiu.fields()
             for field in fields:
-                print(field.typeName())
+                # print(field.typeName())
                 # if (field.typeName()!='String' and field.typeName()!='Date' and field.typeName()!='Date'):
                 if (field.typeName()=='Real' or field.typeName()=='Integer64'):
                     self.lwFieldsSelect.addItem(field.name())
@@ -1262,7 +1273,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         lblLogoAjb.setMinimumHeight(40)
         lblLogoAjb.setMaximumWidth(150)
         lblLogoAjb.setMinimumWidth(150)
-        imatge = QPixmap('logoBcnPetit.jpg')
+        imatge = QPixmap('imatges/logoBcnPetit.jpg')
         lblLogoAjb.setPixmap(imatge)
         lblLogoAjb.setScaledContents(True)
 
@@ -1335,6 +1346,9 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.menuFuncions.addAction(self.actEsborrarSeleccio)
         self.menuFuncions.addAction(self.actSeleccioLliure)
         self.menuFuncions.addAction(self.actSeleccioClick)
+        self.menuFuncions.addAction(self.actDisgregarDirele)
+        
+
         self.menuFuncions.addAction(self.actFerGran)
         self.menuFuncions.addAction(self.actMapTip)
         self.menuFuncions.addAction(self.actTemes)
@@ -1622,9 +1636,7 @@ class QVista(QMainWindow, Ui_MainWindow):
             pass
 
     def martorellUTM(self):
-        """
-        Don't pay attention.
-        """
+ 
 
         extent=self.canvas.extent()
         self.canvas.rotate(45)
@@ -1697,7 +1709,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         #     return
 
     def showScale(self,scale ):
-        self.lblScale.setText( "Scale 1:" + str(int(scale) ))  
+        self.lblScale.setText( "Escala 1:" + str(int(scale) ))  
 
     def definirLabelsStatus(self):
         self.lblXY = QLabel()
@@ -1804,14 +1816,14 @@ class QVista(QMainWindow, Ui_MainWindow):
            
     def obrirDialegNovaCapa(self):
         dialegObertura=QFileDialog()
-        dialegObertura.setDirectoryUrl(QUrl('d:/dropbox/qvistaProd/capes/'))
+        dialegObertura.setDirectoryUrl(QUrl('../Dades/Capes/'))
         dialegObertura.setSupportedSchemes(["Projectes Qgis (*.qgs)", "Otro esquema"])
 
-        nfile,_ = dialegObertura.getOpenFileName(None,"Nova capa", ".", "Totes les capes acceptats (*.csv *.shp *.gpx *.qlr );; CSV (*.csv);; Shapes (*.shp);; Geopackage (*.gpx);;  Layers Qgis(*.qlr)")
+        nfile,_ = dialegObertura.getOpenFileName(None,"Nova capa", '../Dades/Capes/', "Totes les capes acceptats (*.csv *.shp *.gpx *.qlr );; CSV (*.csv);; Shapes (*.shp);; Geopackage (*.gpx);;  Layers Qgis(*.qlr)")
 
         if nfile is not None:
             extensio = nfile[-3:]
-            print (extensio)
+            # print (extensio)
             if extensio.lower() == 'shp' or extensio.lower() =='gpx':
                 layer = QgsVectorLayer(nfile, nfile, "ogr")
                 if not layer.isValid():
@@ -1820,7 +1832,7 @@ class QVista(QMainWindow, Ui_MainWindow):
                 self.project.addMapLayer(layer)
             else:
                 if extensio.lower() == 'qlr':
-                    print(nfile)
+                    # print(nfile)
                     afegirQlr(nfile)
                 # QgsLayerDefinition().loadLayerDefinition(nfile, self.project, self.root)
 
@@ -1841,19 +1853,32 @@ class QVista(QMainWindow, Ui_MainWindow):
                     pass
     
     def recorrerLayersFields(self):
-        self.llegenda.setCurrentLayer(self.llegenda.capaPerNom(self.calculadora.ui.cbLayers.currentText()))
-        self.calculadora.ui.cbLayers.clear()
-        self.potsRecorrer=False
-        layers = self.canvas.layers()
-        layerList = []
-        for layer in layers:
-            layerList.append(layer.name())
-        self.calculadora.ui.cbLayers.addItems(layerList)
-        selectedLayerIndex = self.calculadora.ui.cbLayers.currentIndex()
-        self.selectedLayer = layers[selectedLayerIndex]
-        
-        self.potsRecorrer=True
-        self.recorrerFields()
+        try:
+            self.llegenda.setCurrentLayer(self.llegenda.capaPerNom(self.calculadora.ui.cbLayers.currentText()))
+            self.calculadora.ui.cbLayers.clear()
+            self.potsRecorrer=False
+            layers = self.canvas.layers()
+            layerList = []
+            for layer in layers:
+                layerList.append(layer.name())
+            self.calculadora.ui.cbLayers.addItems(layerList)
+            selectedLayerIndex = self.calculadora.ui.cbLayers.currentIndex()
+
+            self.selectedLayer = layers[selectedLayerIndex]
+            
+            self.potsRecorrer=True
+            self.recorrerFields()
+        except:
+            pass
+            # msg = QMessageBox()
+            # msg.setIcon(QMessageBox.Warning)
+            
+            # msg.setText(str(sys.exc_info()[1]))
+            # # msg.setInformativeText("OK para salir del programa \nCANCEL para seguir en el programa")
+            # msg.setWindowTitle("ERROR: qVista >> recorrerLayersFields")
+            # msg.setStandardButtons(QMessageBox.Close)
+            # retval = msg.exec_()
+
 
     def modeDebug(self):
         self.menuFuncions.show()
@@ -1954,6 +1979,71 @@ def seleccioClick():
     # taulaAtributsSeleccionats()
 
 
+def createFolder(directory):
+    try:
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+    except OSError:
+        print ('Error: Creating directory. ' +  directory)
+        
+
+
+import shutil
+
+def disgregarDirele():
+
+    __numerosCSV = '..\Dades\dadesBcn\TAULA_DIRELE.csv'
+    __path_disgregados= '..\Dades\DadesBcn\dir_ele\\'
+    """
+
+    """
+
+
+    if os.path.isdir(__path_disgregados):
+        shutil.rmtree(__path_disgregados)
+        # os.rmdir(__path_disgregados)
+    
+    createFolder(__path_disgregados)
+
+
+
+    if __numerosCSV:
+        f_read = open(__numerosCSV, 'r')
+        with f_read:
+            reader = csv.reader(f_read, delimiter = ',')
+            count=0
+            codi_carrer_old=''
+            for row in reader:    
+                if count==0:
+                    cabecera=row
+                else:
+                    codi_carrer=row[0]
+                    if codi_carrer != codi_carrer_old:
+                        path= __path_disgregados+str(codi_carrer)+'.csv'
+                        try:
+                            f_write.close()
+                        except:
+                            pass
+
+                        f_write = open(path, 'a')
+                        writer = csv.writer(f_write)
+                        writer.writerow(cabecera)
+                        writer.writerow(row)
+                    else:
+                        writer.writerow(row)
+                        
+                    codi_carrer_old= codi_carrer
+                count += 1
+            f_write.close()
+
+
+
+
+    pass
+
+
+
+
 def seleccioCercle():
     seleccioClick()
     layer=qV.llegenda.currentLayer()  
@@ -1986,7 +2076,12 @@ def seleccioExpressio():
     if qV.leSeleccioExpressio.text().lower() == 'help':
         qV.infoQVista()
         return
-    if qV.leSeleccioExpressio.text().lower() == 'qvdebug':
+
+    if qV.leSeleccioExpressio.text().lower() == 'd':
+        disgregarDirele()
+
+
+    if (qV.leSeleccioExpressio.text().lower() == 'qvdebug') :
         qV.modeDebug()
         return
     layer=qV.llegenda.currentLayer()
@@ -2202,22 +2297,57 @@ def missatgeCaixa(textTitol,textInformacio):
 
 def sortir():
     sys.exit()
+# Funcio per carregar problemes a GITHUB
+
+
+def reportarProblema(titol, descripcio=None, labels=None):
+    '''Crea un "issue" a github'''
+    USUARI = 'JCAIMI'
+    REPOSITORI = 'Qvista'
+    PASSWORD = 'qVista123'
+
+    # url per crear issues
+    url = 'https://api.github.com/repos/%s/%s/issues' % (USUARI, REPOSITORI)
+    print (url)
+    # Creem una sessió
+    session = requests.Session()
+    session.auth = (USUARI, PASSWORD)
+
+    # creem el problema
+    problema = {"title": QvApp().usuari+": "+titol,
+            "body": descripcio}
+
+    # Afegim el problema
+    r = session.post(url, json.dumps(problema))
+
+    if r.status_code == 201:
+        print ('Creat el problema {0:s}'.format(titol))
+        qV.lblResultat.setText("S'ha enviat correctament.")
+    else:
+        print ('Error al crear el problema {0:s}'.format(titol))
+        qV.lblResultat.setText('Error al crear el problema {0:s}'.format(titol))
 
 def main(argv):
     # import subprocess
     global qV
     with qgisapp() as app: 
-        # subprocess.Popen('python-qgis.bat qvista.py')
-        start = time.time()
-        qVapp = QvApp()
-        # ok = qVapp.logInici()            # Por defecto: family='QVISTA', logname='DESKTOP'
-        print ( time.time()-start)
-        # if not ok:
-        #     print('ERROR LOG >>', qVapp.logError())
-        #     ok = qVapp.logRegistre('Capa1')
-        #     ok = qVapp.logRegistre('Atributs')
+        
+        # Splash image al començar el programa. La tancarem amb splash.finish(qV)
+        splash_pix = QPixmap('imatges/qvistaLogo2.png')
+        splash = QSplashScreen(splash_pix, Qt.WindowStaysOnTopHint)
+        splash.setWindowFlags(Qt.WindowStaysOnTopHint | Qt.FramelessWindowHint)
+        splash.setEnabled(True)
+        splash.show()
+        app.processEvents()
 
-        # Idioma
+        qVapp = QvApp()
+        ok = qVapp.logInici()            # Por defecto: family='QVISTA', logname='DESKTOP'
+        if not ok:
+            print('ERROR LOG >>', qVapp.logError())
+            ok = qVapp.logRegistre('Capa1')
+            ok = qVapp.logRegistre('Atributs')
+
+        # # Idioma
         qVapp.carregaIdioma(app, 'ca')
 
         app.setStyle(QStyleFactory.create('fusion'))
@@ -2226,13 +2356,6 @@ def main(argv):
         # app.setStyle('fusion')
         
 
-        # Splash image al començar el programa. La tancarem amb splash.finish(qV)
-        splash_pix = QPixmap('qvistaLogo2.png')
-        splash = QSplashScreen(splash_pix, Qt.WindowStaysOnTopHint)
-        splash.setWindowFlags(Qt.WindowStaysOnTopHint | Qt.FramelessWindowHint)
-        splash.setEnabled(True)
-        splash.show()
-        app.processEvents()
 
         # Prova d'escriure sobre la imatge
         # splash.showMessage("<h1><font color='black'>Versió 0.1 - Work in progress</font></h1>", Qt.AlignTop | Qt.AlignCenter, Qt.white)
@@ -2245,8 +2368,11 @@ def main(argv):
 
         # Tanquem la imatge splash.
         splash.finish(qV)
-        
+        qVapp.logRegistre('LOG_TEMPS', qV.lblTempsArrencada.text())
         app.aboutToQuit.connect(qV.gestioSortida)
 
 if __name__ == "__main__":
-    main(sys.argv)
+    # try:
+        main(sys.argv)
+    # except:
+    #     print ('Ha petado en el main principal')

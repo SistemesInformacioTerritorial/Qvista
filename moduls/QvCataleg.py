@@ -57,7 +57,7 @@ class QvColumnaCataleg(QWidget):
                 self.layoutScroll.addWidget(botoInfoMapa)
 
                 botoInfoMapa.ui.lblTitol.setText(projecte)
-                imatge = QPixmap('../dades/projectes/'+projecte+".png")
+                imatge = QPixmap(carpetaCataleg+projecte+".png")
                 imatge = imatge.scaledToWidth(200)
                 imatge = imatge.scaledToHeight(200)
                 

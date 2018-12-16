@@ -35,13 +35,13 @@
       <property name="minimumSize">
        <size>
         <width>0</width>
-        <height>60</height>
+        <height>85</height>
        </size>
       </property>
       <property name="maximumSize">
        <size>
         <width>16777215</width>
-        <height>60</height>
+        <height>85</height>
        </size>
       </property>
       <property name="frameShape">
@@ -98,17 +98,17 @@
          <widget class="QLabel" name="label">
           <property name="geometry">
            <rect>
-            <x>40</x>
-            <y>-4</y>
-            <width>161</width>
-            <height>50</height>
+            <x>30</x>
+            <y>10</y>
+            <width>191</width>
+            <height>61</height>
            </rect>
           </property>
           <property name="text">
            <string/>
           </property>
           <property name="pixmap">
-           <pixmap>../../Users/Jo/Dropbox/qVistaProd/qVistaLogo.png</pixmap>
+           <pixmap>Imatges/qVistaLogo.png</pixmap>
           </property>
           <property name="scaledContents">
            <bool>true</bool>
@@ -117,10 +117,10 @@
          <widget class="QLabel" name="label_3">
           <property name="geometry">
            <rect>
-            <x>-5</x>
-            <y>30</y>
+            <x>0</x>
+            <y>60</y>
             <width>261</width>
-            <height>41</height>
+            <height>31</height>
            </rect>
           </property>
           <property name="font">
@@ -180,6 +180,18 @@
           </property>
           <item>
            <widget class="QFrame" name="frame_14">
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>15</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>16777215</width>
+              <height>15</height>
+             </size>
+            </property>
             <property name="styleSheet">
              <string notr="true">background-color: #465A63;</string>
             </property>
@@ -257,7 +269,7 @@ color: #FFFFFF</string>
                <property name="font">
                 <font>
                  <family>Calibri</family>
-                 <pointsize>21</pointsize>
+                 <pointsize>22</pointsize>
                 </font>
                </property>
                <property name="text">
@@ -543,13 +555,13 @@ color: #FFFFFF</string>
          <property name="minimumSize">
           <size>
            <width>250</width>
-           <height>20</height>
+           <height>15</height>
           </size>
          </property>
          <property name="maximumSize">
           <size>
            <width>16777215</width>
-           <height>20</height>
+           <height>15</height>
           </size>
          </property>
          <property name="styleSheet">
