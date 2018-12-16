@@ -136,7 +136,6 @@ class QvColumnaCataleg(QWidget):
 
     
     def miniCanvas(self, projecte):
-        print (projecte)
         def obertura():
             try:
                 instruccio = "python-qgis.bat miniCanvas.py {}".format(projecte)

@@ -271,4 +271,4 @@ if __name__ == "__main__":
 
         project.read(projecteInicial)
 
-        canvas.show()
+        # canvas.show()
