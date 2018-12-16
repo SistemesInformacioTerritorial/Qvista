@@ -2336,7 +2336,7 @@ def main(argv):
     with qgisapp() as app: 
         
         # Splash image al començar el programa. La tancarem amb splash.finish(qV)
-        splash_pix = QPixmap('qvistaLogo2.png')
+        splash_pix = QPixmap('imatges/qvistaLogo2.png')
         splash = QSplashScreen(splash_pix, Qt.WindowStaysOnTopHint)
         splash.setWindowFlags(Qt.WindowStaysOnTopHint | Qt.FramelessWindowHint)
         splash.setEnabled(True)
