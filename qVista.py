@@ -1709,7 +1709,13 @@ class QVista(QMainWindow, Ui_MainWindow):
     def showScale(self,scale ):
         self.lblScale.setText( "Escala 1:" + str(int(scale) ))  
 
-    def definirLabelsStatus(self):
+    def definirLabelsStatus(self):    
+        self.lblConnexio = QLabel()
+        self.lblConnexio.setFrameStyle(QFrame.StyledPanel )
+        self.lblConnexio.setMinimumWidth( 140 )
+        self.statusbar.addPermanentWidget( self.lblConnexio, 0 )
+        self.lblConnexio.setText(estatConnexio)
+        
         self.lblXY = QLabel()
 
         self.lblXY.setFrameStyle( QFrame.StyledPanel )
