@@ -2375,4 +2375,7 @@ def main(argv):
         app.aboutToQuit.connect(qV.gestioSortida)
 
 if __name__ == "__main__":
-    main(sys.argv)
+    try:
+        main(sys.argv)
+    except Exception as e:
+        print(str(e))
