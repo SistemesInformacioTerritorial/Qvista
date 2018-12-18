@@ -229,19 +229,20 @@ class QvLlegenda(QgsLayerTreeView):
         # for node in self.nodes():
         #     self.model.refreshLayerLegend(node)
 
+    def actNode(self, node):
+        # Truco para actualizar el nodo de la leyenda
+        nom = node.name()
+        node.setName(nom + ' ')
+        node.setName(nom)
+
     def actIconaFiltre(self, capa):
         node = self.root.findLayer(capa.id())
         if node is not None:
             if capa.subsetString() == '':
                 self.removeIndicator(node, self.iconaFiltre)
-
             else:
                 self.addIndicator(node, self.iconaFiltre)
-            # self.setFocus()
-            # self.repaint()
-            # self.resize(self.size())
-            if QvApp().appQgis is not None:
-                QvApp().appQgis.processEvents()
+            self.actNode(node)
 
     def nouProjecte(self):
         if self.atributs is not None:
