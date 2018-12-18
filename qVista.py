@@ -16,10 +16,9 @@ from moduls.QvMapeta import QvMapeta
 from moduls.QVCercadorAdreca import QCercadorAdreca
 from moduls.QVDistrictesBarris import QVDistrictesBarris
 from moduls.QvCatalegPetit import QvCataleg
-# from moduls.QvAnotacions import QvAnotacions
 from moduls.QvApp import QvApp
 from moduls.QvLectorCsv import QvLectorCsv
-# from moduls.QvPavimentacio import DockPavim
+from moduls.QvPavimentacio import DockPavim
 
 # Variable global sobre la que instanciarem la classe qVista
 global qV
@@ -153,6 +152,7 @@ class QVista(QMainWindow, Ui_MainWindow):
     
     def obrirProjecte(self, projecte, rang = None):
         self.project.read(projecte)
+        self.canvas.refresh()
         if rang is not None:
             self.canvas.setExtent(rang)
 
@@ -238,7 +238,6 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.bImprimir =  self.botoLateral(tamany = 25, accio=self.actImprimir)
         self.bTissores = self.botoLateral(tamany = 25, accio=self.actTissores)
         self.bSeleccioGrafica = self.botoLateral(tamany = 25, accio=self.actSeleccioGrafica)
-        # self.bAnotacions = self.botoLateral(tamany = 25, accio=self.actAnotacions)
 
         spacer2 = QSpacerItem(1000, 1000, QSizePolicy.Expanding,QSizePolicy.Maximum)
         self.lytBotoneraLateral.addItem(spacer2)
@@ -663,6 +662,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         
     def preparacioEntorns(self):
         self.menuEntorns = self.bar.addMenu(5*' '+'Entorns')
+        
         fnt = QFont("Segoe UI", 16, weight=QFont.Normal)
         self.menuEntorns.setStyleSheet("QMenu {background-color: #dddddd; selection-background-color : #79909B;}")
         self.menuEntorns.setFont(fnt)
@@ -885,12 +885,6 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.actSeleccioGrafica.triggered.connect(self.seleccioGrafica)
 
         
-        self.actAnotacions = QAction("Eina per retallar pantalla", self)
-        self.actAnotacions.setStatusTip("Eina per retallar pantalla")
-        icon=QIcon('imatges/select.png')
-        self.actAnotacions.setIcon(icon)
-        self.actAnotacions.triggered.connect(self.preparacioAnotacions)
-
         self.actPanSelected = QAction("Pan selected", self)
         self.actPanSelected.setStatusTip("Pan selected")
         self.actPanSelected.triggered.connect(self.panSelected)
@@ -1715,17 +1709,15 @@ class QVista(QMainWindow, Ui_MainWindow):
     def showScale(self,scale ):
         self.lblScale.setText( "Escala 1:" + str(int(scale) ))  
 
-    def definirLabelsStatus(self):
-
-        
+    def definirLabelsStatus(self):    
         self.lblConnexio = QLabel()
         self.lblConnexio.setFrameStyle(QFrame.StyledPanel )
         self.lblConnexio.setMinimumWidth( 140 )
         self.statusbar.addPermanentWidget( self.lblConnexio, 0 )
         self.lblConnexio.setText(estatConnexio)
-
-
+        
         self.lblXY = QLabel()
+
         self.lblXY.setFrameStyle( QFrame.StyledPanel )
         self.lblXY.setMinimumWidth( 170 )
         self.lblXY.setAlignment( Qt.AlignCenter )
@@ -1920,8 +1912,12 @@ class QVista(QMainWindow, Ui_MainWindow):
                             rowdata.append('')
                     writer.writerow(rowdata)
 
-    def pavimentacio(self):        
-        self.dwPavim = DockPavim()
+    def pavimentacio(self): 
+        self.project.read('d:/qVista/Dades/CatalegProjectes/Vialitat/PavimentacioDemo.qgs')       
+        fnt = QFont("Segoe UI", 20, weight=QFont.Normal)
+        self.lblTitolProjecte.setFont(fnt)
+        self.lblTitolProjecte.setText(self.project.title())
+        self.dwPavim = DockPavim(self)
         self.addDockWidget( Qt.RightDockWidgetArea, self.dwPavim)
         self.dwPavim.show()    
 
@@ -2237,7 +2233,8 @@ def escollirNivellQlr():
         afegirQlr(nfile)
 
 def afegirQlr(nom):
-    QgsLayerDefinition().loadLayerDefinition(nom, qV.project, qV.root)
+    QgsLayerDefinition.loadLayerDefinition(nom, qV.project, qV.root)
+    # QgsLayerDefinition().loadLayerDefinition(nom, qV.project, qV.llegenda.root)
     return
 
 def afegirNivellSHP():
@@ -2384,7 +2381,7 @@ def main(argv):
         app.aboutToQuit.connect(qV.gestioSortida)
 
 if __name__ == "__main__":
-    # try:
+    try:
         main(sys.argv)
-    # except:
-    #     print ('Ha petado en el main principal')
+    except Exception as e:
+        print(str(e))
