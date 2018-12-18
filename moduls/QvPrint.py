@@ -1,13 +1,16 @@
 
 # from moduls.QvImports import *
 
-from qgis.PyQt.QtGui import QStandardItemModel, QStandardItem
-from qgis.core import QgsRectangle
-from qgis.gui import QgsMapTool
+from qgis.core import QgsRectangle, QgsVectorLayer, QgsLayoutExporter, QgsPointXY, QgsGeometry, QgsVector, QgsLayout, QgsReadWriteContext
+from qgis.gui import QgsMapTool, QgsRubberBand
 
-from qgis.PyQt.QtWidgets import QWidget
+from qgis.PyQt.QtCore import Qt, QFile, QUrl
+from qgis.PyQt.QtXml import QDomDocument
+from qgis.PyQt.QtWidgets import QWidget, QVBoxLayout, QComboBox, QPushButton, QCheckBox
+from qgis.PyQt.QtGui import QFont, QColor,QStandardItemModel, QStandardItem, QDesktopServices
 from PyQt5.QtWebKitWidgets import QWebView , QWebPage
 from PyQt5.QtWebKit import QWebSettings
+import time
 projecteInicial='../dades/projectes/BCN11_nord.qgs'
 
 
@@ -50,7 +53,7 @@ class QvPrint(QWidget):
         QWidget.__init__(self)
 
         # Creating a memory layer to draw later the rubberband.
-        self.layer = QgsVectorLayer('Point?crs=epsg:25831', "Capa temporal d'impressió","memory")
+        self.layer = QgsVectorLayer('Point?crs=epsg:23031', "Capa temporal d'impressió","memory")
         project.addMapLayer(self.layer)
 
         # We store safely the parameters as class variables.
