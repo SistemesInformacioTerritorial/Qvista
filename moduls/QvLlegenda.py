@@ -184,10 +184,12 @@ class QvLlegenda(QgsLayerTreeView):
 
         # Model
         self.model = QgsLegendModel(self.root)
-        self.model.setFlag(QgsLegendModel.ShowLegend)
+        self.model.setFlag(QgsLegendModel.ShowLegend, True)
         self.editarLlegenda(True)
 
         self.setModel(self.model)
+        if self.canvas is not None:
+            self.canvas.scaleChanged.connect(self.connectaEscala)
 
         # Acciones disponibles
         self.accions = QvAccions()
@@ -207,26 +209,40 @@ class QvLlegenda(QgsLayerTreeView):
         if self.atributs is not None:
             self.atributs.modificatFiltreCapa.connect(self.actIconaFiltre)
 
-    def actIconaFiltre(self, capa):
-        node = self.root.findLayer(capa.id())
-        if node is not None:
-            if capa.subsetString() == '':
-                self.removeIndicator(node, self.iconaFiltre)
-
-            else:
-                self.addIndicator(node, self.iconaFiltre)
-            # self.setFocus()
-            # self.repaint()
-            # self.resize(self.size())
-            if QvApp().appQgis is not None:
-                QvApp().appQgis.processEvents()
-
     def editarLlegenda(self, on = True):
         self.editable = on
         self.model.setFlag(QgsLegendModel.AllowNodeReorder, on)
         self.model.setFlag(QgsLegendModel.AllowNodeRename, on)
         self.model.setFlag(QgsLegendModel.AllowLegendChangeState, on)
         self.model.setFlag(QgsLegendModel.AllowNodeChangeVisibility, on)
+        # self.model.setFlag(QgsLegendModel.DeferredLegendInvalidation, on)
+
+    def connectaEscala(self, escala):
+        pass
+        # print('Cambio escala:', escala)
+        # for capa in self.capes():
+        #     print(capa.name(), self.capaVisible(capa))
+
+        # self.model.setLegendFilterByScale(escala)
+        # self.model.refreshScaleBasedLayers()
+
+        # for node in self.nodes():
+        #     self.model.refreshLayerLegend(node)
+
+    def actNode(self, node):
+        # Truco para actualizar el nodo de la leyenda
+        nom = node.name()
+        node.setName(nom + ' ')
+        node.setName(nom)
+
+    def actIconaFiltre(self, capa):
+        node = self.root.findLayer(capa.id())
+        if node is not None:
+            if capa.subsetString() == '':
+                self.removeIndicator(node, self.iconaFiltre)
+            else:
+                self.addIndicator(node, self.iconaFiltre)
+            self.actNode(node)
 
     def nouProjecte(self):
         if self.atributs is not None:
@@ -308,7 +324,10 @@ class QvLlegenda(QgsLayerTreeView):
     def capaVisible(self, capa):
         node = self.root.findLayer(capa.id())
         if node is not None:
-            return node.isVisible()
+            v = node.isVisible()
+            if v and capa.hasScaleBasedVisibility() and self.canvas is not None:
+                return capa.isInScaleRange(self.canvas.scale())
+            return v
         return False
 
     def capaMarcada(self, capa):
@@ -531,30 +550,31 @@ if __name__ == "__main__":
     from qgis.gui import QgsMapCanvas
     from qgis.PyQt.QtWidgets import QMessageBox
 
-    with qgisapp() as app:
+    with qgisapp(sysexit=False) as app:
 
         QvApp().carregaIdioma(app, 'ca')
         # QvApp().logInici()
 
         def printCapaActiva():
-            cLayer = llegenda.currentLayer()
+            cLayer = leyenda.currentLayer()
             if cLayer:
-                print('Capa activa:', llegenda.currentLayer().name())
+                print('Capa activa:', leyenda.currentLayer().name())
             else:
                 print('Capa activa: None')
 
-        canvas = QgsMapCanvas()
+        canv = QgsMapCanvas()
 
-        atributs = QvAtributs(canvas)
+        atrib = QvAtributs(canv)
 
-        llegenda = QvLlegenda(canvas, atributs, printCapaActiva)
-        llegenda.project.read('../dades/projectes/bcn11.qgs')
+        leyenda = QvLlegenda(canv, atrib, printCapaActiva)
+        
+        leyenda.project.read('../dades/projectes/bcn11.qgs')
 
-        canvas.setWindowTitle('Canvas')
-        canvas.show()
+        canv.setWindowTitle('Canvas')
+        canv.show()
 
-        llegenda.setWindowTitle('Llegenda')
-        llegenda.show()
+        leyenda.setWindowTitle('Llegenda')
+        leyenda.show()
 
         #
         # Funciones de capes:
@@ -566,15 +586,16 @@ if __name__ == "__main__":
         #
 
         print('Capes Llegenda:')
-        for layer in llegenda.capes():
-            print('-', layer.name(), ', Visible:', llegenda.capaVisible(layer),
-                                     ', Marcada:', llegenda.capaMarcada(layer))
+        for layer in leyenda.capes():
+            print('-', layer.name(), ', Visible:', leyenda.capaVisible(layer),
+                                     ', Marcada:', leyenda.capaMarcada(layer),
+                                     ', Fitro escala:', layer.hasScaleBasedVisibility())
 
-        llegenda.veureCapa(llegenda.capaPerNom('BCN_Barri_ETRS89_SHP'), True)
-        llegenda.veureCapa(llegenda.capaPerNom('BCN_Districte_ETRS89_SHP'), True)
-        llegenda.veureCapa(llegenda.capaPerNom('BCN_Illes_ETRS89_SHP'), False)
+        leyenda.veureCapa(leyenda.capaPerNom('BCN_Barri_ETRS89_SHP'), True)
+        leyenda.veureCapa(leyenda.capaPerNom('BCN_Districte_ETRS89_SHP'), False)
+        leyenda.veureCapa(leyenda.capaPerNom('BCN_Illes_ETRS89_SHP'), True)
 
-        llegenda.setCurrentLayer(llegenda.capaPerNom('BCN_Barri_ETRS89_SHP'))
+        leyenda.setCurrentLayer(leyenda.capaPerNom('BCN_Barri_ETRS89_SHP'))
 
         # Acciones personalizadas para menú contextual de la leyenda:
         #
@@ -595,7 +616,7 @@ if __name__ == "__main__":
             boton.setFlat(True)
 
         def botonCapa(i):
-            if llegenda.capaVisible(llegenda.capaPerNom('BCN_Districte_ETRS89_SHP')):
+            if leyenda.capaVisible(leyenda.capaPerNom('BCN_Districte_ETRS89_SHP')):
                 testSimbologia()
             else:
                 if rangos is not None:
@@ -607,16 +628,16 @@ if __name__ == "__main__":
         # Acciones de usuario
         def testCapas():
             global botonera
-            botonera = QvBotoneraLlegenda(llegenda, 'Botonera')
+            botonera = QvBotoneraLlegenda(leyenda, 'Botonera')
             botonera.afegirBotonera(filtroBotonera, modifBoton)
             botonera.clicatBoto.connect(botonCapa)
             botonera.show()
-            if llegenda.capaVisible(llegenda.capaPerNom('BCN_Districte_ETRS89_SHP')):
+            if leyenda.capaVisible(llegenda.capaPerNom('BCN_Districte_ETRS89_SHP')):
                 testSimbologia()
 
         def testSimbologia():
             global rangos
-            rangos = QvBotoneraLlegenda(llegenda, 'Rangos', False)
+            rangos = QvBotoneraLlegenda(leyenda, 'Rangos', False)
             rangos.afegirBotonera(filtroRangos, modifBoton)
             rangos.show()
 
@@ -624,7 +645,7 @@ if __name__ == "__main__":
             QvApp().logRegistre('Menú Test')
 
             print('Items Llegenda:')
-            for item in llegenda.items():
+            for item in leyenda.items():
                 capa = item.capa()
                 if capa is None:
                     nomCapa = '-'
@@ -642,8 +663,8 @@ if __name__ == "__main__":
             QMessageBox().information(None, 'qVista', 'Salutacions ' + QvApp().usuari)
 
         def editable():
-            llegenda.editarLlegenda(not llegenda.editable)
-            if llegenda.editable:
+            leyenda.editarLlegenda(not leyenda.editable)
+            if leyenda.editable:
                 if rangos is not None:
                     rangos.close()
                 if botonera is not None:
@@ -653,35 +674,35 @@ if __name__ == "__main__":
         act = QAction()
         act.setText("Editable")
         act.triggered.connect(editable)
-        llegenda.accions.afegirAccio('editable', act)
+        leyenda.accions.afegirAccio('editable', act)
 
         act = QAction()
         act.setText("Test")
         act.triggered.connect(test)
-        llegenda.accions.afegirAccio('test', act)
+        leyenda.accions.afegirAccio('test', act)
 
         act = QAction()
         act.setText("Test Botonera")
         act.triggered.connect(testCapas)
-        llegenda.accions.afegirAccio('testCapas', act)
+        leyenda.accions.afegirAccio('testCapas', act)
 
         act = QAction()
         act.setText("Test Simbologia")
         act.triggered.connect(testSimbologia)
-        llegenda.accions.afegirAccio('testSimbologia', act)
+        leyenda.accions.afegirAccio('testSimbologia', act)
 
         # Adaptación del menú
         def menuContexte(tipo):
             if tipo == 'none':
-                llegenda.menuAccions.append('addLayersFromFile')
-                llegenda.menuAccions.append('separator')
-                llegenda.menuAccions.append('test')
-                llegenda.menuAccions.append('testCapas')
-                # llegenda.menuAccions.append('testSimbologia')
-                llegenda.menuAccions.append('editable')
+                leyenda.menuAccions.append('addLayersFromFile')
+                leyenda.menuAccions.append('separator')
+                leyenda.menuAccions.append('test')
+                leyenda.menuAccions.append('testCapas')
+                # leyenda.menuAccions.append('testSimbologia')
+                leyenda.menuAccions.append('editable')
 
         # Conexión de la señal con la función menuContexte para personalizar el menú
-        llegenda.clicatMenuContexte.connect(menuContexte)
+        leyenda.clicatMenuContexte.connect(menuContexte)
 
         app.aboutToQuit.connect(QvApp().logFi)
     
