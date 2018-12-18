@@ -1,9 +1,3 @@
-"""
-20181210
-Mirar cosas de plotly
-
-"""
-
 # coding:utf-8
 
 # Inici del cronòmetre
@@ -24,7 +18,7 @@ from moduls.QVDistrictesBarris import QVDistrictesBarris
 from moduls.QvCatalegPetit import QvCataleg
 from moduls.QvApp import QvApp
 from moduls.QvLectorCsv import QvLectorCsv
-# from moduls.QvPavimentacio import DockPavim
+from moduls.QvPavimentacio import DockPavim
 
 # Variable global sobre la que instanciarem la classe qVista
 global qV
@@ -668,6 +662,11 @@ class QVista(QMainWindow, Ui_MainWindow):
         
     def preparacioEntorns(self):
         self.menuEntorns = self.bar.addMenu(5*' '+'Entorns')
+        
+        fnt = QFont("Segoe UI", 16, weight=QFont.Normal)
+        self.menuEntorns.setStyleSheet("QMenu {background-color: #dddddd; selection-background-color : #79909B;}")
+        self.menuEntorns.setFont(fnt)
+        self.menuEntorns.styleStrategy = QFont.PreferAntialias or QFont.PreferQuality
         for entorn in os.listdir(os.path.dirname('entorns/')):          
             if entorn == '__init__.py' or entorn[-3:] != '.py':
                 pass
@@ -680,6 +679,7 @@ class QVista(QMainWindow, Ui_MainWindow):
                 exec('self.act{}.setStatusTip("{}")'.format(nom, nom))   
                 exec('self.act{}.triggered.connect(self.prepararDash({}))'.format(nom, nom))
                 exec('self.menuEntorns.addAction(self.act{})'.format(nom))
+        self.menuEntorns.addAction(self.actPavimentacio)
     
     def streetViewTancat(self):
         if self.dwSV.isHidden():
@@ -1709,7 +1709,13 @@ class QVista(QMainWindow, Ui_MainWindow):
     def showScale(self,scale ):
         self.lblScale.setText( "Escala 1:" + str(int(scale) ))  
 
-    def definirLabelsStatus(self):
+    def definirLabelsStatus(self):    
+        self.lblConnexio = QLabel()
+        self.lblConnexio.setFrameStyle(QFrame.StyledPanel )
+        self.lblConnexio.setMinimumWidth( 140 )
+        self.statusbar.addPermanentWidget( self.lblConnexio, 0 )
+        self.lblConnexio.setText(estatConnexio)
+        
         self.lblXY = QLabel()
 
         self.lblXY.setFrameStyle( QFrame.StyledPanel )
@@ -1906,8 +1912,12 @@ class QVista(QMainWindow, Ui_MainWindow):
                             rowdata.append('')
                     writer.writerow(rowdata)
 
-    def pavimentacio(self):        
-        self.dwPavim = DockPavim()
+    def pavimentacio(self): 
+        self.project.read('d:/qVista/Dades/CatalegProjectes/Vialitat/PavimentacioDemo.qgs')       
+        fnt = QFont("Segoe UI", 20, weight=QFont.Normal)
+        self.lblTitolProjecte.setFont(fnt)
+        self.lblTitolProjecte.setText(self.project.title())
+        self.dwPavim = DockPavim(self)
         self.addDockWidget( Qt.RightDockWidgetArea, self.dwPavim)
         self.dwPavim.show()    
 
@@ -2223,7 +2233,8 @@ def escollirNivellQlr():
         afegirQlr(nfile)
 
 def afegirQlr(nom):
-    QgsLayerDefinition().loadLayerDefinition(nom, qV.project, qV.root)
+    QgsLayerDefinition.loadLayerDefinition(nom, qV.project, qV.root)
+    # QgsLayerDefinition().loadLayerDefinition(nom, qV.project, qV.llegenda.root)
     return
 
 def afegirNivellSHP():
@@ -2331,7 +2342,7 @@ def main(argv):
     with qgisapp() as app: 
         
         # Splash image al començar el programa. La tancarem amb splash.finish(qV)
-        splash_pix = QPixmap('qvistaLogo2.png')
+        splash_pix = QPixmap('imatges/qvistaLogo2.png')
         splash = QSplashScreen(splash_pix, Qt.WindowStaysOnTopHint)
         splash.setWindowFlags(Qt.WindowStaysOnTopHint | Qt.FramelessWindowHint)
         splash.setEnabled(True)
@@ -2372,5 +2383,5 @@ def main(argv):
 if __name__ == "__main__":
     try:
         main(sys.argv)
-    except:
-        print ('Ha petado en el main principal')
+    except Exception as e:
+        print(str(e))
