@@ -41,7 +41,7 @@ from cubista3 import Ui_MainWindow
 # Widget de propietats del layer. Designer.
 from dlgLayerProperties import LayerProperties
 
-from calculadora import Ui_Calculadora
+# from calculadora import Ui_Calculadora
 
 # Dialeg per definir delimitadors en el CSV. Designer.
 from finestraDelimitadors import Ui_Dialog

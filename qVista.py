@@ -111,7 +111,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.preparacioStreetView()
         # self.preparacioMapTips()
         self.preparacioImpressio()
-        self.preparacioGrafiques()
+        # self.preparacioGrafiques()
         self.preparacioSeleccio()
         self.preparacioEntorns()
         
@@ -616,47 +616,47 @@ class QVista(QMainWindow, Ui_MainWindow):
         # self.dwLlegenda.setContentsMargins ( 2, 2, 2, 2 )
         # self.addDockWidget( Qt.LeftDockWidgetArea, self.dwLlegenda )
 
-    def preparacioGrafiques(self):
-        try:
-            self.fGrafiques = QFrame()
-            self.lyGrafiques = QVBoxLayout(self.fGrafiques)
-            self.fGrafiques.setLayout(self.lyGrafiques)
+    # def preparacioGrafiques(self):
+    #     try:
+    #         self.fGrafiques = QFrame()
+    #         self.lyGrafiques = QVBoxLayout(self.fGrafiques)
+    #         self.fGrafiques.setLayout(self.lyGrafiques)
 
-            self.calculadora = QWidget()
-            self.calculadora.ui = Ui_Calculadora()
-            self.calculadora.ui.setupUi(self.calculadora)
-            # self.calculadora.ui.bLayersFields.clicked.connect(self.recorrerLayersFields)
-            # self.calculadora.ui.bFieldsCalculadora.clicked.connect(carregarFieldsCalculadora)
-            self.calculadora.ui.bFieldsCalculadora.clicked.connect(self.ferGrafica)
-            self.calculadora.ui.cbLayers.currentIndexChanged.connect(self.recorrerFields)
+    #         self.calculadora = QWidget()
+    #         self.calculadora.ui = Ui_Calculadora()
+    #         self.calculadora.ui.setupUi(self.calculadora)
+    #         # self.calculadora.ui.bLayersFields.clicked.connect(self.recorrerLayersFields)
+    #         # self.calculadora.ui.bFieldsCalculadora.clicked.connect(carregarFieldsCalculadora)
+    #         self.calculadora.ui.bFieldsCalculadora.clicked.connect(self.ferGrafica)
+    #         self.calculadora.ui.cbLayers.currentIndexChanged.connect(self.recorrerFields)
             
-            self.calculadora.ui.lwFields.setSelectionMode(QAbstractItemView.ExtendedSelection)
+    #         self.calculadora.ui.lwFields.setSelectionMode(QAbstractItemView.ExtendedSelection)
 
-            self.browserGrafiques = QWebView()
+    #         self.browserGrafiques = QWebView()
 
-            self.dwBrowserGrafiques = QDockWidget( "Gràfiques", self )
-            self.dwBrowserGrafiques.setStyleSheet("QDockWidget {background-color: #000000;}")
-            self.dwBrowserGrafiques.hide()
+    #         self.dwBrowserGrafiques = QDockWidget( "Gràfiques", self )
+    #         self.dwBrowserGrafiques.setStyleSheet("QDockWidget {background-color: #000000;}")
+    #         self.dwBrowserGrafiques.hide()
 
-            self.dwBrowserGrafiques.setObjectName( "Gràfiques" )
-            self.dwBrowserGrafiques.setAllowedAreas( Qt.TopDockWidgetArea |Qt.RightDockWidgetArea| Qt.BottomDockWidgetArea )
-            self.dwBrowserGrafiques.setWidget( self.fGrafiques)
-            self.dwBrowserGrafiques.setContentsMargins ( 0,0,0,0 )
+    #         self.dwBrowserGrafiques.setObjectName( "Gràfiques" )
+    #         self.dwBrowserGrafiques.setAllowedAreas( Qt.TopDockWidgetArea |Qt.RightDockWidgetArea| Qt.BottomDockWidgetArea )
+    #         self.dwBrowserGrafiques.setWidget( self.fGrafiques)
+    #         self.dwBrowserGrafiques.setContentsMargins ( 0,0,0,0 )
 
-            self.lyGrafiques.addWidget(self.calculadora)
-            self.lyGrafiques.addWidget(self.browserGrafiques)
-            self.addDockWidget( Qt.RightDockWidgetArea, self.dwBrowserGrafiques)
+    #         self.lyGrafiques.addWidget(self.calculadora)
+    #         self.lyGrafiques.addWidget(self.browserGrafiques)
+    #         self.addDockWidget( Qt.RightDockWidgetArea, self.dwBrowserGrafiques)
             
-            self.recorrerLayersFields()
-        except:
-            msg = QMessageBox()
-            msg.setIcon(QMessageBox.Warning)
+    #         self.recorrerLayersFields()
+    #     except:
+    #         msg = QMessageBox()
+    #         msg.setIcon(QMessageBox.Warning)
             
-            msg.setText(str(sys.exc_info()[1]))
-            # msg.setInformativeText("OK para salir del programa \nCANCEL para seguir en el programa")
-            msg.setWindowTitle("ERROR: qVista> preparacioGrafiques")
-            msg.setStandardButtons(QMessageBox.Close)
-            retval = msg.exec_()
+    #         msg.setText(str(sys.exc_info()[1]))
+    #         # msg.setInformativeText("OK para salir del programa \nCANCEL para seguir en el programa")
+    #         msg.setWindowTitle("ERROR: qVista> preparacioGrafiques")
+    #         msg.setStandardButtons(QMessageBox.Close)
+    #         retval = msg.exec_()
 
 
         
@@ -852,11 +852,11 @@ class QVista(QMainWindow, Ui_MainWindow):
         # self.actObrirDistrictes.setIcon(icon)
         self.actObrirDistrictes.triggered.connect(self.obrirDistrictes)
     
-        self.actObrirCalculadora= QAction("Obrir calculadora", self)
-        # icon=QIcon(':/Icones/Icones/icons8-calculator-50.png')
-        # self.actObrirCalculadora.setIcon(icon)
-        self.actObrirCalculadora.setStatusTip("Obrir calculadora")
-        self.actObrirCalculadora.triggered.connect(self.obrirCalculadora)
+        # self.actObrirCalculadora= QAction("Obrir calculadora", self)
+        # # icon=QIcon(':/Icones/Icones/icons8-calculator-50.png')
+        # # self.actObrirCalculadora.setIcon(icon)
+        # self.actObrirCalculadora.setStatusTip("Obrir calculadora")
+        # self.actObrirCalculadora.triggered.connect(self.obrirCalculadora)
 
         self.actObrirLlegenda= QAction("Obrir llegenda", self)
         # icon=QIcon(':/Icones/Icones/ic_format_list_bulleted_black_48dp.png')
@@ -1347,20 +1347,20 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.menuFuncions.addAction(self.actDisgregarDirele)
         
 
-        self.menuFuncions.addAction(self.actFerGran)
+        # self.menuFuncions.addAction(self.actFerGran)
         self.menuFuncions.addAction(self.actMapTip)
         self.menuFuncions.addAction(self.actTemes)
-        self.menuFuncions.addAction(self.actObrirCataleg)
-        self.menuFuncions.addAction(self.actObrirDistrictes)
-        self.menuFuncions.addAction(self.actObrirTaulaAtributs)
+        # self.menuFuncions.addAction(self.actObrirCataleg)
+        # self.menuFuncions.addAction(self.actObrirDistrictes)
+        # self.menuFuncions.addAction(self.actObrirTaulaAtributs)
         self.menuFuncions.addAction(self.actTest)
         self.menuFuncions.addAction(self.actInfo)
-        self.menuFuncions.addAction(self.actDashStandard)
+        # self.menuFuncions.addAction(self.actDashStandard)
         self.menuFuncions.addAction(self.actWizard)
         self.menuFuncions.addAction(self.actTest2)
-        self.menuFuncions.addAction(self.actObrirCalculadora)
-        self.menuFuncions.addAction(self.actObrirBrowserGrafiques)
-        self.menuFuncions.addAction(self.actBicing)
+        # self.menuFuncions.addAction(self.actObrirCalculadora)
+        # self.menuFuncions.addAction(self.actObrirBrowserGrafiques)
+        # self.menuFuncions.addAction(self.actBicing)
         self.menuFuncions.addAction(self.actPavimentacio)
         self.menuFuncions.addAction(self.actPlatges)
         
