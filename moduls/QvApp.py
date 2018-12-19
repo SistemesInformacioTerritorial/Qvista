@@ -46,7 +46,7 @@ def _fatalError(type, value, tb):
     print('ERROR -', error)
     QvApp().logRegistre('LOG_ERROR', error[-1000:])
 
-sys.excepthook = _fatalError
+# sys.excepthook = _fatalError
 
 class QvApp(Singleton):
 
