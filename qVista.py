@@ -2311,9 +2311,9 @@ def sortir():
 
 def reportarProblema(titol, descripcio=None, labels=None):
     '''Crea un "issue" a github'''
-    USUARI = 'JCAIMI'
+    USUARI = 'qVistaHost'
     REPOSITORI = 'Qvista'
-    PASSWORD = 'qVista123'
+    PASSWORD = 'HostQVista123'
 
     # url per crear issues
     url = 'https://api.github.com/repos/%s/%s/issues' % (USUARI, REPOSITORI)

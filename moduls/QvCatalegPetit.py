@@ -26,7 +26,7 @@ class QvColumnaCataleg(QWidget):
     """
         Crea una columna de fichas per cada projecte de la llista amb que s'inicialitza.
  
-    Cada columna porta el títol amb que s'ha inicilaitzat.
+    Cada columna porta el títol amb que s'ha inicilitzat.
     Es un widget amb el que és pot fer el que és vulgui, sempre que sigui legal.
     """
 
