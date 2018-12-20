@@ -2312,7 +2312,7 @@ def sortir():
 def reportarProblema(titol, descripcio=None, labels=None):
     '''Crea un "issue" a github'''
     USUARI = 'qVistaHost'
-    REPOSITORI = 'Qvista'
+    REPOSITORI = 'qVista'
     PASSWORD = 'HostQVista123'
 
     # url per crear issues
