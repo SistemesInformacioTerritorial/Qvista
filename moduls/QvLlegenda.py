@@ -163,9 +163,9 @@ class QvLlegendaModel(QgsLegendModel):
         super().__init__(root)
 
     def data(self, index, role):
-        if index.isValid() and role == Qt.ForegroundRole:
-            rojo = QColor('#f00000')
-            return rojo
+        # if index.isValid() and role == Qt.ForegroundRole:
+        #     rojo = QColor('#f00000')
+        #     return rojo
         return super().data(index, role)
 
 class QvLlegenda(QgsLayerTreeView):
