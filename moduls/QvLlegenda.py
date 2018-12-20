@@ -161,12 +161,22 @@ class QvItemLlegenda(object):
 class QvLlegendaModel(QgsLegendModel):
     def __init__(self, root):
         super().__init__(root)
+        self.setScale(1.0)
 
+    def setScale(self, scale):
+        self.scale = scale
 
     def data(self, index, role):
-        # if index.isValid() and role == Qt.ForegroundRole:
-        #     rojo = QColor('#f00000')
-        #     return rojo
+        if index.isValid() and role == Qt.ForegroundRole:
+            node = self.index2node(index)
+            if node is not None and node.nodeType() == QgsLayerTreeNode.NodeLayer and node.isVisible():
+                layer = node.layer()
+                if layer.hasScaleBasedVisibility():
+                    if layer.isInScaleRange(self.scale):
+                        color = QColor('#000000')
+                    else:
+                        color = QColor('#c0c0c0')
+                    return color
         return super().data(index, role)
 
 class QvLlegenda(QgsLayerTreeView):
@@ -202,6 +212,7 @@ class QvLlegenda(QgsLayerTreeView):
         self.setModel(self.model)
         if self.canvas is not None:
             self.canvas.scaleChanged.connect(self.connectaEscala)
+            self.canvas.mapCanvasRefreshed.connect(self.connectaLlegenda)
 
         # Acciones disponibles
         self.accions = QvAccions()
@@ -227,10 +238,20 @@ class QvLlegenda(QgsLayerTreeView):
         self.model.setFlag(QgsLegendModel.AllowNodeRename, on)
         self.model.setFlag(QgsLegendModel.AllowLegendChangeState, on)
         self.model.setFlag(QgsLegendModel.AllowNodeChangeVisibility, on)
-        # self.model.setFlag(QgsLegendModel.DeferredLegendInvalidation, on)
+        self.model.setFlag(QgsLegendModel.DeferredLegendInvalidation, on)
 
     def connectaEscala(self, escala):
-        pass
+        # print('Cambio escala:', escala)
+        self.model.setScale(escala)
+
+    def connectaLlegenda(self):
+        # print('Fin refresco mapa')
+        for capa in self.capes():
+            node = self.root.findLayer(capa.id())
+            if capa.hasScaleBasedVisibility():
+                self.actNode(node)
+
+
         # print('Cambio escala:', escala)
         # for capa in self.capes():
         #     print(capa.name(), self.capaVisible(capa))
