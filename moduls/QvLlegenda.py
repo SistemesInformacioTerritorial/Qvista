@@ -162,6 +162,7 @@ class QvLlegendaModel(QgsLegendModel):
     def __init__(self, root):
         super().__init__(root)
 
+
     def data(self, index, role):
         # if index.isValid() and role == Qt.ForegroundRole:
         #     rojo = QColor('#f00000')
