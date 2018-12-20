@@ -4,7 +4,9 @@ qVista és una eina construida sobre la API de Qgis, per simnplificar l'ús d'in
 
 És un projecte desenvolupat pel Departament de Sistemes d'Informació Territorial, del Institut Municipal d'Informàtica del Ajuntament de Barcelona.
 
-En aqust moment el project es troba en fase de desenvolupament. Aixó vol dir que poden haver-hi errors, canvis freqüents, i inestabilitat en les dades que s'ofereixen. Però per fer-ne proves i jugar-hi, podeu instal.lar-ho de la següent manera:
+En aquest moment el project es troba en fase de desenvolupament. Aixó vol dir que poden haver-hi errors, canvis freqüents, i inestabilitat en les dades que s'ofereixen. Però per fer-ne proves i jugar-hi, podeu instal.lar-ho de la següent manera:
+
+(La rama funcional es PrePro)
 
 - Instal.lació previa de QGIS 3.4
 - Fer un clon del repositori a una carpeta local (Ex: d:\Qvista\codi) D'aquesta carpeta i penjaran els fitxers i carpetes de Github
