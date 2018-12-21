@@ -212,7 +212,6 @@ class QvLlegenda(QgsLayerTreeView):
         self.setModel(self.model)
         if self.canvas is not None:
             self.canvas.scaleChanged.connect(self.connectaEscala)
-            self.canvas.mapCanvasRefreshed.connect(self.connectaLlegenda)
 
         # Acciones disponibles
         self.accions = QvAccions()
@@ -243,14 +242,10 @@ class QvLlegenda(QgsLayerTreeView):
     def connectaEscala(self, escala):
         # print('Cambio escala:', escala)
         self.model.setScale(escala)
-
-    def connectaLlegenda(self):
-        # print('Fin refresco mapa')
         for capa in self.capes():
             node = self.root.findLayer(capa.id())
             if capa.hasScaleBasedVisibility():
                 self.actNode(node)
-
 
         # print('Cambio escala:', escala)
         # for capa in self.capes():
