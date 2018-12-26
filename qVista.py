@@ -1707,7 +1707,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         #     return
 
     def showScale(self,scale ):
-        self.lblScale.setText( "Escala 1:" + str(int(scale) ))  
+        self.bScale.setText( " Escala 1:" + str(int(scale) ))  
 
     def definirLabelsStatus(self):    
         self.lblConnexio = QLabel()
@@ -1724,10 +1724,12 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.statusbar.setSizeGripEnabled( False )
         self.statusbar.addPermanentWidget( self.lblXY, 0 )
 
-        self.lblScale = QLabel()
-        self.lblScale.setFrameStyle(QFrame.StyledPanel )
-        self.lblScale.setMinimumWidth( 140 )
-        self.statusbar.addPermanentWidget( self.lblScale, 0 )
+        self.bScale = QPushButton()
+        self.bScale.setStyleSheet("QPushButton {Text-align:left};")
+        # self.bScale.setFrameStyle(QFrame.StyledPanel )
+        self.bScale.setMinimumWidth( 140 )
+        self.bScale.clicked.connect(self.editarEscala)
+        self.statusbar.addPermanentWidget( self.bScale, 0 )
 
         self.lblProjeccio = QLabel()
         self.lblProjeccio.setFrameStyle(QFrame.StyledPanel )
@@ -1738,6 +1740,21 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.lblProjecte.setFrameStyle(QFrame.StyledPanel )
         self.lblProjecte.setMinimumWidth( 140 )
         self.statusbar.addPermanentWidget( self.lblProjecte, 0 )
+
+    def editarEscala(self):
+        self.bScale.setText(' Escala 1: ')
+        self.leScale = QLineEdit(self.bScale)
+        self.leScale.setGeometry(48,0,100,20)
+        self.leScale.returnPressed.connect(self.escalaEditada)
+        self.leScale.show()
+        self.leScale.setFocus()
+        self.onlyInt = QIntValidator()
+        self.leScale.setValidator(self.onlyInt)
+
+    def escalaEditada(self):
+        escala = self.leScale.text()
+        self.leScale.setParent(None)
+        self.canvas.zoomScale(float(escala))
 
     def centrarMapa(self):
         qV.canvas.zoomToFullExtent()
