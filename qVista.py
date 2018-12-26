@@ -1754,7 +1754,7 @@ class QVista(QMainWindow, Ui_MainWindow):
     def escalaEditada(self):
         escala = self.leScale.text()
         self.leScale.setParent(None)
-        self.canvas.zoomScale(float(escala))
+        self.canvas.zoomScale(int(escala))
 
     def centrarMapa(self):
         qV.canvas.zoomToFullExtent()
