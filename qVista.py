@@ -1048,6 +1048,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.actPropietatsLayer.setStatusTip("Propietats de la capa")
         self.actPropietatsLayer.triggered.connect(self.propietatsLayer)
 
+
     def platges(self):
         self.platges = QvPlatges()
         self.platges.show()
@@ -1365,9 +1366,10 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.menuFuncions.addAction(self.actPlatges)
         
     def test(self):
-        self.handleSave()
+        self.canvas.rotate(0)
+        
     def testProva(self):
-        pass
+        self.canvas.rotate(44)
 
     def ferGrafica(self):
         layerActiu = self.llegenda.currentLayer()
@@ -1730,6 +1732,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.bScale.setMinimumWidth( 140 )
         self.bScale.clicked.connect(self.editarEscala)
         self.statusbar.addPermanentWidget( self.bScale, 0 )
+        self.editantEscala = False
 
         self.lblProjeccio = QLabel()
         self.lblProjeccio.setFrameStyle(QFrame.StyledPanel )
@@ -1742,19 +1745,22 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.statusbar.addPermanentWidget( self.lblProjecte, 0 )
 
     def editarEscala(self):
-        self.bScale.setText(' Escala 1: ')
-        self.leScale = QLineEdit(self.bScale)
-        self.leScale.setGeometry(48,0,100,20)
-        self.leScale.returnPressed.connect(self.escalaEditada)
-        self.leScale.show()
-        self.leScale.setFocus()
-        self.onlyInt = QIntValidator()
-        self.leScale.setValidator(self.onlyInt)
+        if self.editantEscala == False:
+            self.editantEscala = True
+            self.bScale.setText(' Escala 1: ')
+            self.leScale = QLineEdit(self.bScale)
+            self.leScale.setGeometry(48,0,100,20)
+            self.leScale.returnPressed.connect(self.escalaEditada)
+            self.leScale.show()
+            self.leScale.setFocus()
+            self.onlyInt = QIntValidator()
+            self.leScale.setValidator(self.onlyInt)
 
     def escalaEditada(self):
         escala = self.leScale.text()
         self.leScale.setParent(None)
         self.canvas.zoomScale(int(escala))
+        self.editantEscala = False
 
     def centrarMapa(self):
         qV.canvas.zoomToFullExtent()
