@@ -2372,17 +2372,17 @@ def main(argv):
         splash.show()
         app.processEvents()
 
-        qVapp = QvApp()
-        ok = qVapp.logInici()            # Por defecto: family='QVISTA', logname='DESKTOP'
-        if not ok:
-            print('ERROR LOG >>', qVapp.logError())
-            ok = qVapp.logRegistre('Capa1')
-            ok = qVapp.logRegistre('Atributs')
+        # qVapp = QvApp()
+        # ok = qVapp.logInici()            # Por defecto: family='QVISTA', logname='DESKTOP'
+        # if not ok:
+        #     print('ERROR LOG >>', qVapp.logError())
+        #     ok = qVapp.logRegistre('Capa1')
+        #     ok = qVapp.logRegistre('Atributs')
 
-        # # Idioma
-        qVapp.carregaIdioma(app, 'ca')
+        # # # Idioma
+        # qVapp.carregaIdioma(app, 'ca')
 
-        app.setStyle(QStyleFactory.create('fusion'))
+        # app.setStyle(QStyleFactory.create('fusion'))
 
         # estil = EstilPropi('Fusion')   
         # app.setStyle('fusion')
@@ -2400,7 +2400,7 @@ def main(argv):
 
         # Tanquem la imatge splash.
         splash.finish(qV)
-        qVapp.logRegistre('LOG_TEMPS', qV.lblTempsArrencada.text())
+        # qVapp.logRegistre('LOG_TEMPS', qV.lblTempsArrencada.text())
         app.aboutToQuit.connect(qV.gestioSortida)
 
 if __name__ == "__main__":

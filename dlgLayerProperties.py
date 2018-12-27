@@ -39,9 +39,9 @@ class LayerProperties( QtWidgets.QDialog, Ui_LayerProperties ):
         self.layer = layer
         self.updateControls()
         # self.connect( self.chkScale, SIGNAL( "stateChanged(int)" ), self.chkScaleChanged )
-        # self.chkScale.stateChanged().connect(self.chkScaleChanged())
-        # self.accepted().connect(self.apply )
-        # self.rejected().connect(self.close )
+        self.chkScale.stateChanged.connect(self.chkScaleChanged)
+        self.accepted.connect(self.apply )
+        self.rejected.connect(self.close )
         self.sliderTransparencia.valueChanged.connect(self.transparencia)
 
     def transparencia(self):
@@ -119,15 +119,15 @@ class LayerProperties( QtWidgets.QDialog, Ui_LayerProperties ):
 
         # if self.cboDisplayFieldName.isEnabled():
         print ('SI')
-        self.layer.setDisplayField( self.cboDisplayFieldName.currentText() )
+        # self.layer.setDisplayField( self.cboDisplayFieldName.currentText() )
 
         if self.chkScale.checkState() == QtCore.Qt.Checked:
-            self.layer.toggleScaleBasedVisibility( True )
+            self.layer.setScaleBasedVisibility( True )
             self.layer.setMaximumScale( self.minScaleSpinBox.value() )
             self.layer.setMinimumScale( self.maxScaleSpinBox.value() )
             finalScaleDependency = True
         else:
-            self.layer.toggleScaleBasedVisibility( False )
+            self.layer.setScaleBasedVisibility( False )
             finalScaleDependency = False
 
         if ( not self.initialScaleDependency == finalScaleDependency ) or \
