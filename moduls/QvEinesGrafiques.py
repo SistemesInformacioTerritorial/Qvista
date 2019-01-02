@@ -1,6 +1,8 @@
-from moduls.QvImports import *
+# from moduls.QvImports import *
 import math
-
+from qgis.core import QgsFeatureRequest, QgsPointXY, QgsGeometry, QgsRectangle
+from qgis.gui import QgsMapTool, QgsMapToolEmitPoint, QgsMapToolZoom, QgsMapToolPan, QgsRubberBand, QgsAttributeDialog
+from qgis.PyQt.QtWidgets import QMessageBox
 
 
 class QvSeleccioPunt(QgsMapTool):
@@ -287,8 +289,12 @@ class QvSeleccioElement(QgsMapTool):
         #             dialog.setWindowTitle(self.layer.name() + ' - Element ' + str(self.feature.id() + 1))
         #             dialog.setMode(QgsAttributeForm.SingleEditMode)
 
-if __name__ == "__main__":
+if __name__ == "__main__":    
+    from qgis.gui import  QgsLayerTreeMapCanvasBridge
     from moduls.QvLlegenda import QvLlegenda
+    from qgis.gui import QgsMapCanvas
+    from qgis.core import QgsProject
+    from qgis.core.contextmanagers import qgisapp
     with qgisapp() as app:
         canvas = QgsMapCanvas()
 

@@ -5,6 +5,8 @@ import time
 startGlobal = time.time()
 
 from moduls.QvImports import *
+
+iniciTempsModuls = time.time()
 from moduls.QvUbicacions import QvUbicacions
 from moduls.QvPrint import QvPrint
 from moduls.QvCanvas import QvCanvas
@@ -19,6 +21,8 @@ from moduls.QvCatalegPetit import QvCataleg
 from moduls.QvApp import QvApp
 from moduls.QvLectorCsv import QvLectorCsv
 from moduls.QvPavimentacio import DockPavim
+
+print ('Moduls: ',time.time()-iniciTempsModuls)
 
 # Variable global sobre la que instanciarem la classe qVista
 global qV
