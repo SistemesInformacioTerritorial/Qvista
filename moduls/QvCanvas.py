@@ -1,9 +1,11 @@
 # coding:utf-8
 
-from moduls.QvImports import *
+
 from moduls.QvEinesGrafiques import QvSeleccioElement
-from qgis.gui import QgsMapCanvas
-from qgis.PyQt.QtWidgets import QFrame
+from qgis.PyQt.QtCore import Qt, QSize
+from qgis.gui import QgsMapCanvas, QgsMapToolZoom, QgsMapToolPan
+from qgis.PyQt.QtWidgets import QFrame, QVBoxLayout, QHBoxLayout, QPushButton, QSpacerItem, QSizePolicy
+from qgis.PyQt.QtGui import QIcon, QPainter
 from moduls.QvApp import QvApp
 from qgis.core.contextmanagers import qgisapp
 
@@ -16,7 +18,7 @@ class QvCanvas(QgsMapCanvas):
         self.posicioBotonera = posicioBotonera
         self.llegenda = llegenda
         self.pare = pare
-        self.setWhatsThis(QvApp().carregaAjuda(self))
+        # self.setWhatsThis(QvApp().carregaAjuda(self))
 
         self._preparacioBotonsCanvas()
         self.panCanvas()
@@ -236,7 +238,7 @@ class Marc(QFrame):
         # gradient.setColorAt(0.0, Qt.black)
         # gradient.setColorAt(0.4, Qt.gray)
         # gradient.setColorAt(0.7, Qt.black)
-        painter.setBrush(QColor(100,100,100))
+        painter.setBrush(Qt.QColor(100,100,100))
         painter.drawRoundedRect(self.rect(), 10.0, 10.0)
         # painter.end()
 

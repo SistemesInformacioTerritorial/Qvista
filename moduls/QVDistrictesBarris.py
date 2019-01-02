@@ -1,13 +1,18 @@
-# from qgis.core import QgsRectangle
+
 # from qgis.PyQt.QtCore import QObject, QModelIndex
-# from qgis.PyQt.QtGui import QStandardItemModel, QStandardItem
-# from qgis.PyQt.QtWidgets import QTreeView
+# 
+
 # import sys
 
 
 
 
-from  moduls.QvImports import *
+# from  moduls.QvImports import *
+from qgis.core import QgsRectangle
+from qgis.PyQt.QtCore import QObject, QModelIndex, Qt
+from qgis.PyQt.QtGui import QStandardItemModel, QStandardItem
+from qgis.PyQt.QtWidgets import QTreeView, QAction
+import sys, csv
 
 class QVDistrictesBarris(QObject):
 
@@ -28,7 +33,7 @@ class QVDistrictesBarris(QObject):
 
 
 
-        self.view.setContextMenuPolicy(QtCore.Qt.ActionsContextMenu)
+        self.view.setContextMenuPolicy(Qt.ActionsContextMenu)
 
         self.actExpand = QAction("Expandeix/Contreu Tot", self)
         self.actExpand.setStatusTip("Expand")
