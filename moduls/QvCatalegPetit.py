@@ -1,19 +1,20 @@
 
-from moduls.QvImports import * 
+# from moduls.QvImports import * 
 
-from qgis.core import QgsRectangle
+from qgis.core import QgsRectangle, QgsProject
+from qgis.gui import QgsMapCanvas
+from qgis.PyQt.QtWidgets import QWidget, QPushButton, QVBoxLayout, QHBoxLayout, QFrame, QLabel, QLineEdit, QScrollArea
+from qgis.PyQt.QtGui import QFont, QPixmap
+from qgis.PyQt.QtCore import Qt
 from botoInfoMapaPetit import Ui_BotoInfoMapa
 
 from multiprocessing import Process,Queue,Pipe
-
-
-from  moduls.QvImports import *
-from multiprocessing import Process,Pipe
 
 from qgis.core.contextmanagers import qgisapp
 
 import threading
 import pickle
+import os
 
 
 carpetaCataleg = "N:/9SITEB/Publicacions/qVista/CATALEG/Projectes/"

@@ -5,6 +5,8 @@ import time
 startGlobal = time.time()
 
 from moduls.QvImports import *
+
+iniciTempsModuls = time.time()
 from moduls.QvUbicacions import QvUbicacions
 from moduls.QvPrint import QvPrint
 from moduls.QvCanvas import QvCanvas
