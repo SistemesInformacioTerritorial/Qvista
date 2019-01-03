@@ -19,7 +19,7 @@ from moduls.QvCatalegPetit import QvCataleg
 from moduls.QvApp import QvApp
 from moduls.QvLectorCsv import QvLectorCsv
 from moduls.QvPavimentacio import DockPavim
-
+from moduls.QvToolTip import QvToolTip
 # Variable global sobre la que instanciarem la classe qVista
 global qV
 
@@ -130,13 +130,18 @@ class QVista(QMainWindow, Ui_MainWindow):
         if len(QgsGui.editorWidgetRegistry().factories()) == 0:
             QgsGui.editorWidgetRegistry().initEditors()
         
+        # Final del cronomatratge d'arrancada
+        endGlobal = time.time()
+        tempsTotal = endGlobal - startGlobal
+        print ('Total carrega abans projecte: ', tempsTotal)
+
         # Carrega del projecte inicial
         self.obrirProjecte(projecteInicial)
 
         # Final del cronomatratge d'arrancada
         endGlobal = time.time()
         tempsTotal = endGlobal - startGlobal
-        print ('Total carrega: ', tempsTotal)
+        print ('Total carrega després projecte: ', tempsTotal)
 
         # S'escriu el temps calculat d'arrencada sobre la label de la status bar
         self.lblTempsArrencada = QLabel()
@@ -1191,6 +1196,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         taula.resizeColumnsToContents()
 
     def canviLayer(self):
+        self.preparacioMapTips()
         self.layerActiu = self.llegenda.currentLayer()        
         self.lwFieldsSelect.clear()
         self.esborrarSeleccio(True)
@@ -1369,8 +1375,8 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.canvas.rotate(0)
         
     def testProva(self):
-        self.canvas.rotate(44)
-
+        mapSettings = QgsMapSettings()
+        mapSettings.setRotation(44)
     def ferGrafica(self):
         layerActiu = self.llegenda.currentLayer()
         for a in self.calculadora.ui.lwFields.selectedItems():
@@ -1673,7 +1679,7 @@ class QVista(QMainWindow, Ui_MainWindow):
 
     def esborrarSeleccio(self, tambePanCanvas = True):
         'Esborra les seleccions (no els elements) de qualsevol layer del canvas.'
-        layers = self.canvas.layers()
+        layers = self.canvas.layers() 
         for layer in layers:
             layer.removeSelection()
         self.lblNombreElementsSeleccionats.setText('No hi ha elements seleccionats.')
