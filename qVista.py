@@ -4,9 +4,12 @@
 import time
 startGlobal = time.time()
 
+# Fitxer principal de importació de llibreries
 from moduls.QvImports import *
 
+# Carrega de moduls Qv
 iniciTempsModuls = time.time()
+
 from moduls.QvUbicacions import QvUbicacions
 from moduls.QvPrint import QvPrint
 from moduls.QvCanvas import QvCanvas
@@ -22,6 +25,10 @@ from moduls.QvApp import QvApp
 from moduls.QvLectorCsv import QvLectorCsv
 from moduls.QvPavimentacio import DockPavim
 from moduls.QvToolTip import QvToolTip
+
+# Impressió del temps de carrega dels moduls Qv
+print ('Temps de carrega dels moduls Qv:', time.time()-iniciTempsModuls)
+
 # Variable global sobre la que instanciarem la classe qVista
 global qV
 
@@ -37,6 +44,8 @@ class QVLine(QFrame):
         super(QVLine, self).__init__()
         self.setFrameShape(QFrame.VLine)
         self.setFrameShadow(QFrame.Sunken)
+
+# Classe principal QVista
 
 class QVista(QMainWindow, Ui_MainWindow):
     """
@@ -118,7 +127,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.preparacioEntorns()
         
 
-        # Eina inicial del mapa
+        # Eina inicial del mapa = Panning
         self.canvas.panCanvas()
 
         # Preparació d'una marca sobre el mapa. S'utilitzarà per cerca d'adreces i street view
@@ -132,7 +141,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         if len(QgsGui.editorWidgetRegistry().factories()) == 0:
             QgsGui.editorWidgetRegistry().initEditors()
         
-        # Final del cronomatratge d'arrancada
+        # Final del cronometratge d'arrancada
         endGlobal = time.time()
         tempsTotal = endGlobal - startGlobal
         print ('Total carrega abans projecte: ', tempsTotal)
@@ -140,7 +149,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         # Carrega del projecte inicial
         self.obrirProjecte(projecteInicial)
 
-        # Final del cronomatratge d'arrancada
+        # Final del cronometratge d'arrancada
         endGlobal = time.time()
         tempsTotal = endGlobal - startGlobal
         print ('Total carrega després projecte: ', tempsTotal)
@@ -158,16 +167,25 @@ class QVista(QMainWindow, Ui_MainWindow):
     # Fins aquí teniem la inicialització de la classe. Ara venen les funcions, o métodes, de la classe. 
     
     def obrirProjecte(self, projecte, rang = None):
+        """Obre un projecte passat com a parametre, amb un possible rang predeterminat.
+        
+        Arguments:
+            projecte {String} -- Nom (amb path) del projecte a obrir
+        
+        Keyword Arguments:
+            rang {Rect} -- El rang amb el que s'ha d'obrir el projecte (default: {None})
+        """
+        # Obrir el projecte i col.locarse en rang
         self.project.read(projecte)
         self.canvas.refresh()
         if rang is not None:
             self.canvas.setExtent(rang)
 
+        # Labels de la statusbar (Projecció i nom del projecte)
         self.lblProjeccio.setText(self.project.crs().description())
         self.lblProjecte.setText(self.project.fileName())
 
         # Titol del projecte 
-
         fnt = QFont("Segoe UI", 18, weight=QFont.Normal)
         self.lblTitolProjecte.setFont(fnt)
         self.lblTitolProjecte.setText(self.project.title())
