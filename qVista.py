@@ -768,8 +768,8 @@ class QVista(QMainWindow, Ui_MainWindow):
 
     def preparacioMapTips(self):
         layer = self.llegenda.currentLayer()
-        self.my_tool_tip = QvToolTip(self.canvas,layer)
-        self.my_tool_tip.createMapTips()
+        # self.my_tool_tip = QvToolTip(self.canvas,layer)
+        # self.my_tool_tip.createMapTips()
 
     def preparacioImpressio(self):  
         self.dwPrint = QDockWidget( "Print", self )
@@ -1395,8 +1395,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.canvas.rotate(0)
         
     def testProva(self):
-        mapSettings = QgsMapSettings()
-        mapSettings.setRotation(44)
+        self.canvas.setRotation(44)
     def ferGrafica(self):
         layerActiu = self.llegenda.currentLayer()
         for a in self.calculadora.ui.lwFields.selectedItems():
@@ -1735,7 +1734,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         #     return
 
     def showScale(self,scale ):
-        self.bScale.setText( " Escala 1:" + str(int(scale) ))  
+        self.bScale.setText( " Escala 1:" + str(int(round(scale)))) 
 
     def definirLabelsStatus(self):    
         self.lblConnexio = QLabel()
@@ -2388,7 +2387,7 @@ def reportarProblema(titol, descripcio=None, labels=None):
 def main(argv):
     # import subprocess
     global qV
-    with qgisapp() as app: 
+    with qgisapp(sysexit=False) as app: 
         
         # Splash image al començar el programa. La tancarem amb splash.finish(qV)
         splash_pix = QPixmap('imatges/qvistaLogo2.png')

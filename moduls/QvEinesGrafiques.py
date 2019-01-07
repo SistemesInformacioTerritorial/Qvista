@@ -1,8 +1,8 @@
-# from moduls.QvImports import *
+from moduls.QvImports import *
 import math
-from qgis.core import QgsFeatureRequest, QgsPointXY, QgsGeometry, QgsRectangle
-from qgis.gui import QgsMapTool, QgsMapToolEmitPoint, QgsMapToolZoom, QgsMapToolPan, QgsRubberBand, QgsAttributeDialog
-from qgis.PyQt.QtWidgets import QMessageBox
+# from qgis.core import QgsFeatureRequest, QgsPointXY, QgsGeometry, QgsRectangle
+# from qgis.gui import QgsMapTool, QgsMapToolEmitPoint, QgsMapToolZoom, QgsMapToolPan, QgsRubberBand, QgsAttributeDialog
+# from qgis.PyQt.QtWidgets import QMessageBox
 
 
 class QvSeleccioPunt(QgsMapTool):
