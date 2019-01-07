@@ -2387,7 +2387,7 @@ def reportarProblema(titol, descripcio=None, labels=None):
 def main(argv):
     # import subprocess
     global qV
-    with qgisapp() as app: 
+    with qgisapp(sysexit=False) as app: 
         
         # Splash image al començar el programa. La tancarem amb splash.finish(qV)
         splash_pix = QPixmap('imatges/qvistaLogo2.png')
