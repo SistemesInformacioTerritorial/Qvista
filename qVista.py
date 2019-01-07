@@ -184,6 +184,11 @@ class QVista(QMainWindow, Ui_MainWindow):
         # Labels de la statusbar (Projecció i nom del projecte)
         self.lblProjeccio.setText(self.project.crs().description())
         self.lblProjecte.setText(self.project.fileName())
+        if self.canvas.rotation() == 0:
+            self.bOrientacio.setText(' Orientació: Nord')
+        else:
+            self.bOrientacio.setText(' Orientació: Eixample')
+            
 
         # Titol del projecte 
         fnt = QFont("Segoe UI", 18, weight=QFont.Normal)
@@ -768,8 +773,8 @@ class QVista(QMainWindow, Ui_MainWindow):
 
     def preparacioMapTips(self):
         layer = self.llegenda.currentLayer()
-        # self.my_tool_tip = QvToolTip(self.canvas,layer)
-        # self.my_tool_tip.createMapTips()
+        self.my_tool_tip = QvToolTip(self.canvas,layer)
+        self.my_tool_tip.createMapTips()
 
     def preparacioImpressio(self):  
         self.dwPrint = QDockWidget( "Print", self )
@@ -1759,6 +1764,14 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.statusbar.addPermanentWidget( self.bScale, 0 )
         self.editantEscala = False
 
+        self.bOrientacio = QPushButton()
+        self.bOrientacio.setStyleSheet("QPushButton {Text-align:left};")
+        # self.bScale.setFrameStyle(QFrame.StyledPanel )
+        
+        self.bOrientacio.setMinimumWidth( 140 )
+        self.bOrientacio.clicked.connect(self.editarOrientacio)
+        self.statusbar.addPermanentWidget( self.bOrientacio, 0 )
+
         self.lblProjeccio = QLabel()
         self.lblProjeccio.setFrameStyle(QFrame.StyledPanel )
         self.lblProjeccio.setMinimumWidth( 140 )
@@ -1768,6 +1781,15 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.lblProjecte.setFrameStyle(QFrame.StyledPanel )
         self.lblProjecte.setMinimumWidth( 140 )
         self.statusbar.addPermanentWidget( self.lblProjecte, 0 )
+
+    def editarOrientacio(self):
+        if self.canvas.rotation()==0:
+            self.canvas.setRotation(44)
+            self.bOrientacio.setText(' Orientació: Eixample')
+        else:
+            self.canvas.setRotation(0)
+            self.bOrientacio.setText(' Orientació: Nord')
+        self.canvas.refresh()
 
     def editarEscala(self):
         if self.editantEscala == False:
@@ -1968,6 +1990,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.dwPavim = DockPavim(self)
         self.addDockWidget( Qt.RightDockWidgetArea, self.dwPavim)
         self.dwPavim.show()    
+        
 
     def bicing(self):
         bicing=Bicis(self)
