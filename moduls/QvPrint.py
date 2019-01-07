@@ -10,6 +10,9 @@ from qgis.PyQt.QtWidgets import QWidget, QVBoxLayout, QComboBox, QPushButton, QC
 from qgis.PyQt.QtGui import QFont, QColor,QStandardItemModel, QStandardItem, QDesktopServices
 from PyQt5.QtWebKitWidgets import QWebView , QWebPage
 from PyQt5.QtWebKit import QWebSettings
+
+from moduls.QvApp import QvApp
+
 import time
 projecteInicial='../dades/projectes/BCN11_nord.qgs'
 
@@ -173,6 +176,7 @@ class QvPrint(QWidget):
         self.rubberband.show()
 
     def printPlanol(self):
+        #
         if self.checkRotacio.checkState():
             rotacio=44.75
         else:
@@ -183,7 +187,9 @@ class QvPrint(QWidget):
         else:
             self.plantillaMapa = 'plantillaMapaH.qpt'
         self.imprimirPlanol(self.posXY[0], self.posXY[1], int(self.combo.currentText()), rotacio, self.plantillaMapa , 'd:/EUREKA.pdf', 'PDF')
-
+       
+        QvApp().logRegistre('Impressió: '+self.combo.currentText() )
+    
     def imprimirPlanol(self,x, y, escala, rotacion, templateFile, fitxerSortida, tipusSortida):
         tInicial=time.time()
 
@@ -221,7 +227,7 @@ class QvPrint(QWidget):
                 settings.dpi=300
                 settings.exportMetadata=False
                 
-                fitxerSortida='d:/dropbox/qpic/sortida_'+timestamp+'.PDF'
+                fitxerSortida='d:/sortida_'+timestamp+'.PDF'
                 result = exporter.exportToPdf(fitxerSortida, settings)
 
                 print (fitxerSortida)
@@ -230,7 +236,7 @@ class QvPrint(QWidget):
                 settings = QgsLayoutExporter.ImageExportSettings()
                 settings.dpi = 300
 
-                fitxerSortida='d:/dropbox/qpic/sortida_'+timestamp+'.PNG'
+                fitxerSortida='d:/sortida_'+timestamp+'.PNG'
                 result = exporter.exportToImage(fitxerSortida, settings)
         
             #Obra el document si està marcat checkObrirResultat

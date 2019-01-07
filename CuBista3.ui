@@ -299,7 +299,7 @@ color: #FFFFFF</string>
                </property>
                <property name="icon">
                 <iconset>
-                 <normaloff>../../Users/Jo/Dropbox/qVistaProd/Imatges/arrow-left.png</normaloff>../../Users/Jo/Dropbox/qVistaProd/Imatges/arrow-left.png</iconset>
+                 <normaloff>imatges/arrow-left.png</normaloff>../../Users/Jo/Dropbox/qVistaProd/Imatges/arrow-left.png</iconset>
                </property>
                <property name="iconSize">
                 <size>
@@ -331,7 +331,7 @@ color: #FFFFFF</string>
                </property>
                <property name="icon">
                 <iconset>
-                 <normaloff>../../Users/Jo/Dropbox/qVistaProd/Imatges/arrow-right.png</normaloff>../../Users/Jo/Dropbox/qVistaProd/Imatges/arrow-right.png</iconset>
+                 <normaloff>imatges/arrow-right.png</normaloff>imatges/arrow-right.png</iconset>
                </property>
                <property name="iconSize">
                 <size>
