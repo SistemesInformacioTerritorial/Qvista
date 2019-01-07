@@ -243,25 +243,8 @@ class QvLlegenda(QgsLayerTreeView):
         # print('Cambio escala:', escala)
         self.model.setScale(escala)
         for capa in self.capes():
-            node = self.root.findLayer(capa.id())
             if capa.hasScaleBasedVisibility():
-                self.actNode(node)
-
-        # print('Cambio escala:', escala)
-        # for capa in self.capes():
-        #     print(capa.name(), self.capaVisible(capa))
-
-        # self.model.setLegendFilterByScale(escala)
-        # self.model.refreshScaleBasedLayers()
-
-        # for node in self.nodes():
-        #     self.model.refreshLayerLegend(node)
-
-    def actNode(self, node):
-        # Truco para actualizar el nodo de la leyenda
-        nom = node.name()
-        node.setName(nom + ' ')
-        node.setName(nom)
+                capa.nameChanged.emit()
 
     def actIconaFiltre(self, capa):
         node = self.root.findLayer(capa.id())
@@ -270,7 +253,7 @@ class QvLlegenda(QgsLayerTreeView):
                 self.removeIndicator(node, self.iconaFiltre)
             else:
                 self.addIndicator(node, self.iconaFiltre)
-            self.actNode(node)
+            capa.nameChanged.emit()
 
     def nouProjecte(self):
         if self.atributs is not None:
@@ -734,7 +717,6 @@ if __name__ == "__main__":
 
         app.aboutToQuit.connect(QvApp().logFi)
     
-
     #######
         
         # QgsLayerTreeNode --> nameChanged()
