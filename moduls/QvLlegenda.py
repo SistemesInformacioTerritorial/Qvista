@@ -171,7 +171,7 @@ class QvLlegendaModel(QgsLegendModel):
             node = self.index2node(index)
             if node is not None and node.nodeType() == QgsLayerTreeNode.NodeLayer and node.isVisible():
                 layer = node.layer()
-                if layer.hasScaleBasedVisibility():
+                if layer is not None and layer.hasScaleBasedVisibility():
                     if layer.isInScaleRange(self.scale):
                         color = QColor('#000000')
                     else:

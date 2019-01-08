@@ -1227,12 +1227,15 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.esborrarSeleccio(True)
         if self.layerActiu is not None:
             self.lblCapaSeleccionada.setText("Capa activa: "+ self.layerActiu.name())
-            fields = self.layerActiu.fields()
-            for field in fields:
-                # print(field.typeName())
-                # if (field.typeName()!='String' and field.typeName()!='Date' and field.typeName()!='Date'):
-                if (field.typeName()=='Real' or field.typeName()=='Integer64'):
-                    self.lwFieldsSelect.addItem(field.name())
+            if self.layerActiu.type() == QgsMapLayer.VectorLayer:
+                fields = self.layerActiu.fields()
+                for field in fields:
+                    # print(field.typeName())
+                    # if (field.typeName()!='String' and field.typeName()!='Date' and field.typeName()!='Date'):
+                    if (field.typeName()=='Real' or field.typeName()=='Integer64'):
+                        self.lwFieldsSelect.addItem(field.name())
+            else:
+                self.lblCapaSeleccionada.setText("Capa activa sense dades.")
         else:
             self.lblCapaSeleccionada.setText("No hi ha capa activa.")
 
@@ -1705,9 +1708,10 @@ class QVista(QMainWindow, Ui_MainWindow):
         'Esborra les seleccions (no els elements) de qualsevol layer del canvas.'
         layers = self.canvas.layers() 
         for layer in layers:
-            layer.removeSelection()
-        self.lblNombreElementsSeleccionats.setText('No hi ha elements seleccionats.')
+            if layer.type() == QgsMapLayer.VectorLayer:
+                layer.removeSelection()
 
+        self.lblNombreElementsSeleccionats.setText('No hi ha elements seleccionats.')
         self.idsElementsSeleccionats = []
 
         if tambePanCanvas:
