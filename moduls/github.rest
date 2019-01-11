@@ -1,0 +1,20 @@
+
+### Info usuario
+GET /user
+Host: api.github.com
+Authorization: token afc732614d157af0773ebd2f851fd49cd7b11c4c
+User-Agent: qVista
+
+### Lista de temas
+GET /repos/JCAIMI/Qvista/issues
+Host: api.github.com
+Authorization: token afc732614d157af0773ebd2f851fd49cd7b11c4c
+User-Agent: qVista
+
+### Lista de temas asignados a un usuario
+GET /repos/JCAIMI/Qvista/issues?assignee=CPCIMI
+Host: api.github.com
+Authorization: token afc732614d157af0773ebd2f851fd49cd7b11c4c
+User-Agent: qVista
+
+GET /repos/:owner/:repo/contents/:path 

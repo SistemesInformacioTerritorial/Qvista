@@ -1,0 +1,17 @@
+
+###
+POST /user
+Host: api.github.com/graphql
+Authorization: bearer afc732614d157af0773ebd2f851fd49cd7b11c4c
+User-Agent: qVista
+query {
+    
+}
+
+###
+GET /user
+Host: api.github.com/graphql
+Authorization: token afc732614d157af0773ebd2f851fd49cd7b11c4c
+User-Agent: qVista
+
+
