@@ -1,0 +1,20 @@
+# --------------------------------------------------------------------------------------------
+###
+### Búsqueda de un bug abierto por título
+###
+GET https://api.github.com/search/issues
+    ?q=repo:SistemesInformacioTerritorial/QVista+state:open+label:bug+Prueba+bug+in:title
+Authorization: token a6ccb2fa7ec5a4a042596ae167d99378196cfacf
+Accept: application/json
+Time-Zone: Europe/Madrid
+User-Agent: qVista
+
+###
+### Lista de Commits de un fichero (puede añadirse parámetro sha=rama)
+###
+GET http://api.github.com/repos/SistemesInformacioTerritorial/QVista/commits
+    ?path=moduls/QvLlegenda.py
+Authorization: token a6ccb2fa7ec5a4a042596ae167d99378196cfacf
+Accept: application/json
+Time-Zone: Europe/Madrid
+User-Agent: qVista
