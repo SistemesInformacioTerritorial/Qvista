@@ -176,7 +176,12 @@ class QVista(QMainWindow, Ui_MainWindow):
             rang {Rect} -- El rang amb el que s'ha d'obrir el projecte (default: {None})
         """
         # Obrir el projecte i col.locarse en rang
-        self.project.read(projecte)
+        print ('Obro projecte')
+        self.wProgresOpertura.show()
+        oberturaProjecte = self.project.read(projecte)
+        if oberturaProjecte:
+            print('Projecte Obert OK')
+
         self.canvas.refresh()
         if rang is not None:
             self.canvas.setExtent(rang)
@@ -206,7 +211,9 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         # if titolEntorn is not None:
         #     self.lblTitolProjecte.setText(titolEntorn)
-
+    def nivellsAfegits(self, retorn):
+        self.progresOpertura.hide()
+        print ('Carregats Layers')
     def keyPressEvent(self, event):
         """ Defineix les actuacions del qVista en funció de la tecla apretada.
         """
@@ -334,7 +341,10 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.markers = QgsVertexMarker(self.canvas)
 
         # Instancia del projecte i associació canvas-projecte
+        self.wProgresOpertura = QWidget()
+        self.wProgresOpertura.hide()
         self.project = QgsProject.instance()
+        self.project.readProject.connect(self.nivellsAfegits)
         self.root = QgsProject.instance().layerTreeRoot()
 
         self.bridge = QgsLayerTreeMapCanvasBridge(self.root, self.canvas)
