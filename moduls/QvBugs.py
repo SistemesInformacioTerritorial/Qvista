@@ -3,7 +3,7 @@ import requests
 # USUARI = 'qVistaHost'
 # PASSWORD = 'HostQVista123'
 
-_TOKEN = 'a0d8ae1c0a58b63a95538efd954730e611531680' # qVistaHost
+_TOKEN = '7c0e7237075add68733dce460ba1d8d72f5f54ab' # qVistaHost
 
 class QvGithub:
 
@@ -21,11 +21,12 @@ class QvGithub:
             'content-type': "application/json"
         }
         self.repo = 'SistemesInformacioTerritorial/QVista'
+        self.timeout = 2
     
     def getBug(self, title):
         try:
             url = self.conn + '/search/issues?q=repo:' + self.repo + '+state:open+label:bug+' + title + '+in:title'
-            response = requests.request('GET', url, headers=self.headGet)
+            response = requests.get(url, headers=self.headGet, timeout=self.timeout)
             if response.status_code == 200:
                 data = response.json()
                 num = data['total_count']
@@ -48,7 +49,7 @@ class QvGithub:
                     label
                 ]
             }
-            response = requests.request('POST', url, json=data, headers=self.headPost)
+            response = requests.post(url, json=data, headers=self.headPost, timeout=self.timeout)
             if response.status_code == 201:
                 return True
             else:
@@ -63,9 +64,9 @@ class QvGithub:
         self.postIssue(title, body, "JCAIMI", "enhancement")
 
     def getCommitter(self, path):
-        try:
+        # try:
             url = self.conn + '/repos/' + self.repo + '/commits?path=' + path
-            response = requests.request('GET', url, headers=self.headGet)
+            response = requests.get(url, headers=self.headGet, timeout=self.timeout)
             if response.status_code == 200:
                 data = response.json()
                 item = data[0]
@@ -75,8 +76,8 @@ class QvGithub:
                 return committer['name']
             else:
                 return None
-        except:
-            return None
+        # except:
+        #     return None
 
 if __name__ == "__main__":
 
@@ -88,9 +89,9 @@ if __name__ == "__main__":
     com = gh.getCommitter('moduls/QvLlegenda.py')
     print('Committer:', com)
 
-    # ok = gh.postUser('Post de usuario', 'Sugerencia / petición')
+    ok = gh.postUser('Post de usuario', 'Prueba de sugerencia / petición')
 
-    # ok = gh.postBug('Bug desde app qVista', 'Descripción del error', 'CPCIMI')
+    ok = gh.postBug('Bug desde app qVista', 'Descripción del error', 'CPCIMI')
 
 
 

@@ -4,7 +4,7 @@
 ###
 GET https://api.github.com/search/issues
     ?q=repo:SistemesInformacioTerritorial/QVista+state:open+label:bug+Prueba+bug+in:title
-Authorization: token a0d8ae1c0a58b63a95538efd954730e611531680
+Authorization: token 7c0e7237075add68733dce460ba1d8d72f5f54ab
 Accept: application/json
 Time-Zone: Europe/Madrid
 User-Agent: qVista
@@ -14,7 +14,7 @@ User-Agent: qVista
 ###
 GET http://api.github.com/repos/SistemesInformacioTerritorial/QVista/commits
     ?path=moduls/QvLlegenda.py
-Authorization: token a0d8ae1c0a58b63a95538efd954730e611531680
+Authorization: token 7c0e7237075add68733dce460ba1d8d72f5f54ab
 Accept: application/json
 Time-Zone: Europe/Madrid
 User-Agent: qVista
