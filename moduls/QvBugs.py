@@ -1,10 +1,9 @@
 import requests
-import json
 
 # USUARI = 'qVistaHost'
 # PASSWORD = 'HostQVista123'
 
-_TOKEN = '830e8b32793cbc2a16f045549cea95aa25e244e4' # qVistaHost
+_TOKEN = 'a0d8ae1c0a58b63a95538efd954730e611531680' # qVistaHost
 
 class QvGithub:
 
@@ -28,7 +27,7 @@ class QvGithub:
             url = self.conn + '/search/issues?q=repo:' + self.repo + '+state:open+label:bug+' + title + '+in:title'
             response = requests.request('GET', url, headers=self.headGet)
             if response.status_code == 200:
-                data = json.loads(response.text)
+                data = response.json()
                 num = data['total_count']
                 return num
             else:
@@ -36,17 +35,17 @@ class QvGithub:
         except:
             return -1
     
-    def postBug(self, title, body, user):
+    def postIssue(self, title, body, assignee, label):
         try:
             url = self.conn + '/repos/' + self.repo + '/issues'
             data = {
                 "title": title,
                 "body": body,
                 "assignees": [
-                    user
+                    assignee
                 ],
                 "labels": [
-                    "bug"
+                    label
                 ]
             }
             response = requests.request('POST', url, json=data, headers=self.headPost)
@@ -57,12 +56,18 @@ class QvGithub:
         except:
             return False
 
-    def getUser(self, path):
+    def postBug(self, title, body, assignee):
+        self.postIssue(title, body, assignee, "bug")
+
+    def postUser(self, title, body):
+        self.postIssue(title, body, "JCAIMI", "enhancement")
+
+    def getCommitter(self, path):
         try:
             url = self.conn + '/repos/' + self.repo + '/commits?path=' + path
             response = requests.request('GET', url, headers=self.headGet)
             if response.status_code == 200:
-                data = json.loads(response.text)
+                data = response.json()
                 item = data[0]
                 commit = item['commit']
                 author = commit['author']
@@ -77,13 +82,15 @@ if __name__ == "__main__":
 
     gh = QvGithub()
 
-    num = gh.getBug('Prueba bug')
+    num = gh.getBug('Bug desde app qVista')
     print('Bug:', num)
 
-    user = gh.getUser('moduls/QvLlegenda.py')
-    print('Usr:', user)
+    com = gh.getCommitter('moduls/QvLlegenda.py')
+    print('Committer:', com)
 
-    ok = gh.postBug('Bug desde app qVista', 'Descripción del error', 'CPCIMI')
+    # ok = gh.postUser('Post de usuario', 'Sugerencia / petición')
+
+    # ok = gh.postBug('Bug desde app qVista', 'Descripción del error', 'CPCIMI')
 
 
 
