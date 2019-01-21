@@ -63,10 +63,10 @@ class QvGithub:
             return False
 
     def postBug(self, title, body, assignee):
-        self.postIssue(title, body, assignee, "bug")
+        return self.postIssue(title, body, assignee, "bug")
 
     def postUser(self, title, body):
-        self.postIssue(title, body, "JCAIMI", "enhancement")
+        return self.postIssue(title, body, "JCAIMI", "enhancement")
 
     def getCommitter(self, path):
         try:

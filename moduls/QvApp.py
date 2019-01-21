@@ -5,6 +5,7 @@ from qgis.PyQt.QtCore import QTranslator, QLibraryInfo
 from qgis.PyQt.QtNetwork import QNetworkProxy
 from moduls.QvSingleton import Singleton
 from pathlib import Path
+from moduls.QvBugs import QvGithub
 import sys
 import getpass
 import uuid
@@ -61,6 +62,7 @@ class QvApp(Singleton):
         self.sessio = str(uuid.uuid1())         # Id único de sesión
         self.intranet = self.calcIntranet()     # True si estamos conectados a la intranet
         self.proxy = self.setProxy()
+        self.gh = QvGithub()
         self.dbLog = None
         self.queryLog = None
         self.familyLog = None
