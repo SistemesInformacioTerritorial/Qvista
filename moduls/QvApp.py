@@ -16,6 +16,8 @@ _PATH_PRO = 'N:\\SITEB\\APL\\PYQGIS\\QVISTA\\CODI\\'
 
 _PATH_HELP = 'help/'
 
+_FILE_POST = 'POST.txt'
+
 _DB_QVISTA = dict()
 
 _DB_QVISTA['DSV'] = {
@@ -65,7 +67,7 @@ class QvApp(Singleton):
         self.ruta = self.calcRuta()             # Path de la aplicación
         self.intranet = self.calcIntranet()     # True si estamos conectados a la intranet
         self.proxy = self.setProxy()
-        self.gh = QvGithub(self.usuari, os.path.isfile(self.ruta+'POST.txt'))
+        self.gh = QvGithub(self.usuari, os.path.isfile(self.ruta+_FILE_POST))
         self.dbLog = None
         self.queryLog = None
         self.familyLog = None
