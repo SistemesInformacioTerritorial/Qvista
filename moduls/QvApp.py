@@ -5,6 +5,7 @@ from qgis.PyQt.QtCore import QTranslator, QLibraryInfo
 from qgis.PyQt.QtNetwork import QNetworkProxy
 from moduls.QvSingleton import Singleton
 from pathlib import Path
+from moduls.QvGithub import QvGithub
 import sys
 import getpass
 import uuid
@@ -41,10 +42,12 @@ _PROXY = {
 }
 
 def _fatalError(type, value, tb):
-    error = repr(traceback.format_tb(tb))
-    error = error[-1000:]
-    print('ERROR -', error)
-    QvApp().logRegistre('LOG_ERROR', error[-1000:])
+    QvApp().bugFatalError(type, value, tb)
+    
+#     error = repr(traceback.format_tb(tb))
+#     error = error[-1000:]
+#     print('ERROR -', error)
+#     QvApp().logRegistre('LOG_ERROR', error[-1000:])
 
 sys.excepthook = _fatalError
 
@@ -59,8 +62,10 @@ class QvApp(Singleton):
         self.dbQvista = _DB_QVISTA[self.entorn] # Conexión a Oracle según entorno
         self.usuari = getpass.getuser().upper() # Usuario de red
         self.sessio = str(uuid.uuid1())         # Id único de sesión
+        self.ruta = self.calcRuta()             # Path de la aplicación
         self.intranet = self.calcIntranet()     # True si estamos conectados a la intranet
         self.proxy = self.setProxy()
+        self.gh = QvGithub(self.usuari, os.path.isfile(self.ruta+'POST.txt'))
         self.dbLog = None
         self.queryLog = None
         self.familyLog = None
@@ -99,6 +104,13 @@ class QvApp(Singleton):
 
     def calcIntranet(self):
         return os.path.isdir(_PATH_PRO)
+
+    def calcRuta(self):
+        f = sys.argv[0]
+        q = 'qVista\\Codi\\'
+        n = f.find(q)
+        ruta = f[:n+len(q)]
+        return ruta
 
     def carregaIdioma(self, app, idioma = 'ca'):
         if app is None:
@@ -142,6 +154,8 @@ class QvApp(Singleton):
         except Exception as e:
             print(str(e))
             return ''
+
+    # Metodos de LOG en Oracle
 
     def logConnexio(self):
         try:
@@ -209,7 +223,20 @@ class QvApp(Singleton):
         except:
             return None
 
+    # Métodos de reporte de bugs con Github
+
+    def bugUser(self, tit, desc):
+        return self.gh.postUser(tit, desc)
+
+    def bugException(self):
+        return self.gh.reportBug()
+
+    def bugFatalError(self, type, value, tb):
+        return self.gh.reportBug(type, value, tb)
+
 if __name__ == "__main__":
+
+    print(sys.argv[0])
 
     from qgis.core.contextmanagers import qgisapp
 
