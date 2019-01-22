@@ -2384,6 +2384,7 @@ def sortir():
 
 # Funcio per carregar problemes a GITHUB
 def reportarProblema(titol, descripcio=None):
+
     if QvApp().bugUser(titol, descripcio):
         print ('Creat el problema {0:s}'.format(titol))
         qV.lblResultat.setText("S'ha enviat correctament.")

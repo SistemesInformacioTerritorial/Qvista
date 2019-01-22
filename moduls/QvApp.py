@@ -65,11 +65,7 @@ class QvApp(Singleton):
         self.ruta = self.calcRuta()             # Path de la aplicación
         self.intranet = self.calcIntranet()     # True si estamos conectados a la intranet
         self.proxy = self.setProxy()
-<<<<<<< HEAD
         self.gh = QvGithub(self.usuari, os.path.isfile(self.ruta+'POST.txt'))
-=======
-        self.gh = QvGithub()
->>>>>>> c2c2db4b9f9c3aa9aeac4287fa97679c3e7fca6c
         self.dbLog = None
         self.queryLog = None
         self.familyLog = None
