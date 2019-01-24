@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import traceback
 import sys
 
@@ -8,14 +10,11 @@ class QvError:
         try:
             if exc_type is None or exc_value is None or exc_tb is None:
                 exc_type, exc_value, exc_tb = sys.exc_info()
-
             formatted = traceback.format_exception(exc_type, exc_value, exc_tb)
-
-            error = formatted[len(formatted)-2] # ultimo error
-            des = ''.join(formatted)
 
             fich = ''
             lin = ''
+            error = formatted[len(formatted)-2] # ultimo error
             x = error.split(',')
             if len(x) >= 2:
                 f = x[0].strip()
@@ -30,7 +29,11 @@ class QvError:
                     if n >= 0:
                         lin = f[n+len(q):].strip()
 
-            return fich, lin, des
+            # msg = formatted[len(formatted)-1] # mensaje de error
+            # des = ''.join(formatted[:len(formatted)-1])
+            # des = ''.join(formatted)
+
+            return fich, lin, formatted
         except:
             return '', '', ''
 
