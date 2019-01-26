@@ -25,7 +25,6 @@ from moduls.QvApp import QvApp
 from moduls.QvLectorCsv import QvLectorCsv
 from moduls.QvPavimentacio import DockPavim
 from moduls.QvToolTip import QvToolTip
-
 # Impressió del temps de carrega dels moduls Qv
 print ('Temps de carrega dels moduls Qv:', time.time()-iniciTempsModuls)
 
@@ -710,6 +709,7 @@ class QVista(QMainWindow, Ui_MainWindow):
                 exec('self.act{}.triggered.connect(self.prepararDash({}))'.format(nom, nom))
                 exec('self.menuEntorns.addAction(self.act{})'.format(nom))
         self.menuEntorns.addAction(self.actPavimentacio)
+        self.menuEntorns.addAction(self.actMarxesCiutat)
     
     def streetViewTancat(self):
         if self.dwSV.isHidden():
@@ -1042,9 +1042,9 @@ class QVista(QMainWindow, Ui_MainWindow):
 
 
         
-        self.actBicing = QAction("Bicing", self)
-        self.actBicing.setStatusTip("Bicing")
-        self.actBicing.triggered.connect(self.bicing)
+        # self.actBicing = QAction("Bicing", self)
+        # self.actBicing.setStatusTip("Bicing")
+        # self.actBicing.triggered.connect(self.bicing)
 
         self.actWizard = QAction("Wizard", self)
         self.actWizard.setStatusTip("transp")
@@ -1067,9 +1067,15 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.actTest2 = QAction("actTest2", self)
         self.actTest2.setStatusTip("actTest2")
         self.actTest2.triggered.connect(self.testProva)
+
         self.actPavimentacio = QAction("Pavimentació", self)
         self.actPavimentacio.setStatusTip("Pavimentació")
         self.actPavimentacio.triggered.connect(self.pavimentacio)
+
+        self.actMarxesCiutat = QAction("Marxes de Ciutat", self)
+        self.actMarxesCiutat.setStatusTip("Marxes de Ciutat")
+        self.actMarxesCiutat.triggered.connect(self.marxesCiutat)
+
         self.actPlatges = QAction("Pavimentació", self)
         self.actPlatges.setStatusTip("Pavimentació")
         self.actPlatges.triggered.connect(self.platges)
@@ -1995,10 +2001,18 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.addDockWidget( Qt.RightDockWidgetArea, self.dwPavim)
         self.dwPavim.show()    
         
-
-    def bicing(self):
-        bicing=Bicis(self)
-        bicing.show()
+    def marxesCiutat(self): 
+        self.project.read('d:/Marxes ciutat/MarxesCiutat.qgs')       
+        fnt = QFont("Segoe UI", 20, weight=QFont.Normal)
+        self.lblTitolProjecte.setFont(fnt)
+        self.lblTitolProjecte.setText(self.project.title())
+        self.dwPavim = DockPavim(self)
+        self.addDockWidget( Qt.RightDockWidgetArea, self.dwPavim)
+        self.dwPavim.show()    
+        
+# def bicing(self):
+#         self.bicing=Bicis(self)
+#         self.bicing.show()
 
 # Altres clases -------------------------------------------------------------------
 
