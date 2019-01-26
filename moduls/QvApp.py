@@ -5,11 +5,13 @@ from qgis.PyQt.QtCore import QTranslator, QLibraryInfo
 from qgis.PyQt.QtNetwork import QNetworkProxy
 from moduls.QvSingleton import Singleton
 from pathlib import Path
+from moduls.QvGithub import QvGithub
 import sys
 import getpass
 import uuid
 import traceback
 import os
+import json
 
 _PATH_PRO = 'N:\\SITEB\\APL\\PYQGIS\\QVISTA\\CODI\\'
 
@@ -41,26 +43,34 @@ _PROXY = {
 }
 
 def _fatalError(type, value, tb):
-    error = repr(traceback.format_tb(tb))
-    error = error[-1000:]
-    print('ERROR -', error)
-    QvApp().logRegistre('LOG_ERROR', error[-1000:])
+    QvApp().bugFatalError(type, value, tb)
+    
+#     error = repr(traceback.format_tb(tb))
+#     error = error[-1000:]
+#     print('ERROR -', error)
+#     QvApp().logRegistre('LOG_ERROR', error[-1000:])
 
 sys.excepthook = _fatalError
 
 class QvApp(Singleton):
 
     def __init__(self):
-        if hasattr(self, 'entorn'): # Solo se inicializa una vez
+        if hasattr(self, 'ruta'): # Solo se inicializa una vez
             return
         
-        # self.entorn = self.calcEntorn()         # 'DSV' o 'PRO'
-        self.entorn = 'DSV'
-        self.dbQvista = _DB_QVISTA[self.entorn] # Conexión a Oracle según entorno
-        self.usuari = getpass.getuser().upper() # Usuario de red
-        self.sessio = str(uuid.uuid1())         # Id único de sesión
-        self.intranet = self.calcIntranet()     # True si estamos conectados a la intranet
-        self.proxy = self.setProxy()
+        self.ruta, self.rutaBase = self.calcRuta()  # Path de la aplicación
+        self.cfg = self.readCfg()                   # Configuración de la instalación
+        self.entorn = self.calcEntorn()             # 'DSV' o 'PRO'
+        
+        self.usuari = getpass.getuser().upper()     # Id de usuario
+        self.sessio = str(uuid.uuid1())             # Id único de sesión
+
+        self.intranet = self.calcIntranet()         # True si estamos en la intranet
+        self.dbQvista = _DB_QVISTA[self.entorn]     # Conexión a Oracle según entorno
+
+        self.proxy = self.setProxy()                # Establecer proxy
+        self.gh = QvGithub(self.data())             # Establecer Github
+
         self.dbLog = None
         self.queryLog = None
         self.familyLog = None
@@ -70,9 +80,51 @@ class QvApp(Singleton):
         self.qtTranslator = None
         self.qgisTranslator = None
 
+    def data(self):
+        txt = ''
+        txt += 'Nom: ' + self.cfg.get('Nom', '???') + '\n'
+        txt += 'Entorn: ' + self.entorn + '\n'
+        txt += 'Intranet: ' + str(self.intranet) + '\n'
+        txt += 'Usuari: ' + self.usuari + '\n'
+        txt += 'Sessió: ' + self.sessio + '\n'
+        txt += '___' + '\n'
+        return txt
+
+    def calcRuta(self):
+        try:
+            q1 = 'qVista\\'
+            q2 = 'Codi\\'
+            f = sys.argv[0]
+            q = q1 + q2
+            n = f.find(q)
+            if n >= 0:
+                ruta = f[:n+len(q)]
+                rutaBase = f[:n+len(q1)]
+                return ruta, rutaBase
+            else:
+                return '', ''
+        except:
+            self.bugException()
+            return '', ''
+
+    def readCfg(self):
+        try:
+            nom = 'install.cfg'
+            fich = self.rutaBase + nom
+            if not os.path.isfile(fich):
+                fich = self.ruta + nom
+            fp = open(fich, 'r', encoding='utf-8')
+            cfg = json.load(fp)
+            fp.close()
+            return cfg
+        except:
+            self.bugException()
+            return dict()
+
     def setProxy(self):
         try:
-            if self.intranet:
+            val = self.cfg.get('Proxy', 'False')
+            if self.intranet and val == 'True':
                 proxy = QNetworkProxy()
                 proxy.setType(QNetworkProxy.DefaultProxy)
                 proxy.setHostName = _PROXY['HostName']
@@ -82,20 +134,15 @@ class QvApp(Singleton):
             else:
                 return None
         except Exception as e:
-            print(str(e))
+            self.bugException()
             return None
         
     def calcEntorn(self):
-        if len(sys.argv) > 0:
-            prog = sys.argv[0].upper()
-            progL = len(sys.argv[0])
-            path = _PATH_PRO.upper()
-            pathL = len(path)
-            if progL > pathL:
-                pref = prog[:pathL]
-                if pref == path:
-                    return 'PRO'
-        return 'DSV'
+        val = self.cfg.get('Producció', 'False')
+        if val == 'True':
+            return 'PRO'
+        else:
+            return 'DSV'
 
     def calcIntranet(self):
         return os.path.isdir(_PATH_PRO)
@@ -104,7 +151,7 @@ class QvApp(Singleton):
         if app is None:
             return
         self.appQgis = app
-        self.idioma = idioma
+        self.idioma = self.cfg.get('Idioma', idioma)
         self.qtTranslator = QTranslator()
         self.qgisTranslator = QTranslator()
 
@@ -123,7 +170,7 @@ class QvApp(Singleton):
             file = Path(nomFich)
             if file.is_file():
                 file.open() 
-                txt = file.read_text() 
+                txt = file.read_text()
             return txt
         except:
             return ''
@@ -143,9 +190,12 @@ class QvApp(Singleton):
             print(str(e))
             return ''
 
+    # Metodos de LOG en Oracle
+
     def logConnexio(self):
         try:
-            if self.intranet:
+            val = self.cfg.get('Log', 'False')
+            if self.intranet and val == 'True':
                 db = QSqlDatabase.addDatabase(self.dbQvista['Database'])
                 if db.isValid():
                     db.setHostName(self.dbQvista['HostName'])
@@ -209,7 +259,32 @@ class QvApp(Singleton):
         except:
             return None
 
+    # Métodos de reporte de bugs con Github
+
+    def bugUser(self, tit, desc):
+        val = self.cfg.get('Github', 'False')
+        if val == 'True':
+            return self.gh.postUser(tit, desc)
+        else:
+            return False
+
+    def bugException(self):
+        val = self.cfg.get('Github', 'False')
+        if val == 'True':
+            return self.gh.reportBug()
+        else:
+            return False
+
+    def bugFatalError(self, type, value, tb):
+        val = self.cfg.get('Github', 'False')
+        if val == 'True':
+            return self.gh.reportBug(type, value, tb)
+        else:
+            return False
+
 if __name__ == "__main__":
+
+    print(sys.argv[0])
 
     from qgis.core.contextmanagers import qgisapp
 

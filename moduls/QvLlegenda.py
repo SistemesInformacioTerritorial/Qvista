@@ -169,7 +169,7 @@ class QvLlegendaModel(QgsLegendModel):
     def data(self, index, role):
         if index.isValid() and role == Qt.ForegroundRole:
             node = self.index2node(index)
-            if node is not None and node.nodeType() == QgsLayerTreeNode.NodeLayer and node.isVisible():
+            if node is not None and node.nodeType() == QgsLayerTreeNode.NodeLayer: # and node.isVisible():
                 layer = node.layer()
                 if layer is not None and layer.hasScaleBasedVisibility():
                     if layer.isInScaleRange(self.scale):
@@ -247,6 +247,8 @@ class QvLlegenda(QgsLayerTreeView):
                 capa.nameChanged.emit()
 
     def actIconaFiltre(self, capa):
+        if capa.type() != QgsMapLayer.VectorLayer:
+            return
         node = self.root.findLayer(capa.id())
         if node is not None:
             if capa.subsetString() == '':
@@ -256,8 +258,32 @@ class QvLlegenda(QgsLayerTreeView):
             capa.nameChanged.emit()
 
     def nouProjecte(self):
+        # Borrar tabs de atributos si existen
         if self.atributs is not None:
             self.atributs.deleteTabs()
+        # Guardar escala inicial
+        # if self.canvas is not None:
+        #     escala = self.canvas.scale()
+        # Capas: actualizar icono filtro y tratar capas raster
+        for layer in self.capes():
+            if layer.type() == QgsMapLayer.VectorLayer:
+                self.actIconaFiltre(layer)
+            if layer.type() == QgsMapLayer.RasterLayer and self.capaMarcada(layer):
+                self.veureCapa(layer, False)
+                self.veureCapa(layer, True)
+        # Establecer escala inicial
+        # print('Escala:', escala)
+        # if self.canvas is not None:
+        #     self.canvas.zoomScale(escala)
+
+        # print('Capes Llegenda:')
+        # for layer in leyenda.capes():
+        #     print('-', layer.name(), ', Visible:', leyenda.capaVisible(layer),
+        #                              ', Marcada:', leyenda.capaMarcada(layer),
+        #                              ', Filtro escala:', layer.hasScaleBasedVisibility())
+        #     if layer.type() == QgsMapLayer.VectorLayer:
+        #         print(' ', 'Filtro datos:', layer.subsetString())
+        #         leyenda.actIconaFiltre(layer)
 
     def connectaCanviCapaActiva(self, canviCapaActiva):
         if canviCapaActiva:
@@ -579,7 +605,14 @@ if __name__ == "__main__":
 
         leyenda = QvLlegenda(canv, atrib, printCapaActiva)
         
-        leyenda.project.read('../dades/projectes/bcn11.qgs')
+        # leyenda.project.read('../dades/projectes/bcn11.qgs')
+        leyenda.project.read('../dades/projectes/Prototip GUIA OracleSpatial_WMS.qgz')
+
+    # Al cargar un proyecto o capa:
+    # - Ver si tiene filtro de datos para actualizar el icono del embudo
+    # - Para las capas raster, ver si funciona el chech/uncheck de la capa para la visualización
+    # - Ver si se produce un cambio de escala y restaurarlo
+    # Evento: QgsProject -> legendLayersAdded(lista de capas)
 
         canv.setWindowTitle('Canvas')
         canv.show()
@@ -596,17 +629,11 @@ if __name__ == "__main__":
         # nodes(), nodePerNom(), node.isVisible(), node.itemVisibilityChecked()
         #
 
-        print('Capes Llegenda:')
-        for layer in leyenda.capes():
-            print('-', layer.name(), ', Visible:', leyenda.capaVisible(layer),
-                                     ', Marcada:', leyenda.capaMarcada(layer),
-                                     ', Fitro escala:', layer.hasScaleBasedVisibility())
+        # leyenda.veureCapa(leyenda.capaPerNom('BCN_Barri_ETRS89_SHP'), True)
+        # leyenda.veureCapa(leyenda.capaPerNom('BCN_Districte_ETRS89_SHP'), False)
+        # leyenda.veureCapa(leyenda.capaPerNom('BCN_Illes_ETRS89_SHP'), True)
 
-        leyenda.veureCapa(leyenda.capaPerNom('BCN_Barri_ETRS89_SHP'), True)
-        leyenda.veureCapa(leyenda.capaPerNom('BCN_Districte_ETRS89_SHP'), False)
-        leyenda.veureCapa(leyenda.capaPerNom('BCN_Illes_ETRS89_SHP'), True)
-
-        leyenda.setCurrentLayer(leyenda.capaPerNom('BCN_Barri_ETRS89_SHP'))
+        # leyenda.setCurrentLayer(leyenda.capaPerNom('BCN_Barri_ETRS89_SHP'))
 
         # Acciones personalizadas para menú contextual de la leyenda:
         #
