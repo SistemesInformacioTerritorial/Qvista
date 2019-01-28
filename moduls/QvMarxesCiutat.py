@@ -3,7 +3,7 @@ from moduls.QvImports import *
 class MarxesCiutat(QDockWidget):
     def __init__(self, parent):
         self.parent = parent
-        super().__init__("Marxes de ciutat")
+        super().__init__("Marxes exploratòries")
         
         fMarxes = QFrame()
         fMarxes.setStyleSheet("QFrame {background-image: url('c:/qvistaProd/imatges/pavim.jpg');}")
@@ -15,7 +15,7 @@ class MarxesCiutat(QDockWidget):
         self.setMaximumWidth(500)
         self.setMinimumWidth(500)
 
-        bMarxes = QPushButton('Marxes de ciutat')
+        bMarxes = QPushButton('Resum operatiu')
         lytMarxes.addWidget(bMarxes)
         spacer = QSpacerItem(50, 50, QSizePolicy.Expanding,QSizePolicy.Maximum)
         lytMarxes.addItem(spacer)
