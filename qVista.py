@@ -24,6 +24,7 @@ from moduls.QvCatalegPetit import QvCataleg
 from moduls.QvApp import QvApp
 from moduls.QvLectorCsv import QvLectorCsv
 from moduls.QvPavimentacio import DockPavim
+from moduls.QvMarxesCiutat import MarxesCiutat
 from moduls.QvToolTip import QvToolTip
 # Impressió del temps de carrega dels moduls Qv
 print ('Temps de carrega dels moduls Qv:', time.time()-iniciTempsModuls)
@@ -2005,10 +2006,11 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.project.read('d:/Marxes ciutat/MarxesCiutat.qgs')       
         fnt = QFont("Segoe UI", 20, weight=QFont.Normal)
         self.lblTitolProjecte.setFont(fnt)
-        self.lblTitolProjecte.setText(self.project.title())
-        self.dwPavim = DockPavim(self)
-        self.addDockWidget( Qt.RightDockWidgetArea, self.dwPavim)
-        self.dwPavim.show()    
+        # self.lblTitolProjecte.setText(self.project.title())
+        self.lblTitolProjecte.setText("Marxes de ciutat")
+        self.dwMarxes = MarxesCiutat(self)
+        self.addDockWidget( Qt.RightDockWidgetArea, self.dwMarxes)
+        self.dwMarxes.show()    
         
 # def bicing(self):
 #         self.bicing=Bicis(self)

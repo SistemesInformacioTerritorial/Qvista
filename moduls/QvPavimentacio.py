@@ -1,7 +1,8 @@
 from moduls.QvImports import *
 
 class DockPavim(QDockWidget):
-    def __init__(self):
+    def __init__(self, parent):
+        self.parent = parent
         super().__init__("Pavimentació")
         
         fPavim = QFrame()
