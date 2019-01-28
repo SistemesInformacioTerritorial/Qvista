@@ -50,8 +50,6 @@ def _fatalError(type, value, tb):
 #     print('ERROR -', error)
 #     QvApp().logRegistre('LOG_ERROR', error[-1000:])
 
-sys.excepthook = _fatalError
-
 class QvApp(Singleton):
 
     def __init__(self):
@@ -60,8 +58,11 @@ class QvApp(Singleton):
         
         self.ruta, self.rutaBase = self.calcRuta()  # Path de la aplicación
         self.cfg = self.readCfg()                   # Configuración de la instalación
-        self.entorn = self.calcEntorn()             # 'DSV' o 'PRO'
-        
+        val = self.cfg.get("Debug", "False")        # Errores no controlados
+        if val != "True":
+            sys.excepthook = _fatalError
+
+        self.entorn = self.calcEntorn()             # 'DSV' o 'PRO'        
         self.usuari = getpass.getuser().upper()     # Id de usuario
         self.sessio = str(uuid.uuid1())             # Id único de sesión
 
@@ -276,6 +277,7 @@ class QvApp(Singleton):
             return False
 
     def bugFatalError(self, type, value, tb):
+        
         val = self.cfg.get('Github', 'False')
         if val == 'True':
             return self.gh.reportBug(type, value, tb)
