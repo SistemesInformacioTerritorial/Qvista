@@ -1676,8 +1676,6 @@ class QVista(QMainWindow, Ui_MainWindow):
             pass
 
     def martorellUTM(self):
- 
-
         extent=self.canvas.extent()
         self.canvas.rotate(45)
         self.canvas.setExtent(extent)
@@ -2003,11 +2001,11 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.dwPavim.show()    
         
     def marxesCiutat(self): 
-        self.project.read('d:/Marxes ciutat/MarxesCiutat.qgs')       
+        self.project.read('d:/MarxesCiutat/MarxesCiutat.qgs')       
         fnt = QFont("Segoe UI", 20, weight=QFont.Normal)
         self.lblTitolProjecte.setFont(fnt)
         # self.lblTitolProjecte.setText(self.project.title())
-        self.lblTitolProjecte.setText("Marxes de ciutat")
+        self.lblTitolProjecte.setText("Marxes exploratòries")
         self.dwMarxes = MarxesCiutat(self)
         self.addDockWidget( Qt.RightDockWidgetArea, self.dwMarxes)
         self.dwMarxes.show()    
