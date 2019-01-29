@@ -149,7 +149,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         # Carrega del projecte inicial
         self.obrirProjecte(projecteInicial)
 
-        # Final del cronometratge d'arrancada
+        # Final del cronometratge de carrega de projecte
         endGlobal = time.time()
         tempsTotal = endGlobal - startGlobal
         print ('Total carrega després projecte: ', tempsTotal)
@@ -175,6 +175,15 @@ class QVista(QMainWindow, Ui_MainWindow):
         Keyword Arguments:
             rang {Rect} -- El rang amb el que s'ha d'obrir el projecte (default: {None})
         """
+        # self.lblMovie = QLabel(self.canvas)
+        # self.lblMovie.setGeometry(self.width()/2,self.height()/2,300,300)
+        # self.movie = QMovie("imatges/loop4.gif")
+        # self.movie.setScaledSize(QSize(300,150))
+        # self.lblMovie.setMovie(self.movie)
+        # self.lblMovie.show()
+        # self.movie.start()
+
+        self.project.readProject.connect(self.paraMovie)
         # Obrir el projecte i col.locarse en rang
         self.project.read(projecte)
         self.canvas.refresh()
@@ -206,7 +215,8 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         # if titolEntorn is not None:
         #     self.lblTitolProjecte.setText(titolEntorn)
-
+    def paraMovie(self):
+        self.lblMovie.hide()
     def keyPressEvent(self, event):
         """ Defineix les actuacions del qVista en funció de la tecla apretada.
         """
