@@ -704,7 +704,7 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         
     def preparacioEntorns(self):
-        self.menuEntorns = self.bar.addMenu(5*' '+'Entorns')
+        self.menuEntorns = self.bar.addMenu(3*' '+'Entorns'+3*' ')
         
         fnt = QFont("Segoe UI", 16, weight=QFont.Normal)
         self.menuEntorns.setStyleSheet("QMenu {background-color: #dddddd; selection-background-color : #79909B;}")
@@ -922,8 +922,8 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.actTissores.setIcon(icon)
         self.actTissores.triggered.connect(self.tissores)
 
-        self.actSeleccioGrafica = QAction("Eina per retallar pantalla", self)
-        self.actSeleccioGrafica.setStatusTip("Eina per retallar pantalla")
+        self.actSeleccioGrafica = QAction("Selecció gràfica d'elements", self)
+        self.actSeleccioGrafica.setStatusTip("Selecció gràfica d'elements")
         icon=QIcon('imatges/select.png')
         self.actSeleccioGrafica.setIcon(icon)
         self.actSeleccioGrafica.triggered.connect(self.seleccioGrafica)
@@ -1029,7 +1029,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.actFavorit.setStatusTip("Favorit")
         self.actFavorit.triggered.connect(self.favorit)
 
-        self.actCataleg = QAction("Catàleg", self)
+        self.actCataleg = QAction(3*' '+"Catàleg"+3*' ', self)
         self.actCataleg.setStatusTip("Catàleg")
         self.actCataleg.triggered.connect(self.catalegCool)
         
@@ -1370,7 +1370,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         spacer = QSpacerItem(9999, 9999, QSizePolicy.Expanding,QSizePolicy.Maximum)
         
         self.bar.addAction(self.actCataleg)
-        self.menuProjectes = self.bar.addMenu ("         Mapes  ")
+        self.menuProjectes = self.bar.addMenu ("      Mapes      ")
         # self.menuFuncions = self.bar.addMenu("  Eines  ")
         self.menuFuncions = QMenu()
         # self.menuFuncions.setStyleSheet('QMenu {')
