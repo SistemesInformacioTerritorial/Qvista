@@ -375,7 +375,7 @@ class QvLlegenda(QgsLayerTreeView):
 
     def setAccions(self):
         act = QAction()
-        act.setText("Crea grup")
+        act.setText("Nou grup de capes")
         # act.setIcon(QIcon(':/Icones/ic_file_upload_black_48dp.png'))
         act.triggered.connect(self.defaultActions().addGroup)
         self.accions.afegirAccio('addGroup', act)
