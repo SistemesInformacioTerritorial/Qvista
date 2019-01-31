@@ -192,7 +192,8 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         # Labels de la statusbar (Projecció i nom del projecte)
         self.lblProjeccio.setText(self.project.crs().description())
-        self.lblProjecte.setText(self.project.fileName())
+        self.lblProjecte.setText(self.project.baseName())
+        self.lblProjecte.setToolTip(self.project.fileName())
         if self.canvas.rotation() == 0:
             self.bOrientacio.setText(' Orientació: Nord')
         else:
@@ -620,7 +621,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.llegenda = QvLlegenda(self.canvas, self.taulesAtributs)
         self.llegenda.currentLayerChanged.connect(self.canviLayer)
         self.canvas.setLlegenda(self.llegenda)
-        self.layoutFrameLlegenda.setContentsMargins ( 0, 0, 0, 0 )
+        self.layoutFrameLlegenda.setContentsMargins ( 5, 13, 5, 0 )
         self.llegenda.setStyleSheet("QvLlegenda {background-color: #DDDDDD; border: 0px solid red;}")
         fnt = QFont("Segoe UI", 8, weight=QFont.Normal)
         self.llegenda.setFont(fnt)
@@ -1042,6 +1043,8 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         self.tbEndevant.setDefaultAction(self.actEndevant)
         self.tbEnrera.setDefaultAction(self.actEnrera)
+        self.tbEndevant.hide()
+        self.tbEnrera.hide()
 
         self.actTemes = QAction("Temes", self)
         self.actTemes.setStatusTip("Temes")
@@ -1750,7 +1753,7 @@ class QVista(QMainWindow, Ui_MainWindow):
             missatgeCaixa('Cal tenir seleccionat un nivell per poder fer una selecció.','Marqueu un nivell a la llegenda sobre el que aplicar la consulta.')
 
     def showXY(self,p):
-        self.lblXY.setText( str(int(p.x())) + " | " + str(int(p.y()) ))
+        self.lblXY.setText( str("%.2f" % p.x()) + " , " + str("%.2f" % p.y() ))
         # try:
         #     if self.qvPrint.pucMoure:
         #         self.dwPrint.move(self.qvPrint.dockX-100, self.qvPrint.dockY-120)
@@ -2205,7 +2208,7 @@ def guardarDialegProjecte():
     nfile,_ = QFileDialog.getSaveFileName(None,"Guardar Projecte Qgis", ".", "Projectes Qgis (*.qgs)")
 
     qV.project.write(nfile)
-    qV.lblProjecte.setText(qV.project.fileName())
+    qV.lblProjecte.setText(qV.project.baseName())
     #print(scale)
 
 def carregarFieldsCalculadora():
