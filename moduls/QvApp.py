@@ -44,7 +44,8 @@ _PROXY = {
 
 def _fatalError(type, value, tb):
     QvApp().bugFatalError(type, value, tb)
-    
+
+
 #     error = repr(traceback.format_tb(tb))
 #     error = error[-1000:]
 #     print('ERROR -', error)
