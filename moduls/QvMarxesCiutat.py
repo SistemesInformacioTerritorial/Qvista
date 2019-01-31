@@ -1,4 +1,5 @@
 from moduls.QvImports import *
+from moduls.QvPDF import QvPDF
 
 class MarxesCiutat(QDockWidget):
     def __init__(self, parent):
@@ -61,8 +62,16 @@ class MarxesCiutat(QDockWidget):
         QDesktopServices().openUrl(QUrl('c:/temp/tempQgis.qgs'))
         """
     def mostrarInstruccions(self):
-        QDesktopServices().openUrl(QUrl('d:/MarxesCiutat/Guia_lectura_el_coll.pdf'))
+        # QDesktopServices().openUrl(QUrl('d:/MarxesCiutat/Guia_lectura_el_coll.pdf'))
+        PDF = 'file:///' + 'd:/MarxesCiutat/Guia_lectura_el_coll.pdf'
+
+        self.w = QvPDF(PDF)
+        self.w.setGeometry(50, 50, 1200, 800)
+        self.w.setWindowTitle('Marxes exploratóries')
+        self.w.show()
+
     def mostrarColl(self):
         QDesktopServices().openUrl(QUrl('d:/MarxesCiutat/ElColl_resultats.png'))
+
     def mostrarSalut(self):
         QDesktopServices().openUrl(QUrl('d:/MarxesCiutat/Salut_resultats.png'))

@@ -217,7 +217,9 @@ class QVista(QMainWindow, Ui_MainWindow):
         # if titolEntorn is not None:
         #     self.lblTitolProjecte.setText(titolEntorn)
     def paraMovie(self):
-        self.lblMovie.hide()
+        pass
+        # self.lblMovie.hide()
+
     def keyPressEvent(self, event):
         """ Defineix les actuacions del qVista en funció de la tecla apretada.
         """
@@ -2450,6 +2452,9 @@ def main(argv):
     global qV
     with qgisapp(sysexit=False) as app: 
         
+        # Se instancia QvApp al principio para el control de errores
+        qVapp = QvApp()
+
         # Splash image al començar el programa. La tancarem amb splash.finish(qV)
         splash_pix = QPixmap('imatges/qvistaLogo2.png')
         splash = QSplashScreen(splash_pix, Qt.WindowStaysOnTopHint)
@@ -2458,7 +2463,6 @@ def main(argv):
         splash.show()
         app.processEvents()
 
-        qVapp = QvApp()
         ok = qVapp.logInici()            # Por defecto: family='QVISTA', logname='DESKTOP'
         if not ok:
             print('ERROR LOG >>', qVapp.logError())
