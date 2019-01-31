@@ -119,6 +119,8 @@ class QvGithub:
         try:
             ok = False
             fich, lin, desc = QvError.bug(type, value, tb)
+            if fich == '' or lin == '':
+                return False
             title = fich + ' (' + lin + ')'
             if self.getBug(title) == 0:
                 body = self.formatError(desc)
@@ -143,6 +145,8 @@ if __name__ == "__main__":
     # ok = gh.postUser('Post de usuario', 'Prueba de sugerencia / petición')
 
     from moduls.QvApp import QvApp
+
+    app = QvApp()
 
     def pp():
         a = 0
