@@ -375,13 +375,13 @@ class QvLlegenda(QgsLayerTreeView):
 
     def setAccions(self):
         act = QAction()
-        act.setText("Defineix grup")
+        act.setText("Crea grup")
         # act.setIcon(QIcon(':/Icones/ic_file_upload_black_48dp.png'))
         act.triggered.connect(self.defaultActions().addGroup)
         self.accions.afegirAccio('addGroup', act)
 
         act = QAction()
-        act.setText("Afegeix capa")
+        act.setText("Afegeix nova capa")
         # act.setIcon(QIcon(':/Icones/ic_file_upload_black_48dp.png'))ic_beach_access_black_48dp
         act.triggered.connect(self.addLayersFromFile)
         self.accions.afegirAccio('addLayersFromFile', act)
@@ -414,7 +414,7 @@ class QvLlegenda(QgsLayerTreeView):
         self.accions.afegirAccio('showLayerMap', act)
 
         act = QAction()
-        act.setText("Mostra contador elements")
+        act.setText("Comptador elements")
         # act.setIcon(QIcon(':/Icones/ic_file_upload_black_48dp.png'))
         act.triggered.connect(self.defaultActions().showFeatureCount)
         # act.setCheckable(True)
