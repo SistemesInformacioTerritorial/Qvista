@@ -103,6 +103,8 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.mapaMaxim = False
         self.layerActiu = None
         self.prepararCercador = True
+        self.lblMovie = None
+
 
         # # Connectors i accions
         self.definicioAccions()
@@ -175,13 +177,13 @@ class QVista(QMainWindow, Ui_MainWindow):
         Keyword Arguments:
             rang {Rect} -- El rang amb el que s'ha d'obrir el projecte (default: {None})
         """
-        # self.lblMovie = QLabel(self.canvas)
-        # self.lblMovie.setGeometry(self.width()/2,self.height()/2,300,300)
-        # self.movie = QMovie("imatges/loop4.gif")
-        # self.movie.setScaledSize(QSize(300,150))
-        # self.lblMovie.setMovie(self.movie)
-        # self.lblMovie.show()
-        # self.movie.start()
+        self.lblMovie = QLabel(self.canvas)
+        self.lblMovie.setGeometry(self.width()/2,self.height()/2,300,300)
+        self.movie = QMovie("imatges/loop4.gif")
+        self.movie.setScaledSize(QSize(300,150))
+        self.lblMovie.setMovie(self.movie)
+        self.lblMovie.show()
+        self.movie.start()
 
         self.project.readProject.connect(self.paraMovie)
         # Obrir el projecte i col.locarse en rang
@@ -214,9 +216,10 @@ class QVista(QMainWindow, Ui_MainWindow):
         #     exec("self.act{}.trigger()".format(dashboard))
 
         # if titolEntorn is not None:
-        #     self.lblTitolProjecte.setText(titolEntorn)
+        #     self.lblTirotattolProjecte.setText(titolEntorn)
     def paraMovie(self):
         self.lblMovie.hide()
+        pass
     def keyPressEvent(self, event):
         """ Defineix les actuacions del qVista en funció de la tecla apretada.
         """
