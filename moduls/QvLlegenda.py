@@ -183,6 +183,8 @@ class QvLlegenda(QgsLayerTreeView):
 
     obertaTaulaAtributs = pyqtSignal()
     clicatMenuContexte = pyqtSignal(str)
+    carregantProjecte = pyqtSignal()
+    projecteCarregat = pyqtSignal(str)
 
     def __init__(self, canvas=None, atributs=None, canviCapaActiva=None, debug=False):
         super().__init__()
@@ -194,6 +196,7 @@ class QvLlegenda(QgsLayerTreeView):
         self.bridges = []
         self.atributs = atributs
         self.editable = True
+
         self.project.readProject.connect(self.nouProjecte)
 
         self.setWhatsThis(QvApp().carregaAjuda(self))
@@ -232,8 +235,25 @@ class QvLlegenda(QgsLayerTreeView):
         if self.atributs is not None:
             self.atributs.modificatFiltreCapa.connect(self.actIconaFiltre)
 
+        self.projecteObert = False
+        if self.canvas is not None:
+            self.project.layerLoaded.connect(self.iniProjecte)
+            self.canvas.renderComplete.connect(self.fiProjecte)
+
         if self.debug:
             self.printSignals()
+
+    def iniProjecte(self, num, tot):
+        # La carga de un proyecto se inicia con la capa #0
+        if num == 0:
+            self.projecteObert = False
+            self.carregantProjecte.emit()
+    
+    def fiProjecte(self):
+        # La carga de un proyecto acaba con su visualización en el canvas
+        if not self.projecteObert:
+            self.projecteObert = True
+            self.projecteCarregat.emit(self.project.fileName())
 
     def printSignals(self):
         self.canvas.layersChanged.connect(lambda: print('Canvas layersChanged'))
@@ -241,6 +261,8 @@ class QvLlegenda(QgsLayerTreeView):
         self.canvas.renderComplete.connect(lambda: print('Canvas renderComplete'))
         self.project.layerLoaded.connect(lambda num, tot: print("Project layerLoaded %d / %d" % (num, tot)))
         self.project.readProject.connect(lambda: print('Project readProject'))
+        self.carregantProjecte.connect(lambda: print('*** Llegenda carregantProjecte'))
+        self.projecteCarregat.connect(lambda f: print('*** Llegenda projecteCarregat ' + f))
         
     def editarLlegenda(self, on=True):
         self.editable = on
