@@ -14,20 +14,21 @@ class QvError:
 
             fich = ''
             lin = ''
-            error = formatted[len(formatted)-2] # ultimo error
-            x = error.split(',')
-            if len(x) >= 2:
-                f = x[0].strip()
-                q = 'qVista\\Codi\\'
-                n = f.find(q) # buscamos nombre de .py y quitamos " del final
-                if n >= 0:
-                    fich = f[n+len(q):len(f)-1]
-                    fich = fich.replace('\\', '/')
-                    f = x[1].strip()
-                    q = 'line' # buscamos número de linea y quitamos blancos
-                    n = f.find(q)
+            if len(formatted) >= 2:
+                error = formatted[len(formatted)-2] # ultimo error
+                x = error.split(',')
+                if len(x) >= 2:
+                    f = x[0].strip()
+                    q = 'qVista\\Codi\\'
+                    n = f.find(q) # buscamos nombre de .py y quitamos " del final
                     if n >= 0:
-                        lin = f[n+len(q):].strip()
+                        fich = f[n+len(q):len(f)-1]
+                        fich = fich.replace('\\', '/')
+                        f = x[1].strip()
+                        q = 'line' # buscamos número de linea y quitamos blancos
+                        n = f.find(q)
+                        if n >= 0:
+                            lin = f[n+len(q):].strip()
 
             # msg = formatted[len(formatted)-1] # mensaje de error
             # des = ''.join(formatted[:len(formatted)-1])

@@ -108,7 +108,7 @@ class QvGithub:
         if n > 0:
             res = err[n-1]      # Primero el mensaje de error destacado
             res += '---' + '\n'
-            for e in err[:n-2]: # Luego la traza
+            for e in err[:n-1]: # Luego la traza
                 e = e.strip()
                 e = e.replace('<', '[')
                 e = e.replace('>', ']')
@@ -152,12 +152,12 @@ if __name__ == "__main__":
         a = 0
         b = 3 / a
 
-    pp() 
+    # pp() 
 
-    # try:
-    #     pp()
-    # except:
-    #     QvApp().bugException()
+    try:
+        pp()
+    except:
+        QvApp().bugException()
 
 
 
