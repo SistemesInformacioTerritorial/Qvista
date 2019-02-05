@@ -212,7 +212,8 @@ class QVista(QMainWindow, Ui_MainWindow):
         #     self.lblTirotattolProjecte.setText(titolEntorn)
     
     def startMovie(self):
-        self.lblMovie = QLabel(self.canvas)
+        print('carga')
+        self.lblMovie = QLabel()
         self.lblMovie.setGeometry(self.width()/2,self.height()/2,300,300)
         self.movie = QMovie("imatges/loop4.gif")
         self.movie.setScaledSize(QSize(300,150))
