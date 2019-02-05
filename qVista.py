@@ -194,7 +194,8 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         # Labels de la statusbar (Projecció i nom del projecte)
         self.lblProjeccio.setText(self.project.crs().description())
-        self.lblProjecte.setText(self.project.fileName())
+        self.lblProjecte.setText(self.project.baseName())
+        self.lblProjecte.setToolTip(self.project.fileName())
         if self.canvas.rotation() == 0:
             self.bOrientacio.setText(' Orientació: Nord')
         else:
@@ -218,8 +219,14 @@ class QVista(QMainWindow, Ui_MainWindow):
         # if titolEntorn is not None:
         #     self.lblTirotattolProjecte.setText(titolEntorn)
     def paraMovie(self):
+<<<<<<< HEAD
         self.lblMovie.hide()
         pass
+=======
+        pass
+        # self.lblMovie.hide()
+
+>>>>>>> c05b05e6685f9471a74c3459a71db3f9335d1089
     def keyPressEvent(self, event):
         """ Defineix les actuacions del qVista en funció de la tecla apretada.
         """
@@ -623,9 +630,9 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.llegenda = QvLlegenda(self.canvas, self.taulesAtributs)
         self.llegenda.currentLayerChanged.connect(self.canviLayer)
         self.canvas.setLlegenda(self.llegenda)
-        self.layoutFrameLlegenda.setContentsMargins ( 0, 0, 0, 0 )
-        self.llegenda.setStyleSheet("QvLlegenda {background-color: #DDDDDD; border: 0px solid red;}")
-        fnt = QFont("Segoe UI", 8, weight=QFont.Normal)
+        self.layoutFrameLlegenda.setContentsMargins ( 5, 13, 5, 0 )
+        self.llegenda.setStyleSheet("QvLlegenda {color: #2F4550; background-color: #DDDDDD; border: 0px solid red;}")
+        fnt = QFont("Segoe UI", 12, weight=QFont.Normal)
         self.llegenda.setFont(fnt)
         self.layoutFrameLlegenda.addWidget(self.llegenda)
         self.llegenda.accions.afegirAccio('Propietats de capa', self.actPropietatsLayer)
@@ -704,10 +711,10 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         
     def preparacioEntorns(self):
-        self.menuEntorns = self.bar.addMenu(5*' '+'Entorns')
+        self.menuEntorns = self.bar.addMenu(3*' '+'Entorns'+3*' ')
         
         fnt = QFont("Segoe UI", 16, weight=QFont.Normal)
-        self.menuEntorns.setStyleSheet("QMenu {background-color: #dddddd; selection-background-color : #79909B;}")
+        self.menuEntorns.setStyleSheet("QMenu {color: #79909B; background-color: #dddddd; selection-background-color : #444444;}")
         self.menuEntorns.setFont(fnt)
         self.menuEntorns.styleStrategy = QFont.PreferAntialias or QFont.PreferQuality
         for entorn in os.listdir(os.path.dirname('entorns/')):          
@@ -922,8 +929,8 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.actTissores.setIcon(icon)
         self.actTissores.triggered.connect(self.tissores)
 
-        self.actSeleccioGrafica = QAction("Eina per retallar pantalla", self)
-        self.actSeleccioGrafica.setStatusTip("Eina per retallar pantalla")
+        self.actSeleccioGrafica = QAction("Selecció gràfica d'elements", self)
+        self.actSeleccioGrafica.setStatusTip("Selecció gràfica d'elements")
         icon=QIcon('imatges/select.png')
         self.actSeleccioGrafica.setIcon(icon)
         self.actSeleccioGrafica.triggered.connect(self.seleccioGrafica)
@@ -1029,7 +1036,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.actFavorit.setStatusTip("Favorit")
         self.actFavorit.triggered.connect(self.favorit)
 
-        self.actCataleg = QAction("Catàleg", self)
+        self.actCataleg = QAction(3*' '+"Catàleg"+3*' ', self)
         self.actCataleg.setStatusTip("Catàleg")
         self.actCataleg.triggered.connect(self.catalegCool)
         
@@ -1045,6 +1052,8 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         self.tbEndevant.setDefaultAction(self.actEndevant)
         self.tbEnrera.setDefaultAction(self.actEnrera)
+        self.tbEndevant.hide()
+        self.tbEnrera.hide()
 
         self.actTemes = QAction("Temes", self)
         self.actTemes.setStatusTip("Temes")
@@ -1191,7 +1200,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.dwSeleccioGrafica.setWidget( self.wSeleccioGrafica)
         self.dwSeleccioGrafica.setContentsMargins ( 2, 2, 2, 2 )
         self.addDockWidget( Qt.RightDockWidgetArea, self.dwSeleccioGrafica )
-        self.dwSeleccioGrafica.setStyleSheet('QDockWidget {background-color: #909090;}')
+        self.dwSeleccioGrafica.setStyleSheet('QDockWidget {color: #465A63; background-color: #909090;}')
         self.dwSeleccioGrafica.hide()
 
         self.idsElementsSeleccionats = []
@@ -1363,12 +1372,12 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.bar.styleStrategy = QFont.PreferAntialias or QFont.PreferQuality
 
         # bar.setStyleSheet("QMenuBar {color: #FFFFFF; background-color : #4062BB;}")
-        self.bar.setStyleSheet("QMenuBar {color: #FFFFFF; background-color : #38474F; selection-background-color : #79909B;}")
+        self.bar.setStyleSheet("QMenuBar {color: #79909B; background-color : #38474F; selection-background-color : #444444;}")
 
         spacer = QSpacerItem(9999, 9999, QSizePolicy.Expanding,QSizePolicy.Maximum)
         
         self.bar.addAction(self.actCataleg)
-        self.menuProjectes = self.bar.addMenu ("         Mapes  ")
+        self.menuProjectes = self.bar.addMenu ("      Mapes      ")
         # self.menuFuncions = self.bar.addMenu("  Eines  ")
         self.menuFuncions = QMenu()
         # self.menuFuncions.setStyleSheet('QMenu {')
@@ -1376,7 +1385,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         # catalegMenu = self.bar.addMenu("                   Catàleg  ")
 
         fnt = QFont("Segoe UI", 16, weight=QFont.Normal)
-        self.menuProjectes.setStyleSheet("QMenu {background-color: #dddddd; selection-background-color : #79909B;}")
+        self.menuProjectes.setStyleSheet("QMenu {color: #79909B; background-color: #dddddd; selection-background-color : #444444;}")
         self.menuProjectes.setFont(fnt)
         self.menuProjectes.styleStrategy = QFont.PreferAntialias or QFont.PreferQuality
         self.menuProjectes.addAction(self.actObrirProjecte)
@@ -1753,7 +1762,7 @@ class QVista(QMainWindow, Ui_MainWindow):
             missatgeCaixa('Cal tenir seleccionat un nivell per poder fer una selecció.','Marqueu un nivell a la llegenda sobre el que aplicar la consulta.')
 
     def showXY(self,p):
-        self.lblXY.setText( str(int(p.x())) + " | " + str(int(p.y()) ))
+        self.lblXY.setText( str("%.2f" % p.x()) + " , " + str("%.2f" % p.y() ))
         # try:
         #     if self.qvPrint.pucMoure:
         #         self.dwPrint.move(self.qvPrint.dockX-100, self.qvPrint.dockY-120)
@@ -2208,7 +2217,7 @@ def guardarDialegProjecte():
     nfile,_ = QFileDialog.getSaveFileName(None,"Guardar Projecte Qgis", ".", "Projectes Qgis (*.qgs)")
 
     qV.project.write(nfile)
-    qV.lblProjecte.setText(qV.project.fileName())
+    qV.lblProjecte.setText(qV.project.baseName())
     #print(scale)
 
 def carregarFieldsCalculadora():
@@ -2450,6 +2459,9 @@ def main(argv):
     global qV
     with qgisapp(sysexit=False) as app: 
         
+        # Se instancia QvApp al principio para el control de errores
+        qVapp = QvApp()
+
         # Splash image al començar el programa. La tancarem amb splash.finish(qV)
         splash_pix = QPixmap('imatges/qvistaLogo2.png')
         splash = QSplashScreen(splash_pix, Qt.WindowStaysOnTopHint)
@@ -2458,7 +2470,6 @@ def main(argv):
         splash.show()
         app.processEvents()
 
-        qVapp = QvApp()
         ok = qVapp.logInici()            # Por defecto: family='QVISTA', logname='DESKTOP'
         if not ok:
             print('ERROR LOG >>', qVapp.logError())

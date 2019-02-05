@@ -150,6 +150,7 @@ class QvColumnaCataleg(QWidget):
             try:
                 rang = self.qV.canvas.extent()
                 self.projectQgis.read(projecte)
+                self.qV.lblProjecte.setText(self.project.baseName())
                 if rang is not None:
                     self.qV.canvas.setExtent(rang)
                 self.labelProjecte.setText(self.projectQgis.title())

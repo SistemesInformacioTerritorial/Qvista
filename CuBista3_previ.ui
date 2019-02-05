@@ -35,13 +35,13 @@
       <property name="minimumSize">
        <size>
         <width>0</width>
-        <height>50</height>
+        <height>85</height>
        </size>
       </property>
       <property name="maximumSize">
        <size>
         <width>16777215</width>
-        <height>50</height>
+        <height>85</height>
        </size>
       </property>
       <property name="frameShape">
@@ -98,22 +98,57 @@
          <widget class="QLabel" name="label">
           <property name="geometry">
            <rect>
-            <x>40</x>
-            <y>0</y>
-            <width>161</width>
-            <height>51</height>
+            <x>30</x>
+            <y>10</y>
+            <width>191</width>
+            <height>61</height>
            </rect>
           </property>
           <property name="text">
            <string/>
           </property>
           <property name="pixmap">
-           <pixmap>../../Users/Jo/Dropbox/qVistaProd/qVistaLogo.png</pixmap>
+           <pixmap>Imatges/qVistaLogo.png</pixmap>
           </property>
           <property name="scaledContents">
            <bool>true</bool>
           </property>
          </widget>
+         <widget class="QLabel" name="label_3">
+          <property name="geometry">
+           <rect>
+            <x>0</x>
+            <y>60</y>
+            <width>261</width>
+            <height>31</height>
+           </rect>
+          </property>
+          <property name="font">
+           <font>
+            <pointsize>9</pointsize>
+           </font>
+          </property>
+          <property name="styleSheet">
+           <string notr="true">color: rgb(170, 255, 255);</string>
+          </property>
+          <property name="text">
+           <string>Sistema d'Informació Territorial de Barcelona</string>
+          </property>
+          <property name="textFormat">
+           <enum>Qt::RichText</enum>
+          </property>
+          <property name="scaledContents">
+           <bool>false</bool>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignCenter</set>
+          </property>
+          <property name="wordWrap">
+           <bool>true</bool>
+          </property>
+         </widget>
+         <zorder>label_3</zorder>
+         <zorder>label</zorder>
         </widget>
        </item>
        <item>
@@ -148,13 +183,13 @@
             <property name="minimumSize">
              <size>
               <width>0</width>
-              <height>10</height>
+              <height>15</height>
              </size>
             </property>
             <property name="maximumSize">
              <size>
               <width>16777215</width>
-              <height>10</height>
+              <height>15</height>
              </size>
             </property>
             <property name="styleSheet">
@@ -218,22 +253,23 @@ color: #FFFFFF</string>
             </property>
             <layout class="QHBoxLayout" name="horizontalLayout_4">
              <property name="leftMargin">
-              <number>10</number>
+              <number>2</number>
              </property>
              <property name="topMargin">
-              <number>1</number>
+              <number>2</number>
              </property>
              <property name="rightMargin">
-              <number>1</number>
+              <number>2</number>
              </property>
              <property name="bottomMargin">
-              <number>1</number>
+              <number>2</number>
              </property>
              <item>
               <widget class="QLabel" name="lblTitolProjecte">
                <property name="font">
                 <font>
-                 <pointsize>21</pointsize>
+                 <family>Calibri</family>
+                 <pointsize>22</pointsize>
                 </font>
                </property>
                <property name="text">
@@ -245,14 +281,14 @@ color: #FFFFFF</string>
               <widget class="QToolButton" name="tbEnrera">
                <property name="minimumSize">
                 <size>
-                 <width>30</width>
-                 <height>30</height>
+                 <width>20</width>
+                 <height>20</height>
                 </size>
                </property>
                <property name="maximumSize">
                 <size>
-                 <width>30</width>
-                 <height>30</height>
+                 <width>20</width>
+                 <height>20</height>
                 </size>
                </property>
                <property name="styleSheet">
@@ -263,7 +299,7 @@ color: #FFFFFF</string>
                </property>
                <property name="icon">
                 <iconset>
-                 <normaloff>../../Users/Jo/Dropbox/qVistaProd/Imatges/arrow-left.png</normaloff>../../Users/Jo/Dropbox/qVistaProd/Imatges/arrow-left.png</iconset>
+                 <normaloff>imatges/arrow-left.png</normaloff>../../Users/Jo/Dropbox/qVistaProd/Imatges/arrow-left.png</iconset>
                </property>
                <property name="iconSize">
                 <size>
@@ -277,14 +313,14 @@ color: #FFFFFF</string>
               <widget class="QToolButton" name="tbEndevant">
                <property name="minimumSize">
                 <size>
-                 <width>30</width>
-                 <height>30</height>
+                 <width>20</width>
+                 <height>20</height>
                 </size>
                </property>
                <property name="maximumSize">
                 <size>
-                 <width>30</width>
-                 <height>30</height>
+                 <width>20</width>
+                 <height>20</height>
                 </size>
                </property>
                <property name="styleSheet">
@@ -295,7 +331,7 @@ color: #FFFFFF</string>
                </property>
                <property name="icon">
                 <iconset>
-                 <normaloff>../../Users/Jo/Dropbox/qVistaProd/Imatges/arrow-right.png</normaloff>../../Users/Jo/Dropbox/qVistaProd/Imatges/arrow-right.png</iconset>
+                 <normaloff>imatges/arrow-right.png</normaloff>imatges/arrow-right.png</iconset>
                </property>
                <property name="iconSize">
                 <size>
@@ -519,13 +555,13 @@ color: #FFFFFF</string>
          <property name="minimumSize">
           <size>
            <width>250</width>
-           <height>20</height>
+           <height>15</height>
           </size>
          </property>
          <property name="maximumSize">
           <size>
            <width>16777215</width>
-           <height>20</height>
+           <height>15</height>
           </size>
          </property>
          <property name="styleSheet">
