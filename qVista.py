@@ -637,8 +637,8 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         self.llegenda.accions.afegirAccio('actTot', self.actFerGran)
         self.llegenda.clicatMenuContexte.connect(self.menuLlegenda)
-        self.llegenda.projecteCarregat.connect(self.paraMovie)
-        self.llegenda.carregantProjecte.connect(self.startMovie)
+        # self.llegenda.projecteCarregat.connect(self.paraMovie)
+        # self.llegenda.carregantProjecte.connect(self.startMovie)
 
         # self.vistaMapa1 = QvVistaMapa(self.llegenda)
         # self.vistaMapa2 = QvVistaMapa(self.llegenda)

@@ -10,6 +10,7 @@ from qgis.PyQt.QtCore import Qt, pyqtSignal, QSortFilterProxyModel
 from moduls.QvAccions import QvAccions
 from moduls.QvAtributs import QvAtributs
 from moduls.QvApp import QvApp
+from moduls.QvVideo import QvVideo
 
 # import images_rc
 # import recursos
@@ -197,6 +198,8 @@ class QvLlegenda(QgsLayerTreeView):
         self.atributs = atributs
         self.editable = True
 
+        self.player = QvVideo('D:/qVista/Codi/moduls/giphy.gif', 180, 180)
+
         self.project.readProject.connect(self.nouProjecte)
 
         self.setWhatsThis(QvApp().carregaAjuda(self))
@@ -247,12 +250,18 @@ class QvLlegenda(QgsLayerTreeView):
         # La carga de un proyecto se inicia con la capa #0
         if num == 0:
             self.projecteObert = False
+            if self.player is not None:
+                self.player.show()
+                self.player.mediaPlayer.play()
             self.carregantProjecte.emit()
     
     def fiProjecte(self):
         # La carga de un proyecto acaba con su visualización en el canvas
         if not self.projecteObert:
             self.projecteObert = True
+            if self.player is not None:
+                self.player.mediaPlayer.pause()
+                self.player.hide()
             self.projecteCarregat.emit(self.project.fileName())
 
     def printSignals(self):
