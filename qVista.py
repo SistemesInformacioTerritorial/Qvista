@@ -185,7 +185,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.lblMovie.show()
         self.movie.start()
 
-        self.project.readProject.connect(self.paraMovie)
+        self.legend.projecteCarregat.connect(self.paraMovie)
         # Obrir el projecte i col.locarse en rang
         self.project.read(projecte)
         self.canvas.refresh()
@@ -219,14 +219,10 @@ class QVista(QMainWindow, Ui_MainWindow):
         # if titolEntorn is not None:
         #     self.lblTirotattolProjecte.setText(titolEntorn)
     def paraMovie(self):
-<<<<<<< HEAD
+
         self.lblMovie.hide()
         pass
-=======
-        pass
-        # self.lblMovie.hide()
 
->>>>>>> c05b05e6685f9471a74c3459a71db3f9335d1089
     def keyPressEvent(self, event):
         """ Defineix les actuacions del qVista en funció de la tecla apretada.
         """
