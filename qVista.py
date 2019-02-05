@@ -177,15 +177,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         Keyword Arguments:
             rang {Rect} -- El rang amb el que s'ha d'obrir el projecte (default: {None})
         """
-        self.lblMovie = QLabel(self.canvas)
-        self.lblMovie.setGeometry(self.width()/2,self.height()/2,300,300)
-        self.movie = QMovie("imatges/loop4.gif")
-        self.movie.setScaledSize(QSize(300,150))
-        self.lblMovie.setMovie(self.movie)
-        self.lblMovie.show()
-        self.movie.start()
 
-        self.legend.projecteCarregat.connect(self.paraMovie)
         # Obrir el projecte i col.locarse en rang
         self.project.read(projecte)
         self.canvas.refresh()
@@ -218,10 +210,19 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         # if titolEntorn is not None:
         #     self.lblTirotattolProjecte.setText(titolEntorn)
-    def paraMovie(self):
+    
+    def startMovie(self):
+        self.lblMovie = QLabel(self.canvas)
+        self.lblMovie.setGeometry(self.width()/2,self.height()/2,300,300)
+        self.movie = QMovie("imatges/loop4.gif")
+        self.movie.setScaledSize(QSize(300,150))
+        self.lblMovie.setMovie(self.movie)
+        self.lblMovie.show()
+        self.movie.start()
 
+    def paraMovie(self):
         self.lblMovie.hide()
-        pass
+
 
     def keyPressEvent(self, event):
         """ Defineix les actuacions del qVista en funció de la tecla apretada.
@@ -635,6 +636,8 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         self.llegenda.accions.afegirAccio('actTot', self.actFerGran)
         self.llegenda.clicatMenuContexte.connect(self.menuLlegenda)
+        self.llegenda.projecteCarregat.connect(self.paraMovie)
+        self.llegenda.carregantProjecte.connect(self.startMovie)
 
         # self.vistaMapa1 = QvVistaMapa(self.llegenda)
         # self.vistaMapa2 = QvVistaMapa(self.llegenda)
@@ -2453,6 +2456,7 @@ def reportarProblema(titol, descripcio=None):
 def main(argv):
     # import subprocess
     global qV
+    global app
     with qgisapp(sysexit=False) as app: 
         
         # Se instancia QvApp al principio para el control de errores
