@@ -181,6 +181,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         # Obrir el projecte i col.locarse en rang
         self.project.read(projecte)
         self.canvas.refresh()
+
         if rang is not None:
             self.canvas.setExtent(rang)
 
@@ -198,6 +199,11 @@ class QVista(QMainWindow, Ui_MainWindow):
         fnt = QFont("Segoe UI", 18, weight=QFont.Normal)
         self.lblTitolProjecte.setFont(fnt)
         self.lblTitolProjecte.setText(self.project.title())
+
+
+        if self.llegenda.player is None:
+            self.llegenda.setPlayer('moduls/giphy.gif', 170, 170)
+
 
         # self.metadata = self.project.metadata()
         # print ('Author: '+self.metadata.author())

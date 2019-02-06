@@ -50,6 +50,7 @@ class QvVideo(QWidget):
 
         if self.fileName != '':
             self.setWindowFlag(Qt.SplashScreen, True)
+            self.setWindowFlag(Qt.FramelessWindowHint, True)
             self.setBackgroundColor(Qt.white)
             self.open()
         else:
