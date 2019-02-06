@@ -1,8 +1,5 @@
-
 from moduls.QvImports  import *
-
 from qgis.core import QgsRectangle
-
 
 
 class QvMapeta(QFrame):
@@ -20,12 +17,9 @@ class QvMapeta(QFrame):
         """
 
         QFrame.__init__(self)
-
         # Assigno el mapeta al parent
         self.setParent(pare)
-
         self.vengoDeMapeta=False
-
 
         # Convertim paràmetres en variables de classe
         self.canvas = canvas
@@ -33,24 +27,7 @@ class QvMapeta(QFrame):
         
         # Posem per defecte a False
         self.petit = False
-
-        self.pXminYmin_r=QPoint()
-        self.pXminYmin_r.x=0
-        self.pXminYmin_r.y=0        
-        self.pXmaxYmin_r=QPoint()
-        self.pXmaxYmin_r.x=0
-        self.pXmaxYmin_r.y=0        
-        self.pXmaxYmax_r=QPoint()
-        self.pXmaxYmax_r.x=0
-        self.pXmaxYmax_r.y=0        
-        self.pXminYmax_r=QPoint()
-        self.pXminYmax_r.x=0
-        self.pXminYmax_r.y=0        
-
-
-
-
-
+       
         # Preparem el canvas per capturar quan es modifica, i poder repintar el mapeta.
         self.canvas.extentsChanged.connect(self.pintarMapeta)
 
@@ -60,23 +37,23 @@ class QvMapeta(QFrame):
             self.yTamany = 180
             self.setStyleSheet('QFrame {opacity: 50; background-image: url("imatges/MapetaPetit.jpg");}')
         else:
-            # self.xTamany = 267
-            # self.yTamany = 284
-                        
-            self.xTamany = 389
-            self.yTamany = 390
-            # self.setStyleSheet('QFrame {background-image: url("imatges/MAPETA_SITUACIO_267x284.bmp");}')
-            # self.setStyleSheet('QFrame {background-image: url("imatges/MAPETA_SITUACIO_267x284_rot.bmp");}')
-            self.setStyleSheet('QFrame {background-image: url("imatges/MAPETA_SITUACIO_391x392_rot_mio.bmp");}')
-
-
-
+            if self.canvas.rotation() == 44:
+                self.canvasRotado44= True
+                self.xTamany = 389
+                self.yTamany = 390
+                self.setStyleSheet('QFrame {background-image: url("imatges/MAPETA_SITUACIO_391x392_rot_mio.bmp");}')
+                self.seno_44= math.sin(-44 * math.pi /180)
+                self.coseno_44= math.cos(-44 * math.pi /180)
+                self.seno44= math.sin(44 * math.pi /180)
+                self.coseno44= math.cos(44 * math.pi /180)                 
+            else:
+                self.canvasRotado44= False
+                self.xTamany = 267
+                self.yTamany = 284
+                self.setStyleSheet('QFrame {background-image: url("imatges/MAPETA_SITUACIO_267x284.bmp");}')
 
         # Definim la geometria del frame del mapeta
         self.setGeometry(0,0,self.xTamany,self.yTamany)
-        # self.canvas.rotate(44)
-        
-        self.canvas.setRotation(44)        
         self.begin = QPoint()
         self.end = QPoint()
 
@@ -126,7 +103,6 @@ class QvMapeta(QFrame):
     def pintarMapeta(self):
         # qp.drawRect(QRect(self.begin, self.end))  
 
-        # print('Mapeta      Verde Canvas queda con angulo 0   xy=',(self.pXminYmin_r.x),',',(self.pXminYmin_r.y), 'xy=',(self.pXmaxYmin_r.x),',',(self.pXmaxYmin_r.y),'xy=',(self.pXmaxYmax_r.x),',',(self.pXmaxYmax_r.y),'xy=',(self.pXminYmax_r.x),',',(self.pXminYmax_r.y))  
         rect = self.canvas.extent()
         puntIn = self.conversioMapaPantalla([rect.xMinimum(),rect.yMinimum()])
         puntFi = self.conversioMapaPantalla([rect.xMaximum(),rect.yMaximum()])
@@ -135,7 +111,6 @@ class QvMapeta(QFrame):
         yMin = puntIn[1]
         xMax = puntFi[0]
         yMax = puntFi[1]
-
         
         # print('pintar mapeta    xy=',round(xMin),',',round(yMin))
         # print('pintar mapeta    xy=',round(xMax),',',round(yMax))
@@ -176,23 +151,18 @@ class QvMapeta(QFrame):
     def conversioPantallaMapa(self,punt):
         # xmin ymin xmax y max calculados para el canvas girado 44 grados y con tamañp       390 x  389
         # 412649 4582568 444481 4583144 
-
         x = punt[0]
         y = punt[1]
-
-        # aqui
         # Escala = (444481-412649)/self.xTamany
         Escala=57.415730337078651685393258426966
         
-        seno44= math.sin(44 * math.pi /180)
-        coseno44= math.cos(44 * math.pi /180)
 
-        seno0= math.sin(0 * math.pi /180)
+        self.seno0= math.sin(0 * math.pi /180)
         coseno0= math.cos(0 * math.pi /180)
 
 
-        xMapa = 420900  + Escala * (x * coseno0 - y * seno0)
-        yMapa = 4574600 + Escala * (x * seno0 + y * coseno0)
+        xMapa = 420900  + Escala * (x * coseno0 - y * self.seno0)
+        yMapa = 4574600 + Escala * (x * self.seno0 + y * coseno0)
         # print (xMapa, yMapa)
         return [xMapa, yMapa]
 
@@ -225,7 +195,7 @@ class QvMapeta(QFrame):
 
     
     def mouseReleaseEvent(self, event):
-        # a     b	seno	    coseno
+        # a     b	self.seno	    coseno
         # 267	284	0,69465837	0,7193398
         # base	    389,3467039		
         # altura	389,7662882		
@@ -233,10 +203,7 @@ class QvMapeta(QFrame):
         # desplazamiento y 		0	
 
         # Nos harán falta
-        seno_44= math.sin(-44 * math.pi /180)
-        coseno_44= math.cos(-44 * math.pi /180)
-        seno44= math.sin(44 * math.pi /180)
-        coseno44= math.cos(44 * math.pi /180)  
+ 
 
         self.end = event.pos()
 
@@ -280,11 +247,11 @@ class QvMapeta(QFrame):
         # Calculo las coordenadas en el mapeta "normal" (sin giro) con las coordenadas del mapeta girado
         # a las que les aplico un giro de 44 grados, escala=1 y un desplazamiento de P1
         # ...Para el punto inicial
-        self.xIn_= P1.x + Escala_x * (self.xIn * coseno44 - self.yIn * seno44 )
-        self.yIn_= P1.y + Escala_x * (self.xIn * seno44 + self.yIn * coseno44 )
+        self.xIn_= P1.x + Escala_x * (self.xIn * self.coseno44 - self.yIn * self.seno44 )
+        self.yIn_= P1.y + Escala_x * (self.xIn * self.seno44 + self.yIn * self.coseno44 )
         # ...Para el punto final
-        self.xFi_= P1.x + Escala_x * (self.xFi * coseno44 - self.yFi * seno44 )
-        self.yFi_= P1.y + Escala_x * (self.xFi * seno44 + self.yFi * coseno44 )
+        self.xFi_= P1.x + Escala_x * (self.xFi * self.coseno44 - self.yFi * self.seno44 )
+        self.yFi_= P1.y + Escala_x * (self.xFi * self.seno44 + self.yFi * self.coseno44 )
         print('co=99 Marron En girado 0 (mapeta)  xy=',self.xIn_,',',self.yIn_,'xy=',self.xFi_,',',self.yFi_)
        
         # Convertimos las coordenadas del punto inicial del mapeta_ang=0 a coordenadas Mundo
@@ -306,12 +273,12 @@ class QvMapeta(QFrame):
         # coordenadas mundo de los 4 puntos señalados en el mapeta
         Paux1.x= punt1[0]
         Paux1.y= punt1[1]
-        Paux2.x= Paux1.x + (distX * coseno44)
-        Paux2.y= Paux1.y + (distX * seno44)
-        Paux3.x= Paux2.x - (distY * seno44)
-        Paux3.y= Paux2.y + (distY * coseno44)
-        Paux4.x= Paux1.x - (distY * seno44)
-        Paux4.y= Paux1.y + (distY * coseno44)
+        Paux2.x= Paux1.x + (distX * self.coseno44)
+        Paux2.y= Paux1.y + (distX * self.seno44)
+        Paux3.x= Paux2.x - (distY * self.seno44)
+        Paux3.y= Paux2.y + (distY * self.coseno44)
+        Paux4.x= Paux1.x - (distY * self.seno44)
+        Paux4.y= Paux1.y + (distY * self.coseno44)
 
         
         print('co=3 rojo Caja mundo girada  P2 xy=',round(Paux1.x),',',round(Paux1.y))
@@ -357,8 +324,8 @@ class QvMapeta(QFrame):
         
         w= self.canvas.widthMM()
         h= self.canvas.heightMM()
-        H= (h*coseno44)+ (w*seno44)
-        W= (h*seno44)  + (w*coseno44)
+        H= (h*self.coseno44)+ (w*self.seno44)
+        W= (h*self.seno44)  + (w*self.coseno44)
         anchoMundoVerde= PPa3.x - PPa1.x
         altoMundoVerde=  PPa3.y - PPa1.y
         Escalax= anchoMundoVerde / W
@@ -369,10 +336,10 @@ class QvMapeta(QFrame):
         Pa3=QPoint()
         Pa4=QPoint()    
 
-        t1= Escalax*h*seno44
-        t2= Escalax*w*coseno44
-        t3= Escalax*h*coseno44
-        t4= Escalax*w*seno44
+        t1= Escalax*h*self.seno44
+        t2= Escalax*w*self.coseno44
+        t3= Escalax*h*self.coseno44
+        t4= Escalax*w*self.seno44
 
         Pa1.x = PPa1.x
         Pa1.y = PPa1.y +t3
@@ -401,8 +368,8 @@ class QvMapeta(QFrame):
         Par3=QPoint()
         Par4=QPoint()   
 
-        Par1.x=  (xx * coseno_44 - yy * seno_44 )
-        Par1.y=  (xx * seno_44 + yy * coseno_44 )
+        Par1.x=  (xx * self.coseno_44 - yy * self.seno_44 )
+        Par1.y=  (xx * self.seno_44 + yy * self.coseno_44 )
         Par2.x= Par1.x + ancho
         Par2.y= Par1.y 
         Par3.x= Par2.x 
@@ -431,6 +398,7 @@ if __name__ == "__main__":
     with qgisapp() as app:
         # Canvas, projecte i bridge
         canvas=QgsMapCanvas()
+        
         project=QgsProject().instance()
         root=project.layerTreeRoot()
         bridge=QgsLayerTreeMapCanvasBridge(root,canvas)
@@ -438,6 +406,7 @@ if __name__ == "__main__":
         # llegim un projecte de demo
         project.read(projecteInicial)
         canvas.show()
+        canvas.setRotation(44)
 
         qvMapeta = QvMapeta(canvas, tamanyPetit = False, pare=canvas)
         qvMapeta.move(20,20)
