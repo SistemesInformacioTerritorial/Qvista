@@ -2,6 +2,7 @@
 
 from PyQt5 import QtCore
 from PyQt5.QtCore import QDir, Qt, QUrl
+from PyQt5.QtGui import QPalette
 from PyQt5.QtMultimedia import QMediaContent, QMediaPlayer
 from PyQt5.QtMultimediaWidgets import QVideoWidget
 from PyQt5.QtWidgets import (QApplication, QFileDialog, QHBoxLayout, QLabel,
@@ -49,11 +50,18 @@ class QvVideo(QWidget):
 
         if self.fileName != '':
             self.setWindowFlag(Qt.SplashScreen, True)
+            self.setBackgroundColor(Qt.white)
             self.open()
         else:
             layout.addLayout(controlLayout)
 
         self.setLayout(layout)
+
+    def setBackgroundColor(self, color):
+        pal = QPalette()
+        pal.setColor(QPalette.Background, color)
+        self.setAutoFillBackground(True)
+        self.setPalette(pal)
 
     def openFile(self):
         try:
@@ -63,6 +71,7 @@ class QvVideo(QWidget):
         if f != '':
             self.fileName = f
             self.open()
+            self.play()
 
     def open(self):
         if self.fileName != '':

@@ -6,11 +6,12 @@ from qgis.gui import (QgsLayerTreeView, QgsLayerTreeViewMenuProvider, QgsLayerTr
                       QgsLayerTreeViewIndicator, QgsSearchQueryBuilder)
 from qgis.PyQt.QtWidgets import QMenu, QAction, QFileDialog, QWidget, QPushButton, QVBoxLayout, QHBoxLayout
 from qgis.PyQt.QtGui import QIcon, QBrush, QColor
-from qgis.PyQt.QtCore import Qt, pyqtSignal, QSortFilterProxyModel
+from qgis.PyQt.QtCore import Qt, pyqtSignal, QSortFilterProxyModel, QUrl
 from moduls.QvAccions import QvAccions
 from moduls.QvAtributs import QvAtributs
 from moduls.QvApp import QvApp
 from moduls.QvVideo import QvVideo
+import os
 
 # import images_rc
 # import recursos
@@ -187,9 +188,8 @@ class QvLlegenda(QgsLayerTreeView):
     carregantProjecte = pyqtSignal()
     projecteCarregat = pyqtSignal(str)
 
-    def __init__(self, canvas=None, atributs=None, canviCapaActiva=None, debug=False):
+    def __init__(self, canvas=None, atributs=None, canviCapaActiva=None):
         super().__init__()
-        self.debug = debug
         self.project = QgsProject.instance()
         self.root = self.project.layerTreeRoot()
         self.canvas = None
@@ -197,8 +197,6 @@ class QvLlegenda(QgsLayerTreeView):
         self.bridges = []
         self.atributs = atributs
         self.editable = True
-
-        self.player = QvVideo('D:/qVista/Codi/moduls/giphy.gif', 180, 180)
 
         self.project.readProject.connect(self.nouProjecte)
 
@@ -238,31 +236,63 @@ class QvLlegenda(QgsLayerTreeView):
         if self.atributs is not None:
             self.atributs.modificatFiltreCapa.connect(self.actIconaFiltre)
 
-        self.projecteObert = False
+        self.projecteCapes = None
+        self.player = None
+
         if self.canvas is not None:
             self.project.layerLoaded.connect(self.iniProjecte)
-            self.canvas.renderComplete.connect(self.fiProjecte)
-
-        if self.debug:
-            self.printSignals()
+            self.canvas.layersChanged.connect(self.capesProject)
+            self.canvas.renderStarting.connect(self.fiProjecte)
+            # self.canvas.renderComplete.connect(self.fiProjecte)
 
     def iniProjecte(self, num, tot):
         # La carga de un proyecto se inicia con la capa #0
-        if num == 0:
-            self.projecteObert = False
+        if self.projecteCapes is None and num == 0:
+            self.projecteCapes = False
             if self.player is not None:
                 self.player.show()
                 self.player.mediaPlayer.play()
             self.carregantProjecte.emit()
-    
+
+    def capesProject(self):
+        # Capas cargadas
+        if self.projecteCapes is not None and not self.projecteCapes:
+            self.projecteCapes = True
+
     def fiProjecte(self):
-        # La carga de un proyecto acaba con su visualización en el canvas
-        if not self.projecteObert:
-            self.projecteObert = True
+        # La carga de un proyecto acaba con su visualización en el canvas de todas las capas
+        if self.projecteCapes is not None and self.projecteCapes:
+            self.projecteCapes = None
             if self.player is not None:
                 self.player.mediaPlayer.pause()
                 self.player.hide()
             self.projecteCarregat.emit(self.project.fileName())
+
+    # def iniProjecte(self, num, tot):
+    #     # La carga de un proyecto se inicia con la capa #0
+    #     self.projecteCapes = [num, tot]
+    #     if num == 0:
+    #         if self.player is not None:
+    #             self.player.show()
+    #             self.player.mediaPlayer.play()
+    #         self.carregantProjecte.emit()
+    
+    # def fiProjecte(self):
+    #     # La carga de un proyecto acaba con su visualización en el canvas de todas las capas
+    #     num = self.projecteCapes[0]
+    #     tot = self.projecteCapes[1]
+    #     if num == tot:
+    #         self.projecteCapes = [0, 1]
+    #         if self.player is not None:
+    #             self.player.mediaPlayer.pause()
+    #             self.player.hide()
+    #         self.projecteCarregat.emit(self.project.fileName())
+
+    def setPlayer(self, fich, ancho=170, alto=170):
+        if os.path.isfile(fich):
+            self.player = QvVideo(fich, ancho, alto, self.canvas)
+        else:
+            self.player = None
 
     def printSignals(self):
         self.canvas.layersChanged.connect(lambda: print('Canvas layersChanged'))
@@ -646,7 +676,8 @@ if __name__ == "__main__":
 
         atrib = QvAtributs(canv)
 
-        leyenda = QvLlegenda(canv, atrib, printCapaActiva, debug=True)
+        leyenda = QvLlegenda(canv, atrib, printCapaActiva)
+        leyenda.printSignals() # Para debug
 
         leyenda.project.read('../dades/projectes/bcn11.qgs')
         # leyenda.project.read('../dades/projectes/Prototip GUIA OracleSpatial_WMS.qgz')
@@ -707,6 +738,16 @@ if __name__ == "__main__":
         rangos = None
 
         # Acciones de usuario
+
+        def openProject():
+            dialegObertura=QFileDialog()
+            dialegObertura.setDirectoryUrl(QUrl('../dades/projectes/'))
+            nfile,_ = dialegObertura.getOpenFileName(None,"Obrir mapa Qgis", "../dades/projectes/", "Tots els mapes acceptats (*.qgs *.qgz);; Mapes Qgis (*.qgs);;Mapes Qgis comprimits (*.qgz)")
+            if nfile != '':
+                if leyenda.player is None:
+                    leyenda.setPlayer('moduls/giphy.gif', 170, 170)
+                leyenda.project.read(nfile)
+
         def testCapas():
             global botonera
             botonera = QvBotoneraLlegenda(leyenda, 'Botonera')
@@ -772,6 +813,11 @@ if __name__ == "__main__":
         act.triggered.connect(testSimbologia)
         leyenda.accions.afegirAccio('testSimbologia', act)
 
+        act = QAction()
+        act.setText("Abrir proyecto")
+        act.triggered.connect(openProject)
+        leyenda.accions.afegirAccio('openProject', act)
+
         # Adaptación del menú
         def menuContexte(tipo):
             if tipo == 'none':
@@ -781,6 +827,7 @@ if __name__ == "__main__":
                 leyenda.menuAccions.append('testCapas')
                 # leyenda.menuAccions.append('testSimbologia')
                 leyenda.menuAccions.append('editable')
+                leyenda.menuAccions.append('openProject')
 
         # Conexión de la señal con la función menuContexte para personalizar el menú
         leyenda.clicatMenuContexte.connect(menuContexte)
