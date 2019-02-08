@@ -1662,7 +1662,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.wCatalegProjectesLlista.ui.treeCataleg.adjustSize()
         self.wCatalegProjectesLlista.ui.treeCataleg.setHeaderHidden(True)
         fnt=QFont()
-        fnt.setPixelSize(12)
+        fnt = QFont("Segoe UI", 12, weight=QFont.Normal)
         self.wCatalegProjectesLlista.ui.treeCataleg.setFont(fnt)
 
     def infoQVista(self):
