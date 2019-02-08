@@ -197,6 +197,7 @@ class QvLlegenda(QgsLayerTreeView):
         self.bridges = []
         self.atributs = atributs
         self.editable = True
+        self.lastExtent = None
 
         self.project.readProject.connect(self.nouProjecte)
 
@@ -296,13 +297,41 @@ class QvLlegenda(QgsLayerTreeView):
 
     def printSignals(self):
         self.canvas.layersChanged.connect(lambda: print('Canvas layersChanged'))
-        self.canvas.renderStarting.connect(lambda: print('Canvas renderStarting'))
-        self.canvas.renderComplete.connect(lambda: print('Canvas renderComplete'))
+        self.canvas.renderStarting.connect(lambda: self.printCanvasPosition('Canvas renderStarting'))
+        self.canvas.renderComplete.connect(lambda: self.printCanvasPosition('Canvas renderComplete'))
         self.project.layerLoaded.connect(lambda num, tot: print("Project layerLoaded %d / %d" % (num, tot)))
-        self.project.readProject.connect(lambda: print('Project readProject'))
+        self.project.readProject.connect(lambda: self.printCanvasPosition('Project readProject'))
         self.carregantProjecte.connect(lambda: print('*** Llegenda carregantProjecte'))
-        self.projecteCarregat.connect(lambda f: print('*** Llegenda projecteCarregat ' + f))
+        self.projecteCarregat.connect(lambda f: self.deleteCanvasPosition('*** Llegenda projecteCarregat ' + f))
         
+    def deleteCanvasPosition(self, msg):
+        print(msg)
+        self.lastExtent = None
+
+    def saveCanvasPosition(self):
+        self.lastExtent = self.canvas.extent()
+
+    def restoreCanvasPosition(self):
+        if self.lastExtent != None:
+            self.canvas.setExtent(self.lastExtent)
+            return True
+        else:
+            return False
+    #  QgsRectangle r = mapSettings().extent();
+    #  r.scale( scaleFactor, center );
+    #  setExtent( r, true );
+
+    def printCanvasPosition(self, msg):
+        e = round(self.canvas.scale(), 2)
+        x = round(self.canvas.center().x(), 2)
+        y = round(self.canvas.center().y(), 2)
+        print(msg, ':',
+             'escala -', str(e),
+             'centro: ( ', str(x),
+             '-', str(y), ')')
+        if msg == 'Canvas renderStarting' and self.restoreCanvasPosition():
+            self.printCanvasPosition('restoreCanvasPosition')
+
     def editarLlegenda(self, on=True):
         self.editable = on
         self.model.setFlag(QgsLegendModel.AllowNodeReorder, on)
@@ -679,7 +708,9 @@ if __name__ == "__main__":
         leyenda = QvLlegenda(canv, atrib, printCapaActiva)
         leyenda.printSignals() # Para debug
 
-        leyenda.project.read('../dades/projectes/bcn11.qgs')
+        # Extent no funciona con raster en el cambio ni en la carga inicial
+        leyenda.project.read('../Dades/Projectes/Imatge satel·lit 2011 AMB.qgs')
+        # leyenda.project.read('../dades/projectes/bcn11.qgs')
         # leyenda.project.read('../dades/projectes/Prototip GUIA OracleSpatial_WMS.qgz')
 
     # Al cargar un proyecto o capa:
@@ -746,6 +777,8 @@ if __name__ == "__main__":
             if nfile != '':
                 if leyenda.player is None:
                     leyenda.setPlayer('moduls/giphy.gif', 170, 170)
+                leyenda.saveCanvasPosition()
+                leyenda.printCanvasPosition('==> projectRead')
                 leyenda.project.read(nfile)
 
         def testCapas():
