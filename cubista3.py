@@ -40,7 +40,7 @@ class Ui_MainWindow(object):
         self.label = QtWidgets.QLabel(self.frame_11)
         self.label.setGeometry(QtCore.QRect(40, 0, 161, 51))
         self.label.setText("")
-        self.label.setPixmap(QtGui.QPixmap("../../Users/Jo/Dropbox/qVistaProd/qVistaLogo.png"))
+        self.label.setPixmap(QtGui.QPixmap("Imatges/qVistaLogoVerd2.png"))
         self.label.setScaledContents(True)
         self.label.setObjectName("label")
         self.horizontalLayout.addWidget(self.frame_11)

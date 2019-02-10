@@ -230,6 +230,9 @@ class QVista(QMainWindow, Ui_MainWindow):
             print('Cercar')
         if event.key() == Qt.Key_F11:
             self.ferGran()
+        if event.key() == Qt.Key_F5:
+            self.canvas.refresh()
+            print('refrsh')
 
     def botoLateral(self, text = None, tamany = 40, imatge = None, accio=None):
         """Crea un boto per a la botonera lateral.
@@ -707,7 +710,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.menuEntorns = self.bar.addMenu(3*' '+'Entorns'+3*' ')
         
         fnt = QFont("Segoe UI", 16, weight=QFont.Normal)
-        self.menuEntorns.setStyleSheet("QMenu {color: #79909B; background-color: #dddddd; selection-background-color : #444444;}")
+        self.menuEntorns.setStyleSheet("QMenu {color: #79909B; background-color: #dddddd; selection-background-color : #2f4550;}")
         self.menuEntorns.setFont(fnt)
         self.menuEntorns.styleStrategy = QFont.PreferAntialias or QFont.PreferQuality
         for entorn in os.listdir(os.path.dirname('entorns/')):          
@@ -1136,6 +1139,9 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.lytSeleccioGrafica.setAlignment(Qt.AlignTop)
         self.wSeleccioGrafica.setLayout(self.lytSeleccioGrafica)
         self.lytBotonsSeleccio = QHBoxLayout()
+        self.leSel2 = QLineEdit()
+        self.lytSeleccioGrafica.addWidget(self.leSel2)
+        self.leSel2.editingFinished.connect(seleccioExpressio)
         self.lytSeleccioGrafica.addLayout(self.lytBotonsSeleccio)
 
 
@@ -1329,6 +1335,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         lblLogoAjb.setMaximumWidth(150)
         lblLogoAjb.setMinimumWidth(150)
         imatge = QPixmap('imatges/logoBcnPetit.jpg')
+        # imatge = QPixmap('imatges/qVistaLogoVerd2.png')
         lblLogoAjb.setPixmap(imatge)
         lblLogoAjb.setScaledContents(True)
 
@@ -1365,7 +1372,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.bar.styleStrategy = QFont.PreferAntialias or QFont.PreferQuality
 
         # bar.setStyleSheet("QMenuBar {color: #FFFFFF; background-color : #4062BB;}")
-        self.bar.setStyleSheet("QMenuBar {color: #79909B; background-color : #38474F; selection-background-color : #444444;}")
+        self.bar.setStyleSheet("QMenuBar {color: #acc2cc; background-color : #38474F; selection-background-color : #444444;}")
 
         spacer = QSpacerItem(9999, 9999, QSizePolicy.Expanding,QSizePolicy.Maximum)
         
@@ -1378,7 +1385,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         # catalegMenu = self.bar.addMenu("                   Catàleg  ")
 
         fnt = QFont("Segoe UI", 16, weight=QFont.Normal)
-        self.menuProjectes.setStyleSheet("QMenu {color: #79909B; background-color: #dddddd; selection-background-color : #444444;}")
+        self.menuProjectes.setStyleSheet("QMenu {color: #79909B; background-color: #dddddd; selection-background-color : #2f4550;}")
         self.menuProjectes.setFont(fnt)
         self.menuProjectes.styleStrategy = QFont.PreferAntialias or QFont.PreferQuality
         self.menuProjectes.addAction(self.actObrirProjecte)
