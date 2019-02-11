@@ -86,12 +86,9 @@ class QvItemLlegenda(object):
         super().__init__()
         self.item = item
         self.nivell = nivell
-        self.tipus = self.tipus()
+        self.tipus = self.calcTipus()
 
-    def nivell(self):
-        return self.nivell()
-
-    def tipus(self):
+    def calcTipus(self):
         clase = type(self.item).__name__
         if clase == 'QgsLayerTreeLayer':
             return 'layer'
@@ -787,7 +784,7 @@ if __name__ == "__main__":
             botonera.afegirBotonera(filtroBotonera, modifBoton)
             botonera.clicatBoto.connect(botonCapa)
             botonera.show()
-            if leyenda.capaVisible(llegenda.capaPerNom('BCN_Districte_ETRS89_SHP')):
+            if leyenda.capaVisible(leyenda.capaPerNom('BCN_Districte_ETRS89_SHP')):
                 testSimbologia()
 
         def testSimbologia():
