@@ -45,7 +45,9 @@ if __name__ == "__main__":
 
         llegenda = QvLlegenda(canvas)
 
-        escala = QvEscala(canvas)
+        llegenda.fixaEscales()
+
+        # llegenda.fixaEscales([500, 1000, 5000, 10000, 50000])
 
         # llegenda.project.read('projectes/Illes.qgs')
         llegenda.project.read('../Dades/Projectes/BCN11.qgs')

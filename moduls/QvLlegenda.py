@@ -249,14 +249,14 @@ class QvLlegenda(QgsLayerTreeView):
             self.canvas.renderStarting.connect(self.fiProjecte)
             # self.canvas.renderComplete.connect(self.fiProjecte)
 
+    def fixaEscales(self, escales=None):
+        if self.canvas is not None:
+            self.escales = QvEscala(self.canvas, escales)
+
     def msgCapes(self, nomCapa, msgs):
         print('Capa:', nomCapa)
         for m in msgs:
             print(m[0], '-', m[1])
-
-    def fixaEscales(self, escales=None):
-        if self.canvas is not None:
-            self.escales = QvEscala(self.canvas, escales)
 
     def iniProjecte(self, num, tot):
         # La carga de un proyecto se inicia con la capa #0
