@@ -3,13 +3,13 @@
 from qgis.gui import QgsMapCanvas
 
 class QvEscala():
-    def __init__(self, canvas, escalas=None):
+    def __init__(self, canvas, escales=None):
         self.canvas = canvas
-        if escalas is None:
-            self.escalas = [500, 1000, 2500, 5000, 10000,
+        if escales is None:
+            self.escales = [500, 1000, 2500, 5000, 10000,
                             25000, 50000, 100000, 250000, 500000]
         else:
-            self.escalas = escalas
+            self.escales = escales
         self.selec = False
         self.canvas.scaleChanged.connect(self.selecEscala)  
 
@@ -19,7 +19,7 @@ class QvEscala():
         # print ("initial scale: %s" % escala)
         
         nuevaEscala = min(
-            self.escalas, key=lambda x:abs(x - escala)
+            self.escales, key=lambda x:abs(x - escala)
         )
         if nuevaEscala == escala:
             return

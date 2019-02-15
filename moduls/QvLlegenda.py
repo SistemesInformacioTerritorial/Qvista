@@ -11,6 +11,8 @@ from moduls.QvAccions import QvAccions
 from moduls.QvAtributs import QvAtributs
 from moduls.QvApp import QvApp
 from moduls.QvVideo import QvVideo
+from moduls.QvEscala import QvEscala
+
 import os
 
 # import images_rc
@@ -195,6 +197,7 @@ class QvLlegenda(QgsLayerTreeView):
         self.atributs = atributs
         self.editable = True
         self.lastExtent = None
+        self.escales = None
         # self.restoreExtent = 0
         # print('restoreExtent', self.restoreExtent)
 
@@ -250,6 +253,10 @@ class QvLlegenda(QgsLayerTreeView):
         print('Capa:', nomCapa)
         for m in msgs:
             print(m[0], '-', m[1])
+
+    def fixaEscales(self, escales=None):
+        if self.canvas is not None:
+            self.escales = QvEscala(self.canvas, escales)
 
     def iniProjecte(self, num, tot):
         # La carga de un proyecto se inicia con la capa #0
