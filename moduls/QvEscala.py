@@ -21,7 +21,7 @@ class QvEscala():
             var = QgsExpressionContextUtils.projectScope(projecte).variable('qV_escales')
             if var is not None:
                 llista = list(map(int, var.split(',')))
-                if len(llista) > 0:
+                if llista is not None and (len(llista) > 0):
                     return llista
             return None
         except:
@@ -43,7 +43,6 @@ class QvEscala():
         self.llista = None
         self.selec = True
 
-
     def selecEscala(self, escala):
         if self.selec:
             return
@@ -55,8 +54,8 @@ class QvEscala():
         if nuevaEscala == escala:
             return
         
+        # print("zoom to %s" % nuevaEscala)
         self.selec = True
-        print("zoom to %s" % nuevaEscala)
         self.canvas.zoomScale(nuevaEscala)
         self.selec = False
 
@@ -80,7 +79,6 @@ if __name__ == "__main__":
 
         # llegenda.escales.fixe([500, 1000, 5000, 10000, 50000])
 
-        # llegenda.project.read('projectes/Illes.qgs')
         llegenda.project.read('../Dades/Projectes/BCN11.qgs')
 
         llegenda.setWindowTitle('Llegenda')
