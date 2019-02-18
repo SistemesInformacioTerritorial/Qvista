@@ -1,17 +1,48 @@
 # -*- coding: utf-8 -*-
 
 from qgis.gui import QgsMapCanvas
+from qgis.core import QgsExpressionContextUtils
 
 class QvEscala():
-    def __init__(self, canvas, escales=None):
+    def __init__(self, canvas):
         self.canvas = canvas
-        if escales is None:
-            self.escales = [500, 1000, 2500, 5000, 10000,
-                            25000, 50000, 100000, 250000, 500000]
+        self.llista = None
+        self.selec = True
+
+    def nouProjecte(self, projecte):
+        llista = self.varEscales(projecte)
+        if llista is not None:
+            self.fixe(llista)
         else:
-            self.escales = escales
+            self.lliure()
+
+    def varEscales(self, projecte):
+        try:
+            var = QgsExpressionContextUtils.projectScope(projecte).variable('qV_escales')
+            if var is not None:
+                llista = list(map(int, var.split(',')))
+                if len(llista) > 0:
+                    return llista
+            return None
+        except:
+            return None
+
+    def fixe(self, llista=None):
+        if llista is None:
+            self.llista = [500, 1000, 2500,
+                            5000, 10000, 25000,
+                            50000, 100000, 250000]
+        else:
+            self.llista = llista
         self.selec = False
         self.canvas.scaleChanged.connect(self.selecEscala)  
+
+    def lliure(self):
+        if self.llista is not None:
+            self.canvas.scaleChanged.disconnect(self.selecEscala)  
+        self.llista = None
+        self.selec = True
+
 
     def selecEscala(self, escala):
         if self.selec:
@@ -19,13 +50,13 @@ class QvEscala():
         # print ("initial scale: %s" % escala)
         
         nuevaEscala = min(
-            self.escales, key=lambda x:abs(x - escala)
+            self.llista, key=lambda x:abs(x - escala)
         )
         if nuevaEscala == escala:
             return
         
         self.selec = True
-        # print("zoom to %s" % nuevaEscala)
+        print("zoom to %s" % nuevaEscala)
         self.canvas.zoomScale(nuevaEscala)
         self.selec = False
 
@@ -45,9 +76,9 @@ if __name__ == "__main__":
 
         llegenda = QvLlegenda(canvas)
 
-        llegenda.fixaEscales()
+        llegenda.escales.fixe()
 
-        # llegenda.fixaEscales([500, 1000, 5000, 10000, 50000])
+        # llegenda.escales.fixe([500, 1000, 5000, 10000, 50000])
 
         # llegenda.project.read('projectes/Illes.qgs')
         llegenda.project.read('../Dades/Projectes/BCN11.qgs')

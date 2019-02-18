@@ -244,14 +244,11 @@ class QvLlegenda(QgsLayerTreeView):
         self.player = None
 
         if self.canvas is not None:
+            self.escales = QvEscala(self.canvas)
             self.project.layerLoaded.connect(self.iniProjecte)
             self.canvas.layersChanged.connect(self.capesProject)
             self.canvas.renderStarting.connect(self.fiProjecte)
             # self.canvas.renderComplete.connect(self.fiProjecte)
-
-    def fixaEscales(self, escales=None):
-        if self.canvas is not None:
-            self.escales = QvEscala(self.canvas, escales)
 
     def msgCapes(self, nomCapa, msgs):
         print('Capa:', nomCapa)
@@ -385,10 +382,9 @@ class QvLlegenda(QgsLayerTreeView):
         # Borrar tabs de atributos si existen
         if self.atributs is not None:
             self.atributs.deleteTabs()
-        # Guardar escala inicial
-        # if self.canvas is not None:
-        #     escala = self.canvas.scale()
-        # Capas: actualizar icono filtro y tratar capas raster
+
+        self.escales.nouProjecte(self.project)
+
         for layer in self.capes():
             if layer.type() == QgsMapLayer.VectorLayer:
                 self.actIconaFiltre(layer)
@@ -397,10 +393,11 @@ class QvLlegenda(QgsLayerTreeView):
                 # self.restoreExtent = 2
                 # print('restoreExtent', self.restoreExtent)
                 # node.visibilityChanged.connect(self.restoreCanvasPosition)
-                self.restoreCanvasPosition()
+                # self.restoreCanvasPosition()
                 node.setItemVisibilityChecked(False)                
-                self.restoreCanvasPosition()
+                # self.restoreCanvasPosition()
                 node.setItemVisibilityChecked(True)
+
 
         # Establecer escala inicial
         # print('Escala:', escala)
