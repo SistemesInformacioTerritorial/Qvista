@@ -55,7 +55,7 @@ class QvGenerarThumbnails():
         """
 
         dialegObertura=QFileDialog()
-        dialegObertura.setDirectoryUrl(QUrl('d:/dropbox/qvistaProd/../dades/projectes/'))
+        dialegObertura.setDirectoryUrl(QUrl('../dades/projectes/'))
 
         nfiles,_ = dialegObertura.getOpenFileNames(None,"Open Projecte Qgis", ".", "Projectes Qgis (*.qgs)")
         return nfiles

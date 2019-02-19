@@ -1,0 +1,113 @@
+### Punto de entrada
+GET https://api.github.com
+
+### Info usuario
+GET https://api.github.com/user
+Authorization: token a6ccb2fa7ec5a4a042596ae167d99378196cfacf
+User-Agent: qVista
+
+### Temas usuario
+GET https://api.github.com/issues
+Authorization: token a6ccb2fa7ec5a4a042596ae167d99378196cfacf
+User-Agent: qVista
+
+### Temas proyecto
+GET https://api.github.com/repos/SistemesInformacioTerritorial/Qvista/issues
+Authorization: token a6ccb2fa7ec5a4a042596ae167d99378196cfacf
+User-Agent: qVista
+
+### Temas proyecto asignados a un usuario
+GET https://api.github.com/repos/SistemesInformacioTerritorial/Qvista/issues
+    ?assignee=CPCIMI
+Authorization: token a6ccb2fa7ec5a4a042596ae167d99378196cfacf
+User-Agent: qVista
+
+### Búsqueda de un fichero de código por nombre
+GET https://api.github.com/search/code
+    ?q=repo:SistemesInformacioTerritorial/QVista/moduls+QvLlegenda.py+in:path
+Authorization: token a6ccb2fa7ec5a4a042596ae167d99378196cfacf
+Accept: application/json
+Time-Zone: Europe/Madrid
+User-Agent: qVista
+# sha: 730ba5c5d3f28509609d255514df7b2646e8644f
+
+### Ultimo commit rama
+GET https://api.github.com/repos/SistemesInformacioTerritorial/QVista/commits/prePro
+Authorization: token a6ccb2fa7ec5a4a042596ae167d99378196cfacf
+User-Agent: qVista
+# sha: 9c8d7f27b6a857575c81ea82239ceadc6831752d
+
+### Referencia objeto rama -> SHA commit
+GET https://api.github.com/repos/SistemesInformacioTerritorial/QVista/git/refs/heads/prePro
+Authorization: token a6ccb2fa7ec5a4a042596ae167d99378196cfacf
+User-Agent: qVista
+
+### Commit por referencia SHA
+GET https://api.github.com/repos/SistemesInformacioTerritorial/QVista/git/commits/ce885055b0d9ca0a4c265bfd0ed43ea524f012c7
+Authorization: token a6ccb2fa7ec5a4a042596ae167d99378196cfacf
+User-Agent: qVista
+
+### Fichero código
+GET https://api.github.com/repos/SistemesInformacioTerritorial/QVista/contents/moduls/QvLlegenda.py
+    ?ref=prePro
+Authorization: token a6ccb2fa7ec5a4a042596ae167d99378196cfacf
+User-Agent: qVista
+
+# Get a commit:
+# GET /repos/:owner/:repo/git/commits/:commit_sha
+
+# Get contents
+# GET /repos/:owner/:repo/contents/:path
+
+# Try this (as described in the API docs here):
+# http://api.github.com/repos/:owner/:repo/commits?path=PATH_TO_FILE
+
+### Consulta fichero por nombre (devuelve su contenido)
+GET https://api.github.com/repos/SistemesInformacioTerritorial/QVista/contents/moduls/QvLlegenda.py
+    ?ref=prePro
+Authorization: token a6ccb2fa7ec5a4a042596ae167d99378196cfacf
+Accept: application/json
+Time-Zone: Europe/Madrid
+User-Agent: qVista
+
+# --------------------------------------------------------------------------------------------
+###
+### Búsqueda de un bug abierto por título
+###
+GET https://api.github.com/search/issues
+    ?q=repo:SistemesInformacioTerritorial/QVista+state:open+label:bug+Prueba+bug+in:title
+Authorization: token a6ccb2fa7ec5a4a042596ae167d99378196cfacf
+Accept: application/json
+Time-Zone: Europe/Madrid
+User-Agent: qVista
+
+###
+### Lista de Commits de un fichero (puede añadirse parámetro sha=rama)
+###
+GET http://api.github.com/repos/SistemesInformacioTerritorial/QVista/commits
+    ?path=moduls/QvLlegenda.py
+Authorization: token a6ccb2fa7ec5a4a042596ae167d99378196cfacf
+Accept: application/json
+Time-Zone: Europe/Madrid
+User-Agent: qVista
+
+###
+### Crear bug
+###
+POST http://api.github.com/repos/SistemesInformacioTerritorial/QVista/issues
+Authorization: token a6ccb2fa7ec5a4a042596ae167d99378196cfacf
+Content-type: application/json
+
+{
+  "title": "Bug desde qVista",
+  "body": "I'm having a problem with this.",
+  "assignees": [
+    "CPCIMI",
+    "JCAIMI"    
+  ],
+  "labels": [
+    "bug"
+  ]
+}
+
+

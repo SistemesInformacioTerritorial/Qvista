@@ -5,11 +5,15 @@ from qgis.core import (QgsProject, QgsLegendModel, QgsLayerDefinition, QgsMapLay
 from qgis.gui import (QgsLayerTreeView, QgsLayerTreeViewMenuProvider, QgsLayerTreeMapCanvasBridge,
                       QgsLayerTreeViewIndicator, QgsSearchQueryBuilder)
 from qgis.PyQt.QtWidgets import QMenu, QAction, QFileDialog, QWidget, QPushButton, QVBoxLayout, QHBoxLayout
-from qgis.PyQt.QtGui import QIcon
-from qgis.PyQt.QtCore import Qt, pyqtSignal, QSortFilterProxyModel
+from qgis.PyQt.QtGui import QIcon, QBrush, QColor
+from qgis.PyQt.QtCore import Qt, pyqtSignal, QSortFilterProxyModel, QUrl
 from moduls.QvAccions import QvAccions
 from moduls.QvAtributs import QvAtributs
 from moduls.QvApp import QvApp
+from moduls.QvVideo import QvVideo
+from moduls.QvEscala import QvEscala
+
+import os
 
 # import images_rc
 # import recursos
@@ -84,12 +88,9 @@ class QvItemLlegenda(object):
         super().__init__()
         self.item = item
         self.nivell = nivell
-        self.tipus = self.tipus()
+        self.tipus = self.calcTipus()
 
-    def nivell(self):
-        return self.nivell()
-
-    def tipus(self):
+    def calcTipus(self):
         clase = type(self.item).__name__
         if clase == 'QgsLayerTreeLayer':
             return 'layer'
@@ -158,12 +159,35 @@ class QvItemLlegenda(object):
                 if children:
                     self.item.layerNode().setItemVisibilityCheckedRecursive(True)
 
+class QvLlegendaModel(QgsLegendModel):
+    def __init__(self, root):
+        super().__init__(root)
+        self.setScale(1.0)
+
+    def setScale(self, scale):
+        self.scale = scale
+
+    def data(self, index, role):
+        if index.isValid() and role == Qt.ForegroundRole:
+            node = self.index2node(index)
+            if node is not None and node.nodeType() == QgsLayerTreeNode.NodeLayer: # and node.isVisible():
+                layer = node.layer()
+                if layer is not None and layer.hasScaleBasedVisibility():
+                    if layer.isInScaleRange(self.scale):
+                        color = QColor('#000000')
+                    else:
+                        color = QColor('#c0c0c0')
+                    return color
+        return super().data(index, role)
+
 class QvLlegenda(QgsLayerTreeView):
 
     obertaTaulaAtributs = pyqtSignal()
     clicatMenuContexte = pyqtSignal(str)
+    carregantProjecte = pyqtSignal()
+    projecteCarregat = pyqtSignal(str)
 
-    def __init__(self, canvas = None, atributs = None, canviCapaActiva = None):
+    def __init__(self, canvas=None, atributs=None, canviCapaActiva=None):
         super().__init__()
         self.project = QgsProject.instance()
         self.root = self.project.layerTreeRoot()
@@ -172,7 +196,13 @@ class QvLlegenda(QgsLayerTreeView):
         self.bridges = []
         self.atributs = atributs
         self.editable = True
+        self.lastExtent = None
+        self.escales = None
+        # self.restoreExtent = 0
+        # print('restoreExtent', self.restoreExtent)
+
         self.project.readProject.connect(self.nouProjecte)
+        # self.project.loadingLayerMessageReceived.connect(self.msgCapes)
 
         self.setWhatsThis(QvApp().carregaAjuda(self))
 
@@ -183,11 +213,14 @@ class QvLlegenda(QgsLayerTreeView):
         self.connectaCanviCapaActiva(canviCapaActiva)
 
         # Model
-        self.model = QgsLegendModel(self.root)
-        self.model.setFlag(QgsLegendModel.ShowLegend)
+        self.model = QvLlegendaModel(self.root)
+        self.model.setFlag(QgsLegendModel.ShowLegend, True)
+        self.model.setFlag(QgsLegendModel.ShowLegendAsTree, True)
         self.editarLlegenda(True)
 
         self.setModel(self.model)
+        if self.canvas is not None:
+            self.canvas.scaleChanged.connect(self.connectaEscala)
 
         # Acciones disponibles
         self.accions = QvAccions()
@@ -207,30 +240,178 @@ class QvLlegenda(QgsLayerTreeView):
         if self.atributs is not None:
             self.atributs.modificatFiltreCapa.connect(self.actIconaFiltre)
 
-    def actIconaFiltre(self, capa):
-        node = self.root.findLayer(capa.id())
-        if node is not None:
-            if capa.subsetString() == '':
-                self.removeIndicator(node, self.iconaFiltre)
+        self.projecteCapes = None
+        self.player = None
 
-            else:
-                self.addIndicator(node, self.iconaFiltre)
-            # self.setFocus()
-            # self.repaint()
-            # self.resize(self.size())
-            if QvApp().appQgis is not None:
-                QvApp().appQgis.processEvents()
+        if self.canvas is not None:
+            self.escales = QvEscala(self.canvas)
+            self.project.layerLoaded.connect(self.iniProjecte)
+            self.canvas.layersChanged.connect(self.capesProject)
+            self.canvas.renderStarting.connect(self.fiProjecte)
+            # self.canvas.renderComplete.connect(self.fiProjecte)
 
-    def editarLlegenda(self, on = True):
+    # def msgCapes(self, nomCapa, msgs):
+    #     print('Capa:', nomCapa)
+    #     for m in msgs:
+    #         print(m[0], '-', m[1])
+
+    def iniProjecte(self, num, tot):
+        # La carga de un proyecto se inicia con la capa #0
+        if self.projecteCapes is None and num == 0:
+            self.projecteCapes = False
+            if self.player is not None:
+                self.player.show()
+                self.player.mediaPlayer.play()
+            self.carregantProjecte.emit()
+
+    def capesProject(self):
+        # Capas cargadas
+        if self.projecteCapes is not None and not self.projecteCapes:
+            self.projecteCapes = True
+
+    def fiProjecte(self):
+        # La carga de un proyecto acaba con su visualización en el canvas de todas las capas
+        if self.projecteCapes is not None and self.projecteCapes:
+            self.projecteCapes = None
+            if self.player is not None:
+                self.player.mediaPlayer.pause()
+                self.player.hide()
+            self.projecteCarregat.emit(self.project.fileName())
+
+    # def iniProjecte(self, num, tot):
+    #     # La carga de un proyecto se inicia con la capa #0
+    #     self.projecteCapes = [num, tot]
+    #     if num == 0:
+    #         if self.player is not None:
+    #             self.player.show()
+    #             self.player.mediaPlayer.play()
+    #         self.carregantProjecte.emit()
+    
+    # def fiProjecte(self):
+    #     # La carga de un proyecto acaba con su visualización en el canvas de todas las capas
+    #     num = self.projecteCapes[0]
+    #     tot = self.projecteCapes[1]
+    #     if num == tot:
+    #         self.projecteCapes = [0, 1]
+    #         if self.player is not None:
+    #             self.player.mediaPlayer.pause()
+    #             self.player.hide()
+    #         self.projecteCarregat.emit(self.project.fileName())
+
+    def setPlayer(self, fich, ancho=170, alto=170):
+        if os.path.isfile(fich):
+            self.player = QvVideo(fich, ancho, alto, self.canvas)
+        else:
+            self.player = None
+
+    # def printSignals(self):
+# void 	loadingLayer (const QString &layerName)
+#  	Emitted when a layer is loaded. More...
+# void 	loadingLayerMessageReceived (const QString &layerName, const QList< QgsReadWriteContext::ReadWriteMessage > &messages)
+#  	Emitted when loading layers has produced some messages. More...
+    #     self.canvas.mapCanvasRefreshed.connect(lambda: self.printCanvasPosition('>> Canvas mapCanvasRefreshed'))
+    #     self.canvas.extentsChanged.connect(lambda: self.printCanvasPosition('Canvas extentsChanged'))
+    #     self.canvas.layersChanged.connect(lambda: self.printCanvasPosition('Canvas layersChanged'))
+    #     # self.canvas.renderStarting.connect(lambda: self.printCanvasPosition('Canvas renderStarting'))
+    #     self.canvas.renderComplete.connect(lambda: self.printCanvasPosition('Canvas renderComplete'))
+    #     self.project.layerLoaded.connect(lambda num, tot: print("Project layerLoaded %d / %d" % (num, tot)))
+    #     self.project.readProject.connect(lambda: self.printCanvasPosition('Project readProject'))
+    #     self.carregantProjecte.connect(lambda: print('*** Llegenda carregantProjecte'))
+    #     self.projecteCarregat.connect(lambda f: print('*** Llegenda projecteCarregat ' + f))
+        
+    def deleteCanvasPosition(self):
+        self.lastExtent = None
+
+    def saveCanvasPosition(self):
+        self.lastExtent = self.canvas.extent()
+        
+    def restoreCanvasPosition(self):
+        if self.lastExtent != None:
+            self.canvas.setExtent(self.lastExtent)
+
+    #  QgsRectangle r = mapSettings().extent();
+    #  r.scale( scaleFactor, center );
+    #  setExtent( r, true );
+
+    def printCanvasPosition(self, msg):
+        e = round(self.canvas.scale(), 2)
+        x = round(self.canvas.center().x(), 2)
+        y = round(self.canvas.center().y(), 2)
+        print(msg, ':',
+             'escala -', str(e),
+             'centro: (', str(x),
+             '-', str(y), ')')
+
+    #     if msg == 'Canvas layersChanged':
+    #         self.saveCanvasPosition()
+    #     if msg == '>> Canvas mapCanvasRefreshed' and self.restoreExtent > 0:
+    #         self.restoreExtent -= 1
+    #         print('restoreExtent', self.restoreExtent)
+    #     if msg == 'Canvas extentsChanged':
+    #         self.restoreCanvasPosition()
+    #     if msg == 'Canvas renderStarting' and self.restoreCanvasPosition():
+    #         self.printCanvasPosition('restoreCanvasPosition')
+
+    def editarLlegenda(self, on=True):
         self.editable = on
         self.model.setFlag(QgsLegendModel.AllowNodeReorder, on)
         self.model.setFlag(QgsLegendModel.AllowNodeRename, on)
         self.model.setFlag(QgsLegendModel.AllowLegendChangeState, on)
         self.model.setFlag(QgsLegendModel.AllowNodeChangeVisibility, on)
+        self.model.setFlag(QgsLegendModel.DeferredLegendInvalidation, on)
+
+    def connectaEscala(self, escala):
+        # print('Cambio escala:', escala)
+        self.model.setScale(escala)
+        for capa in self.capes():
+            if capa.hasScaleBasedVisibility():
+                capa.nameChanged.emit()
+
+    def actIconaFiltre(self, capa):
+        if capa.type() != QgsMapLayer.VectorLayer:
+            return
+        node = self.root.findLayer(capa.id())
+        if node is not None:
+            if capa.subsetString() == '':
+                self.removeIndicator(node, self.iconaFiltre)
+            else:
+                self.addIndicator(node, self.iconaFiltre)
+            capa.nameChanged.emit()
 
     def nouProjecte(self):
+        # Borrar tabs de atributos si existen
         if self.atributs is not None:
             self.atributs.deleteTabs()
+
+        self.escales.nouProjecte(self.project)
+
+        for layer in self.capes():
+            if layer.type() == QgsMapLayer.VectorLayer:
+                self.actIconaFiltre(layer)
+            if layer.type() == QgsMapLayer.RasterLayer and self.capaMarcada(layer):
+                node = self.root.findLayer(layer.id())
+                # self.restoreExtent = 2
+                # print('restoreExtent', self.restoreExtent)
+                # node.visibilityChanged.connect(self.restoreCanvasPosition)
+                # self.restoreCanvasPosition()
+                node.setItemVisibilityChecked(False)                
+                # # self.restoreCanvasPosition()
+                node.setItemVisibilityChecked(True)
+
+
+        # Establecer escala inicial
+        # print('Escala:', escala)
+        # if self.canvas is not None:
+        #     self.canvas.zoomScale(escala)
+
+        # print('Capes Llegenda:')
+        # for layer in leyenda.capes():
+        #     print('-', layer.name(), ', Visible:', leyenda.capaVisible(layer),
+        #                              ', Marcada:', leyenda.capaMarcada(layer),
+        #                              ', Filtro escala:', layer.hasScaleBasedVisibility())
+        #     if layer.type() == QgsMapLayer.VectorLayer:
+        #         print(' ', 'Filtro datos:', layer.subsetString())
+        #         leyenda.actIconaFiltre(layer)
 
     def connectaCanviCapaActiva(self, canviCapaActiva):
         if canviCapaActiva:
@@ -308,7 +489,10 @@ class QvLlegenda(QgsLayerTreeView):
     def capaVisible(self, capa):
         node = self.root.findLayer(capa.id())
         if node is not None:
-            return node.isVisible()
+            v = node.isVisible()
+            if v and capa.hasScaleBasedVisibility() and self.canvas is not None:
+                return capa.isInScaleRange(self.canvas.scale())
+            return v
         return False
 
     def capaMarcada(self, capa):
@@ -404,11 +588,12 @@ class QvLlegenda(QgsLayerTreeView):
         self.menuAccions = []
         tipo = self.calcTipusMenu()
         if tipo == 'layer':
-            if self.currentLayer().type() == QgsMapLayer.VectorLayer:
+            capa = self.currentLayer()
+            if capa is not None and capa.type() == QgsMapLayer.VectorLayer:
                 if self.atributs is not None:
                     self.menuAccions += ['showFeatureTable', 'filterElements' ]
                 self.menuAccions += ['showFeatureCount']
-            if self.canvas is not None:
+            if capa is not None and self.canvas is not None:
                 self.menuAccions += ['showLayerMap']
             if self.editable:
                 self.menuAccions += ['separator',
@@ -531,30 +716,40 @@ if __name__ == "__main__":
     from qgis.gui import QgsMapCanvas
     from qgis.PyQt.QtWidgets import QMessageBox
 
-    with qgisapp() as app:
+    with qgisapp(sysexit=False) as app:
 
         QvApp().carregaIdioma(app, 'ca')
         # QvApp().logInici()
 
         def printCapaActiva():
-            cLayer = llegenda.currentLayer()
+            cLayer = leyenda.currentLayer()
             if cLayer:
-                print('Capa activa:', llegenda.currentLayer().name())
+                print('Capa activa:', leyenda.currentLayer().name())
             else:
                 print('Capa activa: None')
 
-        canvas = QgsMapCanvas()
+        canv = QgsMapCanvas()
 
-        atributs = QvAtributs(canvas)
+        atrib = QvAtributs(canv)
 
-        llegenda = QvLlegenda(canvas, atributs, printCapaActiva)
-        llegenda.project.read('../dades/projectes/bcn11.qgs')
+        leyenda = QvLlegenda(canv, atrib, printCapaActiva)
+        # leyenda.printSignals() # Para debug
 
-        canvas.setWindowTitle('Canvas')
-        canvas.show()
+        # leyenda.project.read('../Dades/Projectes/Imatge satel·lit 2011 AMB.qgs')
+        leyenda.project.read('../dades/projectes/bcn11.qgs')
+        # leyenda.project.read('../dades/projectes/Prototip GUIA OracleSpatial_WMS.qgz')
 
-        llegenda.setWindowTitle('Llegenda')
-        llegenda.show()
+    # Al cargar un proyecto o capa:
+    # - Ver si tiene filtro de datos para actualizar el icono del embudo
+    # - Para las capas raster, ver si funciona el chech/uncheck de la capa para la visualización
+    # - Ver si se produce un cambio de escala y restaurarlo
+    # Evento: QgsProject -> legendLayersAdded(lista de capas)
+
+        canv.setWindowTitle('Canvas')
+        canv.show()
+
+        leyenda.setWindowTitle('Llegenda')
+        leyenda.show()
 
         #
         # Funciones de capes:
@@ -565,16 +760,11 @@ if __name__ == "__main__":
         # nodes(), nodePerNom(), node.isVisible(), node.itemVisibilityChecked()
         #
 
-        print('Capes Llegenda:')
-        for layer in llegenda.capes():
-            print('-', layer.name(), ', Visible:', llegenda.capaVisible(layer),
-                                     ', Marcada:', llegenda.capaMarcada(layer))
+        # leyenda.veureCapa(leyenda.capaPerNom('BCN_Barri_ETRS89_SHP'), True)
+        # leyenda.veureCapa(leyenda.capaPerNom('BCN_Districte_ETRS89_SHP'), False)
+        # leyenda.veureCapa(leyenda.capaPerNom('BCN_Illes_ETRS89_SHP'), True)
 
-        llegenda.veureCapa(llegenda.capaPerNom('BCN_Barri_ETRS89_SHP'), True)
-        llegenda.veureCapa(llegenda.capaPerNom('BCN_Districte_ETRS89_SHP'), True)
-        llegenda.veureCapa(llegenda.capaPerNom('BCN_Illes_ETRS89_SHP'), False)
-
-        llegenda.setCurrentLayer(llegenda.capaPerNom('BCN_Barri_ETRS89_SHP'))
+        # leyenda.setCurrentLayer(leyenda.capaPerNom('BCN_Barri_ETRS89_SHP'))
 
         # Acciones personalizadas para menú contextual de la leyenda:
         #
@@ -595,7 +785,7 @@ if __name__ == "__main__":
             boton.setFlat(True)
 
         def botonCapa(i):
-            if llegenda.capaVisible(llegenda.capaPerNom('BCN_Districte_ETRS89_SHP')):
+            if leyenda.capaVisible(leyenda.capaPerNom('BCN_Districte_ETRS89_SHP')):
                 testSimbologia()
             else:
                 if rangos is not None:
@@ -605,18 +795,35 @@ if __name__ == "__main__":
         rangos = None
 
         # Acciones de usuario
+
+        def openProject():
+            dialegObertura=QFileDialog()
+            dialegObertura.setDirectoryUrl(QUrl('../dades/projectes/'))
+            nfile,_ = dialegObertura.getOpenFileName(None,"Obrir mapa Qgis", "../dades/projectes/", "Tots els mapes acceptats (*.qgs *.qgz);; Mapes Qgis (*.qgs);;Mapes Qgis comprimits (*.qgz)")
+            if nfile != '':
+                if leyenda.player is None:
+                    leyenda.setPlayer('moduls/giphy.gif', 170, 170)
+                leyenda.saveCanvasPosition()
+                leyenda.printCanvasPosition('==> projectRead')
+                ok = leyenda.project.read(nfile)
+                if ok:
+                    leyenda.restoreCanvasPosition()
+                else:
+                    print('Error al cargar proyecto', nfile)
+                    print(leyenda.project.error().summary())
+
         def testCapas():
             global botonera
-            botonera = QvBotoneraLlegenda(llegenda, 'Botonera')
+            botonera = QvBotoneraLlegenda(leyenda, 'Botonera')
             botonera.afegirBotonera(filtroBotonera, modifBoton)
             botonera.clicatBoto.connect(botonCapa)
             botonera.show()
-            if llegenda.capaVisible(llegenda.capaPerNom('BCN_Districte_ETRS89_SHP')):
+            if leyenda.capaVisible(leyenda.capaPerNom('BCN_Districte_ETRS89_SHP')):
                 testSimbologia()
 
         def testSimbologia():
             global rangos
-            rangos = QvBotoneraLlegenda(llegenda, 'Rangos', False)
+            rangos = QvBotoneraLlegenda(leyenda, 'Rangos', False)
             rangos.afegirBotonera(filtroRangos, modifBoton)
             rangos.show()
 
@@ -624,7 +831,7 @@ if __name__ == "__main__":
             QvApp().logRegistre('Menú Test')
 
             print('Items Llegenda:')
-            for item in llegenda.items():
+            for item in leyenda.items():
                 capa = item.capa()
                 if capa is None:
                     nomCapa = '-'
@@ -642,8 +849,8 @@ if __name__ == "__main__":
             QMessageBox().information(None, 'qVista', 'Salutacions ' + QvApp().usuari)
 
         def editable():
-            llegenda.editarLlegenda(not llegenda.editable)
-            if llegenda.editable:
+            leyenda.editarLlegenda(not leyenda.editable)
+            if leyenda.editable:
                 if rangos is not None:
                     rangos.close()
                 if botonera is not None:
@@ -653,39 +860,44 @@ if __name__ == "__main__":
         act = QAction()
         act.setText("Editable")
         act.triggered.connect(editable)
-        llegenda.accions.afegirAccio('editable', act)
+        leyenda.accions.afegirAccio('editable', act)
 
         act = QAction()
         act.setText("Test")
         act.triggered.connect(test)
-        llegenda.accions.afegirAccio('test', act)
+        leyenda.accions.afegirAccio('test', act)
 
         act = QAction()
         act.setText("Test Botonera")
         act.triggered.connect(testCapas)
-        llegenda.accions.afegirAccio('testCapas', act)
+        leyenda.accions.afegirAccio('testCapas', act)
 
         act = QAction()
         act.setText("Test Simbologia")
         act.triggered.connect(testSimbologia)
-        llegenda.accions.afegirAccio('testSimbologia', act)
+        leyenda.accions.afegirAccio('testSimbologia', act)
+
+        act = QAction()
+        act.setText("Abrir proyecto")
+        act.triggered.connect(openProject)
+        leyenda.accions.afegirAccio('openProject', act)
 
         # Adaptación del menú
         def menuContexte(tipo):
             if tipo == 'none':
-                llegenda.menuAccions.append('addLayersFromFile')
-                llegenda.menuAccions.append('separator')
-                llegenda.menuAccions.append('test')
-                llegenda.menuAccions.append('testCapas')
-                # llegenda.menuAccions.append('testSimbologia')
-                llegenda.menuAccions.append('editable')
+                leyenda.menuAccions.append('addLayersFromFile')
+                leyenda.menuAccions.append('separator')
+                leyenda.menuAccions.append('test')
+                leyenda.menuAccions.append('testCapas')
+                # leyenda.menuAccions.append('testSimbologia')
+                leyenda.menuAccions.append('editable')
+                leyenda.menuAccions.append('openProject')
 
         # Conexión de la señal con la función menuContexte para personalizar el menú
-        llegenda.clicatMenuContexte.connect(menuContexte)
+        leyenda.clicatMenuContexte.connect(menuContexte)
 
         app.aboutToQuit.connect(QvApp().logFi)
     
-
     #######
         
         # QgsLayerTreeNode --> nameChanged()

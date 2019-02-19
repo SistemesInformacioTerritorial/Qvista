@@ -101,8 +101,8 @@ class QCercadorAdreca(QObject):
                     if txt in self.dictCarrers:
                         self.nomCarrer = txt
                         self.codiCarrer = self.dictCarrers[self.nomCarrer]
-
-                        path= self.__path_disgregados__path_disgregados+str(self.codiCarrer)+'.csv'
+                        self.focusANumero()
+                        path= self.__path_disgregados+str(self.codiCarrer)+'.csv'
                         with open(path, encoding='utf-8', newline='') as csvFile:
                             reader = csv.DictReader(csvFile, delimiter=',')
                             for row in reader:

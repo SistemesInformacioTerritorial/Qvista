@@ -1,6 +1,8 @@
 from moduls.QvImports import *
 import math
-
+# from qgis.core import QgsFeatureRequest, QgsPointXY, QgsGeometry, QgsRectangle
+# from qgis.gui import QgsMapTool, QgsMapToolEmitPoint, QgsMapToolZoom, QgsMapToolPan, QgsRubberBand, QgsAttributeDialog
+# from qgis.PyQt.QtWidgets import QMessageBox
 
 
 class QvSeleccioPunt(QgsMapTool):
@@ -29,7 +31,7 @@ class QvSeleccioPunt(QgsMapTool):
         point = self.canvas.getCoordinateTransform().toMapCoordinates(x, y)
         radius = 10
         rect = QgsRectangle(point.x() - radius, point.y() - radius, point.x() + radius, point.y() + radius)
-        if layer:
+        if layer is not None and layer.type() == QgsMapLayer.VectorLayer:
             it = layer.getFeatures(QgsFeatureRequest().setFilterRect(rect))
             ids = [i.id() for i in it]
             self.qV.idsElementsSeleccionats.extend(ids)
@@ -117,7 +119,7 @@ class QvSeleccioCercle(QgsMapTool):
         if not e.button() == Qt.LeftButton:
             return
         layer = self.qV.llegenda.currentLayer()
-        if layer is not None:
+        if layer is not None and layer.type() == QgsMapLayer.VectorLayer:
             #convertir rubberband apoligon
             featsPnt = layer.getFeatures(QgsFeatureRequest().setFilterRect(self.poligono.boundingBox()))
             for featPnt in featsPnt:
@@ -186,6 +188,8 @@ class QvSeleccioPerPoligon(QgsMapToolEmitPoint):
         self.selectPoly()
 
     def selectPoly(self):
+        if self.layer.type() != QgsMapLayer.VectorLayer:
+            return
         listaPoligonos=[self.points]
         poligono=QgsGeometry.fromPolygonXY(listaPoligonos)
         self.rubberband.setToGeometry(poligono,self.layer)
@@ -260,7 +264,7 @@ class QvSeleccioElement(QgsMapTool):
 
             rect = QgsRectangle(point.x() - self.radi, point.y() - self.radi, point.x() + self.radi, point.y() + self.radi)
             ids=[]
-            if layer is not None:
+            if layer is not None and layer.type() == QgsMapLayer.VectorLayer:
                 it = layer.getFeatures(QgsFeatureRequest().setFilterRect(rect))
                 for feature in it:
                     self.fitxaAtributs = QgsAttributeDialog(layer, feature, False) 
@@ -287,8 +291,12 @@ class QvSeleccioElement(QgsMapTool):
         #             dialog.setWindowTitle(self.layer.name() + ' - Element ' + str(self.feature.id() + 1))
         #             dialog.setMode(QgsAttributeForm.SingleEditMode)
 
-if __name__ == "__main__":
+if __name__ == "__main__":    
+    from qgis.gui import  QgsLayerTreeMapCanvasBridge
     from moduls.QvLlegenda import QvLlegenda
+    from qgis.gui import QgsMapCanvas
+    from qgis.core import QgsProject
+    from qgis.core.contextmanagers import qgisapp
     with qgisapp() as app:
         canvas = QgsMapCanvas()
 

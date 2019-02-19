@@ -1,18 +1,22 @@
-from moduls.QvImports import *
-from qgis.PyQt.QtGui import QStandardItemModel, QStandardItem
-from qgis.core import QgsRectangle
+# from moduls.QvImports import *
+from qgis.PyQt.QtGui import QStandardItemModel, QStandardItem, QIcon, QPixmap
+
+from qgis.core import QgsRectangle,   QgsProject, QgsVectorLayer, QgsLayoutExporter, QgsPointXY, QgsGeometry, QgsVector, QgsLayout, QgsReadWriteContext
+from qgis.gui import QgsMapCanvas,QgsLayerTreeMapCanvasBridge
 import sys
-from PyQt5 import QtGui, QtCore, QtWidgets
-from PyQt5.QtCore import QAbstractItemModel, QFile, QIODevice, QModelIndex, Qt
-from PyQt5.QtWidgets import QApplication, QTreeView
+# from PyQt5 import QtGui, QtCore, QtWidgets
+from PyQt5.QtCore import QAbstractItemModel, QFile, QIODevice, QModelIndex, Qt, QSize
+from PyQt5.QtWidgets import QApplication, QMainWindow, QDockWidget, QTreeView, QAction, QVBoxLayout, QHBoxLayout ,QAbstractItemView, QLabel, QWidget, QLineEdit, QPushButton
+
 import pickle
 from collections import deque
 import os.path
+from qgis.core.contextmanagers import qgisapp
 
 projecteInicial='../dades/projectes/BCN11.qgs'
 fic_guardar_arbre='C:/Temp/QvUbicacions.p'  #Fichero para la lectura/escritura de ubicaciones (serializadas)
 
-class StandardItemModel_mio(QtGui.QStandardItemModel):
+class StandardItemModel_mio(QStandardItemModel):
     """ Subclase de QStandardItemModel en el que implemento metodos de importacion de datos y de 
         exportacion de datos
     """
@@ -151,21 +155,21 @@ class StandardItemModel_mio(QtGui.QStandardItemModel):
             ymax = value['ymax']
             visto = value['id_']
 
-            item1= QtGui.QStandardItem(value['mi_ubi'])
+            item1= QStandardItem(value['mi_ubi'])
             item1.setToolTip('')
 
             parent.appendRow([
                 item1,
-                QtGui.QStandardItem(str(xmin)),
-                QtGui.QStandardItem(str(ymin)),
-                QtGui.QStandardItem(str(xmax)),
-                QtGui.QStandardItem(str(ymax)),
+                QStandardItem(str(xmin)),
+                QStandardItem(str(ymin)),
+                QStandardItem(str(xmax)),
+                QStandardItem(str(ymax)),
                 ])
             seen[visto] = parent.child(parent.rowCount() - 1)
 
 
 
-class QvUbicacions(QtWidgets.QWidget):
+class QvUbicacions(QWidget):
     """Una classe del tipus QWidget que mostra i gestiona un arbre d'ubicacions.
     Poden afegir-se noves ubicacions i guardar-hi una descripció. 
     Un click sobre una ubicació ens situa en el rang guardat previament.
@@ -180,7 +184,7 @@ class QvUbicacions(QtWidgets.QWidget):
         """
 
         self.canvas = canvas
-        QtWidgets.QWidget.__init__(self)
+        QWidget.__init__(self)
 
         
         # Leemos un fichero serializado para cargar sus ubicaciones en data
@@ -192,7 +196,7 @@ class QvUbicacions(QtWidgets.QWidget):
             data=[]
   
         # Instanciamos ARBOL ************************************************************+*****
-        self.arbre = QtWidgets.QTreeView()
+        self.arbre = QTreeView()
 
         # Ponemos menu contextual l arbol
         self.arbre.setContextMenuPolicy(Qt.ActionsContextMenu)
@@ -251,7 +255,7 @@ class QvUbicacions(QtWidgets.QWidget):
  
         # ELEMENTOS GRAFICOS DE LA CLASE
         # Definim un lineEdit, li afegim un tooltip i el connectem a una funció quan es premi Return   
-        self.leUbicacions = QtWidgets.QLineEdit()
+        self.leUbicacions = QLineEdit()
         self.leUbicacions.setToolTip('Escriu el nom de la ubicació i prem Return')
         self.leUbicacions.returnPressed.connect(self._novaUbicacio)
 
@@ -264,9 +268,9 @@ class QvUbicacions(QtWidgets.QWidget):
         icon.addPixmap(QPixmap(fichero))  
         # icon.addPixmap(QPixmap("D:/projectes_py/qVista/imatges/guardar.png"))  
 
-        self.boton_1 = QtWidgets.QPushButton(icon,'')       
+        self.boton_1 = QPushButton(icon,'')       
         self.boton_1.setToolTip("Desar ubicacions")
-        self.boton_1.setMaximumSize(QtCore.QSize(20,20))
+        self.boton_1.setMaximumSize(QSize(20,20))
         self.boton_1.show()
         self.boton_1.clicked.connect(self.model.exportData)
 
@@ -431,7 +435,7 @@ if __name__ == "__main__":
         Les següents línies mostren com integrar el widget 'ubicacions' com a dockWidget.
         """
         
-        windowTest = QtWidgets.QMainWindow()
+        windowTest = QMainWindow()
 
         # Posem el canvas com a element central
         windowTest.setCentralWidget(canvas)

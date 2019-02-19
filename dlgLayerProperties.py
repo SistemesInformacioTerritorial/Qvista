@@ -39,9 +39,9 @@ class LayerProperties( QtWidgets.QDialog, Ui_LayerProperties ):
         self.layer = layer
         self.updateControls()
         # self.connect( self.chkScale, SIGNAL( "stateChanged(int)" ), self.chkScaleChanged )
-        # self.chkScale.stateChanged().connect(self.chkScaleChanged())
-        # self.accepted().connect(self.apply )
-        # self.rejected().connect(self.close )
+        self.chkScale.stateChanged.connect(self.chkScaleChanged)
+        self.accepted.connect(self.apply )
+        self.rejected.connect(self.close )
         self.sliderTransparencia.valueChanged.connect(self.transparencia)
 
     def transparencia(self):
@@ -59,11 +59,19 @@ class LayerProperties( QtWidgets.QDialog, Ui_LayerProperties ):
 
             self.fields = self.layer.fields()
             self.cboDisplayFieldName.addItem("Sense etiquetes")
+            self.cbTipField.addItem("Sense etiquetes")
             for field in self.fields:
                 #if not field.type() == QVariant.Double:
                     # self.displayName = self.vectorLayer.attributeDisplayName( key )
                 self.cboDisplayFieldName.addItem( field.name() )
+                self.cbTipField.addItem( field.name() )
 
+            self.fields = self.layer.fields()
+            self.cboDisplayFieldName.addItem("Sense etiquetes")
+            for field in self.fields:
+                #if not field.type() == QVariant.Double:
+                    # self.displayName = self.vectorLayer.attributeDisplayName( key )
+                self.cboDisplayFieldName.addItem( field.name() )
             idx = self.cboDisplayFieldName.findText( self.layer.displayField() )
             self.cboDisplayFieldName.setCurrentIndex( idx )
         else:
@@ -72,6 +80,7 @@ class LayerProperties( QtWidgets.QDialog, Ui_LayerProperties ):
             self.cboDisplayFieldName.setEnabled( False )
 
         self.cboDisplayFieldName.currentTextChanged.connect(self.fieldCanviat)
+        self.cbTipField.currentTextChanged.connect(self.tipFieldCanviat)
             
 
         if self.layer.hasScaleBasedVisibility():
@@ -88,12 +97,19 @@ class LayerProperties( QtWidgets.QDialog, Ui_LayerProperties ):
         self.maxScaleSpinBox.setValue( self.layer.minimumScale() )
         self.minScaleSpinBox.setValue( self.layer.maximumScale() )
 
+    def tipFieldCanviat(self):
+        layer = self.parent.llegenda.currentLayer()
+        if layer is not None:
+            if self.cbTipField.currentText() != 'Sense etiqueta':
+                layer.setDisplayExpression(self.cbTipField.currentText())
+            else:
+                # Desactivar tooltips
+                pass
     def fieldCanviat(self):
         if self.cboDisplayFieldName.currentText() == 'Sense etiqueta':
             print ('sense etiqueta')
             pass
         else:
-            print (self.cboDisplayFieldName.currentText())
             self.parent.pintaLabels(self.cboDisplayFieldName.currentText())
 
     def chkScaleChanged( self, state ):
@@ -119,15 +135,15 @@ class LayerProperties( QtWidgets.QDialog, Ui_LayerProperties ):
 
         # if self.cboDisplayFieldName.isEnabled():
         print ('SI')
-        self.layer.setDisplayField( self.cboDisplayFieldName.currentText() )
+        # self.layer.setDisplayField( self.cboDisplayFieldName.currentText() )
 
         if self.chkScale.checkState() == QtCore.Qt.Checked:
-            self.layer.toggleScaleBasedVisibility( True )
+            self.layer.setScaleBasedVisibility( True )
             self.layer.setMaximumScale( self.minScaleSpinBox.value() )
             self.layer.setMinimumScale( self.maxScaleSpinBox.value() )
             finalScaleDependency = True
         else:
-            self.layer.toggleScaleBasedVisibility( False )
+            self.layer.setScaleBasedVisibility( False )
             finalScaleDependency = False
 
         if ( not self.initialScaleDependency == finalScaleDependency ) or \

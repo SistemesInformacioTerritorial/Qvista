@@ -1,19 +1,20 @@
 
-from moduls.QvImports import * 
+# from moduls.QvImports import * 
 
-from qgis.core import QgsRectangle
+from qgis.core import QgsRectangle, QgsProject
+from qgis.gui import QgsMapCanvas
+from qgis.PyQt.QtWidgets import QWidget, QPushButton, QVBoxLayout, QHBoxLayout, QFrame, QLabel, QLineEdit, QScrollArea
+from qgis.PyQt.QtGui import QFont, QPixmap
+from qgis.PyQt.QtCore import Qt
 from botoInfoMapaPetit import Ui_BotoInfoMapa
 
 from multiprocessing import Process,Queue,Pipe
-
-
-from  moduls.QvImports import *
-from multiprocessing import Process,Pipe
 
 from qgis.core.contextmanagers import qgisapp
 
 import threading
 import pickle
+import os
 
 
 carpetaCataleg = "N:/9SITEB/Publicacions/qVista/CATALEG/Projectes/"
@@ -26,7 +27,7 @@ class QvColumnaCataleg(QWidget):
     """
         Crea una columna de fichas per cada projecte de la llista amb que s'inicialitza.
  
-    Cada columna porta el títol amb que s'ha inicilaitzat.
+    Cada columna porta el títol amb que s'ha inicilitzat.
     Es un widget amb el que és pot fer el que és vulgui, sempre que sigui legal.
     """
 
@@ -149,6 +150,7 @@ class QvColumnaCataleg(QWidget):
             try:
                 rang = self.qV.canvas.extent()
                 self.projectQgis.read(projecte)
+                self.qV.lblProjecte.setText(self.project.baseName())
                 if rang is not None:
                     self.qV.canvas.setExtent(rang)
                 self.labelProjecte.setText(self.projectQgis.title())
