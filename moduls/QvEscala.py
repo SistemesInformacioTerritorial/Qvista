@@ -10,11 +10,10 @@ class QvEscala():
         self.selec = True
 
     def nouProjecte(self, projecte):
+        self.lliure()
         llista = self.varEscales(projecte)
         if llista is not None:
             self.fixe(llista)
-        else:
-            self.lliure()
 
     def varEscales(self, projecte):
         try:
