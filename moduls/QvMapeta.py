@@ -110,7 +110,7 @@ class QvMapeta(QFrame):
     def paintEvent(self, event):
         qp = QPainter(self)
         # self.pintor = qp
-        br = QBrush(QColor(47, 69, 80, 70))  
+        br = QBrush(QColor(50, 110, 90, 70))  
         qp.setBrush(br)   
         qp.drawRect(QRect(self.begin, self.end))
         # print(self.begin.x(), self.end.x(),self.begin.x() +(self.end.x()-self.begin.x())/2)

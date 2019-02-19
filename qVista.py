@@ -103,6 +103,8 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.mapaMaxim = False
         self.layerActiu = None
         self.prepararCercador = True
+        self.lblMovie = None
+
 
         # # Connectors i accions
         self.definicioAccions()
@@ -175,18 +177,11 @@ class QVista(QMainWindow, Ui_MainWindow):
         Keyword Arguments:
             rang {Rect} -- El rang amb el que s'ha d'obrir el projecte (default: {None})
         """
-        # self.lblMovie = QLabel(self.canvas)
-        # self.lblMovie.setGeometry(self.width()/2,self.height()/2,300,300)
-        # self.movie = QMovie("imatges/loop4.gif")
-        # self.movie.setScaledSize(QSize(300,150))
-        # self.lblMovie.setMovie(self.movie)
-        # self.lblMovie.show()
-        # self.movie.start()
 
-        self.project.readProject.connect(self.paraMovie)
         # Obrir el projecte i col.locarse en rang
         self.project.read(projecte)
         self.canvas.refresh()
+
         if rang is not None:
             self.canvas.setExtent(rang)
 
@@ -205,6 +200,11 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.lblTitolProjecte.setFont(fnt)
         self.lblTitolProjecte.setText(self.project.title())
 
+
+        if self.llegenda.player is None:
+            self.llegenda.setPlayer('moduls/giphy.gif', 170, 170)
+
+
         # self.metadata = self.project.metadata()
         # print ('Author: '+self.metadata.author())
 
@@ -215,10 +215,21 @@ class QVista(QMainWindow, Ui_MainWindow):
         #     exec("self.act{}.trigger()".format(dashboard))
 
         # if titolEntorn is not None:
-        #     self.lblTitolProjecte.setText(titolEntorn)
+        #     self.lblTirotattolProjecte.setText(titolEntorn)
+    
+    def startMovie(self):
+        print('carga')
+        self.lblMovie = QLabel()
+        self.lblMovie.setGeometry(self.width()/2,self.height()/2,300,300)
+        self.movie = QMovie("imatges/loop4.gif")
+        self.movie.setScaledSize(QSize(300,150))
+        self.lblMovie.setMovie(self.movie)
+        self.lblMovie.show()
+        self.movie.start()
+
     def paraMovie(self):
-        pass
-        # self.lblMovie.hide()
+        self.lblMovie.hide()
+
 
     def keyPressEvent(self, event):
         """ Defineix les actuacions del qVista en funció de la tecla apretada.
@@ -279,6 +290,7 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         self.bUbicacions = self.botoLateral(tamany = 25, accio=self.actAdreces)
         self.bCataleg = self.botoLateral(tamany = 25, accio=self.actObrirCataleg)
+        self.bCatalegProjectesLlista = self.botoLateral(tamany = 25, accio=self.actObrirCatalegProjectesLlista)
         self.bObrirEnQgis = self.botoLateral(tamany = 25, accio=self.actObrirEnQgis)
         self.bFoto =  self.botoLateral(tamany = 25, accio=self.actCanvasImg)
         self.bImprimir =  self.botoLateral(tamany = 25, accio=self.actImprimir)
@@ -435,6 +447,22 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.addDockWidget( Qt.LeftDockWidgetArea, self.dwCataleg)
         self.cataleg()
 
+
+        self.wCatalegProjectesLlista = QWidget()
+        self.wCatalegProjectesLlista.ui = Ui_Cataleg()
+        self.wCatalegProjectesLlista.ui.setupUi(self.wCatalegProjectesLlista)
+        self.wCatalegProjectesLlista.setWindowTitle("Cataleg d'Informació Territorial")
+        # self.wCataleg.show()
+        #dfgdfgdfg
+
+        self.dwCatalegProjectesLlista = QDockWidget( "Cataleg de mapes", self )
+        self.dwCatalegProjectesLlista.setObjectName( "catalegTaula2" )
+        self.dwCatalegProjectesLlista.setAllowedAreas( Qt.RightDockWidgetArea | Qt.LeftDockWidgetArea )
+        self.dwCatalegProjectesLlista.setWidget(self.wCatalegProjectesLlista)
+        self.dwCatalegProjectesLlista.setContentsMargins ( 0,0,0,0 )
+        self.dwCatalegProjectesLlista.hide()
+        self.addDockWidget( Qt.LeftDockWidgetArea, self.dwCatalegProjectesLlista)
+        self.catalegProjectesLlista()
 
     def preparacioCercadorPostal(self):
     
@@ -616,7 +644,7 @@ class QVista(QMainWindow, Ui_MainWindow):
    
     def preparacioLlegenda(self):
         """Es genera un dockWidget a la dreta, amb la llegenda del projecte.
-
+ 
         Ho fem instanciant la classe QvLlegenda. 
 
         També connectem un click al arbre amb la funció clickArbre.
@@ -635,6 +663,8 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         self.llegenda.accions.afegirAccio('actTot', self.actFerGran)
         self.llegenda.clicatMenuContexte.connect(self.menuLlegenda)
+        # self.llegenda.projecteCarregat.connect(self.paraMovie)
+        # self.llegenda.carregantProjecte.connect(self.startMovie)
 
         # self.vistaMapa1 = QvVistaMapa(self.llegenda)
         # self.vistaMapa2 = QvVistaMapa(self.llegenda)
@@ -999,6 +1029,11 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.actObrirCataleg.setIcon(QIcon('imatges/map-plus.png'))
         self.actObrirCataleg.triggered.connect(self.obrirCataleg)
 
+        self.actObrirCatalegProjectesLlista = QAction("Mapes", self)
+        self.actObrirCatalegProjectesLlista.setStatusTip("Catàleg de Mapes")
+        self.actObrirCatalegProjectesLlista.setIcon(QIcon('imatges/catalegProjectes.png'))
+        self.actObrirCatalegProjectesLlista.triggered.connect(self.obrirCatalegProjectesLlista)
+
         self.actObrirMapeta = QAction("Mapeta", self)
         self.actObrirMapeta.setStatusTip("Mapeta de situació")
         self.actObrirMapeta.triggered.connect(self.obrirMapeta)
@@ -1034,7 +1069,7 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         self.actCataleg = QAction(3*' '+"Catàleg"+3*' ', self)
         self.actCataleg.setStatusTip("Catàleg")
-        self.actCataleg.triggered.connect(self.catalegCool)
+        self.actCataleg.triggered.connect(self.obrirCatalegProjectesLlista)
         
         self.actEnrera = QAction("Retrocedir mapa", self)
         self.actEnrera.setIcon(QIcon('imatges/arrow-left.png'))
@@ -1612,6 +1647,31 @@ class QVista(QMainWindow, Ui_MainWindow):
         fnt.setPixelSize(12)
         self.wCataleg.ui.treeCataleg.setFont(fnt)
 
+    def catalegProjectesLlista(self):
+        self.qModelProjectesLlista = QFileSystemModel()
+        
+        # print(self.qModel.rowCount(), self.qModel.columnCount())
+        rootPath=self.qModelProjectesLlista.setRootPath(carpetaCatalegProjectesLlista)
+        
+        self.wCatalegProjectesLlista.ui.treeCataleg.doubleClicked.connect(carregarProjecteLlista) 
+        self.wCatalegProjectesLlista.ui.treeCataleg.clicked.connect(updateMetadadesCataleg) 
+        self.qModelProjectesLlista.setNameFilters(['*.qgs', '*.qgz'])
+        self.qModelProjectesLlista.setNameFilterDisables(False)
+        self.wCatalegProjectesLlista.ui.treeCataleg.setModel(self.qModelProjectesLlista)
+        self.wCatalegProjectesLlista.ui.treeCataleg.setRootIndex(rootPath)
+        for i in range (1,4):
+            self.wCatalegProjectesLlista.ui.treeCataleg.header().hideSection(i)
+        self.qModelProjectesLlista.setHeaderData(0,Qt.Horizontal,'hola')
+        self.wCatalegProjectesLlista.ui.treeCataleg.setIndentation(20)
+        self.wCatalegProjectesLlista.ui.treeCataleg.setSortingEnabled(False)
+        self.wCatalegProjectesLlista.ui.treeCataleg.setWindowTitle("Catàleg de Mapes")
+        self.wCatalegProjectesLlista.ui.treeCataleg.resize(640, 480)
+        self.wCatalegProjectesLlista.ui.treeCataleg.adjustSize()
+        self.wCatalegProjectesLlista.ui.treeCataleg.setHeaderHidden(True)
+        fnt=QFont()
+        fnt = QFont("Segoe UI", 12, weight=QFont.Normal)
+        self.wCatalegProjectesLlista.ui.treeCataleg.setFont(fnt)
+
     def infoQVista(self):
         self.informacio = QDialog()
         self.informacio.setWindowOpacity(0.8)
@@ -1904,6 +1964,9 @@ class QVista(QMainWindow, Ui_MainWindow):
 
     def obrirCataleg(self):
         self.dwCataleg.show()
+
+    def obrirCatalegProjectesLlista(self):
+        self.dwCatalegProjectesLlista.show()
 
     def obrirQgis(self):
         # TODO: Pensar i generalitzar la obertura de QGis segon directori paquetitzat
@@ -2310,7 +2373,12 @@ def carregarNivellQlr():
     index = qV.wCataleg.ui.treeCataleg.currentIndex()
     mpath=qV.qModel.fileInfo(index).absoluteFilePath()
     afegirQlr(mpath)
-    
+
+def carregarProjecteLlista():
+    index = qV.wCatalegProjectesLlista.ui.treeCataleg.currentIndex()
+    mpath=qV.qModelProjectesLlista.fileInfo(index).absoluteFilePath()
+    qV.obrirProjecte(mpath)
+
 def updateMetadadesCataleg():
     index = qV.wCataleg.ui.treeCataleg.currentIndex()
     # print('Index: ', index)
@@ -2457,6 +2525,7 @@ def reportarProblema(titol, descripcio=None):
 def main(argv):
     # import subprocess
     global qV
+    global app
     with qgisapp(sysexit=False) as app: 
         
         # Se instancia QvApp al principio para el control de errores
