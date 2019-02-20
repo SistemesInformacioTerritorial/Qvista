@@ -5,13 +5,14 @@ from qgis.core import (QgsProject, QgsLegendModel, QgsLayerDefinition, QgsMapLay
 from qgis.gui import (QgsLayerTreeView, QgsLayerTreeViewMenuProvider, QgsLayerTreeMapCanvasBridge,
                       QgsLayerTreeViewIndicator, QgsSearchQueryBuilder)
 from qgis.PyQt.QtWidgets import QMenu, QAction, QFileDialog, QWidget, QPushButton, QVBoxLayout, QHBoxLayout
-from qgis.PyQt.QtGui import QIcon, QBrush, QColor
+from qgis.PyQt.QtGui import QIcon, QBrush, QColor, QDropEvent, QDragEnterEvent, QDragMoveEvent, QDragLeaveEvent
 from qgis.PyQt.QtCore import Qt, pyqtSignal, QSortFilterProxyModel, QUrl
 from moduls.QvAccions import QvAccions
 from moduls.QvAtributs import QvAtributs
 from moduls.QvApp import QvApp
 from moduls.QvVideo import QvVideo
 from moduls.QvEscala import QvEscala
+from moduls.QvDropFiles import QvDropFiles
 
 import os
 
@@ -180,7 +181,7 @@ class QvLlegendaModel(QgsLegendModel):
                     return color
         return super().data(index, role)
 
-class QvLlegenda(QgsLayerTreeView):
+class QvLlegenda(QgsLayerTreeView, QvDropFiles):
 
     obertaTaulaAtributs = pyqtSignal()
     clicatMenuContexte = pyqtSignal(str)
@@ -188,7 +189,13 @@ class QvLlegenda(QgsLayerTreeView):
     projecteCarregat = pyqtSignal(str)
 
     def __init__(self, canvas=None, atributs=None, canviCapaActiva=None):
-        super().__init__()
+        QgsLayerTreeView.__init__(self)
+        QvDropFiles.__init__(self)
+        
+        # # Drop files
+        # self.setDropExts(['.QGS', '.qgz'], ['.QLR', '.shp', '.csv'])
+        # self.arxiusPerProcessar.connect(lambda x: print(x))
+
         self.project = QgsProject.instance()
         self.root = self.project.layerTreeRoot()
         self.canvas = None
@@ -228,9 +235,6 @@ class QvLlegenda(QgsLayerTreeView):
         # Lista de acciones que apareceran en el menú
         self.menuAccions = []
         self.setMenuProvider(QvMenuLlegenda(self))
-
-        # self.setAcceptDrops(True)
-        # self.setDropIndicatorShown(True)
 
         self.iconaFiltre = QgsLayerTreeViewIndicator()
         # self.iconaFiltre.setIcon(QIcon(':/Icones/ic_file_upload_black_48dp.png'))
@@ -359,6 +363,36 @@ class QvLlegenda(QgsLayerTreeView):
         self.model.setFlag(QgsLegendModel.AllowLegendChangeState, on)
         self.model.setFlag(QgsLegendModel.AllowNodeChangeVisibility, on)
         self.model.setFlag(QgsLegendModel.DeferredLegendInvalidation, on)
+        self.setAcceptDrops(on)
+        # self.setDropIndicatorShown(on)
+        # print('acceptDrops', self.acceptDrops())
+
+    # def dragEnterEvent(self, event):
+    #     self.dragFiles = []
+    #     self.dragExts = ['.qlr', '.shp', '.csv'] # pueden haber varios
+    #     self.dragProj = ['.qgs', '.qgz'] # solo uno
+    #     data = event.mimeData()
+    #     if data.hasUrls():
+    #         for url in data.urls():
+    #             fich = url.toLocalFile()
+    #             if os.path.isfile(fich):
+    #                 _, fext = os.path.splitext(fich)
+    #                 if fext.lower() in self.dragExts:
+    #                     print('url', fich)
+    #                     self.dragFiles.append(fich)
+    #     if len(self.dragFiles) > 0:
+    #         event.acceptProposedAction()
+            
+    # def dragMoveEvent(self, event):
+    #     event.acceptProposedAction()
+
+    # def dropEvent(self, event):
+    #     print('Abrir ficheros')
+    #     event.acceptProposedAction()
+
+    # def dragLeaveEvent(self, event):
+    #     self.dragFiles = []
+    #     event.accept()
 
     def connectaEscala(self, escala):
         # print('Cambio escala:', escala)
