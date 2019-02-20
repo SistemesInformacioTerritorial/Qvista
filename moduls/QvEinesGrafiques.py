@@ -29,7 +29,7 @@ class QvSeleccioPunt(QgsMapTool):
         # if layerList: 
         #     layer = layerList[0]
         point = self.canvas.getCoordinateTransform().toMapCoordinates(x, y)
-        radius = 10
+        radius = 0.2
         rect = QgsRectangle(point.x() - radius, point.y() - radius, point.x() + radius, point.y() + radius)
         if layer is not None and layer.type() == QgsMapLayer.VectorLayer:
             it = layer.getFeatures(QgsFeatureRequest().setFilterRect(rect))
@@ -220,7 +220,7 @@ class QvSeleccioElement(QgsMapTool):
        Si la llegenda no té un layer actiu, és treballa amb el primer visible al canvas.
     """
 
-    def __init__(self, canvas, llegenda, radi = 20):
+    def __init__(self, canvas, llegenda, radi = 0.3):
         """[summary]
         
         Arguments:

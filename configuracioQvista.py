@@ -4,8 +4,8 @@ import os
 
 titolFinestra = "qVista 0.1  Sistema d'Informació Territorial de Barcelona"
 
-carpetaCataleg = "N:/SITEB/APL/GISpoint/capes/QGIS 3.4"
-carpetaCatalegProjectesLlista = "N:/9SITEB/Publicacions/qVista/Cataleg/Projectes/"
+carpetaCataleg = "N:/9SITEB/Publicacions/qVista/Cataleg/Capes/QGIS 3.4"
+carpetaCatalegProjectesLlista = "N:/9SITEB/Publicacions/qVista/Cataleg/Mapes/"
 projecteInicial='n:/9siteb/publicacions/qvista/dades/projectes/bcn11_nord.qgs'
 
 estatConnexio = "Xarxa municipal: Connectat"
