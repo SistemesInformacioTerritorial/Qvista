@@ -163,7 +163,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.lblTempsArrencada.setAlignment( Qt.AlignCenter )
         self.statusbar.setSizeGripEnabled( False )
         self.statusbar.addPermanentWidget( self.lblTempsArrencada, 0 )
-        self.lblTempsArrencada.setText ("Segons per arrancar: "+str('%.1f'%tempsTotal))
+        self.lblTempsArrencada.setText ("Segons per arrencar: "+str('%.1f'%tempsTotal))
 
 
     # Fins aquí teniem la inicialització de la classe. Ara venen les funcions, o métodes, de la classe. 
