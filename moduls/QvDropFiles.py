@@ -51,3 +51,6 @@ class QvDropFiles():
         self.llistaArxius = []
         event.acceptProposedAction()
 
+    # # Drop files
+    # self.setDropExts(['.QGS', '.qgz'], ['.QLR', '.shp', '.csv'])
+    # self.arxiusPerProcessar.connect(lambda x: print(x))
