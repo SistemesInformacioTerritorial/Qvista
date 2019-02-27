@@ -2021,7 +2021,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         if nfile is not None:
             # extensio = nfile[-3:]
             # print (extensio)
-            _, extensio = os.path.splitext(f)
+            _, extensio = os.path.splitext(nfile)
             if extensio.lower() == 'shp' or extensio.lower() =='gpkg':
                 layer = QgsVectorLayer(nfile, nfile, "ogr")
                 if not layer.isValid():
