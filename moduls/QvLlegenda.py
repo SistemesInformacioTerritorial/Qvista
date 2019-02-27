@@ -5,14 +5,13 @@ from qgis.core import (QgsProject, QgsLegendModel, QgsLayerDefinition, QgsMapLay
 from qgis.gui import (QgsLayerTreeView, QgsLayerTreeViewMenuProvider, QgsLayerTreeMapCanvasBridge,
                       QgsLayerTreeViewIndicator, QgsSearchQueryBuilder)
 from qgis.PyQt.QtWidgets import QMenu, QAction, QFileDialog, QWidget, QPushButton, QVBoxLayout, QHBoxLayout
-from qgis.PyQt.QtGui import QIcon, QBrush, QColor, QDropEvent, QDragEnterEvent, QDragMoveEvent, QDragLeaveEvent
+from qgis.PyQt.QtGui import QIcon, QBrush, QColor
 from qgis.PyQt.QtCore import Qt, pyqtSignal, QSortFilterProxyModel, QUrl
 from moduls.QvAccions import QvAccions
 from moduls.QvAtributs import QvAtributs
 from moduls.QvApp import QvApp
 from moduls.QvVideo import QvVideo
 from moduls.QvEscala import QvEscala
-from moduls.QvDropFiles import QvDropFiles
 
 import os
 
@@ -181,7 +180,7 @@ class QvLlegendaModel(QgsLegendModel):
                     return color
         return super().data(index, role)
 
-class QvLlegenda(QgsLayerTreeView, QvDropFiles):
+class QvLlegenda(QgsLayerTreeView):
 
     obertaTaulaAtributs = pyqtSignal()
     clicatMenuContexte = pyqtSignal(str)
@@ -190,12 +189,7 @@ class QvLlegenda(QgsLayerTreeView, QvDropFiles):
 
     def __init__(self, canvas=None, atributs=None, canviCapaActiva=None):
         QgsLayerTreeView.__init__(self)
-        QvDropFiles.__init__(self)
         
-        # # Drop files
-        # self.setDropExts(['.QGS', '.qgz'], ['.QLR', '.shp', '.csv'])
-        # self.arxiusPerProcessar.connect(lambda x: print(x))
-
         self.project = QgsProject.instance()
         self.root = self.project.layerTreeRoot()
         self.canvas = None
@@ -363,8 +357,8 @@ class QvLlegenda(QgsLayerTreeView, QvDropFiles):
         self.model.setFlag(QgsLegendModel.AllowLegendChangeState, on)
         self.model.setFlag(QgsLegendModel.AllowNodeChangeVisibility, on)
         self.model.setFlag(QgsLegendModel.DeferredLegendInvalidation, on)
-        self.setAcceptDrops(on)
-        # self.setDropIndicatorShown(on)
+        # self.setAcceptDrops(on)
+        # # self.setDropIndicatorShown(on)
         # print('acceptDrops', self.acceptDrops())
 
     # def dragEnterEvent(self, event):
