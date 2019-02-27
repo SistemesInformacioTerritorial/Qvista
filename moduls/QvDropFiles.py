@@ -1,13 +1,22 @@
 # -*- coding: utf-8 -*-
+"""
+Módulo de drop de ficheros sobre un widget
+"""
 
 from qgis.PyQt.QtGui import QDropEvent, QDragEnterEvent, QDragMoveEvent, QDragLeaveEvent
 from qgis.PyQt.QtCore import QObject, pyqtSignal, QUrl
 
 import os
-class QvDropFiles(QObject): 
-    
+
+class QvDropFiles(QObject):
+    """Permite recibir a un widget cualquiera una lista de ficheros procedente de
+       un drag&drop. Se puede definir dos listas de extensiones de archivos:
+       - La primera especifica las extensiones permitidas si se quiere recibir un solo archivo
+       - La segunda enunera las extensiones permitidas para poder recibir varios archivos
+    """
+
     arxiusPerProcessar = pyqtSignal(list)
-    
+
     def __init__(self, widget):
         QObject.__init__(self)
         self.widget = widget
@@ -21,12 +30,28 @@ class QvDropFiles(QObject):
         self.widgetDropEvent = self.widget.dropEvent
 
     def dropActiu(self):
-        if len(self.extsUn) == 0 and len(self.extsMolts) == 0:
-            return False
-        else:
-            return True
+        """ Comprueba si se han definido las listas de extensiones de archivos que permiten que
+        funcione el filtro del drag&drop
 
-    def llistesExts(self, extsUn=[], extsMolts=[]):
+        Returns:
+            Bool -- Drop activo o no
+        """
+        if self.extsUn or self.extsMolts:
+            return True
+        else:
+            return False
+
+    def llistesExts(self, extsUn=None, extsMolts=None):
+        """Define las listas de extensiones para único fichero o multiples ficheros
+
+        Keyword Arguments:
+            extsUn {[string]} -- Extensiones permitidas para archivo único (default: {None})
+            extsMolts {[string]} -- Extensiones permitidas para varios archivos (default: {None})
+        """
+        if extsUn is None:
+            extsUn = []
+        if extsMolts is None:
+            extsMolts = []
         self.extsUn = [x.lower() for x in extsUn]
         self.extsMolts = [x.lower() for x in extsMolts]
         if self.dropActiu():
@@ -41,6 +66,12 @@ class QvDropFiles(QObject):
             self.widget.dropEvent = self.widgetDropEvent
 
     def dragEnterEvent(self, event):
+        """Sobreescritura de evento de entrada de drag. Realiza el filtro de extensiones
+        de archivo, según sean para uno o para varios
+
+        Arguments:
+            event {QDragEnterEvent} -- Evento
+        """
         self.dropping = False
         self.llistaArxius = []
         nUn = 0
@@ -63,20 +94,37 @@ class QvDropFiles(QObject):
             event.acceptProposedAction()
         else:
             self.widgetDragEnterEvent(event)
-            
+
     def dragMoveEvent(self, event):
+        """Sobreescritura de evento de movimiento de drag. Se actúa solo si se pasó el filtro
+        en dragEnterEvent
+
+        Arguments:
+            event {QDragMoveEvent} -- Evento
+        """
         if self.dropping:
             event.acceptProposedAction()
         else:
             self.widgetDragMoveEvent(event)
 
     def dragLeaveEvent(self, event):
+        """Sobreescritura de evento de abandonar de drag. Se actúa solo si se pasó el filtro
+        en dragEnterEvent
+
+        Arguments:
+            event {QDragLeaveEvent} -- Evento
+        """
         if self.dropping:
             event.accept()
         else:
             self.widgetDragLeaveEvent(event)
 
     def dropEvent(self, event):
+        """Sobreescritura de evento de drop. Se actúa solo si se pasó el filtro en dragEnterEvent
+
+        Arguments:
+            event {QDropEvent} -- Evento
+        """
         if self.dropping:
             self.arxiusPerProcessar.emit(self.llistaArxius)
             self.dropping = False
@@ -94,7 +142,7 @@ if __name__ == "__main__":
     from moduls.QvApp import QvApp
 
     with qgisapp(sysexit=False) as app:
- 
+
         qApp = QvApp()
         qApp.carregaIdioma(app, 'ca')
 
@@ -119,6 +167,3 @@ if __name__ == "__main__":
         canvas.setWindowTitle('Mapa')
         canvas.setGeometry(400, 50, 700, 400)
         canvas.show()
-
-
-
