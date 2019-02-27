@@ -14,6 +14,11 @@ class QvDropFiles(QObject):
         self.extsUn = []
         self.extsMolts = []
         self.llistaArxius = []
+        self.dropping = False
+        self.widgetDragEnterEvent = self.widget.dragEnterEvent
+        self.widgetDragMoveEvent = self.widget.dragMoveEvent
+        self.widgetDragLeaveEvent = self.widget.dragLeaveEvent
+        self.widgetDropEvent = self.widget.dropEvent
 
     def dropActiu(self):
         if len(self.extsUn) == 0 and len(self.extsMolts) == 0:
@@ -29,10 +34,14 @@ class QvDropFiles(QObject):
             self.widget.dragMoveEvent = self.dragMoveEvent
             self.widget.dragLeaveEvent = self.dragLeaveEvent
             self.widget.dropEvent = self.dropEvent
+        else:
+            self.widget.dragEnterEvent = self.widgetDragEnterEvent
+            self.widget.dragMoveEvent = self.widgetDragMoveEvent
+            self.widget.dragLeaveEvent = self.widgetDragLeaveEvent
+            self.widget.dropEvent = self.widgetDropEvent
 
     def dragEnterEvent(self, event):
-        if not self.dropActiu():
-            return
+        self.dropping = False
         self.llistaArxius = []
         nUn = 0
         nMolts = 0
@@ -48,19 +57,33 @@ class QvDropFiles(QObject):
                     if fext.lower() in self.extsMolts:
                         nMolts += 1
                         self.llistaArxius.append(fich)
-        if (nUn == 0 and nMolts > 0) or (nUn == 1 and nMolts == 0):
+            if (nUn == 0 and nMolts > 0) or (nUn == 1 and nMolts == 0):
+                self.dropping = True
+        if self.dropping:
             event.acceptProposedAction()
+        else:
+            self.widgetDragEnterEvent(event)
             
     def dragMoveEvent(self, event):
-        event.acceptProposedAction()
+        if self.dropping:
+            event.acceptProposedAction()
+        else:
+            self.widgetDragMoveEvent(event)
 
     def dragLeaveEvent(self, event):
-        event.accept()
+        if self.dropping:
+            event.accept()
+        else:
+            self.widgetDragLeaveEvent(event)
 
     def dropEvent(self, event):
-        self.arxiusPerProcessar.emit(self.llistaArxius)
-        self.llistaArxius = []
-        event.acceptProposedAction()
+        if self.dropping:
+            self.arxiusPerProcessar.emit(self.llistaArxius)
+            self.dropping = False
+            self.llistaArxius = []
+            event.acceptProposedAction()
+        else:
+            self.widgetDropEvent(event)
 
 if __name__ == "__main__":
 
@@ -78,10 +101,11 @@ if __name__ == "__main__":
         canvas = QgsMapCanvas()
         # 2.- Crear el objeto QvDropFiles pasándole el widget
         drop = QvDropFiles(canvas)
-        # 3.- Definir dos lista de extensiones (permitidas una vez y permitidas varias veces)
+        # 3.- Definir dos listas de extensiones: fichero único (proyecto) o varios ficheros (capas)
         drop.llistesExts(['.QGS', '.qgz'], ['.QLR', '.shp', '.csv'])
         # 4.- Asociar evento de drop a función que maneje la lista de archivos soltados
         drop.arxiusPerProcessar.connect(lambda nomFich: print('Dropped:', nomFich))
+        # 5.- El evento recibirá o bien un fichero de la primera lista o varios de la segunda
 
         llegenda = QvLlegenda(canvas)
 

@@ -26,6 +26,7 @@ from moduls.QvLectorCsv import QvLectorCsv
 from moduls.QvPavimentacio import DockPavim
 from moduls.QvMarxesCiutat import MarxesCiutat
 from moduls.QvToolTip import QvToolTip
+from moduls.QvDropFiles import QvDropFiles
 # Impressió del temps de carrega dels moduls Qv
 print ('Temps de carrega dels moduls Qv:', time.time()-iniciTempsModuls)
 
@@ -165,9 +166,37 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.statusbar.addPermanentWidget( self.lblTempsArrencada, 0 )
         self.lblTempsArrencada.setText ("Segons per arrencar: "+str('%.1f'%tempsTotal))
 
+        # Drop d'arxius -> Canvas i Llegenda
+        # Es permet 1 arxiu de projecte o bé N arxius de capes
+        self.dropLlegenda = QvDropFiles(self.llegenda)
+        self.dropLlegenda.llistesExts(['.qgs', '.qgz'], ['.qlr', '.shp', '.csv', '.gpkg'])
+        self.dropLlegenda.arxiusPerProcessar.connect(self.obrirArxiu)
+        self.dropCanvas = QvDropFiles(self.canvas)
+        self.dropCanvas.llistesExts(['.qgs', '.qgz'], ['.qlr', '.shp', '.csv', '.gpkg'])
+        self.dropCanvas.arxiusPerProcessar.connect(self.obrirArxiu)
 
     # Fins aquí teniem la inicialització de la classe. Ara venen les funcions, o métodes, de la classe. 
-    
+
+    def obrirArxiu(self, llista):
+        """Obre una llista d'arxius (un projecte o una o més capas) passada com a parametre
+        
+        Arguments:
+            llista d'arxius {String} -- Noms (amb path) del projecte o capes a obrir        
+        """
+        for f in llista:
+            _, fext = os.path.splitext(f)
+            fext = fext.lower()
+            if fext in ('.qgs', '.qgz'):
+                self.obrirProjecte(f, self.canvas.extent())
+            elif fext == '.qlr':
+                afegirQlr(f)
+            elif fext in ('.shp', '.gpkg'):
+                layer = QgsVectorLayer(f, f, "ogr")
+                if layer.isValid():
+                    self.project.addMapLayer(layer)
+            elif fext == '.csv':
+                pass
+
     def obrirProjecte(self, projecte, rang = None):
         """Obre un projecte passat com a parametre, amb un possible rang predeterminat.
         
@@ -1987,12 +2016,13 @@ class QVista(QMainWindow, Ui_MainWindow):
         dialegObertura.setDirectoryUrl(QUrl('../Dades/Capes/'))
         dialegObertura.setSupportedSchemes(["Projectes Qgis (*.qgs)", "Otro esquema"])
 
-        nfile,_ = dialegObertura.getOpenFileName(None,"Nova capa", '../Dades/Capes/', "Totes les capes acceptats (*.csv *.shp *.gpx *.qlr );; CSV (*.csv);; Shapes (*.shp);; Geopackage (*.gpx);;  Layers Qgis(*.qlr)")
+        nfile,_ = dialegObertura.getOpenFileName(None,"Nova capa", '../Dades/Capes/', "Totes les capes acceptats (*.csv *.shp *.gpkg *.qlr );; CSV (*.csv);; Shapes (*.shp);; Geopackage (*.gpkg);;  Layers Qgis(*.qlr)")
 
         if nfile is not None:
-            extensio = nfile[-3:]
+            # extensio = nfile[-3:]
             # print (extensio)
-            if extensio.lower() == 'shp' or extensio.lower() =='gpx':
+            _, extensio = os.path.splitext(f)
+            if extensio.lower() == 'shp' or extensio.lower() =='gpkg':
                 layer = QgsVectorLayer(nfile, nfile, "ogr")
                 if not layer.isValid():
                     return
