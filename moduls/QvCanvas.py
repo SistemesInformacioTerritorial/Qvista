@@ -21,7 +21,8 @@ class QvCanvas(QgsMapCanvas):
         # self.setWhatsThis(QvApp().carregaAjuda(self))
 
         self._preparacioBotonsCanvas()
-        self.panCanvas()
+        if self.llistaBotons is not None:
+            self.panCanvas()
 
     def seleccioClick(self):    
         checked = self.bApuntar.isChecked()
@@ -168,27 +169,27 @@ class QvCanvas(QgsMapCanvas):
             # self.botoneraMapa.setMinimumWidth(100)
 
 
-
-        if "panning" in self.llistaBotons:
-            self.bPanning = self._botoMapa('imatges/pan_tool_black_24x24.png')
-            self.layoutBotoneraMapa.addWidget(self.bPanning)     
-            self.bPanning.clicked.connect(self.panCanvas)
-        if "centrar" in self.llistaBotons:
-            self.bCentrar = self._botoMapa('imatges/fit.png')
-            self.layoutBotoneraMapa.addWidget(self.bCentrar)     
-            self.bCentrar.clicked.connect(self.centrarMapa)
-        if "zoomIn" in self.llistaBotons:
-            self.bZoomIn = self._botoMapa('imatges/zoom_in.png')
-            self.layoutBotoneraMapa.addWidget(self.bZoomIn)     
-            self.bZoomIn.clicked.connect(self.zoomIn)
-        if "zoomOut" in self.llistaBotons:
-            self.bZoomOut = self._botoMapa('imatges/zoom_out.png')
-            self.layoutBotoneraMapa.addWidget(self.bZoomOut)     
-            self.bZoomOut.clicked.connect(self.zoomOut)
-        if "apuntar" in self.llistaBotons:
-            self.bApuntar = self._botoMapa('imatges/apuntar.png')
-            self.layoutBotoneraMapa.addWidget(self.bApuntar)        
-            self.bApuntar.clicked.connect(self.seleccioClick)
+        if self.llistaBotons is not None:
+            if "panning" in self.llistaBotons:
+                self.bPanning = self._botoMapa('imatges/pan_tool_black_24x24.png')
+                self.layoutBotoneraMapa.addWidget(self.bPanning)     
+                self.bPanning.clicked.connect(self.panCanvas)
+            if "centrar" in self.llistaBotons:
+                self.bCentrar = self._botoMapa('imatges/fit.png')
+                self.layoutBotoneraMapa.addWidget(self.bCentrar)     
+                self.bCentrar.clicked.connect(self.centrarMapa)
+            if "zoomIn" in self.llistaBotons:
+                self.bZoomIn = self._botoMapa('imatges/zoom_in.png')
+                self.layoutBotoneraMapa.addWidget(self.bZoomIn)     
+                self.bZoomIn.clicked.connect(self.zoomIn)
+            if "zoomOut" in self.llistaBotons:
+                self.bZoomOut = self._botoMapa('imatges/zoom_out.png')
+                self.layoutBotoneraMapa.addWidget(self.bZoomOut)     
+                self.bZoomOut.clicked.connect(self.zoomOut)
+            if "apuntar" in self.llistaBotons:
+                self.bApuntar = self._botoMapa('imatges/apuntar.png')
+                self.layoutBotoneraMapa.addWidget(self.bApuntar)        
+                self.bApuntar.clicked.connect(self.seleccioClick)
 
         # spacer = QSpacerItem(0, 50, QSizePolicy.Expanding, QSizePolicy.Maximum)
         # self.layoutBotoneraMapa.addSpacerItem(spacer)
@@ -245,7 +246,8 @@ class Marc(QFrame):
 if __name__ == "__main__":
     from qgis.core import QgsProject
     from qgis.gui import  QgsLayerTreeMapCanvasBridge
-    from qgis.PyQt.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QSpacerItem, QSizePolicy
+    from qgis.PyQt.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QSpacerItem, QSizePolicy, QLabel
+    from qgis.PyQt.QtGui import QColor
    
 
     projecteInicial='../dades/projectes/BCN11_nord.qgs'

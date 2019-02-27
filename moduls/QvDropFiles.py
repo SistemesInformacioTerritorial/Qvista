@@ -88,7 +88,8 @@ class QvDropFiles(QObject):
 if __name__ == "__main__":
 
     from qgis.core.contextmanagers import qgisapp
-    from qgis.gui import QgsMapCanvas
+    # from qgis.gui import QgsMapCanvas
+    from moduls.QvCanvas import QvCanvas
     from moduls.QvLlegenda import QvLlegenda
     from moduls.QvApp import QvApp
 
@@ -98,7 +99,7 @@ if __name__ == "__main__":
         qApp.carregaIdioma(app, 'ca')
 
         # 1.- Crear widget donde aplicar el drag & drop de ficheros
-        canvas = QgsMapCanvas()
+        canvas = QvCanvas()
         # 2.- Crear el objeto QvDropFiles pasándole el widget
         drop = QvDropFiles(canvas)
         # 3.- Definir dos listas de extensiones: fichero único (proyecto) o varios ficheros (capas)
