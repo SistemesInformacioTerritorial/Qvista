@@ -1,4 +1,4 @@
-# coding:utf-8
+# -*- coding: utf-8 -*-
 
 # Inici del cronòmetre
 import time
@@ -168,11 +168,9 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         # Drop d'arxius -> Canvas i Llegenda
         # Es permet 1 arxiu de projecte o bé N arxius de capes
-        self.dropLlegenda = QvDropFiles(self.llegenda)
-        self.dropLlegenda.llistesExts(['.qgs', '.qgz'], ['.qlr', '.shp', '.csv', '.gpkg'])
+        self.dropLlegenda = QvDropFiles(self.llegenda, ['.qgs', '.qgz'], ['.qlr', '.shp', '.csv', '.gpkg'])
         self.dropLlegenda.arxiusPerProcessar.connect(self.obrirArxiu)
-        self.dropCanvas = QvDropFiles(self.canvas)
-        self.dropCanvas.llistesExts(['.qgs', '.qgz'], ['.qlr', '.shp', '.csv', '.gpkg'])
+        self.dropCanvas = QvDropFiles(self.canvas, ['.qgs', '.qgz'], ['.qlr', '.shp', '.csv', '.gpkg'])
         self.dropCanvas.arxiusPerProcessar.connect(self.obrirArxiu)
 
     # Fins aquí teniem la inicialització de la classe. Ara venen les funcions, o métodes, de la classe. 
@@ -181,7 +179,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         """Obre una llista d'arxius (projectes i capas) passada com a parametre
         
         Arguments:
-            llista d'arxius {[String]} -- Noms (amb path) del projecte o capes a obrir        
+            llista d'arxius (List[String]) -- Noms (amb path) del projecte o capes a obrir        
         """
         for nfile in llista:
             _, fext = os.path.splitext(nfile)
