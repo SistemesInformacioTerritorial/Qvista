@@ -2,6 +2,9 @@ from moduls.QvImports  import *
 from qgis.core import QgsRectangle
 
 
+# import time
+
+
 class QvMapeta(QFrame):
     """La classe que defineix el mapeta de posicionament i que controla un canvas."""
     def __init__(self, canvas, tamanyPetit = False, pare = None):
@@ -17,9 +20,14 @@ class QvMapeta(QFrame):
         """
 
         QFrame.__init__(self)
+       
         # Assigno el mapeta al parent
         self.setParent(pare)
-        self.vengoDeMapeta=False
+        # angulo 0 rangos mundo equivalentes a mapeta
+        self.xmin_0= 419691.945
+        self.ymin_0=4574155.024
+        self.xmax_0= 436891.945
+        self.ymax_0=4591355.024  
 
         # Convertim paràmetres en variables de classe
         self.canvas = canvas
@@ -37,29 +45,20 @@ class QvMapeta(QFrame):
             self.yTamany = 180
             self.setStyleSheet('QFrame {opacity: 50; background-image: url("imatges/MapetaPetit.jpg");}')
         else:
-            self.Escala = 15330/ 267 # relacion base "mundo" base mapeta--> 57.457.15730337078651685393258426966
-            self.InvEscala= 1/self.Escala  # paracalculos de retorno
+            # De entrada cargo el mapeta no girado
+            self.seno_antigiro= 0
+            self.coseno_antigiro= 1
+            self.seno_giro= 0
+            self.coseno_giro= 1
 
-            if self.canvas.rotation() == 44:
-                self.canvasRotado44= True
-                self.xTamany = 389
-                self.yTamany = 390
-                self.setStyleSheet('QFrame {background-image: url("imatges/MAPETA_SITUACIO_391x392_rot_mio.bmp");}')
-                self.seno_44= math.sin(-44 * math.pi /180)
-                self.coseno_44= math.cos(-44 * math.pi /180)
-                self.seno44= math.sin(44 * math.pi /180)
-                self.coseno44= math.cos(44 * math.pi /180)                 
-            else:
-                self.seno_44= 0
-                self.coseno_44= 1
-                self.seno44= 0
-                self.coseno44= 1
+            self.xTamany = 250
+            self.yTamany = 250            
+            self.setStyleSheet('QFrame {background-image: url("imatges/QVista_Mapeta_0graus.png");}')
 
-                self.canvasRotado44= False
-                self.xTamany = 267
-                self.yTamany = 284
-                self.setStyleSheet('QFrame {background-image: url("imatges/MAPETA_SITUACIO_267x284.bmp");}')
-
+            # Ya puedo calcular la escala entre el mapeta y la realidad, basandome en las X (presupongo que la escala Y sera la misma)
+            # Las coordenadas mundo son un dato obtenido con qgis
+            self.Escala =  (self.xmax_0 - self.xmin_0) / self.xTamany # relacion base "mundo" base mapeta--> 68.8
+      
         # Definim la geometria del frame del mapeta
         self.setGeometry(0,0,self.xTamany,self.yTamany)
         self.begin = QPoint()
@@ -82,7 +81,7 @@ class QvMapeta(QFrame):
         self.botoFerPetit.show()
         self.botoFerPetit.clicked.connect(self.ferPetit)
 
-
+        # BOTON QUE INVOCA EL CAMBIO DE ROTACION MEDIANTE LA FUNCION self.cambiarRotacion
         self.botocambiarRotacion = QPushButton(self)
         icon = QIcon('imatges/giro_0_44.png')
         self.botocambiarRotacion.setIcon(icon)
@@ -90,48 +89,26 @@ class QvMapeta(QFrame):
         self.botocambiarRotacion.move(20,0)
         self.botocambiarRotacion.show()
         self.botocambiarRotacion.clicked.connect(self.cambiarRotacion)
-
-
         self.show()
 
+        # self.canvas.setCenter(QgsPointXY(xcent, ycent))
+
     def cambiarRotacion(self):
-        if self.canvas.rotation() == 44:
+        # entramos aqui cuando se pulsa el boton de cambiar rotacion
+        # Si esta a 44.5 la pone a 0, y viceversa.
+        # En funcion de la rotacion carga el mapeta correspondiente
+        if self.canvas.rotation() == 44.5:
             self.canvas.setRotation(0)
-            print('canvas 0')
+            self.setStyleSheet('QFrame {background-image: url("imatges/QVista_Mapeta_0graus.png");}')
         else:
-            self.canvas.setRotation(44)
-            print('canvas 44')
-
-        self.Escala = 15330/ 267 # relacion base "mundo" base mapeta--> 57.457.15730337078651685393258426966
-        self.InvEscala= 1/self.Escala  # paracalculos de retorno
-
-        if self.canvas.rotation() == 44:
-            self.canvasRotado44= True
-            self.xTamany = 389
-            self.yTamany = 390
+            self.canvas.setRotation(44.5)
             self.setGeometry(0,0,self.xTamany,self.yTamany)
-            self.setStyleSheet('QFrame {background-image: url("imatges/MAPETA_SITUACIO_391x392_rot_mio.bmp");}')
-            self.seno_44= math.sin(-44 * math.pi /180)
-            self.coseno_44= math.cos(-44 * math.pi /180)
-            self.seno44= math.sin(44 * math.pi /180)
-            self.coseno44= math.cos(44 * math.pi /180)                 
-        else:
-            self.seno_44= 0
-            self.coseno_44= 1
-            self.seno44= 0
-            self.coseno44= 1
-
-            self.canvasRotado44= False
-            self.xTamany = 267
-            self.yTamany = 284
-            self.setGeometry(0,0,self.xTamany,self.yTamany)
-            self.setStyleSheet('QFrame {background-image: url("imatges/MAPETA_SITUACIO_267x284.bmp");}')
+            self.setStyleSheet('QFrame {background-image: url("imatges/QVista_Mapeta_44_5graus_mio.png");}')
+            # self.setStyleSheet('QFrame {background-image: url("imatges/QVista_Mapeta_44_5graus.png");}')
 
         self.show()
         self.canvas.refresh()
         self.pintarMapeta()
-
-
 
     def setBotoMinimitzar(self, botoMinimitzar):
         """Per assignar o no 
@@ -156,122 +133,130 @@ class QvMapeta(QFrame):
             icon = QIcon('imatges/mapetaPetit.jpg')
             self.botoFerPetit.setIcon(icon)
 
-
     def pintarMapeta(self):
-        # Leo rango del canvas rotado 44, pues se ha adaptado a la geometria de la ventana
-        rect = self.canvas.extent()
-        # print('co=6 naranja Canvas queda con angulo 44  xy=',round(rect.xMinimum()),',',round(rect.yMinimum()),'xy=',round(rect.xMaximum()),',',round(rect.yMaximum()))
-        # Desde el rango del canvas girado 44 , he de calcular el rango inscrito en el que se veria con el canvas a 0 grados
-        PPa1=QPoint()
-        PPa2=QPoint()
-        PPa3=QPoint()
-        PPa4=QPoint()
+        # Cuando hay alteraciones en el canvas, se han de repercutir sobre el mapeta, representando sobre éste el area de cartografia visible
+        # y una cruz que indica el centro 
+        # Esta funcion calcula unas coordenadas para que trabaje el paintEvent (que es quien pinta la caja y la cruz...)
 
+        PPa1=QPoint()   # Pto abajo izquierda del canvas (Mundo)
+        PPa2=QPoint()   # Pto abajo derecha del canvas
+        PPa3=QPoint()   # Pto arriba derecha del canvas
+        PPa4=QPoint()   # Pto arriba izquierda del canvas
+
+        Par1=QPoint()  #  Pto arriba izquierda (Mapeta) Mundo proyectado a mapeta
+        Par2=QPoint()  #  Pto arriba derecha
+        Par3=QPoint()  #  Pto abajo derecha
+        Par4=QPoint()  #  Pto abajo izquierda
+        
+        Pa1=QPoint()   #  Pto arriba izquierda
+        Pa2=QPoint()
+        Pa3=QPoint()
+        Pa4=QPoint()   
+
+        # Leo rango del canvas , pues se ha adaptado a la geometria de la ventana
+        rect = self.canvas.extent()
+       
+        # Desde el rango del canvas, he de calcular el rango inscrito en el que se veria con el canvas a 0 grados
         PPa1.x= rect.xMinimum()
         PPa1.y= rect.yMinimum()
         PPa3.x= rect.xMaximum()
         PPa3.y= rect.yMaximum()
-        
         PPa2.x=  PPa3.x
         PPa2.y=  PPa1.y
         PPa4.x=  PPa1.x
         PPa4.y=  PPa3.y
 
-        anchoMundoVerde= PPa3.x - PPa1.x
-        altoMundoVerde=  PPa3.y - PPa1.y
+        # anchura y altura de la cartografia del canvas en coord mundo
+        anchoMundoVerde= (PPa3.x - PPa1.x)  
+        altoMundoVerde=  (PPa3.y - PPa1.y)
 
         # Proporciones canvas
         w= self.canvas.widthMM()
         h= self.canvas.heightMM()
-        H= (h*self.coseno44)+ (w*self.seno44)
-        W= (h*self.seno44)  + (w*self.coseno44)
 
+        if self.canvas.rotation()==0:
+            self.seno_giro= math.sin(0 * math.pi /180)
+            self.coseno_giro= math.cos(0 * math.pi /180)
+            self.seno_antigiro= math.sin(0 * math.pi /180)
+            self.coseno_antigiro= math.cos(0 * math.pi /180)            
+        else:
+            self.seno_giro= math.sin(44.5 * math.pi /180)
+            self.coseno_giro= math.cos(44.5 * math.pi /180)
+            self.seno_antigiro= math.sin(-44.5 * math.pi /180)
+            self.coseno_antigiro= math.cos(-44.5 * math.pi /180)            
+           
+        H= (h*self.coseno_giro)+ (w*self.seno_giro)
+        W= (h*self.seno_giro)  + (w*self.coseno_giro)
         Escalax= anchoMundoVerde / W
         Escalay= altoMundoVerde /  H
-        
-        Pa1=QPoint()
-        Pa2=QPoint()
-        Pa3=QPoint()
-        Pa4=QPoint()    
 
         Pa1.x = PPa1.x
-        Pa1.y = PPa1.y + Escalax*h*self.coseno44
-        Pa2.x = PPa4.x + Escalax*w*self.coseno44
+        Pa1.y = PPa1.y + Escalax*h*self.coseno_giro
+        Pa2.x = PPa4.x + Escalax*w*self.coseno_giro
         Pa2.y = PPa4.y
         Pa3.x = PPa2.x
-        Pa3.y = PPa2.y + Escalax*w*self.seno44
-        Pa4.x = PPa1.x + Escalax*h*self.seno44
+        Pa3.y = PPa2.y + Escalax*w*self.seno_giro
+        Pa4.x = PPa1.x + Escalax*h*self.seno_giro
         Pa4.y = PPa1.y
-
-        # print('co=7 azul claro  xy=',Pa1.x,',',Pa1.y)
-        # print('co=7 azul claro  xy=',Pa2.x,',',Pa2.y)
-        # print('co=7 azul claro  xy=',Pa3.x,',',Pa3.y)
-        # print('co=7 azul claro  xy=',Pa4.x,',',Pa4.y)
         
         ancho=((Pa2.x-Pa1.x)**2+(Pa2.y-Pa1.y)**2)**0.5/self.Escala
         alto= ((Pa2.x-Pa3.x)**2+(Pa2.y-Pa3.y)**2)**0.5/self.Escala
-
-        P1=QPoint()    
-        if self.canvasRotado44 == True:
-            P1.x=  -127.088
-            P1.y=  +135.111            
+        # Correspondencia del punto 1 mundo en el mapeta. 
+        xx= ((Pa1.x -self.xmin_0)  /self.Escala ) 
+        yy= ((Pa1.y -self.ymin_0) /self.Escala ) 
+        
+        if self.canvas.rotation()==0:
+            Par1.x = xx
+            Par1.y= yy
         else:
-            P1.x=  0
-            P1.y=  0     
+            Par1.x=  ((xx-125 ) * self.coseno_antigiro - (yy -125 ) * self.seno_antigiro )   + 125 
+            Par1.y=  ((xx-125 ) *  self.seno_antigiro   + (yy -125) * self.coseno_antigiro ) + 125 
 
-        xx= ((Pa1.x -420900)  /self.Escala ) + P1.x
-        yy= ((Pa1.y -4574600) /self.Escala ) + P1.y
-
-        Par1=QPoint()
-        Par2=QPoint()
-        Par3=QPoint()
-        Par4=QPoint()   
-
-        Par1.x=  (xx * self.coseno_44 - yy * self.seno_44 )
-        Par1.y=  (xx * self.seno_44 + yy * self.coseno_44 )
         Par2.x= Par1.x + ancho
-        Par2.y= Par1.y 
+        Par2.y= Par1.y
         Par3.x= Par2.x 
         Par3.y= Par2.y - alto
         Par4.x= Par3.x -ancho
         Par4.y= Par3.y
-
-        # print('co=168 gris  xy=',round(Par1.x),',',round(Par1.y))
-        # print('co=168 gris  xy=',round(Par2.x),',',round(Par2.y))
-        # print('co=168 gris  xy=',round(Par3.x),',',round(Par3.y))
-        # print('co=168 gris  xy=',round(Par4.x),',',round(Par4.y))
-     
+    
         xMin = min(Par1.x,Par2.x,Par3.x,Par4.x)    #xmin
         xMax = max(Par1.x,Par2.x,Par3.x,Par4.x)    #xmax
         yMin = min(Par1.y,Par2.y,Par3.y,Par4.y)    #ymin
         yMax = max(Par1.y,Par2.y,Par3.y,Par4.y)    #ymax
-   
+    
         self.begin = QPoint(xMin,yMin)
         self.end = QPoint(xMax,yMax)
-        self.repaint()
+        self.repaint()            
+ 
 
     def paintEvent(self, event):
+        # Cuando se detecta evento de refresco??
+        # Pinto en mapeta rectangulo y cruz
         qp = QPainter(self)
         br = QBrush(QColor(50, 110, 90, 70))  
         qp.setBrush(br)  
         begin_ = QPoint()
         end_ =  QPoint()
 
+        # capturo coordenadas 
         begin_.x= self.begin.x()
         end_.x= self.end.x()
+
+        ## Se cambia el sentido de las coordenadas en y, se pone el 0 en la parte de abajo del mapeta, en funcion de MouseMoveFlag')
         if self.MouseMoveFlag== False:
             begin_.y= self.yTamany-self.begin.y()
             end_.y=   self.yTamany- self.end.y()
         else:
             begin_.y= self.begin.y()
             end_.y= self.end.y()
-
+        
         self.MouseMoveFlag= False
-        # Pinto rectanculo
+        ## Pinto rectangulo')
         qp.drawRect(begin_.x,begin_.y,end_.x-begin_.x,end_.y-begin_.y)
-        # Pinto cruz
+        ## Pinto cruz')
         qp.drawLine(QLineF( QPoint( begin_.x +(end_.x-begin_.x)/2, 0),  QPoint( begin_.x +(end_.x-begin_.x)/2,self.yTamany)  ))
         qp.drawLine(QLineF( QPoint( 0, begin_.y +(end_.y-begin_.y)/2),  QPoint( self.xTamany,begin_.y +(end_.y-begin_.y)/2 )  ))
+
 
     def mousePressEvent(self, event):
         self.begin = event.pos()
@@ -283,134 +268,91 @@ class QvMapeta(QFrame):
         self.canvas.update()
 
     def conversioPantallaMapa(self,punt):
-        # xmin ymin xmax y max calculados para el canvas girado 44 grados y con tamañp       390 x  389
-        # 412649 4582568 444481 4583144 
         x = punt[0]
         y = punt[1]
-        
-        xMapa = 420900  +self.Escala * x
-        yMapa = 4574600 + self.Escala * y 
+        xMapa = self.xmin_0  +self.Escala * x
+        yMapa = self.ymin_0 + self.Escala * y 
         return [xMapa, yMapa]
-
-    
+   
     def mouseReleaseEvent(self, event):
+        Paux1=QPoint() #  Pto arriba izquierda
+        Paux2=QPoint() #  Pto arriba derecha
+        Paux3=QPoint() #  Pto abajo derecha
+        Paux4=QPoint() #  Pto abajo izquierda
         self.end = event.pos()
 
+        ## Cambio origen de coordenadas "Y" poniendolo abajo-izquierda. Acorde con sistema del Mapa')
         self.xIn = self.begin.x()
         self.yIn = self.yTamany - self.begin.y()
         self.xFi = self.end.x()
         self.yFi = self.yTamany - self.end.y()
-
       
-        # Convierto las coordenadas del mapeta girado 44 a coordenadas de mapeta no girado
-        # para buscar la utm
-        P1=QPoint()
-   
-        # segun calculos 
-        if self.canvasRotado44 == True:
-            P1.x=  127.088
-            P1.y=  -135.111            
-        else:
-            P1.x=  0
-            P1.y=  0            
-
-
-        # Intercepto para hacer las pruebas primer punto de control
-        # self.xIn=69
-        # self.yIn=170
-        # self.xFi=104
-        # self.yFi=152
-
-        # Intercepto para hacer las pruebas segundo punto de control
-        # self.xIn=208
-        # self.yIn=292
-        # self.xFi=226
-        # self.yFi=257
+        ## Convierto las coordenadas del mapeta girado 44 a coordenadas de mapeta no girado para buscar la utm')
  
+        # Aqui se puede llegar haciendo una ventana sobre el mapeta 0 o sobre el mapeta 44
+        # Si es sobre el mapeta 0, las coordenadas se pueden buscar la correspondencia de esas coordenadas 
+        # con el mundo
+        # Si el mapeta esta girado, lo que hare sera buscar la correspondencia de las corrdenadas de este mapeta con el mapeta 
+        # no girado. Para ello habra que girarlas 44.5 grados y restarles el desplazamiento
 
-        # atencion equivalente a primer punto de control sobre mapeta no girado
-        # self.xIn=73
-        # self.yIn=22
-        # self.xFi=108
-        # self.yFi=40
-
-
-
-
-
-        # print('------------------------')
-        # print('co=1 azul En girado 44 (mapeta)  xy=',self.xIn,',',self.yIn,'xy=',self.xFi,',',self.yFi)
-
-        # Calculo las coordenadas en el mapeta "normal" (sin giro) con las coordenadas del mapeta girado
-        # a las que les aplico un giro de 44 grados, escala=1 y un desplazamiento de P1
-        # ...Para el punto inicial
-        self.xIn_= P1.x +  (self.xIn * self.coseno44 - self.yIn * self.seno44 )
-        self.yIn_= P1.y +  (self.xIn * self.seno44 + self.yIn * self.coseno44 )
-        # ...Para el punto final
-        self.xFi_= P1.x +  (self.xFi * self.coseno44 - self.yFi * self.seno44 )
-        self.yFi_= P1.y +  (self.xFi * self.seno44 + self.yFi * self.coseno44 )
-        # print('co=99 Marron En girado 0 (mapeta)  xy=',self.xIn_,',',self.yIn_,'xy=',self.xFi_,',',self.yFi_)
-        
-
-
-        # Convertimos las coordenadas del punto inicial del mapeta_ang=0 a coordenadas Mundo
-        punt1 = self.conversioPantallaMapa([self.xIn_, self.yIn_])
-        # print('co=2 verde claro punt1Mundo',punt1)
-
+        #  En el mapeta (girado o no) he señalado una ventana. Calculo su tamaño
         # Calculo la la ventana mundo "girado" correspondiente a los puntos del mapeta
-        Paux1=QPoint()
-        Paux2=QPoint()
-        Paux3=QPoint()
-        Paux4=QPoint()
-
-        # ancho y alto de la seleccion en el mapeta girado (en mundo)
         distX=  (self.xFi - self.xIn)   # ancho mapeta
-        distX= distX * self.Escala           # ancho mundo
+        distX= distX * self.Escala      # ancho mundo
         distY=  (self.yFi - self.yIn)   # alto mapeta
-        distY= distY * self.Escala           # alto mundo 
-        # coordenadas mundo de los 4 puntos señalados en el mapeta
-        Paux1.x= punt1[0]
-        Paux1.y= punt1[1]
-        Paux2.x= Paux1.x + (distX * self.coseno44)
-        Paux2.y= Paux1.y + (distX * self.seno44)
-        Paux3.x= Paux2.x - (distY * self.seno44)
-        Paux3.y= Paux2.y + (distY * self.coseno44)
-        Paux4.x= Paux1.x - (distY * self.seno44)
-        Paux4.y= Paux1.y + (distY * self.coseno44)
-        
-        # print('co=3 rojo Caja mundo girada  P2 xy=',round(Paux1.x),',',round(Paux1.y))
-        # print('co=3 rojo Caja mundo girada  P2 xy=',round(Paux2.x),',',round(Paux2.y))
-        # print('co=3 rojo Caja mundo girada  P3 xy=',round(Paux3.x),',',round(Paux3.y))
-        # print('co=3 rojo Caja mundo girada  P4 xy=',round(Paux4.x),',',round(Paux4.y))
+        distY= distY * self.Escala      # alto mundo 
 
-        # Calculo rango de esa caja girada, (minima, caja que la engloba)
+        if self.canvas.rotation()==44.5:
+            # giro 44.5 (contra reloj)
+            # ...Giro el punto inicial
+            self.xIn_=  ((self.xIn -125) * self.coseno_giro     - (self.yIn -125 ) * self.seno_giro )   + 125 
+            self.yIn_=  ((self.xIn -125) * self.seno_giro       + (self.yIn -125 ) * self.coseno_giro )  + 125 
+            # añado el desplazamiento
+            self.xIn= self.xIn_ 
+            self.yIn= self.yIn_ 
+
+        ## en este punto las coordenadas mapeta que manejo estan referidas al mapeta 0')
+        ## Convertimos las coordenadas del punto inicial del mapeta_ang=0 a coordenadas Mundo')
+        # Miraremos la proporcion de las coordenadas xy sobre el mapeta y lo multiplicaremos por la escala y 
+        # se lo sumaremos a la coordenada del origen...
+        punt1 = self.conversioPantallaMapa([self.xIn, self.yIn])
+
+        ## coordenadas mundo de los 4 puntos señalados en el mapeta. Traslado el rectangulo del mapeta al mundo')
+        Paux1.x= punt1[0]  
+        Paux1.y= punt1[1]
+        Paux2.x= Paux1.x + (distX * self.coseno_giro)
+        Paux2.y= Paux1.y + (distX * self.seno_giro)
+        Paux3.x= Paux2.x - (distY * self.seno_giro)
+        Paux3.y= Paux2.y + (distY * self.coseno_giro)
+        Paux4.x= Paux1.x - (distY * self.seno_giro)
+        Paux4.y= Paux1.y + (distY * self.coseno_giro)
+
+        ## Calculo rango de esa caja girada, (minima, caja que la engloba) para pasarle unas coordenadas al canvas que engloben la caja. Esto solo seria necesario en el caso de rotacion')
         punt1[0]= min(Paux1.x, Paux2.x, Paux3.x,Paux4.x)    #xmin
         punt1[1]= min(Paux1.y, Paux2.y, Paux3.y,Paux4.y)    #ymin
         punt2=[]
-        punt2.append(max(Paux1.x, Paux2.x, Paux3.x,Paux4.x))
-        punt2.append(max(Paux1.y, Paux2.y, Paux3.y,Paux4.y))
-        
-        # print('co=4 amarillo  Rango de caja girada  xy=',round(punt1[0]),',',round(punt1[1]),'xy=',round(punt2[0]),',',round(punt2[1]))
+        punt2.append(max(Paux1.x, Paux2.x, Paux3.x,Paux4.x)) #xmax
+        punt2.append(max(Paux1.y, Paux2.y, Paux3.y,Paux4.y)) #ymax
+
+        ## Pasamos rango al canvas para que lo represente')
         # Necesitare tener estas coordenadas como QgsRectangle...
         rang = QgsRectangle(punt1[0], punt1[1], punt2[0], punt2[1])
-        
-        # Pasamos rango al canvas para que lo represente
-        # print('co=5 violeta  claro Coord que pasamos al canvas:  xy=',round(rang.xMinimum()),',',round(rang.yMinimum()),'xy=',round(rang.xMaximum()),',',round(rang.yMaximum()))
         self.canvas.setExtent(rang)
         self.canvas.refresh()
-
-
+        rect = self.canvas.extent()
+        
 
 import math
 
 if __name__ == "__main__":
     # exit()
-    # projecteInicial='../dades/projectes/tra/mio.qgs'
-    projecteInicial='D:/qVista/Dades/Projectes/tra/mio.qgs'
+    # projecteInicial='D:/qVista/Dades/Projectes/tra/mio.qgs'
+    projecteInicial='D:/qVista/Dades/Projectes/BCN11_nord.qgs'
 
 
     with qgisapp() as app:
         # Canvas, projecte i bridge
+        start1 = time.time()
         canvas=QgsMapCanvas()
         
         project=QgsProject().instance()
@@ -420,10 +362,10 @@ if __name__ == "__main__":
         # llegim un projecte de demo
         project.read(projecteInicial)
         canvas.show()
-        # canvas.setRotation(44)
         canvas.setRotation(0)
 
         qvMapeta = QvMapeta(canvas, tamanyPetit = False, pare=canvas)
         qvMapeta.move(0,0)
         qvMapeta.setBotoMinimitzar(True)
         qvMapeta.show()
+        print ('resto: ',time.time()-start1)
