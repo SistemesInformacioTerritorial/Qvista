@@ -120,6 +120,8 @@ class QvGithub:
             ok = False
             fich, lin, desc = QvError.bug(type, value, tb)
             title = fich + ' (' + lin + ')'
+            if title == '()':
+                return False
             if self.getBug(title) == 0:
                 body = self.formatError(desc)
                 comm = self.getCommitter(fich)
@@ -148,12 +150,12 @@ if __name__ == "__main__":
         a = 0
         b = 3 / a
 
-    pp() 
+    # pp() 
 
-    # try:
-    #     pp()
-    # except:
-    #     QvApp().bugException()
+    try:
+        pp()
+    except:
+        QvApp().bugException()
 
 
 
