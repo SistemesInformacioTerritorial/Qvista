@@ -77,7 +77,8 @@ class QvCanvas(QgsMapCanvas):
             self.bCentrar.setChecked(False)
             self.tool_pan = QgsMapToolPan(self)
             self.setMapTool(self.tool_pan)
-            self.pare.esborrarSeleccio(tambePanCanvas = False)
+            if self.pare is not None:
+                self.pare.esborrarSeleccio(tambePanCanvas = False)
         else: 
             self.bPanning.setChecked(True)
 
