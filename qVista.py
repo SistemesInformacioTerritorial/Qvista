@@ -1,4 +1,4 @@
-# coding:utf-8
+# -*- coding: utf-8 -*-
 
 # Inici del cronòmetre
 import time
@@ -168,30 +168,28 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         # Drop d'arxius -> Canvas i Llegenda
         # Es permet 1 arxiu de projecte o bé N arxius de capes
-        self.dropLlegenda = QvDropFiles(self.llegenda)
-        self.dropLlegenda.llistesExts(['.qgs', '.qgz'], ['.qlr', '.shp', '.csv', '.gpkg'])
+        self.dropLlegenda = QvDropFiles(self.llegenda, ['.qgs', '.qgz'], ['.qlr', '.shp', '.csv', '.gpkg'])
         self.dropLlegenda.arxiusPerProcessar.connect(self.obrirArxiu)
-        self.dropCanvas = QvDropFiles(self.canvas)
-        self.dropCanvas.llistesExts(['.qgs', '.qgz'], ['.qlr', '.shp', '.csv', '.gpkg'])
+        self.dropCanvas = QvDropFiles(self.canvas, ['.qgs', '.qgz'], ['.qlr', '.shp', '.csv', '.gpkg'])
         self.dropCanvas.arxiusPerProcessar.connect(self.obrirArxiu)
 
     # Fins aquí teniem la inicialització de la classe. Ara venen les funcions, o métodes, de la classe. 
 
     def obrirArxiu(self, llista):
-        """Obre una llista d'arxius (un projecte o una o més capas) passada com a parametre
+        """Obre una llista d'arxius (projectes i capas) passada com a parametre
         
         Arguments:
-            llista d'arxius {String} -- Noms (amb path) del projecte o capes a obrir        
+            llista d'arxius (List[String]) -- Noms (amb path) del projecte o capes a obrir        
         """
-        for f in llista:
-            _, fext = os.path.splitext(f)
+        for nfile in llista:
+            _, fext = os.path.splitext(nfile)
             fext = fext.lower()
             if fext in ('.qgs', '.qgz'):
-                self.obrirProjecte(f, self.canvas.extent())
+                self.obrirProjecte(nfile, self.canvas.extent())
             elif fext == '.qlr':
-                afegirQlr(f)
+                afegirQlr(nfile)
             elif fext in ('.shp', '.gpkg'):
-                layer = QgsVectorLayer(f, f, "ogr")
+                layer = QgsVectorLayer(nfile, os.path.basename(nfile), "ogr")
                 if layer.isValid():
                     self.project.addMapLayer(layer)
             elif fext == '.csv':
@@ -2000,7 +1998,7 @@ class QVista(QMainWindow, Ui_MainWindow):
     def obrirQgis(self):
         # TODO: Pensar i generalitzar la obertura de QGis segon directori paquetitzat
         self.project.write('c:/temp/projTemp.qgs')
-        QProcess.startDetached('D:\OSGeo4W64\bin\qgis-bin-g7.4.1.exe c:/temp/projTemp.qgs')
+        QProcess.startDetached(r'D:\OSGeo4W64\bin\qgis-bin-g7.4.1.exe c:/temp/projTemp.qgs')
 
     def obrirDialegProjecte(self):
         dialegObertura=QFileDialog()
@@ -2021,9 +2019,9 @@ class QVista(QMainWindow, Ui_MainWindow):
         if nfile is not None:
             # extensio = nfile[-3:]
             # print (extensio)
-            _, extensio = os.path.splitext(f)
+            _, extensio = os.path.splitext(nfile)
             if extensio.lower() == 'shp' or extensio.lower() =='gpkg':
-                layer = QgsVectorLayer(nfile, nfile, "ogr")
+                layer = QgsVectorLayer(nfile, os.path.basename(nfile), "ogr")
                 if not layer.isValid():
                     return
                 renderer=layer.renderer()
@@ -2204,8 +2202,8 @@ import shutil
 
 def disgregarDirele():
 
-    __numerosCSV = '..\Dades\dadesBcn\TAULA_DIRELE.csv'
-    __path_disgregados= '..\Dades\DadesBcn\dir_ele\\'
+    __numerosCSV = r'..\Dades\dadesBcn\TAULA_DIRELE.csv'
+    __path_disgregados= r'..\Dades\DadesBcn\dir_ele\\'
     """
 
     """
@@ -2358,7 +2356,7 @@ def calcularAtributs():
 def escollirNivellGPX():
     nfile,_ = QFileDialog.getOpenFileName(None, "Obrir GPKG", ".", "Fitxers Shape (*.gpkg)")
     #fileInfo = QFileInfo(nfile)
-    layer = QgsVectorLayer(nfile, nfile, "ogr")
+    layer = QgsVectorLayer(nfile, os.path.basename(nfile), "ogr")
     if not layer.isValid():
         return
     renderer=layer.renderer()
@@ -2449,7 +2447,7 @@ def afegirQlr(nom):
 def afegirNivellSHP():
     nfile,_ = QFileDialog.getOpenFileName(None, "Obrir SHP", ".", "Fitxers Shape (*.shp)")
     #fileInfo = QFileInfo(nfile)
-    layer = QgsVectorLayer(nfile, nfile, "ogr")
+    layer = QgsVectorLayer(nfile, os.path.basename(nfile), "ogr")
     if not layer.isValid():
         return
     renderer=layer.renderer()
