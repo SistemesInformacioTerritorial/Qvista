@@ -41,9 +41,9 @@ class QvMapeta(QFrame):
 
         # Dimensions i fons del mapeta segosn si és gran o petit
         if self.tamanyPetit:
-            self.xTamany = 179
-            self.yTamany = 180
-            self.setStyleSheet('QFrame {opacity: 50; background-image: url("imatges/MapetaPetit.jpg");}')
+            self.xTamany = 185
+            self.yTamany = 185
+            self.setStyleSheet('QFrame {opacity: 50; background-image: url("imatges/QVista_Mapeta_0graus_peque.png");}')
         else:
             # De entrada cargo el mapeta no girado
             self.seno_antigiro= 0
@@ -57,7 +57,8 @@ class QvMapeta(QFrame):
 
             # Ya puedo calcular la escala entre el mapeta y la realidad, basandome en las X (presupongo que la escala Y sera la misma)
             # Las coordenadas mundo son un dato obtenido con qgis
-            self.Escala =  (self.xmax_0 - self.xmin_0) / self.xTamany # relacion base "mundo" base mapeta--> 68.8
+
+        self.Escala =  (self.xmax_0 - self.xmin_0) / self.xTamany # relacion base "mundo" base mapeta--> 68.8
       
         # Definim la geometria del frame del mapeta
         self.setGeometry(0,0,self.xTamany,self.yTamany)
@@ -97,14 +98,24 @@ class QvMapeta(QFrame):
         # entramos aqui cuando se pulsa el boton de cambiar rotacion
         # Si esta a 44.5 la pone a 0, y viceversa.
         # En funcion de la rotacion carga el mapeta correspondiente
-        if self.canvas.rotation() == 44.5:
-            self.canvas.setRotation(0)
-            self.setStyleSheet('QFrame {background-image: url("imatges/QVista_Mapeta_0graus.png");}')
+        if self.tamanyPetit == False:
+            if self.canvas.rotation() == 44.5:
+                self.canvas.setRotation(0)
+                self.setStyleSheet('QFrame {background-image: url("imatges/QVista_Mapeta_0graus.png");}')
+            else:
+                self.canvas.setRotation(44.5)
+                self.setGeometry(0,0,self.xTamany,self.yTamany)
+                self.setStyleSheet('QFrame {background-image: url("imatges/QVista_Mapeta_44_5graus_mio.png");}')
+                # self.setStyleSheet('QFrame {background-image: url("imatges/QVista_Mapeta_44_5graus.png");}')
         else:
-            self.canvas.setRotation(44.5)
-            self.setGeometry(0,0,self.xTamany,self.yTamany)
-            self.setStyleSheet('QFrame {background-image: url("imatges/QVista_Mapeta_44_5graus_mio.png");}')
-            # self.setStyleSheet('QFrame {background-image: url("imatges/QVista_Mapeta_44_5graus.png");}')
+            if self.canvas.rotation() == 44.5:
+                self.canvas.setRotation(0)
+                self.setStyleSheet('QFrame {background-image: url("imatges/QVista_Mapeta_0graus_peque.png");}')
+            else:
+                self.canvas.setRotation(44.5)
+                self.setGeometry(0,0,self.xTamany,self.yTamany)
+                self.setStyleSheet('QFrame {background-image: url("imatges/QVista_Mapeta_44_5graus_mio_peque.png");}')
+
 
         self.show()
         self.canvas.refresh()
@@ -209,8 +220,8 @@ class QvMapeta(QFrame):
             Par1.x = xx
             Par1.y= yy
         else:
-            Par1.x=  ((xx-125 ) * self.coseno_antigiro - (yy -125 ) * self.seno_antigiro )   + 125 
-            Par1.y=  ((xx-125 ) *  self.seno_antigiro   + (yy -125) * self.coseno_antigiro ) + 125 
+            Par1.x=  ((xx-(self.xTamany/2) ) * self.coseno_antigiro - (yy -(self.xTamany/2) ) * self.seno_antigiro )   + (self.xTamany/2) 
+            Par1.y=  ((xx-(self.xTamany/2) ) *  self.seno_antigiro   + (yy -(self.xTamany/2)) * self.coseno_antigiro ) + (self.xTamany/2) 
 
         Par2.x= Par1.x + ancho
         Par2.y= Par1.y
@@ -305,8 +316,8 @@ class QvMapeta(QFrame):
         if self.canvas.rotation()==44.5:
             # giro 44.5 (contra reloj)
             # ...Giro el punto inicial
-            self.xIn_=  ((self.xIn -125) * self.coseno_giro     - (self.yIn -125 ) * self.seno_giro )   + 125 
-            self.yIn_=  ((self.xIn -125) * self.seno_giro       + (self.yIn -125 ) * self.coseno_giro )  + 125 
+            self.xIn_=  ((self.xIn -(self.xTamany/2)) * self.coseno_giro     - (self.yIn -(self.xTamany/2) ) * self.seno_giro )   + (self.xTamany/2) 
+            self.yIn_=  ((self.xIn -(self.xTamany/2)) * self.seno_giro       + (self.yIn -(self.xTamany/2) ) * self.coseno_giro )  + (self.xTamany/2) 
             # añado el desplazamiento
             self.xIn= self.xIn_ 
             self.yIn= self.yIn_ 
