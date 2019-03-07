@@ -652,7 +652,9 @@ class QVista(QMainWindow, Ui_MainWindow):
         # self.wMapeta = QtWidgets.QWidget()
         # self.wMapeta.setGeometry(0,0,267,284)
         # self.wMapeta.show()
-        self.mapeta = QvMapeta(self.canvas, tamanyPetit=True)
+        self.mapeta = QvMapeta(self.canvas, tamanyPetit=False)
+        
+        self.bOrientacio.clicked.connect(self.mapeta.cambiarRotacion)
         self.mapeta.setParent(self.canvas)
         self.mapeta.move(5,5)
         self.mapeta.show()
@@ -1887,7 +1889,6 @@ class QVista(QMainWindow, Ui_MainWindow):
         # self.bScale.setFrameStyle(QFrame.StyledPanel )
         
         self.bOrientacio.setMinimumWidth( 140 )
-        self.bOrientacio.clicked.connect(self.editarOrientacio)
         self.statusbar.addPermanentWidget( self.bOrientacio, 0 )
 
         self.lblProjeccio = QLabel()

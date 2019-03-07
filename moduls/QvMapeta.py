@@ -82,14 +82,14 @@ class QvMapeta(QFrame):
         self.botoFerPetit.clicked.connect(self.ferPetit)
 
         # BOTON QUE INVOCA EL CAMBIO DE ROTACION MEDIANTE LA FUNCION self.cambiarRotacion
-        self.botocambiarRotacion = QPushButton(self)
-        icon = QIcon('imatges/giro_0_44.png')
-        self.botocambiarRotacion.setIcon(icon)
-        self.botocambiarRotacion.setGeometry(0,0,25,25)
-        self.botocambiarRotacion.move(20,0)
-        self.botocambiarRotacion.show()
-        self.botocambiarRotacion.clicked.connect(self.cambiarRotacion)
-        self.show()
+        # self.botocambiarRotacion = QPushButton(self)
+        # icon = QIcon('imatges/giro_0_44.png')
+        # self.botocambiarRotacion.setIcon(icon)
+        # self.botocambiarRotacion.setGeometry(0,0,25,25)
+        # self.botocambiarRotacion.move(20,0)
+        # self.botocambiarRotacion.show()
+        # self.botocambiarRotacion.clicked.connect(self.cambiarRotacion)
+        # self.show()
 
         # self.canvas.setCenter(QgsPointXY(xcent, ycent))
 
