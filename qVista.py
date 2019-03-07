@@ -652,7 +652,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         # self.wMapeta = QtWidgets.QWidget()
         # self.wMapeta.setGeometry(0,0,267,284)
         # self.wMapeta.show()
-        self.mapeta = QvMapeta(self.canvas, tamanyPetit=False)
+        self.mapeta = QvMapeta(self.canvas, tamanyPetit=True)
         
         self.bOrientacio.clicked.connect(self.mapeta.cambiarRotacion)
         self.mapeta.setParent(self.canvas)
