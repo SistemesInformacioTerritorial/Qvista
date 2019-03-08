@@ -1,10 +1,10 @@
-from importaciones import *
+from moduls.QvImports import *
 import  qgis.PyQt.QtSql
 from qgis.PyQt.QtSql import QSqlDatabase, QSqlQuery
 
 projecteInicial='../dades/projectes/BCN11_nord.qgs'
 
-class QvTaulaQuery(QtWidgets.QWidget):
+class QvTaulaQuery(QWidget):
     """Un widget que mostra una taula generada a partir d'un query. 
     Si el resultat conté els camps qv_Xmin, qv_Ymin, qv_Xmax, qv_Ymax, un doble click situa el canvas sobre el rang.
         
@@ -23,7 +23,7 @@ class QvTaulaQuery(QtWidgets.QWidget):
             strQuery {[string]} -- [el query aplicat inicialment]
         """
 
-        QtWidgets.QWidget.__init__(self)
+        QWidget.__init__(self)
         
         self.setWindowTitle("MeGAtAULOdON")
 
@@ -39,14 +39,14 @@ class QvTaulaQuery(QtWidgets.QWidget):
         self.model.setQuery(self.strQuery)
         
         # Instanciem una TableView, li assignem el model i connectem el doble click a self.ajustarMapa
-        self.taula = QtWidgets.QTableView()
+        self.taula = QTableView()
         self.taula.setModel(self.model)
         self.taula.doubleClicked.connect(self.ajustarMapa)
 
         # Amaguem les columnes amb camps qv_ (Poc pitonic, right now...)
         for column in range(0,self.model.columnCount()):
             titol = self.model.record().fieldName(column)
-            print(column, titol, titol[0:3])
+            # print(column, titol, titol[0:3])
             if titol[0:3] == 'qv_':
                 self.taula.setColumnHidden(column,amagarCoordenades)
         
