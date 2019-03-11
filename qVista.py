@@ -2304,7 +2304,8 @@ def seleccioExpressio():
         layer=qV.llegenda.currentLayer()
         if layer is not None:
             for field in layer.fields():
-                if field.typeName()=='String':
+                print(field.typeName())
+                if field.typeName()=='String' or field.typeName()=='text':
                     textCercat = textCercat + field.name()+' LIKE "%' + qV.leSeleccioExpressio.text() + '%" OR '
             textCercat = textCercat + "1==0"
             layer.setSubsetString(textCercat)
