@@ -14,7 +14,8 @@ from qgis.gui import (QgsGui,
                       QgsAttributeEditorContext,
                       QgsLayerTreeMapCanvasBridge,
                       QgsSearchQueryBuilder,
-                      QgsBusyIndicatorDialog)
+                      QgsBusyIndicatorDialog,
+                      QgsActionMenu)
 from moduls.QvAccions import QvAccions
 from moduls.QvApp import QvApp
 # import images_rc
@@ -54,7 +55,7 @@ class QvAtributs(QTabWidget):
         if layer.subsetString() != '':
             self.menuAccions += ['removeFilter']
         self.menuAccions += ['saveToCSV']
-  
+
     def tabTaula(self, layer, current = False):
     # Ver si la tabla ya está abierta y, eventualmente, activar la pestaña
         if layer is None:
@@ -253,7 +254,9 @@ class QvTaulaAtributs(QgsAttributeTableView):
         if self.layer is not None and self.parent is not None:
             self.parent.setMenuAccions(self.layer)
             self.parent.clicatMenuContexte.emit(self.layer)
-            menu = self.accions.menuAccions(self.parent.menuAccions, self.parent.accions.accions)
+            menu = self.accions.menuAccions(self.parent.menuAccions,
+                                            self.parent.accions.accions,
+                                            self.featureActions())
             if menu is not None:
                 menu.exec_(QCursor.pos())
 
@@ -276,6 +279,19 @@ class QvTaulaAtributs(QgsAttributeTableView):
             pass
         return dialog
 
+    def featureActions(self):
+        try:
+            modelIndex = self.currentIndex()
+            if modelIndex is not None and modelIndex.isValid():
+                self.feature = self.model.feature(modelIndex)
+                if self.feature is not None and self.feature.isValid():
+                    menuExtra = QgsActionMenu(self.layer, self.feature, 'Feature', self.canvas)
+                    if menuExtra is not None and not menuExtra.isEmpty():
+                        return menuExtra
+            return None
+        except:
+            return None
+        
     def showFeature(self):
         dlgFitxa = self.crearDialog()
         if dlgFitxa is not None:
@@ -399,7 +415,7 @@ if __name__ == "__main__":
         llegenda = QvLlegenda(canvas, atributs)
 
         # llegenda.project.read('projectes/Illes.qgs')
-        llegenda.project.read('../Dades/Projectes/BCN11.qgs')
+        llegenda.project.read('../Dades/Projectes/BCN11test.qgs')
 
         llegenda.setWindowTitle('Llegenda')
         llegenda.setGeometry(50, 50, 300, 400)
@@ -454,5 +470,7 @@ if __name__ == "__main__":
         atributs.clicatMenuContexte.connect(menuContexte)
 
         # QWhatsThis.enterWhatsThisMode()
+
+
 
 
