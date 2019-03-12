@@ -2,7 +2,8 @@
 
 from qgis.core import QgsMapLayer, QgsVectorLayerCache, QgsFeature
 from qgis.PyQt import QtWidgets
-from qgis.PyQt.QtCore import Qt, QObject, QPoint, QModelIndex, pyqtSignal, pyqtSlot
+from qgis.PyQt.QtCore import (Qt, QObject, QPoint, QModelIndex,
+                              pyqtSignal, pyqtSlot)
 from qgis.PyQt.QtGui import QCursor, QIcon
 from qgis.PyQt.QtWidgets import QTabWidget, QVBoxLayout, QMenu, QAction
 from qgis.gui import (QgsGui,
@@ -23,7 +24,16 @@ from moduls.QvApp import QvApp
 import csv
 # import xlwt - .xls
 
+
 class QvAtributs(QTabWidget):
+    """[summary]
+
+    Arguments:
+        QTabWidget {[type]} -- [description]
+
+    Returns:
+        [type] -- [description]
+    """
 
     clicatMenuContexte = pyqtSignal('PyQt_PyObject')
     modificatFiltreCapa = pyqtSignal('PyQt_PyObject')
@@ -47,17 +57,19 @@ class QvAtributs(QTabWidget):
     def setMenuAccions(self, layer):
         self.menuAccions = ['showFeature', 'selectElement', 'selectAll']
         if layer.selectedFeatureCount() > 0:
-            self.menuAccions +=['separator',
-                                'flashSelection', 'zoomToSelection', 'showSelection',
-                                'invertSelection', 'removeSelection']
-        self.menuAccions += ['separator', 
-                            'filterElements']
+            self.menuAccions += [
+                'separator',
+                'flashSelection', 'zoomToSelection', 'showSelection',
+                'invertSelection', 'removeSelection']
+        self.menuAccions += [
+            'separator',
+            'filterElements']
         if layer.subsetString() != '':
             self.menuAccions += ['removeFilter']
         self.menuAccions += ['saveToCSV']
 
-    def tabTaula(self, layer, current = False):
-    # Ver si la tabla ya está abierta y, eventualmente, activar la pestaña
+    def tabTaula(self, layer, current=False):
+        # Ver si la tabla ya está abierta y, eventualmente, activar la pestaña
         if layer is None:
             return False
         num = self.count()
@@ -71,9 +83,9 @@ class QvAtributs(QTabWidget):
                     self.setCurrentIndex(i)
                 return True
         return False
-    
+
     def obrirTaula(self, layer):
-    # Abrir tabla por layer
+        # Abrir tabla por layer
         if layer is None:
             return
         # Si la tabla está abierta, mostrarla y actualizar nomnbre
@@ -84,16 +96,16 @@ class QvAtributs(QTabWidget):
         i = self.addTab(taula, taula.layerNom())
         taula.canviNomTaula.connect(self.setTabText)
         self.setCurrentIndex(i)
-    
+
     def tancarTab(self, i):
-    # Cerrar tabla por número de tab
+        # Cerrar tabla por número de tab
         num = self.count()
         if i in range(0, num):
             taula = self.widget(i)
             taula.deleteLater()
 
     def tancarTaula(self, layer):
-    # Cerrar tabla por layer
+        # Cerrar tabla por layer
         if layer is None:
             return
         num = self.count()
@@ -101,16 +113,16 @@ class QvAtributs(QTabWidget):
             taula = self.widget(i)
             if taula.layer.id() == layer.id():
                 taula.deleteLater()
-    
+
     def deleteTabs(self):
-    # Cerrar todas las tablas
+        # Cerrar todas las tablas
         num = self.count()
         for i in range(0, num):
             taula = self.widget(i)
             taula.deleteLater()
             self.removeTab(i)
 
-    def filtrarCapa(self, layer, on = True):
+    def filtrarCapa(self, layer, on=True):
         try:
             if on:
                 dlgFiltre = QgsSearchQueryBuilder(layer)
@@ -123,12 +135,15 @@ class QvAtributs(QTabWidget):
         except Exception as e:
             print(str(e))
 
-    def desarCSV(self, layer, selected = False):
+    def desarCSV(self, layer, selected=False):
         try:
-            path,_ = QtWidgets.QFileDialog.getSaveFileName(self, 'Desa dades a arxiu', '', 'CSV (*.csv)')
+            path, _ = QtWidgets.QFileDialog.getSaveFileName(
+                self, 'Desa dades a arxiu', '', 'CSV (*.csv)')
             if path is not None:
                 with open(path, 'w', newline='') as stream:
-                    writer = csv.writer(stream, delimiter=';', quotechar='¨', quoting=csv.QUOTE_MINIMAL)
+                    writer = csv.writer(
+                        stream, delimiter=';', quotechar='¨',
+                        quoting=csv.QUOTE_MINIMAL)
                     writer.writerow(layer.fields().names())
                     if selected:
                         iterator = layer.getSelectedFeatures
@@ -136,16 +151,17 @@ class QvAtributs(QTabWidget):
                         iterator = layer.getFeatures
                     for feature in iterator():
                         writer.writerow(feature.attributes())
-            return path                        
+            return path
         except Exception as e:
             print(str(e))
             return None
+
 
 class QvTaulaAtributs(QgsAttributeTableView):
 
     canviNomTaula = pyqtSignal(int, str)
 
-    def __init__(self, parent = None, layer = None, canvas = None, numCache = 10000):
+    def __init__(self, parent=None, layer=None, canvas=None, numCache=10000):
         if len(QgsGui.editorWidgetRegistry().factories()) == 0:
             QgsGui.editorWidgetRegistry().initEditors()
         super().__init__()
@@ -163,7 +179,7 @@ class QvTaulaAtributs(QgsAttributeTableView):
 
         self.layer.selectionChanged.connect(self.layerSelection)
 
-    def init(self, layer, canvas, numCache = 10000):
+    def init(self, layer, canvas, numCache=10000):
         if not layer or not canvas:
             return
         if layer.type() != QgsMapLayer.VectorLayer:
@@ -260,20 +276,23 @@ class QvTaulaAtributs(QgsAttributeTableView):
             if menu is not None:
                 menu.exec_(QCursor.pos())
 
-    def crearDialog(self, filtre = False):
+    def crearDialog(self, filtre=False):
         dialog = None
         try:
             modelIndex = self.currentIndex()
             if modelIndex is not None and modelIndex.isValid():
                 self.feature = self.model.feature(modelIndex)
                 if self.feature is not None and self.feature.isValid():
-                    dialog = QgsAttributeDialog(self.layer, self.feature, False) # , self)
+                    dialog = QgsAttributeDialog(
+                        self.layer, self.feature, False)
                     # dialog = QgsAttributeForm(self.layer, self.feature)
                     if filtre:
                         dialog.setWindowTitle(self.layer.name() + ' - Filtres')
                         dialog.setMode(QgsAttributeForm.SearchMode)
                     else:
-                        dialog.setWindowTitle(self.layer.name() + ' - Element ' + str(self.feature.id() + 1))
+                        dialog.setWindowTitle(
+                            self.layer.name() +
+                            ' - Element ' + str(self.feature.id() + 1))
                         dialog.setMode(QgsAttributeForm.SingleEditMode)
         except:
             pass
@@ -285,13 +304,14 @@ class QvTaulaAtributs(QgsAttributeTableView):
             if modelIndex is not None and modelIndex.isValid():
                 self.feature = self.model.feature(modelIndex)
                 if self.feature is not None and self.feature.isValid():
-                    menuExtra = QgsActionMenu(self.layer, self.feature, 'Feature', self.canvas)
+                    menuExtra = QgsActionMenu(
+                        self.layer, self.feature, 'Feature', self.canvas)
                     if menuExtra is not None and not menuExtra.isEmpty():
                         return menuExtra
             return None
         except:
             return None
-        
+
     def showFeature(self):
         dlgFitxa = self.crearDialog()
         if dlgFitxa is not None:
@@ -300,7 +320,7 @@ class QvTaulaAtributs(QgsAttributeTableView):
     def flashSelection(self):
         features = self.layer.selectedFeatureIds()
         self.canvas.flashFeatureIds(self.layer, features)
-         
+
     def zoomToSelection(self):
         # box = self.layer.boundingBoxOfSelected()
         # self.canvas.setExtent(box)
@@ -354,17 +374,19 @@ class QvTaulaAtributs(QgsAttributeTableView):
         txt = self.layerNom()
         self.canviNomTaula.emit(i, txt)
 
-    def toggleSelection(self, check = True):
+    def toggleSelection(self, check=True):
         if check:
-            self.filter.setFilterMode(QgsAttributeTableFilterModel.ShowSelected)
+            self.filter.setFilterMode(
+                QgsAttributeTableFilterModel.ShowSelected)
         else:
             self.filter.setFilterMode(QgsAttributeTableFilterModel.ShowAll)
         self.accions.accio('showSelection').setChecked(check)
         self.layerTab()
 
-    def showSelection(self):        
+    def showSelection(self):
         if (self.layer.selectedFeatureCount() > 0 and
-            self.filter.filterMode() == QgsAttributeTableFilterModel.ShowAll):
+                self.filter.filterMode() ==
+                QgsAttributeTableFilterModel.ShowAll):
             self.toggleSelection(True)
         else:
             self.toggleSelection(False)
@@ -376,23 +398,10 @@ class QvTaulaAtributs(QgsAttributeTableView):
             self.layerTab()
 
     def saveToCSV(self):
-        self.parent.desarCSV(self.layer, self.filter.filterMode() == QgsAttributeTableFilterModel.ShowSelected)
-
-        # print('Num features/selected:', self.layer.featureCount(), self.layer.selectedFeatureCount())
-        # try:
-        #     path,_ = QtWidgets.QFileDialog.getSaveFileName(self, 'Desa dades a arxiu', '', 'CSV (*.csv)')
-        #     if path is not None:
-        #         with open(path, 'w', newline='') as stream:
-        #             writer = csv.writer(stream, delimiter=';', quotechar='¨', quoting=csv.QUOTE_MINIMAL)
-        #             writer.writerow(self.layer.fields().names())
-        #             if  self.filter.filterMode() == QgsAttributeTableFilterModel.ShowSelected:
-        #                 iterator = self.layer.getSelectedFeatures
-        #             else:
-        #                 iterator = self.layer.getFeatures
-        #             for feature in iterator():
-        #                 writer.writerow(feature.attributes())                        
-        # except Exception as e:
-        #     print(str(e))
+        self.parent.desarCSV(
+            self.layer,
+            self.filter.filterMode() ==
+            QgsAttributeTableFilterModel.ShowSelected)
 
 if __name__ == "__main__":
 
@@ -402,9 +411,9 @@ if __name__ == "__main__":
     from qgis.PyQt.QtWidgets import QMessageBox, QWhatsThis
     from moduls.QvLlegenda import QvLlegenda
     from qgis.PyQt.QtCore import QTranslator, QLocale, QLibraryInfo
-    
+
     with qgisapp() as app:
- 
+
         qApp = QvApp()
         qApp.carregaIdioma(app, 'ca')
 
@@ -438,13 +447,14 @@ if __name__ == "__main__":
                 txt = 'Salutacions'
             QMessageBox().information(None, txt, 'qVista - Menú QvAtributs ')
 
-
         # Acciones personalizadas para menú contextual de la leyenda:
         #
         # - Definición de la acción y del metodo asociado
-        # - Se añade la acción a la lista de acciones disponibles (llegenda.accions)
-        # - Se redefine la lista de acciones que apareceran en el menú (llegenda.menuAccions)
-        #   mediante la señal clicatMenuContexte según el tipo de nodo clicado
+        # - Se añade la acción a la lista de acciones disponibles
+        #   (llegenda.accions)
+        # - Se redefine la lista de acciones que apareceran en el menú
+        #   (llegenda.menuAccions) mediante la señal clicatMenuContexte
+        #   según el tipo de nodo clicado
         #   (Tipos: none, group, layer, symb)
 
         # Accines de usuario para el menú
@@ -470,7 +480,3 @@ if __name__ == "__main__":
         atributs.clicatMenuContexte.connect(menuContexte)
 
         # QWhatsThis.enterWhatsThisMode()
-
-
-
-

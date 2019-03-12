@@ -53,7 +53,7 @@ def _fatalError(type, value, tb):
 class QvApp(Singleton):
 
     def __init__(self):
-        if hasattr(self, 'ruta'): # Solo se inicializa una vez
+        if hasattr(self, 'ruta'):                   # Solo se inicializa una vez
             return
         
         self.ruta, self.rutaBase = self.calcRuta()  # Path de la aplicación
