@@ -654,7 +654,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         # self.wMapeta.show()
         self.mapeta = QvMapeta(self.canvas, tamanyPetit=False)
         
-        self.bOrientacio.clicked.connect(self.mapeta.cambiarRotacion)
+        self.bOrientacio.clicked.connect(self.editarOrientacio)
         self.mapeta.setParent(self.canvas)
         self.mapeta.move(5,5)
         self.mapeta.show()
@@ -1900,12 +1900,11 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.statusbar.addPermanentWidget( self.lblProjecte, 0 )
 
     def editarOrientacio(self):
+        self.mapeta.cambiarRotacion()
         if self.canvas.rotation()==0:
-            self.canvas.setRotation(44)
-            self.bOrientacio.setText(' Orientació: Eixample')
-        else:
-            self.canvas.setRotation(0)
             self.bOrientacio.setText(' Orientació: Nord')
+        else:
+            self.bOrientacio.setText(' Orientació: Eixample')
         self.canvas.refresh()
 
     def editarEscala(self):
@@ -2286,13 +2285,14 @@ def seleccioExpressio():
         qV.infoQVista()
         return
 
-    if qV.leSeleccioExpressio.text().lower() == 'd':
+    if qV.leSeleccioExpressio.text().lower() == 'direle':
         disgregarDirele()
 
 
     if (qV.leSeleccioExpressio.text().lower() == 'qvdebug') :
         qV.modeDebug()
         return
+
     layer=qV.llegenda.currentLayer()
     if layer is not None:
     #     expr = QgsExpression( qV.leSeleccioExpressio.text())
