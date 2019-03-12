@@ -1743,15 +1743,13 @@ class QVista(QMainWindow, Ui_MainWindow):
     def cercaText(self):
         """Don't pay attention
         """ 
-        textCercat=self.leSeleccioExpressio.text()
-        layer=self.llegenda.view.currentLayer()
-        for feature in layer.getFeatures():
-            for field in feature.fields():
+        textCercat=""
+        layer=self.llegenda.currentLayer()
+        if layer is not None:
+            for field in layer.fields():
                 if field.typeName()=='String':
-                    valor=feature.attributes()[field]
-                    if field.set .find(textCercat):
-                        # print (str(atribut))
-                        pass
+                    textCercat = textCercat + " " + fiel.name()
+            print (textCercat)
 
     def nomCapa(self):
         capa = self.llegenda.view.currentLayer()
@@ -2296,12 +2294,24 @@ def seleccioExpressio():
         qV.modeDebug()
         return
     layer=qV.llegenda.currentLayer()
-    if layer:
-        expr = QgsExpression( qV.leSeleccioExpressio.text())
-        it = layer.getFeatures( QgsFeatureRequest( expr ) )
-        ids = [i.id() for i in it]
-        layer.selectByIds(ids)
-        # taulaAtributs('Seleccionats',layer)
+    if layer is not None:
+    #     expr = QgsExpression( qV.leSeleccioExpressio.text())
+    #     it = layer.getFeatures( QgsFeatureRequest( expr ) )
+    #     ids = [i.id() for i in it]
+    #     layer.selectByIds(ids)
+    #     # taulaAtributs('Seleccionats',layer) 
+        textCercat=""
+        layer=qV.llegenda.currentLayer()
+        if layer is not None:
+            for field in layer.fields():
+                print(field.typeName())
+                if field.typeName()=='String' or field.typeName()=='text':
+                    textCercat = textCercat + field.name()+' LIKE "%' + qV.leSeleccioExpressio.text() + '%" OR '
+            textCercat = textCercat + "1==0"
+            layer.setSubsetString(textCercat)
+            ids = [feature.id() for feature in layer.getFeatures()]
+            qV.canvas.zoomToFeatureIds(layer, ids)
+            print (textCercat)
     else:
         missatgeCaixa('Cal tenir seleccionat un nivell per poder fer una selecció.','Marqueu un nivell a la llegenda sobre el que aplicar la consulta.')
 
