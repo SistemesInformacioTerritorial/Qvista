@@ -41,7 +41,9 @@ class QvTaulaQuery(QWidget):
         # Instanciem una TableView, li assignem el model i connectem el doble click a self.ajustarMapa
         self.taula = QTableView()
         self.taula.setModel(self.model)
-        self.taula.doubleClicked.connect(self.ajustarMapa)
+        # self.taula.doubleClicked.connect(self.ajustarMapa)
+        self.taula.entered.connect(self.ajustarMapa)
+        self.taula.clicked.connect(self.ajustarMapa)
 
         # Amaguem les columnes amb camps qv_ (Poc pitonic, right now...)
         for column in range(0,self.model.columnCount()):

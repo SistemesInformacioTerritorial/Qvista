@@ -27,20 +27,31 @@ def connexio(dbConnexio):
     return None
 
 def redueix():
-    layer=llegenda.currentLayer()
-    expressioCerca="NOM LIKE '%"+leEdit.text()+"%'"
+    layer=llegenda.currentLayer()            
+    if self.layerActiu.type() == QgsMapLayer.VectorLayer:
+        fields = self.layerActiu.fields()
+        for field in fields:
+            # print(field.typeName())
+            # if (field.typeName()!='String' and field.typeName()!='Date' and field.typeName()!='Date'):
+            if (field.typeName()=='Real' or field.typeName()=='Integer64'):
+                self.lwFieldsSelect.addItem(field.name())
+    expressioCerca="NOM LIKE '%"+leEdit.text()+"'"
     if layer:
         layer.setSubsetString(expressioCerca)
-        expr = QgsExpression(expressioCerca)
-        it = layer.getFeatures( QgsFeatureRequest( expr ) )
-        ids = [i.id() for i in it]
-with qgisapp():
-    projecteInicial = 'n:/siteb/apl/vistamecano/bimap/obres/mapaobres.qgs'
+        # expr = QgsExpression(expressioCerca)
+        # it = layer.getFeatures( QgsFeatureRequest( expr ) )
+        # ids = [i.id() for i in it]
+def nouQuery():
+    queryFile2=queryFile.format(param=leEdit.text())
+    taula.setQuery(queryFile2)
+with qgisapp() as app:
+    projecteInicial = 'L:\DADES\SIT\PyQgis\Apl\MaSIP\QGIS\Finques de titularitat publica.qgs'
     canvas=QgsMapCanvas()
     canvas.show()
     leEdit = QLineEdit()
+    leEdit.setText('ciutad')
     leEdit.show()
-    leEdit.editingFinished.connect(redueix)
+    leEdit.textChanged.connect(nouQuery)
     project = QgsProject().instance()
     root = project.layerTreeRoot()
     bridge =QgsLayerTreeMapCanvasBridge(root,canvas)
@@ -48,9 +59,14 @@ with qgisapp():
 
     # llegim un projecte de demo
     project.read(projecteInicial)
+    canvas.zoomToFullExtent()
     db = connexio(dbConnexio)
-    expWhere = "where ESTAT='PROJECTE'"
-    taula = QvTaulaQuery(canvas, db, 'select * from obr_natura_obres'+' '+expWhere)
+
+    with open('d:/RECERCA_GENERAL.sql', 'r') as myfile:
+        queryFile=myfile.read()
+    queryFile2=queryFile.format(param=leEdit.text())
+    print(queryFile2)
+    taula = QvTaulaQuery(canvas, db, queryFile2)
     taula.show()    
     llegenda= QvLlegenda(canvas)
     llegenda.show()

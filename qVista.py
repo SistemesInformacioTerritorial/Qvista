@@ -2304,20 +2304,19 @@ def seleccioExpressio():
         layer=qV.llegenda.currentLayer()
         if layer is not None:
             for field in layer.fields():
-                print(field.typeName())
-                if field.typeName()=='String' or field.typeName()=='text':
-                    textCercat = textCercat + field.name()+' LIKE "%' + qV.leSeleccioExpressio.text() + '%" OR '
-            textCercat = textCercat + "1==0"
-            layer.setSubsetString(textCercat)
+                if field.typeName()=='String' or field.typeName()=='text'  or field.typeName()[0:4]=='VARC':
+                    textCercat = textCercat + field.name()+" LIKE '%" + qV.leSeleccioExpressio.text()+ "%'"
+                    textCercat = textCercat + ' OR '
+
+            layer.setSubsetString(textCercat[:-4])
             ids = [feature.id() for feature in layer.getFeatures()]
             qV.canvas.zoomToFeatureIds(layer, ids)
-            print (textCercat)
+            print (textCercat[:-4])
     else:
         missatgeCaixa('Cal tenir seleccionat un nivell per poder fer una selecció.','Marqueu un nivell a la llegenda sobre el que aplicar la consulta.')
 
 def guardarDialegProjecte():
     nfile,_ = QFileDialog.getSaveFileName(None,"Guardar Projecte Qgis", ".", "Projectes Qgis (*.qgs)")
-
     qV.project.write(nfile)
     qV.lblProjecte.setText(qV.project.baseName())
     #print(scale)
@@ -2347,6 +2346,7 @@ def carregarFieldsCalculadora():
             calcul=feature.attributes()[layer.fields().lookupField(a.text())]
             total=total+calcul
             nombreElements=nombreElements+1
+
         item = QTableWidgetItem(str(total))
         taula.setItem(fila+1,1,item)
         # print('Total: '+a.text()+": ",total)
