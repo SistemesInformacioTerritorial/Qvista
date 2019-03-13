@@ -3,15 +3,18 @@
 from qgis.PyQt.QtSql import QSqlDatabase, QSqlQuery
 from qgis.PyQt.QtCore import QTranslator, QLibraryInfo
 from qgis.PyQt.QtNetwork import QNetworkProxy
+from qgis.core import QgsPythonRunner
 from moduls.QvSingleton import Singleton
-from pathlib import Path
+from moduls.QvPythonRunner import QvPythonRunner
 from moduls.QvGithub import QvGithub
+from pathlib import Path
 import sys
 import getpass
 import uuid
 import traceback
 import os
 import json
+
 
 _PATH_PRO = 'N:\\SITEB\\APL\\PYQGIS\\QVISTA\\CODI\\'
 
@@ -42,6 +45,7 @@ _PROXY = {
     'Port': 8080
 }
 
+
 def _fatalError(type, value, tb):
     QvApp().bugFatalError(type, value, tb)
     
@@ -50,14 +54,15 @@ def _fatalError(type, value, tb):
 #     print('ERROR -', error)
 #     QvApp().logRegistre('LOG_ERROR', error[-1000:])
 
+
 class QvApp(Singleton):
 
     def __init__(self):
-        if hasattr(self, 'ruta'):                   # Solo se inicializa una vez
+        if hasattr(self, 'ruta'):                   # Se inicializa una vez
             return
         
         self.ruta, self.rutaBase = self.calcRuta()  # Path de la aplicación
-        self.cfg = self.readCfg()                   # Configuración de la instalación
+        self.cfg = self.readCfg()                   # Config de instalación
         val = self.cfg.get("Debug", "False")        # Errores no controlados
         if val != "True":
             sys.excepthook = _fatalError
@@ -66,8 +71,8 @@ class QvApp(Singleton):
         self.usuari = getpass.getuser().upper()     # Id de usuario
         self.sessio = str(uuid.uuid1())             # Id único de sesión
 
-        self.intranet = self.calcIntranet()         # True si estamos en la intranet
-        self.dbQvista = _DB_QVISTA[self.entorn]     # Conexión a Oracle según entorno
+        self.intranet = self.calcIntranet()         # True si en la intranet
+        self.dbQvista = _DB_QVISTA[self.entorn]     # Conexión Oracle entorno
 
         self.proxy = self.setProxy()                # Establecer proxy
         self.gh = QvGithub(self.data())             # Establecer Github
@@ -80,6 +85,8 @@ class QvApp(Singleton):
         self.idioma = None
         self.qtTranslator = None
         self.qgisTranslator = None
+
+        QgsPythonRunner.setInstance(QvPythonRunner())   # Ejecuciones Python
 
     def data(self):
         txt = ''
