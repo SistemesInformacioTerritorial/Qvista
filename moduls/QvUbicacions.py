@@ -6,7 +6,7 @@ from qgis.gui import QgsMapCanvas,QgsLayerTreeMapCanvasBridge
 import sys
 # from PyQt5 import QtGui, QtCore, QtWidgets
 from PyQt5.QtCore import QAbstractItemModel, QFile, QIODevice, QModelIndex, Qt, QSize
-from PyQt5.QtWidgets import QApplication, QMainWindow, QDockWidget, QTreeView, QAction, QVBoxLayout, QHBoxLayout ,QAbstractItemView, QLabel, QWidget, QLineEdit, QPushButton
+from PyQt5.QtWidgets import QApplication, QMessageBox, QMainWindow, QDockWidget, QTreeView, QAction, QVBoxLayout, QHBoxLayout ,QAbstractItemView, QLabel, QWidget, QLineEdit, QPushButton
 
 import pickle
 from collections import deque
@@ -38,14 +38,14 @@ class StandardItemModel_mio(QStandardItemModel):
         # import os
         # os.system('D:/projectes_py/qVista/kk.chm')
 
-        def crear__listaDatos(self, parent = QtCore.QModelIndex()):
+        def crear__listaDatos(self, parent = QModelIndex()):
             """ Creamos array de diccionarios que es un objeto serializable
             """
             datos=[]
             n_linea= -1
             raiz=0
             
-            def itemList_2(self, n_linea,datos,raiz, parent = QtCore.QModelIndex()):
+            def itemList_2(self, n_linea,datos,raiz, parent = QModelIndex()):
                 """ Función recursiva para la lectura de todos los nodos del arbol. Una vez obtenidos se
                     formatean adecuadamente y se añaden a la lista
                 """
@@ -311,7 +311,7 @@ class QvUbicacions(QWidget):
     def expand_all(self):
         """Expandir o contraer todo el arbol, dependiendo de si detecta que esta extendido o contraido
         """
-        if self.arbre.isExpanded(self.model.index(0, 0, QtCore.QModelIndex())):
+        if self.arbre.isExpanded(self.model.index(0, 0, QModelIndex())):
             self.arbre.collapseAll()
         else:
             self.arbre.expandAll()
