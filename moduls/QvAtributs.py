@@ -113,13 +113,15 @@ class QvAtributs(QTabWidget):
             taula = self.widget(i)
             if taula.layer.id() == layer.id():
                 taula.deleteLater()
+                return
 
     def deleteTabs(self):
         # Cerrar todas las tablas
         num = self.count()
-        for i in range(0, num):
+        for i in range(num-1, -1, -1):
             taula = self.widget(i)
-            taula.deleteLater()
+            if taula is not None:
+                taula.deleteLater()
             self.removeTab(i)
 
     def filtrarCapa(self, layer, on=True):
