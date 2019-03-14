@@ -146,16 +146,16 @@ class QVista(QMainWindow, Ui_MainWindow):
         
         # Final del cronometratge d'arrancada
         endGlobal = time.time()
-        tempsTotal = endGlobal - startGlobal
-        print ('Total carrega abans projecte: ', tempsTotal)
+        self.tempsTotal = endGlobal - startGlobal
+        print ('Total carrega abans projecte: ', self.tempsTotal)
 
         # Carrega del projecte inicial
         self.obrirProjecte(projecteInicial)
 
         # Final del cronometratge de carrega de projecte
         endGlobal = time.time()
-        tempsTotal = endGlobal - startGlobal
-        print ('Total carrega després projecte: ', tempsTotal)
+        self.tempsTotal = endGlobal - startGlobal
+        print ('Total carrega després projecte: ', self.tempsTotal)
 
         # S'escriu el temps calculat d'arrencada sobre la label de la status bar
         self.lblTempsArrencada = QLabel()
@@ -163,8 +163,8 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.lblTempsArrencada.setMinimumWidth( 170 )
         self.lblTempsArrencada.setAlignment( Qt.AlignCenter )
         self.statusbar.setSizeGripEnabled( False )
-        self.statusbar.addPermanentWidget( self.lblTempsArrencada, 0 )
-        self.lblTempsArrencada.setText ("Segons per arrencar: "+str('%.1f'%tempsTotal))
+        # self.statusbar.addPermanentWidget( self.lblTempsArrencada, 0 )
+        self.lblTempsArrencada.setText ("Segons per arrencar: "+str('%.1f'%self.tempsTotal))
 
         # Drop d'arxius -> Canvas i Llegenda
         # Es permet 1 arxiu de projecte o bé N arxius de capes
@@ -377,12 +377,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.layoutDelsCanvasExtra = QHBoxLayout()
         self.layout.addLayout(self.layoutDelsCanvasExtra)
 
-        self.leSeleccioExpressio = QLineEdit()
-        self.leSeleccioExpressio.setStyleSheet("QLineEdit {border: 0px solid red; background-color: #EEEEEE;}")
-        # self.leSeleccioExpressio.setGraphicsEffect(self._menuBarShadow)
-        self.leSeleccioExpressio.editingFinished.connect(seleccioExpressio)
-        self.layout.addWidget(self.leSeleccioExpressio)
-        self.leSeleccioExpressio.show()
+
         
         # Definició de rubberbands i markers
         self.rubberband = QgsRubberBand(self.canvas)
@@ -1497,6 +1492,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         
     def testProva(self):
         self.canvas.setRotation(44)
+
     def ferGrafica(self):
         layerActiu = self.llegenda.currentLayer()
         for a in self.calculadora.ui.lwFields.selectedItems():
@@ -1860,12 +1856,23 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.bScale.setText( " Escala 1:" + str(int(round(scale)))) 
 
     def definirLabelsStatus(self):    
+        
+
+        self.leSeleccioExpressio = QLineEdit()
+        self.leSeleccioExpressio.setStyleSheet("QLineEdit {border: 0px solid red; background-color: #FFFFFF;}")
+        # self.leSeleccioExpressio.setGraphicsEffect(self._menuBarShadow)
+        self.leSeleccioExpressio.returnPressed.connect(seleccioExpressio)
+        self.statusbar.addPermanentWidget(self.leSeleccioExpressio, 50)
+        self.leSeleccioExpressio.setPlaceholderText('Cerca un text per filtrar elements')
+        self.leSeleccioExpressio.show()
+        # spacer = QSpacerItem(1000, 1000, QSizePolicy.Expanding,QSizePolicy.Maximum)
+        # self.statusbar.addPermanentWidget(spacer)
         self.lblConnexio = QLabel()
         self.lblConnexio.setFrameStyle(QFrame.StyledPanel )
         self.lblConnexio.setMinimumWidth( 140 )
         self.statusbar.addPermanentWidget( self.lblConnexio, 0 )
         self.lblConnexio.setText(estatConnexio)
-        
+
         self.lblXY = QLabel()
 
         self.lblXY.setFrameStyle( QFrame.StyledPanel )
@@ -2200,8 +2207,8 @@ import shutil
 
 def disgregarDirele():
 
-    __numerosCSV = r'..\Dades\dadesBcn\TAULA_DIRELE.csv'
-    __path_disgregados= r'..\Dades\DadesBcn\dir_ele\\'
+    __numerosCSV = r'Dades\dadesBcn\TAULA_DIRELE.csv'
+    __path_disgregados= r'Dades\DadesBcn\dir_ele\\'
     """
 
     """
@@ -2287,10 +2294,15 @@ def seleccioExpressio():
 
     if qV.leSeleccioExpressio.text().lower() == 'direle':
         disgregarDirele()
+        return
 
 
     if (qV.leSeleccioExpressio.text().lower() == 'qvdebug') :
         qV.modeDebug()
+        return
+
+    if (qV.leSeleccioExpressio.text().lower() == 'qvtemps') :
+        missatgeCaixa('Temps per arrancar:', str('%.1f'%qV.tempsTotal))
         return
 
     layer=qV.llegenda.currentLayer()
