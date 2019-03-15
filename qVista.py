@@ -2207,8 +2207,8 @@ import shutil
 
 def disgregarDirele():
 
-    __numerosCSV = r'Dades\dadesBcn\TAULA_DIRELE.csv'
-    __path_disgregados= r'Dades\DadesBcn\dir_ele\\'
+    __numerosCSV = r'Dades\TAULA_DIRELE.csv'
+    __path_disgregados= r'Dades\dir_ele\\'
     """
 
     """
