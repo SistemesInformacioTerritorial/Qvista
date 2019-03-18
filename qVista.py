@@ -2612,6 +2612,9 @@ def main(argv):
         # Instanciem la classe QVista i fem qV global per poder ser utilitzada arreu
         qV = QVista()
 
+        # qV.setWindowFlags(Qt.FramelessWindowHint)
+        # this->setWindowFlags(windowFlags() & ~Qt::FramelessWindowHint);
+
         # qV.showFullScreen()
         qV.showMaximized()
 
