@@ -2608,7 +2608,7 @@ def main(argv):
         splash.setWindowFlags(Qt.WindowStaysOnTopHint | Qt.FramelessWindowHint)
         splash.setEnabled(True)
         splash.show()
-        app.processEvents()
+        appp.processEvents()
 
         ok = qVapp.logInici()            # Por defecto: family='QVISTA', logname='DESKTOP'
         if not ok:
@@ -2644,10 +2644,10 @@ def main(argv):
         app.aboutToQuit.connect(qV.gestioSortida)
 
 if __name__ == "__main__":
-    try:
+    # try:
         main(sys.argv)
-    except:
-        QvApp().bugException()
+    # except:
+    #     QvApp().bugException()
 
     # except Exception as e:
     #     print(str(e))
