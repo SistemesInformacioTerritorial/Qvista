@@ -2481,7 +2481,7 @@ def escollirNivellQlr():
 
 def afegirQlr(nom): if nfile != '':
 
-    layers = QgsLayerDefinition.loadLayerDefinitionLayers(nfile)
+    layers = QgsLayerDefinition.loadLayerDefinitionLayers(nom)
 
     self.project.addMapLayers(layers, True)
     # QgsLayerDefinition().loadLayerDefinition(nom, qV.project, qV.llegenda.root)
