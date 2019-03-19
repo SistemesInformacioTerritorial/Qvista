@@ -537,11 +537,9 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.boton_invocarStreetView.setMaximumWidth(25)
         self.boton_invocarStreetView.setToolTip("Mostrar aquest carrer i aquest número en StreetView")
 
-
         self.layoutbottom.addWidget(QHLine())
         self.layoutbottom.addWidget(self.distBarris.view)
         self.bottomWidget.setLayout(self.layoutbottom)
-
 
         # llenamos layout horizontal de adreca
         self.layoutAdreca.addWidget(self.lblCercadorCarrer)
@@ -562,7 +560,6 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.layoutCercador.addWidget(self.splitter)
 
         self.fCercador.setLayout(self.layoutCercador)      #Asignamos a Frame layout        
-
 
         self.setTabOrder(self.leCarrer, self.leNumero)
         # Activem la clase de cerca d'adreces
@@ -597,7 +594,6 @@ class QVista(QMainWindow, Ui_MainWindow):
         if self.dwSV.isHidden():
             self.dwSV.show()
         self.qvSv.rp.llevame(xx,yy)
-
 
         self.canvas.scene().removeItem(self.marcaLloc)
 
@@ -757,8 +753,6 @@ class QVista(QMainWindow, Ui_MainWindow):
     #         msg.setWindowTitle("ERROR: qVista> preparacioGrafiques")
     #         msg.setStandardButtons(QMessageBox.Close)
     #         retval = msg.exec_()
-
-
         
     def preparacioEntorns(self):
         self.menuEntorns = self.bar.addMenu(3*' '+'Entorns'+3*' ')
@@ -779,6 +773,7 @@ class QVista(QMainWindow, Ui_MainWindow):
                 exec('self.act{}.setStatusTip("{}")'.format(nom, nom))   
                 exec('self.act{}.triggered.connect(self.prepararDash({}))'.format(nom, nom))
                 exec('self.menuEntorns.addAction(self.act{})'.format(nom))
+        
         self.menuEntorns.addAction(self.actPavimentacio)
         self.menuEntorns.addAction(self.actMarxesCiutat)
     
@@ -792,7 +787,6 @@ class QVista(QMainWindow, Ui_MainWindow):
             pass
 
     def trobatNumero_oNo(self,rsc,info_rsc):
-        
         if rsc==0:
             self.canvas.setCenter(self.cAdrec.coordAdreca)
             self.canvas.zoomScale(1000)
@@ -806,7 +800,6 @@ class QVista(QMainWindow, Ui_MainWindow):
             self.marcaLloc.setIconType(QgsVertexMarker.ICON_BOX) # or ICON_CROSS, ICON_X
             self.marcaLloc.setPenWidth(3)
             self.marcaLloc.show()
-
             self.marcaLlocPosada = True
         else:
             msg = QMessageBox()
@@ -920,7 +913,6 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.actAfegirCapa = QAction("Afegir capa", self)
         self.actAfegirCapa.setStatusTip("Afegir cap")
         self.actAfegirCapa.triggered.connect(self.obrirDialegNovaCapa)
-
 
         self.actSeleccioExpressio= QAction("Selecció per expressió", self)
         self.actSeleccioExpressio.setStatusTip("Selecció per expressió")
@@ -2487,8 +2479,11 @@ def escollirNivellQlr():
     if nfile:
         afegirQlr(nfile)
 
-def afegirQlr(nom):
-    QgsLayerDefinition.loadLayerDefinition(nom, qV.project, qV.root)
+def afegirQlr(nom): if nfile != '':
+
+    layers = QgsLayerDefinition.loadLayerDefinitionLayers(nfile)
+
+    self.project.addMapLayers(layers, True)
     # QgsLayerDefinition().loadLayerDefinition(nom, qV.project, qV.llegenda.root)
     return
 
