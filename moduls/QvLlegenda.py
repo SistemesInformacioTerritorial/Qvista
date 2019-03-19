@@ -646,7 +646,9 @@ class QvLlegenda(QgsLayerTreeView):
         # dlgLayers.setDirectoryUrl()
         nfile, _ = dlgLayers.getOpenFileName(None, "Afegir Capes Qgis", ".", "Capes Qgis (*.qlr)")
         if nfile != '':
-            QgsLayerDefinition.loadLayerDefinition(nfile, self.project, self.root)
+            # QgsLayerDefinition.loadLayerDefinition(nfile, self.project, self.root)
+            layers = QgsLayerDefinition.loadLayerDefinitionLayers(nfile)
+            self.project.addMapLayers(layers, True)
     
     def showLayerMap(self):
         if self.canvas is not None:
