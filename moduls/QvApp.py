@@ -130,7 +130,7 @@ class QvApp(Singleton):
             return dict()
 
     def paramCfg(self, name, default):
-        if self.cfg is not None:
+        if hasattr(self, 'cfg') and self.cfg is not None:
             return self.cfg.get(name, default)
         else:
             return default
