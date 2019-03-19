@@ -63,7 +63,7 @@ class QvApp(Singleton):
         
         self.ruta, self.rutaBase = self.calcRuta()  # Path de la aplicación
         self.cfg = self.readCfg()                   # Config de instalación
-        val = self.cfg.get("Debug", "False")        # Errores no controlados
+        val = self.paramCfg("Debug", "False")       # Errores no controlados
         if val != "True":
             sys.excepthook = _fatalError
 
@@ -90,7 +90,7 @@ class QvApp(Singleton):
 
     def data(self):
         txt = ''
-        txt += 'Nom: ' + self.cfg.get('Nom', '???') + '\n'
+        txt += 'Nom: ' + self.paramCfg('Nom', '???') + '\n'
         txt += 'Entorn: ' + self.entorn + '\n'
         txt += 'Intranet: ' + str(self.intranet) + '\n'
         txt += 'Usuari: ' + self.usuari + '\n'
@@ -129,9 +129,15 @@ class QvApp(Singleton):
             self.bugException()
             return dict()
 
+    def paramCfg(self, name, default):
+        if self.cfg is not None:
+            return self.cfg.get(name, default)
+        else:
+            return default
+
     def setProxy(self):
         try:
-            val = self.cfg.get('Proxy', 'False')
+            val = self.paramCfg('Proxy', 'False')
             if self.intranet and val == 'True':
                 proxy = QNetworkProxy()
                 proxy.setType(QNetworkProxy.DefaultProxy)
@@ -146,7 +152,7 @@ class QvApp(Singleton):
             return None
         
     def calcEntorn(self):
-        val = self.cfg.get('Producció', 'False')
+        val = self.paramCfg('Producció', 'False')
         if val == 'True':
             return 'PRO'
         else:
@@ -155,11 +161,11 @@ class QvApp(Singleton):
     def calcIntranet(self):
         return os.path.isdir(_PATH_PRO)
 
-    def carregaIdioma(self, app, idioma = 'ca'):
+    def carregaIdioma(self, app, idioma='ca'):
         if app is None:
             return
         self.appQgis = app
-        self.idioma = self.cfg.get('Idioma', idioma)
+        self.idioma = self.paramCfg('Idioma', idioma)
         self.qtTranslator = QTranslator()
         self.qgisTranslator = QTranslator()
 
@@ -202,7 +208,7 @@ class QvApp(Singleton):
 
     def logConnexio(self):
         try:
-            val = self.cfg.get('Log', 'False')
+            val = self.paramCfg('Log', 'False')
             if self.intranet and val == 'True':
                 db = QSqlDatabase.addDatabase(self.dbQvista['Database'])
                 if db.isValid():
@@ -270,14 +276,14 @@ class QvApp(Singleton):
     # Métodos de reporte de bugs con Github
 
     def bugUser(self, tit, desc):
-        val = self.cfg.get('Github', 'False')
+        val = self.paramCfg('Github', 'False')
         if val == 'True':
             return self.gh.postUser(tit, desc)
         else:
             return False
 
     def bugException(self):
-        val = self.cfg.get('Github', 'False')
+        val = self.paramCfg('Github', 'False')
         if val == 'True':
             return self.gh.reportBug()
         else:
@@ -285,7 +291,7 @@ class QvApp(Singleton):
 
     def bugFatalError(self, type, value, tb):
         
-        val = self.cfg.get('Github', 'False')
+        val = self.paramCfg('Github', 'False')
         if val == 'True':
             return self.gh.reportBug(type, value, tb)
         else:
