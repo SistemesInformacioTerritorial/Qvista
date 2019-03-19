@@ -2479,7 +2479,7 @@ def escollirNivellQlr():
     if nfile:
         afegirQlr(nfile)
 
-def afegirQlr(nom): if nfile != '':
+def afegirQlr(nom): 
 
     layers = QgsLayerDefinition.loadLayerDefinitionLayers(nom)
 
