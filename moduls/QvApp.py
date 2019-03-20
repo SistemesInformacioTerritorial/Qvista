@@ -100,11 +100,14 @@ class QvApp(Singleton):
 
     def calcRuta(self):
         try:
-            q1 = 'qVista\\'
-            q2 = 'Codi\\'
+            q1 = 'qVista/'
+            q2 = 'Codi/'
             f = sys.argv[0]
+            f = f.replace('\\', '/')
+            fUp = f.upper()
             q = q1 + q2
-            n = f.find(q)
+            qUp = q.upper()
+            n = fUp.find(qUp)
             if n >= 0:
                 ruta = f[:n+len(q)]
                 rutaBase = f[:n+len(q1)]
@@ -282,12 +285,15 @@ class QvApp(Singleton):
         else:
             return False
 
-    def bugException(self):
+    def bugException(self, err=None):
+        ok = False
         val = self.paramCfg('Github', 'False')
         if val == 'True':
-            return self.gh.reportBug()
-        else:
-            return False
+            ok = self.gh.reportBug()
+        val = self.paramCfg('Debug', 'False')
+        if val == 'True' and err is not None:
+            raise err
+        return ok
 
     def bugFatalError(self, type, value, tb):
         val = self.paramCfg('Github', 'False')

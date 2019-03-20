@@ -2644,10 +2644,10 @@ def main(argv):
         app.aboutToQuit.connect(qV.gestioSortida)
 
 if __name__ == "__main__":
-    # try:
-    main(sys.argv)
-    # except:
-    #     QvApp().bugException()
+    try:
+        main(sys.argv)
+    except Exception as err:
+        QvApp().bugException(err)
 
     # except Exception as e:
     #     print(str(e))
