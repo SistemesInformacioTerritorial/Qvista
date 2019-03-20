@@ -291,16 +291,19 @@ class QvApp(Singleton):
         if val == 'True':
             ok = self.gh.reportBug()
         val = self.paramCfg('Debug', 'False')
-        if val == 'True' and err is not None:
+        if val == 'True':
             raise err
         return ok
 
     def bugFatalError(self, type, value, tb):
+        ok = False
         val = self.paramCfg('Github', 'False')
         if val == 'True':
-            return self.gh.reportBug(type, value, tb)
-        else:
-            return False
+            ok = self.gh.reportBug(type, value, tb)
+        val = self.paramCfg('Debug', 'False')
+        if val == 'True':
+            raise err
+        return ok
 
 if __name__ == "__main__":
 
