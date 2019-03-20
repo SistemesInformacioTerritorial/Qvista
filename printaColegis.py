@@ -81,9 +81,9 @@ with qgisapp() as app:
     for feature in layer.getFeatures():
         colegi = feature.attributes()[layer.fields().lookupField('LOCAL')]
         seccions = feature.attributes()[layer.fields().lookupField('SECCIONS')]
-        textFiltre = "CODI_SECCIO in '"+seccions+"'"
+        textFiltre = "CODI_SECCIO LIKE '%"+seccions+"%'"
+        print (textFiltre)
         layerSeccions.setSubsetString(textFiltre)
-        print(colegi,seccions)
           
           
     imprimirPlanol(posXY[0], posXY[1], 50000, 0, plantillaMapa , 'd:/EUREKA.pdf', 'PDF')
