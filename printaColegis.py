@@ -1,6 +1,8 @@
 from moduls.QvImports import *
+from moduls.QvLlegenda import QvLlegenda
 
 projecteInicial = 'd:/colegis.qgs'
+
 def imprimirPlanol(x, y, escala, rotacion, templateFile, fitxerSortida, tipusSortida):
     tInicial=time.time()
 
@@ -66,16 +68,24 @@ with qgisapp() as app:
     bridge = QgsLayerTreeMapCanvasBridge(root,canvas)
     bridge.setCanvasLayers()
     project.read(projecteInicial)
+    llegenda = QvLlegenda(canvas)
 
     plantillaMapa = 'plantillaMapaH.qpt'
 
     posXY = [430036,4583163]    
     
+    layer = llegenda.capaPerNom('COLELEC_PLOT')
+    layerSeccions = llegenda.capaPerNom('GSEC_CENS2')
+
     # layer = LAYER DE COLEGIS
-    # for feature in layer.getFeatures():
-    #     seccions = feature.attributes()[layer.fields().lookupField(a.text())]
+    for feature in layer.getFeatures():
+        colegi = feature.attributes()[layer.fields().lookupField('LOCAL')]
+        seccions = feature.attributes()[layer.fields().lookupField('SECCIONS')]
+        textFiltre = "CODI_SECCIO in '"+seccions+"'"
+        layerSeccions.setSubsetString(textFiltre)
+        print(colegi,seccions)
           
           
-    imprimirPlanol(posXY[0], posXY[1], 5000, 0, plantillaMapa , 'd:/EUREKA.pdf', 'PDF')
+    imprimirPlanol(posXY[0], posXY[1], 50000, 0, plantillaMapa , 'd:/EUREKA.pdf', 'PDF')
     
     canvas.show()
