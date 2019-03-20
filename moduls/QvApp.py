@@ -290,7 +290,6 @@ class QvApp(Singleton):
             return False
 
     def bugFatalError(self, type, value, tb):
-        
         val = self.paramCfg('Github', 'False')
         if val == 'True':
             return self.gh.reportBug(type, value, tb)
