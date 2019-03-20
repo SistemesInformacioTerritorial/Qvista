@@ -2645,7 +2645,7 @@ def main(argv):
 
 if __name__ == "__main__":
     # try:
-        main(sys.argv)
+    main(sys.argv)
     # except:
     #     QvApp().bugException()
 
