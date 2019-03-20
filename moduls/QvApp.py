@@ -114,8 +114,8 @@ class QvApp(Singleton):
                 return ruta, rutaBase
             else:
                 return '', ''
-        except:
-            self.bugException()
+        except Exception as err:
+            self.bugException(err)
             return '', ''
 
     def readCfg(self):
@@ -128,8 +128,8 @@ class QvApp(Singleton):
             cfg = json.load(fp)
             fp.close()
             return cfg
-        except:
-            self.bugException()
+        except Exception as err:
+            self.bugException(err)
             return dict()
 
     def paramCfg(self, name, default):
@@ -150,8 +150,8 @@ class QvApp(Singleton):
                 return proxy
             else:
                 return None
-        except Exception as e:
-            self.bugException()
+        except Exception as err:
+            self.bugException(err)
             return None
         
     def calcEntorn(self):
@@ -285,7 +285,7 @@ class QvApp(Singleton):
         else:
             return False
 
-    def bugException(self, err=None):
+    def bugException(self, err):
         ok = False
         val = self.paramCfg('Github', 'False')
         if val == 'True':

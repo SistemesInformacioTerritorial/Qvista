@@ -154,8 +154,8 @@ if __name__ == "__main__":
 
     try:
         pp()
-    except:
-        QvApp().bugException()
+    except Exception as err:
+        self.bugException(err)
 
 
 
