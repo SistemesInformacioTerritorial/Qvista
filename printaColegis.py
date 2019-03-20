@@ -1,13 +1,14 @@
-from QvImports import *
+from moduls.QvImports import *
 
-def imprimirPlanol(self,x, y, escala, rotacion, templateFile, fitxerSortida, tipusSortida):
+projecteInicial = 'd:/colegis.qgs'
+def imprimirPlanol(x, y, escala, rotacion, templateFile, fitxerSortida, tipusSortida):
     tInicial=time.time()
 
     template = QFile(templateFile)
     doc = QDomDocument()
     doc.setContent(template, False)
 
-    layout = QgsLayout(self.project)
+    layout = QgsLayout(project)
     context = QgsReadWriteContext()
     [items, ok] = layout.loadFromTemplate(doc, context)
 
@@ -53,11 +54,28 @@ def imprimirPlanol(self,x, y, escala, rotacion, templateFile, fitxerSortida, tip
         QDesktopServices().openUrl(QUrl(fitxerSortida))
         
         segonsEmprats=round(time.time()-tInicial,1)
-        layersTemporals = self.project.mapLayersByName("Capa temporal d'impressió")
+        layersTemporals = project.mapLayersByName("Capa temporal d'impressió")
         for layer in layersTemporals:
-            self.project.removeMapLayer(layer.id())
+            project.removeMapLayer(layer.id())
   
 
 with qgisapp() as app:
-    boyo = QtPushButton('hola')
-    boyo.show()
+    canvas = QgsMapCanvas()
+    project = QgsProject.instance()
+    root = project.layerTreeRoot()
+    bridge = QgsLayerTreeMapCanvasBridge(root,canvas)
+    bridge.setCanvasLayers()
+    project.read(projecteInicial)
+
+    plantillaMapa = 'plantillaMapaH.qpt'
+
+    posXY = [430036,4583163]    
+    
+    # layer = LAYER DE COLEGIS
+    # for feature in layer.getFeatures():
+    #     seccions = feature.attributes()[layer.fields().lookupField(a.text())]
+          
+          
+    imprimirPlanol(posXY[0], posXY[1], 5000, 0, plantillaMapa , 'd:/EUREKA.pdf', 'PDF')
+    
+    canvas.show()
