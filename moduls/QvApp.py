@@ -100,19 +100,22 @@ class QvApp(Singleton):
 
     def calcRuta(self):
         try:
-            q1 = 'qVista\\'
-            q2 = 'Codi\\'
+            q1 = 'qVista/'
+            q2 = 'Codi/'
             f = sys.argv[0]
+            f = f.replace('\\', '/')
+            fUp = f.upper()
             q = q1 + q2
-            n = f.find(q)
+            qUp = q.upper()
+            n = fUp.find(qUp)
             if n >= 0:
                 ruta = f[:n+len(q)]
                 rutaBase = f[:n+len(q1)]
                 return ruta, rutaBase
             else:
                 return '', ''
-        except:
-            self.bugException()
+        except Exception as err:
+            self.bugException(err)
             return '', ''
 
     def readCfg(self):
@@ -125,8 +128,8 @@ class QvApp(Singleton):
             cfg = json.load(fp)
             fp.close()
             return cfg
-        except:
-            self.bugException()
+        except Exception as err:
+            self.bugException(err)
             return dict()
 
     def paramCfg(self, name, default):
@@ -147,8 +150,8 @@ class QvApp(Singleton):
                 return proxy
             else:
                 return None
-        except Exception as e:
-            self.bugException()
+        except Exception as err:
+            self.bugException(err)
             return None
         
     def calcEntorn(self):
@@ -282,20 +285,25 @@ class QvApp(Singleton):
         else:
             return False
 
-    def bugException(self):
+    def bugException(self, err):
+        ok = False
         val = self.paramCfg('Github', 'False')
         if val == 'True':
-            return self.gh.reportBug()
-        else:
-            return False
+            ok = self.gh.reportBug()
+        val = self.paramCfg('Debug', 'False')
+        if val == 'True':
+            raise err
+        return ok
 
     def bugFatalError(self, type, value, tb):
-        
+        ok = False
         val = self.paramCfg('Github', 'False')
         if val == 'True':
-            return self.gh.reportBug(type, value, tb)
-        else:
-            return False
+            ok = self.gh.reportBug(type, value, tb)
+        val = self.paramCfg('Debug', 'False')
+        if val == 'True':
+            raise err
+        return ok
 
 if __name__ == "__main__":
 
