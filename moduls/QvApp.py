@@ -296,14 +296,11 @@ class QvApp(Singleton):
         return ok
 
     def bugFatalError(self, type, value, tb):
-        ok = False
         val = self.paramCfg('Github', 'False')
         if val == 'True':
-            ok = self.gh.reportBug(type, value, tb)
-        val = self.paramCfg('Debug', 'False')
-        if val == 'True':
-            raise err
-        return ok
+            return self.gh.reportBug(type, value, tb)
+        else:
+            return False
 
 if __name__ == "__main__":
 
@@ -319,7 +316,7 @@ if __name__ == "__main__":
 
         qApp = QvApp()                  # Singleton
         
-        qApp.carregaIdioma(app, 'ca')   # Traductor
+        kkqApp.carregaIdioma(app, 'ca')   # Traductor
 
         #
         # INICIO LOG: Si logInici() retorna False, el resto de funciones de log no hacen nada
