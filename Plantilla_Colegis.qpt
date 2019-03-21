@@ -40,7 +40,7 @@
   </LayoutItem>
   <GuideCollection visible="1"/>
  </PageCollection>
- <LayoutItem uuid="{a86cfefe-5097-4d10-bea9-f4c761dc4642}" zValue="4" groupUuid="" valign="32" templateUuid="{a86cfefe-5097-4d10-bea9-f4c761dc4642}" excludeFromExports="0" halign="8" frameJoinStyle="miter" frame="false" opacity="1" marginY="0" outlineWidthM="0.3,mm" htmlState="0" visibility="1" labelText="SECCIONS" blendMode="0" position="5.18084,198.656,mm" positionOnPage="5.18084,198.656,mm" size="195.398,9.22365,mm" type="65641" itemRotation="0" background="false" id="" positionLock="false" marginX="0" referencePoint="0">
+ <LayoutItem uuid="{5261c64a-8fbf-437c-beff-d2f2dfd50b8f}" zValue="4" groupUuid="" valign="32" templateUuid="{5261c64a-8fbf-437c-beff-d2f2dfd50b8f}" excludeFromExports="0" halign="8" frameJoinStyle="miter" frame="false" opacity="1" marginY="0" outlineWidthM="0.3,mm" htmlState="0" visibility="1" labelText="Lorem ipsum" blendMode="0" position="5.18084,196.06,mm" positionOnPage="5.18084,196.06,mm" size="163.069,11.5875,mm" type="65641" itemRotation="0" background="false" id="LabelSeccions" positionLock="false" marginX="0" referencePoint="0">
   <FrameColor green="0" red="0" blue="0" alpha="255"/>
   <BackgroundColor green="255" red="255" blue="255" alpha="255"/>
   <LayoutObject>
@@ -53,10 +53,10 @@
    </dataDefinedProperties>
    <customproperties/>
   </LayoutObject>
-  <LabelFont description="Arial,16,-1,5,50,0,0,0,0,0,Normal" style="Normal"/>
+  <LabelFont description="Arial,18,-1,5,50,0,0,0,0,0,Normal" style="Normal"/>
   <FontColor green="0" red="0" blue="0"/>
  </LayoutItem>
- <LayoutItem uuid="{34539f3c-e208-4eec-9af2-9aa63ab721d8}" zValue="4" groupUuid="" valign="32" templateUuid="{34539f3c-e208-4eec-9af2-9aa63ab721d8}" excludeFromExports="0" halign="1" frameJoinStyle="miter" frame="false" opacity="1" marginY="0" outlineWidthM="0.3,mm" htmlState="0" visibility="1" labelText="NOM_COLEGI" blendMode="0" position="91.2945,5.87787,mm" positionOnPage="91.2945,5.87787,mm" size="201.311,7.56052,mm" type="65641" itemRotation="0" background="false" id="" positionLock="false" marginX="0" referencePoint="0">
+ <LayoutItem uuid="{ad1d6e0d-61fa-4853-a3af-79f0d77f6f9d}" zValue="3" groupUuid="" valign="32" templateUuid="{ad1d6e0d-61fa-4853-a3af-79f0d77f6f9d}" excludeFromExports="0" halign="8" frameJoinStyle="miter" frame="false" opacity="1" marginY="0" outlineWidthM="0.3,mm" htmlState="0" visibility="1" labelText="Lorem ipsum" blendMode="0" position="79.9536,4.51912,mm" positionOnPage="79.9536,4.51912,mm" size="193.279,9.03823,mm" type="65641" itemRotation="0" background="false" id="LabelColegi" positionLock="false" marginX="0" referencePoint="0">
   <FrameColor green="0" red="0" blue="0" alpha="255"/>
   <BackgroundColor green="255" red="255" blue="255" alpha="255"/>
   <LayoutObject>
