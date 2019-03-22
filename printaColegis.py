@@ -3,7 +3,7 @@ from moduls.QvLlegenda import QvLlegenda
 
 projecteInicial = 'd:/colegis3.qgs'
 
-def imprimirPlanol(x_min, y_min, x_max, y_max, rotacion, templateFile, fitxerSortida, tipusSortida):
+def imprimirPlanol(colegi, meses, x_min, y_min, x_max, y_max, rotacion, templateFile, fitxerSortida, tipusSortida):
     tInicial=time.time()
 
     template = QFile(templateFile)
@@ -16,6 +16,10 @@ def imprimirPlanol(x_min, y_min, x_max, y_max, rotacion, templateFile, fitxerSor
 
     if ok:
         refMap = layout.referenceMap()
+        labelColegi = layout.itemById('LabelColegi')
+        labelSeccions = layout.itemById('LabelSeccions')
+        labelColegi.setText('Col·legi Electoral: ' + colegi)
+        labelSeccions.setText('Meses: ' + meses)
         
         rect = refMap.extent()
         vector = QgsVector(x_min - rect.center().x(), y_min - rect.center().y())
@@ -29,7 +33,7 @@ def imprimirPlanol(x_min, y_min, x_max, y_max, rotacion, templateFile, fitxerSor
         y_max = y_max + offsetY
         distX = (x_max - x_min) 
         distY = (y_max - y_min) 
-        relacio = 280 / 165
+        relacio = 287 / 173
         newOffsetY = 1
         newOffsetX = 1
 
@@ -93,7 +97,7 @@ with qgisapp() as app:
     project.read(projecteInicial)
     llegenda = QvLlegenda(canvas)
 
-    plantillaMapa = 'plantillaMapaH.qpt'
+    plantillaMapa = 'plantilla_COLEGIS.qpt'
 
     posXY = [430036,4583163]    
     
@@ -105,6 +109,7 @@ with qgisapp() as app:
         colegi = feature.attributes()[layer.fields().lookupField('LOCAL')]
         cole = feature.attributes()[layer.fields().lookupField('CODI_COLE')]
         seccions = feature.attributes()[layer.fields().lookupField('SECCIONS')]
+        meses = feature.attributes()[layer.fields().lookupField('MESES')]
         x_min = feature.attributes()[layer.fields().lookupField('XMIN')]
         y_min = feature.attributes()[layer.fields().lookupField('YMIN')]
         x_max = feature.attributes()[layer.fields().lookupField('XMAX')]
@@ -115,6 +120,6 @@ with qgisapp() as app:
         textFiltre2 = 'CODI_COLE'+"='"+cole+"'"
         layerSeccions.setSubsetString(textFiltre) 
         layer.setSubsetString(textFiltre2)     
-        imprimirPlanol(x_min, y_min, x_max, y_max, 0, plantillaMapa , 'd:/EUREKA.pdf', 'PDF')
+        imprimirPlanol(colegi, meses, x_min, y_min, x_max, y_max, 0, plantillaMapa , 'd:/EUREKA.pdf', 'PDF')
     
     canvas.show()
