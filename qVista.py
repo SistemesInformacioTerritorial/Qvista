@@ -61,7 +61,7 @@ class QVista(QMainWindow, Ui_MainWindow):
     
     keyPressed = pyqtSignal(int)
         
-    def __init__(self):
+    def __init__(self,app):
         """  Inicialització de QVista.
         
             Aquí fem:
@@ -86,6 +86,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.setupUi(self)
         # self.frame.setStyleSheet("QFrame {background-color : #52489C}")
 
+        self.app=app
         #Afegim títol a la finestra
         self.setWindowTitle(titolFinestra)
 
@@ -2620,6 +2621,7 @@ def main(argv):
         qVapp.carregaIdioma(app, 'ca')
 
         app.setStyle(QStyleFactory.create('fusion'))
+        
 
         # estil = EstilPropi('Fusion')   
         # app.setStyle('fusion')
@@ -2630,7 +2632,9 @@ def main(argv):
         # splash.showMessage("<h1><font color='black'>Versió 0.1 - Work in progress</font></h1>", Qt.AlignTop | Qt.AlignCenter, Qt.white)
         
         # Instanciem la classe QVista i fem qV global per poder ser utilitzada arreu
-        qV = QVista()
+        # Paso app, para que QvCanvas pueda cambiar cursores
+        qV = QVista(app)
+
 
         # qV.setWindowFlags(Qt.FramelessWindowHint)
         # this->setWindowFlags(windowFlags() & ~Qt::FramelessWindowHint);
@@ -2646,6 +2650,7 @@ def main(argv):
 if __name__ == "__main__":
     try:
         main(sys.argv)
+        
     except Exception as err:
         QvApp().bugException(err)
 
