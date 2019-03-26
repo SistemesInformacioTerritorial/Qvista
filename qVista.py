@@ -174,6 +174,11 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.dropCanvas = QvDropFiles(self.canvas, ['.qgs', '.qgz'], ['.qlr', '.shp', '.csv', '.gpkg'])
         self.dropCanvas.arxiusPerProcessar.connect(self.obrirArxiu)
 
+        self.setMouseTracking(False)
+
+
+    
+
     # Fins aquí teniem la inicialització de la classe. Ara venen les funcions, o métodes, de la classe. 
 
     def obrirArxiu(self, llista):
@@ -644,7 +649,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         # self.wMapeta = QtWidgets.QWidget()
         # self.wMapeta.setGeometry(0,0,267,284)
         # self.wMapeta.show()
-        self.mapeta = QvMapeta(self.canvas, tamanyPetit=True)
+        self.mapeta = QvMapeta(self.canvas, tamanyPetit=True, pare=self)
         
         self.bOrientacio.clicked.connect(self.editarOrientacio)
         self.mapeta.setParent(self.canvas)
@@ -717,7 +722,7 @@ class QVista(QMainWindow, Ui_MainWindow):
     #     try:
     #         self.fGrafiques = QFrame()
     #         self.lyGrafiques = QVBoxLayout(self.fGrafiques)
-    #         self.fGrafiques.setLayout(self.lyGrafiques)
+    #         self.fGrafiques.setLayout(self.lyGrafiques)setMouseTracking
 
     #         self.calculadora = QWidget()
     #         self.calculadora.ui = Ui_Calculadora()
@@ -2141,6 +2146,7 @@ class DialegCSV(QDialog):
             self.ui.cbDelX.addItems(llistaCamps)
             self.ui.cbDelY.addItems(llistaCamps)
         self.exec()
+
 
     def closeEvent(self, event):
         pass

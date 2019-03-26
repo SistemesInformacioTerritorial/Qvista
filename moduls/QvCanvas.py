@@ -19,16 +19,91 @@ class QvCanvas(QgsMapCanvas):
         self.posicioBotonera = posicioBotonera
         self.llegenda = llegenda
         self.pare = pare
+        self.casoCursor=0
         
         # self.setWhatsThis(QvApp().carregaAjuda(self))
 
         self._preparacioBotonsCanvas()
         if self.llistaBotons is not None:
             self.panCanvas()
+            
+        self.setMouseTracking(True)
+
+
+    def mouseMoveEvent(self, event):
+        if self.casoCursor == 0:
+            self.pare.app.setOverrideCursor(QCursor(QPixmap('imatges/cruz.cur'))) 
+        if self.casoCursor == 1:
+            pass
+            # self.pare.app.setOverrideCursor(QCursor(QPixmap('imatges/mano.cur'))) 
+        if self.casoCursor == 2:
+            self.pare.app.setOverrideCursor(QCursor(QPixmap('imatges/fit.cur'))) 
+        if self.casoCursor == 3:
+            self.pare.app.setOverrideCursor(QCursor(QPixmap('imatges/zoom_in.cur'))) 
+        if self.casoCursor == 4:
+            self.pare.app.setOverrideCursor(QCursor(QPixmap('imatges/zoom_out.cur'))) 
+        if self.casoCursor == 5:
+            self.pare.app.setOverrideCursor(QCursor(QPixmap('imatges/dedo.cur')))                                                             
+        
+
+
+    def panCanvas(self):
+        # self.casoCursor = 1
+        # self.pare.app.setOverrideCursor(QCursor(QPixmap('imatges/mano.cur'))) 
+        # try:
+        #     while self.pare.app.overrideCursor() != None:
+        #         self.pare.app.restoreOverrideCursor()
+        # except:
+        #     pass
+
+        if self.bPanning.isChecked():
+            self.bApuntar.setChecked(False)
+            self.bZoomIn.setChecked(False)
+            self.bZoomOut.setChecked(False)
+            self.bCentrar.setChecked(False)
+            self.tool_pan = QgsMapToolPan(self)
+            self.setMapTool(self.tool_pan)
+            if self.pare is not None:
+                self.pare.esborrarSeleccio(tambePanCanvas = False)
+        else: 
+            self.bPanning.setChecked(True)
+
+    def centrarMapa(self):
+        self.casoCursor = 2
+        self.pare.app.setOverrideCursor(QCursor(QPixmap('imatges/fit.cur'))) 
+        self.zoomToFullExtent()
+        self.refresh()
+        self.bCentrar.setChecked(False)
+
+    def zoomIn(self):
+        self.casoCursor = 3
+        self.pare.app.setOverrideCursor(QCursor(QPixmap('imatges/zoom_in.cur'))) 
+        if self.bZoomIn.isChecked():
+            self.bApuntar.setChecked(False)
+            self.bZoomOut.setChecked(False)
+            self.bPanning.setChecked(False)
+            self.bCentrar.setChecked(False)
+            self.tool_zoomin = QgsMapToolZoom(self, False)
+            self.setMapTool(self.tool_zoomin)
+        else: 
+            self.bZoomIn.setChecked(True)
+
+    def zoomOut(self):
+        self.casoCursor = 4
+        self.pare.app.setOverrideCursor(QCursor(QPixmap('imatges/zoom_out.cur')))
+        if self.bZoomOut.isChecked():
+            self.bApuntar.setChecked(False)
+            self.bZoomIn.setChecked(False)
+            self.bPanning.setChecked(False)
+            self.bCentrar.setChecked(False)
+            self.tool_zoomout = QgsMapToolZoom(self, True)
+            self.setMapTool(self.tool_zoomout)
+        else: 
+            self.bZoomOut.setChecked(True)
 
     def seleccioClick(self):
-        print(self.pare.app.overrideCursor())   
-        # self.pare.app.setOverrideCursor(QCursor(QPixmap('D:/tmp/cursores/dedo.cur')))   "imatges/loop4.gif"
+        self.casoCursor = 5
+        
         self.pare.app.setOverrideCursor(QCursor(QPixmap('imatges/dedo.cur')))  
         checked = self.bApuntar.isChecked()
         print(checked)
@@ -47,61 +122,6 @@ class QvCanvas(QgsMapCanvas):
         else:
             self.bApuntar.setChecked(True)
 
-    def centrarMapa(self):
-        print(self.pare.app.overrideCursor())
-        self.pare.app.setOverrideCursor(QCursor(QPixmap('imatges/fit.cur'))) 
-        self.zoomToFullExtent()
-        self.refresh()
-        self.bCentrar.setChecked(False)
-
-    def zoomIn(self):
-        print(self.pare.app.overrideCursor())
-        self.pare.app.setOverrideCursor(QCursor(QPixmap('imatges/zoom_in.cur'))) 
-        if self.bZoomIn.isChecked():
-            self.bApuntar.setChecked(False)
-            self.bZoomOut.setChecked(False)
-            self.bPanning.setChecked(False)
-            self.bCentrar.setChecked(False)
-            self.tool_zoomin = QgsMapToolZoom(self, False)
-            self.setMapTool(self.tool_zoomin)
-        else: 
-            self.bZoomIn.setChecked(True)
-
-    def zoomOut(self):
-        print(self.pare.app.overrideCursor())
-        self.pare.app.setOverrideCursor(QCursor(QPixmap('imatges/zoom_out.cur')))
-        if self.bZoomOut.isChecked():
-            self.bApuntar.setChecked(False)
-            self.bZoomIn.setChecked(False)
-            self.bPanning.setChecked(False)
-            self.bCentrar.setChecked(False)
-            self.tool_zoomout = QgsMapToolZoom(self, True)
-            self.setMapTool(self.tool_zoomout)
-        else: 
-            self.bZoomOut.setChecked(True)
-
-    def panCanvas(self):
-        try:
-            while self.pare.app.overrideCursor() != None:
-                self.pare.app.restoreOverrideCursor()
-        except:
-            pass
-
-
-
-
-        # 
-        if self.bPanning.isChecked():
-            self.bApuntar.setChecked(False)
-            self.bZoomIn.setChecked(False)
-            self.bZoomOut.setChecked(False)
-            self.bCentrar.setChecked(False)
-            self.tool_pan = QgsMapToolPan(self)
-            self.setMapTool(self.tool_pan)
-            if self.pare is not None:
-                self.pare.esborrarSeleccio(tambePanCanvas = False)
-        else: 
-            self.bPanning.setChecked(True)
 
     def setLlegenda(self, llegenda):
         self.llegenda = llegenda
