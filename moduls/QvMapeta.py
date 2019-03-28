@@ -32,6 +32,7 @@ class QvMapeta(QFrame):
 
         # Convertim paràmetres en variables de classe
         self.canvas = canvas
+         
         self.tamanyPetit = tamanyPetit
         self.MouseMoveFlag = False
         self.MousePressFlag= False
@@ -40,6 +41,9 @@ class QvMapeta(QFrame):
        
         # Preparem el canvas per capturar quan es modifica, i poder repintar el mapeta.
         self.canvas.extentsChanged.connect(self.pintarMapeta)
+
+        
+        
 
         # Dimensions i fons del mapeta segosn si és gran o petit
         if self.tamanyPetit:
@@ -95,11 +99,11 @@ class QvMapeta(QFrame):
         # self.show()
 
         # self.canvas.setCenter(QgsPointXY(xcent, ycent))
-
-        self.setMouseTracking(True)
+        
+        # self.setMouseTracking(True)
     
 
-
+        
 
     def cambiarRotacion(self):
         # entramos aqui cuando se pulsa el boton de cambiar rotacion
@@ -282,7 +286,9 @@ class QvMapeta(QFrame):
         self.MousePressFlag=True
 
     def mouseMoveEvent(self, event):
-        self.pare.app.setOverrideCursor(QCursor(QPixmap('imatges/cruz.cur'))) 
+        # self.pare.app.restoreOverrideCursor()
+        # self.pare.app.setOverrideCursor(QCursor(QPixmap('imatges/cruz.cur'))) 
+        # self.setCursor(QCursor(QPixmap('imatges/cruz.cur')))
         if self.MousePressFlag== True:        
             self.end = event.pos()
             self.MouseMoveFlag= True
@@ -294,7 +300,13 @@ class QvMapeta(QFrame):
         xMapa = self.xmin_0  +self.Escala * x
         yMapa = self.ymin_0 + self.Escala * y 
         return [xMapa, yMapa]
-   
+
+    def leaveEvent(self, event):
+        self.pare.app.restoreOverrideCursor()
+
+    def enterEvent(self, event):
+        self.pare.app.setOverrideCursor(QCursor(QPixmap('imatges/cruz.cur')))       
+
     def mouseReleaseEvent(self, event):
         Paux1=QPoint() #  Pto arriba izquierda
         Paux2=QPoint() #  Pto arriba derecha

@@ -27,40 +27,65 @@ class QvCanvas(QgsMapCanvas):
         if self.llistaBotons is not None:
             self.panCanvas()
             
-        self.setMouseTracking(True)
+        # Me interesa tener tener activo mouseMoveEvent hasta sin apretar boton
+        # self.setMouseTracking(True)
+        # self.mousePressEvent = self.entro
+        # self.mouseReleaseEvent = self.b_mouseReleaseEvent
+        # self.mousePressEvent = self.b_mousePressEvent      
+        # self.mouseMoveEvent = self.b_mouseMoveEvent   
 
 
-    def mouseMoveEvent(self, event):
-        if self.casoCursor == 0:
-            self.pare.app.setOverrideCursor(QCursor(QPixmap('imatges/cruz.cur'))) 
-        if self.casoCursor == 1:
-            pass
-            # self.pare.app.setOverrideCursor(QCursor(QPixmap('imatges/mano.cur'))) 
-        if self.casoCursor == 2:
-            self.pare.app.setOverrideCursor(QCursor(QPixmap('imatges/fit.cur'))) 
-        if self.casoCursor == 3:
-            self.pare.app.setOverrideCursor(QCursor(QPixmap('imatges/zoom_in.cur'))) 
-        if self.casoCursor == 4:
-            self.pare.app.setOverrideCursor(QCursor(QPixmap('imatges/zoom_out.cur'))) 
-        if self.casoCursor == 5:
-            self.pare.app.setOverrideCursor(QCursor(QPixmap('imatges/dedo.cur')))                                                             
+
+    # def b_mouseMoveEvent(self,event):
+    #     print ("mouse move")
+
+    # def b_mousePressEvent(self,event):
+    #     print ("mouse press")
+    
+    # def b_mouseReleaseEvent(self, event):
+    #     print ("mouse Release")
+
+          
+
+    # cuando se mueve el cursor, dependiendo de variable que se modificará con el click de botones, cargo cursores
+
+
+    # def mouseMoveEvent(self, event):
+    #     # pass
+    #     if self.casoCursor == 0:       # Establecido en el init
+    #         self.pare.app.setOverrideCursor(QCursor(QPixmap('imatges/cruz.cur')))    
+    #     elif self.casoCursor == 1:        # MANO
+    #         pass
+    #     elif self.casoCursor == 2:        # FIT
+    #         self.pare.app.setOverrideCursor(QCursor(QPixmap('imatges/fit.cur'))) 
+
+    #     elif self.casoCursor == 3:        # ZOOM IN
+    #         self.pare.app.setOverrideCursor(QCursor(QPixmap('imatges/zoom_in.cur'))) 
+
+    #     elif self.casoCursor == 4:        # ZOOM OUT
+    #         self.pare.app.setOverrideCursor(QCursor(QPixmap('imatges/zoom_out.cur'))) 
+
+    #     elif self.casoCursor == 5:        # DEDO
+    #         self.pare.app.setOverrideCursor(QCursor(QPixmap('imatges/dedo.cur')))                                                             
         
 
 
-    def panCanvas(self):
-        # self.casoCursor = 1
+
+    def panCanvas(self):        # MANO
+        self.casoCursor = 1
         # self.pare.app.setOverrideCursor(QCursor(QPixmap('imatges/mano.cur'))) 
-        # try:
-        #     while self.pare.app.overrideCursor() != None:
-        #         self.pare.app.restoreOverrideCursor()
-        # except:
-        #     pass
+
+        # bucle para quitar todos los cursores guardados. quiero que use el que ofrece MapTool
+        while self.pare.app.overrideCursor() != None:
+            self.pare.app.restoreOverrideCursor()
+
 
         if self.bPanning.isChecked():
             self.bApuntar.setChecked(False)
             self.bZoomIn.setChecked(False)
             self.bZoomOut.setChecked(False)
             self.bCentrar.setChecked(False)
+           
             self.tool_pan = QgsMapToolPan(self)
             self.setMapTool(self.tool_pan)
             if self.pare is not None:
@@ -71,18 +96,28 @@ class QvCanvas(QgsMapCanvas):
     def centrarMapa(self):
         self.casoCursor = 2
         self.pare.app.setOverrideCursor(QCursor(QPixmap('imatges/fit.cur'))) 
-        self.zoomToFullExtent()
-        self.refresh()
-        self.bCentrar.setChecked(False)
+
+        if self.bCentrar.isChecked():
+            self.bApuntar.setChecked(False)
+            self.bZoomOut.setChecked(False)
+            self.bPanning.setChecked(False)
+            self.bZoomIn.setChecked(False)
+            
+            self.zoomToFullExtent()
+            self.refresh()
+        else:
+            self.bCentrar.setChecked(True)
 
     def zoomIn(self):
         self.casoCursor = 3
         self.pare.app.setOverrideCursor(QCursor(QPixmap('imatges/zoom_in.cur'))) 
+
         if self.bZoomIn.isChecked():
             self.bApuntar.setChecked(False)
             self.bZoomOut.setChecked(False)
             self.bPanning.setChecked(False)
             self.bCentrar.setChecked(False)
+           
             self.tool_zoomin = QgsMapToolZoom(self, False)
             self.setMapTool(self.tool_zoomin)
         else: 
@@ -91,11 +126,13 @@ class QvCanvas(QgsMapCanvas):
     def zoomOut(self):
         self.casoCursor = 4
         self.pare.app.setOverrideCursor(QCursor(QPixmap('imatges/zoom_out.cur')))
+
         if self.bZoomOut.isChecked():
             self.bApuntar.setChecked(False)
             self.bZoomIn.setChecked(False)
             self.bPanning.setChecked(False)
             self.bCentrar.setChecked(False)
+           
             self.tool_zoomout = QgsMapToolZoom(self, True)
             self.setMapTool(self.tool_zoomout)
         else: 
@@ -103,18 +140,18 @@ class QvCanvas(QgsMapCanvas):
 
     def seleccioClick(self):
         self.casoCursor = 5
-        
         self.pare.app.setOverrideCursor(QCursor(QPixmap('imatges/dedo.cur')))  
-        checked = self.bApuntar.isChecked()
-        print(checked)
+
+        # checked = self.bApuntar.isChecked()
+        # print(checked)
         if  self.bApuntar.isChecked():
-            tool = QvSeleccioElement(self, llegenda = self.llegenda)
+
             self.bZoomIn.setChecked(False)
             self.bZoomOut.setChecked(False)
             self.bPanning.setChecked(False)
-            self.bZoomIn.setChecked(False)
             self.bCentrar.setChecked(False)
             try:
+                tool = QvSeleccioElement(self, llegenda = self.llegenda)
                 self.setMapTool(tool)
             except:
                 print ('except')
@@ -292,11 +329,12 @@ if __name__ == "__main__":
     from qgis.PyQt.QtGui import QColor
    
 
-    projecteInicial='../dades/projectes/BCN11_nord.qgs'
+    
+    projecteInicial='D:/qVista/Dades/Projectes/BCN11_nord.qgs'
 
     with qgisapp() as app:
         # app.setStyle(QStyleFactory.create('fusion'))
-
+        
         llistaBotons = ['centrar', 'zoomIn', 'zoomOut', 'panning']
         widget = QWidget()
         widget.show()

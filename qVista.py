@@ -368,6 +368,11 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.canvas.xyCoordinates.connect(self.showXY)     
         self.canvas.scaleChanged.connect(self.showScale)   
         self.canvas.mapCanvasRefreshed.connect(self.canvasRefrescat)
+        try:
+            self.canvas.enterEvent=self.entro
+        except:
+            pass
+       
 
         self.layout = QVBoxLayout(self.frameCentral)
         self._menuBarShadow = QGraphicsDropShadowEffect()
@@ -395,6 +400,10 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         self.bridge = QgsLayerTreeMapCanvasBridge(self.root, self.canvas)
         # self.bridge.setCanvasLayers()
+
+    def entro(self):
+        print("entro")
+
 
     def canvasRefrescat(self):
         if self.marcaLlocPosada:
