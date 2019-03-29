@@ -414,6 +414,8 @@ if __name__ == "__main__":
     from moduls.QvLlegenda import QvLlegenda
     from qgis.PyQt.QtCore import QTranslator, QLocale, QLibraryInfo
 
+    from moduls.QvPlotly import testBarChart
+
     with qgisapp() as app:
 
         qApp = QvApp()
@@ -426,7 +428,7 @@ if __name__ == "__main__":
         llegenda = QvLlegenda(canvas, atributs)
 
         # llegenda.project.read('projectes/Illes.qgs')
-        llegenda.project.read('../Dades/Projectes/BCN11test.qgs')
+        llegenda.project.read('../Dades/Projectes/BCN11.qgs')
 
         llegenda.setWindowTitle('Llegenda')
         llegenda.setGeometry(50, 50, 300, 400)
@@ -470,6 +472,11 @@ if __name__ == "__main__":
         act.triggered.connect(QWhatsThis.enterWhatsThisMode)
         atributs.accions.afegirAccio('helpmode', act)
 
+        act = QAction()
+        act.setText("Bar Chart")
+        act.triggered.connect(testBarChart)
+        atributs.accions.afegirAccio('barchart', act)
+
         capa = ''
 
         def menuContexte(layer):
@@ -478,6 +485,8 @@ if __name__ == "__main__":
             atributs.menuAccions.append('separator')
             atributs.menuAccions.append('salutacions')
             atributs.menuAccions.append('helpmode')
+            atributs.menuAccions.append('separator')
+            atributs.menuAccions.append('barchart')
 
         atributs.clicatMenuContexte.connect(menuContexte)
 
