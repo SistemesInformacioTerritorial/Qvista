@@ -414,7 +414,7 @@ if __name__ == "__main__":
     from moduls.QvLlegenda import QvLlegenda
     from qgis.PyQt.QtCore import QTranslator, QLocale, QLibraryInfo
 
-    from moduls.QvPlotly import testBarChart
+    from moduls.QvPlotly import testBarChart, layerBarChart
 
     with qgisapp() as app:
 
@@ -464,7 +464,7 @@ if __name__ == "__main__":
         # Accines de usuario para el menú
         act = QAction()
         act.setText("Salutacions")
-        act.triggered.connect(lambda: salutacions(capa))
+        act.triggered.connect(lambda: salutacions(capa.name()))
         atributs.accions.afegirAccio('salutacions', act)
 
         act = QAction()
@@ -474,19 +474,20 @@ if __name__ == "__main__":
 
         act = QAction()
         act.setText("Bar Chart")
-        act.triggered.connect(testBarChart)
+        act.triggered.connect(lambda: layerBarChart(capa))
         atributs.accions.afegirAccio('barchart', act)
 
-        capa = ''
+        capa = None
 
         def menuContexte(layer):
             global capa
-            capa = layer.name()
+            capa = layer
             atributs.menuAccions.append('separator')
             atributs.menuAccions.append('salutacions')
             atributs.menuAccions.append('helpmode')
-            atributs.menuAccions.append('separator')
-            atributs.menuAccions.append('barchart')
+            if 'DISTRICTE' in capa.name().upper():
+                atributs.menuAccions.append('separator')
+                atributs.menuAccions.append('barchart')
 
         atributs.clicatMenuContexte.connect(menuContexte)
 

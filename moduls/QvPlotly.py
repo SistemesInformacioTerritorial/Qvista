@@ -1,25 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# def stackedBarChart(layer, selected=False):
-# try:
-#     path, _ = QtWidgets.QFileDialog.getSaveFileName(
-#         self, 'Desa dades a arxiu', '', 'CSV (*.csv)')
-#     if path is not None:
-#         with open(path, 'w', newline='') as stream:
-#             writer = csv.writer(
-#                 stream, delimiter=';', quotechar='¨',
-#                 quoting=csv.QUOTE_MINIMAL)
-#             writer.writerow(layer.fields().names())
-#             if selected:
-#                 iterator = layer.getSelectedFeatures
-#             else:
-#                 iterator = layer.getFeatures
-#             for feature in iterator():
-#                 writer.writerow(feature.attributes())
-#     return path
-# except Exception as e:
-#     print(str(e))
-#     return None
+from qgis.core import QgsMapLayer, QgsVectorLayerCache, QgsFeature
 
 import plotly as py
 import plotly.graph_objs as go
@@ -35,6 +16,31 @@ def testBarChart():
         y=[12, 18, 29],
         name='LA Zoo'
     )
+
+    data = [trace1, trace2]
+    layout = go.Layout(
+        barmode='stack'
+    )
+
+    fig = go.Figure(data=data, layout=layout)
+    py.offline.plot(fig,  auto_open=True)
+
+def layerBarChart(layer, selected=False):
+    if selected:
+        iterator = layer.getSelectedFeatures
+    else:
+        iterator = layer.getFeatures
+
+    x = []
+    y1 = []
+    y2 = []
+    for feature in iterator():
+        x.append(feature['C_Distri'])
+        y1.append(feature['Dones'])
+        y2.append(feature['Homes'])
+
+    trace1 = go.Bar(x, y1, name='Dones')
+    trace2 = go.Bar(x, y2, name='Homes')
 
     data = [trace1, trace2]
     layout = go.Layout(
