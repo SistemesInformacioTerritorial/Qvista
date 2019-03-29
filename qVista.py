@@ -1613,6 +1613,13 @@ class QVista(QMainWindow, Ui_MainWindow):
             self.layoutFrameLlegenda.addWidget(self.llegenda)
             self._menuBarShadow.setEnabled(True)
             self.botoMaxim.setIcon(QIcon('imatges/arrow-expand.png'))
+
+            # Descomentar para eliminar barra de titulo
+            # if self.lastMaximized:
+            #     qV.showMaximized()
+            # else:
+            #     qV.showNormal()
+
         else:
             self.frameLlegenda.hide()
             # self.frame_19.hide()
@@ -1633,6 +1640,10 @@ class QVista(QMainWindow, Ui_MainWindow):
             self._menuBarShadow.setEnabled(False)
             self.botoMaxim.setIcon(QIcon('imatges/arrow-collapse.png'))
             # self.bar.setGraphicsEffect(_menuBarShadow)
+
+            # Descomentar para eliminar barra de titulo
+            # self.lastMaximized = qV.isMaximized()
+            # qV.showFullScreen()
 
     def clickArbre(self):
         rang = self.distBarris.llegirRang()
@@ -2631,9 +2642,6 @@ def main(argv):
         
         # Instanciem la classe QVista i fem qV global per poder ser utilitzada arreu
         qV = QVista()
-
-        # qV.setWindowFlags(Qt.FramelessWindowHint)
-        # this->setWindowFlags(windowFlags() & ~Qt::FramelessWindowHint);
 
         # qV.showFullScreen()
         qV.showMaximized()
