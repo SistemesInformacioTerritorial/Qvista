@@ -1,9 +1,9 @@
 from moduls.QvImports import *
 from moduls.QvLlegenda import QvLlegenda
 
-projecteInicial = 'd:/colegis.qgs'
+projecteInicial = 'd:/colegis3.qgs'
 
-def imprimirPlanol(x, y, escala, rotacion, templateFile, fitxerSortida, tipusSortida):
+def imprimirPlanol(colegi, meses, x_min, y_min, x_max, y_max, rotacion, templateFile, fitxerSortida, tipusSortida):
     tInicial=time.time()
 
     template = QFile(templateFile)
@@ -16,12 +16,39 @@ def imprimirPlanol(x, y, escala, rotacion, templateFile, fitxerSortida, tipusSor
 
     if ok:
         refMap = layout.referenceMap()
+        labelColegi = layout.itemById('LabelColegi')
+        labelSeccions = layout.itemById('LabelSeccions')
+        labelColegi.setText('Col·legi Electoral: ' + colegi)
+        labelSeccions.setText('Meses: ' + meses)
         
         rect = refMap.extent()
-        vector = QgsVector(x - rect.center().x(), y - rect.center().y())
+        vector = QgsVector(x_min - rect.center().x(), y_min - rect.center().y())
         rect += vector
-        refMap.setExtent(rect)
-        refMap.setScale(escala)
+
+        offsetX = (x_max - x_min) / 6
+        offsetY = (y_max - y_min) / 6
+        x_min = x_min - offsetX
+        y_min = y_min - offsetY
+        x_max = x_max + offsetX
+        y_max = y_max + offsetY
+        distX = (x_max - x_min) 
+        distY = (y_max - y_min) 
+        relacio = 287 / 173
+        newOffsetY = 1
+        newOffsetX = 1
+
+        while distX / (distY + newOffsetY) > relacio:
+            newOffsetY = newOffsetY + 1
+
+        while (distX + newOffsetX) / distY < relacio:
+            newOffsetX = newOffsetX + 1
+         
+        newOffsetY = newOffsetY / 2
+        newOffsetX = newOffsetX / 2
+
+        rectangle = QgsRectangle(x_min - newOffsetX, y_min - newOffsetY, x_max + newOffsetX, y_max + newOffsetY)
+
+        refMap.setExtent(rectangle)
         refMap.setMapRotation(rotacion)
         #Depenent del tipus de sortida...
         
@@ -70,7 +97,7 @@ with qgisapp() as app:
     project.read(projecteInicial)
     llegenda = QvLlegenda(canvas)
 
-    plantillaMapa = 'plantillaMapaH.qpt'
+    plantillaMapa = 'plantilla_COLEGIS.qpt'
 
     posXY = [430036,4583163]    
     
@@ -80,12 +107,19 @@ with qgisapp() as app:
     # layer = LAYER DE COLEGIS
     for feature in layer.getFeatures():
         colegi = feature.attributes()[layer.fields().lookupField('LOCAL')]
+        cole = feature.attributes()[layer.fields().lookupField('CODI_COLE')]
         seccions = feature.attributes()[layer.fields().lookupField('SECCIONS')]
-        textFiltre = "CODI_SECCIO LIKE '%"+seccions+"%'"
-        print (textFiltre)
-        layerSeccions.setSubsetString(textFiltre)
-          
-          
-    imprimirPlanol(posXY[0], posXY[1], 50000, 0, plantillaMapa , 'd:/EUREKA.pdf', 'PDF')
+        meses = feature.attributes()[layer.fields().lookupField('MESES')]
+        x_min = feature.attributes()[layer.fields().lookupField('XMIN')]
+        y_min = feature.attributes()[layer.fields().lookupField('YMIN')]
+        x_max = feature.attributes()[layer.fields().lookupField('XMAX')]
+        y_max = feature.attributes()[layer.fields().lookupField('YMAX')]
+
+
+        textFiltre = "INSTR('"+seccions+"',DISTRICTE||SEC_CENS)>0"
+        textFiltre2 = 'CODI_COLE'+"='"+cole+"'"
+        layerSeccions.setSubsetString(textFiltre) 
+        layer.setSubsetString(textFiltre2)     
+        imprimirPlanol(colegi, meses, x_min, y_min, x_max, y_max, 0, plantillaMapa , 'd:/EUREKA.pdf', 'PDF')
     
     canvas.show()
