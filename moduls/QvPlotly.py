@@ -1,51 +1,76 @@
 # -*- coding: utf-8 -*-
 
 from qgis.core import QgsMapLayer, QgsVectorLayerCache, QgsFeature
+from qgis.PyQt import QtWebKitWidgets
+from qgis.PyQt.QtCore import QUrl
 
 import plotly as py
 import plotly.graph_objs as go
 
-def testBarChart():
-    trace1 = go.Bar(
-        x=['giraffes', 'orangutans', 'monkeys'],
-        y=[20, 14, 23],
-        name='SF Zoo'
-    )
-    trace2 = go.Bar(
-        x=['giraffes', 'orangutans', 'monkeys'],
-        y=[12, 18, 29],
-        name='LA Zoo'
-    )
 
-    data = [trace1, trace2]
-    layout = go.Layout(
-        barmode='stack'
-    )
+class QvChart(QtWebKitWidgets.QWebView):
+    def __init__(self):
+        super(QvChart, self).__init__()
+        self.ruta = None
 
-    fig = go.Figure(data=data, layout=layout)
-    py.offline.plot(fig,  auto_open=True)
+    def densitatBarChart(self, layer, orientation='v', selected=False):
+        if selected:
+            iterator = layer.getSelectedFeatures
+        else:
+            iterator = layer.getFeatures
 
-def layerBarChart(layer, selected=False):
-    if selected:
-        iterator = layer.getSelectedFeatures
-    else:
-        iterator = layer.getFeatures
+        x = []
+        y = []
+        for feature in iterator():
+            x.append(feature['N_Distri'])
+            y.append(round(
+                (feature['Dones'] + feature['Homes']) /
+                (feature['Area'] / 1000000), 2))
 
-    x = []
-    y1 = []
-    y2 = []
-    for feature in iterator():
-        x.append(feature['C_Distri'])
-        y1.append(feature['Dones'])
-        y2.append(feature['Homes'])
+        if orientation == 'v':
+            trace = go.Bar(x=x, y=y, name='Habitants/km2', orientation=orientation)
+        else:
+            trace = go.Bar(x=y, y=x, name='Habitants/mm2', orientation=orientation)
 
-    trace1 = go.Bar(x, y1, name='Dones')
-    trace2 = go.Bar(x, y2, name='Homes')
+        data = [trace]
+        layout = go.Layout(
+            title='Densitat de població per districte<br />(Habitants per km2)',
+            barmode='stack'
+        )
 
-    data = [trace1, trace2]
-    layout = go.Layout(
-        barmode='stack'
-    )
+        fig = go.Figure(data=data, layout=layout)
+        fname = 'd:/temp/pob_temp.html'
+        py.offline.plot(fig,  filename=fname, auto_open=False)
+        self.load = QUrl('file:///' + fname)
 
-    fig = go.Figure(data=data, layout=layout)
-    py.offline.plot(fig,  auto_open=True)
+    def poblacioBarChart(self, layer, orientation='v', selected=False):
+        if selected:
+            iterator = layer.getSelectedFeatures
+        else:
+            iterator = layer.getFeatures
+
+        x = []
+        y1 = []
+        y2 = []
+        for feature in iterator():
+            x.append(feature['N_Distri'])
+            y1.append(feature['Dones'])
+            y2.append(feature['Homes'])
+
+        if orientation == 'v':
+            trace1 = go.Bar(x=x, y=y1, name='Dones', orientation=orientation)
+            trace2 = go.Bar(x=x, y=y2, name='Homes', orientation=orientation)
+        else:   
+            trace1 = go.Bar(x=y1, y=x, name='Dones', orientation=orientation)
+            trace2 = go.Bar(x=y2, y=x, name='Homes', orientation=orientation)
+
+        data = [trace1, trace2]
+        layout = go.Layout(
+            title='Població per districte',
+            barmode='stack'
+        )
+
+        fig = go.Figure(data=data, layout=layout)
+        fname = 'd:/temp/pob_temp.html'
+        py.offline.plot(fig,  filename=fname, auto_open=False)
+        self.load = QUrl('file:///' + fname)
