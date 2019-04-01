@@ -9,9 +9,10 @@ import plotly.graph_objs as go
 
 
 class QvChart(QtWebKitWidgets.QWebView):
-    def __init__(self):
+    def __init__(self, ruta=None):
         super(QvChart, self).__init__()
-        self.ruta = None
+        if ruta is not None:
+            self.load(QUrl(ruta))
 
     def densitatBarChart(self, layer, orientation='v', selected=False):
         if selected:
@@ -39,9 +40,9 @@ class QvChart(QtWebKitWidgets.QWebView):
         )
 
         fig = go.Figure(data=data, layout=layout)
-        fname = 'd:/temp/pob_temp.html'
+        fname = 'D:/Temp/den_temp.html'
         py.offline.plot(fig,  filename=fname, auto_open=False)
-        self.load = QUrl('file:///' + fname)
+        self.load(QUrl('file:///'+fname))
 
     def poblacioBarChart(self, layer, orientation='v', selected=False):
         if selected:
@@ -71,6 +72,6 @@ class QvChart(QtWebKitWidgets.QWebView):
         )
 
         fig = go.Figure(data=data, layout=layout)
-        fname = 'd:/temp/pob_temp.html'
+        fname = 'D:/Temp/pob_temp.html'
         py.offline.plot(fig,  filename=fname, auto_open=False)
-        self.load = QUrl('file:///' + fname)
+        self.load(QUrl('file:///'+fname))

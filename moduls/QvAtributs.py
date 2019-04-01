@@ -487,11 +487,15 @@ if __name__ == "__main__":
         def poblacioBarChart(capa):
             w = QvChart()
             w.poblacioBarChart(capa)
+            w.setGeometry(50, 50, 1200, 800)
+            w.setWindowTitle('Chart Població')
             w.show()
 
         def densitatBarChart(capa):
             w = QvChart()
             w.densitatBarChart(capa)
+            w.setGeometry(50, 50, 1200, 800)
+            w.setWindowTitle('Chart Densitat')
             w.show()
 
         def menuContexte(layer):
