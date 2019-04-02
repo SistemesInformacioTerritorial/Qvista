@@ -446,6 +446,10 @@ if __name__ == "__main__":
         atributs.setGeometry(50, 500, 1050, 250)
         llegenda.obertaTaulaAtributs.connect(atributs.show)
 
+        chart = QvChart()
+        chart.setGeometry(50, 50, 1200, 800)
+        chart.setWindowTitle('Gràfics')
+
         def salutacions(txt):
             if txt == '':
                 txt = 'Salutacions'
@@ -485,18 +489,14 @@ if __name__ == "__main__":
         capa = None
 
         def poblacioBarChart(capa):
-            w = QvChart()
-            w.poblacioBarChart(capa)
-            w.setGeometry(50, 50, 1200, 800)
-            w.setWindowTitle('Chart Població')
-            w.show()
+            chart.showNormal()
+            chart.activateWindow()
+            chart.poblacioBarChart(capa)
 
         def densitatBarChart(capa):
-            w = QvChart()
-            w.densitatBarChart(capa)
-            w.setGeometry(50, 50, 1200, 800)
-            w.setWindowTitle('Chart Densitat')
-            w.show()
+            chart.showNormal()
+            chart.activateWindow()
+            chart.densitatBarChart(capa)
 
         def menuContexte(layer):
             global capa
