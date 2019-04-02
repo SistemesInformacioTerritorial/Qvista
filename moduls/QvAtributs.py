@@ -447,7 +447,7 @@ if __name__ == "__main__":
         llegenda.obertaTaulaAtributs.connect(atributs.show)
 
         chart = QvChart()
-        chart.setGeometry(50, 50, 1200, 800)
+        chart.setGeometry(50, 50, 1200, 750)
         chart.setWindowTitle('Gràfics')
 
         def salutacions(txt):
