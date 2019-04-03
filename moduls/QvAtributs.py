@@ -414,6 +414,8 @@ if __name__ == "__main__":
     from moduls.QvLlegenda import QvLlegenda
     from qgis.PyQt.QtCore import QTranslator, QLocale, QLibraryInfo
 
+    from moduls.QvPlotly import QvChart
+
     with qgisapp() as app:
 
         qApp = QvApp()
@@ -426,7 +428,7 @@ if __name__ == "__main__":
         llegenda = QvLlegenda(canvas, atributs)
 
         # llegenda.project.read('projectes/Illes.qgs')
-        llegenda.project.read('../Dades/Projectes/BCN11test.qgs')
+        llegenda.project.read('../Dades/Projectes/BCN11.qgs')
 
         llegenda.setWindowTitle('Llegenda')
         llegenda.setGeometry(50, 50, 300, 400)
@@ -443,6 +445,10 @@ if __name__ == "__main__":
         atributs.setWindowTitle('Atributs')
         atributs.setGeometry(50, 500, 1050, 250)
         llegenda.obertaTaulaAtributs.connect(atributs.show)
+
+        chart = QvChart()
+        chart.setGeometry(50, 50, 1200, 750)
+        chart.setWindowTitle('Gràfics')
 
         def salutacions(txt):
             if txt == '':
@@ -462,7 +468,7 @@ if __name__ == "__main__":
         # Accines de usuario para el menú
         act = QAction()
         act.setText("Salutacions")
-        act.triggered.connect(lambda: salutacions(capa))
+        act.triggered.connect(lambda: salutacions(capa.name()))
         atributs.accions.afegirAccio('salutacions', act)
 
         act = QAction()
@@ -470,14 +476,38 @@ if __name__ == "__main__":
         act.triggered.connect(QWhatsThis.enterWhatsThisMode)
         atributs.accions.afegirAccio('helpmode', act)
 
-        capa = ''
+        act = QAction()
+        act.setText("Gràfic població")
+        act.triggered.connect(lambda: poblacioBarChart(capa))
+        atributs.accions.afegirAccio('chartpoblacio', act)
+
+        act = QAction()
+        act.setText("Gràfic densitat")
+        act.triggered.connect(lambda: densitatBarChart(capa))
+        atributs.accions.afegirAccio('chartdensitat', act)
+
+        capa = None
+
+        def poblacioBarChart(capa):
+            chart.showNormal()
+            chart.activateWindow()
+            chart.poblacioBarChart(capa)
+
+        def densitatBarChart(capa):
+            chart.showNormal()
+            chart.activateWindow()
+            chart.densitatBarChart(capa)
 
         def menuContexte(layer):
             global capa
-            capa = layer.name()
+            capa = layer
             atributs.menuAccions.append('separator')
             atributs.menuAccions.append('salutacions')
             atributs.menuAccions.append('helpmode')
+            if 'DISTRICTE' in capa.name().upper():
+                atributs.menuAccions.append('separator')
+                atributs.menuAccions.append('chartpoblacio')
+                atributs.menuAccions.append('chartdensitat')
 
         atributs.clicatMenuContexte.connect(menuContexte)
 
