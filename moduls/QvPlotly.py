@@ -56,7 +56,7 @@ class QvChart(QtWebKitWidgets.QWebView):
                 color='green'
             ),
             barmode='stack',
-            separators='.,',
+            separators=',.',
             xaxis=dict(
                 title='DISTRICTES',
                 titlefont=dict(
@@ -65,7 +65,8 @@ class QvChart(QtWebKitWidgets.QWebView):
                     color='grey'
                 ),
                 showticklabels=True,
-                tickangle=0
+                tickangle=0,
+                ticks=''
                 # tickfont=dict(
                 #     family='Arial, sans-serif',
                 #     size=10,
@@ -73,8 +74,9 @@ class QvChart(QtWebKitWidgets.QWebView):
                 # ),
             ),
             yaxis=dict(
-                # tickformat=',.0f',
-                hoverformat=',.0f'
+                exponentformat='none',
+                hoverformat=',.0f',
+                ticks=''
             ),
             shapes=[
                 dict(
@@ -96,7 +98,7 @@ class QvChart(QtWebKitWidgets.QWebView):
                     y=media+100,
                     xref='x',
                     yref='y',
-                    text='Mitjana<br /><b>' + "{:,}".format(round(media)) + '</b>',
+                    text='Mitjana<br /><b>' + "{:,}".format(round(media)).replace(',', '.') + '</b>',
                     font=dict(
                         size=12,
                         color='gray'
@@ -146,7 +148,20 @@ class QvChart(QtWebKitWidgets.QWebView):
         data = [trace1, trace2]
         layout = go.Layout(
             title='Població per districte',
-            barmode='stack'
+            barmode='stack',
+            separators=',.',
+            xaxis=dict(
+                title='DISTRICTES',
+                titlefont=dict(
+                    # family='Arial, sans-serif',
+                    size=18,
+                    color='grey'
+                ),
+            ),
+            yaxis=dict(
+                exponentformat='none',
+                showexponent='none'
+            )
         )
 
         fig = go.Figure(data=data, layout=layout)
