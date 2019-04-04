@@ -414,7 +414,7 @@ if __name__ == "__main__":
     from moduls.QvLlegenda import QvLlegenda
     from qgis.PyQt.QtCore import QTranslator, QLocale, QLibraryInfo
 
-    from moduls.QvPlotly import testBarChart, layerBarChart
+    from moduls.QvPlotly import QvChart
 
     with qgisapp() as app:
 
@@ -446,6 +446,10 @@ if __name__ == "__main__":
         atributs.setGeometry(50, 500, 1050, 250)
         llegenda.obertaTaulaAtributs.connect(atributs.show)
 
+        chart = QvChart()
+        chart.setGeometry(50, 50, 1200, 750)
+        chart.setWindowTitle('Gràfics')
+
         def salutacions(txt):
             if txt == '':
                 txt = 'Salutacions'
@@ -473,11 +477,26 @@ if __name__ == "__main__":
         atributs.accions.afegirAccio('helpmode', act)
 
         act = QAction()
-        act.setText("Bar Chart")
-        act.triggered.connect(lambda: layerBarChart(capa))
-        atributs.accions.afegirAccio('barchart', act)
+        act.setText("Gràfic població")
+        act.triggered.connect(lambda: poblacioBarChart(capa))
+        atributs.accions.afegirAccio('chartpoblacio', act)
+
+        act = QAction()
+        act.setText("Gràfic densitat")
+        act.triggered.connect(lambda: densitatBarChart(capa))
+        atributs.accions.afegirAccio('chartdensitat', act)
 
         capa = None
+
+        def poblacioBarChart(capa):
+            chart.showNormal()
+            chart.activateWindow()
+            chart.poblacioBarChart(capa)
+
+        def densitatBarChart(capa):
+            chart.showNormal()
+            chart.activateWindow()
+            chart.densitatBarChart(capa)
 
         def menuContexte(layer):
             global capa
@@ -487,7 +506,8 @@ if __name__ == "__main__":
             atributs.menuAccions.append('helpmode')
             if 'DISTRICTE' in capa.name().upper():
                 atributs.menuAccions.append('separator')
-                atributs.menuAccions.append('barchart')
+                atributs.menuAccions.append('chartpoblacio')
+                atributs.menuAccions.append('chartdensitat')
 
         atributs.clicatMenuContexte.connect(menuContexte)
 
