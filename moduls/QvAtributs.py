@@ -415,6 +415,7 @@ if __name__ == "__main__":
     from qgis.PyQt.QtCore import QTranslator, QLocale, QLibraryInfo
 
     from moduls.QvPlotly import QvChart
+    import sys
 
     with qgisapp() as app:
 
@@ -446,6 +447,13 @@ if __name__ == "__main__":
         atributs.setGeometry(50, 500, 1050, 250)
         llegenda.obertaTaulaAtributs.connect(atributs.show)
 
+        # Creación dinamica de objeto por nombre
+        # mod = sys.modules['moduls.QvPlotly']
+        # cls = getattr(mod, 'QvChart')
+        # chart = cls()
+        # print(type(chart))
+        # print(vars(chart))
+        
         chart = QvChart()
         chart.setGeometry(50, 50, 1200, 750)
         chart.setWindowTitle('Gràfics')
