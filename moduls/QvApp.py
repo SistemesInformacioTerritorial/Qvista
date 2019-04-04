@@ -75,7 +75,19 @@ class QvApp(Singleton):
         self.dbQvista = _DB_QVISTA[self.entorn]     # Conexión Oracle entorno
 
         self.proxy = self.setProxy()                # Establecer proxy
-        self.gh = QvGithub(self.data())             # Establecer Github
+
+        val = self.paramCfg('Github', 'False')      # Establecer rama Github
+        if val == 'False':
+            self.github = None
+        elif val == 'True':
+            self.github = 'master'
+        else:
+            self.github = val
+
+        if self.github is None:
+            self.gh = None
+        else:
+            self.gh = QvGithub(self.data(), self.github)
 
         self.dbLog = None
         self.queryLog = None
@@ -92,6 +104,7 @@ class QvApp(Singleton):
         txt = ''
         txt += 'Nom: ' + self.paramCfg('Nom', '???') + '\n'
         txt += 'Entorn: ' + self.entorn + '\n'
+        txt += 'Branca: ' + self.github + '\n'
         txt += 'Intranet: ' + str(self.intranet) + '\n'
         txt += 'Usuari: ' + self.usuari + '\n'
         txt += 'Sessió: ' + self.sessio + '\n'
@@ -279,16 +292,14 @@ class QvApp(Singleton):
     # Métodos de reporte de bugs con Github
 
     def bugUser(self, tit, desc):
-        val = self.paramCfg('Github', 'False')
-        if val == 'True':
+        if self.gh is not None:
             return self.gh.postUser(tit, desc)
         else:
             return False
 
     def bugException(self, err):
         ok = False
-        val = self.paramCfg('Github', 'False')
-        if val == 'True':
+        if self.gh is not None:
             ok = self.gh.reportBug()
         val = self.paramCfg('Debug', 'False')
         if val == 'True':
@@ -296,8 +307,7 @@ class QvApp(Singleton):
         return ok
 
     def bugFatalError(self, type, value, tb):
-        val = self.paramCfg('Github', 'False')
-        if val == 'True':
+        if self.gh is not None:
             return self.gh.reportBug(type, value, tb)
         else:
             return False
@@ -316,7 +326,7 @@ if __name__ == "__main__":
 
         qApp = QvApp()                  # Singleton
         
-        kkqApp.carregaIdioma(app, 'ca')   # Traductor
+        qApp.carregaIdioma(app, 'ca')   # Traductor
 
         #
         # INICIO LOG: Si logInici() retorna False, el resto de funciones de log no hacen nada
