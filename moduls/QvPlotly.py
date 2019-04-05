@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from qgis.core import QgsMapLayer, QgsVectorLayerCache, QgsFeature
 from qgis.PyQt import QtWebKitWidgets
 from qgis.PyQt.QtCore import QUrl
 
@@ -98,7 +97,7 @@ class QvChart(QtWebKitWidgets.QWebView):
                     y=media+100,
                     xref='x',
                     yref='y',
-                    text='Mitjana<br /><b>' + "{:,}".format(round(media)).replace(',', '.') + '</b>',
+                    text='Mitjana<br /><b>'+"{:,}".format(round(media)).replace(',', '.')+'</b>',
                     font=dict(
                         size=12,
                         color='gray'
@@ -114,7 +113,7 @@ class QvChart(QtWebKitWidgets.QWebView):
 
         fig = go.Figure(data=data, layout=layout)
         fname = 'C:/temp/den_chart.html'
-        py.offline.plot(fig,  filename=fname, auto_open=False)
+        py.offline.plot(fig, filename=fname, auto_open=False)
         self.load(QUrl('file:///' + fname))
 
     def poblacioBarChart(self, layer, orientation='v', selected=False):
@@ -166,5 +165,5 @@ class QvChart(QtWebKitWidgets.QWebView):
 
         fig = go.Figure(data=data, layout=layout)
         fname = 'C:/temp/pob_chart.html'
-        py.offline.plot(fig,  filename=fname, auto_open=False)
+        py.offline.plot(fig, filename=fname, auto_open=False)
         self.load(QUrl('file:///' + fname))

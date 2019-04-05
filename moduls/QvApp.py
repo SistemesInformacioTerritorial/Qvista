@@ -11,7 +11,7 @@ from pathlib import Path
 import sys
 import getpass
 import uuid
-import traceback
+# import traceback
 import os
 import json
 
@@ -48,7 +48,7 @@ _PROXY = {
 
 def _fatalError(type, value, tb):
     QvApp().bugFatalError(type, value, tb)
-    
+
 #     error = repr(traceback.format_tb(tb))
 #     error = error[-1000:]
 #     print('ERROR -', error)
@@ -60,14 +60,14 @@ class QvApp(Singleton):
     def __init__(self):
         if hasattr(self, 'ruta'):                   # Se inicializa una vez
             return
-        
+
         self.ruta, self.rutaBase = self.calcRuta()  # Path de la aplicación
         self.cfg = self.readCfg()                   # Config de instalación
         val = self.paramCfg("Debug", "False")       # Errores no controlados
         if val != "True":
             sys.excepthook = _fatalError
 
-        self.entorn = self.calcEntorn()             # 'DSV' o 'PRO'        
+        self.entorn = self.calcEntorn()             # 'DSV' o 'PRO'
         self.usuari = getpass.getuser().upper()     # Id de usuario
         self.sessio = str(uuid.uuid1())             # Id único de sesión
 
@@ -166,7 +166,7 @@ class QvApp(Singleton):
         except Exception as err:
             self.bugException(err)
             return None
-        
+
     def calcEntorn(self):
         val = self.paramCfg('Producció', 'False')
         if val == 'True':
@@ -199,14 +199,14 @@ class QvApp(Singleton):
             txt = ''
             file = Path(nomFich)
             if file.is_file():
-                file.open() 
+                file.open()
                 txt = file.read_text()
             return txt
-        except:
+        except Exception:
             return ''
 
     def carregaAjuda(self, objecte):
-        try: 
+        try:
             nom = type(objecte).__name__
             if self.idioma is not None and self.idioma != '':
                 nomFich = nom + '_' + self.idioma + '.html'
@@ -236,7 +236,7 @@ class QvApp(Singleton):
                     if db.open():
                         return db
             return None
-        except:
+        except Exception:
             return None
 
     def logDesconnexio(self):
@@ -247,10 +247,10 @@ class QvApp(Singleton):
             self.dbLog.close()
             self.dbLog = None
             QSqlDatabase.removeDatabase(conName)
-        except:
+        except Exception:
             return
 
-    def logRegistre(self, topic, params = None):
+    def logRegistre(self, topic, params=None):
         if self.dbLog is None or self.queryLog is None:
             return False
         try:
@@ -263,10 +263,10 @@ class QvApp(Singleton):
             self.queryLog.bindValue(':PARAMS', params)
             ok = self.queryLog.exec_()
             return ok
-        except:
+        except Exception:
             return False
 
-    def logInici(self, family = 'QVISTA', logname = 'DESKTOP', params = None):
+    def logInici(self, family='QVISTA', logname='DESKTOP', params=None):
         self.familyLog = family.upper()
         self.nameLog = logname.upper()
         self.dbLog = self.logConnexio()
@@ -276,7 +276,7 @@ class QvApp(Singleton):
             self.queryLog = QSqlQuery()
             return self.logRegistre('LOG_INICI', params)
 
-    def logFi(self, params = None):
+    def logFi(self, params=None):
         ok = self.logRegistre('LOG_FI', params)
         self.logDesconnexio()
         return ok
@@ -286,7 +286,7 @@ class QvApp(Singleton):
             return None
         try:
             return self.queryLog.lastError().text()
-        except:
+        except Exception:
             return None
 
     # Métodos de reporte de bugs con Github
@@ -312,6 +312,7 @@ class QvApp(Singleton):
         else:
             return False
 
+
 if __name__ == "__main__":
 
     print(sys.argv[0])
@@ -320,12 +321,12 @@ if __name__ == "__main__":
 
     gui = False
 
-    with qgisapp(guienabled = gui) as app:
+    with qgisapp(guienabled=gui) as app:
 
         # print(QSqlDatabase.drivers())
 
         qApp = QvApp()                  # Singleton
-        
+
         qApp.carregaIdioma(app, 'ca')   # Traductor
 
         #
@@ -357,6 +358,3 @@ if __name__ == "__main__":
             app.aboutToQuit.connect(QvApp().logFi)
         else:
             QvApp().logFi()
-
-
-        

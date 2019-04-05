@@ -1,21 +1,17 @@
 # -*- coding: utf-8 -*-
 
-from qgis.core import QgsMapLayer, QgsVectorLayerCache, QgsFeature
+from qgis.core import QgsMapLayer, QgsVectorLayerCache
 from qgis.PyQt import QtWidgets
-from qgis.PyQt.QtCore import (Qt, QObject, QPoint, QModelIndex,
-                              pyqtSignal, pyqtSlot)
-from qgis.PyQt.QtGui import QCursor, QIcon
-from qgis.PyQt.QtWidgets import QTabWidget, QVBoxLayout, QMenu, QAction
+from qgis.PyQt.QtCore import Qt, pyqtSignal
+from qgis.PyQt.QtGui import QCursor
+from qgis.PyQt.QtWidgets import QTabWidget, QVBoxLayout, QAction
 from qgis.gui import (QgsGui,
                       QgsAttributeTableModel,
                       QgsAttributeTableView,
                       QgsAttributeTableFilterModel,
                       QgsAttributeDialog,
                       QgsAttributeForm,
-                      QgsAttributeEditorContext,
-                      QgsLayerTreeMapCanvasBridge,
                       QgsSearchQueryBuilder,
-                      QgsBusyIndicatorDialog,
                       QgsActionMenu)
 from moduls.QvAccions import QvAccions
 from moduls.QvApp import QvApp
@@ -296,7 +292,7 @@ class QvTaulaAtributs(QgsAttributeTableView):
                             self.layer.name() +
                             ' - Element ' + str(self.feature.id() + 1))
                         dialog.setMode(QgsAttributeForm.SingleEditMode)
-        except:
+        except Exception:
             pass
         return dialog
 
@@ -311,7 +307,7 @@ class QvTaulaAtributs(QgsAttributeTableView):
                     if menuExtra is not None and not menuExtra.isEmpty():
                         return menuExtra
             return None
-        except:
+        except Exception:
             return None
 
     def showFeature(self):
@@ -405,17 +401,15 @@ class QvTaulaAtributs(QgsAttributeTableView):
             self.filter.filterMode() ==
             QgsAttributeTableFilterModel.ShowSelected)
 
+
 if __name__ == "__main__":
 
-    from qgis.core import QgsProject
     from qgis.core.contextmanagers import qgisapp
     from qgis.gui import QgsMapCanvas
     from qgis.PyQt.QtWidgets import QMessageBox, QWhatsThis
     from moduls.QvLlegenda import QvLlegenda
-    from qgis.PyQt.QtCore import QTranslator, QLocale, QLibraryInfo
 
     from moduls.QvPlotly import QvChart
-    import sys
 
     with qgisapp() as app:
 
@@ -453,7 +447,7 @@ if __name__ == "__main__":
         # chart = cls()
         # print(type(chart))
         # print(vars(chart))
-        
+
         chart = QvChart()
         chart.setGeometry(50, 50, 1200, 750)
         chart.setWindowTitle('Gràfics')
