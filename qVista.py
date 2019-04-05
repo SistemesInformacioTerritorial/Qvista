@@ -2494,7 +2494,7 @@ def afegirQlr(nom):
 
     layers = QgsLayerDefinition.loadLayerDefinitionLayers(nom)
 
-    self.project.addMapLayers(layers, True)
+    qV.project.addMapLayers(layers, True)
     # QgsLayerDefinition().loadLayerDefinition(nom, qV.project, qV.llegenda.root)
     return
 
