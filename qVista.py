@@ -836,6 +836,7 @@ class QVista(QMainWindow, Ui_MainWindow):
             self.mapesOberts = True
 
     def preparacioMapTips(self):
+        
         layer = self.llegenda.currentLayer()
         self.my_tool_tip = QvToolTip(self.canvas,layer)
         self.my_tool_tip.createMapTips()

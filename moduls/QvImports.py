@@ -11,7 +11,7 @@ from qgis.PyQt.QtWidgets import *
 from qgis.PyQt import QtSql
 
 from qgis.PyQt.QtXml import QDomDocument, QDomElement, QDomAttr, QDomText    
-from qgis.PyQt.QtCore import pyqtSignal
+from qgis.PyQt.QtCore import pyqtSignal, QPoint
 
 from PyQt5.QtWebKitWidgets import QWebView , QWebPage
 from PyQt5.QtWebKit import QWebSettings
