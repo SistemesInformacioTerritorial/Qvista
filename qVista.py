@@ -98,7 +98,7 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         # Inicialitzacions
         self.printActiu = False
-        self.qvPrint=0
+        self.qvPrint = 0
         self.mapesOberts = False
         self.primerCop = True
         self.mapaMaxim = False
