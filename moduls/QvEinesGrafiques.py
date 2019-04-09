@@ -220,7 +220,7 @@ class QvSeleccioElement(QgsMapTool):
        Si la llegenda no té un layer actiu, és treballa amb el primer visible al canvas.
     """
 
-    def __init__(self, canvas, llegenda, radi = 0.3):
+    def __init__(self, canvas, llegenda, radi = 10):
         """[summary]
         
         Arguments:
