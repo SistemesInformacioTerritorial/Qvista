@@ -1910,11 +1910,14 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.statusbar.addPermanentWidget( self.lblProjecte, 0 )
 
     def editarOrientacio(self):
-        self.mapeta.cambiarRotacion()
+        # self.mapeta.cambiarRotacion()
+              
         if self.canvas.rotation()==0:
             self.bOrientacio.setText(' Orientació: Nord')
         else:
             self.bOrientacio.setText(' Orientació: Eixample')
+
+        self.mapeta.cambiarRotacion()  
         self.canvas.refresh()
 
     def editarEscala(self):
@@ -2627,6 +2630,8 @@ def main(argv):
             print('ERROR LOG >>', qVapp.logError())
             ok = qVapp.logRegistre('Capa1')
             ok = qVapp.logRegistre('Atributs')
+
+        
 
         # # Idioma
         qVapp.carregaIdioma(app, 'ca')

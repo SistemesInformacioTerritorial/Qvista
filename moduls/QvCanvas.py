@@ -63,6 +63,7 @@ class QvCanvas(QgsMapCanvas):
             self.zoomToFullExtent()
             self.refresh()
         self.bCentrar.setChecked(False)
+        # self.bCentrar.setChecked(True)
 
     def zoomIn(self):
         if self.bZoomIn.isChecked():

@@ -68,6 +68,7 @@ class QvMapeta(QFrame):
       
         # Definim la geometria del frame del mapeta
         self.setGeometry(0,0,self.xTamany,self.yTamany)
+        self.move(5,5)
         self.begin = QPoint()
         self.end = QPoint()
 
@@ -85,7 +86,11 @@ class QvMapeta(QFrame):
         icon = QIcon('imatges/mapeta-collapse.png')
         self.botoFerPetit.setIcon(icon)
         self.botoFerPetit.setGeometry(0,0,25,25)
+
         self.botoFerPetit.show()
+        self.botoFerPetit.setChecked(False)
+        
+        
         self.botoFerPetit.clicked.connect(self.ferPetit)
 
         # BOTON QUE INVOCA EL CAMBIO DE ROTACION MEDIANTE LA FUNCION self.cambiarRotacion
@@ -115,7 +120,13 @@ class QvMapeta(QFrame):
                 self.setStyleSheet('QFrame {background-image: url("imatges/QVista_Mapeta_0graus.png");}')
             else:
                 self.canvas.setRotation(44.5)
-                self.setGeometry(0,0,self.xTamany,self.yTamany)
+                if self.petit == False:
+                    self.setGeometry(0,0,self.xTamany,self.yTamany)
+                    self.move(5,5)
+                else:
+                    self.setGeometry(0,0,25,25)
+                    self.move(5,5)
+                # self.setGeometry(0,0,self.xTamany,self.yTamany)
                 self.setStyleSheet('QFrame {background-image: url("imatges/QVista_Mapeta_44_5graus_mio.png");}')
                 # self.setStyleSheet('QFrame {background-image: url("imatges/QVista_Mapeta_44_5graus.png");}')
         else:
@@ -124,13 +135,26 @@ class QvMapeta(QFrame):
                 self.setStyleSheet('QFrame {background-image: url("imatges/QVista_Mapeta_0graus_peque.png");}')
             else:
                 self.canvas.setRotation(44.5)
-                self.setGeometry(0,0,self.xTamany,self.yTamany)
+                if self.petit == False:
+                    self.setGeometry(0,0,self.xTamany,self.yTamany)
+                    self.move(5,5)
+                else:
+                    self.setGeometry(0,0,25,25)
+                    self.move(5,5)
                 self.setStyleSheet('QFrame {background-image: url("imatges/QVista_Mapeta_44_5graus_mio_peque.png");}')
 
 
-        self.show()
         self.canvas.refresh()
         self.pintarMapeta()
+
+
+
+        if self.botoMinimitzar:
+            self.botoFerPetit.show()
+        else:
+            self.botoFerPetit.hide()
+
+        self.botoFerPetit.setChecked(False)
 
     def setBotoMinimitzar(self, botoMinimitzar):
         """Per assignar o no 
@@ -138,22 +162,30 @@ class QvMapeta(QFrame):
         Arguments:
             botoMinimitzar {[type]} -- [description]
         """
-        if botoMinimitzar:
+        self.botoMinimitzar= botoMinimitzar
+
+        if self.botoMinimitzar:
             self.botoFerPetit.show()
         else:
             self.botoFerPetit.hide()
+        self.botoFerPetit.setChecked(False)
 
     def ferPetit(self):
         if self.petit:
             self.setGeometry(0,0,self.xTamany,self.yTamany)
+            self.move(5,5)
             self.petit = False
-            icon = QIcon('imatges/arrow-collapse.png')
+            # icon = QIcon('imatges/arrow-collapse.png')
+
+            icon = QIcon('imatges/mapeta-collapse.png')
             self.botoFerPetit.setIcon(icon)
         else:
             self.setGeometry(0,0,25,25)
+            self.move(5,5)
             self.petit = True
             icon = QIcon('imatges/mapetaPetit.jpg')
             self.botoFerPetit.setIcon(icon)
+        self.botoFerPetit.setChecked(False)
 
     def pintarMapeta(self):
         # Cuando hay alteraciones en el canvas, se han de repercutir sobre el mapeta, representando sobre éste el area de cartografia visible
@@ -252,6 +284,7 @@ class QvMapeta(QFrame):
  
 
     def paintEvent(self, event):
+
         # Cuando se detecta evento de refresco??
         # Pinto en mapeta rectangulo y cruz
         qp = QPainter(self)
@@ -373,6 +406,7 @@ class QvMapeta(QFrame):
         ## Pasamos rango al canvas para que lo represente')
         # Necesitare tener estas coordenadas como QgsRectangle...
         rang = QgsRectangle(punt1[0], punt1[1], punt2[0], punt2[1])
+        
         self.canvas.setExtent(rang)
         self.canvas.refresh()
         rect = self.canvas.extent()
