@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from qgis.PyQt.QtSql import QSqlDatabase, QSqlQuery
+from qgis.PyQt.QtSql import QSqlDatabase, QSqlQuery, QSql
 from qgis.PyQt.QtCore import QTranslator, QLibraryInfo
 from qgis.PyQt.QtNetwork import QNetworkProxy
 from qgis.core import QgsPythonRunner
@@ -58,9 +58,10 @@ def _fatalError(type, value, tb):
 class QvApp(Singleton):
 
     def __init__(self):
-        if hasattr(self, 'ruta'):                   # Se inicializa una vez
+        if hasattr(self, 'gh'):                     # Se inicializa una vez
             return
 
+        self.gh = None
         self.ruta, self.rutaBase = self.calcRuta()  # Path de la aplicación
         self.cfg = self.readCfg()                   # Config de instalación
         val = self.paramCfg("Debug", "False")       # Errores no controlados
@@ -68,6 +69,7 @@ class QvApp(Singleton):
             sys.excepthook = _fatalError
 
         self.entorn = self.calcEntorn()             # 'DSV' o 'PRO'
+
         self.usuari = getpass.getuser().upper()     # Id de usuario
         self.sessio = str(uuid.uuid1())             # Id único de sesión
 
@@ -75,6 +77,12 @@ class QvApp(Singleton):
         self.dbQvista = _DB_QVISTA[self.entorn]     # Conexión Oracle entorno
 
         self.proxy = self.setProxy()                # Establecer proxy
+
+        val = self.paramCfg('Log', 'False')         # Activación log
+        if val == 'True':
+            self.log = True
+        else:
+            self.log = False
 
         val = self.paramCfg('Github', 'False')      # Establecer rama Github
         if val == 'False':
@@ -89,10 +97,11 @@ class QvApp(Singleton):
         else:
             self.gh = QvGithub(self.data(), self.github)
 
-        self.dbLog = None
+        self.db = None
         self.queryLog = None
         self.familyLog = None
         self.nameLog = None
+        self.queryGeo = None
         self.appQgis = None
         self.idioma = None
         self.qtTranslator = None
@@ -220,12 +229,13 @@ class QvApp(Singleton):
             print(str(e))
             return ''
 
-    # Metodos de LOG en Oracle
+    # Metodos db QVISTA
 
-    def logConnexio(self):
+    def dbConnexio(self):
+        if not self.intranet:
+            return
         try:
-            val = self.paramCfg('Log', 'False')
-            if self.intranet and val == 'True':
+            if self.db is None:
                 db = QSqlDatabase.addDatabase(self.dbQvista['Database'])
                 if db.isValid():
                     db.setHostName(self.dbQvista['HostName'])
@@ -234,24 +244,37 @@ class QvApp(Singleton):
                     db.setUserName(self.dbQvista['UserName'])
                     db.setPassword(self.dbQvista['Password'])
                     if db.open():
-                        return db
-            return None
+                        self.db = db
         except Exception:
-            return None
+            self.db = None
 
-    def logDesconnexio(self):
-        if self.dbLog is None:
+    def dbDesconnexio(self):
+        if not self.intranet:
             return
         try:
-            conName = self.dbLog.connectionName()
-            self.dbLog.close()
-            self.dbLog = None
-            QSqlDatabase.removeDatabase(conName)
+            if self.db is not None:
+                conName = self.db.connectionName()
+                self.db.close()
+                self.db = None
+                QSqlDatabase.removeDatabase(conName)
         except Exception:
-            return
+            self.db = None
+
+    # Metodos de LOG en Oracle
+
+    def logInici(self, family='QVISTA', logname='DESKTOP', params=None):
+        if not self.log:
+            return False
+        self.dbConnexio()
+        if self.db is None:
+            return False
+        self.familyLog = family.upper()
+        self.nameLog = logname.upper()
+        self.queryLog = QSqlQuery()
+        return self.logRegistre('LOG_INICI', params)
 
     def logRegistre(self, topic, params=None):
-        if self.dbLog is None or self.queryLog is None:
+        if not self.log or self.db is None or self.queryLog is None:
             return False
         try:
             self.queryLog.prepare("CALL QV_LOG_WRITE(:IDUSER, :IDSESSION, :FAMILY, :LOGNAME, :TOPIC, :PARAMS)")
@@ -266,28 +289,48 @@ class QvApp(Singleton):
         except Exception:
             return False
 
-    def logInici(self, family='QVISTA', logname='DESKTOP', params=None):
-        self.familyLog = family.upper()
-        self.nameLog = logname.upper()
-        self.dbLog = self.logConnexio()
-        if self.dbLog is None:
-            return False
-        else:
-            self.queryLog = QSqlQuery()
-            return self.logRegistre('LOG_INICI', params)
-
     def logFi(self, params=None):
         ok = self.logRegistre('LOG_FI', params)
-        self.logDesconnexio()
+        self.dbDesconnexio()
         return ok
 
     def logError(self):
-        if self.dbLog is None or self.queryLog is None:
-            return None
+        if not self.log or self.db is None or self.queryLog is None:
+            return 'Log no actiu'
         try:
             return self.queryLog.lastError().text()
         except Exception:
             return None
+
+    # Metodos de geocodificación
+
+    def geocod(self, tipusVia, variant, codi, numIni, lletraIni='', numFi='', lletraFi=''):
+        self.dbConnexio()
+        if self.db is None:
+            return None, None, False
+        if self.queryGeo is None:
+            self.queryGeo = QSqlQuery()
+        try:
+            self.queryGeo.prepare("CALL QV_GEOCOD(:TIPUSVIA, :VARIANTE, :CODIGO, " +
+                                  ":NUMINI, :LETRAINI, :NUMFIN, :LETRAFIN, :X, :Y)")
+            self.queryGeo.bindValue(':TIPUSVIA', tipusVia)
+            self.queryGeo.bindValue(':VARIANTE', variant)
+            self.queryGeo.bindValue(':CODIGO', codi)
+            self.queryGeo.bindValue(':NUMINI', numIni)
+            self.queryGeo.bindValue(':LETRAINI', lletraIni)
+            self.queryGeo.bindValue(':NUMFIN', numFi)
+            self.queryGeo.bindValue(':LETRAFIN', lletraFi)
+            self.queryGeo.bindValue(':X', 0.0, QSql.Out)
+            self.queryGeo.bindValue(':Y', 0.0, QSql.Out)
+            ok = self.queryGeo.exec_()
+            if ok:
+                x = self.queryGeo.boundValue(':X')
+                y = self.queryGeo.boundValue(':Y')
+                return x, y, ok
+            else:
+                return None, None, ok
+        except Exception:
+            return None, None, False
 
     # Métodos de reporte de bugs con Github
 
@@ -328,6 +371,13 @@ if __name__ == "__main__":
         qApp = QvApp()                  # Singleton
 
         qApp.carregaIdioma(app, 'ca')   # Traductor
+
+        x, y, ok = qApp.geocod('C', 'Mallorca', None, '100')
+        if ok:
+            print(str(x), str(y))
+        x, y, ok = qApp.geocod('Av', 'Diagonal', None, '220')
+        if ok:
+            print(str(x), str(y))
 
         #
         # INICIO LOG: Si logInici() retorna False, el resto de funciones de log no hacen nada
