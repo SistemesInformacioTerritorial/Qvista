@@ -1436,7 +1436,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         # self.menuCarregarNivell = self.bar.addMenu("  Finestres  ")
         # catalegMenu = self.bar.addMenu("                   Catàleg  ")
 
-        fnt = QFont("Segoe UI", 16, weight=QFont.Normal)
+        fnt= QFont("Segoe UI", 16, weight=QFont.Normal)
         self.menuProjectes.setStyleSheet("QMenu {color: #79909B; background-color: #dddddd; selection-background-color : #2f4550;}")
         self.menuProjectes.setFont(fnt)
         self.menuProjectes.styleStrategy = QFont.PreferAntialias or QFont.PreferQuality
