@@ -149,26 +149,26 @@ class QvMapeta(QFrame):
 
 
 
-        if self.botoMinimitzar:
-            self.botoFerPetit.show()
-        else:
-            self.botoFerPetit.hide()
+        # if self.botoMinimitzar:
+        #     self.botoFerPetit.show()
+        # else:
+        #     self.botoFerPetit.hide()
 
-        self.botoFerPetit.setChecked(False)
+        # self.botoFerPetit.setChecked(False)
 
-    def setBotoMinimitzar(self, botoMinimitzar):
-        """Per assignar o no 
+    # def setBotoMinimitzar(self, botoMinimitzar):
+    #     """Per assignar o no 
         
-        Arguments:
-            botoMinimitzar {[type]} -- [description]
-        """
-        self.botoMinimitzar= botoMinimitzar
+    #     Arguments:
+    #         botoMinimitzar {[type]} -- [description]
+    #     """
+    #     self.botoMinimitzar = botoMinimitzar
 
-        if self.botoMinimitzar:
-            self.botoFerPetit.show()
-        else:
-            self.botoFerPetit.hide()
-        self.botoFerPetit.setChecked(False)
+    #     if self.botoMinimitzar:
+    #         self.botoFerPetit.show()
+    #     else:
+    #         self.botoFerPetit.hide()
+    #     self.botoFerPetit.setChecked(False)
 
     def ferPetit(self):
         if self.petit:
