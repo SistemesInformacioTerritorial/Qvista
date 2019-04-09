@@ -5,9 +5,10 @@ from moduls.QvEinesGrafiques import QvSeleccioElement
 from qgis.PyQt.QtCore import Qt, QSize
 from qgis.gui import QgsMapCanvas, QgsMapToolZoom, QgsMapToolPan
 from qgis.PyQt.QtWidgets import QFrame, QVBoxLayout, QHBoxLayout, QPushButton, QSpacerItem, QSizePolicy
-from qgis.PyQt.QtGui import QIcon, QPainter
+from qgis.PyQt.QtGui import QIcon, QPainter, QCursor,QPixmap, QKeyEvent
 from moduls.QvApp import QvApp
 from qgis.core.contextmanagers import qgisapp
+
 
 
 class QvCanvas(QgsMapCanvas):
@@ -18,34 +19,51 @@ class QvCanvas(QgsMapCanvas):
         self.posicioBotonera = posicioBotonera
         self.llegenda = llegenda
         self.pare = pare
+        
         # self.setWhatsThis(QvApp().carregaAjuda(self))
 
         self._preparacioBotonsCanvas()
         if self.llistaBotons is not None:
             self.panCanvas()
+            
 
-    def seleccioClick(self):    
-        checked = self.bApuntar.isChecked()
-        print(checked)
-        if  self.bApuntar.isChecked():
-            tool = QvSeleccioElement(self, llegenda = self.llegenda)
+    def keyPressEvent(self, event):
+        """ Defineix les actuacions del QvMapeta en funció de la tecla apretada.
+        """
+        if event.key() == Qt.Key_Escape:
+            if self.pare is not None:
+                try:
+                    self.pare.esborrarSeleccio(tambePanCanvas = False)
+                    self.tool.fitxaAtributs.close()
+                except:
+                    pass
+        
+
+    def panCanvas(self):        # MANO
+        # bucle para quitar todos los cursores guardados. quiero que use el que ofrece MapTool
+        # while self.pare.app.overrideCursor() != None:
+        #     self.pare.app.restoreOverrideCursor()
+
+
+        if self.bPanning.isChecked():
+            self.bApuntar.setChecked(False)
             self.bZoomIn.setChecked(False)
             self.bZoomOut.setChecked(False)
-            self.bPanning.setChecked(False)
-            self.bZoomIn.setChecked(False)
             self.bCentrar.setChecked(False)
-            try:
-                self.setMapTool(tool)
-            except:
-                print ('except')
-                pass
-        else:
-            self.bApuntar.setChecked(True)
+           
+            self.tool_pan = QgsMapToolPan(self)
+            self.setMapTool(self.tool_pan)
+
+
+        else: 
+            self.bPanning.setChecked(True)
 
     def centrarMapa(self):
-        self.zoomToFullExtent()
-        self.refresh()
+        if self.bCentrar.isChecked():
+            self.zoomToFullExtent()
+            self.refresh()
         self.bCentrar.setChecked(False)
+        # self.bCentrar.setChecked(True)
 
     def zoomIn(self):
         if self.bZoomIn.isChecked():
@@ -53,10 +71,12 @@ class QvCanvas(QgsMapCanvas):
             self.bZoomOut.setChecked(False)
             self.bPanning.setChecked(False)
             self.bCentrar.setChecked(False)
+           
             self.tool_zoomin = QgsMapToolZoom(self, False)
             self.setMapTool(self.tool_zoomin)
         else: 
             self.bZoomIn.setChecked(True)
+        self.setCursor(QCursor(QPixmap('imatges/zoom_in.cur')))
 
     def zoomOut(self):
         if self.bZoomOut.isChecked():
@@ -64,23 +84,38 @@ class QvCanvas(QgsMapCanvas):
             self.bZoomIn.setChecked(False)
             self.bPanning.setChecked(False)
             self.bCentrar.setChecked(False)
+           
             self.tool_zoomout = QgsMapToolZoom(self, True)
             self.setMapTool(self.tool_zoomout)
         else: 
             self.bZoomOut.setChecked(True)
 
-    def panCanvas(self):
-        if self.bPanning.isChecked():
-            self.bApuntar.setChecked(False)
+        self.setCursor(QCursor(QPixmap('imatges/zoom_out.cur')))
+
+    def seleccioClick(self):
+        if  self.bApuntar.isChecked():
+
             self.bZoomIn.setChecked(False)
             self.bZoomOut.setChecked(False)
+            self.bPanning.setChecked(False)
             self.bCentrar.setChecked(False)
-            self.tool_pan = QgsMapToolPan(self)
-            self.setMapTool(self.tool_pan)
-            if self.pare is not None:
+
+            try:
                 self.pare.esborrarSeleccio(tambePanCanvas = False)
-        else: 
-            self.bPanning.setChecked(True)
+                self.tool.fitxaAtributs.close()
+            except:
+                pass
+
+            try:
+                self.tool = QvSeleccioElement(self, llegenda = self.llegenda)
+                self.setMapTool(self.tool)
+            except:
+                pass
+        else:
+            self.bApuntar.setChecked(True)
+        
+        self.setCursor(QCursor(QPixmap('imatges/dedo.cur')))
+
 
     def setLlegenda(self, llegenda):
         self.llegenda = llegenda
@@ -173,23 +208,28 @@ class QvCanvas(QgsMapCanvas):
         if self.llistaBotons is not None:
             if "panning" in self.llistaBotons:
                 self.bPanning = self._botoMapa('imatges/pan_tool_black_24x24.png')
-                self.layoutBotoneraMapa.addWidget(self.bPanning)     
+                self.layoutBotoneraMapa.addWidget(self.bPanning)   
+                self.bPanning.setCursor(QCursor(Qt.ArrowCursor))   
                 self.bPanning.clicked.connect(self.panCanvas)
             if "centrar" in self.llistaBotons:
                 self.bCentrar = self._botoMapa('imatges/fit.png')
-                self.layoutBotoneraMapa.addWidget(self.bCentrar)     
+                self.layoutBotoneraMapa.addWidget(self.bCentrar) 
+                self.bCentrar.setCursor(QCursor(Qt.ArrowCursor))     
                 self.bCentrar.clicked.connect(self.centrarMapa)
             if "zoomIn" in self.llistaBotons:
                 self.bZoomIn = self._botoMapa('imatges/zoom_in.png')
-                self.layoutBotoneraMapa.addWidget(self.bZoomIn)     
+                self.layoutBotoneraMapa.addWidget(self.bZoomIn)  
+                self.bZoomIn.setCursor(QCursor(Qt.ArrowCursor))
                 self.bZoomIn.clicked.connect(self.zoomIn)
             if "zoomOut" in self.llistaBotons:
                 self.bZoomOut = self._botoMapa('imatges/zoom_out.png')
-                self.layoutBotoneraMapa.addWidget(self.bZoomOut)     
+                self.layoutBotoneraMapa.addWidget(self.bZoomOut) 
+                self.bZoomOut.setCursor(QCursor(Qt.ArrowCursor))  
                 self.bZoomOut.clicked.connect(self.zoomOut)
             if "apuntar" in self.llistaBotons:
                 self.bApuntar = self._botoMapa('imatges/apuntar.png')
-                self.layoutBotoneraMapa.addWidget(self.bApuntar)        
+                self.layoutBotoneraMapa.addWidget(self.bApuntar)  
+                self.bApuntar.setCursor(QCursor(Qt.ArrowCursor))       
                 self.bApuntar.clicked.connect(self.seleccioClick)
 
         # spacer = QSpacerItem(0, 50, QSizePolicy.Expanding, QSizePolicy.Maximum)
@@ -251,11 +291,12 @@ if __name__ == "__main__":
     from qgis.PyQt.QtGui import QColor
    
 
-    projecteInicial='../dades/projectes/BCN11_nord.qgs'
+    
+    projecteInicial='D:/qVista/Dades/Projectes/BCN11_nord.qgs'
 
     with qgisapp() as app:
         # app.setStyle(QStyleFactory.create('fusion'))
-
+        
         llistaBotons = ['centrar', 'zoomIn', 'zoomOut', 'panning']
         widget = QWidget()
         widget.show()

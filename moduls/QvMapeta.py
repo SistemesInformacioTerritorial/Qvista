@@ -18,11 +18,12 @@ class QvMapeta(QFrame):
             tamanyPetit {bool} -- [True pel Mapeta petit, False pel Mapeta gran] (default: {False})
             pare {[QWidget]} -- [El widget sobre el que es pintarà el mapeta. No és obligatori.] (default: {None})
         """
-
+        
         QFrame.__init__(self)
        
         # Assigno el mapeta al parent
         self.setParent(pare)
+        self.pare= pare
         # angulo 0 rangos mundo equivalentes a mapeta
         self.xmin_0= 419691.945
         self.ymin_0=4574155.024
@@ -31,13 +32,18 @@ class QvMapeta(QFrame):
 
         # Convertim paràmetres en variables de classe
         self.canvas = canvas
+         
         self.tamanyPetit = tamanyPetit
         self.MouseMoveFlag = False
+        self.MousePressFlag= False
         # Posem per defecte a False
         self.petit = False
        
         # Preparem el canvas per capturar quan es modifica, i poder repintar el mapeta.
         self.canvas.extentsChanged.connect(self.pintarMapeta)
+
+        
+        
 
         # Dimensions i fons del mapeta segosn si és gran o petit
         if self.tamanyPetit:
@@ -62,6 +68,7 @@ class QvMapeta(QFrame):
       
         # Definim la geometria del frame del mapeta
         self.setGeometry(0,0,self.xTamany,self.yTamany)
+        self.move(5,5)
         self.begin = QPoint()
         self.end = QPoint()
 
@@ -79,7 +86,11 @@ class QvMapeta(QFrame):
         icon = QIcon('imatges/mapeta-collapse.png')
         self.botoFerPetit.setIcon(icon)
         self.botoFerPetit.setGeometry(0,0,25,25)
+
         self.botoFerPetit.show()
+        self.botoFerPetit.setChecked(False)
+        
+        
         self.botoFerPetit.clicked.connect(self.ferPetit)
 
         # BOTON QUE INVOCA EL CAMBIO DE ROTACION MEDIANTE LA FUNCION self.cambiarRotacion
@@ -93,6 +104,11 @@ class QvMapeta(QFrame):
         # self.show()
 
         # self.canvas.setCenter(QgsPointXY(xcent, ycent))
+        
+        # self.setMouseTracking(True)
+    
+
+        
 
     def cambiarRotacion(self):
         # entramos aqui cuando se pulsa el boton de cambiar rotacion
@@ -104,7 +120,13 @@ class QvMapeta(QFrame):
                 self.setStyleSheet('QFrame {background-image: url("imatges/QVista_Mapeta_0graus.png");}')
             else:
                 self.canvas.setRotation(44.5)
-                self.setGeometry(0,0,self.xTamany,self.yTamany)
+                if self.petit == False:
+                    self.setGeometry(0,0,self.xTamany,self.yTamany)
+                    self.move(5,5)
+                else:
+                    self.setGeometry(0,0,25,25)
+                    self.move(5,5)
+                # self.setGeometry(0,0,self.xTamany,self.yTamany)
                 self.setStyleSheet('QFrame {background-image: url("imatges/QVista_Mapeta_44_5graus_mio.png");}')
                 # self.setStyleSheet('QFrame {background-image: url("imatges/QVista_Mapeta_44_5graus.png");}')
         else:
@@ -113,13 +135,26 @@ class QvMapeta(QFrame):
                 self.setStyleSheet('QFrame {background-image: url("imatges/QVista_Mapeta_0graus_peque.png");}')
             else:
                 self.canvas.setRotation(44.5)
-                self.setGeometry(0,0,self.xTamany,self.yTamany)
+                if self.petit == False:
+                    self.setGeometry(0,0,self.xTamany,self.yTamany)
+                    self.move(5,5)
+                else:
+                    self.setGeometry(0,0,25,25)
+                    self.move(5,5)
                 self.setStyleSheet('QFrame {background-image: url("imatges/QVista_Mapeta_44_5graus_mio_peque.png");}')
 
 
-        self.show()
         self.canvas.refresh()
         self.pintarMapeta()
+
+
+
+        if self.botoMinimitzar:
+            self.botoFerPetit.show()
+        else:
+            self.botoFerPetit.hide()
+
+        self.botoFerPetit.setChecked(False)
 
     def setBotoMinimitzar(self, botoMinimitzar):
         """Per assignar o no 
@@ -127,22 +162,30 @@ class QvMapeta(QFrame):
         Arguments:
             botoMinimitzar {[type]} -- [description]
         """
-        if botoMinimitzar:
+        self.botoMinimitzar= botoMinimitzar
+
+        if self.botoMinimitzar:
             self.botoFerPetit.show()
         else:
             self.botoFerPetit.hide()
+        self.botoFerPetit.setChecked(False)
 
     def ferPetit(self):
         if self.petit:
             self.setGeometry(0,0,self.xTamany,self.yTamany)
+            self.move(5,5)
             self.petit = False
-            icon = QIcon('imatges/arrow-collapse.png')
+            # icon = QIcon('imatges/arrow-collapse.png')
+
+            icon = QIcon('imatges/mapeta-collapse.png')
             self.botoFerPetit.setIcon(icon)
         else:
             self.setGeometry(0,0,25,25)
+            self.move(5,5)
             self.petit = True
             icon = QIcon('imatges/mapetaPetit.jpg')
             self.botoFerPetit.setIcon(icon)
+        self.botoFerPetit.setChecked(False)
 
     def pintarMapeta(self):
         # Cuando hay alteraciones en el canvas, se han de repercutir sobre el mapeta, representando sobre éste el area de cartografia visible
@@ -241,6 +284,7 @@ class QvMapeta(QFrame):
  
 
     def paintEvent(self, event):
+
         # Cuando se detecta evento de refresco??
         # Pinto en mapeta rectangulo y cruz
         qp = QPainter(self)
@@ -272,11 +316,16 @@ class QvMapeta(QFrame):
     def mousePressEvent(self, event):
         self.begin = event.pos()
         self.end = event.pos()
+        self.MousePressFlag=True
 
     def mouseMoveEvent(self, event):
-        self.end = event.pos()
-        self.MouseMoveFlag= True
-        self.canvas.update()
+        # self.pare.app.restoreOverrideCursor()
+        # self.pare.app.setOverrideCursor(QCursor(QPixmap('imatges/cruz.cur'))) 
+        # self.setCursor(QCursor(QPixmap('imatges/cruz.cur')))
+        if self.MousePressFlag== True:        
+            self.end = event.pos()
+            self.MouseMoveFlag= True
+            self.canvas.update()
 
     def conversioPantallaMapa(self,punt):
         x = punt[0]
@@ -284,13 +333,22 @@ class QvMapeta(QFrame):
         xMapa = self.xmin_0  +self.Escala * x
         yMapa = self.ymin_0 + self.Escala * y 
         return [xMapa, yMapa]
-   
+
+    def leaveEvent(self, event):
+        self.pare.app.restoreOverrideCursor()
+
+    def enterEvent(self, event):
+        self.pare.app.setOverrideCursor(QCursor(QPixmap('imatges/cruz.cur')))       
+
     def mouseReleaseEvent(self, event):
         Paux1=QPoint() #  Pto arriba izquierda
         Paux2=QPoint() #  Pto arriba derecha
         Paux3=QPoint() #  Pto abajo derecha
         Paux4=QPoint() #  Pto abajo izquierda
         self.end = event.pos()
+        self.MousePressFlag=False
+
+     
 
         ## Cambio origen de coordenadas "Y" poniendolo abajo-izquierda. Acorde con sistema del Mapa')
         self.xIn = self.begin.x()
@@ -348,9 +406,15 @@ class QvMapeta(QFrame):
         ## Pasamos rango al canvas para que lo represente')
         # Necesitare tener estas coordenadas como QgsRectangle...
         rang = QgsRectangle(punt1[0], punt1[1], punt2[0], punt2[1])
+        
         self.canvas.setExtent(rang)
         self.canvas.refresh()
         rect = self.canvas.extent()
+
+
+
+
+
         
 
 import math

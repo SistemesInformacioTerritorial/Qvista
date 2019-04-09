@@ -61,7 +61,7 @@ class QVista(QMainWindow, Ui_MainWindow):
     
     keyPressed = pyqtSignal(int)
         
-    def __init__(self):
+    def __init__(self,app):
         """  Inicialització de QVista.
         
             Aquí fem:
@@ -86,6 +86,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.setupUi(self)
         # self.frame.setStyleSheet("QFrame {background-color : #52489C}")
 
+        self.app=app
         #Afegim títol a la finestra
         self.setWindowTitle(titolFinestra)
 
@@ -172,6 +173,11 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.dropLlegenda.arxiusPerProcessar.connect(self.obrirArxiu)
         self.dropCanvas = QvDropFiles(self.canvas, ['.qgs', '.qgz'], ['.qlr', '.shp', '.csv', '.gpkg'])
         self.dropCanvas.arxiusPerProcessar.connect(self.obrirArxiu)
+
+        self.setMouseTracking(False)
+
+
+    
 
     # Fins aquí teniem la inicialització de la classe. Ara venen les funcions, o métodes, de la classe. 
 
@@ -363,6 +369,8 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.canvas.scaleChanged.connect(self.showScale)   
         self.canvas.mapCanvasRefreshed.connect(self.canvasRefrescat)
 
+       
+
         self.layout = QVBoxLayout(self.frameCentral)
         self._menuBarShadow = QGraphicsDropShadowEffect()
         self._menuBarShadow.setXOffset(10)
@@ -389,6 +397,9 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         self.bridge = QgsLayerTreeMapCanvasBridge(self.root, self.canvas)
         # self.bridge.setCanvasLayers()
+
+
+
 
     def canvasRefrescat(self):
         if self.marcaLlocPosada:
@@ -643,7 +654,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         # self.wMapeta = QtWidgets.QWidget()
         # self.wMapeta.setGeometry(0,0,267,284)
         # self.wMapeta.show()
-        self.mapeta = QvMapeta(self.canvas, tamanyPetit=True)
+        self.mapeta = QvMapeta(self.canvas, tamanyPetit=True, pare=self)
         
         self.bOrientacio.clicked.connect(self.editarOrientacio)
         self.mapeta.setParent(self.canvas)
@@ -716,7 +727,7 @@ class QVista(QMainWindow, Ui_MainWindow):
     #     try:
     #         self.fGrafiques = QFrame()
     #         self.lyGrafiques = QVBoxLayout(self.fGrafiques)
-    #         self.fGrafiques.setLayout(self.lyGrafiques)
+    #         self.fGrafiques.setLayout(self.lyGrafiques)setMouseTracking
 
     #         self.calculadora = QWidget()
     #         self.calculadora.ui = Ui_Calculadora()
@@ -1912,11 +1923,14 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.statusbar.addPermanentWidget( self.lblProjecte, 0 )
 
     def editarOrientacio(self):
-        self.mapeta.cambiarRotacion()
+        # self.mapeta.cambiarRotacion()
+              
         if self.canvas.rotation()==0:
             self.bOrientacio.setText(' Orientació: Nord')
         else:
             self.bOrientacio.setText(' Orientació: Eixample')
+
+        self.mapeta.cambiarRotacion()  
         self.canvas.refresh()
 
     def editarEscala(self):
@@ -2153,6 +2167,7 @@ class DialegCSV(QDialog):
             self.ui.cbDelX.addItems(llistaCamps)
             self.ui.cbDelY.addItems(llistaCamps)
         self.exec()
+
 
     def closeEvent(self, event):
         pass
@@ -2629,10 +2644,13 @@ def main(argv):
             ok = qVapp.logRegistre('Capa1')
             ok = qVapp.logRegistre('Atributs')
 
+        
+
         # # Idioma
         qVapp.carregaIdioma(app, 'ca')
 
         app.setStyle(QStyleFactory.create('fusion'))
+        
 
         # estil = EstilPropi('Fusion')   
         # app.setStyle('fusion')
@@ -2643,7 +2661,9 @@ def main(argv):
         # splash.showMessage("<h1><font color='black'>Versió 0.1 - Work in progress</font></h1>", Qt.AlignTop | Qt.AlignCenter, Qt.white)
         
         # Instanciem la classe QVista i fem qV global per poder ser utilitzada arreu
-        qV = QVista()
+        # Paso app, para que QvCanvas pueda cambiar cursores
+        qV = QVista(app)
+
 
         # qV.showFullScreen()
         qV.showMaximized()
@@ -2656,6 +2676,7 @@ def main(argv):
 if __name__ == "__main__":
     try:
         main(sys.argv)
+        
     except Exception as err:
         QvApp().bugException(err)
 
