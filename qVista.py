@@ -27,6 +27,7 @@ from moduls.QvPavimentacio import DockPavim
 from moduls.QvMarxesCiutat import MarxesCiutat
 from moduls.QvToolTip import QvToolTip
 from moduls.QvDropFiles import QvDropFiles
+from moduls.QvNews import QvNews
 # Impressió del temps de carrega dels moduls Qv
 print ('Temps de carrega dels moduls Qv:', time.time()-iniciTempsModuls)
 
@@ -174,7 +175,8 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.dropCanvas = QvDropFiles(self.canvas, ['.qgs', '.qgz'], ['.qlr', '.shp', '.csv', '.gpkg'])
         self.dropCanvas.arxiusPerProcessar.connect(self.obrirArxiu)
 
-        self.setMouseTracking(False)
+        self.setMouseTracking(False) 
+        
 
 
     
@@ -336,7 +338,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.bInfo = self.botoLateral(tamany = 25, accio=self.actInfo)
         self.bHelp = self.botoLateral(tamany = 25, accio=self.actHelp)
         self.bBug = self.botoLateral(tamany = 25, accio=self.actBug)
-        self.bDashStandard = self.botoLateral(tamany = 25, accio=self.actDashStandard)
+        # self.bDashStandard = self.botoLateral(tamany = 25, accio=self.actDashStandard)
     
     # Funcions de preparació d'entorns 
     def preparacioStreetView(self):
@@ -469,7 +471,6 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.wCataleg.ui.setupUi(self.wCataleg)
         self.wCataleg.setWindowTitle("Cataleg d'Informació Territorial")
         # self.wCataleg.show()
-        #dfgdfgdfg
 
         self.dwCataleg = QDockWidget( "Cataleg", self )
         self.dwCataleg.setObjectName( "catalegTaula" )
@@ -2663,6 +2664,7 @@ def main(argv):
         # Instanciem la classe QVista i fem qV global per poder ser utilitzada arreu
         # Paso app, para que QvCanvas pueda cambiar cursores
         qV = QVista(app)
+       
 
 
         # qV.showFullScreen()
@@ -2670,6 +2672,9 @@ def main(argv):
 
         # Tanquem la imatge splash.
         splash.finish(qV)
+        # news = QvNews()
+        # news.setWizardStyle(QWizard.ClassicStyle)
+        # news.exec()
         qVapp.logRegistre('LOG_TEMPS', qV.lblTempsArrencada.text())
         app.aboutToQuit.connect(qV.gestioSortida)
 
