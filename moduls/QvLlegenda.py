@@ -188,7 +188,8 @@ class QvLlegenda(QgsLayerTreeView):
     projecteCarregat = pyqtSignal(str)
 
     def __init__(self, canvas=None, atributs=None, canviCapaActiva=None):
-        super().__init__()
+        QgsLayerTreeView.__init__(self)
+        
         self.project = QgsProject.instance()
         self.root = self.project.layerTreeRoot()
         self.canvas = None
@@ -228,9 +229,6 @@ class QvLlegenda(QgsLayerTreeView):
         # Lista de acciones que apareceran en el menú
         self.menuAccions = []
         self.setMenuProvider(QvMenuLlegenda(self))
-
-        # self.setAcceptDrops(True)
-        # self.setDropIndicatorShown(True)
 
         self.iconaFiltre = QgsLayerTreeViewIndicator()
         # self.iconaFiltre.setIcon(QIcon(':/Icones/ic_file_upload_black_48dp.png'))
@@ -359,6 +357,36 @@ class QvLlegenda(QgsLayerTreeView):
         self.model.setFlag(QgsLegendModel.AllowLegendChangeState, on)
         self.model.setFlag(QgsLegendModel.AllowNodeChangeVisibility, on)
         self.model.setFlag(QgsLegendModel.DeferredLegendInvalidation, on)
+        # self.setAcceptDrops(on)
+        # # self.setDropIndicatorShown(on)
+        # print('acceptDrops', self.acceptDrops())
+
+    # def dragEnterEvent(self, event):
+    #     self.dragFiles = []
+    #     self.dragExts = ['.qlr', '.shp', '.csv'] # pueden haber varios
+    #     self.dragProj = ['.qgs', '.qgz'] # solo uno
+    #     data = event.mimeData()
+    #     if data.hasUrls():
+    #         for url in data.urls():
+    #             fich = url.toLocalFile()
+    #             if os.path.isfile(fich):
+    #                 _, fext = os.path.splitext(fich)
+    #                 if fext.lower() in self.dragExts:
+    #                     print('url', fich)
+    #                     self.dragFiles.append(fich)
+    #     if len(self.dragFiles) > 0:
+    #         event.acceptProposedAction()
+            
+    # def dragMoveEvent(self, event):
+    #     event.acceptProposedAction()
+
+    # def dropEvent(self, event):
+    #     print('Abrir ficheros')
+    #     event.acceptProposedAction()
+
+    # def dragLeaveEvent(self, event):
+    #     self.dragFiles = []
+    #     event.accept()
 
     def connectaEscala(self, escala):
         # print('Cambio escala:', escala)
@@ -618,7 +646,9 @@ class QvLlegenda(QgsLayerTreeView):
         # dlgLayers.setDirectoryUrl()
         nfile, _ = dlgLayers.getOpenFileName(None, "Afegir Capes Qgis", ".", "Capes Qgis (*.qlr)")
         if nfile != '':
-            QgsLayerDefinition.loadLayerDefinition(nfile, self.project, self.root)
+            # QgsLayerDefinition.loadLayerDefinition(nfile, self.project, self.root)
+            layers = QgsLayerDefinition.loadLayerDefinitionLayers(nfile)
+            self.project.addMapLayers(layers, True)
     
     def showLayerMap(self):
         if self.canvas is not None:

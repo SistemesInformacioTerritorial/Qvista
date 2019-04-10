@@ -72,7 +72,7 @@ class QvColumnaCataleg(QWidget):
                 # botoInfoMapa.ui.label_3.setText('Autor: '+project.metadata().author())
                 botoInfoMapa.ui.b1.clicked.connect(self.obrirEnQVista(nomProjecte))
                 botoInfoMapa.ui.b2.clicked.connect(self.obrirEnQgis(nomProjecte))    
-                doc=QTextDocument()
+                doc = QTextDocument()
                 doc.setHtml('../dades/projectes/'+projecte+'.htm')
                 botoInfoMapa.ui.textEdit.setDocument(doc)
                 botoInfoMapa.ui.label_3.hide()

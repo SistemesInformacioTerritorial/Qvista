@@ -53,7 +53,7 @@ class QVDistrictesBarris(QObject):
     def expand_all(self):
         """Expandir o contraer todo el arbol, dependiendo de si detecta que esta extendido o contraido
         """
-        if self.view.isExpanded(self.model.index(0, 0, QtCore.QModelIndex())):
+        if self.view.isExpanded(self.model.index(0, 0, QModelIndex())):
             self.view.collapseAll()
         else:
             self.view.expandAll()

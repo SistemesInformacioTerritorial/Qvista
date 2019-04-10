@@ -220,7 +220,7 @@ class QvSeleccioElement(QgsMapTool):
        Si la llegenda no té un layer actiu, és treballa amb el primer visible al canvas.
     """
 
-    def __init__(self, canvas, llegenda, radi = 20):
+    def __init__(self, canvas, llegenda, radi = 10):
         """[summary]
         
         Arguments:
@@ -235,6 +235,16 @@ class QvSeleccioElement(QgsMapTool):
         self.canvas = canvas
         self.llegenda = llegenda
         self.radi = radi
+
+    def keyPressEvent(self, event):
+        """ Defineix les actuacions del QvMapeta en funció de la tecla apretada.
+        """
+        if event.key() == Qt.Key_Escape:
+            pass
+        #     if self.pare is not None:
+        #         self.pare.esborrarSeleccio(tambePanCanvas = False)
+        # self.tool.fitxaAtributs.close()
+
 
     def canvasPressEvent(self, event):
         pass
@@ -251,7 +261,15 @@ class QvSeleccioElement(QgsMapTool):
         msgBox.setInformativeText(textInformacio)
         ret = msgBox.exec()
 
+    def heCerradoFicha(self):
+        bb= self.parent()
+        
+        bb.pare.esborrarSeleccio(tambePanCanvas = False)
+
+
+
     def canvasReleaseEvent(self, event):
+        print("CANVAS RELEASE")
         # Lllegim posició del mouse
         x = event.pos().x()
         y = event.pos().y()
@@ -267,8 +285,36 @@ class QvSeleccioElement(QgsMapTool):
             if layer is not None and layer.type() == QgsMapLayer.VectorLayer:
                 it = layer.getFeatures(QgsFeatureRequest().setFilterRect(rect))
                 for feature in it:
-                    self.fitxaAtributs = QgsAttributeDialog(layer, feature, False) 
+                    # try:
+                    #     print("fitxaAtributs=",self.fitxaAtributs)
+
+                    #     if self.fitxaAtributs != None:
+                    #         self.fitxaAtributs.destroy()
+                    #         print("destroy")
+                    #     else:
+                    #         print("None")
+                    # except :
+                    #     print("error")
+                    
+
+                    self.fitxaAtributs = QgsAttributeDialog(layer, feature, False)
+                    self.fitxaAtributs.finished.connect(self.heCerradoFicha)
                     self.fitxaAtributs.show()
+                    # try:
+                    #     self.fitxaAtributs.clearFocus()
+                    # except :
+                    #     pass
+                    
+
+                    # self.fitxaAtributs.destroy()
+                    # ret = self.fitxaAtributs.exec() 
+
+                    # if ret ==  0:
+                    #     self.fitxaAtributs.destroy()
+                    
+                    # 
+       
+                    
                     ids.append(feature.id())
 
                 # ids = [i.id() for i in it]
@@ -301,14 +347,15 @@ if __name__ == "__main__":
         canvas = QgsMapCanvas()
 
         project = QgsProject.instance()
-        project.read('../dades/projectes/bcn11.qgs')
+        projecteInicial='D:/qVista/Dades/Projectes/BCN11_nord.qgs'
+        project.read(projecteInicial)
         root = project.layerTreeRoot()
         bridge = QgsLayerTreeMapCanvasBridge(root, canvas)
         
         llegenda = QvLlegenda()
         llegenda.show()
         canvas.show()
-        tool = QvSeleccioElement(canvas, llegenda)
+        tool =  QvSeleccioElement(canvas, llegenda)
         canvas.setMapTool(tool)
 
 

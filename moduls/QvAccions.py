@@ -1,12 +1,11 @@
 # -*- coding: utf-8 -*-
 
-from qgis.PyQt.QtGui import QCursor, QIcon
 from qgis.PyQt.QtWidgets import QMenu, QAction
 from qgis.PyQt.QtWidgets import QMessageBox, QWhatsThis
-# import images_rc
-# import recursos
+
 
 class QvAccions:
+
     def __init__(self):
         super().__init__()
 
@@ -32,10 +31,10 @@ class QvAccions:
         act.triggered.connect(self._about)
         self.afegirAccio('about', act)
 
-    def menuAccions(self, llistaAccions, accions = None):
+    def menuAccions(self, llistaAccions, accions=None, menuExtra=None):
         if QWhatsThis.inWhatsThisMode():
             return None
-        if accions == None:
+        if accions is None:
             accions = self.accions
         else:
             accions.update(self.accions)
@@ -45,5 +44,8 @@ class QvAccions:
                 menu.addSeparator()
             elif nom in accions:
                 menu.addAction(accions[nom])
-        return menu
+        if menuExtra is not None:
+            menu.addSeparator()
+            menu.addMenu(menuExtra)
 
+        return menu

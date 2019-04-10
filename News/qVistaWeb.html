@@ -1,0 +1,41 @@
+ <!DOCTYPE html>
+<html>
+<title>HTML Tutorial</title>
+
+<body>
+
+<h1>This is a heading</h1>
+<p>This is a paragraph.</p>
+<div id="toc">
+    <div id="divCercadors"></div>
+</div>
+<div id="map"></div>
+
+<script type="text/javascript" src="https://w33.bcn.cat/geoBCN/js/api?v=0.5&f=jsapi.js"></script> 
+<script type="text/javascript" >    
+    /** Establim si l'entorn utilitzarà el paquet gràfic o no (per defecte no l'utilitza.)*/
+    geoBCN.usHTML = true;
+</script>    
+<script type="text/javascript" >    
+    /** Establim l'entorn en mode mòbil o web (mode per defecte) */
+    geoBCN.esMobil = false;
+    var mapa, cercador; 
+
+/** Programem la inicialització de l'entorn */
+geoBCN.ready = function () {
+
+    /** Construïm el mapa per defecte */
+    mapa = new geoBCN.Map({
+        divId: "map"
+    });
+
+    /** Construim el cercador amb les nostres preferències. Noteu que fa referència al mapa creat anteriorment. */
+    cercador = new geoBCN.Html.Cercadors({
+        "divId": "divCercadors",
+        "mapa": mapa
+    });
+
+};
+    </script>
+</body>
+</html> 

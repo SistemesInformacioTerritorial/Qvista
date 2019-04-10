@@ -1,17 +1,20 @@
 # -*- coding: utf-8 -*-
 
-from qgis.PyQt.QtSql import QSqlDatabase, QSqlQuery
+from qgis.PyQt.QtSql import QSqlDatabase, QSqlQuery, QSql
 from qgis.PyQt.QtCore import QTranslator, QLibraryInfo
 from qgis.PyQt.QtNetwork import QNetworkProxy
+from qgis.core import QgsPythonRunner
 from moduls.QvSingleton import Singleton
-from pathlib import Path
+from moduls.QvPythonRunner import QvPythonRunner
 from moduls.QvGithub import QvGithub
+from pathlib import Path
 import sys
 import getpass
 import uuid
-import traceback
+# import traceback
 import os
 import json
+
 
 _PATH_PRO = 'N:\\SITEB\\APL\\PYQGIS\\QVISTA\\CODI\\'
 
@@ -42,49 +45,75 @@ _PROXY = {
     'Port': 8080
 }
 
+
 def _fatalError(type, value, tb):
     QvApp().bugFatalError(type, value, tb)
-    
+
 #     error = repr(traceback.format_tb(tb))
 #     error = error[-1000:]
 #     print('ERROR -', error)
 #     QvApp().logRegistre('LOG_ERROR', error[-1000:])
 
+
 class QvApp(Singleton):
 
     def __init__(self):
-        if hasattr(self, 'ruta'): # Solo se inicializa una vez
+        if hasattr(self, 'gh'):                     # Se inicializa una vez
             return
-        
+
+        self.gh = None
         self.ruta, self.rutaBase = self.calcRuta()  # Path de la aplicación
-        self.cfg = self.readCfg()                   # Configuración de la instalación
-        val = self.cfg.get("Debug", "False")        # Errores no controlados
+        self.cfg = self.readCfg()                   # Config de instalación
+        val = self.paramCfg("Debug", "False")       # Errores no controlados
         if val != "True":
             sys.excepthook = _fatalError
 
-        self.entorn = self.calcEntorn()             # 'DSV' o 'PRO'        
+        self.entorn = self.calcEntorn()             # 'DSV' o 'PRO'
+
         self.usuari = getpass.getuser().upper()     # Id de usuario
         self.sessio = str(uuid.uuid1())             # Id único de sesión
 
-        self.intranet = self.calcIntranet()         # True si estamos en la intranet
-        self.dbQvista = _DB_QVISTA[self.entorn]     # Conexión a Oracle según entorno
+        self.intranet = self.calcIntranet()         # True si en la intranet
+        self.dbQvista = _DB_QVISTA[self.entorn]     # Conexión Oracle entorno
 
         self.proxy = self.setProxy()                # Establecer proxy
-        self.gh = QvGithub(self.data())             # Establecer Github
 
-        self.dbLog = None
+        val = self.paramCfg('Log', 'False')         # Activación log
+        if val == 'True':
+            self.log = True
+        else:
+            self.log = False
+
+        val = self.paramCfg('Github', 'False')      # Establecer rama Github
+        if val == 'False':
+            self.github = None
+        elif val == 'True':
+            self.github = 'master'
+        else:
+            self.github = val
+
+        if self.github is None:
+            self.gh = None
+        else:
+            self.gh = QvGithub(self.data(), self.github)
+
+        self.db = None
         self.queryLog = None
         self.familyLog = None
         self.nameLog = None
+        self.queryGeo = None
         self.appQgis = None
         self.idioma = None
         self.qtTranslator = None
         self.qgisTranslator = None
 
+        QgsPythonRunner.setInstance(QvPythonRunner())   # Ejecuciones Python
+
     def data(self):
         txt = ''
-        txt += 'Nom: ' + self.cfg.get('Nom', '???') + '\n'
+        txt += 'Nom: ' + self.paramCfg('Nom', '???') + '\n'
         txt += 'Entorn: ' + self.entorn + '\n'
+        txt += 'Branca: ' + self.github + '\n'
         txt += 'Intranet: ' + str(self.intranet) + '\n'
         txt += 'Usuari: ' + self.usuari + '\n'
         txt += 'Sessió: ' + self.sessio + '\n'
@@ -93,19 +122,22 @@ class QvApp(Singleton):
 
     def calcRuta(self):
         try:
-            q1 = 'qVista\\'
-            q2 = 'Codi\\'
+            q1 = 'qVista/'
+            q2 = 'Codi/'
             f = sys.argv[0]
+            f = f.replace('\\', '/')
+            fUp = f.upper()
             q = q1 + q2
-            n = f.find(q)
+            qUp = q.upper()
+            n = fUp.find(qUp)
             if n >= 0:
                 ruta = f[:n+len(q)]
                 rutaBase = f[:n+len(q1)]
                 return ruta, rutaBase
             else:
                 return '', ''
-        except:
-            self.bugException()
+        except Exception as err:
+            self.bugException(err)
             return '', ''
 
     def readCfg(self):
@@ -114,17 +146,23 @@ class QvApp(Singleton):
             fich = self.rutaBase + nom
             if not os.path.isfile(fich):
                 fich = self.ruta + nom
-            fp = open(fich, 'r', encoding='utf-8')
+            fp = open(fich, 'r', encoding='utf-8-sig')
             cfg = json.load(fp)
             fp.close()
             return cfg
-        except:
-            self.bugException()
+        except Exception as err:
+            self.bugException(err)
             return dict()
+
+    def paramCfg(self, name, default):
+        if hasattr(self, 'cfg') and self.cfg is not None:
+            return self.cfg.get(name, default)
+        else:
+            return default
 
     def setProxy(self):
         try:
-            val = self.cfg.get('Proxy', 'False')
+            val = self.paramCfg('Proxy', 'False')
             if self.intranet and val == 'True':
                 proxy = QNetworkProxy()
                 proxy.setType(QNetworkProxy.DefaultProxy)
@@ -134,12 +172,12 @@ class QvApp(Singleton):
                 return proxy
             else:
                 return None
-        except Exception as e:
-            self.bugException()
+        except Exception as err:
+            self.bugException(err)
             return None
-        
+
     def calcEntorn(self):
-        val = self.cfg.get('Producció', 'False')
+        val = self.paramCfg('Producció', 'False')
         if val == 'True':
             return 'PRO'
         else:
@@ -148,11 +186,11 @@ class QvApp(Singleton):
     def calcIntranet(self):
         return os.path.isdir(_PATH_PRO)
 
-    def carregaIdioma(self, app, idioma = 'ca'):
+    def carregaIdioma(self, app, idioma='ca'):
         if app is None:
             return
         self.appQgis = app
-        self.idioma = self.cfg.get('Idioma', idioma)
+        self.idioma = self.paramCfg('Idioma', idioma)
         self.qtTranslator = QTranslator()
         self.qgisTranslator = QTranslator()
 
@@ -170,14 +208,14 @@ class QvApp(Singleton):
             txt = ''
             file = Path(nomFich)
             if file.is_file():
-                file.open() 
+                file.open()
                 txt = file.read_text()
             return txt
-        except:
+        except Exception:
             return ''
 
     def carregaAjuda(self, objecte):
-        try: 
+        try:
             nom = type(objecte).__name__
             if self.idioma is not None and self.idioma != '':
                 nomFich = nom + '_' + self.idioma + '.html'
@@ -191,12 +229,13 @@ class QvApp(Singleton):
             print(str(e))
             return ''
 
-    # Metodos de LOG en Oracle
+    # Metodos db QVISTA
 
-    def logConnexio(self):
+    def dbConnexio(self):
+        if not self.intranet:
+            return
         try:
-            val = self.cfg.get('Log', 'False')
-            if self.intranet and val == 'True':
+            if self.db is None:
                 db = QSqlDatabase.addDatabase(self.dbQvista['Database'])
                 if db.isValid():
                     db.setHostName(self.dbQvista['HostName'])
@@ -205,24 +244,37 @@ class QvApp(Singleton):
                     db.setUserName(self.dbQvista['UserName'])
                     db.setPassword(self.dbQvista['Password'])
                     if db.open():
-                        return db
-            return None
-        except:
-            return None
+                        self.db = db
+        except Exception:
+            self.db = None
 
-    def logDesconnexio(self):
-        if self.dbLog is None:
+    def dbDesconnexio(self):
+        if not self.intranet:
             return
         try:
-            conName = self.dbLog.connectionName()
-            self.dbLog.close()
-            self.dbLog = None
-            QSqlDatabase.removeDatabase(conName)
-        except:
-            return
+            if self.db is not None:
+                conName = self.db.connectionName()
+                self.db.close()
+                self.db = None
+                QSqlDatabase.removeDatabase(conName)
+        except Exception:
+            self.db = None
 
-    def logRegistre(self, topic, params = None):
-        if self.dbLog is None or self.queryLog is None:
+    # Metodos de LOG en Oracle
+
+    def logInici(self, family='QVISTA', logname='DESKTOP', params=None):
+        if not self.log:
+            return False
+        self.dbConnexio()
+        if self.db is None:
+            return False
+        self.familyLog = family.upper()
+        self.nameLog = logname.upper()
+        self.queryLog = QSqlQuery()
+        return self.logRegistre('LOG_INICI', params)
+
+    def logRegistre(self, topic, params=None):
+        if not self.log or self.db is None or self.queryLog is None:
             return False
         try:
             self.queryLog.prepare("CALL QV_LOG_WRITE(:IDUSER, :IDSESSION, :FAMILY, :LOGNAME, :TOPIC, :PARAMS)")
@@ -234,55 +286,77 @@ class QvApp(Singleton):
             self.queryLog.bindValue(':PARAMS', params)
             ok = self.queryLog.exec_()
             return ok
-        except:
+        except Exception:
             return False
 
-    def logInici(self, family = 'QVISTA', logname = 'DESKTOP', params = None):
-        self.familyLog = family.upper()
-        self.nameLog = logname.upper()
-        self.dbLog = self.logConnexio()
-        if self.dbLog is None:
-            return False
-        else:
-            self.queryLog = QSqlQuery()
-            return self.logRegistre('LOG_INICI', params)
-
-    def logFi(self, params = None):
+    def logFi(self, params=None):
         ok = self.logRegistre('LOG_FI', params)
-        self.logDesconnexio()
+        self.dbDesconnexio()
         return ok
 
     def logError(self):
-        if self.dbLog is None or self.queryLog is None:
-            return None
+        if not self.log or self.db is None or self.queryLog is None:
+            return 'Log no actiu'
         try:
             return self.queryLog.lastError().text()
-        except:
+        except Exception:
             return None
+
+    # Metodos de geocodificación
+
+    def geocod(self, tipusVia, variant, codi, numIni, lletraIni='', numFi='', lletraFi=''):
+        self.dbConnexio()
+        if self.db is None:
+            return None, None, False
+        if self.queryGeo is None:
+            self.queryGeo = QSqlQuery()
+        try:
+            self.queryGeo.prepare("CALL QV_GEOCOD(:TIPUSVIA, :VARIANTE, :CODIGO, " +
+                                  ":NUMINI, :LETRAINI, :NUMFIN, :LETRAFIN, :X, :Y)")
+            self.queryGeo.bindValue(':TIPUSVIA', tipusVia)
+            self.queryGeo.bindValue(':VARIANTE', variant)
+            self.queryGeo.bindValue(':CODIGO', codi)
+            self.queryGeo.bindValue(':NUMINI', numIni)
+            self.queryGeo.bindValue(':LETRAINI', lletraIni)
+            self.queryGeo.bindValue(':NUMFIN', numFi)
+            self.queryGeo.bindValue(':LETRAFIN', lletraFi)
+            self.queryGeo.bindValue(':X', 0.0, QSql.Out)
+            self.queryGeo.bindValue(':Y', 0.0, QSql.Out)
+            ok = self.queryGeo.exec_()
+            if ok:
+                x = self.queryGeo.boundValue(':X')
+                if not isinstance(x, float):
+                    x = None
+                y = self.queryGeo.boundValue(':Y')
+                if not isinstance(y, float):
+                    y = None
+            return x, y
+        except Exception:
+            return None, None
 
     # Métodos de reporte de bugs con Github
 
     def bugUser(self, tit, desc):
-        val = self.cfg.get('Github', 'False')
-        if val == 'True':
+        if self.gh is not None:
             return self.gh.postUser(tit, desc)
         else:
             return False
 
-    def bugException(self):
-        val = self.cfg.get('Github', 'False')
+    def bugException(self, err):
+        ok = False
+        if self.gh is not None:
+            ok = self.gh.reportBug()
+        val = self.paramCfg('Debug', 'False')
         if val == 'True':
-            return self.gh.reportBug()
-        else:
-            return False
+            raise err
+        return ok
 
     def bugFatalError(self, type, value, tb):
-        
-        val = self.cfg.get('Github', 'False')
-        if val == 'True':
+        if self.gh is not None:
             return self.gh.reportBug(type, value, tb)
         else:
             return False
+
 
 if __name__ == "__main__":
 
@@ -292,13 +366,23 @@ if __name__ == "__main__":
 
     gui = False
 
-    with qgisapp(guienabled = gui) as app:
+    with qgisapp(guienabled=gui) as app:
 
         # print(QSqlDatabase.drivers())
 
         qApp = QvApp()                  # Singleton
-        
+
         qApp.carregaIdioma(app, 'ca')   # Traductor
+
+        x, y = qApp.geocod('C', 'Mallorca', None, '100')
+        if x is not None:
+            print('C', 'Mallorca', '100', str(x), str(y))
+        x, y = qApp.geocod('Av', 'Diagonal', None, '220')
+        if x is not None:
+            print('Av', 'Diagonal', '220', str(x), str(y))
+        x, y = qApp.geocod('', 'Msakjdaskjdlasdj', None, '220')
+        if x is not None:
+            print(str(x), str(y))
 
         #
         # INICIO LOG: Si logInici() retorna False, el resto de funciones de log no hacen nada
@@ -329,6 +413,3 @@ if __name__ == "__main__":
             app.aboutToQuit.connect(QvApp().logFi)
         else:
             QvApp().logFi()
-
-
-        

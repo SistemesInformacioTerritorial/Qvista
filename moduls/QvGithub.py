@@ -9,8 +9,9 @@ class QvGithub:
     __ID = 'qVistaHost'
     __USER = 'JCAIMI'
 
-    def __init__(self, dataApp=''):
+    def __init__(self, dataApp='', github=None):
         self.dataApp = dataApp
+        self.branch = github
         self.conn = 'https://api.github.com'
         self.calc = lambda s, n: s[-(n+1):] + s[0].upper() + s[1:n*2]+ str((n*14-1)*n)
         self.headGet = {
@@ -45,7 +46,11 @@ class QvGithub:
 
     def getCommitter(self, path):
         try:
-            url = self.conn + '/repos/' + self.repo + '/commits?path=' + path
+            if self.branch is None:
+                rama = ''
+            else:
+                rama = 'sha=' + self.branch + '&'
+            url = self.conn + '/repos/' + self.repo + '/commits?' + rama + 'path=' + path
             response = requests.get(url, headers=self.headGet, auth=self.auth, timeout=self.timeout)
             if response.status_code == 200:
                 data = response.json()
@@ -119,7 +124,7 @@ class QvGithub:
         try:
             ok = False
             fich, lin, desc = QvError.bug(type, value, tb)
-            title = fich + ' (' + lin + ')'
+            title = self.branch + ': ' + fich + ' (' + lin + ')'
             if self.getBug(title) == 0:
                 body = self.formatError(desc)
                 comm = self.getCommitter(fich)
@@ -148,12 +153,12 @@ if __name__ == "__main__":
         a = 0
         b = 3 / a
 
-    pp() 
+    # pp() 
 
-    # try:
-    #     pp()
-    # except:
-    #     QvApp().bugException()
+    try:
+        pp()
+    except Exception as err:
+        QvApp().bugException(err)
 
 
 

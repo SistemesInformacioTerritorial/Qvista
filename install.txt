@@ -1,0 +1,13 @@
+El fichero install.cfg tiene formato JSON y contiene los siguientes parámetros:
+
+- Nom        : String - Nombre de la instalación de qVista
+- Producció  : True o False - Indica si se trata de una versión productiva o en desarrollo
+- Idioma     : ca o es - Idioma usado para presentar pantallas de PyQgis
+- Proxy      : True o False - Indica si se usa el proxy del IMI para acceder a Internet o no
+- Log        : True o False - Permite escribir o no el log de usuario en la BBDD Oracle
+- Github     : True o False - Escribe o no los errores no controlados en GitHub
+- Debug      : True o False - Dejar a True si se quiere usar el debugger
+
+Se distribuye en el directorio qVista\Codi. Si se quieren cambiar parámetros sin perder
+los valores por defecto, el fichero puede copiarse en el directorio qVista y ahí hacer 
+las modificaciones.

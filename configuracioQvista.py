@@ -4,16 +4,16 @@ import os
 
 titolFinestra = "qVista 0.1  Sistema d'Informació Territorial de Barcelona"
 
-carpetaCataleg = "N:/SITEB/APL/GISpoint/capes/QGIS 3.4"
-carpetaCatalegProjectesLlista = "N:/9SITEB/Publicacions/qVista/Cataleg/Projectes/"
-projecteInicial='n:/9siteb/publicacions/qvista/dades/projectes/bcn11_nord.qgs'
+carpetaCataleg = "N:/9SITEB/Publicacions/qVista/Cataleg/Capes/"
+carpetaCatalegProjectesLlista = "N:/9SITEB/Publicacions/qVista/Cataleg/Mapes/"
+projecteInicial = 'mapesOffline/Districtes.qgs'
 
 estatConnexio = "Xarxa municipal: Connectat"
 
 if not os.path.isdir(carpetaCataleg):
     carpetaCataleg = "../dades/CatalegProjectes/"
     carpetaCatalegProjectesLlista = "../dades/CatalegProjectes/"
-    projecteInicial = 'mapesOffline/DistrictesMartorell.qgz'
+    projecteInicial = 'mapesOffline/Districtes.qgs'
     estatConnexio = "Xarxa municipal: Desconnectat"
 
     

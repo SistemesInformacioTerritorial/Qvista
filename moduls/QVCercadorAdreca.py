@@ -12,8 +12,8 @@ import collections
 
 class QCercadorAdreca(QObject):
 
-    __carrersCSV = '..\dades\dadesBcn\CARRERER.csv'
-    __path_disgregados= '..\Dades\DadesBcn\dir_ele\\' 
+    __carrersCSV = 'dades\CARRERER.csv'
+    __path_disgregados= 'Dades\dir_ele\\' 
     sHanTrobatCoordenades = pyqtSignal(int, 'QString')  # atencion
 
     def __init__(self, lineEditCarrer, lineEditNumero, origen = 'CSV'):

@@ -20,7 +20,7 @@ class QvToolTip:
             # Here you could check if your custom MapTips button is active
             self.lastMapPosition = QgsPointXY(p.x(), p.y())
             self.map_tip.clear(self.canvas)
-            self.timer_map_tips.start(300)  # time in milliseconds
+            self.timer_map_tips.start(500)  # time in milliseconds
 
     def showMapTip(self):
         """ SLOT. Show  MapTips on the map """
@@ -30,6 +30,9 @@ class QvToolTip:
             # Here you could check if your custom MapTips button is active
             point_qgs = self.lastMapPosition
             point_qt = self.canvas.mouseLastXY()
+            point_qt.setX(point_qt.x()+10)
+            point_qt.setY(point_qt.y()+10)
+            print(point_qt.x())
             if self.layer:
                 self.map_tip.showMapTip(
                     self.layer,
