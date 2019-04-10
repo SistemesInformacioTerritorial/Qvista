@@ -16,7 +16,7 @@ class QvGeocod:
         Arguments:
             tipusVia {str} -- Tipo de vía
             nomCarrer {str} -- Nombre o variante de la calle
-            numIni {str} -- Primer número postal
+            numIni {str} -- Número postal (primero)
 
         Keyword Arguments:
             lletraIni {str} -- Letra del primer número postal (default: {''})
@@ -33,8 +33,8 @@ class QvGeocod:
         """Retorna las coordenadas a partir de código de calle y número postal
 
         Arguments:
-            codiCarrer {str} -- Código de calla
-            numIni {str} -- Primer número postal
+            codiCarrer {str} -- Código de calle
+            numIni {str} -- Número postal (primero)
 
         Keyword Arguments:
             lletraIni {str} -- Letra del primer número postal (default: {''})
@@ -60,12 +60,6 @@ if __name__ == "__main__":
             print('No coords')
         else:
             print('001808', '23', '25', str(x), str(y))
-
-        x, y = QvGeocod.coordsCodiNum('003406', '132', 'B')
-        if x is None or y is None:
-            print('No coords')
-        else:
-            print('003406', '132', 'B', str(x), str(y))
 
         x, y = QvGeocod.coordsCodiNum('003406', '132', 'B')
         if x is None or y is None:
