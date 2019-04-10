@@ -26,7 +26,7 @@ class QvGeocod:
         Returns:
             x, y -- Coordenadas en formato ETRS89, o None si no se encuentra
         """
-        return QvApp().geocod(tipusVia, nomCarrer, None, numIni, lletraIni, numFi, lletraFi)
+        return QvApp().geocod(tipusVia, nomCarrer, '', numIni, lletraIni, numFi, lletraFi)
 
     @staticmethod
     def coordsCodiNum(codiCarrer, numIni, lletraIni='', numFi='', lletraFi=''):
@@ -78,6 +78,12 @@ if __name__ == "__main__":
             print('No coords')
         else:
             print('C', 'Mallorca', '100', str(x), str(y))
+
+        x, y = QvGeocod.coordsCarrerNum('', 'Balmes', '150')
+        if x is None or y is None:
+            print('No coords')
+        else:
+            print('Balmes', '150', str(x), str(y))
 
         x, y = QvGeocod.coordsCarrerNum('Av', 'Diagonal', '220')
         if x is None or y is None:
