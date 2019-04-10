@@ -146,7 +146,7 @@ class QvApp(Singleton):
             fich = self.rutaBase + nom
             if not os.path.isfile(fich):
                 fich = self.ruta + nom
-            fp = open(fich, 'r', encoding='utf-8')
+            fp = open(fich, 'r', encoding='utf-8-sig')
             cfg = json.load(fp)
             fp.close()
             return cfg
@@ -325,12 +325,14 @@ class QvApp(Singleton):
             ok = self.queryGeo.exec_()
             if ok:
                 x = self.queryGeo.boundValue(':X')
+                if not isinstance(x, float):
+                    x = None
                 y = self.queryGeo.boundValue(':Y')
-                return x, y, ok
-            else:
-                return None, None, ok
+                if not isinstance(y, float):
+                    y = None
+            return x, y
         except Exception:
-            return None, None, False
+            return None, None
 
     # Métodos de reporte de bugs con Github
 
@@ -372,11 +374,14 @@ if __name__ == "__main__":
 
         qApp.carregaIdioma(app, 'ca')   # Traductor
 
-        x, y, ok = qApp.geocod('C', 'Mallorca', None, '100')
-        if ok:
-            print(str(x), str(y))
-        x, y, ok = qApp.geocod('Av', 'Diagonal', None, '220')
-        if ok:
+        x, y = qApp.geocod('C', 'Mallorca', None, '100')
+        if x is not None:
+            print('C', 'Mallorca', '100', str(x), str(y))
+        x, y = qApp.geocod('Av', 'Diagonal', None, '220')
+        if x is not None:
+            print('Av', 'Diagonal', '220', str(x), str(y))
+        x, y = qApp.geocod('', 'Msakjdaskjdlasdj', None, '220')
+        if x is not None:
             print(str(x), str(y))
 
         #
