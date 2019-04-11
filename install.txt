@@ -5,7 +5,7 @@ El fichero install.cfg tiene formato JSON y contiene los siguientes parámetros:
 - Idioma     : ca o es - Idioma usado para presentar pantallas de PyQgis
 - Proxy      : True o False - Indica si se usa el proxy del IMI para acceder a Internet o no
 - Log        : True o False - Permite escribir o no el log de usuario en la BBDD Oracle
-- Github     : True o False - Escribe o no los errores no controlados en GitHub
+- Github     : Rama o False - Para escribir errores en GitHub, poner nombre de rama
 - Debug      : True o False - Dejar a True si se quiere usar el debugger
 
 Se distribuye en el directorio qVista\Codi. Si se quieren cambiar parámetros sin perder
