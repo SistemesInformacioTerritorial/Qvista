@@ -2410,6 +2410,23 @@ def escollirNivellGPX():
     # features=layer.getFeatures()
     # taulaAtributs('Total',layer)
 
+def escollirNivellCSV():
+    # layer = qV.llegenda.view.currentLayer()
+    # qV.project.removeMapLayer(layer)
+    # qV.canvas.refresh()
+    nfile,_ = QFileDialog.getOpenFileName(None, "Obrir fitxer CSV", "U:\QUOTA\Comu_imi\Becaris", "CSV (*.csv)")
+   
+    # print(dCSV.ui.cbDelimitador.currentText())
+    # print("D"+dCSV.ui.cbDelimitador.currentText()+"D")
+    if nfile:
+        with open(nfile) as f:
+            reader = csv.DictReader(f, delimiter=';')
+            llistaCamps = reader.fieldnames
+        print (llistaCamps)
+        projeccio = 25831
+        titol = 'Còpia de Models adreces.csv'
+        nivellCsv(nfile,';','XNUMPOST','YNUMPOST', projeccio, nomCapa = titol)
+        
 # def escollirNivellCSV():
 #     # layer = qV.llegenda.view.currentLayer()
 #     # qV.project.removeMapLayer(layer)
