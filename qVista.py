@@ -28,6 +28,9 @@ from moduls.QvMarxesCiutat import MarxesCiutat
 from moduls.QvToolTip import QvToolTip
 from moduls.QvDropFiles import QvDropFiles
 from moduls.QvNews import QvNews
+
+import re
+
 # Impressió del temps de carrega dels moduls Qv
 print ('Temps de carrega dels moduls Qv:', time.time()-iniciTempsModuls)
 
@@ -2409,7 +2412,325 @@ def escollirNivellGPX():
     qV.project.addMapLayer(layer)
     # features=layer.getFeatures()
     # taulaAtributs('Total',layer)
+def infereixSeparadorRegex(arxiu):
+    #Rep una llista i la retorna sense repeticions
+    def eliminaRep(lst):
+        return list(set(lst))
+    #Rep una llista i la retorna sense repeticions i ordenada
+    def eliminaRepOrd(lst):
+        return sorted(set(lst))
 
+    '''
+    Utilitzant expressions regulars
+    Un substring serà tot allò que comenci per ", i acabi amb ", sense contenir-ne cap a dins, de manera que ens ho carreguem
+    Un nombre serà [0-9]+, cosa que també ens carreguem
+    '''
+    def infereixSeparadorLinia(line):
+        aux=re.sub('"[^"]*"','',line)
+        aux=re.sub('[0-9]+','',aux)
+        aux=re.sub('[a-zA-Z]*','',aux)
+        aux=aux.replace('\n','')#Per si tenim salt de línia al final
+        auxSenseRep=eliminaRepOrd(aux) #Eliminem repeticions
+        if len(auxSenseRep)==1: return aux[0] 
+        #Creem una llista de tuples ordenada, on cada tupla conté el nombre d'aparicions del caracter i el caracter
+        #lst=[(aux.count(x),x) for x in auxSenseRep]
+        lst=sorted(map(lambda x: (aux.count(x),x),auxSenseRep))
+        return lst
+    def uneixLlistesAp(lst1, lst2):
+        return list(set(lst1)&set(lst2))
+    lst=[]
+    for x in arxiu.readlines():
+        act=infereixSeparadorLinia(x)
+        if isinstance(act,str):
+            arxiu.seek(0)
+            return act
+        if len(lst)==0: lst=act #Primera iteració
+        else: lst=uneixLlistesAp(lst,act)
+        if len(lst)==1:
+            arxiu.seek(0)
+            return lst[0][1]
+    arxiu.seek(0)
+    return [y for x,y in lst]
+
+def connexio(dbConnexio):
+    db = QSqlDatabase.addDatabase(dbConnexio['Database'])
+    if db.isValid():
+        db.setHostName(dbConnexio['HostName'])
+        db.setPort(dbConnexio['Port'])
+        db.setDatabaseName(dbConnexio['DatabaseName'])
+        db.setUserName(dbConnexio['UserName'])
+        db.setPassword(dbConnexio['Password'])
+        if db.open(): 
+            return db
+    return None
+class QvtLectorCsv(QvLectorCsv):
+        def __init__(self, fileName='', separador=None, parent=None):
+                print('Comencem init')
+                #QvLectorCsv.__init__(self, fileName)
+                super().__init__(fileName)
+                self.separador=separador
+                print('Init feta')
+                if self.separador is not None:
+                        print('Carrego el csv')
+                        self.carregaCsv(self.fileName,self.separador)
+        def carregaCsv(self, fileName, separador=None):
+                if separador is None:
+                        super().carregaCsv(fileName)
+                        return
+                if fileName:
+                        print(fileName)
+                        f = open(fileName, 'r')
+                        with f:
+                                self.fname = os.path.splitext(str(fileName))[0].split("/")[-1]
+                                self.setWindowTitle(self.fname)
+                                reader=csv.reader(f,delimiter=separador)
+                                self.model.clear()
+                                for row in reader:
+                                        items=[QtGui.QStandardItem(field) for field in row]
+                                        self.model.appendRow(items)
+                                self.tableView.resizeColumnsToContents()
+                                print('Resize acabada')
+        def recarrega(self,separador):
+                self.separador=separador
+                self.carregaCsv(self.fileName,self.separador)
+                
+def func1(nom_fitxer):
+        with open(nom_fitxer) as arxiuCsv:
+                separador=infereixSeparadorRegex(arxiuCsv)
+                varX=''
+                varY=''
+                def actualitzaCamps():
+                        if radio1.isChecked():
+                                separador=';'
+                        elif radio2.isChecked():
+                                separador=','
+                        elif radio3.isChecked():
+                                separador='.'
+                        else:
+                                separador=':'
+                        arxiuCsv.seek(0)
+                        reader=csv.DictReader(arxiuCsv, delimiter=separador)
+                        llistaCamps = reader.fieldnames
+                        print(llistaCamps)
+                        cbx.clear()
+                        cby.clear()
+                        cbx.addItems(llistaCamps)
+                        cby.addItems(llistaCamps)
+                        table.recarrega(separador)
+
+                dialog = QDialog()
+                dialog.setModal(True)
+                layCsv =  QVBoxLayout()
+                leNom=QLineEdit()
+                leNom.setPlaceholderText('Nom de la capa')
+                layCsv.addWidget(leNom)
+                #lblH = QLabel()
+                #layCsv.addWidget(lblH)
+
+
+                cbx=QComboBox()
+                lblcbx = QLabel()
+                lblcbx.setText("Etiqueta X")
+                cby=QComboBox()
+                lblcby = QLabel()
+                lblcby.setText("Etiqueta Y")
+                layCbx = QHBoxLayout()
+                layCbx.addWidget(lblcbx)
+                layCbx.addWidget(cbx)
+                layCby = QHBoxLayout()
+                layCby.addWidget(lblcby)
+                layCby.addWidget(cby)
+
+                radio1 = QRadioButton("Punt i coma (;)")
+                radio1.toggled.connect(actualitzaCamps)
+                radio2 = QRadioButton("Coma (,)")
+                radio2.toggled.connect(actualitzaCamps)
+                radio3 = QRadioButton("Punt (.)")
+                radio3.toggled.connect(actualitzaCamps)
+                radio4 = QRadioButton("Dos punts (:)")
+                radio4.toggled.connect(actualitzaCamps)
+                if isinstance(separador,str):
+                        #lblH.setText('Separador inferit: '+separador)
+                        if separador==';':
+                                radio1.setChecked(True)
+                        elif separador==',':
+                                radio2.setChecked(True)
+                        elif separador=='.':
+                                radio3.setChecked(True)
+                        else:
+                                radio4.setChecked(True)
+                        #actualitzaCamps()
+
+                #else:
+                        #lblH.setText('Separadors inferits: '+str(separador))
+
+                layRB = QHBoxLayout()
+                layRB.addWidget(radio1)
+                layRB.addWidget(radio2)
+                layRB.addWidget(radio3)
+                layRB.addWidget(radio4)
+
+                groupBox1 = QGroupBox("Fitxer")
+                groupBox1.setLayout(layRB)
+
+                groupBox2 = QGroupBox("Decimals")
+                radiob1 = QRadioButton("coma (,)")
+                radiob2 = QRadioButton("punt(.)")
+                radiob2.setChecked(True)
+                vbox = QVBoxLayout()
+                vbox.addWidget(radiob1)
+                vbox.addWidget(radiob2)
+                groupBox2.setLayout(vbox)
+
+                boxSeparador = QgsCollapsibleGroupBox()
+                boxSeparador.setTitle("Separadors")
+                boxSeparador.setChecked(True)
+                laySeparador = QHBoxLayout()
+                laySeparador.addWidget(groupBox1)
+                laySeparador.addWidget(groupBox2)
+                boxSeparador.setLayout(laySeparador)
+
+                layCsv.addWidget(boxSeparador)
+                print("boxseparador")
+
+                layProj = QHBoxLayout()
+                cbProj=QComboBox()
+                projeccions = [25831, 1 , 2 , 3]
+                cbProj.clear()
+                cbProj.addItems([str(x) for x in projeccions])
+                lblproj = QLabel()
+                lblproj.setText("Projeccio")
+                layProj.addWidget(lblproj)
+                layProj.addWidget(cbProj)
+
+                layGeometry = QVBoxLayout()
+                layGeometry.addLayout(layCbx)
+                layGeometry.addLayout(layCby)
+                layGeometry.addLayout(layProj)
+
+                boxGeometria = QgsCollapsibleGroupBox()
+                boxGeometria.setTitle("Definició de la Geometria")
+                boxGeometria.setChecked(True)
+                boxGeometria.setLayout(layGeometry)
+
+                layCsv.addWidget(boxGeometria)
+
+                print("abans table")
+                table=QvtLectorCsv(nom_fitxer,separador,None)
+                #table=QvLectorCsv(nom_fitxer)
+                #table.show()
+
+                vtaula = QVBoxLayout()
+                vtaula.addWidget(table)
+                groupBox3 = QGroupBox("Preview taula")
+                groupBox3.setLayout(vtaula)
+                layCsv.addWidget(groupBox3)
+
+
+                print("despres table")
+                """
+                table = QTableView()
+                print("arriba a table")
+                arxiuCsv.seek(0)
+                reader = csv.DictReader(arxiuCsv)
+                print(reader.fieldnames)
+                for i in reader.fieldnames:
+                        item=QtGui.QTableWidgetItem()
+                        item.setText(i)
+                        table.insertColumn(table.columnCount())
+                        table.setItem(0,table.columnCount()-1,item)
+                print('Primer for')
+                for i in reader.content:
+                        table.insertRow(table.rowCount())
+                        for j in range(len(i)):
+                                item=QtGui.QTableWidgetItem()
+                                item.setText(i[j])
+                                table.setItem(table.rowCount()-1,j,item)
+                print('segon for')
+
+                for x in reader:
+                        i=0
+                        j=0
+                        for y in x.items():
+                                item=QTableWidgetItem()
+                                item.setText(y)
+                layCsv.addWidget(table)
+                """
+
+
+                acceptar=QPushButton('Acceptar')
+                layCsv.addWidget(acceptar)
+                acceptar.clicked.connect(dialog.accept)
+
+                dialog.setLayout(layCsv)
+                dialog.exec()
+                varX=cbx.currentText()
+                varY=cby.currentText()
+                #print(varX, varY)
+                projeccio = int(cbProj.currentText())
+                nom=leNom.text()
+                nivellCsv(nom_fitxer,separador,varX,varY, projeccio, nomCapa = nom)
+
+
+
+def func2():
+    dialeg_opertura = QFileDialog()
+    dialeg_opertura.setDirectoryUrl(QUrl('../dades/projectes'))
+    nom_fitxer , _ = dialeg_opertura.getOpenFileName(None,"Obrir projecte ",'../dades/projectes', "Mapes Qgis (*.qgs *.qgz)" )
+    project.read(nom_fitxer)
+    lblNom.setText(nom_fitxer)
+
+def func3():
+    project.read('../dades/projectes/prova.qgs')
+
+def showXY(p):
+        lblXY.setText( str("%.2f" % p.x()) + " , " + str("%.2f" % p.y() ))
+
+def showScale(scale):
+        bScale.setText( " Escala 1:" + str(int(round(scale)))) 
+
+def selecE():
+        layer=llegenda.currentLayer()
+        if layer is not None:
+                if radioB2.isChecked() :
+                        #cerca
+                        fields = layer.fields()
+                        expressioCerca = ""
+                        words = lineE.text().split(' ')
+                        for field in fields:
+                                if field.typeName() == "String":
+                                        primeraWord = True
+                                        for word in words:
+                                                if primeraWord:
+                                                        expressioCerca =  expressioCerca + field.name() + " LIKE '%" + word + "%'"
+                                                        primeraWord = False
+                                                else:
+                                                        expressioCerca = expressioCerca + " AND " +  field.name() + " LIKE '%" + word + "%'"
+                                        expressioCerca = expressioCerca + " OR "
+                        expressioCerca = expressioCerca[:-3]
+                        print(expressioCerca)
+                        layer.setSubsetString(expressioCerca)
+                        llegenda.actIconaFiltre(layer)
+                else:
+                        #seleccio
+                        expr = QgsExpression(lineE.text())
+                        features = layer.getFeatures( QgsFeatureRequest( expr ) )
+                        ids = [i.id() for i in features]
+                        layer.selectByIds(ids)
+
+def remove_accents(input_str):
+    nfkd_form = unicodedata.normalize('NFKD', input_str)
+    only_ascii = nfkd_form.encode('ASCII', 'ignore')
+    return only_ascii.decode("utf8")
+
+def nivellCsv(fitxer,delimitador,campX,campY, projeccio = 23031, nomCapa = 'Capa sense nom'):
+    uri = "file:///"+fitxer+"?type=csv&delimiter=%s&xField=%s&yField=%s" % (delimitador,campX,campY)
+    print(uri)
+    layer = QgsVectorLayer(uri, nomCapa, 'delimitedtext')
+    layer.setCrs(QgsCoordinateReferenceSystem(projeccio, QgsCoordinateReferenceSystem.EpsgCrsId))
+    if layer is not None:
+            project.addMapLayer(layer)
+            print("aixo no fa res")
 def escollirNivellCSV():
     # layer = qV.llegenda.view.currentLayer()
     # qV.project.removeMapLayer(layer)
@@ -2459,28 +2780,29 @@ def escollirNivellCSV():
 #         #carregarCsvATaula(nfile,';')
 
 def carregarLayerCSV(nfile):
-    dCSV = DialegCSV()
-    dCSV.finished.connect(dCSV)
+    func1(nfile)
+    # dCSV = DialegCSV()
+    # dCSV.finished.connect(dCSV)
    
-    # print(dCSV.ui.cbDelimitador.currentText())
-    # print("D"+dCSV.ui.cbDelimitador.currentText()+"D")
-    projeccio = 0
-    if nfile:
-        with open(nfile) as f:
-            reader = csv.DictReader(f, delimiter=dCSV.ui.cbDelimitador.currentText())
-            llistaCamps = reader.fieldnames
-        # print (llistaCamps)
+    # # print(dCSV.ui.cbDelimitador.currentText())
+    # # print("D"+dCSV.ui.cbDelimitador.currentText()+"D")
+    # projeccio = 0
+    # if nfile:
+    #     with open(nfile) as f:
+    #         reader = csv.DictReader(f, delimiter=dCSV.ui.cbDelimitador.currentText())
+    #         llistaCamps = reader.fieldnames
+    #     # print (llistaCamps)
         
-        dCSV = DialegCSV(llistaCamps)
+    #     dCSV = DialegCSV(llistaCamps)
 
-        if dCSV.ui.cbDelProjeccio.currentText() == 'UTM ED50':
-            projeccio = 23031
-        elif dCSV.ui.cbDelProjeccio.currentText() == 'UTM ETRS89':
-            projeccio = 25831
-        elif dCSV.ui.cbDelProjeccio.currentText() == 'Lat Long':
-            projeccio = 4326
-        titol = dCSV.ui.leNomCapa.text()
-        nivellCsv(nfile,dCSV.ui.cbDelimitador.currentText(),dCSV.ui.cbDelX.currentText(),dCSV.ui.cbDelY.currentText(), projeccio, nomCapa = titol)
+    #     if dCSV.ui.cbDelProjeccio.currentText() == 'UTM ED50':
+    #         projeccio = 23031
+    #     elif dCSV.ui.cbDelProjeccio.currentText() == 'UTM ETRS89':
+    #         projeccio = 25831
+    #     elif dCSV.ui.cbDelProjeccio.currentText() == 'Lat Long':
+    #         projeccio = 4326
+    #     titol = dCSV.ui.leNomCapa.text()
+    #     nivellCsv(nfile,dCSV.ui.cbDelimitador.currentText(),dCSV.ui.cbDelX.currentText(),dCSV.ui.cbDelY.currentText(), projeccio, nomCapa = titol)
         
 
 def carregarNivellQlr():
