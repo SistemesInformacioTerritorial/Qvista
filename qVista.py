@@ -2410,36 +2410,36 @@ def escollirNivellGPX():
     # features=layer.getFeatures()
     # taulaAtributs('Total',layer)
 
-def escollirNivellCSV():
-    # layer = qV.llegenda.view.currentLayer()
-    # qV.project.removeMapLayer(layer)
-    # qV.canvas.refresh()
-    nfile,_ = QFileDialog.getOpenFileName(None, "Obrir fitxer CSV", ".", "CSV (*.csv)")
+# def escollirNivellCSV():
+#     # layer = qV.llegenda.view.currentLayer()
+#     # qV.project.removeMapLayer(layer)
+#     # qV.canvas.refresh()
+#     nfile,_ = QFileDialog.getOpenFileName(None, "Obrir fitxer CSV", ".", "CSV (*.csv)")
 
     
-    dCSV = DialegCSV()
-    dCSV.finished.connect(dCSV)
+#     dCSV = DialegCSV()
+#     dCSV.finished.connect(dCSV)
    
-    # print(dCSV.ui.cbDelimitador.currentText())
-    # print("D"+dCSV.ui.cbDelimitador.currentText()+"D")
-    projeccio = 0
-    if nfile:
-        with open(nfile) as f:
-            reader = csv.DictReader(f, delimiter=dCSV.ui.cbDelimitador.currentText())
-            llistaCamps = reader.fieldnames
-        # print (llistaCamps)
+#     # print(dCSV.ui.cbDelimitador.currentText())
+#     # print("D"+dCSV.ui.cbDelimitador.currentText()+"D")
+#     projeccio = 0
+#     if nfile:
+#         with open(nfile) as f:
+#             reader = csv.DictReader(f, delimiter=dCSV.ui.cbDelimitador.currentText())
+#             llistaCamps = reader.fieldnames
+#         # print (llistaCamps)
         
-        dCSV = DialegCSV(llistaCamps)
+#         dCSV = DialegCSV(llistaCamps)
 
-        if dCSV.ui.cbDelProjeccio.currentText() == 'UTM ED50':
-            projeccio = 23031
-        elif dCSV.ui.cbDelProjeccio.currentText() == 'UTM ETRS89':
-            projeccio = 25831
-        elif dCSV.ui.cbDelProjeccio.currentText() == 'Lat Long':
-            projeccio = 4326
-        titol = dCSV.ui.leNomCapa.text()
-        nivellCsv(nfile,dCSV.ui.cbDelimitador.currentText(),dCSV.ui.cbDelX.currentText(),dCSV.ui.cbDelY.currentText(), projeccio, nomCapa = titol)
-        #carregarCsvATaula(nfile,';')
+#         if dCSV.ui.cbDelProjeccio.currentText() == 'UTM ED50':
+#             projeccio = 23031
+#         elif dCSV.ui.cbDelProjeccio.currentText() == 'UTM ETRS89':
+#             projeccio = 25831
+#         elif dCSV.ui.cbDelProjeccio.currentText() == 'Lat Long':
+#             projeccio = 4326
+#         titol = dCSV.ui.leNomCapa.text()
+#         nivellCsv(nfile,dCSV.ui.cbDelimitador.currentText(),dCSV.ui.cbDelX.currentText(),dCSV.ui.cbDelY.currentText(), projeccio, nomCapa = titol)
+#         #carregarCsvATaula(nfile,';')
 
 def carregarLayerCSV(nfile):
     dCSV = DialegCSV()
