@@ -119,7 +119,8 @@ with qgisapp() as app:
         textFiltre = "INSTR('"+seccions+"',DISTRICTE||SEC_CENS)>0"
         textFiltre2 = 'CODI_COLE'+"='"+cole+"'"
         layerSeccions.setSubsetString(textFiltre) 
-        layer.setSubsetString(textFiltre2)     
-        imprimirPlanol(colegi, meses, x_min, y_min, x_max, y_max, 0, plantillaMapa , 'd:/EUREKA.pdf', 'PDF')
+        layer.setSubsetString(textFiltre2)    
+        if cole == '00813' :
+            imprimirPlanol(colegi, meses, x_min, y_min, x_max, y_max, 0, plantillaMapa , 'd:/EUREKA.pdf', 'PDF')
     
     canvas.show()
