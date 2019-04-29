@@ -449,7 +449,7 @@ if __name__ == "__main__":
         # print(vars(chart))
 
         chart = QvChart()
-        chart.setGeometry(50, 50, 1200, 750)
+        chart.setGeometry(50, 50, 1200, 700)
         chart.setWindowTitle('Gràfics')
 
         def salutacions(txt):
