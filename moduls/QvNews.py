@@ -7,7 +7,7 @@ from PyQt5 import QtCore, QtWidgets
 from PyQt5.QtGui import QColor
 import os
 import tempfile
-from QvConstants import QvConstants
+from moduls.QvConstants import QvConstants
 
 
 class QvNews(QtWidgets.QAction):
