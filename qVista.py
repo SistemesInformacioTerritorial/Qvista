@@ -335,7 +335,9 @@ class QVista(QMainWindow, Ui_MainWindow):
         spacer2 = QSpacerItem(1000, 1000, QSizePolicy.Expanding,QSizePolicy.Maximum)
         self.lytBotoneraLateral.addItem(spacer2)
         
-        self.bInfo = self.botoLateral(tamany = 25, accio=self.actInfo)
+        self.qvNews = QvNews()
+        self.bInfo = self.botoLateral(tamany = 25, accio=self.qvNews)
+        # self.bInfo = self.botoLateral(tamany = 25, accio=self.actInfo)
         self.bHelp = self.botoLateral(tamany = 25, accio=self.actHelp)
         self.bBug = self.botoLateral(tamany = 25, accio=self.actBug)
         # self.bDashStandard = self.botoLateral(tamany = 25, accio=self.actDashStandard)
