@@ -21,6 +21,9 @@ class QCercadorAdreca(QObject):
 
     def __init__(self, lineEditCarrer, lineEditNumero, origen = 'CSV'):
         super().__init__()
+
+        # self.pare= pare
+
         self.origen = origen
         self.leCarrer = lineEditCarrer
         self.leNumero = lineEditNumero
@@ -234,7 +237,7 @@ class QCercadorAdreca(QObject):
             self.sHanTrobatCoordenades.emit(5,info)  #numero          
 
     def trobatNumero(self):
-        
+        self.txto = self.completerCarrer.currentCompletion()
         try:
             # if self.leCarrer.text() in self.dictCarrers:
             if self.txto in self.dictCarrers:

@@ -509,7 +509,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         # instanciamos clases necesarias    
         self.fCercador=QFrame()
         self.bottomWidget = QWidget()
-        self.ubicacions = QvUbicacions(self.canvas)
+        self.ubicacions = QvUbicacions(self.canvas, pare=self)
         self.splitter = QSplitter(Qt.Vertical)             #para separar ubicacion de distBarris
         self.layoutAdreca = QHBoxLayout()                  #Creamos layout, caja de diseño Horizontal
         self.layoutCercador = QVBoxLayout(self.fCercador)  #Creamos layout, caja de diseño Vertical
@@ -587,7 +587,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.addDockWidget( Qt.RightDockWidgetArea, self.dwCercador)
 
     def CopiarA_Ubicacions(self):
-        self.ubicacions.leUbicacions.setText(self.leCarrer.text()+"  "+self.leNumero.text())
+        self.ubicacions.leUbicacions.setText("->"+self.leCarrer.text()+"  "+self.leNumero.text())
         self.ubicacions._novaUbicacio()
 
 

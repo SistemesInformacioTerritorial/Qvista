@@ -2,7 +2,7 @@
 from qgis.PyQt.QtGui import QStandardItemModel, QStandardItem, QIcon, QPixmap
 
 from qgis.core import QgsRectangle,   QgsProject, QgsVectorLayer, QgsLayoutExporter, QgsPointXY, QgsGeometry, QgsVector, QgsLayout, QgsReadWriteContext
-from qgis.gui import QgsMapCanvas,QgsLayerTreeMapCanvasBridge
+from qgis.gui import QgsMapCanvas,QgsLayerTreeMapCanvasBridge,  QgsVertexMarker
 import sys
 # from PyQt5 import QtGui, QtCore, QtWidgets
 from PyQt5.QtCore import QAbstractItemModel, QFile, QIODevice, QModelIndex, Qt, QSize
@@ -12,6 +12,10 @@ import pickle
 from collections import deque
 import os.path
 from qgis.core.contextmanagers import qgisapp
+
+from PyQt5.QtGui import QPainter, QColor, QPen
+
+
 
 projecteInicial='../dades/projectes/BCN11.qgs'
 fic_guardar_arbre='C:/Temp/QvUbicacions.p'  #Fichero para la lectura/escritura de ubicaciones (serializadas)
@@ -27,14 +31,9 @@ class StandardItemModel_mio(QStandardItemModel):
         self.importData(data)    
         self.ubicacions = ubicacions   
 
-
-           
-
-
     def exportData(self):
         """ Las ubicaciones se guardan  serializadas en fichero
         """
-        
         # import os
         # os.system('D:/projectes_py/qVista/kk.chm')
 
@@ -112,8 +111,6 @@ class StandardItemModel_mio(QStandardItemModel):
                 msg.setWindowTitle("QvUbicacions")
                
                 retval = msg.exec_()
-
-
         except:
             msg = QMessageBox()
             msg.setIcon(QMessageBox.Warning)
@@ -175,14 +172,14 @@ class QvUbicacions(QWidget):
     Un click sobre una ubicació ens situa en el rang guardat previament.
     """
     
-    def __init__(self, canvas):
+    def __init__(self, canvas, pare = None):
         """[summary]
         Arguments:
             canvas {[QgsMapCanvas]} -- [El canvas que es vol gestionar]
 
 
         """
-
+        self.pare= pare
         self.canvas = canvas
         QWidget.__init__(self)
 
@@ -263,8 +260,6 @@ class QvUbicacions(QWidget):
         #Definimos un boton para guardar las ubicaciones
         icon = QIcon()
         fichero= './imatges/guardar.png'
-
-
         icon.addPixmap(QPixmap(fichero))  
         # icon.addPixmap(QPixmap("D:/projectes_py/qVista/imatges/guardar.png"))  
 
@@ -296,8 +291,6 @@ class QvUbicacions(QWidget):
         self.arbre.setHeaderHidden(True)  #aqui
         self.arbre.setColumnWidth(0,8000)
         self.arbre.setHorizontalScrollBarPolicy(1)  
-
-
 
 
 
@@ -376,7 +369,6 @@ class QvUbicacions(QWidget):
 
         # La següent linia carrega les variables de x,y màximes i mínimes, segons el currentIndex del model clickat.
         try:
-            # xmin, ymin, xmax, ymax = (float(self.model.itemFromIndex(self.arbre.currentIndex().sibling(self.arbre.currentIndex().row(), i+1)).text()) for i in range(4))
             xxmin  = float(self.model.itemFromIndex(self.arbre.currentIndex().sibling(self.arbre.currentIndex().row(), 0+1)).text())
             yymin  = float(self.model.itemFromIndex(self.arbre.currentIndex().sibling(self.arbre.currentIndex().row(), 1+1)).text())
             xxmax  = float(self.model.itemFromIndex(self.arbre.currentIndex().sibling(self.arbre.currentIndex().row(), 2+1)).text())
@@ -388,6 +380,20 @@ class QvUbicacions(QWidget):
             rang = QgsRectangle(xxmin, yymin, xxmax, yymax)
             # Canviem l'extensió del canvas segons el rang recien calculat.
             self.canvas.zoomToFeatureExtent(rang)
+
+
+            if self.model.itemFromIndex(self.arbre.currentIndex().sibling(self.arbre.currentIndex().row(), 0)).text()[0] =="-" :
+                if self.model.itemFromIndex(self.arbre.currentIndex().sibling(self.arbre.currentIndex().row(), 0)).text()[1] ==">" :
+
+                    self.canvas.scene().removeItem(self.pare.marcaLloc)
+                    self.pare.marcaLloc = QgsVertexMarker(self.pare.canvas)
+                    self.pare.marcaLloc.setCenter( QgsPointXY(float((xxmin+xxmax)/2),  float((yymin+yymax)/2)) )
+                    self.pare.marcaLloc.setColor(QColor(255, 0, 0))
+                    self.pare.marcaLloc.setIconSize(15)
+                    self.pare.marcaLloc.setIconType(QgsVertexMarker.ICON_CIRCLE) # or  ICON_NONE, ICON_CROSS, ICON_X, ICON_BOX, ICON_CIRCLE, ICON_DOUBLE_TRIANGLE 
+                    self.pare.marcaLloc.setPenWidth(3)
+                    self.pare.marcaLloc.show()
+                    self.pare.marcaLlocPosada = True
         except :
             pass
         
