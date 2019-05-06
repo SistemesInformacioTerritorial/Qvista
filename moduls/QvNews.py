@@ -44,8 +44,9 @@ class QvNews(QtWidgets.QAction):
         self.light=not self.light
 
     def mostraNoticies(self):
-        self.news=QvNewsAux(self.ARXIUNEWS)
-        self.news.show()
+        self.news=QvNewsFinestra(self.ARXIUNEWS)
+        self.news.exec_()
+        self.setIcon(self.ICONA)
         with open(self.ARXIUTMP,'w') as arxiu:
             #Escrivim alguna cosa. Realment no caldria
             import time
@@ -58,7 +59,8 @@ class QvNews(QtWidgets.QAction):
             return True
         return os.path.getmtime(self.ARXIUTMP)<os.path.getmtime(self.ARXIUNEWS)
 
-class QvNewsAux(QFrame):
+#QFrame no permet fer exec. QDialog sí
+class QvNewsFinestra(QDialog):
     def __init__(self, file, parent=None):
         super().__init__(parent)
         #Layout gran. Tot a dins
@@ -113,7 +115,9 @@ class QvNewsAux(QFrame):
             "    background: %s;"
             "    height: 0 px;"
             "}"%(QvConstants.COLORGRIS, QvConstants.COLORGRIS, QvConstants.COLORGRIS, QvConstants.COLORGRIS))
-        self.caixaText.setStyleSheet('margin: 20px 2px 20px 20px')
+        #Comentar si volem que s'oculti la scrollbar quan no s'utilitza
+        self.caixaText.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
+        self.caixaText.setContentsMargins(0,0,0,0)
         self.setStyleSheet('background-color: %s; QFrame {border: 0px} QLabel {border: 0px}'%QvConstants.COLORBLANC)
         self.setWindowFlags(Qt.Window | Qt.FramelessWindowHint)
         self.lblLogo.setStyleSheet('background-color: %s; border: 0px'%QvConstants.COLORFOSC)
