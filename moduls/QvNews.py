@@ -44,7 +44,7 @@ class QvNews(QtWidgets.QAction):
         self.light=not self.light
 
     def mostraNoticies(self):
-        self.news=QvNewsAux(self.ARXIUNEWS)
+        self.news=QvNewsFinestra(self.ARXIUNEWS)
         self.news.exec_()
         self.setIcon(self.ICONA)
         with open(self.ARXIUTMP,'w') as arxiu:
@@ -60,7 +60,7 @@ class QvNews(QtWidgets.QAction):
         return os.path.getmtime(self.ARXIUTMP)<os.path.getmtime(self.ARXIUNEWS)
 
 #QFrame no permet fer exec. QDialog sí
-class QvNewsAux(QDialog):
+class QvNewsFinestra(QDialog):
     def __init__(self, file, parent=None):
         super().__init__(parent)
         #Layout gran. Tot a dins
