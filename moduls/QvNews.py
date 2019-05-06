@@ -8,6 +8,7 @@ from PyQt5.QtGui import QColor
 import os
 import tempfile
 from moduls.QvConstants import QvConstants
+from moduls.QvPushButton import QvPushButton
 
 
 class QvNews(QtWidgets.QAction):
@@ -150,25 +151,7 @@ class QvNewsFinestra(QDialog):
         if event.key()==Qt.Key_Escape or event.key()==Qt.Key_Return:
             self.close()
 
-class QvPushButton(QPushButton):
-    def __init__(self, text='', parent=None):
-        QPushButton.__init__(self,text,parent)
-        
-        self.setStyleSheet(
-            "margin: 20px;"
-            "border: none;"
-            "padding: 5px 20px;"
-            "color: %s;"
-            "background-color: %s" % (QvConstants.COLORBLANC,QvConstants.COLORFOSC))
-        self.setGraphicsEffect(QvConstants.ombraWidget())
-        self.setFont(QvConstants.FONTTEXT)
 
-    def enterEvent(self,event):
-        QPushButton.enterEvent(self,event)
-        self.setCursor(Qt.PointingHandCursor)
-    def leaveEvent(self,event):
-        QPushButton.leaveEvent(self,event)
-        self.setCursor(Qt.ArrowCursor)
 
 if __name__=='__main__':
     import sys
