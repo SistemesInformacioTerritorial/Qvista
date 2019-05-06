@@ -8,6 +8,7 @@ from PyQt5.QtGui import QColor
 import os
 import tempfile
 from moduls.QvConstants import QvConstants
+from moduls.QvPushButton import QvPushButton
 
 
 class QvNews(QtWidgets.QAction):
@@ -16,8 +17,6 @@ class QvNews(QtWidgets.QAction):
         self.ICONADESTACADA=QIcon('Imatges/NewsDestacada.png')
         #QtWidgets.QAction.__init__(self,self.ICONA,'Notícies',parent)
         super().__init__(self.ICONA,'Notícies',parent)
-        self.ARXIUNEWS='d:/qVista/codi/News/Noticies.htm'
-        self.ARXIUTMP=tempfile.gettempdir()+'\\ultimaNewOberta'
         if self.calNoticiaNova():
             self.timer=QTimer()
             self.timer.timeout.connect(self.blink)
@@ -44,20 +43,20 @@ class QvNews(QtWidgets.QAction):
         self.light=not self.light
 
     def mostraNoticies(self):
-        self.news=QvNewsFinestra(self.ARXIUNEWS)
+        self.news=QvNewsFinestra(QvConstants.ARXIUNEWS)
         self.news.exec_()
         self.setIcon(self.ICONA)
-        with open(self.ARXIUTMP,'w') as arxiu:
-            #Escrivim alguna cosa. Realment no caldria
+        with open(QvConstants.ARXIUTMP,'w') as arxiu:
+            #Escrivim alguna cosa. Realment no caldria que fos el temps
             import time
             arxiu.write(str(time.time()))
     def calNoticiaNova(self):
         #Si no existeix l'arxiu temporal vol dir que mai hem obert notícies :(
-        if not os.path.isfile(self.ARXIUNEWS):
+        if not os.path.isfile(QvConstants.ARXIUNEWS):
             return False
-        if not os.path.isfile(self.ARXIUTMP):
+        if not os.path.isfile(QvConstants.ARXIUTMP):
             return True
-        return os.path.getmtime(self.ARXIUTMP)<os.path.getmtime(self.ARXIUNEWS)
+        return os.path.getmtime(QvConstants.ARXIUTMP)<os.path.getmtime(QvConstants.ARXIUNEWS)
 
 #QFrame no permet fer exec. QDialog sí
 class QvNewsFinestra(QDialog):
@@ -152,25 +151,7 @@ class QvNewsFinestra(QDialog):
         if event.key()==Qt.Key_Escape or event.key()==Qt.Key_Return:
             self.close()
 
-class QvPushButton(QPushButton):
-    def __init__(self, text='', parent=None):
-        QPushButton.__init__(self,text,parent)
-        
-        self.setStyleSheet(
-            "margin: 20px;"
-            "border: none;"
-            "padding: 5px 20px;"
-            "color: %s;"
-            "background-color: %s" % (QvConstants.COLORBLANC,QvConstants.COLORFOSC))
-        self.setGraphicsEffect(QvConstants.ombraWidget())
-        self.setFont(QvConstants.FONTTEXT)
 
-    def enterEvent(self,event):
-        QPushButton.enterEvent(self,event)
-        self.setCursor(Qt.PointingHandCursor)
-    def leaveEvent(self,event):
-        QPushButton.leaveEvent(self,event)
-        self.setCursor(Qt.ArrowCursor)
 
 if __name__=='__main__':
     import sys
