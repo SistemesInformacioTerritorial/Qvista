@@ -587,7 +587,8 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.addDockWidget( Qt.RightDockWidgetArea, self.dwCercador)
 
     def CopiarA_Ubicacions(self):
-        self.ubicacions.leUbicacions.setText("->"+self.leCarrer.text()+"  "+self.leNumero.text())
+        # self.ubicacions.leUbicacions.setText("->"+self.leCarrer.text()+"  "+self.leNumero.text())
+        self.ubicacions.leUbicacions.setText("->"+self.leCarrer.text()+"  "+self.cAdrec.NumeroOficial)
         self.ubicacions._novaUbicacio()
 
 
@@ -807,6 +808,8 @@ class QVista(QMainWindow, Ui_MainWindow):
 
             self.marcaLloc = QgsVertexMarker(self.canvas)
             self.marcaLloc.setCenter( self.cAdrec.coordAdreca )
+            # self.leNumero.setToolTip('Num oficial: '+self.cAdrec.NumeroOficial)
+            
             self.marcaLloc.setColor(QColor(255, 0, 0))
             self.marcaLloc.setIconSize(15)
             self.marcaLloc.setIconType(QgsVertexMarker.ICON_BOX) # or ICON_CROSS, ICON_X

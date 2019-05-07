@@ -382,8 +382,8 @@ class QvUbicacions(QWidget):
             self.canvas.zoomToFeatureExtent(rang)
 
 
-            if self.model.itemFromIndex(self.arbre.currentIndex().sibling(self.arbre.currentIndex().row(), 0)).text()[0] =="-" :
-                if self.model.itemFromIndex(self.arbre.currentIndex().sibling(self.arbre.currentIndex().row(), 0)).text()[1] ==">" :
+            if self.model.itemFromIndex(self.arbre.currentIndex().sibling(self.arbre.currentIndex().row(), 0)).text()[0] == chr(45): # "-" :
+                if self.model.itemFromIndex(self.arbre.currentIndex().sibling(self.arbre.currentIndex().row(), 0)).text()[1] ==chr(62): #">" :
 
                     self.canvas.scene().removeItem(self.pare.marcaLloc)
                     self.pare.marcaLloc = QgsVertexMarker(self.pare.canvas)

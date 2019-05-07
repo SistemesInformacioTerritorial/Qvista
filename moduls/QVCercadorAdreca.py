@@ -15,7 +15,7 @@ import csv
 
 class QCercadorAdreca(QObject):
 
-    __carrersCSV = 'dades\CARRERER.csv'
+    __carrersCSV = 'dades\Carrers.csv'
     __path_disgregados= 'Dades\dir_ele\\' 
     sHanTrobatCoordenades = pyqtSignal(int, 'QString')  # atencion
 
@@ -107,9 +107,11 @@ class QCercadorAdreca(QObject):
 
             path= self.__path_disgregados+str(self.codiCarrer)+'.csv'
             with open(path, encoding='utf-8', newline='') as csvFile:
-                reader = csv.DictReader(csvFile, delimiter=',')
+                reader = csv.DictReader(csvFile, delimiter=';')
                 for row in reader:
-                    self.dictNumeros[row['CODI_CARRER']][row['NUMPOST']] = row
+                    # self.dictNumeros[row['CODI_CARRER']][row['NUMPOST']] = row
+                    self.dictNumeros[self.codiCarrer][row['NUM_LLETRA_POST']] = row
+                    # self.dictNumeros[row['NUM_LLETRA_POST']] = row
 
             self.prepararCompleterNumero()
             self.focusANumero()
@@ -139,9 +141,10 @@ class QCercadorAdreca(QObject):
                         self.focusANumero()
                         path= self.__path_disgregados+str(self.codiCarrer)+'.csv'
                         with open(path, encoding='utf-8', newline='') as csvFile:
-                            reader = csv.DictReader(csvFile, delimiter=',')
+                            reader = csv.DictReader(csvFile, delimiter=';')
                             for row in reader:
-                                self.dictNumeros[row['CODI_CARRER']][row['NUMPOST']] = row
+                                # self.dictNumeros[row['CODI_CARRER']][row['NUMPOST']] = row
+                                self.dictNumeros[self.codiCarrer][row['NUM_LLETRA_POST']] = row
 
                         self.prepararCompleterNumero()
                         self.focusANumero()
@@ -186,12 +189,12 @@ class QCercadorAdreca(QObject):
     def llegirAdrecesCSV(self):
         try:
             with open(self.__carrersCSV, encoding='utf-8', newline='') as csvFile:
-                reader = csv.DictReader(csvFile, delimiter=',')
+                reader = csv.DictReader(csvFile, delimiter=';')
                 for row in reader:
                     # leemo linea del csv y extraemos campos....
                     nombre= row['NOM_OFICIAL']
                     nombre_sin_acentos= self.remove_accents(nombre)
-                    codi_carrer= row['CODI_VIA']
+                    codi_carrer= row['CODI']
                     # creamos clave.... pongo caracter 30 (invisible), para separar ambas partes
                     if nombre == nombre_sin_acentos:
                         clave= nombre + "  (" + codi_carrer + ")                                                  "+chr(30)
@@ -201,7 +204,8 @@ class QCercadorAdreca(QObject):
                     self.dictCarrers[clave] = codi_carrer 
                     
             return True
-        except:
+        except Exception as e:
+            print(str(e))
             msg = QMessageBox()
             msg.setIcon(QMessageBox.Warning)
             
@@ -228,6 +232,8 @@ class QCercadorAdreca(QObject):
                 self.infoAdreca = self.dictNumerosFiltre[self.numeroCarrer]
                 self.coordAdreca = QgsPointXY(float(self.infoAdreca['ETRS89_COORD_X']), \
                                             float(self.infoAdreca['ETRS89_COORD_Y']))
+
+                self.NumeroOficial= self.infoAdreca['NUM_OFICIAL']
                 self.leNumero.clearFocus()
 
                 info="[0]"
@@ -252,6 +258,7 @@ class QCercadorAdreca(QObject):
                             self.infoAdreca = self.dictNumerosFiltre[self.numeroCarrer]
                             self.coordAdreca = QgsPointXY(float(self.infoAdreca['ETRS89_COORD_X']), \
                                                         float(self.infoAdreca['ETRS89_COORD_Y']))
+                            self.NumeroOficial= self.infoAdreca['NUM_OFICIAL']
                             self.leNumero.clearFocus()
                             info="[0]"
                             self.sHanTrobatCoordenades.emit(0,info)                
