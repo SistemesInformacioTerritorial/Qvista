@@ -116,7 +116,8 @@ class QvNewsFinestra(QDialog):
             "}"%(QvConstants.COLORGRIS, QvConstants.COLORGRIS, QvConstants.COLORGRIS, QvConstants.COLORGRIS))
         #Comentar si volem que s'oculti la scrollbar quan no s'utilitza
         self.caixaText.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
-        self.caixaText.setContentsMargins(0,0,0,0)
+        #self.caixaText.setContentsMargins(0,0,0,0)
+        self.caixaText.setViewportMargins(20,20,0,0)
         self.setStyleSheet('background-color: %s; QFrame {border: 0px} QLabel {border: 0px}'%QvConstants.COLORBLANC)
         self.setWindowFlags(Qt.Window | Qt.FramelessWindowHint)
         self.lblLogo.setStyleSheet('background-color: %s; border: 0px'%QvConstants.COLORFOSC)
@@ -127,6 +128,7 @@ class QvNewsFinestra(QDialog):
         self.lblCapcalera.setFixedHeight(40)
         #self.lblCapcalera.setGraphicsEffect(QvConstants.ombra(self))
         self.layout.setContentsMargins(0,0,0,0)
+        #self.layout.setContentsMargins(20,0,20,0)
         self.layout.setSpacing(0)
         self.layoutCapcalera.setContentsMargins(0,0,0,0)
         self.layoutCapcalera.setSpacing(0)
