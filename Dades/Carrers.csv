@@ -295,7 +295,6 @@ CODI;NOM_OFICIAL
 029501;Carrer de l'Avió Plus Ultra
 029603;Passatge d'Aymà
 029705;Carrer de l'Ajuntament
-029716;Casa de la Ciutat Ajuntament Barcelona
 029807;Carrer de les Açores
 029953;Plaça d'Otero Pedrayo
 030089;Carrer B Zona Franca
@@ -570,7 +569,6 @@ CODI;NOM_OFICIAL
 058634;Camí de Can Clos
 058747;Camí de Can Pasqual
 058780;Camí del Mas Sauró
-058850;Tvc Cumbre Tibidabo
 058907;Carrer de Canaan
 059003;Passatge de Canadell
 059105;Carrer de Canalejas
@@ -625,7 +623,6 @@ CODI;NOM_OFICIAL
 064207;Carrer de Carbonell
 064309;Passatge de Carbonell
 064400;Carrer de Carcassona
-064433;Cárcel Modelo
 064502;Carrer de Cardedeu
 064604;Passatge de Cardedeu
 064706;Carrer del Cardenal Casañas
@@ -718,8 +715,6 @@ CODI;NOM_OFICIAL
 073809;Plaça de Castella
 073900;Carrer de los Castillejos
 073955;Parc del Castell de l'Oreneta
-074030;Castell de l'Oreneta
-074051;Castell de Montjuïc
 074109;Carrer del Castor
 074200;Plaça Catalana
 074302;Passatge de Catalunya
@@ -733,13 +728,8 @@ CODI;NOM_OFICIAL
 075101;Rambla del Caçador
 075203;Passatge de l'Ordi
 075305;Carrer de Celrà
-075349;Cementiri Sant Andreu
-075440;Cementiri Sant Gervasi
-075484;Cementiri les Corts
 075509;Camí del Cementiri de Sant Gervasi
-075531;Cementiri de Sants
 075553;Plaça del Cementiri d'Horta
-075575;Cementiri del Est
 075600;Camí del Cementiri de Sarrià
 075702;Carrer de Carmen Amaya
 075804;Passatge de Rere el Cementiri Vell
@@ -748,7 +738,6 @@ CODI;NOM_OFICIAL
 076104;Plaça de la Central
 076206;Carrer del Centre
 076308;Plaça del Centre
-076443;Cent Quirúrgic Peracamps
 076501;Carrer de la Cera
 076556;Carrer de la Ceràmica
 076603;Carrer del Clos de Sant Francesc
@@ -792,7 +781,6 @@ CODI;NOM_OFICIAL
 080203;Carrer de la Ciutat de Balaguer
 080258;Carrer de la Ciutat d'Elx
 080305;Carrer de Ciudad Real
-080327;Ciutat Sanitaria Vall d'Hebron
 080407;Passatge dels Ciutadans
 080509;Carrer de Ciutadella
 080600;Plaça de Ciutadella
@@ -813,7 +801,6 @@ CODI;NOM_OFICIAL
 082107;Carrer dels Còdols
 082209;Passatge de Coello
 082300;Carrer de Coïmbra
-082333;Colegio Menéndez Pidal
 082402;Carrer de Colòmbia
 082504;Passatge de Colomer
 082606;Carrer de Colomines
@@ -874,7 +861,6 @@ CODI;NOM_OFICIAL
 089004;Carrer del Consell de Cent
 089106;Carrer dels Consellers
 089208;Carrer dels Consorts Sans Bernet
-089252;Consorci de la Zona Franca
 089300;Passatge de la Constància
 089401;Carrer de Constantí
 089503;Carrer de Constantinoble
@@ -929,7 +915,6 @@ CODI;NOM_OFICIAL
 094707;Carrer de la Creu dels Molers
 094809;Carrer de la Creu Coberta
 094900;Carrer de Simancas
-094922;Cuartel de Gerona
 095007;Carrer dels Quatre Camins
 095109;Carrer de Cuba
 095200;Carrer de Cubelles
@@ -1060,7 +1045,6 @@ CODI;NOM_OFICIAL
 106861;Carrer E Zona Franca
 106908;Carrer de l'Ebre
 107004;Carrer de l'Equador
-107150;Edifici Aneto
 107208;Carrer d'Edison
 107300;Carrer d'Eduardo Conde
 107401;Carrer d'Eduard Toda
@@ -1084,7 +1068,6 @@ CODI;NOM_OFICIAL
 108958;Plaça d'Emili Vendrell
 109000;Plaça d'Emili Vilanova
 109101;Carrer dels Enamorats
-109156;Enasa (Zona Franca)
 109203;Carrer de l'Encarnació
 109305;Passatge de l'Encarnació
 109407;Passadís de l'Encarnació
@@ -1128,8 +1111,6 @@ CODI;NOM_OFICIAL
 112605;Riera d'Escuder
 112751;Carrer del Codonyer
 112809;Carrer de les Escoles
-112842;Escola Oficial Nautica
-112853;Escola de Jardineria
 112900;Passatge de les Escoles
 113007;Carrer de les Escoles Pies
 113109;Carrer de l'Escultor Canet
@@ -1164,20 +1145,10 @@ CODI;NOM_OFICIAL
 115851;Carrer del Tren
 116005;Passatge de l'Estació
 116107;Plaça de l'Estació
-116129;Estació Marítima
 116140;Carrer Estació del Morrot
-116151;Estació Sagrera
-116173;Estació del Nord
-116184;Estació Sant Andreu Condal
-116195;Estació de França
 116209;Carrer d'Estadella
-116220;Estació de Sants
-116231;Estació Passeig de Gràcia
-116253;Estació Torre Baró
 116300;Torrent d'Estadella
 116402;Avinguda de l'Estadi
-116457;Estadi Montjuïc
-116479;Estadi Joan Serrahima
 116504;Carrer de Pere Sala
 116708;Carrer de l'Estany
 116800;Carrer de l'Est
@@ -1206,11 +1177,7 @@ CODI;NOM_OFICIAL
 118940;Carrer F Zona Franca
 119003;Passeig de Fabra i Puig
 119105;Carrer de la Fàbrica
-119251;Facultat de Dret
-119273;Facultat de Farmacia
-119309;Facultat Geografia i Història
 119502;Carrer de les Fages
-119557;Facultat de Biologia
 119706;Carrer de Fenals
 119808;Carrer del Farell
 119900;Plaça de la Farga
@@ -1365,17 +1332,13 @@ CODI;NOM_OFICIAL
 136400;Passatge de la Font del Lleó
 136501;Passeig de la Font de la Mulassa
 136603;Plaça de la Font de la Mulassa
-136658;Font les Planes
 136705;Camí de la Font d'en Quintana
-136738;Font dels Pins
 136807;Carrer de la Font del Remei
 136909;Carrer de la Font de Sant Miquel
 137005;Plaça de Carles Buïgas
 137209;Carrer de Fulton
 137300;Carrer de la Foneria
 137402;Plaça del Doctor Andreu
-137446;Estació Funicular Montjuïc
-137468;Estació Funicular Vallvidrera
 137504;Carrer de Funoses Llussà
 137606;Carrer de la Fusina
 137800;Carrer de la Fusteria
@@ -1442,7 +1405,6 @@ CODI;NOM_OFICIAL
 144408;Carrer del General Vives
 144500;Carrer d'Eduard Toldrà
 144601;Avinguda Diagonal
-144656;Palau de la Generalitat de Catalunya
 144805;Carrer de Gènova
 144850;Carrer dels Geranis
 144907;Carrer Sense Nom (Trav de les Corts)
@@ -1552,8 +1514,6 @@ CODI;NOM_OFICIAL
 156101;Carrer d'Hipòlit Lázaro
 156203;Plaça de Pablo Neruda
 156305;Carrer de l'Historiador Maians
-156327;Hogares Mundet
-156349;Hogar Social Emergencia
 156407;Carrer d'Homer
 156509;Carrer d'Hondures
 156600;Carrer d'Horaci
@@ -1568,9 +1528,7 @@ CODI;NOM_OFICIAL
 157705;Carrer de l'Hortènsia
 157909;Carrer de l'Hospital
 158005;Passatge de l'Hospital
-158050;Hospital de Sant Rafael
 158107;Avinguda de Vallcarca
-158151;Hospital Ntra Sra Mar
 158209;Carrer d'Hostafrancs de Sió
 158300;Carrer de l'Hostal d'en Sol
 158402;Carrer d'Hostalric
@@ -1614,9 +1572,7 @@ CODI;NOM_OFICIAL
 162352;Carrer de la Robínia
 162400;Carrer de la Immaculada
 162501;Carrer del Lliri
-162556;Inspeccion de Aduanas
 162603;Carrer de l'Institut Frenopàtic
-162658;Institut Químic de Sarrià
 162705;Carrer de l'Institut Químic de Sarrià
 162807;Passeig de Minici Natal
 162909;Carrer d'Iradier
@@ -1837,8 +1793,6 @@ CODI;NOM_OFICIAL
 184107;Carrer de Llafranc
 184209;Carrer de Llagostera
 184402;Carrer de Llança
-184457;Estació Funicular Tibidabo 1
-184479;Estació Funicular Tibidabo 2
 184504;Carrer d'en Llàstics
 184606;Carrer de Llauder
 184708;Passatge de Llavallol
@@ -2014,7 +1968,6 @@ CODI;NOM_OFICIAL
 201909;Passatge de Martras
 202005;Carrer del Mas Duran
 202050;Camí del Mas Guimbau
-202107;Mas Pascual
 202209;Passatge de Mas de Roda
 202264;Camí de la Reineta
 202275;Camí de la Font dels Pins
@@ -2071,7 +2024,6 @@ CODI;NOM_OFICIAL
 208056;Carrer Menor de Sarrià
 208205;Carrer de Menorca
 208307;Plaça del Mercadal
-208340;Piscines Bernat Picornell
 208409;Passatge de Mercader
 208602;Carrer de Mercaders
 208704;Baixada del Mercat
@@ -2086,8 +2038,6 @@ CODI;NOM_OFICIAL
 209605;Passatge de Mercedes
 209707;Rambla de Mercedes
 209809;Carrer del Mercuri
-209864;Merendero Pati Verd
-209886;Merendero Font Alba
 209900;Avinguda Meridiana
 210003;Carrer Meridional
 210105;Carrer de Messina
@@ -2145,7 +2095,6 @@ CODI;NOM_OFICIAL
 215200;Baixada del Monestir
 215302;Carrer del Monestir
 215404;Plaça del Monestir
-215459;Monasterio Clarisas
 215700;Carrer dels Moneders
 215801;Carrer de Monegal
 215903;Carrer dels Montfar
@@ -2317,7 +2266,6 @@ CODI;NOM_OFICIAL
 232800;Carrer del Bisbe Sivilla
 232902;Plaça d'Urquinaona
 233009;Carrer d'Obradors
-233020;Observatori Fabra
 233031;Carretera de l'Observatori Fabra
 233100;Carrer d'Ocata
 233406;Carrer d'Ogassa
@@ -2361,10 +2309,6 @@ CODI;NOM_OFICIAL
 237203;Carrer d'Otger
 237305;Carrer d'Òtranto
 237484;Passeig del Pavelló Albéniz
-237509;Palauet Albéniz
-237520;Pavelló Ideal
-237564;Facultat de Filosofia
-237586;Pavelló Vall d'Aran
 237600;Carrer de Pau Alcover
 237702;Plaça de Rafael Campalans
 237804;Carrer de Pau Ferran
@@ -2392,8 +2336,6 @@ CODI;NOM_OFICIAL
 240503;Carrer de la Palla
 240605;Passatge de Palau
 240707;Pla de Palau
-240831;Palau Nacional Montjuïc
-240853;Palau de Pedralbes
 240900;Carrer de Palafolls
 241007;Carrer de Palafox
 241200;Carrer de Palamós
@@ -2429,7 +2371,6 @@ CODI;NOM_OFICIAL
 244708;Carrer del Paradís
 244800;Carrer del Paraguai
 244901;Carrer de Parcerisa
-244956;Parlament Catalunya
 245008;Carrer del Passerell
 245052;Baixada del Passerell
 245100;Passatge del Passerell
@@ -2446,7 +2387,6 @@ CODI;NOM_OFICIAL
 246259;Parc de la Ciutadella
 246270;Parc del Guinardó
 246281;Parc Güell
-246292;Palau Municipal dels Esports
 246317;Parc de Montjuïc
 246328;Parc de la Guineueta
 246394;Carrer del Parc de la Budellera
@@ -2456,7 +2396,6 @@ CODI;NOM_OFICIAL
 246805;Carrer del Rector Ubach
 246907;Carrer del Rector Voltà
 247003;Carrer de Pere Tarrés
-247014;Parròquia Antiga Vallvidrera
 247036;Carrer de Parsifal
 247058;Parc Forestal de Can Pasqual
 247069;Pas Groc de Montbau
@@ -2581,7 +2520,6 @@ CODI;NOM_OFICIAL
 259308;Baixada de la Plana
 259400;Carrer de la Plana
 259501;Passatge de la Plana
-259523;Estació de Les Planes
 259603;Passatge de Planell
 259705;Carrer de Planella
 259807;Carrer del Planeta
@@ -2658,7 +2596,6 @@ CODI;NOM_OFICIAL
 267102;Carrer del Príncep Jordi
 267306;Carrer del Príncep de Viana
 267500;Carrer del Priorat
-267554;Cárcel Trinidad
 267601;Carrer de la Proclamació
 267703;Carrer del Profeta
 267805;Carrer del Progrés
@@ -2773,7 +2710,6 @@ CODI;NOM_OFICIAL
 279600;Avinguda de la República Argentina
 279702;Carrer de Requesens
 279804;Carrer de la Residència
-279837;Residència Pau Casals
 279906;Carrer de la Ginestera
 280100;Carrer de Reus
 280202;Carrer de Mossèn Amadeu Oller
@@ -3172,7 +3108,6 @@ CODI;NOM_OFICIAL
 321274;Passatge de Saturn
 321300;Passatge de Saumell
 321401;Carrer de Scala Dei
-321456;Seat Zona Franca
 321503;Carrer de la Seca
 321605;Carrer de Pau Alsina
 321707;Carrer de la Segarra
@@ -3285,7 +3220,6 @@ CODI;NOM_OFICIAL
 332850;Plaça de la Televisió
 332907;Carrer de Tell
 333003;Carrer dels Templers
-333150;Temple Sagrat Cor
 333309;Carrer de Tenerife
 333400;Carrer de González Tablas
 333604;Carrer de John M. Keynes
@@ -3344,8 +3278,6 @@ CODI;NOM_OFICIAL
 339203;Carrer de Torras i Pujalt
 339305;Carrer de la Torre
 339407;Plaça de la Torre
-339418;Torre Aigües Tibidabo
-339429;Torre Bonavista
 339473;Parc Forestal de Torre Baró
 339509;Carrer de la Torre d'en Damians
 339600;Carrer de la Torre Dulac
@@ -3468,7 +3400,6 @@ CODI;NOM_OFICIAL
 352201;Carrer de Valldoreix
 352303;Carrer de la Vall d'Aran
 352405;Plaça de la Vall d'Hebron
-352482;Fundacion Alba V Hebron
 352507;Passeig de la Vall d'Hebron
 352653;Carrer de la Vall d'Ordesa
 352700;Carrer del Vallès
@@ -3481,7 +3412,6 @@ CODI;NOM_OFICIAL
 353656;Carrer de Valls
 353703;Carrer de Vallpar
 353769;Camí de Vallvidrera al Tibidabo
-353791;Estació Apeadero Vallvidrera
 353805;Avinguda de Vallvidrera
 353907;Camí de Vallvidrera
 353951;Riera de Vallvidrera
@@ -3610,7 +3540,6 @@ CODI;NOM_OFICIAL
 366909;Carretera de Vista-rica
 367005;Carrer de Biure
 367107;Carrer de Viver
-367173;Viver Municipal Tres Pins
 367300;Carrer de Biscaia
 367402;Rambla de Volart
 367504;Carrer del Doctor Trueta
@@ -3654,124 +3583,6 @@ CODI;NOM_OFICIAL
 375706;Carrer Número 60 Zona Franca
 375808;Carrer Número 61 Zona Franca
 375900;Carrer Número 62 Zona Franca
-520204;Mercat Mercado Abaceria Central
-520408;Mercat Barceloneta
-520601;Mercat Bon Pastor
-520805;Mercat Carmel
-520850;Mercat Central de Fruites i Verdures A
-521207;Mercat Clot
-521400;Mercat Concepció
-521455;Mercat Encants de Sant Antoni
-521808;Mercat Felip II
-522006;Mercat Fira Bellcaire
-522200;Mercat Flors a l'Engros
-522221;Mercat Flors Rambles
-522232;Mercat Ocells Rambles
-522403;Mercat Galvany
-522607;Mercat Guinardó
-522800;Mercat Guineueta
-523009;Mercat Horta
-523202;Mercat Hostafrancs
-523406;Mercat les Corts
-523600;Mercat Lesseps
-523803;Mercat Llibertat
-524001;Mercat Llibres Vells
-524205;Mercat Mercabarna
-524409;Mercat Mare de Déu de l'Estrella
-524602;Mercat Mare de Déu la Mercè
-524806;Mercat Mare de Déu de Montserrat
-525004;Mercat Mare de Déu de Núria
-525208;Mercat Mare de Déu del Port
-525605;Mercat Porvenir-Ninot
-526007;Mercat Sagrada Família
-526200;Mercat Sagrera
-526404;Mercat Sant Andreu
-526608;Mercat Sant Antoni
-526801;Mercat Sant Gervasi
-527000;Mercat Sant Josep
-527203;Mercat Sant Martí
-527407;Mercat de Santa Caterina
-527600;Mercat Sants
-527804;Mercat Sarrià
-528002;Mercat Sud Oest Besòs (St Martí)
-528400;Mercat Tres Torres
-528454;Mercat Trinitat
-528603;Mercat Unió
-529005;Mercat Vall d'Hebron
-529209;Mercat Vallvidrera
-529606;Mercat Provençals
-529800;Mercat Mare de Déu del Carme
-530150;E.M. Alfons X
-530208;E.M. Pg Gràcia
-530274;E.M. Drassanes
-530332;E.M. Badal
-530343;E.M. Poble Nou
-530354;E.M. Barceloneta
-530547;E.M. Bonanova
-530569;E.M. Bordeta
-530682;E.M. Camp de l'Arpa
-530853;E.M. Catalunya F C
-530864;E.M. Catalunya G M
-530875;E.M. Catalunya M T
-530977;E.M. Zona Universitària
-530988;E.M. Plaça del Centre
-530999;E.M. Hospital Clinic
-531018;E.M. Clot
-531197;E.M. Les Corts
-531550;E.M. Diagonal
-531663;E.M. Hospital Sant Pau
-531903;E.M. Entença
-532123;E.M. Fabra i Puig
-532349;E.M. Fontana
-532473;E.M. Verdaguer
-532564;E.M. Glòries
-532575;E.M. Girona
-532600;E.M. Gràcia
-532790;E.M. Horta
-532917;E.M. Hostafranchs
-533385;E.M. Jaume I
-533396;E.M. Joanich
-534016;E.M. Lesseps
-534050;E.M. Liceu
-534402;E.M. Luchana
-534606;E.M. Maragall
-534617;E.M. Palau Reial
-534640;E.M. Maria Cristina
-534683;E.M. Marina
-534741;E.M. Mercat Nou
-534785;E.M. Muntaner
-534843;E.M. Navas
-534967;E.M. Putxet
-535449;E.M. Pàdua
-535584;E.M. Plaça Espanya
-535609;E.M. Plaça Molina
-535620;E.M. Provença
-535642;E.M. Monumental
-535653;E.M. Poble Sec
-535664;E.M. Bogatell
-536226;E.M. Rocafort
-536248;E.M. Sants Estació
-536259;E.M. Ribera
-536350;E.M. Sagrada Família
-536372;E.M. Sagrera
-536408;E.M. Sant Andreu
-536430;E.M. Sant Gervasi
-536554;E.M. El Guinardó
-536769;E.M. Sants
-536791;E.M. Sarrià
-537025;E.M. Tetuan
-537036;E.M. Tibidabo
-537069;E.M. Torras i Bages
-537138;E.M. Tres Torres
-537150;E.M. Arc del Triomf
-537171;E.M. Trinitat Vella
-537295;E.M. Universitat
-537309;E.M. Selva de Mar
-537364;E.M. Urgell
-537422;E.M. Urquinaona
-537706;E.M. Vilapiscina
-537761;E.M. Virrei Amat
-537794;E.M. Congrés
 540074;Moll Adossat
 540201;Moll d'Álvarez de la Campa
 540267;Moll de les Drassanes
@@ -3814,7 +3625,6 @@ CODI;NOM_OFICIAL
 700025;Passeig de Josep Carner
 700026;Carrer d'Augusto César Sandino
 700028;Plaça de Salvador Allende
-700031;Mercat Fira S Ponc(C Hospital)
 700032;Passatge d'Andalusia
 700033;Passatge Via Trajana B
 700034;Passatge Via Trajana A
@@ -3834,7 +3644,6 @@ CODI;NOM_OFICIAL
 700059;Carretera de Vallvidrera a les Planes
 700060;Passatge de Tossa
 700061;Carrer de les Filatures
-700062;E.M. Llacuna
 700063;Carretera Circumval·lació Tram 5
 700067;Grup Mare de Déu de la Mercè
 700068;Carrer del Mirador del Palau Nacional
@@ -3863,9 +3672,6 @@ CODI;NOM_OFICIAL
 700096;Carrer d'en Paixalet
 700097;Plaça de Lola Anglada
 700098;Pas de Valls
-700099;Estació Renfe Pg Gràcia
-700100;Estació Renfe Sant Andreu Arenal
-700101;Estació Renfe Clot
 700102;Carretera Antiga d'Horta a Cerdanyola
 700103;Carrer dels Segadors
 700104;Plaça del Sot dels Paletes
@@ -3885,7 +3691,6 @@ CODI;NOM_OFICIAL
 700142;Plaça de la Torre Llobeta
 700143;Plaça de les Corts
 700146;Carrer de Comas i Solà
-700149;Mercat Canyelles
 700151;Plaça de la Cultura
 700152;Plaça del Pare Eusebi Millan
 700153;Plaça de Carles Cardó i Sanjoan
@@ -3894,7 +3699,6 @@ CODI;NOM_OFICIAL
 700156;Plaça de Joan Peiró
 700157;Plaça d'Antoni Pérez i Moya
 700158;Plaça del General Moragues
-700162;Estació Depuradora
 700163;Camí del Ciureny
 700164;Camí del Pebràs
 700165;Camí de la Llenega
@@ -3914,252 +3718,14 @@ CODI;NOM_OFICIAL
 700184;Parc de la Creueta del Coll
 700185;Parc de les Aigües
 700186;Parc de La Pegaso
-700188;E.M. Paral·lel
 700189;Parc de l'Espanya Industrial
 700190;Plaça d'Isidre Nonell
 700191;Carrer de Josep Irla i Bosch
 700195;Camí del Carlet
-700196;Col·legi Públic Provençals
-700198;E.M. Vall d'Hebron
-700201;Edifici Colom
 700202;Carretera C-17
 700204;Jardins de Menéndez y Pelayo
 700205;Plaça dels Peixos
 700207;Plaça de Castelao
-700208;Casa Gusta
-700209;Casa Modest Andreu
-700210;Granja V de Martí Codolar
-700211;S del Crèdit Mercantil
-700212;Palau Sessa Larrard
-700213;Palau Mornau
-700214;Convent dels Àngels
-700215;Casa i Capella dels Infants Orfes
-700216;Església de la Concepció
-700217;Editorial Montaner i Simon
-700218;Casa Conrad Roure
-700219;Casa del Gremi d'Assaonadors
-700220;Capella del Palau
-700221;Casa Felip
-700222;Casa Manuel Felip
-700223;Casa Antònia Putget
-700224;Casa Francesc Burés i Borras
-700225;Casa Antoni Roger
-700226;Casa Tomàs Roger
-700227;Casa Antònia Burés
-700228;Casa dels Quatre Rius
-700229;Taller Masriera
-700230;Companyia del Gas Lebon
-700231;Casa Pérez Samanillo
-700232;Torres Jaume I i Sant Sebastià Trns Aeri
-700233;Església de Sant Miquel del Port
-700234;Casa Gomis
-700235;Torre J Figueras Bellesguard
-700236;Convent del Redemptor
-700237;Cases dels Canonges
-700238;Palau Episcopal
-700239;Palau Requesens o Comtessa de Palamós
-700240;Església del Carme
-700241;Casa Muley Afid
-700242;Restes del Antic Convent del Bonsuccés
-700243;Casa de Puig
-700244;Casa Meca
-700245;Can Canet de la Riera
-700246;Palau Castell de Ponc
-700247;Palau Castanyer
-700248;Conservatori Municipal de Música
-700249;Can Canals
-700250;Casa J Espona
-700251;Can Cortada
-700252;Palau Sabassona
-700253;Església de Santa Maria del Pi
-700254;Armera
-700255;Capella d'en Marcus
-700256;Església de la Mare de Deu de Betlem
-700257;Casa Epifani de Fortuny
-700258;Casa Jacint Compte
-700259;Casa Pau Vilaregut
-700260;Casa Torrens i Ptge 1800
-700261;Col·legi de Cirurgia
-700262;Casa Antonio de Monasterio
-700263;Casa Vicens
-700264;Col·legi de Sant Ignasi de Loiola
-700265;Facultat de Medicina
-700266;Casa Pere Company
-700267;Casal de Sant Jordi
-700268;Casa Salvado
-700269;Casa Calvet
-700270;Església S Sever i S Carles Borromeu
-700271;Casa Pia Batllo
-700272;Casa Heribert Pons
-700273;Casa Jaime Moysí
-700274;Casa Pratjusa
-700275;Casa Asols
-700276;Casa Juncadella
-700277;Casa Fargas
-700278;Casa Dolors Calm
-700279;Casa Juncosa
-700280;Església de la Mare de Deu de Montsió
-700281;Casa Antoni Costa
-700282;Casa Serra
-700283;Convent de Valldonzella
-700284;Escultura Deessa
-700285;Museu d'Art Modern Parlament Catalunya
-700286;Església de la Ciutadella
-700287;Palau del Governador
-700288;Restaurant de l'Exposició
-700289;Hivernacle
-700290;Museu Martorell Geologia
-700291;Umbracle
-700292;Torre de Mas Enrich
-700293;Caixa de Barcelona
-700294;Torre de Fang
-700295;Casa Vilaro
-700296;Casa Cervantes
-700297;Antic Convent de la Mercè
-700298;Mercat del Born
-700299;Antic Convent de Sant Agustí
-700300;Palau del Baró de Vilagaia
-700301;Escola Industrial
-700302;Palau Lloctinent i Mirador del Rei Martí
-700303;Palau Reial Major Museu Marès
-700304;Can Deu
-700305;Voltes dels Encants i dels Pintors
-700306;Casa Provincial de Maternitat
-700307;Casa de la Lactància
-700308;Casa Golferichs
-700309;Universitat Literària
-700310;Cinema Coliseum
-700311;Casa Oller
-700312;Font de Diana
-700313;Casa Maria Robert
-700314;Placa de Toros Monumental
-700315;Alcaldia de Sants
-700316;Casa Bassols
-700317;Can Tusquets
-700318;Palau dels Marquesos de Sentmenat
-700319;Grup Escolar Ramon Llull
-700320;Casa Planells
-700321;Palau del Baró de Quadras
-700322;Casa Terrades o Casa de les Punxes
-700323;Casa Sayrach
-700324;Cases Almirall
-700325;Casa Comalat
-700326;Monument a Mossèn Jacint Verdaguer
-700327;Església i Convent de Pompeia
-700328;Magatzems Generals del Dipòsit
-700329;Casa Rabaseda
-700330;Casa Berenguer
-700331;Casa Clapes
-700332;Casa Garriga Nogués
-700333;Casa Fabra
-700334;Torre Rodona
-700335;Casa Ponsich
-700336;Casa Rialp
-700337;Can Girona
-700338;Casa Sastre i Marquès
-700339;Capella de la Misericòrdia
-700340;Casa de la Misericòrdia
-700341;Antic Col.legi Sant Guillem d'Aquitània
-700342;Casa R Sala
-700343;Església de Santa Maria de Vallvidrera
-700344;Font de la Pl d'Espanya
-700345;Nou Monestir Benedictí de Montserrat
-700346;Casa Odena
-700347;Casa Veciana
-700348;Antiga Església de la Trinitat
-700349;Casa Jeroni Juncadella
-700350;Casa Casanovas
-700351;la Seca Flassaders
-700352;Casa Senillosa
-700353;Vapor Vell de Sants
-700354;Col·legi de les Teresianes
-700355;Capella de les Mares Reparadores
-700356;Casa Alemany
-700357;Casa Vila
-700358;Casa Pomar
-700359;Casa Lamadrid
-700360;Casa Granell
-700361;Casa Pascual i Pons
-700362;Palau Marcet
-700363;Joieria Roca
-700364;Edifici de la Unión y el Fenix Español
-700365;Casa Pere Llibre
-700366;Casa Malagrida
-700367;Casa Lleó Morera
-700368;Casa Mulleras
-700369;Casa Bonet
-700370;Casa Amatller
-700371;Casa Batllo
-700372;Casa Olano
-700373;Casa Vidua Marfa
-700374;Casa Enric Batlló
-700375;Casa Milà la Pedrera
-700376;Casa Codina
-700377;Casa Casas
-700378;Palau Robert
-700379;Casa Garriga
-700380;Casa Bonaventura Ferrer
-700381;Casa Fuster
-700382;Edifici de la Caixa de Barcelona
-700383;Masia Can Trilla
-700384;Casa Museu Gaudí
-700385;Casa Requesens
-700386;Can Mariner
-700387;Hospital de la Sta Creu i Casa Convalesc
-700388;Casa Gene
-700389;Casa Bernardí Martorell
-700390;Casa Baltasar de Bacardí
-700391;Casa Baurier i Jardi
-700392;Cases d'en Xifré
-700393;Hotel Gótico
-700394;Can Planas
-700395;Palau d'Alfarràs
-700396;Sanatori Antituberculós
-700397;Casa de Correus i Telègrafs
-700398;Edifici de la Companyia Transmediterrània
-700399;Casa Cambó
-700400;Caixa Pensions per la Vellesa i Estalvis
-700401;Església Mare de Deu Gràcia i Sant Josep
-700402;Cases Ramos
-700403;Arc d'en Boquer
-700404;Casa de la Papallona
-700405;Palau Fivaller
-700406;Palau Mercader
-700407;Casa Bulbena
-700408;Casa Baules
-700409;Can Valent
-700410;Arc de Triomf
-700411;Palau de Justícia
-700412;Grup Escolar Pere Vila
-700413;Can Canals Miralles
-700414;Torre del Rellotge
-700415;Cases Jeroni F Granell
-700417;Palau Montaner
-700418;Palau Casades
-700419;Casa Iglesias
-700420;Casa Thomas
-700421;Casa Vallet i Xiro
-700422;Temple Expiatori de la Sagrada Família
-700423;Casa Evarist Arnus el Pinar
-700424;Can Raspall
-700425;Torre Llobeta Maragall
-700426;Can Querol Fundació Valldejuli
-700427;Can Fargas
-700428;Porta del Convent de Sant Joan de Jerusa
-700429;Església de la Mare de Deu de la Mercè
-700430;Font de Neptú
-700431;Farmacia Dr Sastre i Marquès
-700432;Farmacia Puigoriol
-700433;Fàbrica Myrurgia
-700434;Portal Casa Miralles
-700435;Antiga Fàbrica de Filats Casaramona
-700436;Casa de la Carassa
-700437;Monestir de Santa Maria de Pedralbes
-700438;Conventet
-700439;Casa de la Caritat
-700440;Casa Puigguriguer Casa de la Custódia
-700441;Palau del Marquès de Llio Museu Tèxtil
-700442;Palau Nadal
 700443;Placeta del Roser
 700444;Parc del Carmel
 700445;Plaça dels Països Catalans
@@ -4168,195 +3734,7 @@ CODI;NOM_OFICIAL
 700448;Jardins de Can Feu
 700449;Plaça de Nemesi Ponsati
 700450;Carrer de Joaquim Puig i Pidemunt
-700451;Palau Berenguer d'Aguilar Museu Picasso
-700452;Casa del Baró de Castellet Museu Picasso
-700453;Asil Bressol del Nen Jesús
-700454;Palau Meca Museu Picasso
-700455;Palau Dalmases Omnium Cultural
-700456;Casa Finestres
-700457;Casa Cervello Giudice
-700458;Torres Accés Recinte de l'Exposició 1929
-700459;Font Màgica
-700460;Pavelló de la Ciutat de Barcelona
-700461;Mercat Ciutat Meridiana
-700462;Palau d'Alfons XIII
-700463;Museu d'Art de Catalunya
-700464;Ermita de Santa Madroda
-700465;Palau Arts Gràfiques Museu Arqueològic
-700466;Mercat de les Flors
-700467;Museu Etnològic i Colonial
-700468;Casa Martí Els Quatre Gats
-700469;Casa Carreres
-700470;Casa Pares de Plet
-700471;Palau Güell Museu del Teatre
-700472;Església de l'Esperit Sant
-700473;Font del Geni Català
-700474;Govern Civil Duana Vella
-700475;Casa Collasso
-700476;Llotja Borsa i Acad Belles Arts S Jordi
-700477;Capella de l'Hospital de Sant Sever
-700478;Antiga Pirotècnica Estapé
-700479;Església de l'Esperança
-700480;Vil·la Helius
-700481;Torre Sta Caterina Font del Lleó
-700482;Temple Romà
-700483;Xemeneies de la Fecsa
-700484;Edifici Astoria
-700485;Casa Batlles
-700486;Pavellons d'Entrada de la Finca Güell
-700487;Font de Santa Eulàlia
-700488;Antiga Capella de Sant Llàtzer
-700489;Hostal del Carme
-700490;Can Carabassa Col.legi de Sant Josep
-700491;Casa Fontrodona
-700492;Casa Barnola
-700493;Palau Maldà
-700494;Casa Malasch
-700496;Casa Congregació de la Puríssima Sang
-700497;Casa del Gremi de Revenedors
-700498;Can Verdaguer
-700499;Palau Moja o del Marquès de Comillas
-700500;Casa del Comte de Fonollar
-700501;Palau Magarola
-700502;Casa Josep Martí i Fàbregas
-700503;Casa Jover
-700504;Font de Santa Anna
-700505;Palau Marimón
-700506;Palau Solterra Barbera
-700507;Catalana de Gas i Electricidad
-700508;Monument a Cristòfor Colom
-700509;Reials Drassanes Museu Marítim
-700510;Junta d'Obres del Port
-700511;Can Móra Portell 11
-700512;Casa Malet
-700513;Casa Puig i Cadafalch
-700514;Casa Ferrer Vidal
-700515;Cases Armenteras i Parellada
-700516;Estació Superior Funicular Vallvidrera
-700517;Can Culleretes
-700518;Antiga Foneria de Canons
-700519;Convent de Santa Mònica
-700520;Casa March de Reus
-700521;Casa Xuriguer
-700522;Teatre Principal
-700523;Monument a Serafi Pitarra
-700524;Casa Fradera
-700525;Antic Col·legi de Sant Angelo
-700526;Antic Col·legi de Sant Bonaventura
-700527;Teatre del Liceu
-700528;Casa Doctor Genove
-700529;Casa Bruno Quadros
-700530;Antiga Botiga Bruno Cuadros
-700531;Antiga Casa Figueres
-700532;Palau de la Virreina
-700533;Casa Francesc Piña
-700534;Companyia de Tabacs de Filipines
-700535;Reial Academia de Ciències i Arts
-700536;Casa Josefa Nadal
-700537;Hotel Lloret
-700538;Monument Equestre a Ramón Berenguer III
-700539;Porxos del Rec
-700540;Casa dels Gualbes
-700541;Palau Reial Major Saló del Tinell
-700542;Capella de Santa Àgueda
-700543;Casa Padellas
-700544;Can Sert
-700545;Casa Comas d'Argemir
-700546;Seu Districte de Gràcia
-700547;Cases Cabot
-700548;Torre d'Aigües
-700549;Casa Pere Salisachs
-700550;Casa Josefa Villanueva
-700551;Centre Moral de Gràcia
-700552;Claustre de Santa Maria de Jerusalem
-700553;Font del Xato
-700554;Grup Escolar Baixeras
-700555;Casa Elena Castellano
-700556;Església de Santa Anna
-700557;Església de Santa Eulàlia de Vilapicina
-700558;Can Baste
-700559;Artes Sta Eulàlia VI
-700560;Església de Sant Agustí Nou
-700561;Casa de l'Ardiaca i del Degà
-700562;Església de Santa Maria del Mar
-700563;Font de Santa Maria
-700564;Casa de la Generalitat
-700565;Antiga Església de Sant Antoni Abat
-700566;Hospital de la Santa Creu i Sant Pau
-700567;Grup Escolar la Farigola
-700568;Torre de Sant Jordi
-700569;Església de Sant Felip Neri
-700570;Casa del Gremi de Calderers
-700571;Casa del Gremi dels Sabaters
-700572;Can Safont
-700573;Torre Castanyer
-700574;Col·legi de Jesús Maria
-700575;la Rotonda
-700576;Casa Moxo
-700577;Casa Morell
-700578;Palau del Marquès de Sta Isabel
-700579;Església i Convent de les Saleses
-700580;Casa Macaya
-700581;Font d'Hèrcules
-700582;Monument a J Anselm Clavé
-700583;Font de Sant Just
-700584;Palau Moixo
-700585;Església dels Sants Just i Pastor
-700586;Can Cadena
-700587;Arno
-700588;Palau Centelles
-700589;Hotel España
-700590;Església de Sant Pau del Camp
-700591;Grup Escolar Collaso Gil
-700592;Església de Sant Pere de les Puel·les
-700593;Casa Teixidor
-700594;Monument a Rafael de Casanovas
-700595;Col·legi de l'Art Major de la Seda
-700596;Palau de la Música Catalana
-700597;Atheneum Polytecnicum
-700598;Institut Teatre i Biblioteca Popular
-700599;Palau Dou Grup Escolar Cervantes
-700600;Palau dels Marquesos d'Alós
-700601;Casa Gironella
-700602;Església de Sant Sever
-700603;Església de la Mare de Deu del Coll
-700604;Santuari de Sant Josep de la Muntanya
-700605;Esglesia de Sant Vicenç de Sarrià
-700606;Casa Llansa
-700607;Catedral de Barcelona
-700608;Cases de la Canonja i de la Pia Almoina
-700609;Can Fuster Torre Figuerola
-700610;Oratori de Sant Felip Neri
-700611;Casa Magarola
-700612;Monument al Doctor Robert
-700613;Casa Roviralta el Frare Blanc
-700614;Casa Fornells
-700615;Casa Muntadas
-700616;Casa Casacuberta
-700617;Torre Pastor de Cruilles Resi Mater Salv
-700618;Casa Bloc
-700619;les Carasses Grup Escolar Ignasi Iglesia
-700620;Dispensari Antituberculós
-700621;Paviments Escofet
-700622;Casa Domènech i Estapa
-700623;Casa Santurce
-700624;Casa Elizalde
-700625;Casa Llopis Bofill
-700626;Torre de Sant Joan Escola Cases
-700627;Orfelinat Ribas
-700628;Can Besora
 700630;Plaça de Puigcerdà
-700631;Casa Gallart
-700632;Casa Tosquella
-700633;Estació Inferior del Funicular de Vallvidrera
-700634;Can Mestres
-700635;Casa Manuel Dolcet Escola Eina
-700636;Can Calopa de Dalt
-700637;Cercle Barcelonès de Sant Josep
-700638;Necròpolis Romana
-700639;Hidroelèctrica Catalunya
-700640;Parròquia de Sant Joan de Gràcia
-700641;Institut Agrícola Català de Sant Isidre
 700642;Platja de la Nova Icària
 700643;Platja de la Nova Mar Bella
 700644;Platja de Sant Sebastià
@@ -4393,7 +3771,6 @@ CODI;NOM_OFICIAL
 700680;Carrer de Saint Louis
 700681;Plaça de Rafael Benet
 700682;Carrer de la Fonolleda
-700683;E.M. Tarragona
 700684;Carrer de Víctor Jara
 700685;Plaça de Margarida Xirgu
 700686;Plaça de Rosa Sabater
@@ -4429,7 +3806,6 @@ CODI;NOM_OFICIAL
 700719;Plaça del Ram de l'Aigua
 700720;Travessia de Castellfollit
 700721;Carrer de Gerard Piera
-700724;Casa de la Canonja
 700725;Carrer de Batista i Roca
 700726;Pla de les Madres de la Plaza de Mayo
 700727;Jardins de la Indústria
@@ -4466,22 +3842,11 @@ CODI;NOM_OFICIAL
 700761;Carrer de Torre Melina
 700762;Carrer de Lluís Solé i Sabarís
 700764;Carretera C-16
-700765;Escorxador
 700766;Parc Esportiu de la Mar Bella
 700767;Jardins de Rubió i Tudurí
 700768;Passeig Marítim de la Mar Bella
-700769;Mercabarna Gasolinera
-700770;Macro (Mercabarna)
-700771;Mercat Central de Fruites i Verdures B
-700772;Mercat Central de Fruites i Verdures C
-700773;Mercat Central de Fruites i Verdures D
-700774;Mercat Central de Fruites i Verdures E
-700775;Mercat Central de Fruites i Verdures F
-700776;Mercat Central de Fruites i Verdures G
-700777;Mercat del Peix
 700779;Plaça de les Caramelles
 700780;Plaça del Maresme
-700781;Estació Renfe Cantunis
 700782;Carrer d'Aurora Bertrana
 700783;Carrer de Can Segalar
 700784;Carretera del Cementiri de Collserola
@@ -4524,10 +3889,6 @@ CODI;NOM_OFICIAL
 700830;Carrer de l'Arquitecte Moragas
 700832;Plaça de Josep Pallach
 700833;Plaça de Joan Cornudella
-700835;Zoo
-700836;E.M. Montbau
-700838;E.M. La Pau
-700839;E.M. Llucmajor
 700842;Placeta de Charlot
 700864;Plaça de César Vallejo
 700865;Carrer d'Ignasi Agustí
@@ -4573,10 +3934,6 @@ CODI;NOM_OFICIAL
 700933;Plaça del Poble Romaní
 700934;Jardins de les Tres Xemeneies
 700935;Plaça del Xiprer
-700936;Torre Calatrava
-700937;Estadi Olímpic
-700938;Palau Sant Jordi
-700939;Inef
 700941;Carrer de Menéndez y Pelayo
 700942;Jardins de Joana Tomàs
 700943;Carrer de Mercè Rodoreda
@@ -4586,7 +3943,6 @@ CODI;NOM_OFICIAL
 700948;Plaça de les Havaneres
 700949;Jardins de Màlaga
 700950;Plaça de Theolongo Bacchio
-700951;Torre de Collserola
 700952;Passatge del Vapor Vell
 700953;Plaça de la Marina de Sants
 700954;Passatge de La Canadenca
@@ -4687,7 +4043,6 @@ CODI;NOM_OFICIAL
 701155;Jardins del Doctor Comas i Llaberia
 701156;Plaça del Taxi
 701157;Carrer de Luz Casanova
-701159;Arxiu de la Corona d'Aragó
 701160;Jardins del Baix Guinardó
 701161;Plaça d'Islàndia
 701162;Jardins de Casa Bloc
@@ -4701,7 +4056,6 @@ CODI;NOM_OFICIAL
 701178;Plaça de l'Óssa Menor
 701179;Carrer dels Solsticis
 701180;Plaça de Pere Coromines
-701181;Estació Reina Elisenda
 701182;Jardins del Port Romà
 701183;Jardins de Ca l'Alena
 701184;Jardins de Can Sentmenat
@@ -4709,10 +4063,7 @@ CODI;NOM_OFICIAL
 701186;Plaça de Mossèn Ferran Palau
 701187;Plaça de Josep Obiols
 701188;Jardins de les Hortes de Sant Bertran
-701189;Centre Comercial Glòries
 701191;Plaça de les Arts
-701192;E.M. Vallcarca
-701193;E.M. Sant Antoni
 701194;Jardins de Marià Manent
 701195;Mirador del Port Vell
 701196;Plaça de l'Ictíneo
@@ -4728,7 +4079,6 @@ CODI;NOM_OFICIAL
 701206;Plaça d'Antoni Genescà i Corominas
 701207;Passatge de Joan Mirambell i Bertran
 701208;Plaça de La Maquinista
-701209;E.M. Roquetes
 701210;Jardins de Manuel de Pedrolo
 701211;Plaça de Frederic Marès
 701212;Plaça de Pieyre de Mandiargues
@@ -4746,17 +4096,11 @@ CODI;NOM_OFICIAL
 701225;Plaça d'Anna Frank
 701226;Plaça de Belianes
 701227;Jardins de Montserrat Roig
-701229;E.M. Ciutadella Vila Olímpica
 701230;Jardins de Josep Amat
-701231;Transmediterranea
 701232;Plaça d'Henry Dunant
-701233;E.M. Encants
-701234;E.M. Bac de Roda
-701235;E.M. Sant Martí
 701236;Jardins de Manuel Blancafort
 701237;Jardí de Petra Kelly
 701238;Carrer de Duoda
-701239;Centre Comercial Maremàgnum
 701240;Plaça de Victòria Kent
 701241;Plaça de Joaquín Maurín
 701242;Jardins de Mercè Plantada
@@ -4784,7 +4128,6 @@ CODI;NOM_OFICIAL
 701272;Jardins de la Mediterrània
 701273;Plaça d'Hilari Salvadó
 701274;Plaça de Lluís Casassas
-701275;World Trade Center
 701276;Jardins de Carles Barral
 701277;Jardins de Josep M. Sostres
 701278;Passeig del Taulat
@@ -4878,8 +4221,6 @@ CODI;NOM_OFICIAL
 701369;Carrer de Saturnino Calleja
 701370;Jardí de Joan Llarch
 701371;Carrer de la República Dominicana
-701372;Cementiri del Sud-Oest
-701373;Cementiri d'Horta
 701374;Jardins de Sant Pau del Camp
 701375;Plaça d'Ovidi Montllor
 701376;Plaça de les Matemàtiques
@@ -4905,38 +4246,25 @@ CODI;NOM_OFICIAL
 701396;Plaça de Soledad Gustavo
 701397;Plaça dels Pins de Vallvidrera
 701398;Jardí de Joaquima Raspall
-701399;Seu Districte de Ciutat Vella
 701400;Carrer Número 21
 701401;Carrer Número 22
 701402;Carrer Número 24
 701403;Carrer Número 25
 701404;Avinguda Número 4
 701405;Avinguda Número 5
-701406;Seu Districte de l'Eixample
-701407;Seu Districte de Sants-Montjuïc
-701408;Seu Districte de les Corts
-701409;Seu Districte Horta-Guinardó
-701410;Seu Districte de Nou Barris
-701411;Seu Districte de Sarrià-Sant Gervasi
-701412;Seu Districte de Sant Andreu
-701413;Seu Districte Sant Martí
 701414;Carretera C-31
-701415;Complex Esportiu de la Mar Bella
 701416;Jardins d'Emma de Barcelona
 701417;Jardins de Safo
 701418;Jardins de Fabià Puigserver
 701419;Jardins del Rector Oliveras
 701420;Plaça de Fort Pienc
 701421;Jardins de Sofia Barat
-701422;E.M. Mundet
 701423;Carretera Antiga de Montjuïc
 701424;Plaça de Sarah Bernhardt
 701425;Passatge d'Antaviana
 701426;Jardins del Doctor Robert
-701427;Font del Gat
 701428;Avinguda Número 6
 701429;Carrer Número 23
-701430;Mercat Provisional de la Barceloneta
 701431;Carretera C-17 (Puigcerdà)
 701432;Carretera C-17 (Barcelona)
 701433;Ronda del Mig (Ascendent)
@@ -4966,21 +4294,7 @@ CODI;NOM_OFICIAL
 701457;Jardins de l'Arenal de Llevant
 701458;Jardins de Maria Callas
 701459;Placeta de María Luz Morales
-701460;Centre Comercial Heron City
-701461;Centre Comercial Illa Diagonal
-701462;Centre Comercial La Maquinista
-701463;Centre Comercial Diagonal Mar
-701464;Fòrum 2004 Barcelona
-701465;Mercat de la Marina
 701467;Jardins de Celestina Vigneaux
-701468;Mercat Provisional Santa Caterina
-701469;Mercat Fort Pienc
-701470;E.M. Trinitat Nova
-701471;E.M. Casa de l'Aigua
-701472;E.M. Torre Baró i Vallbona
-701473;E.M. Ciutat Meridiana
-701474;E.M. Canyelles
-701475;E.M. Valldaura
 701476;Carrer Longitudinal 1
 701477;Carrer Longitudinal 2
 701478;Carrer Longitudinal 3
@@ -5008,7 +4322,6 @@ CODI;NOM_OFICIAL
 701501;Carretera B-20 (Llobregat)
 701502;Carretera B-20 (Besòs)
 701503;Plaça de Juliana Morell
-701504;Estació Magòria-La Campana
 701505;Carrer Sense Nom (Tucuman-Junoy)
 701506;Plaça de Carme Montoriol
 701507;Plaça de Can Portabella
@@ -5084,12 +4397,6 @@ CODI;NOM_OFICIAL
 701578;Plaça del Raïm
 701579;Carrer de Dolors Lleonart
 701580;Jardins del Doctor Pla i Armengol
-701581;E.M. El Maresme Forum
-701582;E.M. Besòs Mar
-701583;E.M. Besòs
-701584;E.M. Baró de Viver
-701585;E.M. Via Júlia
-701586;E.M. Can Cuyàs
 701587;Plaça de la Primavera
 701588;Carrer de Clara Zetkin
 701589;Jardins de Can Bruixa
@@ -5149,7 +4456,6 @@ CODI;NOM_OFICIAL
 701643;Plaça de la Rosa dels Vents
 701644;Passeig del Mare Nostrum
 701645;Carrer de Joan Ferrándiz
-701646;Apartat de Correus
 701647;Carrer del Turó de les Roquetes
 701648;Jardins de Gaietà Renom
 701649;Jardins de Mercè Rodoreda
@@ -5314,18 +4620,11 @@ CODI;NOM_OFICIAL
 701823;Carrer de Simó Ferrer
 701824;Mirador de l'Arquitecte Ignasi de Lecea
 701825;Carrer dels Encants Vells
-701826;Institut Municipal d'Informàtica
 701827;Jardins d'Elisava
 701828;Passatge de Xavier Llorens
 701829;Carrer Sense Nom (Banys Fòrum)
 701830;Plaça de Dolors Vives
 701831;Jardins de Rosa Deulofeu
-701832;E.M. El Carmel
-701833;Estació Telefèric de Montjuïc
-701834;E.M. El Coll La Teixonera
-701835;E.M. Onze de Setembre
-701836;E.M. Bon Pastor
-701837;E.M. Penitents
 701838;Jardins de Can Xiringoi
 701839;Placeta de les Dones de Ravensbrück
 701840;Jardí de Baltasar Porcel
@@ -5337,8 +4636,6 @@ CODI;NOM_OFICIAL
 701846;Plaça d' Humberto Rivas
 701847;Plaça del Doctor Matias Guiu
 701848;Jardins dels Encants Nous
-701849;E.A. Hospital Clínic
-701850;Estació Renfe Arc de Triomf
 701851;Passatge d' Antonio Ruiz Villalba
 701852;Carrer de Micaela Chalmeta
 701853;Passatge de Maria Canals

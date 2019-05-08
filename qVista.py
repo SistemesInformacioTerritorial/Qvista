@@ -2249,12 +2249,13 @@ def disgregarDirele():
     if __numerosCSV:
         f_read = open(__numerosCSV, 'r')
         with f_read:
-            reader = csv.reader(f_read, delimiter = ',')
+            reader = csv.reader(f_read, delimiter = ';')
             count=0
             codi_carrer_old=''
             for row in reader:    
                 if count==0:
                     cabecera=row
+                    del cabecera[0]
                 else:
                     codi_carrer=row[0]
                     if codi_carrer != codi_carrer_old:
@@ -2265,10 +2266,13 @@ def disgregarDirele():
                             pass
 
                         f_write = open(path, 'a')
-                        writer = csv.writer(f_write)
+                        writer = csv.writer(f_write, delimiter = ';',lineterminator='\n')
+                        
                         writer.writerow(cabecera)
+                        del row[0]
                         writer.writerow(row)
                     else:
+                        del row[0]
                         writer.writerow(row)
                         
                     codi_carrer_old= codi_carrer
