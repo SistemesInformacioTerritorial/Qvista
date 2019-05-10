@@ -8,6 +8,7 @@ import collections
 import unicodedata
 import re
 import csv
+from PyQt5.QtSql import *
 
 
 
@@ -19,7 +20,7 @@ class QCercadorAdreca(QObject):
     __path_disgregados= 'Dades\dir_ele\\' 
     sHanTrobatCoordenades = pyqtSignal(int, 'QString')  # atencion
 
-    def __init__(self, lineEditCarrer, lineEditNumero, origen = 'CSV'):
+    def __init__(self, lineEditCarrer, lineEditNumero, origen = 'SQLITE'):
         super().__init__()
 
         # self.pare= pare
@@ -105,16 +106,65 @@ class QCercadorAdreca(QObject):
             self.nomCarrer = carrer
             self.codiCarrer = self.dictCarrers[self.nomCarrer]
 
-            path= self.__path_disgregados+str(self.codiCarrer)+'.csv'
-            with open(path, encoding='utf-8', newline='') as csvFile:
-                reader = csv.DictReader(csvFile, delimiter=';')
-                for row in reader:
-                    # self.dictNumeros[row['CODI_CARRER']][row['NUMPOST']] = row
-                    self.dictNumeros[self.codiCarrer][row['NUM_LLETRA_POST']] = row
-                    # self.dictNumeros[row['NUM_LLETRA_POST']] = row
 
-            self.prepararCompleterNumero()
-            self.focusANumero()
+            if self.origen == 'CSV':
+                path= self.__path_disgregados+str(self.codiCarrer)+'.csv'
+                with open(path, encoding='utf-8', newline='') as csvFile:
+                    reader = csv.DictReader(csvFile, delimiter=';')
+                    for row in reader:
+                        self.dictNumeros[self.codiCarrer][row['NUM_LLETRA_POST']] = row
+
+                self.prepararCompleterNumero()
+                self.focusANumero()
+            elif self.origen == 'SQLITE':
+                try:
+                    db = QSqlDatabase.addDatabase('QSQLITE') # Creamos la base de datos
+                    db.setDatabaseName('CarrersNums.db') # Le asignamos un nombre
+                    db.setConnectOptions("QSQLITE_OPEN_READONLY")
+                    
+                    if not db.open(): # En caso de que no se abra
+                        QMessageBox.critical(None, "Error al abrir la base de datos.\n\n"
+                                "Click para cancelar y salir.", QMessageBox.Cancel)
+
+                    index = 0
+                    query = QSqlQuery() # Intancia del Query
+                    query.exec_("select codi, num_lletra_post, etrs89_coord_x, etrs89_coord_y, num_oficial  from Numeros where codi = '" + self.codiCarrer +"'")
+
+                    while query.next():
+                        row= collections.OrderedDict()
+                        row['NUM_LLETRA_POST']=  query.value(1) # Numero y Letra
+                        row['ETRS89_COORD_X']=   query.value(2) # coor x
+                        row['ETRS89_COORD_Y']=   query.value(3) # coor y
+                        row['NUM_OFICIAL']=      query.value(4) # numero oficial
+
+                        self.dictNumeros[self.codiCarrer][query.value(1)] = row
+                        index += 1
+
+                    db.close()
+        
+                    self.prepararCompleterNumero()
+                    self.focusANumero()
+                    
+                except Exception as e:
+                    print(str(e))
+                    msg = QMessageBox()
+                    msg.setIcon(QMessageBox.Warning)
+                    
+                    msg.setText(str(sys.exc_info()[1]))
+                    # msg.setInformativeText("OK para salir del programa \nCANCEL para seguir en el programa")
+                    msg.setWindowTitle("qVista ERROR")
+                    msg.setStandardButtons(QMessageBox.Close)
+                    retval = msg.exec_()
+
+                    print('QCercadorAdreca.iniAdreca(): ', sys.exc_info()[0], sys.exc_info()[1])
+                    return False
+            else:
+                pass
+        
+
+
+
+            
         else:
             info= "ERROR >> [1]" 
             self.sHanTrobatCoordenades.emit(1,info) #adreça vacia
@@ -139,15 +189,62 @@ class QCercadorAdreca(QObject):
                         self.nomCarrer = self.txto
                         self.codiCarrer = self.dictCarrers[self.nomCarrer]
                         self.focusANumero()
-                        path= self.__path_disgregados+str(self.codiCarrer)+'.csv'
-                        with open(path, encoding='utf-8', newline='') as csvFile:
-                            reader = csv.DictReader(csvFile, delimiter=';')
-                            for row in reader:
-                                # self.dictNumeros[row['CODI_CARRER']][row['NUMPOST']] = row
-                                self.dictNumeros[self.codiCarrer][row['NUM_LLETRA_POST']] = row
 
-                        self.prepararCompleterNumero()
-                        self.focusANumero()
+
+
+                        if self.origen == 'CSV':
+                            path= self.__path_disgregados+str(self.codiCarrer)+'.csv'
+                            with open(path, encoding='utf-8', newline='') as csvFile:
+                                reader = csv.DictReader(csvFile, delimiter=';')
+                                for row in reader:
+                                    self.dictNumeros[self.codiCarrer][row['NUM_LLETRA_POST']] = row
+
+                            self.prepararCompleterNumero()
+                            self.focusANumero()
+                        elif self.origen == 'SQLITE':
+                            try:
+                                db = QSqlDatabase.addDatabase('QSQLITE') # Creamos la base de datos
+                                db.setDatabaseName('CarrersNums.db') # Le asignamos un nombre
+                                db.setConnectOptions("QSQLITE_OPEN_READONLY")
+                                
+                                if not db.open(): # En caso de que no se abra
+                                    QMessageBox.critical(None, "Error al abrir la base de datos.\n\n"
+                                            "Click para cancelar y salir.", QMessageBox.Cancel)
+
+                                index = 0
+                                query = QSqlQuery() # Intancia del Query
+                                query.exec_("select codi, num_lletra_post, etrs89_coord_x, etrs89_coord_y, num_oficial  from Numeros where codi = '" + self.codiCarrer +"'")
+
+                                while query.next():
+                                    row= collections.OrderedDict()
+                                    row['NUM_LLETRA_POST']=  query.value(1) # Numero y Letra
+                                    row['ETRS89_COORD_X']=   query.value(2) # coor x
+                                    row['ETRS89_COORD_Y']=   query.value(3) # coor y
+                                    row['NUM_OFICIAL']=      query.value(4) # numero oficial
+
+                                    self.dictNumeros[self.codiCarrer][query.value(1)] = row
+                                    index += 1
+
+                                db.close()
+                                self.prepararCompleterNumero()
+                                self.focusANumero()
+                                
+                            except Exception as e:
+                                print(str(e))
+                                msg = QMessageBox()
+                                msg.setIcon(QMessageBox.Warning)
+                                
+                                msg.setText(str(sys.exc_info()[1]))
+                                # msg.setInformativeText("OK para salir del programa \nCANCEL para seguir en el programa")
+                                msg.setWindowTitle("qVista ERROR")
+                                msg.setStandardButtons(QMessageBox.Close)
+                                retval = msg.exec_()
+
+                                print('QCercadorAdreca.iniAdreca(): ', sys.exc_info()[0], sys.exc_info()[1])
+                                return False
+
+                        
+                        
 
                     else:
                         info="ERROR >> [2]"
@@ -164,17 +261,57 @@ class QCercadorAdreca(QObject):
     def llegirAdreces(self):
         if self.origen == 'CSV':
             ok = self.llegirAdrecesCSV()
-        elif self.origen == 'ORACLE':
-            ok = self.llegirAdrecesOracle()
+        elif self.origen == 'SQLITE':
+            ok = self.llegirAdrecesSQlite()
         else:
             ok = False
         return ok
 
-    def llegirAdrecesOracle(self):
-        #
-        # TODO - Lectura datos de direcciones de Oracle
-        #
-        return False
+    def llegirAdrecesSQlite(self):
+        try:
+            db = QSqlDatabase.addDatabase('QSQLITE') # Creamos la base de datos
+            db.setDatabaseName('CarrersNums.db') # Le asignamos un nombre
+            db.setConnectOptions("QSQLITE_OPEN_READONLY")
+            
+            if not db.open(): # En caso de que no se abra
+                QMessageBox.critical(None, "Error al abrir la base de datos.\n\n"
+                        "Click para cancelar y salir.", QMessageBox.Cancel)
+
+            index = 0
+            query = QSqlQuery() # Intancia del Query
+            query.exec_("select codi , nom_oficial  from Carrers") 
+
+            while query.next():
+                codi_carrer = query.value(0) # Codigo calle
+                nombre = query.value(1) # numero oficial
+                nombre_sin_acentos= self.remove_accents(nombre)
+                if nombre == nombre_sin_acentos:
+                    clave= nombre + "  (" + codi_carrer + ")                                                  "+chr(30)
+                else:
+                    clave= nombre + "  (" + codi_carrer + ")                                                  "+chr(30)+"                                                         " + nombre_sin_acentos
+                    # asignacion al diccionario
+                self.dictCarrers[clave] = codi_carrer
+
+                
+                index += 1
+
+            db.close()
+            return True
+        except Exception as e:
+            print(str(e))
+            msg = QMessageBox()
+            msg.setIcon(QMessageBox.Warning)
+            
+            msg.setText(str(sys.exc_info()[1]))
+            # msg.setInformativeText("OK para salir del programa \nCANCEL para seguir en el programa")
+            msg.setWindowTitle("qVista ERROR")
+            msg.setStandardButtons(QMessageBox.Close)
+            retval = msg.exec_()
+
+            print('QCercadorAdreca.llegirAdrecesSQlite(): ', sys.exc_info()[0], sys.exc_info()[1])
+            return False
+
+
 
     # Normalización caracteres quitando acentos
     def remove_accents(self,input_str):
