@@ -2814,9 +2814,13 @@ def carregarLayerCSV(nfile):
                         nom=leNom.text()
                         nfile=arxiuNouCsv.name
                         nivellCsv(arxiuNouCsv.name, separador, 'XCalculada','YCalculada', nomCapa=nom)
-                import os
-                print(nfile)
-                #os.remove(nfile)
+                        print('Ja pintat')
+                try:
+                    import os
+                    print(nfile)
+                    os.remove(nfile)
+                except:
+                    print("No s'ha pogut esborrar")
 
 
 def carregarNivellQlr():
