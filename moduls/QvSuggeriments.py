@@ -10,57 +10,8 @@ import tempfile
 from moduls.QvConstants import QvConstants
 from moduls.QvPushButton import QvPushButton
 
-
-class QvNews(QtWidgets.QAction):
-    def __init__(self,parent=None):
-        self.ICONA=QIcon('Imatges/News.png')
-        self.ICONADESTACADA=QIcon('Imatges/NewsDestacada.png')
-        #QtWidgets.QAction.__init__(self,self.ICONA,'Notícies',parent)
-        super().__init__(self.ICONA,'Notícies',parent)
-        if self.calNoticiaNova():
-            self.timer=QTimer()
-            self.timer.timeout.connect(self.blink)
-            self.timer.start(200)
-        self.setStatusTip('Notícies')
-        self.triggered.connect(self.mostraNoticies)
-
-    def blink(self):
-        if not hasattr(self,'light'):
-            self.light=False
-            self.numBlinks=0
-
-        if self.light:
-            self.setIcon(self.ICONADESTACADA)
-            self.numBlinks+=1
-        else:
-            self.setIcon(self.ICONA)
-
-        if self.numBlinks==4:
-            delattr(self,'timer')
-            #self.setVisible(True)
-            delattr(self,'numBlinks')
-
-        self.light=not self.light
-
-    def mostraNoticies(self):
-        self.news=QvNewsFinestra(QvConstants.ARXIUNEWS)
-        self.news.exec_()
-        self.setIcon(self.ICONA)
-        with open(QvConstants.ARXIUTMP,'w') as arxiu:
-            #Escrivim alguna cosa. Realment no caldria que fos el temps
-            import time
-            arxiu.write(str(time.time()))
-    def calNoticiaNova(self):
-        #Si no existeix l'arxiu temporal vol dir que mai hem obert notícies :(
-        if not os.path.isfile(QvConstants.ARXIUNEWS):
-            return False
-        if not os.path.isfile(QvConstants.ARXIUTMP):
-            return True
-        return os.path.getmtime(QvConstants.ARXIUTMP)<os.path.getmtime(QvConstants.ARXIUNEWS)
-
-#QFrame no permet fer exec. QDialog sí
-class QvNewsFinestra(QDialog):
-    def __init__(self, file, parent=None):
+class QvSuggeriments(QDialog):
+    def __init__(self, parent=None):
         super().__init__(parent)
         #Layout gran. Tot a dins
         self.layout=QVBoxLayout(self)
@@ -71,37 +22,59 @@ class QvNewsFinestra(QDialog):
         self.widgetSup.setLayout(self.layoutCapcalera)
         self.layout.addWidget(self.widgetSup)
         self.lblLogo=QLabel()
-        self.lblLogo.setPixmap(QPixmap('imatges/qVistaLogoVerdSenseText2.png').scaledToHeight(40))
+        self.lblLogo.setPixmap(QPixmap('imatges/bug_cap_sugg.png'))
         self.lblCapcalera=QLabel()
-        self.lblCapcalera.setText('  Novetats qVista')
+        self.lblCapcalera.setText(' Problemes? Suggeriments?')
         self.lblCapcalera.setStyleSheet('color: %s'%QvConstants.COLORFOSC)
         self.layoutCapcalera.addWidget(self.lblLogo)
         self.layoutCapcalera.addWidget(self.lblCapcalera)
 
+        #info
+        self.info = QLabel()
+        self.info.setFont(QvConstants.FONTTEXT)
+        #self.info.setAlignment(Qt.AlignCenter)
+        self.info.setContentsMargins(20,20,20,20)
+        self.info.setText("Heu trobat algun problema? \nVoleu fer-nos algun suggeriment? \nSiusplau, Descriviu-lo breument a continuació. \nEl vostre suport ens ajudarà a millorar")
+        self.layout.addWidget(self.info)
+
         #Text de la notícia
         self.caixaText=QtWidgets.QTextEdit()
-        self.caixaText.setHtml(open(file).read())
-        self.layout.addWidget(self.caixaText)
+        self.layoutDescripcio = QHBoxLayout()
+        self.offset1 = QLabel()
+        self.offset2 = QLabel()
+        self.layoutDescripcio.addWidget(self.offset1)
+        self.layoutDescripcio.addWidget(self.caixaText)
+        self.layoutDescripcio.addWidget(self.offset2)
+        self.layout.addLayout(self.layoutDescripcio)
 
-        #Botó de sortida
+        #Botons
         self.layoutBoto=QHBoxLayout()
         self.layout.addLayout(self.layoutBoto)
-        self.layoutBoto.addItem(QSpacerItem(20, 5, QSizePolicy.Expanding,QSizePolicy.Minimum))
-        self.exitButton=QvPushButton('Tancar')
+        #self.layoutBoto.addItem(QSpacerItem(10, 5, QSizePolicy.Expanding,QSizePolicy.Minimum))
+        self.acceptButton=QvPushButton('Acceptar',destacat=True)
+        self.acceptButton.clicked.connect(self.close)
+        self.layoutBoto.addWidget(self.acceptButton)
+        self.exitButton=QvPushButton('Cancel·lar')
         self.exitButton.clicked.connect(self.close)
         self.layoutBoto.addWidget(self.exitButton)
 
         self.formata()
+
     def formata(self):
         self.caixaText.viewport().setAutoFillBackground(False)
-        self.caixaText.setReadOnly(True)
         self.caixaText.setEnabled(True) #Millor que es pugui seleccionar el text? O que no es pugui?
-        self.caixaText.setFrameStyle(QFrame.NoFrame)
+        #self.caixaText.setFrameStyle(QFrame.NoFrame)
+        self.caixaText.setFont(QvConstants.FONTTEXT)
+        self.caixaText.setStyleSheet("border:1px solid %s" % QvConstants.COLORCLAR)
         self.caixaText.verticalScrollBar().setStyleSheet(QvConstants.SCROLLBARSTYLESHEET)
+        #self.caixaText.verticalScrollBar().setFrameStyle(QFrame.NoFrame)
         #Comentar si volem que s'oculti la scrollbar quan no s'utilitza
-        self.caixaText.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
+        #self.caixaText.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
         #self.caixaText.setContentsMargins(0,0,0,0)
-        self.caixaText.setViewportMargins(20,20,0,0)
+        self.caixaText.setViewportMargins(5,5,5,5)
+        self.offset1.setFixedWidth(20)
+        self.offset2.setFixedWidth(20)
+        self.lblCapcalera.setStyleSheet('color: %s'%QvConstants.COLORFOSC)
         self.setStyleSheet('background-color: %s; QFrame {border: 0px} QLabel {border: 0px}'%QvConstants.COLORBLANC)
         self.setWindowFlags(Qt.Window | Qt.FramelessWindowHint)
         self.lblLogo.setStyleSheet('background-color: %s; border: 0px'%QvConstants.COLORFOSC)
@@ -122,7 +95,7 @@ class QvNewsFinestra(QDialog):
         self.widgetSup.setGraphicsEffect(QvConstants.ombraHeader(self))
         
         self.setWindowTitle("qVista - Noticies")
-        self.resize(640,480)
+        self.resize(480,360)
         self.oldPos=self.pos()
     
     def mousePressEvent(self, event):
@@ -133,7 +106,9 @@ class QvNewsFinestra(QDialog):
         #print(delta)
         self.move(self.x() + delta.x(), self.y() + delta.y())
         self.oldPos = event.globalPos()
+
     def keyPressEvent(self,event):
+        super().keyPressEvent(event)
         if event.key()==Qt.Key_Escape or event.key()==Qt.Key_Return:
             self.close()
 
@@ -142,8 +117,6 @@ class QvNewsFinestra(QDialog):
 if __name__=='__main__':
     import sys
     app=QtWidgets.QApplication(sys.argv)
-    news=QvNews()
-    menu=QMenu()
-    menu.addAction(news)
-    menu.show()
+    news=QvSuggeriments()
+    news.show()
     sys.exit(app.exec_())
