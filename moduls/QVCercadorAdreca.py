@@ -22,7 +22,7 @@ class QCercadorAdreca(QObject):
 
     def __init__(self, lineEditCarrer, lineEditNumero, origen = 'SQLITE'):
         super().__init__()
-
+       
         # self.pare= pare
 
         self.origen = origen

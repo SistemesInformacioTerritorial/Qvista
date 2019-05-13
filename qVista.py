@@ -577,7 +577,9 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.setTabOrder(self.leCarrer, self.leNumero)
         # Activem la clase de cerca d'adreces
         
+        
         self.cAdrec=QCercadorAdreca(self.leCarrer, self.leNumero,'SQLITE')    # SQLITE o CSV
+        # self.cAdrec=QCercadorAdreca(self.leCarrer, self.leNumero,'CSV')     # SQLITE o CSV        
         self.cAdrec.sHanTrobatCoordenades.connect(self.trobatNumero_oNo) 
 
         self.dwCercador = QDockWidget( "Cercador", self )
