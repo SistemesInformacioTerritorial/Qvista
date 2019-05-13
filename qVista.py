@@ -2751,9 +2751,6 @@ def carregarLayerCSV(nfile):
                         nom=leNom.text()
                         nfile=arxiuNouCsv.name
                         nivellCsv(arxiuNouCsv.name, separador, varX,varY, projeccio, nomCapa=nom)
-                import os
-                print(nfile)
-                os.remove(nfile)
                         
         elif rbAdreca.isChecked():
                 import tempfile
