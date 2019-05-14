@@ -3,7 +3,7 @@ from moduls.QvLlegenda import QvLlegenda
 
 projecteInicial = 'd:/colegis3.qgs'
 
-def imprimirPlanol(colegi, meses, x_min, y_min, x_max, y_max, rotacion, templateFile, fitxerSortida, tipusSortida):
+def imprimirPlanol(colegi, cole, meses, x_min, y_min, x_max, y_max, rotacion, templateFile, fitxerSortida, tipusSortida):
     tInicial=time.time()
 
     template = QFile(templateFile)
@@ -67,7 +67,7 @@ def imprimirPlanol(colegi, meses, x_min, y_min, x_max, y_max, rotacion, template
             settings.dpi=300
             settings.exportMetadata=False
             
-            fitxerSortida='d:/sortida_'+timestamp+'.PDF'
+            fitxerSortida='d:/'+cole+'.PDF'
             result = exporter.exportToPdf(fitxerSortida, settings)
 
             print (fitxerSortida)
@@ -120,7 +120,8 @@ with qgisapp() as app:
         textFiltre2 = 'CODI_COLE'+"='"+cole+"'"
         layerSeccions.setSubsetString(textFiltre) 
         layer.setSubsetString(textFiltre2)    
-        if cole == '00813' :
-            imprimirPlanol(colegi, meses, x_min, y_min, x_max, y_max, 0, plantillaMapa , 'd:/EUREKA.pdf', 'PDF')
+        coles = ['00816','00811']
+        if cole in coles:
+            imprimirPlanol(colegi, cole, meses, x_min, y_min, x_max, y_max, 0, plantillaMapa , 'd:/EUREKA.pdf', 'PDF')
     
     canvas.show()
