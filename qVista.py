@@ -28,6 +28,7 @@ from moduls.QvMarxesCiutat import MarxesCiutat
 from moduls.QvToolTip import QvToolTip
 from moduls.QvDropFiles import QvDropFiles
 from moduls.QvNews import QvNews
+
 # Impressió del temps de carrega dels moduls Qv
 print ('Temps de carrega dels moduls Qv:', time.time()-iniciTempsModuls)
 
@@ -511,7 +512,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         # instanciamos clases necesarias    
         self.fCercador=QFrame()
         self.bottomWidget = QWidget()
-        self.ubicacions = QvUbicacions(self.canvas)
+        self.ubicacions = QvUbicacions(self.canvas, pare=self)
         self.splitter = QSplitter(Qt.Vertical)             #para separar ubicacion de distBarris
         self.layoutAdreca = QHBoxLayout()                  #Creamos layout, caja de diseño Horizontal
         self.layoutCercador = QVBoxLayout(self.fCercador)  #Creamos layout, caja de diseño Vertical
@@ -577,7 +578,10 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         self.setTabOrder(self.leCarrer, self.leNumero)
         # Activem la clase de cerca d'adreces
-        self.cAdrec=QCercadorAdreca(self.leCarrer, self.leNumero)
+        
+        
+        self.cAdrec=QCercadorAdreca(self.leCarrer, self.leNumero,'SQLITE')    # SQLITE o CSV
+        # self.cAdrec=QCercadorAdreca(self.leCarrer, self.leNumero,'CSV')     # SQLITE o CSV        
         self.cAdrec.sHanTrobatCoordenades.connect(self.trobatNumero_oNo) 
 
         self.dwCercador = QDockWidget( "Cercador", self )
@@ -589,7 +593,8 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.addDockWidget( Qt.RightDockWidgetArea, self.dwCercador)
 
     def CopiarA_Ubicacions(self):
-        self.ubicacions.leUbicacions.setText(self.leCarrer.text()+"  "+self.leNumero.text())
+        # self.ubicacions.leUbicacions.setText("->"+self.leCarrer.text()+"  "+self.leNumero.text())
+        self.ubicacions.leUbicacions.setText("->"+self.leCarrer.text()+"  "+self.cAdrec.NumeroOficial)
         self.ubicacions._novaUbicacio()
 
 
@@ -809,6 +814,8 @@ class QVista(QMainWindow, Ui_MainWindow):
 
             self.marcaLloc = QgsVertexMarker(self.canvas)
             self.marcaLloc.setCenter( self.cAdrec.coordAdreca )
+            # self.leNumero.setToolTip('Num oficial: '+self.cAdrec.NumeroOficial)
+            
             self.marcaLloc.setColor(QColor(255, 0, 0))
             self.marcaLloc.setIconSize(15)
             self.marcaLloc.setIconType(QgsVertexMarker.ICON_BOX) # or ICON_CROSS, ICON_X
@@ -2250,12 +2257,13 @@ def disgregarDirele():
     if __numerosCSV:
         f_read = open(__numerosCSV, 'r')
         with f_read:
-            reader = csv.reader(f_read, delimiter = ',')
+            reader = csv.reader(f_read, delimiter = ';')
             count=0
             codi_carrer_old=''
             for row in reader:    
                 if count==0:
                     cabecera=row
+                    del cabecera[0]
                 else:
                     codi_carrer=row[0]
                     if codi_carrer != codi_carrer_old:
@@ -2266,10 +2274,13 @@ def disgregarDirele():
                             pass
 
                         f_write = open(path, 'a')
-                        writer = csv.writer(f_write)
+                        writer = csv.writer(f_write, delimiter = ';',lineterminator='\n')
+                        
                         writer.writerow(cabecera)
+                        del row[0]
                         writer.writerow(row)
                     else:
+                        del row[0]
                         writer.writerow(row)
                         
                     codi_carrer_old= codi_carrer

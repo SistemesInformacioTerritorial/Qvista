@@ -8,6 +8,7 @@ import collections
 import unicodedata
 import re
 import csv
+from PyQt5.QtSql import *
 
 
 
@@ -15,12 +16,17 @@ import csv
 
 class QCercadorAdreca(QObject):
 
-    __carrersCSV = 'dades\CARRERER.csv'
+    __carrersCSV = 'dades\Carrers.csv'
     __path_disgregados= 'Dades\dir_ele\\' 
+    __CarrersNum_sqlite='Dades\CarrersNums.db'
+
     sHanTrobatCoordenades = pyqtSignal(int, 'QString')  # atencion
 
-    def __init__(self, lineEditCarrer, lineEditNumero, origen = 'CSV'):
+    def __init__(self, lineEditCarrer, lineEditNumero, origen = 'SQLITE'):
         super().__init__()
+       
+        # self.pare= pare
+
         self.origen = origen
         self.leCarrer = lineEditCarrer
         self.leNumero = lineEditNumero
@@ -30,6 +36,15 @@ class QCercadorAdreca(QObject):
         self.dictCarrers = {}
         self.dictNumeros = collections.defaultdict(dict)
 
+        self.db = QSqlDatabase.addDatabase('QSQLITE') # Creamos la base de datos
+        self.db.setDatabaseName(self.__CarrersNum_sqlite) # Le asignamos un nombre
+        self.db.setConnectOptions("QSQLITE_OPEN_READONLY")
+        
+        if not self.db.open(): # En caso de que no se abra
+            QMessageBox.critical(None, "Error al abrir la base de datos.\n\n"
+                    "Click para cancelar y salir.", QMessageBox.Cancel)
+
+
         self.txto =''
 
         self.iniAdreca()
@@ -37,6 +52,11 @@ class QCercadorAdreca(QObject):
         if self.llegirAdreces():
             # si se ha podido leer las direciones... creando el diccionario...
             self.prepararCompleterCarrer()
+
+      
+
+    def __exit__(self, exception_type, exception_value, traceback):
+        print("in __exit__    ****************************************")
 
     def prepararCompleterCarrer(self):
         # creo instancia de completer que relaciona diccionario de calles con lineEdit
@@ -102,14 +122,55 @@ class QCercadorAdreca(QObject):
             self.nomCarrer = carrer
             self.codiCarrer = self.dictCarrers[self.nomCarrer]
 
-            path= self.__path_disgregados+str(self.codiCarrer)+'.csv'
-            with open(path, encoding='utf-8', newline='') as csvFile:
-                reader = csv.DictReader(csvFile, delimiter=',')
-                for row in reader:
-                    self.dictNumeros[row['CODI_CARRER']][row['NUMPOST']] = row
 
-            self.prepararCompleterNumero()
-            self.focusANumero()
+            if self.origen == 'CSV':
+                path= self.__path_disgregados+str(self.codiCarrer)+'.csv'
+                with open(path, encoding='utf-8', newline='') as csvFile:
+                    reader = csv.DictReader(csvFile, delimiter=';')
+                    for row in reader:
+                        self.dictNumeros[self.codiCarrer][row['NUM_LLETRA_POST']] = row
+
+                self.prepararCompleterNumero()
+                self.focusANumero()
+            elif self.origen == 'SQLITE':
+                try:
+                    index = 0
+                    self.query = QSqlQuery() # Intancia del Query
+                    self.query.exec_("select codi, num_lletra_post, etrs89_coord_x, etrs89_coord_y, num_oficial  from Numeros where codi = '" + self.codiCarrer +"'")
+
+                    while self.query.next():
+                        row= collections.OrderedDict()
+                        row['NUM_LLETRA_POST']=  self.query.value(1) # Numero y Letra
+                        row['ETRS89_COORD_X']=   self.query.value(2) # coor x
+                        row['ETRS89_COORD_Y']=   self.query.value(3) # coor y
+                        row['NUM_OFICIAL']=      self.query.value(4) # numero oficial
+
+                        self.dictNumeros[self.codiCarrer][self.query.value(1)] = row
+                        index += 1
+
+                    self.query.finish()
+                    # self.db.close()
+        
+                    self.prepararCompleterNumero()
+                    self.focusANumero()
+                    
+                except Exception as e:
+                    print(str(e))
+                    msg = QMessageBox()
+                    msg.setIcon(QMessageBox.Warning)
+                    
+                    msg.setText(str(sys.exc_info()[1]))
+                    # msg.setInformativeText("OK para salir del programa \nCANCEL para seguir en el programa")
+                    msg.setWindowTitle("qVista ERROR")
+                    msg.setStandardButtons(QMessageBox.Close)
+                    retval = msg.exec_()
+
+                    print('QCercadorAdreca.iniAdreca(): ', sys.exc_info()[0], sys.exc_info()[1])
+                    return False
+            else:
+                pass
+
+            
         else:
             info= "ERROR >> [1]" 
             self.sHanTrobatCoordenades.emit(1,info) #adreça vacia
@@ -134,14 +195,50 @@ class QCercadorAdreca(QObject):
                         self.nomCarrer = self.txto
                         self.codiCarrer = self.dictCarrers[self.nomCarrer]
                         self.focusANumero()
-                        path= self.__path_disgregados+str(self.codiCarrer)+'.csv'
-                        with open(path, encoding='utf-8', newline='') as csvFile:
-                            reader = csv.DictReader(csvFile, delimiter=',')
-                            for row in reader:
-                                self.dictNumeros[row['CODI_CARRER']][row['NUMPOST']] = row
 
-                        self.prepararCompleterNumero()
-                        self.focusANumero()
+                        if self.origen == 'CSV':
+                            path= self.__path_disgregados+str(self.codiCarrer)+'.csv'
+                            with open(path, encoding='utf-8', newline='') as csvFile:
+                                reader = csv.DictReader(csvFile, delimiter=';')
+                                for row in reader:
+                                    self.dictNumeros[self.codiCarrer][row['NUM_LLETRA_POST']] = row
+
+                            self.prepararCompleterNumero()
+                            self.focusANumero()
+                        elif self.origen == 'SQLITE':
+                            try:
+                                index = 0
+                                self.query = QSqlQuery() # Intancia del Query
+                                self.query.exec_("select codi, num_lletra_post, etrs89_coord_x, etrs89_coord_y, num_oficial  from Numeros where codi = '" + self.codiCarrer +"'")
+
+                                while self.query.next():
+                                    row= collections.OrderedDict()
+                                    row['NUM_LLETRA_POST']=  self.query.value(1) # Numero y Letra
+                                    row['ETRS89_COORD_X']=   self.query.value(2) # coor x
+                                    row['ETRS89_COORD_Y']=   self.query.value(3) # coor y
+                                    row['NUM_OFICIAL']=      self.query.value(4) # numero oficial
+
+                                    self.dictNumeros[self.codiCarrer][self.query.value(1)] = row
+                                    index += 1
+                                
+                                self.query.finish()
+                                # self.db.close()
+                                self.prepararCompleterNumero()
+                                self.focusANumero()
+                                
+                            except Exception as e:
+                                print(str(e))
+                                msg = QMessageBox()
+                                msg.setIcon(QMessageBox.Warning)
+                                
+                                msg.setText(str(sys.exc_info()[1]))
+                                # msg.setInformativeText("OK para salir del programa \nCANCEL para seguir en el programa")
+                                msg.setWindowTitle("qVista ERROR")
+                                msg.setStandardButtons(QMessageBox.Close)
+                                retval = msg.exec_()
+
+                                print('QCercadorAdreca.iniAdreca(): ', sys.exc_info()[0], sys.exc_info()[1])
+                                return False
 
                     else:
                         info="ERROR >> [2]"
@@ -158,17 +255,49 @@ class QCercadorAdreca(QObject):
     def llegirAdreces(self):
         if self.origen == 'CSV':
             ok = self.llegirAdrecesCSV()
-        elif self.origen == 'ORACLE':
-            ok = self.llegirAdrecesOracle()
+        elif self.origen == 'SQLITE':
+            ok = self.llegirAdrecesSQlite()
         else:
             ok = False
         return ok
 
-    def llegirAdrecesOracle(self):
-        #
-        # TODO - Lectura datos de direcciones de Oracle
-        #
-        return False
+    def llegirAdrecesSQlite(self):
+        try:
+            index = 0
+            self.query = QSqlQuery() # Intancia del Query
+            self.query.exec_("select codi , nom_oficial  from Carrers") 
+
+            while self.query.next():
+                codi_carrer = self.query.value(0) # Codigo calle
+                nombre = self.query.value(1) # numero oficial
+                nombre_sin_acentos= self.remove_accents(nombre)
+                if nombre == nombre_sin_acentos:
+                    clave= nombre + "  (" + codi_carrer + ")                                                  "+chr(30)
+                else:
+                    clave= nombre + "  (" + codi_carrer + ")                                                  "+chr(30)+"                                                         " + nombre_sin_acentos
+                    # asignacion al diccionario
+                self.dictCarrers[clave] = codi_carrer
+                
+                index += 1
+     
+            self.query.finish()
+            # self.db.close()
+            return True
+        except Exception as e:
+            print(str(e))
+            msg = QMessageBox()
+            msg.setIcon(QMessageBox.Warning)
+            
+            msg.setText(str(sys.exc_info()[1]))
+            # msg.setInformativeText("OK para salir del programa \nCANCEL para seguir en el programa")
+            msg.setWindowTitle("qVista ERROR")
+            msg.setStandardButtons(QMessageBox.Close)
+            retval = msg.exec_()
+
+            print('QCercadorAdreca.llegirAdrecesSQlite(): ', sys.exc_info()[0], sys.exc_info()[1])
+            return False
+
+
 
     # Normalización caracteres quitando acentos
     def remove_accents(self,input_str):
@@ -183,12 +312,12 @@ class QCercadorAdreca(QObject):
     def llegirAdrecesCSV(self):
         try:
             with open(self.__carrersCSV, encoding='utf-8', newline='') as csvFile:
-                reader = csv.DictReader(csvFile, delimiter=',')
+                reader = csv.DictReader(csvFile, delimiter=';')
                 for row in reader:
                     # leemo linea del csv y extraemos campos....
                     nombre= row['NOM_OFICIAL']
                     nombre_sin_acentos= self.remove_accents(nombre)
-                    codi_carrer= row['CODI_VIA']
+                    codi_carrer= row['CODI']
                     # creamos clave.... pongo caracter 30 (invisible), para separar ambas partes
                     if nombre == nombre_sin_acentos:
                         clave= nombre + "  (" + codi_carrer + ")                                                  "+chr(30)
@@ -198,7 +327,8 @@ class QCercadorAdreca(QObject):
                     self.dictCarrers[clave] = codi_carrer 
                     
             return True
-        except:
+        except Exception as e:
+            print(str(e))
             msg = QMessageBox()
             msg.setIcon(QMessageBox.Warning)
             
@@ -207,9 +337,6 @@ class QCercadorAdreca(QObject):
             msg.setWindowTitle("qVista ERROR")
             msg.setStandardButtons(QMessageBox.Close)
             retval = msg.exec_()
-
-
-
 
             # print('QCercadorAdreca.llegirAdrecesCSV(): ', sys.exc_info()[0], sys.exc_info()[1])
             return False
@@ -225,6 +352,8 @@ class QCercadorAdreca(QObject):
                 self.infoAdreca = self.dictNumerosFiltre[self.numeroCarrer]
                 self.coordAdreca = QgsPointXY(float(self.infoAdreca['ETRS89_COORD_X']), \
                                             float(self.infoAdreca['ETRS89_COORD_Y']))
+
+                self.NumeroOficial= self.infoAdreca['NUM_OFICIAL']
                 self.leNumero.clearFocus()
 
                 info="[0]"
@@ -234,7 +363,7 @@ class QCercadorAdreca(QObject):
             self.sHanTrobatCoordenades.emit(5,info)  #numero          
 
     def trobatNumero(self):
-        
+        self.txto = self.completerCarrer.currentCompletion()
         try:
             # if self.leCarrer.text() in self.dictCarrers:
             if self.txto in self.dictCarrers:
@@ -249,6 +378,7 @@ class QCercadorAdreca(QObject):
                             self.infoAdreca = self.dictNumerosFiltre[self.numeroCarrer]
                             self.coordAdreca = QgsPointXY(float(self.infoAdreca['ETRS89_COORD_X']), \
                                                         float(self.infoAdreca['ETRS89_COORD_Y']))
+                            self.NumeroOficial= self.infoAdreca['NUM_OFICIAL']
                             self.leNumero.clearFocus()
                             info="[0]"
                             self.sHanTrobatCoordenades.emit(0,info)                
