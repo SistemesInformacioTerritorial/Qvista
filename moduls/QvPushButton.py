@@ -9,18 +9,13 @@ class QvPushButton(QPushButton):
         QPushButton.__init__(self,text,parent)
         self.setDestacat(destacat)
     def formata(self,destacat):
-        
-        if destacat:
-            if self.isEnabled():
+        if self.isEnabled():
+            if destacat:
                 colors=(QvConstants.COLORBLANC,QvConstants.COLORDESTACAT)
             else:
-                colors=(QvConstants.COLORCLAR,QvConstants.COLORGRIS)
-            
-        else:
-            if self.isEnabled():
                 colors=(QvConstants.COLORBLANC,QvConstants.COLORFOSC)
-            else:
-                colors=(QvConstants.COLORCLAR,QvConstants.COLORGRIS)
+        else:
+            colors=(QvConstants.COLORCLAR,QvConstants.COLORGRIS)
         self.setStyleSheet(
             "margin: 20px;"
             "border: none;"
@@ -36,8 +31,8 @@ class QvPushButton(QPushButton):
         super().setEnabled(enabled)
         self.formata(self.destacat)
     def enterEvent(self,event):
-        QPushButton.enterEvent(self,event)
+        super().enterEvent(event)
         self.setCursor(Qt.PointingHandCursor)
     def leaveEvent(self,event):
-        QPushButton.leaveEvent(self,event)
+        super().leaveEvent(event)
         self.setCursor(Qt.ArrowCursor)
