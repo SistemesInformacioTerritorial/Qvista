@@ -22,6 +22,7 @@ class QvPushButton(QPushButton):
             "padding: 5px 20px;"
             "color: %s;"
             "background-color: %s" % colors)
+        self.setSizePolicy(QSizePolicy.Fixed,QSizePolicy.Fixed)
         self.setGraphicsEffect(QvConstants.ombraWidget())
         self.setFont(QvConstants.FONTTEXT)
     def setDestacat(self,destacat):

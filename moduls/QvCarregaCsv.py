@@ -168,6 +168,8 @@ class QvCarregaCsvXY(QvCarregaCsvPage):
         self.cbProj.currentIndexChanged.connect(projChanged)
         
         self.mostraTaula()
+    def nextId(self):
+        return QvCarregaCsv.finestres
 
 class QvCarregaCsvAdreca(QvCarregaCsvPage):
     def __init__(self,parent=None):
