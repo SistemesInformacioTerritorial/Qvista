@@ -11,7 +11,7 @@ from moduls.QvConstants import QvConstants
 from moduls.QvPushButton import QvPushButton
 
 class QvSuggeriments(QDialog):
-    def __init__(self, parent=None):
+    def __init__(self, acceptAction=QWidget.close, parent=None):
         super().__init__(parent)
         #Layout gran. Tot a dins
         self.layout=QVBoxLayout(self)
@@ -25,16 +25,17 @@ class QvSuggeriments(QDialog):
         self.lblLogo.setPixmap(QPixmap('imatges/bug_cap_sugg.png'))
         self.lblCapcalera=QLabel()
         self.lblCapcalera.setText(' Problemes? Suggeriments?')
-        self.lblCapcalera.setStyleSheet('color: %s'%QvConstants.COLORFOSC)
+        self.lblCapcalera.setStyleSheet('color: %s' %QvConstants.COLORFOSC)
         self.layoutCapcalera.addWidget(self.lblLogo)
         self.layoutCapcalera.addWidget(self.lblCapcalera)
 
         #info
         self.info = QLabel()
         self.info.setFont(QvConstants.FONTTEXT)
+        self.info.setStyleSheet("color: %s" %QvConstants.COLORFOSC)
         #self.info.setAlignment(Qt.AlignCenter)
         self.info.setContentsMargins(20,20,20,20)
-        self.info.setText("Heu trobat algun problema? \nVoleu fer-nos algun suggeriment? \nSiusplau, Descriviu-lo breument a continuació. \nEl vostre suport ens ajudarà a millorar")
+        self.info.setText("Heu trobat algun problema? Voleu fer-nos algun suggeriment? \nSi us plau, Descriviu-lo breument a continuació. El vostre suport ens \najudarà a millorar.")
         self.layout.addWidget(self.info)
 
         #Text de la notícia
@@ -49,23 +50,45 @@ class QvSuggeriments(QDialog):
 
         #Botons
         self.layoutBoto=QHBoxLayout()
-        self.layout.addLayout(self.layoutBoto)
-        #self.layoutBoto.addItem(QSpacerItem(10, 5, QSizePolicy.Expanding,QSizePolicy.Minimum))
+        self.hSpacerL = QSpacerItem(80, 5, QSizePolicy.Minimum, QSizePolicy.Expanding)
+        # self.offsetM = QLabel()
+        # self.offsetM.setFixedWidth(20)
         self.acceptButton=QvPushButton('Acceptar',destacat=True)
-        self.acceptButton.clicked.connect(self.close)
-        self.layoutBoto.addWidget(self.acceptButton)
+        self.acceptAction=acceptAction
+        self.acceptButton.clicked.connect(self.acceptar)
+        self.caixaText.textChanged.connect(lambda: self.acceptButton.setEnabled(self.caixaText.toPlainText()!=''))
         self.exitButton=QvPushButton('Cancel·lar')
         self.exitButton.clicked.connect(self.close)
+        self.hSpacerR = QSpacerItem(80, 5, QSizePolicy.Minimum, QSizePolicy.Expanding)
+
+        self.offsetUp = QLabel()
+        self.offsetUp.setFixedHeight(10)
+        self.layout.addWidget(self.offsetUp)
+        
+        self.layout.addLayout(self.layoutBoto)
+        self.layoutBoto.addItem(self.hSpacerL)
+        self.layoutBoto.addWidget(self.acceptButton)
+        #self.layoutBoto.addWidget(self.offsetM)
         self.layoutBoto.addWidget(self.exitButton)
+        self.layoutBoto.addItem(self.hSpacerR)
+
+        self.offsetDown = QLabel()
+        self.offsetUp.setFixedHeight(10)
+        self.layout.addWidget(self.offsetDown)
+        
 
         self.formata()
+
+    def acceptar(self):
+        self.acceptAction(self.caixaText.toPlainText())
+        self.close()
 
     def formata(self):
         self.caixaText.viewport().setAutoFillBackground(False)
         self.caixaText.setEnabled(True) #Millor que es pugui seleccionar el text? O que no es pugui?
         #self.caixaText.setFrameStyle(QFrame.NoFrame)
         self.caixaText.setFont(QvConstants.FONTTEXT)
-        self.caixaText.setStyleSheet("border:1px solid %s" % QvConstants.COLORCLAR)
+        self.caixaText.setStyleSheet("border:1px solid %s; background: white" % QvConstants.COLORCLAR)
         self.caixaText.verticalScrollBar().setStyleSheet(QvConstants.SCROLLBARSTYLESHEET)
         #self.caixaText.verticalScrollBar().setFrameStyle(QFrame.NoFrame)
         #Comentar si volem que s'oculti la scrollbar quan no s'utilitza
@@ -95,7 +118,7 @@ class QvSuggeriments(QDialog):
         self.widgetSup.setGraphicsEffect(QvConstants.ombraHeader(self))
         
         self.setWindowTitle("qVista - Noticies")
-        self.resize(480,360)
+        self.setFixedSize(480, 360)
         self.oldPos=self.pos()
     
     def mousePressEvent(self, event):
@@ -109,14 +132,20 @@ class QvSuggeriments(QDialog):
 
     def keyPressEvent(self,event):
         super().keyPressEvent(event)
-        if event.key()==Qt.Key_Escape or event.key()==Qt.Key_Return:
+        if event.key()==Qt.Key_Escape:
             self.close()
+        elif event.key()==Qt.Key_Return:
+            self.acceptar()
+    def show(self):
+        self.caixaText.setText('')
+        super().show()
+
 
 
 
 if __name__=='__main__':
     import sys
     app=QtWidgets.QApplication(sys.argv)
-    news=QvSuggeriments()
+    news=QvSuggeriments(lambda x: print(x))
     news.show()
     sys.exit(app.exec_())

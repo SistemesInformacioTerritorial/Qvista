@@ -22,7 +22,7 @@ class QvPushButton(QPushButton):
             else:
                 colors=(QvConstants.COLORCLAR,QvConstants.COLORGRIS)
         self.setStyleSheet(
-            "margin: 20px;"
+            "margin: 10px;"
             "border: none;"
             "padding: 5px 20px;"
             "color: %s;"

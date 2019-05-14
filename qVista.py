@@ -30,6 +30,7 @@ from moduls.QvDropFiles import QvDropFiles
 from moduls.QvNews import QvNews
 from moduls.QvPushButton import QvPushButton
 from moduls.QvGeocod import QvGeocod
+from moduls.QvSuggeriments import QvSuggeriments
 import re
 import csv
 import os
@@ -1051,10 +1052,17 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.actHelp.setIcon(icon)
         self.actHelp.triggered.connect(self.helpQVista)
                 
-        self.actBug = QAction("Ajuda ", self)
+        # self.actBug = QAction("Ajuda ", self)
+        # icon=QIcon('imatges/bug.png')
+        # self.actBug.setIcon(icon)
+        # self.actBug.triggered.connect(self.reportarBug)
+
+        #bEnviar.clicked.connect(lambda: reportarProblema(leTitol.text(), leDescripcio.text()))
+        self.suggeriments=QvSuggeriments(reportarProblema)
+        self.actBug = QAction("Problemes o suggeriments ", self)
         icon=QIcon('imatges/bug.png')
         self.actBug.setIcon(icon)
-        self.actBug.triggered.connect(self.reportarBug)
+        self.actBug.triggered.connect(self.suggeriments.show)
                 
         self.actPintaLabels = QAction("pintaLabels", self)
         self.actPintaLabels.setStatusTip("pintaLabels")
@@ -2992,10 +3000,12 @@ def reportarProblema(titol, descripcio=None):
 
     if QvApp().bugUser(titol, descripcio):
         print ('Creat el problema {0:s}'.format(titol))
-        qV.lblResultat.setText("S'ha enviat correctament.")
+        return True
+        #qV.lblResultat.setText("S'ha enviat correctament.")
     else:
         print ('Error al crear el problema {0:s}'.format(titol))
-        qV.lblResultat.setText('Error al crear el problema {0:s}'.format(titol))
+        return False
+        #qV.lblResultat.setText('Error al crear el problema {0:s}'.format(titol))
 
     # '''Crea un "issue" a github'''
     # USUARI = 'qVistaHost'
