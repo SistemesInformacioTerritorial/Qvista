@@ -2431,7 +2431,7 @@ def escollirNivellCSV():
         with open(nfile) as f:
             reader = csv.DictReader(f, delimiter=';')
             llistaCamps = reader.fieldnames
-        print (llistaCamps)
+        #print (llistaCamps)
         projeccio = 25831
         titol = 'Còpia de Models adreces.csv'
         nivellCsv(nfile,';','XNUMPOST','YNUMPOST', projeccio, nomCapa = titol)
@@ -2521,9 +2521,6 @@ def carregarLayerCSV(nfile):
                     leNom=QLineEdit()
                     leNom.setPlaceholderText('Nom de la capa')
                     layCsv.addWidget(leNom)
-                    #lblH = QLabel()
-                    #layCsv.addWidget(lblH)
-
 
                     cbx=QComboBox()
                     lblcbx = QLabel()
@@ -2554,18 +2551,12 @@ def carregarLayerCSV(nfile):
                             else:
                                     radio4.setChecked(True)
                             #actualitzaCamps()
-                            print(':D')
-
-                    else:
-                            print(':(')
-                    
                     
                     radio1.toggled.connect(actualitzaCamps)
                     radio2.toggled.connect(actualitzaCamps)
                     radio3.toggled.connect(actualitzaCamps)
                     radio4.toggled.connect(actualitzaCamps)
                     
-
                     layRB = QHBoxLayout()
                     layRB.addWidget(radio1)
                     layRB.addWidget(radio2)
@@ -2591,7 +2582,6 @@ def carregarLayerCSV(nfile):
                     laySeparador.addWidget(groupBox1)
                     laySeparador.addWidget(groupBox2)
                     boxSeparador.setLayout(laySeparador)
-
                     layCsv.addWidget(boxSeparador)
 
                     layProj = QHBoxLayout()
@@ -2761,9 +2751,6 @@ def carregarLayerCSV(nfile):
                         nom=leNom.text()
                         nfile=arxiuNouCsv.name
                         nivellCsv(arxiuNouCsv.name, separador, varX,varY, projeccio, nomCapa=nom)
-                import os
-                print(nfile)
-                os.remove(nfile)
                         
         elif rbAdreca.isChecked():
                 import tempfile
@@ -2824,7 +2811,6 @@ def carregarLayerCSV(nfile):
                                 d['YCalculada']=y
                                 writer.writerow(d)
                                 
-                        print(arxiuNouCsv.name)
                         nom=leNom.text()
                         nfile=arxiuNouCsv.name
                         nivellCsv(arxiuNouCsv.name, separador, 'XCalculada','YCalculada', nomCapa=nom)

@@ -18,6 +18,27 @@ class QvConstants:
     ARXIUTMPAVIS=tempfile.gettempdir()+'\\ultimAvisObert'
     ARXIUNEWS='d:/qVista/codi/News/Noticies.htm'
     ARXIUTMP=tempfile.gettempdir()+'\\ultimaNewOberta'
+    SCROLLBARSTYLESHEET="""
+            QScrollBar:vertical {
+                background:%s;
+                margin: 0px;
+                border: 0px;
+            }
+            QScrollBar::handle:vertical {
+                background: %s;
+                min-height: 0px;
+                border: 0px;
+            }
+            QScrollBar::sub-page:vertical {
+                background: %s;
+                height: 0 px;
+                border: 0px;
+            }
+            QScrollBar::add-page:vertical {
+                background: %s;
+                height: 0 px;
+                border: 0px;
+            }"""%(COLORGRIS, COLORGRIS, COLORBLANC, COLORBLANC)
     #Funció per retornar ombres amb els paràmetres donats
     #Nota: No assignar un mateix objecte a més d'un widget. Només es conservarà a l'últim
     def ombra(parent=None, offset=(3,3), radius=15, color=QColor(COLOROMBRA)):
