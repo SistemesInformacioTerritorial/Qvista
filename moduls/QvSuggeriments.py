@@ -76,7 +76,6 @@ class QvSuggeriments(QDialog):
         self.offsetUp.setFixedHeight(10)
         self.layout.addWidget(self.offsetDown)
         
-
         self.formata()
 
     def acceptar(self):
@@ -96,9 +95,9 @@ class QvSuggeriments(QDialog):
         #self.caixaText.setContentsMargins(0,0,0,0)
         self.caixaText.setViewportMargins(5,5,5,5)
         self.offset1.setFixedWidth(20)
-        self.offset2.setFixedWidth(20)
+        self.offset2.setFixedWidth(20)  
         self.lblCapcalera.setStyleSheet('color: %s'%QvConstants.COLORFOSC)
-        self.setStyleSheet('background-color: %s; QFrame {border: 0px} QLabel {border: 0px}'%QvConstants.COLORBLANC)
+        #self.setStyleSheet('background-color: %s; QFrame {border: 0px} QLabel {border: 0px}'%QvConstants.COLORBLANC)
         self.setWindowFlags(Qt.Window | Qt.FramelessWindowHint)
         self.lblLogo.setStyleSheet('background-color: %s; border: 0px'%QvConstants.COLORFOSC)
         self.lblLogo.setSizePolicy(QSizePolicy.Fixed,QSizePolicy.Fixed)

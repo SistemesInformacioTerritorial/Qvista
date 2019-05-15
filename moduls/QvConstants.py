@@ -4,7 +4,7 @@ from PyQt5.QtWidgets import QGraphicsDropShadowEffect
 import tempfile
 
 class QvConstants:
-    FONTTITOLS=QFont('Arial',15,QFont.Bold)
+    FONTTITOLS=QFont('Arial',12,QFont.Bold)
     FONTTEXT=QFont('Arial',10)
 
     COLORFOSC='#38474F'
