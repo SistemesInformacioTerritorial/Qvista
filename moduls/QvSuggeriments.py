@@ -140,7 +140,7 @@ class QvSuggeriments(QDialog):
 
         self.widgetSup.setGraphicsEffect(QvConstants.ombraHeader(self))
         
-        self.setWindowTitle("qVista - Noticies")
+        self.setWindowTitle("qVista - Problemes i Suggeriments")
         self.setFixedSize(520, 360)
         self.oldPos=self.pos()
     
