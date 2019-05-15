@@ -77,7 +77,7 @@ class QvSuggeriments(QDialog):
         self.layout.addLayout(self.layoutBoto)
         self.layoutBoto.addItem(self.hSpacerL)
         self.layoutBoto.addWidget(self.acceptButton)
-        #self.layoutBoto.addWidget(self.offsetM)
+        #self.layoutBoto.addWidget(self.offsetM) ##afegir espai entre botons
         self.layoutBoto.addWidget(self.exitButton)
         self.layoutBoto.addItem(self.hSpacerR)
 
@@ -92,6 +92,7 @@ class QvSuggeriments(QDialog):
         print(res)
         self.close()
 
+    #determina el format dels diferents components de la window
     def formata(self): 
         self.layoutTiD.setContentsMargins(20,0,20,0)
         self.layoutTiD.setSpacing(20)
