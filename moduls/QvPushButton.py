@@ -37,3 +37,7 @@ class QvPushButton(QPushButton):
     def leaveEvent(self,event):
         super().leaveEvent(event)
         self.setCursor(Qt.ArrowCursor)
+    def recarrega(self):
+        self.formata(self.destacat)
+    def show(self):
+        self.recarrega()

@@ -19,22 +19,22 @@ class QvConstants:
     ARXIUNEWS='d:/qVista/codi/News/Noticies.htm'
     ARXIUTMP=tempfile.gettempdir()+'\\ultimaNewOberta'
     SCROLLBARSTYLESHEET="""
-            QScrollBar:vertical {
+            QScrollBar {
                 background:%s;
                 margin: 0px;
                 border: 0px;
             }
-            QScrollBar::handle:vertical {
+            QScrollBar::handle {
                 background: %s;
                 min-height: 0px;
                 border: 0px;
             }
-            QScrollBar::sub-page:vertical {
+            QScrollBar::sub-page {
                 background: %s;
                 height: 0 px;
                 border: 0px;
             }
-            QScrollBar::add-page:vertical {
+            QScrollBar::add-page {
                 background: %s;
                 height: 0 px;
                 border: 0px;

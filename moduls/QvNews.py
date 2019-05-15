@@ -102,7 +102,7 @@ class QvNewsFinestra(QDialog):
         self.caixaText.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
         #self.caixaText.setContentsMargins(0,0,0,0)
         self.caixaText.setViewportMargins(20,20,0,0)
-        self.setStyleSheet('background-color: %s; QFrame {border: 0px} QLabel {border: 0px}'%QvConstants.COLORBLANC)
+        #self.setStyleSheet('background-color: %s; QFrame {border: 0px} QLabel {border: 0px}'%QvConstants.COLORBLANC)
         self.setWindowFlags(Qt.Window | Qt.FramelessWindowHint)
         self.lblLogo.setStyleSheet('background-color: %s; border: 0px'%QvConstants.COLORFOSC)
         self.lblLogo.setSizePolicy(QSizePolicy.Fixed,QSizePolicy.Fixed)
@@ -118,8 +118,7 @@ class QvNewsFinestra(QDialog):
         self.layoutCapcalera.setSpacing(0)
         self.layoutBoto.setContentsMargins(0,0,0,0)
         self.layoutBoto.setSpacing(0)
-
-        self.widgetSup.setGraphicsEffect(QvConstants.ombraHeader(self))
+        self.widgetSup.setGraphicsEffect(QvConstants.ombraHeader(self.widgetSup))
         
         self.setWindowTitle("qVista - Noticies")
         self.resize(640,480)
