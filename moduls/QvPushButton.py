@@ -9,24 +9,20 @@ class QvPushButton(QPushButton):
         QPushButton.__init__(self,text,parent)
         self.setDestacat(destacat)
     def formata(self,destacat):
-        
-        if destacat:
-            if self.isEnabled():
+        if self.isEnabled():
+            if destacat:
                 colors=(QvConstants.COLORBLANC,QvConstants.COLORDESTACAT)
             else:
-                colors=(QvConstants.COLORCLAR,QvConstants.COLORGRIS)
-            
-        else:
-            if self.isEnabled():
                 colors=(QvConstants.COLORBLANC,QvConstants.COLORFOSC)
-            else:
-                colors=(QvConstants.COLORCLAR,QvConstants.COLORGRIS)
+        else:
+            colors=(QvConstants.COLORCLAR,QvConstants.COLORGRIS)
         self.setStyleSheet(
             "margin: 10px;"
             "border: none;"
             "padding: 5px 20px;"
             "color: %s;"
             "background-color: %s" % colors)
+        self.setSizePolicy(QSizePolicy.Fixed,QSizePolicy.Fixed)
         self.setGraphicsEffect(QvConstants.ombraWidget())
         self.setFont(QvConstants.FONTTEXT)
     def setDestacat(self,destacat):
@@ -36,8 +32,12 @@ class QvPushButton(QPushButton):
         super().setEnabled(enabled)
         self.formata(self.destacat)
     def enterEvent(self,event):
-        QPushButton.enterEvent(self,event)
+        super().enterEvent(event)
         self.setCursor(Qt.PointingHandCursor)
     def leaveEvent(self,event):
-        QPushButton.leaveEvent(self,event)
+        super().leaveEvent(event)
         self.setCursor(Qt.ArrowCursor)
+    def recarrega(self):
+        self.formata(self.destacat)
+    def show(self):
+        self.recarrega()
