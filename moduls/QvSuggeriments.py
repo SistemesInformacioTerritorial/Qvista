@@ -35,28 +35,37 @@ class QvSuggeriments(QDialog):
         self.info.setStyleSheet("color: %s" %QvConstants.COLORFOSC)
         #self.info.setAlignment(Qt.AlignCenter)
         self.info.setContentsMargins(20,20,20,20)
-        self.info.setText("Heu trobat algun problema? Voleu fer-nos algun suggeriment? \nSi us plau, Descriviu-lo breument a continuació. El vostre suport ens \najudarà a millorar.")
+        self.info.setText("Heu trobat algun problema? Voleu fer-nos algun suggeriment? \nSi us plau, descriviu-lo breument a continuació. El vostre suport ens ajudarà a\nmillorar.")
         self.layout.addWidget(self.info)
 
-        #Text de la notícia
-        self.caixaText=QtWidgets.QTextEdit()
-        self.layoutDescripcio = QHBoxLayout()
+        #TITOL + DESCRIPCIO
+        self.layoutTiD = QVBoxLayout()
+        self.layout.addLayout(self.layoutTiD)
+        self.layoutTitolReport = QHBoxLayout()
+        self.lblTitle = QLabel()
         self.offset1 = QLabel()
-        self.offset2 = QLabel()
-        self.layoutDescripcio.addWidget(self.offset1)
+        self.leTitle = QtWidgets.QTextEdit()
+        self.layoutTitolReport.addWidget(self.lblTitle)
+        self.layoutTitolReport.addWidget(self.offset1)
+        self.layoutTitolReport.addWidget(self.leTitle)
+        self.layoutTiD.addLayout(self.layoutTitolReport)
+
+        self.layoutDescripcio = QHBoxLayout()
+        self.lblContent = QLabel()
+        self.lblContent.setText("Descripció:")
+        self.caixaText=QtWidgets.QTextEdit()
+        self.layoutDescripcio.addWidget(self.lblContent)
         self.layoutDescripcio.addWidget(self.caixaText)
-        self.layoutDescripcio.addWidget(self.offset2)
-        self.layout.addLayout(self.layoutDescripcio)
+        self.layoutTiD.addLayout(self.layoutDescripcio)
+
 
         #Botons
         self.layoutBoto=QHBoxLayout()
         self.hSpacerL = QSpacerItem(80, 5, QSizePolicy.Minimum, QSizePolicy.Expanding)
-        # self.offsetM = QLabel()
-        # self.offsetM.setFixedWidth(20)
         self.acceptButton=QvPushButton('Acceptar',destacat=True)
         self.acceptAction=acceptAction
         self.acceptButton.clicked.connect(self.acceptar)
-        self.caixaText.textChanged.connect(lambda: self.acceptButton.setEnabled(self.caixaText.toPlainText()!=''))
+        self.leTitle.textChanged.connect(lambda: self.acceptButton.setEnabled(self.leTitle.toPlainText()!=''))
         self.exitButton=QvPushButton('Cancel·lar')
         self.exitButton.clicked.connect(self.close)
         self.hSpacerR = QSpacerItem(80, 5, QSizePolicy.Minimum, QSizePolicy.Expanding)
@@ -79,23 +88,37 @@ class QvSuggeriments(QDialog):
         self.formata()
 
     def acceptar(self):
-        self.acceptAction(self.caixaText.toPlainText())
+        res=self.acceptAction(self.leTitle.toPlainText(),self.caixaText.toPlainText())
+        print(res)
         self.close()
 
-    def formata(self):
+    def formata(self): 
+        self.layoutTiD.setContentsMargins(20,0,20,0)
+        self.layoutTiD.setSpacing(20)
+        self.lblTitle.setFont(QvConstants.FONTTEXT)
+        self.lblTitle.setStyleSheet("color: %s" %QvConstants.COLORFOSC)
+        self.lblTitle.setText("Títol:")
+        self.leTitle.setStyleSheet("color: %s" %QvConstants.COLORFOSC)
+        self.leTitle.setFixedHeight(26)
+        self.lblContent.setFont(QvConstants.FONTTEXT)
+        self.lblContent.setStyleSheet("color: %s" %QvConstants.COLORFOSC)
+        self.caixaText.setStyleSheet("color: %s" %QvConstants.COLORFOSC)
         self.caixaText.viewport().setAutoFillBackground(False)
         self.caixaText.setEnabled(True) #Millor que es pugui seleccionar el text? O que no es pugui?
         #self.caixaText.setFrameStyle(QFrame.NoFrame)
         self.caixaText.setFont(QvConstants.FONTTEXT)
+        self.leTitle.setFont(QvConstants.FONTTEXT)
         self.caixaText.setStyleSheet("border:1px solid %s; background: white" % QvConstants.COLORCLAR)
+        self.leTitle.setStyleSheet("border:1px solid %s; background: white" % QvConstants.COLORCLAR)
         self.caixaText.verticalScrollBar().setStyleSheet(QvConstants.SCROLLBARSTYLESHEET)
         #self.caixaText.verticalScrollBar().setFrameStyle(QFrame.NoFrame)
         #Comentar si volem que s'oculti la scrollbar quan no s'utilitza
         #self.caixaText.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
         #self.caixaText.setContentsMargins(0,0,0,0)
-        self.caixaText.setViewportMargins(5,5,5,5)
-        self.offset1.setFixedWidth(20)
-        self.offset2.setFixedWidth(20)  
+        self.caixaText.setViewportMargins(3,3,3,3)
+        self.leTitle.setViewportMargins(3,0,3,0)
+        self.offset1.setFixedWidth(17)
+        #self.offset2.setFixedWidth(20)  
         self.lblCapcalera.setStyleSheet('color: %s'%QvConstants.COLORFOSC)
         #self.setStyleSheet('background-color: %s; QFrame {border: 0px} QLabel {border: 0px}'%QvConstants.COLORBLANC)
         self.setWindowFlags(Qt.Window | Qt.FramelessWindowHint)
@@ -117,7 +140,7 @@ class QvSuggeriments(QDialog):
         self.widgetSup.setGraphicsEffect(QvConstants.ombraHeader(self))
         
         self.setWindowTitle("qVista - Noticies")
-        self.setFixedSize(480, 360)
+        self.setFixedSize(520, 360)
         self.oldPos=self.pos()
     
     def mousePressEvent(self, event):
@@ -136,6 +159,7 @@ class QvSuggeriments(QDialog):
         elif event.key()==Qt.Key_Return:
             self.acceptar()
     def show(self):
+        self.leTitle.setText('')
         self.caixaText.setText('')
         super().show()
 
