@@ -46,6 +46,7 @@ class QvCarregaCsv(QWizard):
         self.setButton(QvCarregaCsv.CancelButton,self.cancelButton)
 
         #self.setFrameStyle(QFrame.NoFrame)
+        self.setFixedWidth(500)
         self.setContentsMargins(0,0,0,0)
         self.setWindowFlags(Qt.Window | Qt.FramelessWindowHint)
         self.setWizardStyle(QWizard.ModernStyle)
@@ -55,9 +56,8 @@ class QvCarregaCsv(QWizard):
             QFrame {border: 0px} 
             QLabel {border: 0px}
             QRadioButton {background-color: transparent}'''%(QvConstants.COLORBLANC))
-        self.pal=QPalette(self.palette())
-        self.pal.setColor(QPalette.Mid,self.pal.color(QPalette.Base))
-        self.setPalette(self.pal)
+        self.setPixmap(QWizard.LogoPixmap, QPixmap('imatges/layers.png'))
+        self.oldPos=self.pos()
     def accept(self):
         super().accept()
         self.carregar(self.csv, self.separador, self.coordX,self.coordY, 'Hola')
@@ -103,7 +103,7 @@ class QvCarregaCsvPage(QWizardPage):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.parent=parent
-        self.setTitle('Assistent de càrrega de CSV')
+        self.setTitle('<font size=4 face=Arial> Assistent de càrrega de CSV </font>')
         self.formata()
     def formata(self):
         # self.parent.segButton.recarrega()
@@ -129,7 +129,7 @@ class QvCarregaCsvPage(QWizardPage):
         self.table=QvtLectorCsv(self.parent.csv,self.parent.separador,completa,self)
     def showEvent(self,event):
         super().showEvent(event)
-        self.table.recarrega(self.parent.separador)
+        if hasattr(self,'table'): self.table.recarrega(self.parent.separador)
         self.parent.segButton.recarrega()
         self.parent.backButton.recarrega()
         self.parent.finishButton.recarrega()
@@ -157,43 +157,62 @@ class QvCarregaCsvTriaSep(QvCarregaCsvPage):
         super().__init__(parent)
         self.setSubTitle('Tria del separador de camps')
         self.layout=QVBoxLayout(self)
+        self.layout.setSpacing(20)
+        self.lblExplicacio1 = QLabel("Escull quin separador fa servir l'arxiu CVS que vols carregar:")
+        self.layout.addWidget(self.lblExplicacio1)
         self.setLayout(self.layout)
-        self.layoutCheckButton=QVBoxLayout(self)
+        self.layoutCheckButton=QHBoxLayout(self)
         self.layout.addLayout(self.layoutCheckButton)
-        self.botons={x:QRadioButton(x) for x in (';',',','.',':','|')}
-        for x, y in self.botons.items(): self.layoutCheckButton.addWidget(y)
+        self.lblSep = QLabel()
+        self.lblSep.setText("Separador:")
+        self.cbSep = QComboBox()
+        llistaSeparadors = [';',',','.',':','|']
+        self.cbSep.addItems(llistaSeparadors)
+        self.layoutCheckButton.addWidget(self.lblSep)
+        self.layoutCheckButton.addWidget(self.cbSep)
+        #self.botons={x:QRadioButton(x) for x in (';',',','.',':','|')}
+        #for x, y in self.botons.items(): self.layoutCheckButton.addWidget(y)
         print(parent.csv)
         self.parent.setSeparador(infereixSeparadorRegex(open(parent.csv)))
         self.mostraTaula()
         def botoClickat(boto):
-            def botoClickatAux():
-                self.parent.setSeparador(boto)
-                self.table.recarrega(self.parent.separador)
-            return botoClickatAux
-        for x, y in self.botons.items(): y.toggled.connect(botoClickat(x))
-        self.botons[self.parent.separador].setChecked(True)
+            self.parent.setSeparador(self.cbSep.currentText())
+            self.table.recarrega(self.parent.separador)
+        self.cbSep.activated.connect(botoClickat)
+        index=llistaSeparadors.index(self.parent.separador)
+        self.cbSep.setCurrentIndex(index)
 
 class QvCarregaCsvTriaSepDec(QvCarregaCsvPage):
     def __init__(self,parent=None):
         super().__init__(parent)
         self.setSubTitle('Tria del separador dels decimals')
         self.layout=QVBoxLayout(self)
-        textBase='Els nombres tenen aquest aspecte: '
-        textPunt=textBase+'105.23  221.5  10000  10003.4'
-        textComa=textPunt.replace('.',',')
-        self.layoutCheckButton=QVBoxLayout()
+        self.layout.setSpacing(20)
+        self.lblExplicacio2 = QLabel("Escull quin separador es fa servir per als decimals:")
+        self.layout.addWidget(self.lblExplicacio2)
+        #textBase='Els nombres tenen aquest aspecte: '
+        #textPunt=textBase+'105.23  221.5  10000  10003.4'
+        #textComa=textPunt.replace('.',',')
+        self.layoutCheckButton=QHBoxLayout()
         self.layout.addLayout(self.layoutCheckButton)
-        self.botoPunt=QRadioButton('.')
-        self.botoComa=QRadioButton(',')
-        self.layoutCheckButton.addWidget(self.botoPunt)
-        self.layoutCheckButton.addWidget(self.botoComa)
+        self.lblSepDec = QLabel()
+        self.lblSepDec.setText("Separador Decimal:")
+        self.cbSepDec = QComboBox()
+        llistaSeparadorsDecimals = ['.',',']
+        self.cbSepDec.addItems(llistaSeparadorsDecimals)
+        #self.botoPunt=QRadioButton('.')
+        #self.botoComa=QRadioButton(',')
+        self.layoutCheckButton.addWidget(self.lblSepDec)
+        self.layoutCheckButton.addWidget(self.cbSepDec)
+        #self.layoutCheckButton.addWidget(self.botoPunt)
+        #self.layoutCheckButton.addWidget(self.botoComa)
 
-        self.label=QLabel()
-        self.layout.addWidget(self.label)
+        #self.label=QLabel()
+        #self.layout.addWidget(self.label)
 
-        self.botoPunt.toggled.connect(lambda: self.label.setText(textPunt))
-        self.botoComa.toggled.connect(lambda: self.label.setText(textComa))
-        self.botoPunt.setChecked(True)
+        #self.botoPunt.toggled.connect(lambda: self.label.setText(textPunt))
+        #self.botoComa.toggled.connect(lambda: self.label.setText(textComa))
+        #self.botoPunt.setChecked(True)
         self.mostraTaula()
         
 
@@ -203,11 +222,17 @@ class QvCarregaCsvTriaSepDec(QvCarregaCsvPage):
 class QvCarregaCsvTriaGeom(QvCarregaCsvPage):
     def __init__(self,parent=None):
         super().__init__(parent)
+        self.setSubTitle('Tria del tipus de la geometria')
         self.layout=QVBoxLayout(self)
+        self.layout.setSpacing(20)
+        self.lblExplicacio3 = QLabel("Hi ha 2 camps del CSV que contenen les coordenades X i Y a processar \no s'han d'inferir a partir d'una adreça?")
+        self.layout.addWidget(self.lblExplicacio3)
         self.botoXY=QRadioButton('Coordenades X Y')
         self.botoAdreca=QRadioButton('Adreça')
-        self.layout.addWidget(self.botoXY)
-        self.layout.addWidget(self.botoAdreca)
+        self.layoutBotons = QHBoxLayout()
+        self.layoutBotons.addWidget(self.botoXY)
+        self.layoutBotons.addWidget(self.botoAdreca)
+        self.layout.addLayout(self.layoutBotons)
         def activaBoto():
             self.completeChanged.emit()
         self.botoXY.toggled.connect(activaBoto)
@@ -256,56 +281,66 @@ class QvCarregaCsvXY(QvCarregaCsvPage):
 class QvCarregaCsvAdreca(QvCarregaCsvPage):
     def __init__(self,parent=None):
         super().__init__(parent)
+        self.setSubTitle('Tria dels components de la geometria')
         self.layout=QVBoxLayout(self)
         self.layoutAdreca=QVBoxLayout()
         self.layout.addLayout(self.layoutAdreca)
         camps=self.obteCamps()
-
-        self.layoutTipus=QHBoxLayout()
         self.lblTipus=QLabel('Tipus Via')
         self.cbTipus=QComboBox()
         self.cbTipus.addItems(['']+camps)
-        self.layoutTipus.addWidget(self.lblTipus)
-        self.layoutTipus.addWidget(self.cbTipus)
-
-        self.layoutCarrer=QHBoxLayout()
         self.lblCarrer=QLabel('Via')
         self.cbCarrer=QComboBox()
-        self.cbCarrer.addItems(camps)
+        self.cbCarrer.addItems(camps)  
+        self.lblNumIni=QLabel('Nº post. inicial')
+        self.cbNumIni=QComboBox()
+        self.cbNumIni.addItems(['']+camps)
+        self.lblLletraIni=QLabel('Lletra inicial')
+        self.cbLletraIni=QComboBox()
+        self.cbLletraIni.addItems(['']+camps)
+        self.lblNumFi=QLabel('Nº post. final  ')
+        self.cbNumFi=QComboBox()
+        self.cbNumFi.addItems(['']+camps)
+        self.lblLletraFi=QLabel('Lletra final  ')
+        self.cbLletraFi=QComboBox()
+        self.cbLletraFi.addItems(['']+camps)
+
+        self.layoutCarrer=QHBoxLayout()
+        self.layoutTipus=QHBoxLayout()
+        self.layoutNumLletraAux = QHBoxLayout()
+        self.layoutNumero=QVBoxLayout()
+        self.layoutLletra=QVBoxLayout()
+
+        self.layoutTipus.addWidget(self.lblTipus)
+        self.layoutTipus.addWidget(self.cbTipus)
         self.layoutCarrer.addWidget(self.lblCarrer)
         self.layoutCarrer.addWidget(self.cbCarrer)
 
-        self.layoutIni=QHBoxLayout()
-        self.lblNumIni=QLabel('Número postal inicial')
-        self.cbNumIni=QComboBox()
-        self.cbNumIni.addItems(['']+camps)
-        self.lblLletraIni=QLabel('Lletra Inicial')
-        self.cbLletraIni=QComboBox()
-        self.cbLletraIni.addItems(['']+camps)
-        self.layoutIni.addWidget(self.lblNumIni)
-        self.layoutIni.addWidget(self.cbNumIni)
-        self.layoutIni.addWidget(self.lblLletraIni)
-        self.layoutIni.addWidget(self.cbLletraIni)
+        lay1 = QHBoxLayout()
+        lay2 = QHBoxLayout()
+        lay3 = QHBoxLayout()
+        lay4 = QHBoxLayout()
 
-        self.layoutFi=QHBoxLayout()
-        self.lblNumFi=QLabel('Número postal final')
-        self.cbNumFi=QComboBox()
-        self.cbNumFi.addItems(['']+camps)
-        self.lblLletraFi=QLabel('Lletra final')
-        self.cbLletraFi=QComboBox()
-        self.cbLletraFi.addItems(['']+camps)
-        self.layoutFi.addWidget(self.lblNumFi)
-        self.layoutFi.addWidget(self.cbNumFi)
-        self.layoutFi.addWidget(self.lblLletraFi)
-        self.layoutFi.addWidget(self.cbLletraFi)
+        lay1.addWidget(self.lblNumIni)
+        lay1.addWidget(self.cbNumIni)
+        lay2.addWidget(self.lblLletraIni)
+        lay2.addWidget(self.cbLletraIni)
+        lay3.addWidget(self.lblNumFi)
+        lay3.addWidget(self.cbNumFi)
+        lay4.addWidget(self.lblLletraFi)
+        lay4.addWidget(self.cbLletraFi)
 
-        
-        
+        self.layoutNumero.addLayout(lay1)
+        self.layoutNumero.addLayout(lay3)
+        self.layoutLletra.addLayout(lay2)
+        self.layoutLletra.addLayout(lay4)
+        self.layoutNumLletraAux.addLayout(self.layoutNumero)
+        self.layoutNumLletraAux.addLayout(self.layoutLletra)
 
         self.layoutAdreca.addLayout(self.layoutTipus)
         self.layoutAdreca.addLayout(self.layoutCarrer)
-        self.layoutAdreca.addLayout(self.layoutIni)
-        self.layoutAdreca.addLayout(self.layoutFi)
+        self.layoutAdreca.addLayout(self.layoutNumLletraAux)
+
         def guardaDades():
             #self.parent.setDadesAdreca(self.cbTipus.currentText(), self.cbCarrer.currentText(), self.cbNumIni.currentText(), self.cbLletraIni.currentText(), self.cbNumFi.currentText(), self.cbLletraFi.currentText())
             self.parent.setDadesAdreca(*[x.currentText() for x in (self.cbTipus, self.cbCarrer,self.cbNumIni,self.cbLletraIni, self.cbNumFi, self.cbLletraFi)])
@@ -331,12 +366,12 @@ class QvCarregaCsvGeneraCoords(QvCarregaCsvPage):
         self.lblAdrecesError = QLabel()
         self.lblAdrecesError.setText("")
         self.lblAdrecesError.setStyleSheet('color: red')
-        self.layout = QVBoxLayout()
+        self.layout = QVBoxLayout(self)
         self.layout.addWidget(self.progress)
         self.layout.addWidget(self.lblAdrecesError)
         self.lblAdrecesError.setText('Hola')
         self.setCommitPage(True) #Després de generar el csv amb coordenades no hi ha volta enrere
-        self.mostraTaula()
+        #self.mostraTaula()
 
 
     def splitCarrer(nomComplet):
@@ -396,6 +431,7 @@ class QvCarregaCsvGeneraCoords(QvCarregaCsvPage):
                 x, y = QvGeocod.coordsCarrerNum(tipusVia, nomVia, num if num!='' else d[self.parent.dadesAdreca[2]],d[self.parent.dadesAdreca[3]],d[self.parent.dadesAdreca[4]],d[self.parent.dadesAdreca[5]])
                 d.pop('')
                 count = count + 1
+                print(count)
                 self.progress.setValue(count)
                 #app.processEvents() 
                 if x is None or y is None:
