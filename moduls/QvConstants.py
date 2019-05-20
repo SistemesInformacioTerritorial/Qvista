@@ -4,8 +4,6 @@ from PyQt5.QtWidgets import QGraphicsDropShadowEffect, QWidget, QScrollBar
 import tempfile
 # Per poder indicar a una funció que rep una seqüència (tupla, llista)
 from typing import Sequence
-# Per poder fer mètodes abstractes
-from abc import abstractmethod
 
 
 class QvConstants:
@@ -79,6 +77,7 @@ class QvConstants:
             widget{QWidget} -- Widget al que afegim la ombra
         """
         QvConstants.aplicaOmbra(widget, QvConstants.ombraHeader(widget))
+
     def formataScrollbar(scrollbar: QScrollBar):
         '''Dóna el format adequat a una scrollbar'''
         scrollbar.setStyleSheet(QvConstants.SCROLLBARSTYLESHEET)
@@ -121,6 +120,5 @@ class QvConstants:
         widget.setGraphicsEffect(ombra)
 
     # No s'ha d'instanciar la classe, de manera que si fem un init es queixa
-    @abstractmethod
     def __init__(self):
-        pass
+        raise TypeError('No es poden crear instàncies de QvConstants')
