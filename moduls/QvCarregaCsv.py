@@ -362,15 +362,19 @@ class WindowProgressBar(QWidget):
         super().__init__(parent)
         self.progress = QProgressBar()
         self.progress.setGeometry(0, 0, 300, 25)
+        self.mida = mida
         self.progress.setMaximum(mida)
         self.count = 0 #necessari per a la progress bar
         self.progress.setValue(self.count)
         self.layProgressW = QVBoxLayout()
         self.lblAdrInfo = QLabel()
-        self.lblAdrInfo.setText("Adreces que no s'han pogut geolocalitzar:")
+        self.lblAdrInfo.setText("Adreces Processades: 0")
         self.layProgressW.addWidget(self.progress)
         self.layProgressW.addWidget(self.lblAdrInfo)
         self.setLayout(self.layProgressW)
+
+    def actualitzaLBL(self):
+        self.lblAdrInfo.setText("Adreces Processades: %i de %i"%(self.count,self.mida))
 
 class QvCarregaCsvGeneraCoords(QvCarregaCsvPage):
     def __init__(self,parent=None):
@@ -388,10 +392,11 @@ class QvCarregaCsvGeneraCoords(QvCarregaCsvPage):
         self.layout.addWidget(self.lblExplicacio4)
         self.scrollErrors = QScrollArea()
         self.scrollErrors.setWidgetResizable(True)
-        self.scrollErrors.setContentsMargins(10,10,10,10)
+        self.scrollErrors.verticalScrollBar().setStyleSheet(QvConstants.SCROLLBARSTYLESHEET)
+        self.lblAdrecesError.setContentsMargins(10,5,10,5)
         self.scrollErrors.setWidget(self.lblAdrecesError)
         self.layout.addWidget(self.scrollErrors)
-        self.lblAdrecesError.setText('Hola \nhola \nhola \nhola \nhola \nhola \nhola \nhola \nhola')
+        #self.lblAdrecesError.setText('Hola \nhola \nhola \nhola \nhola \nhola \nhola \nhola \nhola')
         self.setCommitPage(True) #Després de generar el csv amb coordenades no hi ha volta enrere
         self.showed = False
         #self.mostraTaula()
@@ -463,12 +468,16 @@ class QvCarregaCsvGeneraCoords(QvCarregaCsvPage):
                         x, y = QvGeocod.coordsCarrerNum(tipusVia, nomVia, d[self.parent.dadesAdreca[2]],d[self.parent.dadesAdreca[3]],d[self.parent.dadesAdreca[4]],d[self.parent.dadesAdreca[5]])
                     
                     wpg.count = wpg.count + 1
+                    wpg.actualitzaLBL()
                     print(wpg.count)
                     wpg.progress.setValue(wpg.count)
                     app.processEvents()
                     if x is None or y is None:
                         aux = self.lblAdrecesError.text()
-                        self.lblAdrecesError.setText(aux + "\n"+ tipusVia + " " + nomVia + " " + num)
+                        if aux != "":
+                            self.lblAdrecesError.setText(aux + "\n"+ tipusVia + " " + nomVia + " " + num)
+                        else:
+                            self.lblAdrecesError.setText(tipusVia + " " + nomVia + " " + num)
                         print(tipusVia, nomVia, num)
                         d[self.parent.coordX]=""
                         d[self.parent.coordY]=""
@@ -567,7 +576,7 @@ if __name__=='__main__':
     import sys
     app=QApplication(sys.argv)
     app.setFont(QvConstants.FONTTEXT)
-    wizard=QvCarregaCsv('U:\\QUOTA\\Comu_imi\\Becaris\\XX22 per geocodificar correcció.csv',print)
-    #wizard=QvCarregaCsv('U:\\QUOTA\\Comu_imi\\Becaris\\gossos.csv',print)
+    #wizard=QvCarregaCsv('U:\\QUOTA\\Comu_imi\\Becaris\\XX22 per geocodificar correcció.csv',print)
+    wizard=QvCarregaCsv('U:\\QUOTA\\Comu_imi\\Becaris\\gossos.csv',print)
     wizard.show()
     sys.exit(app.exec_())
