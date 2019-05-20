@@ -1,21 +1,41 @@
 from moduls.QvImports import * 
 from moduls.QvConstants import QvConstants
 
+
+
+#Classe per crear botons amb l'estil qVista
 class QvPushButton(QPushButton):
-    def __init__(self, icon, text, destacat=False, parent=None):
+    def __init__(self, icon: QIcon=None, text: str='', destacat: bool=False, parent: QWidget=None):
+        '''Crea un botó amb icona
+        Arguments:
+            icon{QIcon} -- Icona del botó
+            text{str} -- Text del botó
+        Keyword Arguments:
+            destacat{bool} -- True si volem que el botó tingui el color destacat, fals si volem que sigui el color per defecte
+            parent{QWidget} -- El pare del botó
+        '''
         QPushButton.__init__(self,icon,text,parent)
         self.setDestacat(destacat)
-    def __init__(self, text='', destacat=False, parent=None):
+    def __init__(self, text: str='', destacat: bool=False, parent: QWidget=None):
+        '''Crea un botó sense icona
+        Arguments:
+            icon{QIcon} -- Icona del botó
+            text{str} -- Text del botó
+        Keyword Arguments:
+            destacat{bool} -- True si volem que el botó tingui el color destacat, fals si volem que sigui el color per defecte
+            parent{QWidget} -- El pare del botó
+        '''
         QPushButton.__init__(self,text,parent)
         self.setDestacat(destacat)
-    def formata(self,destacat):
+    
+    def formata(self,destacat: bool):
         if self.isEnabled():
             if destacat:
-                colors=(QvConstants.COLORBLANC,QvConstants.COLORDESTACAT)
+                colors=(QvConstants.COLORBLANCHTML,QvConstants.COLORDESTACATHTML)
             else:
-                colors=(QvConstants.COLORBLANC,QvConstants.COLORFOSC)
+                colors=(QvConstants.COLORBLANCHTML,QvConstants.COLORFOSCHTML)
         else:
-            colors=(QvConstants.COLORCLAR,QvConstants.COLORGRIS)
+            colors=(QvConstants.COLORCLARHTML,QvConstants.COLORGRISHTML)
         self.setStyleSheet(
             "margin: 10px;"
             "border: none;"
@@ -23,12 +43,12 @@ class QvPushButton(QPushButton):
             "color: %s;"
             "background-color: %s" % colors)
         self.setSizePolicy(QSizePolicy.Fixed,QSizePolicy.Fixed)
-        self.setGraphicsEffect(QvConstants.ombraWidget())
+        QvConstants.afegeixOmbraWidget(self)
         self.setFont(QvConstants.FONTTEXT)
-    def setDestacat(self,destacat):
+    def setDestacat(self,destacat: bool):
         self.destacat=destacat
         self.formata(destacat)
-    def setEnabled(self,enabled):
+    def setEnabled(self,enabled: bool):
         super().setEnabled(enabled)
         self.formata(self.destacat)
     def enterEvent(self,event):
@@ -37,7 +57,6 @@ class QvPushButton(QPushButton):
     def leaveEvent(self,event):
         super().leaveEvent(event)
         self.setCursor(Qt.ArrowCursor)
-    def recarrega(self):
+    def showEvent(self,event):
+        super().showEvent(event)
         self.formata(self.destacat)
-    def show(self):
-        self.recarrega()

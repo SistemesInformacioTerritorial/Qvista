@@ -12,7 +12,8 @@ from moduls.QvPushButton import QvPushButton
 
 
 class QvNews(QtWidgets.QAction):
-    def __init__(self,parent=None):
+    '''Acció de les notícies. Ella mateixa comprova si hi ha notícies noves, i si hi són, les mostra'''
+    def __init__(self,parent: QWidget=None):
         self.ICONA=QIcon('Imatges/News.png')
         self.ICONADESTACADA=QIcon('Imatges/NewsDestacada.png')
         #QtWidgets.QAction.__init__(self,self.ICONA,'Notícies',parent)
@@ -25,6 +26,7 @@ class QvNews(QtWidgets.QAction):
         self.triggered.connect(self.mostraNoticies)
 
     def blink(self):
+        '''Acció de parpadejar. Compta quants cops ha parpadejat, i quan arriba a la quantitat fixada esborra el comptador'''
         if not hasattr(self,'light'):
             self.light=False
             self.numBlinks=0
@@ -43,6 +45,7 @@ class QvNews(QtWidgets.QAction):
         self.light=not self.light
 
     def mostraNoticies(self):
+        '''Obre l'arxiu de notícies i les mostra'''
         self.news=QvNewsFinestra(QvConstants.ARXIUNEWS)
         self.news.exec_()
         self.setIcon(self.ICONA)
@@ -50,17 +53,27 @@ class QvNews(QtWidgets.QAction):
             #Escrivim alguna cosa. Realment no caldria que fos el temps
             import time
             arxiu.write(str(time.time()))
-    def calNoticiaNova(self):
+    def calNoticiaNova(self) -> bool:
+        '''Comprova si hi ha notícies noves. 
+            Returns: x{Bool} -- Booleà que indica si hi ha una notícia nova o no
+        '''
         #Si no existeix l'arxiu temporal vol dir que mai hem obert notícies :(
         if not os.path.isfile(QvConstants.ARXIUNEWS):
-            return False
+            raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), QvConstants.ARXIUNEWS)
         if not os.path.isfile(QvConstants.ARXIUTMP):
             return True
         return os.path.getmtime(QvConstants.ARXIUTMP)<os.path.getmtime(QvConstants.ARXIUNEWS)
 
 #QFrame no permet fer exec. QDialog sí
 class QvNewsFinestra(QDialog):
-    def __init__(self, file, parent=None):
+    '''Diàleg per visualitzar les notícies (que, per extensió, podem usar sempre que vulguem per visualitzar arxius HTML)'''
+    def __init__(self, file: str, parent: QWidget=None):
+        '''Crea una instància de QvNewsFinestra
+        Arguments:
+            file {str} -- adreça de l'arxiu HTML que volem visualitzar
+        Keyword Arguments:
+            parent {QWidget} -- Pare del diàleg (default: {None})
+        '''
         super().__init__(parent)
         #Layout gran. Tot a dins
         self.layout=QVBoxLayout(self)
@@ -74,7 +87,7 @@ class QvNewsFinestra(QDialog):
         self.lblLogo.setPixmap(QPixmap('imatges/qVistaLogoVerdSenseText2.png').scaledToHeight(40))
         self.lblCapcalera=QLabel()
         self.lblCapcalera.setText('  Novetats qVista')
-        self.lblCapcalera.setStyleSheet('color: %s'%QvConstants.COLORFOSC)
+        self.lblCapcalera.setStyleSheet('color: %s'%QvConstants.COLORFOSCHTML)
         self.layoutCapcalera.addWidget(self.lblLogo)
         self.layoutCapcalera.addWidget(self.lblCapcalera)
 
@@ -93,32 +106,30 @@ class QvNewsFinestra(QDialog):
 
         self.formata()
     def formata(self):
+        '''Dóna format al diàleg de notícies'''
         self.caixaText.viewport().setAutoFillBackground(False)
         self.caixaText.setReadOnly(True)
         self.caixaText.setEnabled(True) #Millor que es pugui seleccionar el text? O que no es pugui?
         self.caixaText.setFrameStyle(QFrame.NoFrame)
-        self.caixaText.verticalScrollBar().setStyleSheet(QvConstants.SCROLLBARSTYLESHEET)
+        # self.caixaText.verticalScrollBar().setStyleSheet(QvConstants.SCROLLBARSTYLESHEET)
+        QvConstants.formataScrollbar(self.caixaText.verticalScrollBar())
         #Comentar si volem que s'oculti la scrollbar quan no s'utilitza
         self.caixaText.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
-        #self.caixaText.setContentsMargins(0,0,0,0)
         self.caixaText.setViewportMargins(20,20,0,0)
-        #self.setStyleSheet('background-color: %s; QFrame {border: 0px} QLabel {border: 0px}'%QvConstants.COLORBLANC)
         self.setWindowFlags(Qt.Window | Qt.FramelessWindowHint)
-        self.lblLogo.setStyleSheet('background-color: %s; border: 0px'%QvConstants.COLORFOSC)
+        self.lblLogo.setStyleSheet('background-color: %s; border: 0px'%QvConstants.COLORFOSCHTML)
         self.lblLogo.setSizePolicy(QSizePolicy.Fixed,QSizePolicy.Fixed)
-        #self.lblLogo.setGraphicsEffect(QvConstants.ombra(self))
-        self.lblCapcalera.setStyleSheet('background-color: %s; color: %s; border: 0px'%(QvConstants.COLORFOSC,QvConstants.COLORBLANC))
+        self.lblCapcalera.setStyleSheet('background-color: %s; color: %s; border: 0px'%(QvConstants.COLORFOSCHTML,QvConstants.COLORBLANCHTML))
         self.lblCapcalera.setFont(QvConstants.FONTTITOLS)
         self.lblCapcalera.setFixedHeight(40)
-        #self.lblCapcalera.setGraphicsEffect(QvConstants.ombra(self))
         self.layout.setContentsMargins(0,0,0,0)
-        #self.layout.setContentsMargins(20,0,20,0)
         self.layout.setSpacing(0)
         self.layoutCapcalera.setContentsMargins(0,0,0,0)
         self.layoutCapcalera.setSpacing(0)
         self.layoutBoto.setContentsMargins(0,0,0,0)
         self.layoutBoto.setSpacing(0)
-        self.widgetSup.setGraphicsEffect(QvConstants.ombraHeader(self.widgetSup))
+        #self.widgetSup.setGraphicsEffect(QvConstants.ombraHeader(self.widgetSup))
+        QvConstants.afegeixOmbraHeader(self.widgetSup)
         
         self.setWindowTitle("qVista - Noticies")
         self.resize(640,480)

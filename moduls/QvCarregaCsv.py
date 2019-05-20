@@ -55,7 +55,7 @@ class QvCarregaCsv(QWizard):
             QWidget {border: 0px} 
             QFrame {border: 0px} 
             QLabel {border: 0px}
-            QRadioButton {background-color: transparent}'''%(QvConstants.COLORBLANC))
+            QRadioButton {background-color: transparent}'''%(QvConstants.COLORBLANCHTML))
         self.setPixmap(QWizard.LogoPixmap, QPixmap('imatges/layers.png'))
         self.oldPos=self.pos()
     def accept(self):
@@ -110,7 +110,7 @@ class QvCarregaCsvPage(QWizardPage):
         # self.parent.backButton.recarrega()
         # self.parent.finishButton.recarrega()
         # self.parent.cancelButton.recarrega()
-        self.parent.setStyleSheet('background-color: %s; QFrame {border: 0px} QLabel {border: 0px}'%QvConstants.COLORBLANC)
+        self.setStyleSheet('background-color: %s; QFrame {border: 0px} QLabel {border: 0px}'%QvConstants.COLORBLANCHTML)
         
         self.setContentsMargins(0,0,0,0)
         # pal=QPalette(self.palette())
@@ -130,10 +130,6 @@ class QvCarregaCsvPage(QWizardPage):
     def showEvent(self,event):
         super().showEvent(event)
         if hasattr(self,'table'): self.table.recarrega(self.parent.separador)
-        self.parent.segButton.recarrega()
-        self.parent.backButton.recarrega()
-        self.parent.finishButton.recarrega()
-        self.parent.cancelButton.recarrega()
     def obteCamps(self):
         return csv.DictReader(open(self.parent.csv),delimiter=self.parent.separador).fieldnames
     #  PROBLEMA: Les línies separadores es dibuixen dins d'una funció d'una classe inaccessible, que es diu QWizardHeader
