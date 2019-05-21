@@ -5,6 +5,8 @@ import os
 from moduls.QvConstants import QvConstants
 
 class QvAvis(QvNewsFinestra):
+    '''Crea un diàleg d'avisos i, si n'hi ha algun de nou, el mostra
+    '''
     def __init__(self,parent=None):
         super().__init__(QvConstants.ARXIUAVIS,parent)
         if self.calAvis():

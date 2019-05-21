@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-from moduls.QvImports import * 
+from moduls.QvImports import *
 from PyQt5 import QtCore
 from PyQt5 import QtGui
 from PyQt5.QtCore import pyqtProperty
@@ -12,137 +12,161 @@ from moduls.QvPushButton import QvPushButton
 
 
 class QvNews(QtWidgets.QAction):
-    def __init__(self,parent=None):
-        self.ICONA=QIcon('Imatges/News.png')
-        self.ICONADESTACADA=QIcon('Imatges/NewsDestacada.png')
-        #QtWidgets.QAction.__init__(self,self.ICONA,'Notícies',parent)
-        super().__init__(self.ICONA,'Notícies',parent)
+    '''Acció de les notícies. Ella mateixa comprova si hi ha notícies noves, i si hi són, les mostra'''
+
+    def __init__(self, parent: QWidget = None):
+        self.ICONA = QIcon('Imatges/News.png')
+        self.ICONADESTACADA = QIcon('Imatges/NewsDestacada.png')
+        # QtWidgets.QAction.__init__(self,self.ICONA,'Notícies',parent)
+        super().__init__(self.ICONA, 'Notícies', parent)
         if self.calNoticiaNova():
-            self.timer=QTimer()
+            self.timer = QTimer()
             self.timer.timeout.connect(self.blink)
             self.timer.start(200)
         self.setStatusTip('Notícies')
         self.triggered.connect(self.mostraNoticies)
 
     def blink(self):
-        if not hasattr(self,'light'):
-            self.light=False
-            self.numBlinks=0
+        '''Acció de parpadejar. Compta quants cops ha parpadejat, i quan arriba a la quantitat fixada esborra el comptador'''
+        if not hasattr(self, 'light'):
+            self.light = False
+            self.numBlinks = 0
 
         if self.light:
             self.setIcon(self.ICONADESTACADA)
-            self.numBlinks+=1
+            self.numBlinks += 1
         else:
             self.setIcon(self.ICONA)
 
-        if self.numBlinks==4:
-            delattr(self,'timer')
-            #self.setVisible(True)
-            delattr(self,'numBlinks')
+        if self.numBlinks == 4:
+            delattr(self, 'timer')
+            # self.setVisible(True)
+            delattr(self, 'numBlinks')
 
-        self.light=not self.light
+        self.light = not self.light
 
     def mostraNoticies(self):
-        self.news=QvNewsFinestra(QvConstants.ARXIUNEWS)
+        '''Obre l'arxiu de notícies i les mostra'''
+        self.news = QvNewsFinestra(QvConstants.ARXIUNEWS)
         self.news.exec_()
         self.setIcon(self.ICONA)
-        with open(QvConstants.ARXIUTMP,'w') as arxiu:
-            #Escrivim alguna cosa. Realment no caldria que fos el temps
+        with open(QvConstants.ARXIUTMP, 'w') as arxiu:
+            # Escrivim alguna cosa. Realment no caldria que fos el temps
             import time
             arxiu.write(str(time.time()))
-    def calNoticiaNova(self):
-        #Si no existeix l'arxiu temporal vol dir que mai hem obert notícies :(
+
+    def calNoticiaNova(self) -> bool:
+        '''Comprova si hi ha notícies noves. 
+            Returns: x{Bool} -- Booleà que indica si hi ha una notícia nova o no
+        '''
+        # Si no existeix l'arxiu temporal vol dir que mai hem obert notícies :(
         if not os.path.isfile(QvConstants.ARXIUNEWS):
-            return False
+            raise FileNotFoundError(errno.ENOENT, os.strerror(
+                errno.ENOENT), QvConstants.ARXIUNEWS)
         if not os.path.isfile(QvConstants.ARXIUTMP):
             return True
-        return os.path.getmtime(QvConstants.ARXIUTMP)<os.path.getmtime(QvConstants.ARXIUNEWS)
+        return os.path.getmtime(QvConstants.ARXIUTMP) < os.path.getmtime(QvConstants.ARXIUNEWS)
 
-#QFrame no permet fer exec. QDialog sí
+# QFrame no permet fer exec. QDialog sí
+
+
 class QvNewsFinestra(QDialog):
-    def __init__(self, file, parent=None):
-        super().__init__(parent)
-        #Layout gran. Tot a dins
-        self.layout=QVBoxLayout(self)
+    '''Diàleg per visualitzar les notícies (que, per extensió, podem usar sempre que vulguem per visualitzar arxius HTML)'''
 
-        #FILA SUPERIOR
-        self.layoutCapcalera=QHBoxLayout()
-        self.widgetSup=QWidget()
+    def __init__(self, file: str, parent: QWidget = None):
+        '''Crea una instància de QvNewsFinestra
+        Arguments:
+            file {str} -- adreça de l'arxiu HTML que volem visualitzar
+        Keyword Arguments:
+            parent {QWidget} -- Pare del diàleg (default: {None})
+        '''
+        super().__init__(parent)
+        # Layout gran. Tot a dins
+        self.layout = QVBoxLayout(self)
+
+        # FILA SUPERIOR
+        self.layoutCapcalera = QHBoxLayout()
+        self.widgetSup = QWidget()
         self.widgetSup.setLayout(self.layoutCapcalera)
         self.layout.addWidget(self.widgetSup)
-        self.lblLogo=QLabel()
-        self.lblLogo.setPixmap(QPixmap('imatges/qVistaLogoVerdSenseText2.png').scaledToHeight(40))
-        self.lblCapcalera=QLabel()
+        self.lblLogo = QLabel()
+        self.lblLogo.setPixmap(
+            QPixmap('imatges/qVistaLogoVerdSenseText2.png').scaledToHeight(40))
+        self.lblCapcalera = QLabel()
         self.lblCapcalera.setText('  Novetats qVista')
-        self.lblCapcalera.setStyleSheet('color: %s'%QvConstants.COLORFOSC)
+        self.lblCapcalera.setStyleSheet(
+            'color: %s' % QvConstants.COLORFOSCHTML)
         self.layoutCapcalera.addWidget(self.lblLogo)
         self.layoutCapcalera.addWidget(self.lblCapcalera)
 
-        #Text de la notícia
-        self.caixaText=QtWidgets.QTextEdit()
+        # Text de la notícia
+        self.caixaText = QtWidgets.QTextEdit()
         self.caixaText.setHtml(open(file).read())
         self.layout.addWidget(self.caixaText)
 
-        #Botó de sortida
-        self.layoutBoto=QHBoxLayout()
+        # Botó de sortida
+        self.layoutBoto = QHBoxLayout()
         self.layout.addLayout(self.layoutBoto)
-        self.layoutBoto.addItem(QSpacerItem(20, 5, QSizePolicy.Expanding,QSizePolicy.Minimum))
-        self.exitButton=QvPushButton('Tancar')
+        self.layoutBoto.addItem(QSpacerItem(
+            20, 5, QSizePolicy.Expanding, QSizePolicy.Minimum))
+        self.exitButton = QvPushButton('Tancar')
         self.exitButton.clicked.connect(self.close)
         self.layoutBoto.addWidget(self.exitButton)
 
         self.formata()
+
     def formata(self):
+        '''Dóna format al diàleg de notícies'''
         self.caixaText.viewport().setAutoFillBackground(False)
         self.caixaText.setReadOnly(True)
-        self.caixaText.setEnabled(True) #Millor que es pugui seleccionar el text? O que no es pugui?
+        # Millor que es pugui seleccionar el text? O que no es pugui?
+        self.caixaText.setEnabled(True)
         self.caixaText.setFrameStyle(QFrame.NoFrame)
-        self.caixaText.verticalScrollBar().setStyleSheet(QvConstants.SCROLLBARSTYLESHEET)
-        #Comentar si volem que s'oculti la scrollbar quan no s'utilitza
+        # self.caixaText.verticalScrollBar().setStyleSheet(QvConstants.SCROLLBARSTYLESHEET)
+        QvConstants.formataScrollbar(self.caixaText.view().verticalScrollBar())
+        # Comentar si volem que s'oculti la scrollbar quan no s'utilitza
         self.caixaText.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
-        #self.caixaText.setContentsMargins(0,0,0,0)
-        self.caixaText.setViewportMargins(20,20,0,0)
-        #self.setStyleSheet('background-color: %s; QFrame {border: 0px} QLabel {border: 0px}'%QvConstants.COLORBLANC)
+        self.caixaText.setViewportMargins(20, 20, 0, 0)
         self.setWindowFlags(Qt.Window | Qt.FramelessWindowHint)
-        self.lblLogo.setStyleSheet('background-color: %s; border: 0px'%QvConstants.COLORFOSC)
-        self.lblLogo.setSizePolicy(QSizePolicy.Fixed,QSizePolicy.Fixed)
-        #self.lblLogo.setGraphicsEffect(QvConstants.ombra(self))
-        self.lblCapcalera.setStyleSheet('background-color: %s; color: %s; border: 0px'%(QvConstants.COLORFOSC,QvConstants.COLORBLANC))
+        self.lblLogo.setStyleSheet(
+            'background-color: %s; border: 0px' % QvConstants.COLORFOSCHTML)
+        self.lblLogo.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        self.lblCapcalera.setStyleSheet('background-color: %s; color: %s; border: 0px' % (
+            QvConstants.COLORFOSCHTML, QvConstants.COLORBLANCHTML))
         self.lblCapcalera.setFont(QvConstants.FONTTITOLS)
         self.lblCapcalera.setFixedHeight(40)
-        #self.lblCapcalera.setGraphicsEffect(QvConstants.ombra(self))
-        self.layout.setContentsMargins(0,0,0,0)
-        #self.layout.setContentsMargins(20,0,20,0)
+        self.layout.setContentsMargins(0, 0, 0, 0)
         self.layout.setSpacing(0)
-        self.layoutCapcalera.setContentsMargins(0,0,0,0)
+        self.layoutCapcalera.setContentsMargins(0, 0, 0, 0)
         self.layoutCapcalera.setSpacing(0)
-        self.layoutBoto.setContentsMargins(0,0,0,0)
+        self.layoutBoto.setContentsMargins(0, 0, 0, 0)
         self.layoutBoto.setSpacing(0)
-        self.widgetSup.setGraphicsEffect(QvConstants.ombraHeader(self.widgetSup))
-        
+        # self.widgetSup.setGraphicsEffect(QvConstants.ombraHeader(self.widgetSup))
+        QvConstants.afegeixOmbraHeader(self.widgetSup)
+
         self.setWindowTitle("qVista - Noticies")
-        self.resize(640,480)
-        self.oldPos=self.pos()
-    
+        self.resize(640, 480)
+        self.oldPos = self.pos()
+
     def mousePressEvent(self, event):
         self.oldPos = event.globalPos()
 
     def mouseMoveEvent(self, event):
-        delta = QPoint (event.globalPos() - self.oldPos)
-        #print(delta)
+        delta = QPoint(event.globalPos() - self.oldPos)
+        # print(delta)
         self.move(self.x() + delta.x(), self.y() + delta.y())
         self.oldPos = event.globalPos()
-    def keyPressEvent(self,event):
-        if event.key()==Qt.Key_Escape or event.key()==Qt.Key_Return:
+
+    def keyPressEvent(self, event):
+        if event.key() == Qt.Key_Escape or event.key() == Qt.Key_Return:
             self.close()
 
 
-
-if __name__=='__main__':
+if __name__ == '__main__':
     import sys
-    app=QtWidgets.QApplication(sys.argv)
-    news=QvNews()
-    menu=QMenu()
+    app = QtWidgets.QApplication(sys.argv)
+    news = QvNews()
+    menu = QMenu()
     menu.addAction(news)
     menu.show()
     sys.exit(app.exec_())
