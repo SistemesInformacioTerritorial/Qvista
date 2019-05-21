@@ -42,11 +42,13 @@ class QvCarregaCsv(QWizard):
         self.backButton = QvPushButton('Enrere', destacat=False)
         self.finishButton = QvPushButton('Finalitzar', destacat=True)
         self.cancelButton = QvPushButton('Cancel·lar', destacat=False)
+        self.commitButton = QvPushButton('Geocodifica', destacat=True)
 
         self.setButton(QvCarregaCsv.NextButton, self.segButton)
         self.setButton(QvCarregaCsv.BackButton, self.backButton)
         self.setButton(QvCarregaCsv.FinishButton, self.finishButton)
         self.setButton(QvCarregaCsv.CancelButton, self.cancelButton)
+        self.setButton(QvCarregaCsv.CommitButton,self.commitButton)
 
         self.setFixedWidth(500)
         self.setContentsMargins(0, 0, 0, 0)
@@ -416,6 +418,7 @@ class QvCarregaCsvAdreca(QvCarregaCsvPage):
         self.cbNumFi.currentIndexChanged.connect(guardaDades)
         self.cbLletraFi.currentIndexChanged.connect(guardaDades)
         guardaDades()
+        self.setCommitPage(True)
 
         self.mostraTaula()
 
@@ -474,7 +477,8 @@ class QvCarregaCsvGeneraCoords(QvCarregaCsvPage):
         self.setCommitPage(True)
         self.showed = False
 
-    def showEvent(self, event):
+    #def showEvent(self, event):
+    def initializePage(self):
         def splitCarrer(nomComplet):
             if not hasattr(self, 'TIPUSVIES'):
                 with open('U:/QUOTA/Comu_imi/Becaris/Tipusvia.csv') as csvfile:
@@ -495,75 +499,77 @@ class QvCarregaCsvGeneraCoords(QvCarregaCsvPage):
                 num = re.findall('^[0-9]*', subs[1])[0]
             return tipusVia[:-1], nomVia, num
 
-        if not self.showed:
-            self.showed = True
-            self.mostraTaula()
-            fileCsv = open(self.parent.csv)
-            reader = csv.DictReader(fileCsv, delimiter=self.parent.separador)
-            with tempfile.NamedTemporaryFile(suffix='.csv', mode='w+', delete=False) as arxiuNouCsv:
-                self.parent.setNomCsv(arxiuNouCsv.name)
-                mida = len(list(reader))-1
-                fileCsv.seek(0)
+        #if not self.showed:
+        self.showed = True
+        self.mostraTaula(completa=True)
+        fileCsv = open(self.parent.csv)
+        reader = csv.DictReader(fileCsv, delimiter=self.parent.separador)
+        with tempfile.NamedTemporaryFile(suffix='.csv', mode='w+', delete=False) as arxiuNouCsv:
+            self.parent.setNomCsv(arxiuNouCsv.name)
+            mida = len(list(reader))-1
+            fileCsv.seek(0)
 
-                wpg = WindowProgressBar(mida=mida)
-                wpg.show()
+            wpg = WindowProgressBar(mida=mida)
+            wpg.show()
 
-                self.names = self.parent.llistaCamps + \
-                    [self.parent.coordX, self.parent.coordY]
-                writer = csv.DictWriter(
-                    arxiuNouCsv, fieldnames=self.names, delimiter=self.parent.separador)
-                writer.writeheader()
-                i = -1
-                for row in reader:
-                    i += 1
-                    if i == 0:
-                        continue
-                    print(wpg.count)
-                    d = {**row}
-                    d[''] = ''
-                    if self.parent.dadesAdreca[0] == "":
-                        tipusVia, nomVia, num = splitCarrer(
-                            row[self.parent.dadesAdreca[1]])
+            self.names = self.parent.llistaCamps + \
+                [self.parent.coordX, self.parent.coordY]
+            writer = csv.DictWriter(
+                arxiuNouCsv, fieldnames=self.names, delimiter=self.parent.separador)
+            writer.writeheader()
+            i = -1
+            for row in reader:
+                i += 1
+                if i == 0:
+                    continue
+                print(wpg.count)
+                d = {**row}
+                d[''] = ''
+                if self.parent.dadesAdreca[0] == "":
+                    tipusVia, nomVia, num = splitCarrer(
+                        row[self.parent.dadesAdreca[1]])
 
+                else:
+                    tipusVia = row[self.parent.dadesAdreca[0]]
+                    nomVia = row[self.parent.dadesAdreca[1]]
+                    num = row[self.parent.dadesAdreca[2]]
+                    num = re.sub('[^0-9][0-9]*', '', num)
+
+                if num != '':
+                    x, y = QvGeocod.coordsCarrerNum(tipusVia, nomVia, num)
+                else:
+                    x, y = QvGeocod.coordsCarrerNum(
+                        tipusVia, nomVia, d[self.parent.dadesAdreca[2]], d[self.parent.dadesAdreca[3]], d[self.parent.dadesAdreca[4]], d[self.parent.dadesAdreca[5]])
+
+                wpg.count = wpg.count + 1
+                wpg.actualitzaLBL()
+                print(wpg.count)
+                wpg.progress.setValue(wpg.count)
+                app.processEvents()
+                if x is None or y is None:
+                    aux = self.lblAdrecesError.text()
+                    if aux != "":
+                        self.lblAdrecesError.setText(
+                            aux + "\n" + tipusVia + " " + nomVia + " " + num)
                     else:
-                        tipusVia = row[self.parent.dadesAdreca[0]]
-                        nomVia = row[self.parent.dadesAdreca[1]]
-                        num = row[self.parent.dadesAdreca[2]]
-                        num = re.sub('[^0-9][0-9]*', '', num)
-
-                    if num != '':
-                        x, y = QvGeocod.coordsCarrerNum(tipusVia, nomVia, num)
-                    else:
-                        x, y = QvGeocod.coordsCarrerNum(
-                            tipusVia, nomVia, d[self.parent.dadesAdreca[2]], d[self.parent.dadesAdreca[3]], d[self.parent.dadesAdreca[4]], d[self.parent.dadesAdreca[5]])
-
-                    wpg.count = wpg.count + 1
-                    wpg.actualitzaLBL()
-                    print(wpg.count)
-                    wpg.progress.setValue(wpg.count)
-                    app.processEvents()
-                    if x is None or y is None:
-                        aux = self.lblAdrecesError.text()
-                        if aux != "":
-                            self.lblAdrecesError.setText(
-                                aux + "\n" + tipusVia + " " + nomVia + " " + num)
-                        else:
-                            self.lblAdrecesError.setText(
-                                tipusVia + " " + nomVia + " " + num)
-                        print(tipusVia, nomVia, num)
-                        d[self.parent.coordX] = ""
-                        d[self.parent.coordY] = ""
-                        del d[""]
-                        writer.writerow(d)
-                        continue
-
-                    d[self.parent.coordX] = x
-                    d[self.parent.coordY] = y
-                    # print(d)
+                        self.lblAdrecesError.setText(
+                            tipusVia + " " + nomVia + " " + num)
+                    print(tipusVia, nomVia, num)
+                    d[self.parent.coordX] = ""
+                    d[self.parent.coordY] = ""
                     del d[""]
                     writer.writerow(d)
-            self.recarregaTaula(completa=True)
-            app.processEvents()
+                    continue
+
+                d[self.parent.coordX] = x
+                d[self.parent.coordY] = y
+                # print(d)
+                del d[""]
+                writer.writerow(d)
+        self.recarregaTaula(completa=True)
+        app.processEvents()
+    def nextId(self):
+        return -1
 
 
 class QvtLectorCsv(QvLectorCsv):
