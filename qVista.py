@@ -532,7 +532,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         # self.leNumero.setDisabled(True)
 
 
-
+        # aqui
         self.boton_bajar= QPushButton()
         self.boton_bajar.clicked.connect(self.CopiarA_Ubicacions)
         self.boton_bajar.setIcon(QIcon('imatges/down3-512.png'))
@@ -551,6 +551,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.boton_invocarStreetView.setMinimumWidth(25)
         self.boton_invocarStreetView.setMaximumWidth(25)
         self.boton_invocarStreetView.setToolTip("Mostrar aquest carrer i aquest número en StreetView")
+        
 
         self.layoutbottom.addWidget(QHLine())
         self.layoutbottom.addWidget(self.distBarris.view)
@@ -581,7 +582,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         
         
         self.cAdrec=QCercadorAdreca(self.leCarrer, self.leNumero,'SQLITE')    # SQLITE o CSV
-        # self.cAdrec=QCercadorAdreca(self.leCarrer, self.leNumero,'CSV')     # SQLITE o CSV        
+             
         self.cAdrec.sHanTrobatCoordenades.connect(self.trobatNumero_oNo) 
 
         self.dwCercador = QDockWidget( "Cercador", self )
@@ -591,9 +592,13 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.dwCercador.setWidget( self.fCercador)
         self.dwCercador.setContentsMargins ( 2, 2, 2, 2 )
         self.addDockWidget( Qt.RightDockWidgetArea, self.dwCercador)
+        
 
     def CopiarA_Ubicacions(self):
         # self.ubicacions.leUbicacions.setText("->"+self.leCarrer.text()+"  "+self.leNumero.text())
+        if self.cAdrec.NumeroOficial=='0':
+            self.cAdrec.NumeroOficial=''
+
         self.ubicacions.leUbicacions.setText("->"+self.leCarrer.text()+"  "+self.cAdrec.NumeroOficial)
         self.ubicacions._novaUbicacio()
 
@@ -1470,7 +1475,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         # self.menuCarregarNivell.setFont(fnt)
         # self.menuCarregarNivell.styleStrategy = QFont.PreferAntialias or QFont.PreferQuality
 
-        # # self.menuCarregarNivell.addAction("Oracle")
+        # # self.menuCarregarNivell.addActio
         # self.menuCarregarNivell.addAction(self.actAfegirNivellSHP)
         # self.menuCarregarNivell.addAction(self.actAfegirNivellCSV)
         # self.menuCarregarNivell.addAction(self.actAfegirNivellGPX)
