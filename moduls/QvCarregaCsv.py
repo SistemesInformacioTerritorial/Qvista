@@ -661,7 +661,7 @@ if __name__ == '__main__':
     import sys
     app = QApplication(sys.argv)
     app.setFont(QvConstants.FONTTEXT)
-    #wizard=QvCarregaCsv('U:\\QUOTA\\Comu_imi\\Becaris\\XX22 per geocodificar correcció.csv',print)
-    wizard = QvCarregaCsv('U:\\QUOTA\\Comu_imi\\Becaris\\gossos.csv', print)
+    wizard=QvCarregaCsv('U:\\QUOTA\\Comu_imi\\Becaris\\XX22 per geocodificar correcció.csv',print)
+    #wizard = QvCarregaCsv('U:\\QUOTA\\Comu_imi\\Becaris\\gossos.csv', print)
     wizard.show()
     sys.exit(app.exec_())
