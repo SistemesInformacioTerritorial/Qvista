@@ -1,11 +1,12 @@
 from moduls.QvImports import *
 from enum import IntEnum
 from moduls.QvLectorCsv import QvLectorCsv
-import qVista
+#import qVista
 import tempfile
-from QvGeocod import QvGeocod
-from QvConstants import QvConstants
-from QvPushButton import QvPushButton
+from moduls.QvGeocod import QvGeocod
+from moduls.QvConstants import QvConstants
+from moduls.QvPushButton import QvPushButton
+from moduls.QvApp import QvApp
 import re
 
 
@@ -60,8 +61,7 @@ class QvCarregaCsv(QWizard):
             QWidget {border: 0px} 
             QFrame {border: 0px} 
             QLabel {border: 0px}
-            QRadioButton {background-color: transparent}
-            ''' % (QvConstants.COLORBLANCHTML, QvConstants.COLORFOSCHTML))
+            QRadioButton {background-color: transparent}''' % (QvConstants.COLORBLANCHTML, QvConstants.COLORFOSCHTML))
         self.setPixmap(QWizard.LogoPixmap, QPixmap('imatges/layers.png'))
         self.oldPos = self.pos()
         self.setFont(QvConstants.FONTTEXT)
@@ -69,7 +69,7 @@ class QvCarregaCsv(QWizard):
     def accept(self):
         super().accept()
         self.carregar(self.csv, self.separador,
-                      self.coordX, self.coordY, 'Hola')
+                      self.coordX, self.coordY, self.proj, 'Hola')
 
     # Aquestes funcions seran cridades NOMÉS des de les pàgines
     def setSeparador(self, sep):
@@ -295,6 +295,8 @@ class QvCarregaCsvXY(QvCarregaCsvPage):
         super().__init__(parent)
         self.layout = QVBoxLayout(self)
         self.layoutCoord = QHBoxLayout()
+        self.layoutCoordY = QHBoxLayout()
+        self.layoutCoordP = QHBoxLayout()
         self.layout.addLayout(self.layoutCoord)
         self.parent.llistaCamps = self.obteCamps()
         print(self.parent.llistaCamps)
@@ -320,7 +322,7 @@ class QvCarregaCsvXY(QvCarregaCsvPage):
             self.parent.setCoordY(self.cbY.currentText())
 
         def projChanged():
-            self.parent.setProjeccio(self.cbProj.currentText())
+            self.parent.setProjecció(self.cbProj.currentText())
         self.cbX.currentIndexChanged.connect(xChanged)
         self.cbY.currentIndexChanged.connect(yChanged)
         self.cbProj.currentIndexChanged.connect(projChanged)
@@ -485,6 +487,7 @@ class QvCarregaCsvGeneraCoords(QvCarregaCsvPage):
                     reader = csv.reader(csvfile, delimiter=';')
                     self.TIPUSVIES = [y+' ' for x in reader for y in x]
                     self.TIPUSVIES = list(set(self.TIPUSVIES))
+                    print(self.TIPUSVIES)
             tipusVia = ''
             nomVia = ''
             num = ''
@@ -501,15 +504,16 @@ class QvCarregaCsvGeneraCoords(QvCarregaCsvPage):
 
         #if not self.showed:
         self.showed = True
-        self.mostraTaula(completa=True)
+        self.parent.setProjecció(25831)
         fileCsv = open(self.parent.csv)
         reader = csv.DictReader(fileCsv, delimiter=self.parent.separador)
-        with tempfile.NamedTemporaryFile(suffix='.csv', mode='w+', delete=False) as arxiuNouCsv:
+        with tempfile.NamedTemporaryFile(suffix='.csv', mode='w+', delete=False, newline='') as arxiuNouCsv:
             self.parent.setNomCsv(arxiuNouCsv.name)
             mida = len(list(reader))-1
             fileCsv.seek(0)
 
             wpg = WindowProgressBar(mida=mida)
+            wpg.setWindowModality(Qt.WindowModal)
             wpg.show()
 
             self.names = self.parent.llistaCamps + \
@@ -522,7 +526,7 @@ class QvCarregaCsvGeneraCoords(QvCarregaCsvPage):
                 i += 1
                 if i == 0:
                     continue
-                print(wpg.count)
+                #print(wpg.count)
                 d = {**row}
                 d[''] = ''
                 if self.parent.dadesAdreca[0] == "":
@@ -543,9 +547,9 @@ class QvCarregaCsvGeneraCoords(QvCarregaCsvPage):
 
                 wpg.count = wpg.count + 1
                 wpg.actualitzaLBL()
-                print(wpg.count)
+                #print(wpg.count)
                 wpg.progress.setValue(wpg.count)
-                app.processEvents()
+                qApp.processEvents()
                 if x is None or y is None:
                     aux = self.lblAdrecesError.text()
                     if aux != "":
@@ -566,8 +570,9 @@ class QvCarregaCsvGeneraCoords(QvCarregaCsvPage):
                 # print(d)
                 del d[""]
                 writer.writerow(d)
+        self.mostraTaula(completa=True)
         self.recarregaTaula(completa=True)
-        app.processEvents()
+        qApp.processEvents()
     def nextId(self):
         return -1
 
