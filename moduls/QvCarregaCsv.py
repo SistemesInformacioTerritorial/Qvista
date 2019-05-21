@@ -19,7 +19,7 @@ class QvCarregaCsv(QWizard):
         #self.coordX
         #self.coordY
         #self.proj
-        #self.nomCapa
+        self.nomCapa = csv[:-4]
         self.csv=csv
         self.formata()
         self.setPage(QvCarregaCsv.finestres.TriaSep, QvCarregaCsvTriaSep(self))
@@ -60,7 +60,7 @@ class QvCarregaCsv(QWizard):
         self.oldPos=self.pos()
     def accept(self):
         super().accept()
-        self.carregar(self.csv, self.separador, self.coordX,self.coordY, 'Hola')
+        self.carregar(self.csv, self.separador, self.coordX, self.coordY, self.nomCapa)
 
     
     #Aquestes funcions seran cridades NOMÉS des de les pàgines
@@ -250,21 +250,36 @@ class QvCarregaCsvXY(QvCarregaCsvPage):
     def __init__(self,parent=None):
         super().__init__(parent)
         self.layout=QVBoxLayout(self)
-        self.layoutCoord=QHBoxLayout()
-        self.layout.addLayout(self.layoutCoord)
+        self.setSubTitle('Tria dels camps de les coordenades')
+        #self.layout.setSpacing(20)
+        self.layoutCoordX=QHBoxLayout()
+        self.layoutCoordY=QHBoxLayout()
+        self.layoutCoordP=QHBoxLayout()
+        self.lblCoordX = QLabel()
+        self.lblCoordX.setText("Camp Coordenada X:")
+        self.lblCoordY = QLabel()
+        self.lblCoordY.setText("Camp Coordenada Y:")
+        self.lblProj = QLabel()
+        self.lblProj.setText("Camp Projecció:")
+        self.layout.addLayout(self.layoutCoordX)
+        self.layout.addLayout(self.layoutCoordY)
+        self.layout.addLayout(self.layoutCoordP)
         self.parent.llistaCamps=self.obteCamps()
         print(self.parent.llistaCamps)
         self.cbX=QComboBox()
         self.cbX.addItems(self.parent.llistaCamps)
         self.cbY=QComboBox()
         self.cbY.addItems(self.parent.llistaCamps)
-        self.layoutCoord.addWidget(self.cbX)
-        self.layoutCoord.addWidget(self.cbY)
+        self.layoutCoordX.addWidget(self.lblCoordX)
+        self.layoutCoordX.addWidget(self.cbX)
+        self.layoutCoordY.addWidget(self.lblCoordY)
+        self.layoutCoordY.addWidget(self.cbY)
         self.cbProj=QComboBox()
         projeccions = [25831, 1 , 2 , 3]
         self.cbProj.clear()
         self.cbProj.addItems([str(x) for x in projeccions])
-        self.layout.addWidget(self.cbProj)
+        self.layoutCoordP.addWidget(self.lblProj)
+        self.layoutCoordP.addWidget(self.cbProj)
         def xChanged():
             self.parent.setCoordX(self.cbX.currentText())
         def yChanged():
@@ -362,7 +377,7 @@ class WindowProgressBar(QWidget):
         super().__init__(parent)
         self.progress = QProgressBar()
         self.progress.setGeometry(0, 0, 300, 25)
-        self.mida = mida
+        self.mida = mida + 1
         self.progress.setMaximum(mida)
         self.count = 0 #necessari per a la progress bar
         self.progress.setValue(self.count)
@@ -387,6 +402,7 @@ class QvCarregaCsvGeneraCoords(QvCarregaCsvPage):
         #self.lblAdrecesError.setFixedHeight(100)
         self.layout = QVBoxLayout(self)
         self.layout.setSpacing(20)
+        self.layout.setContentsMargins(20,0,20,0)
         self.lblExplicacio4 = QLabel()
         self.lblExplicacio4.setText("Aquestes són les adreces que no s'han pogut geolocalitzar:")
         self.layout.addWidget(self.lblExplicacio4)
@@ -400,7 +416,9 @@ class QvCarregaCsvGeneraCoords(QvCarregaCsvPage):
         self.setCommitPage(True) #Després de generar el csv amb coordenades no hi ha volta enrere
         self.showed = False
         #self.mostraTaula()
-
+        self.lblExplicacio5 = QLabel()
+        self.lblExplicacio5.setText("Vols carregar les adreces geocodificades al teu projecte?")
+        #self.layout.addWidget(self.lblExplicacio5)
 
     def showEvent(self,event):
     #def show(self):
@@ -492,7 +510,7 @@ class QvCarregaCsvGeneraCoords(QvCarregaCsvPage):
                     writer.writerow(d)
             self.recarregaTaula(completa=True)
             app.processEvents()
-                
+            self.layout.addWidget(self.lblExplicacio5)     
 
 
 class QvtLectorCsv(QvLectorCsv):
@@ -576,7 +594,7 @@ if __name__=='__main__':
     import sys
     app=QApplication(sys.argv)
     app.setFont(QvConstants.FONTTEXT)
-    #wizard=QvCarregaCsv('U:\\QUOTA\\Comu_imi\\Becaris\\XX22 per geocodificar correcció.csv',print)
-    wizard=QvCarregaCsv('U:\\QUOTA\\Comu_imi\\Becaris\\gossos.csv',print)
+    wizard=QvCarregaCsv('U:\\QUOTA\\Comu_imi\\Becaris\\XX22 per geocodificar correcció.csv',print)
+    #wizard=QvCarregaCsv('U:\\QUOTA\\Comu_imi\\Becaris\\gossos.csv',print)
     wizard.show()
     sys.exit(app.exec_())
