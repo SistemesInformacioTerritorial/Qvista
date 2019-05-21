@@ -71,7 +71,7 @@ class QvCarregaCsv(QWizard):
         super().accept()
 
         self.carregar(self.csv, self.separador,
-                      self.coordX, self.coordY, self.proj, 'Hola')
+                      self.coordX, self.coordY, self.proj, self.nomCapa.split('\\')[-1].split('/')[-1])
 
     # Aquestes funcions seran cridades NOMÉS des de les pàgines
     def setSeparador(self, sep):
@@ -90,7 +90,7 @@ class QvCarregaCsv(QWizard):
         self.nomCapa = nomCapa
 
     def setNomCsv(self, csv):
-        if not hasattr(self, 'csv'):
+        if not hasattr(self, 'csvOrig'):
             self.csvOrig = self.csv
         self.csv = csv
 
@@ -336,10 +336,11 @@ class QvCarregaCsvXY(QvCarregaCsvPage):
             self.parent.setCoordY(self.cbY.currentText())
 
         def projChanged():
-            self.parent.setProjecció(self.cbProj.currentText())
+            self.parent.setProjecció(int(self.cbProj.currentText()))
         self.cbX.currentIndexChanged.connect(xChanged)
         self.cbY.currentIndexChanged.connect(yChanged)
         self.cbProj.currentIndexChanged.connect(projChanged)
+        projChanged()
 
         self.setFinalPage(True)
         self.mostraTaula()
