@@ -23,8 +23,9 @@ class QvCarregaCsv(QWizard):
             parent{QWidget} -- Pare de l'assistent (default{None})
         '''
         super().__init__(parent)
-        self.carregar = carregar
-        self.csv = csv
+        self.carregar=carregar
+        self.nomCapa = csv[:-4]
+        self.csv=csv
         self.formata()
         self.setPage(QvCarregaCsv.finestres.TriaSep, QvCarregaCsvTriaSep(self))
         self.setPage(QvCarregaCsv.finestres.TriaSepDec,
@@ -68,6 +69,7 @@ class QvCarregaCsv(QWizard):
 
     def accept(self):
         super().accept()
+
         self.carregar(self.csv, self.separador,
                       self.coordX, self.coordY, self.proj, 'Hola')
 
@@ -293,12 +295,22 @@ class QvCarregaCsvXY(QvCarregaCsvPage):
             parent{QWidget} -- Pare de l'assistent (default{None})
         '''
         super().__init__(parent)
-        self.layout = QVBoxLayout(self)
-        self.layoutCoord = QHBoxLayout()
-        self.layoutCoordY = QHBoxLayout()
-        self.layoutCoordP = QHBoxLayout()
-        self.layout.addLayout(self.layoutCoord)
-        self.parent.llistaCamps = self.obteCamps()
+        self.layout=QVBoxLayout(self)
+        self.setSubTitle('Tria dels camps de les coordenades')
+        #self.layout.setSpacing(20)
+        self.layoutCoordX=QHBoxLayout()
+        self.layoutCoordY=QHBoxLayout()
+        self.layoutCoordP=QHBoxLayout()
+        self.lblCoordX = QLabel()
+        self.lblCoordX.setText("Camp Coordenada X:")
+        self.lblCoordY = QLabel()
+        self.lblCoordY.setText("Camp Coordenada Y:")
+        self.lblProj = QLabel()
+        self.lblProj.setText("Camp Projecció:")
+        self.layout.addLayout(self.layoutCoordX)
+        self.layout.addLayout(self.layoutCoordY)
+        self.layout.addLayout(self.layoutCoordP)
+        self.parent.llistaCamps=self.obteCamps()
         print(self.parent.llistaCamps)
         self.cbX = QComboBox()
         QvConstants.formataScrollbar(self.cbX.view().verticalScrollBar())
@@ -306,14 +318,16 @@ class QvCarregaCsvXY(QvCarregaCsvPage):
         self.cbY = QComboBox()
         QvConstants.formataScrollbar(self.cbY.view().verticalScrollBar())
         self.cbY.addItems(self.parent.llistaCamps)
-        self.layoutCoord.addWidget(self.cbX)
-        self.layoutCoord.addWidget(self.cbY)
-        self.cbProj = QComboBox()
-        QvConstants.formataScrollbar(self.cbProj.view().verticalScrollBar())
-        projeccions = [25831, 1, 2, 3]
+        self.layoutCoordX.addWidget(self.lblCoordX)
+        self.layoutCoordX.addWidget(self.cbX)
+        self.layoutCoordY.addWidget(self.lblCoordY)
+        self.layoutCoordY.addWidget(self.cbY)
+        self.cbProj=QComboBox()
+        projeccions = [25831, 1 , 2 , 3]
         self.cbProj.clear()
         self.cbProj.addItems([str(x) for x in projeccions])
-        self.layout.addWidget(self.cbProj)
+        self.layoutCoordP.addWidget(self.lblProj)
+        self.layoutCoordP.addWidget(self.cbProj)
 
         def xChanged():
             self.parent.setCoordX(self.cbX.currentText())
@@ -433,7 +447,7 @@ class WindowProgressBar(QWidget):
         super().__init__(parent)
         self.progress = QProgressBar()
         self.progress.setGeometry(0, 0, 300, 25)
-        self.mida = mida
+        self.mida = mida + 1
         self.progress.setMaximum(mida)
         self.count = 0  # necessari per a la progress bar
         self.progress.setValue(self.count)
@@ -464,6 +478,7 @@ class QvCarregaCsvGeneraCoords(QvCarregaCsvPage):
         # self.lblAdrecesError.setFixedHeight(100)
         self.layout = QVBoxLayout(self)
         self.layout.setSpacing(20)
+        self.layout.setContentsMargins(20,0,20,0)
         self.lblExplicacio4 = QLabel()
         self.lblExplicacio4.setText(
             "Aquestes són les adreces que no s'han pogut geolocalitzar:")
@@ -478,8 +493,11 @@ class QvCarregaCsvGeneraCoords(QvCarregaCsvPage):
         # Després de generar el csv amb coordenades no hi ha volta enrere
         self.setCommitPage(True)
         self.showed = False
-
-    #def showEvent(self, event):
+        #self.mostraTaula()
+        self.lblExplicacio5 = QLabel()
+        self.lblExplicacio5.setText("Vols carregar les adreces geocodificades al teu projecte?")
+        #self.layout.addWidget(self.lblExplicacio5)
+        
     def initializePage(self):
         def splitCarrer(nomComplet):
             if not hasattr(self, 'TIPUSVIES'):
@@ -573,6 +591,7 @@ class QvCarregaCsvGeneraCoords(QvCarregaCsvPage):
         self.mostraTaula(completa=True)
         self.recarregaTaula(completa=True)
         qApp.processEvents()
+        self.layout.addWidget(self.lblExplicacio5)
     def nextId(self):
         return -1
 
