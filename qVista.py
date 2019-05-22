@@ -779,7 +779,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.menuEntorns = self.bar.addMenu(3*' '+'Entorns'+3*' ')
         
         fnt = QFont("Segoe UI", 16, weight=QFont.Normal)
-        self.menuEntorns.setStyleSheet("QMenu {color: #79909B; background-color: #dddddd; selection-background-color : #2f4550;}")
+        self.menuEntorns.setStyleSheet("QMenu {color: #465A63; background-color: #dddddd; selection-background-color : #2f4550;}")
         self.menuEntorns.setFont(fnt)
         self.menuEntorns.styleStrategy = QFont.PreferAntialias or QFont.PreferQuality
         for entorn in os.listdir(os.path.dirname('entorns/')):          
@@ -1069,14 +1069,14 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.actPintaLabels.setStatusTip("pintaLabels")
         self.actPintaLabels.triggered.connect(self.pintaLabels)
 
-        self.actObrirCataleg = QAction("GIS Point", self)
+        self.actObrirCataleg = QAction("Afegir capa", self)
         self.actObrirCataleg.setStatusTip("Catàleg d'Informació Territorial")
-        self.actObrirCataleg.setIcon(QIcon('imatges/map-plus.png'))
+        self.actObrirCataleg.setIcon(QIcon('imatges/layers_2.png'))
         self.actObrirCataleg.triggered.connect(self.obrirCataleg)
 
         self.actObrirCatalegProjectesLlista = QAction("Mapes", self)
         self.actObrirCatalegProjectesLlista.setStatusTip("Catàleg de Mapes")
-        self.actObrirCatalegProjectesLlista.setIcon(QIcon('imatges/catalegProjectes.png'))
+        self.actObrirCatalegProjectesLlista.setIcon(QIcon('imatges/map-plus.png'))
         self.actObrirCatalegProjectesLlista.triggered.connect(self.obrirCatalegProjectesLlista)
 
         self.actObrirMapeta = QAction("Mapeta", self)
@@ -1159,7 +1159,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.actDashStandard.triggered.connect(self.dashStandard)
 
         self.actAdreces = QAction("Cerca per adreça", self)
-        self.actAdreces.setIcon(QIcon('imatges/map-marker.png'))
+        self.actAdreces.setIcon(QIcon('imatges/map-search.png'))
         self.actAdreces.setStatusTip("Adreces")
         self.actAdreces.triggered.connect(self.adreces)
 
@@ -1465,7 +1465,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         # catalegMenu = self.bar.addMenu("                   Catàleg  ")
 
         fnt= QFont("Segoe UI", 16, weight=QFont.Normal)
-        self.menuProjectes.setStyleSheet("QMenu {color: #79909B; background-color: #dddddd; selection-background-color : #2f4550;}")
+        self.menuProjectes.setStyleSheet("QMenu {color: #465A63; background-color: #dddddd; selection-background-color : #2f4550;}")
         self.menuProjectes.setFont(fnt)
         self.menuProjectes.styleStrategy = QFont.PreferAntialias or QFont.PreferQuality
         self.menuProjectes.addAction(self.actObrirProjecte)
@@ -1483,7 +1483,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         # self.menuCarregarNivell.addAction(self.actAfegirNivellGPX)
         # self.menuCarregarNivell.addAction(self.actAfegirNivellQlr)
         
-        self.menuFuncions.setStyleSheet("QMenu {background-color: #dddddc; selection-background-color : #79909B;}")
+        self.menuFuncions.setStyleSheet("QMenu {color: #465A63 background-color: #dddddc; selection-background-color : #79909B;}")
         
         self.menuFuncions.setFont(fnt)
         self.menuFuncions.addAction(self.actEsborrarSeleccio)
