@@ -323,8 +323,12 @@ class QCercadorAdreca(QObject):
             # if self.leCarrer.text() in self.dictCarrers:
             if self.txto in self.dictCarrers:
                 
-                txt = self.completerNumero.currentCompletion()
-                self.leNumero.setText(txt)
+                if self.leNumero.text() != '':
+                    txt = self.completerNumero.currentCompletion()
+                    self.leNumero.setText(txt)
+                else:
+                    txt = ' '
+
                 if txt != '': # and txt != self.numeroCarrer:
                     self.iniAdrecaNumero()
                     if self.nomCarrer != '':
