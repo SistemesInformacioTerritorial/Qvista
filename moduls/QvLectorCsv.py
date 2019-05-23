@@ -6,6 +6,7 @@ import os, sys
 from PyQt5 import QtCore, QtGui, QtWidgets, QtPrintSupport
 from PyQt5.QtGui import QImage, QPainter
 from PyQt5.QtCore import QFile
+from moduls.QvPushButton import QvPushButton
  
 class QvLectorCsv(QtWidgets.QWidget):
    def __init__(self, fileName= "", parent=None):
@@ -21,72 +22,22 @@ class QvLectorCsv(QtWidgets.QWidget):
        self.tableView.setGeometry(10, 50, 780, 645)
        self.model.dataChanged.connect(self.finishedEdit)
  
-    #    self.pushButtonLoad = QtWidgets.QPushButton(self)
-    #    self.pushButtonLoad.setText("Load CSV")
-    #    self.pushButtonLoad.clicked.connect(self.loadCsv)
-    #    self.pushButtonLoad.setFixedWidth(80)
-    #    self.pushButtonLoad.setStyleSheet(stylesheet(self))
+    #    self.pushButtonPrint = QtWidgets.QPushButton(self)
+    #    self.pushButtonPrint.setText("Imprimir")
+    #    self.pushButtonPrint.clicked.connect(self.handlePrint)
+    #    self.pushButtonPrint.setStyleSheet('border: none; margin: 0px; padding: 0px')
+
  
- 
-    #    self.pushButtonPreview = QtWidgets.QPushButton(self)
-    #    self.pushButtonPreview.setText("Print Preview")
-    #    self.pushButtonPreview.clicked.connect(self.handlePreview)
-    #    self.pushButtonPreview.setFixedWidth(80)
-    #    self.pushButtonPreview.setStyleSheet(stylesheet(self))
- 
-       self.pushButtonPrint = QtWidgets.QPushButton(self)
-       self.pushButtonPrint.setText("Imprimir")
-       self.pushButtonPrint.clicked.connect(self.handlePrint)
-       self.pushButtonPrint.setFixedWidth(80)
-       self.pushButtonPrint.setStyleSheet(stylesheet(self))
- 
-       self.pushButtonWrite = QtWidgets.QPushButton(self)
-       self.pushButtonWrite.setText("Guardar CSV")
-       self.pushButtonWrite.clicked.connect(self.writeCsv)
-       self.pushButtonWrite.setFixedWidth(80)
-       self.pushButtonWrite.setStyleSheet(stylesheet(self))
-    #    self.pushAddRow = QtWidgets.QPushButton(self)
-    #    self.pushAddRow.setText("add Row")
-    #    self.pushAddRow.clicked.connect(self.addRow)
-    #    self.pushAddRow.setFixedWidth(80)
-    #    self.pushAddRow.setStyleSheet(stylesheet(self))
- 
-    #    self.pushDeleteRow = QtWidgets.QPushButton(self)
-    #    self.pushDeleteRow.setText("delete Row")
-    #    self.pushDeleteRow.clicked.connect(self.removeRow)
-    #    self.pushDeleteRow.setFixedWidth(80)
-    #    self.pushDeleteRow.setStyleSheet(stylesheet(self))
- 
-    #    self.pushAddColumn = QtWidgets.QPushButton(self)
-    #    self.pushAddColumn.setText("add Column")
-    #    self.pushAddColumn.clicked.connect(self.addColumn)
-    #    self.pushAddColumn.setFixedWidth(80)
-    #    self.pushAddColumn.setStyleSheet(stylesheet(self))
- 
-    #    self.pushDeleteColumn = QtWidgets.QPushButton(self)
-    #    self.pushDeleteColumn.setText("delete Column")
-    #    self.pushDeleteColumn.clicked.connect(self.removeColumn)
-    #    self.pushDeleteColumn.setFixedWidth(86)
-    #    self.pushDeleteColumn.setStyleSheet(stylesheet(self))
- 
-    #    self.pushClear = QtWidgets.QPushButton(self)
-    #    self.pushClear.setText("Clear")
-    #    self.pushClear.clicked.connect(self.clearList)
-    #    self.pushClear.setFixedWidth(60)
-    #    self.pushClear.setStyleSheet(stylesheet(self))
- 
+    #    self.pushButtonWrite = QtWidgets.QPushButton(self)
+    #    self.pushButtonWrite.setText("Desar CSV")
+    #    self.pushButtonWrite.clicked.connect(self.writeCsv)
+    #    self.pushButtonWrite.setStyleSheet('border: none; margin: 0px; padding: 0px')
+    
        grid = QtWidgets.QGridLayout()
        grid.setSpacing(10)
-    #    grid.addWidget(self.pushButtonLoad, 0, 0)
-       grid.addWidget(self.pushButtonPrint, 0, 8, 1, 1, QtCore.Qt.AlignRight)
-       grid.addWidget(self.pushButtonWrite, 0, 1)
-    #    grid.addWidget(self.pushAddRow, 0, 2)
-    #    grid.addWidget(self.pushDeleteRow, 0, 3)
-    #    grid.addWidget(self.pushAddColumn, 0, 4)
-    #    grid.addWidget(self.pushDeleteColumn, 0, 5)
-    #    grid.addWidget(self.pushClear, 0, 6)
-    #    grid.addWidget(self.pushButtonPreview, 0, 7)
-       grid.addWidget(self.tableView, 1, 0, 1, 9)
+       #grid.addWidget(self.pushButtonPrint, 1, 2, 1, 1, QtCore.Qt.AlignRight)
+       #grid.addWidget(self.pushButtonWrite, 1, 0)
+       grid.addWidget(self.tableView, 0, 0, 1, 9)
        self.setLayout(grid)
  
        item = QtGui.QStandardItem()
