@@ -109,7 +109,11 @@ class QCercadorAdreca(QObject):
         # print(carrer)
 
         nn= carrer.find(chr(30))
-        ss= carrer[0:nn]
+        if nn==-1:
+            ss=carrer
+        else:
+            ss= carrer[0:nn-1]
+
         self.calle_con_acentos=ss.rstrip()
 
         self.leCarrer.setAlignment(Qt.AlignLeft)  
@@ -177,7 +181,12 @@ class QCercadorAdreca(QObject):
             self.txto = self.completerCarrer.currentCompletion()
 
             nn= self.txto.find(chr(30))
-            ss= self.txto[0:nn]
+            if nn==-1:
+                ss=self.txto
+            else:
+                ss= self.txto[0:nn-1]
+
+            # ss= self.txto[0:nn-1]
             self.calle_con_acentos=ss.rstrip()
 
             self.leCarrer.setAlignment(Qt.AlignLeft)  
@@ -258,7 +267,8 @@ class QCercadorAdreca(QObject):
                 nombre = self.query.value(1) # numero oficial
                 nombre_sin_acentos= self.remove_accents(nombre)
                 if nombre == nombre_sin_acentos:
-                    clave= nombre + "  (" + codi_carrer + ")                                                  "+chr(30)
+                    clave= nombre + "  (" + codi_carrer + ")"
+                    # clave= nombre + "  (" + codi_carrer + ")                                                  "+chr(30)
                 else:
                     clave= nombre + "  (" + codi_carrer + ")                                                  "+chr(30)+"                                                         " + nombre_sin_acentos
                     # asignacion al diccionario
