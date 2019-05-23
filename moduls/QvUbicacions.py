@@ -102,15 +102,15 @@ class StandardItemModel_mio(QStandardItemModel):
                 pickle.dump(datos, f)
                 datos.clear()
                 f.close()
+                # msg = QMessageBox()
 
-                msg = QMessageBox()
-                msg.setIcon(QMessageBox.Information)
-                literal= "Ubicacions desades"
-                msg.setText(literal)
-                # msg.setInformativeText("OK para salir del programa \nCANCEL para seguir en el programa")
-                msg.setWindowTitle("QvUbicacions")
+                # msg.setIcon(QMessageBox.Information)
+                # literal= "Ubicacions desades"
+                # msg.setText(literal)
+                # # msg.setInformativeText("OK para salir del programa \nCANCEL para seguir en el programa")
+                # msg.setWindowTitle("QvUbicacions")
                
-                retval = msg.exec_()
+                # retval = msg.exec_()
         except:
             msg = QMessageBox()
             msg.setIcon(QMessageBox.Warning)
@@ -360,6 +360,11 @@ class QvUbicacions(QWidget):
                 pass               
 
         self.leUbicacions.clear()
+        try:
+            self.model.exportData()
+        except Exception  as ee:
+            print(str(ee))
+        
         
 
     def _clickArbre(self):
