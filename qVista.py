@@ -343,7 +343,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.lytBotoneraLateral.addItem(spacer2)
         
         self.qvNews = QvNews()
-        # self.bInfo = self.botoLateral(tamany = 25, accio=self.qvNews)
+        self.bInfo = self.botoLateral(tamany = 25, accio=self.qvNews)
         # self.bInfo = self.botoLateral(tamany = 25, accio=self.actInfo)
         self.bHelp = self.botoLateral(tamany = 25, accio=self.actHelp)
         self.bBug = self.botoLateral(tamany = 25, accio=self.actBug)
