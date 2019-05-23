@@ -363,6 +363,9 @@ class QvCarregaCsvAdreca(QvCarregaCsvPage):
         super().__init__(parent)
         self.setSubTitle('Tria dels components de la geometria')
         self.layout = QVBoxLayout(self)
+        self.lblExplicacio6 = QLabel()
+        self.lblExplicacio6.setText("Omplena els següents camps de les adreces que vols geocodificar.\nNomés el segon camp és obligatori.")
+        self.layout.addWidget(self.lblExplicacio6)
         self.layoutAdreca = QVBoxLayout()
         self.layout.addLayout(self.layoutAdreca)
         camps = self.obteCamps()
@@ -370,7 +373,7 @@ class QvCarregaCsvAdreca(QvCarregaCsvPage):
         self.cbTipus = QComboBox()
         QvConstants.formataScrollbar(self.cbTipus.view().verticalScrollBar())
         self.cbTipus.addItems(['']+camps)
-        self.lblCarrer = QLabel('Via')
+        self.lblCarrer = QLabel('Via  (o Adreça)')
         self.cbCarrer = QComboBox()
         QvConstants.formataScrollbar(self.cbCarrer.view().verticalScrollBar())
         self.cbCarrer.addItems(camps)
@@ -460,17 +463,23 @@ class WindowProgressBar(QWidget):
         self.mida = mida + 1
         self.progress.setMaximum(mida)
         self.count = 0  # necessari per a la progress bar
+        self.errors = 0
         self.progress.setValue(self.count)
         self.layProgressW = QVBoxLayout()
         self.lblAdrInfo = QLabel()
         self.lblAdrInfo.setText("Adreces Processades: 0")
+        self.lblAdrErrors = QLabel()
+        self.lblAdrErrors.setText("Adreces no geolocalitzades: 0")
         self.layProgressW.addWidget(self.progress)
         self.layProgressW.addWidget(self.lblAdrInfo)
+        self.layProgressW.addWidget(self.lblAdrErrors)
         self.setLayout(self.layProgressW)
 
     def actualitzaLBL(self):
         self.lblAdrInfo.setText(
             "Adreces Processades: %i de %i" % (self.count, self.mida))
+        self.lblAdrErrors.setText(
+            "Adreces no geolocalitzades: %i" % (self.errors))
 
 
 class QvCarregaCsvGeneraCoords(QvCarregaCsvPage):
@@ -480,6 +489,7 @@ class QvCarregaCsvGeneraCoords(QvCarregaCsvPage):
             parent{QWidget} -- Pare de l'assistent (default{None})
         '''
         super().__init__(parent)
+        self.setSubTitle("Gestió d'errors i finalitzar procés")
         self.parent.coordX = 'XCalculadaqVista'
         self.parent.coordY = 'YCalculadaqVista'
         self.lblAdrecesError = QLabel()
@@ -507,7 +517,7 @@ class QvCarregaCsvGeneraCoords(QvCarregaCsvPage):
         self.showed = False
         #self.mostraTaula()
         self.lblExplicacio5 = QLabel()
-        self.lblExplicacio5.setText("Vols carregar les adreces geocodificades al teu projecte?")
+        self.lblExplicacio5.setText("Vols carregar les adreces geocodificades al teu projecte? Les adreces que no s'han pogut \ngeolocalitzar no apareixeran.")
         #self.layout.addWidget(self.lblExplicacio5)
         
     def initializePage(self):
@@ -590,6 +600,7 @@ class QvCarregaCsvGeneraCoords(QvCarregaCsvPage):
                 qApp.processEvents()
                 if x is None or y is None:
                     aux = self.lblAdrecesError.text()
+                    wpg.errors = wpg.errors + 1
                     if aux != "":
                         self.lblAdrecesError.setText(
                             aux + "\n" + tipusVia + " " + nomVia + " " + num + ' - Fila ' + str(i))
