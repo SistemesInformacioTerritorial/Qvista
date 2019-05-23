@@ -2481,9 +2481,15 @@ globalLlistaCamps=None
 tamanyReader=0
 def carregarLayerCSV(nfile):
         if nfile: 
-            assistent=QvCarregaCsv(nfile,nivellCsv)
-            assistent.exec_()
-
+            assistent=QvCarregaCsv(nfile,nivellCsv,qV)
+            assistent.setModal(True)
+            #assistent.setWindowFlags(assistent.windowFlags() | Qt.Popup)
+            assistent.setWindowFlags(assistent.windowFlags() | Qt.WindowStaysOnTopHint)
+            #qV.raise_()
+            assistent.show()
+            #assistent.raise_()
+            #qV.setFocus()
+            
 
 def carregarNivellQlr():
     index = qV.wCataleg.ui.treeCataleg.currentIndex()
@@ -2590,7 +2596,7 @@ def loadCsv():
                     qV.tableView.resizeColumnsToContents()
     qV.dwTaula.show()
 
-def nivellCsv(fitxer,delimitador,campX,campY, projeccio = 23031, nomCapa = 'Capa sense nom'):
+def nivellCsv(fitxer: str,delimitador: str,campX: str,campY: str, projeccio: int = 23031, nomCapa: str = 'Capa sense nom'):
     uri = "file:///"+fitxer+"?type=csv&delimiter=%s&xField=%s&yField=%s" % (delimitador,campX,campY)
     layer = QgsVectorLayer(uri, nomCapa, 'delimitedtext')
     layer.setCrs(QgsCoordinateReferenceSystem(projeccio, QgsCoordinateReferenceSystem.EpsgCrsId))
@@ -2605,52 +2611,12 @@ def missatgeCaixa(textTitol,textInformacio):
     ret = msgBox.exec()
 
 
-def infereixSeparadorRegex(arxiu):
-    import re
-    #Rep una llista i la retorna sense repeticions
-    def eliminaRep(lst):
-        return list(set(lst))
-    #Rep una llista i la retorna sense repeticions i ordenada
-    def eliminaRepOrd(lst):
-        return sorted(set(lst))
-
-    '''
-    Utilitzant expressions regulars
-    Un substring serà tot allò que comenci per ", i acabi amb ", sense contenir-ne cap a dins, de manera que ens ho carreguem
-    Un nombre serà [0-9]+, cosa que també ens carreguem
-    '''
-    def infereixSeparadorLinia(line):
-        aux=re.sub('"[^"]*"','',line)
-        aux=re.sub('[0-9]+','',aux)
-        aux=re.sub('[a-zA-Z]*','',aux)
-        aux=aux.replace('\n','')#Per si tenim salt de línia al final
-        auxSenseRep=eliminaRepOrd(aux) #Eliminem repeticions
-        if len(auxSenseRep)==1: return aux[0] 
-        #Creem una llista de tuples ordenada, on cada tupla conté el nombre d'aparicions del caracter i el caracter
-        #lst=[(aux.count(x),x) for x in auxSenseRep]
-        lst=sorted(map(lambda x: (aux.count(x),x),auxSenseRep))
-        return lst
-    def uneixLlistesAp(lst1, lst2):
-        return list(set(lst1)&set(lst2))
-    lst=[]
-    for x in arxiu.readlines():
-        act=infereixSeparadorLinia(x)
-        if isinstance(act,str):
-            arxiu.seek(0)
-            return act
-        if len(lst)==0: lst=act #Primera iteració
-        else: lst=uneixLlistesAp(lst,act)
-        if len(lst)==1:
-            arxiu.seek(0)
-            return lst[0][1]
-    arxiu.seek(0)
-    return [y for x,y in lst]
 
 def sortir():
     sys.exit()
 
 # Funcio per carregar problemes a GITHUB
-def reportarProblema(titol, descripcio=None):
+def reportarProblema(titol: str, descripcio: str=None):
 
     if QvApp().bugUser(titol, descripcio):
         print ('Creat el problema {0:s}'.format(titol))
@@ -2687,37 +2653,6 @@ def reportarProblema(titol, descripcio=None):
     #     print ('Error al crear el problema {0:s}'.format(titol))
     #     qV.lblResultat.setText('Error al crear el problema {0:s}'.format(titol))
 
-class QvtLectorCsv(QvLectorCsv):
-        def __init__(self, fileName='', separador=None, parent=None):
-                print('Comencem init')
-                #QvLectorCsv.__init__(self, fileName)
-                super().__init__(fileName)
-                self.separador=separador
-                print('Init feta')
-                if self.separador is not None:
-                        print('Carrego el csv')
-                        self.carregaCsv(self.fileName,self.separador)
-        def carregaCsv(self, fileName, separador=None):
-                from PyQt5 import QtGui
-                if separador is None:
-                        super().carregaCsv(fileName)
-                        return
-                if fileName:
-                        print(fileName)
-                        f = open(fileName, 'r')
-                        with f:
-                                self.fname = os.path.splitext(str(fileName))[0].split("/")[-1]
-                                self.setWindowTitle(self.fname)
-                                reader=csv.reader(f,delimiter=separador)
-                                self.model.clear()
-                                for row in reader:
-                                        items=[QtGui.QStandardItem(field) for field in row]
-                                        self.model.appendRow(items)
-                                self.tableView.resizeColumnsToContents()
-                                print('Resize acabada')
-        def recarrega(self,separador):
-                self.separador=separador
-                self.carregaCsv(self.fileName,self.separador)
 
 def main(argv):
     # import subprocess

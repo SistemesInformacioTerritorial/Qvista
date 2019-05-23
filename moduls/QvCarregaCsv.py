@@ -197,7 +197,7 @@ class QvCarregaCsvTriaSep(QvCarregaCsvPage):
         self.layout = QVBoxLayout(self)
         self.layout.setSpacing(20)
         self.lblExplicacio1 = QLabel(
-            "Escull quin separador fa servir l'arxiu CVS que vols carregar:")
+            "Escolliu quin separador fa servir l'arxiu CSV que voleu carregar:")
         self.layout.addWidget(self.lblExplicacio1)
         self.setLayout(self.layout)
         self.layoutCheckButton = QHBoxLayout(self)
@@ -233,7 +233,7 @@ class QvCarregaCsvTriaSepDec(QvCarregaCsvPage):
         self.layout = QVBoxLayout(self)
         self.layout.setSpacing(20)
         self.lblExplicacio2 = QLabel(
-            "Escull quin separador es fa servir per als decimals:")
+            "Escolliu quin separador es fa servir per als decimals:")
         self.layout.addWidget(self.lblExplicacio2)
         self.layoutCheckButton = QHBoxLayout()
         self.layout.addLayout(self.layoutCheckButton)
@@ -263,11 +263,12 @@ class QvCarregaCsvTriaGeom(QvCarregaCsvPage):
         self.layout = QVBoxLayout(self)
         self.layout.setSpacing(20)
         self.lblExplicacio3 = QLabel(
-            "Hi ha 2 camps del CSV que contenen les coordenades X i Y a processar \no s'han d'inferir a partir d'una adreça?")
+            "De quins camps obtenim les coordenades?")
         self.layout.addWidget(self.lblExplicacio3)
-        self.botoXY = QRadioButton('Coordenades X Y')
-        self.botoAdreca = QRadioButton('Adreça')
-        self.layoutBotons = QHBoxLayout()
+        self.botoXY = QRadioButton('Camps de coordenades X Y')
+        self.botoAdreca = QRadioButton('Cal geocodificar-los a partir d\'una adreça postal')
+        self.layoutBotons = QVBoxLayout()
+        self.layoutBotons.setSpacing(0)
         self.layoutBotons.addWidget(self.botoXY)
         self.layoutBotons.addWidget(self.botoAdreca)
         self.layout.addLayout(self.layoutBotons)
@@ -306,7 +307,7 @@ class QvCarregaCsvXY(QvCarregaCsvPage):
         self.lblCoordY = QLabel()
         self.lblCoordY.setText("Camp Coordenada Y:")
         self.lblProj = QLabel()
-        self.lblProj.setText("Camp Projecció:")
+        self.lblProj.setText("Projecció usada:")
         self.layout.addLayout(self.layoutCoordX)
         self.layout.addLayout(self.layoutCoordY)
         self.layout.addLayout(self.layoutCoordP)
@@ -323,9 +324,12 @@ class QvCarregaCsvXY(QvCarregaCsvPage):
         self.layoutCoordY.addWidget(self.lblCoordY)
         self.layoutCoordY.addWidget(self.cbY)
         self.cbProj=QComboBox()
-        projeccions = [25831, 1 , 2 , 3]
+        #projeccions = [25831, 1 , 2 , 3]
+        projeccionsDict = {'EPSG:25831 UTM ETRS89 31N':25831,
+                           'EPSG:3857 Pseudo Mercator (Google)':3857,
+                           'EPSG:4326 WGS 84':4326}
         self.cbProj.clear()
-        self.cbProj.addItems([str(x) for x in projeccions])
+        self.cbProj.addItems([str(x) for x, y in projeccionsDict.items()])
         self.layoutCoordP.addWidget(self.lblProj)
         self.layoutCoordP.addWidget(self.cbProj)
 
@@ -336,7 +340,8 @@ class QvCarregaCsvXY(QvCarregaCsvPage):
             self.parent.setCoordY(self.cbY.currentText())
 
         def projChanged():
-            self.parent.setProjecció(int(self.cbProj.currentText()))
+            self.parent.setProjecció(projeccionsDict[self.cbProj.currentText()])
+            print(self.parent.proj)
         self.cbX.currentIndexChanged.connect(xChanged)
         self.cbY.currentIndexChanged.connect(yChanged)
         self.cbProj.currentIndexChanged.connect(projChanged)
@@ -420,8 +425,12 @@ class QvCarregaCsvAdreca(QvCarregaCsvPage):
         self.layoutNumLletraAux.addLayout(self.layoutNumero)
         self.layoutNumLletraAux.addLayout(self.layoutLletra)
 
-        self.layoutAdreca.addLayout(self.layoutTipus)
-        self.layoutAdreca.addLayout(self.layoutCarrer)
+        # self.layoutAdreca.addLayout(self.layoutTipus)
+        # self.layoutAdreca.addLayout(self.layoutCarrer)
+        layAdrecaTipus=QHBoxLayout()
+        layAdrecaTipus.addLayout(self.layoutTipus)
+        layAdrecaTipus.addLayout(self.layoutCarrer)
+        self.layoutAdreca.addLayout(layAdrecaTipus)
         self.layoutAdreca.addLayout(self.layoutNumLletraAux)
 
         def guardaDades():
@@ -485,11 +494,13 @@ class QvCarregaCsvGeneraCoords(QvCarregaCsvPage):
             "Aquestes són les adreces que no s'han pogut geolocalitzar:")
         self.layout.addWidget(self.lblExplicacio4)
         self.scrollErrors = QScrollArea()
+        self.scrollErrors.setFixedHeight(75)
         self.scrollErrors.setWidgetResizable(True)
         self.scrollErrors.verticalScrollBar().setStyleSheet(
             QvConstants.SCROLLBARSTYLESHEET)
         self.lblAdrecesError.setContentsMargins(10, 5, 10, 5)
         self.scrollErrors.setWidget(self.lblAdrecesError)
+        QvConstants.formataScrollbar(self.scrollErrors.verticalScrollBar())
         self.layout.addWidget(self.scrollErrors)
         # Després de generar el csv amb coordenades no hi ha volta enrere
         self.setCommitPage(True)
@@ -542,6 +553,7 @@ class QvCarregaCsvGeneraCoords(QvCarregaCsvPage):
             writer.writeheader()
             i = -1
             for row in reader:
+                error=False
                 i += 1
                 if i == 0:
                     continue
@@ -549,16 +561,23 @@ class QvCarregaCsvGeneraCoords(QvCarregaCsvPage):
                 d = {**row}
                 d[''] = ''
                 if self.parent.dadesAdreca[0] == "":
-                    tipusVia, nomVia, num = splitCarrer(
-                        row[self.parent.dadesAdreca[1]])
+                    try:
+                        tipusVia, nomVia, num = splitCarrer(row[self.parent.dadesAdreca[1]])
+                    except:
+                        error=True
+                        print(row)
+                        print (row[self.parent.dadesAdreca[1]])
+                        print(tipusVia, nomVia, num)
 
                 else:
                     tipusVia = row[self.parent.dadesAdreca[0]]
                     nomVia = row[self.parent.dadesAdreca[1]]
                     num = row[self.parent.dadesAdreca[2]]
                     num = re.sub('[^0-9][0-9]*', '', num)
-
-                if num != '':
+                if error or nomVia=='':
+                    x, y = None, None
+                    tipusVia, nomVia, num = '',row[self.parent.dadesAdreca[1]],''
+                elif num != '':
                     x, y = QvGeocod.coordsCarrerNum(tipusVia, nomVia, num)
                 else:
                     x, y = QvGeocod.coordsCarrerNum(
@@ -573,10 +592,10 @@ class QvCarregaCsvGeneraCoords(QvCarregaCsvPage):
                     aux = self.lblAdrecesError.text()
                     if aux != "":
                         self.lblAdrecesError.setText(
-                            aux + "\n" + tipusVia + " " + nomVia + " " + num)
+                            aux + "\n" + tipusVia + " " + nomVia + " " + num + ' - Fila ' + str(i))
                     else:
                         self.lblAdrecesError.setText(
-                            tipusVia + " " + nomVia + " " + num)
+                            tipusVia + " " + nomVia + " " + num + ' - Fila ' + str(i))
                     print(tipusVia, nomVia, num)
                     d[self.parent.coordX] = ""
                     d[self.parent.coordY] = ""

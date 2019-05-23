@@ -25,7 +25,7 @@ class QvPushButton(QPushButton):
             destacat{bool} -- True si volem que el botó tingui el color destacat, fals si volem que sigui el color per defecte
             parent{QWidget} -- El pare del botó
         '''
-        QPushButton.__init__(self,text,parent)
+        super().__init__(text,parent)
         self.setDestacat(destacat)
     
     def formata(self,destacat: bool):
