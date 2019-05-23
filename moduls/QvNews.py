@@ -123,10 +123,11 @@ class QvNewsFinestra(QDialog):
         self.caixaText.setEnabled(True)
         self.caixaText.setFrameStyle(QFrame.NoFrame)
         # self.caixaText.verticalScrollBar().setStyleSheet(QvConstants.SCROLLBARSTYLESHEET)
-        QvConstants.formataScrollbar(self.caixaText.view().verticalScrollBar())
+        QvConstants.formataScrollbar(self.caixaText.verticalScrollBar())
         # Comentar si volem que s'oculti la scrollbar quan no s'utilitza
         self.caixaText.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
-        self.caixaText.setViewportMargins(20, 20, 0, 0)
+        #self.caixaText.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+        self.caixaText.setViewportMargins(20, 20, 20, 0)
         self.setWindowFlags(Qt.Window | Qt.FramelessWindowHint)
         self.lblLogo.setStyleSheet(
             'background-color: %s; border: 0px' % QvConstants.COLORFOSCHTML)
