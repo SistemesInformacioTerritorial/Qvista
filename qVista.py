@@ -2343,6 +2343,17 @@ def seleccioExpressio():
         disgregarDirele()
         return
 
+    if qV.leSeleccioExpressio.text().lower() == 'version':
+        msg = QMessageBox()
+        msg.setIcon(QMessageBox.Warning)
+        
+        msg.setText('20190524 1125')
+        # msg.setInformativeText("OK para salir del programa \nCANCEL para seguir en el programa")
+        msg.setWindowTitle("qVista version")
+        msg.setStandardButtons(QMessageBox.Close)
+        retval = msg.exec_()
+        return        
+
 
     if (qV.leSeleccioExpressio.text().lower() == 'qvdebug') :
         qV.modeDebug()
