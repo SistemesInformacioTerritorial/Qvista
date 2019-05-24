@@ -2127,6 +2127,12 @@ class QVista(QMainWindow, Ui_MainWindow):
         pass
 
     def gestioSortida(self):
+        
+        try:
+            self.ubicacions.model.exportData()
+        except Exception  as ee:
+            print(str(ee))
+
         QvApp().logFi()
 
     def handleSave(self):
