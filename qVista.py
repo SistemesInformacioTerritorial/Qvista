@@ -108,6 +108,8 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.layerActiu = None
         self.prepararCercador = True
         self.lblMovie = None
+        self.ubicacions= None
+        self.cAdrec= None
 
 
         # # Connectors i accions
@@ -2127,20 +2129,18 @@ class QVista(QMainWindow, Ui_MainWindow):
         pass
 
     def gestioSortida(self):
-        
+
         try:
-            self.ubicacions.model.exportData()
+            if self.ubicacions is not None:
+                self.ubicacions.ubicacionsFi()
         except Exception  as ee:
             print(str(ee))
 
-        # cerrar sqlite de direcciones
         try:
-            if self.cAdrec.db.isOpen():
-                self.cAdrec.db.close()
+            if self.cAdrec is not None:
+                self.cAdrec.cercadorAdrecaFi()
         except Exception as ee:
             print(str(ee))
-
-
 
         try:
             QvApp().logFi()

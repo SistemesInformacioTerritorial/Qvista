@@ -296,7 +296,8 @@ class QvUbicacions(QWidget):
 
 
        
-       
+    def ubicacionsFi(self):
+        self.model.exportData()   
        
        
     def esborrarNode(self):
