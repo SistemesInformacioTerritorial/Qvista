@@ -44,7 +44,7 @@ class QCercadorAdreca(QObject):
             QMessageBox.critical(None, "Error al abrir la base de datos.\n\n"
                     "Click para cancelar y salir.", QMessageBox.Cancel)
 
-        self.query = QSqlQuery() # Intancia del Query
+        self.query = QSqlQuery(self.db) # Intancia del Query
         self.txto =''
 
         self.iniAdreca()
