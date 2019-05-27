@@ -11,6 +11,7 @@ from moduls.QvPushButton import QvPushButton
 class QvLectorCsv(QtWidgets.QWidget):
    def __init__(self, fileName= "", parent=None):
        QtWidgets.QWidget.__init__(self)
+       self.setContentsMargins(0,0,0,0)
        self.fileName = fileName
        self.fname = "Liste"
        self.model =  QtGui.QStandardItemModel(self)
@@ -34,6 +35,7 @@ class QvLectorCsv(QtWidgets.QWidget):
     #    self.pushButtonWrite.setStyleSheet('border: none; margin: 0px; padding: 0px')
     
        grid = QtWidgets.QGridLayout()
+       grid.setContentsMargins(0,0,0,0)
        grid.setSpacing(10)
        #grid.addWidget(self.pushButtonPrint, 1, 2, 1, 1, QtCore.Qt.AlignRight)
        #grid.addWidget(self.pushButtonWrite, 1, 0)

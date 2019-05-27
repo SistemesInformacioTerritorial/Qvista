@@ -135,6 +135,7 @@ class QvCarregaCsvPage(QWizardPage):
                               QFrame {border: 0px} 
                               QLabel {border: 0px}
                               ''' % QvConstants.COLORBLANCHTML)
+        self.setFont(QvConstants.FONTTITOLS)
 
         self.setContentsMargins(0, 0, 0, 0)
 
@@ -209,11 +210,14 @@ class QvCarregaCsvTriaSep(QvCarregaCsvPage):
         self.lblSep = QLabel()
         self.lblSep.setText("Separador:")
         self.cbSep = QComboBox()
+        self.cbSep.setFixedWidth(60)
         QvConstants.formataScrollbar(self.cbSep.view().verticalScrollBar())
         llistaSeparadors = [';', ',', '.', ':', '|']
         self.cbSep.addItems(llistaSeparadors)
         self.layoutCheckButton.addWidget(self.lblSep)
         self.layoutCheckButton.addWidget(self.cbSep)
+        #self.layoutCheckButton.addItem(QSpacerItem(20,20,QSizePolicy.Minimum, QSizePolicy.Expanding))
+        self.layoutCheckButton.addStretch(1)
         print(parent.csv)
         self.parent.setSeparador(infereixSeparadorRegex(open(parent.csv)))
         self.mostraTaula()
@@ -244,11 +248,13 @@ class QvCarregaCsvTriaSepDec(QvCarregaCsvPage):
         self.lblSepDec = QLabel()
         self.lblSepDec.setText("Separador Decimal:")
         self.cbSepDec = QComboBox()
+        self.cbSepDec.setFixedWidth(60)
         QvConstants.formataScrollbar(self.cbSepDec.view().verticalScrollBar())
         llistaSeparadorsDecimals = ['.', ',']
         self.cbSepDec.addItems(llistaSeparadorsDecimals)
         self.layoutCheckButton.addWidget(self.lblSepDec)
         self.layoutCheckButton.addWidget(self.cbSepDec)
+        self.layoutCheckButton.addStretch(1)
         self.mostraTaula()
 
     pass
@@ -351,11 +357,11 @@ class QvCarregaCsvXY(QvCarregaCsvPage):
         self.cbProj.currentIndexChanged.connect(projChanged)
         projChanged()
 
-        self.setFinalPage(True)
+        #self.setFinalPage(True)
         self.mostraTaula()
 
     def nextId(self):
-        return -1  # No hi ha pàgina següent
+        return QvCarregaCsv.finestres.Personalitza
 
 
 class QvCarregaCsvAdreca(QvCarregaCsvPage):
@@ -365,44 +371,55 @@ class QvCarregaCsvAdreca(QvCarregaCsvPage):
             parent{QWidget} -- Pare de l'assistent (default{None})
         '''
         super().__init__(parent)
+        MIDACOMBOBOX=100 #Perquè totes les combobox tinguin la mateixa mida
         self.setSubTitle('Tria dels components de la geometria')
         self.layout = QVBoxLayout(self)
         self.lblExplicacio6 = QLabel()
-        self.lblExplicacio6.setText("Omplena els següents camps de les adreces que vols geocodificar.\nNomés el segon camp és obligatori.")
+        #self.lblExplicacio6.setText("Emplena els següents camps de les adreces que vols geocodificar.\nNomés el segon camp és obligatori.")
+        self.lblExplicacio6.setText("Indiqueu el(s) camp(s) de les adreces que voleu geocodificar.\nNomés és obligatori el camp de la via")
         self.layout.addWidget(self.lblExplicacio6)
         self.layoutAdreca = QVBoxLayout()
         self.layout.addLayout(self.layoutAdreca)
         camps = self.obteCamps()
         self.lblTipus = QLabel('Tipus Via')
         self.cbTipus = QComboBox()
+        self.cbTipus.setFixedWidth(MIDACOMBOBOX)
         QvConstants.formataScrollbar(self.cbTipus.view().verticalScrollBar())
         self.cbTipus.addItems(['']+camps)
-        self.lblCarrer = QLabel('Via  (o Adreça)')
+        self.lblCarrer = QLabel('Via o adreça')
         self.cbCarrer = QComboBox()
         QvConstants.formataScrollbar(self.cbCarrer.view().verticalScrollBar())
         self.cbCarrer.addItems(camps)
+        self.cbCarrer.setFixedWidth(MIDACOMBOBOX)
         self.lblNumIni = QLabel('Nº post. inicial')
         self.cbNumIni = QComboBox()
         QvConstants.formataScrollbar(self.cbNumIni.view().verticalScrollBar())
         self.cbNumIni.addItems(['']+camps)
+        self.cbNumIni.setFixedWidth(MIDACOMBOBOX)
         self.lblLletraIni = QLabel('Lletra inicial')
         self.cbLletraIni = QComboBox()
+        self.cbLletraIni.setFixedWidth(MIDACOMBOBOX)
         QvConstants.formataScrollbar(
             self.cbLletraIni.view().verticalScrollBar())
         self.cbLletraIni.addItems(['']+camps)
         self.lblNumFi = QLabel('Nº post. final  ')
         self.cbNumFi = QComboBox()
+        self.cbNumFi.setFixedWidth(MIDACOMBOBOX)
         QvConstants.formataScrollbar(self.cbNumFi.view().verticalScrollBar())
         self.cbNumFi.addItems(['']+camps)
         self.lblLletraFi = QLabel('Lletra final  ')
         self.cbLletraFi = QComboBox()
+        self.cbLletraFi.setFixedWidth(MIDACOMBOBOX)
         QvConstants.formataScrollbar(
             self.cbLletraFi.view().verticalScrollBar())
         self.cbLletraFi.addItems(['']+camps)
 
         self.layoutCarrer = QHBoxLayout()
+        self.layoutCarrer.addStretch(1)
         self.layoutTipus = QHBoxLayout()
+        self.layoutTipus.addStretch(1)
         self.layoutNumLletraAux = QHBoxLayout()
+        #self.layoutNumLletraAux.addStretch(1)
         self.layoutNumero = QVBoxLayout()
         self.layoutLletra = QVBoxLayout()
 
@@ -415,6 +432,11 @@ class QvCarregaCsvAdreca(QvCarregaCsvPage):
         lay2 = QHBoxLayout()
         lay3 = QHBoxLayout()
         lay4 = QHBoxLayout()
+
+        lay1.addStretch(1)
+        lay2.addStretch(1)
+        lay3.addStretch(1)
+        lay4.addStretch(1)
 
         lay1.addWidget(self.lblNumIni)
         lay1.addWidget(self.cbNumIni)
@@ -431,6 +453,7 @@ class QvCarregaCsvAdreca(QvCarregaCsvPage):
         self.layoutLletra.addLayout(lay4)
         self.layoutNumLletraAux.addLayout(self.layoutNumero)
         self.layoutNumLletraAux.addLayout(self.layoutLletra)
+
 
         # self.layoutAdreca.addLayout(self.layoutTipus)
         # self.layoutAdreca.addLayout(self.layoutCarrer)
@@ -784,7 +807,11 @@ class QvtLectorCsv(QvLectorCsv):
                     if not completa and i > 9:
                         break  # Per agilitzar la càrrega, només ens cal una preview petita
                     items = [QtGui.QStandardItem(field) for field in row]
-                    self.model.appendRow(items)
+                    
+                    if (i==0): 
+                        self.model.setHorizontalHeaderLabels([x.text() for x in items])
+                    else:
+                        self.model.appendRow(items)
                     i += 1
                 self.tableView.resizeColumnsToContents()
 

@@ -9,6 +9,7 @@ import os
 import tempfile
 from moduls.QvConstants import QvConstants
 from moduls.QvPushButton import QvPushButton
+import errno
 
 
 class QvNews(QtWidgets.QAction):
@@ -47,10 +48,10 @@ class QvNews(QtWidgets.QAction):
 
     def mostraNoticies(self):
         '''Obre l'arxiu de notícies i les mostra'''
-        self.news = QvNewsFinestra(QvConstants.ARXIUNEWS)
+        self.news = QvNewsFinestra(arxiuNews)
         self.news.exec_()
         self.setIcon(self.ICONA)
-        with open(QvConstants.ARXIUTMP, 'w') as arxiu:
+        with open(arxiuTmpNews, 'w') as arxiu:
             # Escrivim alguna cosa. Realment no caldria que fos el temps
             import time
             arxiu.write(str(time.time()))
@@ -60,12 +61,12 @@ class QvNews(QtWidgets.QAction):
             Returns: x{Bool} -- Booleà que indica si hi ha una notícia nova o no
         '''
         # Si no existeix l'arxiu temporal vol dir que mai hem obert notícies :(
-        if not os.path.isfile(QvConstants.ARXIUNEWS):
+        if not os.path.isfile(arxiuNews):
             raise FileNotFoundError(errno.ENOENT, os.strerror(
-                errno.ENOENT), QvConstants.ARXIUNEWS)
-        if not os.path.isfile(QvConstants.ARXIUTMP):
+                errno.ENOENT), arxiuNews)
+        if not os.path.isfile(arxiuTmpNews):
             return True
-        return os.path.getmtime(QvConstants.ARXIUTMP) < os.path.getmtime(QvConstants.ARXIUNEWS)
+        return os.path.getmtime(arxiuTmpNews) < os.path.getmtime(arxiuNews)
 
 # QFrame no permet fer exec. QDialog sí
 
