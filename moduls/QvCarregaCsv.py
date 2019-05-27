@@ -685,7 +685,7 @@ class QvCarregaCsvPersonalitza(QvCarregaCsvPage):
             parent.color = dcolor.name()
             canvicolor(self,dcolor)
         bColor.clicked.connect(openColorDialog)
-        bColor.setFixedWidth(320)
+        bColor.setFixedWidth(339)
         #bColor.setText("Escull Color")
         self.layColor.addWidget(bColor)
         self.layout.addLayout(self.layColor)
