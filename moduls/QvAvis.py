@@ -15,7 +15,7 @@ class QvAvis(QvNewsFinestra):
     def calAvis(self):
         if not os.path.isfile(arxiuAvis):
             return False
-        if not os.path.isfile(arxiuAvis):
+        if not os.path.isfile(arxiuTmpAvis):
             return True
         return os.path.getmtime(arxiuTmpAvis)<os.path.getmtime(arxiuAvis)
     def exec_(self):

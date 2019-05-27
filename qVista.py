@@ -2721,9 +2721,6 @@ def main(argv):
         # Tanquem la imatge splash.
         splash.finish(qV)
         avisos=QvAvis()
-        # news = QvNews()
-        # news.setWizardStyle(QWizard.ClassicStyle)
-        # news.exec()
         qVapp.logRegistre('LOG_TEMPS', qV.lblTempsArrencada.text())
         app.aboutToQuit.connect(qV.gestioSortida)
 
