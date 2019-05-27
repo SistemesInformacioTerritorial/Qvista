@@ -17,6 +17,12 @@ arxiuNews=docdir+'Noticies.htm'
 arxiuTmpAvis=tempdir+'ultimAvisObert'
 arxiuTmpNews=tempdir+'ultimaNewOberta'
 
+if not os.path.exists(tempdir):
+    try:
+        os.mkdir(tempdir)
+    except:
+        print('ERROR. No he pogut crear el directori temporal')
+
 if not os.path.isdir(carpetaCataleg):
     carpetaCataleg = "../dades/CatalegProjectes/"
     carpetaCatalegProjectesLlista = "../dades/CatalegProjectes/"
