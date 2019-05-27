@@ -2133,7 +2133,24 @@ class QVista(QMainWindow, Ui_MainWindow):
         except Exception  as ee:
             print(str(ee))
 
-        QvApp().logFi()
+        # cerrar sqlite de direcciones
+        try:
+            if self.cAdrec.db.isOpen():
+                self.cAdrec.db.close()
+        except Exception as ee:
+            print(str(ee))
+
+
+
+        try:
+            QvApp().logFi()
+        except Exception as ee:
+            msg = QMessageBox()
+            msg.setIcon(QMessageBox.Warning)
+            
+            msg.setText(strin(ee))
+            msg.setStandardButtons(QMessageBox.Close)
+            retval = msg.exec_()
 
     def handleSave(self):
         self.table = self.taulesAtributs.widget(0)
@@ -2347,7 +2364,7 @@ def seleccioExpressio():
         msg = QMessageBox()
         msg.setIcon(QMessageBox.Warning)
         
-        msg.setText('20190524 1125')
+        msg.setText('20190527 08:33  cierro bbdd sqlite en gestioSortida')
         # msg.setInformativeText("OK para salir del programa \nCANCEL para seguir en el programa")
         msg.setWindowTitle("qVista version")
         msg.setStandardButtons(QMessageBox.Close)

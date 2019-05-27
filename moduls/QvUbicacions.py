@@ -98,10 +98,10 @@ class StandardItemModel_mio(QStandardItemModel):
             # if os.path.exists(fic_guardar_arbre):
             #     os.remove(fic_guardar_arbre)
 
-            with open(fic_guardar_arbre,'wb') as f:
-                pickle.dump(datos, f)
+            with open(fic_guardar_arbre,'wb') as fga:
+                pickle.dump(datos, fga)
                 datos.clear()
-                f.close()
+                fga.close()
                 # msg = QMessageBox()
 
                 # msg.setIcon(QMessageBox.Information)
@@ -186,9 +186,9 @@ class QvUbicacions(QWidget):
         
         # Leemos un fichero serializado para cargar sus ubicaciones en data
         try:
-            with open(fic_guardar_arbre,'rb') as f:
-                data=pickle.load(f)
-                f.close()
+            with open(fic_guardar_arbre,'rb') as fga:
+                data=pickle.load(fga)
+                fga.close()
         except:
             data=[]
   
