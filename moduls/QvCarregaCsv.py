@@ -12,7 +12,7 @@ import re
 
 class QvCarregaCsv(QWizard):
     finestres = IntEnum(
-        'finestres', 'TriaSep TriaSepDec TriaGeom CampsXY Adreca GeneraCoords')
+        'finestres', 'TriaSep TriaSepDec TriaGeom CampsXY Adreca GeneraCoords Personalitza')
 
     def __init__(self, csv: str, carregar, parent: QWidget = None):
         '''Crea un assistent de càrrega de csv
@@ -25,7 +25,10 @@ class QvCarregaCsv(QWizard):
         super().__init__(parent)
         self.carregar=carregar
         self.nomCapa = csv[:-4]
+        self.nomCapa = self.nomCapa.split('\\')[-1].split('/')[-1]
         self.csv=csv
+        self.color = 'blue'
+        self.symbol = 'circle'
         self.formata()
         self.setPage(QvCarregaCsv.finestres.TriaSep, QvCarregaCsvTriaSep(self))
         self.setPage(QvCarregaCsv.finestres.TriaSepDec,
@@ -36,6 +39,8 @@ class QvCarregaCsv(QWizard):
         self.setPage(QvCarregaCsv.finestres.Adreca, QvCarregaCsvAdreca(self))
         self.setPage(QvCarregaCsv.finestres.GeneraCoords,
                      QvCarregaCsvGeneraCoords(self))
+        self.setPage(QvCarregaCsv.finestres.Personalitza,
+                     QvCarregaCsvPersonalitza(self))
 
     def formata(self):
         '''Dóna format a l'assistent'''
@@ -70,8 +75,7 @@ class QvCarregaCsv(QWizard):
     def accept(self):
         super().accept()
 
-        self.carregar(self.csv, self.separador,
-                      self.coordX, self.coordY, self.proj, self.nomCapa.split('\\')[-1].split('/')[-1])
+        self.carregar(self.csv, self.separador,self.coordX, self.coordY, self.proj, self.nomCapa, color = self.color, symbol = self.symbol)
 
     # Aquestes funcions seran cridades NOMÉS des de les pàgines
     def setSeparador(self, sep):
@@ -646,6 +650,135 @@ class QvCarregaCsvGeneraCoords(QvCarregaCsvPage):
         self.recarregaTaula(completa=True)
         qApp.processEvents()
         self.layout.addWidget(self.lblExplicacio5)
+
+    def nextId(self):
+        return QvCarregaCsv.finestres.Personalitza
+
+class QvCarregaCsvPersonalitza(QvCarregaCsvPage):
+    def __init__(self, parent):
+        '''Crea una pàgina de l'assistent de càrrega de csv que permet personalitzar la nova capa
+            parent{QWidget} -- Pare de l'assistent (default{None})
+        '''
+        super().__init__(parent)
+        self.setSubTitle("Personalització de la nova capa")
+        self.layout = QVBoxLayout(self)
+        self.layout.setSpacing(40)
+        self.layout.setAlignment(Qt.AlignTop)
+        self.layNom = QHBoxLayout()
+        self.lblNom = QLabel()
+        self.lblNom.setText("Nom de la capa:")
+        self.leNom = QLineEdit()
+        self.leNom.setText(parent.nomCapa)
+        self.layNom.addWidget(self.lblNom)
+        self.layNom.addWidget(self.leNom)
+        self.layout.addLayout(self.layNom)
+        self.leColor = QLabel()
+        self.leColor.setText("Trieu el color:")
+        self.layColor = QHBoxLayout()
+        self.layColor.addWidget(self.leColor)
+
+        bColor = QPushButton()
+        def canvicolor(self,dcolor):
+            bColor.setStyleSheet("background-color: %s;" %dcolor.name())
+        def openColorDialog(self):
+            dcolor = QColorDialog().getColor()
+            parent.color = dcolor.name()
+            canvicolor(self,dcolor)
+        bColor.clicked.connect(openColorDialog)
+        bColor.setFixedWidth(320)
+        #bColor.setText("Escull Color")
+        self.layColor.addWidget(bColor)
+        self.layout.addLayout(self.layColor)
+
+        self.lblSimbol = QLabel()
+        self.lblSimbol.setText("Amb quin símbol voleu representar els punts?")
+        self.layout.addWidget(self.lblSimbol)
+    
+        self.groupBox = QGroupBox("") 
+        self.layIMGS1 = QHBoxLayout()
+        radio1 = QRadioButton()
+        def fradio1():
+            parent.symbol = 'square'
+        radio1.toggled.connect(fradio1)
+        self.layIMGS1.addWidget(radio1)
+        self.img1 = QLabel()
+        self.img1.setPixmap(QPixmap('imatges/squareW.png'))
+        self.layIMGS1.addWidget(self.img1)
+        radio2 = QRadioButton()
+        def fradio2():
+            parent.symbol = 'diamond'
+        radio2.toggled.connect(fradio2)
+        self.layIMGS1.addWidget(radio2)
+        self.img2 = QLabel()
+        self.img2.setPixmap(QPixmap('imatges/rhombusW.png'))
+        self.layIMGS1.addWidget(self.img2)
+        radio3 = QRadioButton()
+        def fradio3():
+            parent.symbol = 'pentagon'
+        radio3.toggled.connect(fradio3)
+        self.layIMGS1.addWidget(radio3)
+        self.img3 = QLabel()
+        self.img3.setPixmap(QPixmap('imatges/pentagonW.png'))
+        self.layIMGS1.addWidget(self.img3)
+        #self.layout.addLayout(self.layIMGS1)
+        radio7 = QRadioButton()
+        def fradio7():
+            parent.symbol = 'star'
+        radio7.toggled.connect(fradio7)
+        self.layIMGS1.addWidget(radio7)
+        self.img7 = QLabel()
+        self.img7.setPixmap(QPixmap('imatges/starW.png'))
+        self.layIMGS1.addWidget(self.img7)
+        self.layIMGS2 = QHBoxLayout()
+        radio4 = QRadioButton()
+        def fradio4():
+            parent.symbol = 'triangle'
+        radio4.toggled.connect(fradio4)
+        self.layIMGS2.addWidget(radio4)
+        self.img4 = QLabel()
+        self.img4.setPixmap(QPixmap('imatges/triangleW.png'))
+        self.layIMGS2.addWidget(self.img4)
+        radio5 = QRadioButton()
+        def fradio5():
+            parent.symbol = 'circle'
+        radio5.toggled.connect(fradio5)
+        self.layIMGS2.addWidget(radio5)
+        self.img5 = QLabel()
+        self.img5.setPixmap(QPixmap('imatges/circleW.png'))
+        self.layIMGS2.addWidget(self.img5)
+        radio6 = QRadioButton()
+        def fradio6():
+            parent.symbol = 'hexagon'
+        radio6.toggled.connect(fradio6)
+        self.layIMGS2.addWidget(radio6)
+        self.img6 = QLabel()
+        self.img6.setPixmap(QPixmap('imatges/hexagonW.png'))
+        self.layIMGS2.addWidget(self.img6)
+        radio8 = QRadioButton()
+        def fradio8():
+            parent.symbol = 'cross'
+        radio8.toggled.connect(fradio8)
+        self.layIMGS2.addWidget(radio8)
+        self.img8 = QLabel()
+        self.img8.setPixmap(QPixmap('imatges/crossW.png'))
+        self.layIMGS2.addWidget(self.img8)
+        self.layIMGS1.setSpacing(25)
+        self.layIMGS2.setSpacing(25)
+        layoutGB = QVBoxLayout()
+        layoutGB.addLayout(self.layIMGS1)
+        layoutGB.addLayout(self.layIMGS2)
+        self.groupBox.setLayout(layoutGB)
+        self.layCB = QVBoxLayout()
+        self.layCB.addWidget(self.lblSimbol)
+        self.layCB.addWidget(self.groupBox)
+        self.layCB.setSpacing(8)
+        self.layout.addLayout(self.layCB)
+
+        #symbol = QgsMarkerSymbol.createSimple({'name': 'square', 'color': 'red'})
+        #layer.renderer().setSymbol(symbol)
+        #https://docs.qgis.org/testing/en/docs/pyqgis_developer_cookbook/vector.html#modify-features
+    
+
     def nextId(self):
         return -1
 
