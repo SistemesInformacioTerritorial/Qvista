@@ -270,7 +270,7 @@ class QvApp(Singleton):
             return False
         self.familyLog = family.upper()
         self.nameLog = logname.upper()
-        self.queryLog = QSqlQuery()
+        self.queryLog = QSqlQuery(self.db)
         return self.logRegistre('LOG_INICI', params)
 
     def logRegistre(self, topic, params=None):
@@ -309,7 +309,7 @@ class QvApp(Singleton):
         if self.db is None:
             return None, None, False
         if self.queryGeo is None:
-            self.queryGeo = QSqlQuery()
+            self.queryGeo = QSqlQuery(self.db)
         try:
             self.queryGeo.prepare("CALL QV_GEOCOD(:TIPUSVIA, :VARIANTE, :CODIGO, " +
                                   ":NUMINI, :LETRAINI, :NUMFIN, :LETRAFIN, :X, :Y)")
