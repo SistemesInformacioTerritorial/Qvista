@@ -236,7 +236,7 @@ class QvApp(Singleton):
             return
         try:
             if self.db is None:
-                db = QSqlDatabase.addDatabase(self.dbQvista['Database'])
+                db = QSqlDatabase.addDatabase(self.dbQvista['Database'], 'LOG')
                 if db.isValid():
                     db.setHostName(self.dbQvista['HostName'])
                     db.setPort(self.dbQvista['Port'])
