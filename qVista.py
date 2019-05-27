@@ -2295,8 +2295,25 @@ def disgregarDirele():
 
     pass
 
+def nivellCsv(fitxer: str,delimitador: str,campX: str,campY: str, projeccio: int = 23031, nomCapa: str = 'Capa sense nom', color = 'cyan', symbol = 'circle'):
+    uri = "file:///"+fitxer+"?type=csv&delimiter=%s&xField=%s&yField=%s" % (delimitador,campX,campY)
+    layer = QgsVectorLayer(uri, nomCapa, 'delimitedtext')
+    layer.setCrs(QgsCoordinateReferenceSystem(projeccio, QgsCoordinateReferenceSystem.EpsgCrsId))
+    if layer is not None:
+        symbol = QgsMarkerSymbol.createSimple({'name': symbol, 'color': color})
+        layer.renderer().setSymbol(symbol)
+        qV.project.addMapLayer(layer)
+        print("add layer")
 
-
+# def carregaCSVWizard(fitxer: str,delimitador: str,campX: str,campY: str, projeccio: int = 23031, nomCapa: str = 'Capa sense nom', color, symbol):
+#     uri = "file:///"+fitxer+"?type=csv&delimiter=%s&xField=%s&yField=%s" % (delimitador,campX,campY)
+#     layer = QgsVectorLayer(uri, nomCapa, 'delimitedtext')
+#     layer.setCrs(QgsCoordinateReferenceSystem(projeccio, QgsCoordinateReferenceSystem.EpsgCrsId))
+#     if layer is not None:
+#         symbol = QgsMarkerSymbol.createSimple({'name': symbol, 'color': color})
+#         layer.renderer().setSymbol(symbol)
+#         qV.project.addMapLayer(layer)
+#         print("add layer")
 
 def seleccioCercle():
     seleccioClick()
@@ -2484,7 +2501,7 @@ def carregarLayerCSV(nfile):
             assistent=QvCarregaCsv(nfile,nivellCsv,qV)
             assistent.setModal(True)
             #assistent.setWindowFlags(assistent.windowFlags() | Qt.Popup)
-            assistent.setWindowFlags(assistent.windowFlags() | Qt.WindowStaysOnTopHint)
+            #assistent.setWindowFlags(assistent.windowFlags() | Qt.WindowStaysOnTopHint)
             #qV.raise_()
             assistent.show()
             #assistent.raise_()
@@ -2596,13 +2613,7 @@ def loadCsv():
                     qV.tableView.resizeColumnsToContents()
     qV.dwTaula.show()
 
-def nivellCsv(fitxer: str,delimitador: str,campX: str,campY: str, projeccio: int = 23031, nomCapa: str = 'Capa sense nom'):
-    uri = "file:///"+fitxer+"?type=csv&delimiter=%s&xField=%s&yField=%s" % (delimitador,campX,campY)
-    layer = QgsVectorLayer(uri, nomCapa, 'delimitedtext')
-    layer.setCrs(QgsCoordinateReferenceSystem(projeccio, QgsCoordinateReferenceSystem.EpsgCrsId))
-    if layer is not None:
-        qV.project.addMapLayer(layer)
-        print("add layer")
+
 
 def missatgeCaixa(textTitol,textInformacio):
     msgBox=QMessageBox()
