@@ -98,10 +98,10 @@ class StandardItemModel_mio(QStandardItemModel):
             # if os.path.exists(fic_guardar_arbre):
             #     os.remove(fic_guardar_arbre)
 
-            with open(fic_guardar_arbre,'wb') as f:
-                pickle.dump(datos, f)
+            with open(fic_guardar_arbre,'wb') as fga:
+                pickle.dump(datos, fga)
                 datos.clear()
-                f.close()
+                fga.close()
                 # msg = QMessageBox()
 
                 # msg.setIcon(QMessageBox.Information)
@@ -186,9 +186,9 @@ class QvUbicacions(QWidget):
         
         # Leemos un fichero serializado para cargar sus ubicaciones en data
         try:
-            with open(fic_guardar_arbre,'rb') as f:
-                data=pickle.load(f)
-                f.close()
+            with open(fic_guardar_arbre,'rb') as fga:
+                data=pickle.load(fga)
+                fga.close()
         except:
             data=[]
   
@@ -206,6 +206,7 @@ class QvUbicacions(QWidget):
         self.actExpand.setStatusTip("Expand")
         self.actExpand.triggered.connect(self.expand_all)
         self.arbre.addAction(self.actExpand)
+       
 
         self.actClear = QAction("Esborrar arbre", self)
         self.actClear.setStatusTip("Clear")
@@ -226,6 +227,7 @@ class QvUbicacions(QWidget):
 
         # Instanciamos MODELO *********************************************************************
         self.model = StandardItemModel_mio(data, ubicacions = self)
+
         # asignamos al arbol el modelo
         self.arbre.setModel(self.model)
 
@@ -263,11 +265,11 @@ class QvUbicacions(QWidget):
         icon.addPixmap(QPixmap(fichero))  
         # icon.addPixmap(QPixmap("D:/projectes_py/qVista/imatges/guardar.png"))  
 
-        self.boton_1 = QPushButton(icon,'')       
-        self.boton_1.setToolTip("Desar ubicacions")
-        self.boton_1.setMaximumSize(QSize(20,20))
-        self.boton_1.show()
-        self.boton_1.clicked.connect(self.model.exportData)
+        # self.boton_1 = QPushButton(icon,'')       
+        # self.boton_1.setToolTip("Desar ubicacions")
+        # self.boton_1.setMaximumSize(QSize(20,20))
+        # self.boton_1.show()
+        # self.boton_1.clicked.connect(self.model.exportData)
 
         self.lblubicacio = QLabel('Ubicació:') 
 
@@ -278,7 +280,7 @@ class QvUbicacions(QWidget):
         # incluimos en la caja horizontal el line edit y el boton (entran de izquierda a derecha)
         self.layHUbicacions.addWidget(self.lblubicacio)
         self.layHUbicacions.addWidget(self.leUbicacions)
-        self.layHUbicacions.addWidget(self.boton_1)  # y colocacion en contenidor horizontal   
+        # self.layHUbicacions.addWidget(self.boton_1)  # y colocacion en contenidor horizontal   
 
         # incluimos en caja vertical el la caja horizontal y el arbol  (entran desde abajo) 
         self.layVUbicacions.addLayout(self.layHUbicacions)
@@ -293,7 +295,10 @@ class QvUbicacions(QWidget):
         self.arbre.setHorizontalScrollBarPolicy(1)  
 
 
-
+       
+       
+       
+       
     def esborrarNode(self):
         """ Eliminar rama del arbol
         """
@@ -360,10 +365,10 @@ class QvUbicacions(QWidget):
                 pass               
 
         self.leUbicacions.clear()
-        try:
-            self.model.exportData()
-        except Exception  as ee:
-            print(str(ee))
+        # try:
+        #     self.model.exportData()
+        # except Exception  as ee:
+        #     print(str(ee))
         
         
 

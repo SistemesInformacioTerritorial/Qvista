@@ -2127,7 +2127,30 @@ class QVista(QMainWindow, Ui_MainWindow):
         pass
 
     def gestioSortida(self):
-        QvApp().logFi()
+        
+        try:
+            self.ubicacions.model.exportData()
+        except Exception  as ee:
+            print(str(ee))
+
+        # cerrar sqlite de direcciones
+        try:
+            if self.cAdrec.db.isOpen():
+                self.cAdrec.db.close()
+        except Exception as ee:
+            print(str(ee))
+
+
+
+        try:
+            QvApp().logFi()
+        except Exception as ee:
+            msg = QMessageBox()
+            msg.setIcon(QMessageBox.Warning)
+            
+            msg.setText(strin(ee))
+            msg.setStandardButtons(QMessageBox.Close)
+            retval = msg.exec_()
 
     def handleSave(self):
         self.table = self.taulesAtributs.widget(0)
@@ -2336,6 +2359,17 @@ def seleccioExpressio():
     if qV.leSeleccioExpressio.text().lower() == 'direle':
         disgregarDirele()
         return
+
+    if qV.leSeleccioExpressio.text().lower() == 'version':
+        msg = QMessageBox()
+        msg.setIcon(QMessageBox.Warning)
+        
+        msg.setText('20190527 08:33  cierro bbdd sqlite en gestioSortida')
+        # msg.setInformativeText("OK para salir del programa \nCANCEL para seguir en el programa")
+        msg.setWindowTitle("qVista version")
+        msg.setStandardButtons(QMessageBox.Close)
+        retval = msg.exec_()
+        return        
 
 
     if (qV.leSeleccioExpressio.text().lower() == 'qvdebug') :
