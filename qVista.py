@@ -2682,7 +2682,7 @@ def main(argv):
         splash = QSplashScreen(splash_pix, Qt.WindowStaysOnTopHint)
         splash.setWindowFlags(Qt.WindowStaysOnTopHint | Qt.FramelessWindowHint)
         splash.setEnabled(True)
-        splash.showMessage("Institut Municipal d'Informàtica (IMI)\nVersió "+versio,Qt.AlignRight | Qt.AlignBottom, QvConstants.COLORFOSC)
+        splash.showMessage("""Institut Municipal d'Informàtica (IMI) Versió """+versio+'  ',Qt.AlignRight | Qt.AlignBottom, QvConstants.COLORFOSC)
         splash.setFont(QFont(QvConstants.NOMFONT,8))
         splash.show()
         app.processEvents()

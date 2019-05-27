@@ -357,11 +357,11 @@ class QvCarregaCsvXY(QvCarregaCsvPage):
         self.cbProj.currentIndexChanged.connect(projChanged)
         projChanged()
 
-        self.setFinalPage(True)
+        #self.setFinalPage(True)
         self.mostraTaula()
 
     def nextId(self):
-        return -1  # No hi ha pàgina següent
+        return QvCarregaCsv.finestres.Personalitza
 
 
 class QvCarregaCsvAdreca(QvCarregaCsvPage):
