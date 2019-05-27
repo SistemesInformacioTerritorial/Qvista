@@ -11,8 +11,11 @@ class QvConstants:
     Nota: No canviar el valor de les constants. No són constants
     '''
     # Fonts del qVista
-    FONTTITOLS = QFont('Arial', 12, QFont.Bold)
-    FONTTEXT = QFont('Arial', 10)
+    NOMFONT='Arial'
+    MIDAFONTTITOLS=12
+    MIDAFONTTEXT=10
+    FONTTITOLS = QFont(NOMFONT, MIDAFONTTITOLS, QFont.Bold)
+    FONTTEXT = QFont(NOMFONT,MIDAFONTTEXT, 10)
 
     # Colors del qVista, utilitzant el seu codi HTML
     COLORFOSCHTML = '#38474F'
@@ -31,10 +34,11 @@ class QvConstants:
     COLORDESTACAT = QColor(COLORDESTACATHTML)
     COLOROMBRA = QColor(COLOROMBRAHTML)
 
-    ARXIUAVIS = 'd:/qVista/codi/News/Avisos.htm'
-    ARXIUTMPAVIS = tempfile.gettempdir()+'\\ultimAvisObert'
-    ARXIUNEWS = 'd:/qVista/codi/News/Noticies.htm'
-    ARXIUTMP = tempfile.gettempdir()+'\\ultimaNewOberta'
+    # TEMPDIR='C:/temp/qVista/temp'
+    # ARXIUAVIS = 'L:/DADES/SIT/Doc/QVISTA/Avisos.htm'
+    # ARXIUTMPAVIS = TEMPDIR+'/ultimAvisObert'
+    # ARXIUNEWS = 'L:/DADES/SIT/Doc/QVISTA/Noticies.htm'
+    # ARXIUTMP = TEMPDIR+'/ultimaNewOberta'
     # Això de sota no hauria d'estar aquí
     SCROLLBARSTYLESHEET = """
             QScrollBar {

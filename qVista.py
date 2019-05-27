@@ -32,6 +32,8 @@ from moduls.QvPushButton import QvPushButton
 from moduls.QvGeocod import QvGeocod
 from moduls.QvSuggeriments import QvSuggeriments
 from moduls.QvCarregaCsv import QvCarregaCsv
+from moduls.QvConstants import QvConstants
+from moduls.QvAvis import QvAvis
 import re
 import csv
 import os
@@ -2664,10 +2666,13 @@ def main(argv):
         qVapp = QvApp()
 
         # Splash image al començar el programa. La tancarem amb splash.finish(qV)
-        splash_pix = QPixmap('imatges/qvistaLogo2.png')
+        #splash_pix = QPixmap('imatges/qvistaLogo2.png')
+        splash_pix = QPixmap('imatges/SplashScreen_qVista.png')
         splash = QSplashScreen(splash_pix, Qt.WindowStaysOnTopHint)
         splash.setWindowFlags(Qt.WindowStaysOnTopHint | Qt.FramelessWindowHint)
         splash.setEnabled(True)
+        splash.showMessage("Institut Municipal d'Informàtica (IMI)\nVersió "+versio,Qt.AlignRight | Qt.AlignBottom, QvConstants.COLORFOSC)
+        splash.setFont(QFont(QvConstants.NOMFONT,8))
         splash.show()
         app.processEvents()
 
@@ -2704,6 +2709,7 @@ def main(argv):
 
         # Tanquem la imatge splash.
         splash.finish(qV)
+        avisos=QvAvis()
         # news = QvNews()
         # news.setWizardStyle(QWizard.ClassicStyle)
         # news.exec()
