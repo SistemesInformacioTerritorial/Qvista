@@ -36,8 +36,8 @@ class QCercadorAdreca(QObject):
         self.dictCarrers = {}
         self.dictNumeros = collections.defaultdict(dict)
 
-        self.db = QSqlDatabase.addDatabase('QSQLITE') # Creamos la base de datos
-        self.db.setDatabaseName(self.__CarrersNum_sqlite) # Le asignamos un nombre
+        self.db = QSqlDatabase.addDatabase('QSQLITE', self.__CarrersNum_sqlite) # Creamos la base de datos
+        # self.db.setDatabaseName(self.__CarrersNum_sqlite) # Le asignamos un nombre
         self.db.setConnectOptions("QSQLITE_OPEN_READONLY")
         
         if not self.db.open(): # En caso de que no se abra
@@ -55,8 +55,9 @@ class QCercadorAdreca(QObject):
 
       
 
-    def __exit__(self, exception_type, exception_value, traceback):
-        print("in __exit__    ****************************************")
+    def cercadorAdrecaFi(self):
+        if self.db.isOpen():
+            self.db.close()
 
     def prepararCompleterCarrer(self):
         # creo instancia de completer que relaciona diccionario de calles con lineEdit
