@@ -337,7 +337,8 @@ class QvCarregaCsvXY(QvCarregaCsvPage):
         #projeccions = [25831, 1 , 2 , 3]
         projeccionsDict = {'EPSG:25831 UTM ETRS89 31N':25831,
                            'EPSG:3857 Pseudo Mercator (Google)':3857,
-                           'EPSG:4326 WGS 84':4326}
+                           'EPSG:4326 WGS 84':4326,
+                           'EPSG:23031 ED50 31N':25831}
         self.cbProj.clear()
         self.cbProj.addItems([str(x) for x, y in projeccionsDict.items()])
         self.layoutCoordP.addWidget(self.lblProj)
@@ -356,11 +357,14 @@ class QvCarregaCsvXY(QvCarregaCsvPage):
         self.cbY.currentIndexChanged.connect(yChanged)
         self.cbProj.currentIndexChanged.connect(projChanged)
         projChanged()
-
+        nofares =  3
         #self.setFinalPage(True)
         self.mostraTaula()
 
     def nextId(self):
+        self.parent.setCoordX(self.cbX.currentText())
+        self.parent.setCoordY(self.cbY.currentText())
+
         return QvCarregaCsv.finestres.Personalitza
 
 
@@ -669,6 +673,7 @@ class QvCarregaCsvPersonalitza(QvCarregaCsvPage):
         self.lblNom.setText("Nom de la capa:")
         self.leNom = QLineEdit()
         self.leNom.setText(parent.nomCapa)
+        self.leNom.textChanged.connect(lambda: self.parent.setNomCapa(self.leNom.text()))
         self.layNom.addWidget(self.lblNom)
         self.layNom.addWidget(self.leNom)
         self.layout.addLayout(self.layNom)
