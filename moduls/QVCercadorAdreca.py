@@ -36,8 +36,10 @@ class QCercadorAdreca(QObject):
         self.dictCarrers = {}
         self.dictNumeros = collections.defaultdict(dict)
 
-        self.db = QSqlDatabase.addDatabase('QSQLITE', self.__CarrersNum_sqlite) # Creamos la base de datos
-        # self.db.setDatabaseName(self.__CarrersNum_sqlite) # Le asignamos un nombre
+        self.db = QSqlDatabase.addDatabase('QSQLITE', 'CyN') # Creamos la base de datos
+        self.db.setDatabaseName(self.__CarrersNum_sqlite) # Le asignamos un nombre
+
+
         self.db.setConnectOptions("QSQLITE_OPEN_READONLY")
         
         if not self.db.open(): # En caso de que no se abra
