@@ -28,7 +28,15 @@ from moduls.QvMarxesCiutat import MarxesCiutat
 from moduls.QvToolTip import QvToolTip
 from moduls.QvDropFiles import QvDropFiles
 from moduls.QvNews import QvNews
-
+from moduls.QvPushButton import QvPushButton
+from moduls.QvGeocod import QvGeocod
+from moduls.QvSuggeriments import QvSuggeriments
+from moduls.QvCarregaCsv import QvCarregaCsv
+from moduls.QvConstants import QvConstants
+from moduls.QvAvis import QvAvis
+import re
+import csv
+import os
 # Impressió del temps de carrega dels moduls Qv
 print ('Temps de carrega dels moduls Qv:', time.time()-iniciTempsModuls)
 
@@ -107,7 +115,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.mapaMaxim = False
         self.layerActiu = None
         self.prepararCercador = True
-        self.lblMovie = None
+        self.lblMovie = None        
         self.ubicacions= None
         self.cAdrec= None
 
@@ -339,7 +347,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.lytBotoneraLateral.addItem(spacer2)
         
         self.qvNews = QvNews()
-        # self.bInfo = self.botoLateral(tamany = 25, accio=self.qvNews)
+        self.bInfo = self.botoLateral(tamany = 25, accio=self.qvNews)
         # self.bInfo = self.botoLateral(tamany = 25, accio=self.actInfo)
         self.bHelp = self.botoLateral(tamany = 25, accio=self.actHelp)
         self.bBug = self.botoLateral(tamany = 25, accio=self.actBug)
@@ -534,7 +542,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         # self.leNumero.setDisabled(True)
 
 
-        # aqui
+
         self.boton_bajar= QPushButton()
         self.boton_bajar.clicked.connect(self.CopiarA_Ubicacions)
         self.boton_bajar.setIcon(QIcon('imatges/down3-512.png'))
@@ -553,7 +561,6 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.boton_invocarStreetView.setMinimumWidth(25)
         self.boton_invocarStreetView.setMaximumWidth(25)
         self.boton_invocarStreetView.setToolTip("Mostrar aquest carrer i aquest número en StreetView")
-        
 
         self.layoutbottom.addWidget(QHLine())
         self.layoutbottom.addWidget(self.distBarris.view)
@@ -581,10 +588,8 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         self.setTabOrder(self.leCarrer, self.leNumero)
         # Activem la clase de cerca d'adreces
-        
-        
         self.cAdrec=QCercadorAdreca(self.leCarrer, self.leNumero,'SQLITE')    # SQLITE o CSV
-             
+          
         self.cAdrec.sHanTrobatCoordenades.connect(self.trobatNumero_oNo) 
 
         self.dwCercador = QDockWidget( "Cercador", self )
@@ -594,10 +599,9 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.dwCercador.setWidget( self.fCercador)
         self.dwCercador.setContentsMargins ( 2, 2, 2, 2 )
         self.addDockWidget( Qt.RightDockWidgetArea, self.dwCercador)
-        
 
-    def CopiarA_Ubicacions(self):
-        # self.ubicacions.leUbicacions.setText("->"+self.leCarrer.text()+"  "+self.leNumero.text())
+    def CopiarA_Ubicacions(self):       
+         # self.ubicacions.leUbicacions.setText("->"+self.leCarrer.text()+"  "+self.leNumero.text())
         if self.cAdrec.NumeroOficial=='0':
             self.cAdrec.NumeroOficial=''
 
@@ -784,7 +788,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.menuEntorns = self.bar.addMenu(3*' '+'Entorns'+3*' ')
         
         fnt = QFont("Segoe UI", 16, weight=QFont.Normal)
-        self.menuEntorns.setStyleSheet("QMenu {color: #79909B; background-color: #dddddd; selection-background-color : #2f4550;}")
+        self.menuEntorns.setStyleSheet("QMenu {color: #465A63; background-color: #dddddd; selection-background-color : #2f4550;}")
         self.menuEntorns.setFont(fnt)
         self.menuEntorns.styleStrategy = QFont.PreferAntialias or QFont.PreferQuality
         for entorn in os.listdir(os.path.dirname('entorns/')):          
@@ -821,8 +825,6 @@ class QVista(QMainWindow, Ui_MainWindow):
 
             self.marcaLloc = QgsVertexMarker(self.canvas)
             self.marcaLloc.setCenter( self.cAdrec.coordAdreca )
-            # self.leNumero.setToolTip('Num oficial: '+self.cAdrec.NumeroOficial)
-            
             self.marcaLloc.setColor(QColor(255, 0, 0))
             self.marcaLloc.setIconSize(15)
             self.marcaLloc.setIconType(QgsVertexMarker.ICON_BOX) # or ICON_CROSS, ICON_X
@@ -1060,23 +1062,30 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.actHelp.setIcon(icon)
         self.actHelp.triggered.connect(self.helpQVista)
                 
-        self.actBug = QAction("Ajuda ", self)
+        # self.actBug = QAction("Ajuda ", self)
+        # icon=QIcon('imatges/bug.png')
+        # self.actBug.setIcon(icon)
+        # self.actBug.triggered.connect(self.reportarBug)
+
+        #bEnviar.clicked.connect(lambda: reportarProblema(leTitol.text(), leDescripcio.text()))
+        self.suggeriments=QvSuggeriments(reportarProblema)
+        self.actBug = QAction("Problemes o suggeriments ", self)
         icon=QIcon('imatges/bug.png')
         self.actBug.setIcon(icon)
-        self.actBug.triggered.connect(self.reportarBug)
+        self.actBug.triggered.connect(self.suggeriments.show)
                 
         self.actPintaLabels = QAction("pintaLabels", self)
         self.actPintaLabels.setStatusTip("pintaLabels")
         self.actPintaLabels.triggered.connect(self.pintaLabels)
 
-        self.actObrirCataleg = QAction("GIS Point", self)
+        self.actObrirCataleg = QAction("Afegir capa", self)
         self.actObrirCataleg.setStatusTip("Catàleg d'Informació Territorial")
-        self.actObrirCataleg.setIcon(QIcon('imatges/map-plus.png'))
+        self.actObrirCataleg.setIcon(QIcon('imatges/layers_2.png'))
         self.actObrirCataleg.triggered.connect(self.obrirCataleg)
 
         self.actObrirCatalegProjectesLlista = QAction("Mapes", self)
         self.actObrirCatalegProjectesLlista.setStatusTip("Catàleg de Mapes")
-        self.actObrirCatalegProjectesLlista.setIcon(QIcon('imatges/catalegProjectes.png'))
+        self.actObrirCatalegProjectesLlista.setIcon(QIcon('imatges/map-plus.png'))
         self.actObrirCatalegProjectesLlista.triggered.connect(self.obrirCatalegProjectesLlista)
 
         self.actObrirMapeta = QAction("Mapeta", self)
@@ -1159,7 +1168,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.actDashStandard.triggered.connect(self.dashStandard)
 
         self.actAdreces = QAction("Cerca per adreça", self)
-        self.actAdreces.setIcon(QIcon('imatges/map-marker.png'))
+        self.actAdreces.setIcon(QIcon('imatges/map-search.png'))
         self.actAdreces.setStatusTip("Adreces")
         self.actAdreces.triggered.connect(self.adreces)
 
@@ -1465,7 +1474,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         # catalegMenu = self.bar.addMenu("                   Catàleg  ")
 
         fnt= QFont("Segoe UI", 16, weight=QFont.Normal)
-        self.menuProjectes.setStyleSheet("QMenu {color: #79909B; background-color: #dddddd; selection-background-color : #2f4550;}")
+        self.menuProjectes.setStyleSheet("QMenu {color: #465A63; background-color: #dddddd; selection-background-color : #2f4550;}")
         self.menuProjectes.setFont(fnt)
         self.menuProjectes.styleStrategy = QFont.PreferAntialias or QFont.PreferQuality
         self.menuProjectes.addAction(self.actObrirProjecte)
@@ -1477,13 +1486,13 @@ class QVista(QMainWindow, Ui_MainWindow):
         # self.menuCarregarNivell.setFont(fnt)
         # self.menuCarregarNivell.styleStrategy = QFont.PreferAntialias or QFont.PreferQuality
 
-        # # self.menuCarregarNivell.addActio
+        # # self.menuCarregarNivell.addAction("Oracle")
         # self.menuCarregarNivell.addAction(self.actAfegirNivellSHP)
         # self.menuCarregarNivell.addAction(self.actAfegirNivellCSV)
         # self.menuCarregarNivell.addAction(self.actAfegirNivellGPX)
         # self.menuCarregarNivell.addAction(self.actAfegirNivellQlr)
         
-        self.menuFuncions.setStyleSheet("QMenu {background-color: #dddddc; selection-background-color : #79909B;}")
+        self.menuFuncions.setStyleSheet("QMenu {color: #465A63 background-color: #dddddc; selection-background-color : #79909B;}")
         
         self.menuFuncions.setFont(fnt)
         self.menuFuncions.addAction(self.actEsborrarSeleccio)
@@ -2129,7 +2138,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         pass
 
     def gestioSortida(self):
-
+        
         try:
             if self.ubicacions is not None:
                 self.ubicacions.ubicacionsFi()
@@ -2151,7 +2160,6 @@ class QVista(QMainWindow, Ui_MainWindow):
             msg.setText(strin(ee))
             msg.setStandardButtons(QMessageBox.Close)
             retval = msg.exec_()
-
     def handleSave(self):
         self.table = self.taulesAtributs.widget(0)
         path,_ = QFileDialog.getSaveFileName(self, 'Guardar archivo', '', 'CSV(*.csv)')
@@ -2285,13 +2293,12 @@ def disgregarDirele():
     if __numerosCSV:
         f_read = open(__numerosCSV, 'r')
         with f_read:
-            reader = csv.reader(f_read, delimiter = ';')
+            reader = csv.reader(f_read, delimiter = ',')
             count=0
             codi_carrer_old=''
             for row in reader:    
                 if count==0:
                     cabecera=row
-                    del cabecera[0]
                 else:
                     codi_carrer=row[0]
                     if codi_carrer != codi_carrer_old:
@@ -2302,13 +2309,10 @@ def disgregarDirele():
                             pass
 
                         f_write = open(path, 'a')
-                        writer = csv.writer(f_write, delimiter = ';',lineterminator='\n')
-                        
+                        writer = csv.writer(f_write)
                         writer.writerow(cabecera)
-                        del row[0]
                         writer.writerow(row)
                     else:
-                        del row[0]
                         writer.writerow(row)
                         
                     codi_carrer_old= codi_carrer
@@ -2320,8 +2324,25 @@ def disgregarDirele():
 
     pass
 
+def nivellCsv(fitxer: str,delimitador: str,campX: str,campY: str, projeccio: int = 23031, nomCapa: str = 'Capa sense nom', color = 'cyan', symbol = 'circle'):
+    uri = "file:///"+fitxer+"?type=csv&delimiter=%s&xField=%s&yField=%s" % (delimitador,campX,campY)
+    layer = QgsVectorLayer(uri, nomCapa, 'delimitedtext')
+    layer.setCrs(QgsCoordinateReferenceSystem(projeccio, QgsCoordinateReferenceSystem.EpsgCrsId))
+    if layer is not None:
+        symbol = QgsMarkerSymbol.createSimple({'name': symbol, 'color': color})
+        layer.renderer().setSymbol(symbol)
+        qV.project.addMapLayer(layer)
+        print("add layer")
 
-
+# def carregaCSVWizard(fitxer: str,delimitador: str,campX: str,campY: str, projeccio: int = 23031, nomCapa: str = 'Capa sense nom', color, symbol):
+#     uri = "file:///"+fitxer+"?type=csv&delimiter=%s&xField=%s&yField=%s" % (delimitador,campX,campY)
+#     layer = QgsVectorLayer(uri, nomCapa, 'delimitedtext')
+#     layer.setCrs(QgsCoordinateReferenceSystem(projeccio, QgsCoordinateReferenceSystem.EpsgCrsId))
+#     if layer is not None:
+#         symbol = QgsMarkerSymbol.createSimple({'name': symbol, 'color': color})
+#         layer.renderer().setSymbol(symbol)
+#         qV.project.addMapLayer(layer)
+#         print("add layer")
 
 def seleccioCercle():
     seleccioClick()
@@ -2369,9 +2390,7 @@ def seleccioExpressio():
         msg.setWindowTitle("qVista version")
         msg.setStandardButtons(QMessageBox.Close)
         retval = msg.exec_()
-        return        
-
-
+        return     
     if (qV.leSeleccioExpressio.text().lower() == 'qvdebug') :
         qV.modeDebug()
         return
@@ -2476,7 +2495,7 @@ def escollirNivellCSV():
         with open(nfile) as f:
             reader = csv.DictReader(f, delimiter=';')
             llistaCamps = reader.fieldnames
-        print (llistaCamps)
+        #print (llistaCamps)
         projeccio = 25831
         titol = 'Còpia de Models adreces.csv'
         nivellCsv(nfile,';','XNUMPOST','YNUMPOST', projeccio, nomCapa = titol)
@@ -2511,161 +2530,21 @@ def escollirNivellCSV():
 #         titol = dCSV.ui.leNomCapa.text()
 #         nivellCsv(nfile,dCSV.ui.cbDelimitador.currentText(),dCSV.ui.cbDelX.currentText(),dCSV.ui.cbDelY.currentText(), projeccio, nomCapa = titol)
 #         #carregarCsvATaula(nfile,';')
+    
 
+globalLlistaCamps=None
+tamanyReader=0
 def carregarLayerCSV(nfile):
-    #dCSV = DialegCSV()
-    #dCSV.finished.connect(dCSV)
-   
-    # print(dCSV.ui.cbDelimitador.currentText())
-    # print("D"+dCSV.ui.cbDelimitador.currentText()+"D")
-    #projeccio = 0
-    if nfile:
-        with open(nfile) as arxiuCsv:
-            separador=infereixSeparadorRegex(arxiuCsv)
-            varX=''
-            varY=''
-            def actualitzaCamps():
-                if radio1.isChecked():
-                        separador=';'
-                elif radio2.isChecked():
-                        separador=','
-                elif radio3.isChecked():
-                        separador='.'
-                else:
-                        separador=':'
-                arxiuCsv.seek(0)
-                reader=csv.DictReader(arxiuCsv, delimiter=separador)
-                llistaCamps = reader.fieldnames
-                print(llistaCamps)
-                cbx.clear()
-                cby.clear()
-                cbx.addItems(llistaCamps)
-                cby.addItems(llistaCamps)
-                #table.recarrega(separador)
-
-            dialog = QDialog()
-            dialog.setModal(True)
-            layCsv =  QVBoxLayout()
-            leNom=QLineEdit()
-            leNom.setPlaceholderText('Nom de la capa')
-            layCsv.addWidget(leNom)
-            #lblH = QLabel()
-            #layCsv.addWidget(lblH)
-
-
-            cbx=QComboBox()
-            lblcbx = QLabel()
-            lblcbx.setText("Etiqueta X")
-            cby=QComboBox()
-            lblcby = QLabel()
-            lblcby.setText("Etiqueta Y")
-            layCbx = QHBoxLayout()
-            layCbx.addWidget(lblcbx)
-            layCbx.addWidget(cbx)
-            layCby = QHBoxLayout()
-            layCby.addWidget(lblcby)
-            layCby.addWidget(cby)
-
-            radio1 = QRadioButton("Punt i coma (;)")
-            radio1.toggled.connect(actualitzaCamps)
-            radio2 = QRadioButton("Coma (,)")
-            radio2.toggled.connect(actualitzaCamps)
-            radio3 = QRadioButton("Punt (.)")
-            radio3.toggled.connect(actualitzaCamps)
-            radio4 = QRadioButton("Dos punts (:)")
-            radio4.toggled.connect(actualitzaCamps)
-            if isinstance(separador,str):
-                #lblH.setText('Separador inferit: '+separador)
-                if separador==';':
-                        radio1.setChecked(True)
-                elif separador==',':
-                        radio2.setChecked(True)
-                elif separador=='.':
-                        radio3.setChecked(True)
-                else:
-                        radio4.setChecked(True)
-                #actualitzaCamps()
-
-            #else:
-                #lblH.setText('Separadors inferits: '+str(separador))
-
-            layRB = QHBoxLayout()
-            layRB.addWidget(radio1)
-            layRB.addWidget(radio2)
-            layRB.addWidget(radio3)
-            layRB.addWidget(radio4)
-
-            groupBox1 = QGroupBox("Fitxer")
-            groupBox1.setLayout(layRB)
-
-            groupBox2 = QGroupBox("Decimals")
-            radiob1 = QRadioButton("coma (,)")
-            radiob2 = QRadioButton("punt(.)")
-            radiob2.setChecked(True)
-            vbox = QVBoxLayout()
-            vbox.addWidget(radiob1)
-            vbox.addWidget(radiob2)
-            groupBox2.setLayout(vbox)
-
-            boxSeparador = QgsCollapsibleGroupBox()
-            boxSeparador.setTitle("Separadors")
-            boxSeparador.setChecked(True)
-            laySeparador = QHBoxLayout()
-            laySeparador.addWidget(groupBox1)
-            laySeparador.addWidget(groupBox2)
-            boxSeparador.setLayout(laySeparador)
-
-            layCsv.addWidget(boxSeparador)
-            print("boxseparador")
-
-            layProj = QHBoxLayout()
-            cbProj=QComboBox()
-            projeccions = [25831, 1 , 2 , 3]
-            cbProj.clear()
-            cbProj.addItems([str(x) for x in projeccions])
-            lblproj = QLabel()
-            lblproj.setText("Projeccio")
-            layProj.addWidget(lblproj)
-            layProj.addWidget(cbProj)
-
-            layGeometry = QVBoxLayout()
-            layGeometry.addLayout(layCbx)
-            layGeometry.addLayout(layCby)
-            layGeometry.addLayout(layProj)
-
-            boxGeometria = QgsCollapsibleGroupBox()
-            boxGeometria.setTitle("Definició de la Geometria")
-            boxGeometria.setChecked(True)
-            boxGeometria.setLayout(layGeometry)
-
-            layCsv.addWidget(boxGeometria)
-
-            print("abans table")
-            table=QvtLectorCsv(nfile,separador,None)
-            #table=QvLectorCsv(nom_fitxer)
-            #table.show()
-
-            vtaula = QVBoxLayout()
-            vtaula.addWidget(table)
-            groupBox3 = QGroupBox("Preview taula")
-            groupBox3.setLayout(vtaula)
-            layCsv.addWidget(groupBox3)
-
-
-            acceptar=QPushButton('Acceptar')
-            layCsv.addWidget(acceptar)
-            acceptar.clicked.connect(dialog.accept)
-
-            dialog.setLayout(layCsv)
-            dialog.exec()
-            varX=cbx.currentText()
-            varY=cby.currentText()
-            #print(varX, varY)
-            projeccio = int(cbProj.currentText())
-            nom=leNom.text()
-            print("abans crida csv")
-            nivellCsv(nfile,separador,varX,varY, projeccio, nomCapa = nom)
-        
+        if nfile: 
+            assistent=QvCarregaCsv(nfile,nivellCsv,qV)
+            assistent.setModal(True)
+            #assistent.setWindowFlags(assistent.windowFlags() | Qt.Popup)
+            #assistent.setWindowFlags(assistent.windowFlags() | Qt.WindowStaysOnTopHint)
+            #qV.raise_()
+            assistent.show()
+            #assistent.raise_()
+            #qV.setFocus()
+            
 
 def carregarNivellQlr():
     index = qV.wCataleg.ui.treeCataleg.currentIndex()
@@ -2772,13 +2651,7 @@ def loadCsv():
                     qV.tableView.resizeColumnsToContents()
     qV.dwTaula.show()
 
-def nivellCsv(fitxer,delimitador,campX,campY, projeccio = 23031, nomCapa = 'Capa sense nom'):
-    uri = "file:///"+fitxer+"?type=csv&delimiter=%s&xField=%s&yField=%s" % (delimitador,campX,campY)
-    layer = QgsVectorLayer(uri, nomCapa, 'delimitedtext')
-    layer.setCrs(QgsCoordinateReferenceSystem(projeccio, QgsCoordinateReferenceSystem.EpsgCrsId))
-    if layer is not None:
-        qV.project.addMapLayer(layer)
-        print("add layer")
+
 
 def missatgeCaixa(textTitol,textInformacio):
     msgBox=QMessageBox()
@@ -2787,59 +2660,21 @@ def missatgeCaixa(textTitol,textInformacio):
     ret = msgBox.exec()
 
 
-def infereixSeparadorRegex(arxiu):
-    import re
-    #Rep una llista i la retorna sense repeticions
-    def eliminaRep(lst):
-        return list(set(lst))
-    #Rep una llista i la retorna sense repeticions i ordenada
-    def eliminaRepOrd(lst):
-        return sorted(set(lst))
-
-    '''
-    Utilitzant expressions regulars
-    Un substring serà tot allò que comenci per ", i acabi amb ", sense contenir-ne cap a dins, de manera que ens ho carreguem
-    Un nombre serà [0-9]+, cosa que també ens carreguem
-    '''
-    def infereixSeparadorLinia(line):
-        aux=re.sub('"[^"]*"','',line)
-        aux=re.sub('[0-9]+','',aux)
-        aux=re.sub('[a-zA-Z]*','',aux)
-        aux=aux.replace('\n','')#Per si tenim salt de línia al final
-        auxSenseRep=eliminaRepOrd(aux) #Eliminem repeticions
-        if len(auxSenseRep)==1: return aux[0] 
-        #Creem una llista de tuples ordenada, on cada tupla conté el nombre d'aparicions del caracter i el caracter
-        #lst=[(aux.count(x),x) for x in auxSenseRep]
-        lst=sorted(map(lambda x: (aux.count(x),x),auxSenseRep))
-        return lst
-    def uneixLlistesAp(lst1, lst2):
-        return list(set(lst1)&set(lst2))
-    lst=[]
-    for x in arxiu.readlines():
-        act=infereixSeparadorLinia(x)
-        if isinstance(act,str):
-            arxiu.seek(0)
-            return act
-        if len(lst)==0: lst=act #Primera iteració
-        else: lst=uneixLlistesAp(lst,act)
-        if len(lst)==1:
-            arxiu.seek(0)
-            return lst[0][1]
-    arxiu.seek(0)
-    return [y for x,y in lst]
 
 def sortir():
     sys.exit()
 
 # Funcio per carregar problemes a GITHUB
-def reportarProblema(titol, descripcio=None):
+def reportarProblema(titol: str, descripcio: str=None):
 
     if QvApp().bugUser(titol, descripcio):
         print ('Creat el problema {0:s}'.format(titol))
-        qV.lblResultat.setText("S'ha enviat correctament.")
+        return True
+        #qV.lblResultat.setText("S'ha enviat correctament.")
     else:
         print ('Error al crear el problema {0:s}'.format(titol))
-        qV.lblResultat.setText('Error al crear el problema {0:s}'.format(titol))
+        return False
+        #qV.lblResultat.setText('Error al crear el problema {0:s}'.format(titol))
 
     # '''Crea un "issue" a github'''
     # USUARI = 'qVistaHost'
@@ -2867,37 +2702,6 @@ def reportarProblema(titol, descripcio=None):
     #     print ('Error al crear el problema {0:s}'.format(titol))
     #     qV.lblResultat.setText('Error al crear el problema {0:s}'.format(titol))
 
-class QvtLectorCsv(QvLectorCsv):
-        def __init__(self, fileName='', separador=None, parent=None):
-                print('Comencem init')
-                #QvLectorCsv.__init__(self, fileName)
-                super().__init__(fileName)
-                self.separador=separador
-                print('Init feta')
-                if self.separador is not None:
-                        print('Carrego el csv')
-                        self.carregaCsv(self.fileName,self.separador)
-        def carregaCsv(self, fileName, separador=None):
-                from PyQt5 import QtGui
-                if separador is None:
-                        super().carregaCsv(fileName)
-                        return
-                if fileName:
-                        print(fileName)
-                        f = open(fileName, 'r')
-                        with f:
-                                self.fname = os.path.splitext(str(fileName))[0].split("/")[-1]
-                                self.setWindowTitle(self.fname)
-                                reader=csv.reader(f,delimiter=separador)
-                                self.model.clear()
-                                for row in reader:
-                                        items=[QtGui.QStandardItem(field) for field in row]
-                                        self.model.appendRow(items)
-                                self.tableView.resizeColumnsToContents()
-                                print('Resize acabada')
-        def recarrega(self,separador):
-                self.separador=separador
-                self.carregaCsv(self.fileName,self.separador)
 
 def main(argv):
     # import subprocess
@@ -2909,10 +2713,13 @@ def main(argv):
         qVapp = QvApp()
 
         # Splash image al començar el programa. La tancarem amb splash.finish(qV)
-        splash_pix = QPixmap('imatges/qvistaLogo2.png')
+        #splash_pix = QPixmap('imatges/qvistaLogo2.png')
+        splash_pix = QPixmap('imatges/SplashScreen_qVista.png')
         splash = QSplashScreen(splash_pix, Qt.WindowStaysOnTopHint)
         splash.setWindowFlags(Qt.WindowStaysOnTopHint | Qt.FramelessWindowHint)
         splash.setEnabled(True)
+        splash.showMessage("""Institut Municipal d'Informàtica (IMI) Versió """+versio+'  ',Qt.AlignRight | Qt.AlignBottom, QvConstants.COLORFOSC)
+        splash.setFont(QFont(QvConstants.NOMFONT,8))
         splash.show()
         app.processEvents()
 
@@ -2949,9 +2756,7 @@ def main(argv):
 
         # Tanquem la imatge splash.
         splash.finish(qV)
-        # news = QvNews()
-        # news.setWizardStyle(QWizard.ClassicStyle)
-        # news.exec()
+        avisos=QvAvis()
         qVapp.logRegistre('LOG_TEMPS', qV.lblTempsArrencada.text())
         app.aboutToQuit.connect(qV.gestioSortida)
 
