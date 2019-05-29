@@ -338,7 +338,7 @@ class QvCarregaCsvXY(QvCarregaCsvPage):
         projeccionsDict = {'EPSG:25831 UTM ETRS89 31N':25831,
                            'EPSG:3857 Pseudo Mercator (Google)':3857,
                            'EPSG:4326 WGS 84':4326,
-                           'EPSG:23031 ED50 31N':25831}
+                           'EPSG:23031 ED50 31N':23031}
         self.cbProj.clear()
         self.cbProj.addItems([str(x) for x, y in projeccionsDict.items()])
         self.layoutCoordP.addWidget(self.lblProj)
