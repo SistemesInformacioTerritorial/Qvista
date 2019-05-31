@@ -7,6 +7,7 @@ from qgis.core import QgsPythonRunner
 from moduls.QvSingleton import Singleton
 from moduls.QvPythonRunner import QvPythonRunner
 from moduls.QvGithub import QvGithub
+from moduls.QvSqlite import QvSqlite
 from pathlib import Path
 import sys
 import getpass
@@ -75,6 +76,7 @@ class QvApp(Singleton):
 
         self.intranet = self.calcIntranet()         # True si en la intranet
         self.dbQvista = _DB_QVISTA[self.entorn]     # Conexión Oracle entorno
+        self.dbGeo = QvSqlite().dbGeoConnexio()     # Conexión Geocod SQlite
 
         self.proxy = self.setProxy()                # Establecer proxy
 
@@ -97,7 +99,7 @@ class QvApp(Singleton):
         else:
             self.gh = QvGithub(self.data(), self.github)
 
-        self.db = None
+        self.dbLog = None
         self.queryLog = None
         self.familyLog = None
         self.nameLog = None
@@ -231,11 +233,11 @@ class QvApp(Singleton):
 
     # Metodos db QVISTA
 
-    def dbConnexio(self):
+    def dbLogConnexio(self):
         if not self.intranet:
             return
         try:
-            if self.db is None:
+            if self.dbLog is None:
                 db = QSqlDatabase.addDatabase(self.dbQvista['Database'], 'LOG')
                 if db.isValid():
                     db.setHostName(self.dbQvista['HostName'])
@@ -244,37 +246,37 @@ class QvApp(Singleton):
                     db.setUserName(self.dbQvista['UserName'])
                     db.setPassword(self.dbQvista['Password'])
                     if db.open():
-                        self.db = db
+                        self.dbLog = db
         except Exception:
-            self.db = None
+            self.dbLog = None
 
-    def dbDesconnexio(self):
+    def dbLogDesconnexio(self):
         if not self.intranet:
             return
         try:
-            if self.db is not None:
-                conName = self.db.connectionName()
-                self.db.close()
-                self.db = None
+            if self.dbLog is not None:
+                conName = self.dbLog.connectionName()
+                self.dbLog.close()
+                self.dbLog = None
                 QSqlDatabase.removeDatabase(conName)
         except Exception:
-            self.db = None
+            self.dbLog = None
 
     # Metodos de LOG en Oracle
 
     def logInici(self, family='QVISTA', logname='DESKTOP', params=None):
         if not self.log:
             return False
-        self.dbConnexio()
-        if self.db is None:
+        self.dbLogConnexio()
+        if self.dbLog is None:
             return False
         self.familyLog = family.upper()
         self.nameLog = logname.upper()
-        self.queryLog = QSqlQuery(self.db)
+        self.queryLog = QSqlQuery(self.dbLog)
         return self.logRegistre('LOG_INICI', params)
 
     def logRegistre(self, topic, params=None):
-        if not self.log or self.db is None or self.queryLog is None:
+        if not self.log or self.dbLog is None or self.queryLog is None:
             return False
         try:
             self.queryLog.prepare("CALL QV_LOG_WRITE(:IDUSER, :IDSESSION, :FAMILY, :LOGNAME, :TOPIC, :PARAMS)")
@@ -291,11 +293,11 @@ class QvApp(Singleton):
 
     def logFi(self, params=None):
         ok = self.logRegistre('LOG_FI', params)
-        self.dbDesconnexio()
+        self.dbLogDesconnexio()
         return ok
 
     def logError(self):
-        if not self.log or self.db is None or self.queryLog is None:
+        if not self.log or self.dbLog is None or self.queryLog is None:
             return 'Log no actiu'
         try:
             return self.queryLog.lastError().text()
@@ -305,11 +307,11 @@ class QvApp(Singleton):
     # Metodos de geocodificación
 
     def geocod(self, tipusVia, variant, codi, numIni, lletraIni='', numFi='', lletraFi=''):
-        self.dbConnexio()
-        if self.db is None:
+        self.dbLogConnexio()
+        if self.dbLog is None:
             return None, None, False
         if self.queryGeo is None:
-            self.queryGeo = QSqlQuery(self.db)
+            self.queryGeo = QSqlQuery(self.dbLog)
         try:
             self.queryGeo.prepare("CALL QV_GEOCOD(:TIPUSVIA, :VARIANTE, :CODIGO, " +
                                   ":NUMINI, :LETRAINI, :NUMFIN, :LETRAFIN, :X, :Y)")

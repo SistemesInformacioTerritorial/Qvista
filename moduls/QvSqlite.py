@@ -1,61 +1,95 @@
 # -*- coding: utf-8 -*-
 
+from moduls.QvSingleton import Singleton
 from qgis.PyQt.QtSql import QSqlDatabase, QSqlQuery, QSql
+import os
 
 
-class QvSqlite:
-    """Clase con métodos estáticos para uso de la geocodificación de Oracle
-    """
+class QvSqlite(Singleton):
 
-    @staticmethod
-    def coordsCarrerNum(tipusVia, nomCarrer, numIni, lletraIni='', numFi='', lletraFi=''):
-        """Retorna las coordenadas de una dirección postal
+    def __init__(self):
+        if hasattr(self, 'db'):  # Se inicializa una vez
+            return
+        self.db = None
+        self.query = None
+        self.dbFile = r'Dades\Geocod.db'
+        self.trans = str.maketrans('ÁÉÍÓÚáéíóúÀÈÌÒÙàèìòùÂÊÎÔÛâêîôûÄËÏÖÜäëïöü·ºª.',
+                                   'AEIOUAEIOUAEIOUAEIOUAEIOUAEIOUAEIOUAEIOU.   ')
 
-        Arguments:
-            tipusVia {str} -- Tipo de vía
-            nomCarrer {str} -- Nombre o variante de la calle
-            numIni {str} -- Número postal (primero)
+    def dbGeoConnexio(self):
+        try:
+            if self.db is None:
+                if not os.path.exists(self.dbFile):
+                    return None
+                db = QSqlDatabase.addDatabase('QSQLITE', 'GEO')
+                db.setDatabaseName(self.dbFile)
+                db.setConnectOptions("QSQLITE_OPEN_READONLY")
+                if db.isValid() and db.open():
+                    self.db = db
+                    self.query = QSqlQuery(self.db)
+                    # ok = self.query.exec_("PRAGMA cache_size = 32768")
+                    # ok = self.query.exec_("PRAGMA temp_store = MEMORY")
+                else:
+                    self.db = None
+                    self.query = None
+                return db
+        except Exception:
+            self.db = None
+            self.query = None
+            return None
 
-        Keyword Arguments:
-            lletraIni {str} -- Letra del primer número postal (default: {''})
-            numFi {str} -- Segundo número postal (default: {''})
-            lletraFi {str} -- Letra del segundo número postal (default: {''})
+    def dbGeoDesconnexio(self):
+        try:
+            if self.db is not None:
+                if self.db.isOpen():
+                    self.db.close()
+                self.db = None
+                self.query = None
+        except Exception:
+            self.db = None
+            self.query = None
 
-        Returns:
-            x, y -- Coordenadas en formato ETRS89, o None si no se encuentra
-        """
-#        return QvApp().geocod(tipusVia, nomCarrer, '', numIni, lletraIni, numFi, lletraFi)
+    def dbSelectValue(self, select, param):
+        if self.db is None or param == '' or param is None:
+            return ''
+        try:
+            select = select.format(param)
+            if self.query.exec_(select) and self.query.next():
+                txt = self.query.value(0)
+                self.query.finish()
+                return txt
+            else:
+                err = self.query.lastError().databaseText()
+                self.query.finish()
+                if err is not None and err != '':
+                    print(err)
+                return ''
+        except Exception:
+            err = self.query.lastError().databaseText()
+            if err is not None and err != '':
+                print(err)
+            return ''
 
-    @staticmethod
-    def coordsCodiNum(codiCarrer, numIni, lletraIni='', numFi='', lletraFi=''):
-        """Retorna las coordenadas a partir de código de calle y número postal
+    def dbTipusVia(self, variant):
+        select = "SELECT TIPUS_VIA FROM TipusVia WHERE VARIANT='{}'"
+        return self.dbSelectValue(select, variant.strip().replace("'", "''"))
 
-        Arguments:
-            codiCarrer {str} -- Código de calle
-            numIni {str} -- Número postal (primero)
+    def dbVariant(self, variant):
+        select = "SELECT CODI FROM Variants WHERE VARIANT='{}'"
+        return self.dbSelectValue(select, variant.strip().replace("'", "''"))
 
-        Keyword Arguments:
-            lletraIni {str} -- Letra del primer número postal (default: {''})
-            numFi {str} -- Segundo número postal (default: {''})
-            lletraFi {str} -- Letra del segundo número postal (default: {''})
-
-        Returns:
-            x, y -- Coordenadas en formato ETRS89, o None si no se encuentra
-        """
-#        return QvApp().geocod('', '', codiCarrer, numIni, lletraIni, numFi, lletraFi)
-
-    @staticmethod
-    def normalitzaVariant(variant=''):
+    def codiCarrerVariant(self, variant):
         if variant == '' or variant is None:
             return ''
 
-        # Pasar a mayúsculas, eliminar acenttos y otros caracteres, trim
+        # Pasar a mayúsculas, eliminar acentos y otros caracteres, trim
         variant = variant.upper()
-        variant = variant.maketrans('ÁÉÍÓÚáéíóúÀÈÌÒÙàèìòùÂÊÎÔÛâêîôûÄËÏÖÜäëïöü·ºª.',
-                                    'AEIOUAEIOUAEIOUAEIOUAEIOUAEIOUAEIOUAEIOU.   ')
+        variant = variant.translate(self.trans)
         variant = variant.strip()
+
+        # Si no quedan caracteres, hemos terminado
         if variant == '':
-            return variant
+            return ''
 
         # Eliminar espacions en blanco redundantes
         tmp = variant.replace('  ', ' ')
@@ -64,211 +98,113 @@ class QvSqlite:
             tmp = variant.replace('  ', ' ')
 
         # Las variantes tienen como máximo 30 caracteres
-        if len(variant) > 30:
-            variant = variant[0:30]
+        variant30 = variant[:30]
 
+        # Si se encuentra la variante exacta, hemos terminado
+        codi = self.dbVariant(variant30)
+        if codi != '':
+            return codi
 
+        # Dividimos la variante en primera palabra y resto
+        parte = variant.split(' ', 1)
+        num = len(parte)
 
+        if num > 1:
+            tipus = self.dbTipusVia(parte[0])
+            variant = parte[1]
+        else:
+            tipus = ''
+            variant = parte[0]
 
-        return variant
+        # Dividimos la variante en primera palabra, segunda y resto
+        parte = variant.split(' ', 2)
+        num = len(parte)
 
+        # Busqueda y eliminación de partículas:
+        # "DE", "DEL", "DELS", "D'EN", "D'", "DE L'", "DE LA", "DE LES", "DE LOS", "DE LAS"
+        if num > 1:
+            if parte[0] in ("DE", "DEL", "DELS", "D'EN", "D'"):
+                if num == 3:
+                    if parte[0] == "DE" and parte[1] in ("L'", "LA", "LES", "LOS", "LAS"):
+                        variant = parte[2]
+                    else:
+                        variant = parte[1] + ' ' + parte[2]
+                else:
+                    variant = parte[1]
 
-#    -------------------------------------------------------------------------------------------
-#    -- ( fNormalizaVariante ) --------------------------------------------------------------
-#    -------------------------------------------------------------------------------------------
-#    -- Entorno : Privada --------------------------------------------------------------------
-#    -- Parametros : pVARIANTE        ( Entrada - Variante a tratar )
-#    -- Retorno :    pRESULTADO ->    Variante resultante ya tratada
-#    -- Función : Retorna la variante despues de realizar algunos tratamientos con ella :
-#    --           1 -> Paso a Mayusculas
-#    --           2 -> Supresión de espacios en blanco al principio y al final de la variante
-#    --           3 -> Sustitución de grupos de espacios en blanco en media de la variante
-#    --                por un solo espacio
-#    --           4 -> Sustitución de acentos, dieresis y puntuación de la 'l ageminada'
-#    --           5 -> Si se encuentra un espacio en blanco en la variante, se supone que
-#    --                el tipo de via es la primera palabra. Se busca edsta palabra en el
-#    --                variantero de tipos de via y si se encuentra se sustituye por el
-#    --                tipo de via oficial, si no se encuentra se retorna la variante
-#    --                como este.
-#    -------------------------------------------------------------------------------------------
-#    FUNCTION fNormalizaVariante (pVARIANTE IN VARCHAR2)
-#       RETURN VARCHAR2
-#    IS
-#    BEGIN
-#       DECLARE
-#          sVARIANTE      VARCHAR2 (256);
-#          sVARTIPUSVIA   VARCHAR2 (256);
-#          sPARTICULA     VARCHAR2 (256);
-#          sTIPUSVIA      VARCHAR2 (256);
-#          sTMP           VARCHAR2 (256);
-#          nPos           INTEGER;
-#       BEGIN
-#          -- Conversión a Mayusculas
-#          sVARIANTE := UPPER (pVARIANTE);
-#          -- Sustitución de puntos por blancos'
-#          sVARIANTE := TRANSLATE (sVARIANTE, '.', ' ');
-#          -- Sustitución de acentos, dieresis y puntuación de la 'l ageminada'
-#          sVARIANTE :=
-#             TRANSLATE (
-#                sVARIANTE,
-#                'ÁÉÍÓÚáéíóúÀÈÌÒÙàèìòùÂÊÎÔÛâêîôûÄËÏÖÜäëïöü·ºª',
-#                'AEIOUAEIOUAEIOUAEIOUAEIOUAEIOUAEIOUAEIOU.  ');
-#          -- Eliminación de espacios al principio y al final
-#          sVARIANTE := LTRIM (RTRIM (sVARIANTE));
+        # Búsqueda de tipo y variante, si hay tipo
+        if tipus != '':
+            tVariant = tipus.upper() + ' ' + variant
+            tVariant = tVariant.strip()
+            variant30 = tVariant[:30]
+            codi = self.dbVariant(variant30)
+            if codi != '':
+                return codi
 
-#          IF (sVARIANTE = '') OR (sVARIANTE IS NULL)
-#          THEN
-#             RETURN '';
-#          END IF;
+        # Búsqueda de variante limpia
+        variant = variant.strip()
+        variant30 = variant[:30]
+        codi = self.dbVariant(variant30)
+        if codi != '':
+            return codi
 
-#          -- Eliminación de espacios en blanco redundantes
-#          sTMP := '';
+    def formatNum(self, num):
+        if num is None:
+            return '0'
+        num = num.strip()
+        num = num.lstrip('0')
+        if num == '':
+            return '0'
+        else:
+            return num
 
-#          LOOP
-#             sTMP := REPLACE (sVARIANTE, '  ', ' ');
+    def coordsCarrerNum(self, codiCarrer, num):
+        if self.db is None or num == '' or num is None or codiCarrer == '' or codiCarrer is None:
+            return None, None
+        try:
+            select = "SELECT ETRS89_COORD_X, ETRS89_COORD_Y FROM Numeros WHERE \
+                CODI = '{}' AND NUM_LLETRA_POST = '{}'"
+            select = select.format(codiCarrer.strip(), num.strip())
+            if self.query.exec_(select) and self.query.next():
+                x = float(self.query.value(0))
+                y = float(self.query.value(1))
+                self.query.finish()
+                return x, y
+            else:
+                err = self.query.lastError().databaseText()
+                self.query.finish()
+                if err is not None and err != '':
+                    print(err)
+                return None, None
+        except Exception:
+            err = self.query.lastError().databaseText()
+            if err is not None and err != '':
+                print(err)
+            return None, None
 
-#             IF sTMP = sVARIANTE
-#             THEN
-#                sVARIANTE := sTMP;
-#                EXIT;
-#             END IF;
-
-#             sVARIANTE := sTMP;
-#          END LOOP;
-
-#          -- Se hace por la limitación existente a 30 caracteres y la salvedad de
-#          -- 'Gran Via de les Corts Catalanes''
-#          IF LENGTH (sVARIANTE) > 30
-#          THEN
-#             sVARIANTE := SUBSTR (sVARIANTE, 1, 30);
-#          END IF;
-
-#          nPos := INSTR (sVARIANTE, ' ');
-
-#          -- Se encuentran varias palabras en la variante, se toma la primera como tipo de via
-#          IF nPos > 0
-#          THEN
-#             -- Previo al tratamiento del tipo de via, se busca la variante exacta
-#             -- Esto se realiza ya que existen calles en cuyo nombre existe como parte
-#             -- del nombre un tipo a variante de tipo de vial.
-#             -- Si se encuentra la variante exacta, no se procesa el tipo de vial.
-#             BEGIN
-#                -- Se quita el posible comodin para la búsqueda exacta
-#                SELECT CODI
-#                  INTO sTMP
-#                  FROM VARIANTS
-#                 WHERE VARIANT = REPLACE (sVARIANTE, '%', '');
-
-#                RETURN sVARIANTE;
-#             EXCEPTION
-#                WHEN NO_DATA_FOUND
-#                THEN
-#                   NULL;
-#                WHEN OTHERS
-#                THEN
-#                   NULL;
-#             END;
-
-#             sVARTIPUSVIA := SUBSTR (sVARIANTE, 1, nPos - 1);
-
-#             BEGIN
-#                SELECT TIPUS_VIA
-#                  INTO sTIPUSVIA
-#                  FROM VAR_TIPUSVIA
-#                 WHERE VARIANT = sVARTIPUSVIA;
-#             EXCEPTION
-#                WHEN NO_DATA_FOUND
-#                THEN
-#                   RETURN sVARIANTE;
-#                WHEN OTHERS
-#                THEN
-#                   RETURN sVARIANTE;
-#             END;
-
-#             sVARIANTE :=
-#                LTRIM (
-#                   SUBSTR (sVARIANTE, nPos, (LENGTH (sVARIANTE) - nPos) + 1));
-
-#             -- Se buscan las particulas 'DE', 'DEL', 'DELS', 'D'EN', 'D'', 'DE L'', 'DE LA', 'DE LES', 'DE LOS' Y 'DE LAS'
-
-#             sPARTICULA := SUBSTR (sVARIANTE, 1, 2);
-
-#             IF sPARTICULA = 'D'''
-#             THEN
-#                sPARTICULA := SUBSTR (sVARIANTE, 1, 5);
-
-#                IF sPARTICULA <> 'D''EN '
-#                THEN
-#                   sVARIANTE :=
-#                      LTRIM (SUBSTR (sVARIANTE, 3, (LENGTH (sVARIANTE) - 2)));
-#                END IF;
-#             END IF;
-
-#             nPos := INSTR (sVARIANTE, ' ');
-
-#             IF nPos > 0
-#             THEN
-#                sPARTICULA := SUBSTR (sVARIANTE, 1, nPos - 1);
-
-#                IF sPARTICULA = 'DE'
-#                THEN
-#                   sVARIANTE :=
-#                      LTRIM (
-#                         SUBSTR (sVARIANTE,
-#                                 nPos,
-#                                 (LENGTH (sVARIANTE) - nPos) + 1));
-
-#                   -- Busqueda de 'DE L''
-#                   sPARTICULA := SUBSTR (sVARIANTE, 1, 2);
-
-#                   IF sPARTICULA = 'L'''
-#                   THEN
-#                      sVARIANTE :=
-#                         LTRIM (
-#                            SUBSTR (sVARIANTE, 3, (LENGTH (sVARIANTE) - 2)));
-#                   ELSE
-#                      nPos := INSTR (sVARIANTE, ' ');
-
-#                      IF nPos > 0
-#                      THEN
-#                         sPARTICULA := SUBSTR (sVARIANTE, 1, nPos - 1);
-
-#                         IF    sPARTICULA = 'LA'
-#                            OR sPARTICULA = 'LES'
-#                            OR sPARTICULA = 'LOS'
-#                            OR sPARTICULA = 'LAS'
-#                         THEN
-#                            sVARIANTE :=
-#                               LTRIM (
-#                                  SUBSTR (sVARIANTE,
-#                                          nPos,
-#                                          (LENGTH (sVARIANTE) - nPos) + 1));
-#                         END IF;
-#                      END IF;
-#                   END IF;
-#                ELSIF    sPARTICULA = 'DEL'
-#                      OR sPARTICULA = 'DELS'
-#                      OR sPARTICULA = 'D''EN'
-#                THEN
-#                   sVARIANTE :=
-#                      LTRIM (
-#                         SUBSTR (sVARIANTE,
-#                                 nPos,
-#                                 (LENGTH (sVARIANTE) - nPos) + 1));
-#                END IF;
-#             END IF;
-
-#             IF sTIPUSVIA <> 'C'
-#             THEN
-#                sVARIANTE := sTIPUSVIA || ' ' || sVARIANTE;
-#             END IF;
-#          END IF;
-
-#          RETURN sVARIANTE;
-#       END;
-#    END;
-#    -------------------------------------------------------------------------------------------
-
+    def coordsAdreca(self, variant, num=''):
+        if variant == '' or variant is None:
+            return None, None
+        try:
+            codi = self.codiCarrerVariant(variant)
+            if codi == '':
+                return None, None
+            nums = num.split('-')
+            nNums = len(nums)
+            if nNums == 0:
+                num = '0'
+            else:
+                num = self.formatNum(nums[0])
+            x, y = self.coordsCarrerNum(codi, num)
+            if x is not None and y is not None:
+                return x, y
+            if nNums > 1:
+                num = self.formatNum(nums[1])
+                return self.coordsCarrerNum(codi, num)
+            else:
+                return None, None
+        except Exception:
+            return None, None
 
 
 if __name__ == "__main__":
@@ -279,50 +215,35 @@ if __name__ == "__main__":
 
     with qgisapp(guienabled=gui) as app:
 
-        x, y = QvSqlite.coordsCodiNum('001808', '23', '', '25')
-        if x is None or y is None:
-            print('No coords')
-        else:
-            print('001808', '23', '25', str(x), str(y))
+        sqlite = QvSqlite()
 
-        x, y = QvSqlite.coordsCodiNum('003406', '132', 'B')
-        if x is None or y is None:
-            print('No coords')
-        else:
-            print('003406', '132', 'B', str(x), str(y))
+        sqlite.dbGeoConnexio()
 
-        x, y = QvSqlite.coordsCodiNum('dfadfadfadfadf', 'asdfadfad')
-        if x is None or y is None:
-            print('No coords')
-        else:
-            print('003406', '132', 'B', str(x), str(y))
+        x, y = sqlite.coordsAdreca('C BAC DE RODA', '20')
+        x, y = sqlite.coordsAdreca('Pg DEL TAULAT', '216')
+        x, y = sqlite.coordsAdreca('Pg DE GARCIA FARIA', '77')
+        x, y = sqlite.coordsAdreca('Pg DEL TAULAT', '238')
 
-        x, y = QvSqlite.coordsCarrerNum('C', 'Mallorca', '100')
-        if x is None or y is None:
-            print('No coords')
-        else:
-            print('C', 'Mallorca', '100', str(x), str(y))
+        x, y = sqlite.coordsAdreca('Carrer de Mallorca', '0025')
+        x, y = sqlite.coordsAdreca('Calle Numancia', '0085 - 00089')
+        x, y = sqlite.coordsAdreca('000180', 'kk-')
 
-        x, y = QvSqlite.coordsCarrerNum('', 'Balmes', '150')
-        if x is None or y is None:
-            print('No coords')
-        else:
-            print('Balmes', '150', str(x), str(y))
+        txt = sqlite.codiCarrerVariant('Carrer de Mallorca')
+        txt = sqlite.codiCarrerVariant('Carrer   Mallorca')
+        txt = sqlite.codiCarrerVariant('DE MALLORCA')
+        txt = sqlite.codiCarrerVariant('DE BALMES')
+        txt = sqlite.codiCarrerVariant('BALMES')
+        txt = sqlite.codiCarrerVariant(' Gran.     vía. de     les corts    catalanes  ')
+        txt = sqlite.codiCarrerVariant('avda. dIAgONAL.')
+        txt = sqlite.codiCarrerVariant('avenida diagonal')
+        txt = sqlite.codiCarrerVariant('PALAU DE LA VIRREINA')
+        txt = sqlite.codiCarrerVariant('191204')
 
-        x, y = QvSqlite.coordsCarrerNum('Av', 'Diagonal', '220')
-        if x is None or y is None:
-            print('No coords')
-        else:
-            print('Av', 'Diagonal', '220', str(x), str(y))
+        txt = sqlite.dbTipusVia('CALLE')
+        txt = sqlite.dbTipusVia()
+        txt = sqlite.dbTipusVia('AVENIDA')
+        txt = sqlite.dbTipusVia('JARDIN')
+        txt = sqlite.dbTipusVia('PLAZA')
+        txt = sqlite.dbTipusVia('CALLEJON')
 
-        x, y = QvSqlite.coordsCarrerNum('Av', 'Diagonal', '45', 'X')
-        if x is None or y is None:
-            print('No coords')
-        else:
-            print('Av', 'Diagonal', '45', 'X', str(x), str(y))
-
-        x, y = QvSqlite.coordsCarrerNum('', 'Msakjdaskjdlasdj', '220')
-        if x is None or y is None:
-            print('No coords')
-        else:
-            print('Msakjdaskjdlasdj', '220', str(x), str(y))
+        sqlite.dbGeoDesconnexio()
