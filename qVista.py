@@ -94,6 +94,8 @@ class QVista(QMainWindow, Ui_MainWindow):
         QMainWindow.__init__(self)
 
         self.setupUi(self)
+        self.setFont(QvConstants.FONTTEXT)
+        app.setFont(QvConstants.FONTTEXT)
         # self.frame.setStyleSheet("QFrame {background-color : #52489C}")
 
         self.app=app
@@ -185,6 +187,8 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.dropCanvas.arxiusPerProcessar.connect(self.obrirArxiu)
 
         self.setMouseTracking(False) 
+
+        self.label.clear() #Deixem el logo buit?
         
 
 
@@ -658,6 +662,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.dwBotonera.setWidget(self.botonera)
         self.dwBotonera.setContentsMargins ( 2, 2, 2, 2 )
         self.addDockWidget(Qt.LeftDockWidgetArea, self.dwBotonera)
+        # self.botonera.setStylesheet('QFrame{background: transparent;}')
 
     def preparacioNoticies(self):
         return
@@ -1376,6 +1381,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.frameTranspInfo.setGeometry(5,5,100,100)
         # self.frameTranspInfo.setStyleSheet('QFrame {opacity:50;}')
         self.frameTranspInfo.show()
+        self.frameTranspInfo.setStylesheet('QFrame{background: transparent;}')
 
     def activaCapa(self,capa):
         def funcioCapa():
@@ -1414,15 +1420,17 @@ class QVista(QMainWindow, Ui_MainWindow):
         lblLogoAjb = QLabel()
         lblLogoAjb.setMaximumHeight(40)
         lblLogoAjb.setMinimumHeight(40)
-        lblLogoAjb.setMaximumWidth(150)
-        lblLogoAjb.setMinimumWidth(150)
-        imatge = QPixmap('imatges/logoBcnPetit.jpg')
+        lblLogoAjb.setMaximumWidth(88)
+        lblLogoAjb.setMinimumWidth(88)
+        #imatge = QPixmap('imatges/logoBcnPetit.jpg')
+        imatge = QPixmap('imatges/qVistaLogo_88x40.png')
         # imatge = QPixmap('imatges/qVistaLogoVerd2.png')
         lblLogoAjb.setPixmap(imatge)
         lblLogoAjb.setScaledContents(True)
 
         self.bar = self.menuBar()
         self.bar.setFont(fnt)
+        self.bar.setCornerWidget(lblLogoAjb,Qt.TopLeftCorner)
 
         # self._menuBarShadow = QGraphicsDropShadowEffect()
         # self._menuBarShadow.setXOffset(0)
@@ -1431,13 +1439,13 @@ class QVista(QMainWindow, Ui_MainWindow):
         # self.bar.setGraphicsEffect(self._menuBarShadow)
 
         self.bar.setFixedHeight(40)
-        self.bar.setCornerWidget(lblLogoAjb, Qt.TopLeftCorner)
         self.fMaxim = QFrame()
         self.lytMaxim = QGridLayout(self.fMaxim)
         self.fMaxim.setLayout(self.lytMaxim)
         self.lytMaxim.setContentsMargins(0,0,0,0)
         
-        self.botoMaxim = QPushButton()
+        #self.botoMaxim = QPushButton()
+        self.botoMaxim=QvPushButton()
         self.botoMaxim.clicked.connect(self.ferGran)
         self.botoMaxim.setIcon(QIcon('imatges/arrow-expand.png'))
         self.botoMaxim.setMinimumHeight(40)
@@ -1445,7 +1453,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.botoMaxim.setMinimumWidth(40)
         self.botoMaxim.setMaximumWidth(40)
         self.botoMaxim.setIconSize(QSize(30, 30))
-        self.botoMaxim.setStyleSheet('QPushButton {opacity: 50; border: 1px #dddddd;}')
+        #self.botoMaxim.setStyleSheet('QPushButton {opacity: 50; border: 1px #dddddd;}')
         self.lytMaxim.addWidget(self.botoMaxim)
 
         self.bar.setCornerWidget(self.fMaxim, Qt.TopRightCorner)
@@ -1454,7 +1462,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.bar.styleStrategy = QFont.PreferAntialias or QFont.PreferQuality
 
         # bar.setStyleSheet("QMenuBar {color: #FFFFFF; background-color : #4062BB;}")
-        self.bar.setStyleSheet("QMenuBar {color: #acc2cc; background-color : #38474F; selection-background-color : #444444;}")
+        #self.bar.setStyleSheet("QMenuBar {color: #acc2cc; background-color : #38474F; selection-background-color : #444444;}")
 
         spacer = QSpacerItem(9999, 9999, QSizePolicy.Expanding,QSizePolicy.Maximum)
         
@@ -1467,7 +1475,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         # catalegMenu = self.bar.addMenu("                   Catàleg  ")
 
         fnt= QFont("Segoe UI", 16, weight=QFont.Normal)
-        self.menuProjectes.setStyleSheet("QMenu {color: #465A63; background-color: #dddddd; selection-background-color : #2f4550;}")
+        #self.menuProjectes.setStyleSheet("QMenu {color: #465A63; background-color: #dddddd; selection-background-color : #2f4550;}")
         self.menuProjectes.setFont(fnt)
         self.menuProjectes.styleStrategy = QFont.PreferAntialias or QFont.PreferQuality
         self.menuProjectes.addAction(self.actObrirProjecte)
@@ -1485,7 +1493,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         # self.menuCarregarNivell.addAction(self.actAfegirNivellGPX)
         # self.menuCarregarNivell.addAction(self.actAfegirNivellQlr)
         
-        self.menuFuncions.setStyleSheet("QMenu {color: #465A63 background-color: #dddddc; selection-background-color : #79909B;}")
+        #self.menuFuncions.setStyleSheet("QMenu {color: #465A63 background-color: #dddddc; selection-background-color : #79909B;}")
         
         self.menuFuncions.setFont(fnt)
         self.menuFuncions.addAction(self.actEsborrarSeleccio)
@@ -1894,7 +1902,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         
 
         self.leSeleccioExpressio = QLineEdit()
-        self.leSeleccioExpressio.setStyleSheet("QLineEdit {border: 0px solid red; background-color: #FFFFFF;}")
+        self.leSeleccioExpressio.setStyleSheet("QLineEdit {border: 0px solid red; background-color: #FFFFFF;}")  #????
         # self.leSeleccioExpressio.setGraphicsEffect(self._menuBarShadow)
         self.leSeleccioExpressio.returnPressed.connect(seleccioExpressio)
         self.statusbar.addPermanentWidget(self.leSeleccioExpressio, 50)
@@ -1918,6 +1926,7 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         self.bScale = QPushButton()
         self.bScale.setStyleSheet("QPushButton {Text-align:left};")
+
         # self.bScale.setFrameStyle(QFrame.StyledPanel )
         self.bScale.setMinimumWidth( 140 )
         self.bScale.clicked.connect(self.editarEscala)
@@ -1926,6 +1935,7 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         self.bOrientacio = QPushButton()
         self.bOrientacio.setStyleSheet("QPushButton {Text-align:left};")
+
         # self.bScale.setFrameStyle(QFrame.StyledPanel )
         
         self.bOrientacio.setMinimumWidth( 140 )
@@ -2303,7 +2313,8 @@ def nivellCsv(fitxer: str,delimitador: str,campX: str,campY: str, projeccio: int
     layer.setCrs(QgsCoordinateReferenceSystem(projeccio, QgsCoordinateReferenceSystem.EpsgCrsId))
     if layer is not None:
         symbol = QgsMarkerSymbol.createSimple({'name': symbol, 'color': color})
-        layer.renderer().setSymbol(symbol)
+        if layer.renderer() is not None: 
+            layer.renderer().setSymbol(symbol)
         qV.project.addMapLayer(layer)
         print("add layer")
 
@@ -2686,6 +2697,8 @@ def main(argv):
         splash.setFont(QFont(QvConstants.NOMFONT,8))
         splash.show()
         app.processEvents()
+        with open('moduls/style.qss') as st:
+            app.setStyleSheet(st.read())
 
         ok = qVapp.logInici()            # Por defecto: family='QVISTA', logname='DESKTOP'
         if not ok:

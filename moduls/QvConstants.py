@@ -84,7 +84,8 @@ class QvConstants:
 
     def formataScrollbar(scrollbar: QScrollBar):
         '''Dóna el format adequat a una scrollbar'''
-        scrollbar.setStyleSheet(QvConstants.SCROLLBARSTYLESHEET)
+        #scrollbar.setStyleSheet(QvConstants.SCROLLBARSTYLESHEET)
+        pass
     # FUNCIONS "PRIVADES"
     # Cap funció de les de sota hauria de ser cridada des de fora de la classe
 

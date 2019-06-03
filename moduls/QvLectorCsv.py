@@ -16,7 +16,7 @@ class QvLectorCsv(QtWidgets.QWidget):
        self.fname = "Liste"
        self.model =  QtGui.QStandardItemModel(self)
        self.tableView = QtWidgets.QTableView(self)
-       self.tableView.setStyleSheet(stylesheet(self))
+       #self.tableView.setStyleSheet(stylesheet(self))
        self.tableView.setModel(self.model)
        self.tableView.horizontalHeader().setStretchLastSection(True)
        self.tableView.setShowGrid(True)

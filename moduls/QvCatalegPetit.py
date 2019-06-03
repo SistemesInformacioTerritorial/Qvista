@@ -196,7 +196,7 @@ class QvCataleg(QWidget):
         frameCapcalera = QFrame()
         frameCapcalera.setMaximumHeight(70)
         frameCapcalera.setMinimumHeight(70)
-        frameCapcalera.setStyleSheet('QFrame {background-color: #aaaaaa')
+        #frameCapcalera.setStyleSheet('QFrame {background-color: #aaaaaa')
 
         lytCapcalera = QVBoxLayout(frameCapcalera)
         frameCapcalera.setLayout(lytCapcalera)

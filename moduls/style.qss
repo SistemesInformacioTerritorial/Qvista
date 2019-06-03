@@ -1,0 +1,173 @@
+/*
+ * Color fosc:     #38474F
+ * Color mig:      #465A63
+ * Color clar:     #79909B
+ * Color gris:     #DDDDDD
+ * Color blanc:    #F0F0F0
+ * Color destacat: #FF6215
+*/
+
+
+
+QWidget {
+    color: #38474f;
+    background-color: #f0f0f0;
+    border: 0px;
+}
+QWidget #layoutFosc {
+    background: solid;
+    background-color: #38474F; 
+    border: 0px;
+}
+QWidget #layout {
+    background: transparent;
+    /* background-color: #38474F;  */
+    border: 0px;
+}
+QWidget::window {
+    border: 0px;
+    background-color: #F0F0F0;
+}
+
+QFrame {
+    background-color: #f0f0f0 transparent;
+}
+
+QScrollBar {
+    background: #DDDDDD;
+    margin: 0px;
+    border: 0px;
+}
+QScrollBar::handle {
+    background: #DDDDDD;
+    min-height: 0px;
+    border: 0px;
+}
+QScrollBar::sub-page {
+    background: #F0F0F0;
+    height: 0 px;
+    border: 0px;
+}
+QScrollBar::add-page {
+    background: #F0F0F0;
+    height: 0 px;
+    border: 0px;
+}
+
+QLabel {
+    background-color: #F0F0F0 transparent;
+    color: #38474F;
+}
+
+QLabel#fosca{
+    background-color: #38474F solid;
+    color: #F0F0F0;
+}
+
+QMenuBar {
+    color: #79909B; 
+    background-color : #38474F; 
+    /*selection-background-color : #444444;*/
+}
+
+QLineEdit {
+    border: 1px solid #79909B; 
+    background-color: white;
+}
+
+QTextEdit[readOnly="true"] {
+    border:0; 
+    background-color: #f0f0f0;
+}
+
+QTextEdit {
+    border:0px;
+    background-color: white;
+}
+
+QComboBox {
+    border: 1px solid #38474F;
+	color: #38474F;
+	background-color: #465A63;
+	selection-background-color: #FF6215;
+	outline: 0;
+}
+
+QComboBox QAbstractItemView {
+    background-color: #465A63;
+    /*selection-background-color: transparent;*/
+    outline: 0;
+    border: 1px solid #38474F;
+}
+
+QTableView {
+    background-color: solid white;
+    selection-background-color: #FF6215;
+    color: 38474F;
+    border: 1px solid #38474F;
+}
+
+QTableView::item {
+    background-color: solid white;
+}
+
+QTableView QTableCornerButton::section {
+    background: transparent;
+    border: 0px;
+}
+
+QPushButton {
+	background-color: transparent;
+	color: #38474F;
+	border: 0px;
+	padding: 0px 0px;
+}
+/*
+
+ * EDITAR A PARTIR D'AQUI
+
+*/
+QMenu {
+	background-color: #263238;
+	color: #546E7A;
+}
+
+QMenu::item:selected {
+	color: #AFBDC4;
+}
+
+QMenu::item:pressed {
+	color: #FFFFFF;
+}
+
+QMenu::separator {
+	height: 1px;
+	background: transparent;
+	margin-left: 10px;
+	margin-right: 10px;
+	margin-top: 5px;
+	margin-bottom: 5px;
+}
+
+
+QMenuBar {
+	background-color: #263238;
+	color: #546E7A;
+}
+
+QMenuBar::item {
+    background: transparent;
+    padding: 0px;
+}
+
+QMenuBar::item:disabled {
+	color: gray;
+}
+
+QMenuBar::item:selected {
+	color: #AFBDC4;
+}
+
+QMenuBar::item:pressed {
+	color: #FFFFFF;
+}

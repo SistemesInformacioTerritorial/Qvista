@@ -337,7 +337,8 @@ class QvCarregaCsvXY(QvCarregaCsvPage):
         #projeccions = [25831, 1 , 2 , 3]
         projeccionsDict = {'EPSG:25831 UTM ETRS89 31N':25831,
                            'EPSG:3857 Pseudo Mercator (Google)':3857,
-                           'EPSG:4326 WGS 84':4326}
+                           'EPSG:4326 WGS 84':4326,
+                           'EPSG:23031 ED50 31N':23031}
         self.cbProj.clear()
         self.cbProj.addItems([str(x) for x, y in projeccionsDict.items()])
         self.layoutCoordP.addWidget(self.lblProj)
@@ -355,6 +356,8 @@ class QvCarregaCsvXY(QvCarregaCsvPage):
         self.cbX.currentIndexChanged.connect(xChanged)
         self.cbY.currentIndexChanged.connect(yChanged)
         self.cbProj.currentIndexChanged.connect(projChanged)
+        xChanged()
+        yChanged()
         projChanged()
 
         #self.setFinalPage(True)
@@ -517,8 +520,6 @@ class QvCarregaCsvGeneraCoords(QvCarregaCsvPage):
         '''
         super().__init__(parent)
         self.setSubTitle("Gestió d'errors i finalitzar procés")
-        self.parent.coordX = 'XCalculadaqVista'
-        self.parent.coordY = 'YCalculadaqVista'
         self.lblAdrecesError = QLabel()
         self.lblAdrecesError.setText("")
         self.lblAdrecesError.setStyleSheet('color: red')
@@ -548,6 +549,8 @@ class QvCarregaCsvGeneraCoords(QvCarregaCsvPage):
         #self.layout.addWidget(self.lblExplicacio5)
         
     def initializePage(self):
+        self.parent.coordX = 'XCalculadaqVista'
+        self.parent.coordY = 'YCalculadaqVista'
         def splitCarrer(nomComplet):
             if not hasattr(self, 'TIPUSVIES'):
                 with open('U:/QUOTA/Comu_imi/Becaris/Tipusvia.csv') as csvfile:
@@ -669,6 +672,7 @@ class QvCarregaCsvPersonalitza(QvCarregaCsvPage):
         self.lblNom.setText("Nom de la capa:")
         self.leNom = QLineEdit()
         self.leNom.setText(parent.nomCapa)
+        self.leNom.textChanged.connect(lambda: self.parent.setNomCapa(self.leNom.text()))
         self.layNom.addWidget(self.lblNom)
         self.layNom.addWidget(self.leNom)
         self.layout.addLayout(self.layNom)
