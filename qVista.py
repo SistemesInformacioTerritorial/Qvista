@@ -2324,9 +2324,8 @@ def disgregarDirele():
 
     pass
 
-def nivellCsv(fitxer: str,delimitador: str,campX: str,campY: str, projeccio: int = 23031, nomCapa: str = 'Capa sense nom', color = 'cyan', symbol = 'circle'):
+def nivellCsv(fitxer: str,delimitador: str,campX: str,campY: str, projeccio: int = 23031, nomCapa: str = 'Capa sense nom', color = 'red', symbol = 'circle'):
     uri = "file:///"+fitxer+"?type=csv&delimiter=%s&xField=%s&yField=%s" % (delimitador,campX,campY)
-    nomCapa = "nomcapa"
     layer = QgsVectorLayer(uri, nomCapa, 'delimitedtext')
     layer.setCrs(QgsCoordinateReferenceSystem(projeccio, QgsCoordinateReferenceSystem.EpsgCrsId))
     if layer is not None:
@@ -2334,6 +2333,11 @@ def nivellCsv(fitxer: str,delimitador: str,campX: str,campY: str, projeccio: int
         layer.renderer().setSymbol(symbol)
         qV.project.addMapLayer(layer)
         print("add layer")
+    else: print ("no s'ha pogut afegir la nova layer")
+
+    #symbol = QgsMarkerSymbol.createSimple({'name': 'square', 'color': 'red'})
+    #layer.renderer().setSymbol(symbol)
+    #https://docs.qgis.org/testing/en/docs/pyqgis_developer_cookbook/vector.html#modify-features
 
 # def carregaCSVWizard(fitxer: str,delimitador: str,campX: str,campY: str, projeccio: int = 23031, nomCapa: str = 'Capa sense nom', color, symbol):
 #     uri = "file:///"+fitxer+"?type=csv&delimiter=%s&xField=%s&yField=%s" % (delimitador,campX,campY)

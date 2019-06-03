@@ -27,7 +27,7 @@ class QvCarregaCsv(QWizard):
         self.nomCapa = csv[:-4]
         self.nomCapa = self.nomCapa.split('\\')[-1].split('/')[-1]
         self.csv=csv
-        self.color = 'blue'
+        self.color = 'red'
         self.symbol = 'circle'
         self.formata()
         self.setPage(QvCarregaCsv.finestres.TriaSep, QvCarregaCsvTriaSep(self))
