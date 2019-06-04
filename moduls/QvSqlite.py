@@ -206,6 +206,28 @@ class QvSqlite(Singleton):
         except Exception:
             return None, None
 
+    def geoCoordsCarrerNum(self, tipusVia, nomCarrer, numIni, lletraIni='', numFi='', lletraFi=''):
+        # Verificamos si hay número final / letra final para añadirlos
+        if numFi == '' and lletraFi == '':
+            num2 = ''
+        else:
+            num2 = '-' + numFi + lletraFi
+        # Buscamos dirección en Geocod de SQLite
+        if tipusVia is None or tipusVia == '':
+            variant = nomCarrer
+        else:
+            variant = tipusVia + ' ' + nomCarrer
+        return self.coordsAdreca(variant, numIni + lletraIni + num2)
+
+    def geoCoordsCodiNum(self, codiCarrer, numIni, lletraIni='', numFi='', lletraFi=''):
+        # Buscamos número / letra inicial en Geocod de SQLite
+        x, y = self.coordsCarrerNum(codiCarrer, numIni + lletraIni)
+        if x is not None and y is not None:
+            return x, y
+        if numFi == '' and lletraFi == '':
+            return None, None
+        # Si no, buscamos número / letra finales en  Geocod de SQLite
+        return self.coordsCarrerNum(codiCarrer, numFi + lletraFi)
 
 if __name__ == "__main__":
 

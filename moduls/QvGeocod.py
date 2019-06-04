@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 """
-Módulo de funciones de goecodificación de Oracle
+Módulo de funciones de goecodificación de Oracle / SQLite
 """
 from moduls.QvApp import QvApp
 from moduls.QvSqlite import QvSqlite
 
 
 class QvGeocod:
-    """Clase con métodos estáticos para uso de la geocodificación de Oracle
+    """Clase con métodos estáticos para uso de la geocodificación con Oracle o SQLite
     """
 
     @staticmethod
@@ -31,17 +31,8 @@ class QvGeocod:
             # LLamamos a rutinas GEOCOD de Oracle
             return QvApp().geocod(tipusVia, nomCarrer, '', numIni, lletraIni, numFi, lletraFi)
         else:
-            # Verificamos si hay número final / letra final para añadirlos
-            if numFi == '' and lletraFi == '':
-                num2 = ''
-            else:
-                num2 = '-' + numFi + lletraFi
-            # Buscamos dirección en Geocod de SQLite
-            if tipusVia is None or tipusVia == '':
-                variant = nomCarrer
-            else:
-                variant = tipusVia + ' ' + nomCarrer
-            return QvSqlite().coordsAdreca(variant, numIni + lletraIni + num2)
+            # LLamamos a rutinas GEOCOD de SQLite
+            return QvSqlite().geoCoordsCarrerNum(tipusVia, nomCarrer, numIni, lletraIni, numFi, lletraFi)
 
     @staticmethod
     def coordsCodiNum(codiCarrer, numIni, lletraIni='', numFi='', lletraFi=''):
@@ -63,15 +54,8 @@ class QvGeocod:
             # LLamamos a rutinas GEOCOD de Oracle
             return QvApp().geocod('', '', codiCarrer, numIni, lletraIni, numFi, lletraFi)
         else:
-            # Buscamos número / letra inicial en Geocod de SQLite
-            x, y = QvSqlite().coordsCarrerNum(codiCarrer, numIni + lletraIni)
-            if x is not None and y is not None:
-                return x, y
-            if numFi == '' and lletraFi == '':
-                return None, None
-            # Si no, buscamos número / letra finales en  Geocod de SQLite
-            return QvSqlite().coordsCarrerNum(codiCarrer, numFi + lletraFi)
-
+            # LLamamos a rutinas GEOCOD de SQLite
+            return QvSqlite().geoCoordsCodiNum(codiCarrer, numIni, lletraIni, numFi, lletraFi)
 
 if __name__ == "__main__":
 
@@ -80,6 +64,19 @@ if __name__ == "__main__":
     gui = False
 
     with qgisapp(guienabled=gui) as app:
+
+
+        x, y = QvApp().geocod('Pl', 'TIRANT LO BLANC', '',  '2')
+        if x is None or y is None:
+            print('No coords')
+        else:
+            print('ORACLE', 'Pl', 'TIRANT LO BLANC', '2', str(x), str(y))
+
+        x, y = QvSqlite().geoCoordsCarrerNum('Pl', 'TIRANT LO BLANC', '2')
+        if x is None or y is None:
+            print('No coords')
+        else:
+            print('SQLite', 'Pl', 'TIRANT LO BLANC', '2', str(x), str(y))
 
         x, y = QvGeocod.coordsCodiNum('001808', '23', '', '25')
         if x is None or y is None:
