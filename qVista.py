@@ -119,7 +119,9 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.mapaMaxim = False
         self.layerActiu = None
         self.prepararCercador = True
-        self.lblMovie = None
+        self.lblMovie = None        
+        self.ubicacions= None
+        self.cAdrec= None
 
 
         # # Connectors i accions
@@ -528,7 +530,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         # instanciamos clases necesarias    
         self.fCercador=QFrame()
         self.bottomWidget = QWidget()
-        self.ubicacions = QvUbicacions(self.canvas)
+        self.ubicacions = QvUbicacions(self.canvas, pare=self)
         self.splitter = QSplitter(Qt.Vertical)             #para separar ubicacion de distBarris
         self.layoutAdreca = QHBoxLayout()                  #Creamos layout, caja de diseño Horizontal
         self.layoutCercador = QVBoxLayout(self.fCercador)  #Creamos layout, caja de diseño Vertical
@@ -594,7 +596,8 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         self.setTabOrder(self.leCarrer, self.leNumero)
         # Activem la clase de cerca d'adreces
-        self.cAdrec=QCercadorAdreca(self.leCarrer, self.leNumero)
+        self.cAdrec=QCercadorAdreca(self.leCarrer, self.leNumero,'SQLITE')    # SQLITE o CSV
+          
         self.cAdrec.sHanTrobatCoordenades.connect(self.trobatNumero_oNo) 
 
         self.dwCercador = QDockWidget( "Cercador", self )
@@ -605,8 +608,12 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.dwCercador.setContentsMargins ( 2, 2, 2, 2 )
         self.addDockWidget( Qt.RightDockWidgetArea, self.dwCercador)
 
-    def CopiarA_Ubicacions(self):
-        self.ubicacions.leUbicacions.setText(self.leCarrer.text()+"  "+self.leNumero.text())
+    def CopiarA_Ubicacions(self):       
+         # self.ubicacions.leUbicacions.setText("->"+self.leCarrer.text()+"  "+self.leNumero.text())
+        if self.cAdrec.NumeroOficial=='0':
+            self.cAdrec.NumeroOficial=''
+
+        self.ubicacions.leUbicacions.setText("->"+self.leCarrer.text()+"  "+self.cAdrec.NumeroOficial)
         self.ubicacions._novaUbicacio()
 
 
@@ -2198,8 +2205,28 @@ class QVista(QMainWindow, Ui_MainWindow):
         pass
 
     def gestioSortida(self):
-        QvApp().logFi()
+        
+        try:
+            if self.ubicacions is not None:
+                self.ubicacions.ubicacionsFi()
+        except Exception  as ee:
+            print(str(ee))
 
+        try:
+            if self.cAdrec is not None:
+                self.cAdrec.cercadorAdrecaFi()
+        except Exception as ee:
+            print(str(ee))
+
+        try:
+            QvApp().logFi()
+        except Exception as ee:
+            msg = QMessageBox()
+            msg.setIcon(QMessageBox.Warning)
+            
+            msg.setText(strin(ee))
+            msg.setStandardButtons(QMessageBox.Close)
+            retval = msg.exec_()
     def handleSave(self):
         self.table = self.taulesAtributs.widget(0)
         path,_ = QFileDialog.getSaveFileName(self, 'Guardar archivo', '', 'CSV(*.csv)')
@@ -2382,7 +2409,7 @@ def disgregarDirele():
 
     pass
 
-def nivellCsv(fitxer: str,delimitador: str,campX: str,campY: str, projeccio: int = 23031, nomCapa: str = 'Capa sense nom', color = 'cyan', symbol = 'circle'):
+def nivellCsv(fitxer: str,delimitador: str,campX: str,campY: str, projeccio: int = 23031, nomCapa: str = 'Capa sense nom', color = 'red', symbol = 'circle'):
     uri = "file:///"+fitxer+"?type=csv&delimiter=%s&xField=%s&yField=%s" % (delimitador,campX,campY)
     layer = QgsVectorLayer(uri, nomCapa, 'delimitedtext')
     layer.setCrs(QgsCoordinateReferenceSystem(projeccio, QgsCoordinateReferenceSystem.EpsgCrsId))
@@ -2392,6 +2419,11 @@ def nivellCsv(fitxer: str,delimitador: str,campX: str,campY: str, projeccio: int
             layer.renderer().setSymbol(symbol)
         qV.project.addMapLayer(layer)
         print("add layer")
+    else: print ("no s'ha pogut afegir la nova layer")
+
+    #symbol = QgsMarkerSymbol.createSimple({'name': 'square', 'color': 'red'})
+    #layer.renderer().setSymbol(symbol)
+    #https://docs.qgis.org/testing/en/docs/pyqgis_developer_cookbook/vector.html#modify-features
 
 # def carregaCSVWizard(fitxer: str,delimitador: str,campX: str,campY: str, projeccio: int = 23031, nomCapa: str = 'Capa sense nom', color, symbol):
 #     uri = "file:///"+fitxer+"?type=csv&delimiter=%s&xField=%s&yField=%s" % (delimitador,campX,campY)
@@ -2440,7 +2472,16 @@ def seleccioExpressio():
         disgregarDirele()
         return
 
-
+    if qV.leSeleccioExpressio.text().lower() == 'version':
+        msg = QMessageBox()
+        msg.setIcon(QMessageBox.Warning)
+        
+        msg.setText('20190527 08:33  cierro bbdd sqlite en gestioSortida')
+        # msg.setInformativeText("OK para salir del programa \nCANCEL para seguir en el programa")
+        msg.setWindowTitle("qVista version")
+        msg.setStandardButtons(QMessageBox.Close)
+        retval = msg.exec_()
+        return     
     if (qV.leSeleccioExpressio.text().lower() == 'qvdebug') :
         qV.modeDebug()
         return

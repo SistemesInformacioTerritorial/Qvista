@@ -4,8 +4,9 @@ import requests
 from requests.auth import HTTPBasicAuth
 from moduls.QvError import QvError
 
+
 class QvGithub:
-    
+
     __ID = 'qVistaHost'
     __USER = 'JCAIMI'
 
@@ -13,7 +14,7 @@ class QvGithub:
         self.dataApp = dataApp
         self.branch = github
         self.conn = 'https://api.github.com'
-        self.calc = lambda s, n: s[-(n+1):] + s[0].upper() + s[1:n*2]+ str((n*14-1)*n)
+        self.calc = lambda s, n: s[-(n+1):] + s[0].upper() + s[1:n*2] + str((n*14-1)*n)
         self.headGet = {
             'accept': "application/json",
             'time-zone': "Europe/Madrid",
@@ -27,7 +28,7 @@ class QvGithub:
         self.auth = HTTPBasicAuth(QvGithub.__ID, self.calc(QvGithub.__ID, 3))
         self.timeout = 2
         self.error = ''
-    
+
     def getBug(self, title):
         try:
             url = self.conn + '/search/issues?q=repo:' + self.repo + '+state:open+label:bug+' + title + '+in:title'
@@ -56,7 +57,7 @@ class QvGithub:
                 data = response.json()
                 item = data[0]
                 commit = item['commit']
-                author = commit['author']
+                # author = commit['author']
                 committer = commit['committer']
                 name = committer['name']
                 self.error = ''
@@ -78,7 +79,10 @@ class QvGithub:
         try:
             if assignee is None:
                 assignee = QvGithub.__USER
-            body = self.dataApp + body                
+            if body is None:
+                body = self.dataApp
+            else:
+                body = self.dataApp + body
             url = self.conn + '/repos/' + self.repo + '/issues'
             data = {
                 "title": title,
@@ -111,9 +115,9 @@ class QvGithub:
         res = ''
         n = len(err)
         if n > 0:
-            res = err[n-1]      # Primero el mensaje de error destacado
+            res = err[n-1]       # Primero el mensaje de error destacado
             res += '---' + '\n'
-            for e in err[:n-2]: # Luego la traza
+            for e in err[:n-2]:  # Luego la traza
                 e = e.strip()
                 e = e.replace('<', '[')
                 e = e.replace('>', ']')
@@ -130,8 +134,9 @@ class QvGithub:
                 comm = self.getCommitter(fich)
                 ok = self.postBug(title, body, comm)
             return ok
-        except:
+        except Exception:
             return False
+
 
 if __name__ == "__main__":
 
@@ -152,13 +157,11 @@ if __name__ == "__main__":
     def pp():
         a = 0
         b = 3 / a
+        print(a, b)
 
-    # pp() 
+    # pp()
 
     try:
         pp()
     except Exception as err:
         QvApp().bugException(err)
-
-
-

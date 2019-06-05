@@ -342,10 +342,12 @@ class QvMapeta(QFrame):
         return [xMapa, yMapa]
 
     def leaveEvent(self, event):
-        self.pare.app.restoreOverrideCursor()
+        # self.pare.app.restoreOverrideCursor()
+        pass
 
     def enterEvent(self, event):
-        self.pare.app.setOverrideCursor(QCursor(QPixmap('imatges/cruz.cur')))       
+        # self.pare.app.setOverrideCursor(QCursor(QPixmap('imatges/cruz.cur')))  
+        self.setCursor(QCursor(QPixmap('imatges/cruz.cur')))     
 
     def mouseReleaseEvent(self, event):
         Paux1=QPoint() #  Pto arriba izquierda

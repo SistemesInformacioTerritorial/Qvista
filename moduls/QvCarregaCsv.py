@@ -27,7 +27,7 @@ class QvCarregaCsv(QWizard):
         self.nomCapa = csv[:-4]
         self.nomCapa = self.nomCapa.split('\\')[-1].split('/')[-1]
         self.csv=csv
-        self.color = 'blue'
+        self.color = 'red'
         self.symbol = 'circle'
         self.formata()
         self.setPage(QvCarregaCsv.finestres.TriaSep, QvCarregaCsvTriaSep(self))
@@ -356,11 +356,14 @@ class QvCarregaCsvXY(QvCarregaCsvPage):
         xChanged()
         yChanged()
         projChanged()
-
+        nofares =  3
         #self.setFinalPage(True)
         self.mostraTaula()
 
     def nextId(self):
+        self.parent.setCoordX(self.cbX.currentText())
+        self.parent.setCoordY(self.cbY.currentText())
+
         return QvCarregaCsv.finestres.Personalitza
 
 
@@ -675,7 +678,7 @@ class QvCarregaCsvPersonalitza(QvCarregaCsvPage):
             parent.color = dcolor.name()
             canvicolor(self,dcolor)
         bColor.clicked.connect(openColorDialog)
-        bColor.setFixedWidth(320)
+        bColor.setFixedWidth(339)
         #bColor.setText("Escull Color")
         self.layColor.addWidget(bColor)
         self.layout.addLayout(self.layColor)
