@@ -684,7 +684,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         # self.wMapeta.setGeometry(0,0,267,284)
         # self.wMapeta.show()
         self.mapeta = QvMapeta(self.canvas, tamanyPetit=True, pare=self)
-        
+        self.mapeta.setGraphicsEffect(QvConstants.ombra(self,radius=50,color=QvConstants.COLORCLAR))
         self.bOrientacio.clicked.connect(self.editarOrientacio)
         self.mapeta.setParent(self.canvas)
         self.mapeta.move(5,5)
@@ -798,7 +798,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.menuEntorns = self.bar.addMenu(3*' '+'Entorns'+3*' ')
         
         fnt = QFont("Segoe UI", 16, weight=QFont.Normal)
-        self.menuEntorns.setStyleSheet("QMenu {color: #465A63; background-color: #dddddd; selection-background-color : #38474f;}")
+        self.menuEntorns.setStyleSheet("QMenu {color: #465A63; background-color: #dddddd; selection-background-color : #38474f;}")                           
         self.menuEntorns.setFont(fnt)
         self.menuEntorns.styleStrategy = QFont.PreferAntialias or QFont.PreferQuality
         for entorn in os.listdir(os.path.dirname('entorns/')):          
@@ -1542,7 +1542,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         # catalegMenu = self.bar.addMenu("                   Catàleg  ")
 
         fnt= QFont("Segoe UI", 16, weight=QFont.Normal)
-        #self.menuProjectes.setStyleSheet("QMenu {color: #465A63; background-color: #dddddd; selection-background-color : #2f4550;}")
+        self.menuProjectes.setStyleSheet("QMenu {color: #465A63; background-color: #dddddd; selection-background-color : #38474f;}")
         self.menuProjectes.setFont(fnt)
         self.menuProjectes.styleStrategy = QFont.PreferAntialias or QFont.PreferQuality
         self.menuProjectes.addAction(self.actObrirProjecte)
@@ -2438,7 +2438,7 @@ def nivellCsv(fitxer: str,delimitador: str,campX: str,campY: str, projeccio: int
     uri = "file:///"+fitxer+"?type=csv&delimiter=%s&xField=%s&yField=%s" % (delimitador,campX,campY)
     layer = QgsVectorLayer(uri, nomCapa, 'delimitedtext')
     layer.setCrs(QgsCoordinateReferenceSystem(projeccio, QgsCoordinateReferenceSystem.EpsgCrsId))
-    if layer is not None:
+    if layer is not None or layer is not NoneType:
         symbol = QgsMarkerSymbol.createSimple({'name': symbol, 'color': color})
         if layer.renderer() is not None: 
             layer.renderer().setSymbol(symbol)
