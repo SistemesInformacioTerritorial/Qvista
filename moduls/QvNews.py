@@ -92,11 +92,11 @@ class QvNewsFinestra(QDialog):
         self.layout.addWidget(self.widgetSup)
         self.lblLogo = QLabel()
         self.lblLogo.setPixmap(
-            QPixmap('imatges/qVistaLogoVerdSenseText2.png').scaledToHeight(40))
+            QPixmap('imatges/QVistaLogo_40_32.png'))
         self.lblCapcalera = QLabel()
         self.lblCapcalera.setText('  Novetats qVista')
-        self.lblCapcalera.setStyleSheet(
-            'color: %s' % QvConstants.COLORFOSCHTML)
+        # self.lblCapcalera.setStyleSheet(
+        #     'color: %s' % QvConstants.COLORFOSCHTML)
         self.layoutCapcalera.addWidget(self.lblLogo)
         self.layoutCapcalera.addWidget(self.lblCapcalera)
 
@@ -123,8 +123,6 @@ class QvNewsFinestra(QDialog):
         # Millor que es pugui seleccionar el text? O que no es pugui?
         self.caixaText.setEnabled(True)
         self.caixaText.setFrameStyle(QFrame.NoFrame)
-        # self.caixaText.verticalScrollBar().setStyleSheet(QvConstants.SCROLLBARSTYLESHEET)
-        QvConstants.formataScrollbar(self.caixaText.verticalScrollBar())
         # Comentar si volem que s'oculti la scrollbar quan no s'utilitza
         self.caixaText.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
         #self.caixaText.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)

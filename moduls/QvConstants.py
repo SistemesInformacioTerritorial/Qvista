@@ -2,6 +2,7 @@
 from PyQt5.QtGui import QFont, QColor
 from PyQt5.QtWidgets import QGraphicsDropShadowEffect, QWidget, QScrollBar
 import tempfile
+from moduls.QvImports import * 
 # Per poder indicar a una funció que rep una seqüència (tupla, llista)
 from typing import Sequence
 
@@ -29,38 +30,19 @@ class QvConstants:
     COLORFOSC = QColor(COLORFOSCHTML)
     COLORMIG = QColor(COLORMIGHTML)
     COLORCLAR = QColor(COLORCLARHTML)
+    COLORCLARSEMITRANS=QColor(121,144,155,70)
     COLORGRIS = QColor(COLORGRISHTML)
     COLORBLANC = QColor(COLORBLANCHTML)
     COLORDESTACAT = QColor(COLORDESTACATHTML)
     COLOROMBRA = QColor(COLOROMBRAHTML)
 
-    # TEMPDIR='C:/temp/qVista/temp'
-    # ARXIUAVIS = 'L:/DADES/SIT/Doc/QVISTA/Avisos.htm'
-    # ARXIUTMPAVIS = TEMPDIR+'/ultimAvisObert'
-    # ARXIUNEWS = 'L:/DADES/SIT/Doc/QVISTA/Noticies.htm'
-    # ARXIUTMP = TEMPDIR+'/ultimaNewOberta'
-    # Això de sota no hauria d'estar aquí
-    SCROLLBARSTYLESHEET = """
-            QScrollBar {
-                background:%s;
-                margin: 0px;
-                border: 0px;
-            }
-            QScrollBar::handle {
-                background: %s;
-                min-height: 0px;
-                border: 0px;
-            }
-            QScrollBar::sub-page {
-                background: %s;
-                height: 0 px;
-                border: 0px;
-            }
-            QScrollBar::add-page {
-                background: %s;
-                height: 0 px;
-                border: 0px;
-            }""" % (COLORGRISHTML, COLORGRISHTML, COLORBLANCHTML, COLORBLANCHTML)
+    #No podem crear una QPixMap sense 
+    CURSORFLETXA=Qt.ArrowCursor
+    CURSORCLICK=Qt.PointingHandCursor
+    CURSORZOOMIN=None
+    CURSORZOOMOUT=None
+    CURSORDIT=None
+    CURSOROCUPAT=Qt.WaitCursor
 
     @staticmethod
     def afegeixOmbraWidget(widget: QWidget):
@@ -82,15 +64,12 @@ class QvConstants:
         """
         QvConstants.aplicaOmbra(widget, QvConstants.ombraHeader(widget))
 
-    def formataScrollbar(scrollbar: QScrollBar):
-        '''Dóna el format adequat a una scrollbar'''
-        scrollbar.setStyleSheet(QvConstants.SCROLLBARSTYLESHEET)
     # FUNCIONS "PRIVADES"
     # Cap funció de les de sota hauria de ser cridada des de fora de la classe
 
     # La funció que crea la ombra. Totes les altres tiren d'aquesta
     @staticmethod
-    def ombra(parent: QWidget = None, offset: Sequence[int] = (3, 3), radius: int = 15, color: QColor = QColor(COLOROMBRA)) -> QGraphicsDropShadowEffect:
+    def ombra(parent: QWidget = None, offset: Sequence[int] = (3, 3), radius: int = 15, color: QColor = COLOROMBRA) -> QGraphicsDropShadowEffect:
         ombra = QGraphicsDropShadowEffect(parent)
         ombra.setBlurRadius(radius)
         ombra.setOffset(*offset)
@@ -122,6 +101,31 @@ class QvConstants:
     @staticmethod
     def aplicaOmbra(widget: QWidget, ombra: QGraphicsDropShadowEffect):
         widget.setGraphicsEffect(ombra)
+    
+    @staticmethod
+    def cursorZoomIn():
+        if QvConstants.CURSORZOOMIN is None:
+            QvConstants.CURSORZOOMIN=QCursor(QPixmap('imatges/zoom_in.cur'))
+        return QvConstants.CURSORZOOMIN
+    @staticmethod
+    def cursorZoomOut():
+        if QvConstants.CURSORZOOMOUT is None:
+            QvConstants.CURSORZOOMOUT=QCursor(QPixmap('imatges/zoom_out.cur'))
+        return QvConstants.CURSORZOOMOUT
+    @staticmethod
+    def cursorDit():
+        if QvConstants.CURSORDIT is None:
+            QvConstants.CURSORDIT=QCursor(QPixmap('imatges/dedo.cur'))
+        return QvConstants.CURSORDIT
+    @staticmethod
+    def cursorFletxa():
+        return QvConstants.CURSORFLETXA
+    @staticmethod
+    def cursorClick():
+        return QvConstants.CURSORCLICK
+    @staticmethod
+    def cursorOcupat():
+        return QvConstants.CURSOROCUPAT
 
     # No s'ha d'instanciar la classe, de manera que si fem un init es queixa
     def __init__(self):

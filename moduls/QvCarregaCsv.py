@@ -119,6 +119,9 @@ class QvCarregaCsv(QWizard):
         elif event.key() == Qt.Key_Enter or event.key() == Qt.Key_Return:
             if self.segButton.isEnabled():
                 self.next()
+    def show(self):
+        super().show()
+        self.activateWindow() #Que el carregador aparegui per sobre de tot
 
 
 class QvCarregaCsvPage(QWizardPage):
@@ -151,8 +154,6 @@ class QvCarregaCsvPage(QWizardPage):
         '''
         self.table = QvtLectorCsv(
             self.parent.csv, self.parent.separador, completa, self)
-        self.table.verticalScrollBar().setStyleSheet(QvConstants.SCROLLBARSTYLESHEET)
-        self.table.horizontalScrollBar().setStyleSheet(QvConstants.SCROLLBARSTYLESHEET)
         self.layoutTable = QVBoxLayout()
         self.layout.addLayout(self.layoutTable)
         self.layoutTable.addWidget(self.table)
@@ -214,7 +215,6 @@ class QvCarregaCsvTriaSep(QvCarregaCsvPage):
         self.lblSep.setText("Separador:")
         self.cbSep = QComboBox()
         self.cbSep.setFixedWidth(60)
-        QvConstants.formataScrollbar(self.cbSep.view().verticalScrollBar())
         llistaSeparadors = [';', ',', '.', ':', '|']
         self.cbSep.addItems(llistaSeparadors)
         self.layoutCheckButton.addWidget(self.lblSep)
@@ -252,7 +252,6 @@ class QvCarregaCsvTriaSepDec(QvCarregaCsvPage):
         self.lblSepDec.setText("Separador Decimal:")
         self.cbSepDec = QComboBox()
         self.cbSepDec.setFixedWidth(60)
-        QvConstants.formataScrollbar(self.cbSepDec.view().verticalScrollBar())
         llistaSeparadorsDecimals = ['.', ',']
         self.cbSepDec.addItems(llistaSeparadorsDecimals)
         self.layoutCheckButton.addWidget(self.lblSepDec)
@@ -331,10 +330,8 @@ class QvCarregaCsvXY(QvCarregaCsvPage):
         self.parent.llistaCamps=self.obteCamps()
         print(self.parent.llistaCamps)
         self.cbX = QComboBox()
-        QvConstants.formataScrollbar(self.cbX.view().verticalScrollBar())
         self.cbX.addItems(self.parent.llistaCamps)
         self.cbY = QComboBox()
-        QvConstants.formataScrollbar(self.cbY.view().verticalScrollBar())
         self.cbY.addItems(self.parent.llistaCamps)
         self.layoutCoordX.addWidget(self.lblCoordX)
         self.layoutCoordX.addWidget(self.cbX)
@@ -363,6 +360,8 @@ class QvCarregaCsvXY(QvCarregaCsvPage):
         self.cbX.currentIndexChanged.connect(xChanged)
         self.cbY.currentIndexChanged.connect(yChanged)
         self.cbProj.currentIndexChanged.connect(projChanged)
+        xChanged()
+        yChanged()
         projChanged()
         #self.setFinalPage(True)
         self.mostraTaula()
@@ -398,34 +397,26 @@ class QvCarregaCsvAdreca(QvCarregaCsvPage):
         self.lblTipus = QLabel('Tipus Via')
         self.cbTipus = QComboBox()
         self.cbTipus.setFixedWidth(MIDACOMBOBOX)
-        QvConstants.formataScrollbar(self.cbTipus.view().verticalScrollBar())
         self.cbTipus.addItems(['']+camps)
         self.lblCarrer = QLabel('Via o adreça')
         self.cbCarrer = QComboBox()
-        QvConstants.formataScrollbar(self.cbCarrer.view().verticalScrollBar())
         self.cbCarrer.addItems(camps)
         self.cbCarrer.setFixedWidth(MIDACOMBOBOX)
         self.lblNumIni = QLabel('Nº post. inicial')
         self.cbNumIni = QComboBox()
-        QvConstants.formataScrollbar(self.cbNumIni.view().verticalScrollBar())
         self.cbNumIni.addItems(['']+camps)
         self.cbNumIni.setFixedWidth(MIDACOMBOBOX)
         self.lblLletraIni = QLabel('Lletra inicial')
         self.cbLletraIni = QComboBox()
         self.cbLletraIni.setFixedWidth(MIDACOMBOBOX)
-        QvConstants.formataScrollbar(
-            self.cbLletraIni.view().verticalScrollBar())
         self.cbLletraIni.addItems(['']+camps)
         self.lblNumFi = QLabel('Nº post. final  ')
         self.cbNumFi = QComboBox()
         self.cbNumFi.setFixedWidth(MIDACOMBOBOX)
-        QvConstants.formataScrollbar(self.cbNumFi.view().verticalScrollBar())
         self.cbNumFi.addItems(['']+camps)
         self.lblLletraFi = QLabel('Lletra final  ')
         self.cbLletraFi = QComboBox()
         self.cbLletraFi.setFixedWidth(MIDACOMBOBOX)
-        QvConstants.formataScrollbar(
-            self.cbLletraFi.view().verticalScrollBar())
         self.cbLletraFi.addItems(['']+camps)
 
         self.layoutCarrer = QHBoxLayout()
@@ -531,8 +522,6 @@ class QvCarregaCsvGeneraCoords(QvCarregaCsvPage):
         '''
         super().__init__(parent)
         self.setSubTitle("Gestió d'errors i finalitzar procés")
-        self.parent.coordX = 'XCalculadaqVista'
-        self.parent.coordY = 'YCalculadaqVista'
         self.lblAdrecesError = QLabel()
         self.lblAdrecesError.setText("")
         self.lblAdrecesError.setStyleSheet('color: red')
@@ -547,11 +536,8 @@ class QvCarregaCsvGeneraCoords(QvCarregaCsvPage):
         self.scrollErrors = QScrollArea()
         self.scrollErrors.setFixedHeight(75)
         self.scrollErrors.setWidgetResizable(True)
-        self.scrollErrors.verticalScrollBar().setStyleSheet(
-            QvConstants.SCROLLBARSTYLESHEET)
         self.lblAdrecesError.setContentsMargins(10, 5, 10, 5)
         self.scrollErrors.setWidget(self.lblAdrecesError)
-        QvConstants.formataScrollbar(self.scrollErrors.verticalScrollBar())
         self.layout.addWidget(self.scrollErrors)
         # Després de generar el csv amb coordenades no hi ha volta enrere
         self.setCommitPage(True)
@@ -562,6 +548,8 @@ class QvCarregaCsvGeneraCoords(QvCarregaCsvPage):
         #self.layout.addWidget(self.lblExplicacio5)
         
     def initializePage(self):
+        self.parent.coordX = 'XCalculadaqVista'
+        self.parent.coordY = 'YCalculadaqVista'
         def splitCarrer(nomComplet):
             if not hasattr(self, 'TIPUSVIES'):
                 with open('U:/QUOTA/Comu_imi/Becaris/Tipusvia.csv') as csvfile:
@@ -692,7 +680,7 @@ class QvCarregaCsvPersonalitza(QvCarregaCsvPage):
         self.layColor = QHBoxLayout()
         self.layColor.addWidget(self.leColor)
 
-        bColor = QPushButton()
+        bColor = QvPushButton(flat=True)
         def canvicolor(self,dcolor):
             bColor.setStyleSheet("background-color: %s;" %dcolor.name())
         def openColorDialog(self):

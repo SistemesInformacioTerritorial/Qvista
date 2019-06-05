@@ -7,10 +7,11 @@ from qgis.core import QgsRectangle
 
 from PyQt5.QtWebKitWidgets import QWebView , QWebPage
 from PyQt5.QtWebKit import QWebSettings
+from moduls.QvPushButton import QvPushButton
 
-class BotoQvBrowser(QPushButton):
+class BotoQvBrowser(QvPushButton):
     def __init__(self):
-        QPushButton.__init__(self)
+        QvPushButton.__init__(self)
         self.setMinimumHeight(30)
         self.setMaximumHeight(30)
         self.setMinimumWidth(100)
