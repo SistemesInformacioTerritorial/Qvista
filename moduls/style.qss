@@ -3,15 +3,15 @@
  * Color mig:      #465A63
  * Color clar:     #79909B
  * Color gris:     #DDDDDD
- * Color blanc:    #F0F0F0
+ * Color blanc:    #F9F9F9
  * Color destacat: #FF6215
 */
 
 
 
-QWidget {
+/* QWidget {
     color: #38474f;
-    background-color: #f0f0f0;
+    background-color: #F9F9F9;
     border: 0px;
 }
 QWidget #layoutFosc {
@@ -21,16 +21,25 @@ QWidget #layoutFosc {
 }
 QWidget #layout {
     background: transparent;
-    /* background-color: #38474F;  */
     border: 0px;
 }
 QWidget::window {
     border: 0px;
-    background-color: #F0F0F0;
+    background-color: #F9F9F9;
+} */
+
+QWidget #layoutFosc {
+    background: solid;
+    background-color: #38474F; 
+    border: 0px;
+}
+QWidget #layout {
+    background: transparent;
+    border: 0px;
 }
 
 QFrame {
-    background-color: #f0f0f0 transparent;
+    background-color: #F9F9F9 transparent;
 }
 
 QScrollBar {
@@ -44,13 +53,14 @@ QScrollBar::handle {
     border: 0px;
 }
 QScrollBar::sub-page {
-    background: #F0F0F0;
-    height: 8 px;
+    background: #F9F9F9;
+    height: 0 px;
     border: 0px;
 }
 QScrollBar::add-page {
-    background: #F0F0F0;
-    height: 8 px;
+    background: #F9F9F9;
+    height: 0 px;
+
     border: 0px;
 }
 QScrollArea{
@@ -58,13 +68,15 @@ QScrollArea{
 	background: white;
 }
 QLabel {
-    background-color: #F0F0F0 transparent;
+    background-color: #F9F9F9 transparent;
     color: #38474F;
+    margin: 1px;
 }
 
 QLabel#fosca{
     background-color: #38474F solid;
-    color: #F0F0F0;
+    color: #F9F9F9;
+    border: 1px;
 }
 
 QMenuBar {
@@ -80,7 +92,7 @@ QLineEdit {
 
 QTextEdit[readOnly="true"] {
     border:0; 
-    background-color: #f0f0f0;
+    background-color: #F9F9F9;
 }
 
 QTextEdit {
@@ -118,19 +130,51 @@ QTableView QTableCornerButton::section {
     background-color: solid white;
     border: 0px;
 }
-
-QPushButton {
-	background-color: transparent;
-	color: #38474F;
-	border: 0px;
-	padding: 2px 2px;
+/* 
+QPushButton{
+    border: 2px;
+    margin: 2px;
+    background-color: transparent;
 }
 
-QPushButton:checked{
+QPushButton:hover{
+    border: 2px;
+    margin: 2px;
+    background-color: #F9F9F9;
+} */
+
+/* QvPushButton {
+	background-color: #F9F9F9 transparent;
+	color: #38474F;
+    margin: 1px;
+    border-style: groove;
+    border-color: #38474F;
+    border-width: 1px;
+} */
+
+QvPushButton {
+    background-color: #F9F9F9 transparent;
+    color: #38474F;
+    margin: 0px;
+    border: 0px;
+}
+
+QvPushButton:checked{
     background-color: #DDDDDD;
     color: #38474F;
 	border: 0px;
 	padding: 2px 2px;
+} 
+
+QvToolButton {
+	background-color: transparent;
+	color: #38474F;
+	border: 0px;
+	padding: 1px 1px;
+}
+
+QStatusBar {
+    background-color: #DDDDDD;
 }
 
 /*
@@ -138,7 +182,7 @@ QPushButton:checked{
  * EDITAR A PARTIR D'AQUI
 
 */
-QMenu {
+/* QMenu {
 	background-color: #263238;
 	color: #546E7A;
 }
@@ -158,6 +202,6 @@ QMenu::separator {
 	margin-right: 10px;
 	margin-top: 5px;
 	margin-bottom: 5px;
-}
+} */
 
 

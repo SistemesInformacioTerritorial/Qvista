@@ -393,6 +393,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.canvas.setAnnotationsVisible(True)
 
         self.canvas.xyCoordinates.connect(self.showXY)     
+        self.showXY(self.canvas.center())
         self.canvas.scaleChanged.connect(self.showScale)   
         self.canvas.mapCanvasRefreshed.connect(self.canvasRefrescat)
 
@@ -1449,24 +1450,26 @@ class QVista(QMainWindow, Ui_MainWindow):
         # self._menuBarShadow.setColor(QColor(55,57,63))
         # self._menuBarShadow.setBlurRadius(20)
         # self.bar.setGraphicsEffect(self._menuBarShadow)
+        self._menuBarShadow=QvConstants.afegeixOmbraHeader(self.bar)
 
         self.bar.setFixedHeight(40)
         self.fMaxim = QFrame()
-        self.lytMaxim = QHBoxLayout(self.fMaxim)
-        self.fMaxim.setLayout(self.lytMaxim)
-        self.lytMaxim.setContentsMargins(0,0,0,0)
+        self.lytBotonsFinestra = QHBoxLayout(self.fMaxim)
+        self.fMaxim.setLayout(self.lytBotonsFinestra)
+        self.lytBotonsFinestra.setContentsMargins(0,0,0,0)
         
         #self.botoMaxim = QvPushButton(flat=True)
-        self.botoMaxim=QvPushButton()
+        self.botoMaxim=QvPushButton(flat=True)
         self.botoMaxim.clicked.connect(self.ferGran)
         self.botoMaxim.setIcon(QIcon('imatges/arrow-expand.png'))
-        self.botoMaxim.setMinimumHeight(40)
-        self.botoMaxim.setMaximumHeight(40)
-        self.botoMaxim.setMinimumWidth(40)
-        self.botoMaxim.setMaximumWidth(40)
+        # self.botoMaxim.setMinimumHeight(40)
+        # self.botoMaxim.setMaximumHeight(40)
+        # self.botoMaxim.setMinimumWidth(40)
+        # self.botoMaxim.setMaximumWidth(40)
         self.botoMaxim.setIconSize(QSize(30, 30))
         #self.botoMaxim.setStyleSheet('QPushButton {opacity: 50; border: 1px #dddddd;}')
-        # self.lytMaxim.addWidget(self.botoMaxim)
+        self.lytMaxim=QHBoxLayout(self.frame_13)
+        self.lytMaxim.addWidget(self.botoMaxim)
 
         stylesheetBotonsFinestra='''
             QPushButton{
@@ -1487,7 +1490,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.botoMinimitzar.setFixedSize(40,40)
         self.botoMinimitzar.clicked.connect(self.showMinimized)
         self.botoMinimitzar.setStyleSheet(stylesheetBotonsFinestra)
-        self.lytMaxim.addWidget(self.botoMinimitzar)
+        self.lytBotonsFinestra.addWidget(self.botoMinimitzar)
 
         self.maximitzada=True
         iconaRestaurar1=QIcon('imatges/window-restore.png')
@@ -1511,14 +1514,14 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.botoRestaurar.clicked.connect(restaurar)
         self.botoRestaurar.setFixedSize(40,40)
         self.botoRestaurar.setStyleSheet(stylesheetBotonsFinestra)
-        self.lytMaxim.addWidget(self.botoRestaurar)
+        self.lytBotonsFinestra.addWidget(self.botoRestaurar)
 
         self.botoSortir=QvPushButton(flat=True)
         self.botoSortir.setIcon(QIcon('imatges/window_close.png'))
         self.botoSortir.setFixedSize(40,40)
         self.botoSortir.clicked.connect(self.close)
         self.botoSortir.setStyleSheet(stylesheetBotonsFinestra)
-        self.lytMaxim.addWidget(self.botoSortir)
+        self.lytBotonsFinestra.addWidget(self.botoSortir)
 
         self.bar.setCornerWidget(self.fMaxim, Qt.TopRightCorner)
 
@@ -1952,7 +1955,7 @@ class QVista(QMainWindow, Ui_MainWindow):
             missatgeCaixa('Cal tenir seleccionat un nivell per poder fer una selecció.','Marqueu un nivell a la llegenda sobre el que aplicar la consulta.')
 
     def showXY(self,p):
-        self.lblXY.setText( str("%.2f" % p.x()) + " , " + str("%.2f" % p.y() ))
+        self.lblXY.setText( str("%.2f" % p.x()) + ", " + str("%.2f" % p.y() ))
         # try:
         #     if self.qvPrint.pucMoure:
         #         self.dwPrint.move(self.qvPrint.dockX-100, self.qvPrint.dockY-120)
@@ -1974,45 +1977,67 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.leSeleccioExpressio.show()
         # spacer = QSpacerItem(1000, 1000, QSizePolicy.Expanding,QSizePolicy.Maximum)
         # self.statusbar.addPermanentWidget(spacer)
+        styleheetLabel='''
+            QLabel {
+                background-color: #F9F9F9;
+                color: #38474F;
+                border: 0px;
+                margin: 0px;
+                padding: 4px;
+            }'''
+        stylesheetButton='''
+            QvPushButton {
+                background-color: #F9F9F9;
+                color: #38474F;
+                margin: 0px;
+                border: 0px;
+                padding: 4px;
+            }'''
         self.lblConnexio = QLabel()
+        self.lblConnexio.setStyleSheet(styleheetLabel)
         self.lblConnexio.setFrameStyle(QFrame.StyledPanel )
-        self.lblConnexio.setMinimumWidth( 140 )
         self.statusbar.addPermanentWidget( self.lblConnexio, 0 )
         self.lblConnexio.setText(estatConnexio)
 
         self.lblXY = QLabel()
+        self.lblXY.setStyleSheet(styleheetLabel)
 
         self.lblXY.setFrameStyle( QFrame.StyledPanel )
-        self.lblXY.setMinimumWidth( 170 )
         self.lblXY.setAlignment( Qt.AlignCenter )
         self.statusbar.setSizeGripEnabled( False )
         self.statusbar.addPermanentWidget( self.lblXY, 0 )
+        # self.showXY(QCursor.pos())
+
+        self.lblProjeccio = QLabel()
+        self.lblProjeccio.setStyleSheet(styleheetLabel)
+        self.lblProjeccio.setFrameStyle(QFrame.StyledPanel )
+        # self.lblProjeccio.setMinimumWidth( 140 )
+        self.statusbar.addPermanentWidget( self.lblProjeccio, 0 )
 
         self.bScale = QvPushButton(flat=True)
-        self.bScale.setStyleSheet("QPushButton {Text-align:left};")
+        self.bScale.setStyleSheet(stylesheetButton)
 
         # self.bScale.setFrameStyle(QFrame.StyledPanel )
-        self.bScale.setMinimumWidth( 140 )
+        # self.bScale.setMinimumWidth( 140 )
         self.bScale.clicked.connect(self.editarEscala)
         self.statusbar.addPermanentWidget( self.bScale, 0 )
         self.editantEscala = False
 
         self.bOrientacio = QvPushButton(flat=True)
-        self.bOrientacio.setStyleSheet("QPushButton {Text-align:left};")
+        self.bOrientacio.setStyleSheet(stylesheetButton)
+        # self.bOrientacio.setStyleSheet("QPushButton {margin: 1px;};")
 
         # self.bScale.setFrameStyle(QFrame.StyledPanel )
         
-        self.bOrientacio.setMinimumWidth( 140 )
+        # self.bOrientacio.setMinimumWidth( 140 )
         self.statusbar.addPermanentWidget( self.bOrientacio, 0 )
 
-        self.lblProjeccio = QLabel()
-        self.lblProjeccio.setFrameStyle(QFrame.StyledPanel )
-        self.lblProjeccio.setMinimumWidth( 140 )
-        self.statusbar.addPermanentWidget( self.lblProjeccio, 0 )
+        
 
         self.lblProjecte = QLabel()
+        self.lblProjecte.setStyleSheet(styleheetLabel)
         self.lblProjecte.setFrameStyle(QFrame.StyledPanel )
-        self.lblProjecte.setMinimumWidth( 140 )
+        # self.lblProjecte.setMinimumWidth( 140 )
         self.statusbar.addPermanentWidget( self.lblProjecte, 0 )
 
     def editarOrientacio(self):
