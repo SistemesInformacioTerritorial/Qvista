@@ -8,6 +8,8 @@ from qgis.PyQt.QtWidgets import QFrame, QVBoxLayout, QHBoxLayout, QPushButton, Q
 from qgis.PyQt.QtGui import QIcon, QPainter, QCursor,QPixmap, QKeyEvent
 from moduls.QvApp import QvApp
 from qgis.core.contextmanagers import qgisapp
+from moduls.QvConstants import QvConstants
+from moduls.QvPushButton import QvPushButton
 
 
 
@@ -76,7 +78,7 @@ class QvCanvas(QgsMapCanvas):
             self.setMapTool(self.tool_zoomin)
         else: 
             self.bZoomIn.setChecked(True)
-        self.setCursor(QCursor(QPixmap('imatges/zoom_in.cur')))
+        self.setCursor(QvConstants.cursorZoomIn())
 
     def zoomOut(self):
         if self.bZoomOut.isChecked():
@@ -90,7 +92,7 @@ class QvCanvas(QgsMapCanvas):
         else: 
             self.bZoomOut.setChecked(True)
 
-        self.setCursor(QCursor(QPixmap('imatges/zoom_out.cur')))
+        self.setCursor(QvConstants.cursorZoomOut())
 
     def seleccioClick(self):
         if  self.bApuntar.isChecked():
@@ -114,14 +116,14 @@ class QvCanvas(QgsMapCanvas):
         else:
             self.bApuntar.setChecked(True)
         
-        self.setCursor(QCursor(QPixmap('imatges/dedo.cur')))
+        self.setCursor(QvConstants.cursorDit())
 
 
     def setLlegenda(self, llegenda):
         self.llegenda = llegenda
         
     def _botoMapa(self,imatge):
-        boto = QPushButton()
+        boto = QvPushButton(flat=True)
         boto.setCheckable(True)
         icon=QIcon(imatge)
         boto.setIcon(icon)
@@ -209,33 +211,34 @@ class QvCanvas(QgsMapCanvas):
             if "panning" in self.llistaBotons:
                 self.bPanning = self._botoMapa('imatges/pan_tool_black_24x24.png')
                 self.layoutBotoneraMapa.addWidget(self.bPanning)   
-                self.bPanning.setCursor(QCursor(Qt.ArrowCursor))   
+                self.bPanning.setCursor(QvConstants.cursorFletxa())   
                 self.bPanning.clicked.connect(self.panCanvas)
             if "centrar" in self.llistaBotons:
                 self.bCentrar = self._botoMapa('imatges/fit.png')
                 self.layoutBotoneraMapa.addWidget(self.bCentrar) 
-                self.bCentrar.setCursor(QCursor(Qt.ArrowCursor))     
+                self.bCentrar.setCursor(QvConstants.cursorFletxa())     
                 self.bCentrar.clicked.connect(self.centrarMapa)
             if "zoomIn" in self.llistaBotons:
                 self.bZoomIn = self._botoMapa('imatges/zoom_in.png')
                 self.layoutBotoneraMapa.addWidget(self.bZoomIn)  
-                self.bZoomIn.setCursor(QCursor(Qt.ArrowCursor))
+                self.bZoomIn.setCursor(QvConstants.cursorFletxa())
                 self.bZoomIn.clicked.connect(self.zoomIn)
             if "zoomOut" in self.llistaBotons:
                 self.bZoomOut = self._botoMapa('imatges/zoom_out.png')
                 self.layoutBotoneraMapa.addWidget(self.bZoomOut) 
-                self.bZoomOut.setCursor(QCursor(Qt.ArrowCursor))  
+                self.bZoomOut.setCursor(QvConstants.cursorFletxa())  
                 self.bZoomOut.clicked.connect(self.zoomOut)
             if "apuntar" in self.llistaBotons:
                 self.bApuntar = self._botoMapa('imatges/apuntar.png')
                 self.layoutBotoneraMapa.addWidget(self.bApuntar)  
-                self.bApuntar.setCursor(QCursor(Qt.ArrowCursor))       
+                self.bApuntar.setCursor(QvConstants.cursorFletxa())       
                 self.bApuntar.clicked.connect(self.seleccioClick)
+                self.bApuntar.setToolTip('Informació objecte')
 
         # spacer = QSpacerItem(0, 50, QSizePolicy.Expanding, QSizePolicy.Maximum)
         # self.layoutBotoneraMapa.addSpacerItem(spacer)
 
-        self.butoMostra = QPushButton()
+        self.butoMostra = QvPushButton(flat=True)
         self.butoMostra.setMaximumHeight(80)
         self.butoMostra.setMinimumHeight(80)
         self.butoMostra.setMaximumWidth(80)
@@ -245,7 +248,7 @@ class QvCanvas(QgsMapCanvas):
         self.butoMostra.setIconSize(QSize(80,80))
         self.butoMostra.setIcon(icon)
 
-        self.butoMostra2 = QPushButton()
+        self.butoMostra2 = QvPushButton(flat=True)
         self.butoMostra2.setMaximumHeight(80)
         self.butoMostra2.setMinimumHeight(80)
         self.butoMostra2.setMaximumWidth(80)
@@ -273,7 +276,7 @@ class QvCanvas(QgsMapCanvas):
 class Marc(QFrame):
     def __init__(self, master=None):
         QFrame.__init__(self, master)
-
+    #ENTRA????
     def paintEvent(self, ev):
         painter = QPainter(self)
         # gradient = QLinearGradient(QRectF(self.rect()).topLeft(),QRectF(self.rect()).bottomLeft())

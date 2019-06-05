@@ -34,6 +34,8 @@ from moduls.QvSuggeriments import QvSuggeriments
 from moduls.QvCarregaCsv import QvCarregaCsv
 from moduls.QvConstants import QvConstants
 from moduls.QvAvis import QvAvis
+from moduls.QvToolButton import QvToolButton
+from moduls.QvMenuBar import QvMenuBar
 import re
 import csv
 import os
@@ -92,10 +94,10 @@ class QVista(QMainWindow, Ui_MainWindow):
         
         """
         QMainWindow.__init__(self)
-
         self.setupUi(self)
         self.setFont(QvConstants.FONTTEXT)
         app.setFont(QvConstants.FONTTEXT)
+        self.setWindowFlags(Qt.FramelessWindowHint)
         # self.frame.setStyleSheet("QFrame {background-color : #52489C}")
 
         self.app=app
@@ -188,8 +190,7 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         self.setMouseTracking(False) 
 
-        self.label.clear() #Deixem el logo buit?
-        
+        self.oldPos = self.pos() #Per quan vulguem moure la finestra
 
 
     
@@ -244,7 +245,7 @@ class QVista(QMainWindow, Ui_MainWindow):
             
 
         # Titol del projecte 
-        fnt = QFont("Segoe UI", 18, weight=QFont.Normal)
+        fnt = QFont("Segoe UI Light", 18, weight=QFont.Normal)
         self.lblTitolProjecte.setFont(fnt)
         self.lblTitolProjecte.setText(self.project.title())
 
@@ -303,18 +304,25 @@ class QVista(QMainWindow, Ui_MainWindow):
             accio {[QAction]} -- [Una QAction associada al botó] (default: {None})
         
         """
-
-        boto = QToolButton()
+        #Passem de QToolButton a QvPushButton pla
+        #El codi queda una mica més guarro, però funciona bé
+        boto = QvToolButton()
+        # boto = QvPushButton(flat=True)
         boto.setMinimumHeight(tamany)
         boto.setMaximumHeight(tamany)
         boto.setMinimumWidth(tamany)
         boto.setMinimumWidth(tamany)
         boto.setDefaultAction(accio)
         boto.setIconSize(QSize(tamany, tamany))
-        boto.setStyleSheet('QToolButton {opacity: 50; border: 1px #dddddd;}')
+        #boto.setStyleSheet('QToolButton {opacity: 50; border: 1px #dddddd;}')
+        # if accio is not None: boto.setToolTip(accio.toolTip())
+        #Si ens especifica una icona concreta, la posem. Si no, posem la icona de l'acció (si en té)
         if imatge is not None:
             icon = QIcon(imatge)
             boto.setIcon(icon)
+        # elif accio is not None:
+        #     boto.setIcon(accio.icon())
+        # boto.clicked.connect(accio)
         self.lytBotoneraLateral.addWidget(boto)
         # boto.setStyleSheet("QToolButton {background-color: #777777; border: 0px solid red;}")
         return boto
@@ -389,11 +397,7 @@ class QVista(QMainWindow, Ui_MainWindow):
        
 
         self.layout = QVBoxLayout(self.frameCentral)
-        self._menuBarShadow = QGraphicsDropShadowEffect()
-        self._menuBarShadow.setXOffset(10)
-        self._menuBarShadow.setYOffset(10)
-        self._menuBarShadow.setColor(QColor(170,170,170))
-        self._menuBarShadow.setBlurRadius(10)
+        
 
         self.layout.setContentsMargins(0,0,0,0)
         # self.layout.addWidget(self.botonera1)
@@ -545,7 +549,7 @@ class QVista(QMainWindow, Ui_MainWindow):
 
 
 
-        self.boton_bajar= QPushButton()
+        self.boton_bajar= QvPushButton(flat=True)
         self.boton_bajar.clicked.connect(self.CopiarA_Ubicacions)
         self.boton_bajar.setIcon(QIcon('imatges/down3-512.png'))
         self.boton_bajar.setMinimumHeight(25)
@@ -555,7 +559,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.boton_bajar.setToolTip("Copiar aquest carrer i aquest número a l'arbre d'ubicacións")
 
         #boton invoc_streer
-        self.boton_invocarStreetView= QPushButton()
+        self.boton_invocarStreetView= QvPushButton(flat=True)
         self.boton_invocarStreetView.clicked.connect(self.invocarStreetView)
         self.boton_invocarStreetView.setIcon(QIcon('imatges/littleMan.png'))
         self.boton_invocarStreetView.setMinimumHeight(25)
@@ -703,7 +707,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.llegenda.currentLayerChanged.connect(self.canviLayer)
         self.canvas.setLlegenda(self.llegenda)
         self.layoutFrameLlegenda.setContentsMargins ( 5, 13, 5, 0 )
-        self.llegenda.setStyleSheet("QvLlegenda {color: #2F4550; background-color: #DDDDDD; border: 0px solid red;}")
+        self.llegenda.setStyleSheet("QvLlegenda {color: #38474f; background-color: #DDDDDD; border: 0px solid red;}")
         fnt = QFont("Segoe UI", 12, weight=QFont.Normal)
         self.llegenda.setFont(fnt)
         self.layoutFrameLlegenda.addWidget(self.llegenda)
@@ -786,7 +790,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.menuEntorns = self.bar.addMenu(3*' '+'Entorns'+3*' ')
         
         fnt = QFont("Segoe UI", 16, weight=QFont.Normal)
-        self.menuEntorns.setStyleSheet("QMenu {color: #465A63; background-color: #dddddd; selection-background-color : #2f4550;}")
+        self.menuEntorns.setStyleSheet("QMenu {color: #465A63; background-color: #dddddd; selection-background-color : #38474f;}")
         self.menuEntorns.setFont(fnt)
         self.menuEntorns.styleStrategy = QFont.PreferAntialias or QFont.PreferQuality
         for entorn in os.listdir(os.path.dirname('entorns/')):          
@@ -1203,7 +1207,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         leTitol.setPlaceholderText('Escriu aquí el titol del sugeriment')
         leDescripcio = QLineEdit()
         leDescripcio.setPlaceholderText('Escriu.ne aquí una breu descripció')
-        bEnviar = QPushButton('Enviar')
+        bEnviar = QvPushButton('Enviar',flat=True)
         self.lblResultat = QLabel()
         bEnviar.clicked.connect(lambda: reportarProblema(leTitol.text(), leDescripcio.text()))
         self.lytFitxaError.addWidget(leTitol)
@@ -1232,16 +1236,16 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.lytSeleccioGrafica.addLayout(self.lytBotonsSeleccio)
 
 
-        self.bs1 = QPushButton()
+        self.bs1 = QvPushButton(flat=True)
         # self.bs1.setCheckable(True)
         self.bs1.setIcon(QIcon('imatges/cursor-pointer.png'))
-        self.bs2 = QPushButton()
+        self.bs2 = QvPushButton(flat=True)
         # self.bs2.setCheckable(True)
         self.bs2.setIcon(QIcon('imatges/shape-polygon-plus.png'))
-        self.bs3 = QPushButton()
+        self.bs3 = QvPushButton(flat=True)
         # self.bs3.setCheckable(True)
         self.bs3.setIcon(QIcon('imatges/vector-circle-variant.png'))
-        self.bs4 = QPushButton()
+        self.bs4 = QvPushButton(flat=True)
         # self.bs4.setCheckable(True)
         self.bs4.setIcon(QIcon('imatges/trash-can-outline.png'))
 
@@ -1251,10 +1255,10 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.lwFieldsSelect = QListWidget()
         self.lwFieldsSelect.setSelectionMode(QAbstractItemView.ExtendedSelection)
 
-        self.bs5 = QPushButton('Calcular')
+        self.bs5 = QvPushButton('Calcular',flat=True)
         self.bs5.clicked.connect(self.calcularSeleccio)
         
-        self.bs6 = QPushButton('Crear CSV')
+        self.bs6 = QvPushButton('Crear CSV',flat=True)
         self.bs6.clicked.connect(self.crearCsv)
 
         self.twResultats = QTableWidget()
@@ -1420,14 +1424,15 @@ class QVista(QMainWindow, Ui_MainWindow):
         lblLogoAjb = QLabel()
         lblLogoAjb.setMaximumHeight(40)
         lblLogoAjb.setMinimumHeight(40)
-        lblLogoAjb.setMaximumWidth(88)
-        lblLogoAjb.setMinimumWidth(88)
+        # lblLogoAjb.setMaximumWidth(88)
+        # lblLogoAjb.setMinimumWidth(88)
         #imatge = QPixmap('imatges/logoBcnPetit.jpg')
-        imatge = QPixmap('imatges/qVistaLogo_88x40.png')
+        imatge = QPixmap('imatges/qVistaLogo_text_40.png')
         # imatge = QPixmap('imatges/qVistaLogoVerd2.png')
         lblLogoAjb.setPixmap(imatge)
         lblLogoAjb.setScaledContents(True)
-
+        menubar=QvMenuBar(self)
+        self.setMenuBar(menubar)
         self.bar = self.menuBar()
         self.bar.setFont(fnt)
         self.bar.setCornerWidget(lblLogoAjb,Qt.TopLeftCorner)
@@ -1440,11 +1445,11 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         self.bar.setFixedHeight(40)
         self.fMaxim = QFrame()
-        self.lytMaxim = QGridLayout(self.fMaxim)
+        self.lytMaxim = QHBoxLayout(self.fMaxim)
         self.fMaxim.setLayout(self.lytMaxim)
         self.lytMaxim.setContentsMargins(0,0,0,0)
         
-        #self.botoMaxim = QPushButton()
+        #self.botoMaxim = QvPushButton(flat=True)
         self.botoMaxim=QvPushButton()
         self.botoMaxim.clicked.connect(self.ferGran)
         self.botoMaxim.setIcon(QIcon('imatges/arrow-expand.png'))
@@ -1454,7 +1459,59 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.botoMaxim.setMaximumWidth(40)
         self.botoMaxim.setIconSize(QSize(30, 30))
         #self.botoMaxim.setStyleSheet('QPushButton {opacity: 50; border: 1px #dddddd;}')
-        self.lytMaxim.addWidget(self.botoMaxim)
+        # self.lytMaxim.addWidget(self.botoMaxim)
+
+        stylesheetBotonsFinestra='''
+            QPushButton{
+                background: transparent;
+            }
+            QPushButton::hover {
+                background-color: %s;
+                opacity: 1;
+            }
+            QPushButton::pressed{
+                background-color: %s;
+                opacity: 0.1;
+            }
+        '''%(QvConstants.COLORDESTACATHTML,QvConstants.COLORDESTACATHTML)
+
+        self.botoMinimitzar=QvPushButton(flat=True)
+        self.botoMinimitzar.setIcon(QIcon('imatges/window-minimize.png'))
+        self.botoMinimitzar.setFixedSize(40,40)
+        self.botoMinimitzar.clicked.connect(self.showMinimized)
+        self.botoMinimitzar.setStyleSheet(stylesheetBotonsFinestra)
+        self.lytMaxim.addWidget(self.botoMinimitzar)
+
+        self.maximitzada=True
+        iconaRestaurar1=QIcon('imatges/window-restore.png')
+        iconaRestaurar2=QIcon('imatges/window-maximize.png')
+        def restaurar():
+            if self.maximitzada:
+                self.setWindowState(Qt.WindowActive)
+                self.midax=self.width()
+                self.miday=self.height()
+                self.botoRestaurar.setIcon(iconaRestaurar2)
+                pass
+            else:
+                self.setWindowState(Qt.WindowActive | Qt.WindowMaximized)
+                self.botoRestaurar.setIcon(iconaRestaurar1)
+                # self.setFixedSize(self.midax,self.miday)
+                # self.setGeometry(0,0,self.midax,self.miday)
+            self.maximitzada=not self.maximitzada
+        self.restaurarFunc=restaurar
+        self.botoRestaurar=QvPushButton(flat=True)
+        self.botoRestaurar.setIcon(iconaRestaurar1)
+        self.botoRestaurar.clicked.connect(restaurar)
+        self.botoRestaurar.setFixedSize(40,40)
+        self.botoRestaurar.setStyleSheet(stylesheetBotonsFinestra)
+        self.lytMaxim.addWidget(self.botoRestaurar)
+
+        self.botoSortir=QvPushButton(flat=True)
+        self.botoSortir.setIcon(QIcon('imatges/window_close.png'))
+        self.botoSortir.setFixedSize(40,40)
+        self.botoSortir.clicked.connect(self.close)
+        self.botoSortir.setStyleSheet(stylesheetBotonsFinestra)
+        self.lytMaxim.addWidget(self.botoSortir)
 
         self.bar.setCornerWidget(self.fMaxim, Qt.TopRightCorner)
 
@@ -1924,7 +1981,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.statusbar.setSizeGripEnabled( False )
         self.statusbar.addPermanentWidget( self.lblXY, 0 )
 
-        self.bScale = QPushButton()
+        self.bScale = QvPushButton(flat=True)
         self.bScale.setStyleSheet("QPushButton {Text-align:left};")
 
         # self.bScale.setFrameStyle(QFrame.StyledPanel )
@@ -1933,7 +1990,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.statusbar.addPermanentWidget( self.bScale, 0 )
         self.editantEscala = False
 
-        self.bOrientacio = QPushButton()
+        self.bOrientacio = QvPushButton(flat=True)
         self.bOrientacio.setStyleSheet("QPushButton {Text-align:left};")
 
         # self.bScale.setFrameStyle(QFrame.StyledPanel )
@@ -2177,6 +2234,24 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.dwMarxes = MarxesCiutat(self)
         self.addDockWidget( Qt.RightDockWidgetArea, self.dwMarxes)
         self.dwMarxes.show()    
+    def mousePressEvent(self, event):
+        self.oldPos = event.globalPos()
+
+    def mouseMoveEvent(self, event):
+        if self.maximitzada:
+            self.restaurarFunc()
+            #Desmaximitzar
+        delta = QPoint(event.globalPos() - self.oldPos)
+        # print(delta)
+        self.move(self.x() + delta.x(), self.y() + delta.y())
+        self.oldPos = event.globalPos()
+    def mouseDoubleClickEvent(self,event):
+        super().mouseDoubleClickEvent(event)
+        if event.button()==Qt.LeftButton:
+            self.restaurarFunc()
+    # def enterEvent(self,event):
+    #     super().enterEvent(event)
+    #     qApp.setCursor(QCursor(Qt.ArrowCursor))
         
 # def bicing(self):
 #         self.bicing=Bicis(self)
@@ -2511,7 +2586,9 @@ globalLlistaCamps=None
 tamanyReader=0
 def carregarLayerCSV(nfile):
         if nfile: 
+            qApp.setOverrideCursor(Qt.WaitCursor)
             assistent=QvCarregaCsv(nfile,nivellCsv,qV)
+            qApp.restoreOverrideCursor()
             assistent.setModal(True)
             #assistent.setWindowFlags(assistent.windowFlags() | Qt.Popup)
             #assistent.setWindowFlags(assistent.windowFlags() | Qt.WindowStaysOnTopHint)
@@ -2696,6 +2773,7 @@ def main(argv):
         splash.showMessage("""Institut Municipal d'Informàtica (IMI) Versió """+versio+'  ',Qt.AlignRight | Qt.AlignBottom, QvConstants.COLORFOSC)
         splash.setFont(QFont(QvConstants.NOMFONT,8))
         splash.show()
+        app.setWindowIcon(QIcon('imatges/QVistaLogo_256.png'))
         app.processEvents()
         with open('moduls/style.qss') as st:
             app.setStyleSheet(st.read())

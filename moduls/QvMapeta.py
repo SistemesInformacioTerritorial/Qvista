@@ -1,5 +1,7 @@
 from moduls.QvImports  import *
 from qgis.core import QgsRectangle
+from moduls.QvConstants import QvConstants
+from moduls.QvPushButton import QvPushButton
 
 
 # import time
@@ -73,13 +75,14 @@ class QvMapeta(QFrame):
         self.end = QPoint()
 
         # Aixó serveix per donar ombra al frame
-        effect = QGraphicsDropShadowEffect()
-        effect.setBlurRadius(5)
-        effect.setColor(QColor(120,120,120,0))
-        effect.setXOffset(5)
-        effect.setYOffset(5)
-        effect.setColor(QColor(150,150,150))
-        self.setGraphicsEffect(effect)
+        # effect = QGraphicsDropShadowEffect()
+        # effect.setBlurRadius(5)
+        # effect.setColor(QColor(120,120,120,0))
+        # effect.setXOffset(5)
+        # effect.setYOffset(5)
+        # effect.setColor(QColor(150,150,150))
+        # self.setGraphicsEffect(effect)
+        QvConstants.afegeixOmbraWidget(self)
 
         # El botó per minimitzar el mapa
         self.botoFerPetit = QPushButton(self)
@@ -288,8 +291,12 @@ class QvMapeta(QFrame):
         # Cuando se detecta evento de refresco??
         # Pinto en mapeta rectangulo y cruz
         qp = QPainter(self)
-        br = QBrush(QColor(50, 110, 90, 70))  
+        #br = QBrush(QColor(50, 110, 90, 70))  
+        br = QBrush(QvConstants.COLORCLARSEMITRANS) #Color de fons del quadrat
         qp.setBrush(br)  
+
+        pen=QPen(QvConstants.COLORFOSC)
+        qp.setPen(pen)
         begin_ = QPoint()
         end_ =  QPoint()
 

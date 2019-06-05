@@ -103,7 +103,7 @@ QComboBox QAbstractItemView {
 QTableView {
     background-color: solid white;
     selection-background-color: #FF6215;
-    color: 38474F;
+    color: #38474F;
     border: 1px solid #38474F;
 }
 
@@ -112,7 +112,7 @@ QTableView::item {
 }
 
 QTableView QTableCornerButton::section {
-    background: transparent;
+    background-color: solid white;
     border: 0px;
 }
 
@@ -120,8 +120,16 @@ QPushButton {
 	background-color: transparent;
 	color: #38474F;
 	border: 0px;
-	padding: 0px 0px;
+	padding: 2px 2px;
 }
+
+QPushButton:checked{
+    background-color: #DDDDDD;
+    color: #38474F;
+	border: 0px;
+	padding: 2px 2px;
+}
+
 /*
 
  * EDITAR A PARTIR D'AQUI
@@ -150,24 +158,3 @@ QMenu::separator {
 }
 
 
-QMenuBar {
-	background-color: #263238;
-	color: #546E7A;
-}
-
-QMenuBar::item {
-    background: transparent;
-    padding: 0px;
-}
-
-QMenuBar::item:disabled {
-	color: gray;
-}
-
-QMenuBar::item:selected {
-	color: #AFBDC4;
-}
-
-QMenuBar::item:pressed {
-	color: #FFFFFF;
-}

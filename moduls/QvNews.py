@@ -123,7 +123,6 @@ class QvNewsFinestra(QDialog):
         # Millor que es pugui seleccionar el text? O que no es pugui?
         self.caixaText.setEnabled(True)
         self.caixaText.setFrameStyle(QFrame.NoFrame)
-        QvConstants.formataScrollbar(self.caixaText.verticalScrollBar())
         # Comentar si volem que s'oculti la scrollbar quan no s'utilitza
         self.caixaText.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
         #self.caixaText.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)

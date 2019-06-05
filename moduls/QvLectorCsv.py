@@ -22,23 +22,10 @@ class QvLectorCsv(QtWidgets.QWidget):
        self.tableView.setShowGrid(True)
        self.tableView.setGeometry(10, 50, 780, 645)
        self.model.dataChanged.connect(self.finishedEdit)
- 
-    #    self.pushButtonPrint = QtWidgets.QPushButton(self)
-    #    self.pushButtonPrint.setText("Imprimir")
-    #    self.pushButtonPrint.clicked.connect(self.handlePrint)
-    #    self.pushButtonPrint.setStyleSheet('border: none; margin: 0px; padding: 0px')
-
- 
-    #    self.pushButtonWrite = QtWidgets.QPushButton(self)
-    #    self.pushButtonWrite.setText("Desar CSV")
-    #    self.pushButtonWrite.clicked.connect(self.writeCsv)
-    #    self.pushButtonWrite.setStyleSheet('border: none; margin: 0px; padding: 0px')
     
        grid = QtWidgets.QGridLayout()
        grid.setContentsMargins(0,0,0,0)
        grid.setSpacing(10)
-       #grid.addWidget(self.pushButtonPrint, 1, 2, 1, 1, QtCore.Qt.AlignRight)
-       #grid.addWidget(self.pushButtonWrite, 1, 0)
        grid.addWidget(self.tableView, 0, 0, 1, 9)
        self.setLayout(grid)
  
@@ -297,40 +284,37 @@ class QvLectorCsv(QtWidgets.QWidget):
                myitem.setText("")
  
 def stylesheet(self):
-       return """
-       QTableView
-       {
-border: 1px solid grey;
-border-radius: 0px;
-font-size: 12px;
-        background-color: #f8f8f8;
-selection-color: white;
-selection-background-color: #111111;
-       }
- 
-QTableView QTableCornerButton::section {
-    background: #D6D1D1;
-    border: 1px outset black;
-}
- 
-QPushButton
-{
-font-size: 11px;
-border: 1px inset grey;
-height: 24px;
-width: 80px;
-color: black;
-background-color: #e8e8e8;
-background-position: bottom-left;
-} 
- 
-QPushButton::hover
-{
-border: 2px inset goldenrod;
-font-weight: bold;
-color: #e8e8e8;
-background-color: green;
-} 
+    return """
+        QTableView{
+            border: 1px solid grey;
+            border-radius: 0px;
+            font-size: 12px;
+                    background-color: #f8f8f8;
+            selection-color: white;
+            selection-background-color: #111111;
+        }
+
+        QTableView QTableCornerButton::section {
+            background: #D6D1D1;
+            border: 1px outset black;
+        }
+
+        QPushButton{
+            font-size: 11px;
+            border: 1px inset grey;
+            height: 24px;
+            width: 80px;
+            color: black;
+            background-color: #e8e8e8;
+            background-position: bottom-left;
+        } 
+
+        QPushButton::hover{
+            border: 2px inset goldenrod;
+            font-weight: bold;
+            color: #e8e8e8;
+            background-color: green;
+        } 
 """
 
 # from qgis.core.contextmanagers import qgisapp
