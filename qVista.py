@@ -674,7 +674,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         # self.wMapeta.setGeometry(0,0,267,284)
         # self.wMapeta.show()
         self.mapeta = QvMapeta(self.canvas, tamanyPetit=True, pare=self)
-        
+        self.mapeta.setGraphicsEffect(QvConstants.ombra(self,radius=50,color=QvConstants.COLORCLAR))
         self.bOrientacio.clicked.connect(self.editarOrientacio)
         self.mapeta.setParent(self.canvas)
         self.mapeta.move(5,5)
@@ -2328,7 +2328,7 @@ def nivellCsv(fitxer: str,delimitador: str,campX: str,campY: str, projeccio: int
     uri = "file:///"+fitxer+"?type=csv&delimiter=%s&xField=%s&yField=%s" % (delimitador,campX,campY)
     layer = QgsVectorLayer(uri, nomCapa, 'delimitedtext')
     layer.setCrs(QgsCoordinateReferenceSystem(projeccio, QgsCoordinateReferenceSystem.EpsgCrsId))
-    if layer is not None:
+    if layer is not None or layer is not NoneType:
         symbol = QgsMarkerSymbol.createSimple({'name': symbol, 'color': color})
         layer.renderer().setSymbol(symbol)
         qV.project.addMapLayer(layer)

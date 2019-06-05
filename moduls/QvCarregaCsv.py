@@ -81,6 +81,9 @@ class QvCarregaCsv(QWizard):
     def setSeparador(self, sep):
         self.separador = sep
 
+    def setSeparadorDec(self, sepD):
+        self.separadorDec = sepD
+
     def setCoordX(self, coordX):
         self.coordX = coordX
 
@@ -254,6 +257,10 @@ class QvCarregaCsvTriaSepDec(QvCarregaCsvPage):
         self.cbSepDec.addItems(llistaSeparadorsDecimals)
         self.layoutCheckButton.addWidget(self.lblSepDec)
         self.layoutCheckButton.addWidget(self.cbSepDec)
+        self.parent.setSeparadorDec('.')
+        def botoClickatDec(boto):
+            self.parent.setSeparadorDec(self.cbSepDec.currentText())
+        self.cbSepDec.activated.connect(botoClickatDec)
         self.layoutCheckButton.addStretch(1)
         self.mostraTaula()
 
@@ -357,14 +364,17 @@ class QvCarregaCsvXY(QvCarregaCsvPage):
         self.cbY.currentIndexChanged.connect(yChanged)
         self.cbProj.currentIndexChanged.connect(projChanged)
         projChanged()
-        nofares =  3
         #self.setFinalPage(True)
         self.mostraTaula()
+
+    def replaceComa(self):
+        print("aqui canviem les compes per punts")
 
     def nextId(self):
         self.parent.setCoordX(self.cbX.currentText())
         self.parent.setCoordY(self.cbY.currentText())
-
+        if self.parent.separadorDec == ',':
+            self.replaceComa()
         return QvCarregaCsv.finestres.Personalitza
 
 
