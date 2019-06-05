@@ -670,7 +670,7 @@ class QvCarregaCsvPersonalitza(QvCarregaCsvPage):
         self.layColor = QHBoxLayout()
         self.layColor.addWidget(self.leColor)
 
-        bColor = QvPushButton(flat=True)
+        bColor = QPushButton()
         def canvicolor(self,dcolor):
             bColor.setStyleSheet("background-color: %s;" %dcolor.name())
         def openColorDialog(self):

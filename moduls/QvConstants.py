@@ -23,9 +23,10 @@ class QvConstants:
     COLORMIGHTML = '#465A63'
     COLORCLARHTML = '#79909B'
     COLORGRISHTML = '#DDDDDD'
-    COLORBLANCHTML = '#F0F0F0'
+    COLORBLANCHTML = '#F9F9F9'
     COLORDESTACATHTML = '#FF6215'
-    COLOROMBRAHTML = '#666666'
+    # COLOROMBRAHTML = '#666666DD'
+    COLOROMBRAHTML = '#66000000'
     # Colors del qVista, utilitzant QColor
     COLORFOSC = QColor(COLORFOSCHTML)
     COLORMIG = QColor(COLORMIGHTML)
@@ -50,7 +51,7 @@ class QvConstants:
         Arguments:
             widget{QWidget} -- Widget al que afegim la ombra
         """
-        QvConstants.aplicaOmbra(widget, QvConstants.ombraWidget(widget))
+        return QvConstants.aplicaOmbra(widget, QvConstants.ombraWidget(widget))
 
     @staticmethod
     def afegeixOmbraHeader(widget: QWidget):
@@ -62,7 +63,7 @@ class QvConstants:
         Arguments:
             widget{QWidget} -- Widget al que afegim la ombra
         """
-        QvConstants.aplicaOmbra(widget, QvConstants.ombraHeader(widget))
+        return QvConstants.aplicaOmbra(widget, QvConstants.ombraHeader(widget))
 
     # FUNCIONS "PRIVADES"
     # Cap funció de les de sota hauria de ser cridada des de fora de la classe
@@ -101,6 +102,7 @@ class QvConstants:
     @staticmethod
     def aplicaOmbra(widget: QWidget, ombra: QGraphicsDropShadowEffect):
         widget.setGraphicsEffect(ombra)
+        return ombra
     
     @staticmethod
     def cursorZoomIn():
