@@ -55,7 +55,7 @@ class QvCarregaCsv(QWizard):
         self.setButton(QvCarregaCsv.BackButton, self.backButton)
         self.setButton(QvCarregaCsv.FinishButton, self.finishButton)
         self.setButton(QvCarregaCsv.CancelButton, self.cancelButton)
-        self.setButton(QvCarregaCsv.CommitButton,self.commitButton)
+        self.setButton(QvCarregaCsv.CommitButton, self.commitButton)
 
         self.setFixedWidth(500)
         self.setContentsMargins(0, 0, 0, 0)
@@ -479,7 +479,7 @@ class QvCarregaCsvAdreca(QvCarregaCsvPage):
         self.cbNumFi.currentIndexChanged.connect(guardaDades)
         self.cbLletraFi.currentIndexChanged.connect(guardaDades)
         guardaDades()
-        self.setCommitPage(True)
+        #self.setCommitPage(True)
 
         self.mostraTaula()
 
@@ -540,7 +540,7 @@ class QvCarregaCsvGeneraCoords(QvCarregaCsvPage):
         self.scrollErrors.setWidget(self.lblAdrecesError)
         self.layout.addWidget(self.scrollErrors)
         # Després de generar el csv amb coordenades no hi ha volta enrere
-        self.setCommitPage(True)
+        #self.setCommitPage(True)
         self.showed = False
         #self.mostraTaula()
         self.lblExplicacio5 = QLabel()
@@ -665,6 +665,7 @@ class QvCarregaCsvPersonalitza(QvCarregaCsvPage):
         self.setSubTitle("Personalització de la nova capa")
         self.layout = QVBoxLayout(self)
         self.layout.setSpacing(40)
+        self.setCommitPage(True)
         self.layout.setAlignment(Qt.AlignTop)
         self.layNom = QHBoxLayout()
         self.lblNom = QLabel()
