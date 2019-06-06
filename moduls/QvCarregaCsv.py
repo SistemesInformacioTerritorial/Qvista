@@ -55,7 +55,7 @@ class QvCarregaCsv(QWizard):
         self.setButton(QvCarregaCsv.BackButton, self.backButton)
         self.setButton(QvCarregaCsv.FinishButton, self.finishButton)
         self.setButton(QvCarregaCsv.CancelButton, self.cancelButton)
-        self.setButton(QvCarregaCsv.CommitButton,self.commitButton)
+        self.setButton(QvCarregaCsv.CommitButton, self.commitButton)
 
         self.setFixedWidth(500)
         self.setContentsMargins(0, 0, 0, 0)
@@ -80,6 +80,9 @@ class QvCarregaCsv(QWizard):
     # Aquestes funcions seran cridades NOMÉS des de les pàgines
     def setSeparador(self, sep):
         self.separador = sep
+
+    def setSeparadorDec(self, sepD):
+        self.separadorDec = sepD
 
     def setCoordX(self, coordX):
         self.coordX = coordX
@@ -253,6 +256,10 @@ class QvCarregaCsvTriaSepDec(QvCarregaCsvPage):
         self.cbSepDec.addItems(llistaSeparadorsDecimals)
         self.layoutCheckButton.addWidget(self.lblSepDec)
         self.layoutCheckButton.addWidget(self.cbSepDec)
+        self.parent.setSeparadorDec('.')
+        def botoClickatDec(boto):
+            self.parent.setSeparadorDec(self.cbSepDec.currentText())
+        self.cbSepDec.activated.connect(botoClickatDec)
         self.layoutCheckButton.addStretch(1)
         self.mostraTaula()
 
@@ -356,14 +363,17 @@ class QvCarregaCsvXY(QvCarregaCsvPage):
         xChanged()
         yChanged()
         projChanged()
-        nofares =  3
         #self.setFinalPage(True)
         self.mostraTaula()
+
+    def replaceComa(self):
+        print("aqui canviem les compes per punts")
 
     def nextId(self):
         self.parent.setCoordX(self.cbX.currentText())
         self.parent.setCoordY(self.cbY.currentText())
-
+        if self.parent.separadorDec == ',':
+            self.replaceComa()
         return QvCarregaCsv.finestres.Personalitza
 
 
@@ -469,7 +479,7 @@ class QvCarregaCsvAdreca(QvCarregaCsvPage):
         self.cbNumFi.currentIndexChanged.connect(guardaDades)
         self.cbLletraFi.currentIndexChanged.connect(guardaDades)
         guardaDades()
-        self.setCommitPage(True)
+        #self.setCommitPage(True)
 
         self.mostraTaula()
 
@@ -530,7 +540,7 @@ class QvCarregaCsvGeneraCoords(QvCarregaCsvPage):
         self.scrollErrors.setWidget(self.lblAdrecesError)
         self.layout.addWidget(self.scrollErrors)
         # Després de generar el csv amb coordenades no hi ha volta enrere
-        self.setCommitPage(True)
+        #self.setCommitPage(True)
         self.showed = False
         #self.mostraTaula()
         self.lblExplicacio5 = QLabel()
@@ -655,6 +665,7 @@ class QvCarregaCsvPersonalitza(QvCarregaCsvPage):
         self.setSubTitle("Personalització de la nova capa")
         self.layout = QVBoxLayout(self)
         self.layout.setSpacing(40)
+        self.setCommitPage(True)
         self.layout.setAlignment(Qt.AlignTop)
         self.layNom = QHBoxLayout()
         self.lblNom = QLabel()

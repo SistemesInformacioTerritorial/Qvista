@@ -41,7 +41,7 @@ QScrollBar {
 }
 QScrollBar::handle {
     background: #DDDDDD;
-    min-height: 0px;
+    min-height: 25px;
     border: 0px;
 }
 QScrollBar::sub-page {
@@ -52,7 +52,12 @@ QScrollBar::sub-page {
 QScrollBar::add-page {
     background: #F9F9F9;
     height: 0 px;
+
     border: 0px;
+}
+QScrollArea{
+	background-color: white;
+	background: white;
 }
 
 QLabel {

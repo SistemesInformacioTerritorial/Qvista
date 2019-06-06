@@ -110,7 +110,6 @@ class QVista(QMainWindow, Ui_MainWindow):
         # Preparació deprojecte i canvas
         self.preparacioEntornGrafic()
         
-
         # Inicialitzacions
         self.printActiu = False
         self.qvPrint = 0
@@ -122,7 +121,6 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.lblMovie = None        
         self.ubicacions= None
         self.cAdrec= None
-
 
         # # Connectors i accions
         self.definicioAccions()
@@ -139,7 +137,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.preparacioLlegenda()
         self.preparacioArbreDistrictes()
         self.preparacioCataleg()
-        self.preparacioStreetView()
+        self.preparacioStreetView()     #fa el qvSv. necessita el canvas
         # self.preparacioMapTips()
         self.preparacioImpressio()
         # self.preparacioGrafiques()
@@ -385,9 +383,10 @@ class QVista(QMainWindow, Ui_MainWindow):
 
     def preparacioEntornGrafic(self):
         # Canvas
-        llistaBotons = ['apuntar', 'zoomIn', 'zoomOut', 'panning', 'centrar']
+        #llistaBotons = ['apuntar', 'zoomIn', 'zoomOut', 'panning', 'centrar']
+        llistaBotons = ['streetview','apuntar', 'zoomIn', 'zoomOut', 'panning', 'centrar']
         
-        self.canvas = QvCanvas(llistaBotons=llistaBotons, posicioBotonera = 'SO', botoneraHoritzontal = False, pare=self)
+        self.canvas = QvCanvas(llistaBotons=llistaBotons, posicioBotonera = 'NO', botoneraHoritzontal = True, pare=self)
 
         self.canvas.setCanvasColor(QColor(253,253,255))
         self.canvas.setAnnotationsVisible(True)
@@ -684,10 +683,10 @@ class QVista(QMainWindow, Ui_MainWindow):
         # self.wMapeta.setGeometry(0,0,267,284)
         # self.wMapeta.show()
         self.mapeta = QvMapeta(self.canvas, tamanyPetit=True, pare=self)
-        
+        self.mapeta.setGraphicsEffect(QvConstants.ombra(self,radius=30,color=QvConstants.COLORCLAR))
         self.bOrientacio.clicked.connect(self.editarOrientacio)
         self.mapeta.setParent(self.canvas)
-        self.mapeta.move(5,5)
+        self.mapeta.move(20,20)
         self.mapeta.show()
         # self.dwMapeta = QDockWidget("Mapa de situació", self)
         # self.dwMapeta.setMinimumWidth(180)
@@ -798,7 +797,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.menuEntorns = self.bar.addMenu(3*' '+'Entorns'+3*' ')
         
         fnt = QFont("Segoe UI", 16, weight=QFont.Normal)
-        self.menuEntorns.setStyleSheet("QMenu {color: #465A63; background-color: #dddddd; selection-background-color : #38474f;}")
+        self.menuEntorns.setStyleSheet("QMenu {color: #465A63; background-color: #dddddd; selection-background-color : #38474f;}")                           
         self.menuEntorns.setFont(fnt)
         self.menuEntorns.styleStrategy = QFont.PreferAntialias or QFont.PreferQuality
         for entorn in os.listdir(os.path.dirname('entorns/')):          
@@ -1543,7 +1542,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         # catalegMenu = self.bar.addMenu("                   Catàleg  ")
 
         fnt= QFont("Segoe UI", 16, weight=QFont.Normal)
-        #self.menuProjectes.setStyleSheet("QMenu {color: #465A63; background-color: #dddddd; selection-background-color : #2f4550;}")
+        self.menuProjectes.setStyleSheet("QMenu {color: #465A63; background-color: #dddddd; selection-background-color : #38474f;}")
         self.menuProjectes.setFont(fnt)
         self.menuProjectes.styleStrategy = QFont.PreferAntialias or QFont.PreferQuality
         self.menuProjectes.addAction(self.actObrirProjecte)
@@ -2455,7 +2454,7 @@ def nivellCsv(fitxer: str,delimitador: str,campX: str,campY: str, projeccio: int
     uri = "file:///"+fitxer+"?type=csv&delimiter=%s&xField=%s&yField=%s" % (delimitador,campX,campY)
     layer = QgsVectorLayer(uri, nomCapa, 'delimitedtext')
     layer.setCrs(QgsCoordinateReferenceSystem(projeccio, QgsCoordinateReferenceSystem.EpsgCrsId))
-    if layer is not None:
+    if layer is not None or layer is not NoneType:
         symbol = QgsMarkerSymbol.createSimple({'name': symbol, 'color': color})
         if layer.renderer() is not None: 
             layer.renderer().setSymbol(symbol)
