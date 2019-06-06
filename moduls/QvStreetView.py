@@ -11,11 +11,11 @@ from moduls.QvPushButton import QvPushButton
 
 class BotoQvBrowser(QvPushButton):
     def __init__(self):
-        QvPushButton.__init__(self)
-        self.setMinimumHeight(30)
-        self.setMaximumHeight(30)
-        self.setMinimumWidth(100)
-        self.setMaximumWidth(100)
+        super().__init__()
+        # self.setMinimumHeight(30)
+        # self.setMaximumHeight(30)
+        # self.setMinimumWidth(100)
+        # self.setMaximumWidth(100)
 
 class QvBrowser(QWidget):
 
@@ -36,7 +36,9 @@ class QvBrowser(QWidget):
         self.botoneraQvBrowser = QFrame()
         self.botoneraQvBrowser.setContentsMargins(0,0,0,0)
         self.botoneraQvBrowser.setMinimumHeight(30)
-        self.botoneraQvBrowser.setMaximumHeight(30)
+        self.botoneraQvBrowser.setMaximumHeight(45)
+        # self.botoneraQvBrowser.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
+        # self.botoneraQvBrowser.setVerticalPolicy(QSizePolicy.Minimum)
 
         self.layoutBotonera = QHBoxLayout(self.botoneraQvBrowser)
         self.layoutBotonera.setContentsMargins(0,0,0,0)

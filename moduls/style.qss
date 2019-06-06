@@ -17,7 +17,7 @@
 
 
 QWidget::window {
-    border: 0px;
+    border: 1px solid #79909B;
     background-color: #F9F9F9;
 } 
 
@@ -37,7 +37,7 @@ QFrame {
 QScrollBar {
     background: #DDDDDD;
     margin: 0px;
-    border: 0px;
+    border: none;
 }
 QScrollBar::handle {
     background: #DDDDDD;
