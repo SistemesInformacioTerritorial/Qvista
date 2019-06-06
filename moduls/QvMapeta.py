@@ -69,8 +69,8 @@ class QvMapeta(QFrame):
         self.Escala =  (self.xmax_0 - self.xmin_0) / self.xTamany # relacion base "mundo" base mapeta--> 68.8
       
         # Definim la geometria del frame del mapeta
-        self.setGeometry(0,0,self.xTamany,self.yTamany)
-        self.move(5,5)
+        self.setGeometry(20,20,self.xTamany,self.yTamany)
+        self.move(20,20)
         self.begin = QPoint()
         self.end = QPoint()
 
@@ -126,11 +126,11 @@ class QvMapeta(QFrame):
             else:
                 self.canvas.setRotation(44.5)
                 if self.petit == False:
-                    self.setGeometry(0,0,self.xTamany,self.yTamany)
-                    self.move(5,5)
+                    self.setGeometry(20,20,self.xTamany,self.yTamany)
+                    self.move(20,20)
                 else:
-                    self.setGeometry(0,0,25,25)
-                    self.move(5,5)
+                    self.setGeometry(20,20,25,25)
+                    self.move(20,20)
                 # self.setGeometry(0,0,self.xTamany,self.yTamany)
                 self.setStyleSheet('QFrame {background-image: url("imatges/QVista_Mapeta_44_5graus_mio.png");}')
                 # self.setStyleSheet('QFrame {background-image: url("imatges/QVista_Mapeta_44_5graus.png");}')
@@ -141,11 +141,11 @@ class QvMapeta(QFrame):
             else:
                 self.canvas.setRotation(44.5)
                 if self.petit == False:
-                    self.setGeometry(0,0,self.xTamany,self.yTamany)
-                    self.move(5,5)
+                    self.setGeometry(20,20,self.xTamany,self.yTamany)
+                    self.move(20,20)
                 else:
-                    self.setGeometry(0,0,25,25)
-                    self.move(5,5)
+                    self.setGeometry(20,20,25,25)
+                    self.move(20,20)
                 self.setStyleSheet('QFrame {background-image: url("imatges/QVista_Mapeta_44_5graus_mio_peque.png");}')
 
 
@@ -178,7 +178,7 @@ class QvMapeta(QFrame):
     def ferPetit(self):
         if self.petit:
             self.setGeometry(0,0,self.xTamany,self.yTamany)
-            self.move(5,5)
+            self.move(20,20)
             self.petit = False
             # icon = QIcon('imatges/arrow-collapse.png')
 
@@ -186,7 +186,7 @@ class QvMapeta(QFrame):
             self.botoFerPetit.setIcon(icon)
         else:
             self.setGeometry(0,0,25,25)
-            self.move(5,5)
+            self.move(20,20)
             self.petit = True
             icon = QIcon('imatges/mapetaPetit.jpg')
             self.botoFerPetit.setIcon(icon)

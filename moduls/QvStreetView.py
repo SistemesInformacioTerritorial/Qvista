@@ -157,7 +157,7 @@ class PointTool(QgsMapTool):
         self.parent.m.setIconType(QgsVertexMarker.ICON_BOX) # or ICON_CROSS, ICON_X
         self.parent.m.setPenWidth(3)
         self.parent.m.show()
-        self.parent.boto.move(40, 5)
+        self.parent.boto.move(220, 20)
         self.moureBoto = False
 
 class QvStreetView(QWidget):
@@ -176,12 +176,12 @@ class QvStreetView(QWidget):
         self.parent = parent
         self.rp = PointTool(self, self.canvas)
         self.canvas.setMapTool(self.rp)
-        self.boto = QPushButton(self.canvas)
+        self.boto = QvPushButton(parent = self.canvas, flat = True)
         self.icon=QIcon('imatges/littleMan.png')
         self.boto.setIcon(self.icon)
         self.boto.clicked.connect(self.segueixBoto)
-        self.boto.setGeometry(40,5,25,25)
-        self.boto.setIconSize(QSize(20,20))
+        self.boto.setGeometry(220,20,25,25)
+        self.boto.setIconSize(QSize(25,25))
         
 
         self.setupUI()
@@ -197,12 +197,10 @@ class QvStreetView(QWidget):
         self.layoutH.setSpacing(0)
         self.setLayout(self.layoutH)
 
-
         self.qbrowser = QvBrowser(self)
         self.qbrowser.show()
 
         self.layoutH.addWidget(self.qbrowser)
-
 
 
     def llevame_old(self,xx,yy):

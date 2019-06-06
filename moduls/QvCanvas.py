@@ -7,9 +7,12 @@ from qgis.gui import QgsMapCanvas, QgsMapToolZoom, QgsMapToolPan
 from qgis.PyQt.QtWidgets import QFrame, QVBoxLayout, QHBoxLayout, QPushButton, QSpacerItem, QSizePolicy
 from qgis.PyQt.QtGui import QIcon, QPainter, QCursor,QPixmap, QKeyEvent
 from moduls.QvApp import QvApp
+from moduls.QvImports  import *
 from qgis.core.contextmanagers import qgisapp
 from moduls.QvConstants import QvConstants
 from moduls.QvPushButton import QvPushButton
+from moduls.QvStreetView import *
+#from qVista import QVista
 
 
 
@@ -21,6 +24,7 @@ class QvCanvas(QgsMapCanvas):
         self.posicioBotonera = posicioBotonera
         self.llegenda = llegenda
         self.pare = pare
+       
         
         # self.setWhatsThis(QvApp().carregaAjuda(self))
 
@@ -122,11 +126,12 @@ class QvCanvas(QgsMapCanvas):
     def setLlegenda(self, llegenda):
         self.llegenda = llegenda
         
-    def _botoMapa(self,imatge):
+    def _botoMapa(self,imatge = None):
         boto = QvPushButton(flat=True)
         boto.setCheckable(True)
-        icon=QIcon(imatge)
-        boto.setIcon(icon)
+        if imatge is not None:
+            icon=QIcon(imatge)
+            boto.setIcon(icon)
         boto.setWindowOpacity(0.5)
         boto.setIconSize(QSize(25,25))
         boto.setGeometry(0,0,25,25)
@@ -134,12 +139,12 @@ class QvCanvas(QgsMapCanvas):
 
     def _preparacioBotonsCanvas(self):
         self.botoneraMapa = QFrame()
-        # self.botoneraMapa.setStyleSheet("QFrame {background-color: #ffffff;}")
+        #self.botoneraMapa.setStyleSheet("QFrame {background-color: #ffffff;}")
 
-        # self.botoneraMapa.move(10,10)
+        #self.botoneraMapa.move(90,20)#nofares
 
-        # self.botoneraMapa.setFrameShape(QFrame.StyledPanel)
-        # self.botoneraMapa.setFrameShadow(QFrame.Raised)
+        #self.botoneraMapa.setFrameShape(QFrame.StyledPanel)
+        #self.botoneraMapa.setFrameShadow(QFrame.Raised)
 
         if self.botoneraHoritzontal:
             self.layoutCanvas = QVBoxLayout(self)
@@ -171,8 +176,17 @@ class QvCanvas(QgsMapCanvas):
         if self.posicioBotonera == 'NO':
             if self.botoneraHoritzontal:
                 self.layoutBotoneraMapa.setAlignment(Qt.AlignLeft)
+                self.offsetEsq = QLabel()
+                self.offsetEsq.setFixedWidth(208)
+                self.offsetUp = QLabel()
+                self.offsetUp.setFixedHeight(8)
+                self.layoutBotoneraMapa.addWidget(self.offsetEsq)
+                self.layoutCanvas.addWidget(self.offsetUp)
                 self.layoutCanvas.addWidget(self.botoneraMapa)  
                 self.layoutCanvas.addSpacerItem(spacer)   
+                #self.layoutBotoneraMapa.setAlignment(Qt.AlignLeft)
+                #self.layoutCanvas.addWidget(self.botoneraMapa)  
+                #self.layoutCanvas.addSpacerItem(spacer)   
             else:
                 self.layoutBotoneraMapa.setAlignment(Qt.AlignTop)
                 self.layoutCanvas.addWidget(self.botoneraMapa)  
@@ -208,6 +222,11 @@ class QvCanvas(QgsMapCanvas):
 
 
         if self.llistaBotons is not None:
+            if "streetview" in self.llistaBotons:
+                self.bstreetview = self._botoMapa('imatges/littleMan.png')
+                self.layoutBotoneraMapa.addWidget(self.bstreetview)   
+                self.bstreetview.setCursor(QvConstants.cursorFletxa())   
+                #self.bstreetview.clicked.connect(QvStreetView.segueixBoto)
             if "panning" in self.llistaBotons:
                 self.bPanning = self._botoMapa('imatges/pan_tool_black_24x24.png')
                 self.layoutBotoneraMapa.addWidget(self.bPanning)   
