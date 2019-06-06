@@ -28,6 +28,15 @@ from moduls.QvMarxesCiutat import MarxesCiutat
 from moduls.QvToolTip import QvToolTip
 from moduls.QvDropFiles import QvDropFiles
 from moduls.QvNews import QvNews
+from moduls.QvPushButton import QvPushButton
+from moduls.QvGeocod import QvGeocod
+from moduls.QvSuggeriments import QvSuggeriments
+from moduls.QvCarregaCsv import QvCarregaCsv
+from moduls.QvConstants import QvConstants
+from moduls.QvAvis import QvAvis
+import re
+import csv
+import os
 # Impressió del temps de carrega dels moduls Qv
 print ('Temps de carrega dels moduls Qv:', time.time()-iniciTempsModuls)
 
@@ -106,7 +115,9 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.mapaMaxim = False
         self.layerActiu = None
         self.prepararCercador = True
-        self.lblMovie = None
+        self.lblMovie = None        
+        self.ubicacions= None
+        self.cAdrec= None
 
 
         # # Connectors i accions
@@ -334,8 +345,10 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         spacer2 = QSpacerItem(1000, 1000, QSizePolicy.Expanding,QSizePolicy.Maximum)
         self.lytBotoneraLateral.addItem(spacer2)
-
-        self.bInfo = self.botoLateral(tamany = 25, accio=self.actInfo)
+        
+        self.qvNews = QvNews()
+        self.bInfo = self.botoLateral(tamany = 25, accio=self.qvNews)
+        # self.bInfo = self.botoLateral(tamany = 25, accio=self.actInfo)
         self.bHelp = self.botoLateral(tamany = 25, accio=self.actHelp)
         self.bBug = self.botoLateral(tamany = 25, accio=self.actBug)
         # self.bDashStandard = self.botoLateral(tamany = 25, accio=self.actDashStandard)
@@ -509,7 +522,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         # instanciamos clases necesarias    
         self.fCercador=QFrame()
         self.bottomWidget = QWidget()
-        self.ubicacions = QvUbicacions(self.canvas)
+        self.ubicacions = QvUbicacions(self.canvas, pare=self)
         self.splitter = QSplitter(Qt.Vertical)             #para separar ubicacion de distBarris
         self.layoutAdreca = QHBoxLayout()                  #Creamos layout, caja de diseño Horizontal
         self.layoutCercador = QVBoxLayout(self.fCercador)  #Creamos layout, caja de diseño Vertical
@@ -575,7 +588,8 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         self.setTabOrder(self.leCarrer, self.leNumero)
         # Activem la clase de cerca d'adreces
-        self.cAdrec=QCercadorAdreca(self.leCarrer, self.leNumero)
+        self.cAdrec=QCercadorAdreca(self.leCarrer, self.leNumero,'SQLITE')    # SQLITE o CSV
+          
         self.cAdrec.sHanTrobatCoordenades.connect(self.trobatNumero_oNo) 
 
         self.dwCercador = QDockWidget( "Cercador", self )
@@ -586,8 +600,12 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.dwCercador.setContentsMargins ( 2, 2, 2, 2 )
         self.addDockWidget( Qt.RightDockWidgetArea, self.dwCercador)
 
-    def CopiarA_Ubicacions(self):
-        self.ubicacions.leUbicacions.setText(self.leCarrer.text()+"  "+self.leNumero.text())
+    def CopiarA_Ubicacions(self):       
+         # self.ubicacions.leUbicacions.setText("->"+self.leCarrer.text()+"  "+self.leNumero.text())
+        if self.cAdrec.NumeroOficial=='0':
+            self.cAdrec.NumeroOficial=''
+
+        self.ubicacions.leUbicacions.setText("->"+self.leCarrer.text()+"  "+self.cAdrec.NumeroOficial)
         self.ubicacions._novaUbicacio()
 
 
@@ -770,7 +788,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.menuEntorns = self.bar.addMenu(3*' '+'Entorns'+3*' ')
         
         fnt = QFont("Segoe UI", 16, weight=QFont.Normal)
-        self.menuEntorns.setStyleSheet("QMenu {color: #79909B; background-color: #dddddd; selection-background-color : #2f4550;}")
+        self.menuEntorns.setStyleSheet("QMenu {color: #465A63; background-color: #dddddd; selection-background-color : #2f4550;}")
         self.menuEntorns.setFont(fnt)
         self.menuEntorns.styleStrategy = QFont.PreferAntialias or QFont.PreferQuality
         for entorn in os.listdir(os.path.dirname('entorns/')):          
@@ -1044,23 +1062,30 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.actHelp.setIcon(icon)
         self.actHelp.triggered.connect(self.helpQVista)
                 
-        self.actBug = QAction("Ajuda ", self)
+        # self.actBug = QAction("Ajuda ", self)
+        # icon=QIcon('imatges/bug.png')
+        # self.actBug.setIcon(icon)
+        # self.actBug.triggered.connect(self.reportarBug)
+
+        #bEnviar.clicked.connect(lambda: reportarProblema(leTitol.text(), leDescripcio.text()))
+        self.suggeriments=QvSuggeriments(reportarProblema)
+        self.actBug = QAction("Problemes o suggeriments ", self)
         icon=QIcon('imatges/bug.png')
         self.actBug.setIcon(icon)
-        self.actBug.triggered.connect(self.reportarBug)
+        self.actBug.triggered.connect(self.suggeriments.show)
                 
         self.actPintaLabels = QAction("pintaLabels", self)
         self.actPintaLabels.setStatusTip("pintaLabels")
         self.actPintaLabels.triggered.connect(self.pintaLabels)
 
-        self.actObrirCataleg = QAction("GIS Point", self)
+        self.actObrirCataleg = QAction("Afegir capa", self)
         self.actObrirCataleg.setStatusTip("Catàleg d'Informació Territorial")
-        self.actObrirCataleg.setIcon(QIcon('imatges/map-plus.png'))
+        self.actObrirCataleg.setIcon(QIcon('imatges/layers_2.png'))
         self.actObrirCataleg.triggered.connect(self.obrirCataleg)
 
         self.actObrirCatalegProjectesLlista = QAction("Mapes", self)
         self.actObrirCatalegProjectesLlista.setStatusTip("Catàleg de Mapes")
-        self.actObrirCatalegProjectesLlista.setIcon(QIcon('imatges/catalegProjectes.png'))
+        self.actObrirCatalegProjectesLlista.setIcon(QIcon('imatges/map-plus.png'))
         self.actObrirCatalegProjectesLlista.triggered.connect(self.obrirCatalegProjectesLlista)
 
         self.actObrirMapeta = QAction("Mapeta", self)
@@ -1143,7 +1168,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.actDashStandard.triggered.connect(self.dashStandard)
 
         self.actAdreces = QAction("Cerca per adreça", self)
-        self.actAdreces.setIcon(QIcon('imatges/map-marker.png'))
+        self.actAdreces.setIcon(QIcon('imatges/map-search.png'))
         self.actAdreces.setStatusTip("Adreces")
         self.actAdreces.triggered.connect(self.adreces)
 
@@ -1449,7 +1474,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         # catalegMenu = self.bar.addMenu("                   Catàleg  ")
 
         fnt= QFont("Segoe UI", 16, weight=QFont.Normal)
-        self.menuProjectes.setStyleSheet("QMenu {color: #79909B; background-color: #dddddd; selection-background-color : #2f4550;}")
+        self.menuProjectes.setStyleSheet("QMenu {color: #465A63; background-color: #dddddd; selection-background-color : #2f4550;}")
         self.menuProjectes.setFont(fnt)
         self.menuProjectes.styleStrategy = QFont.PreferAntialias or QFont.PreferQuality
         self.menuProjectes.addAction(self.actObrirProjecte)
@@ -1467,7 +1492,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         # self.menuCarregarNivell.addAction(self.actAfegirNivellGPX)
         # self.menuCarregarNivell.addAction(self.actAfegirNivellQlr)
         
-        self.menuFuncions.setStyleSheet("QMenu {background-color: #dddddc; selection-background-color : #79909B;}")
+        self.menuFuncions.setStyleSheet("QMenu {color: #465A63 background-color: #dddddc; selection-background-color : #79909B;}")
         
         self.menuFuncions.setFont(fnt)
         self.menuFuncions.addAction(self.actEsborrarSeleccio)
@@ -2045,17 +2070,19 @@ class QVista(QMainWindow, Ui_MainWindow):
             # extensio = nfile[-3:]
             # print (extensio)
             _, extensio = os.path.splitext(nfile)
-            if extensio.lower() == 'shp' or extensio.lower() =='gpkg':
+            if extensio.lower() == '.shp' or extensio.lower() =='.gpkg':
                 layer = QgsVectorLayer(nfile, os.path.basename(nfile), "ogr")
                 if not layer.isValid():
                     return
                 renderer=layer.renderer()
                 self.project.addMapLayer(layer)
             else:
-                if extensio.lower() == 'qlr':
+                if extensio.lower() == '.qlr':
                     # print(nfile)
                     afegirQlr(nfile)
                 # QgsLayerDefinition().loadLayerDefinition(nfile, self.project, self.root)
+                elif extensio.lower() == '.csv':
+                    carregarLayerCSV(nfile)
 
     def recorrerFields(self):
         if self.potsRecorrer:
@@ -2111,8 +2138,28 @@ class QVista(QMainWindow, Ui_MainWindow):
         pass
 
     def gestioSortida(self):
-        QvApp().logFi()
+        
+        try:
+            if self.ubicacions is not None:
+                self.ubicacions.ubicacionsFi()
+        except Exception  as ee:
+            print(str(ee))
 
+        try:
+            if self.cAdrec is not None:
+                self.cAdrec.cercadorAdrecaFi()
+        except Exception as ee:
+            print(str(ee))
+
+        try:
+            QvApp().logFi()
+        except Exception as ee:
+            msg = QMessageBox()
+            msg.setIcon(QMessageBox.Warning)
+            
+            msg.setText(strin(ee))
+            msg.setStandardButtons(QMessageBox.Close)
+            retval = msg.exec_()
     def handleSave(self):
         self.table = self.taulesAtributs.widget(0)
         path,_ = QFileDialog.getSaveFileName(self, 'Guardar archivo', '', 'CSV(*.csv)')
@@ -2277,8 +2324,26 @@ def disgregarDirele():
 
     pass
 
+def nivellCsv(fitxer: str,delimitador: str,campX: str,campY: str, projeccio: int = 23031, nomCapa: str = 'Capa sense nom', color = 'cyan', symbol = 'circle'):
+    uri = "file:///"+fitxer+"?type=csv&delimiter=%s&xField=%s&yField=%s" % (delimitador,campX,campY)
+    nomCapa = "nomcapa"
+    layer = QgsVectorLayer(uri, nomCapa, 'delimitedtext')
+    layer.setCrs(QgsCoordinateReferenceSystem(projeccio, QgsCoordinateReferenceSystem.EpsgCrsId))
+    if layer is not None:
+        symbol = QgsMarkerSymbol.createSimple({'name': symbol, 'color': color})
+        layer.renderer().setSymbol(symbol)
+        qV.project.addMapLayer(layer)
+        print("add layer")
 
-
+# def carregaCSVWizard(fitxer: str,delimitador: str,campX: str,campY: str, projeccio: int = 23031, nomCapa: str = 'Capa sense nom', color, symbol):
+#     uri = "file:///"+fitxer+"?type=csv&delimiter=%s&xField=%s&yField=%s" % (delimitador,campX,campY)
+#     layer = QgsVectorLayer(uri, nomCapa, 'delimitedtext')
+#     layer.setCrs(QgsCoordinateReferenceSystem(projeccio, QgsCoordinateReferenceSystem.EpsgCrsId))
+#     if layer is not None:
+#         symbol = QgsMarkerSymbol.createSimple({'name': symbol, 'color': color})
+#         layer.renderer().setSymbol(symbol)
+#         qV.project.addMapLayer(layer)
+#         print("add layer")
 
 def seleccioCercle():
     seleccioClick()
@@ -2317,7 +2382,16 @@ def seleccioExpressio():
         disgregarDirele()
         return
 
-
+    if qV.leSeleccioExpressio.text().lower() == 'version':
+        msg = QMessageBox()
+        msg.setIcon(QMessageBox.Warning)
+        
+        msg.setText('20190527 08:33  cierro bbdd sqlite en gestioSortida')
+        # msg.setInformativeText("OK para salir del programa \nCANCEL para seguir en el programa")
+        msg.setWindowTitle("qVista version")
+        msg.setStandardButtons(QMessageBox.Close)
+        retval = msg.exec_()
+        return     
     if (qV.leSeleccioExpressio.text().lower() == 'qvdebug') :
         qV.modeDebug()
         return
@@ -2422,7 +2496,7 @@ def escollirNivellCSV():
         with open(nfile) as f:
             reader = csv.DictReader(f, delimiter=';')
             llistaCamps = reader.fieldnames
-        print (llistaCamps)
+        #print (llistaCamps)
         projeccio = 25831
         titol = 'Còpia de Models adreces.csv'
         nivellCsv(nfile,';','XNUMPOST','YNUMPOST', projeccio, nomCapa = titol)
@@ -2457,31 +2531,21 @@ def escollirNivellCSV():
 #         titol = dCSV.ui.leNomCapa.text()
 #         nivellCsv(nfile,dCSV.ui.cbDelimitador.currentText(),dCSV.ui.cbDelX.currentText(),dCSV.ui.cbDelY.currentText(), projeccio, nomCapa = titol)
 #         #carregarCsvATaula(nfile,';')
+    
 
+globalLlistaCamps=None
+tamanyReader=0
 def carregarLayerCSV(nfile):
-    dCSV = DialegCSV()
-    dCSV.finished.connect(dCSV)
-   
-    # print(dCSV.ui.cbDelimitador.currentText())
-    # print("D"+dCSV.ui.cbDelimitador.currentText()+"D")
-    projeccio = 0
-    if nfile:
-        with open(nfile) as f:
-            reader = csv.DictReader(f, delimiter=dCSV.ui.cbDelimitador.currentText())
-            llistaCamps = reader.fieldnames
-        # print (llistaCamps)
-        
-        dCSV = DialegCSV(llistaCamps)
-
-        if dCSV.ui.cbDelProjeccio.currentText() == 'UTM ED50':
-            projeccio = 23031
-        elif dCSV.ui.cbDelProjeccio.currentText() == 'UTM ETRS89':
-            projeccio = 25831
-        elif dCSV.ui.cbDelProjeccio.currentText() == 'Lat Long':
-            projeccio = 4326
-        titol = dCSV.ui.leNomCapa.text()
-        nivellCsv(nfile,dCSV.ui.cbDelimitador.currentText(),dCSV.ui.cbDelX.currentText(),dCSV.ui.cbDelY.currentText(), projeccio, nomCapa = titol)
-        
+        if nfile: 
+            assistent=QvCarregaCsv(nfile,nivellCsv,qV)
+            assistent.setModal(True)
+            #assistent.setWindowFlags(assistent.windowFlags() | Qt.Popup)
+            #assistent.setWindowFlags(assistent.windowFlags() | Qt.WindowStaysOnTopHint)
+            #qV.raise_()
+            assistent.show()
+            #assistent.raise_()
+            #qV.setFocus()
+            
 
 def carregarNivellQlr():
     index = qV.wCataleg.ui.treeCataleg.currentIndex()
@@ -2588,11 +2652,7 @@ def loadCsv():
                     qV.tableView.resizeColumnsToContents()
     qV.dwTaula.show()
 
-def nivellCsv(fitxer,delimitador,campX,campY, projeccio = 23031, nomCapa = 'Capa sense nom'):
-    uri = "file:///"+fitxer+"?type=csv&delimiter=%s&xField=%s&yField=%s" % (delimitador,campX,campY)
-    layer = QgsVectorLayer(uri, nomCapa, 'delimitedtext')
-    layer.setCrs(QgsCoordinateReferenceSystem(projeccio, QgsCoordinateReferenceSystem.EpsgCrsId))
-    qV.project.addMapLayer(layer)
+
 
 def missatgeCaixa(textTitol,textInformacio):
     msgBox=QMessageBox()
@@ -2600,18 +2660,22 @@ def missatgeCaixa(textTitol,textInformacio):
     msgBox.setInformativeText(textInformacio)
     ret = msgBox.exec()
 
+
+
 def sortir():
     sys.exit()
 
 # Funcio per carregar problemes a GITHUB
-def reportarProblema(titol, descripcio=None):
+def reportarProblema(titol: str, descripcio: str=None):
 
     if QvApp().bugUser(titol, descripcio):
         print ('Creat el problema {0:s}'.format(titol))
-        qV.lblResultat.setText("S'ha enviat correctament.")
+        return True
+        #qV.lblResultat.setText("S'ha enviat correctament.")
     else:
         print ('Error al crear el problema {0:s}'.format(titol))
-        qV.lblResultat.setText('Error al crear el problema {0:s}'.format(titol))
+        return False
+        #qV.lblResultat.setText('Error al crear el problema {0:s}'.format(titol))
 
     # '''Crea un "issue" a github'''
     # USUARI = 'qVistaHost'
@@ -2639,6 +2703,7 @@ def reportarProblema(titol, descripcio=None):
     #     print ('Error al crear el problema {0:s}'.format(titol))
     #     qV.lblResultat.setText('Error al crear el problema {0:s}'.format(titol))
 
+
 def main(argv):
     # import subprocess
     global qV
@@ -2649,10 +2714,13 @@ def main(argv):
         qVapp = QvApp()
 
         # Splash image al començar el programa. La tancarem amb splash.finish(qV)
-        splash_pix = QPixmap('imatges/qvistaLogo2.png')
+        #splash_pix = QPixmap('imatges/qvistaLogo2.png')
+        splash_pix = QPixmap('imatges/SplashScreen_qVista.png')
         splash = QSplashScreen(splash_pix, Qt.WindowStaysOnTopHint)
         splash.setWindowFlags(Qt.WindowStaysOnTopHint | Qt.FramelessWindowHint)
         splash.setEnabled(True)
+        splash.showMessage("""Institut Municipal d'Informàtica (IMI) Versió """+versio+'  ',Qt.AlignRight | Qt.AlignBottom, QvConstants.COLORFOSC)
+        splash.setFont(QFont(QvConstants.NOMFONT,8))
         splash.show()
         app.processEvents()
 
@@ -2689,9 +2757,7 @@ def main(argv):
 
         # Tanquem la imatge splash.
         splash.finish(qV)
-        # news = QvNews()
-        # news.setWizardStyle(QWizard.ClassicStyle)
-        # news.exec()
+        avisos=QvAvis()
         qVapp.logRegistre('LOG_TEMPS', qV.lblTempsArrencada.text())
         app.aboutToQuit.connect(qV.gestioSortida)
 

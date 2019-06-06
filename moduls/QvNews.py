@@ -1,68 +1,174 @@
 #!/usr/bin/env python
- 
+from moduls.QvImports import *
 from PyQt5 import QtCore
 from PyQt5 import QtGui
 from PyQt5.QtCore import pyqtProperty
 from PyQt5 import QtCore, QtWidgets
+from PyQt5.QtGui import QColor
 import os
- 
- 
-class QvNews(QtWidgets.QWizard):
-    def __init__(self, parent=None):
-        super(QvNews, self).__init__(parent)
-        contingutCarpetes = os.walk('d:/qVista/codi/news')
-        for carpeta in contingutCarpetes:
-            for fitxer in carpeta[2]:
-                print(fitxer)        
-                page = QtWidgets.QWizardPage()
-                layout = QtWidgets.QVBoxLayout(page)
-                page.setLayout(layout)
-                caixaText = QtWidgets.QTextEdit()
-                # doc = QtGui.QTextDocument()
-                # doc.setHtml('d:/qvista/codi/qVistaweb2.html')
-                text=open(fitxer).read()
-                caixaText.setHtml(text)
-                layout.addWidget(caixaText)
-                self.addPage(page)
-        # self.addPage(Page1(self))
-        # self.addPage(Page2(self))
-        # self.addPage(Page1(self))
+import tempfile
+from moduls.QvConstants import QvConstants
+from moduls.QvPushButton import QvPushButton
+import errno
+
+
+class QvNews(QtWidgets.QAction):
+    '''Acció de les notícies. Ella mateixa comprova si hi ha notícies noves, i si hi són, les mostra'''
+
+    def __init__(self, parent: QWidget = None):
+        self.ICONA = QIcon('Imatges/News.png')
+        self.ICONADESTACADA = QIcon('Imatges/NewsDestacada.png')
+        # QtWidgets.QAction.__init__(self,self.ICONA,'Notícies',parent)
+        super().__init__(self.ICONA, 'Notícies', parent)
+        if self.calNoticiaNova():
+            self.timer = QTimer()
+            self.timer.timeout.connect(self.blink)
+            self.timer.start(200)
+        self.setStatusTip('Notícies')
+        self.triggered.connect(self.mostraNoticies)
+
+    def blink(self):
+        '''Acció de parpadejar. Compta quants cops ha parpadejat, i quan arriba a la quantitat fixada esborra el comptador'''
+        if not hasattr(self, 'light'):
+            self.light = False
+            self.numBlinks = 0
+
+        if self.light:
+            self.setIcon(self.ICONADESTACADA)
+            self.numBlinks += 1
+        else:
+            self.setIcon(self.ICONA)
+
+        if self.numBlinks == 4:
+            delattr(self, 'timer')
+            # self.setVisible(True)
+            delattr(self, 'numBlinks')
+
+        self.light = not self.light
+
+    def mostraNoticies(self):
+        '''Obre l'arxiu de notícies i les mostra'''
+        self.news = QvNewsFinestra(arxiuNews)
+        self.news.exec_()
+        self.setIcon(self.ICONA)
+        with open(arxiuTmpNews, 'w') as arxiu:
+            # Escrivim alguna cosa. Realment no caldria que fos el temps
+            import time
+            arxiu.write(str(time.time()))
+
+    def calNoticiaNova(self) -> bool:
+        '''Comprova si hi ha notícies noves. 
+            Returns: x{Bool} -- Booleà que indica si hi ha una notícia nova o no
+        '''
+        # Si no existeix l'arxiu temporal vol dir que mai hem obert notícies :(
+        if not os.path.isfile(arxiuNews):
+            raise FileNotFoundError(errno.ENOENT, os.strerror(
+                errno.ENOENT), arxiuNews)
+        if not os.path.isfile(arxiuTmpNews):
+            return True
+        return os.path.getmtime(arxiuTmpNews) < os.path.getmtime(arxiuNews)
+
+# QFrame no permet fer exec. QDialog sí
+
+
+class QvNewsFinestra(QDialog):
+    '''Diàleg per visualitzar les notícies (que, per extensió, podem usar sempre que vulguem per visualitzar arxius HTML)'''
+
+    def __init__(self, file: str, parent: QWidget = None):
+        '''Crea una instància de QvNewsFinestra
+        Arguments:
+            file {str} -- adreça de l'arxiu HTML que volem visualitzar
+        Keyword Arguments:
+            parent {QWidget} -- Pare del diàleg (default: {None})
+        '''
+        super().__init__(parent)
+        # Layout gran. Tot a dins
+        self.layout = QVBoxLayout(self)
+
+        # FILA SUPERIOR
+        self.layoutCapcalera = QHBoxLayout()
+        self.widgetSup = QWidget()
+        self.widgetSup.setLayout(self.layoutCapcalera)
+        self.layout.addWidget(self.widgetSup)
+        self.lblLogo = QLabel()
+        self.lblLogo.setPixmap(
+            QPixmap('imatges/qVistaLogoVerdSenseText2.png').scaledToHeight(40))
+        self.lblCapcalera = QLabel()
+        self.lblCapcalera.setText('  Novetats qVista')
+        self.lblCapcalera.setStyleSheet(
+            'color: %s' % QvConstants.COLORFOSCHTML)
+        self.layoutCapcalera.addWidget(self.lblLogo)
+        self.layoutCapcalera.addWidget(self.lblCapcalera)
+
+        # Text de la notícia
+        self.caixaText = QtWidgets.QTextEdit()
+        self.caixaText.setHtml(open(file).read())
+        self.layout.addWidget(self.caixaText)
+
+        # Botó de sortida
+        self.layoutBoto = QHBoxLayout()
+        self.layout.addLayout(self.layoutBoto)
+        self.layoutBoto.addItem(QSpacerItem(
+            20, 5, QSizePolicy.Expanding, QSizePolicy.Minimum))
+        self.exitButton = QvPushButton('Tancar')
+        self.exitButton.clicked.connect(self.close)
+        self.layoutBoto.addWidget(self.exitButton)
+
+        self.formata()
+
+    def formata(self):
+        '''Dóna format al diàleg de notícies'''
+        self.caixaText.viewport().setAutoFillBackground(False)
+        self.caixaText.setReadOnly(True)
+        # Millor que es pugui seleccionar el text? O que no es pugui?
+        self.caixaText.setEnabled(True)
+        self.caixaText.setFrameStyle(QFrame.NoFrame)
+        # self.caixaText.verticalScrollBar().setStyleSheet(QvConstants.SCROLLBARSTYLESHEET)
+        QvConstants.formataScrollbar(self.caixaText.verticalScrollBar())
+        # Comentar si volem que s'oculti la scrollbar quan no s'utilitza
+        self.caixaText.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
+        #self.caixaText.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+        self.caixaText.setViewportMargins(20, 20, 20, 0)
+        self.setWindowFlags(Qt.Window | Qt.FramelessWindowHint)
+        self.lblLogo.setStyleSheet(
+            'background-color: %s; border: 0px' % QvConstants.COLORFOSCHTML)
+        self.lblLogo.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        self.lblCapcalera.setStyleSheet('background-color: %s; color: %s; border: 0px' % (
+            QvConstants.COLORFOSCHTML, QvConstants.COLORBLANCHTML))
+        self.lblCapcalera.setFont(QvConstants.FONTTITOLS)
+        self.lblCapcalera.setFixedHeight(40)
+        self.layout.setContentsMargins(0, 0, 0, 0)
+        self.layout.setSpacing(0)
+        self.layoutCapcalera.setContentsMargins(0, 0, 0, 0)
+        self.layoutCapcalera.setSpacing(0)
+        self.layoutBoto.setContentsMargins(0, 0, 0, 0)
+        self.layoutBoto.setSpacing(0)
+        # self.widgetSup.setGraphicsEffect(QvConstants.ombraHeader(self.widgetSup))
+        QvConstants.afegeixOmbraHeader(self.widgetSup)
+
         self.setWindowTitle("qVista - Noticies")
-        self.resize(640,480)
-        # self.button(MagicWizard.BackButton).show()
- 
-class Page1(QtWidgets.QWizardPage):
-    def __init__(self, parent=None):
-        super(Page1, self).__init__(parent)
-        # self.comboBox = QIComboBox(self)
-        # self.comboBox.addItem("Python","/path/to/filename1")
-        # self.comboBox.addItem("PyQt5","/path/to/filename2")
-        layout = QtWidgets.QVBoxLayout()
-        # layout.addWidget(self.comboBox)
-        self.setLayout(layout)
- 
- 
-class Page2(QtWidgets.QWizardPage):
-    def __init__(self, parent=None):
-        super(Page2, self).__init__(parent)
-        self.label1 = QtWidgets.QLabel()
-        self.label2 = QtWidgets.QLabel()
-        layout = QtWidgets.QVBoxLayout()
-        layout.addWidget(self.label1)
-        layout.addWidget(self.label2)
-        self.setLayout(layout)
- 
-    def initializePage(self):
-        self.label1.setText("Example text")
-        self.label2.setText("Example text")
- 
+        self.resize(640, 480)
+        self.oldPos = self.pos()
+
+    def mousePressEvent(self, event):
+        self.oldPos = event.globalPos()
+
+    def mouseMoveEvent(self, event):
+        delta = QPoint(event.globalPos() - self.oldPos)
+        # print(delta)
+        self.move(self.x() + delta.x(), self.y() + delta.y())
+        self.oldPos = event.globalPos()
+
+    def keyPressEvent(self, event):
+        if event.key() == Qt.Key_Escape or event.key() == Qt.Key_Return:
+            self.close()
+
+
 if __name__ == '__main__':
     import sys
     app = QtWidgets.QApplication(sys.argv)
-    wizard = QvNews()
-    wizard.setWizardStyle(QtWidgets.QWizard.ClassicStyle)
-    # wizard.button(MagicWizard.BackButton).show()
-    buto = QtWidgets.QPushButton('hola')
-    wizard.setSideWidget(buto)
-    wizard.show()
+    news = QvNews()
+    menu = QMenu()
+    menu.addAction(news)
+    menu.show()
     sys.exit(app.exec_())
