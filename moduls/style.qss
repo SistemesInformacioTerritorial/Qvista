@@ -67,6 +67,7 @@ QScrollArea{
 	background-color: white;
 	background: white;
 }
+
 QLabel {
     background-color: #F9F9F9 transparent;
     color: #38474F;

@@ -110,7 +110,6 @@ class QVista(QMainWindow, Ui_MainWindow):
         # Preparació deprojecte i canvas
         self.preparacioEntornGrafic()
         
-
         # Inicialitzacions
         self.printActiu = False
         self.qvPrint = 0
@@ -122,7 +121,6 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.lblMovie = None        
         self.ubicacions= None
         self.cAdrec= None
-
 
         # # Connectors i accions
         self.definicioAccions()
@@ -139,7 +137,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.preparacioLlegenda()
         self.preparacioArbreDistrictes()
         self.preparacioCataleg()
-        self.preparacioStreetView()
+        self.preparacioStreetView()     #fa el qvSv. necessita el canvas
         # self.preparacioMapTips()
         self.preparacioImpressio()
         # self.preparacioGrafiques()
@@ -385,9 +383,10 @@ class QVista(QMainWindow, Ui_MainWindow):
 
     def preparacioEntornGrafic(self):
         # Canvas
-        llistaBotons = ['apuntar', 'zoomIn', 'zoomOut', 'panning', 'centrar']
+        #llistaBotons = ['apuntar', 'zoomIn', 'zoomOut', 'panning', 'centrar']
+        llistaBotons = ['streetview','apuntar', 'zoomIn', 'zoomOut', 'panning', 'centrar']
         
-        self.canvas = QvCanvas(llistaBotons=llistaBotons, posicioBotonera = 'SO', botoneraHoritzontal = False, pare=self)
+        self.canvas = QvCanvas(llistaBotons=llistaBotons, posicioBotonera = 'NO', botoneraHoritzontal = True, pare=self)
 
         self.canvas.setCanvasColor(QColor(253,253,255))
         self.canvas.setAnnotationsVisible(True)
@@ -684,10 +683,10 @@ class QVista(QMainWindow, Ui_MainWindow):
         # self.wMapeta.setGeometry(0,0,267,284)
         # self.wMapeta.show()
         self.mapeta = QvMapeta(self.canvas, tamanyPetit=True, pare=self)
-        self.mapeta.setGraphicsEffect(QvConstants.ombra(self,radius=50,color=QvConstants.COLORCLAR))
+        self.mapeta.setGraphicsEffect(QvConstants.ombra(self,radius=30,color=QvConstants.COLORCLAR))
         self.bOrientacio.clicked.connect(self.editarOrientacio)
         self.mapeta.setParent(self.canvas)
-        self.mapeta.move(5,5)
+        self.mapeta.move(20,20)
         self.mapeta.show()
         # self.dwMapeta = QDockWidget("Mapa de situació", self)
         # self.dwMapeta.setMinimumWidth(180)
