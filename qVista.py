@@ -386,7 +386,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         #llistaBotons = ['apuntar', 'zoomIn', 'zoomOut', 'panning', 'centrar']
         llistaBotons = ['streetview','apuntar', 'zoomIn', 'zoomOut', 'panning', 'centrar']
         
-        self.canvas = QvCanvas(llistaBotons=llistaBotons, posicioBotonera = 'NO', botoneraHoritzontal = True, pare=self)
+        self.canvas = QvCanvas(llistaBotons=llistaBotons, posicioBotonera = 'SO', botoneraHoritzontal = False, pare=self)
 
         self.canvas.setCanvasColor(QColor(253,253,255))
         self.canvas.setAnnotationsVisible(True)

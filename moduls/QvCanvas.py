@@ -223,9 +223,10 @@ class QvCanvas(QgsMapCanvas):
 
         if self.llistaBotons is not None:
             if "streetview" in self.llistaBotons:
-                self.bstreetview = self._botoMapa('imatges/littleMan.png')
+                self.bstreetview = self._botoMapa()
                 self.layoutBotoneraMapa.addWidget(self.bstreetview)   
-                self.bstreetview.setCursor(QvConstants.cursorFletxa())   
+                self.bstreetview.setCursor(QvConstants.cursorFletxa())
+                #self.bstreetview = self._botoMapa('imatges/littleMan.png') 
                 #self.bstreetview.clicked.connect(QvStreetView.segueixBoto)
             if "panning" in self.llistaBotons:
                 self.bPanning = self._botoMapa('imatges/pan_tool_black_24x24.png')
