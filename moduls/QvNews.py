@@ -87,13 +87,13 @@ class QvNewsFinestra(QDialog):
 
         # FILA SUPERIOR
         self.layoutCapcalera = QHBoxLayout()
-        self.widgetSup = QWidget()
+        self.widgetSup = QWidget(objectName='layoutFosc')
         self.widgetSup.setLayout(self.layoutCapcalera)
         self.layout.addWidget(self.widgetSup)
         self.lblLogo = QLabel()
         self.lblLogo.setPixmap(
             QPixmap('imatges/QVistaLogo_40_32.png'))
-        self.lblCapcalera = QLabel()
+        self.lblCapcalera = QLabel(objectName='Fosca')
         self.lblCapcalera.setText('  Novetats qVista')
         # self.lblCapcalera.setStyleSheet(
         #     'color: %s' % QvConstants.COLORFOSCHTML)
@@ -141,8 +141,9 @@ class QvNewsFinestra(QDialog):
         self.layoutCapcalera.setSpacing(0)
         self.layoutBoto.setContentsMargins(0, 0, 0, 0)
         self.layoutBoto.setSpacing(0)
-        # self.widgetSup.setGraphicsEffect(QvConstants.ombraHeader(self.widgetSup))
-        QvConstants.afegeixOmbraHeader(self.widgetSup)
+        self.widgetSup.setGraphicsEffect(QvConstants.ombraHeader(self.widgetSup))
+        # self.ombraHeader=QvConstants.afegeixOmbraHeader(self.widgetSup)
+        # self.ombraHeader.setEnabled(True)
 
         self.setWindowTitle("qVista - Noticies")
         self.resize(640, 480)
@@ -160,6 +161,7 @@ class QvNewsFinestra(QDialog):
     def keyPressEvent(self, event):
         if event.key() == Qt.Key_Escape or event.key() == Qt.Key_Return:
             self.close()
+    
 
 
 if __name__ == '__main__':

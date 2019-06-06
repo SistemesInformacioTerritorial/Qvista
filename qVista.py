@@ -1450,6 +1450,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         # self._menuBarShadow.setColor(QColor(55,57,63))
         # self._menuBarShadow.setBlurRadius(20)
         # self.bar.setGraphicsEffect(self._menuBarShadow)
+        
         self._menuBarShadow=QvConstants.afegeixOmbraHeader(self.bar)
 
         self.bar.setFixedHeight(40)
@@ -1969,11 +1970,13 @@ class QVista(QMainWindow, Ui_MainWindow):
         
 
         self.leSeleccioExpressio = QLineEdit()
-        self.leSeleccioExpressio.setStyleSheet("QLineEdit {border: 0px solid red; background-color: #FFFFFF;}")  #????
+        self.leSeleccioExpressio.setStyleSheet("QLineEdit {margin: 0px; border: 0px; padding: 0px; background-color: #FFFFFF;}")  #????
+        
         # self.leSeleccioExpressio.setGraphicsEffect(self._menuBarShadow)
         self.leSeleccioExpressio.returnPressed.connect(seleccioExpressio)
         self.statusbar.addPermanentWidget(self.leSeleccioExpressio, 50)
         self.leSeleccioExpressio.setPlaceholderText('Cerca un text per filtrar elements')
+        self.leSeleccioExpressio.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Minimum)
         self.leSeleccioExpressio.show()
         # spacer = QSpacerItem(1000, 1000, QSizePolicy.Expanding,QSizePolicy.Maximum)
         # self.statusbar.addPermanentWidget(spacer)
@@ -2014,13 +2017,21 @@ class QVista(QMainWindow, Ui_MainWindow):
         # self.lblProjeccio.setMinimumWidth( 140 )
         self.statusbar.addPermanentWidget( self.lblProjeccio, 0 )
 
+
+        #Per no haver de posar un Line Edit a sobre del botó, fem un widget que contingui un layout. Aquest layout contindrà el botó, i a vegades el Line Edit
+        self.wScale=QWidget()
+        self.lScale=QHBoxLayout()
+        self.lScale.setContentsMargins(0,0,0,0)
+        self.lScale.setSpacing(0)
+        self.wScale.setLayout(self.lScale)
         self.bScale = QvPushButton(flat=True)
         self.bScale.setStyleSheet(stylesheetButton)
+        self.lScale.addWidget(self.bScale)
 
         # self.bScale.setFrameStyle(QFrame.StyledPanel )
         # self.bScale.setMinimumWidth( 140 )
         self.bScale.clicked.connect(self.editarEscala)
-        self.statusbar.addPermanentWidget( self.bScale, 0 )
+        self.statusbar.addPermanentWidget( self.wScale, 0 )
         self.editantEscala = False
 
         self.bOrientacio = QvPushButton(flat=True)
@@ -2055,8 +2066,13 @@ class QVista(QMainWindow, Ui_MainWindow):
         if self.editantEscala == False:
             self.editantEscala = True
             self.bScale.setText(' Escala 1: ')
-            self.leScale = QLineEdit(self.bScale)
-            self.leScale.setGeometry(48,0,100,20)
+            self.leScale = QLineEdit()
+            self.leScale.setStyleSheet('margin: 0px; border: 0px; padding: 0px;')
+            self.lScale.addWidget(self.leScale)
+            # self.leScale.setGeometry(48,0,100,20)
+            self.leScale.setMinimumWidth(10)
+            # self.leScale.setMaximumWidth(35)
+            self.leScale.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Minimum)
             self.leScale.returnPressed.connect(self.escalaEditada)
             self.leScale.show()
             self.leScale.setFocus()
@@ -2066,6 +2082,7 @@ class QVista(QMainWindow, Ui_MainWindow):
     def escalaEditada(self):
         escala = self.leScale.text()
         self.leScale.setParent(None)
+        self.lScale.removeWidget(self.leScale)
         self.canvas.zoomScale(int(escala))
         self.editantEscala = False
 
