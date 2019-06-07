@@ -1,4 +1,5 @@
 from moduls.QvImports import *
+from moduls.QvPushButton import QvPushButton
 
 class DockPavim(QDockWidget):
     def __init__(self, parent):
@@ -15,7 +16,7 @@ class DockPavim(QDockWidget):
         self.setMaximumWidth(500)
         self.setMinimumWidth(500)
 
-        bPavim = QPushButton('Pavimentació')
+        bPavim = QvPushButton('Pavimentació', flat=True)
         lytPavim.addWidget(bPavim)
 
         self.browserPavim = QWebView()

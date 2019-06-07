@@ -1,0 +1,194 @@
+/*
+ * Color fosc:     #38474F
+ * Color mig:      #465A63
+ * Color clar:     #79909B
+ * Color gris:     #DDDDDD
+ * Color blanc:    #F9F9F9
+ * Color destacat: #FF6215
+*/
+
+
+
+/* QWidget {
+    color: #38474f;
+    background-color: #F9F9F9;
+    border: 0px;
+} */
+
+
+QWidget::window {
+    border: 1px solid #79909B;
+    background-color: #F9F9F9;
+} 
+
+QWidget #layoutFosc {
+    background-color: #38474F solid; 
+    border: 15px;
+}
+QWidget #layout {
+    background: transparent;
+    border: 0px;
+}
+
+QFrame {
+    background-color: #F9F9F9 transparent;
+}
+
+QScrollBar {
+    background: #DDDDDD;
+    margin: 0px;
+    border: none;
+}
+QScrollBar::handle {
+    background: #DDDDDD;
+    min-height: 25px;
+    border: 0px;
+}
+QScrollBar::sub-page {
+    background: #F9F9F9;
+    height: 0 px;
+    border: 0px;
+}
+QScrollBar::add-page {
+    background: #F9F9F9;
+    height: 0 px;
+
+    border: 0px;
+}
+QScrollArea{
+	background-color: white;
+	background: white;
+}
+
+QLabel {
+    background-color: #F9F9F9 transparent;
+    color: #38474F;
+    margin: 0px;
+}
+
+QLabel#fosca{
+    background-color: #38474F solid;
+    color: #F9F9F9;
+    border: 0px;
+}
+
+QMenuBar {
+    color: #79909B; 
+    background-color : #38474F; 
+    /*selection-background-color : #444444;*/
+}
+
+QLineEdit {
+    border: 1px solid #79909B; 
+    background-color: white;
+}
+
+QTextEdit {
+    border:1px solid #38474F;
+    background-color: white;
+}
+
+QTextEdit[readOnly="true"] {
+    /* margin: 15px; */
+    /* background-color: #F9F9F9; */
+    border: 0px;
+    background-color: transparent;
+}
+
+
+
+QComboBox {
+    border: 1px solid #38474F;
+	color: #38474F;
+	background-color: #465A63;
+	selection-background-color: #FF6215;
+	outline: 0;
+}
+
+QComboBox QAbstractItemView {
+    background-color: #465A63;
+    /*selection-background-color: transparent;*/
+    outline: 0;
+    border: 1px solid #38474F;
+}
+
+QTableView {
+    background-color: solid white;
+    selection-background-color: #FF6215;
+    color: #38474F;
+    border: 1px solid #38474F;
+}
+
+QTableView::item {
+    background-color: solid white;
+}
+
+QTableView QTableCornerButton::section {
+    background-color: solid white;
+    border: 0px;
+}
+
+QProgressBar {
+    background-color: #38474F;
+    color: #F9F9F9;
+    text-align: center;
+}
+
+QProgressBar::chunk{
+    background-color: #FF6215;
+    color: #F9F9F9;
+}
+
+/* QDialog, QWizard{
+    border: 5px #38474F;
+    margin: 5px;
+    background-color: #F9F9F9;
+} */
+
+
+
+QvPushButton {
+    background-color: #F9F9F9 transparent;
+    color: #38474F;
+    margin: 0px;
+    border: 0px;
+}
+
+QvPushButton:checked{
+    background-color: #DDDDDD;
+    color: #38474F;
+	border: 0px;
+	padding: 2px 2px;
+} 
+
+QvToolButton {
+	background-color: transparent;
+	color: #38474F;
+	border: 0px;
+	padding: 1px 1px;
+}
+
+QStatusBar {
+    background-color: #DDDDDD;
+}
+
+/*
+
+ * EDITAR A PARTIR D'AQUI
+
+*/
+
+QMenuBar {
+    background-color: #38474F;
+    color: #F9F9F9;
+}
+
+QMenuBar::item:hover{
+    background-color: #465A63;
+    color: #F9F9F9;
+}
+/* Com que hem posat el mouse tracking a false no podem saber si el ratolí està a sobre o no fins que hi clickem, de manera que fins que no fem click no quedarà amb aquest color */
+QMenuBar::item:selected{
+    background-color: #FF6215;
+    color: #F9F9F9;
+}

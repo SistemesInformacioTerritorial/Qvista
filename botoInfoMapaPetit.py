@@ -7,6 +7,7 @@
 # WARNING! All changes made in this file will be lost!
 
 from PyQt5 import QtCore, QtGui, QtWidgets
+from moduls.QvPushButton import QvPushButton
 
 class Ui_BotoInfoMapa(object):
     def setupUi(self, BotoInfoMapa):
@@ -104,12 +105,12 @@ class Ui_BotoInfoMapa(object):
         self.verticalLayout_3.setContentsMargins(3, 0, 3, 0)
         self.verticalLayout_3.setSpacing(1)
         self.verticalLayout_3.setObjectName("verticalLayout_3")
-        self.b1 = QtWidgets.QPushButton(self.frame_9)
+        self.b1 = QvPushButton(parent=self.frame_9,flat=True)
         self.b1.setMinimumSize(QtCore.QSize(30, 30))
         self.b1.setMaximumSize(QtCore.QSize(30, 30))
         self.b1.setObjectName("b1")
         self.verticalLayout_3.addWidget(self.b1)
-        self.b2 = QtWidgets.QPushButton(self.frame_9)
+        self.b2 = QvPushButton(parent=self.frame_9,flat=True)
         self.b2.setMinimumSize(QtCore.QSize(30, 30))
         self.b2.setMaximumSize(QtCore.QSize(30, 30))
         self.b2.setText("")
@@ -119,13 +120,13 @@ class Ui_BotoInfoMapa(object):
         self.b2.setIconSize(QtCore.QSize(28, 28))
         self.b2.setObjectName("b2")
         self.verticalLayout_3.addWidget(self.b2)
-        self.b3 = QtWidgets.QPushButton(self.frame_9)
+        self.b3 = QvPushButton(parent=self.frame_9,flat=True)
         self.b3.setMinimumSize(QtCore.QSize(30, 30))
         self.b3.setMaximumSize(QtCore.QSize(30, 30))
         self.b3.setText("")
         self.b3.setObjectName("b3")
         self.verticalLayout_3.addWidget(self.b3)
-        self.b4 = QtWidgets.QPushButton(self.frame_9)
+        self.b4 = QvPushButton(parent=self.frame_9,flat=True)
         self.b4.setMinimumSize(QtCore.QSize(30, 30))
         self.b4.setMaximumSize(QtCore.QSize(30, 30))
         self.b4.setText("")
