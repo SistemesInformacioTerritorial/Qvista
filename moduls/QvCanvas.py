@@ -177,7 +177,7 @@ class QvCanvas(QgsMapCanvas):
             if self.botoneraHoritzontal:
                 self.layoutBotoneraMapa.setAlignment(Qt.AlignLeft)
                 self.offsetEsq = QLabel()
-                self.offsetEsq.setFixedWidth(208)
+                self.offsetEsq.setFixedWidth(8)
                 self.offsetUp = QLabel()
                 self.offsetUp.setFixedHeight(8)
                 self.layoutBotoneraMapa.addWidget(self.offsetEsq)

@@ -1130,7 +1130,8 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.actFavorit.setStatusTip("Favorit")
         self.actFavorit.triggered.connect(self.favorit)
 
-        self.actCataleg = QAction(3*' '+"Catàleg"+3*' ', self)
+        #self.actCataleg = QAction(3*' '+"Catàleg"+3*' ', self)
+        self.actCataleg = QAction("Catàleg"+3*' ', self)
         self.actCataleg.setStatusTip("Catàleg")
         self.actCataleg.triggered.connect(self.obrirCatalegProjectesLlista)
         
@@ -1428,21 +1429,35 @@ class QVista(QMainWindow, Ui_MainWindow):
 
 
         fnt = QFont("Segoe UI Light", 18, weight=QFont.Light)
-        lblLogoAjb = QLabel()
-        lblLogoAjb.setMaximumHeight(40)
-        lblLogoAjb.setMinimumHeight(40)
-        # lblLogoAjb.setMaximumWidth(88)
-        # lblLogoAjb.setMinimumWidth(88)
+        lblLogoQVista = QLabel()
+        lblLogoQVista.setMaximumHeight(40)
+        lblLogoQVista.setMinimumHeight(40)
+        sizeWidget=self.frame_11.width()
+        lblLogoQVista.setMaximumWidth(sizeWidget)
+        lblLogoQVista.setMinimumWidth(sizeWidget)
+        
+        # lblLogoQVista.setMaximumWidth(88)
+        # lblLogoQVista.setMinimumWidth(88)
         #imatge = QPixmap('imatges/logoBcnPetit.jpg')
         imatge = QPixmap('imatges/qVistaLogo_text_40.png')
         # imatge = QPixmap('imatges/qVistaLogoVerd2.png')
-        lblLogoAjb.setPixmap(imatge)
-        lblLogoAjb.setScaledContents(True)
+        lblLogoQVista.setPixmap(imatge)
+        lblLogoQVista.setScaledContents(False)
+
+        # sizeWidget=self.frame_11.size()
+        # wid=QWidget()
+        # layLogo=QHBoxLayout()
+        # layLogo.setContentsMargins(0,0,0,0)
+        # layLogo.setSpacing(0)
+        # wid.setLayout(layLogo)
+        # wid.setFixedSize(sizeWidget)
+        # layLogo.addWidget(lblLogoQVista)
+
         menubar=QvMenuBar(self)
         self.setMenuBar(menubar)
         self.bar = self.menuBar()
         self.bar.setFont(fnt)
-        self.bar.setCornerWidget(lblLogoAjb,Qt.TopLeftCorner)
+        self.bar.setCornerWidget(lblLogoQVista,Qt.TopLeftCorner)
 
         # self._menuBarShadow = QGraphicsDropShadowEffect()
         # self._menuBarShadow.setXOffset(0)
@@ -1964,6 +1979,11 @@ class QVista(QMainWindow, Ui_MainWindow):
 
     def showScale(self,scale ):
         self.bScale.setText( " Escala 1:" + str(int(round(scale)))) 
+        #Si estàvem editant l'escala i entrem aquí vol dir que hem abortat missió
+        #Per tant, deixem d'editar-la
+        if self.editantEscala:  
+            self.editantEscala=False
+            self.leScale.setParent(None)
 
     def definirLabelsStatus(self):    
         
