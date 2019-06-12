@@ -1130,7 +1130,8 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.actFavorit.setStatusTip("Favorit")
         self.actFavorit.triggered.connect(self.favorit)
 
-        self.actCataleg = QAction(3*' '+"Catàleg"+3*' ', self)
+        #self.actCataleg = QAction(3*' '+"Catàleg"+3*' ', self)
+        self.actCataleg = QAction("Catàleg"+3*' ', self)
         self.actCataleg.setStatusTip("Catàleg")
         self.actCataleg.triggered.connect(self.obrirCatalegProjectesLlista)
         
@@ -1428,27 +1429,42 @@ class QVista(QMainWindow, Ui_MainWindow):
 
 
         fnt = QFont("Segoe UI Light", 18, weight=QFont.Light)
-        lblLogoAjb = QLabel()
-        lblLogoAjb.setMaximumHeight(40)
-        lblLogoAjb.setMinimumHeight(40)
-        # lblLogoAjb.setMaximumWidth(88)
-        # lblLogoAjb.setMinimumWidth(88)
+        lblLogoQVista = QLabel()
+        lblLogoQVista.setMaximumHeight(40)
+        lblLogoQVista.setMinimumHeight(40)
+        sizeWidget=self.frame_11.width()
+        lblLogoQVista.setMaximumWidth(sizeWidget)
+        lblLogoQVista.setMinimumWidth(sizeWidget)
+        
+        # lblLogoQVista.setMaximumWidth(88)
+        # lblLogoQVista.setMinimumWidth(88)
         #imatge = QPixmap('imatges/logoBcnPetit.jpg')
         imatge = QPixmap('imatges/qVistaLogo_text_40.png')
         # imatge = QPixmap('imatges/qVistaLogoVerd2.png')
-        lblLogoAjb.setPixmap(imatge)
-        lblLogoAjb.setScaledContents(True)
+        lblLogoQVista.setPixmap(imatge)
+        lblLogoQVista.setScaledContents(False)
+
+        # sizeWidget=self.frame_11.size()
+        # wid=QWidget()
+        # layLogo=QHBoxLayout()
+        # layLogo.setContentsMargins(0,0,0,0)
+        # layLogo.setSpacing(0)
+        # wid.setLayout(layLogo)
+        # wid.setFixedSize(sizeWidget)
+        # layLogo.addWidget(lblLogoQVista)
+
         menubar=QvMenuBar(self)
         self.setMenuBar(menubar)
         self.bar = self.menuBar()
         self.bar.setFont(fnt)
-        self.bar.setCornerWidget(lblLogoAjb,Qt.TopLeftCorner)
+        self.bar.setCornerWidget(lblLogoQVista,Qt.TopLeftCorner)
 
         # self._menuBarShadow = QGraphicsDropShadowEffect()
         # self._menuBarShadow.setXOffset(0)
         # self._menuBarShadow.setColor(QColor(55,57,63))
         # self._menuBarShadow.setBlurRadius(20)
         # self.bar.setGraphicsEffect(self._menuBarShadow)
+        
         self._menuBarShadow=QvConstants.afegeixOmbraHeader(self.bar)
 
         self.bar.setFixedHeight(40)
@@ -1963,16 +1979,23 @@ class QVista(QMainWindow, Ui_MainWindow):
 
     def showScale(self,scale ):
         self.bScale.setText( " Escala 1:" + str(int(round(scale)))) 
+        #Si estàvem editant l'escala i entrem aquí vol dir que hem abortat missió
+        #Per tant, deixem d'editar-la
+        if self.editantEscala:  
+            self.editantEscala=False
+            self.leScale.setParent(None)
 
     def definirLabelsStatus(self):    
         
 
         self.leSeleccioExpressio = QLineEdit()
-        self.leSeleccioExpressio.setStyleSheet("QLineEdit {border: 0px solid red; background-color: #FFFFFF;}")  #????
+        self.leSeleccioExpressio.setStyleSheet("QLineEdit {margin: 0px; border: 0px; padding: 0px; background-color: #FFFFFF;}")  #????
+        
         # self.leSeleccioExpressio.setGraphicsEffect(self._menuBarShadow)
         self.leSeleccioExpressio.returnPressed.connect(seleccioExpressio)
         self.statusbar.addPermanentWidget(self.leSeleccioExpressio, 50)
         self.leSeleccioExpressio.setPlaceholderText('Cerca un text per filtrar elements')
+        self.leSeleccioExpressio.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Minimum)
         self.leSeleccioExpressio.show()
         # spacer = QSpacerItem(1000, 1000, QSizePolicy.Expanding,QSizePolicy.Maximum)
         # self.statusbar.addPermanentWidget(spacer)
@@ -2013,13 +2036,21 @@ class QVista(QMainWindow, Ui_MainWindow):
         # self.lblProjeccio.setMinimumWidth( 140 )
         self.statusbar.addPermanentWidget( self.lblProjeccio, 0 )
 
+
+        #Per no haver de posar un Line Edit a sobre del botó, fem un widget que contingui un layout. Aquest layout contindrà el botó, i a vegades el Line Edit
+        self.wScale=QWidget()
+        self.lScale=QHBoxLayout()
+        self.lScale.setContentsMargins(0,0,0,0)
+        self.lScale.setSpacing(0)
+        self.wScale.setLayout(self.lScale)
         self.bScale = QvPushButton(flat=True)
         self.bScale.setStyleSheet(stylesheetButton)
+        self.lScale.addWidget(self.bScale)
 
         # self.bScale.setFrameStyle(QFrame.StyledPanel )
         # self.bScale.setMinimumWidth( 140 )
         self.bScale.clicked.connect(self.editarEscala)
-        self.statusbar.addPermanentWidget( self.bScale, 0 )
+        self.statusbar.addPermanentWidget( self.wScale, 0 )
         self.editantEscala = False
 
         self.bOrientacio = QvPushButton(flat=True)
@@ -2054,8 +2085,13 @@ class QVista(QMainWindow, Ui_MainWindow):
         if self.editantEscala == False:
             self.editantEscala = True
             self.bScale.setText(' Escala 1: ')
-            self.leScale = QLineEdit(self.bScale)
-            self.leScale.setGeometry(48,0,100,20)
+            self.leScale = QLineEdit()
+            self.leScale.setStyleSheet('margin: 0px; border: 0px; padding: 0px;')
+            self.lScale.addWidget(self.leScale)
+            # self.leScale.setGeometry(48,0,100,20)
+            self.leScale.setMinimumWidth(10)
+            # self.leScale.setMaximumWidth(35)
+            self.leScale.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Minimum)
             self.leScale.returnPressed.connect(self.escalaEditada)
             self.leScale.show()
             self.leScale.setFocus()
@@ -2065,6 +2101,7 @@ class QVista(QMainWindow, Ui_MainWindow):
     def escalaEditada(self):
         escala = self.leScale.text()
         self.leScale.setParent(None)
+        self.lScale.removeWidget(self.leScale)
         self.canvas.zoomScale(int(escala))
         self.editantEscala = False
 

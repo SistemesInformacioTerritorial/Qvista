@@ -74,7 +74,7 @@ class QvNews(QtWidgets.QAction):
 class QvNewsFinestra(QDialog):
     '''Diàleg per visualitzar les notícies (que, per extensió, podem usar sempre que vulguem per visualitzar arxius HTML)'''
 
-    def __init__(self, file: str, parent: QWidget = None):
+    def __init__(self, file: str, titol: str = 'Novetats qVista', parent: QWidget = None):
         '''Crea una instància de QvNewsFinestra
         Arguments:
             file {str} -- adreça de l'arxiu HTML que volem visualitzar
@@ -87,14 +87,14 @@ class QvNewsFinestra(QDialog):
 
         # FILA SUPERIOR
         self.layoutCapcalera = QHBoxLayout()
-        self.widgetSup = QWidget()
+        self.widgetSup = QWidget(objectName='layout')
         self.widgetSup.setLayout(self.layoutCapcalera)
         self.layout.addWidget(self.widgetSup)
         self.lblLogo = QLabel()
         self.lblLogo.setPixmap(
             QPixmap('imatges/QVistaLogo_40_32.png'))
-        self.lblCapcalera = QLabel()
-        self.lblCapcalera.setText('  Novetats qVista')
+        self.lblCapcalera = QLabel(objectName='Fosca')
+        self.lblCapcalera.setText('  '+titol)
         # self.lblCapcalera.setStyleSheet(
         #     'color: %s' % QvConstants.COLORFOSCHTML)
         self.layoutCapcalera.addWidget(self.lblLogo)
@@ -141,12 +141,14 @@ class QvNewsFinestra(QDialog):
         self.layoutCapcalera.setSpacing(0)
         self.layoutBoto.setContentsMargins(0, 0, 0, 0)
         self.layoutBoto.setSpacing(0)
-        # self.widgetSup.setGraphicsEffect(QvConstants.ombraHeader(self.widgetSup))
-        QvConstants.afegeixOmbraHeader(self.widgetSup)
+        self.widgetSup.setGraphicsEffect(QvConstants.ombraHeader(self.widgetSup))
+        # self.ombraHeader=QvConstants.afegeixOmbraHeader(self.widgetSup)
+        # self.ombraHeader.setEnabled(True)
 
         self.setWindowTitle("qVista - Noticies")
         self.resize(640, 480)
         self.oldPos = self.pos()
+        # QvConstants.afegeixOmbraWidget(self)
 
     def mousePressEvent(self, event):
         self.oldPos = event.globalPos()
@@ -160,6 +162,7 @@ class QvNewsFinestra(QDialog):
     def keyPressEvent(self, event):
         if event.key() == Qt.Key_Escape or event.key() == Qt.Key_Return:
             self.close()
+    
 
 
 if __name__ == '__main__':

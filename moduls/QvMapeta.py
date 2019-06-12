@@ -82,8 +82,10 @@ class QvMapeta(QFrame):
         # effect.setYOffset(5)
         # effect.setColor(QColor(150,150,150))
         # self.setGraphicsEffect(effect)
+
         ombra=QvConstants.ombra(self,radius=20)
         self.setGraphicsEffect(ombra)
+
         # QvConstants.afegeixOmbraWidget(self)
 
         # El botó per minimitzar el mapa

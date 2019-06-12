@@ -11,11 +11,11 @@ from moduls.QvPushButton import QvPushButton
 
 class BotoQvBrowser(QvPushButton):
     def __init__(self):
-        QvPushButton.__init__(self)
-        self.setMinimumHeight(30)
-        self.setMaximumHeight(30)
-        self.setMinimumWidth(100)
-        self.setMaximumWidth(100)
+        super().__init__()
+        # self.setMinimumHeight(30)
+        # self.setMaximumHeight(30)
+        # self.setMinimumWidth(100)
+        # self.setMaximumWidth(100)
 
 class QvBrowser(QWidget):
 
@@ -36,7 +36,9 @@ class QvBrowser(QWidget):
         self.botoneraQvBrowser = QFrame()
         self.botoneraQvBrowser.setContentsMargins(0,0,0,0)
         self.botoneraQvBrowser.setMinimumHeight(30)
-        self.botoneraQvBrowser.setMaximumHeight(30)
+        self.botoneraQvBrowser.setMaximumHeight(45)
+        # self.botoneraQvBrowser.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
+        # self.botoneraQvBrowser.setVerticalPolicy(QSizePolicy.Minimum)
 
         self.layoutBotonera = QHBoxLayout(self.botoneraQvBrowser)
         self.layoutBotonera.setContentsMargins(0,0,0,0)
@@ -157,7 +159,7 @@ class PointTool(QgsMapTool):
         self.parent.m.setIconType(QgsVertexMarker.ICON_BOX) # or ICON_CROSS, ICON_X
         self.parent.m.setPenWidth(3)
         self.parent.m.show()
-        self.parent.boto.move(220, 20)
+        self.parent.boto.move(8, 713)
         self.moureBoto = False
 
 class QvStreetView(QWidget):
@@ -180,7 +182,7 @@ class QvStreetView(QWidget):
         self.icon=QIcon('imatges/littleMan.png')
         self.boto.setIcon(self.icon)
         self.boto.clicked.connect(self.segueixBoto)
-        self.boto.setGeometry(220,20,25,25)
+        self.boto.setGeometry(8,713,25,25)
         self.boto.setIconSize(QSize(25,25))
         
 

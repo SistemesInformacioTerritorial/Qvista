@@ -13,25 +13,17 @@
     color: #38474f;
     background-color: #F9F9F9;
     border: 0px;
-}
-QWidget #layoutFosc {
-    background: solid;
-    background-color: #38474F; 
-    border: 0px;
-}
-QWidget #layout {
-    background: transparent;
-    border: 0px;
-}
-QWidget::window {
-    border: 0px;
-    background-color: #F9F9F9;
 } */
 
+
+QWidget::window {
+    border: 1px solid #79909B;
+    background-color: #F9F9F9;
+} 
+
 QWidget #layoutFosc {
-    background: solid;
-    background-color: #38474F; 
-    border: 0px;
+    background-color: #38474F solid; 
+    border: 15px;
 }
 QWidget #layout {
     background: transparent;
@@ -45,7 +37,7 @@ QFrame {
 QScrollBar {
     background: #DDDDDD;
     margin: 0px;
-    border: 0px;
+    border: none;
 }
 QScrollBar::handle {
     background: #DDDDDD;
@@ -71,13 +63,13 @@ QScrollArea{
 QLabel {
     background-color: #F9F9F9 transparent;
     color: #38474F;
-    margin: 1px;
+    margin: 0px;
 }
 
 QLabel#fosca{
     background-color: #38474F solid;
     color: #F9F9F9;
-    border: 1px;
+    border: 0px;
 }
 
 QMenuBar {
@@ -91,15 +83,19 @@ QLineEdit {
     background-color: white;
 }
 
-QTextEdit[readOnly="true"] {
-    border:0; 
-    background-color: #F9F9F9;
-}
-
 QTextEdit {
-    border:0px;
+    border:1px solid #38474F;
     background-color: white;
 }
+
+QTextEdit[readOnly="true"] {
+    /* margin: 15px; */
+    /* background-color: #F9F9F9; */
+    border: 0px;
+    background-color: transparent;
+}
+
+
 
 QComboBox {
     border: 1px solid #38474F;
@@ -131,27 +127,25 @@ QTableView QTableCornerButton::section {
     background-color: solid white;
     border: 0px;
 }
-/* 
-QPushButton{
-    border: 2px;
-    margin: 2px;
-    background-color: transparent;
+
+QProgressBar {
+    background-color: #38474F;
+    color: #F9F9F9;
+    text-align: center;
 }
 
-QPushButton:hover{
-    border: 2px;
-    margin: 2px;
+QProgressBar::chunk{
+    background-color: #FF6215;
+    color: #F9F9F9;
+}
+
+/* QDialog, QWizard{
+    border: 5px #38474F;
+    margin: 5px;
     background-color: #F9F9F9;
 } */
 
-/* QvPushButton {
-	background-color: #F9F9F9 transparent;
-	color: #38474F;
-    margin: 1px;
-    border-style: groove;
-    border-color: #38474F;
-    border-width: 1px;
-} */
+
 
 QvPushButton {
     background-color: #F9F9F9 transparent;
@@ -183,26 +177,18 @@ QStatusBar {
  * EDITAR A PARTIR D'AQUI
 
 */
-/* QMenu {
-	background-color: #263238;
-	color: #546E7A;
+
+QMenuBar {
+    background-color: #38474F;
+    color: #F9F9F9;
 }
 
-QMenu::item:selected {
-	color: #AFBDC4;
+QMenuBar::item:hover{
+    background-color: #465A63;
+    color: #F9F9F9;
 }
-
-QMenu::item:pressed {
-	color: #FFFFFF;
+/* Com que hem posat el mouse tracking a false no podem saber si el ratolí està a sobre o no fins que hi clickem, de manera que fins que no fem click no quedarà amb aquest color */
+QMenuBar::item:selected{
+    background-color: #FF6215;
+    color: #F9F9F9;
 }
-
-QMenu::separator {
-	height: 1px;
-	background: transparent;
-	margin-left: 10px;
-	margin-right: 10px;
-	margin-top: 5px;
-	margin-bottom: 5px;
-} */
-
-
