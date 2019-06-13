@@ -490,6 +490,7 @@ class QvCarregaCsvAdreca(QvCarregaCsvPage):
 class WindowProgressBar(QWidget):
     def __init__(self, mida, parent=None):
         super().__init__(parent)
+        self.setWindowTitle("Progrés")
         self.progress = QProgressBar()
         self.progress.setGeometry(0, 0, 300, 25)
         self.mida = mida + 1
