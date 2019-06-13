@@ -316,7 +316,7 @@ class QvApp(Singleton):
     def geocod(self, tipusVia, variant, codi, numIni, lletraIni='', numFi='', lletraFi=''):
         self.dbLogConnexio()
         if self.dbLog is None:
-            return None, None, False
+            return None, None
         if self.queryGeo is None:
             self.queryGeo = QSqlQuery(self.dbLog)
         try:
