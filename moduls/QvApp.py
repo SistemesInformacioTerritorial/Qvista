@@ -12,7 +12,6 @@ from pathlib import Path
 import sys
 import getpass
 import uuid
-# import traceback
 import os
 import json
 
@@ -98,6 +97,14 @@ class QvApp(Singleton):
             self.gh = None
         else:
             self.gh = QvGithub(self.data(), self.github)
+
+        val = self.paramCfg('Stdout', 'False')      # Activación fichero salida
+        if val == 'True':
+            try:
+                # print(os.getcwd())
+                sys.stdout = open('../Salida.txt', 'w')
+            except Exception:
+                print('Error al redirigir stdout')
 
         self.dbLog = None
         self.queryLog = None
