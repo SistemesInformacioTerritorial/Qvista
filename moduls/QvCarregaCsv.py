@@ -145,18 +145,27 @@ class QvCarregaCsvPage(QWizardPage):
 
         self.setContentsMargins(0, 0, 0, 0)
 
-    def mostraTaula(self, completa=False):
+    def mostraTaula(self, completa=False, guardar = False):
         '''Mostra la taula provisional que està carregant
         Keyword Arguments:
             completa{bool} -- Indica si volem mostrar la taula completa.
                 Si és false, mostra una previsualització de 10 elements 
                 (default: {False})
         '''
-        self.table = QvtLectorCsv(
-            self.parent.csv, self.parent.separador, completa, self)
+        self.table = QvtLectorCsv(self.parent.csv, self.parent.separador, completa, guardar, self)
         self.layoutTable = QVBoxLayout()
         self.layout.addLayout(self.layoutTable)
         self.layoutTable.addWidget(self.table)
+        if guardar:
+            #self.layout.setSpacing(0)
+            self.table.setMinimumHeight(120)
+            self.bGuardar = QvPushButton("Guardar CCSV")
+            self.bGuardar.clicked.connect(self.table.writeCsv)
+            self.layoutB = QVBoxLayout()
+            self.layoutB.setAlignment(Qt.AlignCenter)
+            self.layoutB.addWidget(self.bGuardar)
+            self.layoutTable.addLayout(self.layoutB)
+            
 
     def recarregaTaula(self, completa=False):
         self.table = QvtLectorCsv(
@@ -528,7 +537,7 @@ class QvCarregaCsvGeneraCoords(QvCarregaCsvPage):
         self.lblAdrecesError.setStyleSheet('color: red')
         # self.lblAdrecesError.setFixedHeight(100)
         self.layout = QVBoxLayout(self)
-        self.layout.setSpacing(20)
+        self.layout.setSpacing(10)
         self.layout.setContentsMargins(20,0,20,0)
         self.lblExplicacio4 = QLabel()
         self.lblExplicacio4.setText(
@@ -649,12 +658,13 @@ class QvCarregaCsvGeneraCoords(QvCarregaCsvPage):
                 # print(d)
                 del d[""]
                 writer.writerow(d)
-        self.mostraTaula(completa=True)
+        self.mostraTaula(completa=True, guardar = True)
         self.recarregaTaula(completa=True)
         qApp.processEvents()
         self.layout.addWidget(self.lblExplicacio5)
 
     def nextId(self):
+        self.resize(500,500)
         return QvCarregaCsv.finestres.Personalitza
 
 class QvCarregaCsvPersonalitza(QvCarregaCsvPage):
@@ -789,8 +799,8 @@ class QvCarregaCsvPersonalitza(QvCarregaCsvPage):
 
 
 class QvtLectorCsv(QvLectorCsv):
-    def __init__(self, fileName='', separador=None, completa=False, parent=None):
-        super().__init__(fileName)
+    def __init__(self, fileName='', separador=None, completa=False, guardar=False, parent=None):
+        super().__init__(fileName, guardar)
         self.separador = separador
         if self.separador is not None:
             self.carregaCsv(self.fileName, self.separador, completa)
