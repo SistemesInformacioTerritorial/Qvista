@@ -609,28 +609,68 @@ class QvCarregaCsvGeneraCoords(QvCarregaCsvPage):
                 #print(wpg.count)
                 d = {**row}
                 d[''] = ''
-                if self.parent.dadesAdreca[0] == "":
-                    try:
-                        tipusVia, nomVia, num = splitCarrer(row[self.parent.dadesAdreca[1]])
-                    except:
-                        error=True
-                        print(row)
-                        print (row[self.parent.dadesAdreca[1]])
-                        print(tipusVia, nomVia, num)
 
+                if self.parent.dadesAdreca[0] == "": 
+                    tipusVia = ""
                 else:
                     tipusVia = row[self.parent.dadesAdreca[0]]
-                    nomVia = row[self.parent.dadesAdreca[1]]
-                    num = row[self.parent.dadesAdreca[2]]
-                    num = re.sub('[^0-9][0-9]*', '', num)
-                if error or nomVia=='':
-                    x, y = None, None
-                    tipusVia, nomVia, num = '',row[self.parent.dadesAdreca[1]],''
-                elif num != '':
-                    x, y = QvGeocod.coordsCarrerNum(tipusVia, nomVia, num)
+                nomVia = row[self.parent.dadesAdreca[1]]
+                if self.parent.dadesAdreca[2] == "": 
+                    numI = "" 
                 else:
-                    x, y = QvGeocod.coordsCarrerNum(
-                        tipusVia, nomVia, d[self.parent.dadesAdreca[2]], d[self.parent.dadesAdreca[3]], d[self.parent.dadesAdreca[4]], d[self.parent.dadesAdreca[5]])
+                    numI = row[self.parent.dadesAdreca[2]]
+                    numI = re.sub('[^0-9][0-9]*', '', numI)
+                if self.parent.dadesAdreca[3] == "":
+                    lletraI = ""
+                else:
+                    lletraI = row[self.parent.dadesAdreca[3]]
+                if self.parent.dadesAdreca[4] == "": 
+                    numF = "" 
+                else:
+                    numF = row[self.parent.dadesAdreca[4]]
+                    numF = re.sub('[^0-9][0-9]*', '', numF)
+                if self.parent.dadesAdreca[5] == "":
+                    lletraF = ""
+                else:
+                    lletraF = row[self.parent.dadesAdreca[5]]
+
+
+                if self.parent.dadesAdreca[0] == "" and self.parent.dadesAdreca[2] == "":
+                    try:
+                        tipusVia, nomVia, numI = splitCarrer(row[self.parent.dadesAdreca[1]])
+                    except:
+                        error=True
+
+                elif self.parent.dadesAdreca[0] == "" and self.parent.dadesAdreca[2] != "":
+                    try:
+                        tipusVia, nomVia, numIaux = splitCarrer(row[self.parent.dadesAdreca[1]])
+                    except:
+                        error=True
+
+                elif self.parent.dadesAdreca[0] != "" and self.parent.dadesAdreca[2] == "":
+                    try:
+                        tipusViaaux, nomVia, numI = splitCarrer(row[self.parent.dadesAdreca[1]])
+                    except:
+                        error=True
+
+                if nomVia == "":
+                    nomVia = row[self.parent.dadesAdreca[1]]
+                    
+                x, y = QvGeocod.coordsCarrerNum(tipusVia, nomVia, numI, lletraI, numF, lletraF)
+
+                # else:
+                #     tipusVia = row[self.parent.dadesAdreca[0]]
+                #     nomVia = row[self.parent.dadesAdreca[1]]
+                #     numI = row[self.parent.dadesAdreca[2]]
+                #     numI = re.sub('[^0-9][0-9]*', '', num)
+                # if error or nomVia=='':
+                #     x, y = None, None
+                #     tipusVia, nomVia, numI = '',row[self.parent.dadesAdreca[1]],''
+                # elif numI != '':
+                #     x, y = QvGeocod.coordsCarrerNum(tipusVia, nomVia, num)
+                # else:
+                #     x, y = QvGeocod.coordsCarrerNum(
+                #         tipusVia, nomVia, d[self.parent.dadesAdreca[2]], d[self.parent.dadesAdreca[3]], d[self.parent.dadesAdreca[4]], d[self.parent.dadesAdreca[5]])
 
                 wpg.count = wpg.count + 1
                 wpg.actualitzaLBL()
@@ -642,11 +682,11 @@ class QvCarregaCsvGeneraCoords(QvCarregaCsvPage):
                     wpg.errors = wpg.errors + 1
                     if aux != "":
                         self.lblAdrecesError.setText(
-                            aux + "\n" + tipusVia + " " + nomVia + " " + num + ' - Fila ' + str(i))
+                            aux + "\n" + tipusVia + " " + nomVia + " " + numI + ' - Fila ' + str(i))
                     else:
                         self.lblAdrecesError.setText(
-                            tipusVia + " " + nomVia + " " + num + ' - Fila ' + str(i))
-                    print(tipusVia, nomVia, num)
+                            tipusVia + " " + nomVia + " " + numI + ' - Fila ' + str(i))
+                    print(tipusVia, nomVia, numI)
                     d[self.parent.coordX] = ""
                     d[self.parent.coordY] = ""
                     del d[""]
