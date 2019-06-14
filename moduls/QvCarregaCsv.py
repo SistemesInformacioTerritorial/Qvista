@@ -232,6 +232,8 @@ class QvCarregaCsvTriaSep(QvCarregaCsvPage):
         self.layoutCheckButton.addStretch(1)
         print(parent.csv)
         self.parent.setSeparador(infereixSeparadorRegex(open(parent.csv)))
+        if not isinstance(self.parent.setSeparador, str):
+            self.parent.setSeparador(';')
         self.mostraTaula()
 
         def botoClickat(boto):
@@ -537,7 +539,7 @@ class QvCarregaCsvGeneraCoords(QvCarregaCsvPage):
         self.lblAdrecesError.setStyleSheet('color: red')
         # self.lblAdrecesError.setFixedHeight(100)
         self.layout = QVBoxLayout(self)
-        self.layout.setSpacing(10)
+        self.layout.setSpacing(12)
         self.layout.setContentsMargins(20,0,20,0)
         self.lblExplicacio4 = QLabel()
         self.lblExplicacio4.setText(
@@ -550,7 +552,7 @@ class QvCarregaCsvGeneraCoords(QvCarregaCsvPage):
         self.scrollErrors.setWidget(self.lblAdrecesError)
         self.layout.addWidget(self.scrollErrors)
         # Després de generar el csv amb coordenades no hi ha volta enrere
-        #self.setCommitPage(True)
+        self.setCommitPage(True)
         self.showed = False
         #self.mostraTaula()
         self.lblExplicacio5 = QLabel()
@@ -604,10 +606,14 @@ class QvCarregaCsvGeneraCoords(QvCarregaCsvPage):
             for row in reader:
                 error=False
                 i += 1
+                d = {**row}
                 if i == 0:
+                    d[self.parent.coordX] = self.parent.coordX
+                    d[self.parent.coordY] = self.parent.coordY
+                    writer.writerow(d)
                     continue
                 #print(wpg.count)
-                d = {**row}
+                
                 d[''] = ''
 
                 if self.parent.dadesAdreca[0] == "": 
@@ -855,6 +861,8 @@ class QvtLectorCsv(QvLectorCsv):
             with f:
                 self.fname = os.path.splitext(str(fileName))[0].split("/")[-1]
                 self.setWindowTitle(self.fname)
+                if not isinstance(separador, str):
+                    separador = ';'
                 reader = csv.reader(f, delimiter=separador)
                 self.model.clear()
                 i = 0

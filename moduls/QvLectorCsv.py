@@ -108,12 +108,11 @@ class QvLectorCsv(QtWidgets.QWidget):
                        (QtCore.QDir.homePath() + "/" + self.fname + ".csv"),"CSV Files (*.csv)")
        if fileName:
            print(fileName)
-           f = open(fileName, 'w')
+           f = open(fileName, 'w', newline='')
            with f:
-               writer = csv.writer(f, delimiter = '\t')
+               writer = csv.writer(f, delimiter = ';')
                for rowNumber in range(self.model.rowCount()):
-                   fields = [self.model.data(self.model.index(rowNumber, columnNumber),
-                                        QtCore.Qt.DisplayRole)
+                   fields = [self.model.data(self.model.index(rowNumber, columnNumber),QtCore.Qt.DisplayRole)
                     for columnNumber in range(self.model.columnCount())]
                    writer.writerow(fields)
                self.fname = os.path.splitext(str(fileName))[0].split("/")[-1]
