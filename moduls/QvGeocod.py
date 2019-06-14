@@ -77,7 +77,53 @@ if __name__ == "__main__":
 
     with qgisapp(guienabled=gui) as app:
 
-        # sys.stdout = open('D:/qVista/Salida.txt', 'w')
+        import sys
+        import csv
+        import time
+
+        ini = time.time()
+
+        # fich = 'CarrecsUTF8-100'
+        # fich = 'CarrecsUTF8-100MIL'
+        fich = 'CarrecsUTF8'
+
+        tipo = 'CODI'
+        # tipo = 'NOM'
+
+        sys.stdout = open('../' + fich + tipo + '.txt', 'w')
+        print('*** FICHERO:', fich, 'por', tipo)
+
+        with open('../' + fich + '.csv', encoding='utf-8') as csvfile:
+
+            data = csv.DictReader(csvfile, delimiter=';')
+            tot = num = 0
+            for row in data:
+                tot += 1
+                if tipo == 'CODI':
+                    x, y = QvGeocod().coordsCodiNum(row['CODI_CARRER_GPL'],
+                                                    row['NUM_I_GPL'], '',
+                                                    row['NUM_F_GPL'], '')
+                else:
+                    x, y = QvGeocod().coordsCarrerNum('', row['NOM_CARRER_GPL'],
+                                                      row['NUM_I_GPL'], '',
+                                                      row['NUM_F_GPL'], '')
+                if x is None or y is None:
+                    num += 1
+                    print('- ERROR', end='')
+                else:
+                    print('- COORDS x:', x, 'y:', y, end='')
+
+                print(' |', row['NFIXE'], '-',
+                      row['NOM_CARRER_GPL'], row['CODI_CARRER_GPL'],
+                      row['NUM_I_GPL'], '-', row['NUM_F_GPL'])
+
+            fin = time.time()
+            print('==> REGISTROS:', str(tot), '- ERRORES:', str(num))
+            print('==> TIEMPO:', str(fin - ini), 'segundos')
+
+        sys.exit(0)
+
+# *******************************************************************************
 
         x, y = QvGeocod().coordsCarrerNum('Av', 'BALMES', '61')
         if x is None or y is None:

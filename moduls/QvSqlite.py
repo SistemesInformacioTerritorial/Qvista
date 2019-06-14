@@ -220,14 +220,18 @@ class QvSqlite(Singleton):
         return self.coordsAdreca(tipusVia, variant, numIni + lletraIni + num2)
 
     def geoCoordsCodiNum(self, codiCarrer, numIni, lletraIni='', numFi='', lletraFi=''):
-        # Buscamos número / letra inicial en Geocod de SQLite
-        x, y = self.coordsCarrerNum(codiCarrer, numIni + lletraIni)
+        # Buscamos número / letra inicial en Ge<ocod de SQLite
+        num1 = self.formatNum(numIni) + lletraIni.strip().upper()
+        x, y = self.coordsCarrerNum(codiCarrer, num1)
         if x is not None and y is not None:
             return x, y
-        if numFi == '' and lletraFi == '':
-            return None, None
-        # Si no, buscamos número / letra finales en  Geocod de SQLite
-        return self.coordsCarrerNum(codiCarrer, numFi + lletraFi)
+        else:
+            # Si no, buscamos número / letra finales en  Geocod de SQLite
+            num2 = self.formatNum(numFi) + lletraFi.strip().upper()
+            if num2 != num1:
+                return self.coordsCarrerNum(codiCarrer, num2)
+            else:
+                return None, None
 
 
 if __name__ == "__main__":
@@ -266,7 +270,6 @@ if __name__ == "__main__":
         txt = sqlite.codiCarrerVariant('', '191204')
 
         txt = sqlite.dbTipusVia('CALLE')
-        txt = sqlite.dbTipusVia()
         txt = sqlite.dbTipusVia('AVENIDA')
         txt = sqlite.dbTipusVia('JARDIN')
         txt = sqlite.dbTipusVia('PLAZA')
