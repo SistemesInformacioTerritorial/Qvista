@@ -9,7 +9,7 @@ from PyQt5.QtCore import QFile
 from moduls.QvPushButton import QvPushButton
  
 class QvLectorCsv(QtWidgets.QWidget):
-   def __init__(self, fileName= "", parent=None):
+   def __init__(self, fileName= "", parent=None, guardar = False):
        QtWidgets.QWidget.__init__(self)
        self.setContentsMargins(0,0,0,0)
        self.fileName = fileName
@@ -25,8 +25,13 @@ class QvLectorCsv(QtWidgets.QWidget):
     
        grid = QtWidgets.QGridLayout()
        grid.setContentsMargins(0,0,0,0)
-       grid.setSpacing(10)
+       grid.setSpacing(0)
        grid.addWidget(self.tableView, 0, 0, 1, 9)
+       if guardar: #aixo no s'arriba a executar mai
+            bGuardar = QvPushButton()
+            bGuardar.setText("Guardar CSV")
+            bGuardar.clicked.connect(self.writeCsv)
+            grid.addWidget(bGuardar, 0, 0, 2, 9)
        self.setLayout(grid)
  
        item = QtGui.QStandardItem()
@@ -103,12 +108,11 @@ class QvLectorCsv(QtWidgets.QWidget):
                        (QtCore.QDir.homePath() + "/" + self.fname + ".csv"),"CSV Files (*.csv)")
        if fileName:
            print(fileName)
-           f = open(fileName, 'w')
+           f = open(fileName, 'w', newline='')
            with f:
-               writer = csv.writer(f, delimiter = '\t')
+               writer = csv.writer(f, delimiter = ';')
                for rowNumber in range(self.model.rowCount()):
-                   fields = [self.model.data(self.model.index(rowNumber, columnNumber),
-                                        QtCore.Qt.DisplayRole)
+                   fields = [self.model.data(self.model.index(rowNumber, columnNumber),QtCore.Qt.DisplayRole)
                     for columnNumber in range(self.model.columnCount())]
                    writer.writerow(fields)
                self.fname = os.path.splitext(str(fileName))[0].split("/")[-1]
