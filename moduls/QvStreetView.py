@@ -162,6 +162,7 @@ class PointTool(QgsMapTool):
         self.parent.boto.move(8, 713)
         self.parent.boto.hide()
         self.moureBoto = False
+        self.parent.boto.hide()
 
 class QvStreetView(QWidget):
     """Una classe del tipus QWidget 
@@ -186,11 +187,13 @@ class QvStreetView(QWidget):
         self.boto.setGeometry(8,713,25,25)
         self.boto.hide()
         self.boto.setIconSize(QSize(25,25))
+        self.boto.hide()
         
 
         self.setupUI()
         # self.canvas.xyCoordinates.connect(self.mocMouse)
-
+    def getBoto(self):
+        return self.boto
     def segueixBoto(self):
         self.boto.show()
         self.canvas.setMapTool(self.rp)

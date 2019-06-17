@@ -113,13 +113,13 @@ class QvPrint(QWidget):
 
         self.font = QFont()
         self.font.setPointSize(20)
-        self.boto = QvPushButton(parent=self)
+        self.boto = QPushButton(parent=self)
         self.boto.setText('Plot')
         self.boto.setFont(self.font)
         self.boto.setMinimumHeight(self.boto.height()*2)
         
         self.boto.clicked.connect(self.printPlanol)
-        self.boto2 = QvPushButton(parent=self)
+        self.boto2 = QPushButton(parent=self)
         self.boto2.setText('Reposicionar')
         self.boto2.clicked.connect(self.potsMoure)
 

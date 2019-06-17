@@ -1,13 +1,16 @@
 #!/usr/bin/python3
-#-*- coding:utf-8 -*-
-import csv, codecs 
-import os, sys
- 
+# -*- coding:utf-8 -*-
+import csv
+import codecs
+import os
+import sys
+
 from PyQt5 import QtCore, QtGui, QtWidgets, QtPrintSupport
 from PyQt5.QtGui import QImage, QPainter
 from PyQt5.QtCore import QFile
 from moduls.QvPushButton import QvPushButton
- 
+
+
 class QvLectorCsv(QtWidgets.QWidget):
    def __init__(self, fileName= "", parent=None, guardar = False):
        QtWidgets.QWidget.__init__(self)
@@ -207,6 +210,7 @@ class QvLectorCsv(QtWidgets.QWidget):
        deleteColumnAction = QtWidgets.QAction('delete Column', self)
        deleteColumnAction.triggered.connect(lambda: self.deleteColumnByContext(event))
        # add other required actions
+
     #    self.menu.addAction(copyAction)
     #    self.menu.addAction(pasteAction)
     #    self.menu.addAction(cutAction)
@@ -218,75 +222,76 @@ class QvLectorCsv(QtWidgets.QWidget):
     #    self.menu.addAction(addColumnAfterAction)
     #    self.menu.addSeparator()
     #    self.menu.addAction(removeAction)
-       self.menu.addAction(deleteColumnAction)
-       self.menu.popup(QtGui.QCursor.pos())
- 
-   def deleteRowByContext(self, event):
-       for i in self.tableView.selectionModel().selection().indexes():
-           row = i.row()
-           self.model.removeRow(row)
-           print("Row " + str(row) + " deleted")
-           self.tableView.selectRow(row)
- 
-   def addRowByContext(self, event):
-       for i in self.tableView.selectionModel().selection().indexes():
-           row = i.row() + 1
-           self.model.insertRow(row)
-           print("Row at " + str(row) + " inserted")
-           self.tableView.selectRow(row)
- 
-   def addRowByContext2(self, event):
-       for i in self.tableView.selectionModel().selection().indexes():
-           row = i.row()
-           self.model.insertRow(row)
-           print("Row at " + str(row) + " inserted")
-           self.tableView.selectRow(row)
- 
-   def addColumnBeforeByContext(self, event):
-       for i in self.tableView.selectionModel().selection().indexes():
-           col = i.column()
-           self.model.insertColumn(col)
-           print("Column at " + str(col) + " inserted")
- 
-   def addColumnAfterByContext(self, event):
-       for i in self.tableView.selectionModel().selection().indexes():
-           col = i.column() + 1
-           self.model.insertColumn(col)
-           print("Column at " + str(col) + " inserted")
- 
-   def deleteColumnByContext(self, event):
-       for i in self.tableView.selectionModel().selection().indexes():
-           col = i.column()
-           self.model.removeColumn(col)
-           print("Column at " + str(col) + " removed")
- 
-   def copyByContext(self, event):
-       for i in self.tableView.selectionModel().selection().indexes():
-           row = i.row()
-           col = i.column()
-           myitem = self.model.item(row,col)
-           if myitem is not None:
-               clip = QtWidgets.QApplication.clipboard()
-               clip.setText(myitem.text())
- 
-   def pasteByContext(self, event):
-       for i in self.tableView.selectionModel().selection().indexes():
-           row = i.row()
-           col = i.column()
-           myitem = self.model.item(row,col)
-           clip = QtWidgets.QApplication.clipboard()
-           myitem.setText(clip.text())
- 
-   def cutByContext(self, event):
-       for i in self.tableView.selectionModel().selection().indexes():
-           row = i.row()
-           col = i.column()
-           myitem = self.model.item(row,col)
-           if myitem is not None:
-               clip = QtWidgets.QApplication.clipboard()
-               clip.setText(myitem.text())
-               myitem.setText("")
- 
+        self.menu.addAction(deleteColumnAction)
+        self.menu.popup(QtGui.QCursor.pos())
+
+    def deleteRowByContext(self, event):
+        for i in self.tableView.selectionModel().selection().indexes():
+            row = i.row()
+            self.model.removeRow(row)
+            print("Row " + str(row) + " deleted")
+            self.tableView.selectRow(row)
+
+    def addRowByContext(self, event):
+        for i in self.tableView.selectionModel().selection().indexes():
+            row = i.row() + 1
+            self.model.insertRow(row)
+            print("Row at " + str(row) + " inserted")
+            self.tableView.selectRow(row)
+
+    def addRowByContext2(self, event):
+        for i in self.tableView.selectionModel().selection().indexes():
+            row = i.row()
+            self.model.insertRow(row)
+            print("Row at " + str(row) + " inserted")
+            self.tableView.selectRow(row)
+
+    def addColumnBeforeByContext(self, event):
+        for i in self.tableView.selectionModel().selection().indexes():
+            col = i.column()
+            self.model.insertColumn(col)
+            print("Column at " + str(col) + " inserted")
+
+    def addColumnAfterByContext(self, event):
+        for i in self.tableView.selectionModel().selection().indexes():
+            col = i.column() + 1
+            self.model.insertColumn(col)
+            print("Column at " + str(col) + " inserted")
+
+    def deleteColumnByContext(self, event):
+        for i in self.tableView.selectionModel().selection().indexes():
+            col = i.column()
+            self.model.removeColumn(col)
+            print("Column at " + str(col) + " removed")
+
+    def copyByContext(self, event):
+        for i in self.tableView.selectionModel().selection().indexes():
+            row = i.row()
+            col = i.column()
+            myitem = self.model.item(row, col)
+            if myitem is not None:
+                clip = QtWidgets.QApplication.clipboard()
+                clip.setText(myitem.text())
+
+    def pasteByContext(self, event):
+        for i in self.tableView.selectionModel().selection().indexes():
+            row = i.row()
+            col = i.column()
+            myitem = self.model.item(row, col)
+            clip = QtWidgets.QApplication.clipboard()
+            myitem.setText(clip.text())
+
+    def cutByContext(self, event):
+        for i in self.tableView.selectionModel().selection().indexes():
+            row = i.row()
+            col = i.column()
+            myitem = self.model.item(row, col)
+            if myitem is not None:
+                clip = QtWidgets.QApplication.clipboard()
+                clip.setText(myitem.text())
+                myitem.setText("")
+
+
 def stylesheet(self):
     return """
         QTableView{
@@ -329,4 +334,3 @@ def stylesheet(self):
 #     main.setGeometry(0,0,820,700)
 #     main.setWindowTitle("CSV Viewer")
 #     main.show()
- 
