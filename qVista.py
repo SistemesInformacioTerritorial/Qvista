@@ -188,7 +188,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.dropCanvas = QvDropFiles(self.canvas, ['.qgs', '.qgz'], ['.qlr', '.shp', '.csv', '.gpkg'])
         self.dropCanvas.arxiusPerProcessar.connect(self.obrirArxiu)
 
-        self.setMouseTracking(False) 
+        # self.setMouseTracking(False) 
 
         self.oldPos = self.pos() #Per quan vulguem moure la finestra
 
@@ -245,8 +245,7 @@ class QVista(QMainWindow, Ui_MainWindow):
             
 
         # Titol del projecte 
-        fnt = QFont("Segoe UI Light", 18, weight=QFont.Normal)
-        self.lblTitolProjecte.setFont(fnt)
+        self.lblTitolProjecte.setFont(QvConstants.FONTTITOLS)
         self.lblTitolProjecte.setText(self.project.title())
 
 
@@ -369,6 +368,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         """
 
         self.qvSv = QvStreetView(self.canvas, self)
+        self.canvas.setStreetView(self.qvSv)
         self.canvas.setMapTool(self.qvSv.rp)
         # qvSv.setContentsMargins(0,0,0,0)
         self.qvSv.hide()
@@ -718,8 +718,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.canvas.setLlegenda(self.llegenda)
         self.layoutFrameLlegenda.setContentsMargins ( 5, 13, 5, 0 )
         self.llegenda.setStyleSheet("QvLlegenda {color: #38474f; background-color: #DDDDDD; border: 0px solid red;}")
-        fnt = QFont("Segoe UI", 12, weight=QFont.Normal)
-        self.llegenda.setFont(fnt)
+        self.llegenda.setFont(QvConstants.FONTTEXT)
         self.layoutFrameLlegenda.addWidget(self.llegenda)
         self.llegenda.accions.afegirAccio('Propietats de capa', self.actPropietatsLayer)
 
@@ -797,11 +796,10 @@ class QVista(QMainWindow, Ui_MainWindow):
     #         retval = msg.exec_()
         
     def preparacioEntorns(self):
-        self.menuEntorns = self.bar.addMenu(3*' '+'Entorns'+3*' ')
+        self.menuEntorns = self.bar.addMenu('Entorns')
         
-        fnt = QFont("Segoe UI", 16, weight=QFont.Normal)
-        self.menuEntorns.setStyleSheet("QMenu {color: #465A63; background-color: #dddddd; selection-background-color : #38474f;}")                           
-        self.menuEntorns.setFont(fnt)
+        # self.menuEntorns.setStyleSheet("QMenu {color: #465A63; background-color: #dddddd; selection-background-color : #38474f;}")                           
+        self.menuEntorns.setFont(QvConstants.FONTSUBTITOLS)
         self.menuEntorns.styleStrategy = QFont.PreferAntialias or QFont.PreferQuality
         for entorn in os.listdir(os.path.dirname('entorns/')):          
             if entorn == '__init__.py' or entorn[-3:] != '.py':
@@ -1134,7 +1132,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.actFavorit.triggered.connect(self.favorit)
 
         #self.actCataleg = QAction(3*' '+"Catàleg"+3*' ', self)
-        self.actCataleg = QAction("Catàleg"+3*' ', self)
+        self.actCataleg = QAction("Catàleg", self)
         self.actCataleg.setStatusTip("Catàleg")
         self.actCataleg.triggered.connect(self.obrirCatalegProjectesLlista)
         
@@ -1431,7 +1429,6 @@ class QVista(QMainWindow, Ui_MainWindow):
         """
 
 
-        fnt = QFont("Segoe UI Light", 18, weight=QFont.Light)
         lblLogoQVista = QLabel()
         lblLogoQVista.setMaximumHeight(40)
         lblLogoQVista.setMinimumHeight(40)
@@ -1459,7 +1456,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         menubar=QvMenuBar(self)
         self.setMenuBar(menubar)
         self.bar = self.menuBar()
-        self.bar.setFont(fnt)
+        self.bar.setFont(QvConstants.FONTTITOLS)
         self.bar.setCornerWidget(lblLogoQVista,Qt.TopLeftCorner)
 
         # self._menuBarShadow = QGraphicsDropShadowEffect()
@@ -1552,16 +1549,15 @@ class QVista(QMainWindow, Ui_MainWindow):
         spacer = QSpacerItem(9999, 9999, QSizePolicy.Expanding,QSizePolicy.Maximum)
         
         self.bar.addAction(self.actCataleg)
-        self.menuProjectes = self.bar.addMenu ("      Mapes      ")
+        self.menuProjectes = self.bar.addMenu ("Mapes")
         # self.menuFuncions = self.bar.addMenu("  Eines  ")
         self.menuFuncions = QMenu()
         # self.menuFuncions.setStyleSheet('QMenu {')
         # self.menuCarregarNivell = self.bar.addMenu("  Finestres  ")
         # catalegMenu = self.bar.addMenu("                   Catàleg  ")
 
-        fnt= QFont("Segoe UI", 16, weight=QFont.Normal)
-        self.menuProjectes.setStyleSheet("QMenu {color: #465A63; background-color: #dddddd; selection-background-color : #38474f;}")
-        self.menuProjectes.setFont(fnt)
+        # self.menuProjectes.setStyleSheet("QMenu {color: #465A63; background-color: #dddddd; selection-background-color : #38474f;}")
+        self.menuProjectes.setFont(QvConstants.FONTSUBTITOLS)
         self.menuProjectes.styleStrategy = QFont.PreferAntialias or QFont.PreferQuality
         self.menuProjectes.addAction(self.actObrirProjecte)
         self.menuProjectes.addAction(self.actGuardarProjecte)
@@ -1580,7 +1576,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         
         #self.menuFuncions.setStyleSheet("QMenu {color: #465A63 background-color: #dddddc; selection-background-color : #79909B;}")
         
-        self.menuFuncions.setFont(fnt)
+        self.menuFuncions.setFont(QvConstants.FONTSUBTITOLS)
         self.menuFuncions.addAction(self.actEsborrarSeleccio)
         self.menuFuncions.addAction(self.actSeleccioLliure)
         self.menuFuncions.addAction(self.actSeleccioClick)
@@ -1796,9 +1792,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.wCataleg.ui.treeCataleg.resize(640, 480)
         self.wCataleg.ui.treeCataleg.adjustSize()
         self.wCataleg.ui.treeCataleg.setHeaderHidden(True)
-        fnt=QFont()
-        fnt.setPixelSize(12)
-        self.wCataleg.ui.treeCataleg.setFont(fnt)
+        self.wCataleg.ui.treeCataleg.setFont(QvConstants.FONTTEXT)
 
     def catalegProjectesLlista(self):
         self.qModelProjectesLlista = QFileSystemModel()
@@ -1821,9 +1815,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.wCatalegProjectesLlista.ui.treeCataleg.resize(640, 480)
         self.wCatalegProjectesLlista.ui.treeCataleg.adjustSize()
         self.wCatalegProjectesLlista.ui.treeCataleg.setHeaderHidden(True)
-        fnt=QFont()
-        fnt = QFont("Segoe UI", 12, weight=QFont.Normal)
-        self.wCatalegProjectesLlista.ui.treeCataleg.setFont(fnt)
+        self.wCatalegProjectesLlista.ui.treeCataleg.setFont(QvConstants.FONTTEXT)
 
     def infoQVista(self):
         self.informacio = QDialog()
@@ -1843,7 +1835,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         layer_settings  = QgsPalLayerSettings()
         text_format = QgsTextFormat()
 
-        text_format.setFont(QFont("Arial", 10))
+        text_format.setFont(QvConstants.FONTTEXT)
         text_format.setSize(12)
 
         buffer_settings = QgsTextBufferSettings()
@@ -1893,8 +1885,7 @@ class QVista(QMainWindow, Ui_MainWindow):
 
     def crearMenuCapa(self):
         menu = QMenu()
-        # fnt = QFont("Segoe UI Light", 16, weight=QFont.Light)
-        menu.setFont(fnt)
+        menu.setFont(QvConstants.FONTSUBTITOLS)
         menu.addAction('Nom Capa', self.nomCapa)
         menu.addAction('Extensió Capa', self.extCapa)
         menu.addAction('Esborrar Capa', self.esborrarCapa)
@@ -2309,37 +2300,39 @@ class QVista(QMainWindow, Ui_MainWindow):
 
     def pavimentacio(self): 
         self.project.read('d:/qVista/Dades/CatalegProjectes/Vialitat/PavimentacioDemo.qgs')       
-        fnt = QFont("Segoe UI", 20, weight=QFont.Normal)
-        self.lblTitolProjecte.setFont(fnt)
+        self.lblTitolProjecte.setFont(QvConstants.FONTTITOLS)
         self.lblTitolProjecte.setText(self.project.title())
         self.dwPavim = DockPavim(self)
         self.addDockWidget( Qt.RightDockWidgetArea, self.dwPavim)
         self.dwPavim.show()    
         
     def marxesCiutat(self): 
-        self.project.read('d:/MarxesCiutat/MarxesCiutat.qgs')       
-        fnt = QFont("Segoe UI", 20, weight=QFont.Normal)
-        self.lblTitolProjecte.setFont(fnt)
+        self.project.read('d:/MarxesCiutat/MarxesCiutat.qgs')      
+        self.lblTitolProjecte.setFont(QvConstants.FONTTITOLS)
         # self.lblTitolProjecte.setText(self.project.title())
         self.lblTitolProjecte.setText("Marxes exploratòries")
         self.dwMarxes = MarxesCiutat(self)
         self.addDockWidget( Qt.RightDockWidgetArea, self.dwMarxes)
         self.dwMarxes.show()    
-    def mousePressEvent(self, event):
-        self.oldPos = event.globalPos()
+    # def mousePressEvent(self, event):
+    #     super().mouseMoveEvent(event)
+    #     if event.button()==Qt.LeftButton:
+    #         self.oldPos = event.globalPos()
 
-    def mouseMoveEvent(self, event):
-        if self.maximitzada:
-            self.restaurarFunc()
-            #Desmaximitzar
-        delta = QPoint(event.globalPos() - self.oldPos)
-        # print(delta)
-        self.move(self.x() + delta.x(), self.y() + delta.y())
-        self.oldPos = event.globalPos()
-    def mouseDoubleClickEvent(self,event):
-        super().mouseDoubleClickEvent(event)
-        if event.button()==Qt.LeftButton:
-            self.restaurarFunc()
+    # def mouseMoveEvent(self, event):
+    #     super().mouseMoveEvent(event)
+    #     if event.buttons() & Qt.LeftButton:
+    #         if self.maximitzada:
+    #             self.restaurarFunc()
+    #             #Desmaximitzar
+    #         delta = QPoint(event.globalPos() - self.oldPos)
+    #         # print(delta)
+    #         self.move(self.x() + delta.x(), self.y() + delta.y())
+    #         self.oldPos = event.globalPos()
+    # def mouseDoubleClickEvent(self,event):
+    #     super().mouseDoubleClickEvent(event)
+    #     if event.button()==Qt.LeftButton:
+    #         self.restaurarFunc()
     # def enterEvent(self,event):
     #     super().enterEvent(event)
     #     qApp.setCursor(QCursor(Qt.ArrowCursor))
