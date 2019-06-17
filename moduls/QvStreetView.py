@@ -160,6 +160,7 @@ class PointTool(QgsMapTool):
         self.parent.m.setPenWidth(3)
         self.parent.m.show()
         self.parent.boto.move(8, 713)
+        self.parent.boto.hide()
         self.moureBoto = False
         self.parent.boto.hide()
 
@@ -183,7 +184,8 @@ class QvStreetView(QWidget):
         self.icon=QIcon('imatges/littleMan.png')
         self.boto.setIcon(self.icon)
         self.boto.clicked.connect(self.segueixBoto)
-        # self.boto.setGeometry(8,713,25,25)
+        self.boto.setGeometry(8,713,25,25)
+        self.boto.hide()
         self.boto.setIconSize(QSize(25,25))
         self.boto.hide()
         
@@ -227,7 +229,7 @@ class QvStreetView(QWidget):
             qbrowser.browser.setUrl(QUrl(self.parent.urlStreetView))
             
             self.show()
-            
+            self.boto.hide()
             self.parent.show()
         except:
             pass        

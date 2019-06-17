@@ -148,18 +148,27 @@ class QvCarregaCsvPage(QWizardPage):
 
         self.setContentsMargins(0, 0, 0, 0)
 
-    def mostraTaula(self, completa=False):
+    def mostraTaula(self, completa=False, guardar = False):
         '''Mostra la taula provisional que està carregant
         Keyword Arguments:
             completa{bool} -- Indica si volem mostrar la taula completa.
                 Si és false, mostra una previsualització de 10 elements 
                 (default: {False})
         '''
-        self.table = QvLectorCsv(
-            self.parent.csv, self.parent.separador, completa, self)
+        self.table = QvtLectorCsv(self.parent.csv, self.parent.separador, completa, guardar, self)
         self.layoutTable = QVBoxLayout()
         self.layout.addLayout(self.layoutTable)
         self.layoutTable.addWidget(self.table)
+        if guardar:
+            #self.layout.setSpacing(0)
+            self.table.setMinimumHeight(120)
+            self.bGuardar = QvPushButton("Guardar CCSV")
+            self.bGuardar.clicked.connect(self.table.writeCsv)
+            self.layoutB = QVBoxLayout()
+            self.layoutB.setAlignment(Qt.AlignCenter)
+            self.layoutB.addWidget(self.bGuardar)
+            self.layoutTable.addLayout(self.layoutB)
+            
 
     def recarregaTaula(self, completa=False):
         self.table = QvLectorCsv(
@@ -226,6 +235,8 @@ class QvCarregaCsvTriaSep(QvCarregaCsvPage):
         self.layoutCheckButton.addStretch(1)
         print(parent.csv)
         self.parent.setSeparador(infereixSeparadorRegex(open(parent.csv)))
+        if not isinstance(self.parent.setSeparador, str):
+            self.parent.setSeparador(';')
         self.mostraTaula()
 
         def botoClickat(boto):
@@ -496,6 +507,7 @@ class QvCarregaCsvAdreca(QvCarregaCsvPage):
 class WindowProgressBar(QWidget):
     def __init__(self, mida, parent=None):
         super().__init__(parent)
+        self.setWindowTitle("Progrés")
         self.progress = QProgressBar()
         self.progress.setGeometry(0, 0, 300, 25)
         self.mida = mida + 1
@@ -533,8 +545,8 @@ class QvCarregaCsvGeneraCoords(QvCarregaCsvPage):
         self.lblAdrecesError.setStyleSheet('color: red')
         # self.lblAdrecesError.setFixedHeight(100)
         self.layout = QVBoxLayout(self)
-        self.layout.setSpacing(20)
-        self.layout.setContentsMargins(20, 0, 20, 0)
+        self.layout.setSpacing(12)
+        self.layout.setContentsMargins(20,0,20,0)
         self.lblExplicacio4 = QLabel()
         self.lblExplicacio4.setText(
             "Aquestes són les adreces que no s'han pogut geolocalitzar:")
@@ -546,7 +558,7 @@ class QvCarregaCsvGeneraCoords(QvCarregaCsvPage):
         self.scrollErrors.setWidget(self.lblAdrecesError)
         self.layout.addWidget(self.scrollErrors)
         # Després de generar el csv amb coordenades no hi ha volta enrere
-        # self.setCommitPage(True)
+        self.setCommitPage(True)
         self.showed = False
         # self.mostraTaula()
         self.lblExplicacio5 = QLabel()
@@ -602,34 +614,76 @@ class QvCarregaCsvGeneraCoords(QvCarregaCsvPage):
             for row in reader:
                 error = False
                 i += 1
-                if i == 0:
-                    continue
-                # print(wpg.count)
                 d = {**row}
+                if i == 0:
+                    d[self.parent.coordX] = self.parent.coordX
+                    d[self.parent.coordY] = self.parent.coordY
+                    writer.writerow(d)
+                    continue
                 d[''] = ''
-                if self.parent.dadesAdreca[0] == "":
-                    try:
-                        tipusVia, nomVia, num = splitCarrer(
-                            row[self.parent.dadesAdreca[1]])
-                    except:
-                        error = True
-                        print(row)
-                        print(row[self.parent.dadesAdreca[1]])
-                        print(tipusVia, nomVia, num)
 
+                if self.parent.dadesAdreca[0] == "": 
+                    tipusVia = ""
                 else:
                     tipusVia = row[self.parent.dadesAdreca[0]]
-                    nomVia = row[self.parent.dadesAdreca[1]]
-                    num = row[self.parent.dadesAdreca[2]]
-                    num = re.sub('[^0-9][0-9]*', '', num)
-                if error or nomVia == '':
-                    x, y = None, None
-                    tipusVia, nomVia, num = '', row[self.parent.dadesAdreca[1]], ''
-                elif num != '':
-                    x, y = QvGeocod.coordsCarrerNum(tipusVia, nomVia, num)
+                nomVia = row[self.parent.dadesAdreca[1]]
+                if self.parent.dadesAdreca[2] == "": 
+                    numI = "" 
                 else:
-                    x, y = QvGeocod.coordsCarrerNum(
-                        tipusVia, nomVia, d[self.parent.dadesAdreca[2]], d[self.parent.dadesAdreca[3]], d[self.parent.dadesAdreca[4]], d[self.parent.dadesAdreca[5]])
+                    numI = row[self.parent.dadesAdreca[2]]
+                    numI = re.sub('[^0-9][0-9]*', '', numI)
+                if self.parent.dadesAdreca[3] == "":
+                    lletraI = ""
+                else:
+                    lletraI = row[self.parent.dadesAdreca[3]]
+                if self.parent.dadesAdreca[4] == "": 
+                    numF = "" 
+                else:
+                    numF = row[self.parent.dadesAdreca[4]]
+                    numF = re.sub('[^0-9][0-9]*', '', numF)
+                if self.parent.dadesAdreca[5] == "":
+                    lletraF = ""
+                else:
+                    lletraF = row[self.parent.dadesAdreca[5]]
+
+
+                if self.parent.dadesAdreca[0] == "" and self.parent.dadesAdreca[2] == "":
+                    try:
+                        tipusVia, nomVia, numI = splitCarrer(row[self.parent.dadesAdreca[1]])
+                    except:
+                        error=True
+
+
+                elif self.parent.dadesAdreca[0] == "" and self.parent.dadesAdreca[2] != "":
+                    try:
+                        tipusVia, nomVia, numIaux = splitCarrer(row[self.parent.dadesAdreca[1]])
+                    except:
+                        error=True
+
+                elif self.parent.dadesAdreca[0] != "" and self.parent.dadesAdreca[2] == "":
+                    try:
+                        tipusViaaux, nomVia, numI = splitCarrer(row[self.parent.dadesAdreca[1]])
+                    except:
+                        error=True
+
+                if nomVia == "":
+                    nomVia = row[self.parent.dadesAdreca[1]]  
+                x, y = QvGeocod.coordsCarrerNum(tipusVia, nomVia, numI, lletraI, numF, lletraF)
+
+                # else:
+                #     tipusVia = row[self.parent.dadesAdreca[0]]
+                #     nomVia = row[self.parent.dadesAdreca[1]]
+                #     numI = row[self.parent.dadesAdreca[2]]
+                #     numI = re.sub('[^0-9][0-9]*', '', num)
+                # if error or nomVia=='':
+                #     x, y = None, None
+                #     tipusVia, nomVia, numI = '',row[self.parent.dadesAdreca[1]],''
+                # elif numI != '':
+                #     x, y = QvGeocod.coordsCarrerNum(tipusVia, nomVia, num)
+                # else:
+                #     x, y = QvGeocod.coordsCarrerNum(
+                #         tipusVia, nomVia, d[self.parent.dadesAdreca[2]], d[self.parent.dadesAdreca[3]], d[self.parent.dadesAdreca[4]], d[self.parent.dadesAdreca[5]])
+
 
                 wpg.count = wpg.count + 1
                 wpg.actualitzaLBL()
@@ -641,11 +695,11 @@ class QvCarregaCsvGeneraCoords(QvCarregaCsvPage):
                     wpg.errors = wpg.errors + 1
                     if aux != "":
                         self.lblAdrecesError.setText(
-                            aux + "\n" + tipusVia + " " + nomVia + " " + num + ' - Fila ' + str(i))
+                            aux + "\n" + tipusVia + " " + nomVia + " " + numI + ' - Fila ' + str(i))
                     else:
                         self.lblAdrecesError.setText(
-                            tipusVia + " " + nomVia + " " + num + ' - Fila ' + str(i))
-                    print(tipusVia, nomVia, num)
+                            tipusVia + " " + nomVia + " " + numI + ' - Fila ' + str(i))
+                    print(tipusVia, nomVia, numI)
                     d[self.parent.coordX] = ""
                     d[self.parent.coordY] = ""
                     del d[""]
@@ -657,12 +711,13 @@ class QvCarregaCsvGeneraCoords(QvCarregaCsvPage):
                 # print(d)
                 del d[""]
                 writer.writerow(d)
-        self.mostraTaula(completa=True)
+        self.mostraTaula(completa=True, guardar = True)
         self.recarregaTaula(completa=True)
         qApp.processEvents()
         self.layout.addWidget(self.lblExplicacio5)
 
     def nextId(self):
+        self.resize(500,500)
         return QvCarregaCsv.finestres.Personalitza
 
 
@@ -807,47 +862,49 @@ class QvCarregaCsvPersonalitza(QvCarregaCsvPage):
         return -1
 
 
-# class QvtLectorCsv(QvLectorCsv):
-#     def __init__(self, fileName='', separador=None, completa=False, parent=None):
-#         super().__init__(fileName)
-#         self.separador = separador
-#         if self.separador is not None:
-#             self.carregaCsv(self.fileName, self.separador, completa)
+class QvtLectorCsv(QvLectorCsv):
+    def __init__(self, fileName='', separador=None, completa=False, guardar=False, parent=None):
+        super().__init__(fileName, guardar)
+        self.separador = separador
+        if self.separador is not None:
+            self.carregaCsv(self.fileName, self.separador, completa)
 
-#     def carregaCsv(self, fileName, separador=None, completa=False):
-#         from PyQt5 import QtGui
-#         if separador is None:
-#             super().carregaCsv(fileName)
-#             return
-#         if fileName:
-#             f = open(fileName, 'r')
-#             with f:
-#                 self.fname = os.path.splitext(str(fileName))[0].split("/")[-1]
-#                 self.setWindowTitle(self.fname)
-#                 reader = csv.reader(f, delimiter=separador)
-#                 self.model.clear()
-#                 i = 0
-#                 for row in reader:
-#                     if not completa and i > 9:
-#                         break  # Per agilitzar la càrrega, només ens cal una preview petita
-#                     items = [QtGui.QStandardItem(field) for field in row]
+    def carregaCsv(self, fileName, separador=None, completa=False):
+        from PyQt5 import QtGui
+        if separador is None:
+            super().carregaCsv(fileName)
+            return
+        if fileName:
+            f = open(fileName, 'r')
+            with f:
+                self.fname = os.path.splitext(str(fileName))[0].split("/")[-1]
+                self.setWindowTitle(self.fname)
+                if not isinstance(separador, str):
+                    separador = ';'
+                reader = csv.reader(f, delimiter=separador)
+                self.model.clear()
+                i = 0
+                for row in reader:
+                    if not completa and i > 9:
+                        break  # Per agilitzar la càrrega, només ens cal una preview petita
+                    items = [QtGui.QStandardItem(field) for field in row]
+                    
+                    if (i==0): 
+                        self.model.setHorizontalHeaderLabels([x.text() for x in items])
+                    else:
+                        self.model.appendRow(items)
+                    i += 1
+                self.tableView.resizeColumnsToContents()
 
-#                     if (i==0):
-#                         self.model.setHorizontalHeaderLabels([x.text() for x in items])
-#                     else:
-#                         self.model.appendRow(items)
-#                     i += 1
-#                 self.tableView.resizeColumnsToContents()
+    def recarrega(self, separador):
+        self.separador = separador
+        self.carregaCsv(self.fileName, self.separador)
 
-#     def recarrega(self, separador):
-#         self.separador = separador
-#         self.carregaCsv(self.fileName, self.separador)
+    def verticalScrollBar(self):
+        return self.tableView.verticalScrollBar()
 
-#     def verticalScrollBar(self):
-#         return self.tableView.verticalScrollBar()
-
-#     def horizontalScrollBar(self):
-#         return self.tableView.horizontalScrollBar()
+    def horizontalScrollBar(self):
+        return self.tableView.horizontalScrollBar()
 
 
 def infereixSeparadorRegex(arxiu):

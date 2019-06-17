@@ -137,7 +137,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.preparacioLlegenda()
         self.preparacioArbreDistrictes()
         self.preparacioCataleg()
-        self.preparacioStreetView()     #fa el qvSv. necessita el canvas
+       
         # self.preparacioMapTips()
         self.preparacioImpressio()
         # self.preparacioGrafiques()
@@ -387,6 +387,9 @@ class QVista(QMainWindow, Ui_MainWindow):
         llistaBotons = ['streetview','apuntar', 'zoomIn', 'zoomOut', 'panning', 'centrar']
         
         self.canvas = QvCanvas(llistaBotons=llistaBotons, posicioBotonera = 'SO', botoneraHoritzontal = False, pare=self)
+
+        self.preparacioStreetView()     #fa el qvSv. necessita el canvas
+        self.canvas.bstreetview.clicked.connect(self.qvSv.segueixBoto)
 
         self.canvas.setCanvasColor(QColor(253,253,255))
         self.canvas.setAnnotationsVisible(True)
