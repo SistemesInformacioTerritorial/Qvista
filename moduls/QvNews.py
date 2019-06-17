@@ -133,7 +133,7 @@ class QvNewsFinestra(QDialog):
         self.lblLogo.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         self.lblCapcalera.setStyleSheet('background-color: %s; color: %s; border: 0px' % (
             QvConstants.COLORFOSCHTML, QvConstants.COLORBLANCHTML))
-        self.lblCapcalera.setFont(QvConstants.FONTTITOLS)
+        self.lblCapcalera.setFont(QvConstants.FONTCAPCALERES)
         self.lblCapcalera.setFixedHeight(40)
         self.layout.setContentsMargins(0, 0, 0, 0)
         self.layout.setSpacing(0)

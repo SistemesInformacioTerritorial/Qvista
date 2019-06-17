@@ -44,6 +44,8 @@ class QvCanvas(QgsMapCanvas):
                 except:
                     pass
         
+    def desmarcaSv(self):
+        self.bstreetview.setChecked(False)
 
     def panCanvas(self):        # MANO
         # bucle para quitar todos los cursores guardados. quiero que use el que ofrece MapTool
@@ -125,7 +127,9 @@ class QvCanvas(QgsMapCanvas):
 
     def setLlegenda(self, llegenda):
         self.llegenda = llegenda
-        
+    def setStreetView(self,streetView):
+        self.qvSv=streetView
+        self.bstreetview.clicked.connect(self.qvSv.segueixBoto)
     def _botoMapa(self,imatge = None):
         boto = QvPushButton(flat=True)
         boto.setCheckable(True)
@@ -225,7 +229,8 @@ class QvCanvas(QgsMapCanvas):
             if "streetview" in self.llistaBotons:
                 self.bstreetview = self._botoMapa('imatges/littleMan.png')
                 self.layoutBotoneraMapa.addWidget(self.bstreetview)   
-                self.bstreetview.setCursor(QvConstants.cursorFletxa())   
+                self.bstreetview.setCursor(QvConstants.cursorFletxa()) 
+                self.bstreetview.clicked.connect(self.desmarcaSv)  
                 #self.bstreetview.clicked.connect(QvStreetView.segueixBoto)
             if "panning" in self.llistaBotons:
                 self.bPanning = self._botoMapa('imatges/pan_tool_black_24x24.png')
