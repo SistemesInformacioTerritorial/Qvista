@@ -1728,7 +1728,8 @@ class QVista(QMainWindow, Ui_MainWindow):
             self.frameLlegenda.show()
             # self.frame_19.show()
             self.frame_2.show()
-            self.frame_3.show()
+            #self.frame_3.show()
+            self.frame_11.show()
             self.mapaMaxim = False
             self.dwLlegenda.hide()
             self.layoutFrameLlegenda.addWidget(self.llegenda)
@@ -1745,7 +1746,8 @@ class QVista(QMainWindow, Ui_MainWindow):
             self.frameLlegenda.hide()
             # self.frame_19.hide()
             self.frame_2.hide()
-            self.frame_3.hide()
+            # self.frame_3.hide()
+            self.frame_11.hide()
             # self.oldCentraWidget = self.centralWidget()
             # self.setCentralWidget(self.canvas)
             self.mapaMaxim = True

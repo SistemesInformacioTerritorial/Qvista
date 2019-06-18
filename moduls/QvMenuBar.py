@@ -1,4 +1,5 @@
 from moduls.QvImports import *
+from moduls.QvConstants import QvConstants
 class QvMenuBar(QMenuBar):
     def __init__(self,parent=None):
         super().__init__(parent)
@@ -23,3 +24,9 @@ class QvMenuBar(QMenuBar):
         super().mouseDoubleClickEvent(event)
         if event.button()==Qt.LeftButton:
             self.parentWidget().restaurarFunc()
+    def enterEvent(self,event):
+        super().enterEvent(event)
+        self.setCursor(QvConstants.cursorClick())
+    def leaveEvent(self,event):
+        super().leaveEvent(event)
+        self.setCursor(QvConstants.cursorFletxa())
