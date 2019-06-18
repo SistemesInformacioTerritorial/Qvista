@@ -12,6 +12,7 @@ from pathlib import Path
 import sys
 import getpass
 import uuid
+# import traceback
 import os
 import json
 
@@ -97,14 +98,6 @@ class QvApp(Singleton):
             self.gh = None
         else:
             self.gh = QvGithub(self.data(), self.github)
-
-        val = self.paramCfg('Stdout', 'False')      # Activación fichero salida
-        if val == 'True':
-            try:
-                # print(os.getcwd())
-                sys.stdout = open('../Salida.txt', 'w')
-            except Exception:
-                print('Error al redirigir stdout')
 
         self.dbLog = None
         self.queryLog = None
@@ -316,7 +309,7 @@ class QvApp(Singleton):
     def geocod(self, tipusVia, variant, codi, numIni, lletraIni='', numFi='', lletraFi=''):
         self.dbLogConnexio()
         if self.dbLog is None:
-            return None, None
+            return None, None, False
         if self.queryGeo is None:
             self.queryGeo = QSqlQuery(self.dbLog)
         try:

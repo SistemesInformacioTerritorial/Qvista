@@ -2,7 +2,6 @@
 
 from moduls.QvImports import *
 import random
-from moduls.QvPushButton import QvPushButton
 
 adreca_test = "D:/qVista_tests/Dades/Projectes/prova2.qgs"
 
@@ -172,12 +171,12 @@ with qgisapp() as app:
     stack.addWidget(widgetP1)
     stack.addWidget(widgetP2)
 
-    page = QvPushButton("Canvi Pàgina")
+    page = QPushButton("Canvi Pàgina")
     page.clicked.connect(stack.canviPagina)
 
-    page1Button = QvPushButton("Page 1")
-    page2Button = QvPushButton("Page 2")
-    page3Button = QvPushButton("Seguent Projecte")
+    page1Button = QPushButton("Page 1")
+    page2Button = QPushButton("Page 2")
+    page3Button = QPushButton("Seguent Projecte")
     page1Button.clicked.connect(stack.setPage1)
     page2Button.clicked.connect(stack.setPage2)
     page3Button.clicked.connect(seguentProjecte)

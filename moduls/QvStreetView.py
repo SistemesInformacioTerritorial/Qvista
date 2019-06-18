@@ -7,15 +7,14 @@ from qgis.core import QgsRectangle
 
 from PyQt5.QtWebKitWidgets import QWebView , QWebPage
 from PyQt5.QtWebKit import QWebSettings
-from moduls.QvPushButton import QvPushButton
 
-class BotoQvBrowser(QvPushButton):
+class BotoQvBrowser(QPushButton):
     def __init__(self):
-        super().__init__()
-        # self.setMinimumHeight(30)
-        # self.setMaximumHeight(30)
-        # self.setMinimumWidth(100)
-        # self.setMaximumWidth(100)
+        QPushButton.__init__(self)
+        self.setMinimumHeight(30)
+        self.setMaximumHeight(30)
+        self.setMinimumWidth(100)
+        self.setMaximumWidth(100)
 
 class QvBrowser(QWidget):
 
@@ -36,9 +35,7 @@ class QvBrowser(QWidget):
         self.botoneraQvBrowser = QFrame()
         self.botoneraQvBrowser.setContentsMargins(0,0,0,0)
         self.botoneraQvBrowser.setMinimumHeight(30)
-        self.botoneraQvBrowser.setMaximumHeight(45)
-        # self.botoneraQvBrowser.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
-        # self.botoneraQvBrowser.setVerticalPolicy(QSizePolicy.Minimum)
+        self.botoneraQvBrowser.setMaximumHeight(30)
 
         self.layoutBotonera = QHBoxLayout(self.botoneraQvBrowser)
         self.layoutBotonera.setContentsMargins(0,0,0,0)
@@ -159,10 +156,8 @@ class PointTool(QgsMapTool):
         self.parent.m.setIconType(QgsVertexMarker.ICON_BOX) # or ICON_CROSS, ICON_X
         self.parent.m.setPenWidth(3)
         self.parent.m.show()
-        self.parent.boto.move(8, 713)
-        self.parent.boto.hide()
+        self.parent.boto.move(40, 5)
         self.moureBoto = False
-        self.parent.boto.hide()
 
 class QvStreetView(QWidget):
     """Una classe del tipus QWidget 
@@ -180,22 +175,18 @@ class QvStreetView(QWidget):
         self.parent = parent
         self.rp = PointTool(self, self.canvas)
         self.canvas.setMapTool(self.rp)
-        self.boto = QvPushButton(parent = self.canvas, flat = True)
+        self.boto = QPushButton(self.canvas)
         self.icon=QIcon('imatges/littleMan.png')
         self.boto.setIcon(self.icon)
         self.boto.clicked.connect(self.segueixBoto)
-        self.boto.setGeometry(8,713,25,25)
-        self.boto.hide()
-        self.boto.setIconSize(QSize(25,25))
-        self.boto.hide()
+        self.boto.setGeometry(40,5,25,25)
+        self.boto.setIconSize(QSize(20,20))
         
 
         self.setupUI()
         # self.canvas.xyCoordinates.connect(self.mocMouse)
-    def getBoto(self):
-        return self.boto
+
     def segueixBoto(self):
-        self.boto.show()
         self.canvas.setMapTool(self.rp)
         self.rp.moureBoto = True
 
@@ -205,10 +196,12 @@ class QvStreetView(QWidget):
         self.layoutH.setSpacing(0)
         self.setLayout(self.layoutH)
 
+
         self.qbrowser = QvBrowser(self)
         self.qbrowser.show()
 
         self.layoutH.addWidget(self.qbrowser)
+
 
 
     def llevame_old(self,xx,yy):
@@ -229,7 +222,7 @@ class QvStreetView(QWidget):
             qbrowser.browser.setUrl(QUrl(self.parent.urlStreetView))
             
             self.show()
-            self.boto.hide()
+            
             self.parent.show()
         except:
             pass        
