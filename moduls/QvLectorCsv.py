@@ -12,7 +12,7 @@ from moduls.QvPushButton import QvPushButton
 
 
 class QvLectorCsv(QtWidgets.QWidget):
-   def __init__(self, fileName= "", parent=None, guardar = False):
+    def __init__(self, fileName= "", parent=None, guardar = False):
        QtWidgets.QWidget.__init__(self)
        self.setContentsMargins(0,0,0,0)
        self.fileName = fileName
@@ -43,7 +43,7 @@ class QvLectorCsv(QtWidgets.QWidget):
        self.tableView.resizeColumnsToContents()
        self.carregaCsv(self.fileName)
  
-   def loadCsv(self, fileName):
+    def loadCsv(self, fileName):
        fileName, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Open CSV",
                (QtCore.QDir.homePath()), "CSV (*.csv *.tsv)")
  
@@ -72,7 +72,7 @@ class QvLectorCsv(QtWidgets.QWidget):
                        self.model.appendRow(items)
                    self.tableView.resizeColumnsToContents()
  
-   def carregaCsv(self, fileName):
+    def carregaCsv(self, fileName):
 
        if fileName:
            print(fileName)
@@ -99,7 +99,7 @@ class QvLectorCsv(QtWidgets.QWidget):
                        self.model.appendRow(items)
                    self.tableView.resizeColumnsToContents()
  
-   def writeCsv(self, fileName):
+    def writeCsv(self, fileName):
        # find empty cells
        for row in range(self.model.rowCount()):
            for column in range(self.model.columnCount()):
@@ -121,18 +121,18 @@ class QvLectorCsv(QtWidgets.QWidget):
                self.fname = os.path.splitext(str(fileName))[0].split("/")[-1]
                self.setWindowTitle(self.fname)
  
-   def handlePrint(self):
+    def handlePrint(self):
        dialog = QtPrintSupport.QPrintDialog()
        if dialog.exec_() == QtWidgets.QDialog.Accepted:
            self.handlePaintRequest(dialog.printer())
  
-   def handlePreview(self):
+    def handlePreview(self):
        dialog = QtPrintSupport.QPrintPreviewDialog()
        dialog.setFixedSize(1000,700)
        dialog.paintRequested.connect(self.handlePaintRequest)
        dialog.exec_()
  
-   def handlePaintRequest(self, printer):
+    def handlePaintRequest(self, printer):
        # find empty cells
        for row in range(self.model.rowCount()):
            for column in range(self.model.columnCount()):
@@ -151,80 +151,68 @@ class QvLectorCsv(QtWidgets.QWidget):
                cursor.movePosition(QtGui.QTextCursor.NextCell)
        document.print_(printer)
  
-   def removeRow(self):
+    def removeRow(self):
        model = self.model
        indices = self.tableView.selectionModel().selectedRows() 
        for index in sorted(indices):
            model.removeRow(index.row()) 
  
-   def addRow(self):
+    def addRow(self):
        item = QtGui.QStandardItem("")
        self.model.appendRow(item)
  
-   def clearList(self):
+    def clearList(self):
        self.model.clear()
  
-   def removeColumn(self):
+    def removeColumn(self):
        model = self.model
        indices = self.tableView.selectionModel().selectedColumns() 
        for index in sorted(indices):
            model.removeColumn(index.column()) 
  
-   def addColumn(self):
+    def addColumn(self):
        count = self.model.columnCount()
        print (count)
        self.model.setColumnCount(count + 1)
        self.model.setData(self.model.index(0, count), "", 0)
        self.tableView.resizeColumnsToContents()
  
-   def finishedEdit(self):
-       self.tableView.resizeColumnsToContents()
+    def finishedEdit(self):
+        self.tableView.resizeColumnsToContents()
  
-   def contextMenuEvent(self, event):
-       self.menu = QtWidgets.QMenu(self)
-       # copy
-       copyAction = QtWidgets.QAction('Copy', self)
-       copyAction.triggered.connect(lambda: self.copyByContext(event))
-       # paste
-       pasteAction = QtWidgets.QAction('Paste', self)
-       pasteAction.triggered.connect(lambda: self.pasteByContext(event))
-       # cut
-       cutAction = QtWidgets.QAction('Cut', self)
-       cutAction.triggered.connect(lambda: self.cutByContext(event))
-       # delete selected Row
-       removeAction = QtWidgets.QAction('delete Row', self)
-       removeAction.triggered.connect(lambda: self.deleteRowByContext(event))
-       # add Row after
-       addAction = QtWidgets.QAction('insert new Row after', self)
-       addAction.triggered.connect(lambda: self.addRowByContext(event))
-       # add Row before
-       addAction2 = QtWidgets.QAction('insert new Row before', self)
-       addAction2.triggered.connect(lambda: self.addRowByContext2(event))
-       # add Column before
-       addColumnBeforeAction = QtWidgets.QAction('insert new Column before', self)
-       addColumnBeforeAction.triggered.connect(lambda: self.addColumnBeforeByContext(event))
-       # add Column after
-       addColumnAfterAction = QtWidgets.QAction('insert new Column after', self)
-       addColumnAfterAction.triggered.connect(lambda: self.addColumnAfterByContext(event))
-       # delete Column
-       deleteColumnAction = QtWidgets.QAction('delete Column', self)
-       deleteColumnAction.triggered.connect(lambda: self.deleteColumnByContext(event))
-       # add other required actions
-
-    #    self.menu.addAction(copyAction)
-    #    self.menu.addAction(pasteAction)
-    #    self.menu.addAction(cutAction)
-    #    self.menu.addSeparator()
-    #    self.menu.addAction(addAction)
-    #    self.menu.addAction(addAction2)
-    #    self.menu.addSeparator()
-    #    self.menu.addAction(addColumnBeforeAction)
-    #    self.menu.addAction(addColumnAfterAction)
-    #    self.menu.addSeparator()
-    #    self.menu.addAction(removeAction)
+    def contextMenuEvent(self, event):
+        self.menu = QtWidgets.QMenu(self)
+        # copy
+        copyAction = QtWidgets.QAction('Copy', self)
+        copyAction.triggered.connect(lambda: self.copyByContext(event))
+        # paste
+        pasteAction = QtWidgets.QAction('Paste', self)
+        pasteAction.triggered.connect(lambda: self.pasteByContext(event))
+        # cut
+        cutAction = QtWidgets.QAction('Cut', self)
+        cutAction.triggered.connect(lambda: self.cutByContext(event))
+        # delete selected Row
+        removeAction = QtWidgets.QAction('delete Row', self)
+        removeAction.triggered.connect(lambda: self.deleteRowByContext(event))
+        # add Row after
+        addAction = QtWidgets.QAction('insert new Row after', self)
+        addAction.triggered.connect(lambda: self.addRowByContext(event))
+        # add Row before
+        addAction2 = QtWidgets.QAction('insert new Row before', self)
+        addAction2.triggered.connect(lambda: self.addRowByContext2(event))
+        # add Column before
+        addColumnBeforeAction = QtWidgets.QAction('insert new Column before', self)
+        addColumnBeforeAction.triggered.connect(lambda: self.addColumnBeforeByContext(event))
+        # add Column after
+        addColumnAfterAction = QtWidgets.QAction('insert new Column after', self)
+        addColumnAfterAction.triggered.connect(lambda: self.addColumnAfterByContext(event))
+        # delete Column
+        deleteColumnAction = QtWidgets.QAction('delete Column', self)
+        deleteColumnAction.triggered.connect(lambda: self.deleteColumnByContext(event))
+        # add other required actions
         self.menu.addAction(deleteColumnAction)
         self.menu.popup(QtGui.QCursor.pos())
-
+        
     def deleteRowByContext(self, event):
         for i in self.tableView.selectionModel().selection().indexes():
             row = i.row()
