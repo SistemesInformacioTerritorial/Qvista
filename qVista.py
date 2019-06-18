@@ -1467,7 +1467,8 @@ class QVista(QMainWindow, Ui_MainWindow):
         
         self._menuBarShadow=QvConstants.afegeixOmbraHeader(self.bar)
 
-        self.bar.setFixedHeight(40)
+        # self.bar.setFixedHeight(40)
+        self.bar.setMinimumHeight(40)
         self.fMaxim = QFrame()
         self.lytBotonsFinestra = QHBoxLayout(self.fMaxim)
         self.fMaxim.setLayout(self.lytBotonsFinestra)
