@@ -1,6 +1,5 @@
 from moduls.QvImports import *
 from moduls.QvPDF import QvPDF
-from moduls.QvPushButton import QvPushButton
 
 class MarxesCiutat(QDockWidget):
     def __init__(self, parent):
@@ -17,19 +16,19 @@ class MarxesCiutat(QDockWidget):
         self.setMaximumWidth(500)
         self.setMinimumWidth(500)
 
-        bMarxes = QvPushButton('Resum operatiu',flat=True)
+        bMarxes = QPushButton('Resum operatiu')
         lytMarxes.addWidget(bMarxes)
         spacer = QSpacerItem(50, 50, QSizePolicy.Expanding,QSizePolicy.Maximum)
         lytMarxes.addItem(spacer)
-        bMarxes1 = QvPushButton('El Coll', flat=True)
-        bMarxes2 = QvPushButton('La Salut', flat=True)
-        bMarxes3 = QvPushButton('el Besós i el Maresme', flat=True)
-        bMarxes4 = QvPushButton('el Bon pastor', flat=True)
-        bMarxes5 = QvPushButton('la Trinitat Nova', flat=True)
-        bMarxes6 = QvPushButton('la Trinitat Vella', flat=True)
-        bMarxes7 = QvPushButton('la Vila de Gràcia', flat=True)
-        bMarxes8 = QvPushButton('Vallcarca', flat=True)
-        bMarxes9 = QvPushButton('la Marina del Prat vermell', flat=True)
+        bMarxes1 = QPushButton('El Coll')
+        bMarxes2 = QPushButton('La Salut')
+        bMarxes3 = QPushButton('el Besós i el Maresme')
+        bMarxes4 = QPushButton('el Bon pastor')
+        bMarxes5 = QPushButton('la Trinitat Nova')
+        bMarxes6 = QPushButton('la Trinitat Vella')
+        bMarxes7 = QPushButton('la Vila de Gràcia')
+        bMarxes8 = QPushButton('Vallcarca')
+        bMarxes9 = QPushButton('la Marina del Prat vermell')
         lytMarxes.addWidget(bMarxes1)
         lytMarxes.addWidget(bMarxes2)
         lytMarxes.addWidget(bMarxes3)

@@ -7,12 +7,7 @@ from qgis.gui import QgsMapCanvas, QgsMapToolZoom, QgsMapToolPan
 from qgis.PyQt.QtWidgets import QFrame, QVBoxLayout, QHBoxLayout, QPushButton, QSpacerItem, QSizePolicy
 from qgis.PyQt.QtGui import QIcon, QPainter, QCursor,QPixmap, QKeyEvent
 from moduls.QvApp import QvApp
-from moduls.QvImports  import *
 from qgis.core.contextmanagers import qgisapp
-from moduls.QvConstants import QvConstants
-from moduls.QvPushButton import QvPushButton
-from moduls.QvStreetView import *
-#from qVista import QVista
 
 
 
@@ -24,7 +19,6 @@ class QvCanvas(QgsMapCanvas):
         self.posicioBotonera = posicioBotonera
         self.llegenda = llegenda
         self.pare = pare
-       
         
         # self.setWhatsThis(QvApp().carregaAjuda(self))
 
@@ -43,6 +37,7 @@ class QvCanvas(QgsMapCanvas):
                     self.tool.fitxaAtributs.close()
                 except:
                     pass
+        
 
     def panCanvas(self):        # MANO
         # bucle para quitar todos los cursores guardados. quiero que use el que ofrece MapTool
@@ -63,9 +58,6 @@ class QvCanvas(QgsMapCanvas):
         else: 
             self.bPanning.setChecked(True)
 
-    def amagaStreetView(self):
-        self.bstreetview.setChecked(False)
-
     def centrarMapa(self):
         if self.bCentrar.isChecked():
             self.zoomToFullExtent()
@@ -84,7 +76,7 @@ class QvCanvas(QgsMapCanvas):
             self.setMapTool(self.tool_zoomin)
         else: 
             self.bZoomIn.setChecked(True)
-        self.setCursor(QvConstants.cursorZoomIn())
+        self.setCursor(QCursor(QPixmap('imatges/zoom_in.cur')))
 
     def zoomOut(self):
         if self.bZoomOut.isChecked():
@@ -98,7 +90,7 @@ class QvCanvas(QgsMapCanvas):
         else: 
             self.bZoomOut.setChecked(True)
 
-        self.setCursor(QvConstants.cursorZoomOut())
+        self.setCursor(QCursor(QPixmap('imatges/zoom_out.cur')))
 
     def seleccioClick(self):
         if  self.bApuntar.isChecked():
@@ -122,20 +114,17 @@ class QvCanvas(QgsMapCanvas):
         else:
             self.bApuntar.setChecked(True)
         
-        self.setCursor(QvConstants.cursorDit())
+        self.setCursor(QCursor(QPixmap('imatges/dedo.cur')))
 
 
     def setLlegenda(self, llegenda):
         self.llegenda = llegenda
-    def setStreetView(self,streetView):
-        self.qvSv=streetView
-        self.bstreetview.clicked.connect(self.qvSv.segueixBoto)
-    def _botoMapa(self,imatge = None):
-        boto = QvPushButton(flat=True)
+        
+    def _botoMapa(self,imatge):
+        boto = QPushButton()
         boto.setCheckable(True)
-        if imatge is not None:
-            icon=QIcon(imatge)
-            boto.setIcon(icon)
+        icon=QIcon(imatge)
+        boto.setIcon(icon)
         boto.setWindowOpacity(0.5)
         boto.setIconSize(QSize(25,25))
         boto.setGeometry(0,0,25,25)
@@ -143,12 +132,12 @@ class QvCanvas(QgsMapCanvas):
 
     def _preparacioBotonsCanvas(self):
         self.botoneraMapa = QFrame()
-        #self.botoneraMapa.setStyleSheet("QFrame {background-color: #ffffff;}")
+        # self.botoneraMapa.setStyleSheet("QFrame {background-color: #ffffff;}")
 
-        #self.botoneraMapa.move(90,20)#nofares
+        # self.botoneraMapa.move(10,10)
 
-        #self.botoneraMapa.setFrameShape(QFrame.StyledPanel)
-        #self.botoneraMapa.setFrameShadow(QFrame.Raised)
+        # self.botoneraMapa.setFrameShape(QFrame.StyledPanel)
+        # self.botoneraMapa.setFrameShadow(QFrame.Raised)
 
         if self.botoneraHoritzontal:
             self.layoutCanvas = QVBoxLayout(self)
@@ -180,17 +169,8 @@ class QvCanvas(QgsMapCanvas):
         if self.posicioBotonera == 'NO':
             if self.botoneraHoritzontal:
                 self.layoutBotoneraMapa.setAlignment(Qt.AlignLeft)
-                self.offsetEsq = QLabel()
-                self.offsetEsq.setFixedWidth(8)
-                self.offsetUp = QLabel()
-                self.offsetUp.setFixedHeight(8)
-                self.layoutBotoneraMapa.addWidget(self.offsetEsq)
-                self.layoutCanvas.addWidget(self.offsetUp)
                 self.layoutCanvas.addWidget(self.botoneraMapa)  
                 self.layoutCanvas.addSpacerItem(spacer)   
-                #self.layoutBotoneraMapa.setAlignment(Qt.AlignLeft)
-                #self.layoutCanvas.addWidget(self.botoneraMapa)  
-                #self.layoutCanvas.addSpacerItem(spacer)   
             else:
                 self.layoutBotoneraMapa.setAlignment(Qt.AlignTop)
                 self.layoutCanvas.addWidget(self.botoneraMapa)  
@@ -226,43 +206,36 @@ class QvCanvas(QgsMapCanvas):
 
 
         if self.llistaBotons is not None:
-            if "streetview" in self.llistaBotons:
-                self.bstreetview = self._botoMapa('imatges/littleMan.png') 
-                self.layoutBotoneraMapa.addWidget(self.bstreetview)   
-                self.bstreetview.setCursor(QvConstants.cursorFletxa()) 
-                self.bstreetview.clicked.connect(self.desmarcaSv)  
-                #self.bstreetview.clicked.connect(QvStreetView.segueixBoto)
             if "panning" in self.llistaBotons:
                 self.bPanning = self._botoMapa('imatges/pan_tool_black_24x24.png')
                 self.layoutBotoneraMapa.addWidget(self.bPanning)   
-                self.bPanning.setCursor(QvConstants.cursorFletxa())   
+                self.bPanning.setCursor(QCursor(Qt.ArrowCursor))   
                 self.bPanning.clicked.connect(self.panCanvas)
             if "centrar" in self.llistaBotons:
                 self.bCentrar = self._botoMapa('imatges/fit.png')
                 self.layoutBotoneraMapa.addWidget(self.bCentrar) 
-                self.bCentrar.setCursor(QvConstants.cursorFletxa())     
+                self.bCentrar.setCursor(QCursor(Qt.ArrowCursor))     
                 self.bCentrar.clicked.connect(self.centrarMapa)
             if "zoomIn" in self.llistaBotons:
                 self.bZoomIn = self._botoMapa('imatges/zoom_in.png')
                 self.layoutBotoneraMapa.addWidget(self.bZoomIn)  
-                self.bZoomIn.setCursor(QvConstants.cursorFletxa())
+                self.bZoomIn.setCursor(QCursor(Qt.ArrowCursor))
                 self.bZoomIn.clicked.connect(self.zoomIn)
             if "zoomOut" in self.llistaBotons:
                 self.bZoomOut = self._botoMapa('imatges/zoom_out.png')
                 self.layoutBotoneraMapa.addWidget(self.bZoomOut) 
-                self.bZoomOut.setCursor(QvConstants.cursorFletxa())  
+                self.bZoomOut.setCursor(QCursor(Qt.ArrowCursor))  
                 self.bZoomOut.clicked.connect(self.zoomOut)
             if "apuntar" in self.llistaBotons:
                 self.bApuntar = self._botoMapa('imatges/apuntar.png')
                 self.layoutBotoneraMapa.addWidget(self.bApuntar)  
-                self.bApuntar.setCursor(QvConstants.cursorFletxa())       
+                self.bApuntar.setCursor(QCursor(Qt.ArrowCursor))       
                 self.bApuntar.clicked.connect(self.seleccioClick)
-                self.bApuntar.setToolTip('Informació objecte')
 
         # spacer = QSpacerItem(0, 50, QSizePolicy.Expanding, QSizePolicy.Maximum)
         # self.layoutBotoneraMapa.addSpacerItem(spacer)
 
-        self.butoMostra = QvPushButton(flat=True)
+        self.butoMostra = QPushButton()
         self.butoMostra.setMaximumHeight(80)
         self.butoMostra.setMinimumHeight(80)
         self.butoMostra.setMaximumWidth(80)
@@ -272,7 +245,7 @@ class QvCanvas(QgsMapCanvas):
         self.butoMostra.setIconSize(QSize(80,80))
         self.butoMostra.setIcon(icon)
 
-        self.butoMostra2 = QvPushButton(flat=True)
+        self.butoMostra2 = QPushButton()
         self.butoMostra2.setMaximumHeight(80)
         self.butoMostra2.setMinimumHeight(80)
         self.butoMostra2.setMaximumWidth(80)
@@ -300,7 +273,7 @@ class QvCanvas(QgsMapCanvas):
 class Marc(QFrame):
     def __init__(self, master=None):
         QFrame.__init__(self, master)
-    #ENTRA????
+
     def paintEvent(self, ev):
         painter = QPainter(self)
         # gradient = QLinearGradient(QRectF(self.rect()).topLeft(),QRectF(self.rect()).bottomLeft())

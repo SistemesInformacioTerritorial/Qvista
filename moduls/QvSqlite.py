@@ -72,86 +72,81 @@ class QvSqlite(Singleton):
 
     def dbTipusVia(self, variant):
         select = "SELECT TIPUS_VIA FROM TipusVia WHERE VARIANT='{}'"
-        variant = variant.strip().upper().replace("'", "''")
-        return self.dbSelectValue(select, variant)
+        return self.dbSelectValue(select, variant.strip().replace("'", "''"))
 
     def dbVariant(self, variant):
         select = "SELECT CODI FROM Variants WHERE VARIANT='{}'"
-        variant = variant.strip().upper().replace("'", "''")
-        variant = variant[:30]
-        return self.dbSelectValue(select, variant)
+        return self.dbSelectValue(select, variant.strip().replace("'", "''"))
 
-    def dbTipusVariant(self, tipusVia, variant):
-        tipusVia = tipusVia.strip().upper()
-        if tipusVia == '':
-            codi = self.dbVariant(variant)
-        else:
-            if tipusVia == 'C':
-                codi = self.dbVariant(variant)
-            else:
-                codi = self.dbVariant(self.netejaString(tipusVia) + ' ' + variant)
-        return codi
-
-    def netejaString(self, txt):
-        # Pasar a mayúsculas, eliminar acentos y otros caracteres, trim
-        txt = txt.upper()
-        txt = txt.translate(self.trans)
-        txt = txt.strip()
-
-        # Eliminar espacios en blanco redundantes
-        tmp = txt.replace('  ', ' ')
-        while tmp != txt:
-            txt = tmp
-            tmp = txt.replace('  ', ' ')
-
-        return txt
-
-    def senseParticules(self, txt):
-        # Busqueda y eliminación de partículas (prefijos)
-        lista = ("DE L'", "DE LA ", "DE LES ", "DE LOS ", "DE LAS ", "DE ", "DEL ", "DELS ", "D'EN ", "D'")
-        for particula in lista:
-            n = len(particula)
-            if particula == txt[:n]:
-                txt = txt[n:]
-                return txt.lstrip()
-        return txt
-
-    def codiCarrerVariant(self, tipusVia, variant):
+    def codiCarrerVariant(self, variant):
         if variant == '' or variant is None:
             return ''
 
-        variant = self.netejaString(variant)
+        # Pasar a mayúsculas, eliminar acentos y otros caracteres, trim
+        variant = variant.upper()
+        variant = variant.translate(self.trans)
+        variant = variant.strip()
+
+        # Si no quedan caracteres, hemos terminado
         if variant == '':
             return ''
 
-        if tipusVia == '' or tipusVia is None:
-            tipusVia = ''
+        # Eliminar espacions en blanco redundantes
+        tmp = variant.replace('  ', ' ')
+        while tmp != variant:
+            variant = tmp
+            tmp = variant.replace('  ', ' ')
+
+        # Las variantes tienen como máximo 30 caracteres
+        variant30 = variant[:30]
+
+        # Si se encuentra la variante exacta, hemos terminado
+        codi = self.dbVariant(variant30)
+        if codi != '':
+            return codi
+
+        # Dividimos la variante en primera palabra y resto
+        parte = variant.split(' ', 1)
+        num = len(parte)
+
+        if num > 1:
+            tipus = self.dbTipusVia(parte[0])
+            variant = parte[1]
         else:
-            tipusVia = self.dbTipusVia(tipusVia)
+            tipus = ''
+            variant = parte[0]
 
-        codi = self.dbTipusVariant(tipusVia, variant)
-        if codi == '':
-            v = self.senseParticules(variant)
-            if v != variant:
-                variant = v
-                codi = self.dbTipusVariant(tipusVia, variant)
-            if codi == '':
-                parte = variant.split(' ', 1)
-                num = len(parte)
-                if num > 1:
-                    tipus = self.dbTipusVia(parte[0])
-                    if tipus != '':
-                        variant = self.senseParticules(parte[1])
-                        codi = self.dbTipusVariant(tipus, variant)
-                        if codi == '':
-                            codi = self.dbTipusVariant(tipusVia, parte[0] + ' ' + variant)
-                        if codi == '' and tipusVia != tipus:
-                            codi = self.dbTipusVariant(tipusVia, variant)
+        # Dividimos la variante en primera palabra, segunda y resto
+        parte = variant.split(' ', 2)
+        num = len(parte)
+
+        # Busqueda y eliminación de partículas:
+        # "DE", "DEL", "DELS", "D'EN", "D'", "DE L'", "DE LA", "DE LES", "DE LOS", "DE LAS"
+        if num > 1:
+            if parte[0] in ("DE", "DEL", "DELS", "D'EN", "D'"):
+                if num == 3:
+                    if parte[0] == "DE" and parte[1] in ("L'", "LA", "LES", "LOS", "LAS"):
+                        variant = parte[2]
+                    else:
+                        variant = parte[1] + ' ' + parte[2]
                 else:
-                    if tipusVia != 'C':
-                        codi = self.dbTipusVariant('', variant)
+                    variant = parte[1]
 
-        return codi
+        # Búsqueda de tipo y variante, si hay tipo
+        if tipus != '':
+            tVariant = tipus.upper() + ' ' + variant
+            tVariant = tVariant.strip()
+            variant30 = tVariant[:30]
+            codi = self.dbVariant(variant30)
+            if codi != '':
+                return codi
+
+        # Búsqueda de variante limpia
+        variant = variant.strip()
+        variant30 = variant[:30]
+        codi = self.dbVariant(variant30)
+        if codi != '':
+            return codi
 
     def formatNum(self, num):
         if num is None:
@@ -164,7 +159,7 @@ class QvSqlite(Singleton):
             return num
 
     def coordsCarrerNum(self, codiCarrer, num):
-        if self.db is None or codiCarrer is None or codiCarrer == '' or num is None or num == '' or num == '0':
+        if self.db is None or num == '' or num is None or codiCarrer == '' or codiCarrer is None:
             return None, None
         try:
             select = "SELECT ETRS89_COORD_X, ETRS89_COORD_Y FROM Numeros WHERE \
@@ -187,11 +182,11 @@ class QvSqlite(Singleton):
                 print(err)
             return None, None
 
-    def coordsAdreca(self, tipusVia, variant, num=''):
+    def coordsAdreca(self, variant, num=''):
         if variant == '' or variant is None:
             return None, None
         try:
-            codi = self.codiCarrerVariant(tipusVia, variant)
+            codi = self.codiCarrerVariant(variant)
             if codi == '':
                 return None, None
             nums = num.split('-')
@@ -211,28 +206,28 @@ class QvSqlite(Singleton):
         except Exception:
             return None, None
 
-    def geoCoordsCarrerNum(self, tipusVia, variant, numIni, lletraIni='', numFi='', lletraFi=''):
+    def geoCoordsCarrerNum(self, tipusVia, nomCarrer, numIni, lletraIni='', numFi='', lletraFi=''):
         # Verificamos si hay número final / letra final para añadirlos
         if numFi == '' and lletraFi == '':
             num2 = ''
         else:
             num2 = '-' + numFi + lletraFi
-        return self.coordsAdreca(tipusVia, variant, numIni + lletraIni + num2)
+        # Buscamos dirección en Geocod de SQLite
+        if tipusVia is None or tipusVia == '':
+            variant = nomCarrer
+        else:
+            variant = tipusVia + ' ' + nomCarrer
+        return self.coordsAdreca(variant, numIni + lletraIni + num2)
 
     def geoCoordsCodiNum(self, codiCarrer, numIni, lletraIni='', numFi='', lletraFi=''):
-        # Buscamos número / letra inicial en Ge<ocod de SQLite
-        num1 = self.formatNum(numIni) + lletraIni.strip().upper()
-        x, y = self.coordsCarrerNum(codiCarrer, num1)
+        # Buscamos número / letra inicial en Geocod de SQLite
+        x, y = self.coordsCarrerNum(codiCarrer, numIni + lletraIni)
         if x is not None and y is not None:
             return x, y
-        else:
-            # Si no, buscamos número / letra finales en  Geocod de SQLite
-            num2 = self.formatNum(numFi) + lletraFi.strip().upper()
-            if num2 != num1:
-                return self.coordsCarrerNum(codiCarrer, num2)
-            else:
-                return None, None
-
+        if numFi == '' and lletraFi == '':
+            return None, None
+        # Si no, buscamos número / letra finales en  Geocod de SQLite
+        return self.coordsCarrerNum(codiCarrer, numFi + lletraFi)
 
 if __name__ == "__main__":
 
@@ -246,30 +241,28 @@ if __name__ == "__main__":
 
         sqlite.dbGeoConnexio()
 
-        x, y = sqlite.coordsAdreca('', 'C RIBAS', '19')
-        x, y = sqlite.coordsAdreca('C', 'RIBAS', '19')
+        x, y = sqlite.coordsAdreca('C BAC DE RODA', '20')
+        x, y = sqlite.coordsAdreca('Pg DEL TAULAT', '216')
+        x, y = sqlite.coordsAdreca('Pg DE GARCIA FARIA', '77')
+        x, y = sqlite.coordsAdreca('Pg DEL TAULAT', '238')
 
-        x, y = sqlite.coordsAdreca('', 'C BAC DE RODA', '20')
-        x, y = sqlite.coordsAdreca('', 'Pg DEL TAULAT', '216')
-        x, y = sqlite.coordsAdreca('', 'Pg DE GARCIA FARIA', '77')
-        x, y = sqlite.coordsAdreca('', 'Pg DEL TAULAT', '238')
+        x, y = sqlite.coordsAdreca('Carrer de Mallorca', '0025')
+        x, y = sqlite.coordsAdreca('Calle Numancia', '0085 - 00089')
+        x, y = sqlite.coordsAdreca('000180', 'kk-')
 
-        x, y = sqlite.coordsAdreca('', 'Carrer de Mallorca', '0025')
-        x, y = sqlite.coordsAdreca('', 'Calle Numancia', '0085 - 00089')
-        x, y = sqlite.coordsAdreca('', '000180', 'kk-')
-
-        txt = sqlite.codiCarrerVariant('', 'Carrer de Mallorca')
-        txt = sqlite.codiCarrerVariant('', 'Carrer   Mallorca')
-        txt = sqlite.codiCarrerVariant('', 'DE MALLORCA')
-        txt = sqlite.codiCarrerVariant('', 'DE BALMES')
-        txt = sqlite.codiCarrerVariant('', 'BALMES')
-        txt = sqlite.codiCarrerVariant('', ' Gran.     vía. de     les corts    catalanes  ')
-        txt = sqlite.codiCarrerVariant('', 'avda. dIAgONAL.')
-        txt = sqlite.codiCarrerVariant('', 'avenida diagonal')
-        txt = sqlite.codiCarrerVariant('', 'PALAU DE LA VIRREINA')
-        txt = sqlite.codiCarrerVariant('', '191204')
+        txt = sqlite.codiCarrerVariant('Carrer de Mallorca')
+        txt = sqlite.codiCarrerVariant('Carrer   Mallorca')
+        txt = sqlite.codiCarrerVariant('DE MALLORCA')
+        txt = sqlite.codiCarrerVariant('DE BALMES')
+        txt = sqlite.codiCarrerVariant('BALMES')
+        txt = sqlite.codiCarrerVariant(' Gran.     vía. de     les corts    catalanes  ')
+        txt = sqlite.codiCarrerVariant('avda. dIAgONAL.')
+        txt = sqlite.codiCarrerVariant('avenida diagonal')
+        txt = sqlite.codiCarrerVariant('PALAU DE LA VIRREINA')
+        txt = sqlite.codiCarrerVariant('191204')
 
         txt = sqlite.dbTipusVia('CALLE')
+        txt = sqlite.dbTipusVia()
         txt = sqlite.dbTipusVia('AVENIDA')
         txt = sqlite.dbTipusVia('JARDIN')
         txt = sqlite.dbTipusVia('PLAZA')

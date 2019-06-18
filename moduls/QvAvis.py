@@ -9,7 +9,7 @@ class QvAvis(QvNewsFinestra):
     '''Crea un diàleg d'avisos i, si n'hi ha algun de nou, el mostra
     '''
     def __init__(self,parent=None):
-        super().__init__(arxiuAvis, 'Avisos qVista',parent)
+        super().__init__(arxiuAvis,parent)
         if self.calAvis():
             self.exec_()
     def calAvis(self):
