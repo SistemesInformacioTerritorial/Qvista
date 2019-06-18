@@ -34,6 +34,8 @@ from moduls.QvSuggeriments import QvSuggeriments
 from moduls.QvCarregaCsv import QvCarregaCsv
 from moduls.QvConstants import QvConstants
 from moduls.QvAvis import QvAvis
+from moduls.QvToolButton import QvToolButton
+from moduls.QvMenuBar import QvMenuBar
 import re
 import csv
 import os
@@ -92,8 +94,10 @@ class QVista(QMainWindow, Ui_MainWindow):
         
         """
         QMainWindow.__init__(self)
-
         self.setupUi(self)
+        self.setFont(QvConstants.FONTTEXT)
+        app.setFont(QvConstants.FONTTEXT)
+        self.setWindowFlags(Qt.FramelessWindowHint)
         # self.frame.setStyleSheet("QFrame {background-color : #52489C}")
 
         self.app=app
@@ -106,7 +110,6 @@ class QVista(QMainWindow, Ui_MainWindow):
         # Preparació deprojecte i canvas
         self.preparacioEntornGrafic()
         
-
         # Inicialitzacions
         self.printActiu = False
         self.qvPrint = 0
@@ -118,7 +121,6 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.lblMovie = None        
         self.ubicacions= None
         self.cAdrec= None
-
 
         # # Connectors i accions
         self.definicioAccions()
@@ -135,7 +137,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.preparacioLlegenda()
         self.preparacioArbreDistrictes()
         self.preparacioCataleg()
-        self.preparacioStreetView()
+       
         # self.preparacioMapTips()
         self.preparacioImpressio()
         # self.preparacioGrafiques()
@@ -186,8 +188,9 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.dropCanvas = QvDropFiles(self.canvas, ['.qgs', '.qgz'], ['.qlr', '.shp', '.csv', '.gpkg'])
         self.dropCanvas.arxiusPerProcessar.connect(self.obrirArxiu)
 
-        self.setMouseTracking(False) 
-        
+        # self.setMouseTracking(False) 
+
+        self.oldPos = self.pos() #Per quan vulguem moure la finestra
 
 
     
@@ -242,8 +245,7 @@ class QVista(QMainWindow, Ui_MainWindow):
             
 
         # Titol del projecte 
-        fnt = QFont("Segoe UI", 18, weight=QFont.Normal)
-        self.lblTitolProjecte.setFont(fnt)
+        self.lblTitolProjecte.setFont(QvConstants.FONTTITOLS)
         self.lblTitolProjecte.setText(self.project.title())
 
 
@@ -301,18 +303,25 @@ class QVista(QMainWindow, Ui_MainWindow):
             accio {[QAction]} -- [Una QAction associada al botó] (default: {None})
         
         """
-
-        boto = QToolButton()
+        #Passem de QToolButton a QvPushButton pla
+        #El codi queda una mica més guarro, però funciona bé
+        boto = QvToolButton()
+        # boto = QvPushButton(flat=True)
         boto.setMinimumHeight(tamany)
         boto.setMaximumHeight(tamany)
         boto.setMinimumWidth(tamany)
         boto.setMinimumWidth(tamany)
         boto.setDefaultAction(accio)
         boto.setIconSize(QSize(tamany, tamany))
-        boto.setStyleSheet('QToolButton {opacity: 50; border: 1px #dddddd;}')
+        #boto.setStyleSheet('QToolButton {opacity: 50; border: 1px #dddddd;}')
+        # if accio is not None: boto.setToolTip(accio.toolTip())
+        #Si ens especifica una icona concreta, la posem. Si no, posem la icona de l'acció (si en té)
         if imatge is not None:
             icon = QIcon(imatge)
             boto.setIcon(icon)
+        # elif accio is not None:
+        #     boto.setIcon(accio.icon())
+        # boto.clicked.connect(accio)
         self.lytBotoneraLateral.addWidget(boto)
         # boto.setStyleSheet("QToolButton {background-color: #777777; border: 0px solid red;}")
         return boto
@@ -359,6 +368,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         """
 
         self.qvSv = QvStreetView(self.canvas, self)
+        self.canvas.setStreetView(self.qvSv)
         self.canvas.setMapTool(self.qvSv.rp)
         # qvSv.setContentsMargins(0,0,0,0)
         self.qvSv.hide()
@@ -373,25 +383,26 @@ class QVista(QMainWindow, Ui_MainWindow):
 
     def preparacioEntornGrafic(self):
         # Canvas
-        llistaBotons = ['apuntar', 'zoomIn', 'zoomOut', 'panning', 'centrar']
+        #llistaBotons = ['apuntar', 'zoomIn', 'zoomOut', 'panning', 'centrar']
+        llistaBotons = ['streetview','apuntar', 'zoomIn', 'zoomOut', 'panning', 'centrar']
         
         self.canvas = QvCanvas(llistaBotons=llistaBotons, posicioBotonera = 'SO', botoneraHoritzontal = False, pare=self)
+
+        self.preparacioStreetView()     #fa el qvSv. necessita el canvas
+        self.canvas.bstreetview.clicked.connect(self.qvSv.segueixBoto)
 
         self.canvas.setCanvasColor(QColor(253,253,255))
         self.canvas.setAnnotationsVisible(True)
 
         self.canvas.xyCoordinates.connect(self.showXY)     
+        self.showXY(self.canvas.center())
         self.canvas.scaleChanged.connect(self.showScale)   
         self.canvas.mapCanvasRefreshed.connect(self.canvasRefrescat)
 
        
 
         self.layout = QVBoxLayout(self.frameCentral)
-        self._menuBarShadow = QGraphicsDropShadowEffect()
-        self._menuBarShadow.setXOffset(10)
-        self._menuBarShadow.setYOffset(10)
-        self._menuBarShadow.setColor(QColor(170,170,170))
-        self._menuBarShadow.setBlurRadius(10)
+        
 
         self.layout.setContentsMargins(0,0,0,0)
         # self.layout.addWidget(self.botonera1)
@@ -543,7 +554,7 @@ class QVista(QMainWindow, Ui_MainWindow):
 
 
 
-        self.boton_bajar= QPushButton()
+        self.boton_bajar= QvPushButton(flat=True)
         self.boton_bajar.clicked.connect(self.CopiarA_Ubicacions)
         self.boton_bajar.setIcon(QIcon('imatges/down3-512.png'))
         self.boton_bajar.setMinimumHeight(25)
@@ -553,7 +564,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.boton_bajar.setToolTip("Copiar aquest carrer i aquest número a l'arbre d'ubicacións")
 
         #boton invoc_streer
-        self.boton_invocarStreetView= QPushButton()
+        self.boton_invocarStreetView= QvPushButton(flat=True)
         self.boton_invocarStreetView.clicked.connect(self.invocarStreetView)
         self.boton_invocarStreetView.setIcon(QIcon('imatges/littleMan.png'))
         self.boton_invocarStreetView.setMinimumHeight(25)
@@ -665,6 +676,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.dwBotonera.setWidget(self.botonera)
         self.dwBotonera.setContentsMargins ( 2, 2, 2, 2 )
         self.addDockWidget(Qt.LeftDockWidgetArea, self.dwBotonera)
+        # self.botonera.setStylesheet('QFrame{background: transparent;}')
 
     def preparacioNoticies(self):
         return
@@ -674,10 +686,10 @@ class QVista(QMainWindow, Ui_MainWindow):
         # self.wMapeta.setGeometry(0,0,267,284)
         # self.wMapeta.show()
         self.mapeta = QvMapeta(self.canvas, tamanyPetit=True, pare=self)
-        
+        self.mapeta.setGraphicsEffect(QvConstants.ombra(self,radius=30,color=QvConstants.COLORCLAR))
         self.bOrientacio.clicked.connect(self.editarOrientacio)
         self.mapeta.setParent(self.canvas)
-        self.mapeta.move(5,5)
+        self.mapeta.move(20,20)
         self.mapeta.show()
         # self.dwMapeta = QDockWidget("Mapa de situació", self)
         # self.dwMapeta.setMinimumWidth(180)
@@ -705,9 +717,8 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.llegenda.currentLayerChanged.connect(self.canviLayer)
         self.canvas.setLlegenda(self.llegenda)
         self.layoutFrameLlegenda.setContentsMargins ( 5, 13, 5, 0 )
-        self.llegenda.setStyleSheet("QvLlegenda {color: #2F4550; background-color: #DDDDDD; border: 0px solid red;}")
-        fnt = QFont("Segoe UI", 12, weight=QFont.Normal)
-        self.llegenda.setFont(fnt)
+        self.llegenda.setStyleSheet("QvLlegenda {color: #38474f; background-color: #DDDDDD; border: 0px solid red;}")
+        self.llegenda.setFont(QvConstants.FONTTEXT)
         self.layoutFrameLlegenda.addWidget(self.llegenda)
         self.llegenda.accions.afegirAccio('Propietats de capa', self.actPropietatsLayer)
 
@@ -785,11 +796,10 @@ class QVista(QMainWindow, Ui_MainWindow):
     #         retval = msg.exec_()
         
     def preparacioEntorns(self):
-        self.menuEntorns = self.bar.addMenu(3*' '+'Entorns'+3*' ')
+        self.menuEntorns = self.bar.addMenu('Entorns')
         
-        fnt = QFont("Segoe UI", 16, weight=QFont.Normal)
-        self.menuEntorns.setStyleSheet("QMenu {color: #465A63; background-color: #dddddd; selection-background-color : #2f4550;}")
-        self.menuEntorns.setFont(fnt)
+        # self.menuEntorns.setStyleSheet("QMenu {color: #465A63; background-color: #dddddd; selection-background-color : #38474f;}")                           
+        self.menuEntorns.setFont(QvConstants.FONTSUBTITOLS)
         self.menuEntorns.styleStrategy = QFont.PreferAntialias or QFont.PreferQuality
         for entorn in os.listdir(os.path.dirname('entorns/')):          
             if entorn == '__init__.py' or entorn[-3:] != '.py':
@@ -1121,7 +1131,8 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.actFavorit.setStatusTip("Favorit")
         self.actFavorit.triggered.connect(self.favorit)
 
-        self.actCataleg = QAction(3*' '+"Catàleg"+3*' ', self)
+        #self.actCataleg = QAction(3*' '+"Catàleg"+3*' ', self)
+        self.actCataleg = QAction("Catàleg", self)
         self.actCataleg.setStatusTip("Catàleg")
         self.actCataleg.triggered.connect(self.obrirCatalegProjectesLlista)
         
@@ -1205,7 +1216,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         leTitol.setPlaceholderText('Escriu aquí el titol del sugeriment')
         leDescripcio = QLineEdit()
         leDescripcio.setPlaceholderText('Escriu.ne aquí una breu descripció')
-        bEnviar = QPushButton('Enviar')
+        bEnviar = QvPushButton('Enviar',flat=True)
         self.lblResultat = QLabel()
         bEnviar.clicked.connect(lambda: reportarProblema(leTitol.text(), leDescripcio.text()))
         self.lytFitxaError.addWidget(leTitol)
@@ -1234,16 +1245,16 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.lytSeleccioGrafica.addLayout(self.lytBotonsSeleccio)
 
 
-        self.bs1 = QPushButton()
+        self.bs1 = QvPushButton(flat=True)
         # self.bs1.setCheckable(True)
         self.bs1.setIcon(QIcon('imatges/cursor-pointer.png'))
-        self.bs2 = QPushButton()
+        self.bs2 = QvPushButton(flat=True)
         # self.bs2.setCheckable(True)
         self.bs2.setIcon(QIcon('imatges/shape-polygon-plus.png'))
-        self.bs3 = QPushButton()
+        self.bs3 = QvPushButton(flat=True)
         # self.bs3.setCheckable(True)
         self.bs3.setIcon(QIcon('imatges/vector-circle-variant.png'))
-        self.bs4 = QPushButton()
+        self.bs4 = QvPushButton(flat=True)
         # self.bs4.setCheckable(True)
         self.bs4.setIcon(QIcon('imatges/trash-can-outline.png'))
 
@@ -1253,10 +1264,10 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.lwFieldsSelect = QListWidget()
         self.lwFieldsSelect.setSelectionMode(QAbstractItemView.ExtendedSelection)
 
-        self.bs5 = QPushButton('Calcular')
+        self.bs5 = QvPushButton('Calcular',flat=True)
         self.bs5.clicked.connect(self.calcularSeleccio)
         
-        self.bs6 = QPushButton('Crear CSV')
+        self.bs6 = QvPushButton('Crear CSV',flat=True)
         self.bs6.clicked.connect(self.crearCsv)
 
         self.twResultats = QTableWidget()
@@ -1383,6 +1394,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.frameTranspInfo.setGeometry(5,5,100,100)
         # self.frameTranspInfo.setStyleSheet('QFrame {opacity:50;}')
         self.frameTranspInfo.show()
+        self.frameTranspInfo.setStylesheet('QFrame{background: transparent;}')
 
     def activaCapa(self,capa):
         def funcioCapa():
@@ -1417,43 +1429,114 @@ class QVista(QMainWindow, Ui_MainWindow):
         """
 
 
-        fnt = QFont("Segoe UI Light", 18, weight=QFont.Light)
-        lblLogoAjb = QLabel()
-        lblLogoAjb.setMaximumHeight(40)
-        lblLogoAjb.setMinimumHeight(40)
-        lblLogoAjb.setMaximumWidth(150)
-        lblLogoAjb.setMinimumWidth(150)
-        imatge = QPixmap('imatges/logoBcnPetit.jpg')
+        lblLogoQVista = QLabel()
+        lblLogoQVista.setMaximumHeight(40)
+        lblLogoQVista.setMinimumHeight(40)
+        sizeWidget=self.frame_11.width()
+        lblLogoQVista.setMaximumWidth(sizeWidget)
+        lblLogoQVista.setMinimumWidth(sizeWidget)
+        
+        # lblLogoQVista.setMaximumWidth(88)
+        # lblLogoQVista.setMinimumWidth(88)
+        #imatge = QPixmap('imatges/logoBcnPetit.jpg')
+        imatge = QPixmap('imatges/qVistaLogo_text_40.png')
         # imatge = QPixmap('imatges/qVistaLogoVerd2.png')
-        lblLogoAjb.setPixmap(imatge)
-        lblLogoAjb.setScaledContents(True)
+        lblLogoQVista.setPixmap(imatge)
+        lblLogoQVista.setScaledContents(False)
 
+        # sizeWidget=self.frame_11.size()
+        # wid=QWidget()
+        # layLogo=QHBoxLayout()
+        # layLogo.setContentsMargins(0,0,0,0)
+        # layLogo.setSpacing(0)
+        # wid.setLayout(layLogo)
+        # wid.setFixedSize(sizeWidget)
+        # layLogo.addWidget(lblLogoQVista)
+
+        menubar=QvMenuBar(self)
+        self.setMenuBar(menubar)
         self.bar = self.menuBar()
-        self.bar.setFont(fnt)
+        self.bar.setFont(QvConstants.FONTTITOLS)
+        self.bar.setCornerWidget(lblLogoQVista,Qt.TopLeftCorner)
 
         # self._menuBarShadow = QGraphicsDropShadowEffect()
         # self._menuBarShadow.setXOffset(0)
         # self._menuBarShadow.setColor(QColor(55,57,63))
         # self._menuBarShadow.setBlurRadius(20)
         # self.bar.setGraphicsEffect(self._menuBarShadow)
+        
+        self._menuBarShadow=QvConstants.afegeixOmbraHeader(self.bar)
 
         self.bar.setFixedHeight(40)
-        self.bar.setCornerWidget(lblLogoAjb, Qt.TopLeftCorner)
         self.fMaxim = QFrame()
-        self.lytMaxim = QGridLayout(self.fMaxim)
-        self.fMaxim.setLayout(self.lytMaxim)
-        self.lytMaxim.setContentsMargins(0,0,0,0)
+        self.lytBotonsFinestra = QHBoxLayout(self.fMaxim)
+        self.fMaxim.setLayout(self.lytBotonsFinestra)
+        self.lytBotonsFinestra.setContentsMargins(0,0,0,0)
         
-        self.botoMaxim = QPushButton()
+        #self.botoMaxim = QvPushButton(flat=True)
+        self.botoMaxim=QvPushButton(flat=True)
         self.botoMaxim.clicked.connect(self.ferGran)
         self.botoMaxim.setIcon(QIcon('imatges/arrow-expand.png'))
-        self.botoMaxim.setMinimumHeight(40)
-        self.botoMaxim.setMaximumHeight(40)
-        self.botoMaxim.setMinimumWidth(40)
-        self.botoMaxim.setMaximumWidth(40)
+        # self.botoMaxim.setMinimumHeight(40)
+        # self.botoMaxim.setMaximumHeight(40)
+        # self.botoMaxim.setMinimumWidth(40)
+        # self.botoMaxim.setMaximumWidth(40)
         self.botoMaxim.setIconSize(QSize(30, 30))
-        self.botoMaxim.setStyleSheet('QPushButton {opacity: 50; border: 1px #dddddd;}')
+        #self.botoMaxim.setStyleSheet('QPushButton {opacity: 50; border: 1px #dddddd;}')
+        self.lytMaxim=QHBoxLayout(self.frame_13)
         self.lytMaxim.addWidget(self.botoMaxim)
+
+        stylesheetBotonsFinestra='''
+            QPushButton{
+                background: transparent;
+            }
+            QPushButton::hover {
+                background-color: %s;
+                opacity: 1;
+            }
+            QPushButton::pressed{
+                background-color: %s;
+                opacity: 0.1;
+            }
+        '''%(QvConstants.COLORDESTACATHTML,QvConstants.COLORDESTACATHTML)
+
+        self.botoMinimitzar=QvPushButton(flat=True)
+        self.botoMinimitzar.setIcon(QIcon('imatges/window-minimize.png'))
+        self.botoMinimitzar.setFixedSize(40,40)
+        self.botoMinimitzar.clicked.connect(self.showMinimized)
+        self.botoMinimitzar.setStyleSheet(stylesheetBotonsFinestra)
+        self.lytBotonsFinestra.addWidget(self.botoMinimitzar)
+
+        self.maximitzada=True
+        iconaRestaurar1=QIcon('imatges/window-restore.png')
+        iconaRestaurar2=QIcon('imatges/window-maximize.png')
+        def restaurar():
+            if self.maximitzada:
+                self.setWindowState(Qt.WindowActive)
+                self.midax=self.width()
+                self.miday=self.height()
+                self.botoRestaurar.setIcon(iconaRestaurar2)
+                pass
+            else:
+                self.setWindowState(Qt.WindowActive | Qt.WindowMaximized)
+                self.botoRestaurar.setIcon(iconaRestaurar1)
+                # self.setFixedSize(self.midax,self.miday)
+                # self.setGeometry(0,0,self.midax,self.miday)
+            self.maximitzada=not self.maximitzada
+        self.restaurarFunc=restaurar
+        self.botoRestaurar=QvPushButton(flat=True)
+        self.botoRestaurar.setIcon(iconaRestaurar1)
+        self.botoRestaurar.clicked.connect(restaurar)
+        self.botoRestaurar.setFixedSize(40,40)
+        self.botoRestaurar.setStyleSheet(stylesheetBotonsFinestra)
+        self.lytBotonsFinestra.addWidget(self.botoRestaurar)
+
+        self.botoSortir=QvPushButton(flat=True)
+        self.botoSortir.setIcon(QIcon('imatges/window_close.png'))
+        self.botoSortir.setFixedSize(40,40)
+        self.botoSortir.clicked.connect(self.close)
+        self.botoSortir.setStyleSheet(stylesheetBotonsFinestra)
+        self.lytBotonsFinestra.addWidget(self.botoSortir)
 
         self.bar.setCornerWidget(self.fMaxim, Qt.TopRightCorner)
 
@@ -1461,21 +1544,20 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.bar.styleStrategy = QFont.PreferAntialias or QFont.PreferQuality
 
         # bar.setStyleSheet("QMenuBar {color: #FFFFFF; background-color : #4062BB;}")
-        self.bar.setStyleSheet("QMenuBar {color: #acc2cc; background-color : #38474F; selection-background-color : #444444;}")
+        #self.bar.setStyleSheet("QMenuBar {color: #acc2cc; background-color : #38474F; selection-background-color : #444444;}")
 
         spacer = QSpacerItem(9999, 9999, QSizePolicy.Expanding,QSizePolicy.Maximum)
         
         self.bar.addAction(self.actCataleg)
-        self.menuProjectes = self.bar.addMenu ("      Mapes      ")
+        self.menuProjectes = self.bar.addMenu ("Mapes")
         # self.menuFuncions = self.bar.addMenu("  Eines  ")
         self.menuFuncions = QMenu()
         # self.menuFuncions.setStyleSheet('QMenu {')
         # self.menuCarregarNivell = self.bar.addMenu("  Finestres  ")
         # catalegMenu = self.bar.addMenu("                   Catàleg  ")
 
-        fnt= QFont("Segoe UI", 16, weight=QFont.Normal)
-        self.menuProjectes.setStyleSheet("QMenu {color: #465A63; background-color: #dddddd; selection-background-color : #2f4550;}")
-        self.menuProjectes.setFont(fnt)
+        # self.menuProjectes.setStyleSheet("QMenu {color: #465A63; background-color: #dddddd; selection-background-color : #38474f;}")
+        self.menuProjectes.setFont(QvConstants.FONTSUBTITOLS)
         self.menuProjectes.styleStrategy = QFont.PreferAntialias or QFont.PreferQuality
         self.menuProjectes.addAction(self.actObrirProjecte)
         self.menuProjectes.addAction(self.actGuardarProjecte)
@@ -1492,9 +1574,9 @@ class QVista(QMainWindow, Ui_MainWindow):
         # self.menuCarregarNivell.addAction(self.actAfegirNivellGPX)
         # self.menuCarregarNivell.addAction(self.actAfegirNivellQlr)
         
-        self.menuFuncions.setStyleSheet("QMenu {color: #465A63 background-color: #dddddc; selection-background-color : #79909B;}")
+        #self.menuFuncions.setStyleSheet("QMenu {color: #465A63 background-color: #dddddc; selection-background-color : #79909B;}")
         
-        self.menuFuncions.setFont(fnt)
+        self.menuFuncions.setFont(QvConstants.FONTSUBTITOLS)
         self.menuFuncions.addAction(self.actEsborrarSeleccio)
         self.menuFuncions.addAction(self.actSeleccioLliure)
         self.menuFuncions.addAction(self.actSeleccioClick)
@@ -1710,9 +1792,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.wCataleg.ui.treeCataleg.resize(640, 480)
         self.wCataleg.ui.treeCataleg.adjustSize()
         self.wCataleg.ui.treeCataleg.setHeaderHidden(True)
-        fnt=QFont()
-        fnt.setPixelSize(12)
-        self.wCataleg.ui.treeCataleg.setFont(fnt)
+        self.wCataleg.ui.treeCataleg.setFont(QvConstants.FONTTEXT)
 
     def catalegProjectesLlista(self):
         self.qModelProjectesLlista = QFileSystemModel()
@@ -1735,9 +1815,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.wCatalegProjectesLlista.ui.treeCataleg.resize(640, 480)
         self.wCatalegProjectesLlista.ui.treeCataleg.adjustSize()
         self.wCatalegProjectesLlista.ui.treeCataleg.setHeaderHidden(True)
-        fnt=QFont()
-        fnt = QFont("Segoe UI", 12, weight=QFont.Normal)
-        self.wCatalegProjectesLlista.ui.treeCataleg.setFont(fnt)
+        self.wCatalegProjectesLlista.ui.treeCataleg.setFont(QvConstants.FONTTEXT)
 
     def infoQVista(self):
         self.informacio = QDialog()
@@ -1757,7 +1835,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         layer_settings  = QgsPalLayerSettings()
         text_format = QgsTextFormat()
 
-        text_format.setFont(QFont("Arial", 10))
+        text_format.setFont(QvConstants.FONTTEXT)
         text_format.setSize(12)
 
         buffer_settings = QgsTextBufferSettings()
@@ -1807,8 +1885,7 @@ class QVista(QMainWindow, Ui_MainWindow):
 
     def crearMenuCapa(self):
         menu = QMenu()
-        # fnt = QFont("Segoe UI Light", 16, weight=QFont.Light)
-        menu.setFont(fnt)
+        menu.setFont(QvConstants.FONTSUBTITOLS)
         menu.addAction('Nom Capa', self.nomCapa)
         menu.addAction('Extensió Capa', self.extCapa)
         menu.addAction('Esborrar Capa', self.esborrarCapa)
@@ -1887,7 +1964,7 @@ class QVista(QMainWindow, Ui_MainWindow):
             missatgeCaixa('Cal tenir seleccionat un nivell per poder fer una selecció.','Marqueu un nivell a la llegenda sobre el que aplicar la consulta.')
 
     def showXY(self,p):
-        self.lblXY.setText( str("%.2f" % p.x()) + " , " + str("%.2f" % p.y() ))
+        self.lblXY.setText( str("%.2f" % p.x()) + ", " + str("%.2f" % p.y() ))
         # try:
         #     if self.qvPrint.pucMoure:
         #         self.dwPrint.move(self.qvPrint.dockX-100, self.qvPrint.dockY-120)
@@ -1896,56 +1973,95 @@ class QVista(QMainWindow, Ui_MainWindow):
 
     def showScale(self,scale ):
         self.bScale.setText( " Escala 1:" + str(int(round(scale)))) 
+        #Si estàvem editant l'escala i entrem aquí vol dir que hem abortat missió
+        #Per tant, deixem d'editar-la
+        if self.editantEscala:  
+            self.editantEscala=False
+            self.leScale.setParent(None)
 
     def definirLabelsStatus(self):    
         
 
         self.leSeleccioExpressio = QLineEdit()
-        self.leSeleccioExpressio.setStyleSheet("QLineEdit {border: 0px solid red; background-color: #FFFFFF;}")
+        self.leSeleccioExpressio.setStyleSheet("QLineEdit {margin: 0px; border: 0px; padding: 0px; background-color: #FFFFFF;}")  #????
+        
         # self.leSeleccioExpressio.setGraphicsEffect(self._menuBarShadow)
         self.leSeleccioExpressio.returnPressed.connect(seleccioExpressio)
         self.statusbar.addPermanentWidget(self.leSeleccioExpressio, 50)
         self.leSeleccioExpressio.setPlaceholderText('Cerca un text per filtrar elements')
+        self.leSeleccioExpressio.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Minimum)
         self.leSeleccioExpressio.show()
         # spacer = QSpacerItem(1000, 1000, QSizePolicy.Expanding,QSizePolicy.Maximum)
         # self.statusbar.addPermanentWidget(spacer)
+        styleheetLabel='''
+            QLabel {
+                background-color: #F9F9F9;
+                color: #38474F;
+                border: 0px;
+                margin: 0px;
+                padding: 4px;
+            }'''
+        stylesheetButton='''
+            QvPushButton {
+                background-color: #F9F9F9;
+                color: #38474F;
+                margin: 0px;
+                border: 0px;
+                padding: 4px;
+            }'''
         self.lblConnexio = QLabel()
+        self.lblConnexio.setStyleSheet(styleheetLabel)
         self.lblConnexio.setFrameStyle(QFrame.StyledPanel )
-        self.lblConnexio.setMinimumWidth( 140 )
         self.statusbar.addPermanentWidget( self.lblConnexio, 0 )
         self.lblConnexio.setText(estatConnexio)
 
         self.lblXY = QLabel()
+        self.lblXY.setStyleSheet(styleheetLabel)
 
         self.lblXY.setFrameStyle( QFrame.StyledPanel )
-        self.lblXY.setMinimumWidth( 170 )
         self.lblXY.setAlignment( Qt.AlignCenter )
         self.statusbar.setSizeGripEnabled( False )
         self.statusbar.addPermanentWidget( self.lblXY, 0 )
-
-        self.bScale = QPushButton()
-        self.bScale.setStyleSheet("QPushButton {Text-align:left};")
-        # self.bScale.setFrameStyle(QFrame.StyledPanel )
-        self.bScale.setMinimumWidth( 140 )
-        self.bScale.clicked.connect(self.editarEscala)
-        self.statusbar.addPermanentWidget( self.bScale, 0 )
-        self.editantEscala = False
-
-        self.bOrientacio = QPushButton()
-        self.bOrientacio.setStyleSheet("QPushButton {Text-align:left};")
-        # self.bScale.setFrameStyle(QFrame.StyledPanel )
-        
-        self.bOrientacio.setMinimumWidth( 140 )
-        self.statusbar.addPermanentWidget( self.bOrientacio, 0 )
+        # self.showXY(QCursor.pos())
 
         self.lblProjeccio = QLabel()
+        self.lblProjeccio.setStyleSheet(styleheetLabel)
         self.lblProjeccio.setFrameStyle(QFrame.StyledPanel )
-        self.lblProjeccio.setMinimumWidth( 140 )
+        # self.lblProjeccio.setMinimumWidth( 140 )
         self.statusbar.addPermanentWidget( self.lblProjeccio, 0 )
 
+
+        #Per no haver de posar un Line Edit a sobre del botó, fem un widget que contingui un layout. Aquest layout contindrà el botó, i a vegades el Line Edit
+        self.wScale=QWidget()
+        self.lScale=QHBoxLayout()
+        self.lScale.setContentsMargins(0,0,0,0)
+        self.lScale.setSpacing(0)
+        self.wScale.setLayout(self.lScale)
+        self.bScale = QvPushButton(flat=True)
+        self.bScale.setStyleSheet(stylesheetButton)
+        self.lScale.addWidget(self.bScale)
+
+        # self.bScale.setFrameStyle(QFrame.StyledPanel )
+        # self.bScale.setMinimumWidth( 140 )
+        self.bScale.clicked.connect(self.editarEscala)
+        self.statusbar.addPermanentWidget( self.wScale, 0 )
+        self.editantEscala = False
+
+        self.bOrientacio = QvPushButton(flat=True)
+        self.bOrientacio.setStyleSheet(stylesheetButton)
+        # self.bOrientacio.setStyleSheet("QPushButton {margin: 1px;};")
+
+        # self.bScale.setFrameStyle(QFrame.StyledPanel )
+        
+        # self.bOrientacio.setMinimumWidth( 140 )
+        self.statusbar.addPermanentWidget( self.bOrientacio, 0 )
+
+        
+
         self.lblProjecte = QLabel()
+        self.lblProjecte.setStyleSheet(styleheetLabel)
         self.lblProjecte.setFrameStyle(QFrame.StyledPanel )
-        self.lblProjecte.setMinimumWidth( 140 )
+        # self.lblProjecte.setMinimumWidth( 140 )
         self.statusbar.addPermanentWidget( self.lblProjecte, 0 )
 
     def editarOrientacio(self):
@@ -1963,8 +2079,13 @@ class QVista(QMainWindow, Ui_MainWindow):
         if self.editantEscala == False:
             self.editantEscala = True
             self.bScale.setText(' Escala 1: ')
-            self.leScale = QLineEdit(self.bScale)
-            self.leScale.setGeometry(48,0,100,20)
+            self.leScale = QLineEdit()
+            self.leScale.setStyleSheet('margin: 0px; border: 0px; padding: 0px;')
+            self.lScale.addWidget(self.leScale)
+            # self.leScale.setGeometry(48,0,100,20)
+            self.leScale.setMinimumWidth(10)
+            # self.leScale.setMaximumWidth(35)
+            self.leScale.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Minimum)
             self.leScale.returnPressed.connect(self.escalaEditada)
             self.leScale.show()
             self.leScale.setFocus()
@@ -1974,6 +2095,7 @@ class QVista(QMainWindow, Ui_MainWindow):
     def escalaEditada(self):
         escala = self.leScale.text()
         self.leScale.setParent(None)
+        self.lScale.removeWidget(self.leScale)
         self.canvas.zoomScale(int(escala))
         self.editantEscala = False
 
@@ -2178,22 +2300,42 @@ class QVista(QMainWindow, Ui_MainWindow):
 
     def pavimentacio(self): 
         self.project.read('d:/qVista/Dades/CatalegProjectes/Vialitat/PavimentacioDemo.qgs')       
-        fnt = QFont("Segoe UI", 20, weight=QFont.Normal)
-        self.lblTitolProjecte.setFont(fnt)
+        self.lblTitolProjecte.setFont(QvConstants.FONTTITOLS)
         self.lblTitolProjecte.setText(self.project.title())
         self.dwPavim = DockPavim(self)
         self.addDockWidget( Qt.RightDockWidgetArea, self.dwPavim)
         self.dwPavim.show()    
         
     def marxesCiutat(self): 
-        self.project.read('d:/MarxesCiutat/MarxesCiutat.qgs')       
-        fnt = QFont("Segoe UI", 20, weight=QFont.Normal)
-        self.lblTitolProjecte.setFont(fnt)
+        self.project.read('d:/MarxesCiutat/MarxesCiutat.qgs')      
+        self.lblTitolProjecte.setFont(QvConstants.FONTTITOLS)
         # self.lblTitolProjecte.setText(self.project.title())
         self.lblTitolProjecte.setText("Marxes exploratòries")
         self.dwMarxes = MarxesCiutat(self)
         self.addDockWidget( Qt.RightDockWidgetArea, self.dwMarxes)
         self.dwMarxes.show()    
+    # def mousePressEvent(self, event):
+    #     super().mouseMoveEvent(event)
+    #     if event.button()==Qt.LeftButton:
+    #         self.oldPos = event.globalPos()
+
+    # def mouseMoveEvent(self, event):
+    #     super().mouseMoveEvent(event)
+    #     if event.buttons() & Qt.LeftButton:
+    #         if self.maximitzada:
+    #             self.restaurarFunc()
+    #             #Desmaximitzar
+    #         delta = QPoint(event.globalPos() - self.oldPos)
+    #         # print(delta)
+    #         self.move(self.x() + delta.x(), self.y() + delta.y())
+    #         self.oldPos = event.globalPos()
+    # def mouseDoubleClickEvent(self,event):
+    #     super().mouseDoubleClickEvent(event)
+    #     if event.button()==Qt.LeftButton:
+    #         self.restaurarFunc()
+    # def enterEvent(self,event):
+    #     super().enterEvent(event)
+    #     qApp.setCursor(QCursor(Qt.ArrowCursor))
         
 # def bicing(self):
 #         self.bicing=Bicis(self)
@@ -2324,16 +2466,21 @@ def disgregarDirele():
 
     pass
 
-def nivellCsv(fitxer: str,delimitador: str,campX: str,campY: str, projeccio: int = 23031, nomCapa: str = 'Capa sense nom', color = 'cyan', symbol = 'circle'):
+def nivellCsv(fitxer: str,delimitador: str,campX: str,campY: str, projeccio: int = 23031, nomCapa: str = 'Capa sense nom', color = 'red', symbol = 'circle'):
     uri = "file:///"+fitxer+"?type=csv&delimiter=%s&xField=%s&yField=%s" % (delimitador,campX,campY)
-    nomCapa = "nomcapa"
     layer = QgsVectorLayer(uri, nomCapa, 'delimitedtext')
     layer.setCrs(QgsCoordinateReferenceSystem(projeccio, QgsCoordinateReferenceSystem.EpsgCrsId))
-    if layer is not None:
+    if layer is not None or layer is not NoneType:
         symbol = QgsMarkerSymbol.createSimple({'name': symbol, 'color': color})
-        layer.renderer().setSymbol(symbol)
+        if layer.renderer() is not None: 
+            layer.renderer().setSymbol(symbol)
         qV.project.addMapLayer(layer)
         print("add layer")
+    else: print ("no s'ha pogut afegir la nova layer")
+
+    #symbol = QgsMarkerSymbol.createSimple({'name': 'square', 'color': 'red'})
+    #layer.renderer().setSymbol(symbol)
+    #https://docs.qgis.org/testing/en/docs/pyqgis_developer_cookbook/vector.html#modify-features
 
 # def carregaCSVWizard(fitxer: str,delimitador: str,campX: str,campY: str, projeccio: int = 23031, nomCapa: str = 'Capa sense nom', color, symbol):
 #     uri = "file:///"+fitxer+"?type=csv&delimiter=%s&xField=%s&yField=%s" % (delimitador,campX,campY)
@@ -2537,7 +2684,9 @@ globalLlistaCamps=None
 tamanyReader=0
 def carregarLayerCSV(nfile):
         if nfile: 
+            qApp.setOverrideCursor(Qt.WaitCursor)
             assistent=QvCarregaCsv(nfile,nivellCsv,qV)
+            qApp.restoreOverrideCursor()
             assistent.setModal(True)
             #assistent.setWindowFlags(assistent.windowFlags() | Qt.Popup)
             #assistent.setWindowFlags(assistent.windowFlags() | Qt.WindowStaysOnTopHint)
@@ -2722,7 +2871,10 @@ def main(argv):
         splash.showMessage("""Institut Municipal d'Informàtica (IMI) Versió """+versio+'  ',Qt.AlignRight | Qt.AlignBottom, QvConstants.COLORFOSC)
         splash.setFont(QFont(QvConstants.NOMFONT,8))
         splash.show()
+        app.setWindowIcon(QIcon('imatges/QVistaLogo_256.png'))
         app.processEvents()
+        with open('moduls/style.qss') as st:
+            app.setStyleSheet(st.read())
 
         ok = qVapp.logInici()            # Por defecto: family='QVISTA', logname='DESKTOP'
         if not ok:

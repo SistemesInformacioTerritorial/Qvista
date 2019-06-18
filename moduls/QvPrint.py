@@ -12,6 +12,7 @@ from PyQt5.QtWebKitWidgets import QWebView , QWebPage
 from PyQt5.QtWebKit import QWebSettings
 
 from moduls.QvApp import QvApp
+from moduls.QvPushButton import QvPushButton
 
 import time
 projecteInicial='../dades/projectes/BCN11_nord.qgs'
@@ -112,13 +113,13 @@ class QvPrint(QWidget):
 
         self.font = QFont()
         self.font.setPointSize(20)
-        self.boto = QPushButton(self)
+        self.boto = QPushButton(parent=self)
         self.boto.setText('Plot')
         self.boto.setFont(self.font)
         self.boto.setMinimumHeight(self.boto.height()*2)
         
         self.boto.clicked.connect(self.printPlanol)
-        self.boto2 = QPushButton(self)
+        self.boto2 = QPushButton(parent=self)
         self.boto2.setText('Reposicionar')
         self.boto2.clicked.connect(self.potsMoure)
 

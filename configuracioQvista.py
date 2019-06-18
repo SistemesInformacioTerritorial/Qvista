@@ -6,7 +6,7 @@ titolFinestra = versio+"qVista %s  Sistema d'Informació Territorial de Barcelon
 
 carpetaCataleg = "N:/9SITEB/Publicacions/qVista/Cataleg/Capes/"
 carpetaCatalegProjectesLlista = "N:/9SITEB/Publicacions/qVista/Cataleg/Mapes/"
-projecteInicial = 'mapesOffline/Districtes.qgs'
+projecteInicial = 'mapesOffline/qVista default map.qgs'
 
 estatConnexio = "Xarxa municipal: Connectat"
 
@@ -26,7 +26,7 @@ if not os.path.exists(tempdir):
 if not os.path.isdir(carpetaCataleg):
     carpetaCataleg = "../dades/CatalegProjectes/"
     carpetaCatalegProjectesLlista = "../dades/CatalegProjectes/"
-    projecteInicial = 'mapesOffline/Districtes.qgs'
+    projecteInicial = 'mapesOffline/qVista default map.qgs'
     estatConnexio = "Xarxa municipal: Desconnectat"
 
     

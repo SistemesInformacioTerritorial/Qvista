@@ -1,5 +1,7 @@
 from moduls.QvImports  import *
 from qgis.core import QgsRectangle
+from moduls.QvConstants import QvConstants
+from moduls.QvPushButton import QvPushButton
 
 
 # import time
@@ -67,19 +69,24 @@ class QvMapeta(QFrame):
         self.Escala =  (self.xmax_0 - self.xmin_0) / self.xTamany # relacion base "mundo" base mapeta--> 68.8
       
         # Definim la geometria del frame del mapeta
-        self.setGeometry(0,0,self.xTamany,self.yTamany)
-        self.move(5,5)
+        self.setGeometry(20,20,self.xTamany,self.yTamany)
+        self.move(20,20)
         self.begin = QPoint()
         self.end = QPoint()
 
         # Aixó serveix per donar ombra al frame
-        effect = QGraphicsDropShadowEffect()
-        effect.setBlurRadius(5)
-        effect.setColor(QColor(120,120,120,0))
-        effect.setXOffset(5)
-        effect.setYOffset(5)
-        effect.setColor(QColor(150,150,150))
-        self.setGraphicsEffect(effect)
+        # effect = QGraphicsDropShadowEffect()
+        # effect.setBlurRadius(5)
+        # effect.setColor(QColor(120,120,120,0))
+        # effect.setXOffset(5)
+        # effect.setYOffset(5)
+        # effect.setColor(QColor(150,150,150))
+        # self.setGraphicsEffect(effect)
+
+        ombra=QvConstants.ombra(self,radius=20)
+        self.setGraphicsEffect(ombra)
+
+        # QvConstants.afegeixOmbraWidget(self)
 
         # El botó per minimitzar el mapa
         self.botoFerPetit = QPushButton(self)
@@ -121,11 +128,11 @@ class QvMapeta(QFrame):
             else:
                 self.canvas.setRotation(44.5)
                 if self.petit == False:
-                    self.setGeometry(0,0,self.xTamany,self.yTamany)
-                    self.move(5,5)
+                    self.setGeometry(20,20,self.xTamany,self.yTamany)
+                    self.move(20,20)
                 else:
-                    self.setGeometry(0,0,25,25)
-                    self.move(5,5)
+                    self.setGeometry(20,20,25,25)
+                    self.move(20,20)
                 # self.setGeometry(0,0,self.xTamany,self.yTamany)
                 self.setStyleSheet('QFrame {background-image: url("imatges/QVista_Mapeta_44_5graus_mio.png");}')
                 # self.setStyleSheet('QFrame {background-image: url("imatges/QVista_Mapeta_44_5graus.png");}')
@@ -136,11 +143,11 @@ class QvMapeta(QFrame):
             else:
                 self.canvas.setRotation(44.5)
                 if self.petit == False:
-                    self.setGeometry(0,0,self.xTamany,self.yTamany)
-                    self.move(5,5)
+                    self.setGeometry(20,20,self.xTamany,self.yTamany)
+                    self.move(20,20)
                 else:
-                    self.setGeometry(0,0,25,25)
-                    self.move(5,5)
+                    self.setGeometry(20,20,25,25)
+                    self.move(20,20)
                 self.setStyleSheet('QFrame {background-image: url("imatges/QVista_Mapeta_44_5graus_mio_peque.png");}')
 
 
@@ -173,7 +180,7 @@ class QvMapeta(QFrame):
     def ferPetit(self):
         if self.petit:
             self.setGeometry(0,0,self.xTamany,self.yTamany)
-            self.move(5,5)
+            self.move(20,20)
             self.petit = False
             # icon = QIcon('imatges/arrow-collapse.png')
 
@@ -181,7 +188,7 @@ class QvMapeta(QFrame):
             self.botoFerPetit.setIcon(icon)
         else:
             self.setGeometry(0,0,25,25)
-            self.move(5,5)
+            self.move(20,20)
             self.petit = True
             icon = QIcon('imatges/mapetaPetit.jpg')
             self.botoFerPetit.setIcon(icon)
@@ -288,8 +295,12 @@ class QvMapeta(QFrame):
         # Cuando se detecta evento de refresco??
         # Pinto en mapeta rectangulo y cruz
         qp = QPainter(self)
-        br = QBrush(QColor(50, 110, 90, 70))  
+        #br = QBrush(QColor(50, 110, 90, 70))  
+        br = QBrush(QvConstants.COLORCLARSEMITRANS) #Color de fons del quadrat
         qp.setBrush(br)  
+
+        pen=QPen(QvConstants.COLORFOSC)
+        qp.setPen(pen)
         begin_ = QPoint()
         end_ =  QPoint()
 

@@ -1,0 +1,934 @@
+<!DOCTYPE qgis PUBLIC 'http://mrcc.com/qgis.dtd' 'SYSTEM'>
+<qgis version="3.4.1-Madeira" projectname="">
+  <homePath path=""/>
+  <title></title>
+  <autotransaction active="0"/>
+  <evaluateDefaultValues active="0"/>
+  <trust active="0"/>
+  <projectCrs>
+    <spatialrefsys>
+      <proj4>+proj=utm +zone=31 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs</proj4>
+      <srsid>2104</srsid>
+      <srid>25831</srid>
+      <authid>EPSG:25831</authid>
+      <description>ETRS89 / UTM zone 31N</description>
+      <projectionacronym>utm</projectionacronym>
+      <ellipsoidacronym>GRS80</ellipsoidacronym>
+      <geographicflag>false</geographicflag>
+    </spatialrefsys>
+  </projectCrs>
+  <layer-tree-group>
+    <customproperties/>
+    <layer-tree-layer providerKey="ogr" name="Districtes" source="./DistrictesColor.gpkg|layername=DistrictesColor" checked="Qt::Checked" expanded="1" id="DistrictesColor_2d0cceeb_7385_4fcf_abd5_fc8f15b7bc30">
+      <customproperties/>
+    </layer-tree-layer>
+    <custom-order enabled="0">
+      <item>DistrictesColor_2d0cceeb_7385_4fcf_abd5_fc8f15b7bc30</item>
+    </custom-order>
+  </layer-tree-group>
+  <snapping-settings mode="2" type="1" unit="1" intersection-snapping="0" tolerance="12" enabled="0">
+    <individual-layer-settings>
+      <layer-setting type="1" tolerance="12" units="1" id="DistrictesColor_2d0cceeb_7385_4fcf_abd5_fc8f15b7bc30" enabled="0"/>
+    </individual-layer-settings>
+  </snapping-settings>
+  <relations/>
+  <mapcanvas name="theMapCanvas" annotationsVisible="1">
+    <units>meters</units>
+    <extent>
+      <xmin>423003.93172261718427762</xmin>
+      <ymin>4578180.16855971608310938</ymin>
+      <xmax>435147.76101508870488033</xmax>
+      <ymax>4587183.92981034610420465</ymax>
+    </extent>
+    <rotation>0</rotation>
+    <destinationsrs>
+      <spatialrefsys>
+        <proj4>+proj=utm +zone=31 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs</proj4>
+        <srsid>2104</srsid>
+        <srid>25831</srid>
+        <authid>EPSG:25831</authid>
+        <description>ETRS89 / UTM zone 31N</description>
+        <projectionacronym>utm</projectionacronym>
+        <ellipsoidacronym>GRS80</ellipsoidacronym>
+        <geographicflag>false</geographicflag>
+      </spatialrefsys>
+    </destinationsrs>
+    <rendermaptile>0</rendermaptile>
+  </mapcanvas>
+  <projectModels/>
+  <legend updateDrawingOrder="true">
+    <legendlayer open="true" drawingOrder="-1" name="Districtes" checked="Qt::Checked" showFeatureCount="0">
+      <filegroup open="true" hidden="false">
+        <legendlayerfile visible="1" layerid="DistrictesColor_2d0cceeb_7385_4fcf_abd5_fc8f15b7bc30" isInOverview="0"/>
+      </filegroup>
+    </legendlayer>
+  </legend>
+  <mapViewDocks/>
+  <mapViewDocks3D/>
+  <mapcanvas name="mAreaCanvas" annotationsVisible="1">
+    <units>degrees</units>
+    <extent>
+      <xmin>0</xmin>
+      <ymin>0</ymin>
+      <xmax>0</xmax>
+      <ymax>0</ymax>
+    </extent>
+    <rotation>0</rotation>
+    <destinationsrs>
+      <spatialrefsys>
+        <proj4>+proj=longlat +datum=WGS84 +no_defs</proj4>
+        <srsid>3452</srsid>
+        <srid>4326</srid>
+        <authid>EPSG:4326</authid>
+        <description>WGS 84</description>
+        <projectionacronym>longlat</projectionacronym>
+        <ellipsoidacronym>WGS84</ellipsoidacronym>
+        <geographicflag>true</geographicflag>
+      </spatialrefsys>
+    </destinationsrs>
+    <rendermaptile>0</rendermaptile>
+  </mapcanvas>
+  <mapcanvas name="mAreaCanvas" annotationsVisible="1">
+    <units>degrees</units>
+    <extent>
+      <xmin>0</xmin>
+      <ymin>0</ymin>
+      <xmax>0</xmax>
+      <ymax>0</ymax>
+    </extent>
+    <rotation>0</rotation>
+    <destinationsrs>
+      <spatialrefsys>
+        <proj4>+proj=longlat +datum=WGS84 +no_defs</proj4>
+        <srsid>3452</srsid>
+        <srid>4326</srid>
+        <authid>EPSG:4326</authid>
+        <description>WGS 84</description>
+        <projectionacronym>longlat</projectionacronym>
+        <ellipsoidacronym>WGS84</ellipsoidacronym>
+        <geographicflag>true</geographicflag>
+      </spatialrefsys>
+    </destinationsrs>
+    <rendermaptile>0</rendermaptile>
+  </mapcanvas>
+  <mapcanvas name="mAreaCanvas" annotationsVisible="1">
+    <units>degrees</units>
+    <extent>
+      <xmin>0</xmin>
+      <ymin>0</ymin>
+      <xmax>0</xmax>
+      <ymax>0</ymax>
+    </extent>
+    <rotation>0</rotation>
+    <destinationsrs>
+      <spatialrefsys>
+        <proj4>+proj=longlat +datum=WGS84 +no_defs</proj4>
+        <srsid>3452</srsid>
+        <srid>4326</srid>
+        <authid>EPSG:4326</authid>
+        <description>WGS 84</description>
+        <projectionacronym>longlat</projectionacronym>
+        <ellipsoidacronym>WGS84</ellipsoidacronym>
+        <geographicflag>true</geographicflag>
+      </spatialrefsys>
+    </destinationsrs>
+    <rendermaptile>0</rendermaptile>
+  </mapcanvas>
+  <projectlayers>
+    <maplayer autoRefreshEnabled="0" refreshOnNotifyEnabled="0" minScale="1e+08" autoRefreshTime="0" type="vector" hasScaleBasedVisibilityFlag="0" styleCategories="AllStyleCategories" geometry="Polygon" simplifyDrawingHints="1" simplifyLocal="1" simplifyAlgorithm="0" simplifyMaxScale="1" labelsEnabled="0" maxScale="0" readOnly="0" refreshOnNotifyMessage="" simplifyDrawingTol="1">
+      <extent>
+        <xmin>420812.53125</xmin>
+        <ymin>4574282</ymin>
+        <xmax>435480.40625</xmax>
+        <ymax>4591061</ymax>
+      </extent>
+      <id>DistrictesColor_2d0cceeb_7385_4fcf_abd5_fc8f15b7bc30</id>
+      <datasource>./DistrictesColor.gpkg|layername=DistrictesColor</datasource>
+      <keywordList>
+        <value></value>
+      </keywordList>
+      <layername>Districtes</layername>
+      <srs>
+        <spatialrefsys>
+          <proj4>+proj=utm +zone=31 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs</proj4>
+          <srsid>2104</srsid>
+          <srid>25831</srid>
+          <authid>EPSG:25831</authid>
+          <description>ETRS89 / UTM zone 31N</description>
+          <projectionacronym>utm</projectionacronym>
+          <ellipsoidacronym>GRS80</ellipsoidacronym>
+          <geographicflag>false</geographicflag>
+        </spatialrefsys>
+      </srs>
+      <resourceMetadata>
+        <identifier></identifier>
+        <parentidentifier></parentidentifier>
+        <language></language>
+        <type></type>
+        <title></title>
+        <abstract></abstract>
+        <contact>
+          <name></name>
+          <organization></organization>
+          <position></position>
+          <voice></voice>
+          <fax></fax>
+          <email></email>
+          <role></role>
+        </contact>
+        <links/>
+        <fees></fees>
+        <encoding></encoding>
+        <crs>
+          <spatialrefsys>
+            <proj4></proj4>
+            <srsid>0</srsid>
+            <srid>0</srid>
+            <authid></authid>
+            <description></description>
+            <projectionacronym></projectionacronym>
+            <ellipsoidacronym></ellipsoidacronym>
+            <geographicflag>false</geographicflag>
+          </spatialrefsys>
+        </crs>
+        <extent>
+          <spatial minx="0" crs="" miny="0" maxz="0" dimensions="2" minz="0" maxy="0" maxx="0"/>
+          <temporal>
+            <period>
+              <start></start>
+              <end></end>
+            </period>
+          </temporal>
+        </extent>
+      </resourceMetadata>
+      <provider encoding="UTF-8">ogr</provider>
+      <vectorjoins/>
+      <layerDependencies/>
+      <dataDependencies/>
+      <legend type="default-vector"/>
+      <expressionfields/>
+      <map-layer-style-manager current="predeterminado">
+        <map-layer-style name="predeterminado"/>
+      </map-layer-style-manager>
+      <auxiliaryLayer/>
+      <flags>
+        <Identifiable>1</Identifiable>
+        <Removable>1</Removable>
+        <Searchable>1</Searchable>
+      </flags>
+      <renderer-v2 attr="NDistric" type="categorizedSymbol" forceraster="0" symbollevels="0" enableorderby="0">
+        <categories>
+          <category value="Ciutat Vella" symbol="0" label="Ciutat Vella" render="true"/>
+          <category value="Eixample" symbol="1" label="Eixample" render="true"/>
+          <category value="GrÃ cia" symbol="2" label="GrÃ cia" render="true"/>
+          <category value="Horta-GuinardÃ³" symbol="3" label="Horta-GuinardÃ³" render="true"/>
+          <category value="Les Corts" symbol="4" label="Les Corts" render="true"/>
+          <category value="Nou Barris" symbol="5" label="Nou Barris" render="true"/>
+          <category value="Sant Andreu" symbol="6" label="Sant Andreu" render="true"/>
+          <category value="Sant MartÃ­" symbol="7" label="Sant MartÃ­" render="true"/>
+          <category value="Sants-MontjuÃ¯c" symbol="8" label="Sants-MontjuÃ¯c" render="true"/>
+          <category value="SarriÃ -Sant Gervasi" symbol="9" label="SarriÃ -Sant Gervasi" render="true"/>
+          <category value="" symbol="10" label="" render="true"/>
+        </categories>
+        <symbols>
+          <symbol type="fill" name="0" alpha="1" clip_to_extent="1">
+            <layer class="SimpleFill" pass="0" enabled="1" locked="0">
+              <prop v="3x:0,0,0,0,0,0" k="border_width_map_unit_scale"/>
+              <prop v="215,183,184,255" k="color"/>
+              <prop v="bevel" k="joinstyle"/>
+              <prop v="0,0" k="offset"/>
+              <prop v="3x:0,0,0,0,0,0" k="offset_map_unit_scale"/>
+              <prop v="MM" k="offset_unit"/>
+              <prop v="35,35,35,255" k="outline_color"/>
+              <prop v="no" k="outline_style"/>
+              <prop v="0.26" k="outline_width"/>
+              <prop v="MM" k="outline_width_unit"/>
+              <prop v="solid" k="style"/>
+              <data_defined_properties>
+                <Option type="Map">
+                  <Option type="QString" value="" name="name"/>
+                  <Option name="properties"/>
+                  <Option type="QString" value="collection" name="type"/>
+                </Option>
+              </data_defined_properties>
+            </layer>
+          </symbol>
+          <symbol type="fill" name="1" alpha="1" clip_to_extent="1">
+            <layer class="SimpleFill" pass="0" enabled="1" locked="0">
+              <prop v="3x:0,0,0,0,0,0" k="border_width_map_unit_scale"/>
+              <prop v="231,180,149,255" k="color"/>
+              <prop v="bevel" k="joinstyle"/>
+              <prop v="0,0" k="offset"/>
+              <prop v="3x:0,0,0,0,0,0" k="offset_map_unit_scale"/>
+              <prop v="MM" k="offset_unit"/>
+              <prop v="35,35,35,255" k="outline_color"/>
+              <prop v="no" k="outline_style"/>
+              <prop v="0.26" k="outline_width"/>
+              <prop v="MM" k="outline_width_unit"/>
+              <prop v="solid" k="style"/>
+              <data_defined_properties>
+                <Option type="Map">
+                  <Option type="QString" value="" name="name"/>
+                  <Option name="properties"/>
+                  <Option type="QString" value="collection" name="type"/>
+                </Option>
+              </data_defined_properties>
+            </layer>
+          </symbol>
+          <symbol type="fill" name="10" alpha="1" clip_to_extent="1">
+            <layer class="SimpleFill" pass="0" enabled="1" locked="0">
+              <prop v="3x:0,0,0,0,0,0" k="border_width_map_unit_scale"/>
+              <prop v="43,131,186,255" k="color"/>
+              <prop v="bevel" k="joinstyle"/>
+              <prop v="0,0" k="offset"/>
+              <prop v="3x:0,0,0,0,0,0" k="offset_map_unit_scale"/>
+              <prop v="MM" k="offset_unit"/>
+              <prop v="35,35,35,255" k="outline_color"/>
+              <prop v="no" k="outline_style"/>
+              <prop v="0.26" k="outline_width"/>
+              <prop v="MM" k="outline_width_unit"/>
+              <prop v="solid" k="style"/>
+              <data_defined_properties>
+                <Option type="Map">
+                  <Option type="QString" value="" name="name"/>
+                  <Option name="properties"/>
+                  <Option type="QString" value="collection" name="type"/>
+                </Option>
+              </data_defined_properties>
+            </layer>
+          </symbol>
+          <symbol type="fill" name="2" alpha="1" clip_to_extent="1">
+            <layer class="SimpleFill" pass="0" enabled="1" locked="0">
+              <prop v="3x:0,0,0,0,0,0" k="border_width_map_unit_scale"/>
+              <prop v="246,176,114,255" k="color"/>
+              <prop v="bevel" k="joinstyle"/>
+              <prop v="0,0" k="offset"/>
+              <prop v="3x:0,0,0,0,0,0" k="offset_map_unit_scale"/>
+              <prop v="MM" k="offset_unit"/>
+              <prop v="35,35,35,255" k="outline_color"/>
+              <prop v="no" k="outline_style"/>
+              <prop v="0.26" k="outline_width"/>
+              <prop v="MM" k="outline_width_unit"/>
+              <prop v="solid" k="style"/>
+              <data_defined_properties>
+                <Option type="Map">
+                  <Option type="QString" value="" name="name"/>
+                  <Option name="properties"/>
+                  <Option type="QString" value="collection" name="type"/>
+                </Option>
+              </data_defined_properties>
+            </layer>
+          </symbol>
+          <symbol type="fill" name="3" alpha="1" clip_to_extent="1">
+            <layer class="SimpleFill" pass="0" enabled="1" locked="0">
+              <prop v="3x:0,0,0,0,0,0" k="border_width_map_unit_scale"/>
+              <prop v="254,190,116,255" k="color"/>
+              <prop v="bevel" k="joinstyle"/>
+              <prop v="0,0" k="offset"/>
+              <prop v="3x:0,0,0,0,0,0" k="offset_map_unit_scale"/>
+              <prop v="MM" k="offset_unit"/>
+              <prop v="35,35,35,255" k="outline_color"/>
+              <prop v="no" k="outline_style"/>
+              <prop v="0.26" k="outline_width"/>
+              <prop v="MM" k="outline_width_unit"/>
+              <prop v="solid" k="style"/>
+              <data_defined_properties>
+                <Option type="Map">
+                  <Option type="QString" value="" name="name"/>
+                  <Option name="properties"/>
+                  <Option type="QString" value="collection" name="type"/>
+                </Option>
+              </data_defined_properties>
+            </layer>
+          </symbol>
+          <symbol type="fill" name="4" alpha="1" clip_to_extent="1">
+            <layer class="SimpleFill" pass="0" enabled="1" locked="0">
+              <prop v="3x:0,0,0,0,0,0" k="border_width_map_unit_scale"/>
+              <prop v="255,223,154,255" k="color"/>
+              <prop v="bevel" k="joinstyle"/>
+              <prop v="0,0" k="offset"/>
+              <prop v="3x:0,0,0,0,0,0" k="offset_map_unit_scale"/>
+              <prop v="MM" k="offset_unit"/>
+              <prop v="35,35,35,255" k="outline_color"/>
+              <prop v="no" k="outline_style"/>
+              <prop v="0.26" k="outline_width"/>
+              <prop v="MM" k="outline_width_unit"/>
+              <prop v="solid" k="style"/>
+              <data_defined_properties>
+                <Option type="Map">
+                  <Option type="QString" value="" name="name"/>
+                  <Option name="properties"/>
+                  <Option type="QString" value="collection" name="type"/>
+                </Option>
+              </data_defined_properties>
+            </layer>
+          </symbol>
+          <symbol type="fill" name="5" alpha="1" clip_to_extent="1">
+            <layer class="SimpleFill" pass="0" enabled="1" locked="0">
+              <prop v="3x:0,0,0,0,0,0" k="border_width_map_unit_scale"/>
+              <prop v="255,255,191,255" k="color"/>
+              <prop v="bevel" k="joinstyle"/>
+              <prop v="0,0" k="offset"/>
+              <prop v="3x:0,0,0,0,0,0" k="offset_map_unit_scale"/>
+              <prop v="MM" k="offset_unit"/>
+              <prop v="35,35,35,255" k="outline_color"/>
+              <prop v="no" k="outline_style"/>
+              <prop v="0.26" k="outline_width"/>
+              <prop v="MM" k="outline_width_unit"/>
+              <prop v="solid" k="style"/>
+              <data_defined_properties>
+                <Option type="Map">
+                  <Option type="QString" value="" name="name"/>
+                  <Option name="properties"/>
+                  <Option type="QString" value="collection" name="type"/>
+                </Option>
+              </data_defined_properties>
+            </layer>
+          </symbol>
+          <symbol type="fill" name="6" alpha="1" clip_to_extent="1">
+            <layer class="SimpleFill" pass="0" enabled="1" locked="0">
+              <prop v="3x:0,0,0,0,0,0" k="border_width_map_unit_scale"/>
+              <prop v="222,242,180,255" k="color"/>
+              <prop v="bevel" k="joinstyle"/>
+              <prop v="0,0" k="offset"/>
+              <prop v="3x:0,0,0,0,0,0" k="offset_map_unit_scale"/>
+              <prop v="MM" k="offset_unit"/>
+              <prop v="35,35,35,255" k="outline_color"/>
+              <prop v="no" k="outline_style"/>
+              <prop v="0.26" k="outline_width"/>
+              <prop v="MM" k="outline_width_unit"/>
+              <prop v="solid" k="style"/>
+              <data_defined_properties>
+                <Option type="Map">
+                  <Option type="QString" value="" name="name"/>
+                  <Option name="properties"/>
+                  <Option type="QString" value="collection" name="type"/>
+                </Option>
+              </data_defined_properties>
+            </layer>
+          </symbol>
+          <symbol type="fill" name="7" alpha="1" clip_to_extent="1">
+            <layer class="SimpleFill" pass="0" enabled="1" locked="0">
+              <prop v="3x:0,0,0,0,0,0" k="border_width_map_unit_scale"/>
+              <prop v="188,228,170,255" k="color"/>
+              <prop v="bevel" k="joinstyle"/>
+              <prop v="0,0" k="offset"/>
+              <prop v="3x:0,0,0,0,0,0" k="offset_map_unit_scale"/>
+              <prop v="MM" k="offset_unit"/>
+              <prop v="35,35,35,255" k="outline_color"/>
+              <prop v="no" k="outline_style"/>
+              <prop v="0.26" k="outline_width"/>
+              <prop v="MM" k="outline_width_unit"/>
+              <prop v="solid" k="style"/>
+              <data_defined_properties>
+                <Option type="Map">
+                  <Option type="QString" value="" name="name"/>
+                  <Option name="properties"/>
+                  <Option type="QString" value="collection" name="type"/>
+                </Option>
+              </data_defined_properties>
+            </layer>
+          </symbol>
+          <symbol type="fill" name="8" alpha="1" clip_to_extent="1">
+            <layer class="SimpleFill" pass="0" enabled="1" locked="0">
+              <prop v="3x:0,0,0,0,0,0" k="border_width_map_unit_scale"/>
+              <prop v="145,203,169,255" k="color"/>
+              <prop v="bevel" k="joinstyle"/>
+              <prop v="0,0" k="offset"/>
+              <prop v="3x:0,0,0,0,0,0" k="offset_map_unit_scale"/>
+              <prop v="MM" k="offset_unit"/>
+              <prop v="35,35,35,255" k="outline_color"/>
+              <prop v="no" k="outline_style"/>
+              <prop v="0.26" k="outline_width"/>
+              <prop v="MM" k="outline_width_unit"/>
+              <prop v="solid" k="style"/>
+              <data_defined_properties>
+                <Option type="Map">
+                  <Option type="QString" value="" name="name"/>
+                  <Option name="properties"/>
+                  <Option type="QString" value="collection" name="type"/>
+                </Option>
+              </data_defined_properties>
+            </layer>
+          </symbol>
+          <symbol type="fill" name="9" alpha="1" clip_to_extent="1">
+            <layer class="SimpleFill" pass="0" enabled="1" locked="0">
+              <prop v="3x:0,0,0,0,0,0" k="border_width_map_unit_scale"/>
+              <prop v="94,167,177,255" k="color"/>
+              <prop v="bevel" k="joinstyle"/>
+              <prop v="0,0" k="offset"/>
+              <prop v="3x:0,0,0,0,0,0" k="offset_map_unit_scale"/>
+              <prop v="MM" k="offset_unit"/>
+              <prop v="35,35,35,255" k="outline_color"/>
+              <prop v="no" k="outline_style"/>
+              <prop v="0.26" k="outline_width"/>
+              <prop v="MM" k="outline_width_unit"/>
+              <prop v="solid" k="style"/>
+              <data_defined_properties>
+                <Option type="Map">
+                  <Option type="QString" value="" name="name"/>
+                  <Option name="properties"/>
+                  <Option type="QString" value="collection" name="type"/>
+                </Option>
+              </data_defined_properties>
+            </layer>
+          </symbol>
+        </symbols>
+        <source-symbol>
+          <symbol type="fill" name="0" alpha="1" clip_to_extent="1">
+            <layer class="SimpleFill" pass="0" enabled="1" locked="0">
+              <prop v="3x:0,0,0,0,0,0" k="border_width_map_unit_scale"/>
+              <prop v="229,182,54,255" k="color"/>
+              <prop v="bevel" k="joinstyle"/>
+              <prop v="0,0" k="offset"/>
+              <prop v="3x:0,0,0,0,0,0" k="offset_map_unit_scale"/>
+              <prop v="MM" k="offset_unit"/>
+              <prop v="35,35,35,255" k="outline_color"/>
+              <prop v="no" k="outline_style"/>
+              <prop v="0.26" k="outline_width"/>
+              <prop v="MM" k="outline_width_unit"/>
+              <prop v="solid" k="style"/>
+              <data_defined_properties>
+                <Option type="Map">
+                  <Option type="QString" value="" name="name"/>
+                  <Option name="properties"/>
+                  <Option type="QString" value="collection" name="type"/>
+                </Option>
+              </data_defined_properties>
+            </layer>
+          </symbol>
+        </source-symbol>
+        <colorramp type="gradient" name="[source]">
+          <prop v="215,183,184,255" k="color1"/>
+          <prop v="43,131,186,255" k="color2"/>
+          <prop v="0" k="discrete"/>
+          <prop v="gradient" k="rampType"/>
+          <prop v="0.25;253,174,97,255:0.5;255,255,191,255:0.75;171,221,164,255" k="stops"/>
+        </colorramp>
+        <rotation/>
+        <sizescale/>
+      </renderer-v2>
+      <customproperties>
+        <property value="0" key="embeddedWidgets/count"/>
+        <property key="variableNames"/>
+        <property key="variableValues"/>
+      </customproperties>
+      <blendMode>0</blendMode>
+      <featureBlendMode>0</featureBlendMode>
+      <layerOpacity>1</layerOpacity>
+      <SingleCategoryDiagramRenderer attributeLegend="1" diagramType="Histogram">
+        <DiagramCategory opacity="1" scaleDependency="Area" barWidth="5" minimumSize="0" rotationOffset="270" width="15" diagramOrientation="Up" sizeScale="3x:0,0,0,0,0,0" labelPlacementMethod="XHeight" maxScaleDenominator="1e+08" minScaleDenominator="0" backgroundAlpha="255" penAlpha="255" scaleBasedVisibility="0" backgroundColor="#ffffff" lineSizeScale="3x:0,0,0,0,0,0" penColor="#000000" enabled="0" lineSizeType="MM" height="15" sizeType="MM" penWidth="0">
+          <fontProperties description="MS Shell Dlg 2,8.25,-1,5,50,0,0,0,0,0" style=""/>
+        </DiagramCategory>
+      </SingleCategoryDiagramRenderer>
+      <DiagramLayerSettings showAll="1" placement="1" linePlacementFlags="18" zIndex="0" obstacle="0" priority="0" dist="0">
+        <properties>
+          <Option type="Map">
+            <Option type="QString" value="" name="name"/>
+            <Option name="properties"/>
+            <Option type="QString" value="collection" name="type"/>
+          </Option>
+        </properties>
+      </DiagramLayerSettings>
+      <geometryOptions removeDuplicateNodes="0" geometryPrecision="0">
+        <activeChecks/>
+        <checkConfiguration/>
+      </geometryOptions>
+      <fieldConfiguration>
+        <field name="fid">
+          <editWidget type="TextEdit">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field name="District">
+          <editWidget type="TextEdit">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field name="NDistric">
+          <editWidget type="TextEdit">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field name="CBarri">
+          <editWidget type="TextEdit">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field name="NBarri">
+          <editWidget type="TextEdit">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field name="C_AEB">
+          <editWidget type="TextEdit">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field name="CSecCens">
+          <editWidget type="TextEdit">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field name="C_ILLA">
+          <editWidget type="TextEdit">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field name="SUP_CONSTR">
+          <editWidget type="TextEdit">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field name="SUP_LOCALS">
+          <editWidget type="TextEdit">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field name="SUPSERVEIS">
+          <editWidget type="TextEdit">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field name="N_PARCELES">
+          <editWidget type="TextEdit">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field name="NHABITATGE">
+          <editWidget type="TextEdit">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field name="N_PARQUING">
+          <editWidget type="TextEdit">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field name="N_ALTRES">
+          <editWidget type="TextEdit">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field name="N_LOCALS">
+          <editWidget type="TextEdit">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field name="AREA">
+          <editWidget type="TextEdit">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field name="PERIMETRE">
+          <editWidget type="TextEdit">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field name="COORD_X">
+          <editWidget type="TextEdit">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field name="COORD_Y">
+          <editWidget type="TextEdit">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+      </fieldConfiguration>
+      <aliases>
+        <alias field="fid" index="0" name=""/>
+        <alias field="District" index="1" name=""/>
+        <alias field="NDistric" index="2" name=""/>
+        <alias field="CBarri" index="3" name=""/>
+        <alias field="NBarri" index="4" name=""/>
+        <alias field="C_AEB" index="5" name=""/>
+        <alias field="CSecCens" index="6" name=""/>
+        <alias field="C_ILLA" index="7" name=""/>
+        <alias field="SUP_CONSTR" index="8" name=""/>
+        <alias field="SUP_LOCALS" index="9" name=""/>
+        <alias field="SUPSERVEIS" index="10" name=""/>
+        <alias field="N_PARCELES" index="11" name=""/>
+        <alias field="NHABITATGE" index="12" name=""/>
+        <alias field="N_PARQUING" index="13" name=""/>
+        <alias field="N_ALTRES" index="14" name=""/>
+        <alias field="N_LOCALS" index="15" name=""/>
+        <alias field="AREA" index="16" name=""/>
+        <alias field="PERIMETRE" index="17" name=""/>
+        <alias field="COORD_X" index="18" name=""/>
+        <alias field="COORD_Y" index="19" name=""/>
+      </aliases>
+      <excludeAttributesWMS/>
+      <excludeAttributesWFS/>
+      <defaults>
+        <default field="fid" applyOnUpdate="0" expression=""/>
+        <default field="District" applyOnUpdate="0" expression=""/>
+        <default field="NDistric" applyOnUpdate="0" expression=""/>
+        <default field="CBarri" applyOnUpdate="0" expression=""/>
+        <default field="NBarri" applyOnUpdate="0" expression=""/>
+        <default field="C_AEB" applyOnUpdate="0" expression=""/>
+        <default field="CSecCens" applyOnUpdate="0" expression=""/>
+        <default field="C_ILLA" applyOnUpdate="0" expression=""/>
+        <default field="SUP_CONSTR" applyOnUpdate="0" expression=""/>
+        <default field="SUP_LOCALS" applyOnUpdate="0" expression=""/>
+        <default field="SUPSERVEIS" applyOnUpdate="0" expression=""/>
+        <default field="N_PARCELES" applyOnUpdate="0" expression=""/>
+        <default field="NHABITATGE" applyOnUpdate="0" expression=""/>
+        <default field="N_PARQUING" applyOnUpdate="0" expression=""/>
+        <default field="N_ALTRES" applyOnUpdate="0" expression=""/>
+        <default field="N_LOCALS" applyOnUpdate="0" expression=""/>
+        <default field="AREA" applyOnUpdate="0" expression=""/>
+        <default field="PERIMETRE" applyOnUpdate="0" expression=""/>
+        <default field="COORD_X" applyOnUpdate="0" expression=""/>
+        <default field="COORD_Y" applyOnUpdate="0" expression=""/>
+      </defaults>
+      <constraints>
+        <constraint unique_strength="1" field="fid" exp_strength="0" constraints="3" notnull_strength="1"/>
+        <constraint unique_strength="0" field="District" exp_strength="0" constraints="0" notnull_strength="0"/>
+        <constraint unique_strength="0" field="NDistric" exp_strength="0" constraints="0" notnull_strength="0"/>
+        <constraint unique_strength="0" field="CBarri" exp_strength="0" constraints="0" notnull_strength="0"/>
+        <constraint unique_strength="0" field="NBarri" exp_strength="0" constraints="0" notnull_strength="0"/>
+        <constraint unique_strength="0" field="C_AEB" exp_strength="0" constraints="0" notnull_strength="0"/>
+        <constraint unique_strength="0" field="CSecCens" exp_strength="0" constraints="0" notnull_strength="0"/>
+        <constraint unique_strength="0" field="C_ILLA" exp_strength="0" constraints="0" notnull_strength="0"/>
+        <constraint unique_strength="0" field="SUP_CONSTR" exp_strength="0" constraints="0" notnull_strength="0"/>
+        <constraint unique_strength="0" field="SUP_LOCALS" exp_strength="0" constraints="0" notnull_strength="0"/>
+        <constraint unique_strength="0" field="SUPSERVEIS" exp_strength="0" constraints="0" notnull_strength="0"/>
+        <constraint unique_strength="0" field="N_PARCELES" exp_strength="0" constraints="0" notnull_strength="0"/>
+        <constraint unique_strength="0" field="NHABITATGE" exp_strength="0" constraints="0" notnull_strength="0"/>
+        <constraint unique_strength="0" field="N_PARQUING" exp_strength="0" constraints="0" notnull_strength="0"/>
+        <constraint unique_strength="0" field="N_ALTRES" exp_strength="0" constraints="0" notnull_strength="0"/>
+        <constraint unique_strength="0" field="N_LOCALS" exp_strength="0" constraints="0" notnull_strength="0"/>
+        <constraint unique_strength="0" field="AREA" exp_strength="0" constraints="0" notnull_strength="0"/>
+        <constraint unique_strength="0" field="PERIMETRE" exp_strength="0" constraints="0" notnull_strength="0"/>
+        <constraint unique_strength="0" field="COORD_X" exp_strength="0" constraints="0" notnull_strength="0"/>
+        <constraint unique_strength="0" field="COORD_Y" exp_strength="0" constraints="0" notnull_strength="0"/>
+      </constraints>
+      <constraintExpressions>
+        <constraint field="fid" desc="" exp=""/>
+        <constraint field="District" desc="" exp=""/>
+        <constraint field="NDistric" desc="" exp=""/>
+        <constraint field="CBarri" desc="" exp=""/>
+        <constraint field="NBarri" desc="" exp=""/>
+        <constraint field="C_AEB" desc="" exp=""/>
+        <constraint field="CSecCens" desc="" exp=""/>
+        <constraint field="C_ILLA" desc="" exp=""/>
+        <constraint field="SUP_CONSTR" desc="" exp=""/>
+        <constraint field="SUP_LOCALS" desc="" exp=""/>
+        <constraint field="SUPSERVEIS" desc="" exp=""/>
+        <constraint field="N_PARCELES" desc="" exp=""/>
+        <constraint field="NHABITATGE" desc="" exp=""/>
+        <constraint field="N_PARQUING" desc="" exp=""/>
+        <constraint field="N_ALTRES" desc="" exp=""/>
+        <constraint field="N_LOCALS" desc="" exp=""/>
+        <constraint field="AREA" desc="" exp=""/>
+        <constraint field="PERIMETRE" desc="" exp=""/>
+        <constraint field="COORD_X" desc="" exp=""/>
+        <constraint field="COORD_Y" desc="" exp=""/>
+      </constraintExpressions>
+      <expressionfields/>
+      <attributeactions>
+        <defaultAction value="{00000000-0000-0000-0000-000000000000}" key="Canvas"/>
+      </attributeactions>
+      <attributetableconfig sortExpression="" actionWidgetStyle="dropDown" sortOrder="0">
+        <columns>
+          <column type="field" name="fid" width="-1" hidden="0"/>
+          <column type="field" name="District" width="-1" hidden="0"/>
+          <column type="field" name="NDistric" width="-1" hidden="0"/>
+          <column type="field" name="CBarri" width="-1" hidden="0"/>
+          <column type="field" name="NBarri" width="-1" hidden="0"/>
+          <column type="field" name="C_AEB" width="-1" hidden="0"/>
+          <column type="field" name="CSecCens" width="-1" hidden="0"/>
+          <column type="field" name="C_ILLA" width="-1" hidden="0"/>
+          <column type="field" name="SUP_CONSTR" width="-1" hidden="0"/>
+          <column type="field" name="SUP_LOCALS" width="-1" hidden="0"/>
+          <column type="field" name="SUPSERVEIS" width="-1" hidden="0"/>
+          <column type="field" name="N_PARCELES" width="-1" hidden="0"/>
+          <column type="field" name="NHABITATGE" width="-1" hidden="0"/>
+          <column type="field" name="N_PARQUING" width="-1" hidden="0"/>
+          <column type="field" name="N_ALTRES" width="-1" hidden="0"/>
+          <column type="field" name="N_LOCALS" width="-1" hidden="0"/>
+          <column type="field" name="AREA" width="-1" hidden="0"/>
+          <column type="field" name="PERIMETRE" width="-1" hidden="0"/>
+          <column type="field" name="COORD_X" width="-1" hidden="0"/>
+          <column type="field" name="COORD_Y" width="-1" hidden="0"/>
+          <column type="actions" width="-1" hidden="1"/>
+        </columns>
+      </attributetableconfig>
+      <conditionalstyles>
+        <rowstyles/>
+        <fieldstyles/>
+      </conditionalstyles>
+      <editform tolerant="1"></editform>
+      <editforminit/>
+      <editforminitcodesource>0</editforminitcodesource>
+      <editforminitfilepath></editforminitfilepath>
+      <editforminitcode><![CDATA[# -*- codificación: utf-8 -*-
+"""
+Los formularios de QGIS pueden tener una función de Python que
+es llamada cuando se abre el formulario.
+
+Use esta función para añadir lógica extra a sus formularios.
+
+Introduzca el nombre de la función en el campo
+"Python Init function".
+Sigue un ejemplo:
+"""
+from qgis.PyQt.QtWidgets import QWidget
+
+def my_form_open(dialog, layer, feature):
+	geom = feature.geometry()
+	control = dialog.findChild(QWidget, "MyLineEdit")
+]]></editforminitcode>
+      <featformsuppress>0</featformsuppress>
+      <editorlayout>generatedlayout</editorlayout>
+      <editable>
+        <field name="AREA" editable="1"/>
+        <field name="CBarri" editable="1"/>
+        <field name="COORD_X" editable="1"/>
+        <field name="COORD_Y" editable="1"/>
+        <field name="CSecCens" editable="1"/>
+        <field name="C_AEB" editable="1"/>
+        <field name="C_ILLA" editable="1"/>
+        <field name="District" editable="1"/>
+        <field name="NBarri" editable="1"/>
+        <field name="NDistric" editable="1"/>
+        <field name="NHABITATGE" editable="1"/>
+        <field name="N_ALTRES" editable="1"/>
+        <field name="N_LOCALS" editable="1"/>
+        <field name="N_PARCELES" editable="1"/>
+        <field name="N_PARQUING" editable="1"/>
+        <field name="PERIMETRE" editable="1"/>
+        <field name="SUPSERVEIS" editable="1"/>
+        <field name="SUP_CONSTR" editable="1"/>
+        <field name="SUP_LOCALS" editable="1"/>
+        <field name="fid" editable="1"/>
+      </editable>
+      <labelOnTop>
+        <field name="AREA" labelOnTop="0"/>
+        <field name="CBarri" labelOnTop="0"/>
+        <field name="COORD_X" labelOnTop="0"/>
+        <field name="COORD_Y" labelOnTop="0"/>
+        <field name="CSecCens" labelOnTop="0"/>
+        <field name="C_AEB" labelOnTop="0"/>
+        <field name="C_ILLA" labelOnTop="0"/>
+        <field name="District" labelOnTop="0"/>
+        <field name="NBarri" labelOnTop="0"/>
+        <field name="NDistric" labelOnTop="0"/>
+        <field name="NHABITATGE" labelOnTop="0"/>
+        <field name="N_ALTRES" labelOnTop="0"/>
+        <field name="N_LOCALS" labelOnTop="0"/>
+        <field name="N_PARCELES" labelOnTop="0"/>
+        <field name="N_PARQUING" labelOnTop="0"/>
+        <field name="PERIMETRE" labelOnTop="0"/>
+        <field name="SUPSERVEIS" labelOnTop="0"/>
+        <field name="SUP_CONSTR" labelOnTop="0"/>
+        <field name="SUP_LOCALS" labelOnTop="0"/>
+        <field name="fid" labelOnTop="0"/>
+      </labelOnTop>
+      <widgets/>
+      <previewExpression>fid</previewExpression>
+      <mapTip></mapTip>
+    </maplayer>
+  </projectlayers>
+  <layerorder>
+    <layer id="DistrictesColor_2d0cceeb_7385_4fcf_abd5_fc8f15b7bc30"/>
+  </layerorder>
+  <properties>
+    <Gui>
+      <SelectionColorBluePart type="int">0</SelectionColorBluePart>
+      <SelectionColorRedPart type="int">255</SelectionColorRedPart>
+      <SelectionColorAlphaPart type="int">255</SelectionColorAlphaPart>
+      <CanvasColorGreenPart type="int">255</CanvasColorGreenPart>
+      <CanvasColorRedPart type="int">255</CanvasColorRedPart>
+      <SelectionColorGreenPart type="int">255</SelectionColorGreenPart>
+      <CanvasColorBluePart type="int">255</CanvasColorBluePart>
+    </Gui>
+    <Measure>
+      <Ellipsoid type="QString">WGS84</Ellipsoid>
+    </Measure>
+    <SpatialRefSys>
+      <ProjectionsEnabled type="int">1</ProjectionsEnabled>
+    </SpatialRefSys>
+    <PositionPrecision>
+      <DecimalPlaces type="int">2</DecimalPlaces>
+      <Automatic type="bool">true</Automatic>
+    </PositionPrecision>
+    <Paths>
+      <Absolute type="bool">false</Absolute>
+    </Paths>
+    <Legend>
+      <filterByMap type="bool">false</filterByMap>
+    </Legend>
+    <Measurement>
+      <DistanceUnits type="QString"></DistanceUnits>
+      <AreaUnits type="QString"></AreaUnits>
+    </Measurement>
+    <PAL>
+      <CandidatesLine type="int">50</CandidatesLine>
+      <CandidatesPoint type="int">16</CandidatesPoint>
+      <DrawRectOnly type="bool">false</DrawRectOnly>
+      <ShowingAllLabels type="bool">false</ShowingAllLabels>
+      <SearchMethod type="int">0</SearchMethod>
+      <ShowingCandidates type="bool">false</ShowingCandidates>
+      <CandidatesPolygon type="int">30</CandidatesPolygon>
+      <ShowingPartialsLabels type="bool">true</ShowingPartialsLabels>
+      <DrawOutlineLabels type="bool">true</DrawOutlineLabels>
+    </PAL>
+  </properties>
+  <visibility-presets/>
+  <transformContext/>
+  <projectMetadata>
+    <identifier></identifier>
+    <parentidentifier></parentidentifier>
+    <language></language>
+    <type></type>
+    <title></title>
+    <abstract></abstract>
+    <links/>
+    <author>Jo</author>
+    <creation>2018-12-15T23:20:21</creation>
+  </projectMetadata>
+  <Annotations/>
+  <Layouts/>
+</qgis>

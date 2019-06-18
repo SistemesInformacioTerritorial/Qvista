@@ -1,6 +1,7 @@
 # coding:utf-8
 
 from moduls.QvImports import *
+from moduls.QvPushButton import QvPushButton
 
 from qgis.PyQt.QtGui import QStandardItemModel, QStandardItem
 from qgis.core import QgsRectangle
@@ -81,7 +82,7 @@ class QvAnotacions(QWidget):
         self.canvas.setMapTool(self.pt)
         self.entradaText = QTextEdit()
         self.entradaText.show()
-        self.botoBorrar = QPushButton('Esborrar anotacions')
+        self.botoBorrar = QvPushButton('Esborrar anotacions')
         self.botoBorrar.clicked.connect(self.esborrarAnotacions)
         self.layout.addWidget(self.entradaText)
         self.layout.addWidget(self.botoBorrar)
