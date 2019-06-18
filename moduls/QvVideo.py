@@ -5,6 +5,7 @@ from PyQt5.QtCore import QDir, Qt, QUrl
 from PyQt5.QtGui import QPalette
 from PyQt5.QtMultimedia import QMediaContent, QMediaPlayer
 from PyQt5.QtMultimediaWidgets import QVideoWidget
+from moduls.QvConstants import QvConstants
 from PyQt5.QtWidgets import (QApplication, QFileDialog, QHBoxLayout, QLabel,
         QPushButton, QSizePolicy, QSlider, QStyle, QVBoxLayout, QWidget)
 
@@ -16,7 +17,7 @@ class QvVideo(QWidget):
         self.fileName = fileName
         self.resize(xSize, ySize)
         self.setWindowTitle('Reproducció Video')
-
+        ombra_ = QvConstants.afegeixOmbraWidget(self)
         self.openButton = QPushButton("Obrir...")
         self.openButton.clicked.connect(self.openFile)
 
@@ -36,6 +37,7 @@ class QvVideo(QWidget):
         controlLayout.addWidget(self.positionSlider)
 
         videoWidget = QVideoWidget()
+        ombra_ = QvConstants.afegeixOmbraWidget(videoWidget)
 
         # videoWidget.setAttribute(Qt.WA_TranslucentBackground, True)
 

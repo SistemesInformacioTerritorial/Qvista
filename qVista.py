@@ -267,18 +267,13 @@ class QVista(QMainWindow, Ui_MainWindow):
         #     self.lblTirotattolProjecte.setText(titolEntorn)
     
     def startMovie(self):
-        print('carga')
-        # self.lblmovie = QLabel()
-        # self.movie = QMovie()
-        # self.lblmovie.setMovie(self.movie)
-        # self.movie.start()
-        # app.processEvents()
-        self.player = QvVideo("Imatges/Spinner_2.gif", 150, 150)
+        self.player = QvVideo("Imatges/Spinner_2.gif", 160, 160)
+        self.player_ = QvConstants.afegeixOmbraWidget(self.player)
+        #self.player.raise()
         self.player.show()
         self.player.mediaPlayer.play()
 
     def stopMovie(self):
-        print ('fi carga')
         self.player.mediaPlayer.pause()
         self.player.hide()
 
@@ -295,7 +290,7 @@ class QVista(QMainWindow, Ui_MainWindow):
             self.ferGran()
         if event.key() == Qt.Key_F5:
             self.canvas.refresh()
-            print('refrsh')
+            print('refresh')
 
     def botoLateral(self, text = None, tamany = 40, imatge = None, accio=None):
         """Crea un boto per a la botonera lateral.
@@ -2690,7 +2685,7 @@ tamanyReader=0
 def carregarLayerCSV(nfile):
         if nfile: 
             qV.startMovie()
-            #qApp.setOverrideCursor(Qt.WaitCursor)
+            qApp.setOverrideCursor(Qt.WaitCursor)
             assistent=QvCarregaCsv(nfile,nivellCsv,qV)
             qApp.restoreOverrideCursor()
             assistent.setModal(True)

@@ -157,7 +157,7 @@ class QvCanvas(QgsMapCanvas):
             self.layoutCanvas = QHBoxLayout(self)
             self.layoutBotoneraMapa = QVBoxLayout(self.botoneraMapa)
 
-        self.layoutCanvas.setContentsMargins(3,3,3,3)
+        self.layoutCanvas.setContentsMargins(15,15,15,15)
         self.layoutBotoneraMapa.setContentsMargins(0, 0, 0, 0)
         self.setLayout(self.layoutCanvas) 
 
@@ -206,7 +206,7 @@ class QvCanvas(QgsMapCanvas):
             else:
                 self.layoutBotoneraMapa.setAlignment(Qt.AlignBottom)
                 self.layoutCanvas.addSpacerItem(spacer)   
-                self.layoutCanvas.addWidget(self.botoneraMapa)  
+                self.layoutCanvas.addWidget(self.botoneraMapa)                
 
 
         if self.posicioBotonera == 'SO':
