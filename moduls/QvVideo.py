@@ -111,6 +111,5 @@ if __name__ == '__main__':
 
         player = QvVideo()
         # player = QvVideo('C:/Users/Public/Videos/Sample Videos/Wildlife.wmv')
-        # player = QvVideo('D:/qVista/Codi/moduls/load.gif')
+        player = QvVideo('D:/qVista/Codi/imatges/Spinner_2.gif')
         player.show()
-

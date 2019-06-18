@@ -36,6 +36,7 @@ from moduls.QvConstants import QvConstants
 from moduls.QvAvis import QvAvis
 from moduls.QvToolButton import QvToolButton
 from moduls.QvMenuBar import QvMenuBar
+from moduls.QvVideo import QvVideo
 import re
 import csv
 import os
@@ -250,7 +251,7 @@ class QVista(QMainWindow, Ui_MainWindow):
 
 
         if self.llegenda.player is None:
-            self.llegenda.setPlayer('moduls/giphy.gif', 170, 170)
+            self.llegenda.setPlayer('imatges/Spinner_2.gif', 150, 150)
 
 
         # self.metadata = self.project.metadata()
@@ -267,16 +268,19 @@ class QVista(QMainWindow, Ui_MainWindow):
     
     def startMovie(self):
         print('carga')
-        self.lblMovie = QLabel()
-        self.lblMovie.setGeometry(self.width()/2,self.height()/2,300,300)
-        self.movie = QMovie("imatges/loop4.gif")
-        self.movie.setScaledSize(QSize(300,150))
-        self.lblMovie.setMovie(self.movie)
-        self.lblMovie.show()
-        self.movie.start()
+        # self.lblmovie = QLabel()
+        # self.movie = QMovie()
+        # self.lblmovie.setMovie(self.movie)
+        # self.movie.start()
+        # app.processEvents()
+        self.player = QvVideo("Imatges/Spinner_2.gif", 150, 150)
+        self.player.show()
+        self.player.mediaPlayer.play()
 
-    def paraMovie(self):
-        self.lblMovie.hide()
+    def stopMovie(self):
+        print ('fi carga')
+        self.player.mediaPlayer.pause()
+        self.player.hide()
 
 
     def keyPressEvent(self, event):
@@ -2685,13 +2689,15 @@ globalLlistaCamps=None
 tamanyReader=0
 def carregarLayerCSV(nfile):
         if nfile: 
-            qApp.setOverrideCursor(Qt.WaitCursor)
+            qV.startMovie()
+            #qApp.setOverrideCursor(Qt.WaitCursor)
             assistent=QvCarregaCsv(nfile,nivellCsv,qV)
             qApp.restoreOverrideCursor()
             assistent.setModal(True)
             #assistent.setWindowFlags(assistent.windowFlags() | Qt.Popup)
             #assistent.setWindowFlags(assistent.windowFlags() | Qt.WindowStaysOnTopHint)
             #qV.raise_()
+            qV.stopMovie()
             assistent.show()
             #assistent.raise_()
             #qV.setFocus()
