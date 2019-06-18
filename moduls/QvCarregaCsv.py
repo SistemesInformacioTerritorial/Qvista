@@ -171,7 +171,7 @@ class QvCarregaCsvPage(QWizardPage):
             
 
     def recarregaTaula(self, completa=False):
-        self.table = QvLectorCsv(
+        self.table = QvtLectorCsv(
             self.parent.csv, self.parent.separador, completa, self)
 
     def showEvent(self, event):
