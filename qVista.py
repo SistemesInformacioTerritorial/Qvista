@@ -269,7 +269,8 @@ class QVista(QMainWindow, Ui_MainWindow):
     def startMovie(self):
         self.player = QvVideo("Imatges/Spinner_2.gif", 160, 160)
         self.player_ = QvConstants.afegeixOmbraWidget(self.player)
-        #self.player.raise()
+        self.player.setModal(True)
+        self.player.activateWindow()
         self.player.show()
         self.player.mediaPlayer.play()
 

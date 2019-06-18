@@ -7,9 +7,9 @@ from PyQt5.QtMultimedia import QMediaContent, QMediaPlayer
 from PyQt5.QtMultimediaWidgets import QVideoWidget
 from moduls.QvConstants import QvConstants
 from PyQt5.QtWidgets import (QApplication, QFileDialog, QHBoxLayout, QLabel,
-        QPushButton, QSizePolicy, QSlider, QStyle, QVBoxLayout, QWidget)
+        QPushButton, QSizePolicy, QSlider, QStyle, QVBoxLayout, QWidget,QDialog)
 
-class QvVideo(QWidget):
+class QvVideo(QDialog):
 
     def __init__(self, fileName='', xSize=800, ySize=600, parent=None):
         super(QvVideo, self).__init__(parent)
