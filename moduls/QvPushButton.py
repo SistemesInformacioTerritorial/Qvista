@@ -61,10 +61,10 @@ class QvPushButton(QPushButton):
         self.formata(self.destacat)
     def enterEvent(self,event):
         super().enterEvent(event)
-        self.setCursor(Qt.PointingHandCursor)
+        self.setCursor(QvConstants.cursorClick())
     def leaveEvent(self,event):
         super().leaveEvent(event)
-        self.setCursor(Qt.ArrowCursor)
+        self.setCursor(QvConstants.cursorFletxa())
     def showEvent(self,event):
         super().showEvent(event)
         self.formata(self.destacat)
