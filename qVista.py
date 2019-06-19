@@ -36,6 +36,7 @@ from moduls.QvConstants import QvConstants
 from moduls.QvAvis import QvAvis
 from moduls.QvToolButton import QvToolButton
 from moduls.QvMenuBar import QvMenuBar
+from moduls.QvVideo import QvVideo
 import re
 import csv
 import os
@@ -250,7 +251,7 @@ class QVista(QMainWindow, Ui_MainWindow):
 
 
         if self.llegenda.player is None:
-            self.llegenda.setPlayer('moduls/giphy.gif', 170, 170)
+            self.llegenda.setPlayer('imatges/Spinner_2.gif', 150, 150)
 
 
         # self.metadata = self.project.metadata()
@@ -266,17 +267,16 @@ class QVista(QMainWindow, Ui_MainWindow):
         #     self.lblTirotattolProjecte.setText(titolEntorn)
     
     def startMovie(self):
-        print('carga')
-        self.lblMovie = QLabel()
-        self.lblMovie.setGeometry(self.width()/2,self.height()/2,300,300)
-        self.movie = QMovie("imatges/loop4.gif")
-        self.movie.setScaledSize(QSize(300,150))
-        self.lblMovie.setMovie(self.movie)
-        self.lblMovie.show()
-        self.movie.start()
+        self.player = QvVideo("Imatges/Spinner_2.gif", 160, 160)
+        self.player_ = QvConstants.afegeixOmbraWidget(self.player)
+        self.player.setModal(True)
+        self.player.activateWindow()
+        self.player.show()
+        self.player.mediaPlayer.play()
 
-    def paraMovie(self):
-        self.lblMovie.hide()
+    def stopMovie(self):
+        self.player.mediaPlayer.pause()
+        self.player.hide()
 
 
     def keyPressEvent(self, event):
@@ -291,7 +291,7 @@ class QVista(QMainWindow, Ui_MainWindow):
             self.ferGran()
         if event.key() == Qt.Key_F5:
             self.canvas.refresh()
-            print('refrsh')
+            print('refresh')
 
     def botoLateral(self, text = None, tamany = 40, imatge = None, accio=None):
         """Crea un boto per a la botonera lateral.
@@ -1467,7 +1467,8 @@ class QVista(QMainWindow, Ui_MainWindow):
         
         self._menuBarShadow=QvConstants.afegeixOmbraHeader(self.bar)
 
-        self.bar.setFixedHeight(40)
+        # self.bar.setFixedHeight(40)
+        self.bar.setMinimumHeight(40)
         self.fMaxim = QFrame()
         self.lytBotonsFinestra = QHBoxLayout(self.fMaxim)
         self.fMaxim.setLayout(self.lytBotonsFinestra)
@@ -1728,7 +1729,8 @@ class QVista(QMainWindow, Ui_MainWindow):
             self.frameLlegenda.show()
             # self.frame_19.show()
             self.frame_2.show()
-            self.frame_3.show()
+            #self.frame_3.show()
+            self.frame_11.show()
             self.mapaMaxim = False
             self.dwLlegenda.hide()
             self.layoutFrameLlegenda.addWidget(self.llegenda)
@@ -1745,7 +1747,8 @@ class QVista(QMainWindow, Ui_MainWindow):
             self.frameLlegenda.hide()
             # self.frame_19.hide()
             self.frame_2.hide()
-            self.frame_3.hide()
+            # self.frame_3.hide()
+            self.frame_11.hide()
             # self.oldCentraWidget = self.centralWidget()
             # self.setCentralWidget(self.canvas)
             self.mapaMaxim = True
@@ -2684,6 +2687,7 @@ globalLlistaCamps=None
 tamanyReader=0
 def carregarLayerCSV(nfile):
         if nfile: 
+            qV.startMovie()
             qApp.setOverrideCursor(Qt.WaitCursor)
             assistent=QvCarregaCsv(nfile,nivellCsv,qV)
             qApp.restoreOverrideCursor()
@@ -2691,6 +2695,7 @@ def carregarLayerCSV(nfile):
             #assistent.setWindowFlags(assistent.windowFlags() | Qt.Popup)
             #assistent.setWindowFlags(assistent.windowFlags() | Qt.WindowStaysOnTopHint)
             #qV.raise_()
+            qV.stopMovie()
             assistent.show()
             #assistent.raise_()
             #qV.setFocus()

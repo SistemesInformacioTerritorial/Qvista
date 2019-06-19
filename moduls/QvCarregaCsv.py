@@ -160,7 +160,6 @@ class QvCarregaCsvPage(QWizardPage):
         self.layout.addLayout(self.layoutTable)
         self.layoutTable.addWidget(self.table)
         if guardar:
-            #self.layout.setSpacing(0)
             self.table.setMinimumHeight(120)
             self.bGuardar = QvPushButton("Guardar CCSV")
             self.bGuardar.clicked.connect(self.table.writeCsv)
@@ -171,7 +170,7 @@ class QvCarregaCsvPage(QWizardPage):
             
 
     def recarregaTaula(self, completa=False):
-        self.table = QvLectorCsv(
+        self.table = QvtLectorCsv(
             self.parent.csv, self.parent.separador, completa, self)
 
     def showEvent(self, event):
@@ -231,7 +230,6 @@ class QvCarregaCsvTriaSep(QvCarregaCsvPage):
         self.cbSep.addItems(llistaSeparadors)
         self.layoutCheckButton.addWidget(self.lblSep)
         self.layoutCheckButton.addWidget(self.cbSep)
-        #self.layoutCheckButton.addItem(QSpacerItem(20,20,QSizePolicy.Minimum, QSizePolicy.Expanding))
         self.layoutCheckButton.addStretch(1)
         print(parent.csv)
         self.parent.setSeparador(infereixSeparadorRegex(open(parent.csv)))
@@ -330,7 +328,6 @@ class QvCarregaCsvXY(QvCarregaCsvPage):
         super().__init__(parent)
         self.layout = QVBoxLayout(self)
         self.setSubTitle('Tria dels camps de les coordenades')
-        # self.layout.setSpacing(20)
         self.layoutCoordX = QHBoxLayout()
         self.layoutCoordY = QHBoxLayout()
         self.layoutCoordP = QHBoxLayout()
@@ -354,7 +351,6 @@ class QvCarregaCsvXY(QvCarregaCsvPage):
         self.layoutCoordY.addWidget(self.lblCoordY)
         self.layoutCoordY.addWidget(self.cbY)
         self.cbProj = QComboBox()
-        #projeccions = [25831, 1 , 2 , 3]
         projeccionsDict = {'EPSG:25831 UTM ETRS89 31N': 25831,
                            'EPSG:3857 Pseudo Mercator (Google)': 3857,
                            'EPSG:4326 WGS 84': 4326,
@@ -380,7 +376,6 @@ class QvCarregaCsvXY(QvCarregaCsvPage):
         xChanged()
         yChanged()
         projChanged()
-        # self.setFinalPage(True)
         self.mostraTaula()
 
     def replaceComa(self):
@@ -405,7 +400,6 @@ class QvCarregaCsvAdreca(QvCarregaCsvPage):
         self.setSubTitle('Tria dels components de la geometria')
         self.layout = QVBoxLayout(self)
         self.lblExplicacio6 = QLabel()
-        #self.lblExplicacio6.setText("Emplena els següents camps de les adreces que vols geocodificar.\nNomés el segon camp és obligatori.")
         self.lblExplicacio6.setText(
             "Indiqueu el(s) camp(s) de les adreces que voleu geocodificar.\nNomés és obligatori el camp de la via")
         self.layout.addWidget(self.lblExplicacio6)
@@ -442,7 +436,6 @@ class QvCarregaCsvAdreca(QvCarregaCsvPage):
         self.layoutTipus = QHBoxLayout()
         self.layoutTipus.addStretch(1)
         self.layoutNumLletraAux = QHBoxLayout()
-        # self.layoutNumLletraAux.addStretch(1)
         self.layoutNumero = QVBoxLayout()
         self.layoutLletra = QVBoxLayout()
 
@@ -477,8 +470,6 @@ class QvCarregaCsvAdreca(QvCarregaCsvPage):
         self.layoutNumLletraAux.addLayout(self.layoutNumero)
         self.layoutNumLletraAux.addLayout(self.layoutLletra)
 
-        # self.layoutAdreca.addLayout(self.layoutTipus)
-        # self.layoutAdreca.addLayout(self.layoutCarrer)
         layAdrecaTipus = QHBoxLayout()
         layAdrecaTipus.addLayout(self.layoutTipus)
         layAdrecaTipus.addLayout(self.layoutCarrer)
@@ -543,7 +534,6 @@ class QvCarregaCsvGeneraCoords(QvCarregaCsvPage):
         self.lblAdrecesError = QLabel()
         self.lblAdrecesError.setText("")
         self.lblAdrecesError.setStyleSheet('color: red')
-        # self.lblAdrecesError.setFixedHeight(100)
         self.layout = QVBoxLayout(self)
         self.layout.setSpacing(12)
         self.layout.setContentsMargins(20,0,20,0)
@@ -560,11 +550,9 @@ class QvCarregaCsvGeneraCoords(QvCarregaCsvPage):
         # Després de generar el csv amb coordenades no hi ha volta enrere
         self.setCommitPage(True)
         self.showed = False
-        # self.mostraTaula()
         self.lblExplicacio5 = QLabel()
         self.lblExplicacio5.setText(
             "Vols carregar les adreces geocodificades al teu projecte? Les adreces que no s'han pogut \ngeolocalitzar no apareixeran.")
-        # self.layout.addWidget(self.lblExplicacio5)
 
     def initializePage(self):
         self.parent.coordX = 'XCalculadaqVista'
@@ -591,7 +579,6 @@ class QvCarregaCsvGeneraCoords(QvCarregaCsvPage):
                 num = re.findall('^[0-9]*', subs[1])[0]
             return tipusVia[:-1], nomVia, num
 
-        # if not self.showed:
         self.showed = True
         self.parent.setProjecció(25831)
         fileCsv = open(self.parent.csv)
@@ -670,24 +657,10 @@ class QvCarregaCsvGeneraCoords(QvCarregaCsvPage):
                     nomVia = row[self.parent.dadesAdreca[1]]  
                 x, y = QvGeocod.coordsCarrerNum(tipusVia, nomVia, numI, lletraI, numF, lletraF)
 
-                # else:
-                #     tipusVia = row[self.parent.dadesAdreca[0]]
-                #     nomVia = row[self.parent.dadesAdreca[1]]
-                #     numI = row[self.parent.dadesAdreca[2]]
-                #     numI = re.sub('[^0-9][0-9]*', '', num)
-                # if error or nomVia=='':
-                #     x, y = None, None
-                #     tipusVia, nomVia, numI = '',row[self.parent.dadesAdreca[1]],''
-                # elif numI != '':
-                #     x, y = QvGeocod.coordsCarrerNum(tipusVia, nomVia, num)
-                # else:
-                #     x, y = QvGeocod.coordsCarrerNum(
-                #         tipusVia, nomVia, d[self.parent.dadesAdreca[2]], d[self.parent.dadesAdreca[3]], d[self.parent.dadesAdreca[4]], d[self.parent.dadesAdreca[5]])
 
 
                 wpg.count = wpg.count + 1
                 wpg.actualitzaLBL()
-                # print(wpg.count)
                 wpg.progress.setValue(wpg.count)
                 qApp.processEvents()
                 if x is None or y is None:
@@ -708,7 +681,6 @@ class QvCarregaCsvGeneraCoords(QvCarregaCsvPage):
 
                 d[self.parent.coordX] = x
                 d[self.parent.coordY] = y
-                # print(d)
                 del d[""]
                 writer.writerow(d)
         self.mostraTaula(completa=True, guardar = True)
@@ -730,7 +702,6 @@ class QvCarregaCsvPersonalitza(QvCarregaCsvPage):
         self.setSubTitle("Personalització de la nova capa")
         self.layout = QVBoxLayout(self)
         self.layout.setSpacing(40)
-        # self.setCommitPage(True)
         self.layout.setAlignment(Qt.AlignTop)
         self.layNom = QHBoxLayout()
         self.lblNom = QLabel()
