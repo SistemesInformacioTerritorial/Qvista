@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from moduls.QvSingleton import Singleton
-from qgis.PyQt.QtSql import QSqlDatabase, QSqlQuery, QSql
+from qgis.PyQt.QtSql import QSqlDatabase, QSqlQuery
 import os
 
 
@@ -245,6 +245,9 @@ if __name__ == "__main__":
         sqlite = QvSqlite()
 
         sqlite.dbGeoConnexio()
+
+        x, y = sqlite.coordsAdreca('Av', 'VALLCARCA', '159')
+        x, y = sqlite.coordsAdreca('Camí', 'CAL NOTARI', '7')
 
         x, y = sqlite.coordsAdreca('', 'C RIBAS', '19')
         x, y = sqlite.coordsAdreca('C', 'RIBAS', '19')
