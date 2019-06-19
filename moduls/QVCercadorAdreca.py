@@ -9,6 +9,7 @@ import unicodedata
 import re
 import csv
 from PyQt5.QtSql import *
+from moduls.QvApp import QvApp
 
 
 
@@ -16,7 +17,7 @@ from PyQt5.QtSql import *
 
 class QCercadorAdreca(QObject):
 
-    __carrersCSV = 'dades\Carrers.csv'
+    # __carrersCSV = 'dades\Carrers.csv'
 
     __CarrersNum_sqlite='Dades\CarrersNums.db'
 
@@ -36,13 +37,15 @@ class QCercadorAdreca(QObject):
         self.dictCarrers = {}
         self.dictNumeros = collections.defaultdict(dict)
 
-        self.db = QSqlDatabase.addDatabase('QSQLITE', 'CyN') # Creamos la base de datos
-        self.db.setDatabaseName(self.__CarrersNum_sqlite) # Le asignamos un nombre
+        # self.db = QSqlDatabase.addDatabase('QSQLITE', 'CyN') # Creamos la base de datos
+        # self.db.setDatabaseName(self.__CarrersNum_sqlite) # Le asignamos un nombre
 
 
-        self.db.setConnectOptions("QSQLITE_OPEN_READONLY")
+        # self.db.setConnectOptions("QSQLITE_OPEN_READONLY")
+
+        self.db= QvApp().dbGeo
         
-        if not self.db.open(): # En caso de que no se abra
+        if self.db is None:   #not self.db.open(): # En caso de que no se abra
             QMessageBox.critical(None, "Error al abrir la base de datos.\n\n"
                     "Click para cancelar y salir.", QMessageBox.Cancel)
 
