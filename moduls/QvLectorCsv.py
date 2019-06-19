@@ -12,6 +12,7 @@ from moduls.QvPushButton import QvPushButton
 
 
 class QvLectorCsv(QtWidgets.QWidget):
+
     def __init__(self, fileName="", parent=None, guardar=False):
         QtWidgets.QWidget.__init__(self)
         self.setContentsMargins(0, 0, 0, 0)
@@ -217,7 +218,7 @@ class QvLectorCsv(QtWidgets.QWidget):
         # add other required actions
         self.menu.addAction(deleteColumnAction)
         self.menu.popup(QtGui.QCursor.pos())
-
+        
     def deleteRowByContext(self, event):
         for i in self.tableView.selectionModel().selection().indexes():
             row = i.row()
