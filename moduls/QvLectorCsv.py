@@ -182,6 +182,8 @@ class QvLectorCsv(QtWidgets.QWidget):
         self.tableView.resizeColumnsToContents()
 
     def contextMenuEvent(self, event):
+        return None  # Forzamos salida, no interesa gestionar este evento (deberiamos eliminar este trozo de codigo pero mola coma ejemplo)
+        
         self.menu = QtWidgets.QMenu(self)
         # copy
         copyAction = QtWidgets.QAction('Copy', self)
