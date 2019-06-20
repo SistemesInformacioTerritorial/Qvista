@@ -167,6 +167,19 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.tempsTotal = endGlobal - startGlobal
         print ('Total carrega abans projecte: ', self.tempsTotal)
 
+        
+        
+        
+        # ponemos el gpkkg a readinly....
+        import win32con, win32api,os
+        elGpkg=projecteInicial
+        pre, ext = os.path.splitext(elGpkg)
+        elGpkg= pre + '.gpkg'
+        win32api.SetFileAttributes(elGpkg,win32con.FILE_ATTRIBUTE_READONLY)
+      
+
+
+
         # Carrega del projecte inicial
         self.obrirProjecte(projecteInicial)
 
