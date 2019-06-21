@@ -170,7 +170,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         
         
         
-        # ponemos el gpkkg a readinly....
+        # ponemos el gpkd a readonly....
         import win32con, win32api,os
         elGpkg=projecteInicial
         pre, ext = os.path.splitext(elGpkg)
