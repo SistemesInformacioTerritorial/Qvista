@@ -170,7 +170,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         
         
         
-        # ponemos el gpkkg a readinly....
+        # ponemos el gpkd a readonly....
         import win32con, win32api,os
         elGpkg=projecteInicial
         pre, ext = os.path.splitext(elGpkg)
@@ -2551,7 +2551,7 @@ def seleccioExpressio():
         msg = QMessageBox()
         msg.setIcon(QMessageBox.Warning)
         
-        msg.setText('20190527 08:33  cierro bbdd sqlite en gestioSortida')
+        msg.setText('20190621 12:12  con gpkd-shm y gpkg-wal')
         # msg.setInformativeText("OK para salir del programa \nCANCEL para seguir en el programa")
         msg.setWindowTitle("qVista version")
         msg.setStandardButtons(QMessageBox.Close)
