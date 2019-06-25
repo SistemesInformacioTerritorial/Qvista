@@ -2,6 +2,8 @@
 #Ignore thumbnails created by Windows
 Thumbs.db
 #Ignore files built by Visual Studio
+*.gpkg-shm
+*.gpkg-wal
 *.obj
 *.exe
 *.pdb
@@ -37,5 +39,3 @@ __pycache__/
 moduls/__pycache__/
 moduls/__pycache__/*.*
 moduls/__pycache__/QvCataleg.cpython-37.pyc
-MapesOffline/DistrictesColor.gpkg-shm
-MapesOffline/DistrictesColor.gpkg-wal

@@ -11,7 +11,7 @@ projecteInicial = 'mapesOffline/qVista default map.qgs'
 estatConnexio = "Xarxa municipal: Connectat"
 
 tempdir='C:/temp/qVista/temp/'
-docdir='L:/DADES/SIT/Doc/QVISTA/'
+docdir='n:/siteb/apl/pyqgis/qvista/dades/'
 arxiuAvis=docdir+'Avisos.htm'
 arxiuNews=docdir+'Noticies.htm'
 arxiuTmpAvis=tempdir+'ultimAvisObert'

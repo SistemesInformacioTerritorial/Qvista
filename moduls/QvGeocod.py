@@ -80,8 +80,62 @@ if __name__ == "__main__":
         import sys
         import csv
         import time
+        # import locale
+
+        # print(locale.getpreferredencoding())
+
+# ************************** PRUEBA GOSSOS
 
         ini = time.time()
+
+        ruta = '../'
+        fich = 'GossosBCN'
+        code = 'cp1252'
+        tipo = 'NOM'
+
+        # Fichero de salida de errores
+        sys.stdout = open(ruta + fich + tipo + '_ERR.txt', 'w')
+        print('*** FICHERO:', fich, 'por', tipo)
+
+        # Fichero CSV de entrada
+        with open(ruta + fich + '.csv', encoding=code) as csvInput:
+
+            # Fichero CSV de salida con columnas X, Y extras
+            with open(ruta + fich + tipo + '.csv', 'w', encoding=code) as csvOutput:
+
+                # Cabeceras
+                data = csv.DictReader(csvInput, delimiter=';')
+                fields = data.fieldnames
+                fields.append('X')
+                fields.append('Y')
+
+                writer = csv.DictWriter(csvOutput, fieldnames=fields, lineterminator='\n')
+                writer.writeheader()
+
+                # Lectura de filas y geocodificación
+                tot = num = 0
+                for row in data:
+                    tot += 1
+                    x, y = QvGeocod().coordsCarrerNum(row['Tipus de via'],
+                                                      row['Via'],
+                                                      row['Número'])
+                    # Error en geocodificación
+                    if x is None or y is None:
+                        num += 1
+                        print('- ERROR', '|', row['Identificador gos'],
+                              row['Tipus de via'], row['Via'], row['Número'])
+
+                    # Escritura de fila con X e Y
+                    row.update([('X', x), ('Y', y)])
+                    writer.writerow(row)
+
+            fin = time.time()
+            print('==> REGISTROS:', str(tot), '- ERRORES:', str(num))
+            print('==> TIEMPO:', str(fin - ini), 'segundos')
+
+        sys.exit(0)
+
+# ************************** PRUEBA IMH
 
         # fich = 'CarrecsUTF8-100'
         # fich = 'CarrecsUTF8-100MIL'
@@ -93,9 +147,9 @@ if __name__ == "__main__":
         sys.stdout = open('../' + fich + tipo + '.txt', 'w')
         print('*** FICHERO:', fich, 'por', tipo)
 
-        with open('../' + fich + '.csv', encoding='utf-8') as csvfile:
+        with open('../' + fich + '.csv', encoding='utf-8') as csvInput:
 
-            data = csv.DictReader(csvfile, delimiter=';')
+            data = csv.DictReader(csvInput, delimiter=';')
             tot = num = 0
             for row in data:
                 tot += 1

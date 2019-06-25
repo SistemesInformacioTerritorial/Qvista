@@ -10,6 +10,8 @@ from moduls.QvImports import *
 # Carrega de moduls Qv
 iniciTempsModuls = time.time()
 
+
+
 from moduls.QvUbicacions import QvUbicacions
 from moduls.QvPrint import QvPrint
 from moduls.QvCanvas import QvCanvas
@@ -164,6 +166,19 @@ class QVista(QMainWindow, Ui_MainWindow):
         endGlobal = time.time()
         self.tempsTotal = endGlobal - startGlobal
         print ('Total carrega abans projecte: ', self.tempsTotal)
+
+        
+        
+        
+        # ponemos el gpkd a readonly....
+        import win32con, win32api,os
+        elGpkg=projecteInicial
+        pre, ext = os.path.splitext(elGpkg)
+        elGpkg= pre + '.gpkg'
+        win32api.SetFileAttributes(elGpkg,win32con.FILE_ATTRIBUTE_READONLY)
+      
+
+
 
         # Carrega del projecte inicial
         self.obrirProjecte(projecteInicial)
@@ -2536,7 +2551,7 @@ def seleccioExpressio():
         msg = QMessageBox()
         msg.setIcon(QMessageBox.Warning)
         
-        msg.setText('20190527 08:33  cierro bbdd sqlite en gestioSortida')
+        msg.setText('20190621 12:12  con gpkd-shm y gpkg-wal')
         # msg.setInformativeText("OK para salir del programa \nCANCEL para seguir en el programa")
         msg.setWindowTitle("qVista version")
         msg.setStandardButtons(QMessageBox.Close)

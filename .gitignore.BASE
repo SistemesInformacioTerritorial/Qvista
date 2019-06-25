@@ -2,6 +2,8 @@
 #Ignore thumbnails created by Windows
 Thumbs.db
 #Ignore files built by Visual Studio
+*.gpkg-shm
+*.gpkg-wal
 *.obj
 *.exe
 *.pdb

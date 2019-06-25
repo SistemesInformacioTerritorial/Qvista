@@ -19,6 +19,25 @@ from moduls.QvApp import QvApp
 # import recursos
 import csv
 # import xlwt - .xls
+from PyQt5.QtWidgets import QWidget
+
+from moduls.Ui_Atributs import Ui_Dialog
+
+class QvFitxesAtributs(QWidget):
+    def __init__(self, layer, features, titul='Elements seleccionats'):
+        QWidget.__init__(self)
+        self.ui = Ui_Dialog()
+        self.ui.setupUi(self)
+        self.title = titul
+        self.total = len(features)
+        for feature in features:
+            form = QgsAttributeForm(layer, feature)
+            self.ui.stackedWidget.addWidget(form)
+        self.ui.stackedWidget.setCurrentIndex(0)
+
+    def setTitle(self, n):
+        titul = self.title + ' (' + str(n) + ' de ' + str(self.total) + ')'
+        self.setWindowTitle(titul)
 
 
 class QvAtributs(QTabWidget):
