@@ -42,7 +42,7 @@ class QvLectorCsv(QtWidgets.QWidget):
         self.model.appendRow(item)
         self.model.setData(self.model.index(0, 0), "", 0)
         self.tableView.resizeColumnsToContents()
-        self.carregaCsv(self.fileName)
+        #self.carregaCsv(self.fileName)
 
     def loadCsv(self, fileName):
         fileName, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Open CSV",

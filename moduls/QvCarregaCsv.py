@@ -8,6 +8,8 @@ from moduls.QvConstants import QvConstants
 from moduls.QvPushButton import QvPushButton
 from moduls.QvApp import QvApp
 import re
+from csv import DictReader
+import io
 
 
 class QvCarregaCsv(QWizard):
@@ -27,20 +29,26 @@ class QvCarregaCsv(QWizard):
         self.nomCapa = csv[:-4]
         self.nomCapa = self.nomCapa.split('\\')[-1].split('/')[-1]
         self.csv = csv
+        self.arxiuCsv=open(self.csv,'r')
         self.color = 'red'
         self.symbol = 'circle'
         self.formata()
-        self.setPage(QvCarregaCsv.finestres.TriaSep, QvCarregaCsvTriaSep(self))
-        self.setPage(QvCarregaCsv.finestres.TriaSepDec,
-                     QvCarregaCsvTriaSepDec(self))
-        self.setPage(QvCarregaCsv.finestres.TriaGeom,
-                     QvCarregaCsvTriaGeom(self))
-        self.setPage(QvCarregaCsv.finestres.CampsXY, QvCarregaCsvXY(self))
-        self.setPage(QvCarregaCsv.finestres.Adreca, QvCarregaCsvAdreca(self))
-        self.setPage(QvCarregaCsv.finestres.GeneraCoords,
-                     QvCarregaCsvGeneraCoords(self))
-        self.setPage(QvCarregaCsv.finestres.Personalitza,
-                     QvCarregaCsvPersonalitza(self))
+        self.camps = DictReader(self.getCsv(), delimiter=';').fieldnames
+        if 'XCalculadaqVista' in self.camps and 'YCalculadaqVista' in self.camps:
+            self.prefab()
+            self.setPage(QvCarregaCsv.finestres.Personalitza,QvCarregaCsvPersonalitza(self))
+        else:
+            self.setPage(QvCarregaCsv.finestres.TriaSep, QvCarregaCsvTriaSep(self))
+            self.setPage(QvCarregaCsv.finestres.TriaSepDec,
+                        QvCarregaCsvTriaSepDec(self))
+            self.setPage(QvCarregaCsv.finestres.TriaGeom,
+                        QvCarregaCsvTriaGeom(self))
+            self.setPage(QvCarregaCsv.finestres.CampsXY, QvCarregaCsvXY(self))
+            self.setPage(QvCarregaCsv.finestres.Adreca, QvCarregaCsvAdreca(self))
+            self.setPage(QvCarregaCsv.finestres.GeneraCoords,
+                        QvCarregaCsvGeneraCoords(self))
+            self.setPage(QvCarregaCsv.finestres.Personalitza,
+                        QvCarregaCsvPersonalitza(self))
 
     def formata(self):
         '''Dóna format a l'assistent'''
@@ -73,6 +81,12 @@ class QvCarregaCsv(QWizard):
         self.oldPos = self.pos()
         self.setFont(QvConstants.FONTTEXT)
 
+    def prefab (self):
+        self.coordX = 'XCalculadaqVista'
+        self.coordY = 'YCalculadaqVista'
+        self.separador = ';'
+        self.proj = 25831
+
     def accept(self):
         super().accept()
 
@@ -102,6 +116,10 @@ class QvCarregaCsv(QWizard):
         if not hasattr(self, 'csvOrig'):
             self.csvOrig = self.csv
         self.csv = csv
+        self.arxiuCsv=open(self.csv,'r')
+    def getCsv(self):
+        self.arxiuCsv.seek(0)
+        return self.arxiuCsv
 
     def setDadesAdreca(self, tipusVia, via, numIni, lletraIni, numFi, lletraFi):
         self.dadesAdreca = (tipusVia, via, numIni, lletraIni, numFi, lletraFi)
@@ -155,13 +173,13 @@ class QvCarregaCsvPage(QWizardPage):
                 Si és false, mostra una previsualització de 10 elements 
                 (default: {False})
         '''
-        self.table = QvtLectorCsv(self.parent.csv, self.parent.separador, completa, guardar, self)
+        self.table = QvtLectorCsv(self.parent.getCsv(), self.parent.separador, completa, guardar, self)
         self.layoutTable = QVBoxLayout()
         self.layout.addLayout(self.layoutTable)
         self.layoutTable.addWidget(self.table)
         if guardar:
             self.table.setMinimumHeight(120)
-            self.bGuardar = QvPushButton("Guardar CCSV")
+            self.bGuardar = QvPushButton("Guardar CSV")
             self.bGuardar.clicked.connect(self.table.writeCsv)
             self.layoutB = QVBoxLayout()
             self.layoutB.setAlignment(Qt.AlignCenter)
@@ -171,7 +189,7 @@ class QvCarregaCsvPage(QWizardPage):
 
     def recarregaTaula(self, completa=False):
         self.table = QvtLectorCsv(
-            self.parent.csv, self.parent.separador, completa, self)
+            self.parent.getCsv(), self.parent.separador, completa, self)
 
     def showEvent(self, event):
         super().showEvent(event)
@@ -179,7 +197,7 @@ class QvCarregaCsvPage(QWizardPage):
             self.table.recarrega(self.parent.separador)
 
     def obteCamps(self):
-        return csv.DictReader(open(self.parent.csv), delimiter=self.parent.separador).fieldnames
+        return csv.DictReader(self.parent.getCsv(), delimiter=self.parent.separador).fieldnames
     #  PROBLEMA: Les línies separadores es dibuixen dins d'una funció d'una classe inaccessible, que es diu QWizardHeader
     #            No podem aplicar-hi una stylesheet ni una paleta de colors, ja que no podem accedir a la instància de la classe
     #            La única solució que he pogut trobar és canviar la paleta de colors de la app, posant el color Mid del mateix
@@ -232,7 +250,7 @@ class QvCarregaCsvTriaSep(QvCarregaCsvPage):
         self.layoutCheckButton.addWidget(self.cbSep)
         self.layoutCheckButton.addStretch(1)
         print(parent.csv)
-        self.parent.setSeparador(infereixSeparadorRegex(open(parent.csv)))
+        self.parent.setSeparador(infereixSeparadorRegex(parent.getCsv()))
         if not isinstance(self.parent.setSeparador, str):
             self.parent.setSeparador(';')
         self.mostraTaula()
@@ -405,7 +423,9 @@ class QvCarregaCsvAdreca(QvCarregaCsvPage):
         self.layout.addWidget(self.lblExplicacio6)
         self.layoutAdreca = QVBoxLayout()
         self.layout.addLayout(self.layoutAdreca)
+
         camps = self.obteCamps()
+
         self.lblTipus = QLabel('Tipus Via')
         self.cbTipus = QComboBox()
         self.cbTipus.setFixedWidth(MIDACOMBOBOX)
@@ -581,7 +601,7 @@ class QvCarregaCsvGeneraCoords(QvCarregaCsvPage):
 
         self.showed = True
         self.parent.setProjecció(25831)
-        fileCsv = open(self.parent.csv)
+        fileCsv = self.parent.getCsv()
         reader = csv.DictReader(fileCsv, delimiter=self.parent.separador)
         with tempfile.NamedTemporaryFile(suffix='.csv', mode='w+', delete=False, newline='') as arxiuNouCsv:
             self.parent.setNomCsv(arxiuNouCsv.name)
@@ -834,13 +854,21 @@ class QvCarregaCsvPersonalitza(QvCarregaCsvPage):
 
 
 class QvtLectorCsv(QvLectorCsv):
-    def __init__(self, fileName='', separador=None, completa=False, guardar=False, parent=None):
-        super().__init__(fileName, guardar)
+    def __init__(self, csv='', separador=None, completa=False, guardar=False, parent=None):
+        super().__init__(csv, guardar)
         self.separador = separador
         if self.separador is not None:
-            self.carregaCsv(self.fileName, self.separador, completa)
-
-    def carregaCsv(self, fileName, separador=None, completa=False):
+            if isinstance(csv,str): #És el nom de l'arxiu
+                self.carregaCsv(csv, self.separador, completa)
+            elif isinstance(csv,io.TextIOBase): #És l'arxiu
+                self.carregaCsvFile(csv,self.separador,completa)
+    
+    def carregaCsv(self, file, separador=None, completa=False):
+        if isinstance(csv,str): #És el nom de l'arxiu
+            self.carregaCsvNom(csv, self.separador, completa)
+        elif isinstance(csv,io.TextIOBase): #És l'arxiu
+            self.carregaCsvFile(csv,self.separador,completa)
+    def carregaCsvNom(self, fileName, separador=None, completa=False):
         from PyQt5 import QtGui
         if separador is None:
             super().carregaCsv(fileName)
@@ -866,6 +894,26 @@ class QvtLectorCsv(QvLectorCsv):
                         self.model.appendRow(items)
                     i += 1
                 self.tableView.resizeColumnsToContents()
+    def carregaCsvFile(self,f,separador,completa=False):
+        from PyQt5 import QtGui
+        # self.fname = os.path.splitext(str(fileName))[0].split("/")[-1]
+        # self.setWindowTitle(self.fname)
+        if not isinstance(separador, str):
+            separador = ';'
+        reader = csv.reader(f, delimiter=separador)
+        self.model.clear()
+        i = 0
+        for row in reader:
+            if not completa and i > 9:
+                break  # Per agilitzar la càrrega, només ens cal una preview petita
+            items = [QtGui.QStandardItem(field) for field in row]
+            
+            if (i==0): 
+                self.model.setHorizontalHeaderLabels([x.text() for x in items])
+            else:
+                self.model.appendRow(items)
+            i += 1
+        self.tableView.resizeColumnsToContents()
 
     def recarrega(self, separador):
         self.separador = separador
