@@ -1,4 +1,5 @@
 from moduls.QvImports import *
+from moduls.QvAtributs import QvFitxesAtributs
 import math
 # from qgis.core import QgsFeatureRequest, QgsPointXY, QgsGeometry, QgsRectangle
 # from qgis.gui import QgsMapTool, QgsMapToolEmitPoint, QgsMapToolZoom, QgsMapToolPan, QgsRubberBand, QgsAttributeDialog
@@ -235,6 +236,7 @@ class QvSeleccioElement(QgsMapTool):
         self.canvas = canvas
         self.llegenda = llegenda
         self.radi = radi
+        self.fitxaAtributs = None
 
     def keyPressEvent(self, event):
         """ Defineix les actuacions del QvMapeta en funció de la tecla apretada.
@@ -270,6 +272,9 @@ class QvSeleccioElement(QgsMapTool):
 
     def canvasReleaseEvent(self, event):
         print("CANVAS RELEASE")
+        if self.fitxaAtributs is not None:
+            self.fitxaAtributs.accept()
+            self.fitxaAtributs = None
         # Lllegim posició del mouse
         x = event.pos().x()
         y = event.pos().y()
@@ -281,48 +286,26 @@ class QvSeleccioElement(QgsMapTool):
             point = self.canvas.getCoordinateTransform().toMapCoordinates(x, y)
 
             rect = QgsRectangle(point.x() - self.radi, point.y() - self.radi, point.x() + self.radi, point.y() + self.radi)
-            ids=[]
+            # ids=[]
+            features=[]
             if layer is not None and layer.type() == QgsMapLayer.VectorLayer:
                 it = layer.getFeatures(QgsFeatureRequest().setFilterRect(rect))
-                for feature in it:
-                    # try:
-                    #     print("fitxaAtributs=",self.fitxaAtributs)
 
-                    #     if self.fitxaAtributs != None:
-                    #         self.fitxaAtributs.destroy()
-                    #         print("destroy")
-                    #     else:
-                    #         print("None")
-                    # except :
-                    #     print("error")
-                    
-
-                    self.fitxaAtributs = QgsAttributeDialog(layer, feature, False)
-                    self.fitxaAtributs.finished.connect(self.heCerradoFicha)
-                    self.fitxaAtributs.show()
-                    # try:
-                    #     self.fitxaAtributs.clearFocus()
-                    # except :
-                    #     pass
-                    
-
-                    # self.fitxaAtributs.destroy()
-                    # ret = self.fitxaAtributs.exec() 
-
-                    # if ret ==  0:
-                    #     self.fitxaAtributs.destroy()
-                    
-                    # 
-       
-                    
-                    ids.append(feature.id())
+                for feature in it:       
+                    # ids.append(feature.id())
+                    features.append(feature)
 
                 # ids = [i.id() for i in it]
-                layer.selectByIds(ids)
+                # layer.selectByIds(ids)
+                if len(features) > 0:
+                    self.fitxaAtributs = QvFitxesAtributs(layer, features)
+                    self.fitxaAtributs.exec_()
+                    self.fitxaAtributs = None
+
             else:
                 self.missatgeCaixa('Cal tenir seleccionat un nivell per poder fer una selecció.','Marqueu un nivell a la llegenda sobre el que aplicar la consulta.')
-        except:
-            pass
+        except Exception as e:
+            print(str(e))
        
         # modelIndex = self.currentIndex()
         # if modelIndex is not None and modelIndex.isValid():
