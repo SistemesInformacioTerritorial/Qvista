@@ -75,15 +75,8 @@ class QvFitxesAtributs(QDialog):
     def finish(self, int):
         self.select()
 
+
 class QvAtributs(QTabWidget):
-    """[summary]
-
-    Arguments:
-        QTabWidget {[type]} -- [description]
-
-    Returns:
-        [type] -- [description]
-    """
 
     clicatMenuContexte = pyqtSignal('PyQt_PyObject')
     modificatFiltreCapa = pyqtSignal('PyQt_PyObject')
