@@ -67,7 +67,7 @@ class Ui_AtributsForm(object):
 
     def retranslateUi(self, AtributsForm):
         _translate = QtCore.QCoreApplication.translate
-        AtributsForm.setWindowTitle(_translate("AtributsForm", "Atributs d\'element seleccionat"))
+        AtributsForm.setWindowTitle(_translate("AtributsForm", "Atributs d\'element"))
         self.bPrev.setText(_translate("AtributsForm", "Anterior"))
         self.bNext.setText(_translate("AtributsForm", "Següent"))
 

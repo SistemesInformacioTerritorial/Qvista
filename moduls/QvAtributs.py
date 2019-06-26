@@ -25,7 +25,7 @@ from moduls.Ui_AtributsForm import Ui_AtributsForm
 
 
 class QvFitxesAtributs(QDialog):
-    def __init__(self, layer, features):
+    def __init__(self, layer, features, selectFeature=True):
         QDialog.__init__(self)
         self.ui = Ui_AtributsForm()
         self.ui.setupUi(self)
@@ -33,6 +33,7 @@ class QvFitxesAtributs(QDialog):
         self.finished.connect(self.finish)
         self.layer = layer
         self.features = features
+        self.selectFeature = selectFeature
         self.title = self.windowTitle()
         self.total = len(self.features)
         if self.total > 0:
@@ -49,6 +50,8 @@ class QvFitxesAtributs(QDialog):
             self.setWindowTitle(self.title)
 
     def select(self, n=None):
+        if not self.selectFeature:
+            return
         if n is None:
             self.layer.selectByIds([])
         else:
@@ -321,24 +324,26 @@ class QvTaulaAtributs(QgsAttributeTableView):
             if menu is not None:
                 menu.exec_(QCursor.pos())
 
-    def crearDialog(self, filtre=False):
+    def crearDialog(self):
         dialog = None
         try:
             modelIndex = self.currentIndex()
             if modelIndex is not None and modelIndex.isValid():
                 self.feature = self.model.feature(modelIndex)
                 if self.feature is not None and self.feature.isValid():
-                    dialog = QgsAttributeDialog(
-                        self.layer, self.feature, False)
-                    # dialog = QgsAttributeForm(self.layer, self.feature)
-                    if filtre:
-                        dialog.setWindowTitle(self.layer.name() + ' - Filtres')
-                        dialog.setMode(QgsAttributeForm.SearchMode)
-                    else:
-                        dialog.setWindowTitle(
-                            self.layer.name() +
-                            ' - Element ' + str(self.feature.id() + 1))
-                        dialog.setMode(QgsAttributeForm.SingleEditMode)
+                    num = self.layer.selectedFeatureCount()
+                    dialog = QvFitxesAtributs(self.layer, [self.feature], num == 0)
+                #     dialog = QgsAttributeDialog(
+                #         self.layer, self.feature, False)
+                #     # dialog = QgsAttributeForm(self.layer, self.feature)
+                #     if filtre:
+                #         dialog.setWindowTitle(self.layer.name() + ' - Filtres')
+                #         dialog.setMode(QgsAttributeForm.SearchMode)
+                #     else:
+                #         dialog.setWindowTitle(
+                #             self.layer.name() +
+                #             ' - Element ' + str(self.feature.id()))
+                #         dialog.setMode(QgsAttributeForm.SingleEditMode)
         except Exception:
             pass
         return dialog

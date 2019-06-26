@@ -14,7 +14,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Atributs d'element seleccionat</string>
+   <string>Atributs d'element</string>
   </property>
   <property name="modal">
    <bool>true</bool>
