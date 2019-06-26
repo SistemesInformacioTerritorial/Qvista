@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from qgis.core import QgsMapLayer, QgsVectorLayerCache
-from qgis.PyQt import QtWidgets
+from qgis.PyQt import QtWidgets  # , uic
 from qgis.PyQt.QtCore import Qt, pyqtSignal
 from qgis.PyQt.QtGui import QCursor
 from qgis.PyQt.QtWidgets import QTabWidget, QVBoxLayout, QAction
@@ -19,26 +19,61 @@ from moduls.QvApp import QvApp
 # import recursos
 import csv
 # import xlwt - .xls
-from PyQt5.QtWidgets import QWidget
+from PyQt5.QtWidgets import QDialog
 
-from moduls.Ui_Atributs import Ui_Dialog
+from moduls.Ui_AtributsForm import Ui_AtributsForm
 
-class QvFitxesAtributs(QWidget):
-    def __init__(self, layer, features, titul='Elements seleccionats'):
-        QWidget.__init__(self)
-        self.ui = Ui_Dialog()
+
+class QvFitxesAtributs(QDialog):
+    def __init__(self, layer, features):
+        QDialog.__init__(self)
+        self.ui = Ui_AtributsForm()
         self.ui.setupUi(self)
-        self.title = titul
-        self.total = len(features)
-        for feature in features:
-            form = QgsAttributeForm(layer, feature)
-            self.ui.stackedWidget.addWidget(form)
-        self.ui.stackedWidget.setCurrentIndex(0)
+        self.ui.buttonBox.accepted.connect(self.accept)
+        self.finished.connect(self.finish)
+        self.layer = layer
+        self.features = features
+        self.title = self.windowTitle()
+        self.total = len(self.features)
+        if self.total > 0:
+            for feature in self.features:
+                form = QgsAttributeForm(self.layer, feature)
+                self.ui.stackedWidget.addWidget(form)
+            self.visibleButtons()
+            self.go(0)
 
     def setTitle(self, n):
-        titul = self.title + ' (' + str(n) + ' de ' + str(self.total) + ')'
-        self.setWindowTitle(titul)
+        if self.total > 1:
+            self.setWindowTitle(self.title + ' (' + str(n+1) + ' de ' + str(self.total) + ')')
+        else:
+            self.setWindowTitle(self.title)
 
+    def select(self, n=None):
+        if n is None:
+            self.layer.selectByIds([])
+        else:
+            self.layer.selectByIds([self.features[n].id()])
+
+    def go(self, n):
+        if self.total > n:
+            self.select(n)
+            self.ui.stackedWidget.setCurrentIndex(n)
+            self.setTitle(n)
+
+    def move(self, inc):
+        n = (self.ui.stackedWidget.currentIndex() + inc) % self.total
+        self.go(n)
+
+    def visibleButtons(self):
+        if self.total > 1:
+            self.ui.bPrev.clicked.connect(lambda: self.move(-1))
+            self.ui.bNext.clicked.connect(lambda: self.move(1))
+            self.ui.groupBox.setVisible(True)
+        else:
+            self.ui.groupBox.setVisible(False)
+
+    def finish(self, int):
+        self.select()
 
 class QvAtributs(QTabWidget):
     """[summary]
@@ -434,6 +469,12 @@ if __name__ == "__main__":
 
         qApp = QvApp()
         qApp.carregaIdioma(app, 'ca')
+
+        # win = uic.loadUi('moduls/Dialog.ui')  # specify the location of your .ui file
+        # win.buttonBox.accepted.connect(win.accept)
+        # result = win.exec_()
+        # if result == QDialog.Accepted:
+        #     print('OK')
 
         canvas = QgsMapCanvas()
 
