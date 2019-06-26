@@ -146,7 +146,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.preparacioImpressio()
         # self.preparacioGrafiques()
         self.preparacioSeleccio()
-        self.preparacioEntorns()
+        # self.preparacioEntorns()
         
 
         # Eina inicial del mapa = Panning
