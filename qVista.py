@@ -209,6 +209,7 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         self.oldPos = self.pos() #Per quan vulguem moure la finestra
 
+        self.ferGran()
 
     
 
