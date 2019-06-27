@@ -15,7 +15,8 @@ import chardet
 
 class QvCarregaCsv(QWizard):
     finestres = IntEnum(
-        'finestres', 'TriaSep TriaSepDec TriaGeom CampsXY Adreca GeneraCoords Personalitza')
+        'finestres', 'TriaSep           TriaGeom CampsXY Adreca GeneraCoords Personalitza')
+                             #TriaSepDec
 
     def __init__(self, csv: str, carregar, parent: QWidget = None):
         '''Crea un assistent de càrrega de csv
@@ -40,8 +41,7 @@ class QvCarregaCsv(QWizard):
             self.setPage(QvCarregaCsv.finestres.Personalitza,QvCarregaCsvPersonalitza(self))
         else:
             self.setPage(QvCarregaCsv.finestres.TriaSep, QvCarregaCsvTriaSep(self))
-            self.setPage(QvCarregaCsv.finestres.TriaSepDec,
-                        QvCarregaCsvTriaSepDec(self))
+            #self.setPage(QvCarregaCsv.finestres.TriaSepDec,QvCarregaCsvTriaSepDec(self))
             self.setPage(QvCarregaCsv.finestres.TriaGeom,
                         QvCarregaCsvTriaGeom(self))
             self.setPage(QvCarregaCsv.finestres.CampsXY, QvCarregaCsvXY(self))
@@ -272,6 +272,9 @@ class QvCarregaCsvTriaSep(QvCarregaCsvPage):
         self.cbSep.activated.connect(botoClickat)
         index = llistaSeparadors.index(self.parent.separador)
         self.cbSep.setCurrentIndex(index)
+
+        def nextId(self):
+            return QvCarregaCsv.finestres.TriaGeom
 
 
 class QvCarregaCsvTriaSepDec(QvCarregaCsvPage):
@@ -638,7 +641,6 @@ class QvCarregaCsvGeneraCoords(QvCarregaCsvPage):
             numLinies=mida/midalinia
 
             wpg = WindowProgressBar(mida=numLinies)
-            # wpg.setWindowFlags(Qt.WindowStaysOnTopHint & ~Qt.WindowMinimizeButtonHint )
             wpg.setWindowFlag(Qt.WindowStaysOnTopHint)
             wpg.setWindowFlag(Qt.WindowMinimizeButtonHint,False)
             wpg.setWindowFlag(Qt.WindowMaximizeButtonHint,False)
@@ -714,11 +716,12 @@ class QvCarregaCsvGeneraCoords(QvCarregaCsvPage):
 
 
                 # wpg.count = wpg.count + 1
-                if i%int(numLinies/1000)==0:
-                    wpg.count = i
-                    wpg.actualitzaLBL()
-                    wpg.progress.setValue(wpg.count)
-                qApp.processEvents()
+                if numLinies > 1000:
+                    if i%int(numLinies/1000)==0:
+                        wpg.count = i
+                        wpg.actualitzaLBL()
+                        wpg.progress.setValue(wpg.count)
+                    qApp.processEvents()
                 if x is None or y is None:
                     aux = self.lblAdrecesError.text()
                     wpg.errors = wpg.errors + 1
