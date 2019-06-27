@@ -11,6 +11,7 @@ import re
 from csv import DictReader
 import io
 import chardet
+from PyQt5 import QtWidgets
 
 
 class QvCarregaCsv(QWizard):
@@ -122,7 +123,7 @@ class QvCarregaCsv(QWizard):
             string=b''
             i=0
             while i<112:
-                string+=f.readline()
+                if i!=0: string+=f.readline()
                 i+=1
             # self.csvEncoding=chardet.detect(f.read())['encoding']
             self.csvEncoding=chardet.detect(string)['encoding']
@@ -184,14 +185,14 @@ class QvCarregaCsvPage(QWizardPage):
                 Si és false, mostra una previsualització de 10 elements 
                 (default: {False})
         '''
-        self.table = QvtLectorCsv(self.parent.getCsv(), self.parent.separador, completa, guardar, self)
+        self.table = QvtLectorCsv(self.parent.nomCapa, self.parent.getCsv(), self.parent.separador, completa, guardar, self)
         self.layoutTable = QVBoxLayout()
         self.layout.addLayout(self.layoutTable)
         self.layoutTable.addWidget(self.table)
         if guardar:
             self.table.setMinimumHeight(120)
             self.bGuardar = QvPushButton("Guardar CSV")
-            self.bGuardar.clicked.connect(self.table.writeCsv)
+            self.bGuardar.clicked.connect(lambda: self.table.writeCsv(self.parent.getCsv()))
             self.layoutB = QVBoxLayout()
             self.layoutB.setAlignment(Qt.AlignCenter)
             self.layoutB.addWidget(self.bGuardar)
@@ -741,7 +742,7 @@ class QvCarregaCsvGeneraCoords(QvCarregaCsvPage):
                 row[self.parent.coordX] = x
                 row[self.parent.coordY] = y
                 del row[""]
-                writer.writerow(row)
+                writer.writerow(row) 
         self.mostraTaula(completa=False, guardar = True)
         #self.recarregaTaula(completa=False)
         qApp.processEvents()
@@ -893,14 +894,14 @@ class QvCarregaCsvPersonalitza(QvCarregaCsvPage):
 
 
 class QvtLectorCsv(QvLectorCsv):
-    def __init__(self, csv='', separador=None, completa=False, guardar=False, parent=None):
-        super().__init__(csv, guardar)
+    def __init__(self, csvName, csv=None, separador=None, completa=False, guardar=False, parent=None):
+        super().__init__(csvName, guardar)
         self.separador = separador
         if self.separador is not None:
-            if isinstance(csv,str): #És el nom de l'arxiu
-                self.carregaCsv(csv, self.separador, completa)
+            if csv is None: #És el nom de l'arxiu
+                self.carregaCsv(csvName, self.separador, completa)
             elif isinstance(csv,io.TextIOBase): #És l'arxiu
-                self.carregaCsvFile(csv,self.separador,completa)
+                self.carregaCsvFile(csv, csvName,self.separador,completa)
     
     def carregaCsv(self, file, separador=None, completa=False):
         if isinstance(csv,str): #És el nom de l'arxiu
@@ -908,6 +909,7 @@ class QvtLectorCsv(QvLectorCsv):
         elif isinstance(csv,io.TextIOBase): #És l'arxiu
             self.carregaCsvFile(csv,self.separador,completa)
     def carregaCsvNom(self, fileName, separador=None, completa=False):
+        self.fname=fileName
         from PyQt5 import QtGui
         if separador is None:
             super().carregaCsv(fileName)
@@ -933,7 +935,8 @@ class QvtLectorCsv(QvLectorCsv):
                         self.model.appendRow(items)
                     i += 1
                 self.tableView.resizeColumnsToContents()
-    def carregaCsvFile(self,f,separador,completa=False):
+    def carregaCsvFile(self,f, fname, separador,completa=False):
+        self.fname=fname
         from PyQt5 import QtGui
         # self.fname = os.path.splitext(str(fileName))[0].split("/")[-1]
         # self.setWindowTitle(self.fname)
@@ -953,6 +956,16 @@ class QvtLectorCsv(QvLectorCsv):
                 self.model.appendRow(items)
             i += 1
         self.tableView.resizeColumnsToContents()
+
+    def writeCsv(self, file):
+        fileName, _ = QtWidgets.QFileDialog.getSaveFileName(self, "Save File",
+                        (QtCore.QDir.homePath() + "/" + self.fname + '_qVista' + ".csv"), "CSV Files (*.csv)")
+        if fileName:
+            with open(fileName,'w', newline='') as sortida:
+                reader=csv.reader(file,delimiter=self.separador)
+                writer=csv.writer(sortida,delimiter=';')
+                for x in reader:
+                    writer.writerow(x)
 
     def recarrega(self, separador):
         self.separador = separador
