@@ -125,64 +125,6 @@
            <number>0</number>
           </property>
           <item>
-           <widget class="QFrame" name="frame_14">
-            <property name="minimumSize">
-             <size>
-              <width>0</width>
-              <height>10</height>
-             </size>
-            </property>
-            <property name="maximumSize">
-             <size>
-              <width>16777215</width>
-              <height>10</height>
-             </size>
-            </property>
-            <property name="styleSheet">
-             <string notr="true">background-color: #465A63;</string>
-            </property>
-            <property name="frameShape">
-             <enum>QFrame::NoFrame</enum>
-            </property>
-            <property name="frameShadow">
-             <enum>QFrame::Raised</enum>
-            </property>
-            <property name="lineWidth">
-             <number>0</number>
-            </property>
-            <layout class="QHBoxLayout" name="horizontalLayout_3">
-             <property name="spacing">
-              <number>0</number>
-             </property>
-             <property name="leftMargin">
-              <number>0</number>
-             </property>
-             <property name="topMargin">
-              <number>0</number>
-             </property>
-             <property name="rightMargin">
-              <number>0</number>
-             </property>
-             <property name="bottomMargin">
-              <number>0</number>
-             </property>
-             <item>
-              <spacer name="horizontalSpacer">
-               <property name="orientation">
-                <enum>Qt::Horizontal</enum>
-               </property>
-               <property name="sizeHint" stdset="0">
-                <size>
-                 <width>40</width>
-                 <height>20</height>
-                </size>
-               </property>
-              </spacer>
-             </item>
-            </layout>
-           </widget>
-          </item>
-          <item>
            <widget class="QFrame" name="frame_15">
             <property name="styleSheet">
              <string notr="true">background-color: #79909B;
@@ -552,7 +494,7 @@ color: #FFFFFF</string>
      <x>0</x>
      <y>0</y>
      <width>1233</width>
-     <height>34</height>
+     <height>41</height>
     </rect>
    </property>
    <property name="minimumSize">
@@ -621,9 +563,9 @@ color: #FFFFFF</string>
       <colorrole role="Text">
        <brush brushstyle="SolidPattern">
         <color alpha="255">
-         <red>249</red>
-         <green>249</green>
-         <blue>249</blue>
+         <red>255</red>
+         <green>255</green>
+         <blue>255</blue>
         </color>
        </brush>
       </colorrole>
@@ -648,9 +590,9 @@ color: #FFFFFF</string>
       <colorrole role="Base">
        <brush brushstyle="SolidPattern">
         <color alpha="255">
-         <red>0</red>
-         <green>0</green>
-         <blue>0</blue>
+         <red>56</red>
+         <green>71</green>
+         <blue>79</blue>
         </color>
        </brush>
       </colorrole>
@@ -758,9 +700,9 @@ color: #FFFFFF</string>
       <colorrole role="Text">
        <brush brushstyle="SolidPattern">
         <color alpha="255">
-         <red>249</red>
-         <green>249</green>
-         <blue>249</blue>
+         <red>255</red>
+         <green>255</green>
+         <blue>255</blue>
         </color>
        </brush>
       </colorrole>
@@ -785,9 +727,9 @@ color: #FFFFFF</string>
       <colorrole role="Base">
        <brush brushstyle="SolidPattern">
         <color alpha="255">
-         <red>0</red>
-         <green>0</green>
-         <blue>0</blue>
+         <red>56</red>
+         <green>71</green>
+         <blue>79</blue>
         </color>
        </brush>
       </colorrole>
@@ -841,9 +783,9 @@ color: #FFFFFF</string>
       <colorrole role="WindowText">
        <brush brushstyle="SolidPattern">
         <color alpha="255">
-         <red>28</red>
-         <green>35</green>
-         <blue>39</blue>
+         <red>255</red>
+         <green>255</green>
+         <blue>255</blue>
         </color>
        </brush>
       </colorrole>
@@ -895,9 +837,9 @@ color: #FFFFFF</string>
       <colorrole role="Text">
        <brush brushstyle="SolidPattern">
         <color alpha="255">
-         <red>28</red>
-         <green>35</green>
-         <blue>39</blue>
+         <red>255</red>
+         <green>255</green>
+         <blue>255</blue>
         </color>
        </brush>
       </colorrole>
@@ -913,9 +855,9 @@ color: #FFFFFF</string>
       <colorrole role="ButtonText">
        <brush brushstyle="SolidPattern">
         <color alpha="255">
-         <red>28</red>
-         <green>35</green>
-         <blue>39</blue>
+         <red>255</red>
+         <green>255</green>
+         <blue>255</blue>
         </color>
        </brush>
       </colorrole>
