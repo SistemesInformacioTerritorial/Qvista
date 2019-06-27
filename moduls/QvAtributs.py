@@ -4,7 +4,7 @@ from qgis.core import QgsMapLayer, QgsVectorLayerCache
 from qgis.PyQt import QtWidgets  # , uic
 from qgis.PyQt.QtCore import Qt, pyqtSignal
 from qgis.PyQt.QtGui import QCursor
-from qgis.PyQt.QtWidgets import QTabWidget, QVBoxLayout, QAction
+from qgis.PyQt.QtWidgets import QTabWidget, QVBoxLayout, QAction, QMenuBar, QMenu
 from qgis.gui import (QgsGui,
                       QgsAttributeTableModel,
                       QgsAttributeTableView,
@@ -49,6 +49,16 @@ class QvFitxesAtributs(QDialog):
         else:
             self.setWindowTitle(self.title)
 
+    def setMenu(self, n):        
+        self.menuBar = QMenuBar()
+        self.menu = QgsActionMenu(self.layer, self.features[n], 'Feature')
+        if self.menu is not None and not self.menu.isEmpty():
+            self.menuBar.addMenu(self.menu)
+            self.menuBar.setVisible(True)
+        else:
+            self.menuBar.setVisible(False)
+        self.layout().setMenuBar(self.menuBar)
+
     def select(self, n=None):
         if not self.selectFeature:
             return
@@ -58,10 +68,11 @@ class QvFitxesAtributs(QDialog):
             self.layer.selectByIds([self.features[n].id()])
 
     def go(self, n):
-        if self.total > n:
+        if n >= 0 and n < self.total:
             self.select(n)
-            self.ui.stackedWidget.setCurrentIndex(n)
             self.setTitle(n)
+            self.setMenu(n)
+            self.ui.stackedWidget.setCurrentIndex(n)
 
     def move(self, inc):
         n = (self.ui.stackedWidget.currentIndex() + inc) % self.total
