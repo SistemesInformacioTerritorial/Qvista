@@ -638,6 +638,11 @@ class QvCarregaCsvGeneraCoords(QvCarregaCsvPage):
             numLinies=mida/midalinia
 
             wpg = WindowProgressBar(mida=numLinies)
+            # wpg.setWindowFlags(Qt.WindowStaysOnTopHint & ~Qt.WindowMinimizeButtonHint )
+            wpg.setWindowFlag(Qt.WindowStaysOnTopHint)
+            wpg.setWindowFlag(Qt.WindowMinimizeButtonHint,False)
+            wpg.setWindowFlag(Qt.WindowMaximizeButtonHint,False)
+            
             wpg.setWindowModality(Qt.WindowModal)
             wpg.show()
 
