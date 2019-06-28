@@ -2,6 +2,7 @@
 
 # Inici del cronòmetre
 import time
+
 startGlobal = time.time()
 
 # Fitxer principal de importació de llibreries
@@ -145,7 +146,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.preparacioImpressio()
         # self.preparacioGrafiques()
         self.preparacioSeleccio()
-        self.preparacioEntorns()
+        # self.preparacioEntorns()
         
 
         # Eina inicial del mapa = Panning
@@ -208,6 +209,7 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         self.oldPos = self.pos() #Per quan vulguem moure la finestra
 
+        self.ferGran()
 
     
 
