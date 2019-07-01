@@ -36,6 +36,7 @@ class QvCarregaCsv(QWizard):
         self.setNomCsv(csv)
         self.color = 'red'
         self.symbol = 'circle'
+        self.aprofitar = False #per defecte no aprofitarà les coordenades precalculades
         self.formata()
         self.camps = DictReader(self.getCsv(), delimiter=';').fieldnames
         if 'XCalculadaqVista' in self.camps and 'YCalculadaqVista' in self.camps:
@@ -68,7 +69,7 @@ class QvCarregaCsv(QWizard):
         self.setButton(QvCarregaCsv.CommitButton, self.commitButton)
 
         self.setFixedWidth(500)
-        self.setFixedHeight(460)
+        self.setFixedHeight(440)
         self.setContentsMargins(0, 0, 0, 0)
         self.setWindowFlags(Qt.Window | Qt.FramelessWindowHint)
         self.setWizardStyle(QWizard.ModernStyle)
@@ -257,25 +258,30 @@ class QvCarregaCsvPrecalculat(QvCarregaCsvPage):
         self.layout.addWidget(self.lblExplicacio0)
         self.setLayout(self.layout)
         self.botoA = QRadioButton('Carregar directament')
-        self.botoB = QRadioButton('Procediment normal')
+        self.botoB = QRadioButton('Procediment normal aprofitant coordenades calculades')
+        self.botoC = QRadioButton('Procediment normal recalculant totes les coordenades')
         self.layoutBotons = QVBoxLayout()
         self.layoutBotons.setSpacing(20)
         self.layoutBotons.addWidget(self.botoA)
         self.layoutBotons.addWidget(self.botoB)
+        self.layoutBotons.addWidget(self.botoC)
         self.layout.addLayout(self.layoutBotons)
 
         def activaBoto():
             self.completeChanged.emit()
         self.botoA.toggled.connect(activaBoto)
         self.botoB.toggled.connect(activaBoto)
+        self.botoC.toggled.connect(activaBoto)
 
     def isComplete(self):
-        return self.botoA.isChecked() or self.botoB.isChecked()
+        return self.botoA.isChecked() or self.botoB.isChecked() or self.botoC.isChecked()
 
     def nextId(self):
         if self.botoA.isChecked():
             self.parent.prefab()
             return QvCarregaCsv.finestres.Personalitza
+        if self.botoB.isChecked():
+            self.parent.aprofitar = True
         return QvCarregaCsv.finestres.TriaSep
 
 class QvCarregaCsvTriaSep(QvCarregaCsvPage):
@@ -716,6 +722,11 @@ class QvCarregaCsvGeneraCoords(QvCarregaCsvPage):
                     row[self.parent.coordY] = self.parent.coordY
                     writer.writerow(row)
                     continue
+
+                if self.parent.aprofitar:
+                    if row['XCalculadaqVista'] != '':
+                        continue
+
                 row[''] = ''
 
                 if self.parent.dadesAdreca[0] == "": 
