@@ -48,6 +48,12 @@ class QvNews(QtWidgets.QAction):
 
     def mostraNoticies(self):
         '''Obre l'arxiu de notícies i les mostra'''
+        if not os.path.isfile(arxiuNews):
+            msg=QMessageBox()
+            msg.setText("No s'ha pogut accedir a les notícies")
+            msg.setWindowTitle('qVista')
+            msg.exec_()
+            return
         self.news = QvNewsFinestra(arxiuNews)
         self.news.exec_()
         self.setIcon(self.ICONA)
@@ -62,8 +68,7 @@ class QvNews(QtWidgets.QAction):
         '''
         # Si no existeix l'arxiu temporal vol dir que mai hem obert notícies :(
         if not os.path.isfile(arxiuNews):
-            raise FileNotFoundError(errno.ENOENT, os.strerror(
-                errno.ENOENT), arxiuNews)
+            return False
         if not os.path.isfile(arxiuTmpNews):
             return True
         return os.path.getmtime(arxiuTmpNews) < os.path.getmtime(arxiuNews)

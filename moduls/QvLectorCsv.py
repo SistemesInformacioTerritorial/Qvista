@@ -9,15 +9,15 @@ from PyQt5 import QtCore, QtGui, QtWidgets, QtPrintSupport
 from PyQt5.QtGui import QImage, QPainter
 from PyQt5.QtCore import QFile
 from moduls.QvPushButton import QvPushButton
+import io
 
 
 class QvLectorCsv(QtWidgets.QWidget):
 
-    def __init__(self, fileName="", parent=None, guardar=False):
+    def __init__(self, csvName, csv=None, separador=None, completa=False, guardar=False, parent=None):
         QtWidgets.QWidget.__init__(self)
         self.setContentsMargins(0, 0, 0, 0)
-        self.fileName = fileName
-        self.fname = "Liste"
+        self.fileName = csvName
         self.model = QtGui.QStandardItemModel(self)
         self.tableView = QtWidgets.QTableView(self)
         # self.tableView.setStyleSheet(stylesheet(self))
@@ -31,97 +31,103 @@ class QvLectorCsv(QtWidgets.QWidget):
         grid.setContentsMargins(0, 0, 0, 0)
         grid.setSpacing(0)
         grid.addWidget(self.tableView, 0, 0, 1, 9)
-        if guardar:  # aixo no s'arriba a executar mai
-            bGuardar = QvPushButton()
-            bGuardar.setText("Guardar CSV")
-            bGuardar.clicked.connect(self.writeCsv)
-            grid.addWidget(bGuardar, 0, 0, 2, 9)
+        # if guardar:  # aixo no s'arriba a executar mai
+        #     bGuardar = QvPushButton()
+        #     bGuardar.setText("Guardar CSV")
+        #     bGuardar.clicked.connect(self.writeCsv)
+        #     grid.addWidget(bGuardar, 0, 0, 2, 9)
         self.setLayout(grid)
 
         item = QtGui.QStandardItem()
         self.model.appendRow(item)
         self.model.setData(self.model.index(0, 0), "", 0)
         self.tableView.resizeColumnsToContents()
-        self.carregaCsv(self.fileName)
 
-    def loadCsv(self, fileName):
-        fileName, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Open CSV",
-                (QtCore.QDir.homePath()), "CSV (*.csv *.tsv)")
 
+        self.separador = separador
+        self.fname=os.path.splitext(str(csvName))[0].split("/")[-1]
+        self.setWindowTitle(self.fname)
+        if self.separador is not None:
+            self.carregaCsv(csvName,csv,separador,completa)
+
+    # def carregaCsv(self, fileName):
+    #     if fileName:
+    #         print(fileName)
+    #         ff = open(fileName, 'r')
+    #         mytext = ff.read()
+    #         ff.close()
+    #         f = open(fileName, 'r')
+    #         with f:
+    #             self.fname = os.path.splitext(str(fileName))[0].split("/")[-1]
+    #             self.setWindowTitle(self.fname)
+    #             if mytext.count(';') <= mytext.count('\t'):
+    #                 reader = csv.reader(f, delimiter='\t')
+    #                 self.model.clear()
+    #                 for row in reader:
+    #                     items = [QtGui.QStandardItem(field) for field in row]
+    #                     self.model.appendRow(items)
+    #                 self.tableView.resizeColumnsToContents()
+    #             else:
+    #                 reader = csv.reader(f, delimiter=';')
+    #                 self.model.clear()
+    #                 for row in reader:
+    #                     items = [QtGui.QStandardItem(field) for field in row]
+    #                     self.model.appendRow(items)
+    #                 self.tableView.resizeColumnsToContents()
+    def carregaCsv(self, filename, file=None, separador=None, completa=False):
+        if file is None:
+            self.carregaCsvNom(filename, self.separador, completa)
+        elif isinstance(file,io.TextIOBase): #És l'arxiu
+            self.carregaCsvFile(file, filename, self.separador,completa)
+    def carregaCsvNom(self, fileName, separador=None, completa=False):
+        from PyQt5 import QtGui
+        if separador is None:
+            super().carregaCsv(fileName)
+            return
         if fileName:
-            print(fileName)
-            ff = open(fileName, 'r')
-            mytext = ff.read()
-    #            print(mytext)
-            ff.close()
-            f = open(fileName, 'r')
+            f = open(fileName, 'r',errors='ignore')
             with f:
-                self.fname = os.path.splitext(str(fileName))[0].split("/")[-1]
-                self.setWindowTitle(self.fname)
-                if mytext.count(';') <= mytext.count('\t'):
-                    reader = csv.reader(f, delimiter='\t')
-                    self.model.clear()
-                    for row in reader:
-                        items = [QtGui.QStandardItem(field) for field in row]
-                        self.model.appendRow(items)
-                    self.tableView.resizeColumnsToContents()
-                else:
-                    reader = csv.reader(f, delimiter=';')
-                    self.model.clear()
-                    for row in reader:
-                        items = [QtGui.QStandardItem(field) for field in row]
-                        self.model.appendRow(items)
-                    self.tableView.resizeColumnsToContents()
+                self.carregaCsvFile(f,fileName,separador,completa)
+    def carregaCsvFile(self,f, fname, separador,completa=False):
+        from PyQt5 import QtGui
+        self.setWindowTitle(self.fname)
+        if not isinstance(separador, str):
+            separador = ';'
+        reader = csv.reader(f, delimiter=separador)
+        self.model.clear()
+        i = 0
+        for row in reader:
+            if not completa and i > 9:
+                break  # Per agilitzar la càrrega, només ens cal una preview petita
+            items = [QtGui.QStandardItem(field) for field in row]
+            
+            if (i==0): 
+                self.model.setHorizontalHeaderLabels([x.text() for x in items])
+            else:
+                self.model.appendRow(items)
+            i += 1
+        self.tableView.resizeColumnsToContents()
+        self.file=f
 
-    def carregaCsv(self, fileName):
-
-        if fileName:
-            print(fileName)
-            ff = open(fileName, 'r')
-            mytext = ff.read()
-    #            print(mytext)
-            ff.close()
-            f = open(fileName, 'r')
-            with f:
-                self.fname = os.path.splitext(str(fileName))[0].split("/")[-1]
-                self.setWindowTitle(self.fname)
-                if mytext.count(';') <= mytext.count('\t'):
-                    reader = csv.reader(f, delimiter='\t')
-                    self.model.clear()
-                    for row in reader:
-                        items = [QtGui.QStandardItem(field) for field in row]
-                        self.model.appendRow(items)
-                    self.tableView.resizeColumnsToContents()
-                else:
-                    reader = csv.reader(f, delimiter=';')
-                    self.model.clear()
-                    for row in reader:
-                        items = [QtGui.QStandardItem(field) for field in row]
-                        self.model.appendRow(items)
-                    self.tableView.resizeColumnsToContents()
-
-    def writeCsv(self, fileName):
-        # find empty cells
-        for row in range(self.model.rowCount()):
-            for column in range(self.model.columnCount()):
-                myitem = self.model.item(row, column)
-                if myitem is None:
-                    item = QtGui.QStandardItem("")
-                    self.model.setItem(row, column, item)
+    def writeCsv(self, file):
         fileName, _ = QtWidgets.QFileDialog.getSaveFileName(self, "Save File",
-                        (QtCore.QDir.homePath() + "/" + self.fname + ".csv"), "CSV Files (*.csv)")
+                        (QtCore.QDir.homePath() + "/" + self.fname + '_qVista' + ".csv"), "CSV Files (*.csv)")
         if fileName:
-            print(fileName)
-            f = open(fileName, 'w', newline='')
-            with f:
-                writer = csv.writer(f, delimiter=';')
-                for rowNumber in range(self.model.rowCount()):
-                    fields = [self.model.data(self.model.index(rowNumber, columnNumber), QtCore.Qt.DisplayRole)
-                    for columnNumber in range(self.model.columnCount())]
-                    writer.writerow(fields)
-                self.fname = os.path.splitext(str(fileName))[0].split("/")[-1]
-                self.setWindowTitle(self.fname)
+            with open(fileName,'w', newline='') as sortida:
+                reader=csv.reader(file,delimiter=self.separador)
+                writer=csv.writer(sortida,delimiter=';')
+                for x in reader:
+                    writer.writerow(x)
 
+    def recarrega(self, separador, completa=False):
+        self.separador = separador
+        self.carregaCsv(self.file, self.separador, completa)
+
+    def verticalScrollBar(self):
+        return self.tableView.verticalScrollBar()
+
+    def horizontalScrollBar(self):
+        return self.tableView.horizontalScrollBar()
     def handlePrint(self):
         dialog = QtPrintSupport.QPrintDialog()
         if dialog.exec_() == QtWidgets.QDialog.Accepted:
