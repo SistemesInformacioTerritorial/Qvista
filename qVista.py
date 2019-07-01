@@ -1769,13 +1769,14 @@ class QVista(QMainWindow, Ui_MainWindow):
             # self.oldCentraWidget = self.centralWidget()
             # self.setCentralWidget(self.canvas)
             self.mapaMaxim = True
-            self.dwLlegenda = QDockWidget( "Llegenda", self )
-            self.dwLlegenda.show()
-            self.dwLlegenda.setObjectName( "layers" )
-            self.dwLlegenda.setAllowedAreas( Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea )
+            if not hasattr(self,'dwLlegenda'): 
+                self.dwLlegenda = QDockWidget( "Llegenda", self )
+                self.dwLlegenda.setObjectName( "layers" )
+                self.dwLlegenda.setAllowedAreas( Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea )
+                self.dwLlegenda.setContentsMargins ( 0,0,0,0)
+                self.addDockWidget( Qt.LeftDockWidgetArea , self.dwLlegenda )
             self.dwLlegenda.setWidget(self.llegenda)
-            self.dwLlegenda.setContentsMargins ( 0,0,0,0)
-            self.addDockWidget( Qt.LeftDockWidgetArea , self.dwLlegenda )
+            self.dwLlegenda.show()
             # self.dwLlegenda.show()
 
             self._menuBarShadow.setEnabled(False)

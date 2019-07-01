@@ -50,7 +50,7 @@ class QvNews(QtWidgets.QAction):
         '''Obre l'arxiu de notícies i les mostra'''
         if not os.path.isfile(arxiuNews):
             msg=QMessageBox()
-            msg.setText("No s'ha pogut accedir a les notícies")
+            msg.setText("No s'ha pogut accedir a les notícies      ")
             msg.setWindowTitle('qVista')
             msg.exec_()
             return
