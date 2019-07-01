@@ -30,6 +30,33 @@ QWidget #layout {
     border: 0px;
 }
 
+QDockWidget{
+    color: white;
+    titlebar-close-icon: url("Imatges/window_close.png");
+    titlebar-normal-icon: url("Imatges/window-restore.png");
+}
+
+QDockWidget::title {
+    background-color: #79909B;
+    padding: 4px;
+    /* border: 1px solid red; */
+}
+
+QDockWidget::close-button, QDockWidget::float-button  {
+    color: transparent;
+    background-color: transparent;
+}
+
+
+QDockWidget::close-button:hover, QDockWidget::float-button:hover  {
+    background:  #FF6215;
+}
+
+
+QvLlegenda{
+    background-color: #F9F9F9;
+}
+
 QFrame {
     background-color: #F9F9F9 transparent;
 }
