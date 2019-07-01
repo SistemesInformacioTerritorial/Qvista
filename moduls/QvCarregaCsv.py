@@ -12,6 +12,7 @@ from csv import DictReader
 import io
 import chardet
 from PyQt5 import QtWidgets
+import time
 
 
 class QvCarregaCsv(QWizard):
@@ -555,11 +556,21 @@ class WindowProgressBar(QWidget):
         self.layProgressW.addWidget(self.lblAdrErrors)
         self.setLayout(self.layProgressW)
 
+        self.timeB=time.time()
+        self.lblTempsRestant=QLabel()
+        self.layProgressW.addWidget(self.lblTempsRestant)
+
     def actualitzaLBL(self):
         self.lblAdrInfo.setText(
             "Adreces Processades: %i d'aproximadament %i" % (self.count, self.mida))
         self.lblAdrErrors.setText(
             "Adreces no geolocalitzades: %i" % (self.errors))
+        if self.count>=self.mida:
+            tempsR=0
+        else:
+            tempsR=(time.time()-self.timeB)*max(self.mida/self.count,1)*(1-self.count/self.mida)
+        tempsTxt=time.strftime("%H:%M:%S", time.gmtime(tempsR))
+        self.lblTempsRestant.setText('Temps restant: %s'%tempsTxt)
 
 
 class QvCarregaCsvGeneraCoords(QvCarregaCsvPage):
