@@ -10,18 +10,25 @@ projecteInicial = 'mapesOffline/qVista default map.qgs'
 
 estatConnexio = "Xarxa municipal: Connectat"
 
-tempdir='C:/temp/qVista/temp/'
+QvTempdir='C:/temp/qVista/'
+tempdir=QvTempdir+'temp/'
 docdir='n:/siteb/apl/pyqgis/qvista/dades/'
 arxiuAvis=docdir+'Avisos.htm'
 arxiuNews=docdir+'Noticies.htm'
 arxiuTmpAvis=tempdir+'ultimAvisObert'
 arxiuTmpNews=tempdir+'ultimaNewOberta'
 
+if not os.path.exists(QvTempdir):
+    try:
+        os.mkdir(QvTempdir)
+    except:
+        print('ERROR. No he pogut crear el directori temporal '+QvTempdir)
+
 if not os.path.exists(tempdir):
     try:
         os.mkdir(tempdir)
     except:
-        print('ERROR. No he pogut crear el directori temporal')
+        print('ERROR. No he pogut crear el directori temporal '+tempdir)
 
 if not os.path.isdir(carpetaCataleg):
     carpetaCataleg = "../dades/CatalegProjectes/"
