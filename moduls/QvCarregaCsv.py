@@ -17,7 +17,7 @@ import time
 
 class QvCarregaCsv(QWizard):
     finestres = IntEnum(
-        'finestres', 'TriaSep           TriaGeom CampsXY Adreca GeneraCoords Personalitza')
+        'finestres', 'Precalculat TriaSep           TriaGeom CampsXY Adreca GeneraCoords Personalitza')
                              #TriaSepDec
 
     def __init__(self, csv: str, carregar, parent: QWidget = None):
@@ -39,19 +39,18 @@ class QvCarregaCsv(QWizard):
         self.formata()
         self.camps = DictReader(self.getCsv(), delimiter=';').fieldnames
         if 'XCalculadaqVista' in self.camps and 'YCalculadaqVista' in self.camps:
-            self.prefab()
-            self.setPage(QvCarregaCsv.finestres.Personalitza,QvCarregaCsvPersonalitza(self))
-        else:
-            self.setPage(QvCarregaCsv.finestres.TriaSep, QvCarregaCsvTriaSep(self))
-            #self.setPage(QvCarregaCsv.finestres.TriaSepDec,QvCarregaCsvTriaSepDec(self))
-            self.setPage(QvCarregaCsv.finestres.TriaGeom,
-                        QvCarregaCsvTriaGeom(self))
-            self.setPage(QvCarregaCsv.finestres.CampsXY, QvCarregaCsvXY(self))
-            self.setPage(QvCarregaCsv.finestres.Adreca, QvCarregaCsvAdreca(self))
-            self.setPage(QvCarregaCsv.finestres.GeneraCoords,
-                        QvCarregaCsvGeneraCoords(self))
-            self.setPage(QvCarregaCsv.finestres.Personalitza,
-                        QvCarregaCsvPersonalitza(self))
+            self.setPage(QvCarregaCsv.finestres.Precalculat,QvCarregaCsvPrecalculat(self))
+
+        self.setPage(QvCarregaCsv.finestres.TriaSep, QvCarregaCsvTriaSep(self))
+        #self.setPage(QvCarregaCsv.finestres.TriaSepDec,QvCarregaCsvTriaSepDec(self))
+        self.setPage(QvCarregaCsv.finestres.TriaGeom,
+                    QvCarregaCsvTriaGeom(self))
+        self.setPage(QvCarregaCsv.finestres.CampsXY, QvCarregaCsvXY(self))
+        self.setPage(QvCarregaCsv.finestres.Adreca, QvCarregaCsvAdreca(self))
+        self.setPage(QvCarregaCsv.finestres.GeneraCoords,
+                    QvCarregaCsvGeneraCoords(self))
+        self.setPage(QvCarregaCsv.finestres.Personalitza,
+                    QvCarregaCsvPersonalitza(self))
 
     def formata(self):
         '''Dóna format a l'assistent'''
@@ -69,6 +68,7 @@ class QvCarregaCsv(QWizard):
         self.setButton(QvCarregaCsv.CommitButton, self.commitButton)
 
         self.setFixedWidth(500)
+        self.setFixedHeight(460)
         self.setContentsMargins(0, 0, 0, 0)
         self.setWindowFlags(Qt.Window | Qt.FramelessWindowHint)
         self.setWizardStyle(QWizard.ModernStyle)
@@ -240,6 +240,43 @@ class QvCarregaCsvPage(QWizardPage):
         s = '<p><span style="color: #38474f; font-size: 10pt;"><strong><span style="font-family: arial, helvetica, sans-serif;">%s</span></strong></span></p>' % subtitle
         super().setSubTitle(s)
 
+class QvCarregaCsvPrecalculat(QvCarregaCsvPage):
+    def __init__(self, parent):
+        '''Crea una pàgina de l'assistent de càrrega de csv que permet escollir entre el procediment normal o saltar-se'l 
+            en cas que trobi els camps XCalculadaqVista i YCalculadaqVista.
+            parent{QWidget} -- Pare de l'assistent (default{None})
+        '''
+        super().__init__(parent)
+        self.parent = parent
+        self.setSubTitle("Procediment a seguir")
+        self.layout = QVBoxLayout(self)
+        self.layout.setSpacing(20)
+        self.lblExplicacio0 = QLabel(
+            """Hem detectat que l'arxiu .CSV que vols carregar ja ha estat tractat per aquest programa. Vols que es carregui directament o vols continuar amb el procediment normal?""")
+        self.lblExplicacio0.setWordWrap(True)
+        self.layout.addWidget(self.lblExplicacio0)
+        self.setLayout(self.layout)
+        self.botoA = QRadioButton('Carregar directament')
+        self.botoB = QRadioButton('Procediment normal')
+        self.layoutBotons = QVBoxLayout()
+        self.layoutBotons.setSpacing(20)
+        self.layoutBotons.addWidget(self.botoA)
+        self.layoutBotons.addWidget(self.botoB)
+        self.layout.addLayout(self.layoutBotons)
+
+        def activaBoto():
+            self.completeChanged.emit()
+        self.botoA.toggled.connect(activaBoto)
+        self.botoB.toggled.connect(activaBoto)
+
+    def isComplete(self):
+        return self.botoA.isChecked() or self.botoB.isChecked()
+
+    def nextId(self):
+        if self.botoA.isChecked():
+            self.parent.prefab()
+            return QvCarregaCsv.finestres.Personalitza
+        return QvCarregaCsv.finestres.TriaSep
 
 class QvCarregaCsvTriaSep(QvCarregaCsvPage):
     def __init__(self, parent=None):
@@ -422,8 +459,8 @@ class QvCarregaCsvXY(QvCarregaCsvPage):
     def nextId(self):
         self.parent.setCoordX(self.cbX.currentText())
         self.parent.setCoordY(self.cbY.currentText())
-        if self.parent.separadorDec == ',':
-            self.replaceComa()
+        # if self.parent.separadorDec == ',':
+        #     self.replaceComa()
         return QvCarregaCsv.finestres.Personalitza
 
 
