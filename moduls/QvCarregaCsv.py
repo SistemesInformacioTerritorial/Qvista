@@ -631,7 +631,7 @@ class QvCarregaCsvGeneraCoords(QvCarregaCsvPage):
         self.layout.setSpacing(20)
         self.layout.setContentsMargins(20,0,20,0)
         self.lblExplicacio4 = QLabel()
-        self.lblExplicacio4.setText("Aquestes són les adreces que no s'han pogut geolocalitzar:1")
+        self.lblExplicacio4.setText("Aquestes són les adreces que no s'han pogut geolocalitzar:")
         self.layout.addWidget(self.lblExplicacio4)
         self.scrollErrors = QScrollArea()
         self.scrollErrors.setFixedHeight(75)
@@ -639,12 +639,8 @@ class QvCarregaCsvGeneraCoords(QvCarregaCsvPage):
         self.lblAdrecesError.setContentsMargins(10, 5, 10, 5)
         self.scrollErrors.setWidget(self.lblAdrecesError)
         self.layout.addWidget(self.scrollErrors)
-        # Després de generar el csv amb coordenades no hi ha volta enrere
-        # self.setCommitPage(True)
         self.showed = False
-        # self.lblExplicacio5 = QLabel()
-        # self.lblExplicacio5.setText("Vols carregar les adreces geocodificades al teu projecte? Les adreces que no s'han pogut geolocalitzar no apareixeran.")
-        # self.lblExplicacio5.setWordWrap(True)
+
 
     def initializePage(self):
         self.parent.coordX = 'XCalculadaqVista'
@@ -714,12 +710,10 @@ class QvCarregaCsvGeneraCoords(QvCarregaCsvPage):
             #writer.writeheader()
             i = -1
             for row in reader:
-                # if i%1000==0: arxiuNouCsv.flush()
                 error = False
                 i += 1
 
                 if i == 0:
-                    #if 'XCalculadaqVista' not in row:
                     row[self.parent.coordX] = self.parent.coordX
                     row[self.parent.coordY] = self.parent.coordY
                     writer.writerow(row)

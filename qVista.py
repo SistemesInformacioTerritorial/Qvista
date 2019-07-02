@@ -2710,6 +2710,7 @@ def carregarLayerCSV(nfile):
             assistent=QvCarregaCsv(nfile,nivellCsv,qV)
             qApp.restoreOverrideCursor()
             assistent.setModal(True)
+            assistent.setGraphicsEffect(QvConstants.ombra(self,radius=30,color=QvConstants.COLORCLAR))
             #assistent.setWindowFlags(assistent.windowFlags() | Qt.Popup)
             #assistent.setWindowFlags(assistent.windowFlags() | Qt.WindowStaysOnTopHint)
             #qV.raise_()
@@ -2932,7 +2933,10 @@ def main(argv):
 
         # Tanquem la imatge splash.
         splash.finish(qV)
-        avisos=QvAvis()
+        try:
+            avisos=QvAvis()
+        except:
+            print('no es pot accedir als avisos')
         qVapp.logRegistre('LOG_TEMPS', qV.lblTempsArrencada.text())
         app.aboutToQuit.connect(qV.gestioSortida)
 
