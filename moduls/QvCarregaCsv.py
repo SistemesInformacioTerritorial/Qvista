@@ -69,7 +69,7 @@ class QvCarregaCsv(QWizard):
         self.setButton(QvCarregaCsv.CommitButton, self.commitButton)
 
         self.setFixedWidth(500)
-        self.setFixedHeight(440)
+        self.setFixedHeight(460)
         self.setContentsMargins(0, 0, 0, 0)
         self.setWindowFlags(Qt.Window | Qt.FramelessWindowHint)
         self.setWizardStyle(QWizard.ModernStyle)
@@ -200,7 +200,11 @@ class QvCarregaCsvPage(QWizardPage):
             self.bGuardar = QvPushButton("Guardar CSV")
             self.bGuardar.clicked.connect(lambda: self.table.writeCsv(self.parent.getCsv()))
             self.layoutB = QVBoxLayout()
+            self.lblOff = QLabel()
+            self.lblOff.setFixedHeight(0)
+            self.lblOff.setFixedWidth(0)
             self.layoutB.setAlignment(Qt.AlignCenter)
+            self.layoutTable.addWidget(self.lblOff)
             self.layoutB.addWidget(self.bGuardar)
             self.layoutTable.addLayout(self.layoutB)
             
