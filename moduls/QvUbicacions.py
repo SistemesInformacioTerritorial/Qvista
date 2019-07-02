@@ -17,7 +17,7 @@ from PyQt5.QtGui import QPainter, QColor, QPen
 
 
 
-projecteInicial='../dades/projectes/BCN11.qgs'
+projecteInicial='mapesOffline/qVista default map.qgs'
 fic_guardar_arbre='C:/Temp/QvUbicacions.p'  #Fichero para la lectura/escritura de ubicaciones (serializadas)
 
 class StandardItemModel_mio(QStandardItemModel):
