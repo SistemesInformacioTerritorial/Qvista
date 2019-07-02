@@ -1,6 +1,6 @@
 # qVista
 
-qVista és una eina construida sobre la API de Qgis, per simnplificar l'ús d'informació territorial de Barcelona amb especial èmfasi en serveis técnics i equips gerencials.
+qVista és una eina construida sobre l'API de Qgis, per simnplificar l'ús d'informació territorial de Barcelona amb especial èmfasi en serveis técnics i equips gerencials.
 
 És un projecte desenvolupat pel Departament de Sistemes d'Informació Territorial de l'Institut Municipal d'Informàtica de l'Ajuntament de Barcelona.
 
