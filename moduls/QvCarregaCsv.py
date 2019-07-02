@@ -631,8 +631,7 @@ class QvCarregaCsvGeneraCoords(QvCarregaCsvPage):
         self.layout.setSpacing(20)
         self.layout.setContentsMargins(20,0,20,0)
         self.lblExplicacio4 = QLabel()
-        self.lblExplicacio4.setText(
-            "Aquestes són les adreces que no s'han pogut geolocalitzar:")
+        self.lblExplicacio4.setText("Aquestes són les adreces que no s'han pogut geolocalitzar:1")
         self.layout.addWidget(self.lblExplicacio4)
         self.scrollErrors = QScrollArea()
         self.scrollErrors.setFixedHeight(75)
@@ -706,9 +705,10 @@ class QvCarregaCsvGeneraCoords(QvCarregaCsvPage):
             wpg.setWindowModality(Qt.WindowModal)
             wpg.show()
 
-
-            self.names = self.parent.llistaCamps + \
-                [self.parent.coordX, self.parent.coordY]
+            if 'XCalculadaqVista' not in self.parent.llistaCamps:
+                self.names = self.parent.llistaCamps + [self.parent.coordX, self.parent.coordY]
+            else: 
+                self.names = self.parent.llistaCamps
             writer = csv.DictWriter(
                 arxiuNouCsv, fieldnames=self.names, delimiter=self.parent.separador)
             #writer.writeheader()
@@ -717,14 +717,28 @@ class QvCarregaCsvGeneraCoords(QvCarregaCsvPage):
                 # if i%1000==0: arxiuNouCsv.flush()
                 error = False
                 i += 1
+
                 if i == 0:
+                    #if 'XCalculadaqVista' not in row:
                     row[self.parent.coordX] = self.parent.coordX
                     row[self.parent.coordY] = self.parent.coordY
                     writer.writerow(row)
                     continue
 
+                if numLinies > 1000:
+                    if i%int(numLinies/1000)==0:
+                        wpg.count = i
+                        wpg.actualitzaLBL()
+                        wpg.progress.setValue(wpg.count)
+                    qApp.processEvents()
+                else:
+                    wpg.count = i
+                    wpg.actualitzaLBL()
+                    wpg.progress.setValue(wpg.count)
+
                 if self.parent.aprofitar:
                     if row['XCalculadaqVista'] != '':
+                        writer.writerow(row)
                         continue
 
                 row[''] = ''
@@ -779,16 +793,7 @@ class QvCarregaCsvGeneraCoords(QvCarregaCsvPage):
 
 
                 # wpg.count = wpg.count + 1
-                if numLinies > 1000:
-                    if i%int(numLinies/1000)==0:
-                        wpg.count = i
-                        wpg.actualitzaLBL()
-                        wpg.progress.setValue(wpg.count)
-                    qApp.processEvents()
-                else:
-                    wpg.count = i
-                    wpg.actualitzaLBL()
-                    wpg.progress.setValue(wpg.count)
+                
                 if x is None or y is None:
                     aux = self.lblAdrecesError.text()
                     wpg.errors = wpg.errors + 1
@@ -809,6 +814,9 @@ class QvCarregaCsvGeneraCoords(QvCarregaCsvPage):
                 row[self.parent.coordY] = y
                 del row[""]
                 writer.writerow(row) 
+            wpg.errors
+            self.lblExplicacio4.setText(
+            "Aquestes són les adreces que no s'han pogut geolocalitzar: (%i)" %wpg.errors)
         self.mostraTaula(completa=False, guardar = True)
         #self.recarregaTaula(completa=False)
         qApp.processEvents()
