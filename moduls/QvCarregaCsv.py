@@ -8,11 +8,17 @@ from moduls.QvConstants import QvConstants
 from moduls.QvPushButton import QvPushButton
 from moduls.QvApp import QvApp
 import re
+from csv import DictReader
+import io
+import chardet
+from PyQt5 import QtWidgets
+import time
 
 
 class QvCarregaCsv(QWizard):
     finestres = IntEnum(
-        'finestres', 'TriaSep TriaSepDec TriaGeom CampsXY Adreca GeneraCoords Personalitza')
+        'finestres', 'Precalculat TriaSep           TriaGeom CampsXY Adreca GeneraCoords Personalitza')
+                             #TriaSepDec
 
     def __init__(self, csv: str, carregar, parent: QWidget = None):
         '''Crea un assistent de càrrega de csv
@@ -26,21 +32,26 @@ class QvCarregaCsv(QWizard):
         self.carregar = carregar
         self.nomCapa = csv[:-4]
         self.nomCapa = self.nomCapa.split('\\')[-1].split('/')[-1]
-        self.csv = csv
+        # self.csv = csv
+        self.setNomCsv(csv)
         self.color = 'red'
         self.symbol = 'circle'
+        self.aprofitar = False #per defecte no aprofitarà les coordenades precalculades
         self.formata()
+        self.camps = DictReader(self.getCsv(), delimiter=';').fieldnames
+        if 'XCalculadaqVista' in self.camps and 'YCalculadaqVista' in self.camps:
+            self.setPage(QvCarregaCsv.finestres.Precalculat,QvCarregaCsvPrecalculat(self))
+
         self.setPage(QvCarregaCsv.finestres.TriaSep, QvCarregaCsvTriaSep(self))
-        self.setPage(QvCarregaCsv.finestres.TriaSepDec,
-                     QvCarregaCsvTriaSepDec(self))
+        #self.setPage(QvCarregaCsv.finestres.TriaSepDec,QvCarregaCsvTriaSepDec(self))
         self.setPage(QvCarregaCsv.finestres.TriaGeom,
-                     QvCarregaCsvTriaGeom(self))
+                    QvCarregaCsvTriaGeom(self))
         self.setPage(QvCarregaCsv.finestres.CampsXY, QvCarregaCsvXY(self))
         self.setPage(QvCarregaCsv.finestres.Adreca, QvCarregaCsvAdreca(self))
         self.setPage(QvCarregaCsv.finestres.GeneraCoords,
-                     QvCarregaCsvGeneraCoords(self))
+                    QvCarregaCsvGeneraCoords(self))
         self.setPage(QvCarregaCsv.finestres.Personalitza,
-                     QvCarregaCsvPersonalitza(self))
+                    QvCarregaCsvPersonalitza(self))
 
     def formata(self):
         '''Dóna format a l'assistent'''
@@ -58,6 +69,7 @@ class QvCarregaCsv(QWizard):
         self.setButton(QvCarregaCsv.CommitButton, self.commitButton)
 
         self.setFixedWidth(500)
+        self.setFixedHeight(460)
         self.setContentsMargins(0, 0, 0, 0)
         self.setWindowFlags(Qt.Window | Qt.FramelessWindowHint)
         self.setWizardStyle(QWizard.ModernStyle)
@@ -73,6 +85,12 @@ class QvCarregaCsv(QWizard):
         self.oldPos = self.pos()
         self.setFont(QvConstants.FONTTEXT)
 
+    def prefab (self):
+        self.coordX = 'XCalculadaqVista'
+        self.coordY = 'YCalculadaqVista'
+        self.separador = ';'
+        self.proj = 25831
+
     def accept(self):
         super().accept()
 
@@ -80,30 +98,49 @@ class QvCarregaCsv(QWizard):
                       self.proj, self.nomCapa, color=self.color, symbol=self.symbol)
 
     # Aquestes funcions seran cridades NOMÉS des de les pàgines
-    def setSeparador(self, sep):
+    def setSeparador(self, sep: str):
         self.separador = sep
 
-    def setSeparadorDec(self, sepD):
+    def setSeparadorDec(self, sepD: str): #Teòricament no es cridarà
         self.separadorDec = sepD
 
-    def setCoordX(self, coordX):
+    def setCoordX(self, coordX: str):
         self.coordX = coordX
 
-    def setCoordY(self, coordY):
+    def setCoordY(self, coordY: str):
         self.coordY = coordY
 
-    def setProjecció(self, proj):
+    def setProjecció(self, proj: int):
         self.proj = proj
 
-    def setNomCapa(self, nomCapa):
+    def setNomCapa(self, nomCapa: str):
         self.nomCapa = nomCapa
 
-    def setNomCsv(self, csv):
+    def setNomCsv(self, csv: str):
+        if not hasattr(self,'csv'):
+            self.csv=csv
+        #Si fem setNomCsv d'un nom que ja tenim, no repetirem càlculs
+        elif self.csv==csv: return
+        
         if not hasattr(self, 'csvOrig'):
             self.csvOrig = self.csv
         self.csv = csv
+        #Detecció de la codificació
+        with open(self.csv,'rb') as f:
+            string=b''
+            i=0
+            while i<112:
+                if i!=0: string+=f.readline() #???
+                i+=1
+            self.csvEncoding=chardet.detect(string)['encoding']
+        #Obertura
+        self.arxiuCsv=open(self.csv,'r',errors='ignore',encoding=self.csvEncoding)
+    def getCsv(self):
+        #Anem al principi de l'arxiu, per si en algun moment ens havíem desplaçat
+        self.arxiuCsv.seek(0)
+        return self.arxiuCsv
 
-    def setDadesAdreca(self, tipusVia, via, numIni, lletraIni, numFi, lletraFi):
+    def setDadesAdreca(self, tipusVia: str, via: str, numIni: str, lletraIni: str, numFi: str, lletraFi: str):
         self.dadesAdreca = (tipusVia, via, numIni, lletraIni, numFi, lletraFi)
 
     def mousePressEvent(self, event):
@@ -111,7 +148,6 @@ class QvCarregaCsv(QWizard):
 
     def mouseMoveEvent(self, event):
         delta = QPoint(event.globalPos() - self.oldPos)
-        # print(delta)
         self.move(self.x() + delta.x(), self.y() + delta.y())
         self.oldPos = event.globalPos()
 
@@ -155,23 +191,27 @@ class QvCarregaCsvPage(QWizardPage):
                 Si és false, mostra una previsualització de 10 elements 
                 (default: {False})
         '''
-        self.table = QvtLectorCsv(self.parent.csv, self.parent.separador, completa, guardar, self)
+        self.table = QvLectorCsv(self.parent.nomCapa, self.parent.getCsv(), self.parent.separador, completa, guardar, self)
         self.layoutTable = QVBoxLayout()
         self.layout.addLayout(self.layoutTable)
         self.layoutTable.addWidget(self.table)
         if guardar:
             self.table.setMinimumHeight(120)
-            self.bGuardar = QvPushButton("Guardar CCSV")
-            self.bGuardar.clicked.connect(self.table.writeCsv)
+            self.bGuardar = QvPushButton("Guardar CSV")
+            self.bGuardar.clicked.connect(lambda: self.table.writeCsv(self.parent.getCsv()))
             self.layoutB = QVBoxLayout()
+            self.lblOff = QLabel()
+            self.lblOff.setFixedHeight(0)
+            self.lblOff.setFixedWidth(0)
             self.layoutB.setAlignment(Qt.AlignCenter)
+            self.layoutTable.addWidget(self.lblOff)
             self.layoutB.addWidget(self.bGuardar)
             self.layoutTable.addLayout(self.layoutB)
             
 
     def recarregaTaula(self, completa=False):
         self.table = QvtLectorCsv(
-            self.parent.csv, self.parent.separador, completa, self)
+            self.parent.getCsv(), self.parent.separador, completa, self)
 
     def showEvent(self, event):
         super().showEvent(event)
@@ -179,7 +219,7 @@ class QvCarregaCsvPage(QWizardPage):
             self.table.recarrega(self.parent.separador)
 
     def obteCamps(self):
-        return csv.DictReader(open(self.parent.csv), delimiter=self.parent.separador).fieldnames
+        return csv.DictReader(self.parent.getCsv(), delimiter=self.parent.separador).fieldnames
     #  PROBLEMA: Les línies separadores es dibuixen dins d'una funció d'una classe inaccessible, que es diu QWizardHeader
     #            No podem aplicar-hi una stylesheet ni una paleta de colors, ja que no podem accedir a la instància de la classe
     #            La única solució que he pogut trobar és canviar la paleta de colors de la app, posant el color Mid del mateix
@@ -205,6 +245,48 @@ class QvCarregaCsvPage(QWizardPage):
         s = '<p><span style="color: #38474f; font-size: 10pt;"><strong><span style="font-family: arial, helvetica, sans-serif;">%s</span></strong></span></p>' % subtitle
         super().setSubTitle(s)
 
+class QvCarregaCsvPrecalculat(QvCarregaCsvPage):
+    def __init__(self, parent):
+        '''Crea una pàgina de l'assistent de càrrega de csv que permet escollir entre el procediment normal o saltar-se'l 
+            en cas que trobi els camps XCalculadaqVista i YCalculadaqVista.
+            parent{QWidget} -- Pare de l'assistent (default{None})
+        '''
+        super().__init__(parent)
+        self.parent = parent
+        self.setSubTitle("Procediment a seguir")
+        self.layout = QVBoxLayout(self)
+        self.layout.setSpacing(20)
+        self.lblExplicacio0 = QLabel(
+            """Hem detectat que l'arxiu .CSV que vols carregar ja ha estat tractat per aquest programa. Vols que es carregui directament o vols continuar amb el procediment normal?""")
+        self.lblExplicacio0.setWordWrap(True)
+        self.layout.addWidget(self.lblExplicacio0)
+        self.setLayout(self.layout)
+        self.botoA = QRadioButton('Carregar directament')
+        self.botoB = QRadioButton('Procediment normal aprofitant coordenades calculades')
+        self.botoC = QRadioButton('Procediment normal recalculant totes les coordenades')
+        self.layoutBotons = QVBoxLayout()
+        self.layoutBotons.setSpacing(20)
+        self.layoutBotons.addWidget(self.botoA)
+        self.layoutBotons.addWidget(self.botoB)
+        self.layoutBotons.addWidget(self.botoC)
+        self.layout.addLayout(self.layoutBotons)
+
+        def activaBoto():
+            self.completeChanged.emit()
+        self.botoA.toggled.connect(activaBoto)
+        self.botoB.toggled.connect(activaBoto)
+        self.botoC.toggled.connect(activaBoto)
+
+    def isComplete(self):
+        return self.botoA.isChecked() or self.botoB.isChecked() or self.botoC.isChecked()
+
+    def nextId(self):
+        if self.botoA.isChecked():
+            self.parent.prefab()
+            return QvCarregaCsv.finestres.Personalitza
+        if self.botoB.isChecked():
+            self.parent.aprofitar = True
+        return QvCarregaCsv.finestres.TriaSep
 
 class QvCarregaCsvTriaSep(QvCarregaCsvPage):
     def __init__(self, parent=None):
@@ -232,7 +314,7 @@ class QvCarregaCsvTriaSep(QvCarregaCsvPage):
         self.layoutCheckButton.addWidget(self.cbSep)
         self.layoutCheckButton.addStretch(1)
         print(parent.csv)
-        self.parent.setSeparador(infereixSeparadorRegex(open(parent.csv)))
+        self.parent.setSeparador(infereixSeparadorRegex(parent.getCsv()))
         if not isinstance(self.parent.setSeparador, str):
             self.parent.setSeparador(';')
         self.mostraTaula()
@@ -243,6 +325,9 @@ class QvCarregaCsvTriaSep(QvCarregaCsvPage):
         self.cbSep.activated.connect(botoClickat)
         index = llistaSeparadors.index(self.parent.separador)
         self.cbSep.setCurrentIndex(index)
+
+        def nextId(self):
+            return QvCarregaCsv.finestres.TriaGeom
 
 
 class QvCarregaCsvTriaSepDec(QvCarregaCsvPage):
@@ -384,8 +469,8 @@ class QvCarregaCsvXY(QvCarregaCsvPage):
     def nextId(self):
         self.parent.setCoordX(self.cbX.currentText())
         self.parent.setCoordY(self.cbY.currentText())
-        if self.parent.separadorDec == ',':
-            self.replaceComa()
+        # if self.parent.separadorDec == ',':
+        #     self.replaceComa()
         return QvCarregaCsv.finestres.Personalitza
 
 
@@ -405,7 +490,9 @@ class QvCarregaCsvAdreca(QvCarregaCsvPage):
         self.layout.addWidget(self.lblExplicacio6)
         self.layoutAdreca = QVBoxLayout()
         self.layout.addLayout(self.layoutAdreca)
+
         camps = self.obteCamps()
+
         self.lblTipus = QLabel('Tipus Via')
         self.cbTipus = QComboBox()
         self.cbTipus.setFixedWidth(MIDACOMBOBOX)
@@ -516,11 +603,21 @@ class WindowProgressBar(QWidget):
         self.layProgressW.addWidget(self.lblAdrErrors)
         self.setLayout(self.layProgressW)
 
+        self.timeB=time.time()
+        self.lblTempsRestant=QLabel()
+        self.layProgressW.addWidget(self.lblTempsRestant)
+
     def actualitzaLBL(self):
         self.lblAdrInfo.setText(
-            "Adreces Processades: %i de %i" % (self.count, self.mida))
+            "Adreces Processades: %i d'aproximadament %i" % (self.count, self.mida))
         self.lblAdrErrors.setText(
             "Adreces no geolocalitzades: %i" % (self.errors))
+        if self.count>=self.mida:
+            tempsR=0
+        else:
+            tempsR=(time.time()-self.timeB)*max(self.mida/self.count,1)*(1-self.count/self.mida)
+        tempsTxt=time.strftime("%H:%M:%S", time.gmtime(tempsR))
+        self.lblTempsRestant.setText('Temps restant: %s'%tempsTxt)
 
 
 class QvCarregaCsvGeneraCoords(QvCarregaCsvPage):
@@ -535,11 +632,10 @@ class QvCarregaCsvGeneraCoords(QvCarregaCsvPage):
         self.lblAdrecesError.setText("")
         self.lblAdrecesError.setStyleSheet('color: red')
         self.layout = QVBoxLayout(self)
-        self.layout.setSpacing(12)
+        self.layout.setSpacing(20)
         self.layout.setContentsMargins(20,0,20,0)
         self.lblExplicacio4 = QLabel()
-        self.lblExplicacio4.setText(
-            "Aquestes són les adreces que no s'han pogut geolocalitzar:")
+        self.lblExplicacio4.setText("Aquestes són les adreces que no s'han pogut geolocalitzar:")
         self.layout.addWidget(self.lblExplicacio4)
         self.scrollErrors = QScrollArea()
         self.scrollErrors.setFixedHeight(75)
@@ -547,12 +643,8 @@ class QvCarregaCsvGeneraCoords(QvCarregaCsvPage):
         self.lblAdrecesError.setContentsMargins(10, 5, 10, 5)
         self.scrollErrors.setWidget(self.lblAdrecesError)
         self.layout.addWidget(self.scrollErrors)
-        # Després de generar el csv amb coordenades no hi ha volta enrere
-        self.setCommitPage(True)
         self.showed = False
-        self.lblExplicacio5 = QLabel()
-        self.lblExplicacio5.setText(
-            "Vols carregar les adreces geocodificades al teu projecte? Les adreces que no s'han pogut \ngeolocalitzar no apareixeran.")
+
 
     def initializePage(self):
         self.parent.coordX = 'XCalculadaqVista'
@@ -581,33 +673,73 @@ class QvCarregaCsvGeneraCoords(QvCarregaCsvPage):
 
         self.showed = True
         self.parent.setProjecció(25831)
-        fileCsv = open(self.parent.csv)
+        fileCsv = self.parent.getCsv()
         reader = csv.DictReader(fileCsv, delimiter=self.parent.separador)
-        with tempfile.NamedTemporaryFile(suffix='.csv', mode='w+', delete=False, newline='') as arxiuNouCsv:
+        with tempfile.NamedTemporaryFile(suffix='.csv', mode='w+', delete=False, newline='', encoding=self.parent.csvEncoding) as arxiuNouCsv:
             self.parent.setNomCsv(arxiuNouCsv.name)
-            mida = len(list(reader))-1
+            try:
+                # mida = len(list(reader))-1
+                with tempfile.NamedTemporaryFile(suffix='.csv',mode='w',delete=True) as jajasalu2:
+                    i=0
+                    linies_a_mirar=500
+                    wrt=csv.DictWriter(jajasalu2,fieldnames=reader.fieldnames)
+                    wrt.writeheader()
+                    for x in reader:
+                        if i>=linies_a_mirar: break
+                        wrt.writerow(x)
+                        i+=1
+                    jajasalu2.flush()
+                    midalinia=os.path.getsize(jajasalu2.name)/linies_a_mirar
+                mida=os.path.getsize(fileCsv.name)
+                #for _ in reader: mida+=1
+            except:
+                mida=-1
             fileCsv.seek(0)
+            numLinies=mida/midalinia
 
-            wpg = WindowProgressBar(mida=mida)
+            wpg = WindowProgressBar(mida=numLinies)
+            wpg.setWindowFlag(Qt.WindowStaysOnTopHint)
+            wpg.setWindowFlag(Qt.WindowMinimizeButtonHint,False)
+            wpg.setWindowFlag(Qt.WindowMaximizeButtonHint,False)
+            
             wpg.setWindowModality(Qt.WindowModal)
             wpg.show()
 
-            self.names = self.parent.llistaCamps + \
-                [self.parent.coordX, self.parent.coordY]
+            if 'XCalculadaqVista' not in self.parent.llistaCamps:
+                self.names = self.parent.llistaCamps + [self.parent.coordX, self.parent.coordY]
+            else: 
+                self.names = self.parent.llistaCamps
             writer = csv.DictWriter(
                 arxiuNouCsv, fieldnames=self.names, delimiter=self.parent.separador)
-            writer.writeheader()
+            #writer.writeheader()
             i = -1
             for row in reader:
                 error = False
                 i += 1
-                d = {**row}
+
                 if i == 0:
-                    d[self.parent.coordX] = self.parent.coordX
-                    d[self.parent.coordY] = self.parent.coordY
-                    writer.writerow(d)
+                    row[self.parent.coordX] = self.parent.coordX
+                    row[self.parent.coordY] = self.parent.coordY
+                    writer.writerow(row)
                     continue
-                d[''] = ''
+
+                if numLinies > 1000:
+                    if i%int(numLinies/1000)==0:
+                        wpg.count = i
+                        wpg.actualitzaLBL()
+                        wpg.progress.setValue(wpg.count)
+                    qApp.processEvents()
+                else:
+                    wpg.count = i
+                    wpg.actualitzaLBL()
+                    wpg.progress.setValue(wpg.count)
+
+                if self.parent.aprofitar:
+                    if row['XCalculadaqVista'] != '':
+                        writer.writerow(row)
+                        continue
+
+                row[''] = ''
 
                 if self.parent.dadesAdreca[0] == "": 
                     tipusVia = ""
@@ -658,11 +790,8 @@ class QvCarregaCsvGeneraCoords(QvCarregaCsvPage):
                 x, y = QvGeocod.coordsCarrerNum(tipusVia, nomVia, numI, lletraI, numF, lletraF)
 
 
-
-                wpg.count = wpg.count + 1
-                wpg.actualitzaLBL()
-                wpg.progress.setValue(wpg.count)
-                qApp.processEvents()
+                # wpg.count = wpg.count + 1
+                
                 if x is None or y is None:
                     aux = self.lblAdrecesError.text()
                     wpg.errors = wpg.errors + 1
@@ -672,21 +801,24 @@ class QvCarregaCsvGeneraCoords(QvCarregaCsvPage):
                     else:
                         self.lblAdrecesError.setText(
                             tipusVia + " " + nomVia + " " + numI + ' - Fila ' + str(i))
-                    print(tipusVia, nomVia, numI)
-                    d[self.parent.coordX] = ""
-                    d[self.parent.coordY] = ""
-                    del d[""]
-                    writer.writerow(d)
+                    # print(tipusVia, nomVia, numI)
+                    row[self.parent.coordX] = ""
+                    row[self.parent.coordY] = ""
+                    del row[""]
+                    writer.writerow(row)
                     continue
 
-                d[self.parent.coordX] = x
-                d[self.parent.coordY] = y
-                del d[""]
-                writer.writerow(d)
-        self.mostraTaula(completa=True, guardar = True)
-        self.recarregaTaula(completa=True)
+                row[self.parent.coordX] = x
+                row[self.parent.coordY] = y
+                del row[""]
+                writer.writerow(row) 
+            wpg.errors
+            self.lblExplicacio4.setText(
+            "Aquestes són les adreces que no s'han pogut geolocalitzar: (%i)" %wpg.errors)
+        self.mostraTaula(completa=False, guardar = True)
+        #self.recarregaTaula(completa=False)
         qApp.processEvents()
-        self.layout.addWidget(self.lblExplicacio5)
+        # self.layout.addWidget(self.lblExplicacio5)
 
     def nextId(self):
         self.resize(500,500)
@@ -834,48 +966,19 @@ class QvCarregaCsvPersonalitza(QvCarregaCsvPage):
 
 
 class QvtLectorCsv(QvLectorCsv):
-    def __init__(self, fileName='', separador=None, completa=False, guardar=False, parent=None):
-        super().__init__(fileName, guardar)
+    def __init__(self, csvName, csv=None, separador=None, completa=False, guardar=False, parent=None):
+        super().__init__(csvName, guardar)
         self.separador = separador
+        self.fname=csvName
         if self.separador is not None:
-            self.carregaCsv(self.fileName, self.separador, completa)
+            if csv is None: #És el nom de l'arxiu
+                self.carregaCsv(csvName, self.separador, completa)
+            elif isinstance(csv,io.TextIOBase): #És l'arxiu
+                self.carregaCsvFile(csv, csvName,self.separador,completa)
+    
+    
 
-    def carregaCsv(self, fileName, separador=None, completa=False):
-        from PyQt5 import QtGui
-        if separador is None:
-            super().carregaCsv(fileName)
-            return
-        if fileName:
-            f = open(fileName, 'r')
-            with f:
-                self.fname = os.path.splitext(str(fileName))[0].split("/")[-1]
-                self.setWindowTitle(self.fname)
-                if not isinstance(separador, str):
-                    separador = ';'
-                reader = csv.reader(f, delimiter=separador)
-                self.model.clear()
-                i = 0
-                for row in reader:
-                    if not completa and i > 9:
-                        break  # Per agilitzar la càrrega, només ens cal una preview petita
-                    items = [QtGui.QStandardItem(field) for field in row]
-                    
-                    if (i==0): 
-                        self.model.setHorizontalHeaderLabels([x.text() for x in items])
-                    else:
-                        self.model.appendRow(items)
-                    i += 1
-                self.tableView.resizeColumnsToContents()
-
-    def recarrega(self, separador):
-        self.separador = separador
-        self.carregaCsv(self.fileName, self.separador)
-
-    def verticalScrollBar(self):
-        return self.tableView.verticalScrollBar()
-
-    def horizontalScrollBar(self):
-        return self.tableView.horizontalScrollBar()
+    
 
 
 def infereixSeparadorRegex(arxiu):
@@ -914,7 +1017,8 @@ def infereixSeparadorRegex(arxiu):
     def uneixLlistesAp(lst1, lst2):
         return list(set(lst1) & set(lst2))
     lst = []
-    for x in arxiu.readlines():
+    for x in arxiu.readlines(1000):
+        print(x)
         act = infereixSeparadorLinia(x)
         if isinstance(act, str):
             arxiu.seek(0)

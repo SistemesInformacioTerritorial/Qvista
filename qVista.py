@@ -11,8 +11,6 @@ from moduls.QvImports import *
 # Carrega de moduls Qv
 iniciTempsModuls = time.time()
 
-
-
 from moduls.QvUbicacions import QvUbicacions
 from moduls.QvPrint import QvPrint
 from moduls.QvCanvas import QvCanvas
@@ -621,7 +619,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.cAdrec.sHanTrobatCoordenades.connect(self.trobatNumero_oNo) 
 
         self.dwCercador = QDockWidget( "Cercador", self )
-        self.dwCercador.setStyleSheet("QDockWidget {background-color: #DDDDDD; border: 0px solid red;}")
+        # self.dwCercador.setStyleSheet("QDockWidget {background-color: #DDDDDD; border: 0px solid red;}")
         self.dwCercador.hide()
         self.dwCercador.setAllowedAreas( Qt.RightDockWidgetArea | Qt.LeftDockWidgetArea )
         self.dwCercador.setWidget( self.fCercador)
@@ -734,7 +732,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.llegenda.currentLayerChanged.connect(self.canviLayer)
         self.canvas.setLlegenda(self.llegenda)
         self.layoutFrameLlegenda.setContentsMargins ( 5, 13, 5, 0 )
-        self.llegenda.setStyleSheet("QvLlegenda {color: #38474f; background-color: #DDDDDD; border: 0px solid red;}")
+        self.llegenda.setStyleSheet("QvLlegenda {color: #38474f; background-color: #F9F9F9; border: 0px solid red;}")
         self.llegenda.setFont(QvConstants.FONTTEXT)
         self.layoutFrameLlegenda.addWidget(self.llegenda)
         self.llegenda.accions.afegirAccio('Propietats de capa', self.actPropietatsLayer)
@@ -1316,7 +1314,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.dwSeleccioGrafica.setWidget( self.wSeleccioGrafica)
         self.dwSeleccioGrafica.setContentsMargins ( 2, 2, 2, 2 )
         self.addDockWidget( Qt.RightDockWidgetArea, self.dwSeleccioGrafica )
-        self.dwSeleccioGrafica.setStyleSheet('QDockWidget {color: #465A63; background-color: #909090;}')
+        #self.dwSeleccioGrafica.setStyleSheet('QDockWidget {color: #465A63; background-color: #909090;}')
         self.dwSeleccioGrafica.hide()
 
         self.idsElementsSeleccionats = []
@@ -1411,7 +1409,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.frameTranspInfo.setGeometry(5,5,100,100)
         # self.frameTranspInfo.setStyleSheet('QFrame {opacity:50;}')
         self.frameTranspInfo.show()
-        self.frameTranspInfo.setStylesheet('QFrame{background: transparent;}')
+        #self.frameTranspInfo.setStylesheet('QFrame{background: transparent;}')
 
     def activaCapa(self,capa):
         def funcioCapa():
@@ -1769,13 +1767,14 @@ class QVista(QMainWindow, Ui_MainWindow):
             # self.oldCentraWidget = self.centralWidget()
             # self.setCentralWidget(self.canvas)
             self.mapaMaxim = True
-            self.dwLlegenda = QDockWidget( "Llegenda", self )
-            self.dwLlegenda.show()
-            self.dwLlegenda.setObjectName( "layers" )
-            self.dwLlegenda.setAllowedAreas( Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea )
+            if not hasattr(self,'dwLlegenda'): 
+                self.dwLlegenda = QDockWidget( "Llegenda", self )
+                self.dwLlegenda.setObjectName( "layers" )
+                self.dwLlegenda.setAllowedAreas( Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea )
+                self.dwLlegenda.setContentsMargins ( 0,0,0,0)
+                self.addDockWidget( Qt.LeftDockWidgetArea , self.dwLlegenda )
             self.dwLlegenda.setWidget(self.llegenda)
-            self.dwLlegenda.setContentsMargins ( 0,0,0,0)
-            self.addDockWidget( Qt.LeftDockWidgetArea , self.dwLlegenda )
+            self.dwLlegenda.show()
             # self.dwLlegenda.show()
 
             self._menuBarShadow.setEnabled(False)
@@ -2709,6 +2708,7 @@ def carregarLayerCSV(nfile):
             assistent=QvCarregaCsv(nfile,nivellCsv,qV)
             qApp.restoreOverrideCursor()
             assistent.setModal(True)
+            #assistent.setGraphicsEffect(QvConstants.ombra(assistent,radius=30,color=QvConstants.COLORCLAR))
             #assistent.setWindowFlags(assistent.windowFlags() | Qt.Popup)
             #assistent.setWindowFlags(assistent.windowFlags() | Qt.WindowStaysOnTopHint)
             #qV.raise_()
@@ -2895,7 +2895,7 @@ def main(argv):
         splash.show()
         app.setWindowIcon(QIcon('imatges/QVistaLogo_256.png'))
         app.processEvents()
-        with open('moduls/style.qss') as st:
+        with open('style.qss') as st:
             app.setStyleSheet(st.read())
 
         ok = qVapp.logInici()            # Por defecto: family='QVISTA', logname='DESKTOP'
@@ -2931,7 +2931,10 @@ def main(argv):
 
         # Tanquem la imatge splash.
         splash.finish(qV)
-        avisos=QvAvis()
+        try:
+            avisos=QvAvis()
+        except:
+            print('no es pot accedir als avisos')
         qVapp.logRegistre('LOG_TEMPS', qV.lblTempsArrencada.text())
         app.aboutToQuit.connect(qV.gestioSortida)
 
