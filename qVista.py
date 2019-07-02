@@ -11,8 +11,6 @@ from moduls.QvImports import *
 # Carrega de moduls Qv
 iniciTempsModuls = time.time()
 
-
-
 from moduls.QvUbicacions import QvUbicacions
 from moduls.QvPrint import QvPrint
 from moduls.QvCanvas import QvCanvas
@@ -1769,13 +1767,14 @@ class QVista(QMainWindow, Ui_MainWindow):
             # self.oldCentraWidget = self.centralWidget()
             # self.setCentralWidget(self.canvas)
             self.mapaMaxim = True
-            self.dwLlegenda = QDockWidget( "Llegenda", self )
-            self.dwLlegenda.show()
-            self.dwLlegenda.setObjectName( "layers" )
-            self.dwLlegenda.setAllowedAreas( Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea )
+            if not hasattr(self,'dwLlegenda'): 
+                self.dwLlegenda = QDockWidget( "Llegenda", self )
+                self.dwLlegenda.setObjectName( "layers" )
+                self.dwLlegenda.setAllowedAreas( Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea )
+                self.dwLlegenda.setContentsMargins ( 0,0,0,0)
+                self.addDockWidget( Qt.LeftDockWidgetArea , self.dwLlegenda )
             self.dwLlegenda.setWidget(self.llegenda)
-            self.dwLlegenda.setContentsMargins ( 0,0,0,0)
-            self.addDockWidget( Qt.LeftDockWidgetArea , self.dwLlegenda )
+            self.dwLlegenda.show()
             # self.dwLlegenda.show()
 
             self._menuBarShadow.setEnabled(False)
@@ -2709,6 +2708,7 @@ def carregarLayerCSV(nfile):
             assistent=QvCarregaCsv(nfile,nivellCsv,qV)
             qApp.restoreOverrideCursor()
             assistent.setModal(True)
+            #assistent.setGraphicsEffect(QvConstants.ombra(assistent,radius=30,color=QvConstants.COLORCLAR))
             #assistent.setWindowFlags(assistent.windowFlags() | Qt.Popup)
             #assistent.setWindowFlags(assistent.windowFlags() | Qt.WindowStaysOnTopHint)
             #qV.raise_()
@@ -2931,7 +2931,10 @@ def main(argv):
 
         # Tanquem la imatge splash.
         splash.finish(qV)
-        avisos=QvAvis()
+        try:
+            avisos=QvAvis()
+        except:
+            print('no es pot accedir als avisos')
         qVapp.logRegistre('LOG_TEMPS', qV.lblTempsArrencada.text())
         app.aboutToQuit.connect(qV.gestioSortida)
 

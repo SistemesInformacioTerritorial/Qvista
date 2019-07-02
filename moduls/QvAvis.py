@@ -29,5 +29,5 @@ if __name__=='__main__':
     import sys
     app=QtWidgets.QApplication(sys.argv)
     avis=QvAvis()
-    #avis.show()
+    avis.show()
     sys.exit(app.exec_())
