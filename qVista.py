@@ -161,6 +161,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         if len(QgsGui.editorWidgetRegistry().factories()) == 0:
             QgsGui.editorWidgetRegistry().initEditors()
         
+        
         # Final del cronometratge d'arrancada
         endGlobal = time.time()
         self.tempsTotal = endGlobal - startGlobal
