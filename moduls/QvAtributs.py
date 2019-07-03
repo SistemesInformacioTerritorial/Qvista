@@ -4,12 +4,11 @@ from qgis.core import QgsMapLayer, QgsVectorLayerCache
 from qgis.PyQt import QtWidgets  # , uic
 from qgis.PyQt.QtCore import Qt, pyqtSignal
 from qgis.PyQt.QtGui import QCursor
-from qgis.PyQt.QtWidgets import QTabWidget, QVBoxLayout, QAction, QMenuBar, QMenu
+from qgis.PyQt.QtWidgets import QTabWidget, QVBoxLayout, QAction, QMenuBar
 from qgis.gui import (QgsGui,
                       QgsAttributeTableModel,
                       QgsAttributeTableView,
                       QgsAttributeTableFilterModel,
-                      QgsAttributeDialog,
                       QgsAttributeForm,
                       QgsSearchQueryBuilder,
                       QgsActionMenu)
@@ -49,7 +48,7 @@ class QvFitxesAtributs(QDialog):
         else:
             self.setWindowTitle(self.title)
 
-    def setMenu(self, n):        
+    def setMenu(self, n):
         self.menuBar = QMenuBar()
         self.menu = QgsActionMenu(self.layer, self.features[n], 'Feature')
         if self.menu is not None and not self.menu.isEmpty():
@@ -87,7 +86,7 @@ class QvFitxesAtributs(QDialog):
             self.ui.groupBox.setVisible(False)
 
     def finish(self, int):
-        self.select()
+        self.select(None)
 
 
 class QvAtributs(QTabWidget):
