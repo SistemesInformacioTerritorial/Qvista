@@ -158,7 +158,9 @@ class QvAtributs(QTabWidget):
         num = self.count()
         if i in range(0, num):
             taula = self.widget(i)
-            taula.deleteLater()
+            if taula is not None:
+                taula.deleteLater()
+                self.removeTab(i)
 
     def tancarTaula(self, layer):
         # Cerrar tabla por layer
@@ -167,9 +169,24 @@ class QvAtributs(QTabWidget):
         num = self.count()
         for i in range(0, num):
             taula = self.widget(i)
-            if taula.layer.id() == layer.id():
+            if taula is not None and taula.layer.id() == layer.id():
                 taula.deleteLater()
+                self.removeTab(i)
                 return
+
+    def tancarTaules(self, layers):
+        # Cerrar tablas de un conjunto de layers
+        if layers is None:
+            return
+        ids = []
+        for layer in layers:
+            ids.append(layer.id())
+        num = self.count()
+        for i in range(num-1, -1, -1):
+            taula = self.widget(i)
+            if taula is not None and taula.layer.id() in ids:
+                taula.deleteLater()
+                self.removeTab(i)
 
     def deleteTabs(self):
         # Cerrar todas las tablas
