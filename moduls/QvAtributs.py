@@ -14,7 +14,7 @@ from qgis.gui import (QgsGui,
                       QgsActionMenu)
 from moduls.QvAccions import QvAccions
 from moduls.QvApp import QvApp
-# import images_rc
+# import images_rc  # NOQA
 # import recursos
 import csv
 # import xlwt - .xls

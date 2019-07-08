@@ -15,8 +15,10 @@ from moduls.QvEscala import QvEscala
 
 import os
 
-# import images_rc
-# import recursos
+
+# Resultado de compilacion de recursos del fuente de qgis (directorio images)
+# pyrcc5 images.qrc >images_rc.py
+import images_rc  # NOQA
 
 
 class QvBotoneraLlegenda(QWidget):
