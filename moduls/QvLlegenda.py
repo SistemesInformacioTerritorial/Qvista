@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 
-from qgis.core import (QgsProject, QgsLegendModel, QgsLayerDefinition, QgsMapLayer, 
-                       QgsLayerTree, QgsLayerTreeNode, QgsLayerTreeLayer, QgsLayerTreeUtils)
+from qgis.core import (QgsProject, QgsLegendModel, QgsLayerDefinition, QgsMapLayer,
+                       QgsLayerTree, QgsLayerTreeNode, QgsLayerTreeUtils)
 from qgis.gui import (QgsLayerTreeView, QgsLayerTreeViewMenuProvider, QgsLayerTreeMapCanvasBridge,
-                      QgsLayerTreeViewIndicator, QgsSearchQueryBuilder)
-from qgis.PyQt.QtWidgets import QMenu, QAction, QFileDialog, QWidget, QPushButton, QVBoxLayout, QHBoxLayout
-from qgis.PyQt.QtGui import QIcon, QBrush, QColor
-from qgis.PyQt.QtCore import Qt, pyqtSignal, QSortFilterProxyModel, QUrl
+                      QgsLayerTreeViewIndicator)
+from qgis.PyQt.QtWidgets import QAction, QFileDialog, QWidget, QPushButton, QVBoxLayout, QHBoxLayout
+from qgis.PyQt.QtGui import QIcon, QColor
+from qgis.PyQt.QtCore import Qt, pyqtSignal, QUrl
 from moduls.QvAccions import QvAccions
 from moduls.QvAtributs import QvAtributs
 from moduls.QvApp import QvApp
@@ -57,7 +57,7 @@ class QvBotoneraLlegenda(QWidget):
         self.items = dict()
         self.botons = dict()
 
-    def afegirBotonera(self, funcioFiltre = None, funcioBoto = None):
+    def afegirBotonera(self, funcioFiltre=None, funcioBoto=None):
         # Filtro de usuario del itema a añadir a botonera
         if funcioFiltre is not None:
             self.funcioFiltre = funcioFiltre
@@ -102,7 +102,7 @@ class QvItemLlegenda(object):
             return 'symb'
         else:
             return 'none'
-    
+
     def capa(self):
         if self.tipus == 'layer':
             return self.item.layer()
@@ -129,7 +129,7 @@ class QvItemLlegenda(object):
         else:
             return None
 
-    def marcar(self, on = True):
+    def marcar(self, on=True):
         if self.tipus in ('layer', 'group'):
             self.item.setItemVisibilityChecked(on)
         elif self.tipus == 'symb':
@@ -146,7 +146,7 @@ class QvItemLlegenda(object):
         else:
             return None
 
-    def veure(self, on = True, children = True):
+    def veure(self, on=True, children=True):
         if self.tipus in ('layer', 'group'):
             if on:
                 self.item.setItemVisibilityCheckedParentRecursive(True)
@@ -288,7 +288,7 @@ class QvLlegenda(QgsLayerTreeView):
     #             self.player.show()
     #             self.player.mediaPlayer.play()
     #         self.carregantProjecte.emit()
-    
+
     # def fiProjecte(self):
     #     # La carga de un proyecto acaba con su visualización en el canvas de todas las capas
     #     num = self.projecteCapes[0]
@@ -309,7 +309,8 @@ class QvLlegenda(QgsLayerTreeView):
     # def printSignals(self):
     # void 	loadingLayer (const QString &layerName)
     #  	Emitted when a layer is loaded. More...
-    # void 	loadingLayerMessageReceived (const QString &layerName, const QList< QgsReadWriteContext::ReadWriteMessage > &messages)
+    # void 	loadingLayerMessageReceived (const QString &layerName,
+    #                                    const QList< QgsReadWriteContext::ReadWriteMessage > &messages)
     #  	Emitted when loading layers has produced some messages. More...
     #     self.canvas.mapCanvasRefreshed.connect(lambda: self.printCanvasPosition('>> Canvas mapCanvasRefreshed'))
     #     self.canvas.extentsChanged.connect(lambda: self.printCanvasPosition('Canvas extentsChanged'))
@@ -328,7 +329,7 @@ class QvLlegenda(QgsLayerTreeView):
         self.lastExtent = self.canvas.extent()
 
     def restoreCanvasPosition(self):
-        if self.lastExtent != None:
+        if self.lastExtent is not None:
             self.canvas.setExtent(self.lastExtent)
 
     #  QgsRectangle r = mapSettings().extent();
@@ -340,9 +341,9 @@ class QvLlegenda(QgsLayerTreeView):
         x = round(self.canvas.center().x(), 2)
         y = round(self.canvas.center().y(), 2)
         print(msg, ':',
-             'escala -', str(e),
-             'centro: (', str(x),
-             '-', str(y), ')')
+              'escala -', str(e),
+              'centro: (', str(x),
+              '-', str(y), ')')
 
     #     if msg == 'Canvas layersChanged':
     #         self.saveCanvasPosition()
@@ -380,7 +381,7 @@ class QvLlegenda(QgsLayerTreeView):
     #                     self.dragFiles.append(fich)
     #     if len(self.dragFiles) > 0:
     #         event.acceptProposedAction()
-            
+
     # def dragMoveEvent(self, event):
     #     event.acceptProposedAction()
 
@@ -426,7 +427,7 @@ class QvLlegenda(QgsLayerTreeView):
                 # print('restoreExtent', self.restoreExtent)
                 # node.visibilityChanged.connect(self.restoreCanvasPosition)
                 # self.restoreCanvasPosition()
-                node.setItemVisibilityChecked(False)                
+                node.setItemVisibilityChecked(False)
                 # # self.restoreCanvasPosition()
                 node.setItemVisibilityChecked(True)
 
@@ -452,7 +453,7 @@ class QvLlegenda(QgsLayerTreeView):
         """
         Enlaza el proyecto con un canvas. La primera vez se invoca con el canvas del
         mapa principal. El resto, con los temas.
-    
+
         Arguments:
             canvas {QgsMapCanvas} -- Canvas donde se muestra el proyecto
                 bridges
@@ -460,7 +461,7 @@ class QvLlegenda(QgsLayerTreeView):
         if canvas is None:
             return
         bridge = QgsLayerTreeMapCanvasBridge(self.root, canvas)
-        if self.canvas is None: # Canvas principal
+        if self.canvas is None:  # Canvas principal
             self.canvas = canvas
             self.bridge = bridge
         else:
@@ -497,7 +498,7 @@ class QvLlegenda(QgsLayerTreeView):
         for capaId in self.project.mapLayers():
             yield self.project.mapLayer(capaId)
 
-    def veureCapa(self, capa, visible = True, subCapas = True):
+    def veureCapa(self, capa, visible=True, subCapas=True):
         """
         Hace visible o invisible una layer.
 
@@ -557,10 +558,10 @@ class QvLlegenda(QgsLayerTreeView):
         act.triggered.connect(self.defaultActions().renameGroupOrLayer)  # , type = Qt.DirectConnection)
         self.accions.afegirAccio('renameGroupOrLayer', act)
 
-        # 
+        #
         # TODO:
         # Sincronizar señales para que la segunda espere al final de la primera
-        # 
+        #
 
         # if self.atributs is not None:
         #   act.triggered.connect(lambda: self.atributs.tabTaula(self.currentLayer()))
@@ -571,7 +572,7 @@ class QvLlegenda(QgsLayerTreeView):
         if self.atributs is not None:
             act.triggered.connect(lambda: self.atributs.tancarTaules(
                 QgsLayerTreeUtils.collectMapLayersRecursive([self.currentNode()])))
-        act.triggered.connect(self.defaultActions().removeGroupOrLayer)
+        act.triggered.connect(self.removeGroupOrLayer)  # No usa defaultActions() porque elimina todos los seleccionados
         self.accions.afegirAccio('removeGroupOrLayer', act)
 
         act = QAction()
@@ -645,14 +646,13 @@ class QvLlegenda(QgsLayerTreeView):
         elif tipo == 'none':
             if self.editable:
                 self.menuAccions += ['addGroup', 'addLayersFromFile']
-        else: # 'symb'
+        else:  # 'symb'
             pass
         return tipo
 
-    # def removeGroupOrLayer(self):
-    #     if self.atributs is not None:
-    #         self.atributs.tancarTaula(self.currentLayer())
-    #     self.defaultActions().removeGroupOrLayer()
+    def removeGroupOrLayer(self):
+        node = self.currentNode()
+        node.parent().removeChildNode(node)
 
     def addLayersFromFile(self):
         dlgLayers = QFileDialog()
@@ -831,7 +831,7 @@ if __name__ == "__main__":
 
         # Generación de botoneras de leyenda
         def filtroBotonera(item):
-            return item.tipus in ('layer','group')
+            return item.tipus in ('layer', 'group')
 
         def filtroRangos(item):
             return item.tipus in ('symb')
@@ -852,9 +852,11 @@ if __name__ == "__main__":
         # Acciones de usuario
 
         def openProject():
-            dialegObertura=QFileDialog()
+            dialegObertura = QFileDialog()
             dialegObertura.setDirectoryUrl(QUrl('../dades/projectes/'))
-            nfile,_ = dialegObertura.getOpenFileName(None,"Obrir mapa Qgis", "../dades/projectes/", "Tots els mapes acceptats (*.qgs *.qgz);; Mapes Qgis (*.qgs);;Mapes Qgis comprimits (*.qgz)")
+            nfile, _ = dialegObertura.getOpenFileName(None, "Obrir mapa Qgis", "../dades/projectes/",
+                                                      "Tots els mapes acceptats (*.qgs *.qgz);; " +
+                                                      "Mapes Qgis (*.qgs);;Mapes Qgis comprimits (*.qgz)")
             if nfile != '':
                 if leyenda.player is None:
                     leyenda.setPlayer('moduls/giphy.gif', 170, 170)
@@ -894,11 +896,11 @@ if __name__ == "__main__":
                     nomCapa = capa.name()
                 print('  ' * item.nivell, '-',
                       'Tipo:', item.tipus,
-                     'Nivel:', item.nivell,
-                     ' Capa:', nomCapa,
-                    'Nombre:', item.nom(), 
-                   'Visible:', item.esVisible(),
-                   'Marcado:', item.esMarcat())
+                      'Nivel:', item.nivell,
+                      'Capa:', nomCapa,
+                      'Nombre:', item.nom(),
+                      'Visible:', item.esVisible(),
+                      'Marcado:', item.esMarcat())
 
         def salutacions():
             QMessageBox().information(None, 'qVista', 'Salutacions ' + QvApp().usuari)
@@ -909,8 +911,8 @@ if __name__ == "__main__":
                 if rangos is not None:
                     rangos.close()
                 if botonera is not None:
-                     botonera.close()
-        
+                    botonera.close()
+
         # Acciones de usuario para el menú
         act = QAction()
         act.setText("Editable")
@@ -952,9 +954,9 @@ if __name__ == "__main__":
         leyenda.clicatMenuContexte.connect(menuContexte)
 
         app.aboutToQuit.connect(QvApp().logFi)
-    
+
     #######
-        
+
         # QgsLayerTreeNode --> nameChanged()
 
         # from qgis.gui import QgsCategorizedSymbolRendererWidget
@@ -965,4 +967,3 @@ if __name__ == "__main__":
         # cats = QgsCategorizedSymbolRendererWidget(layer, QgsStyle.defaultStyle(), renderer)
         # cats.show()
         # cats.applyChanges()
-
