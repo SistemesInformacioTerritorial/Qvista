@@ -205,6 +205,7 @@ class QvLlegenda(QgsLayerTreeView):
         self.editable = True
         self.lastExtent = None
         self.escales = None
+        self.directory = '.'
         # self.restoreExtent = 0
         # print('restoreExtent', self.restoreExtent)
 
@@ -658,22 +659,24 @@ class QvLlegenda(QgsLayerTreeView):
 
     def addLayersFromFile(self):
         dlgLayers = QFileDialog()
-        # dlgLayers.setDirectoryUrl()
-        nfile, ok = dlgLayers.getOpenFileName(None, "Afegir Capes Qgis", ".", "Capes Qgis (*.qlr)")
+        nfile, ok = dlgLayers.getOpenFileName(None, "Afegir Capes Qgis", self.directory, "Capes Qgis (*.qlr)")
         if ok and nfile != '':
             layers = QgsLayerDefinition.loadLayerDefinitionLayers(nfile)
             self.project.addMapLayers(layers, True)
+            self.directory = os.path.dirname(nfile)
 
     def saveLayersToFile(self):
-        node = self.currentNode()
-        if node is not None and node.nodeType() in (QgsLayerTreeNode.NodeLayer, QgsLayerTreeNode.NodeGroup):
+        nodes = self.selectedNodes()
+        if len(nodes) > 0:
             dlgLayers = QFileDialog()
-            # dlgLayers.setDirectoryUrl()
-            nfile, ok = dlgLayers.getSaveFileName(None, "Desar Capes Qgis", ".", "Capes Qgis (*.qlr)")
+            if self.directory is not None:
+                dlgLayers.setDirectory(self.directory)
+            nfile, ok = dlgLayers.getSaveFileName(None, "Desar Capes Qgis", self.directory, "Capes Qgis (*.qlr)")
             if ok and nfile != '':
-                ok, txt = QgsLayerDefinition.exportLayerDefinition(nfile, [node])
+                self.directory = os.path.dirname(nfile)
+                ok, txt = QgsLayerDefinition.exportLayerDefinition(nfile, nodes)
                 if not ok:
-                    print('No se pudo exportar capa', txt)
+                    print('No se pudo exportar capas', txt)
 
     def showLayerMap(self):
         if self.canvas is not None:
