@@ -232,6 +232,7 @@ class QVista(QMainWindow, Ui_MainWindow):
                 layer = QgsVectorLayer(nfile, os.path.basename(nfile), "ogr")
                 if layer.isValid():
                     self.project.addMapLayer(layer)
+                    self.canvisPendents=True
             elif fext == '.csv':
                 carregarLayerCSV(nfile)
 
@@ -247,6 +248,7 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         # Obrir el projecte i col.locarse en rang
         self.project.read(projecte)
+        self.canvisPendents = False #es el bit Dirty que ens diu si hem de guardar al tancar o no
         self.canvas.refresh()
 
         if rang is not None:
@@ -1552,7 +1554,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.botoSortir=QvPushButton(flat=True)
         self.botoSortir.setIcon(QIcon('imatges/window_close.png'))
         self.botoSortir.setFixedSize(40,40)
-        self.botoSortir.clicked.connect(self.close)
+        self.botoSortir.clicked.connect(self.provaDeTancar)
         self.botoSortir.setStyleSheet(stylesheetBotonsFinestra)
         self.lytBotonsFinestra.addWidget(self.botoSortir)
 
@@ -1784,6 +1786,7 @@ class QVista(QMainWindow, Ui_MainWindow):
             # Descomentar para eliminar barra de titulo
             # self.lastMaximized = qV.isMaximized()
             # qV.showFullScreen()
+        
 
     def clickArbre(self):
         rang = self.distBarris.llegirRang()
@@ -2214,6 +2217,7 @@ class QVista(QMainWindow, Ui_MainWindow):
                     return
                 renderer=layer.renderer()
                 self.project.addMapLayer(layer)
+                self.canvisPendents=True
             else:
                 if extensio.lower() == '.qlr':
                     # print(nfile)
@@ -2275,6 +2279,32 @@ class QVista(QMainWindow, Ui_MainWindow):
     def favorit(self):
         pass
 
+    def teCanvisPendents(self):
+        return self.canvisPendents
+
+    def provaDeTancar(self):
+        if self.teCanvisPendents():
+            msgBox = QMessageBox()
+            msgBox.setWindowTitle("Sortir de qVista")
+            msgBox.setText("Hi ha canvis pendents de desar.")
+            msgBox.setInformativeText("Què en voleu fer?")
+            msgBox.addButton(QvPushButton('Desar-los',destacat=True),QMessageBox.AcceptRole)
+            msgBox.addButton(QvPushButton('Descartar-los'),QMessageBox.DestructiveRole)
+            msgBox.addButton(QvPushButton('Romandre a qVista'),QMessageBox.RejectRole)
+            # msgBox.setStandardButtons(QMessageBox.Save | QMessageBox.Discard | QMessageBox.Cancel)
+            msgBox.setDefaultButton(QMessageBox.Save)
+            ret = msgBox.exec_()
+            if ret == QMessageBox.Save:
+                if not guardarDialegProjecte(): return
+                #Si cancel·la, retornem. Si no, cridem a gestioSortida
+                self.gestioSortida()
+            elif ret ==  QMessageBox.Cancel:
+                return
+            elif ret == QMessageBox.Discard:
+                self.gestioSortida()
+        else:
+            self.gestioSortida()
+
     def gestioSortida(self):
         
         try:
@@ -2290,7 +2320,8 @@ class QVista(QMainWindow, Ui_MainWindow):
             print(str(ee))
 
         try:
-            QvApp().logFi()
+            QvApp().logFi() #fa aixo pero no arriba a tancar la app
+            QCoreApplication.exit(0) #preguntar al Jordi que li sembla
         except Exception as ee:
             msg = QMessageBox()
             msg.setIcon(QMessageBox.Warning)
@@ -2298,6 +2329,7 @@ class QVista(QMainWindow, Ui_MainWindow):
             msg.setText(strin(ee))
             msg.setStandardButtons(QMessageBox.Close)
             retval = msg.exec_()
+
     def handleSave(self):
         self.table = self.taulesAtributs.widget(0)
         path,_ = QFileDialog.getSaveFileName(self, 'Guardar archivo', '', 'CSV(*.csv)')
@@ -2492,6 +2524,7 @@ def nivellCsv(fitxer: str,delimitador: str,campX: str,campY: str, projeccio: int
             layer.renderer().setSymbol(symbol)
         qV.project.addMapLayer(layer)
         print("add layer")
+        qV.canvisPendents=True
     else: print ("no s'ha pogut afegir la nova layer")
 
     #symbol = QgsMarkerSymbol.createSimple({'name': 'square', 'color': 'red'})
@@ -2585,10 +2618,13 @@ def seleccioExpressio():
     else:
         missatgeCaixa('Cal tenir seleccionat un nivell per poder fer una selecció.','Marqueu un nivell a la llegenda sobre el que aplicar la consulta.')
 
+#A més de desar, retornarà un booleà indicant si l'usuari ha desat (True) o ha cancelat (False)
 def guardarDialegProjecte():
     nfile,_ = QFileDialog.getSaveFileName(None,"Guardar Projecte Qgis", ".", "Projectes Qgis (*.qgs)")
+    if nfile=='': return False
     qV.project.write(nfile)
     qV.lblProjecte.setText(qV.project.baseName())
+    return True
     #print(scale)
 
 def nouMapa():
@@ -2649,6 +2685,7 @@ def escollirNivellGPX():
     # print(renderer.type())
     
     qV.project.addMapLayer(layer)
+    qV.canvisPendents=True
     # features=layer.getFeatures()
     # taulaAtributs('Total',layer)
 
@@ -2766,6 +2803,7 @@ def afegirQlr(nom):
     layers = QgsLayerDefinition.loadLayerDefinitionLayers(nom)
 
     qV.project.addMapLayers(layers, True)
+    qV.canvisPendents=True
     # QgsLayerDefinition().loadLayerDefinition(nom, qV.project, qV.llegenda.root)
     return
 
@@ -2779,6 +2817,7 @@ def afegirNivellSHP():
     # print(renderer.type())
     
     qV.project.addMapLayer(layer)
+    qV.canvisPendents=True
     # features=layer.getFeatures()
     # taulaAtributs('Total',layer)
 
