@@ -143,7 +143,6 @@ class QvCanvas(QgsMapCanvas):
 
     def _preparacioBotonsCanvas(self):
         self.botoneraMapa = QFrame()
-        #self.botoneraMapa.setStyleSheet("QFrame {background-color: #ffffff;}")
 
         #self.botoneraMapa.move(90,20)#nofares
 

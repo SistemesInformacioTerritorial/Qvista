@@ -166,66 +166,63 @@ color: #FFFFFF</string>
               </widget>
              </item>
              <item>
-              <widget class="QToolButton" name="tbEnrera">
-               <property name="minimumSize">
-                <size>
-                 <width>30</width>
-                 <height>30</height>
-                </size>
+              <spacer name="horizontalSpacer">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
                </property>
-               <property name="maximumSize">
-                <size>
-                 <width>30</width>
-                 <height>30</height>
-                </size>
-               </property>
-               <property name="styleSheet">
-                <string notr="true">border-color: rgb(121, 144, 155);</string>
-               </property>
-               <property name="text">
-                <string>...</string>
-               </property>
-               <property name="icon">
-                <iconset>
-                 <normaloff>../../Users/Jo/Dropbox/qVistaProd/Imatges/arrow-left.png</normaloff>../../Users/Jo/Dropbox/qVistaProd/Imatges/arrow-left.png</iconset>
-               </property>
-               <property name="iconSize">
+               <property name="sizeHint" stdset="0">
                 <size>
                  <width>40</width>
-                 <height>40</height>
+                 <height>20</height>
                 </size>
+               </property>
+              </spacer>
+             </item>
+             <item alignment="Qt::AlignRight">
+              <widget class="QPushButton" name="botoVeureLlegenda">
+               <property name="minimumSize">
+                <size>
+                 <width>24</width>
+                 <height>24</height>
+                </size>
+               </property>
+               <property name="toolTip">
+                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Veure i ocultar llegenda&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+               </property>
+               <property name="text">
+                <string/>
                </property>
               </widget>
              </item>
-             <item>
-              <widget class="QToolButton" name="tbEndevant">
+             <item alignment="Qt::AlignRight">
+              <widget class="QPushButton" name="botoDesarProjecte">
                <property name="minimumSize">
                 <size>
-                 <width>30</width>
-                 <height>30</height>
+                 <width>24</width>
+                 <height>0</height>
                 </size>
                </property>
-               <property name="maximumSize">
-                <size>
-                 <width>30</width>
-                 <height>30</height>
-                </size>
-               </property>
-               <property name="styleSheet">
-                <string notr="true">border-color: rgb(121, 144, 155);</string>
+               <property name="toolTip">
+                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Desar projecte&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                </property>
                <property name="text">
-                <string>...</string>
+                <string/>
                </property>
-               <property name="icon">
-                <iconset>
-                 <normaloff>../../Users/Jo/Dropbox/qVistaProd/Imatges/arrow-right.png</normaloff>../../Users/Jo/Dropbox/qVistaProd/Imatges/arrow-right.png</iconset>
-               </property>
-               <property name="iconSize">
+              </widget>
+             </item>
+             <item alignment="Qt::AlignRight">
+              <widget class="QPushButton" name="botoObrirQGis">
+               <property name="minimumSize">
                 <size>
-                 <width>40</width>
-                 <height>40</height>
+                 <width>24</width>
+                 <height>24</height>
                 </size>
+               </property>
+               <property name="toolTip">
+                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Obrir projecte en QGis&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+               </property>
+               <property name="text">
+                <string/>
                </property>
               </widget>
              </item>
@@ -494,7 +491,7 @@ color: #FFFFFF</string>
      <x>0</x>
      <y>0</y>
      <width>1233</width>
-     <height>41</height>
+     <height>34</height>
     </rect>
    </property>
    <property name="minimumSize">

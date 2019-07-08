@@ -2,7 +2,7 @@ import os
 
 #Parametres configuració inicial
 versio="0.2"
-titolFinestra = versio+"qVista %s  Sistema d'Informació Territorial de Barcelona"%versio
+titolFinestra = "qVista %s  Sistema d'Informació Territorial de Barcelona"%versio
 
 carpetaCataleg = "N:/9SITEB/Publicacions/qVista/Cataleg/Capes/"
 carpetaCatalegProjectesLlista = "N:/9SITEB/Publicacions/qVista/Cataleg/Mapes/"

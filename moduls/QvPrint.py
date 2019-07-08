@@ -6,13 +6,14 @@ from qgis.gui import QgsMapTool, QgsRubberBand
 
 from qgis.PyQt.QtCore import Qt, QFile, QUrl
 from qgis.PyQt.QtXml import QDomDocument
-from qgis.PyQt.QtWidgets import QWidget, QVBoxLayout, QComboBox, QPushButton, QCheckBox
+from qgis.PyQt.QtWidgets import QWidget, QVBoxLayout, QComboBox, QPushButton, QCheckBox, QSlider, QLabel
 from qgis.PyQt.QtGui import QFont, QColor,QStandardItemModel, QStandardItem, QDesktopServices
 from PyQt5.QtWebKitWidgets import QWebView , QWebPage
 from PyQt5.QtWebKit import QWebSettings
 
 from moduls.QvApp import QvApp
 from moduls.QvPushButton import QvPushButton
+from moduls.QvConstants import QvConstants
 
 import time
 projecteInicial='../dades/projectes/BCN11_nord.qgs'
@@ -89,19 +90,31 @@ class QvPrint(QWidget):
 
         self.canvas.xyCoordinates.connect(self.mocMouse)
         self.pintarRectangle(self.poligon)
+    def escales(self, val):
+        if isinstance(val,str):
+            val=int(val)
+        return val//5
 
     def setupUI(self):
         self.layout = QVBoxLayout(self)
+        self.layout.setSpacing(0)
+        self.layout.setContentsMargins(0,0,0,0)
         self.setLayout(self.layout)
-        self.layout.setAlignment(Qt.AlignTop)
+        # self.layout.setAlignment(Qt.AlignTop)
 
+        self.lblDimensions=QLabel('')
 
-        self.combo = QComboBox(self)
-        # self.combo.move(5,100)
-        llistaEscales = [key for key in self.dictEscales]
-        self.combo.addItems(llistaEscales)
-        self.combo.currentTextChanged.connect(self.canviEscala)
-        self.combo.show()
+        self.slider= QSlider(Qt.Horizontal)
+        self.slider.setMinimum(500)
+        self.slider.setMaximum(50000)
+        self.slider.setValue(25000)
+        self.slider.valueChanged.connect(self.canviEscala)
+        self.slider.setFocusPolicy(Qt.NoFocus)
+        # self.slider.setFocusPolicy(Qt.StrongFocus)
+        # self.slider.setTickPosition(QSlider.TicksBothSides)
+        self.slider.setTickInterval(500)
+        self.slider.setSingleStep(500)
+        self.slider.setPageStep(500)
 
         
         self.comboOrientacio = QComboBox(self)
@@ -111,26 +124,27 @@ class QvPrint(QWidget):
         self.comboOrientacio.currentTextChanged.connect(self.canviOrientacio)
         self.comboOrientacio.show()
 
-        self.font = QFont()
-        self.font.setPointSize(20)
-        self.boto = QPushButton(parent=self)
-        self.boto.setText('Plot')
-        self.boto.setFont(self.font)
-        self.boto.setMinimumHeight(self.boto.height()*2)
-        
+        self.layBotons=QVBoxLayout()
+        self.layBotons.setContentsMargins(0,0,0,0)
+        self.layBotons.setSpacing(0)
+        self.boto = QvPushButton(text='Plot', destacat=True, parent=self)
         self.boto.clicked.connect(self.printPlanol)
-        self.boto2 = QPushButton(parent=self)
-        self.boto2.setText('Reposicionar')
+        self.boto2 = QvPushButton('Reposicionar',parent=self)
         self.boto2.clicked.connect(self.potsMoure)
+        self.layBotons.addWidget(self.boto)
+        self.layBotons.addWidget(self.boto2)
 
         self.checkRotacio = QCheckBox('Planol rotat')
         self.checkRotacio.show()
 
-        self.layout.addWidget(self.boto)
-        self.layout.addWidget(self.boto2)
-        self.layout.addWidget(self.combo)
+        # self.layout.addWidget(self.boto)
+        # self.layout.addWidget(self.boto2)
+        self.layout.addLayout(self.layBotons)
+        self.layout.addWidget(self.lblDimensions)
+        self.layout.addWidget(self.slider)
         self.layout.addWidget(self.checkRotacio)
         self.layout.addWidget(self.comboOrientacio)
+        self.canviEscala()
 
     def potsMoure(self):
         # self.canvas.scene().removeItem(self.rubberband)
@@ -138,7 +152,8 @@ class QvPrint(QWidget):
 
     def canviEscala(self):
         self.pucMoure = True
-        escala = int(self.dictEscales[self.combo.currentText()])
+        # escala = int(self.dictEscales[self.combo.currentText()])
+        escala=self.escales(self.slider.value())
 
         if self.comboOrientacio.currentText() == 'Vertical':
             self.incX = escala
@@ -146,6 +161,7 @@ class QvPrint(QWidget):
         else:
             self.incX = escala * 1.5
             self.incY = escala
+        self.lblDimensions.setText('Escala àrea d\'impressió: %i'%self.slider.value())
 
     def canviOrientacio(self):
         self.pucMoure = True
@@ -187,7 +203,7 @@ class QvPrint(QWidget):
             self.plantillaMapa = 'plantillaMapa.qpt'
         else:
             self.plantillaMapa = 'plantillaMapaH.qpt'
-        self.imprimirPlanol(self.posXY[0], self.posXY[1], int(self.combo.currentText()), rotacio, self.plantillaMapa , 'd:/EUREKA.pdf', 'PDF')
+        self.imprimirPlanol(self.posXY[0], self.posXY[1], self.slider.value(), rotacio, self.plantillaMapa , 'd:/EUREKA.pdf', 'PDF')
        
         QvApp().logRegistre('Impressió: '+self.combo.currentText() )
     

@@ -100,8 +100,6 @@ class QvNewsFinestra(QDialog):
             QPixmap('imatges/QVistaLogo_40_32.png'))
         self.lblCapcalera = QLabel(objectName='Fosca')
         self.lblCapcalera.setText('  '+titol)
-        # self.lblCapcalera.setStyleSheet(
-        #     'color: %s' % QvConstants.COLORFOSCHTML)
         self.layoutCapcalera.addWidget(self.lblLogo)
         self.layoutCapcalera.addWidget(self.lblCapcalera)
 
@@ -133,8 +131,6 @@ class QvNewsFinestra(QDialog):
         #self.caixaText.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
         self.caixaText.setViewportMargins(20, 20, 20, 0)
         self.setWindowFlags(Qt.Window | Qt.FramelessWindowHint)
-        self.lblLogo.setStyleSheet(
-            'background-color: %s; border: 0px' % QvConstants.COLORFOSCHTML)
         self.lblLogo.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         self.lblCapcalera.setStyleSheet('background-color: %s; color: %s; border: 0px' % (
             QvConstants.COLORFOSCHTML, QvConstants.COLORBLANCHTML))
