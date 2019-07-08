@@ -13,6 +13,7 @@ estatConnexio = "Xarxa municipal: Connectat"
 QvTempdir='C:/temp/qVista/'
 tempdir=QvTempdir+'temp/'
 docdir='n:/siteb/apl/pyqgis/qvista/dades/'
+docdirPlantilles=docdir+'plantilles/'
 arxiuAvis=docdir+'Avisos.htm'
 arxiuNews=docdir+'Noticies.htm'
 arxiuTmpAvis=tempdir+'ultimAvisObert'

@@ -198,12 +198,16 @@ QvPushButton:checked{
 	padding: 2px 2px;
 } 
 
-QvToolButton {
+/* QvToolButton {
 	background-color: transparent;
 	color: #38474F;
 	border: 0px;
 	padding: 1px 1px;
 }
+
+QvToolButton[marcat=true]{
+    background-color: #FF6215 solid;
+} */
 
 QStatusBar {
     background-color: #DDDDDD;
