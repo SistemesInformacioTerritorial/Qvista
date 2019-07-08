@@ -1,0 +1,254 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>Dialog</class>
+ <widget class="QDialog" name="Dialog">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>472</width>
+    <height>520</height>
+   </rect>
+  </property>
+  <property name="maximumSize">
+   <size>
+    <width>472</width>
+    <height>520</height>
+   </size>
+  </property>
+  <property name="windowTitle">
+   <string>Consulta vials. Selecció</string>
+  </property>
+  <property name="sizeGripEnabled">
+   <bool>false</bool>
+  </property>
+  <property name="modal">
+   <bool>false</bool>
+  </property>
+  <layout class="QGridLayout" name="gridLayout">
+   <item row="9" column="7" colspan="2">
+    <widget class="QPushButton" name="pushButton">
+     <property name="text">
+      <string>Consultar</string>
+     </property>
+    </widget>
+   </item>
+   <item row="9" column="9">
+    <widget class="QPushButton" name="pushButton_2">
+     <property name="text">
+      <string>Tancar</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="0" colspan="3">
+    <widget class="QLabel" name="label_2">
+     <property name="text">
+      <string>Tipus de vial</string>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="3">
+    <widget class="QDateTimeEdit" name="dateTimeEdit">
+     <property name="displayFormat">
+      <string>dd/MM/yyyy</string>
+     </property>
+     <property name="calendarPopup">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="1">
+    <widget class="QLabel" name="label_3">
+     <property name="text">
+      <string>Nom</string>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="3" colspan="2">
+    <widget class="QLineEdit" name="lineEdit">
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="0" colspan="2">
+    <widget class="QLabel" name="label">
+     <property name="text">
+      <string>Codi de vial</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="3" colspan="2">
+    <widget class="QComboBox" name="comboBox_2">
+     <item>
+      <property name="text">
+       <string>Comença per...</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>Contenint ...</string>
+      </property>
+     </item>
+    </widget>
+   </item>
+   <item row="4" column="0" colspan="3">
+    <widget class="QLabel" name="label_4">
+     <property name="text">
+      <string>Data Aprovació</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="3" colspan="2">
+    <widget class="QComboBox" name="comboBox">
+     <item>
+      <property name="text">
+       <string>Era</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>Apartat</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>Camí</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>Carrer</string>
+      </property>
+     </item>
+    </widget>
+   </item>
+   <item row="2" column="5" colspan="5">
+    <widget class="QLineEdit" name="lineEdit_2">
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="1" colspan="4">
+    <widget class="QCheckBox" name="checkBox">
+     <property name="text">
+      <string>Cercar per variants</string>
+     </property>
+    </widget>
+   </item>
+   <item row="5" column="0" colspan="2">
+    <widget class="QLabel" name="label_5">
+     <property name="text">
+      <string>Propietat</string>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="5">
+    <widget class="QLabel" name="label_7">
+     <property name="text">
+      <string>fins a</string>
+     </property>
+    </widget>
+   </item>
+   <item row="5" column="2">
+    <widget class="QComboBox" name="comboBox_3">
+     <item>
+      <property name="text">
+       <string>Publica</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>Privada</string>
+      </property>
+     </item>
+    </widget>
+   </item>
+   <item row="8" column="0" colspan="10">
+    <widget class="QTableView" name="tableView"/>
+   </item>
+   <item row="7" column="8" colspan="2">
+    <widget class="QPushButton" name="pushButton_6">
+     <property name="text">
+      <string>Tancar</string>
+     </property>
+    </widget>
+   </item>
+   <item row="6" column="0">
+    <widget class="QLabel" name="label_6">
+     <property name="text">
+      <string>Nom</string>
+     </property>
+    </widget>
+   </item>
+   <item row="6" column="1" colspan="3">
+    <widget class="QComboBox" name="comboBox_4">
+     <item>
+      <property name="text">
+       <string>Nom Oficial</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>Nom Popular</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>Nom no Oficial</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>Nom Gèneric</string>
+      </property>
+     </item>
+    </widget>
+   </item>
+   <item row="7" column="2" colspan="3">
+    <widget class="QCheckBox" name="checkBox_2">
+     <property name="text">
+      <string>Només donats de baixa</string>
+     </property>
+    </widget>
+   </item>
+   <item row="7" column="7">
+    <widget class="QPushButton" name="pushButton_5">
+     <property name="text">
+      <string>Filtar</string>
+     </property>
+    </widget>
+   </item>
+   <item row="9" column="3" colspan="2">
+    <widget class="QPushButton" name="pushButton_4">
+     <property name="text">
+      <string>Presentar informe</string>
+     </property>
+    </widget>
+   </item>
+   <item row="9" column="0" colspan="3">
+    <widget class="QPushButton" name="pushButton_3">
+     <property name="text">
+      <string>Dades historiques</string>
+     </property>
+     <property name="checkable">
+      <bool>false</bool>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="6">
+    <widget class="QDateTimeEdit" name="dateTimeEdit_2">
+     <property name="displayFormat">
+      <string>dd/MM/yyyy</string>
+     </property>
+     <property name="calendarPopup">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
