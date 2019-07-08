@@ -543,13 +543,13 @@ class QvLlegenda(QgsLayerTreeView):
         self.accions.afegirAccio('addGroup', act)
 
         act = QAction()
-        act.setText("Afegeix capa")
+        act.setText("Afegeix capes Qgis")
         # act.setIcon(QIcon(':/Icones/ic_file_upload_black_48dp.png'))ic_beach_access_black_48dp
         act.triggered.connect(self.addLayersFromFile)
         self.accions.afegirAccio('addLayersFromFile', act)
 
         act = QAction()
-        act.setText("Desa capa")
+        act.setText("Desa capes Qgis")
         # act.setIcon(QIcon(':/Icones/ic_file_upload_black_48dp.png'))ic_beach_access_black_48dp
         act.triggered.connect(self.saveLayersToFile)
         self.accions.afegirAccio('saveLayersToFile', act)
