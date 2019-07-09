@@ -257,6 +257,7 @@ class QvCarregaCsvPrecalculat(QvCarregaCsvPage):
         self.layoutBotons.addWidget(self.botoB)
         self.layoutBotons.addWidget(self.botoC)
         self.layout.addLayout(self.layoutBotons)
+        self.parent.prefab()
 
         def activaBoto():
             self.completeChanged.emit()
@@ -269,11 +270,10 @@ class QvCarregaCsvPrecalculat(QvCarregaCsvPage):
 
     def nextId(self):
         if self.botoA.isChecked():
-            self.parent.prefab()
             return QvCarregaCsv.finestres.Personalitza
         if self.botoB.isChecked():
             self.parent.aprofitar = True
-        return QvCarregaCsv.finestres.TriaSep
+        return QvCarregaCsv.finestres.Adreca
 
 class QvCarregaCsvTriaSep(QvCarregaCsvPage):
     def __init__(self, parent: QWidget=None):
