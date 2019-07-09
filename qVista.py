@@ -247,6 +247,7 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         # Obrir el projecte i col.locarse en rang
         self.project.read(projecte)
+        self.pathProjecteActual = projecte
         self.canvisPendents = False #es el bit Dirty que ens diu si hem de guardar al tancar o no
         self.canvas.refresh()
 
@@ -1178,7 +1179,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.botoDesarProjecte.setIcon(self.iconaSenseCanvisPendents)
         self.botoDesarProjecte.setStyleSheet(stylesheetBotons)
         self.botoDesarProjecte.setIconSize(QSize(24, 24))
-        self.botoDesarProjecte.clicked.connect(guardarDialegProjecte) #OJO això no hauria d'obrir un diàleg
+        self.botoDesarProjecte.clicked.connect(guardarProjecte) #OJO això no hauria d'obrir un diàleg
 
         self.botoObrirQGis.setIcon(QIcon('Imatges/qgis-3.png'))
         self.botoObrirQGis.setStyleSheet(stylesheetBotons)
@@ -2289,6 +2290,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         if self.teCanvisPendents():
             msgBox = QMessageBox()
             msgBox.setWindowTitle("Sortir de qVista")
+            msgBox.setIcon(QMessageBox.Information)
             msgBox.setText("Hi ha canvis pendents de desar.")
             msgBox.setInformativeText("Què voleu fer?")
             msgBox.addButton(QvPushButton('Desar-los',destacat=True),QMessageBox.AcceptRole)
@@ -2625,10 +2627,34 @@ def seleccioExpressio():
         missatgeCaixa('Cal tenir seleccionat un nivell per poder fer una selecció.','Marqueu un nivell a la llegenda sobre el que aplicar la consulta.')
 
 #A més de desar, retornarà un booleà indicant si l'usuari ha desat (True) o ha cancelat (False)
+
+def guardarProjecte():
+    """  Protecció dels projectes read-only: tres vies:
+    -       Variable del projecte qV_readOnly=’True’
+    -       Ubicació en una carpeta de només-lectura
+    -       Ubicació en una de les subcarpetes de N:\SITEB\APL\PyQgis\qVista
+    -       Ubicació en una de les subcarpetes de N:\9SITEB\Publicacions\qVista
+    """
+
+    if QgsExpressionContextUtils.projectScope(qV.project).variable('qV_readOnly') == 'True':
+        guardarDialegProjecte()
+    elif qV.pathProjecteActual == 'mapesOffline/qVista default map.qgs':
+        guardarDialegProjecte()
+    elif qV.pathProjecteActual.startswith( 'n:/siteb/apl/pyqgis/qvista' ):
+        guardarDialegProjecte()
+    elif qV.pathProjecteActual.startswith( 'n:/9siteb/publicacions/qvista' ):
+        guardarDialegProjecte()
+    else:
+        qV.project.write(qV.pathProjecteActual)
+        qV.canvisPendents = False
+        qV.botoDesarProjecte.setIcon(qV.iconaSenseCanvisPendents)
+        
+
 def guardarDialegProjecte():
     nfile,_ = QFileDialog.getSaveFileName(None,"Guardar Projecte Qgis", ".", "Projectes Qgis (*.qgs)")
     if nfile=='': return False
     qV.project.write(nfile)
+    qV.pathProjecteActual = nfile
     qV.lblProjecte.setText(qV.project.baseName())
     qV.botoDesarProjecte.setIcon(qV.iconaSenseCanvisPendents)
     qV.canvisPendents = False
