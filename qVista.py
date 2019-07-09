@@ -1179,7 +1179,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.botoDesarProjecte.setIcon(self.iconaSenseCanvisPendents)
         self.botoDesarProjecte.setStyleSheet(stylesheetBotons)
         self.botoDesarProjecte.setIconSize(QSize(24, 24))
-        self.botoDesarProjecte.clicked.connect(guardarProjecte) #OJO això no hauria d'obrir un diàleg
+        self.botoDesarProjecte.clicked.connect(guardarProjecte) 
 
         self.botoObrirQGis.setIcon(QIcon('Imatges/qgis-3.png'))
         self.botoObrirQGis.setStyleSheet(stylesheetBotons)
@@ -2635,6 +2635,7 @@ def guardarProjecte():
     -       Ubicació en una de les subcarpetes de N:\SITEB\APL\PyQgis\qVista
     -       Ubicació en una de les subcarpetes de N:\9SITEB\Publicacions\qVista
     """
+    #Pensar què fer quan es dona al botó de gurdar i no hi ha canvis per guardar
 
     if QgsExpressionContextUtils.projectScope(qV.project).variable('qV_readOnly') == 'True':
         return guardarDialegProjecte()
