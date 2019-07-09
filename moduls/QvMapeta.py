@@ -135,7 +135,6 @@ class QvMapeta(QFrame):
                     self.move(20,20)
                 # self.setGeometry(0,0,self.xTamany,self.yTamany)
                 self.setStyleSheet('QFrame {background-image: url("imatges/QVista_Mapeta_44_5graus_mio.png");}')
-                # self.setStyleSheet('QFrame {background-image: url("imatges/QVista_Mapeta_44_5graus.png");}')
         else:
             if self.canvas.rotation() == 44.5:
                 self.canvas.setRotation(0)

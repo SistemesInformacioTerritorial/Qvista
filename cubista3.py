@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'cubista3.ui'
+# Form implementation generated from reading ui file 'CuBista3.ui'
 #
 # Created by: PyQt5 UI code generator 5.11.3
 #
@@ -64,26 +64,23 @@ class Ui_MainWindow(object):
         self.lblTitolProjecte.setFont(font)
         self.lblTitolProjecte.setObjectName("lblTitolProjecte")
         self.horizontalLayout_4.addWidget(self.lblTitolProjecte)
-        self.tbEnrera = QtWidgets.QToolButton(self.frame_15)
-        self.tbEnrera.setMinimumSize(QtCore.QSize(30, 30))
-        self.tbEnrera.setMaximumSize(QtCore.QSize(30, 30))
-        self.tbEnrera.setStyleSheet("border-color: rgb(121, 144, 155);")
-        icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap("../../Users/Jo/Dropbox/qVistaProd/Imatges/arrow-left.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.tbEnrera.setIcon(icon)
-        self.tbEnrera.setIconSize(QtCore.QSize(40, 40))
-        self.tbEnrera.setObjectName("tbEnrera")
-        self.horizontalLayout_4.addWidget(self.tbEnrera)
-        self.tbEndevant = QtWidgets.QToolButton(self.frame_15)
-        self.tbEndevant.setMinimumSize(QtCore.QSize(30, 30))
-        self.tbEndevant.setMaximumSize(QtCore.QSize(30, 30))
-        self.tbEndevant.setStyleSheet("border-color: rgb(121, 144, 155);")
-        icon1 = QtGui.QIcon()
-        icon1.addPixmap(QtGui.QPixmap("../../Users/Jo/Dropbox/qVistaProd/Imatges/arrow-right.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.tbEndevant.setIcon(icon1)
-        self.tbEndevant.setIconSize(QtCore.QSize(40, 40))
-        self.tbEndevant.setObjectName("tbEndevant")
-        self.horizontalLayout_4.addWidget(self.tbEndevant)
+        spacerItem = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+        self.horizontalLayout_4.addItem(spacerItem)
+        self.botoVeureLlegenda = QtWidgets.QPushButton(self.frame_15)
+        self.botoVeureLlegenda.setMinimumSize(QtCore.QSize(24, 24))
+        self.botoVeureLlegenda.setText("")
+        self.botoVeureLlegenda.setObjectName("botoVeureLlegenda")
+        self.horizontalLayout_4.addWidget(self.botoVeureLlegenda, 0, QtCore.Qt.AlignRight)
+        self.botoDesarProjecte = QtWidgets.QPushButton(self.frame_15)
+        self.botoDesarProjecte.setMinimumSize(QtCore.QSize(24, 0))
+        self.botoDesarProjecte.setText("")
+        self.botoDesarProjecte.setObjectName("botoDesarProjecte")
+        self.horizontalLayout_4.addWidget(self.botoDesarProjecte, 0, QtCore.Qt.AlignRight)
+        self.botoObrirQGis = QtWidgets.QPushButton(self.frame_15)
+        self.botoObrirQGis.setMinimumSize(QtCore.QSize(24, 24))
+        self.botoObrirQGis.setText("")
+        self.botoObrirQGis.setObjectName("botoObrirQGis")
+        self.horizontalLayout_4.addWidget(self.botoObrirQGis, 0, QtCore.Qt.AlignRight)
         self.verticalLayout_4.addWidget(self.frame_15)
         self.horizontalLayout.addWidget(self.frame_12)
         self.frame_13 = QtWidgets.QFrame(self.frame_3)
@@ -130,12 +127,12 @@ class Ui_MainWindow(object):
         self.frameCentral.setFrameShadow(QtWidgets.QFrame.Sunken)
         self.frameCentral.setLineWidth(0)
         self.frameCentral.setObjectName("frameCentral")
+
         self.horizontalLayout_2.addWidget(self.frameCentral)
         self.frame_19 = QtWidgets.QFrame(self.frame_16)
         self.frame_19.setMinimumSize(QtCore.QSize(40, 0))
         self.frame_19.setMaximumSize(QtCore.QSize(40, 16777215))
-        self.frame_19.setStyleSheet("background-color: #DDDDDD\n"
-"")
+        self.frame_19.setStyleSheet("background-color: #DDDDDD\n""")
         self.frame_19.setFrameShape(QtWidgets.QFrame.NoFrame)
         self.frame_19.setFrameShadow(QtWidgets.QFrame.Raised)
         self.frame_19.setLineWidth(0)
@@ -170,7 +167,7 @@ class Ui_MainWindow(object):
         self.verticalLayout.addWidget(self.frame_9)
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 1233, 41))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 1233, 34))
         self.menubar.setMinimumSize(QtCore.QSize(0, 0))
         palette = QtGui.QPalette()
         brush = QtGui.QBrush(QtGui.QColor(255, 255, 255))
@@ -330,8 +327,9 @@ class Ui_MainWindow(object):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
         self.lblTitolProjecte.setText(_translate("MainWindow", "Qualificacions urbanístiques i suspensions"))
-        self.tbEnrera.setText(_translate("MainWindow", "..."))
-        self.tbEndevant.setText(_translate("MainWindow", "..."))
+        self.botoVeureLlegenda.setToolTip(_translate("MainWindow", "<html><head/><body><p>Veure i ocultar llegenda</p></body></html>"))
+        self.botoDesarProjecte.setToolTip(_translate("MainWindow", "<html><head/><body><p>Desar projecte</p></body></html>"))
+        self.botoObrirQGis.setToolTip(_translate("MainWindow", "<html><head/><body><p>Obrir projecte en QGis</p></body></html>"))
 
 
 if __name__ == "__main__":

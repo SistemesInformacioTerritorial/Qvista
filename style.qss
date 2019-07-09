@@ -16,9 +16,9 @@
 } */
 
 
-QWidget::window {
-    border: 1px solid #79909B;
-    background-color: #F9F9F9;
+QWidget::window, QDialog {
+    background-color: #F4F4F4;
+    margin: 2px #38474F;
 } 
 
 QWidget #layoutFosc {
@@ -87,10 +87,27 @@ QScrollArea{
 	background: white;
 }
 
+QSlider{
+    background: #F9F9F9;
+}
+
+/* QSlider::groove:horizontal{
+    
+} */
+
+/* QSlider::handle:horizontal{
+    background: #FF6215;
+} */
+
+QSlider::add-page:horizontal {
+    background: #FF6215;
+}
+
 QLabel {
     background-color: #F9F9F9 transparent;
     color: #38474F;
     margin: 0px;
+    border: 0px;
 }
 
 QLabel#fosca{
@@ -160,9 +177,9 @@ QProgressBar::chunk{
 }
 
 /* QDialog, QWizard{
-    border: 5px #38474F;
-    margin: 5px;
+    border: 0px;
     background-color: #F9F9F9;
+    color: #38474F;
 } */
 
 
@@ -181,12 +198,16 @@ QvPushButton:checked{
 	padding: 2px 2px;
 } 
 
-QvToolButton {
+/* QvToolButton {
 	background-color: transparent;
 	color: #38474F;
 	border: 0px;
 	padding: 1px 1px;
 }
+
+QvToolButton[marcat=true]{
+    background-color: #FF6215 solid;
+} */
 
 QStatusBar {
     background-color: #DDDDDD;

@@ -52,7 +52,6 @@ class QvPushButton(QPushButton):
             "background-color: %s" % colors)
         self.setSizePolicy(QSizePolicy.Fixed,QSizePolicy.Fixed)
         QvConstants.afegeixOmbraWidget(self)
-        self.setFont(QvConstants.FONTTEXT)
     def setDestacat(self,destacat: bool):
         self.destacat=destacat
         self.formata(destacat)
