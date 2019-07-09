@@ -231,6 +231,7 @@ class QVista(QMainWindow, Ui_MainWindow):
                 if layer.isValid():
                     self.project.addMapLayer(layer)
                     self.canvisPendents=True
+                    self.botoDesarProjecte.setIcon(self.iconaAmbCanvisPendents)
             elif fext == '.csv':
                 carregarLayerCSV(nfile)
 
@@ -1172,10 +1173,12 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.botoVeureLlegenda.setIconSize(QSize(24, 24))
         self.botoVeureLlegenda.clicked.connect(self.obrirLlegenda)
 
-        self.botoDesarProjecte.setIcon(QIcon('Imatges/content-save.png'))
+        self.iconaSenseCanvisPendents = QIcon('Imatges/content-save.png')
+        self.iconaAmbCanvisPendents = QIcon('Imatges/content-save_orange.png')
+        self.botoDesarProjecte.setIcon(self.iconaSenseCanvisPendents)
         self.botoDesarProjecte.setStyleSheet(stylesheetBotons)
         self.botoDesarProjecte.setIconSize(QSize(24, 24))
-        self.botoDesarProjecte.clicked.connect(guardarDialegProjecte)
+        self.botoDesarProjecte.clicked.connect(guardarDialegProjecte) #OJO això no hauria d'obrir un diàleg
 
         self.botoObrirQGis.setIcon(QIcon('Imatges/qgis-3.png'))
         self.botoObrirQGis.setStyleSheet(stylesheetBotons)
@@ -2217,6 +2220,7 @@ class QVista(QMainWindow, Ui_MainWindow):
                 renderer=layer.renderer()
                 self.project.addMapLayer(layer)
                 self.canvisPendents=True
+                self.botoDesarProjecte.setIcon(self.iconaAmbCanvisPendents)
             else:
                 if extensio.lower() == '.qlr':
                     # print(nfile)
@@ -2286,21 +2290,23 @@ class QVista(QMainWindow, Ui_MainWindow):
             msgBox = QMessageBox()
             msgBox.setWindowTitle("Sortir de qVista")
             msgBox.setText("Hi ha canvis pendents de desar.")
-            msgBox.setInformativeText("Què en voleu fer?")
+            msgBox.setInformativeText("Què voleu fer?")
             msgBox.addButton(QvPushButton('Desar-los',destacat=True),QMessageBox.AcceptRole)
             msgBox.addButton(QvPushButton('Descartar-los'),QMessageBox.DestructiveRole)
             msgBox.addButton(QvPushButton('Romandre a qVista'),QMessageBox.RejectRole)
             # msgBox.setStandardButtons(QMessageBox.Save | QMessageBox.Discard | QMessageBox.Cancel)
-            msgBox.setDefaultButton(QMessageBox.Save)
+            # msgBox.setDefaultButton(QMessageBox.Save)
             ret = msgBox.exec_()
-            if ret == QMessageBox.Save:
-                if not guardarDialegProjecte(): return
+            if ret == QMessageBox.AcceptRole:
+                b = guardarDialegProjecte()
+                if not b: return
                 #Si cancel·la, retornem. Si no, cridem a gestioSortida
                 self.gestioSortida()
-            elif ret ==  QMessageBox.Cancel:
-                return
-            elif ret == QMessageBox.Discard:
+            elif ret ==  QMessageBox.RejectRole: #Aquest i el seguent estàn invertits en teoria, però així funciona bé
                 self.gestioSortida()
+            elif ret == QMessageBox.DestructiveRole:
+                return
+                
         else:
             self.gestioSortida()
 
@@ -2524,6 +2530,7 @@ def nivellCsv(fitxer: str,delimitador: str,campX: str,campY: str, projeccio: int
         qV.project.addMapLayer(layer)
         print("add layer")
         qV.canvisPendents=True
+        qV.botoDesarProjecte.setIcon(qV.iconaAmbCanvisPendents)
     else: print ("no s'ha pogut afegir la nova layer")
 
     #symbol = QgsMarkerSymbol.createSimple({'name': 'square', 'color': 'red'})
@@ -2623,6 +2630,8 @@ def guardarDialegProjecte():
     if nfile=='': return False
     qV.project.write(nfile)
     qV.lblProjecte.setText(qV.project.baseName())
+    qV.botoDesarProjecte.setIcon(qV.iconaSenseCanvisPendents)
+    qV.canvisPendents = False
     return True
     #print(scale)
 
@@ -2685,6 +2694,7 @@ def escollirNivellGPX():
     
     qV.project.addMapLayer(layer)
     qV.canvisPendents=True
+    qV.botoDesarProjecte.setIcon(qV.iconaAmbCanvisPendents)
     # features=layer.getFeatures()
     # taulaAtributs('Total',layer)
 
@@ -2804,6 +2814,7 @@ def afegirQlr(nom):
 
     qV.project.addMapLayers(layers, True)
     qV.canvisPendents=True
+    qV.botoDesarProjecte.setIcon(qV.iconaAmbCanvisPendents)
     # QgsLayerDefinition().loadLayerDefinition(nom, qV.project, qV.llegenda.root)
     return
 
@@ -2818,6 +2829,7 @@ def afegirNivellSHP():
     
     qV.project.addMapLayer(layer)
     qV.canvisPendents=True
+    qV.botoDesarProjecte.setIcon(qV.iconaAmbCanvisPendents)
     # features=layer.getFeatures()
     # taulaAtributs('Total',layer)
 
