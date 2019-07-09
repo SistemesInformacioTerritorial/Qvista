@@ -73,7 +73,16 @@ class QvCarregaCsv(QWizard):
         self.setContentsMargins(0, 0, 0, 0)
         self.setWindowFlags(Qt.Window | Qt.FramelessWindowHint)
         self.setWizardStyle(QWizard.ModernStyle)
+        self.setStyleSheet('''
+            background-color: %s;
+            color: %s;
+            /*QWidget {border: 0px} 
+            QFrame {border: 0px} 
+            QLabel {border: 0px}*/
+            QRadioButton {background-color: transparent}
+            ''' % (QvConstants.COLORBLANCHTML, QvConstants.COLORFOSCHTML))
         self.setPixmap(QWizard.LogoPixmap, QPixmap('imatges/layers.png'))
+        self.setFont(QvConstants.FONTTEXT)
         self.oldPos = self.pos()
 
     def prefab (self):
@@ -168,7 +177,11 @@ class QvCarregaCsvPage(QWizardPage):
 
     def formata(self):
         # self.setStyleSheet('QFrame {border: 0px}')
-
+        self.setStyleSheet('''background-color: %s; 
+                              QFrame {border: 0px} 
+                              QLabel {border: 0px}
+                              ''' % QvConstants.COLORBLANCHTML)
+        self.setFont(QvConstants.FONTTITOLS)
         self.setContentsMargins(0, 0, 0, 0)
 
     def mostraTaula(self, completa: bool=False, guardar: bool = False):

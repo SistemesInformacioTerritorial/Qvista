@@ -2300,7 +2300,7 @@ class QVista(QMainWindow, Ui_MainWindow):
             # msgBox.setDefaultButton(QMessageBox.Save)
             ret = msgBox.exec_()
             if ret == QMessageBox.AcceptRole:
-                b = guardarDialegProjecte()
+                b = guardarProjecte()
                 if not b: return
                 #Si cancel·la, retornem. Si no, cridem a gestioSortida
                 self.gestioSortida()
@@ -2637,13 +2637,13 @@ def guardarProjecte():
     """
 
     if QgsExpressionContextUtils.projectScope(qV.project).variable('qV_readOnly') == 'True':
-        guardarDialegProjecte()
+        return guardarDialegProjecte()
     elif qV.pathProjecteActual == 'mapesOffline/qVista default map.qgs':
-        guardarDialegProjecte()
+        return guardarDialegProjecte()
     elif qV.pathProjecteActual.startswith( 'n:/siteb/apl/pyqgis/qvista' ):
-        guardarDialegProjecte()
+        return guardarDialegProjecte()
     elif qV.pathProjecteActual.startswith( 'n:/9siteb/publicacions/qvista' ):
-        guardarDialegProjecte()
+        return guardarDialegProjecte()
     else:
         qV.project.write(qV.pathProjecteActual)
         qV.canvisPendents = False
