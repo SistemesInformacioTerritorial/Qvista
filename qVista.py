@@ -2702,7 +2702,6 @@ def nouMapa():
     # qV.obrirProjecte("./__newProjectTemplate.qgs")
 
 def executeChrome():
-    from PyQt5.QtCore import QProcess
     process = QProcess(qV)
     pathChrome = "c:/users/d062735/appdata/local/google/chrome/application/chrome.exe"
     process.start(pathChrome)
