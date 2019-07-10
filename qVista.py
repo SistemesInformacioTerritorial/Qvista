@@ -813,7 +813,7 @@ class QVista(QMainWindow, Ui_MainWindow):
     #         retval = msg.exec_()
         
     def preparacioEntorns(self):
-        self.menuEntorns = self.bar.addMenu('Entorns')
+        #self.menuEntorns = self.bar.addMenu('Entorns')
                               
         self.menuEntorns.setFont(QvConstants.FONTSUBTITOLS)
         self.menuEntorns.styleStrategy = QFont.PreferAntialias or QFont.PreferQuality
@@ -940,6 +940,11 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.actNouMapa = QAction("Nou", self)
         self.actNouMapa.setStatusTip("Nou Mapa")
         self.actNouMapa.triggered.connect(nouMapa)
+
+        self.actExecuteChrome = QAction("Google Chrome", self)
+        iconaChrome=QIcon('imatges/iconaChrome.png')
+        self.actExecuteChrome.setIcon(iconaChrome)
+        self.actExecuteChrome.triggered.connect(executeChrome)
 
         
         self.actImprimir = QAction("Imprimir", self)
@@ -1577,6 +1582,8 @@ class QVista(QMainWindow, Ui_MainWindow):
         #self.bar.addAction(self.actCataleg)
         self.menuMapes = self.bar.addMenu ("Mapes")
         self.menuCapes = self.bar.addMenu ("Capes")
+        self.menuEntorns = self.bar.addMenu("Entorns")
+        self.menuUtilitats = self.bar.addMenu("Utilitats")
         # self.menuFuncions = self.bar.addMenu("  Eines  ")
         self.menuFuncions = QMenu()
         # self.menuCarregarNivell = self.bar.addMenu("  Finestres  ")
@@ -1602,7 +1609,11 @@ class QVista(QMainWindow, Ui_MainWindow):
         # self.menuCarregarNivell.addAction(self.actAfegirNivellGPX)
         # self.menuCarregarNivell.addAction(self.actAfegirNivellQlr)
         
-        
+        self.menuUtilitats.setFont(QvConstants.FONTSUBTITOLS)
+        self.menuUtilitats.styleStrategy = QFont.PreferAntialias or QFont.PreferQuality
+        self.menuUtilitats.addAction(self.actExecuteChrome)
+
+
         self.menuFuncions.setFont(QvConstants.FONTSUBTITOLS)
         self.menuFuncions.addAction(self.actEsborrarSeleccio)
         self.menuFuncions.addAction(self.actSeleccioLliure)
@@ -2042,7 +2053,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.sbCarregantCanvas = QProgressBar()
         self.sbCarregantCanvas.setRange(0,0)
         self.statusbar.addPermanentWidget( self.sbCarregantCanvas, 0 )
-        self.sbCarregantCanvas.hide()
+        # self.sbCarregantCanvas.hide()
 
         self.lblConnexio = QLabel()
         self.lblConnexio.setStyleSheet(styleheetLabel)
@@ -2689,6 +2700,13 @@ def nouMapa():
     dialegNouMapa = QvNouMapa(qV)
     dialegNouMapa.exec()
     # qV.obrirProjecte("./__newProjectTemplate.qgs")
+
+def executeChrome():
+    from PyQt5.QtCore import QProcess
+    process = QProcess(qV)
+    pathChrome = "c:/users/d062735/appdata/local/google/chrome/application/chrome.exe"
+    process.start(pathChrome)
+    app.processEvents()
 
 def carregarFieldsCalculadora():
     # print(qV.calculadora.ui.cbLayers.currentText())
