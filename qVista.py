@@ -11,8 +11,6 @@ from moduls.QvImports import *
 # Carrega de moduls Qv
 iniciTempsModuls = time.time()
 
-
-
 from moduls.QvUbicacions import QvUbicacions
 from moduls.QvPrint import QvPrint
 from moduls.QvCanvas import QvCanvas
@@ -233,6 +231,7 @@ class QVista(QMainWindow, Ui_MainWindow):
                 if layer.isValid():
                     self.project.addMapLayer(layer)
                     self.canvisPendents=True
+                    self.botoDesarProjecte.setIcon(self.iconaAmbCanvisPendents)
             elif fext == '.csv':
                 carregarLayerCSV(nfile)
 
@@ -248,6 +247,7 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         # Obrir el projecte i col.locarse en rang
         self.project.read(projecte)
+        self.pathProjecteActual = projecte
         self.canvisPendents = False #es el bit Dirty que ens diu si hem de guardar al tancar o no
         self.canvas.refresh()
 
@@ -1174,10 +1174,12 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.botoVeureLlegenda.setIconSize(QSize(24, 24))
         self.botoVeureLlegenda.clicked.connect(self.obrirLlegenda)
 
-        self.botoDesarProjecte.setIcon(QIcon('Imatges/content-save.png'))
+        self.iconaSenseCanvisPendents = QIcon('Imatges/content-save.png')
+        self.iconaAmbCanvisPendents = QIcon('Imatges/content-save_orange.png')
+        self.botoDesarProjecte.setIcon(self.iconaSenseCanvisPendents)
         self.botoDesarProjecte.setStyleSheet(stylesheetBotons)
         self.botoDesarProjecte.setIconSize(QSize(24, 24))
-        self.botoDesarProjecte.clicked.connect(guardarDialegProjecte)
+        self.botoDesarProjecte.clicked.connect(guardarProjecte) 
 
         self.botoObrirQGis.setIcon(QIcon('Imatges/qgis-3.png'))
         self.botoObrirQGis.setStyleSheet(stylesheetBotons)
@@ -1770,13 +1772,14 @@ class QVista(QMainWindow, Ui_MainWindow):
             # self.oldCentraWidget = self.centralWidget()
             # self.setCentralWidget(self.canvas)
             self.mapaMaxim = True
-            self.dwLlegenda = QDockWidget( "Llegenda", self )
-            self.dwLlegenda.show()
-            self.dwLlegenda.setObjectName( "layers" )
-            self.dwLlegenda.setAllowedAreas( Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea )
+            if not hasattr(self,'dwLlegenda'): 
+                self.dwLlegenda = QDockWidget( "Llegenda", self )
+                self.dwLlegenda.setObjectName( "layers" )
+                self.dwLlegenda.setAllowedAreas( Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea )
+                self.dwLlegenda.setContentsMargins ( 0,0,0,0)
+                self.addDockWidget( Qt.LeftDockWidgetArea , self.dwLlegenda )
             self.dwLlegenda.setWidget(self.llegenda)
-            self.dwLlegenda.setContentsMargins ( 0,0,0,0)
-            self.addDockWidget( Qt.LeftDockWidgetArea , self.dwLlegenda )
+            self.dwLlegenda.show()
             # self.dwLlegenda.show()
 
             self._menuBarShadow.setEnabled(False)
@@ -2218,6 +2221,7 @@ class QVista(QMainWindow, Ui_MainWindow):
                 renderer=layer.renderer()
                 self.project.addMapLayer(layer)
                 self.canvisPendents=True
+                self.botoDesarProjecte.setIcon(self.iconaAmbCanvisPendents)
             else:
                 if extensio.lower() == '.qlr':
                     # print(nfile)
@@ -2286,22 +2290,25 @@ class QVista(QMainWindow, Ui_MainWindow):
         if self.teCanvisPendents():
             msgBox = QMessageBox()
             msgBox.setWindowTitle("Sortir de qVista")
+            msgBox.setIcon(QMessageBox.Information)
             msgBox.setText("Hi ha canvis pendents de desar.")
-            msgBox.setInformativeText("Què en voleu fer?")
+            msgBox.setInformativeText("Què voleu fer?")
             msgBox.addButton(QvPushButton('Desar-los',destacat=True),QMessageBox.AcceptRole)
             msgBox.addButton(QvPushButton('Descartar-los'),QMessageBox.DestructiveRole)
             msgBox.addButton(QvPushButton('Romandre a qVista'),QMessageBox.RejectRole)
             # msgBox.setStandardButtons(QMessageBox.Save | QMessageBox.Discard | QMessageBox.Cancel)
-            msgBox.setDefaultButton(QMessageBox.Save)
+            # msgBox.setDefaultButton(QMessageBox.Save)
             ret = msgBox.exec_()
-            if ret == QMessageBox.Save:
-                if not guardarDialegProjecte(): return
+            if ret == QMessageBox.AcceptRole:
+                b = guardarProjecte()
+                if not b: return
                 #Si cancel·la, retornem. Si no, cridem a gestioSortida
                 self.gestioSortida()
-            elif ret ==  QMessageBox.Cancel:
-                return
-            elif ret == QMessageBox.Discard:
+            elif ret ==  QMessageBox.RejectRole: #Aquest i el seguent estàn invertits en teoria, però així funciona bé
                 self.gestioSortida()
+            elif ret == QMessageBox.DestructiveRole:
+                return
+                
         else:
             self.gestioSortida()
 
@@ -2525,6 +2532,7 @@ def nivellCsv(fitxer: str,delimitador: str,campX: str,campY: str, projeccio: int
         qV.project.addMapLayer(layer)
         print("add layer")
         qV.canvisPendents=True
+        qV.botoDesarProjecte.setIcon(qV.iconaAmbCanvisPendents)
     else: print ("no s'ha pogut afegir la nova layer")
 
     #symbol = QgsMarkerSymbol.createSimple({'name': 'square', 'color': 'red'})
@@ -2619,11 +2627,38 @@ def seleccioExpressio():
         missatgeCaixa('Cal tenir seleccionat un nivell per poder fer una selecció.','Marqueu un nivell a la llegenda sobre el que aplicar la consulta.')
 
 #A més de desar, retornarà un booleà indicant si l'usuari ha desat (True) o ha cancelat (False)
+
+def guardarProjecte():
+    """  Protecció dels projectes read-only: tres vies:
+    -       Variable del projecte qV_readOnly=’True’
+    -       Ubicació en una carpeta de només-lectura
+    -       Ubicació en una de les subcarpetes de N:\SITEB\APL\PyQgis\qVista
+    -       Ubicació en una de les subcarpetes de N:\9SITEB\Publicacions\qVista
+    """
+    #Pensar què fer quan es dona al botó de gurdar i no hi ha canvis per guardar
+
+    if QgsExpressionContextUtils.projectScope(qV.project).variable('qV_readOnly') == 'True':
+        return guardarDialegProjecte()
+    elif qV.pathProjecteActual == 'mapesOffline/qVista default map.qgs':
+        return guardarDialegProjecte()
+    elif qV.pathProjecteActual.startswith( 'n:/siteb/apl/pyqgis/qvista' ):
+        return guardarDialegProjecte()
+    elif qV.pathProjecteActual.startswith( 'n:/9siteb/publicacions/qvista' ):
+        return guardarDialegProjecte()
+    else:
+        qV.project.write(qV.pathProjecteActual)
+        qV.canvisPendents = False
+        qV.botoDesarProjecte.setIcon(qV.iconaSenseCanvisPendents)
+        
+
 def guardarDialegProjecte():
     nfile,_ = QFileDialog.getSaveFileName(None,"Guardar Projecte Qgis", ".", "Projectes Qgis (*.qgs)")
     if nfile=='': return False
     qV.project.write(nfile)
+    qV.pathProjecteActual = nfile
     qV.lblProjecte.setText(qV.project.baseName())
+    qV.botoDesarProjecte.setIcon(qV.iconaSenseCanvisPendents)
+    qV.canvisPendents = False
     return True
     #print(scale)
 
@@ -2686,6 +2721,7 @@ def escollirNivellGPX():
     
     qV.project.addMapLayer(layer)
     qV.canvisPendents=True
+    qV.botoDesarProjecte.setIcon(qV.iconaAmbCanvisPendents)
     # features=layer.getFeatures()
     # taulaAtributs('Total',layer)
 
@@ -2747,6 +2783,7 @@ def carregarLayerCSV(nfile):
             assistent=QvCarregaCsv(nfile,nivellCsv,qV)
             qApp.restoreOverrideCursor()
             assistent.setModal(True)
+            #assistent.setGraphicsEffect(QvConstants.ombra(assistent,radius=30,color=QvConstants.COLORCLAR))
             #assistent.setWindowFlags(assistent.windowFlags() | Qt.Popup)
             #assistent.setWindowFlags(assistent.windowFlags() | Qt.WindowStaysOnTopHint)
             #qV.raise_()
@@ -2804,6 +2841,7 @@ def afegirQlr(nom):
 
     qV.project.addMapLayers(layers, True)
     qV.canvisPendents=True
+    qV.botoDesarProjecte.setIcon(qV.iconaAmbCanvisPendents)
     # QgsLayerDefinition().loadLayerDefinition(nom, qV.project, qV.llegenda.root)
     return
 
@@ -2818,6 +2856,7 @@ def afegirNivellSHP():
     
     qV.project.addMapLayer(layer)
     qV.canvisPendents=True
+    qV.botoDesarProjecte.setIcon(qV.iconaAmbCanvisPendents)
     # features=layer.getFeatures()
     # taulaAtributs('Total',layer)
 
@@ -2970,7 +3009,10 @@ def main(argv):
 
         # Tanquem la imatge splash.
         splash.finish(qV)
-        avisos=QvAvis()
+        try:
+            avisos=QvAvis()
+        except:
+            print('no es pot accedir als avisos')
         qVapp.logRegistre('LOG_TEMPS', qV.lblTempsArrencada.text())
         app.aboutToQuit.connect(qV.gestioSortida)
 

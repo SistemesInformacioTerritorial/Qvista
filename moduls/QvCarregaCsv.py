@@ -17,7 +17,7 @@ import time
 
 class QvCarregaCsv(QWizard):
     finestres = IntEnum(
-        'finestres', 'TriaSep           TriaGeom CampsXY Adreca GeneraCoords Personalitza')
+        'finestres', 'Precalculat TriaSep           TriaGeom CampsXY Adreca GeneraCoords Personalitza')
                              #TriaSepDec
 
     def __init__(self, csv: str, carregar, parent: QWidget = None):
@@ -36,22 +36,22 @@ class QvCarregaCsv(QWizard):
         self.setNomCsv(csv)
         self.color = 'red'
         self.symbol = 'circle'
+        self.aprofitar = False #per defecte no aprofitarà les coordenades precalculades
         self.formata()
         self.camps = DictReader(self.getCsv(), delimiter=';').fieldnames
         if 'XCalculadaqVista' in self.camps and 'YCalculadaqVista' in self.camps:
-            self.prefab()
-            self.setPage(QvCarregaCsv.finestres.Personalitza,QvCarregaCsvPersonalitza(self))
-        else:
-            self.setPage(QvCarregaCsv.finestres.TriaSep, QvCarregaCsvTriaSep(self))
-            #self.setPage(QvCarregaCsv.finestres.TriaSepDec,QvCarregaCsvTriaSepDec(self))
-            self.setPage(QvCarregaCsv.finestres.TriaGeom,
-                        QvCarregaCsvTriaGeom(self))
-            self.setPage(QvCarregaCsv.finestres.CampsXY, QvCarregaCsvXY(self))
-            self.setPage(QvCarregaCsv.finestres.Adreca, QvCarregaCsvAdreca(self))
-            self.setPage(QvCarregaCsv.finestres.GeneraCoords,
-                        QvCarregaCsvGeneraCoords(self))
-            self.setPage(QvCarregaCsv.finestres.Personalitza,
-                        QvCarregaCsvPersonalitza(self))
+            self.setPage(QvCarregaCsv.finestres.Precalculat,QvCarregaCsvPrecalculat(self))
+
+        self.setPage(QvCarregaCsv.finestres.TriaSep, QvCarregaCsvTriaSep(self))
+        #self.setPage(QvCarregaCsv.finestres.TriaSepDec,QvCarregaCsvTriaSepDec(self))
+        self.setPage(QvCarregaCsv.finestres.TriaGeom,
+                    QvCarregaCsvTriaGeom(self))
+        self.setPage(QvCarregaCsv.finestres.CampsXY, QvCarregaCsvXY(self))
+        self.setPage(QvCarregaCsv.finestres.Adreca, QvCarregaCsvAdreca(self))
+        self.setPage(QvCarregaCsv.finestres.GeneraCoords,
+                    QvCarregaCsvGeneraCoords(self))
+        self.setPage(QvCarregaCsv.finestres.Personalitza,
+                    QvCarregaCsvPersonalitza(self))
 
     def formata(self):
         '''Dóna format a l'assistent'''
@@ -69,10 +69,20 @@ class QvCarregaCsv(QWizard):
         self.setButton(QvCarregaCsv.CommitButton, self.commitButton)
 
         self.setFixedWidth(500)
+        self.setFixedHeight(460)
         self.setContentsMargins(0, 0, 0, 0)
         self.setWindowFlags(Qt.Window | Qt.FramelessWindowHint)
         self.setWizardStyle(QWizard.ModernStyle)
+        self.setStyleSheet('''
+            background-color: %s;
+            color: %s;
+            /*QWidget {border: 0px} 
+            QFrame {border: 0px} 
+            QLabel {border: 0px}*/
+            QRadioButton {background-color: transparent}
+            ''' % (QvConstants.COLORBLANCHTML, QvConstants.COLORFOSCHTML))
         self.setPixmap(QWizard.LogoPixmap, QPixmap('imatges/layers.png'))
+        self.setFont(QvConstants.FONTTEXT)
         self.oldPos = self.pos()
 
     def prefab (self):
@@ -167,7 +177,11 @@ class QvCarregaCsvPage(QWizardPage):
 
     def formata(self):
         # self.setStyleSheet('QFrame {border: 0px}')
-
+        self.setStyleSheet('''background-color: %s; 
+                              QFrame {border: 0px} 
+                              QLabel {border: 0px}
+                              ''' % QvConstants.COLORBLANCHTML)
+        self.setFont(QvConstants.FONTTITOLS)
         self.setContentsMargins(0, 0, 0, 0)
 
     def mostraTaula(self, completa: bool=False, guardar: bool = False):
@@ -186,7 +200,11 @@ class QvCarregaCsvPage(QWizardPage):
             self.bGuardar = QvPushButton("Guardar CSV")
             self.bGuardar.clicked.connect(lambda: self.table.writeCsv(self.parent.getCsv()))
             self.layoutB = QVBoxLayout()
+            self.lblOff = QLabel()
+            self.lblOff.setFixedHeight(0)
+            self.lblOff.setFixedWidth(0)
             self.layoutB.setAlignment(Qt.AlignCenter)
+            self.layoutTable.addWidget(self.lblOff)
             self.layoutB.addWidget(self.bGuardar)
             self.layoutTable.addLayout(self.layoutB)
             
@@ -227,6 +245,48 @@ class QvCarregaCsvPage(QWizardPage):
         s = '<p><span style="color: #38474f; font-size: 10pt;"><strong><span style="font-family: arial, helvetica, sans-serif;">%s</span></strong></span></p>' % subtitle
         super().setSubTitle(s)
 
+class QvCarregaCsvPrecalculat(QvCarregaCsvPage):
+    def __init__(self, parent):
+        '''Crea una pàgina de l'assistent de càrrega de csv que permet escollir entre el procediment normal o saltar-se'l 
+            en cas que trobi els camps XCalculadaqVista i YCalculadaqVista.
+            parent{QWidget} -- Pare de l'assistent (default{None})
+        '''
+        super().__init__(parent)
+        self.parent = parent
+        self.setSubTitle("Procediment a seguir")
+        self.layout = QVBoxLayout(self)
+        self.layout.setSpacing(20)
+        self.lblExplicacio0 = QLabel(
+            """Hem detectat que l'arxiu .CSV que vols carregar ja ha estat tractat per aquest programa. Vols que es carregui directament o vols continuar amb el procediment normal?""")
+        self.lblExplicacio0.setWordWrap(True)
+        self.layout.addWidget(self.lblExplicacio0)
+        self.setLayout(self.layout)
+        self.botoA = QRadioButton('Carregar directament')
+        self.botoB = QRadioButton('Procediment normal aprofitant coordenades calculades')
+        self.botoC = QRadioButton('Procediment normal recalculant totes les coordenades')
+        self.layoutBotons = QVBoxLayout()
+        self.layoutBotons.setSpacing(20)
+        self.layoutBotons.addWidget(self.botoA)
+        self.layoutBotons.addWidget(self.botoB)
+        self.layoutBotons.addWidget(self.botoC)
+        self.layout.addLayout(self.layoutBotons)
+
+        def activaBoto():
+            self.completeChanged.emit()
+        self.botoA.toggled.connect(activaBoto)
+        self.botoB.toggled.connect(activaBoto)
+        self.botoC.toggled.connect(activaBoto)
+
+    def isComplete(self):
+        return self.botoA.isChecked() or self.botoB.isChecked() or self.botoC.isChecked()
+
+    def nextId(self):
+        if self.botoA.isChecked():
+            self.parent.prefab()
+            return QvCarregaCsv.finestres.Personalitza
+        if self.botoB.isChecked():
+            self.parent.aprofitar = True
+        return QvCarregaCsv.finestres.Adreca
 
 class QvCarregaCsvTriaSep(QvCarregaCsvPage):
     def __init__(self, parent: QWidget=None):
@@ -409,8 +469,8 @@ class QvCarregaCsvXY(QvCarregaCsvPage):
     def nextId(self):
         self.parent.setCoordX(self.cbX.currentText())
         self.parent.setCoordY(self.cbY.currentText())
-        if self.parent.separadorDec == ',':
-            self.replaceComa()
+        # if self.parent.separadorDec == ',':
+        #     self.replaceComa()
         return QvCarregaCsv.finestres.Personalitza
 
 
@@ -575,8 +635,7 @@ class QvCarregaCsvGeneraCoords(QvCarregaCsvPage):
         self.layout.setSpacing(20)
         self.layout.setContentsMargins(20,0,20,0)
         self.lblExplicacio4 = QLabel()
-        self.lblExplicacio4.setText(
-            "Aquestes són les adreces que no s'han pogut geolocalitzar:")
+        self.lblExplicacio4.setText("Aquestes són les adreces que no s'han pogut geolocalitzar:")
         self.layout.addWidget(self.lblExplicacio4)
         self.scrollErrors = QScrollArea()
         self.scrollErrors.setFixedHeight(75)
@@ -584,12 +643,8 @@ class QvCarregaCsvGeneraCoords(QvCarregaCsvPage):
         self.lblAdrecesError.setContentsMargins(10, 5, 10, 5)
         self.scrollErrors.setWidget(self.lblAdrecesError)
         self.layout.addWidget(self.scrollErrors)
-        # Després de generar el csv amb coordenades no hi ha volta enrere
-        # self.setCommitPage(True)
         self.showed = False
-        # self.lblExplicacio5 = QLabel()
-        # self.lblExplicacio5.setText("Vols carregar les adreces geocodificades al teu projecte? Les adreces que no s'han pogut geolocalitzar no apareixeran.")
-        # self.lblExplicacio5.setWordWrap(True)
+
 
     def initializePage(self):
         self.parent.coordX = 'XCalculadaqVista'
@@ -650,22 +705,40 @@ class QvCarregaCsvGeneraCoords(QvCarregaCsvPage):
             wpg.setWindowModality(Qt.WindowModal)
             wpg.show()
 
-
-            self.names = self.parent.llistaCamps + \
-                [self.parent.coordX, self.parent.coordY]
+            if 'XCalculadaqVista' not in self.parent.llistaCamps:
+                self.names = self.parent.llistaCamps + [self.parent.coordX, self.parent.coordY]
+            else: 
+                self.names = self.parent.llistaCamps
             writer = csv.DictWriter(
                 arxiuNouCsv, fieldnames=self.names, delimiter=self.parent.separador)
             #writer.writeheader()
             i = -1
             for row in reader:
-                # if i%1000==0: arxiuNouCsv.flush()
                 error = False
                 i += 1
+
                 if i == 0:
                     row[self.parent.coordX] = self.parent.coordX
                     row[self.parent.coordY] = self.parent.coordY
                     writer.writerow(row)
                     continue
+
+                if numLinies > 1000:
+                    if i%int(numLinies/1000)==0:
+                        wpg.count = i
+                        wpg.actualitzaLBL()
+                        wpg.progress.setValue(wpg.count)
+                    qApp.processEvents()
+                else:
+                    wpg.count = i
+                    wpg.actualitzaLBL()
+                    wpg.progress.setValue(wpg.count)
+
+                if self.parent.aprofitar:
+                    if row['XCalculadaqVista'] != '':
+                        writer.writerow(row)
+                        continue
+
                 row[''] = ''
 
                 if self.parent.dadesAdreca[0] == "": 
@@ -718,16 +791,7 @@ class QvCarregaCsvGeneraCoords(QvCarregaCsvPage):
 
 
                 # wpg.count = wpg.count + 1
-                if numLinies > 1000:
-                    if i%int(numLinies/1000)==0:
-                        wpg.count = i
-                        wpg.actualitzaLBL()
-                        wpg.progress.setValue(wpg.count)
-                    qApp.processEvents()
-                else:
-                    wpg.count = i
-                    wpg.actualitzaLBL()
-                    wpg.progress.setValue(wpg.count)
+                
                 if x is None or y is None:
                     aux = self.lblAdrecesError.text()
                     wpg.errors = wpg.errors + 1
@@ -748,6 +812,9 @@ class QvCarregaCsvGeneraCoords(QvCarregaCsvPage):
                 row[self.parent.coordY] = y
                 del row[""]
                 writer.writerow(row) 
+            wpg.errors
+            self.lblExplicacio4.setText(
+            "Aquestes són les adreces que no s'han pogut geolocalitzar: (%i)" %wpg.errors)
         self.mostraTaula(completa=False, guardar = True)
         #self.recarregaTaula(completa=False)
         qApp.processEvents()
