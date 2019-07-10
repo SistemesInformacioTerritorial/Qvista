@@ -106,12 +106,18 @@ class QVista(QMainWindow, Ui_MainWindow):
         #Afegim títol a la finestra
         self.setWindowTitle(titolFinestra)
 
+        
+
         # Definició dels labels de la statusBar 
         self.definirLabelsStatus()   
 
         # Preparació deprojecte i canvas
         self.preparacioEntornGrafic()
-        
+
+        # Connectar progressBar del canvas a la statusBar
+        self.connectarProgressBarCanvas()
+
+
         # Inicialitzacions
         self.printActiu = False
         self.qvPrint = 0
@@ -2032,6 +2038,12 @@ class QVista(QMainWindow, Ui_MainWindow):
                 border: 0px;
                 padding: 4px;
             }'''
+
+        self.sbCarregantCanvas = QProgressBar()
+        self.sbCarregantCanvas.setRange(0,0)
+        self.statusbar.addPermanentWidget( self.sbCarregantCanvas, 0 )
+        self.sbCarregantCanvas.hide()
+
         self.lblConnexio = QLabel()
         self.lblConnexio.setStyleSheet(styleheetLabel)
         self.lblConnexio.setFrameStyle(QFrame.StyledPanel )
@@ -2085,6 +2097,17 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.lblProjecte.setFrameStyle(QFrame.StyledPanel )
         # self.lblProjecte.setMinimumWidth( 140 )
         self.statusbar.addPermanentWidget( self.lblProjecte, 0 )
+    
+    def connectarProgressBarCanvas(self):
+        self.canvas.mapCanvasRefreshed.connect(self.hideSB)
+        self.canvas.renderStarting.connect(self.showSB)
+        self.canvas.renderComplete.connect(self.hideSB)
+
+    def showSB(self):
+        self.sbCarregantCanvas.show()
+
+    def hideSB(self):
+        self.sbCarregantCanvas.hide()
 
     def editarOrientacio(self):
         self.mapeta.cambiarRotacion()
