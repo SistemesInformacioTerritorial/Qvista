@@ -941,8 +941,8 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.actNouMapa.setStatusTip("Nou Mapa")
         self.actNouMapa.triggered.connect(nouMapa)
 
-        self.actExecuteChrome = QAction("Google Chrome", self)
-        iconaChrome=QIcon('imatges/iconaChrome.png')
+        self.actExecuteChrome = QAction("Calculadora", self)
+        iconaChrome=QIcon('imatges/calc.png')
         self.actExecuteChrome.setIcon(iconaChrome)
         self.actExecuteChrome.triggered.connect(executeChrome)
 
@@ -2703,7 +2703,7 @@ def nouMapa():
 
 def executeChrome():
     process = QProcess(qV)
-    pathChrome = "c:/users/d062735/appdata/local/google/chrome/application/chrome.exe"
+    pathChrome = "c:/windows/system32/calc.exe"
     process.start(pathChrome)
     app.processEvents()
 
@@ -3003,7 +3003,7 @@ def main(argv):
         qVapp = QvApp()
 
         # Splash image al començar el programa. La tancarem amb splash.finish(qV)
-        #splash_pix = QPixmap('imatges/qvistaLogo2.png')
+        # splash_pix = QPixmap('imatges/qvistaLogo2.png')
         splash_pix = QPixmap('imatges/SplashScreen_qVista.png')
         splash = QSplashScreen(splash_pix, Qt.WindowStaysOnTopHint)
         splash.setWindowFlags(Qt.WindowStaysOnTopHint | Qt.FramelessWindowHint)
