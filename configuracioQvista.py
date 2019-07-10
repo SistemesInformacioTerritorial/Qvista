@@ -18,6 +18,7 @@ arxiuAvis=docdir+'Avisos.htm'
 arxiuNews=docdir+'Noticies.htm'
 arxiuTmpAvis=tempdir+'ultimAvisObert'
 arxiuTmpNews=tempdir+'ultimaNewOberta'
+arxiuMapesRecents=tempdir+'mapesRecents'
 
 if not os.path.exists(QvTempdir):
     try:

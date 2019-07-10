@@ -271,7 +271,9 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         if self.llegenda.player is None:
             self.llegenda.setPlayer('imatges/Spinner_2.gif', 150, 150)
-
+        self.mapesRecents.insert(0,self.pathProjecteActual)
+        print(self.mapesRecents)
+        print(self.accionsMapesRecentsDict)
 
         # self.metadata = self.project.metadata()
         # print ('Author: '+self.metadata.author())
@@ -1567,7 +1569,11 @@ class QVista(QMainWindow, Ui_MainWindow):
 
 
         spacer = QSpacerItem(9999, 9999, QSizePolicy.Expanding,QSizePolicy.Maximum)
-        
+        try:
+            with open(arxiuMapesRecents,'r',encoding='utf-8') as recents:
+                self.mapesRecents=list(recents.readlines())
+        except:
+                self.mapesRecents=[]
         #self.bar.addAction(self.actCataleg)
         self.menuMapes = self.bar.addMenu ("Mapes")
         self.menuCapes = self.bar.addMenu ("Capes")
@@ -1582,6 +1588,17 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.menuMapes.addAction(self.actObrirProjecte)
         self.menuMapes.addAction(self.actGuardarProjecte)
         self.menuMapes.addAction(self.actNouMapa)
+        self.menuRecents=QMenu('Mapes recents',self.menuMapes)
+        self.accionsMapesRecentsDict={QAction(x):x.replace('\n','') for x in self.mapesRecents} #Fem un diccionari on la clau és l'acció i el valor és la ruta del mapa que ha d'obrir l'acció
+        for x, y in self.accionsMapesRecentsDict.items():
+            x.setToolTip(y)
+            import functools
+            #functools.partial crea una funció a partir de passar-li uns determinats paràmetres a una altra
+            #Teòricament serveix per passar-li només una part, però whatever
+            #Si fèiem connect a lambda: self.obrirProjecte(y) o similars, no funcionava i sempre rebia com a paràmetre la última y :'(
+            x.triggered.connect(functools.partial(self.obrirProjecte,y,None))
+            self.menuRecents.addAction(x)
+        self.menuMapes.addMenu(self.menuRecents)
 
         self.menuCapes.setFont(QvConstants.FONTSUBTITOLS)
         self.menuCapes.styleStrategy = QFont.PreferAntialias or QFont.PreferQuality
@@ -2313,7 +2330,13 @@ class QVista(QMainWindow, Ui_MainWindow):
             self.gestioSortida()
 
     def gestioSortida(self):
-        
+        with open(arxiuMapesRecents,'w',encoding='utf-8') as recents:
+            print(self.mapesRecents)
+            #Ens carreguem els salts de línia per si n'ha quedat algun, fent un map. Creem un set 
+            self.mapesRecents=[x.replace('\n','') for x in self.mapesRecents]
+            self.mapesRecents=sorted(set(self.mapesRecents),key=lambda x: self.mapesRecents.index(x))[:9]
+            for x in self.mapesRecents:
+                recents.write(x+'\n')
         try:
             if self.ubicacions is not None:
                 self.ubicacions.ubicacionsFi()
