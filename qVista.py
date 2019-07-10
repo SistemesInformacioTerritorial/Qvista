@@ -106,12 +106,18 @@ class QVista(QMainWindow, Ui_MainWindow):
         #Afegim títol a la finestra
         self.setWindowTitle(titolFinestra)
 
+        
+
         # Definició dels labels de la statusBar 
         self.definirLabelsStatus()   
 
         # Preparació deprojecte i canvas
         self.preparacioEntornGrafic()
-        
+
+        # Connectar progressBar del canvas a la statusBar
+        self.connectarProgressBarCanvas()
+
+
         # Inicialitzacions
         self.printActiu = False
         self.qvPrint = 0
@@ -809,7 +815,7 @@ class QVista(QMainWindow, Ui_MainWindow):
     #         retval = msg.exec_()
         
     def preparacioEntorns(self):
-        self.menuEntorns = self.bar.addMenu('Entorns')
+        #self.menuEntorns = self.bar.addMenu('Entorns')
                               
         self.menuEntorns.setFont(QvConstants.FONTSUBTITOLS)
         self.menuEntorns.styleStrategy = QFont.PreferAntialias or QFont.PreferQuality
@@ -936,6 +942,11 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.actNouMapa = QAction("Nou", self)
         self.actNouMapa.setStatusTip("Nou Mapa")
         self.actNouMapa.triggered.connect(nouMapa)
+
+        self.actExecuteChrome = QAction("Calculadora", self)
+        iconaChrome=QIcon('imatges/calc.png')
+        self.actExecuteChrome.setIcon(iconaChrome)
+        self.actExecuteChrome.triggered.connect(executeChrome)
 
         
         self.actImprimir = QAction("Imprimir", self)
@@ -1577,6 +1588,8 @@ class QVista(QMainWindow, Ui_MainWindow):
         #self.bar.addAction(self.actCataleg)
         self.menuMapes = self.bar.addMenu ("Mapes")
         self.menuCapes = self.bar.addMenu ("Capes")
+        self.menuEntorns = self.bar.addMenu("Entorns")
+        self.menuUtilitats = self.bar.addMenu("Utilitats")
         # self.menuFuncions = self.bar.addMenu("  Eines  ")
         self.menuFuncions = QMenu()
         # self.menuCarregarNivell = self.bar.addMenu("  Finestres  ")
@@ -1613,7 +1626,11 @@ class QVista(QMainWindow, Ui_MainWindow):
         # self.menuCarregarNivell.addAction(self.actAfegirNivellGPX)
         # self.menuCarregarNivell.addAction(self.actAfegirNivellQlr)
         
-        
+        self.menuUtilitats.setFont(QvConstants.FONTSUBTITOLS)
+        self.menuUtilitats.styleStrategy = QFont.PreferAntialias or QFont.PreferQuality
+        self.menuUtilitats.addAction(self.actExecuteChrome)
+
+
         self.menuFuncions.setFont(QvConstants.FONTSUBTITOLS)
         self.menuFuncions.addAction(self.actEsborrarSeleccio)
         self.menuFuncions.addAction(self.actSeleccioLliure)
@@ -2049,6 +2066,12 @@ class QVista(QMainWindow, Ui_MainWindow):
                 border: 0px;
                 padding: 4px;
             }'''
+
+        self.sbCarregantCanvas = QProgressBar()
+        self.sbCarregantCanvas.setRange(0,0)
+        self.statusbar.addPermanentWidget( self.sbCarregantCanvas, 0 )
+        # self.sbCarregantCanvas.hide()
+
         self.lblConnexio = QLabel()
         self.lblConnexio.setStyleSheet(styleheetLabel)
         self.lblConnexio.setFrameStyle(QFrame.StyledPanel )
@@ -2102,6 +2125,17 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.lblProjecte.setFrameStyle(QFrame.StyledPanel )
         # self.lblProjecte.setMinimumWidth( 140 )
         self.statusbar.addPermanentWidget( self.lblProjecte, 0 )
+    
+    def connectarProgressBarCanvas(self):
+        self.canvas.mapCanvasRefreshed.connect(self.hideSB)
+        self.canvas.renderStarting.connect(self.showSB)
+        self.canvas.renderComplete.connect(self.hideSB)
+
+    def showSB(self):
+        self.sbCarregantCanvas.show()
+
+    def hideSB(self):
+        self.sbCarregantCanvas.hide()
 
     def editarOrientacio(self):
         self.mapeta.cambiarRotacion()
@@ -2690,6 +2724,12 @@ def nouMapa():
     dialegNouMapa.exec()
     # qV.obrirProjecte("./__newProjectTemplate.qgs")
 
+def executeChrome():
+    process = QProcess(qV)
+    pathChrome = "c:/windows/system32/calc.exe"
+    process.start(pathChrome)
+    app.processEvents()
+
 def carregarFieldsCalculadora():
     # print(qV.calculadora.ui.cbLayers.currentText())
     layer = QvLlegenda.capaPerNom(qV,qV.calculadora.ui.cbLayers.currentText())
@@ -2986,7 +3026,7 @@ def main(argv):
         qVapp = QvApp()
 
         # Splash image al començar el programa. La tancarem amb splash.finish(qV)
-        #splash_pix = QPixmap('imatges/qvistaLogo2.png')
+        # splash_pix = QPixmap('imatges/qvistaLogo2.png')
         splash_pix = QPixmap('imatges/SplashScreen_qVista.png')
         splash = QSplashScreen(splash_pix, Qt.WindowStaysOnTopHint)
         splash.setWindowFlags(Qt.WindowStaysOnTopHint | Qt.FramelessWindowHint)

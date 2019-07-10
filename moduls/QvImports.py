@@ -16,6 +16,7 @@ from qgis.PyQt.QtCore import pyqtSignal, QPoint
 from PyQt5.QtWebKitWidgets import QWebView , QWebPage
 from PyQt5.QtWebKit import QWebSettings
 
+
 import csv, codecs
 import os
 import sys
