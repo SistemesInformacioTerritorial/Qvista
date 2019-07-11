@@ -132,13 +132,14 @@ class QvCanvas(QgsMapCanvas):
         self.bstreetview.clicked.connect(self.qvSv.segueixBoto)
     def _botoMapa(self,imatge = None):
         boto = QvPushButton(flat=True)
+        boto.setStyleSheet('background: rgba(255,255,255,168); padding: 2px;')
         boto.setCheckable(True)
         if imatge is not None:
             icon=QIcon(imatge)
             boto.setIcon(icon)
         boto.setWindowOpacity(0.5)
-        boto.setIconSize(QSize(25,25))
-        boto.setGeometry(0,0,25,25)
+        boto.setIconSize(QSize(24,24))
+        boto.setGeometry(0,0,24,24)
         return boto
 
     def _preparacioBotonsCanvas(self):

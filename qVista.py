@@ -271,9 +271,7 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         if self.llegenda.player is None:
             self.llegenda.setPlayer('imatges/Spinner_2.gif', 150, 150)
-        self.mapesRecents.insert(0,self.pathProjecteActual)
-        print(self.mapesRecents)
-        print(self.accionsMapesRecentsDict)
+        self.actualitzaMapesRecents(self.pathProjecteActual)
 
         # self.metadata = self.project.metadata()
         # print ('Author: '+self.metadata.author())
@@ -922,7 +920,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.actObrirProjecte = QAction("Obrir...", self)
         # icon=QIcon(':/Icones/Icones/ic_file_upload_black_48dp.png')
         # self.actObrirProjecte.setIcon(icon)
-        self.actObrirProjecte.setShortcut("Ctrl+P")
+        self.actObrirProjecte.setShortcut("Ctrl+O")
         self.actObrirProjecte.setStatusTip("Obrir mapa QGis")
         self.actObrirProjecte.triggered.connect(self.obrirDialegProjecte)
         
@@ -931,7 +929,11 @@ class QVista(QMainWindow, Ui_MainWindow):
         # self.actGuardarProjecte.setIcon(icon)
         self.actGuardarProjecte.setShortcut("Ctrl+S")
         self.actGuardarProjecte.setStatusTip("Guardar Mapa")
-        self.actGuardarProjecte.triggered.connect(guardarDialegProjecte)
+        self.actGuardarProjecte.triggered.connect(guardarProjecte)
+
+        self.actGuardarComAProjecte=QAction('Anomena i desa...', self)
+        self.actGuardarComAProjecte.setStatusTip("Desar una còpia del mapa actual")
+        self.actGuardarComAProjecte.triggered.connect(guardarDialegProjecte)
 
         self.actNouMapa = QAction("Nou", self)
         self.actNouMapa.setStatusTip("Nou Mapa")
@@ -1569,11 +1571,6 @@ class QVista(QMainWindow, Ui_MainWindow):
 
 
         spacer = QSpacerItem(9999, 9999, QSizePolicy.Expanding,QSizePolicy.Maximum)
-        try:
-            with open(arxiuMapesRecents,'r',encoding='utf-8') as recents:
-                self.mapesRecents=list(recents.readlines())
-        except:
-                self.mapesRecents=[]
         #self.bar.addAction(self.actCataleg)
         self.menuMapes = self.bar.addMenu ("Mapes")
         self.menuCapes = self.bar.addMenu ("Capes")
@@ -1585,19 +1582,15 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.menuMapes.setFont(QvConstants.FONTSUBTITOLS)
         self.menuMapes.styleStrategy = QFont.PreferAntialias or QFont.PreferQuality
         self.menuMapes.addAction(self.actCataleg)
+        self.menuMapes.addSeparator()
+        self.menuMapes.addAction(self.actNouMapa)
         self.menuMapes.addAction(self.actObrirProjecte)
         self.menuMapes.addAction(self.actGuardarProjecte)
-        self.menuMapes.addAction(self.actNouMapa)
+        self.menuMapes.addAction(self.actGuardarComAProjecte)
+        #Aquí originalment creàvem el menú de Mapes recents
+        #No obstant, com que a actualitzaMapesRecents es crea de nou, no cal crear-lo aquí
         self.menuRecents=QMenu('Mapes recents',self.menuMapes)
-        self.accionsMapesRecentsDict={QAction(x):x.replace('\n','') for x in self.mapesRecents} #Fem un diccionari on la clau és l'acció i el valor és la ruta del mapa que ha d'obrir l'acció
-        for x, y in self.accionsMapesRecentsDict.items():
-            x.setToolTip(y)
-            import functools
-            #functools.partial crea una funció a partir de passar-li uns determinats paràmetres a una altra
-            #Teòricament serveix per passar-li només una part, però whatever
-            #Si fèiem connect a lambda: self.obrirProjecte(y) o similars, no funcionava i sempre rebia com a paràmetre la última y :'(
-            x.triggered.connect(functools.partial(self.obrirProjecte,y,None))
-            self.menuRecents.addAction(x)
+        self.actualitzaMapesRecents(None)
         self.menuMapes.addMenu(self.menuRecents)
 
         self.menuCapes.setFont(QvConstants.FONTSUBTITOLS)
@@ -2302,20 +2295,22 @@ class QVista(QMainWindow, Ui_MainWindow):
 
     def teCanvisPendents(self):
         return self.canvisPendents
-
+    def missatgeDesar(self, titol="Sortir de qVista", txtDesar='Desar-los', txtDescartar='Descartar-los',txtCancelar='Romandre a qVista'):
+        msgBox = QMessageBox()
+        msgBox.setWindowTitle(titol)
+        msgBox.setIcon(QMessageBox.Information)
+        msgBox.setText("Hi ha canvis pendents de desar.")
+        msgBox.setInformativeText("Què voleu fer?")
+        msgBox.addButton(QvPushButton(txtDesar,destacat=True),QMessageBox.AcceptRole)
+        msgBox.addButton(QvPushButton(txtDescartar),QMessageBox.DestructiveRole)
+        msgBox.addButton(QvPushButton(txtCancelar),QMessageBox.RejectRole)
+        return msgBox.exec()
     def provaDeTancar(self):
         if self.teCanvisPendents():
-            msgBox = QMessageBox()
-            msgBox.setWindowTitle("Sortir de qVista")
-            msgBox.setIcon(QMessageBox.Information)
-            msgBox.setText("Hi ha canvis pendents de desar.")
-            msgBox.setInformativeText("Què voleu fer?")
-            msgBox.addButton(QvPushButton('Desar-los',destacat=True),QMessageBox.AcceptRole)
-            msgBox.addButton(QvPushButton('Descartar-los'),QMessageBox.DestructiveRole)
-            msgBox.addButton(QvPushButton('Romandre a qVista'),QMessageBox.RejectRole)
+            
             # msgBox.setStandardButtons(QMessageBox.Save | QMessageBox.Discard | QMessageBox.Cancel)
             # msgBox.setDefaultButton(QMessageBox.Save)
-            ret = msgBox.exec_()
+            ret = self.missatgeDesar()
             if ret == QMessageBox.AcceptRole:
                 b = guardarProjecte()
                 if not b: return
@@ -2328,8 +2323,15 @@ class QVista(QMainWindow, Ui_MainWindow):
                 
         else:
             self.gestioSortida()
-
-    def gestioSortida(self):
+    def actualitzaMapesRecents(self,ultim=None):
+        #Si no tenim en memòria els mapes recents, si existeixen els carreguem. Si no, doncs una llista buida
+        if not hasattr(self,'mapesRecents'):
+            if not os.path.isfile(arxiuMapesRecents):
+                self.mapesRecents=[]
+            else:
+                with open(arxiuMapesRecents,'r',encoding='utf-8') as recents:
+                    self.mapesRecents=list(recents.readlines())
+        #Desem els mapes recents, eliminant repeticions i salts de línia que poden portar problemes
         with open(arxiuMapesRecents,'w',encoding='utf-8') as recents:
             print(self.mapesRecents)
             #Ens carreguem els salts de línia per si n'ha quedat algun, fent un map. Creem un set 
@@ -2337,6 +2339,23 @@ class QVista(QMainWindow, Ui_MainWindow):
             self.mapesRecents=sorted(set(self.mapesRecents),key=lambda x: self.mapesRecents.index(x))[:9]
             for x in self.mapesRecents:
                 recents.write(x+'\n')
+        #Finalment creem les accions
+        # self.menuRecents=QMenu('Mapes recents',self.menuMapes)
+        self.menuRecents.clear()
+        self.accionsMapesRecentsDict={QAction(x):x.replace('\n','') for x in self.mapesRecents} #Fem un diccionari on la clau és l'acció i el valor és la ruta del mapa que ha d'obrir l'acció
+        for x, y in self.accionsMapesRecentsDict.items():
+            x.setToolTip(y)
+            import functools
+            #functools.partial crea una funció a partir de passar-li uns determinats paràmetres a una altra
+            #Teòricament serveix per passar-li només una part, però whatever
+            #Si fèiem connect a lambda: self.obrirProjecte(y) o similars, no funcionava i sempre rebia com a paràmetre la última y :'(
+            x.triggered.connect(functools.partial(self.obrirProjecte,y,None))
+            self.menuRecents.addAction(x)
+        if ultim is not None:
+            self.mapesRecents.insert(0,ultim)
+
+    def gestioSortida(self):
+        
         try:
             if self.ubicacions is not None:
                 self.ubicacions.ubicacionsFi()
@@ -2686,6 +2705,15 @@ def guardarDialegProjecte():
     #print(scale)
 
 def nouMapa():
+    if qV.teCanvisPendents(): #Posar la comprovació del dirty bit
+        ret = qV.missatgeDesar(titol='Crear un nou mapa',txtCancelar='Cancel·lar')
+        if ret == QMessageBox.AcceptRole:
+            b = guardarProjecte()
+            if not b: return
+        elif ret ==  QMessageBox.RejectRole: #Aquest i el seguent estàn invertits en teoria, però així funciona bé
+            pass
+        elif ret == QMessageBox.DestructiveRole:
+            return
     dialegNouMapa = QvNouMapa(qV)
     dialegNouMapa.exec()
     # qV.obrirProjecte("./__newProjectTemplate.qgs")

@@ -247,3 +247,4 @@ QMenu::item:selected{
     background-color: #FF6215;
     color: #F9F9F9;
 }
+
