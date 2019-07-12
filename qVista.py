@@ -1460,7 +1460,11 @@ class QVista(QMainWindow, Ui_MainWindow):
 
     def tissores(self):
         # QDesktopServices().openUrl(QUrl('c:\windows\system32\SnippingTool.exe'))
-        subprocess.check_call([r'c:\windows\system32\SnippingTool.exe'])
+        # subprocess.check_call([r'c:\windows\system32\SnippingTool.exe'])
+        process = QProcess(self)
+        pathApp = "c:\windows\system32\SnippingTool.exe"
+        process.start(pathApp)
+        app.processEvents()
 
     def definirMenus(self):
         """Definició dels menús de la barra superior.
