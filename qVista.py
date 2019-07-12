@@ -2243,6 +2243,16 @@ class QVista(QMainWindow, Ui_MainWindow):
         QProcess.startDetached(r'D:\OSGeo4W64\bin\qgis-bin-g7.4.1.exe c:/temp/projTemp.qgs')
 
     def obrirDialegProjecte(self):
+        if self.teCanvisPendents(): #Posar la comprovació del dirty bit
+            ret = self.missatgeDesar(titol='Crear un nou mapa',txtCancelar='Cancel·lar')
+            if ret == QMessageBox.AcceptRole:
+                b = guardarProjecte()
+                if not b: return
+            elif ret ==  QMessageBox.RejectRole: #Aquest i el seguent estàn invertits en teoria, però així funciona bé
+                pass
+            elif ret == QMessageBox.DestructiveRole:
+                return
+
         dialegObertura=QFileDialog()
         dialegObertura.setDirectoryUrl(QUrl('../dades/projectes/'))
         rect = self.canvas.extent()
@@ -2709,6 +2719,7 @@ def seleccioExpressio():
 #A més de desar, retornarà un booleà indicant si l'usuari ha desat (True) o ha cancelat (False)
 
 def guardarProjecte():
+    """ la funcio retorna si s'ha acabat guardant o no """
     """  Protecció dels projectes read-only: tres vies:
     -       Variable del projecte qV_readOnly=’True’
     -       Ubicació en una carpeta de només-lectura
@@ -2729,11 +2740,22 @@ def guardarProjecte():
         qV.project.write(qV.pathProjecteActual)
         qV.canvisPendents = False
         qV.botoDesarProjecte.setIcon(qV.iconaSenseCanvisPendents)
+        return True
         
 
 def guardarDialegProjecte():
     nfile,_ = QFileDialog.getSaveFileName(None,"Guardar Projecte Qgis", ".", "Projectes Qgis (*.qgs)")
     if nfile=='': return False
+    elif nfile.endswith('mapesOffline/qVista default map.qgs') or nfile.startswith( 'n:/siteb/apl/pyqgis/qvista' ) or nfile.startswith( 'n:/9siteb/publicacions/qvista' ):
+        msgBox = QMessageBox()
+        msgBox.setWindowTitle("Advertència")
+        msgBox.setIcon(QMessageBox.Warning)
+        msgBox.setText("No pots guardar el teu mapa en aquesta direcció.")
+        msgBox.setInformativeText("Prova de fer-ho en una altre.")
+        msgBox.setStandardButtons(QMessageBox.Ok)
+        msgBox.setDefaultButton(QMessageBox.Ok)
+        msgBox.exec()
+        return False 
     qV.project.write(nfile)
     qV.pathProjecteActual = nfile
     qV.lblProjecte.setText(qV.project.baseName())
