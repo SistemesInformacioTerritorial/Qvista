@@ -15,13 +15,14 @@ from moduls.QvApp import QvApp
 
 
 
+
 class QCercadorAdreca(QObject):
 
     # __carrersCSV = 'dades\Carrers.csv'
 
     __CarrersNum_sqlite='Dades\CarrersNums.db'
 
-    sHanTrobatCoordenades = pyqtSignal(int, 'QString')  # atencion
+    sHanTrobatCoordenades = pyqtSignal(int, 'QString','QgsPointXY', 'QString','QString', 'QString')  # atencion
 
     def __init__(self, lineEditCarrer, lineEditNumero, origen = 'SQLITE'):
         super().__init__()
@@ -67,6 +68,8 @@ class QCercadorAdreca(QObject):
     def prepararCompleterCarrer(self):
         # creo instancia de completer que relaciona diccionario de calles con lineEdit
         self.completerCarrer = QCompleter(self.dictCarrers, self.leCarrer)
+        self.completerCarrer.setMaxVisibleItems(300)
+        self.completerCarrer.setCompletionColumn(0)
         # Determino funcionamiento del completer
         self.completerCarrer.setFilterMode(QtCore.Qt.MatchContains)
         self.completerCarrer.setCaseSensitivity(QtCore.Qt.CaseInsensitive)
@@ -179,7 +182,7 @@ class QCercadorAdreca(QObject):
             
         else:
             info= "ERROR >> [1]" 
-            self.sHanTrobatCoordenades.emit(1,info) #adreça vacia
+            self.sHanTrobatCoordenades.emit(1,info,self.coordAdreca,self.codi_carrer,self.calle_con_acentos,self.numeroCarrer) #adreça vacia
 
     def trobatCarrer(self):
         self.carrerActivat = False
@@ -245,14 +248,14 @@ class QCercadorAdreca(QObject):
 
                     else:
                         info="ERROR >> [2]"
-                        self.sHanTrobatCoordenades.emit(2,info) #direccion no está en diccicionario
+                        self.sHanTrobatCoordenades.emit(2,info,self.coordAdreca,self.codi_carrer,self.calle_con_acentos,self.numeroCarrer) #direccion no está en diccicionario
                         self.iniAdreca()
                 else:
                     info="ERROR >> [3]"
-                    self.sHanTrobatCoordenades.emit(3,info)    #nunca
+                    self.sHanTrobatCoordenades.emit(3,info,self.coordAdreca,self.codi_carrer,self.calle_con_acentos,self.numeroCarrer)    #nunca
             else:
                 info="ERROR >> [4]"
-                self.sHanTrobatCoordenades.emit(4,info) #adreça vac       
+                self.sHanTrobatCoordenades.emit(4,info,self.coordAdreca,self.codi_carrer,self.calle_con_acentos,self.numeroCarrer) #adreça vac       
 
             
     def llegirAdreces(self):
@@ -262,23 +265,27 @@ class QCercadorAdreca(QObject):
             ok = False
         return ok
 
+
     def llegirAdrecesSQlite(self):
         try:
+            self.codi_carrer=None
             index = 0
             # self.query = QSqlQuery() # Intancia del Query
-            self.query.exec_("select codi , nom_oficial  from Carrers") 
+            self.query.exec_("select codi , nom_oficial, variants  from Carrers") 
+            
 
             while self.query.next():
-                codi_carrer = self.query.value(0) # Codigo calle
+                self.codi_carrer = self.query.value(0) # Codigo calle
                 nombre = self.query.value(1) # numero oficial
+                variantes = self.query.value(2) # numero oficial
                 nombre_sin_acentos= self.remove_accents(nombre)
                 if nombre == nombre_sin_acentos:
-                    clave= nombre + "  (" + codi_carrer + ")"
-                    # clave= nombre + "  (" + codi_carrer + ")                                                  "+chr(30)
+                    # clave= nombre + "  (" + self.codi_carrer + ")"
+                    clave= nombre + "  (" + self.codi_carrer + ")                                                  "+chr(30)+"                                                         ," + variantes
                 else:
-                    clave= nombre + "  (" + codi_carrer + ")                                                  "+chr(30)+"                                                         " + nombre_sin_acentos
+                    clave= nombre + "  (" + self.codi_carrer + ")                                                  "+chr(30)+"                                                         " + nombre_sin_acentos+ "  ," + variantes
                     # asignacion al diccionario
-                self.dictCarrers[clave] = codi_carrer
+                self.dictCarrers[clave] = self.codi_carrer
                 
                 index += 1
      
@@ -299,7 +306,44 @@ class QCercadorAdreca(QObject):
             print('QCercadorAdreca.llegirAdrecesSQlite(): ', sys.exc_info()[0], sys.exc_info()[1])
             return False
 
+    def llegirAdrecesSQlite_old(self):
+        try:
+            index = 0
+            # self.query = QSqlQuery() # Intancia del Query
+            self.query.exec_("select codi , nom_oficial  from Carrers") 
+            
 
+            while self.query.next():
+                self.codi_carrer = self.query.value(0) # Codigo calle
+                nombre = self.query.value(1) # numero oficial
+                nombre_sin_acentos= self.remove_accents(nombre)
+                if nombre == nombre_sin_acentos:
+                    clave= nombre + "  (" + self.codi_carrer + ")"
+                    # clave= nombre + "  (" + codi_carrer + ")                                                  "+chr(30)
+                else:
+                    clave= nombre + "  (" + self.codi_carrer + ")                                                  "+chr(30)+"                                                         " + nombre_sin_acentos
+                    # asignacion al diccionario
+                self.dictCarrers[clave] = self.codi_carrer
+                
+                index += 1
+     
+            self.query.finish()
+            # self.db.close()
+            return True
+        except Exception as e:
+            print(str(e))
+            msg = QMessageBox()
+            msg.setIcon(QMessageBox.Warning)
+            
+            msg.setText(str(sys.exc_info()[1]))
+            # msg.setInformativeText("OK para salir del programa \nCANCEL para seguir en el programa")
+            msg.setWindowTitle("qVista ERROR")
+            msg.setStandardButtons(QMessageBox.Close)
+            retval = msg.exec_()
+            print('QCercadorAdreca.llegirAdrecesSQlite(): ', sys.exc_info()[0], sys.exc_info()[1])
+            return False
+
+    
 
     # Normalización caracteres quitando acentos
     def remove_accents(self,input_str):
@@ -324,14 +368,14 @@ class QCercadorAdreca(QObject):
                 self.leNumero.clearFocus()
 
                 info="[0]"
-                self.sHanTrobatCoordenades.emit(0,info)  
+                self.sHanTrobatCoordenades.emit(0,info,self.coordAdreca,self.codi_carrer,self.calle_con_acentos,self.numeroCarrer)  
                 if self.leNumero.text()==' ':
                     self.leNumero.clear()
 
 
         else :
             info="ERROR >> [5]"
-            self.sHanTrobatCoordenades.emit(5,info)  #numero          
+            self.sHanTrobatCoordenades.emit(5,info,self.coordAdreca,self.codi_carrer,self.calle_con_acentos,self.numeroCarrer)  #numero          
 
     def trobatNumero(self):
         self.txto = self.completerCarrer.currentCompletion()
@@ -356,23 +400,23 @@ class QCercadorAdreca(QObject):
                             self.NumeroOficial= self.infoAdreca['NUM_OFICIAL']
                             self.leNumero.clearFocus()
                             info="[0]"
-                            self.sHanTrobatCoordenades.emit(0,info) 
+                            self.sHanTrobatCoordenades.emit(0,info,self.coordAdreca,self.codi_carrer,self.calle_con_acentos,self.numeroCarrer) 
                             if self.leNumero.text()==' ':
                                 self.leNumero.clear()
                
                         else:
                             info="ERROR >> [6]"
-                            self.sHanTrobatCoordenades.emit(6,info)  #numero no está en diccicionario
+                            self.sHanTrobatCoordenades.emit(6,info,self.coordAdreca,self.codi_carrer,self.calle_con_acentos,self.numeroCarrer)  #numero no está en diccicionario
                     else:
                         info="ERROR >> [7]"
-                        self.sHanTrobatCoordenades.emit(7,info) #adreça vacia  nunca
+                        self.sHanTrobatCoordenades.emit(7,info,self.coordAdreca,self.codi_carrer,self.calle_con_acentos,self.numeroCarrer) #adreça vacia  nunca
                 else:
                     info="ERROR >> [8]"
-                    self.sHanTrobatCoordenades.emit(8,info)   #numero en blanco
+                    self.sHanTrobatCoordenades.emit(8,info,self.coordAdreca,self.codi_carrer,self.calle_con_acentos,self.numeroCarrer)   #numero en blanco
             else:
                 self.leNumero.clear()
                 info="ERROR >> [9]"
-                self.sHanTrobatCoordenades.emit(9,info)   #numero en blanco
+                self.sHanTrobatCoordenades.emit(9,info,self.coordAdreca,self.codi_carrer,self.calle_con_acentos,self.numeroCarrer)   #numero en blanco
         except: 
             
             msg = QMessageBox()
