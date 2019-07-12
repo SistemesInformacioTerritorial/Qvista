@@ -61,7 +61,7 @@ class QvMapeta(QFrame):
 
             self.xTamany = 250
             self.yTamany = 250            
-            self.setStyleSheet('QFrame {background-image: url("imatges/QVista_Mapeta_0graus.png");}')
+            self.setStyleSheet('QFrame {opacity: 50; background-image: url("imatges/QVista_Mapeta_0graus.png");}')
 
             # Ya puedo calcular la escala entre el mapeta y la realidad, basandome en las X (presupongo que la escala Y sera la misma)
             # Las coordenadas mundo son un dato obtenido con qgis
