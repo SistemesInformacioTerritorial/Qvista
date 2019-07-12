@@ -279,11 +279,27 @@ class QCercadorAdreca(QObject):
                 nombre = self.query.value(1) # numero oficial
                 variantes = self.query.value(2) # numero oficial
                 nombre_sin_acentos= self.remove_accents(nombre)
+                
+                # aa= '{:< 10}'.format(' ')
+
+               
+                
+                nn= 87 - nombre.__len__()
+                
+                izq=')'
+                izq= izq.ljust(nn, " ") 
+                nnn=1
+                der=','
+                der=der.rjust(nnn," ")
+                
+
                 if nombre == nombre_sin_acentos:
                     # clave= nombre + "  (" + self.codi_carrer + ")"
-                    clave= nombre + "  (" + self.codi_carrer + ")                                                  "+chr(30)+"                                                         ," + variantes
+                    # clave= nombre + "  (" + self.codi_carrer + ")                                                  "+chr(30)+"                                                         ," + variantes
+                    clave= nombre + "  (" + self.codi_carrer + izq +chr(30)+ der + variantes
                 else:
-                    clave= nombre + "  (" + self.codi_carrer + ")                                                  "+chr(30)+"                                                         " + nombre_sin_acentos+ "  ," + variantes
+                    # clave= nombre + "  (" + self.codi_carrer + ")                                                  "+chr(30)+"                                                         " + nombre_sin_acentos+ "  ," + variantes
+                    clave= nombre + "  (" + self.codi_carrer + izq +chr(30)+ der  + nombre_sin_acentos+ "  ," + variantes
                     # asignacion al diccionario
                 self.dictCarrers[clave] = self.codi_carrer
                 
