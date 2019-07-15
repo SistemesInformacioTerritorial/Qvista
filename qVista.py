@@ -1470,8 +1470,6 @@ class QVista(QMainWindow, Ui_MainWindow):
         """Definició dels menús de la barra superior.
         (Cal fer neteja.)
         """
-
-
         lblLogoQVista = QLabel()
         lblLogoQVista.setMaximumHeight(40)
         lblLogoQVista.setMinimumHeight(40)
@@ -1479,24 +1477,19 @@ class QVista(QMainWindow, Ui_MainWindow):
         lblLogoQVista.setMaximumWidth(sizeWidget)
         lblLogoQVista.setMinimumWidth(sizeWidget)
         
-        # lblLogoQVista.setMaximumWidth(88)
-        # lblLogoQVista.setMinimumWidth(88)
-        #imatge = QPixmap('imatges/logoBcnPetit.jpg')
         imatge = QPixmap('imatges/qVistaLogo_text_40.png')
-        # imatge = QPixmap('imatges/qVistaLogoVerd2.png')
+        p = QPainter(imatge) 
+        p.setPen(QPen(Qt.white))
+        p.setFont(QFont("Arial", 12, QFont.Medium))
+        p.drawText(106,26, versio)
+        p.end()
+
         lblLogoQVista.setPixmap(imatge)
         lblLogoQVista.setScaledContents(False)
-        # p=QPainter(imatge)
-        # p.drawText(imatge.rect(),Qt.AlignCenter,"Hola")
 
-        # sizeWidget=self.frame_11.size()
-        # wid=QWidget()
-        # layLogo=QHBoxLayout()
-        # layLogo.setContentsMargins(0,0,0,0)
-        # layLogo.setSpacing(0)
-        # wid.setLayout(layLogo)
-        # wid.setFixedSize(sizeWidget)
-        # layLogo.addWidget(lblLogoQVista)
+        # self.lblVersio = QLabel()
+        # self.lblVersio.setText(versio)
+        # self.lblVersio.setGeometry(100,100,100,100)
 
         menubar=QvMenuBar(self)
         self.setMenuBar(menubar)
