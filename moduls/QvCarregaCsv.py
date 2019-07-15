@@ -606,6 +606,12 @@ class WindowProgressBar(QWidget):
         self.timeB=time.time()
         self.lblTempsRestant=QLabel()
         self.layProgressW.addWidget(self.lblTempsRestant)
+        self.bCancelar = QvPushButton('Cancel·lar', destacat = False)
+        self.layCancelar = QHBoxLayout()
+        self.layCancelar.setAlignment(Qt.AlignRight)
+        self.layProgressW.addLayout(self.layCancelar)
+        self.layCancelar.addWidget(self.bCancelar)
+        self.bCancelar.clicked.connect(self.cancelar)
 
     def actualitzaLBL(self):
         self.lblAdrInfo.setText(
@@ -618,6 +624,10 @@ class WindowProgressBar(QWidget):
             tempsR=(time.time()-self.timeB)*max(self.mida/self.count,1)*(1-self.count/self.mida)
         tempsTxt=time.strftime("%H:%M:%S", time.gmtime(tempsR))
         self.lblTempsRestant.setText('Temps restant: %s'%tempsTxt)
+    
+    def cancelar(self):
+        print("HOLA")
+        del self
 
 
 class QvCarregaCsvGeneraCoords(QvCarregaCsvPage):
