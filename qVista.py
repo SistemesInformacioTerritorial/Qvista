@@ -2090,7 +2090,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.lXY.addWidget(self.bXY)
         self.leXY = QLineEdit()
         self.leXY.setFixedHeight(24)
-        self.leXY.setFixedWidth(150)
+        self.leXY.setFixedWidth(142)
         self.leXY.setStyleSheet(stylesheetLineEdit)
         self.leXY.returnPressed.connect(self.returnEditarXY)
         self.lXY.addWidget(self.leXY)
@@ -2161,11 +2161,14 @@ class QVista(QMainWindow, Ui_MainWindow):
     def editarXY(self):
         self.bXY.hide()
         self.leXY.show()
+        self.leXY.setText(self.bXY.text())
        
         
     def returnEditarXY(self):
         try:
             x,y = self.leXY.text().split(',')
+            x = x.strip()
+            y = y.strip()
             def num_ok(num):
                 return all(char.isdigit() or char=='.' for char in num)
             if x is not None and y is not None:
