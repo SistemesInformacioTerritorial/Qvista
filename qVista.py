@@ -1223,6 +1223,10 @@ class QVista(QMainWindow, Ui_MainWindow):
                 border: 0px;
                 padding: 0px;
             }
+            QToolTip{
+                color: #38474F;
+                background-color: #F0F0F0;
+            }
         '''
         self.botoVeureLlegenda.setIcon(QIcon('Imatges/map-legend.png'))
         self.botoVeureLlegenda.setStyleSheet(stylesheetBotons)

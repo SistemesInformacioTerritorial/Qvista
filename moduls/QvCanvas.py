@@ -228,36 +228,41 @@ class QvCanvas(QgsMapCanvas):
         if self.llistaBotons is not None:
             if "streetview" in self.llistaBotons:
                 self.bstreetview = self._botoMapa('imatges/littleMan.png') 
+                self.bstreetview.setToolTip('Google Street view')
                 self.layoutBotoneraMapa.addWidget(self.bstreetview)   
                 self.bstreetview.setCursor(QvConstants.cursorFletxa()) 
                 self.bstreetview.clicked.connect(self.amagaStreetView)  
                 #self.bstreetview.clicked.connect(QvStreetView.segueixBoto)
             if "panning" in self.llistaBotons:
                 self.bPanning = self._botoMapa('imatges/pan_tool_black_24x24.png')
+                self.bPanning.setToolTip('Desplaçament sobre el mapa')
                 self.layoutBotoneraMapa.addWidget(self.bPanning)   
                 self.bPanning.setCursor(QvConstants.cursorFletxa())   
                 self.bPanning.clicked.connect(self.panCanvas)
             if "centrar" in self.llistaBotons:
                 self.bCentrar = self._botoMapa('imatges/fit.png')
+                self.bCentrar.setToolTip('Enquadrar el mapa complet a la pantalla')
                 self.layoutBotoneraMapa.addWidget(self.bCentrar) 
                 self.bCentrar.setCursor(QvConstants.cursorFletxa())     
                 self.bCentrar.clicked.connect(self.centrarMapa)
             if "zoomIn" in self.llistaBotons:
                 self.bZoomIn = self._botoMapa('imatges/zoom_in.png')
+                self.bZoomIn.setToolTip('Zoom per apropar-se')
                 self.layoutBotoneraMapa.addWidget(self.bZoomIn)  
                 self.bZoomIn.setCursor(QvConstants.cursorFletxa())
                 self.bZoomIn.clicked.connect(self.zoomIn)
             if "zoomOut" in self.llistaBotons:
                 self.bZoomOut = self._botoMapa('imatges/zoom_out.png')
+                self.bZoomOut.setToolTip('Zoom per allunyar-se')
                 self.layoutBotoneraMapa.addWidget(self.bZoomOut) 
                 self.bZoomOut.setCursor(QvConstants.cursorFletxa())  
                 self.bZoomOut.clicked.connect(self.zoomOut)
             if "apuntar" in self.llistaBotons:
                 self.bApuntar = self._botoMapa('imatges/apuntar.png')
+                self.bApuntar.setToolTip('Seleccioneu objectes per veure la seva informació')
                 self.layoutBotoneraMapa.addWidget(self.bApuntar)  
                 self.bApuntar.setCursor(QvConstants.cursorFletxa())       
                 self.bApuntar.clicked.connect(self.seleccioClick)
-                self.bApuntar.setToolTip('Informació objecte')
 
         # spacer = QSpacerItem(0, 50, QSizePolicy.Expanding, QSizePolicy.Maximum)
         # self.layoutBotoneraMapa.addSpacerItem(spacer)
