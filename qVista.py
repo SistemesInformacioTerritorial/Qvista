@@ -2018,7 +2018,7 @@ class QVista(QMainWindow, Ui_MainWindow):
             missatgeCaixa('Cal tenir seleccionat un nivell per poder fer una selecció.','Marqueu un nivell a la llegenda sobre el que aplicar la consulta.')
 
     def showXY(self,p):
-        self.lblXY.setText( str("%.2f" % p.x()) + ", " + str("%.2f" % p.y() ))
+        self.bXY.setText( str("%.2f" % p.x()) + ", " + str("%.2f" % p.y() ))
         # try:
         #     if self.qvPrint.pucMoure:
         #         self.dwPrint.move(self.qvPrint.dockX-100, self.qvPrint.dockY-120)
@@ -2042,6 +2042,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         # self.leSeleccioExpressio.setGraphicsEffect(self._menuBarShadow)
         self.leSeleccioExpressio.returnPressed.connect(seleccioExpressio)
         self.statusbar.addPermanentWidget(self.leSeleccioExpressio, 50)
+        self.statusbar.setSizeGripEnabled( False )
         self.leSeleccioExpressio.setPlaceholderText('Cerca un text per filtrar elements')
         self.leSeleccioExpressio.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Minimum)
         self.leSeleccioExpressio.show()
@@ -2063,6 +2064,9 @@ class QVista(QMainWindow, Ui_MainWindow):
                 border: 0px;
                 padding: 4px;
             }'''
+        stylesheetLineEdit='''
+            margin: 0px; border: 0px; padding: 0px;
+            '''
 
         self.sbCarregantCanvas = QProgressBar()
         self.sbCarregantCanvas.setRange(0,0)
@@ -2075,13 +2079,23 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.statusbar.addPermanentWidget( self.lblConnexio, 0 )
         self.lblConnexio.setText(estatConnexio)
 
-        self.lblXY = QLabel()
-        self.lblXY.setStyleSheet(styleheetLabel)
-
-        self.lblXY.setFrameStyle( QFrame.StyledPanel )
-        self.lblXY.setAlignment( Qt.AlignCenter )
-        self.statusbar.setSizeGripEnabled( False )
-        self.statusbar.addPermanentWidget( self.lblXY, 0 )
+        self.wXY = QWidget()
+        self.lXY=QHBoxLayout()
+        self.lXY.setContentsMargins(0,0,0,0)
+        self.lXY.setSpacing(0)
+        self.wXY.setLayout(self.lXY)
+        self.bXY = QvPushButton(flat=True)
+        self.bXY.clicked.connect(self.editarXY)
+        self.bXY.setStyleSheet(stylesheetButton)
+        self.lXY.addWidget(self.bXY)
+        self.leXY = QLineEdit()
+        self.leXY.setFixedHeight(24)
+        self.leXY.setFixedWidth(150)
+        self.leXY.setStyleSheet(stylesheetLineEdit)
+        self.leXY.returnPressed.connect(self.returnEditarXY)
+        self.lXY.addWidget(self.leXY)
+        self.leXY.hide()
+        self.statusbar.addPermanentWidget(self.wXY, 0 )
         # self.showXY(QCursor.pos())
 
         self.lblProjeccio = QLabel()
@@ -2115,8 +2129,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         # self.bOrientacio.setMinimumWidth( 140 )
         self.statusbar.addPermanentWidget( self.bOrientacio, 0 )
 
-        
-
+    
         self.lblProjecte = QLabel()
         self.lblProjecte.setStyleSheet(styleheetLabel)
         self.lblProjecte.setFrameStyle(QFrame.StyledPanel )
@@ -2144,6 +2157,26 @@ class QVista(QMainWindow, Ui_MainWindow):
 
  
         self.canvas.refresh()
+
+    def editarXY(self):
+        self.bXY.hide()
+        self.leXY.show()
+       
+        
+    def returnEditarXY(self):
+        try:
+            x,y = self.leXY.text().split(',')
+            def num_ok(num):
+                return all(char.isdigit() or char=='.' for char in num)
+            if x is not None and y is not None:
+                if num_ok(x) and num_ok(y):
+                    self.canvas.setCenter(QgsPointXY(float(x),float(y)))
+                    self.canvas.refresh()
+        except:
+            print("ERROR >> Coordenades mal escrites")
+        self.bXY.show()
+        self.leXY.hide()
+        self.leXY.setText("")
 
     def editarEscala(self):
         if self.editantEscala == False:
