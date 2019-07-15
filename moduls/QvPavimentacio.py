@@ -5,6 +5,7 @@ class DockPavim(QDockWidget):
     def __init__(self, parent):
         self.parent = parent
         super().__init__("Pavimentació")
+        self.setContextMenuPolicy(Qt.PreventContextMenu)
         
         fPavim = QFrame()
         fPavim.setStyleSheet("QFrame {background-image: url('c:/qvistaProd/imatges/pavim.jpg');}")

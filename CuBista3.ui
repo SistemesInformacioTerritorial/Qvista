@@ -35,13 +35,13 @@
       <property name="minimumSize">
        <size>
         <width>0</width>
-        <height>50</height>
+        <height>40</height>
        </size>
       </property>
       <property name="maximumSize">
        <size>
         <width>16777215</width>
-        <height>50</height>
+        <height>40</height>
        </size>
       </property>
       <property name="frameShape">
@@ -153,12 +153,37 @@ color: #FFFFFF</string>
               <number>1</number>
              </property>
              <item>
-              <widget class="QLabel" name="lblTitolProjecte">
+              <widget class="QLineEdit" name="leTitolProjecte">
                <property name="font">
                 <font>
-                 <family>Segoe UI Light</family>
-                 <pointsize>21</pointsize>
+                 <family>Arial</family>
+                 <pointsize>14</pointsize>
                 </font>
+               </property>
+               <property name="styleSheet">
+                <string notr="true">background-color: #F9F9F9 transparent;
+    color: #38474F;
+    margin: 0px;
+    border: 0px;</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="lblTitolProjecte">
+               <property name="font">
+                <font>
+                 <family>Arial</family>
+                 <pointsize>14</pointsize>
+                </font>
+               </property>
+               <property name="toolTip">
+                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt; color:#38474f;&quot;&gt;Feu clic per canviar el títol del projecte&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+               </property>
+               <property name="styleSheet">
+                <string notr="true">background-color: #F9F9F9 transparent;
+    color: white;
+    margin: 0px;
+    border: 0px;</string>
                </property>
                <property name="text">
                 <string>Qualificacions urbanístiques i suspensions</string>
@@ -178,7 +203,7 @@ color: #FFFFFF</string>
                </property>
               </spacer>
              </item>
-             <item alignment="Qt::AlignRight">
+             <item>
               <widget class="QPushButton" name="botoVeureLlegenda">
                <property name="minimumSize">
                 <size>
@@ -187,7 +212,7 @@ color: #FFFFFF</string>
                 </size>
                </property>
                <property name="toolTip">
-                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; color:#38474f; background-color: #FF6215;&quot;&gt;Veure i ocultar llegenda&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Veure i ocultar llegenda&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                </property>
                <property name="styleSheet">
                 <string notr="true"/>
@@ -197,19 +222,10 @@ color: #FFFFFF</string>
                </property>
               </widget>
              </item>
-             <item alignment="Qt::AlignRight">
-              <widget class="QPushButton" name="botoDesarProjecte">
-               <property name="minimumSize">
-                <size>
-                 <width>24</width>
-                 <height>0</height>
-                </size>
-               </property>
+             <item>
+              <widget class="QPushButton" name="botoMapeta">
                <property name="toolTip">
-                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Desar projecte&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-               </property>
-               <property name="styleSheet">
-                <string notr="true"/>
+                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Mostrar i ocultar mapeta&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                </property>
                <property name="text">
                 <string/>
@@ -226,6 +242,25 @@ color: #FFFFFF</string>
                </property>
                <property name="toolTip">
                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Obrir projecte en QGis&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+               </property>
+               <property name="styleSheet">
+                <string notr="true"/>
+               </property>
+               <property name="text">
+                <string/>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="botoDesarProjecte">
+               <property name="minimumSize">
+                <size>
+                 <width>24</width>
+                 <height>0</height>
+                </size>
+               </property>
+               <property name="toolTip">
+                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Desar projecte&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                </property>
                <property name="styleSheet">
                 <string notr="true"/>
