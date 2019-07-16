@@ -88,17 +88,7 @@ class QvMapeta(QFrame):
 
         # QvConstants.afegeixOmbraWidget(self)
 
-        # El botó per minimitzar el mapa
-        self.botoFerPetit = QPushButton(self)
-        icon = QIcon('imatges/mapeta-collapse.png')
-        self.botoFerPetit.setIcon(icon)
-        self.botoFerPetit.setGeometry(0,0,25,25)
-
-        self.botoFerPetit.show()
-        self.botoFerPetit.setChecked(False)
         
-        
-        self.botoFerPetit.clicked.connect(self.ferPetit)
 
         # BOTON QUE INVOCA EL CAMBIO DE ROTACION MEDIANTE LA FUNCION self.cambiarRotacion
         # self.botocambiarRotacion = QPushButton(self)
@@ -178,20 +168,22 @@ class QvMapeta(QFrame):
 
     def ferPetit(self):
         if self.petit:
-            self.setGeometry(0,0,self.xTamany,self.yTamany)
-            self.move(20,20)
+            # self.setGeometry(0,0,self.xTamany,self.yTamany)
+            # self.move(20,20)
+            self.show()
             self.petit = False
             # icon = QIcon('imatges/arrow-collapse.png')
 
             icon = QIcon('imatges/mapeta-collapse.png')
-            self.botoFerPetit.setIcon(icon)
+            # self.botoFerPetit.setIcon(icon)
         else:
-            self.setGeometry(0,0,25,25)
-            self.move(20,20)
+            # self.setGeometry(0,0,25,25)
+            # self.move(20,20)
+            self.hide()
             self.petit = True
-            icon = QIcon('imatges/mapetaPetit.jpg')
-            self.botoFerPetit.setIcon(icon)
-        self.botoFerPetit.setChecked(False)
+            # icon = QIcon('imatges/mapetaPetit.jpg')
+        #     self.botoFerPetit.setIcon(icon)
+        # self.botoFerPetit.setChecked(False)
 
     def pintarMapeta(self):
         # Cuando hay alteraciones en el canvas, se han de repercutir sobre el mapeta, representando sobre éste el area de cartografia visible
