@@ -42,7 +42,7 @@ class QvBrowser(QWidget):
 
         self.layoutBotonera = QHBoxLayout(self.botoneraQvBrowser)
         self.layoutBotonera.setContentsMargins(0,0,0,0)
-        self.layoutBotonera.setAlignment( Qt.AlignRight )
+        self.layoutBotonera.setAlignment( Qt.AlignCenter )
         self.botoneraQvBrowser.setLayout(self.layoutBotonera)
 
         self.botoneraQvBrowser.show()
@@ -54,23 +54,18 @@ class QvBrowser(QWidget):
         self.botoOSM = BotoQvBrowser()
         self.botoOSM.setText('OpenStreet Maps')
         self.botoOSM.clicked.connect(self.openStreetMaps)
-        self.botoOSM.show()
 
         self.botoGoogleMaps = BotoQvBrowser()
         self.botoGoogleMaps.setText('Google Maps')
         self.botoGoogleMaps.clicked.connect(self.openGoogleMaps)
-        self.botoGoogleMaps.show()
 
         self.botoStreetView = BotoQvBrowser()
         self.botoStreetView.setText('Street view')
         self.botoStreetView.clicked.connect(self.openStreetView)
-        self.botoStreetView.show()
-
 
         self.layoutBotonera.addWidget(self.botoOSM)
         self.layoutBotonera.addWidget(self.botoGoogleMaps)
         self.layoutBotonera.addWidget(self.botoStreetView)
-        # self.layoutBotonera.addWidget(self.botoTancar)
         self.layoutBrowser.addWidget(self.botoneraQvBrowser)
         self.layoutBrowser.addWidget(self.browser)
         self.setLayout(self.layoutBrowser)

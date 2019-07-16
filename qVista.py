@@ -402,7 +402,9 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.dwSV.setContentsMargins ( 0, 0, 0, 0 )
         self.dwSV.hide()
         self.dwSV.visibilityChanged.connect(self.streetViewTancat)
-        self.addDockWidget( Qt.RightDockWidgetArea, self.dwSV)
+        # self.addDockWidget( Qt.RightDockWidgetArea, self.dwSV)
+        self.dwSV.setFloating(True)
+        self.dwSV.move(575,175)
 
     def preparacioEntornGrafic(self):
         # Canvas
