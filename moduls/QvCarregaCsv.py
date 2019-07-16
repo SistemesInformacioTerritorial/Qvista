@@ -606,6 +606,13 @@ class WindowProgressBar(QWidget):
         self.timeB=time.time()
         self.lblTempsRestant=QLabel()
         self.layProgressW.addWidget(self.lblTempsRestant)
+        self.bCancelar = QvPushButton('Cancel·lar', destacat = False)
+        self.layCancelar = QHBoxLayout()
+        self.layCancelar.setAlignment(Qt.AlignRight)
+        self.layProgressW.addLayout(self.layCancelar)
+        self.layCancelar.addWidget(self.bCancelar)
+        self.bCancelar.clicked.connect(self.cancelar)
+        self.cancelat = False
 
     def actualitzaLBL(self):
         self.lblAdrInfo.setText(
@@ -618,6 +625,11 @@ class WindowProgressBar(QWidget):
             tempsR=(time.time()-self.timeB)*max(self.mida/self.count,1)*(1-self.count/self.mida)
         tempsTxt=time.strftime("%H:%M:%S", time.gmtime(tempsR))
         self.lblTempsRestant.setText('Temps restant: %s'%tempsTxt)
+    
+    def cancelar(self):
+        print("HOLA")
+        self.cancelat = True
+        self.close()
 
 
 class QvCarregaCsvGeneraCoords(QvCarregaCsvPage):
@@ -628,6 +640,7 @@ class QvCarregaCsvGeneraCoords(QvCarregaCsvPage):
         '''
         super().__init__(parent)
         # self.setSubTitle("Gestió d'errors i finalitzar procés")
+        self.parent = parent
         self.lblAdrecesError = QLabel()
         self.lblAdrecesError.setText("")
         self.lblAdrecesError.setStyleSheet('color: red')
@@ -811,7 +824,11 @@ class QvCarregaCsvGeneraCoords(QvCarregaCsvPage):
                 row[self.parent.coordX] = x
                 row[self.parent.coordY] = y
                 del row[""]
-                writer.writerow(row) 
+                writer.writerow(row)
+                if wpg.cancelat:
+                    self.close()
+                    self.parent.close()
+                    break
             wpg.errors
             self.lblExplicacio4.setText(
             "Aquestes són les adreces que no s'han pogut geolocalitzar: (%i)" %wpg.errors)
@@ -860,7 +877,7 @@ class QvCarregaCsvPersonalitza(QvCarregaCsvPage):
             parent.color = dcolor.name()
             canvicolor(self, dcolor)
         bColor.clicked.connect(openColorDialog)
-        bColor.setFixedWidth(339)
+        bColor.setFixedWidth(322)
         #bColor.setText("Escull Color")
         self.layColor.addWidget(bColor)
         self.layout.addLayout(self.layColor)

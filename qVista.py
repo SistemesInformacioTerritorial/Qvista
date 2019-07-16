@@ -425,6 +425,8 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.dwSV.hide()
         self.dwSV.visibilityChanged.connect(self.streetViewTancat)
         self.addDockWidget( Qt.RightDockWidgetArea, self.dwSV)
+        self.dwSV.setFloating(True)
+        self.dwSV.move(575,175)
 
     def preparacioEntornGrafic(self):
         # Canvas
@@ -1521,14 +1523,16 @@ class QVista(QMainWindow, Ui_MainWindow):
 
     def tissores(self):
         # QDesktopServices().openUrl(QUrl('c:\windows\system32\SnippingTool.exe'))
-        subprocess.check_call([r'c:\windows\system32\SnippingTool.exe'])
+        # subprocess.check_call([r'c:\windows\system32\SnippingTool.exe'])
+        process = QProcess(self)
+        pathApp = "c:\windows\system32\SnippingTool.exe"
+        process.start(pathApp)
+        app.processEvents()
 
     def definirMenus(self):
         """Definició dels menús de la barra superior.
         (Cal fer neteja.)
         """
-
-
         lblLogoQVista = QLabel()
         lblLogoQVista.setMaximumHeight(40)
         lblLogoQVista.setMinimumHeight(40)
@@ -1536,24 +1540,19 @@ class QVista(QMainWindow, Ui_MainWindow):
         lblLogoQVista.setMaximumWidth(sizeWidget)
         lblLogoQVista.setMinimumWidth(sizeWidget)
         
-        # lblLogoQVista.setMaximumWidth(88)
-        # lblLogoQVista.setMinimumWidth(88)
-        #imatge = QPixmap('imatges/logoBcnPetit.jpg')
         imatge = QPixmap('imatges/qVistaLogo_text_40.png')
-        # imatge = QPixmap('imatges/qVistaLogoVerd2.png')
+        p = QPainter(imatge) 
+        p.setPen(QPen(Qt.white))
+        p.setFont(QFont("Arial", 12, QFont.Medium))
+        p.drawText(106,26, versio)
+        p.end()
+
         lblLogoQVista.setPixmap(imatge)
         lblLogoQVista.setScaledContents(False)
-        # p=QPainter(imatge)
-        # p.drawText(imatge.rect(),Qt.AlignCenter,"Hola")
 
-        # sizeWidget=self.frame_11.size()
-        # wid=QWidget()
-        # layLogo=QHBoxLayout()
-        # layLogo.setContentsMargins(0,0,0,0)
-        # layLogo.setSpacing(0)
-        # wid.setLayout(layLogo)
-        # wid.setFixedSize(sizeWidget)
-        # layLogo.addWidget(lblLogoQVista)
+        # self.lblVersio = QLabel()
+        # self.lblVersio.setText(versio)
+        # self.lblVersio.setGeometry(100,100,100,100)
 
         menubar=QvMenuBar(self)
         self.setMenuBar(menubar)
@@ -2083,7 +2082,7 @@ class QVista(QMainWindow, Ui_MainWindow):
             missatgeCaixa('Cal tenir seleccionat un nivell per poder fer una selecció.','Marqueu un nivell a la llegenda sobre el que aplicar la consulta.')
 
     def showXY(self,p):
-        self.lblXY.setText( str("%.2f" % p.x()) + ", " + str("%.2f" % p.y() ))
+        self.bXY.setText( str("%.2f" % p.x()) + ", " + str("%.2f" % p.y() ))
         # try:
         #     if self.qvPrint.pucMoure:
         #         self.dwPrint.move(self.qvPrint.dockX-100, self.qvPrint.dockY-120)
@@ -2107,6 +2106,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         # self.leSeleccioExpressio.setGraphicsEffect(self._menuBarShadow)
         self.leSeleccioExpressio.returnPressed.connect(seleccioExpressio)
         self.statusbar.addPermanentWidget(self.leSeleccioExpressio, 50)
+        self.statusbar.setSizeGripEnabled( False )
         self.leSeleccioExpressio.setPlaceholderText('Cerca un text per filtrar elements')
         self.leSeleccioExpressio.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Minimum)
         self.leSeleccioExpressio.show()
@@ -2128,6 +2128,9 @@ class QVista(QMainWindow, Ui_MainWindow):
                 border: 0px;
                 padding: 4px;
             }'''
+        stylesheetLineEdit='''
+            margin: 0px; border: 0px; padding: 0px;
+            '''
 
         self.sbCarregantCanvas = QProgressBar()
         self.sbCarregantCanvas.setRange(0,0)
@@ -2140,13 +2143,23 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.statusbar.addPermanentWidget( self.lblConnexio, 0 )
         self.lblConnexio.setText(estatConnexio)
 
-        self.lblXY = QLabel()
-        self.lblXY.setStyleSheet(styleheetLabel)
-
-        self.lblXY.setFrameStyle( QFrame.StyledPanel )
-        self.lblXY.setAlignment( Qt.AlignCenter )
-        self.statusbar.setSizeGripEnabled( False )
-        self.statusbar.addPermanentWidget( self.lblXY, 0 )
+        self.wXY = QWidget()
+        self.lXY=QHBoxLayout()
+        self.lXY.setContentsMargins(0,0,0,0)
+        self.lXY.setSpacing(0)
+        self.wXY.setLayout(self.lXY)
+        self.bXY = QvPushButton(flat=True)
+        self.bXY.clicked.connect(self.editarXY)
+        self.bXY.setStyleSheet(stylesheetButton)
+        self.lXY.addWidget(self.bXY)
+        self.leXY = QLineEdit()
+        self.leXY.setFixedHeight(24)
+        self.leXY.setFixedWidth(142)
+        self.leXY.setStyleSheet(stylesheetLineEdit)
+        self.leXY.returnPressed.connect(self.returnEditarXY)
+        self.lXY.addWidget(self.leXY)
+        self.leXY.hide()
+        self.statusbar.addPermanentWidget(self.wXY, 0 )
         # self.showXY(QCursor.pos())
 
         self.lblProjeccio = QLabel()
@@ -2180,8 +2193,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         # self.bOrientacio.setMinimumWidth( 140 )
         self.statusbar.addPermanentWidget( self.bOrientacio, 0 )
 
-        
-
+    
         self.lblProjecte = QLabel()
         self.lblProjecte.setStyleSheet(styleheetLabel)
         self.lblProjecte.setFrameStyle(QFrame.StyledPanel )
@@ -2209,6 +2221,29 @@ class QVista(QMainWindow, Ui_MainWindow):
 
  
         self.canvas.refresh()
+
+    def editarXY(self):
+        self.bXY.hide()
+        self.leXY.show()
+        self.leXY.setText(self.bXY.text())
+       
+        
+    def returnEditarXY(self):
+        try:
+            x,y = self.leXY.text().split(',')
+            x = x.strip()
+            y = y.strip()
+            def num_ok(num):
+                return all(char.isdigit() or char=='.' for char in num)
+            if x is not None and y is not None:
+                if num_ok(x) and num_ok(y):
+                    self.canvas.setCenter(QgsPointXY(float(x),float(y)))
+                    self.canvas.refresh()
+        except:
+            print("ERROR >> Coordenades mal escrites")
+        self.bXY.show()
+        self.leXY.hide()
+        self.leXY.setText("")
 
     def editarEscala(self):
         if self.editantEscala == False:
@@ -2308,6 +2343,16 @@ class QVista(QMainWindow, Ui_MainWindow):
         QProcess.startDetached(r'D:\OSGeo4W64\bin\qgis-bin-g7.4.1.exe c:/temp/projTemp.qgs')
 
     def obrirDialegProjecte(self):
+        if self.teCanvisPendents(): #Posar la comprovació del dirty bit
+            ret = self.missatgeDesar(titol='Crear un nou mapa',txtCancelar='Cancel·lar')
+            if ret == QMessageBox.AcceptRole:
+                b = guardarProjecte()
+                if not b: return
+            elif ret ==  QMessageBox.RejectRole: #Aquest i el seguent estàn invertits en teoria, però així funciona bé
+                pass
+            elif ret == QMessageBox.DestructiveRole:
+                return
+
         dialegObertura=QFileDialog()
         dialegObertura.setDirectoryUrl(QUrl('../dades/projectes/'))
         rect = self.canvas.extent()
@@ -2772,6 +2817,7 @@ def seleccioExpressio():
 #A més de desar, retornarà un booleà indicant si l'usuari ha desat (True) o ha cancelat (False)
 
 def guardarProjecte():
+    """ la funcio retorna si s'ha acabat guardant o no """
     """  Protecció dels projectes read-only: tres vies:
     -       Variable del projecte qV_readOnly=’True’
     -       Ubicació en una carpeta de només-lectura
@@ -2792,11 +2838,22 @@ def guardarProjecte():
         qV.project.write(qV.pathProjecteActual)
         qV.canvisPendents = False
         qV.botoDesarProjecte.setIcon(qV.iconaSenseCanvisPendents)
+        return True
         
 
 def guardarDialegProjecte():
     nfile,_ = QFileDialog.getSaveFileName(None,"Guardar Projecte Qgis", ".", "Projectes Qgis (*.qgs)")
     if nfile=='': return False
+    elif nfile.endswith('mapesOffline/qVista default map.qgs') or nfile.startswith( 'n:/siteb/apl/pyqgis/qvista' ) or nfile.startswith( 'n:/9siteb/publicacions/qvista' ):
+        msgBox = QMessageBox()
+        msgBox.setWindowTitle("Advertència")
+        msgBox.setIcon(QMessageBox.Warning)
+        msgBox.setText("No pots guardar el teu mapa en aquesta direcció.")
+        msgBox.setInformativeText("Prova de fer-ho en una altre.")
+        msgBox.setStandardButtons(QMessageBox.Ok)
+        msgBox.setDefaultButton(QMessageBox.Ok)
+        msgBox.exec()
+        return False 
     qV.project.write(nfile)
     qV.pathProjecteActual = nfile
     qV.lblProjecte.setText(qV.project.baseName())
