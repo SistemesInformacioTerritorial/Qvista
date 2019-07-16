@@ -14,7 +14,7 @@ iniciTempsModuls = time.time()
 from moduls.QvUbicacions import QvUbicacions
 from moduls.QvPrint import QvPrint
 from moduls.QvCanvas import QvCanvas
-from moduls.QvEinesGrafiques import QvSeleccioElement, QvSeleccioPerPoligon, QvSeleccioCercle, QvSeleccioPunt
+from moduls.QvEinesGrafiques import QvSeleccioElement, QvSeleccioPerPoligon, QvMesuraMultiLinia, QvSeleccioCercle, QvSeleccioPunt
 from moduls.QvStreetView import QvStreetView
 from moduls.QvLlegenda import QvLlegenda
 from moduls.QvAtributs import QvAtributs
@@ -142,6 +142,7 @@ class QVista(QMainWindow, Ui_MainWindow):
        
         # self.preparacioMapTips()
         self.preparacioImpressio()
+        self.preparacioMesura()
         # self.preparacioGrafiques()
         self.preparacioSeleccio()
         # self.preparacioEntorns()
@@ -366,6 +367,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.bImprimir =  self.botoLateral(tamany = 25, accio=self.actImprimir)
         self.bTissores = self.botoLateral(tamany = 25, accio=self.actTissores)
         self.bSeleccioGrafica = self.botoLateral(tamany = 25, accio=self.actSeleccioGrafica)
+        self.bMesuraGrafica = self.botoLateral(tamany = 25, accio=self.actMesuraGrafica)
 
         spacer2 = QSpacerItem(1000, 1000, QSizePolicy.Expanding,QSizePolicy.Maximum)
         self.lytBotoneraLateral.addItem(spacer2)
@@ -1033,6 +1035,13 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.actSeleccioGrafica.setIcon(icon)
         self.actSeleccioGrafica.triggered.connect(self.seleccioGrafica)
 
+        #Eina de mesura -nexus-
+        self.actMesuraGrafica = QAction("Mesura gràfica del mapa", self)
+        self.actMesuraGrafica.setStatusTip("Mesura gràfica del mapa")
+        icon=QIcon('imatges/regle.png')
+        self.actMesuraGrafica.setIcon(icon)
+        self.actMesuraGrafica.triggered.connect(self.mesuraGrafica)
+
         
         self.actPanSelected = QAction("Pan selected", self)
         self.actPanSelected.setStatusTip("Pan selected")
@@ -1319,10 +1328,67 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         self.idsElementsSeleccionats = []
 
+    #Eina de mesura sobre el mapa -nexus-
+    def preparacioMesura(self):
+
+        # Disseny del interface
+        class QvMesuraGrafica(QWidget):
+            def __init__(self):
+                QWidget.__init__(self)
+
+        self.wMesuraGrafica = QvMesuraGrafica()
+        
+        self.wMesuraGrafica.setWhatsThis(QvApp().carregaAjuda(self))
+        self.lytMesuraGrafica = QVBoxLayout()
+        self.lytMesuraGrafica.setAlignment(Qt.AlignTop)
+        self.wMesuraGrafica.setLayout(self.lytMesuraGrafica)
+        self.lytBotonsMesura = QHBoxLayout()
+
+        self.lytMesuraGrafica.addLayout(self.lytBotonsMesura)
+
+
+        self.bm1 = QvPushButton(flat=True) 
+        self.bm1.setIcon(QIcon('imatges/cursor-pointer.png'))
+        self.bm4 = QvPushButton(flat=True)
+        # self.bs4.setCheckable(True)
+        self.bm4.setIcon(QIcon('imatges/trash-can-outline.png'))
+
+        self.lblDistanciaTotal = QLabel('Distància total:')
+        self.lblDistanciaTotal.setFixedWidth(230)
+        self.lblDistanciaTempsReal = QLabel('Distáncia últim tram:')
+        self.lblMesuraArea = QLabel('Àrea:')
+
+        
+        self.lwMesuresHist = QListWidget()
+        self.lwMesuresHist.setSelectionMode(QAbstractItemView.ExtendedSelection)
+
+        self.twResultatsMesura = QTableWidget()
+
+        self.bm1.clicked.connect(mesuraDistancies)
+        self.bm4.clicked.connect(lambda: self.esborrarSeleccio(True))
+
+        self.lytBotonsMesura.addWidget(self.bm1)
+        self.lytBotonsMesura.addWidget(self.bm4)
+        self.lytMesuraGrafica.addWidget(self.lblDistanciaTotal)
+        self.lytMesuraGrafica.addWidget(self.lblDistanciaTempsReal)
+        self.lytMesuraGrafica.addWidget(self.lblMesuraArea)
+        
+        self.lytMesuraGrafica.addWidget(self.lwMesuresHist)
+        
+        self.dwMesuraGrafica = QDockWidget("Mesura gràfica", self)
+        self.dwMesuraGrafica.hide()
+        self.dwMesuraGrafica.setAllowedAreas( Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea )
+        self.dwMesuraGrafica.setWidget( self.wMesuraGrafica)
+        self.dwMesuraGrafica.setContentsMargins ( 2, 2, 2, 2 )
+        self.addDockWidget( Qt.RightDockWidgetArea, self.dwMesuraGrafica )
+        #self.dwMesuraGrafica.setStyleSheet('QDockWidget {color: #465A63; background-color: #909090;}')
+        self.dwMesuraGrafica.hide()
+
     def crearCsv(self):
         nomTriat = self.taulesAtributs.desarCSV(self.llegenda.currentLayer(), selected = True)
         self.finestraCSV = QvLectorCsv(nomTriat)
         self.finestraCSV.show()
+
 
     def calcularSeleccio(self):
         layer = self.llegenda.currentLayer()
@@ -1384,6 +1450,10 @@ class QVista(QMainWindow, Ui_MainWindow):
 
     def seleccioGrafica(self):
         self.dwSeleccioGrafica.show()
+        self.canviLayer()
+
+    def mesuraGrafica(self):
+        self.dwMesuraGrafica.show()
         self.canviLayer()
 
     def helpQVista(self):
@@ -1967,6 +2037,7 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         try:
             qV.canvas.scene().removeItem(qV.toolSelect.rubberband)
+            qV.canvas.scene().removeItem(qV.toolSelect.rubberband2)
             # taulaAtributs('Total',layer)
         except:
             pass
@@ -2390,6 +2461,20 @@ class DialegCSV(QDialog):
 #             return QProxyStyle.pixelMetric(self, QStyle_PixelMetric, option, widget)
 
 # funcions globals QVista --------------------------------------------------------
+def mesuraDistancies():
+    layer=qV.llegenda.currentLayer()
+    qV.markers.hide()
+    try:
+        qV.canvas.scene().removeItem(qV.toolSelect.rubberband)
+    except:
+        pass
+
+    qV.actionMapSelect = QAction('Seleccionar dibuixant', qV)
+    qV.toolSelect = QvMesuraMultiLinia(qV,qV.canvas, layer)
+
+    qV.toolSelect.setAction(qV.actionMapSelect)
+    qV.canvas.setMapTool(qV.toolSelect)
+    # taulaAtributs('Seleccionats', layer)
 
 def seleccioLliure():
     layer=qV.llegenda.currentLayer()
