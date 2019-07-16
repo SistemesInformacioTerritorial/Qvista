@@ -431,7 +431,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         #llistaBotons = ['apuntar', 'zoomIn', 'zoomOut', 'panning', 'centrar']
         llistaBotons = ['streetview','apuntar', 'zoomIn', 'zoomOut', 'panning', 'centrar', 'enrere', 'endavant', 'maximitza']
         
-        self.canvas = QvCanvas(llistaBotons=llistaBotons, posicioBotonera = 'SO', botoneraHoritzontal = False, pare=self)
+        self.canvas = QvCanvas(llistaBotons=llistaBotons, posicioBotonera = 'SE', botoneraHoritzontal = True, pare=self)
 
         self.preparacioStreetView()     #fa el qvSv. necessita el canvas
         self.canvas.bstreetview.clicked.connect(self.qvSv.segueixBoto)

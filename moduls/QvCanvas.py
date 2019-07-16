@@ -137,7 +137,7 @@ class QvCanvas(QgsMapCanvas):
         self.bstreetview.clicked.connect(self.qvSv.segueixBoto)
     def _botoMapa(self,imatge = None):
         boto = QvPushButton(flat=True)
-        boto.setStyleSheet('background: rgba(255,255,255,168); padding: 2px;')
+        boto.setStyleSheet('background: rgba(255,255,255,168); padding: 1px;')
         boto.setCheckable(True)
         if imatge is not None:
             icon=QIcon(imatge)
@@ -186,11 +186,11 @@ class QvCanvas(QgsMapCanvas):
             if self.botoneraHoritzontal:
                 self.layoutBotoneraMapa.setAlignment(Qt.AlignLeft)
                 self.offsetEsq = QLabel()
-                self.offsetEsq.setFixedWidth(8)
+                self.offsetEsq.setFixedWidth(200)
                 self.offsetUp = QLabel()
-                self.offsetUp.setFixedHeight(8)
+                self.offsetUp.setFixedHeight(0)
                 self.layoutBotoneraMapa.addWidget(self.offsetEsq)
-                self.layoutCanvas.addWidget(self.offsetUp)
+                # self.layoutCanvas.addWidget(self.offsetUp)
                 self.layoutCanvas.addWidget(self.botoneraMapa)  
                 self.layoutCanvas.addSpacerItem(spacer)   
                 #self.layoutBotoneraMapa.setAlignment(Qt.AlignLeft)
