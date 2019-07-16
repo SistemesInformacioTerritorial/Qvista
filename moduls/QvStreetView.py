@@ -45,7 +45,6 @@ class QvBrowser(QWidget):
         self.layoutBotonera.setAlignment( Qt.AlignCenter )
         self.botoneraQvBrowser.setLayout(self.layoutBotonera)
 
-        self.botoneraQvBrowser.show()
         # self.botoTancar = BotoQvBrowser()
         # self.botoTancar.setText('SORTIR')
         # self.botoTancar.clicked.connect(self.tancar)
