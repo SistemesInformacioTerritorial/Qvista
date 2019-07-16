@@ -38,11 +38,16 @@ class QvCanvas(QgsMapCanvas):
         """
         if event.key() == Qt.Key_Escape:
             if self.pare is not None:
+                if not self.pare.mapaMaxim:
+                    self.pare.ferGran()
                 try:
                     self.pare.esborrarSeleccio(tambePanCanvas = False)
                     self.tool.fitxaAtributs.close()
                 except:
                     pass
+        if event.key()==Qt.Key_F11:
+            if self.pare is not None:
+                self.pare.ferGran()
 
     def panCanvas(self):        # MANO
         # bucle para quitar todos los cursores guardados. quiero que use el que ofrece MapTool
@@ -275,6 +280,14 @@ class QvCanvas(QgsMapCanvas):
                 self.bstreetview.setCursor(QvConstants.cursorFletxa()) 
                 self.bstreetview.clicked.connect(self.amagaStreetView)  
                 #self.bstreetview.clicked.connect(QvStreetView.segueixBoto)
+            if 'maximitza' in self.llistaBotons:
+                self.iconaMaximitza=QIcon('imatges/fullscreen.png')
+                self.iconaMinimitza=QIcon('imatges/fullscreen-exit.png')
+                self.bMaximitza = self._botoMapa('imatges/fullscreen.png') 
+                self.bMaximitza.setToolTip('Google Street view')
+                self.layoutBotoneraMapa.addWidget(self.bMaximitza)   
+                self.bMaximitza.setCursor(QvConstants.cursorFletxa()) 
+                self.bMaximitza.clicked.connect(self.pare.ferGran)  
 
         # spacer = QSpacerItem(0, 50, QSizePolicy.Expanding, QSizePolicy.Maximum)
         # self.layoutBotoneraMapa.addSpacerItem(spacer)

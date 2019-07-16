@@ -220,6 +220,16 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         self.oldPos = self.pos() #Per quan vulguem moure la finestra
 
+        #Això abans ho feia al ferGran. Però allà no està bé fer-ho. Ho deixo aquí i ja ho mourem
+        self.frameLlegenda.hide()
+        self.frame_11.hide()
+        self.dwLlegenda = QDockWidget( "Llegenda", self )
+        self.dwLlegenda.setObjectName( "layers" )
+        self.dwLlegenda.setAllowedAreas( Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea )
+        self.dwLlegenda.setContentsMargins ( 0,0,0,0)
+        self.addDockWidget( Qt.LeftDockWidgetArea , self.dwLlegenda )
+        self.dwLlegenda.setWidget(self.llegenda)
+        self.dwLlegenda.show()
         self.ferGran()
 
     
@@ -419,7 +429,7 @@ class QVista(QMainWindow, Ui_MainWindow):
     def preparacioEntornGrafic(self):
         # Canvas
         #llistaBotons = ['apuntar', 'zoomIn', 'zoomOut', 'panning', 'centrar']
-        llistaBotons = ['streetview','apuntar', 'zoomIn', 'zoomOut', 'panning', 'centrar', 'enrere', 'endavant']
+        llistaBotons = ['streetview','apuntar', 'zoomIn', 'zoomOut', 'panning', 'centrar', 'enrere', 'endavant', 'maximitza']
         
         self.canvas = QvCanvas(llistaBotons=llistaBotons, posicioBotonera = 'SO', botoneraHoritzontal = False, pare=self)
 
@@ -1835,16 +1845,19 @@ class QVista(QMainWindow, Ui_MainWindow):
     def ferGran(self):
         # print('JOLA')
 
-        if self.mapaMaxim:
-            self.frameLlegenda.show()
-            # self.frame_19.show()
+        if not self.mapaMaxim:
+            self.showMaximized()
+            if hasattr(self.canvas,'bMaximitza'):
+                self.canvas.bMaximitza.setIcon(self.canvas.iconaMaximitza)
+            self.frame_3.show()
+            self.frame_19.show()
             self.frame_2.show()
-            #self.frame_3.show()
-            self.frame_11.show()
-            self.mapaMaxim = False
-            self.dwLlegenda.hide()
-            self.layoutFrameLlegenda.addWidget(self.llegenda)
-            self._menuBarShadow.setEnabled(True)
+            if hasattr(self,'dockWidgetsVisibles'):
+                for x in self.dockWidgetsVisibles: x.show()
+            else:
+                self.dwLlegenda.show()
+            self.bar.show()
+            self.statusbar.show()
             # self.botoMaxim.setIcon(QIcon('imatges/arrow-expand.png'))
 
             # Descomentar para eliminar barra de titulo
@@ -1854,33 +1867,25 @@ class QVista(QMainWindow, Ui_MainWindow):
             #     qV.showNormal()
 
         else:
-            self.frameLlegenda.hide()
-            # self.frame_19.hide()
+            if hasattr(self.canvas,'bMaximitza'):
+                self.canvas.bMaximitza.setIcon(self.canvas.iconaMinimitza)
+            self.dockWidgetsVisibles=[x for x in self.findChildren(QDockWidget) if x.isVisible()]
+            for x in self.dockWidgetsVisibles: x.hide()
+            self.frame_3.hide()
+            self.frame_19.hide()
             self.frame_2.hide()
-            # self.frame_3.hide()
-            self.frame_11.hide()
-            # self.oldCentraWidget = self.centralWidget()
-            # self.setCentralWidget(self.canvas)
-            self.mapaMaxim = True
-            if not hasattr(self,'dwLlegenda'): 
-                self.dwLlegenda = QDockWidget( "Llegenda", self )
-                self.dwLlegenda.setContextMenuPolicy(Qt.PreventContextMenu)
-                self.dwLlegenda.setObjectName( "layers" )
-                self.dwLlegenda.setAllowedAreas( Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea )
-                self.dwLlegenda.setContentsMargins ( 0,0,0,0)
-                self.addDockWidget( Qt.LeftDockWidgetArea , self.dwLlegenda )
-            self.dwLlegenda.setWidget(self.llegenda)
-            self.dwLlegenda.show()
-            # self.dwLlegenda.show()
+            self.dwLlegenda.hide()
+            self.bar.hide()
+            self.statusbar.hide()
+            self.showFullScreen()
+        self.mapaMaxim=not self.mapaMaxim
 
-            self._menuBarShadow.setEnabled(False)
-            # self.botoMaxim.setIcon(QIcon('imatges/arrow-collapse.png'))
-            # self.bar.setGraphicsEffect(_menuBarShadow)
+            
+
 
             # Descomentar para eliminar barra de titulo
             # self.lastMaximized = qV.isMaximized()
             # qV.showFullScreen()
-        
 
     def clickArbre(self):
         rang = self.distBarris.llegirRang()
