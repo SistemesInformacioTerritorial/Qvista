@@ -612,6 +612,7 @@ class WindowProgressBar(QWidget):
         self.layProgressW.addLayout(self.layCancelar)
         self.layCancelar.addWidget(self.bCancelar)
         self.bCancelar.clicked.connect(self.cancelar)
+        self.cancelat = False
 
     def actualitzaLBL(self):
         self.lblAdrInfo.setText(
@@ -627,7 +628,8 @@ class WindowProgressBar(QWidget):
     
     def cancelar(self):
         print("HOLA")
-        del self
+        self.cancelat = True
+        self.close()
 
 
 class QvCarregaCsvGeneraCoords(QvCarregaCsvPage):
@@ -638,6 +640,7 @@ class QvCarregaCsvGeneraCoords(QvCarregaCsvPage):
         '''
         super().__init__(parent)
         # self.setSubTitle("Gestió d'errors i finalitzar procés")
+        self.parent = parent
         self.lblAdrecesError = QLabel()
         self.lblAdrecesError.setText("")
         self.lblAdrecesError.setStyleSheet('color: red')
@@ -821,7 +824,11 @@ class QvCarregaCsvGeneraCoords(QvCarregaCsvPage):
                 row[self.parent.coordX] = x
                 row[self.parent.coordY] = y
                 del row[""]
-                writer.writerow(row) 
+                writer.writerow(row)
+                if wpg.cancelat:
+                    self.close()
+                    self.parent.close()
+                    break
             wpg.errors
             self.lblExplicacio4.setText(
             "Aquestes són les adreces que no s'han pogut geolocalitzar: (%i)" %wpg.errors)
