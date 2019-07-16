@@ -484,13 +484,13 @@ color: #FFFFFF</string>
          <property name="minimumSize">
           <size>
            <width>250</width>
-           <height>20</height>
+           <height>2</height>
           </size>
          </property>
          <property name="maximumSize">
           <size>
            <width>16777215</width>
-           <height>20</height>
+           <height>2</height>
           </size>
          </property>
          <property name="styleSheet">

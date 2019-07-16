@@ -248,3 +248,6 @@ QMenu::item:selected{
     color: #F9F9F9;
 }
 
+QStatusBar{
+    padding: 0px;
+}
