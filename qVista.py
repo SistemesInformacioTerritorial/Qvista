@@ -419,7 +419,7 @@ class QVista(QMainWindow, Ui_MainWindow):
     def preparacioEntornGrafic(self):
         # Canvas
         #llistaBotons = ['apuntar', 'zoomIn', 'zoomOut', 'panning', 'centrar']
-        llistaBotons = ['streetview','apuntar', 'zoomIn', 'zoomOut', 'panning', 'centrar']
+        llistaBotons = ['streetview','apuntar', 'zoomIn', 'zoomOut', 'panning', 'centrar', 'enrere', 'endavant']
         
         self.canvas = QvCanvas(llistaBotons=llistaBotons, posicioBotonera = 'SO', botoneraHoritzontal = False, pare=self)
 
