@@ -39,6 +39,7 @@ from moduls.QvToolButton import QvToolButton
 from moduls.QvMenuBar import QvMenuBar
 from moduls.QvVideo import QvVideo
 from moduls.QvNouMapa import QvNouMapa
+from moduls.QvVisorHTML import QvVisorHTML
 import re
 import csv
 import os
@@ -266,7 +267,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         Keyword Arguments:
             rang {Rect} -- El rang amb el que s'ha d'obrir el projecte (default: {None})
         """
-
+        if projecte.strip()=='': return
         # Obrir el projecte i col.locarse en rang
         self.project.read(projecte)
         self.pathProjecteActual = projecte
@@ -299,6 +300,17 @@ class QVista(QMainWindow, Ui_MainWindow):
         if self.llegenda.player is None:
             self.llegenda.setPlayer('imatges/Spinner_2.gif', 150, 150)
         self.actualitzaMapesRecents(self.pathProjecteActual)
+
+        
+        metadades=Path(self.pathProjecteActual).with_suffix('.htm')
+        if os.path.isfile(metadades):
+            def obrirMetadades():
+                visor=QvVisorHTML(metadades,'Informació del mapa',logo=False,parent=self)
+                visor.exec_()
+            self.botoMetadades.show()
+            self.botoMetadades.clicked.connect(obrirMetadades)
+        else:
+            self.botoMetadades.hide()
 
         # self.metadata = self.project.metadata()
         # print ('Author: '+self.metadata.author())
@@ -1265,6 +1277,11 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.botoMapeta.setIconSize(QSize(24,24))
         self.botoMapeta.clicked.connect(self.mapeta.ferPetit)
         self.botoMapeta.setCursor(QvConstants.cursorClick())
+
+        self.botoMetadades.setIcon(QIcon('Imatges/information-variant.png'))
+        self.botoMetadades.setStyleSheet(stylesheetBotons)
+        self.botoMetadades.setIconSize(QSize(24,24))
+        self.botoMetadades.setCursor(QvConstants.cursorClick())
 
 
         

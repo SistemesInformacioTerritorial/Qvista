@@ -194,7 +194,7 @@ QvPushButton {
 QvPushButton:checked{
     background-color: #DDDDDD;
     color: #38474F;
-	border: 0px;
+	border: 1px solid #FF6215;
 	padding: 2px 2px;
 } 
 
