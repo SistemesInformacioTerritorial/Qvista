@@ -215,6 +215,7 @@ class QvCarregaCsvPage(QWizardPage):
 
     def showEvent(self, event):
         super().showEvent(event)
+        # qApp.processEvents()
         if hasattr(self, 'table'):
             self.table.recarrega(self.parent.separador)
 
@@ -296,6 +297,7 @@ class QvCarregaCsvTriaSep(QvCarregaCsvPage):
         '''
         super().__init__(parent)
         # self.setSubTitle('Tria del separador de camps')
+        self.parent = parent
         self.layout = QVBoxLayout(self)
         self.layout.setSpacing(20)
         self.lblExplicacio1 = QLabel(
@@ -650,11 +652,13 @@ class QvCarregaCsvGeneraCoords(QvCarregaCsvPage):
         self.lblExplicacio4 = QLabel()
         self.lblExplicacio4.setText("Aquestes són les adreces que no s'han pogut geolocalitzar:")
         self.layout.addWidget(self.lblExplicacio4)
+        self.lblExplicacio4.hide()
         self.scrollErrors = QScrollArea()
         self.scrollErrors.setFixedHeight(75)
         self.scrollErrors.setWidgetResizable(True)
         self.lblAdrecesError.setContentsMargins(10, 5, 10, 5)
         self.scrollErrors.setWidget(self.lblAdrecesError)
+        self.scrollErrors.hide()
         self.layout.addWidget(self.scrollErrors)
         self.showed = False
 
@@ -703,6 +707,7 @@ class QvCarregaCsvGeneraCoords(QvCarregaCsvPage):
                         i+=1
                     jajasalu2.flush()
                     midalinia=os.path.getsize(jajasalu2.name)/linies_a_mirar
+                    jajasalu2.seek(0)
                 mida=os.path.getsize(fileCsv.name)
                 #for _ in reader: mida+=1
             except:
@@ -826,12 +831,16 @@ class QvCarregaCsvGeneraCoords(QvCarregaCsvPage):
                 del row[""]
                 writer.writerow(row)
                 if wpg.cancelat:
-                    self.close()
                     self.parent.close()
+                    # del self
                     break
-            wpg.errors
-            self.lblExplicacio4.setText(
-            "Aquestes són les adreces que no s'han pogut geolocalitzar: (%i)" %wpg.errors)
+            if wpg.cancelat:
+                return
+            else:
+                self.lblExplicacio4.show()
+                self.scrollErrors.show()
+                self.lblExplicacio4.setText(
+                "Aquestes són les adreces que no s'han pogut geolocalitzar: (%i)" %wpg.errors)
         self.mostraTaula(completa=False, guardar = True)
         #self.recarregaTaula(completa=False)
         qApp.processEvents()
