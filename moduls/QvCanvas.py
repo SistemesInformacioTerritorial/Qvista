@@ -267,12 +267,14 @@ class QvCanvas(QgsMapCanvas):
                 self.layoutBotoneraMapa.addWidget(self.bEnrere)
                 self.bEnrere.setCursor(QvConstants.cursorFletxa())
                 self.bEnrere.clicked.connect(self.zoomToPreviousExtent)
+                self.bEnrere.setCheckable(False)
             if 'endavant' in self.llistaBotons:
                 self.bEndavant=self._botoMapa('Imatges/zoom-next.png')
                 self.bEndavant.setToolTip('Avançar al zoom següent')
                 self.layoutBotoneraMapa.addWidget(self.bEndavant)
                 self.bEndavant.setCursor(QvConstants.cursorFletxa())
                 self.bEndavant.clicked.connect(self.zoomToNextExtent)
+                self.bEndavant.setCheckable(False)
             if "streetview" in self.llistaBotons:
                 self.bstreetview = self._botoMapa('imatges/littleMan.png') 
                 self.bstreetview.setToolTip('Google Street view')
@@ -284,10 +286,11 @@ class QvCanvas(QgsMapCanvas):
                 self.iconaMaximitza=QIcon('imatges/fullscreen.png')
                 self.iconaMinimitza=QIcon('imatges/fullscreen-exit.png')
                 self.bMaximitza = self._botoMapa('imatges/fullscreen.png') 
-                self.bMaximitza.setToolTip('Google Street view')
+                self.bMaximitza.setToolTip('Pantalla completa (F11)')
                 self.layoutBotoneraMapa.addWidget(self.bMaximitza)   
                 self.bMaximitza.setCursor(QvConstants.cursorFletxa()) 
                 self.bMaximitza.clicked.connect(self.pare.ferGran)  
+                self.bMaximitza.setCheckable(False)
 
         # spacer = QSpacerItem(0, 50, QSizePolicy.Expanding, QSizePolicy.Maximum)
         # self.layoutBotoneraMapa.addSpacerItem(spacer)

@@ -170,6 +170,12 @@ color: #FFFFFF</string>
              </item>
              <item>
               <widget class="QPushButton" name="lblTitolProjecte">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
                <property name="font">
                 <font>
                  <family>Arial</family>
@@ -181,9 +187,10 @@ color: #FFFFFF</string>
                </property>
                <property name="styleSheet">
                 <string notr="true">background-color: #F9F9F9 transparent;
-    color: white;
-    margin: 0px;
-    border: 0px;</string>
+color: white;
+margin: 0px;
+border: 0px;
+text-align: left;</string>
                </property>
                <property name="text">
                 <string>Qualificacions urbanístiques i suspensions</string>
@@ -191,17 +198,11 @@ color: #FFFFFF</string>
               </widget>
              </item>
              <item>
-              <spacer name="horizontalSpacer">
-               <property name="orientation">
-                <enum>Qt::Horizontal</enum>
+              <widget class="QPushButton" name="botoMetadades">
+               <property name="text">
+                <string/>
                </property>
-               <property name="sizeHint" stdset="0">
-                <size>
-                 <width>40</width>
-                 <height>20</height>
-                </size>
-               </property>
-              </spacer>
+              </widget>
              </item>
              <item>
               <widget class="QPushButton" name="botoVeureLlegenda">
