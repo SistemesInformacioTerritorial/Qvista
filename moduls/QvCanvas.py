@@ -284,7 +284,7 @@ class QvCanvas(QgsMapCanvas):
                 self.iconaMaximitza=QIcon('imatges/fullscreen.png')
                 self.iconaMinimitza=QIcon('imatges/fullscreen-exit.png')
                 self.bMaximitza = self._botoMapa('imatges/fullscreen.png') 
-                self.bMaximitza.setToolTip('Google Street view')
+                self.bMaximitza.setToolTip('Pantalla completa')
                 self.layoutBotoneraMapa.addWidget(self.bMaximitza)   
                 self.bMaximitza.setCursor(QvConstants.cursorFletxa()) 
                 self.bMaximitza.clicked.connect(self.pare.ferGran)  

@@ -69,18 +69,22 @@ class Ui_MainWindow(object):
         self.leTitolProjecte.setObjectName("leTitolProjecte")
         self.horizontalLayout_4.addWidget(self.leTitolProjecte)
         self.lblTitolProjecte = QtWidgets.QPushButton(self.frame_15)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Fixed)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.lblTitolProjecte.sizePolicy().hasHeightForWidth())
+        self.lblTitolProjecte.setSizePolicy(sizePolicy)
         font = QtGui.QFont()
         font.setFamily("Arial")
         font.setPointSize(14)
         self.lblTitolProjecte.setFont(font)
         self.lblTitolProjecte.setStyleSheet("background-color: #F9F9F9 transparent;\n"
-"    color: white;\n"
-"    margin: 0px;\n"
-"    border: 0px;")
+"color: white;\n"
+"margin: 0px;\n"
+"border: 0px;\n"
+"text-align: left;")
         self.lblTitolProjecte.setObjectName("lblTitolProjecte")
         self.horizontalLayout_4.addWidget(self.lblTitolProjecte)
-        spacerItem = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
-        self.horizontalLayout_4.addItem(spacerItem)
         self.botoVeureLlegenda = QtWidgets.QPushButton(self.frame_15)
         self.botoVeureLlegenda.setMinimumSize(QtCore.QSize(24, 24))
         self.botoVeureLlegenda.setStyleSheet("")

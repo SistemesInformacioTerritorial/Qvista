@@ -157,7 +157,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.preparacioImpressio()
         # self.preparacioGrafiques()
         self.preparacioSeleccio()
-        self.preparacioEntorns()
+        # self.preparacioEntorns()
         
 
         # Eina inicial del mapa = Panning
@@ -1244,6 +1244,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.botoVeureLlegenda.setStyleSheet(stylesheetBotons)
         self.botoVeureLlegenda.setIconSize(QSize(24, 24))
         self.botoVeureLlegenda.clicked.connect(self.obrirLlegenda)
+        self.botoVeureLlegenda.setCursor(QvConstants.cursorClick())
 
         self.iconaSenseCanvisPendents = QIcon('Imatges/content-save.png')
         self.iconaAmbCanvisPendents = QIcon('Imatges/content-save_orange.png')
@@ -1251,16 +1252,19 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.botoDesarProjecte.setStyleSheet(stylesheetBotons)
         self.botoDesarProjecte.setIconSize(QSize(24, 24))
         self.botoDesarProjecte.clicked.connect(guardarProjecte) 
+        self.botoDesarProjecte.setCursor(QvConstants.cursorClick())
 
         self.botoObrirQGis.setIcon(QIcon('Imatges/qgis-3.png'))
         self.botoObrirQGis.setStyleSheet(stylesheetBotons)
         self.botoObrirQGis.setIconSize(QSize(24, 24))
         self.botoObrirQGis.clicked.connect(self.obrirEnQgis)
+        self.botoObrirQGis.setCursor(QvConstants.cursorClick())
 
         self.botoMapeta.setIcon(QIcon('Imatges/Mapeta.png'))
         self.botoMapeta.setStyleSheet(stylesheetBotons)
         self.botoMapeta.setIconSize(QSize(24,24))
         self.botoMapeta.clicked.connect(self.mapeta.ferPetit)
+        self.botoMapeta.setCursor(QvConstants.cursorClick())
 
 
         
@@ -1649,7 +1653,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         #self.bar.addAction(self.actCataleg)
         self.menuMapes = self.bar.addMenu ("Mapes")
         self.menuCapes = self.bar.addMenu ("Capes")
-        self.menuEntorns = self.bar.addMenu("Entorns")
+        # self.menuEntorns = self.bar.addMenu("Entorns")
         self.menuUtilitats = self.bar.addMenu("Utilitats")
         # self.menuFuncions = self.bar.addMenu("  Eines  ")
         self.menuFuncions = QMenu()
