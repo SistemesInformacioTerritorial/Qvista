@@ -265,6 +265,10 @@ class QvLlegenda(QgsLayerTreeView):
     #     for m in msgs:
     #         print(m[0], '-', m[1])
 
+    def modificacioProjecte(self, txt='userModification'):
+        if self.iniSignal:
+            self.projecteModificat.emit(txt)
+
     def iniProjecte(self, num, tot):
         # La carga de un proyecto se inicia con la capa #0
         if self.iniSignal:
@@ -425,8 +429,7 @@ class QvLlegenda(QgsLayerTreeView):
             else:
                 self.addIndicator(node, self.iconaFiltre)
             capa.nameChanged.emit()
-            if self.iniSignal:
-                self.projecteModificat.emit('filterModified')
+            self.modificacioProjecte('filterModified')
 
     def nouProjecte(self):
         # Borrar tabs de atributos si existen
@@ -672,15 +675,13 @@ class QvLlegenda(QgsLayerTreeView):
     #     self.defaultActions().addGroup()
 
     def renameGroupOrLayer(self):
-        if self.iniSignal:
-            self.projecteModificat.emit('renameGroupOrLayer')
+        self.modificacioProjecte('renameGroupOrLayer')
         self.defaultActions().renameGroupOrLayer()
 
     def removeGroupOrLayer(self):
         node = self.currentNode()
         if node is not None:
             node.parent().removeChildNode(node)
-            # self.projecteModificat.emit('removeGroupOrLayer')
 
     def addLayersFromFile(self):
         dlgLayers = QFileDialog()
@@ -690,7 +691,6 @@ class QvLlegenda(QgsLayerTreeView):
             if layers is not None and len(layers) > 0:
                 loaded = self.project.addMapLayers(layers, True)
                 if loaded is not None and len(loaded) > 0:
-                    # self.projecteModificat.emit('addLayersFromFile')
                     if set(layers) != set(loaded):
                         print('Alguna capa no se pudo cargar')
             self.directory = os.path.dirname(nfile)
