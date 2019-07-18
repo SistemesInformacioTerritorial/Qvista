@@ -3,7 +3,7 @@
 from qgis.core import (QgsProject, QgsLegendModel, QgsLayerDefinition, QgsMapLayer,
                        QgsLayerTree, QgsLayerTreeNode, QgsLayerTreeUtils)
 from qgis.gui import (QgsLayerTreeView, QgsLayerTreeViewMenuProvider, QgsLayerTreeMapCanvasBridge,
-                      QgsLayerTreeViewIndicator)
+                      QgsLayerTreeViewIndicator, QgsLayerTreeViewDefaultActions)
 from qgis.PyQt.QtWidgets import QAction, QFileDialog, QWidget, QPushButton, QVBoxLayout, QHBoxLayout
 from qgis.PyQt.QtGui import QIcon, QColor
 from qgis.PyQt.QtCore import Qt, pyqtSignal, QUrl
@@ -192,6 +192,7 @@ class QvLlegenda(QgsLayerTreeView):
     clicatMenuContexte = pyqtSignal(str)
     carregantProjecte = pyqtSignal()
     projecteCarregat = pyqtSignal(str)
+    projecteModificat = pyqtSignal(str)
 
     def __init__(self, canvas=None, atributs=None, canviCapaActiva=None):
         QgsLayerTreeView.__init__(self)
@@ -255,6 +256,10 @@ class QvLlegenda(QgsLayerTreeView):
             self.canvas.renderStarting.connect(self.fiProjecte)
             # self.canvas.renderComplete.connect(self.fiProjecte)
 
+        self.fSignal = lambda: self.projecteModificat.emit('canvasLayersChanged')
+        self.iniSignal = False
+        # self.defActions = QgsLayerTreeViewDefaultActions(self)
+
     # def msgCapes(self, nomCapa, msgs):
     #     print('Capa:', nomCapa)
     #     for m in msgs:
@@ -262,6 +267,10 @@ class QvLlegenda(QgsLayerTreeView):
 
     def iniProjecte(self, num, tot):
         # La carga de un proyecto se inicia con la capa #0
+        if self.iniSignal:
+            self.bridge.canvasLayersChanged.disconnect(self.fSignal)
+            self.iniSignal = False
+
         if self.projecteCapes is None and num == 0:
             self.projecteCapes = False
             if self.player is not None:
@@ -282,6 +291,9 @@ class QvLlegenda(QgsLayerTreeView):
                 self.player.mediaPlayer.pause()
                 self.player.hide()
             self.projecteCarregat.emit(self.project.fileName())
+            if not self.iniSignal:
+                self.bridge.canvasLayersChanged.connect(self.fSignal)
+                self.iniSignal = True
 
     # def iniProjecte(self, num, tot):
     #     # La carga de un proyecto se inicia con la capa #0
@@ -413,6 +425,8 @@ class QvLlegenda(QgsLayerTreeView):
             else:
                 self.addIndicator(node, self.iconaFiltre)
             capa.nameChanged.emit()
+            if self.iniSignal:
+                self.projecteModificat.emit('filterModified')
 
     def nouProjecte(self):
         # Borrar tabs de atributos si existen
@@ -558,7 +572,7 @@ class QvLlegenda(QgsLayerTreeView):
         act = QAction()
         act.setText("Canvia nom")
         # act.setIcon(QIcon(':/Icones/ic_file_upload_black_48dp.png'))
-        act.triggered.connect(self.defaultActions().renameGroupOrLayer)  # , type = Qt.DirectConnection)
+        act.triggered.connect(self.renameGroupOrLayer)  # , type = Qt.DirectConnection)
         self.accions.afegirAccio('renameGroupOrLayer', act)
 
         #
@@ -653,16 +667,32 @@ class QvLlegenda(QgsLayerTreeView):
             pass
         return tipo
 
+    # def addGroup(self):
+    #     self.projecteModificat.emit('addGroup')
+    #     self.defaultActions().addGroup()
+
+    def renameGroupOrLayer(self):
+        if self.iniSignal:
+            self.projecteModificat.emit('renameGroupOrLayer')
+        self.defaultActions().renameGroupOrLayer()
+
     def removeGroupOrLayer(self):
         node = self.currentNode()
-        node.parent().removeChildNode(node)
+        if node is not None:
+            node.parent().removeChildNode(node)
+            # self.projecteModificat.emit('removeGroupOrLayer')
 
     def addLayersFromFile(self):
         dlgLayers = QFileDialog()
         nfile, ok = dlgLayers.getOpenFileName(None, "Afegir Capes Qgis", self.directory, "Capes Qgis (*.qlr)")
         if ok and nfile != '':
             layers = QgsLayerDefinition.loadLayerDefinitionLayers(nfile)
-            self.project.addMapLayers(layers, True)
+            if layers is not None and len(layers) > 0:
+                loaded = self.project.addMapLayers(layers, True)
+                if loaded is not None and len(loaded) > 0:
+                    # self.projecteModificat.emit('addLayersFromFile')
+                    if set(layers) != set(loaded):
+                        print('Alguna capa no se pudo cargar')
             self.directory = os.path.dirname(nfile)
 
     def saveLayersToFile(self):
@@ -957,6 +987,8 @@ if __name__ == "__main__":
 
         # Conexión de la señal con la función menuContexte para personalizar el menú
         leyenda.clicatMenuContexte.connect(menuContexte)
+
+        leyenda.projecteModificat.connect(print)
 
         app.aboutToQuit.connect(QvApp().logFi)
 
