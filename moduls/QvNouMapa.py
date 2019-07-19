@@ -126,7 +126,7 @@ class QvNouMapa(QDialog):
         self.botoAcceptar.setEnabled(False)
         self.botoAcceptar.clicked.connect(self.carrega)
 
-        self.botoCancelar=QvPushButton('Cancelar',parent=self)
+        self.botoCancelar=QvPushButton('Cancel·lar',parent=self)
         self.botoCancelar.clicked.connect(self.close)
 
         self.layoutBotons.addStretch()

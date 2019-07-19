@@ -1016,6 +1016,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.actExecuteChrome.triggered.connect(executeChrome)
         
         self.actDocumentacio=QAction('Documentació',self)
+        self.actDocumentacio.setIcon(QIcon('Imatges/file-document.png'))
         self.actDocumentacio.triggered.connect(obreDocumentacio)
 
         
@@ -1175,7 +1176,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         # self.actBug.triggered.connect(self.reportarBug)
 
         #bEnviar.clicked.connect(lambda: reportarProblema(leTitol.text(), leDescripcio.text()))
-        self.suggeriments=QvSuggeriments(reportarProblema)
+        self.suggeriments=QvSuggeriments(reportarProblema,self)
         self.actBug = QAction("Problemes o suggeriments ", self)
         icon=QIcon('imatges/bug.png')
         self.actBug.setIcon(icon)
@@ -2908,7 +2909,9 @@ def executeChrome():
     process.start(pathChrome)
     app.processEvents()
 def obreDocumentacio():
+    qV.startMovie()
     doc=QvDocumentacio(qV)
+    qV.stopMovie()
     doc.show()
 def carregarFieldsCalculadora():
     # print(qV.calculadora.ui.cbLayers.currentText())

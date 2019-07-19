@@ -15,7 +15,7 @@ class QvDocumentacio(QDialog):
         #Layout principal. Tot aquí
         self.layout=QVBoxLayout(self)
         #Layout de la capçalera
-        self.layoutCapcalera=QHBoxLayout(self)
+        self.layoutCapcalera=QHBoxLayout()
         self.lblTitol=QLabel('  Documentació')
         self.layoutCapcalera.addWidget(self.lblTitol)
 
@@ -28,6 +28,7 @@ class QvDocumentacio(QDialog):
         self.treeView.setRootIndex(rootPath)
         self.treeView.clicked.connect(self.clicat)
         self.treeView.doubleClicked.connect(self.obrir)
+        # self.treeView.introPressed.connect(self.obrir)
 
 
         self.layoutBotonera=QHBoxLayout()
@@ -59,9 +60,13 @@ class QvDocumentacio(QDialog):
             self.treeView.header().hideSection(i)
         self.treeView.setHeaderHidden(True)
         self.treeView.adjustSize()
+        self.treeView.setAnimated(True)
+        # self.treeView.setStyleSheet('QTreeView{background: transparent; border: 1px solid #38474F;}')
+        self.treeView.setStyleSheet('QTreeView{margin: 20px 2px 0px 20px; border: none;}')
 
         self.layout.setContentsMargins(0,0,0,0)
         self.layout.setSpacing(0)
+        self.layoutBotonera.setContentsMargins(10,10,10,10)
         # self.treeView.setStyleSheet('padding: 5px; background: white')
     def clicat(self,index):
         path=self.qModel.fileInfo(index).absoluteFilePath()
@@ -106,7 +111,7 @@ class QvDocumentacio(QDialog):
         self.oldPos = event.globalPos()
 
     def keyPressEvent(self, event):
-        if event.key() == Qt.Key_Escape or event.key() == Qt.Key_Return:
+        if event.key() == Qt.Key_Escape:
             self.close()
 if __name__=='__main__':
     app = QtWidgets.QApplication(sys.argv)
