@@ -20,6 +20,7 @@ arxiuTmpAvis=tempdir+'ultimAvisObert'
 arxiuTmpNews=tempdir+'ultimaNewOberta'
 arxiuMapesRecents=tempdir+'mapesRecents'
 carpetaDocuments=docdir+'Documentacio/'
+arxiuInfoQVista=docdir+'InfoQVista.pdf'
 
 if not os.path.exists(QvTempdir):
     try:

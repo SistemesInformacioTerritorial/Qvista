@@ -21,6 +21,12 @@ QWidget::window, QDialog {
     margin: 2px #38474F;
 } 
 
+QvVideo{
+    background: transparent;
+    margin: 0px;
+    border: 0px;
+}
+
 QWidget #layoutFosc {
     background-color: #38474F solid; 
     border: 15px;

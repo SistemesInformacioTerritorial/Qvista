@@ -79,7 +79,10 @@ class QvDocumentacio(QDialog):
     def obrir(self):
         path=self.qModel.fileInfo(self.index).absoluteFilePath()
         if os.path.isfile(path):
+            self.parentWidget().startMovie()
             os.startfile(path)
+            time.sleep(1)
+            self.parentWidget().stopMovie()
         else:
             pass
         #Ara la fem
