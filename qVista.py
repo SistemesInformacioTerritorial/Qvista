@@ -2272,9 +2272,9 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.leXY.setText("")
 
     def editarEscala(self):
-        if QgsExpressionContextUtils.projectScope(self.project).variable('project_escala'):
+        if QgsExpressionContextUtils.projectScope(self.project).variable('qV_escales'):
             if self.comboEscales.count() == 0:
-                valors = QgsExpressionContextUtils.projectScope(self.project).variable('project_escala').split(' ')
+                valors = QgsExpressionContextUtils.projectScope(self.project).variable('qV_escales').split(' ')
                 self.comboEscales.addItems(valors)
             self.comboEscales.show()
             def botoClickat():
