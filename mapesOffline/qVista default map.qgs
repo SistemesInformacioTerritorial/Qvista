@@ -58,10 +58,10 @@
   <mapcanvas name="theMapCanvas" annotationsVisible="1">
     <units>meters</units>
     <extent>
-      <xmin>420446.32500000001164153</xmin>
-      <ymin>4573860.25</ymin>
-      <xmax>435846.67499999998835847</xmax>
-      <ymax>4591489.75</ymax>
+      <xmin>411582.54969410446938127</xmin>
+      <ymin>4577066.50500556174665689</ymin>
+      <xmax>426982.89969410444609821</xmax>
+      <ymax>4594696.00500556174665689</ymax>
     </extent>
     <rotation>0</rotation>
     <destinationsrs>
@@ -2483,7 +2483,7 @@ def my_form_open(dialog, layer, feature):
     </Paths>
     <Variables>
       <variableValues type="QStringList">
-        <value>250 1500 3000 6000 12000 24000 48000</value>
+        <value>100 200 250 500 1000 2000 2500 5000 10000 20000 25000 50000</value>
       </variableValues>
       <variableNames type="QStringList">
         <value>qV_escales</value>

@@ -326,16 +326,18 @@ class QVista(QMainWindow, Ui_MainWindow):
         #     self.lblTirotattolProjecte.setText(titolEntorn)
     
     def startMovie(self):
-        self.player = QvVideo("Imatges/Spinner_2.gif", 160, 160)
+        self.player = QvVideo("Imatges/Spinner_2.gif", 128, 128)
         self.player_ = QvConstants.afegeixOmbraWidget(self.player)
         self.player.setModal(True)
         self.player.activateWindow()
-        self.player.show()
         self.player.mediaPlayer.play()
+        self.player.show()
+        
 
     def stopMovie(self):
-        self.player.mediaPlayer.pause()
         self.player.hide()
+        self.player.mediaPlayer.pause()
+        
 
 
     def keyPressEvent(self, event):
@@ -2277,10 +2279,10 @@ class QVista(QMainWindow, Ui_MainWindow):
                 valors = QgsExpressionContextUtils.projectScope(self.project).variable('qV_escales').split(' ')
                 self.comboEscales.addItems(valors)
             self.comboEscales.show()
-            def botoClickat():
+            def comboClickat():
                 self.leScale.setText(self.comboEscales.currentText())
                 self.escalaEditada()
-            self.comboEscales.activated.connect(botoClickat)
+            self.comboEscales.activated.connect(comboClickat)
             # self.comboEscales.hide()
             # print("aqui posem les escales")
 
@@ -2292,7 +2294,7 @@ class QVista(QMainWindow, Ui_MainWindow):
             self.lScale.addWidget(self.leScale)
             # self.leScale.setGeometry(48,0,100,20)
             self.leScale.setMinimumWidth(10)
-            # self.leScale.setMaximumWidth(35)
+            self.leScale.setMaximumWidth(70)
             self.leScale.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Minimum)
             self.leScale.returnPressed.connect(self.escalaEditada)
             self.leScale.show()
