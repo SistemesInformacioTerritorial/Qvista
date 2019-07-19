@@ -40,6 +40,7 @@ from moduls.QvMenuBar import QvMenuBar
 from moduls.QvVideo import QvVideo
 from moduls.QvNouMapa import QvNouMapa
 from moduls.QvVisorHTML import QvVisorHTML
+from moduls.QvDocumentacio import QvDocumentacio
 import re
 import csv
 import os
@@ -1013,6 +1014,10 @@ class QVista(QMainWindow, Ui_MainWindow):
         iconaChrome=QIcon('imatges/calc.png')
         self.actExecuteChrome.setIcon(iconaChrome)
         self.actExecuteChrome.triggered.connect(executeChrome)
+        
+        self.actDocumentacio=QAction('Documentació',self)
+        self.actDocumentacio.setIcon(QIcon('Imatges/file-document.png'))
+        self.actDocumentacio.triggered.connect(obreDocumentacio)
 
         
         self.actImprimir = QAction("Imprimir", self)
@@ -1171,7 +1176,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         # self.actBug.triggered.connect(self.reportarBug)
 
         #bEnviar.clicked.connect(lambda: reportarProblema(leTitol.text(), leDescripcio.text()))
-        self.suggeriments=QvSuggeriments(reportarProblema)
+        self.suggeriments=QvSuggeriments(reportarProblema,self)
         self.actBug = QAction("Problemes o suggeriments ", self)
         icon=QIcon('imatges/bug.png')
         self.actBug.setIcon(icon)
@@ -1707,6 +1712,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.menuUtilitats.setFont(QvConstants.FONTSUBTITOLS)
         self.menuUtilitats.styleStrategy = QFont.PreferAntialias or QFont.PreferQuality
         self.menuUtilitats.addAction(self.actExecuteChrome)
+        self.menuUtilitats.addAction(self.actDocumentacio)
 
 
         self.menuFuncions.setFont(QvConstants.FONTSUBTITOLS)
@@ -2861,7 +2867,7 @@ def guardarProjecte():
         qV.botoDesarProjecte.setIcon(qV.iconaSenseCanvisPendents)
         return True
         
-
+#Anomena i desa (AKA Guardar como)
 def guardarDialegProjecte():
     nfile,_ = QFileDialog.getSaveFileName(None,"Guardar Projecte Qgis", ".", "Projectes Qgis (*.qgs)")
     if nfile=='': return False
@@ -2902,7 +2908,11 @@ def executeChrome():
     pathChrome = "c:/windows/system32/calc.exe"
     process.start(pathChrome)
     app.processEvents()
-
+def obreDocumentacio():
+    qV.startMovie()
+    doc=QvDocumentacio(qV)
+    qV.stopMovie()
+    doc.show()
 def carregarFieldsCalculadora():
     # print(qV.calculadora.ui.cbLayers.currentText())
     layer = QvLlegenda.capaPerNom(qV,qV.calculadora.ui.cbLayers.currentText())

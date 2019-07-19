@@ -117,12 +117,12 @@ QLabel#fosca{
 }
 
 QLineEdit {
-    border: 1px solid #79909B; 
+    border: 1px solid #DDDDDD; 
     background-color: white;
 }
 
 QTextEdit {
-    border:1px solid #38474F;
+    border:1px solid #DDDDDD;
     background-color: white;
 }
 
@@ -251,3 +251,8 @@ QMenu::item:selected{
 QStatusBar{
     padding: 0px;
 }
+
+/* QTreeView{
+    margin: 20px 2px 0px 20px;
+    border: none;
+} */
