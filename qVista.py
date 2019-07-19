@@ -2205,22 +2205,21 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.bScale = QvPushButton(flat=True)
         self.bScale.setStyleSheet(stylesheetButton)
         self.lScale.addWidget(self.bScale)
-
         # self.bScale.setFrameStyle(QFrame.StyledPanel )
         # self.bScale.setMinimumWidth( 140 )
         self.bScale.clicked.connect(self.editarEscala)
         self.statusbar.addPermanentWidget( self.wScale, 0 )
         self.editantEscala = False
+        self.comboEscales = QComboBox()
+        self.lScale.addWidget(self.comboEscales)
+        self.comboEscales.hide()
 
         self.bOrientacio = QvPushButton(flat=True)
         self.bOrientacio.setStyleSheet(stylesheetButton)
-
         # self.bScale.setFrameStyle(QFrame.StyledPanel )
-        
         # self.bOrientacio.setMinimumWidth( 140 )
         self.statusbar.addPermanentWidget( self.bOrientacio, 0 )
 
-    
         self.lblProjecte = QLabel()
         self.lblProjecte.setStyleSheet(styleheetLabel)
         self.lblProjecte.setFrameStyle(QFrame.StyledPanel )
@@ -2273,6 +2272,18 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.leXY.setText("")
 
     def editarEscala(self):
+        if QgsExpressionContextUtils.projectScope(self.project).variable('project_escala'):
+            if self.comboEscales.count() == 0:
+                valors = QgsExpressionContextUtils.projectScope(self.project).variable('project_escala').split(' ')
+                self.comboEscales.addItems(valors)
+            self.comboEscales.show()
+            def botoClickat():
+                self.leScale.setText(self.comboEscales.currentText())
+                self.escalaEditada()
+            self.comboEscales.activated.connect(botoClickat)
+            # self.comboEscales.hide()
+            # print("aqui posem les escales")
+
         if self.editantEscala == False:
             self.editantEscala = True
             self.bScale.setText(' Escala 1: ')
@@ -2295,6 +2306,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.lScale.removeWidget(self.leScale)
         self.canvas.zoomScale(int(escala))
         self.editantEscala = False
+        self.comboEscales.hide()
 
     def centrarMapa(self):
         qV.canvas.zoomToFullExtent()
