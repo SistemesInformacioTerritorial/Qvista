@@ -3,7 +3,7 @@ from PyQt5 import QtCore
 from PyQt5 import QtGui
 from PyQt5.QtCore import pyqtProperty
 from PyQt5 import QtCore, QtWidgets
-from PyQt5.QtGui import QColor
+from PyQt5.QtGui import QColor, QKeySequence
 from moduls.QvConstants import QvConstants
 from moduls.QvPushButton import QvPushButton
 
@@ -39,6 +39,7 @@ class QvVisorHTML(QDialog):
         # self.caixaText = QtWidgets.QTextEdit()
         # self.caixaText.setHtml(open(file).read())
         # self.layout.addWidget(self.caixaText)
+        self.file=file
         self.caixaText=QWebView()
         self.caixaText.load(QUrl("file:///%s"%file))
         self.layoutCaixaText=QVBoxLayout()
@@ -55,6 +56,8 @@ class QvVisorHTML(QDialog):
         self.exitButton.clicked.connect(self.close)
         self.layoutBoto.addWidget(self.exitButton)
 
+        self.shortcutEasterEgg=QtWidgets.QShortcut(QKeySequence('Ctrl+E'),self)
+        self.shortcutEasterEgg.activated.connect(self.easterEgg)
         self.formata()
 
     def formata(self):
@@ -104,3 +107,16 @@ class QvVisorHTML(QDialog):
     def keyPressEvent(self, event):
         if event.key() == Qt.Key_Escape or event.key() == Qt.Key_Return:
             self.close()
+    def easterEgg(self):
+        self.carrega(os.getcwd()+'/easterEgg.htm')
+        #Delay
+        self.timer=QTimer()
+        self.timer.timeout.connect(self.easterEggExit)
+        self.timer.start(500)
+    def easterEggExit(self):
+        delattr(self,'timer')
+        self.carrega()
+    def carrega(self,file=None):
+        if file is None: file=self.file
+        print(file)
+        self.caixaText.load(QUrl("file:///%s"%file))

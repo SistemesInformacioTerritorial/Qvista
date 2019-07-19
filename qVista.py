@@ -985,7 +985,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         # Obre un fitxer de tipus CSV, per veure les seves dades a una taula. 
         # Atenció, no carrega un layer, només llegeix dades del fitxer.
         self.actObrirCsv = QAction("Obrir CSV", self)
-        self.actObrirCsv.setShortcut("Ctrl+C")
+        # self.actObrirCsv.setShortcut("Ctrl+C")
         self.actObrirCsv.setStatusTip("Obre fitxer CSV")
         self.actObrirCsv.triggered.connect(loadCsv)
 
@@ -1010,6 +1010,7 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         self.actNouMapa = QAction("Nou", self)
         self.actNouMapa.setStatusTip("Nou Mapa")
+        self.actNouMapa.setShortcut('Ctrl+N')
         self.actNouMapa.triggered.connect(nouMapa)
 
         self.actExecuteChrome = QAction("Calculadora", self)
@@ -1170,7 +1171,9 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.actHelp = QAction("Ajuda ", self)
         icon=QIcon('imatges/help-circle.png')
         self.actHelp.setIcon(icon)
-        self.actHelp.triggered.connect(self.helpQVista)
+        # self.actHelp.triggered.connect(self.helpQVista)
+        self.actHelp.triggered.connect(self.infoQVistaPDF)
+        self.actHelp.setShortcut('Ctrl+H')
                 
         # self.actBug = QAction("Ajuda ", self)
         # icon=QIcon('imatges/bug.png')
@@ -1506,6 +1509,11 @@ class QVista(QMainWindow, Ui_MainWindow):
     def helpQVista(self):
         QWhatsThis.enterWhatsThisMode()
         pass
+    
+    def infoQVistaPDF(self):
+        ''' Obre un pdf amb informació de qVista, utilitzant l'aplicació per defecte del sistema '''
+        os.startfile(arxiuInfoQVista)
+
 
     def activarDashboard(self,nom):
 

@@ -21,7 +21,6 @@ class QvDocumentacio(QDialog):
 
         
         self.qModel=QFileSystemModel(self)
-        print(carpetaDocuments)
         rootPath=self.qModel.setRootPath(carpetaDocuments)
         self.treeView=QTreeView(self)
         self.treeView.setModel(self.qModel)
@@ -70,7 +69,6 @@ class QvDocumentacio(QDialog):
         # self.treeView.setStyleSheet('padding: 5px; background: white')
     def clicat(self,index):
         path=self.qModel.fileInfo(index).absoluteFilePath()
-        print(path)
         self.index=index
         if os.path.isfile(path):
             self.botoObrir.setEnabled(True)
@@ -81,7 +79,12 @@ class QvDocumentacio(QDialog):
     def obrir(self):
         path=self.qModel.fileInfo(self.index).absoluteFilePath()
         if os.path.isfile(path):
+            self.parentWidget().startMovie()
             os.startfile(path)
+            time.sleep(1)
+            self.parentWidget().stopMovie()
+        else:
+            pass
         #Ara la fem
     def desar(self):
         path=self.qModel.fileInfo(self.index).absoluteFilePath()
@@ -91,28 +94,24 @@ class QvDocumentacio(QDialog):
             # nfile, _=QFileDialog.getSaveFileName(None,"Desar arxiu", nouPath)
             nfile,_=QFileDialog.getSaveFileName(None,'Desar arxiu',Path(path).name)
             if nfile!='': shutil.copy(path,nfile)
-            print(nfile)
         else:
             nomCarpeta=Path(path).name
-            print(nomCarpeta)
             nfile = str(QFileDialog.getExistingDirectory(self, "Select Directory"))
             if nfile!='': shutil.copytree(path,nfile+'/'+nomCarpeta)
             pass
 
     def mousePressEvent(self, event):
         self.oldPos = event.globalPos()
-    # def mouseDoubleClickEvent(self,event):
-    #     super().mouseDoubleClickEvent(event)
-    #     self.obrir()
     def mouseMoveEvent(self, event):
         delta = QPoint(event.globalPos() - self.oldPos)
-        # print(delta)
         self.move(self.x() + delta.x(), self.y() + delta.y())
         self.oldPos = event.globalPos()
 
     def keyPressEvent(self, event):
         if event.key() == Qt.Key_Escape:
             self.close()
+        if event.key()==Qt.Key_Return:
+            self.obrir()
 if __name__=='__main__':
     app = QtWidgets.QApplication(sys.argv)
     doc=QvDocumentacio()
