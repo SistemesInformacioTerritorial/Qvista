@@ -1875,11 +1875,31 @@ class QVista(QMainWindow, Ui_MainWindow):
     def catalegCool(self):
         self.catalegCool = QvCataleg(self, self.project, self.lblTitolProjecte)
         self.catalegCool.showMaximized()
-
+    def showLblFlotant(self,txt):
+        self.lblFlotant=QLabel(txt)
+        self.lblFlotant.setFont(QvConstants.FONTTEXT)
+        self.lblFlotant.setStyleSheet('''
+            background: %s;
+            color: %s;
+            padding: 2px;
+            border: 2px solid %s;
+            border-radius: 10px;
+            margin: 0px;
+        '''%(QvConstants.COLORBLANCHTML,QvConstants.COLORFOSCHTML, QvConstants.COLORDESTACATHTML))
+        self.lblFlotant.setWindowFlags(Qt.WindowStaysOnTopHint | Qt.FramelessWindowHint)
+        self.timerLblFlotant=QTimer(self)
+        self.timerLblFlotant.setSingleShot(True)
+        self.timerLblFlotant.timeout.connect(lambda: self.lblFlotant.hide())
+        self.timerLblFlotant.start(5000)
+        self.lblFlotant.show()
+    def hideLblFlotant(self):
+        if hasattr(self,'lblFlotant'):
+            self.lblFlotant.hide()
     def ferGran(self):
         # print('JOLA')
 
         if not self.mapaMaxim:
+            self.hideLblFlotant()
             self.showMaximized()
             if hasattr(self.canvas,'bMaximitza'):
                 self.canvas.bMaximitza.setIcon(self.canvas.iconaMaximitza)
@@ -1901,6 +1921,7 @@ class QVista(QMainWindow, Ui_MainWindow):
             #     qV.showNormal()
 
         else:
+            self.showLblFlotant('Prem F-11, Esc o el botó de maximitzar per sortir de la pantalla completa')
             if hasattr(self.canvas,'bMaximitza'):
                 self.canvas.bMaximitza.setIcon(self.canvas.iconaMinimitza)
             self.dockWidgetsVisibles=[x for x in self.findChildren(QDockWidget) if x.isVisible()]
