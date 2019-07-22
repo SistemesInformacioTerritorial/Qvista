@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 
-from qgis.core import (QgsProject, QgsLegendModel, QgsLayerDefinition, QgsMapLayer,
-                       QgsLayerTree, QgsLayerTreeNode, QgsLayerTreeUtils)
+from qgis.core import (QgsProject, QgsLegendModel, QgsLayerDefinition, QgsMapLayer, QgsVectorLayer,
+                       QgsVectorFileWriter, QgsVectorLayerJoinInfo, QgsLayerTree, QgsLayerTreeNode,
+                       QgsLayerTreeUtils, QgsVectorDataProvider)
 from qgis.gui import (QgsLayerTreeView, QgsLayerTreeViewMenuProvider, QgsLayerTreeMapCanvasBridge,
                       QgsLayerTreeViewIndicator, QgsLayerTreeViewDefaultActions)
 from qgis.PyQt.QtWidgets import QAction, QFileDialog, QWidget, QPushButton, QVBoxLayout, QHBoxLayout
@@ -627,6 +628,12 @@ class QvLlegenda(QgsLayerTreeView):
         act.triggered.connect(self.removeFilter)
         self.accions.afegirAccio('removeFilter', act)
 
+        # act = QAction()
+        # act.setText("Afegeix capa CSV")
+        # # act.setIcon(QIcon(':/Icones/ic_file_upload_black_48dp.png'))ic_beach_access_black_48dp
+        # act.triggered.connect(self.addCustomCSV)
+        # self.accions.afegirAccio('addCustomCSV', act)
+
     def calcTipusMenu(self):
         # Tipos: none, group, layer, symb
         tipo = 'none'
@@ -666,6 +673,8 @@ class QvLlegenda(QgsLayerTreeView):
         elif tipo == 'none':
             if self.editable:
                 self.menuAccions += ['addGroup', 'addLayersFromFile']
+                # if QvApp().usuari in ('CPRET', 'DE1717'):
+                #     self.menuAccions += ['addCustomCSV']
         else:  # 'symb'
             pass
         return tipo
@@ -694,6 +703,19 @@ class QvLlegenda(QgsLayerTreeView):
                     if set(layers) != set(loaded):
                         print('Alguna capa no se pudo cargar')
             self.directory = os.path.dirname(nfile)
+
+    # def addCustomCSV(self):
+    #     dlgLayers = QFileDialog()
+    #     nfile, ok = dlgLayers.getOpenFileName(None, "Afegir Capa CSV", self.directory, "Capes CSV (*.csv)")
+    #     if ok and nfile != '':
+    #         # uri = 'file:///' + nfile + '?delimiter=;'
+    #         # uri = 'file:///' + nfile + '?delimiter=;&crs=epsg:25831&xField=XCalculadaqVista&yField=YCalculadaqVista'
+    #         uri = 'file:///' + nfile + '?delimiter=;&crs=epsg:25831&wktField=GEOMETRIA'
+    #         layer = QgsVectorLayer(uri, os.path.basename(nfile), 'delimitedtext')
+    #         addLayer = self.project.addMapLayer(layer)
+    #         if addLayer is None:
+    #             print('Error al añadir capa')
+    #         self.directory = os.path.dirname(nfile)
 
     def saveLayersToFile(self):
         nodes = self.selectedNodes()
@@ -948,6 +970,51 @@ if __name__ == "__main__":
                 if botonera is not None:
                     botonera.close()
 
+        def testJoin():
+
+            print(QgsVectorDataProvider.availableEncodings())
+
+            vectorLyr = QgsVectorLayer('D:/qVista/Barris.gpkg', 'Barris' , "ogr")
+            vectorLyr.setProviderEncoding("UTF-8")
+            infoLyr = QgsVectorLayer('D:/qVista/CarrecsBarri.csv', 'Carrecs' , "ogr")
+            vectorLyr.setProviderEncoding("windows-1252")
+
+            QgsVectorFileWriter.writeAsVectorFormat(vectorLyr,
+                "D:/qVista/Barris", "UTF-8", vectorLyr.crs(), "SQLite")
+
+            leyenda.project.addMapLayers([infoLyr, vectorLyr], False)
+
+            vlayer = QgsVectorLayer( "?query="
+                "select C.*, B.NOM_BARRI, B.DISTRICTE, B.GEOMETRY as GEOM from Carrecs as C "
+                "left join Barris as B on C.CODI_BARRI = B.CODI_BARRI", "CarrecsBarri", "virtual" )
+            QgsVectorFileWriter.writeAsVectorFormat(vlayer,
+                "D:/qVista/CarrecsBarri.gpkg", "UTF-8", vectorLyr.crs(), "C")
+
+            vlayer = QgsVectorLayer( "?query="
+                "select C.*, B.NOM_BARRI, B.DISTRICTE, B.GEOMETRY as GEOM from "
+                "(select count(*) AS NUM_CARRECS, CODI_BARRI from Carrecs group by CODI_BARRI) as C "
+                "left join Barris as B on C.CODI_BARRI = B.CODI_BARRI", "CarrecsBarriGroup", "virtual" )
+
+            # vlayer = QgsVectorLayer( "?query="
+            #     "select C.*, B.NOM_BARRI, B.DISTRICTE, B.GEOMETRY as GEOM from "
+            #     "(select count(*) AS NUM_CARRECS, CODI_BARRI from Carrecs group by CODI_BARRI) as C "
+            #     "left join Barris as B on C.CODI_BARRI = B.CODI_BARRI", "CarrecsBarriGroup", "virtual" )
+            QgsVectorFileWriter.writeAsVectorFormat(vlayer,
+                "D:/qVista/CarrecsBarriGroup", "UTF-8", vectorLyr.crs(), "SQLite")
+            QgsVectorFileWriter.writeAsVectorFormat(vlayer,
+                "D:/qVista/CarrecsBarriGroup", "UTF-8", vectorLyr.crs(), "GPKG")
+
+            leyenda.project.removeMapLayers([infoLyr.id(), vectorLyr.id()])
+            joinLyr = QgsVectorLayer('D:/qVista/CarrecsBarri.gpkg', 'CarrecsBarri' , "ogr")
+            joinLyr.setProviderEncoding("UTF-8")
+            leyenda.project.addMapLayer(joinLyr, True)
+            joinLyr = QgsVectorLayer('D:/qVista/CarrecsBarriGroup.gpkg', 'CarrecsBarriGroupGPKG' , "ogr")
+            joinLyr.setProviderEncoding("UTF-8")
+            leyenda.project.addMapLayer(joinLyr, True)
+            joinLyr = QgsVectorLayer('D:/qVista/CarrecsBarriGroup.sqlite', 'CarrecsBarriGroupSQLite' , "ogr")
+            joinLyr.setProviderEncoding("UTF-8")
+            leyenda.project.addMapLayer(joinLyr, True)
+
         # Acciones de usuario para el menú
         act = QAction()
         act.setText("Editable")
@@ -970,6 +1037,11 @@ if __name__ == "__main__":
         leyenda.accions.afegirAccio('testSimbologia', act)
 
         act = QAction()
+        act.setText("Test Join")
+        act.triggered.connect(testJoin)
+        leyenda.accions.afegirAccio('testJoin', act)
+
+        act = QAction()
         act.setText("Abrir proyecto")
         act.triggered.connect(openProject)
         leyenda.accions.afegirAccio('openProject', act)
@@ -982,6 +1054,7 @@ if __name__ == "__main__":
                 leyenda.menuAccions.append('test')
                 leyenda.menuAccions.append('testCapas')
                 # leyenda.menuAccions.append('testSimbologia')
+                leyenda.menuAccions.append('testJoin')
                 leyenda.menuAccions.append('editable')
                 leyenda.menuAccions.append('openProject')
 
