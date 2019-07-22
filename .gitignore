@@ -37,5 +37,7 @@ __pycache__/
 .vscode/
 *.json
 moduls/__pycache__/
-moduls/__pycache__/*.*
-moduls/__pycache__/QvCataleg.cpython-37.pyc
+_test/
+
+
+

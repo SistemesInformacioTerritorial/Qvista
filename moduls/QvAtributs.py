@@ -4,18 +4,17 @@ from qgis.core import QgsMapLayer, QgsVectorLayerCache
 from qgis.PyQt import QtWidgets  # , uic
 from qgis.PyQt.QtCore import Qt, pyqtSignal
 from qgis.PyQt.QtGui import QCursor
-from qgis.PyQt.QtWidgets import QTabWidget, QVBoxLayout, QAction, QMenuBar, QMenu
+from qgis.PyQt.QtWidgets import QTabWidget, QVBoxLayout, QAction, QMenuBar
 from qgis.gui import (QgsGui,
                       QgsAttributeTableModel,
                       QgsAttributeTableView,
                       QgsAttributeTableFilterModel,
-                      QgsAttributeDialog,
                       QgsAttributeForm,
                       QgsSearchQueryBuilder,
                       QgsActionMenu)
 from moduls.QvAccions import QvAccions
 from moduls.QvApp import QvApp
-# import images_rc
+# import images_rc  # NOQA
 # import recursos
 import csv
 # import xlwt - .xls
@@ -49,7 +48,7 @@ class QvFitxesAtributs(QDialog):
         else:
             self.setWindowTitle(self.title)
 
-    def setMenu(self, n):        
+    def setMenu(self, n):
         self.menuBar = QMenuBar()
         self.menu = QgsActionMenu(self.layer, self.features[n], 'Feature')
         if self.menu is not None and not self.menu.isEmpty():
@@ -87,7 +86,7 @@ class QvFitxesAtributs(QDialog):
             self.ui.groupBox.setVisible(False)
 
     def finish(self, int):
-        self.select()
+        self.select(None)
 
 
 class QvAtributs(QTabWidget):
@@ -159,7 +158,9 @@ class QvAtributs(QTabWidget):
         num = self.count()
         if i in range(0, num):
             taula = self.widget(i)
-            taula.deleteLater()
+            if taula is not None:
+                taula.deleteLater()
+                self.removeTab(i)
 
     def tancarTaula(self, layer):
         # Cerrar tabla por layer
@@ -168,29 +169,53 @@ class QvAtributs(QTabWidget):
         num = self.count()
         for i in range(0, num):
             taula = self.widget(i)
-            if taula.layer.id() == layer.id():
+            if taula is not None and taula.layer.id() == layer.id():
                 taula.deleteLater()
+                self.removeTab(i)
                 return
+
+    def tancarTaules(self, layers):
+        # Cerrar tablas de un conjunto de layers
+        if layers is None:
+            return
+        ids = []
+        for layer in layers:
+            ids.append(layer.id())
+        num = self.count()
+        if num > 0:
+            for i in range(num-1, -1, -1):
+                taula = self.widget(i)
+                if taula is not None and taula.layer.id() in ids:
+                    taula.deleteLater()
+                    self.removeTab(i)
 
     def deleteTabs(self):
         # Cerrar todas las tablas
         num = self.count()
-        for i in range(num-1, -1, -1):
-            taula = self.widget(i)
-            if taula is not None:
-                taula.deleteLater()
-            self.removeTab(i)
+        if num > 0:
+            for i in range(num-1, -1, -1):
+                taula = self.widget(i)
+                if taula is not None:
+                    taula.deleteLater()
+                self.removeTab(i)
 
     def filtrarCapa(self, layer, on=True):
         try:
+            filtro = layer.subsetString()
             if on:
                 dlgFiltre = QgsSearchQueryBuilder(layer)
-                dlgFiltre.setSearchString(layer.subsetString())
-                dlgFiltre.exec_()
-                layer.setSubsetString(dlgFiltre.searchString())
+                dlgFiltre.setSearchString(filtro)
+                ok = dlgFiltre.exec_()
+                if ok != 1:
+                    return
+                nuevoFiltro = dlgFiltre.searchString()                   
             else:
-                layer.setSubsetString('')
-            self.modificatFiltreCapa.emit(layer)
+                nuevoFiltro = ''
+
+            if nuevoFiltro != filtro:
+                layer.setSubsetString(nuevoFiltro)
+                self.modificatFiltreCapa.emit(layer)
+
         except Exception as e:
             print(str(e))
 
