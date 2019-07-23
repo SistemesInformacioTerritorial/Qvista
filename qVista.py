@@ -1673,6 +1673,23 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.botoSortir.setStyleSheet(stylesheetBotonsFinestra)
         self.lytBotonsFinestra.addWidget(self.botoSortir)
 
+        def ocultaBotons():
+            if not self.botoSortir.isEnabled():
+                self.botoSortir.setEnabled(True)
+                self.botoRestaurar.setEnabled(True)
+                self.botoMinimitzar.setEnabled(True)
+                self.showLblFlotant(":'(")
+            else:
+                self.botoSortir.setEnabled(False)
+                self.botoRestaurar.setEnabled(False)
+                self.botoMinimitzar.setEnabled(False)
+                self.showLblFlotant('Benvingut al mode "qVista Màxima Rellevància". \
+    En aquest mode els botons per tancar, minimitzar i fer petita la finestra deixen de funcionar, \
+    ja que qVista passa a ser el programa més important de l\'ordinador.')
+
+        self.shortcutNoEsPotSortir=QShortcut(QKeySequence('Ctrl+Shift+Alt+Ç'),self)
+        self.shortcutNoEsPotSortir.activated.connect(ocultaBotons)
+
         self.bar.setCornerWidget(self.fMaxim, Qt.TopRightCorner)
 
 
@@ -1878,6 +1895,7 @@ class QVista(QMainWindow, Ui_MainWindow):
     def showLblFlotant(self,txt):
         self.lblFlotant=QLabel(txt)
         self.lblFlotant.setFont(QvConstants.FONTTEXT)
+        self.lblFlotant.setWordWrap(True)
         self.lblFlotant.setStyleSheet('''
             background: %s;
             color: %s;
@@ -1892,6 +1910,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.timerLblFlotant.timeout.connect(lambda: self.lblFlotant.hide())
         self.timerLblFlotant.start(5000)
         self.lblFlotant.show()
+        self.lblFlotant.move(self.width()-500,self.height()-50)
     def hideLblFlotant(self):
         if hasattr(self,'lblFlotant'):
             self.lblFlotant.hide()
