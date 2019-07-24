@@ -1449,7 +1449,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         numeroFields=0
         fila=0
         columna=0
-        # nombreElements = 0
+        nombreElements = 0
         taula.setColumnCount(3)
         taula.setHorizontalHeaderLabels(['','Total', 'Mitjana'])
         nombreFieldsSeleccionats=0
