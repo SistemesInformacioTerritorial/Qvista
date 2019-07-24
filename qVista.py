@@ -799,6 +799,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.layoutFrameLlegenda = QVBoxLayout(self.frameLlegenda)
         self.llegenda = QvLlegenda(self.canvas, self.taulesAtributs)
         self.llegenda.currentLayerChanged.connect(self.canviLayer)
+        self.llegenda.projecteModificat.connect(lambda: self.setDirtyBit(True))
         self.canvas.setLlegenda(self.llegenda)
         self.layoutFrameLlegenda.setContentsMargins ( 5, 13, 5, 0 )
         self.llegenda.setStyleSheet("QvLlegenda {color: #38474f; background-color: #F9F9F9; border: 0px solid red;}")
