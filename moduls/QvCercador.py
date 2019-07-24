@@ -169,6 +169,7 @@ if __name__ == "__main__":
 
         # Creem un dockWdget i definim les característiques
         dwUbicacions = QDockWidget( "Ubicacions", windowTest )
+        dwUbicacions.setContextMenuPolicy(Qt.PreventContextMenu)
         dwUbicacions.setAllowedAreas( Qt.RightDockWidgetArea | Qt.LeftDockWidgetArea )
         dwUbicacions.setContentsMargins ( 1, 1, 1, 1 )
 

@@ -82,8 +82,8 @@ class QvCarregaCsv(QWizard):
             QRadioButton {background-color: transparent}
             ''' % (QvConstants.COLORBLANCHTML, QvConstants.COLORFOSCHTML))
         self.setPixmap(QWizard.LogoPixmap, QPixmap('imatges/layers.png'))
-        self.oldPos = self.pos()
         self.setFont(QvConstants.FONTTEXT)
+        self.oldPos = self.pos()
 
     def prefab (self):
         self.coordX = 'XCalculadaqVista'
@@ -172,19 +172,19 @@ class QvCarregaCsvPage(QWizardPage):
         super().__init__(parent)
         self.parent = parent
         self.setTitle('Assistent de càrrega de csv')
-        self.setSubTitle('Subtítol de prova)')
+        self.setSubTitle('')
         self.formata()
 
     def formata(self):
+        # self.setStyleSheet('QFrame {border: 0px}')
         self.setStyleSheet('''background-color: %s; 
                               QFrame {border: 0px} 
                               QLabel {border: 0px}
                               ''' % QvConstants.COLORBLANCHTML)
         self.setFont(QvConstants.FONTTITOLS)
-
         self.setContentsMargins(0, 0, 0, 0)
 
-    def mostraTaula(self, completa=False, guardar = False):
+    def mostraTaula(self, completa: bool=False, guardar: bool = False):
         '''Mostra la taula provisional que està carregant
         Keyword Arguments:
             completa{bool} -- Indica si volem mostrar la taula completa.
@@ -209,7 +209,7 @@ class QvCarregaCsvPage(QWizardPage):
             self.layoutTable.addLayout(self.layoutB)
             
 
-    def recarregaTaula(self, completa=False):
+    def recarregaTaula(self, completa: bool=False):
         self.table = QvtLectorCsv(
             self.parent.getCsv(), self.parent.separador, completa, self)
 
@@ -237,11 +237,11 @@ class QvCarregaCsvPage(QWizardPage):
         pal.setColor(QPalette.Mid, colorMidAnt)
         qApp.setPalette(pal)
 
-    def setTitle(self, title):
+    def setTitle(self, title: str):
         s = '<p><span style="color: #38474f;"><strong><span style="font-family: arial, helvetica, sans-serif; font-size: 12pt;">%s</span></strong></span></p>' % title
         super().setTitle(s)
 
-    def setSubTitle(self, subtitle):
+    def setSubTitle(self, subtitle: str):
         s = '<p><span style="color: #38474f; font-size: 10pt;"><strong><span style="font-family: arial, helvetica, sans-serif;">%s</span></strong></span></p>' % subtitle
         super().setSubTitle(s)
 
@@ -286,16 +286,16 @@ class QvCarregaCsvPrecalculat(QvCarregaCsvPage):
             return QvCarregaCsv.finestres.Personalitza
         if self.botoB.isChecked():
             self.parent.aprofitar = True
-        return QvCarregaCsv.finestres.TriaSep
+        return QvCarregaCsv.finestres.Adreca
 
 class QvCarregaCsvTriaSep(QvCarregaCsvPage):
-    def __init__(self, parent=None):
+    def __init__(self, parent: QWidget=None):
         '''Crea una pàgina de l'assistent de càrrega de csv que permet triar el separador d'aquest
         Keyword Arguments:
             parent{QWidget} -- Pare de l'assistent (default{None})
         '''
         super().__init__(parent)
-        self.setSubTitle('Tria del separador de camps')
+        # self.setSubTitle('Tria del separador de camps')
         self.layout = QVBoxLayout(self)
         self.layout.setSpacing(20)
         self.lblExplicacio1 = QLabel(
@@ -331,7 +331,7 @@ class QvCarregaCsvTriaSep(QvCarregaCsvPage):
 
 
 class QvCarregaCsvTriaSepDec(QvCarregaCsvPage):
-    def __init__(self, parent=None):
+    def __init__(self, parent: QWidget=None):
         '''Crea una pàgina de l'assistent de càrrega de csv que permet triar el separador decimal
         Keyword Arguments:
             parent{QWidget} -- Pare de l'assistent (default{None})
@@ -367,13 +367,13 @@ class QvCarregaCsvTriaSepDec(QvCarregaCsvPage):
 
 
 class QvCarregaCsvTriaGeom(QvCarregaCsvPage):
-    def __init__(self, parent=None):
+    def __init__(self, parent: QWidget=None):
         '''Crea una pàgina de l'assistent de càrrega de csv que permet triar-ne la geometria
         Keyword Arguments:
             parent{QWidget} -- Pare de l'assistent (default{None})
         '''
         super().__init__(parent)
-        self.setSubTitle('Tria del tipus de la geometria')
+        # self.setSubTitle('Tria del tipus de la geometria')
         self.layout = QVBoxLayout(self)
         self.layout.setSpacing(20)
         self.lblExplicacio3 = QLabel(
@@ -405,14 +405,14 @@ class QvCarregaCsvTriaGeom(QvCarregaCsvPage):
 
 
 class QvCarregaCsvXY(QvCarregaCsvPage):
-    def __init__(self, parent=None):
+    def __init__(self, parent: QWidget=None):
         '''Crea una pàgina de l'assistent de càrrega de csv que permet triar els camps de les coordenades X Y
         Keyword Arguments:
             parent{QWidget} -- Pare de l'assistent (default{None})
         '''
         super().__init__(parent)
         self.layout = QVBoxLayout(self)
-        self.setSubTitle('Tria dels camps de les coordenades')
+        # self.setSubTitle('Tria dels camps de les coordenades')
         self.layoutCoordX = QHBoxLayout()
         self.layoutCoordY = QHBoxLayout()
         self.layoutCoordP = QHBoxLayout()
@@ -475,14 +475,14 @@ class QvCarregaCsvXY(QvCarregaCsvPage):
 
 
 class QvCarregaCsvAdreca(QvCarregaCsvPage):
-    def __init__(self, parent=None):
+    def __init__(self, parent: QWidget=None):
         '''Crea una pàgina de l'assistent de càrrega de csv que permet triar els camps de l'adreça
         Keyword Arguments:
             parent{QWidget} -- Pare de l'assistent (default{None})
         '''
         super().__init__(parent)
         MIDACOMBOBOX = 100  # Perquè totes les combobox tinguin la mateixa mida
-        self.setSubTitle('Tria dels components de la geometria')
+        # self.setSubTitle('Tria dels components de la geometria')
         self.layout = QVBoxLayout(self)
         self.lblExplicacio6 = QLabel()
         self.lblExplicacio6.setText(
@@ -583,7 +583,7 @@ class QvCarregaCsvAdreca(QvCarregaCsvPage):
 
 
 class WindowProgressBar(QWidget):
-    def __init__(self, mida, parent=None):
+    def __init__(self, mida: int, parent: QWidget=None):
         super().__init__(parent)
         self.setWindowTitle("Progrés")
         self.progress = QProgressBar()
@@ -606,6 +606,13 @@ class WindowProgressBar(QWidget):
         self.timeB=time.time()
         self.lblTempsRestant=QLabel()
         self.layProgressW.addWidget(self.lblTempsRestant)
+        self.bCancelar = QvPushButton('Cancel·lar', destacat = False)
+        self.layCancelar = QHBoxLayout()
+        self.layCancelar.setAlignment(Qt.AlignRight)
+        self.layProgressW.addLayout(self.layCancelar)
+        self.layCancelar.addWidget(self.bCancelar)
+        self.bCancelar.clicked.connect(self.cancelar)
+        self.cancelat = False
 
     def actualitzaLBL(self):
         self.lblAdrInfo.setText(
@@ -618,16 +625,22 @@ class WindowProgressBar(QWidget):
             tempsR=(time.time()-self.timeB)*max(self.mida/self.count,1)*(1-self.count/self.mida)
         tempsTxt=time.strftime("%H:%M:%S", time.gmtime(tempsR))
         self.lblTempsRestant.setText('Temps restant: %s'%tempsTxt)
+    
+    def cancelar(self):
+        print("HOLA")
+        self.cancelat = True
+        self.close()
 
 
 class QvCarregaCsvGeneraCoords(QvCarregaCsvPage):
-    def __init__(self, parent=None):
+    def __init__(self, parent: QWidget=None):
         '''Crea una pàgina de l'assistent de càrrega de csv que genera les coordenades a partir d'una adreça
         Keyword Arguments:
             parent{QWidget} -- Pare de l'assistent (default{None})
         '''
         super().__init__(parent)
-        self.setSubTitle("Gestió d'errors i finalitzar procés")
+        # self.setSubTitle("Gestió d'errors i finalitzar procés")
+        self.parent = parent
         self.lblAdrecesError = QLabel()
         self.lblAdrecesError.setText("")
         self.lblAdrecesError.setStyleSheet('color: red')
@@ -650,7 +663,7 @@ class QvCarregaCsvGeneraCoords(QvCarregaCsvPage):
         self.parent.coordX = 'XCalculadaqVista'
         self.parent.coordY = 'YCalculadaqVista'
 
-        def splitCarrer(nomComplet):
+        def splitCarrer(nomComplet: str):
             if not hasattr(self, 'TIPUSVIES'):
                 with open('U:/QUOTA/Comu_imi/Becaris/Tipusvia.csv') as csvfile:
                     reader = csv.reader(csvfile, delimiter=';')
@@ -811,7 +824,11 @@ class QvCarregaCsvGeneraCoords(QvCarregaCsvPage):
                 row[self.parent.coordX] = x
                 row[self.parent.coordY] = y
                 del row[""]
-                writer.writerow(row) 
+                writer.writerow(row)
+                if wpg.cancelat:
+                    self.close()
+                    self.parent.close()
+                    break
             wpg.errors
             self.lblExplicacio4.setText(
             "Aquestes són les adreces que no s'han pogut geolocalitzar: (%i)" %wpg.errors)
@@ -826,12 +843,12 @@ class QvCarregaCsvGeneraCoords(QvCarregaCsvPage):
 
 
 class QvCarregaCsvPersonalitza(QvCarregaCsvPage):
-    def __init__(self, parent):
+    def __init__(self, parent: QWidget=None):
         '''Crea una pàgina de l'assistent de càrrega de csv que permet personalitzar la nova capa
             parent{QWidget} -- Pare de l'assistent (default{None})
         '''
         super().__init__(parent)
-        self.setSubTitle("Personalització de la nova capa")
+        # self.setSubTitle("Personalització de la nova capa")
         self.layout = QVBoxLayout(self)
         self.layout.setSpacing(40)
         self.layout.setAlignment(Qt.AlignTop)
@@ -860,7 +877,7 @@ class QvCarregaCsvPersonalitza(QvCarregaCsvPage):
             parent.color = dcolor.name()
             canvicolor(self, dcolor)
         bColor.clicked.connect(openColorDialog)
-        bColor.setFixedWidth(339)
+        bColor.setFixedWidth(322)
         #bColor.setText("Escull Color")
         self.layColor.addWidget(bColor)
         self.layout.addLayout(self.layColor)
@@ -966,14 +983,14 @@ class QvCarregaCsvPersonalitza(QvCarregaCsvPage):
 
 
 class QvtLectorCsv(QvLectorCsv):
-    def __init__(self, csvName, csv=None, separador=None, completa=False, guardar=False, parent=None):
+    def __init__(self, csvName: str, csv: io.TextIOBase=None, separador: str=None, completa: bool=False, guardar: bool=False, parent: QWidget=None):
         super().__init__(csvName, guardar)
         self.separador = separador
         self.fname=csvName
         if self.separador is not None:
             if csv is None: #És el nom de l'arxiu
                 self.carregaCsv(csvName, self.separador, completa)
-            elif isinstance(csv,io.TextIOBase): #És l'arxiu
+            else: #És l'arxiu
                 self.carregaCsvFile(csv, csvName,self.separador,completa)
     
     

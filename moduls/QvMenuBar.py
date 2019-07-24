@@ -3,6 +3,7 @@ from moduls.QvConstants import QvConstants
 class QvMenuBar(QMenuBar):
     def __init__(self,parent=None):
         super().__init__(parent)
+        self.setContextMenuPolicy(Qt.PreventContextMenu)
 
     def mousePressEvent(self, event):
         super().mousePressEvent(event)
@@ -12,10 +13,11 @@ class QvMenuBar(QMenuBar):
     def mouseMoveEvent(self, event):
         super().mouseMoveEvent(event)
         if event.buttons() & Qt.LeftButton:
+            delta = QPoint(event.globalPos() - self.parentWidget().oldPos)
+            if abs(delta.y())<30: return
             if self.parentWidget().maximitzada:
                 self.parentWidget().restaurarFunc()
                 #Desmaximitzar
-            delta = QPoint(event.globalPos() - self.parentWidget().oldPos)
             # print(delta)
             self.parentWidget().move(self.parentWidget().x() + delta.x(), self.parentWidget().y() + delta.y())
             self.parentWidget().oldPos = event.globalPos()
