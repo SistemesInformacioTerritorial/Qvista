@@ -180,8 +180,11 @@ class QvNouMapa(QDialog):
         self.oldPos = event.globalPos()
 
     def keyPressEvent(self, event):
-        if event.key() == Qt.Key_Escape or event.key() == Qt.Key_Return:
+        if event.key() == Qt.Key_Escape:
             self.close()
+        if event.key() == Qt.Key_Return:
+            if self.botoAcceptar.isEnabled(): #Si el botó d'acceptar està enabled, podem acceptar
+                self.carrega()
 
 # class QvToolButton(QToolButton):
 #     def __init__(self,parent=None):
