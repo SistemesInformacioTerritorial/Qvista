@@ -226,6 +226,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.frameLlegenda.hide()
         self.frame_11.hide()
         self.dwLlegenda = QDockWidget( "Llegenda", self )
+        self.dwLlegenda.setContextMenuPolicy(Qt.PreventContextMenu)
         self.dwLlegenda.setObjectName( "layers" )
         self.dwLlegenda.setAllowedAreas( Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea )
         self.dwLlegenda.setContentsMargins ( 0,0,0,0)
@@ -334,8 +335,8 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.player.mediaPlayer.play()
 
     def stopMovie(self):
-        self.player.mediaPlayer.pause()
         self.player.hide()
+        self.player.mediaPlayer.pause()
 
 
     def keyPressEvent(self, event):
