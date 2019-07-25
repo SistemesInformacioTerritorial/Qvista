@@ -14,6 +14,7 @@ from moduls.QvApp import QvApp
 from moduls.QvPushButton import QvPushButton
 
 import time
+import math
 projecteInicial='../dades/projectes/BCN11_nord.qgs'
 
 
@@ -161,12 +162,23 @@ class QvPrint(QWidget):
             self.pucMoure
 
         elif self.pucMoure:
-            self.posXY = [p.x()+self.incX/2, p.y()+self.incY/2]
-            self.rubberband.movePoint(0,QgsPointXY(p.x()+self.incX,p.y()+self.incY),0)
-            self.rubberband.movePoint(1,QgsPointXY(p.x()+self.incX,p.y()),0)
-            self.rubberband.movePoint(2,QgsPointXY(p.x(),p.y()),0)
-            self.rubberband.movePoint(3,QgsPointXY(p.x(),p.y()+self.incY),0)
-            self.rubberband.movePoint(4,QgsPointXY(p.x()+self.incX,p.y()+self.incY),0)
+            if self.canvas.rotation()==0:
+                self.posXY = [p.x()+self.incX/2, p.y()+self.incY/2]
+                self.rubberband.movePoint(0,QgsPointXY(p.x()+self.incX,p.y()+self.incY),0)
+                self.rubberband.movePoint(1,QgsPointXY(p.x()+self.incX,p.y()),0)
+                self.rubberband.movePoint(2,QgsPointXY(p.x(),p.y()),0)
+                self.rubberband.movePoint(3,QgsPointXY(p.x(),p.y()+self.incY),0)
+                self.rubberband.movePoint(4,QgsPointXY(p.x()+self.incX,p.y()+self.incY),0)
+            else:
+                alpha=math.radians(self.canvas.rotation())
+                beta=math.atan(self.incY/self.incX)
+                d=math.sqrt(self.incX**2+self.incY**2)
+                self.posXY = [(2*p.x()+d*math.cos(alpha+beta))/2,(2*p.y()+d*math.sin(alpha+beta))/2]
+                self.rubberband.movePoint(0,QgsPointXY(p.x()+d*math.cos(alpha+beta),p.y()+d*math.sin(alpha+beta)),0)
+                self.rubberband.movePoint(1,QgsPointXY(p.x()+self.incX*math.cos(alpha),p.y()+self.incX*math.sin(alpha)),0)
+                self.rubberband.movePoint(2,QgsPointXY(p.x(),p.y()),0)
+                self.rubberband.movePoint(3,QgsPointXY(p.x()+self.incY*math.cos(math.radians(90+45)),p.y()+self.incY*math.sin(math.radians(90+45))),0)
+                self.rubberband.movePoint(4,QgsPointXY(p.x()+d*math.cos(alpha+beta),p.y()+d*math.sin(alpha+beta)),0)
             
 
 
@@ -179,10 +191,11 @@ class QvPrint(QWidget):
 
     def printPlanol(self):
         #
-        if self.checkRotacio.checkState():
-            rotacio=44.75
-        else:
-            rotacio=0
+        # if self.checkRotacio.checkState():
+        #     rotacio=44.75
+        # else:
+        #     rotacio=0
+        rotacio=self.canvas.rotation()
         orientacio = self.comboOrientacio.currentText()
         if orientacio == 'Vertical':
             self.plantillaMapa = 'plantillaMapa.qpt'
