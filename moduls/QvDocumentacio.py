@@ -9,6 +9,8 @@ from pathlib import Path
 import shutil
 
 class QvDocumentacio(QDialog):
+    '''Diàleg que mostra la documentació de la carpeta de documentació definida a configuracioQvista
+    Mostra una TreeView amb els documents, i delega en el sistema la tasca d'obrir-los'''
     def __init__(self,parent=None):
         super().__init__(parent)
         self.setMinimumSize(750,500)

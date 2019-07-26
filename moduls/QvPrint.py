@@ -5,7 +5,7 @@ from qgis.gui import QgsMapTool, QgsRubberBand
 
 from qgis.PyQt.QtCore import Qt, QFile, QUrl
 from qgis.PyQt.QtXml import QDomDocument
-from qgis.PyQt.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QComboBox, QPushButton, QCheckBox, QLineEdit
+from qgis.PyQt.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QComboBox, QPushButton, QCheckBox, QLineEdit, QRadioButton
 from qgis.PyQt.QtGui import QFont, QColor,QStandardItemModel, QStandardItem, QDesktopServices
 from PyQt5.QtWebKitWidgets import QWebView , QWebPage
 from PyQt5.QtWebKit import QWebSettings
@@ -108,12 +108,7 @@ class QvPrint(QWidget):
         self.combo.show()
 
         
-        self.comboOrientacio = QComboBox(self)
         # self.combo.move(5,100)
-        orientacions = ['Vertical', 'Horitzontal']
-        self.comboOrientacio.addItems(orientacions)
-        self.comboOrientacio.currentTextChanged.connect(self.canviOrientacio)
-        self.comboOrientacio.show()
 
         self.layoutBotons=QHBoxLayout()
         self.boto = QvPushButton(text='Plot',destacat=True, parent=self)
@@ -123,16 +118,20 @@ class QvPrint(QWidget):
         self.layoutBotons.addWidget(self.boto)
         self.layoutBotons.addWidget(self.boto2)
 
-        self.checkRotacio = QCheckBox('Planol rotat')
-        self.checkRotacio.show()
+        self.rbVertical=QRadioButton('Vertical')
+        self.rbHoritzontal=QRadioButton('Horitzontal')
+        self.rbVertical.setChecked(True)
+        self.rbVertical.clicked.connect(self.canviOrientacio)
+        self.rbHoritzontal.clicked.connect(self.canviOrientacio)
+        
+        # self.checkRotacio = QCheckBox('Planol rotat')
+        # self.checkRotacio.show()
 
         self.layout.addWidget(self.leTitol)
-        # self.layout.addWidget(self.boto)
-        # self.layout.addWidget(self.boto2)
         self.layout.addLayout(self.layoutBotons)
         self.layout.addWidget(self.combo)
-        self.layout.addWidget(self.checkRotacio)
-        self.layout.addWidget(self.comboOrientacio)
+        self.layout.addWidget(self.rbVertical)
+        self.layout.addWidget(self.rbHoritzontal)
 
     def potsMoure(self):
         # self.canvas.scene().removeItem(self.rubberband)
@@ -142,7 +141,7 @@ class QvPrint(QWidget):
         self.pucMoure = True
         escala = int(self.dictEscales[self.combo.currentText()])
 
-        if self.comboOrientacio.currentText() == 'Vertical':
+        if self.rbVertical.isChecked():
             self.incX = escala
             self.incY = escala * 1.5
         else:
@@ -196,8 +195,7 @@ class QvPrint(QWidget):
         # else:
         #     rotacio=0
         rotacio=self.canvas.rotation()
-        orientacio = self.comboOrientacio.currentText()
-        if orientacio == 'Vertical':
+        if self.rbVertical.isChecked():
             self.plantillaMapa = 'plantillaMapa.qpt'
         else:
             self.plantillaMapa = 'plantillaMapaH.qpt'
