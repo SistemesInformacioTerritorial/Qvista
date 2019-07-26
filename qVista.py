@@ -2591,7 +2591,6 @@ class QVista(QMainWindow, Ui_MainWindow):
                 self.cAdrec.cercadorAdrecaFi()
         except Exception as ee:
             print(str(ee))
-
         try:
             QvApp().logFi() #fa aixo pero no arriba a tancar la app
             QCoreApplication.exit(0) #preguntar al Jordi que li sembla
@@ -3249,6 +3248,16 @@ def reportarProblema(titol: str, descripcio: str=None):
     #     print ('Error al crear el problema {0:s}'.format(titol))
     #     qV.lblResultat.setText('Error al crear el problema {0:s}'.format(titol))
 
+def esborraCarpetaTemporal():
+    '''Esborra el contingut de la carpeta temporal en iniciar qVista
+    '''
+    #Esborrarem el contingut de la carpeta temporal
+    for file in os.scandir(tempdir):
+        try:
+            #Si no podem esborrar un arxiu, doncs és igual. Deu estar obert. Ja s'esborrarà en algun moment
+            os.unlink(file.path)
+        except:
+            pass
 
 def main(argv):
     # import subprocess
@@ -3269,6 +3278,7 @@ def main(argv):
         splash.setFont(QFont(QvConstants.NOMFONT,8))
         splash.show()
         app.setWindowIcon(QIcon('imatges/QVistaLogo_256.png'))
+        esborraCarpetaTemporal() #Esborrem els temporals de la sessió anterior
         app.processEvents()
         with open('style.qss') as st:
             app.setStyleSheet(st.read())

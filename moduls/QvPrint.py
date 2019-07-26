@@ -10,6 +10,7 @@ from qgis.PyQt.QtGui import QFont, QColor,QStandardItemModel, QStandardItem, QDe
 from PyQt5.QtWebKitWidgets import QWebView , QWebPage
 from PyQt5.QtWebKit import QWebSettings
 
+from moduls.QvImports import *
 from moduls.QvApp import QvApp
 from moduls.QvPushButton import QvPushButton
 
@@ -247,7 +248,8 @@ class QvPrint(QWidget):
                 settings.dpi=300
                 settings.exportMetadata=False
                 
-                fitxerSortida='d:/sortida_'+timestamp+'.PDF'
+                # fitxerSortida='d:/sortida_'+timestamp+'.PDF'
+                fitxerSortida=tempdir+'sortid_'+timestamp+'.PDF'
                 result = exporter.exportToPdf(fitxerSortida, settings)
 
                 print (fitxerSortida)
@@ -256,7 +258,8 @@ class QvPrint(QWidget):
                 settings = QgsLayoutExporter.ImageExportSettings()
                 settings.dpi = 300
 
-                fitxerSortida='d:/sortida_'+timestamp+'.PNG'
+                # fitxerSortida='d:/sortida_'+timestamp+'.PNG'
+                fitxerSortida=tempdir+'sortid_'+timestamp+'.PNG'
                 result = exporter.exportToImage(fitxerSortida, settings)
         
             #Obra el document si està marcat checkObrirResultat
