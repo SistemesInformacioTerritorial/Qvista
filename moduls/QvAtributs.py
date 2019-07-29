@@ -201,14 +201,21 @@ class QvAtributs(QTabWidget):
 
     def filtrarCapa(self, layer, on=True):
         try:
+            filtro = layer.subsetString()
             if on:
                 dlgFiltre = QgsSearchQueryBuilder(layer)
-                dlgFiltre.setSearchString(layer.subsetString())
-                dlgFiltre.exec_()
-                layer.setSubsetString(dlgFiltre.searchString())
+                dlgFiltre.setSearchString(filtro)
+                ok = dlgFiltre.exec_()
+                if ok != 1:
+                    return
+                nuevoFiltro = dlgFiltre.searchString()                   
             else:
-                layer.setSubsetString('')
-            self.modificatFiltreCapa.emit(layer)
+                nuevoFiltro = ''
+
+            if nuevoFiltro != filtro:
+                layer.setSubsetString(nuevoFiltro)
+                self.modificatFiltreCapa.emit(layer)
+
         except Exception as e:
             print(str(e))
 

@@ -61,7 +61,7 @@ class QvMapeta(QFrame):
 
             self.xTamany = 250
             self.yTamany = 250            
-            self.setStyleSheet('QFrame {background-image: url("imatges/QVista_Mapeta_0graus.png");}')
+            self.setStyleSheet('QFrame {opacity: 50; background-image: url("imatges/QVista_Mapeta_0graus.png");}')
 
             # Ya puedo calcular la escala entre el mapeta y la realidad, basandome en las X (presupongo que la escala Y sera la misma)
             # Las coordenadas mundo son un dato obtenido con qgis
@@ -88,17 +88,7 @@ class QvMapeta(QFrame):
 
         # QvConstants.afegeixOmbraWidget(self)
 
-        # El botó per minimitzar el mapa
-        self.botoFerPetit = QPushButton(self)
-        icon = QIcon('imatges/mapeta-collapse.png')
-        self.botoFerPetit.setIcon(icon)
-        self.botoFerPetit.setGeometry(0,0,25,25)
-
-        self.botoFerPetit.show()
-        self.botoFerPetit.setChecked(False)
         
-        
-        self.botoFerPetit.clicked.connect(self.ferPetit)
 
         # BOTON QUE INVOCA EL CAMBIO DE ROTACION MEDIANTE LA FUNCION self.cambiarRotacion
         # self.botocambiarRotacion = QPushButton(self)
@@ -135,7 +125,6 @@ class QvMapeta(QFrame):
                     self.move(20,20)
                 # self.setGeometry(0,0,self.xTamany,self.yTamany)
                 self.setStyleSheet('QFrame {background-image: url("imatges/QVista_Mapeta_44_5graus_mio.png");}')
-                # self.setStyleSheet('QFrame {background-image: url("imatges/QVista_Mapeta_44_5graus.png");}')
         else:
             if self.canvas.rotation() == 44.5:
                 self.canvas.setRotation(0)
@@ -179,20 +168,22 @@ class QvMapeta(QFrame):
 
     def ferPetit(self):
         if self.petit:
-            self.setGeometry(0,0,self.xTamany,self.yTamany)
-            self.move(20,20)
+            # self.setGeometry(0,0,self.xTamany,self.yTamany)
+            # self.move(20,20)
+            self.show()
             self.petit = False
             # icon = QIcon('imatges/arrow-collapse.png')
 
             icon = QIcon('imatges/mapeta-collapse.png')
-            self.botoFerPetit.setIcon(icon)
+            # self.botoFerPetit.setIcon(icon)
         else:
-            self.setGeometry(0,0,25,25)
-            self.move(20,20)
+            # self.setGeometry(0,0,25,25)
+            # self.move(20,20)
+            self.hide()
             self.petit = True
-            icon = QIcon('imatges/mapetaPetit.jpg')
-            self.botoFerPetit.setIcon(icon)
-        self.botoFerPetit.setChecked(False)
+            # icon = QIcon('imatges/mapetaPetit.jpg')
+        #     self.botoFerPetit.setIcon(icon)
+        # self.botoFerPetit.setChecked(False)
 
     def pintarMapeta(self):
         # Cuando hay alteraciones en el canvas, se han de repercutir sobre el mapeta, representando sobre éste el area de cartografia visible

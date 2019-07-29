@@ -1,4 +1,3 @@
-
 # from moduls.QvImports import *
 
 from qgis.core import QgsRectangle, QgsVectorLayer, QgsLayoutExporter, QgsPointXY, QgsGeometry, QgsVector, QgsLayout, QgsReadWriteContext
@@ -6,15 +5,17 @@ from qgis.gui import QgsMapTool, QgsRubberBand
 
 from qgis.PyQt.QtCore import Qt, QFile, QUrl
 from qgis.PyQt.QtXml import QDomDocument
-from qgis.PyQt.QtWidgets import QWidget, QVBoxLayout, QComboBox, QPushButton, QCheckBox
+from qgis.PyQt.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QComboBox, QPushButton, QCheckBox, QLineEdit, QRadioButton
 from qgis.PyQt.QtGui import QFont, QColor,QStandardItemModel, QStandardItem, QDesktopServices
 from PyQt5.QtWebKitWidgets import QWebView , QWebPage
 from PyQt5.QtWebKit import QWebSettings
 
+from moduls.QvImports import *
 from moduls.QvApp import QvApp
 from moduls.QvPushButton import QvPushButton
 
 import time
+import math
 projecteInicial='../dades/projectes/BCN11_nord.qgs'
 
 
@@ -42,7 +43,6 @@ class PointTool(QgsMapTool):
         
 class QvPrint(QWidget):
     """Una classe del tipus QWidget que servirà per imprimir un area determinada.
-
     El widget conté un botó per imprimir, un per tornar a posicionar l'area d'impresió, i un comboBox per escollir l'escala.
     """
     
@@ -93,7 +93,12 @@ class QvPrint(QWidget):
     def setupUI(self):
         self.layout = QVBoxLayout(self)
         self.setLayout(self.layout)
-        self.layout.setAlignment(Qt.AlignTop)
+        self.layout.setContentsMargins(0,0,0,0)
+        self.layout.setSpacing(0)
+        # self.layout.setAlignment(Qt.AlignTop)
+
+        self.leTitol=QLineEdit(self)
+        self.leTitol.setPlaceholderText('Títol')
 
 
         self.combo = QComboBox(self)
@@ -104,33 +109,54 @@ class QvPrint(QWidget):
         self.combo.show()
 
         
-        self.comboOrientacio = QComboBox(self)
         # self.combo.move(5,100)
-        orientacions = ['Vertical', 'Horitzontal']
-        self.comboOrientacio.addItems(orientacions)
-        self.comboOrientacio.currentTextChanged.connect(self.canviOrientacio)
-        self.comboOrientacio.show()
 
-        self.font = QFont()
-        self.font.setPointSize(20)
-        self.boto = QPushButton(parent=self)
-        self.boto.setText('Plot')
-        self.boto.setFont(self.font)
-        self.boto.setMinimumHeight(self.boto.height()*2)
-        
+        self.layoutBotons=QHBoxLayout()
+        self.boto = QvPushButton(text='Plot',destacat=True, parent=self)
         self.boto.clicked.connect(self.printPlanol)
-        self.boto2 = QPushButton(parent=self)
-        self.boto2.setText('Reposicionar')
+        self.boto2 = QvPushButton(text='Reposicionar',parent=self)
         self.boto2.clicked.connect(self.potsMoure)
+        self.layoutBotons.addWidget(self.boto)
+        self.layoutBotons.addWidget(self.boto2)
 
-        self.checkRotacio = QCheckBox('Planol rotat')
-        self.checkRotacio.show()
+        self.wOrientacio=QWidget()
+        self.layoutOrientacio=QHBoxLayout()
+        self.wOrientacio.setLayout(self.layoutOrientacio)
+        self.rbVertical=QRadioButton('Vertical')
+        self.rbHoritzontal=QRadioButton('Horitzontal')
+        self.rbVertical.setChecked(True)
+        self.rbVertical.clicked.connect(self.canviOrientacio)
+        self.rbHoritzontal.clicked.connect(self.canviOrientacio)
+        self.layoutOrientacio.addWidget(self.rbVertical)
+        self.layoutOrientacio.addWidget(self.rbHoritzontal)
 
-        self.layout.addWidget(self.boto)
-        self.layout.addWidget(self.boto2)
+        self.wFormat=QWidget()
+        self.layoutFormat=QHBoxLayout()
+        self.wFormat.setLayout(self.layoutFormat)
+        self.rbPDF=QRadioButton('PDF')
+        self.rbPNG=QRadioButton('PNG')
+        self.rbPDF.setChecked(True)
+        self.layoutFormat.addWidget(self.rbPDF)
+        self.layoutFormat.addWidget(self.rbPNG)
+
+        self.cbMida=QComboBox(self)
+        self.cbMida.addItems(['A0','A1','A2','A3','A4'])
+        self.cbMida.currentTextChanged.connect(self.canviEscala)
+        self.cbMida.setCurrentIndex(4)
+        self.cbMida.hide() #Ho ocultem fins que sapiguem implementar-ho bé
+        
+        # self.checkRotacio = QCheckBox('Planol rotat')
+        # self.checkRotacio.show()
+
+        self.layout.addWidget(self.leTitol)
+        self.layout.addLayout(self.layoutBotons)
         self.layout.addWidget(self.combo)
-        self.layout.addWidget(self.checkRotacio)
-        self.layout.addWidget(self.comboOrientacio)
+        self.layout.addWidget(self.wOrientacio)
+        self.layout.addWidget(self.wFormat)
+        # self.layout.addWidget(self.cbMida)
+        # self.layout.addWidget(self.rbVertical)
+        # self.layout.addWidget(self.rbHoritzontal)
+        self.layout.addStretch()
 
     def potsMoure(self):
         # self.canvas.scene().removeItem(self.rubberband)
@@ -139,8 +165,18 @@ class QvPrint(QWidget):
     def canviEscala(self):
         self.pucMoure = True
         escala = int(self.dictEscales[self.combo.currentText()])
+        mida=self.cbMida.currentText()
+        if mida=='A3':
+            escala*=math.sqrt(2)
+        elif mida=='A2':
+            escala*=math.sqrt(2)*2
+        elif mida=='A1':
+            escala*=math.sqrt(2)*3
+        elif mida=='A0':
+            escala*=math.sqrt(2)*4
 
-        if self.comboOrientacio.currentText() == 'Vertical':
+
+        if self.rbVertical.isChecked():
             self.incX = escala
             self.incY = escala * 1.5
         else:
@@ -160,12 +196,23 @@ class QvPrint(QWidget):
             self.pucMoure
 
         elif self.pucMoure:
-            self.posXY = [p.x()+self.incX/2, p.y()+self.incY/2]
-            self.rubberband.movePoint(0,QgsPointXY(p.x()+self.incX,p.y()+self.incY),0)
-            self.rubberband.movePoint(1,QgsPointXY(p.x()+self.incX,p.y()),0)
-            self.rubberband.movePoint(2,QgsPointXY(p.x(),p.y()),0)
-            self.rubberband.movePoint(3,QgsPointXY(p.x(),p.y()+self.incY),0)
-            self.rubberband.movePoint(4,QgsPointXY(p.x()+self.incX,p.y()+self.incY),0)
+            if self.canvas.rotation()==0:
+                self.posXY = [p.x()+self.incX/2, p.y()+self.incY/2]
+                self.rubberband.movePoint(0,QgsPointXY(p.x()+self.incX,p.y()+self.incY),0)
+                self.rubberband.movePoint(1,QgsPointXY(p.x()+self.incX,p.y()),0)
+                self.rubberband.movePoint(2,QgsPointXY(p.x(),p.y()),0)
+                self.rubberband.movePoint(3,QgsPointXY(p.x(),p.y()+self.incY),0)
+                self.rubberband.movePoint(4,QgsPointXY(p.x()+self.incX,p.y()+self.incY),0)
+            else:
+                alpha=math.radians(self.canvas.rotation())
+                beta=math.atan(self.incY/self.incX)
+                d=math.sqrt(self.incX**2+self.incY**2)
+                self.posXY = [(2*p.x()+d*math.cos(alpha+beta))/2,(2*p.y()+d*math.sin(alpha+beta))/2]
+                self.rubberband.movePoint(0,QgsPointXY(p.x()+d*math.cos(alpha+beta),p.y()+d*math.sin(alpha+beta)),0)
+                self.rubberband.movePoint(1,QgsPointXY(p.x()+self.incX*math.cos(alpha),p.y()+self.incX*math.sin(alpha)),0)
+                self.rubberband.movePoint(2,QgsPointXY(p.x(),p.y()),0)
+                self.rubberband.movePoint(3,QgsPointXY(p.x()+self.incY*math.cos(math.radians(90+45)),p.y()+self.incY*math.sin(math.radians(90+45))),0)
+                self.rubberband.movePoint(4,QgsPointXY(p.x()+d*math.cos(alpha+beta),p.y()+d*math.sin(alpha+beta)),0)
             
 
 
@@ -178,32 +225,56 @@ class QvPrint(QWidget):
 
     def printPlanol(self):
         #
-        if self.checkRotacio.checkState():
-            rotacio=44.75
-        else:
-            rotacio=0
-        orientacio = self.comboOrientacio.currentText()
-        if orientacio == 'Vertical':
+        # if self.checkRotacio.checkState():
+        #     rotacio=44.75
+        # else:
+        #     rotacio=0
+        rotacio=self.canvas.rotation()
+        if self.rbVertical.isChecked():
             self.plantillaMapa = 'plantillaMapa.qpt'
+            print(self.plantillaMapa)
         else:
             self.plantillaMapa = 'plantillaMapaH.qpt'
-        self.imprimirPlanol(self.posXY[0], self.posXY[1], int(self.combo.currentText()), rotacio, self.plantillaMapa , 'd:/EUREKA.pdf', 'PDF')
+
+        t = time.localtime()
+        timestamp = time.strftime('%b-%d-%Y_%H%M%S', t)
+        sortida=tempdir+'sortida_'+timestamp
+        escalesProd={'A4':1, 'A3':2, 'A2':4, 'A1':8, 'A0':16}
+        
+        self.imprimirPlanol(self.posXY[0], self.posXY[1], int(self.combo.currentText()), rotacio, self.cbMida.currentText(), self.plantillaMapa , sortida, 'PDF' if self.rbPDF.isChecked() else 'PNG')
        
         QvApp().logRegistre('Impressió: '+self.combo.currentText() )
     
-    def imprimirPlanol(self,x, y, escala, rotacion, templateFile, fitxerSortida, tipusSortida):
+    def imprimirPlanol(self,x, y, escala, rotacion, midaPagina, templateFile, fitxerSortida, tipusSortida):
         tInicial=time.time()
+
 
         template = QFile(templateFile)
         doc = QDomDocument()
         doc.setContent(template, False)
 
         layout = QgsLayout(self.project)
+        # page=QgsLayoutItemPage(layout)
+        # page.setPageSize(midaPagina)
+        # layout.pageCollection().addPage(page)
+
+        # layout.initializeDefaults()
+        # p=layout.pageCollection().pages()[0]
+        # p.setPageSize(midaPagina)
+
         context = QgsReadWriteContext()
         [items, ok] = layout.loadFromTemplate(doc, context)
+        p=layout.pageCollection().pages()[0]
+        p.setPageSize(midaPagina)
    
         if ok:
             refMap = layout.referenceMap()
+
+            titol=layout.itemById('idNomMapa')
+            if self.leTitol.text()!='':
+                titol.setText(self.leTitol.text())
+            # else:
+            #     titol.setText('')
             
             rect = refMap.extent()
             vector = QgsVector(x - rect.center().x(), y - rect.center().y())
@@ -220,15 +291,14 @@ class QvPrint(QWidget):
             # result = exporter.exportToImage('d:/dropbox/qpic/preview.png',  image_settings)
             # imatge = QPixmap('d:/dropbox/qpic/preview.png')
             # self.ui.lblImatgeResultat.setPixmap(imatge)
-            t = time.localtime()
-
-            timestamp = time.strftime('%b-%d-%Y_%H%M%S', t)
+            
             if tipusSortida=='PDF':
                 settings = QgsLayoutExporter.PdfExportSettings()
                 settings.dpi=300
                 settings.exportMetadata=False
                 
-                fitxerSortida='d:/sortida_'+timestamp+'.PDF'
+                # fitxerSortida='d:/sortida_'+timestamp+'.PDF'
+                fitxerSortida+='.PDF'
                 result = exporter.exportToPdf(fitxerSortida, settings)
 
                 print (fitxerSortida)
@@ -237,7 +307,8 @@ class QvPrint(QWidget):
                 settings = QgsLayoutExporter.ImageExportSettings()
                 settings.dpi = 300
 
-                fitxerSortida='d:/sortida_'+timestamp+'.PNG'
+                # fitxerSortida='d:/sortida_'+timestamp+'.PNG'
+                fitxerSortida+='.PNG'
                 result = exporter.exportToImage(fitxerSortida, settings)
         
             #Obra el document si està marcat checkObrirResultat
@@ -251,7 +322,7 @@ class QvPrint(QWidget):
 
 if __name__ == "__main__":
     with qgisapp() as app:
-        app.setStyle(QStyleFactory.create('fusion'))
+        # app.setStyle(QStyleFactory.create('fusion'))
         # Canvas, projecte i bridge
         #canvas=QvCanvas()
         canvas=QgsMapCanvas()
@@ -277,33 +348,24 @@ if __name__ == "__main__":
         Amb aquesta linia:
         qvPrint.show()
         es veuria el widget suelto, separat del canvas.
-
         Les següents línies mostren com integrar el widget 'ubicacions' com a dockWidget.
         """
         # Definim una finestra QMainWindow
         """ 
         windowTest = QMainWindow()
-
         # Posem el canvas com a element central
         windowTest.setCentralWidget(canvas)
-
         # Creem un dockWdget i definim les característiques
         dwPrint = QDockWidget( "qV Print", windowTest )
         dwPrint.setAllowedAreas( Qt.RightDockWidgetArea | Qt.LeftDockWidgetArea )
         dwPrint.setContentsMargins ( 1, 1, 1, 1 )
         dwPrint.setMaximumHeight(200)
-
         # Afegim el widget ubicacions al dockWidget
         dwPrint.setWidget(qvPrint)
-
         # Coloquem el dockWidget al costat esquerra de la finestra
         windowTest.addDockWidget( Qt.LeftDockWidgetArea, dwPrint)
-
         # Fem visible el dockWidget
         # dwPrint.show()
-
         # Fem visible la finestra principal
-
         windowTest.show() """
         canvas.show()
-

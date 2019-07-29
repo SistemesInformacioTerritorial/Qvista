@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 
-from qgis.core import (QgsProject, QgsLegendModel, QgsLayerDefinition, QgsMapLayer,
-                       QgsLayerTree, QgsLayerTreeNode, QgsLayerTreeUtils)
+from qgis.core import (QgsProject, QgsLegendModel, QgsLayerDefinition, QgsMapLayer, QgsVectorLayer,
+                       QgsVectorFileWriter, QgsVectorLayerJoinInfo, QgsLayerTree, QgsLayerTreeNode,
+                       QgsLayerTreeUtils, QgsVectorDataProvider)
 from qgis.gui import (QgsLayerTreeView, QgsLayerTreeViewMenuProvider, QgsLayerTreeMapCanvasBridge,
-                      QgsLayerTreeViewIndicator)
+                      QgsLayerTreeViewIndicator, QgsLayerTreeViewDefaultActions)
 from qgis.PyQt.QtWidgets import QAction, QFileDialog, QWidget, QPushButton, QVBoxLayout, QHBoxLayout
 from qgis.PyQt.QtGui import QIcon, QColor
 from qgis.PyQt.QtCore import Qt, pyqtSignal, QUrl
@@ -192,6 +193,7 @@ class QvLlegenda(QgsLayerTreeView):
     clicatMenuContexte = pyqtSignal(str)
     carregantProjecte = pyqtSignal()
     projecteCarregat = pyqtSignal(str)
+    projecteModificat = pyqtSignal(str)
 
     def __init__(self, canvas=None, atributs=None, canviCapaActiva=None):
         QgsLayerTreeView.__init__(self)
@@ -255,13 +257,25 @@ class QvLlegenda(QgsLayerTreeView):
             self.canvas.renderStarting.connect(self.fiProjecte)
             # self.canvas.renderComplete.connect(self.fiProjecte)
 
+        self.fSignal = lambda: self.projecteModificat.emit('canvasLayersChanged')
+        self.iniSignal = False
+        # self.defActions = QgsLayerTreeViewDefaultActions(self)
+
     # def msgCapes(self, nomCapa, msgs):
     #     print('Capa:', nomCapa)
     #     for m in msgs:
     #         print(m[0], '-', m[1])
 
+    def modificacioProjecte(self, txt='userModification'):
+        if self.iniSignal:
+            self.projecteModificat.emit(txt)
+
     def iniProjecte(self, num, tot):
         # La carga de un proyecto se inicia con la capa #0
+        if self.iniSignal:
+            self.bridge.canvasLayersChanged.disconnect(self.fSignal)
+            self.iniSignal = False
+
         if self.projecteCapes is None and num == 0:
             self.projecteCapes = False
             if self.player is not None:
@@ -282,6 +296,9 @@ class QvLlegenda(QgsLayerTreeView):
                 self.player.mediaPlayer.pause()
                 self.player.hide()
             self.projecteCarregat.emit(self.project.fileName())
+            if not self.iniSignal:
+                self.bridge.canvasLayersChanged.connect(self.fSignal)
+                self.iniSignal = True
 
     # def iniProjecte(self, num, tot):
     #     # La carga de un proyecto se inicia con la capa #0
@@ -413,6 +430,7 @@ class QvLlegenda(QgsLayerTreeView):
             else:
                 self.addIndicator(node, self.iconaFiltre)
             capa.nameChanged.emit()
+            self.modificacioProjecte('filterModified')
 
     def nouProjecte(self):
         # Borrar tabs de atributos si existen
@@ -558,7 +576,7 @@ class QvLlegenda(QgsLayerTreeView):
         act = QAction()
         act.setText("Canvia nom")
         # act.setIcon(QIcon(':/Icones/ic_file_upload_black_48dp.png'))
-        act.triggered.connect(self.defaultActions().renameGroupOrLayer)  # , type = Qt.DirectConnection)
+        act.triggered.connect(self.renameGroupOrLayer)  # , type = Qt.DirectConnection)
         self.accions.afegirAccio('renameGroupOrLayer', act)
 
         #
@@ -610,6 +628,12 @@ class QvLlegenda(QgsLayerTreeView):
         act.triggered.connect(self.removeFilter)
         self.accions.afegirAccio('removeFilter', act)
 
+        # act = QAction()
+        # act.setText("Afegeix capa CSV")
+        # # act.setIcon(QIcon(':/Icones/ic_file_upload_black_48dp.png'))ic_beach_access_black_48dp
+        # act.triggered.connect(self.addCustomCSV)
+        # self.accions.afegirAccio('addCustomCSV', act)
+
     def calcTipusMenu(self):
         # Tipos: none, group, layer, symb
         tipo = 'none'
@@ -649,21 +673,49 @@ class QvLlegenda(QgsLayerTreeView):
         elif tipo == 'none':
             if self.editable:
                 self.menuAccions += ['addGroup', 'addLayersFromFile']
+                # if QvApp().usuari in ('CPRET', 'DE1717'):
+                #     self.menuAccions += ['addCustomCSV']
         else:  # 'symb'
             pass
         return tipo
 
+    # def addGroup(self):
+    #     self.projecteModificat.emit('addGroup')
+    #     self.defaultActions().addGroup()
+
+    def renameGroupOrLayer(self):
+        self.modificacioProjecte('renameGroupOrLayer')
+        self.defaultActions().renameGroupOrLayer()
+
     def removeGroupOrLayer(self):
         node = self.currentNode()
-        node.parent().removeChildNode(node)
+        if node is not None:
+            node.parent().removeChildNode(node)
 
     def addLayersFromFile(self):
         dlgLayers = QFileDialog()
         nfile, ok = dlgLayers.getOpenFileName(None, "Afegir Capes Qgis", self.directory, "Capes Qgis (*.qlr)")
         if ok and nfile != '':
             layers = QgsLayerDefinition.loadLayerDefinitionLayers(nfile)
-            self.project.addMapLayers(layers, True)
+            if layers is not None and len(layers) > 0:
+                loaded = self.project.addMapLayers(layers, True)
+                if loaded is not None and len(loaded) > 0:
+                    if set(layers) != set(loaded):
+                        print('Alguna capa no se pudo cargar')
             self.directory = os.path.dirname(nfile)
+
+    # def addCustomCSV(self):
+    #     dlgLayers = QFileDialog()
+    #     nfile, ok = dlgLayers.getOpenFileName(None, "Afegir Capa CSV", self.directory, "Capes CSV (*.csv)")
+    #     if ok and nfile != '':
+    #         # uri = 'file:///' + nfile + '?delimiter=;'
+    #         # uri = 'file:///' + nfile + '?delimiter=;&crs=epsg:25831&xField=XCalculadaqVista&yField=YCalculadaqVista'
+    #         uri = 'file:///' + nfile + '?delimiter=;&crs=epsg:25831&wktField=GEOMETRIA'
+    #         layer = QgsVectorLayer(uri, os.path.basename(nfile), 'delimitedtext')
+    #         addLayer = self.project.addMapLayer(layer)
+    #         if addLayer is None:
+    #             print('Error al añadir capa')
+    #         self.directory = os.path.dirname(nfile)
 
     def saveLayersToFile(self):
         nodes = self.selectedNodes()
@@ -918,6 +970,51 @@ if __name__ == "__main__":
                 if botonera is not None:
                     botonera.close()
 
+        def testJoin():
+
+            print(QgsVectorDataProvider.availableEncodings())
+
+            vectorLyr = QgsVectorLayer('D:/qVista/Barris.gpkg', 'Barris' , "ogr")
+            vectorLyr.setProviderEncoding("UTF-8")
+            infoLyr = QgsVectorLayer('D:/qVista/CarrecsBarri.csv', 'Carrecs' , "ogr")
+            vectorLyr.setProviderEncoding("windows-1252")
+
+            QgsVectorFileWriter.writeAsVectorFormat(vectorLyr,
+                "D:/qVista/Barris", "UTF-8", vectorLyr.crs(), "SQLite")
+
+            leyenda.project.addMapLayers([infoLyr, vectorLyr], False)
+
+            vlayer = QgsVectorLayer( "?query="
+                "select C.*, B.NOM_BARRI, B.DISTRICTE, B.GEOMETRY as GEOM from Carrecs as C "
+                "left join Barris as B on C.CODI_BARRI = B.CODI_BARRI", "CarrecsBarri", "virtual" )
+            QgsVectorFileWriter.writeAsVectorFormat(vlayer,
+                "D:/qVista/CarrecsBarri.gpkg", "UTF-8", vectorLyr.crs(), "C")
+
+            vlayer = QgsVectorLayer( "?query="
+                "select C.*, B.NOM_BARRI, B.DISTRICTE, B.GEOMETRY as GEOM from "
+                "(select count(*) AS NUM_CARRECS, CODI_BARRI from Carrecs group by CODI_BARRI) as C "
+                "left join Barris as B on C.CODI_BARRI = B.CODI_BARRI", "CarrecsBarriGroup", "virtual" )
+
+            # vlayer = QgsVectorLayer( "?query="
+            #     "select C.*, B.NOM_BARRI, B.DISTRICTE, B.GEOMETRY as GEOM from "
+            #     "(select count(*) AS NUM_CARRECS, CODI_BARRI from Carrecs group by CODI_BARRI) as C "
+            #     "left join Barris as B on C.CODI_BARRI = B.CODI_BARRI", "CarrecsBarriGroup", "virtual" )
+            QgsVectorFileWriter.writeAsVectorFormat(vlayer,
+                "D:/qVista/CarrecsBarriGroup", "UTF-8", vectorLyr.crs(), "SQLite")
+            QgsVectorFileWriter.writeAsVectorFormat(vlayer,
+                "D:/qVista/CarrecsBarriGroup", "UTF-8", vectorLyr.crs(), "GPKG")
+
+            leyenda.project.removeMapLayers([infoLyr.id(), vectorLyr.id()])
+            joinLyr = QgsVectorLayer('D:/qVista/CarrecsBarri.gpkg', 'CarrecsBarri' , "ogr")
+            joinLyr.setProviderEncoding("UTF-8")
+            leyenda.project.addMapLayer(joinLyr, True)
+            joinLyr = QgsVectorLayer('D:/qVista/CarrecsBarriGroup.gpkg', 'CarrecsBarriGroupGPKG' , "ogr")
+            joinLyr.setProviderEncoding("UTF-8")
+            leyenda.project.addMapLayer(joinLyr, True)
+            joinLyr = QgsVectorLayer('D:/qVista/CarrecsBarriGroup.sqlite', 'CarrecsBarriGroupSQLite' , "ogr")
+            joinLyr.setProviderEncoding("UTF-8")
+            leyenda.project.addMapLayer(joinLyr, True)
+
         # Acciones de usuario para el menú
         act = QAction()
         act.setText("Editable")
@@ -940,6 +1037,11 @@ if __name__ == "__main__":
         leyenda.accions.afegirAccio('testSimbologia', act)
 
         act = QAction()
+        act.setText("Test Join")
+        act.triggered.connect(testJoin)
+        leyenda.accions.afegirAccio('testJoin', act)
+
+        act = QAction()
         act.setText("Abrir proyecto")
         act.triggered.connect(openProject)
         leyenda.accions.afegirAccio('openProject', act)
@@ -952,11 +1054,14 @@ if __name__ == "__main__":
                 leyenda.menuAccions.append('test')
                 leyenda.menuAccions.append('testCapas')
                 # leyenda.menuAccions.append('testSimbologia')
+                leyenda.menuAccions.append('testJoin')
                 leyenda.menuAccions.append('editable')
                 leyenda.menuAccions.append('openProject')
 
         # Conexión de la señal con la función menuContexte para personalizar el menú
         leyenda.clicatMenuContexte.connect(menuContexte)
+
+        leyenda.projecteModificat.connect(print)
 
         app.aboutToQuit.connect(QvApp().logFi)
 
