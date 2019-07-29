@@ -11,7 +11,7 @@ from moduls.QvConstants import QvConstants
 from moduls.QvPushButton import QvPushButton
 
 class QvSuggeriments(QDialog):
-    def __init__(self, acceptAction=QWidget.close, parent=None):
+    def __init__(self, acceptAction: Callable[[str,str],None]=QWidget.close, parent: QtWidgets.QWidget=None):
         super().__init__(parent)
         #Layout gran. Tot a dins
         self.layout=QVBoxLayout(self)

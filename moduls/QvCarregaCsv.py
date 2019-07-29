@@ -14,6 +14,7 @@ import chardet
 from PyQt5 import QtWidgets
 import time
 from pathlib import Path
+from typing import Callable
 
 
 class QvCarregaCsv(QWizard):
@@ -21,7 +22,7 @@ class QvCarregaCsv(QWizard):
         'finestres', 'Precalculat TriaSep           TriaGeom CampsXY Adreca GeneraCoords Personalitza')
                              #TriaSepDec
 
-    def __init__(self, csv: str, carregar, parent: QWidget = None):
+    def __init__(self, csv: str, carregar: Callable[[str,str,str,str],None], parent: QWidget = None):
         '''Crea un assistent de càrrega de csv
         Arguments:
             csv{str} -- Nom de l'arxiu a carregar
@@ -249,7 +250,7 @@ class QvCarregaCsvPage(QWizardPage):
         super().setSubTitle(s)
 
 class QvCarregaCsvPrecalculat(QvCarregaCsvPage):
-    def __init__(self, parent):
+    def __init__(self, parent: QWidget=None):
         '''Crea una pàgina de l'assistent de càrrega de csv que permet escollir entre el procediment normal o saltar-se'l 
             en cas que trobi els camps XCalculadaqVista i YCalculadaqVista.
             parent{QWidget} -- Pare de l'assistent (default{None})
