@@ -1740,7 +1740,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.menuUtilitats.setFont(QvConstants.FONTSUBTITOLS)
         self.menuUtilitats.styleStrategy = QFont.PreferAntialias or QFont.PreferQuality
         self.menuUtilitats.addAction(self.actExecuteChrome)
-        self.menuUtilitats.addAction(self.actDocumentacio)
+        # self.menuUtilitats.addAction(self.actDocumentacio)
 
 
         self.menuFuncions.setFont(QvConstants.FONTSUBTITOLS)
