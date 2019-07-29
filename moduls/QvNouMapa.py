@@ -12,7 +12,11 @@ from moduls.QvPushButton import QvPushButton
 from moduls.QvToolButton import QvToolButton
 
 class QvNouMapa(QDialog):
-    def __init__(self, parent=None):
+    '''Diàleg de creació del mapa. Mostra uns mapes base i una line edit perquè l'usuari triï base i títol del projecte, i els carrega en el qVista quan sortim del diàleg'''
+    def __init__(self, parent):
+        '''Construeix un QvNouMapa. Rep obligatòriament el widget pare, que ha de ser el qVista
+        Arguments:
+            parent{QVista} -- Instància de qVista que estem executant'''
         super().__init__(parent)
         self.setWindowFlags(Qt.Window | Qt.FramelessWindowHint)
         self.layout=QVBoxLayout(self)
@@ -136,6 +140,10 @@ class QvNouMapa(QDialog):
         self.layout.addLayout(self.layoutContingut)
 
     def botoClick(self,boto):
+        '''Funció que rep un dels botons del diàleg, i fa click sobre ell. Marca la resta com a no clicats
+        Arguments:
+            boto{QvToolButton} -- Botó que volem marcar. Ha de ser un dels sis que té el diàleg
+        '''
         botons=set([self.mapaBuit,self.mapa1,self.mapa2,self.mapa3,self.mapa4,self.mapa5])
         boto.setMarcat(True)
         botons.remove(boto)
@@ -154,10 +162,18 @@ class QvNouMapa(QDialog):
             self.setAdreca(docdirPlantilles+'MapaEnBlanc.qgs')
 
     def setAdreca(self,adreca):
+        '''Selecciona l'adreça del mapa que volem posar
+        Arguments:
+            adreca{str} -- Adreça a posar. Ha de ser un projecte qGis, i en teoria hauria d'equivaldre a la icona del botó a la que s'asocia
+        '''
         self.adreca=adreca
         if self.leTitol.text()!='': 
             self.botoAcceptar.setEnabled(True)
     def setTitol(self,titol):
+        '''Posa títol al projecte que farem
+        Arguments:
+            titol{str} -- Títol. Pot ser buit, i en aquest cas es desactivarà el botó d'acceptar
+        '''
         self.titol=titol
         if titol!='':
             if hasattr(self,'adreca'):
@@ -180,23 +196,8 @@ class QvNouMapa(QDialog):
         self.oldPos = event.globalPos()
 
     def keyPressEvent(self, event):
-        if event.key() == Qt.Key_Escape or event.key() == Qt.Key_Return:
+        if event.key() == Qt.Key_Escape:
             self.close()
-
-# class QvToolButton(QToolButton):
-#     def __init__(self,parent=None):
-#         super().__init__(parent)
-#         self.setStyleSheet('''
-#             QToolButton{
-#                 padding: 0px;
-#                 background: transparent;
-#                 margin: 0px;
-#                 border: 0px;
-#             }
-#         ''')
-#     def enterEvent(self,event):
-#         super().enterEvent(event)
-#         self.setCursor(QvConstants.cursorClick())
-#     def leaveEvent(self,event):
-#         super().leaveEvent(event)
-#         self.setCursor(QvConstants.cursorFletxa())
+        if event.key() == Qt.Key_Return:
+            if self.botoAcceptar.isEnabled(): #Si el botó d'acceptar està enabled, podem acceptar
+                self.carrega()

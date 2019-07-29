@@ -799,6 +799,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.layoutFrameLlegenda = QVBoxLayout(self.frameLlegenda)
         self.llegenda = QvLlegenda(self.canvas, self.taulesAtributs)
         self.llegenda.currentLayerChanged.connect(self.canviLayer)
+        self.llegenda.projecteModificat.connect(lambda: self.setDirtyBit(True))
         self.canvas.setLlegenda(self.llegenda)
         self.layoutFrameLlegenda.setContentsMargins ( 5, 13, 5, 0 )
         self.llegenda.setStyleSheet("QvLlegenda {color: #38474f; background-color: #F9F9F9; border: 0px solid red;}")
@@ -969,7 +970,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.dwPrint.setAllowedAreas( Qt.RightDockWidgetArea | Qt.LeftDockWidgetArea )
         self.dwPrint.setContentsMargins ( 1, 1, 1, 1 )
         self.addDockWidget(Qt.RightDockWidgetArea, self.dwPrint)
-        self.dwPrint.setMaximumHeight(200)
+        # self.dwPrint.setMaximumHeight(200)
         self.dwPrint.hide()
 
     def imprimir(self):    
@@ -1380,7 +1381,7 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         self.bs1 = QvPushButton(flat=True)
         # self.bs1.setCheckable(True)
-        self.bs1.setIcon(QIcon('imatges/cursor-pointer.png'))
+        self.bs1.setIcon(QIcon('imatges/apuntar.png'))
         self.bs2 = QvPushButton(flat=True)
         # self.bs2.setCheckable(True)
         self.bs2.setIcon(QIcon('imatges/shape-polygon-plus.png'))
@@ -2590,7 +2591,6 @@ class QVista(QMainWindow, Ui_MainWindow):
                 self.cAdrec.cercadorAdrecaFi()
         except Exception as ee:
             print(str(ee))
-
         try:
             QvApp().logFi() #fa aixo pero no arriba a tancar la app
             QCoreApplication.exit(0) #preguntar al Jordi que li sembla
@@ -3248,6 +3248,16 @@ def reportarProblema(titol: str, descripcio: str=None):
     #     print ('Error al crear el problema {0:s}'.format(titol))
     #     qV.lblResultat.setText('Error al crear el problema {0:s}'.format(titol))
 
+def esborraCarpetaTemporal():
+    '''Esborra el contingut de la carpeta temporal en iniciar qVista
+    '''
+    #Esborrarem el contingut de la carpeta temporal
+    for file in os.scandir(tempdir):
+        try:
+            #Si no podem esborrar un arxiu, doncs és igual. Deu estar obert. Ja s'esborrarà en algun moment
+            os.unlink(file.path)
+        except:
+            pass
 
 def main(argv):
     # import subprocess
@@ -3268,6 +3278,7 @@ def main(argv):
         splash.setFont(QFont(QvConstants.NOMFONT,8))
         splash.show()
         app.setWindowIcon(QIcon('imatges/QVistaLogo_256.png'))
+        esborraCarpetaTemporal() #Esborrem els temporals de la sessió anterior
         app.processEvents()
         with open('style.qss') as st:
             app.setStyleSheet(st.read())
