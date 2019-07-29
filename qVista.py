@@ -970,7 +970,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.dwPrint.setAllowedAreas( Qt.RightDockWidgetArea | Qt.LeftDockWidgetArea )
         self.dwPrint.setContentsMargins ( 1, 1, 1, 1 )
         self.addDockWidget(Qt.RightDockWidgetArea, self.dwPrint)
-        self.dwPrint.setMaximumHeight(200)
+        # self.dwPrint.setMaximumHeight(200)
         self.dwPrint.hide()
 
     def imprimir(self):    
@@ -1381,7 +1381,7 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         self.bs1 = QvPushButton(flat=True)
         # self.bs1.setCheckable(True)
-        self.bs1.setIcon(QIcon('imatges/cursor-pointer.png'))
+        self.bs1.setIcon(QIcon('imatges/apuntar.png'))
         self.bs2 = QvPushButton(flat=True)
         # self.bs2.setCheckable(True)
         self.bs2.setIcon(QIcon('imatges/shape-polygon-plus.png'))

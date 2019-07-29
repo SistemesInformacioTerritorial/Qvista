@@ -119,11 +119,31 @@ class QvPrint(QWidget):
         self.layoutBotons.addWidget(self.boto)
         self.layoutBotons.addWidget(self.boto2)
 
+        self.wOrientacio=QWidget()
+        self.layoutOrientacio=QHBoxLayout()
+        self.wOrientacio.setLayout(self.layoutOrientacio)
         self.rbVertical=QRadioButton('Vertical')
         self.rbHoritzontal=QRadioButton('Horitzontal')
         self.rbVertical.setChecked(True)
         self.rbVertical.clicked.connect(self.canviOrientacio)
         self.rbHoritzontal.clicked.connect(self.canviOrientacio)
+        self.layoutOrientacio.addWidget(self.rbVertical)
+        self.layoutOrientacio.addWidget(self.rbHoritzontal)
+
+        self.wFormat=QWidget()
+        self.layoutFormat=QHBoxLayout()
+        self.wFormat.setLayout(self.layoutFormat)
+        self.rbPDF=QRadioButton('PDF')
+        self.rbPNG=QRadioButton('PNG')
+        self.rbPDF.setChecked(True)
+        self.layoutFormat.addWidget(self.rbPDF)
+        self.layoutFormat.addWidget(self.rbPNG)
+
+        self.cbMida=QComboBox(self)
+        self.cbMida.addItems(['A0','A1','A2','A3','A4'])
+        self.cbMida.currentTextChanged.connect(self.canviEscala)
+        self.cbMida.setCurrentIndex(4)
+        self.cbMida.hide() #Ho ocultem fins que sapiguem implementar-ho bé
         
         # self.checkRotacio = QCheckBox('Planol rotat')
         # self.checkRotacio.show()
@@ -131,8 +151,12 @@ class QvPrint(QWidget):
         self.layout.addWidget(self.leTitol)
         self.layout.addLayout(self.layoutBotons)
         self.layout.addWidget(self.combo)
-        self.layout.addWidget(self.rbVertical)
-        self.layout.addWidget(self.rbHoritzontal)
+        self.layout.addWidget(self.wOrientacio)
+        self.layout.addWidget(self.wFormat)
+        # self.layout.addWidget(self.cbMida)
+        # self.layout.addWidget(self.rbVertical)
+        # self.layout.addWidget(self.rbHoritzontal)
+        self.layout.addStretch()
 
     def potsMoure(self):
         # self.canvas.scene().removeItem(self.rubberband)
@@ -141,6 +165,16 @@ class QvPrint(QWidget):
     def canviEscala(self):
         self.pucMoure = True
         escala = int(self.dictEscales[self.combo.currentText()])
+        mida=self.cbMida.currentText()
+        if mida=='A3':
+            escala*=math.sqrt(2)
+        elif mida=='A2':
+            escala*=math.sqrt(2)*2
+        elif mida=='A1':
+            escala*=math.sqrt(2)*3
+        elif mida=='A0':
+            escala*=math.sqrt(2)*4
+
 
         if self.rbVertical.isChecked():
             self.incX = escala
@@ -198,13 +232,20 @@ class QvPrint(QWidget):
         rotacio=self.canvas.rotation()
         if self.rbVertical.isChecked():
             self.plantillaMapa = 'plantillaMapa.qpt'
+            print(self.plantillaMapa)
         else:
             self.plantillaMapa = 'plantillaMapaH.qpt'
-        self.imprimirPlanol(self.posXY[0], self.posXY[1], int(self.combo.currentText()), rotacio, self.plantillaMapa , 'd:/EUREKA.pdf', 'PDF')
+
+        t = time.localtime()
+        timestamp = time.strftime('%b-%d-%Y_%H%M%S', t)
+        sortida=tempdir+'sortida_'+timestamp
+        escalesProd={'A4':1, 'A3':2, 'A2':4, 'A1':8, 'A0':16}
+        
+        self.imprimirPlanol(self.posXY[0], self.posXY[1], int(self.combo.currentText()), rotacio, self.cbMida.currentText(), self.plantillaMapa , sortida, 'PDF' if self.rbPDF.isChecked() else 'PNG')
        
         QvApp().logRegistre('Impressió: '+self.combo.currentText() )
     
-    def imprimirPlanol(self,x, y, escala, rotacion, templateFile, fitxerSortida, tipusSortida):
+    def imprimirPlanol(self,x, y, escala, rotacion, midaPagina, templateFile, fitxerSortida, tipusSortida):
         tInicial=time.time()
 
 
@@ -213,8 +254,18 @@ class QvPrint(QWidget):
         doc.setContent(template, False)
 
         layout = QgsLayout(self.project)
+        # page=QgsLayoutItemPage(layout)
+        # page.setPageSize(midaPagina)
+        # layout.pageCollection().addPage(page)
+
+        # layout.initializeDefaults()
+        # p=layout.pageCollection().pages()[0]
+        # p.setPageSize(midaPagina)
+
         context = QgsReadWriteContext()
         [items, ok] = layout.loadFromTemplate(doc, context)
+        p=layout.pageCollection().pages()[0]
+        p.setPageSize(midaPagina)
    
         if ok:
             refMap = layout.referenceMap()
@@ -240,16 +291,14 @@ class QvPrint(QWidget):
             # result = exporter.exportToImage('d:/dropbox/qpic/preview.png',  image_settings)
             # imatge = QPixmap('d:/dropbox/qpic/preview.png')
             # self.ui.lblImatgeResultat.setPixmap(imatge)
-            t = time.localtime()
-
-            timestamp = time.strftime('%b-%d-%Y_%H%M%S', t)
+            
             if tipusSortida=='PDF':
                 settings = QgsLayoutExporter.PdfExportSettings()
                 settings.dpi=300
                 settings.exportMetadata=False
                 
                 # fitxerSortida='d:/sortida_'+timestamp+'.PDF'
-                fitxerSortida=tempdir+'sortid_'+timestamp+'.PDF'
+                fitxerSortida+='.PDF'
                 result = exporter.exportToPdf(fitxerSortida, settings)
 
                 print (fitxerSortida)
@@ -259,7 +308,7 @@ class QvPrint(QWidget):
                 settings.dpi = 300
 
                 # fitxerSortida='d:/sortida_'+timestamp+'.PNG'
-                fitxerSortida=tempdir+'sortid_'+timestamp+'.PNG'
+                fitxerSortida+='.PNG'
                 result = exporter.exportToImage(fitxerSortida, settings)
         
             #Obra el document si està marcat checkObrirResultat
