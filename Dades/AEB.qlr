@@ -1,0 +1,223 @@
+<!DOCTYPE qgis-layer-definition>
+<qlr>
+  <layer-tree-group expanded="1" name="" checked="Qt::Checked">
+    <customproperties/>
+    <layer-tree-layer expanded="1" name="AEB" id="AEB_fff6edcd_d73f_463f_2019073109051060510176" source="./AEB.sqlite|layername=aeb" providerKey="ogr" checked="Qt::Unchecked">
+      <customproperties/>
+    </layer-tree-layer>
+  </layer-tree-group>
+  <maplayers>
+    <maplayer simplifyAlgorithm="0" refreshOnNotifyEnabled="0" autoRefreshTime="0" styleCategories="AllStyleCategories" type="vector" simplifyDrawingHints="1" simplifyMaxScale="1" hasScaleBasedVisibilityFlag="0" simplifyLocal="1" refreshOnNotifyMessage="" readOnly="0" autoRefreshEnabled="0" labelsEnabled="0" geometry="Polygon" maxScale="0" minScale="1e+08" simplifyDrawingTol="1">
+      <extent>
+        <xmin>420812.53980000002775341</xmin>
+        <ymin>4574282.45000000018626451</ymin>
+        <xmax>435480.35899999999674037</xmax>
+        <ymax>4591066.02599999960511923</ymax>
+      </extent>
+      <id>AEB_fff6edcd_d73f_463f_2019073109051060510176</id>
+      <datasource>./AEB.sqlite|layername=aeb</datasource>
+      <keywordList>
+        <value></value>
+      </keywordList>
+      <layername>AEB</layername>
+      <srs>
+        <spatialrefsys>
+          <proj4>+proj=utm +zone=31 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs</proj4>
+          <srsid>2104</srsid>
+          <srid>25831</srid>
+          <authid>EPSG:25831</authid>
+          <description>ETRS89 / UTM zone 31N</description>
+          <projectionacronym>utm</projectionacronym>
+          <ellipsoidacronym>GRS80</ellipsoidacronym>
+          <geographicflag>false</geographicflag>
+        </spatialrefsys>
+      </srs>
+      <resourceMetadata>
+        <identifier></identifier>
+        <parentidentifier></parentidentifier>
+        <language></language>
+        <type></type>
+        <title></title>
+        <abstract></abstract>
+        <links/>
+        <fees></fees>
+        <encoding></encoding>
+        <crs>
+          <spatialrefsys>
+            <proj4></proj4>
+            <srsid>0</srsid>
+            <srid>0</srid>
+            <authid></authid>
+            <description></description>
+            <projectionacronym></projectionacronym>
+            <ellipsoidacronym></ellipsoidacronym>
+            <geographicflag>false</geographicflag>
+          </spatialrefsys>
+        </crs>
+        <extent/>
+      </resourceMetadata>
+      <provider encoding="UTF-8">ogr</provider>
+      <vectorjoins/>
+      <layerDependencies/>
+      <dataDependencies/>
+      <legend type="default-vector"/>
+      <expressionfields/>
+      <map-layer-style-manager current="predeterminado">
+        <map-layer-style name="predeterminado"/>
+      </map-layer-style-manager>
+      <auxiliaryLayer/>
+      <flags>
+        <Identifiable>1</Identifiable>
+        <Removable>1</Removable>
+        <Searchable>1</Searchable>
+      </flags>
+      <renderer-v2 symbollevels="0" type="singleSymbol" enableorderby="0" forceraster="0">
+        <symbols>
+          <symbol name="0" force_rhr="0" type="fill" alpha="1" clip_to_extent="1">
+            <layer class="SimpleFill" pass="0" enabled="1" locked="0">
+              <prop v="3x:0,0,0,0,0,0" k="border_width_map_unit_scale"/>
+              <prop v="221,221,221,255" k="color"/>
+              <prop v="bevel" k="joinstyle"/>
+              <prop v="0,0" k="offset"/>
+              <prop v="3x:0,0,0,0,0,0" k="offset_map_unit_scale"/>
+              <prop v="Pixel" k="offset_unit"/>
+              <prop v="211,211,211,255" k="outline_color"/>
+              <prop v="solid" k="outline_style"/>
+              <prop v="0.96" k="outline_width"/>
+              <prop v="Pixel" k="outline_width_unit"/>
+              <prop v="no" k="style"/>
+              <data_defined_properties>
+                <Option type="Map">
+                  <Option name="name" type="QString" value=""/>
+                  <Option name="properties"/>
+                  <Option name="type" type="QString" value="collection"/>
+                </Option>
+              </data_defined_properties>
+            </layer>
+          </symbol>
+        </symbols>
+        <rotation/>
+        <sizescale/>
+      </renderer-v2>
+      <customproperties>
+        <property key="dualview/previewExpressions" value="&quot;ogc_fid&quot;"/>
+      </customproperties>
+      <blendMode>0</blendMode>
+      <featureBlendMode>0</featureBlendMode>
+      <layerOpacity>1</layerOpacity>
+      <geometryOptions geometryPrecision="0" removeDuplicateNodes="0">
+        <activeChecks/>
+        <checkConfiguration/>
+      </geometryOptions>
+      <fieldConfiguration>
+        <field name="ogc_fid">
+          <editWidget type="">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field name="codi">
+          <editWidget type="">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field name="area">
+          <editWidget type="">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field name="perimetre">
+          <editWidget type="">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field name="districte">
+          <editWidget type="">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field name="barri">
+          <editWidget type="">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+      </fieldConfiguration>
+      <aliases>
+        <alias name="" field="ogc_fid" index="0"/>
+        <alias name="" field="codi" index="1"/>
+        <alias name="" field="area" index="2"/>
+        <alias name="" field="perimetre" index="3"/>
+        <alias name="" field="districte" index="4"/>
+        <alias name="" field="barri" index="5"/>
+      </aliases>
+      <excludeAttributesWMS/>
+      <excludeAttributesWFS/>
+      <defaults>
+        <default expression="" field="ogc_fid" applyOnUpdate="0"/>
+        <default expression="" field="codi" applyOnUpdate="0"/>
+        <default expression="" field="area" applyOnUpdate="0"/>
+        <default expression="" field="perimetre" applyOnUpdate="0"/>
+        <default expression="" field="districte" applyOnUpdate="0"/>
+        <default expression="" field="barri" applyOnUpdate="0"/>
+      </defaults>
+      <constraints>
+        <constraint unique_strength="1" field="ogc_fid" notnull_strength="1" exp_strength="0" constraints="3"/>
+        <constraint unique_strength="0" field="codi" notnull_strength="0" exp_strength="0" constraints="0"/>
+        <constraint unique_strength="0" field="area" notnull_strength="0" exp_strength="0" constraints="0"/>
+        <constraint unique_strength="0" field="perimetre" notnull_strength="0" exp_strength="0" constraints="0"/>
+        <constraint unique_strength="0" field="districte" notnull_strength="0" exp_strength="0" constraints="0"/>
+        <constraint unique_strength="0" field="barri" notnull_strength="0" exp_strength="0" constraints="0"/>
+      </constraints>
+      <constraintExpressions>
+        <constraint field="ogc_fid" exp="" desc=""/>
+        <constraint field="codi" exp="" desc=""/>
+        <constraint field="area" exp="" desc=""/>
+        <constraint field="perimetre" exp="" desc=""/>
+        <constraint field="districte" exp="" desc=""/>
+        <constraint field="barri" exp="" desc=""/>
+      </constraintExpressions>
+      <expressionfields/>
+      <attributeactions>
+        <defaultAction key="Canvas" value="{00000000-0000-0000-0000-000000000000}"/>
+      </attributeactions>
+      <attributetableconfig sortOrder="0" actionWidgetStyle="dropDown" sortExpression="">
+        <columns>
+          <column name="ogc_fid" hidden="0" type="field" width="-1"/>
+          <column name="codi" hidden="0" type="field" width="-1"/>
+          <column name="area" hidden="0" type="field" width="-1"/>
+          <column name="perimetre" hidden="0" type="field" width="-1"/>
+          <column name="districte" hidden="0" type="field" width="-1"/>
+          <column name="barri" hidden="0" type="field" width="-1"/>
+          <column hidden="1" type="actions" width="-1"/>
+        </columns>
+      </attributetableconfig>
+      <conditionalstyles>
+        <rowstyles/>
+        <fieldstyles/>
+      </conditionalstyles>
+      <editform tolerant="1"></editform>
+      <editforminit/>
+      <editforminitcodesource>0</editforminitcodesource>
+      <editforminitfilepath></editforminitfilepath>
+      <editforminitcode><![CDATA[]]></editforminitcode>
+      <featformsuppress>0</featformsuppress>
+      <editorlayout>generatedlayout</editorlayout>
+      <editable/>
+      <labelOnTop/>
+      <widgets/>
+      <previewExpression>"ogc_fid"</previewExpression>
+      <mapTip></mapTip>
+    </maplayer>
+  </maplayers>
+</qlr>
