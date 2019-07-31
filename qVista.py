@@ -2235,7 +2235,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.leXY.setFixedHeight(24)
         self.leXY.setFixedWidth(142)
         self.leXY.setStyleSheet(stylesheetLineEdit)
-        self.leXY.returnPressed.connect(self.returnEditarXY)
+        self.leXY.editingFinished.connect(self.returnEditarXY)
         self.lXY.addWidget(self.leXY)
         self.leXY.hide()
         self.statusbar.addPermanentWidget(self.wXY, 0 )
