@@ -2108,9 +2108,10 @@ class QVista(QMainWindow, Ui_MainWindow):
         Un dialeg demana on guardar-la.
        """    
         dialegFitxer=QFileDialog()
-        dialegFitxer.setDirectoryUrl(QUrl('c:/Temp/'))
+        # dialegFitxer.setDirectoryUrl(QUrl('c:/Temp/'))
 
-        nfile,_ = dialegFitxer.getSaveFileName(None,"Guardar imatge", ".", "(*.png)")
+        titol=self.lblTitolProjecte.text()
+        nfile,_ = dialegFitxer.getSaveFileName(None,"Guardar imatge", tempdir+titol, "(*.png)")
 
         self.canvas.saveAsImage(nfile)	
 
