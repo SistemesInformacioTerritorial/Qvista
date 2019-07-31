@@ -124,7 +124,8 @@ class QvSeleccioCercle(QgsMapTool):
             #convertir rubberband apoligon
             featsPnt = layer.getFeatures(QgsFeatureRequest().setFilterRect(self.poligono.boundingBox()))
             for featPnt in featsPnt:
-                if self.overlap:
+                
+                if self.qV.checkOverlap.checkState():
                     if featPnt.geometry().intersects(self.poligono):
                         layer.select(featPnt.id())
                         self.qV.idsElementsSeleccionats.append(featPnt.id())
