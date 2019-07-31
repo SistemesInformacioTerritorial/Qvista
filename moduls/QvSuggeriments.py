@@ -9,6 +9,7 @@ import os
 import tempfile
 from moduls.QvConstants import QvConstants
 from moduls.QvPushButton import QvPushButton
+from typing import Callable
 
 class QvSuggeriments(QDialog):
     def __init__(self, acceptAction: Callable[[str,str],None]=QWidget.close, parent: QtWidgets.QWidget=None):
