@@ -3,7 +3,7 @@ from moduls.QvConstants import QvConstants
 class QvMenuBar(QMenuBar):
     '''Classe per fer que la menubar del qVista faci arrossegable el programa
     '''
-    def __init__(self,parent=None):
+    def __init__(self,parent: QWidget=None):
         super().__init__(parent)
         self.setContextMenuPolicy(Qt.PreventContextMenu)
 
