@@ -226,7 +226,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         #Això abans ho feia al ferGran. Però allà no està bé fer-ho. Ho deixo aquí i ja ho mourem
         self.frameLlegenda.hide()
         self.frame_11.hide()
-        self.dwLlegenda = QDockWidget( "Llegenda", self )
+        self.dwLlegenda = QvDockWidget( "Llegenda", self )
         self.dwLlegenda.setContextMenuPolicy(Qt.PreventContextMenu)
         self.dwLlegenda.setObjectName( "layers" )
         self.dwLlegenda.setAllowedAreas( Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea )
@@ -432,7 +432,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         # qvSv.setContentsMargins(0,0,0,0)
         self.qvSv.hide()
         # self.qvSv.qbrowser.show()
-        self.dwSV = QDockWidget( "Street View", self )
+        self.dwSV = QvDockWidget( "Street View", self )
         self.dwSV.setContextMenuPolicy(Qt.PreventContextMenu)
         self.dwSV.setAllowedAreas( Qt.RightDockWidgetArea | Qt.LeftDockWidgetArea )
         self.dwSV.setWidget(self.qvSv)
@@ -441,6 +441,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.dwSV.visibilityChanged.connect(self.streetViewTancat)
         self.addDockWidget( Qt.RightDockWidgetArea, self.dwSV)
         self.dwSV.setFloating(True)
+        self.dwSV.setDockatInici(False)
         self.dwSV.move(575,175)
 
     def preparacioEntornGrafic(self):
@@ -532,7 +533,7 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         self.wUbicacions = QvUbicacions(self.canvas)
         # self.wUbicacions.hide()
-        self.dwUbicacions = QDockWidget( "Ubicacions", self )
+        self.dwUbicacions = QvDockWidget( "Ubicacions", self )
         self.dwUbicacions.setContextMenuPolicy(Qt.PreventContextMenu)
         self.dwUbicacions.setAllowedAreas( Qt.RightDockWidgetArea | Qt.LeftDockWidgetArea )
         self.dwUbicacions.setWidget( self.wUbicacions)
@@ -554,7 +555,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.distBarris = QVDistrictesBarris()
         self.distBarris.view.clicked.connect(self.clickArbre)
         
-        # self.dwArbreDistrictes = QDockWidget("Districtes - Barris", self)
+        # self.dwArbreDistrictes = QvDockWidget("Districtes - Barris", self)
         # self.dwArbreDistrictes.hide()
         # self.dwArbreDistrictes.setAllowedAreas( Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea )
         # self.dwArbreDistrictes.setWidget( self.distBarris.view )
@@ -579,7 +580,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.wCataleg.setWindowTitle("Cataleg d'Informació Territorial")
         # self.wCataleg.show()
 
-        self.dwCataleg = QDockWidget( "Cataleg de capes", self )
+        self.dwCataleg = QvDockWidget( "Cataleg de capes", self )
         self.dwCataleg.setContextMenuPolicy(Qt.PreventContextMenu)
         self.dwCataleg.setObjectName( "catalegTaula" )
         self.dwCataleg.setAllowedAreas( Qt.RightDockWidgetArea | Qt.LeftDockWidgetArea )
@@ -597,7 +598,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         # self.wCataleg.show()
         #dfgdfgdfg
 
-        self.dwCatalegProjectesLlista = QDockWidget( "Cataleg de mapes", self )
+        self.dwCatalegProjectesLlista = QvDockWidget( "Cataleg de mapes", self )
         self.dwCatalegProjectesLlista.setContextMenuPolicy(Qt.PreventContextMenu)
         self.dwCatalegProjectesLlista.setObjectName( "catalegTaula2" )
         self.dwCatalegProjectesLlista.setAllowedAreas( Qt.RightDockWidgetArea | Qt.LeftDockWidgetArea )
@@ -688,7 +689,7 @@ class QVista(QMainWindow, Ui_MainWindow):
           
         self.cAdrec.sHanTrobatCoordenades.connect(self.trobatNumero_oNo) 
 
-        self.dwCercador = QDockWidget( "Cercador", self )
+        self.dwCercador = QvDockWidget( "Cercador", self )
         self.dwCercador.setContextMenuPolicy(Qt.PreventContextMenu)
         self.dwCercador.hide()
         self.dwCercador.setAllowedAreas( Qt.RightDockWidgetArea | Qt.LeftDockWidgetArea )
@@ -738,7 +739,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         """
         self.taulesAtributs = QvAtributs(self.canvas)
         # self.twAtributs=QTableWidget()
-        self.dwTaulaAtributs = QDockWidget( "Taula de dades", self )
+        self.dwTaulaAtributs = QvDockWidget( "Taula de dades", self )
         self.dwTaulaAtributs.setContextMenuPolicy(Qt.PreventContextMenu)
         self.dwTaulaAtributs.hide()
         self.dwTaulaAtributs.setObjectName( "taulaAtributs" )
@@ -755,7 +756,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.ui = Ui_Frame()
         self.ui.setupUi(self.botonera)
         # self.botonera.show()
-        self.dwBotonera = QDockWidget( "Botonera", self )
+        self.dwBotonera = QvDockWidget( "Botonera", self )
         self.dwBotonera.setContextMenuPolicy(Qt.PreventContextMenu)
         self.dwBotonera.hide()
         self.dwBotonera.setObjectName( "Botonera" )
@@ -777,7 +778,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.mapeta.setParent(self.canvas)
         self.mapeta.move(20,20)
         self.mapeta.show()
-        # self.dwMapeta = QDockWidget("Mapa de situació", self)
+        # self.dwMapeta = QvDockWidget("Mapa de situació", self)
         # self.dwMapeta.setMinimumWidth(180)
         # self.dwMapeta.setMaximumWidth(180)
         # self.dwMapeta.setMaximumHeight(200)
@@ -830,7 +831,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         
         self.llegenda.obertaTaulaAtributs.connect(self.dwTaulaAtributs.show)
 
-        # self.dwLlegenda = QDockWidget( "Llegenda", self )
+        # self.dwLlegenda = QvDockWidget( "Llegenda", self )
         # self.dwLlegenda.show()
         # self.dwLlegenda.setObjectName( "layers" )
         # self.dwLlegenda.setAllowedAreas( Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea )
@@ -856,7 +857,7 @@ class QVista(QMainWindow, Ui_MainWindow):
 
     #         self.browserGrafiques = QWebView()
 
-    #         self.dwBrowserGrafiques = QDockWidget( "Gràfiques", self )
+    #         self.dwBrowserGrafiques = QvDockWidget( "Gràfiques", self )
     #         self.dwBrowserGrafiques.hide()
 
     #         self.dwBrowserGrafiques.setObjectName( "Gràfiques" )
@@ -965,7 +966,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.my_tool_tip.createMapTips()
 
     def preparacioImpressio(self):  
-        self.dwPrint = QDockWidget( "Print", self )
+        self.dwPrint = QvDockWidget( "Print", self )
         self.dwPrint.setContextMenuPolicy(Qt.PreventContextMenu)
         self.dwPrint.setObjectName( "Print" )
         self.dwPrint.setAllowedAreas( Qt.RightDockWidgetArea | Qt.LeftDockWidgetArea )
@@ -1428,7 +1429,7 @@ class QVista(QMainWindow, Ui_MainWindow):
 
 
         
-        self.dwSeleccioGrafica = QDockWidget("Selecció gràfica", self)
+        self.dwSeleccioGrafica = QvDockWidget("Selecció gràfica", self)
         self.dwSeleccioGrafica.setContextMenuPolicy(Qt.PreventContextMenu)
         # self.dwSeleccioGrafica.setContextMenuPolicy(Qt.PreventContextMenu)
         self.dwSeleccioGrafica.hide()
@@ -1930,7 +1931,7 @@ class QVista(QMainWindow, Ui_MainWindow):
             self.frame_19.show()
             self.frame_2.show()
             if hasattr(self,'dockWidgetsVisibles'):
-                for x in self.dockWidgetsVisibles: x.show()
+                for x in self.dockWidgetsVisibles: x.showtq()
             else:
                 self.dwLlegenda.show()
             self.bar.show()
@@ -1947,8 +1948,8 @@ class QVista(QMainWindow, Ui_MainWindow):
             self.showLblFlotant('Prem F-11, Esc o el botó de maximitzar per sortir de la pantalla completa')
             if hasattr(self.canvas,'bMaximitza'):
                 self.canvas.bMaximitza.setIcon(self.canvas.iconaMinimitza)
-            self.dockWidgetsVisibles=[x for x in self.findChildren(QDockWidget) if x.isVisible()]
-            for x in self.dockWidgetsVisibles: x.hide()
+            self.dockWidgetsVisibles=[x for x in self.findChildren(QvDockWidget) if x.isVisible()]
+            # for x in self.dockWidgetsVisibles: x.hide()
             self.frame_3.hide()
             self.frame_19.hide()
             self.frame_2.hide()
@@ -2400,7 +2401,8 @@ class QVista(QMainWindow, Ui_MainWindow):
 
     def obrirLlegenda(self):
         if self.dwLlegenda.isHidden():
-            self.dwLlegenda.show()  
+            self.dwLlegenda.show()
+            self.dwLlegenda.setFloating(False)
         else:
             self.dwLlegenda.hide()
 
@@ -3259,6 +3261,22 @@ def esborraCarpetaTemporal():
             os.unlink(file.path)
         except:
             pass
+
+class QvDockWidget(QDockWidget):
+    def __init__(self,parent=None,flags=Qt.WindowFlags()):
+        super().__init__(parent,flags)
+        self.setDockatInici()
+    def __init__(self,titol, parent=None,flags=Qt.WindowFlags()):
+        super().__init__(titol,parent,flags)
+        self.setDockatInici()
+    def setDockatInici(self,dockat=True):
+        self.dockat=dockat
+    def show(self):
+        super().show()
+        if self.dockat: self.setFloating(False)
+    def showtq(self):
+        #Show tal qual. És a dir, ho mostra on estigués abans
+        super().show()
 
 def main(argv):
     # import subprocess

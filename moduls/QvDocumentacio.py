@@ -2,7 +2,7 @@ from moduls.QvImports import *
 from PyQt5 import QtCore
 from PyQt5 import QtGui
 from PyQt5 import QtWidgets
-from PyQt5.QtWidgets import QVBoxLayout, QHBoxLayout, QFileSystemModel, QTreeView
+from PyQt5.QtWidgets import QVBoxLayout, QHBoxLayout, QFileSystemModel, QTreeView, QWidget
 from moduls.QvConstants import QvConstants
 from moduls.QvPushButton import QvPushButton
 from pathlib import Path
@@ -11,7 +11,7 @@ import shutil
 class QvDocumentacio(QDialog):
     '''Diàleg que mostra la documentació de la carpeta de documentació definida a configuracioQvista
     Mostra una TreeView amb els documents, i delega en el sistema la tasca d'obrir-los'''
-    def __init__(self,parent=None):
+    def __init__(self,parent: QWidget=None):
         super().__init__(parent)
         self.setMinimumSize(750,500)
         #Layout principal. Tot aquí
@@ -69,7 +69,7 @@ class QvDocumentacio(QDialog):
         self.layout.setSpacing(0)
         self.layoutBotonera.setContentsMargins(10,10,10,10)
         # self.treeView.setStyleSheet('padding: 5px; background: white')
-    def clicat(self,index):
+    def clicat(self,index: int):
         path=self.qModel.fileInfo(index).absoluteFilePath()
         self.index=index
         if os.path.isfile(path):
