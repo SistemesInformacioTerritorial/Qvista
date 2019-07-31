@@ -55,7 +55,10 @@ class QvPrint(QWidget):
         """
         # We inherit our parent's properties and methods.
         QWidget.__init__(self)
-
+        #Esborrem les capes anteriors que hagin quedat
+        layersTemporals = project.mapLayersByName("Capa temporal d'impressió")
+        for layer in layersTemporals:
+            project.removeMapLayer(layer.id())
         # Creating a memory layer to draw later the rubberband.
         self.layer = QgsVectorLayer('Point?crs=epsg:23031', "Capa temporal d'impressió","memory")
         project.addMapLayer(self.layer)

@@ -33,7 +33,8 @@ class QvSuggeriments(QDialog):
         #info
         self.info = QLabel()
         self.info.setContentsMargins(20,20,20,20)
-        self.info.setText("Heu trobat algun problema? Voleu fer-nos algun suggeriment? \nSi us plau, descriviu-lo breument a continuació. El vostre suport ens ajudarà a\nmillorar.")
+        self.info.setText("Heu trobat algun problema? Voleu fer-nos algun suggeriment? \nSi us plau, descriviu-lo breument a continuació. El vostre suport ens ajudarà a millorar.")
+        self.info.setWordWrap(True)
         self.layout.addWidget(self.info)
 
         #TITOL + DESCRIPCIO
