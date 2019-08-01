@@ -1662,7 +1662,7 @@ class QVista(QMainWindow, Ui_MainWindow):
                 self.actualitzaWindowFlags()
                 self.show()
             self.maximitzada=not self.maximitzada
-        # self.restaurarFunc=restaurar #Comentat perquè sembla que no cal
+        self.restaurarFunc=restaurar #Comentat perquè sembla que no cal
         self.botoRestaurar=QvPushButton(flat=True)
         self.botoRestaurar.setIcon(iconaRestaurar1)
         self.botoRestaurar.clicked.connect(restaurar)
