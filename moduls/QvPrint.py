@@ -7,7 +7,7 @@ from qgis.PyQt.QtCore import Qt, QFile, QUrl
 from qgis.PyQt.QtXml import QDomDocument
 from qgis.PyQt.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QComboBox, QPushButton, QCheckBox, QLineEdit, QRadioButton
 from qgis.PyQt.QtGui import QFont, QColor,QStandardItemModel, QStandardItem, QDesktopServices
-from PyQt5.QtWebKitWidgets import QWebView , QWebPage
+from PyQt5.QtWebKitWidgets import QWebView , QWebPage #???
 from PyQt5.QtWebKit import QWebSettings
 
 from moduls.QvImports import *
@@ -36,8 +36,8 @@ class PointTool(QgsMapTool):
     def canvasReleaseEvent(self, event):
         
         self.point = self.toMapCoordinates(event.pos())
-        xMon = self.point.x()
-        yMon = self.point.y()
+        xMon = self.point.x() #???
+        yMon = self.point.y() #???
 
         self.parent.pucMoure = False
         
@@ -190,7 +190,7 @@ class QvPrint(QWidget):
         self.pucMoure = True
         self.incX, self.incY = self.incY, self.incX
 
-    def canvasClickat(self):
+    def canvasClickat(self): #???
         print ('Clickat, si')
 
     def mocMouse(self,p):
@@ -242,7 +242,6 @@ class QvPrint(QWidget):
         t = time.localtime()
         timestamp = time.strftime('%b-%d-%Y_%H%M%S', t)
         sortida=tempdir+'sortida_'+timestamp
-        escalesProd={'A4':1, 'A3':2, 'A2':4, 'A1':8, 'A0':16}
         
         self.imprimirPlanol(self.posXY[0], self.posXY[1], int(self.combo.currentText()), rotacio, self.cbMida.currentText(), self.plantillaMapa , sortida, 'PDF' if self.rbPDF.isChecked() else 'PNG')
        
@@ -302,7 +301,7 @@ class QvPrint(QWidget):
                 
                 # fitxerSortida='d:/sortida_'+timestamp+'.PDF'
                 fitxerSortida+='.PDF'
-                result = exporter.exportToPdf(fitxerSortida, settings)
+                result = exporter.exportToPdf(fitxerSortida, settings) #Cal desar el resultat (???)
 
                 print (fitxerSortida)
 
@@ -312,12 +311,12 @@ class QvPrint(QWidget):
 
                 # fitxerSortida='d:/sortida_'+timestamp+'.PNG'
                 fitxerSortida+='.PNG'
-                result = exporter.exportToImage(fitxerSortida, settings)
+                result = exporter.exportToImage(fitxerSortida, settings) #Cal desar el resultat (???)
         
             #Obra el document si està marcat checkObrirResultat
             QDesktopServices().openUrl(QUrl(fitxerSortida))
             
-            segonsEmprats=round(time.time()-tInicial,1)
+            segonsEmprats=round(time.time()-tInicial,1) #???
             layersTemporals = self.project.mapLayersByName("Capa temporal d'impressió")
             for layer in layersTemporals:
                 self.project.removeMapLayer(layer.id())

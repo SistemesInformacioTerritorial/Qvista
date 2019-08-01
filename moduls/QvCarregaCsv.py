@@ -467,8 +467,6 @@ class QvCarregaCsvXY(QvCarregaCsvPage):
         projChanged()
         self.mostraTaula()
 
-    def replaceComa(self):
-        print("aqui canviem les compes per punts")
 
     def nextId(self):
         self.parent.setCoordX(self.cbX.currentText())
@@ -794,13 +792,13 @@ class QvCarregaCsvGeneraCoords(QvCarregaCsvPage):
 
                 elif self.parent.dadesAdreca[0] == "" and self.parent.dadesAdreca[2] != "":
                     try:
-                        tipusVia, nomVia, numIaux = splitCarrer(row[self.parent.dadesAdreca[1]])
+                        tipusVia, nomVia, _ = splitCarrer(row[self.parent.dadesAdreca[1]]) #numIaux (???)
                     except:
                         error=True
 
                 elif self.parent.dadesAdreca[0] != "" and self.parent.dadesAdreca[2] == "":
                     try:
-                        tipusViaaux, nomVia, numI = splitCarrer(row[self.parent.dadesAdreca[1]])
+                        _, nomVia, numI = splitCarrer(row[self.parent.dadesAdreca[1]])
                     except:
                         error=True
 
@@ -1012,13 +1010,13 @@ def infereixSeparadorRegex(arxiu):
         separador{str} -- El separador inferit
     '''
     import re
-    # Rep una llista i la retorna sense repeticions
 
     def eliminaRep(lst):
+        '''Rep una llista i la retorna sense repeticions'''
         return list(set(lst))
-    # Rep una llista i la retorna sense repeticions i ordenada
 
     def eliminaRepOrd(lst):
+        '''Rep una llista i la retorna sense repeticions i ordenada'''
         return sorted(set(lst))
 
     # Utilitzant expressions regulars

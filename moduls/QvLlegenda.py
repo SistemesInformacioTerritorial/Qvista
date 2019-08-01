@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 
 from qgis.core import (QgsProject, QgsLegendModel, QgsLayerDefinition, QgsMapLayer, QgsVectorLayer,
-                       QgsVectorFileWriter, QgsVectorLayerJoinInfo, QgsLayerTree, QgsLayerTreeNode,
+                       QgsVectorFileWriter, QgsVectorLayerJoinInfo, QgsLayerTree, QgsLayerTreeNode, #QgsVectorLayerJoinInfo (???)
                        QgsLayerTreeUtils, QgsVectorDataProvider)
 from qgis.gui import (QgsLayerTreeView, QgsLayerTreeViewMenuProvider, QgsLayerTreeMapCanvasBridge,
-                      QgsLayerTreeViewIndicator, QgsLayerTreeViewDefaultActions)
+                      QgsLayerTreeViewIndicator, QgsLayerTreeViewDefaultActions) #QgsLayerTreeViewDefaultActions (???)
 from qgis.PyQt.QtWidgets import QAction, QFileDialog, QWidget, QPushButton, QVBoxLayout, QHBoxLayout
 from qgis.PyQt.QtGui import QIcon, QColor
 from qgis.PyQt.QtCore import Qt, pyqtSignal, QUrl
@@ -19,7 +19,7 @@ import os
 
 # Resultado de compilacion de recursos del fuente de qgis (directorio images)
 # pyrcc5 images.qrc >images_rc.py
-import images_rc  # NOQA
+import images_rc  # NOQA #???
 
 
 class QvBotoneraLlegenda(QWidget):
@@ -488,7 +488,7 @@ class QvLlegenda(QgsLayerTreeView):
         else:
             self.bridges.append((canvas, bridge))
 
-    def temes(self):
+    def temes(self): #???
         return self.project.mapThemeCollection().mapThemes()
 
     def capaPerNom(self, nomCapa):
@@ -782,7 +782,7 @@ class QvLlegenda(QgsLayerTreeView):
             yield node
             yield from recurse(node)
 
-    def nodePerNom(self, nom, filtre='none'):
+    def nodePerNom(self, nom, filtre='none'): #???
         if filtre == 'group':
             tipus = QgsLayerTreeNode.NodeGroup
         elif filtre == 'layer':

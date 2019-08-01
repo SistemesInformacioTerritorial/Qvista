@@ -1,7 +1,7 @@
 from moduls.QvImports import *
 from PyQt5 import QtCore
 from PyQt5 import QtGui
-from PyQt5.QtCore import pyqtProperty
+from PyQt5.QtCore import pyqtProperty #???
 from PyQt5 import QtCore, QtWidgets
 from PyQt5.QtGui import QColor, QKeySequence
 from moduls.QvConstants import QvConstants
