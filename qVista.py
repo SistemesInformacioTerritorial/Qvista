@@ -1124,6 +1124,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.actReload = QAction('Recàrrega del mapa',self)
         self.actReload.setStatusTip('Recàrrega del mapa')
         self.actReload.setIcon(QIcon('Imatges/reload.png'))
+        self.actReload.setShortcut('F5')
         self.actReload.triggered.connect(self.reload)
 
         
@@ -1231,7 +1232,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.actGrafiques.setStatusTip("Gràfiques")
         self.actGrafiques.triggered.connect(self.obrirBrowserGrafiques)
 
-        self.actCanvasImg = QAction("Guardar imatge del canvas", self)
+        self.actCanvasImg = QAction("Desar imatge del canvas", self)
         self.actCanvasImg.setIcon(QIcon('imatges/camera.png'))
         self.actCanvasImg.setStatusTip("Imatge del canvas")
         self.actCanvasImg.triggered.connect(self.canvasImg)
