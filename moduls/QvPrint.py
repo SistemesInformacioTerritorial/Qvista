@@ -46,7 +46,7 @@ class QvPrint(QWidget):
     El widget conté un botó per imprimir, un per tornar a posicionar l'area d'impresió, i un comboBox per escollir l'escala.
     """
     
-    def __init__(self, project, canvas, poligon):
+    def __init__(self, project, canvas, poligon,parent=None):
         """Inicialització de la clase:
             Arguments:
                 project {QgsProject().instance()} -- El projecte actiu
@@ -54,11 +54,7 @@ class QvPrint(QWidget):
                 poligon {QgsPoligon} -- Poligon inicial. A revisar.
         """
         # We inherit our parent's properties and methods.
-        QWidget.__init__(self)
-        #Esborrem les capes anteriors que hagin quedat
-        layersTemporals = project.mapLayersByName("Capa temporal d'impressió")
-        for layer in layersTemporals:
-            project.removeMapLayer(layer.id())
+        QWidget.__init__(self, parent)
         # Creating a memory layer to draw later the rubberband.
         self.layer = QgsVectorLayer('Point?crs=epsg:23031', "Capa temporal d'impressió","memory")
         project.addMapLayer(self.layer)
@@ -320,6 +316,12 @@ class QvPrint(QWidget):
             layersTemporals = self.project.mapLayersByName("Capa temporal d'impressió")
             for layer in layersTemporals:
                 self.project.removeMapLayer(layer.id())
+    def oculta(self):
+        #Eliminem la capa temporal
+        layersTemporals = self.project.mapLayersByName("Capa temporal d'impressió")
+        for layer in layersTemporals:
+            self.project.removeMapLayer(layer.id())
+        #Falta posar el ratolí anterior
 
 
 if __name__ == "__main__":

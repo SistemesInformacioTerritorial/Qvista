@@ -975,11 +975,16 @@ class QVista(QMainWindow, Ui_MainWindow):
         # self.dwPrint.setMaximumHeight(200)
         self.dwPrint.hide()
 
-    def imprimir(self):    
+    def imprimir(self):
         self.qvPrint = QvPrint(self.project, self.canvas, self.canvas.extent())
         self.dwPrint.setWidget(self.qvPrint)
         self.dwPrint.show()
         self.qvPrint.pucMoure = True #Mala idea modificar atributs des d'aquí
+        def destruirQvPrint(x):
+            if x: return
+            self.qvPrint.oculta()
+            self.dwPrint.setWidget(None)
+        self.dwPrint.visibilityChanged.connect(destruirQvPrint)
 
     def definicioAccions(self):
         """ Definició de les accions que després seran assignades a menús o botons. """
