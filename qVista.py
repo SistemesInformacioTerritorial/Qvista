@@ -976,7 +976,8 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.dwPrint.hide()
 
     def imprimir(self):
-        self.qvPrint = QvPrint(self.project, self.canvas, self.canvas.extent())
+        self.canvisPendentsAnt=self.canvisPendents
+        self.qvPrint = QvPrint(self.project, self.canvas, self.canvas.extent(),parent=self.dwPrint)
         self.dwPrint.setWidget(self.qvPrint)
         self.dwPrint.show()
         self.qvPrint.pucMoure = True #Mala idea modificar atributs des d'aquí
@@ -984,6 +985,7 @@ class QVista(QMainWindow, Ui_MainWindow):
             if x: return
             self.qvPrint.oculta()
             self.dwPrint.setWidget(None)
+            self.setDirtyBit(self.canvisPendentsAnt) #No va :(
         self.dwPrint.visibilityChanged.connect(destruirQvPrint)
 
     def definicioAccions(self):
