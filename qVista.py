@@ -409,6 +409,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.bImprimir =  self.botoLateral(tamany = 25, accio=self.actImprimir)
         self.bTissores = self.botoLateral(tamany = 25, accio=self.actTissores)
         self.bSeleccioGrafica = self.botoLateral(tamany = 25, accio=self.actSeleccioGrafica)
+        self.bReload = self.botoLateral(tamany=25, accio=self.actReload)
 
         spacer2 = QSpacerItem(1000, 1000, QSizePolicy.Expanding,QSizePolicy.Maximum)
         self.lytBotoneraLateral.addItem(spacer2)
@@ -1120,6 +1121,11 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.actSeleccioGrafica.setIcon(icon)
         self.actSeleccioGrafica.triggered.connect(self.seleccioGrafica)
 
+        self.actReload = QAction('Recàrrega del mapa',self)
+        self.actReload.setStatusTip('Recàrrega del mapa')
+        self.actReload.setIcon(QIcon('Imatges/reload.png'))
+        self.actReload.triggered.connect(self.reload)
+
         
         self.actPanSelected = QAction("Pan selected", self)
         self.actPanSelected.setStatusTip("Pan selected")
@@ -1507,6 +1513,19 @@ class QVista(QMainWindow, Ui_MainWindow):
     def seleccioGrafica(self):
         self.dwSeleccioGrafica.show()
         self.canviLayer()
+    
+    def reload(self):
+        #comprovar si hi ha canvis
+        if self.teCanvisPendents(): #Posar la comprovació del dirty bit
+            ret = self.missatgeDesar(titol='Recàrrega del mapa',txtCancelar='Cancel·lar')
+            if ret == QMessageBox.AcceptRole:
+                b = guardarProjecte()
+                if not b: return
+            elif ret ==  QMessageBox.RejectRole: #Aquest i el seguent estàn invertits en teoria, però així funciona bé
+                pass
+            elif ret == QMessageBox.DestructiveRole:
+                return
+        self.obrirProjecte(self.pathProjecteActual)
 
     def helpQVista(self): #Ara no es fa servir, però en el futur es pot utilitzar per saber què és un element
         QWhatsThis.enterWhatsThisMode()
@@ -1662,7 +1681,7 @@ class QVista(QMainWindow, Ui_MainWindow):
                 self.actualitzaWindowFlags()
                 self.show()
             self.maximitzada=not self.maximitzada
-        self.restaurarFunc=restaurar #Comentat perquè sembla que no cal
+        self.restaurarFunc=restaurar 
         self.botoRestaurar=QvPushButton(flat=True)
         self.botoRestaurar.setIcon(iconaRestaurar1)
         self.botoRestaurar.clicked.connect(restaurar)
