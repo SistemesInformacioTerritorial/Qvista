@@ -60,6 +60,7 @@ class QvPushButton(QPushButton):
         self.formata(self.destacat)
     def enterEvent(self,event):
         super().enterEvent(event)
+        if not self.isEnabled(): return
         self.setCursor(QvConstants.cursorClick())
     def leaveEvent(self,event):
         super().leaveEvent(event)

@@ -28,7 +28,7 @@ class QvToolButton(QToolButton):
             background-color: #F0F0F0;
         }
     '''%QvConstants.COLORDESTACATHTML
-    def __init__(self, parent=None):
+    def __init__(self, parent: QWidget=None):
         super().__init__(parent)
         self.setStyleSheet(QvToolButton.stylesheetDefault)
     def enterEvent(self,event):
@@ -37,7 +37,7 @@ class QvToolButton(QToolButton):
     def leaveEvent(self,event):
         super().leaveEvent(event)
         self.setCursor(QvConstants.cursorFletxa())
-    def setMarcat(self,marcat):
+    def setMarcat(self,marcat: bool):
         if marcat:
             self.setStyleSheet(QvToolButton.stylesheetMarcat)
         else:
