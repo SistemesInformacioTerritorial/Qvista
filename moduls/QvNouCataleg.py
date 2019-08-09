@@ -30,7 +30,7 @@ class QvNouCataleg(QWidget):
         self.lblCapcalera=QLabel(objectName='fosca')
         self.lblCapcalera.setText('Catàleg de mapes')
         self.lblCapcalera.setStyleSheet('background-color: %s;' %QvConstants.COLORFOSCHTML)
-        self.lblCapcalera.setFont(QvConstants.FONTCAPCALERES)
+        self.lblCapcalera.setFont(QvConstants.FONTTITOLS)
         self.lblCapcalera.setSizePolicy(QSizePolicy.Expanding,QSizePolicy.Expanding)
         self.bCerca=QPushButton()
         self.bCerca.setIcon(QIcon('imatges/cerca.png'))
