@@ -61,7 +61,7 @@ class QvVideo(QDialog):
         self.setLayout(layout)
         self.resize(xSize, ySize)
 
-    def setBackgroundColor(self, color):
+    def setBackgroundColor(self, color): #???
         pal = QPalette()
         pal.setColor(QPalette.Background, color)
         self.setAutoFillBackground(True)

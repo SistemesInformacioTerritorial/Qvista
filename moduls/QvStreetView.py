@@ -5,7 +5,7 @@ from moduls.QvImports import *
 from qgis.PyQt.QtGui import QStandardItemModel, QStandardItem
 from qgis.core import QgsRectangle
 
-from PyQt5.QtWebKitWidgets import QWebView , QWebPage
+from PyQt5.QtWebKitWidgets import QWebView , QWebPage #QWebPage (???)
 from PyQt5.QtWebKit import QWebSettings
 from moduls.QvPushButton import QvPushButton
 
@@ -120,8 +120,8 @@ class PointTool(QgsMapTool):
     def canvasReleaseEvent(self, event):
         
         self.point = self.toMapCoordinates(event.pos())
-        xMon = self.point.x()
-        yMon = self.point.y()
+        xMon = self.point.x() #???
+        yMon = self.point.y() #???
 
         self.transformacio = QgsCoordinateTransform(QgsCoordinateReferenceSystem("EPSG:25831"), 
                              QgsCoordinateReferenceSystem("EPSG:4326"), 
@@ -206,7 +206,7 @@ class QvStreetView(QWidget):
         self.layoutH.addWidget(self.qbrowser)
 
 
-    def llevame_old(self,xx,yy):
+    def llevame_old(self,xx,yy): #???
       
         try:
             point= QgsPointXY(xx, yy)

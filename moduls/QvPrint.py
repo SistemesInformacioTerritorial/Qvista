@@ -7,7 +7,7 @@ from qgis.PyQt.QtCore import Qt, QFile, QUrl
 from qgis.PyQt.QtXml import QDomDocument
 from qgis.PyQt.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QComboBox, QPushButton, QCheckBox, QLineEdit, QRadioButton
 from qgis.PyQt.QtGui import QFont, QColor,QStandardItemModel, QStandardItem, QDesktopServices
-from PyQt5.QtWebKitWidgets import QWebView , QWebPage
+from PyQt5.QtWebKitWidgets import QWebView , QWebPage #???
 from PyQt5.QtWebKit import QWebSettings
 
 from moduls.QvImports import *
@@ -36,8 +36,8 @@ class PointTool(QgsMapTool):
     def canvasReleaseEvent(self, event):
         
         self.point = self.toMapCoordinates(event.pos())
-        xMon = self.point.x()
-        yMon = self.point.y()
+        xMon = self.point.x() #???
+        yMon = self.point.y() #???
 
         self.parent.pucMoure = False
         
@@ -46,7 +46,7 @@ class QvPrint(QWidget):
     El widget conté un botó per imprimir, un per tornar a posicionar l'area d'impresió, i un comboBox per escollir l'escala.
     """
     
-    def __init__(self, project, canvas, poligon):
+    def __init__(self, project, canvas, poligon,parent=None):
         """Inicialització de la clase:
             Arguments:
                 project {QgsProject().instance()} -- El projecte actiu
@@ -54,11 +54,7 @@ class QvPrint(QWidget):
                 poligon {QgsPoligon} -- Poligon inicial. A revisar.
         """
         # We inherit our parent's properties and methods.
-        QWidget.__init__(self)
-        #Esborrem les capes anteriors que hagin quedat
-        layersTemporals = project.mapLayersByName("Capa temporal d'impressió")
-        for layer in layersTemporals:
-            project.removeMapLayer(layer.id())
+        QWidget.__init__(self, parent)
         # Creating a memory layer to draw later the rubberband.
         self.layer = QgsVectorLayer('Point?crs=epsg:23031', "Capa temporal d'impressió","memory")
         project.addMapLayer(self.layer)
@@ -190,7 +186,7 @@ class QvPrint(QWidget):
         self.pucMoure = True
         self.incX, self.incY = self.incY, self.incX
 
-    def canvasClickat(self):
+    def canvasClickat(self): #???
         print ('Clickat, si')
 
     def mocMouse(self,p):
@@ -242,7 +238,6 @@ class QvPrint(QWidget):
         t = time.localtime()
         timestamp = time.strftime('%b-%d-%Y_%H%M%S', t)
         sortida=tempdir+'sortida_'+timestamp
-        escalesProd={'A4':1, 'A3':2, 'A2':4, 'A1':8, 'A0':16}
         
         self.imprimirPlanol(self.posXY[0], self.posXY[1], int(self.combo.currentText()), rotacio, self.cbMida.currentText(), self.plantillaMapa , sortida, 'PDF' if self.rbPDF.isChecked() else 'PNG')
        
@@ -302,7 +297,7 @@ class QvPrint(QWidget):
                 
                 # fitxerSortida='d:/sortida_'+timestamp+'.PDF'
                 fitxerSortida+='.PDF'
-                result = exporter.exportToPdf(fitxerSortida, settings)
+                result = exporter.exportToPdf(fitxerSortida, settings) #Cal desar el resultat (???)
 
                 print (fitxerSortida)
 
@@ -312,15 +307,21 @@ class QvPrint(QWidget):
 
                 # fitxerSortida='d:/sortida_'+timestamp+'.PNG'
                 fitxerSortida+='.PNG'
-                result = exporter.exportToImage(fitxerSortida, settings)
+                result = exporter.exportToImage(fitxerSortida, settings) #Cal desar el resultat (???)
         
             #Obra el document si està marcat checkObrirResultat
             QDesktopServices().openUrl(QUrl(fitxerSortida))
             
-            segonsEmprats=round(time.time()-tInicial,1)
+            segonsEmprats=round(time.time()-tInicial,1) #???
             layersTemporals = self.project.mapLayersByName("Capa temporal d'impressió")
             for layer in layersTemporals:
                 self.project.removeMapLayer(layer.id())
+    def oculta(self):
+        #Eliminem la capa temporal
+        layersTemporals = self.project.mapLayersByName("Capa temporal d'impressió")
+        for layer in layersTemporals:
+            self.project.removeMapLayer(layer.id())
+        #Falta posar el ratolí anterior
 
 
 if __name__ == "__main__":

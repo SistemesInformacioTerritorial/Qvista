@@ -47,19 +47,19 @@ class QvSeleccioPunt(QgsMapTool):
         else:
           self.missatgeCaixa('Cal tenir seleccionat un nivell per poder fer una selecció.','Marqueu un nivell a la llegenda sobre el que aplicar la consulta.')
 
-    def activate(self):
+    def activate(self): #???
         pass
 
-    def deactivate(self):
+    def deactivate(self): #???
         pass
 
-    def isZoomTool(self):
+    def isZoomTool(self): #???
         return False
 
-    def isTransient(self):
+    def isTransient(self): #???
         return False
 
-    def isEditTool(self):
+    def isEditTool(self): #???
         return True
 
     def missatgeCaixa(self, textTitol,textInformacio):
@@ -264,7 +264,7 @@ class QvSeleccioElement(QgsMapTool):
         msgBox.setInformativeText(textInformacio)
         ret = msgBox.exec()
 
-    def heCerradoFicha(self):
+    def heCerradoFicha(self): #???
         bb= self.parent()
         
         bb.pare.esborrarSeleccio(tambePanCanvas = False)
