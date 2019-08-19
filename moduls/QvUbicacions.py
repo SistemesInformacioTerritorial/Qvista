@@ -58,7 +58,7 @@ class StandardItemModel_mio(QStandardItemModel):
                     i_yymin = self.ubicacions.model.index(row, 2, parent)
                     i_xxmax = self.ubicacions.model.index(row, 3, parent)
                     i_yymax = self.ubicacions.model.index(row, 4, parent)
-                    i_proy = self.ubicacions.model.index(row, 5, parent)
+                    i_proy = self.ubicacions.model.index(row, 5, parent) #???
                     
                     nn=int(str(idx)[38:-1],16)
                     par=int(str(parent)[38:-1],16)
@@ -120,7 +120,7 @@ class StandardItemModel_mio(QStandardItemModel):
             msg.setWindowTitle("QvUbicacions ERROR")
             msg.setDetailedText("Comprovar que existeix i es pot escriure en: " + os.path.dirname(fic_guardar_arbre))
             msg.setStandardButtons(QMessageBox.Close)
-            retval = msg.exec_()
+            retval = msg.exec_() #No fem res amb el valor de retorn (???)
             # if retval== 1024:
             #     print('Implementer salida')
             # else:
@@ -411,7 +411,7 @@ class QvUbicacions(QWidget):
 
 
 
-    def _prepararBotonera(self):
+    def _prepararBotonera(self): #???
         """Funció reservada per a la gestió de la botonera de ubicacions. En aquest moment no s'utilitza.
         """
         self.botoneraArbre = ['Nou']

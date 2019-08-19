@@ -16,7 +16,7 @@ class QvMenuBar(QMenuBar):
         super().mouseMoveEvent(event)
         if event.buttons() & Qt.LeftButton:
             delta = QPoint(event.globalPos() - self.parentWidget().oldPos)
-            if abs(delta.y())<30: return
+            if abs(delta.y())<15: return
             if self.parentWidget().maximitzada:
                 self.parentWidget().restaurarFunc()
                 #Desmaximitzar

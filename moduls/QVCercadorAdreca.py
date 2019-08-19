@@ -19,7 +19,7 @@ class QCercadorAdreca(QObject):
 
     # __carrersCSV = 'dades\Carrers.csv'
 
-    __CarrersNum_sqlite='Dades\CarrersNums.db'
+    __CarrersNum_sqlite='Dades\CarrersNums.db' #???
 
     sHanTrobatCoordenades = pyqtSignal(int, 'QString')  # atencion
 
@@ -169,7 +169,7 @@ class QCercadorAdreca(QObject):
                 # msg.setInformativeText("OK para salir del programa \nCANCEL para seguir en el programa")
                 msg.setWindowTitle("qVista ERROR")
                 msg.setStandardButtons(QMessageBox.Close)
-                retval = msg.exec_()
+                retval = msg.exec_() #No fem res amb el valor de retorn (???)
 
                 print('QCercadorAdreca.iniAdreca(): ', sys.exc_info()[0], sys.exc_info()[1])
                 return False
@@ -238,7 +238,7 @@ class QCercadorAdreca(QObject):
                             # msg.setInformativeText("OK para salir del programa \nCANCEL para seguir en el programa")
                             msg.setWindowTitle("qVista ERROR")
                             msg.setStandardButtons(QMessageBox.Close)
-                            retval = msg.exec_()
+                            retval = msg.exec_() #No fem res amb el valor de retorn (???)
 
                             print('QCercadorAdreca.iniAdreca(): ', sys.exc_info()[0], sys.exc_info()[1])
                             return False
@@ -294,7 +294,7 @@ class QCercadorAdreca(QObject):
             # msg.setInformativeText("OK para salir del programa \nCANCEL para seguir en el programa")
             msg.setWindowTitle("qVista ERROR")
             msg.setStandardButtons(QMessageBox.Close)
-            retval = msg.exec_()
+            retval = msg.exec_() #No fem res amb el valor de retorn (???)
 
             print('QCercadorAdreca.llegirAdrecesSQlite(): ', sys.exc_info()[0], sys.exc_info()[1])
             return False
@@ -383,7 +383,7 @@ class QCercadorAdreca(QObject):
             msg.setWindowTitle("qVista >> QVCercadorAdreca>> trobatNumero")
             
             msg.setStandardButtons(QMessageBox.Close)
-            retval = msg.exec_()
+            retval = msg.exec_() #No fem res amb el valor de retorn (???)
 
     def focusANumero(self):
         self.leNumero.setFocus()

@@ -17,7 +17,7 @@ class QvVideo(QDialog):
         self.fileName = fileName
         self.resize(xSize, ySize)
         self.setWindowTitle('Reproducció Video')
-        ombra_ = QvConstants.afegeixOmbraWidget(self)
+        QvConstants.afegeixOmbraWidget(self)
         self.openButton = QPushButton("Obrir...")
         self.openButton.clicked.connect(self.openFile)
 
@@ -37,7 +37,7 @@ class QvVideo(QDialog):
         controlLayout.addWidget(self.positionSlider)
 
         videoWidget = QVideoWidget()
-        ombra_ = QvConstants.afegeixOmbraWidget(videoWidget)
+        QvConstants.afegeixOmbraWidget(videoWidget)
 
         # videoWidget.setAttribute(Qt.WA_TranslucentBackground, True)
 
@@ -60,7 +60,7 @@ class QvVideo(QDialog):
 
         self.setLayout(layout)
 
-    def setBackgroundColor(self, color):
+    def setBackgroundColor(self, color): #???
         pal = QPalette()
         pal.setColor(QPalette.Background, color)
         self.setAutoFillBackground(True)

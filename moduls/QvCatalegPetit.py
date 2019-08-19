@@ -8,7 +8,7 @@ from qgis.PyQt.QtGui import QFont, QPixmap
 from qgis.PyQt.QtCore import Qt
 from botoInfoMapaPetit import Ui_BotoInfoMapa
 
-from multiprocessing import Process,Queue,Pipe
+from multiprocessing import Process,Queue,Pipe #Queue (???)
 
 from qgis.core.contextmanagers import qgisapp
 
@@ -169,7 +169,7 @@ class QvColumnaCataleg(QWidget):
             self.tcanvas.show()
             self.tproject.read(prj)
 
-    def canvasProvisional(self, projecte):
+    def canvasProvisional(self, projecte): #???
         
         def obertura():
             try:

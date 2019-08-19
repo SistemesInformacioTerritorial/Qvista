@@ -178,7 +178,7 @@ class QvCataleg(QWidget):
 
         # frame.show()
         self.temesCataleg = []
-        temes = []
+        temes = [] #???
         self.dictProjectes = {}
         contingutCarpetes = os.walk(carpetaCataleg)
         for carpeta in contingutCarpetes:
