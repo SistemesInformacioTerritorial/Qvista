@@ -331,13 +331,13 @@ class QVista(QMainWindow, Ui_MainWindow):
         QvConstants.afegeixOmbraWidget(self.player)
         self.player.setModal(True)
         self.player.activateWindow()
-        self.player.show()
         self.player.mediaPlayer.play()
+        self.player.show()
+        
 
     def stopMovie(self):
         self.player.hide()
         self.player.mediaPlayer.pause()
-
 
     def keyPressEvent(self, event):
         """ Defineix les actuacions del qVista en funció de la tecla apretada.
@@ -2285,22 +2285,21 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.bScale = QvPushButton(flat=True)
         self.bScale.setStyleSheet(stylesheetButton)
         self.lScale.addWidget(self.bScale)
-
         # self.bScale.setFrameStyle(QFrame.StyledPanel )
         # self.bScale.setMinimumWidth( 140 )
         self.bScale.clicked.connect(self.editarEscala)
         self.statusbar.addPermanentWidget( self.wScale, 0 )
         self.editantEscala = False
+        self.comboEscales = QComboBox()
+        self.lScale.addWidget(self.comboEscales)
+        self.comboEscales.hide()
 
         self.bOrientacio = QvPushButton(flat=True)
         self.bOrientacio.setStyleSheet(stylesheetButton)
-
         # self.bScale.setFrameStyle(QFrame.StyledPanel )
-        
         # self.bOrientacio.setMinimumWidth( 140 )
         self.statusbar.addPermanentWidget( self.bOrientacio, 0 )
 
-    
         self.lblProjecte = QLabel()
         self.lblProjecte.setStyleSheet(styleheetLabel)
         self.lblProjecte.setFrameStyle(QFrame.StyledPanel )
@@ -2353,6 +2352,18 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.leXY.setText("")
 
     def editarEscala(self):
+        if QgsExpressionContextUtils.projectScope(self.project).variable('qV_escales'):
+            if self.comboEscales.count() == 0:
+                valors = QgsExpressionContextUtils.projectScope(self.project).variable('qV_escales').split(' ')
+                self.comboEscales.addItems(valors)
+            self.comboEscales.show()
+            def comboClickat():
+                self.leScale.setText(self.comboEscales.currentText())
+                self.escalaEditada()
+            self.comboEscales.activated.connect(comboClickat)
+            # self.comboEscales.hide()
+            # print("aqui posem les escales")
+
         if self.editantEscala == False:
             self.editantEscala = True
             self.bScale.setText(' Escala 1: ')
@@ -2361,7 +2372,7 @@ class QVista(QMainWindow, Ui_MainWindow):
             self.lScale.addWidget(self.leScale)
             # self.leScale.setGeometry(48,0,100,20)
             self.leScale.setMinimumWidth(10)
-            # self.leScale.setMaximumWidth(35)
+            self.leScale.setMaximumWidth(70)
             self.leScale.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Minimum)
             self.leScale.returnPressed.connect(self.escalaEditada)
             self.leScale.show()
@@ -2375,6 +2386,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.lScale.removeWidget(self.leScale)
         self.canvas.zoomScale(int(escala))
         self.editantEscala = False
+        self.comboEscales.hide()
 
     def centrarMapa(self):
         qV.canvas.zoomToFullExtent()
