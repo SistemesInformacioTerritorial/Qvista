@@ -9,6 +9,7 @@ import os
 import tempfile
 from moduls.QvConstants import QvConstants
 from moduls.QvPushButton import QvPushButton
+from moduls.QvRedimLayout import QvRedimLayout
 from typing import Callable 
 
 
@@ -16,7 +17,8 @@ class QvNouCataleg(QWidget):
     
     def __init__(self,parent: QtWidgets.QWidget=None):
         super().__init__(parent)
-        self.setWindowFlags(Qt.Window | Qt.FramelessWindowHint)
+        self.setWindowFlags(Qt.FramelessWindowHint)
+        self.actualitzaWindowFlags()
         #Layout gran. Tot a dins
         self.layout=QVBoxLayout(self)
 
@@ -31,7 +33,7 @@ class QvNouCataleg(QWidget):
         self.lblCapcalera.setText('Catàleg de mapes')
         self.lblCapcalera.setStyleSheet('background-color: %s;' %QvConstants.COLORFOSCHTML)
         self.lblCapcalera.setFont(QvConstants.FONTTITOLS)
-        self.lblCapcalera.setSizePolicy(QSizePolicy.Expanding,QSizePolicy.Expanding)
+        self.lblCapcalera.setSizePolicy(QSizePolicy.Expanding,QSizePolicy.Maximum)
         self.bCerca=QPushButton()
         self.bCerca.setIcon(QIcon('imatges/cerca.png'))
         self.bCerca.setIconSize(QSize(24, 24))
@@ -90,6 +92,7 @@ class QvNouCataleg(QWidget):
             if self.maximitzada:
                 self.setWindowFlag(Qt.FramelessWindowHint,False)
                 self.setWindowState(Qt.WindowActive)
+                self.actualitzaWindowFlags()
                 amplada=self.width()
                 alcada=self.height()
                 self.resize(0.8*amplada,0.8*alcada)
@@ -99,6 +102,7 @@ class QvNouCataleg(QWidget):
                 self.setWindowState(Qt.WindowActive | Qt.WindowMaximized)
                 self.botoRestaurar.setIcon(iconaRestaurar1)
                 self.setWindowFlag(Qt.FramelessWindowHint)
+                self.actualitzaWindowFlags()
                 self.show()
             self.maximitzada=not self.maximitzada
         self.restaurarFunc=restaurar
@@ -120,13 +124,226 @@ class QvNouCataleg(QWidget):
 
         #CONTINGUT CATALEG
         self.spacer = QtWidgets.QSpacerItem(99999, 99999, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
-        self.layout.addItem(self.spacer)
+        # self.layout.addItem(self.spacer)
+        self.layoutContingut=QHBoxLayout() #El contingut del catàleg
+        self.layoutContingut.setAlignment(Qt.AlignLeft | Qt.AlignTop)
+        self.layout.addLayout(self.layoutContingut)
+        self.carregaBandaEsquerra()
+        self.wCataleg=QWidget()
+        self.layoutCataleg=QVBoxLayout()
+        # self.layoutCataleg.setSpacing(20)
+        # self.layoutCataleg.setContentsMargins(20,20,20,20)
+        self.wCataleg.setLayout(self.layoutCataleg)
+        self.wCataleg.setStyleSheet('background: white')
+        self.scroll=QScrollArea()
+        self.scroll.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+        self.scroll.setWidgetResizable(True)
+        self.scroll.setWidget(self.wCataleg)
+        self.scroll.setSizePolicy(QSizePolicy.Expanding,QSizePolicy.Expanding)
+        self.wCataleg.setSizePolicy(QSizePolicy.Expanding,QSizePolicy.Expanding)
+        # self.layoutContingut.addWidget(self.wCataleg)
+        self.layoutContingut.addWidget(self.scroll)
+        self.oldPos = self.pos()
+    def actualitzaWindowFlags(self):
+        self.setWindowFlag(Qt.Window)
+        self.setWindowFlag(Qt.CustomizeWindowHint,True)
+        self.setWindowFlag(Qt.WindowTitleHint,False)
+        self.setWindowFlag(Qt.WindowSystemMenuHint,False)
+        self.setWindowFlag(Qt.WindowMinimizeButtonHint,False)
+        self.setWindowFlag(Qt.WindowMaximizeButtonHint,False)
+        self.setWindowFlag(Qt.WindowMinMaxButtonsHint,False)
+        self.setWindowFlag(Qt.WindowCloseButtonHint,False)
+    def carregaBandaEsquerra(self):
+        self.wBanda=QWidget()
+        self.wBanda.setStyleSheet('background: %s'%QvConstants.COLORGRISCLARHTML)
+        self.wBanda.setFixedWidth(256)
+        self.layoutContingut.addWidget(self.wBanda)
+        self.lBanda=QVBoxLayout()
+        self.wBanda.setLayout(self.lBanda)
+
+        _,dirs,_=next(os.walk(carpetaCatalegProjectesLlista))
+        self.catalegs={} #Serà un dict on la clau serà el nom del directori, i el valor una llista de botons
+        self.botonsLaterals=[]
+
+        self.fav=BotoLateral('Favorits',self)
+        self.fav.setCheckable(True)
+        self.lBanda.addWidget(self.fav)
+        
+        
+        self.tots=BotoLateral('Tots',self)
+        self.tots.setCheckable(True)
+        self.lBanda.addWidget(self.tots)
+
+        dirs=sorted(dirs)
+        for x in dirs:
+            print(x)
+            self.catalegs[x]=self.carregaBotons(x) #TODO
+            boto=BotoLateral(x,self)
+            boto.setCheckable(True)
+            # boto.clicked.connect(self.mostraMapes)
+            self.botonsLaterals.append(boto)
+            self.lBanda.addWidget(boto)
+        
+        def clickTots():
+            for x in self.botonsLaterals:
+                x.setChecked(True)
+            self.mostraMapes()
+        self.tots.clicked.connect(clickTots)
+        self.lBanda.addStretch()
+    def carregaBotons(self,dir):
+        _,_,files=next(os.walk(carpetaCatalegProjectesLlista+'/'+dir))
+        files=(x[:-4] for x in files if x.endswith('.qgs'))
+        files=(carpetaCatalegProjectesLlista+dir+'/'+x for x in files)
+        # files=[ for x in files]
+        return [MapaCataleg(x,self) for x in files]
+    def mostraMapes(self):
+        self.clearContingut()
+        self.widsCataleg=[]
+        for x in self.botonsLaterals:
+            if x.isChecked():
+                wid=QWidget()
+                layout=QVBoxLayout()
+                lbl=QLabel(x.text())
+                lbl.setStyleSheet('background: %s; padding: 2px;'%QvConstants.COLORGRISCLARHTML)
+                lbl.setFont(QFont('Arial',12))
+                lbl.setSizePolicy(QSizePolicy.Minimum,QSizePolicy.Maximum)
+                layout.addWidget(lbl)
+                nlayout=QvRedimLayout(spacing=20)
+                layout.addLayout(nlayout)
+                self.layoutCataleg.addWidget(wid)
+                # self.layoutCataleg.addLayout(layout)
+                for y in self.catalegs[x.text()]:
+                    nlayout.addWidget(y)
+                wid.setLayout(layout)
+                wid.setSizePolicy(QSizePolicy.Expanding,QSizePolicy.Expanding)
+                self.widsCataleg.append(wid)
+        # scrollArea=QScrollArea()
+        # scrollArea.setWidget(self.wCataleg)
+    def clearContingut(self):
+        if hasattr(self,'widsCataleg'):
+            for x in self.widsCataleg:
+                # x.setParent(None)
+                x.hide()
+        return
+
+    def mousePressEvent(self, event):
+        self.oldPos = event.globalPos()
+
+    def mouseMoveEvent(self, event):
+        if event.buttons() & Qt.LeftButton:
+            if self.maximitzada:
+                self.restaurarFunc()
+            delta = QPoint(event.globalPos() - self.oldPos)
+            # print(delta)
+            self.move(self.x() + delta.x(), self.y() + delta.y())
+            self.oldPos = event.globalPos()
+    def mouseDoubleClickEvent(self,event):
+        if event.buttons()&Qt.LeftButton:
+            self.restaurarFunc()
+
+    def keyPressEvent(self, event):
+        if event.key() == Qt.Key_Escape:
+            self.close()
+
+class BotoLateral(QPushButton):
+    def __init__(self,text,cataleg,parent=None):
+        super().__init__(text,parent)
+        self.cataleg=cataleg
+    def mousePressEvent(self,event):
+        if self==self.cataleg.tots:
+            super().mousePressEvent(event)
+        if event.modifiers()==Qt.ShiftModifier:
+            #Multiselecció
+            pass
+        elif event.modifiers()==Qt.ControlModifier:
+            #Seleccionar aquest botó mantenint els seleccionats
+            self.setChecked(True)
+            pass
+        else:
+            for x in self.cataleg.botonsLaterals:
+                if x==self: continue
+                x.setChecked(False)
+            self.cataleg.tots.setChecked(False)
+            if self!=self.cataleg.fav:
+                self.cataleg.fav.setChecked(False)
+            self.setChecked(True)
+        self.cataleg.mostraMapes()
+
+class MapaCataleg(QWidget):
+    def __init__(self,dir,cataleg=None): #Dir ha de contenir la ruta de l'arxiu (absoluta o relativa) i no només el seu nom. Ha de ser sense extensió
+        super().__init__()
+        self.cataleg=cataleg
+        midaWidget=QSize(300,241)
+        self.setFixedSize(midaWidget)
+        self.layout=QVBoxLayout(self)
+        self.setLayout(self.layout)
+
+        self.layout.setContentsMargins(0,0,0,0)
+        self.layout.setSpacing(0)
+
+        self.imatge=QPixmap(dir)
+        self.lblImatge=QLabel()
+        self.lblImatge.setPixmap(self.imatge)
+        self.lblImatge.setFixedSize(300,180)
+        self.lblImatge.setScaledContents(True)
+        midaLblImatge=self.lblImatge.sizeHint()
+        self.layout.addWidget(self.lblImatge)
+        try:
+            with open(dir+'.txt') as text:
+                self.titol=text.readline()
+
+                self.text=text.read()
+                self.lblText=QLabel('<p><strong><span style="color: #38474f; font-family: arial, helvetica, sans-serif; font-size: 10pt;">%s<br /></span></strong><span style="color: #38474f; font-family: arial, helvetica, sans-serif; font-size: 8pt;">%s</span></p>'%(self.titol,self.text))
+                self.lblText.setWordWrap(True)
+                self.layout.addWidget(self.lblText)
+        except:
+            self.lblText=QLabel('<p><strong><span style="color: #38474f; font-family: arial, helvetica, sans-serif; font-size: 10pt;">Títol no disponible<br /></span></strong><span style="color: #38474f; font-family: arial, helvetica, sans-serif; font-size: 8pt;">Descripció no disponible</span></p>')
+            self.layout.addWidget(self.lblText)
 
 
+        self.lblImatge.setSizePolicy(QSizePolicy.Ignored,QSizePolicy.Ignored)
+        self.lblText.setAlignment(Qt.AlignTop)
+        self.lblText.setFixedHeight(56)
+        self.lblText.setAlignment(Qt.AlignTop)
+
+        self.botoFav=QvPushButton('Fav',flat=True,parent=self)
+        self.botoFav.move(230,0)
+        self.botoObre=QvPushButton(flat=True,parent=self)
+        self.botoObre.setIcon(QIcon('Imatges/cm_play.png'))
+        self.botoObre.move(230,100)
+        self.botoObre.setIconSize(QSize(24,24))
+        self.botoQGis=QvPushButton(flat=True,parent=self)
+        self.botoQGis.setIcon(QIcon('Imatges/cm_qgis.png'))
+        self.botoQGis.move(230,125)
+        self.botoQGis.setIconSize(QSize(24,24))
+        self.botoInfo=QvPushButton(flat=True,parent=self)
+        self.botoInfo.setIcon(QIcon('Imatges/cm_info.png'))
+        self.botoInfo.move(230,150)
+        self.botoInfo.setIconSize(QSize(24,24))
+        self.setChecked(False)
+    def mousePressEvent(self,event):
+        if event.buttons() & Qt.LeftButton:
+            for x,y in self.cataleg.catalegs.items():
+                for z in y:
+                    z.setChecked(False)
+            self.setChecked(True)
+    def setChecked(self,checked):
+        if checked:
+            self.botoFav.show()
+            self.botoObre.show()
+            self.botoQGis.show()
+            self.botoInfo.show()
+        else:
+            self.botoFav.hide()
+            self.botoObre.hide()
+            self.botoQGis.hide()
+            self.botoInfo.hide()
 
 
 if __name__ == "__main__":
     with qgisapp() as app:
-
+        app.setStyleSheet(open('style.qss').read())
         cataleg = QvNouCataleg()
         cataleg.showMaximized()
+        # mapa=MapaCataleg("N:/9SITEB/Publicacions/qVista/CATALEG/Mapes - en preparació per XLG/2. Ortofotos/Imatge de satel·lit 2011 de l'AMB")
+        # mapa.show()
