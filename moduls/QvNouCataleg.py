@@ -144,6 +144,7 @@ class QvNouCataleg(QWidget):
         # self.layoutContingut.addWidget(self.wCataleg)
         self.layoutContingut.addWidget(self.scroll)
         self.oldPos = self.pos()
+        self.clickTots()
     def actualitzaWindowFlags(self):
         self.setWindowFlag(Qt.Window)
         self.setWindowFlag(Qt.CustomizeWindowHint,True)
@@ -155,10 +156,12 @@ class QvNouCataleg(QWidget):
         self.setWindowFlag(Qt.WindowCloseButtonHint,False)
     def carregaBandaEsquerra(self):
         self.wBanda=QWidget()
-        self.wBanda.setStyleSheet('background: %s'%QvConstants.COLORGRISCLARHTML)
+        self.wBanda.setStyleSheet('background: %s;'%QvConstants.COLORGRISCLARHTML)
         self.wBanda.setFixedWidth(256)
         self.layoutContingut.addWidget(self.wBanda)
         self.lBanda=QVBoxLayout()
+        self.lBanda.setContentsMargins(0,0,0,0)
+        self.lBanda.setSpacing(0)
         self.wBanda.setLayout(self.lBanda)
 
         _,dirs,_=next(os.walk(carpetaCatalegProjectesLlista))
@@ -171,6 +174,7 @@ class QvNouCataleg(QWidget):
         
         
         self.tots=BotoLateral('Tots',self)
+        self.tots.setIcon(QIcon('Imatges/cm_check_all.png'))
         self.tots.setCheckable(True)
         self.lBanda.addWidget(self.tots)
 
@@ -184,12 +188,14 @@ class QvNouCataleg(QWidget):
             self.botonsLaterals.append(boto)
             self.lBanda.addWidget(boto)
         
-        def clickTots():
-            for x in self.botonsLaterals:
-                x.setChecked(True)
-            self.mostraMapes()
-        self.tots.clicked.connect(clickTots)
+        
+        self.tots.clicked.connect(self.clickTots)
         self.lBanda.addStretch()
+    def clickTots(self):
+        for x in self.botonsLaterals:
+            x.setChecked(True)
+        self.tots.setChecked(True)
+        self.mostraMapes()
     def carregaBotons(self,dir):
         _,_,files=next(os.walk(carpetaCatalegProjectesLlista+'/'+dir))
         files=(x[:-4] for x in files if x.endswith('.qgs'))
@@ -249,6 +255,24 @@ class BotoLateral(QPushButton):
     def __init__(self,text,cataleg,parent=None):
         super().__init__(text,parent)
         self.cataleg=cataleg
+        stylesheet='''
+            BotoLateral{
+                background: transparent;
+                color: %s;
+                border: none;
+                width: 256px;
+                height: 36px;
+                text-align: left;
+                padding-left: 10px;
+            }
+            BotoLateral:checked{
+                background: solid %s;
+                color: white;
+                border: none;
+            }
+        '''%(QvConstants.COLORFOSCHTML,QvConstants.COLORCLARHTML)
+        self.setStyleSheet(stylesheet)
+        self.setFont(QFont('Arial',12))
     def mousePressEvent(self,event):
         if self==self.cataleg.tots:
             super().mousePressEvent(event)
@@ -269,9 +293,11 @@ class BotoLateral(QPushButton):
             self.setChecked(True)
         self.cataleg.mostraMapes()
 
-class MapaCataleg(QWidget):
+class MapaCataleg(QFrame):
     def __init__(self,dir,cataleg=None): #Dir ha de contenir la ruta de l'arxiu (absoluta o relativa) i no només el seu nom. Ha de ser sense extensió
         super().__init__()
+        self.setFrameStyle(QFrame.Panel)
+        self.checked=False
         self.cataleg=cataleg
         midaWidget=QSize(300,241)
         self.setFixedSize(midaWidget)
@@ -284,7 +310,7 @@ class MapaCataleg(QWidget):
         self.imatge=QPixmap(dir)
         self.lblImatge=QLabel()
         self.lblImatge.setPixmap(self.imatge)
-        self.lblImatge.setFixedSize(300,180)
+        self.lblImatge.setFixedSize(300-4,180) #La mida que volem, restant-li el que ocuparà el border
         self.lblImatge.setScaledContents(True)
         midaLblImatge=self.lblImatge.sizeHint()
         self.layout.addWidget(self.lblImatge)
@@ -306,20 +332,33 @@ class MapaCataleg(QWidget):
         self.lblText.setFixedHeight(56)
         self.lblText.setAlignment(Qt.AlignTop)
 
-        self.botoFav=QvPushButton('Fav',flat=True,parent=self)
+        stylesheet='''
+            QPushButton{
+                background: solid white; margin: none; height: 40; width: 40;
+            }
+        '''
+
+        self.botoFav=QPushButton('Fav',parent=self)
         self.botoFav.move(230,0)
-        self.botoObre=QvPushButton(flat=True,parent=self)
+        self.botoObre=QPushButton(parent=self)
         self.botoObre.setIcon(QIcon('Imatges/cm_play.png'))
         self.botoObre.move(230,100)
         self.botoObre.setIconSize(QSize(24,24))
-        self.botoQGis=QvPushButton(flat=True,parent=self)
+        self.botoQGis=QPushButton(parent=self)
         self.botoQGis.setIcon(QIcon('Imatges/cm_qgis.png'))
         self.botoQGis.move(230,125)
         self.botoQGis.setIconSize(QSize(24,24))
-        self.botoInfo=QvPushButton(flat=True,parent=self)
+        self.botoInfo=QPushButton(parent=self)
         self.botoInfo.setIcon(QIcon('Imatges/cm_info.png'))
         self.botoInfo.move(230,150)
         self.botoInfo.setIconSize(QSize(24,24))
+
+        self.botoFav.setStyleSheet(stylesheet)
+        self.botoObre.setStyleSheet(stylesheet)
+        self.botoQGis.setStyleSheet(stylesheet)
+        self.botoInfo.setStyleSheet(stylesheet)
+        
+
         self.setChecked(False)
     def mousePressEvent(self,event):
         if event.buttons() & Qt.LeftButton:
@@ -328,16 +367,33 @@ class MapaCataleg(QWidget):
                     z.setChecked(False)
             self.setChecked(True)
     def setChecked(self,checked):
+        self.checked=checked
         if checked:
+            self.setStyleSheet('MapaCataleg{border: 2px solid %s;}'%QvConstants.COLORFOSCHTML)
             self.botoFav.show()
             self.botoObre.show()
             self.botoQGis.show()
             self.botoInfo.show()
+            
         else:
+            self.setStyleSheet('MapaCataleg{border: 2px transparent;}')
             self.botoFav.hide()
             self.botoObre.hide()
             self.botoQGis.hide()
             self.botoInfo.hide()
+        self.update()
+    # def paintEvent(self,event):
+    #     if self.checked:
+    #         painter=QPainter(self)
+    #         painter.setRenderHint(QPainter.Antialiasing)
+    #         path=QPainterPath()
+    #         path.addRect(QRectF(10,10,100,50))
+    #         pen=QPen(Qt.black,10)
+    #         painter.setPen(pen)
+    #         painter.drawPath(path)
+    #         painter.fillPath(path,Qt.red)
+    #     super().paintEvent(event)
+            
 
 
 if __name__ == "__main__":
