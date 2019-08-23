@@ -142,6 +142,7 @@ class QvNouCataleg(QWidget):
         self.scroll.setWidgetResizable(True)
         self.scroll.setWidget(self.wCataleg)
         self.scroll.setSizePolicy(QSizePolicy.Expanding,QSizePolicy.Expanding)
+        self.scroll.installEventFilter(self)
         self.wCataleg.setSizePolicy(QSizePolicy.Expanding,QSizePolicy.Expanding)
         # self.layoutContingut.addWidget(self.wCataleg)
         self.layoutContingut.addWidget(self.scroll)
@@ -167,10 +168,6 @@ class QvNouCataleg(QWidget):
         self.lBanda.setSpacing(0)
         self.wBanda.setLayout(self.lBanda)
 
-        _,dirs,_=next(os.walk(carpetaCatalegProjectesLlista))
-        self.catalegs={} #Serà un dict on la clau serà el nom del directori, i el valor una llista de botons
-        self.botonsLaterals=[]
-
         self.fav=BotoLateral('Favorits',self)
         self.fav.setCheckable(True)
         self.lBanda.addWidget(self.fav)
@@ -181,15 +178,23 @@ class QvNouCataleg(QWidget):
         self.tots.setCheckable(True)
         self.lBanda.addWidget(self.tots)
 
-        dirs=sorted(dirs)
-        for x in dirs:
-            print(x)
-            self.catalegs[x]=self.carregaBotons(x) #TODO
-            boto=BotoLateral(x,self)
-            boto.setCheckable(True)
-            # boto.clicked.connect(self.mostraMapes)
-            self.botonsLaterals.append(boto)
-            self.lBanda.addWidget(boto)
+        self.catalegs={} #Serà un dict on la clau serà el nom del directori, i el valor una llista de botons
+        self.botonsLaterals=[]
+        for y in carpetaCatalegProjectesLlista:
+            try:
+                _,dirs,_=next(os.walk(y))
+            except:
+                continue
+            
+            dirs=sorted(dirs)
+            for x in dirs:
+                print(x)
+                self.catalegs[x]=self.carregaBotons(x) #TODO
+                boto=BotoLateral(x,self)
+                boto.setCheckable(True)
+                # boto.clicked.connect(self.mostraMapes)
+                self.botonsLaterals.append(boto)
+                self.lBanda.addWidget(boto)
         
         
         self.tots.clicked.connect(self.clickTots)
@@ -200,14 +205,21 @@ class QvNouCataleg(QWidget):
         self.tots.setChecked(True)
         self.mostraMapes()
     def carregaBotons(self,dir):
-        _,_,files=next(os.walk(carpetaCatalegProjectesLlista+'/'+dir))
-        files=(x[:-4] for x in files if x.endswith('.qgs'))
-        files=(carpetaCatalegProjectesLlista+dir+'/'+x for x in files)
-        # files=[ for x in files]
-        return [MapaCataleg(x,self) for x in files]
+        f=[]
+        for y in carpetaCatalegProjectesLlista:
+            try:
+                _,_,files=next(os.walk(y+'/'+dir))
+                files=(x[:-4] for x in files if x.endswith('.qgs'))
+                files=(y+dir+'/'+x for x in files)
+                f+=files
+            except:
+                continue
+            # files=[ for x in files]
+        return [MapaCataleg(x,self) for x in f]
     def mostraMapes(self):
         self.clearContingut()
         self.widsCataleg=[]
+        self.nlayouts=[]
         for x in self.botonsLaterals:
             if x.isChecked():
                 wid=QWidget()
@@ -226,6 +238,8 @@ class QvNouCataleg(QWidget):
                 wid.setLayout(layout)
                 wid.setSizePolicy(QSizePolicy.Expanding,QSizePolicy.Expanding)
                 self.widsCataleg.append(wid)
+                self.nlayouts.append(nlayout)
+        self.indexLayoutSeleccionat=-1
         # scrollArea=QScrollArea()
         # scrollArea.setWidget(self.wCataleg)
     def clearContingut(self):
@@ -274,8 +288,86 @@ class QvNouCataleg(QWidget):
     def keyPressEvent(self, event):
         if event.key() == Qt.Key_Escape:
             self.close()
-        # if event.key() == Qt.Key_Left:
-        #     index=
+        if event.key()==Qt.Key_Left or event.key()==Qt.Key_H:
+            self.mouEsquerra()
+        if event.key()==Qt.Key_Down or event.key()==Qt.Key_J:
+            self.mouBaix()
+        if event.key()==Qt.Key_Up or event.key()==Qt.Key_K:
+            self.mouDalt()
+        if event.key()==Qt.Key_Right or event.key()==Qt.Key_L:
+            self.mouDreta()
+    def seleccionaElement(self,widget):
+        if widget is None: return
+        for x, y in self.catalegs.items():
+            for z in y:
+                z.setChecked(False)
+        widget.setChecked(True)
+        self.scroll.ensureWidgetVisible(widget)
+        self.widgetSeleccionat=widget
+        for x in range(0,len(self.nlayouts)):
+            if self.nlayouts[x].indexOf(widget)!=-1:
+                self.indexLayoutSeleccionat=x
+                return
+    def mouHoritzontal(self,despl):
+        if self.indexLayoutSeleccionat!=-1:
+            nlayout=self.nlayouts[self.indexLayoutSeleccionat]
+            i, j = nlayout.indexsOf(self.widgetSeleccionat)
+            j+=despl
+            if j>=nlayout.x(i):
+                j=0
+                i+=1
+                if i>=nlayout.y():
+                    if self.indexLayoutSeleccionat+1<len(self.nlayouts):
+                        i=0
+                        j=0
+                        nlayout=self.nlayouts[self.indexLayoutSeleccionat+1]
+                    else:
+                        i=nlayout.y()-1
+                        j=nlayout.x(i)
+            elif j<0:
+                i-=1
+                if i>=0:
+                    j=nlayout.x(i)-1
+                else:
+                    if self.indexLayoutSeleccionat>0:
+                        nlayout=self.nlayouts[self.indexLayoutSeleccionat-1]
+                        i=nlayout.y()-1
+                        j=nlayout.x(i)-1
+                    #Agafem el layout anterior
+
+            self.seleccionaElement(nlayout.widgetAt(i,j))
+    def mouVertical(self,despl):
+        if self.indexLayoutSeleccionat!=-1:
+            nlayout=self.nlayouts[self.indexLayoutSeleccionat]
+            i, j = nlayout.indexsOf(self.widgetSeleccionat)
+            i+=despl
+            if i>=nlayout.y():
+                if len(self.nlayouts)>self.indexLayoutSeleccionat+1:
+                    nlayout=self.nlayouts[self.indexLayoutSeleccionat+1]
+                    i=0
+                else:
+                    j=0
+            elif i<0:
+                if self.indexLayoutSeleccionat-1>=0:
+                    nlayout=self.nlayouts[self.indexLayoutSeleccionat-1]
+                    i=nlayout.y()-1
+                else:
+                    j=nlayout.x(i)-1
+            wid=nlayout.widgetAt(i,j)
+            self.seleccionaElement(wid)
+    def mouEsquerra(self):
+        self.mouHoritzontal(-1)  
+    def mouDreta(self):
+        self.mouHoritzontal(+1)
+    def mouDalt(self):
+        self.mouVertical(-1)
+    def mouBaix(self):
+        self.mouVertical(1)
+    def eventFilter(self,obj,event):
+        if event.type()==QEvent.KeyPress:
+            self.keyPressEvent(event)
+        return False
+
 
 class BotoLateral(QPushButton):
     def __init__(self,text,cataleg,parent=None):
@@ -395,10 +487,11 @@ class MapaCataleg(QFrame):
         self.setChecked(False)
     def mousePressEvent(self,event):
         if event.buttons() & Qt.LeftButton:
-            for x,y in self.cataleg.catalegs.items():
-                for z in y:
-                    z.setChecked(False)
-            self.setChecked(True)
+            self.cataleg.seleccionaElement(self)
+            # for x,y in self.cataleg.catalegs.items():
+            #     for z in y:
+            #         z.setChecked(False)
+            # self.setChecked(True)
     def setChecked(self,checked):
         self.checked=checked
         if checked:

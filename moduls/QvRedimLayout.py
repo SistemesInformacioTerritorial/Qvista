@@ -111,7 +111,9 @@ class QvRedimLayout(QLayout):
         x = rect.x()
         y = rect.y()
         lineHeight = 0
-
+        self.posicions={} #Desarem les posicions dels elements del layout en un diccionari, on la clau serà el widget i el valor serà una tupla amb les posicions
+        self.elements=[[]]
+        i, j = 0, 0
         for item in self.itemList:
             wid = item.widget()
             spaceX = self.spacing() + wid.style().layoutSpacing(QSizePolicy.PushButton, QSizePolicy.PushButton, Qt.Horizontal)
@@ -122,12 +124,51 @@ class QvRedimLayout(QLayout):
                 y = y + lineHeight + spaceY
                 nextX = x + item.sizeHint().width() + spaceX
                 lineHeight = 0
+                #Passem a la línia següent
+                i+=1
+                j=0
+                self.elements.append([])
 
             if not testOnly:
                 item.setGeometry(QRect(QPoint(x, y), item.sizeHint()))
+                self.posicions[wid]=(i,j)
+                self.elements[i].append(wid)
 
             x = nextX
             lineHeight = max(lineHeight, item.sizeHint().height())
+            j+=1 #Següent posició
 
         return y + lineHeight - rect.y()
+    
+    def indexsOf(self,widget):
+        if widget in self.posicions:
+            return self.posicions[widget]
+        return None
+    def widgetAt(self,i,j):
+        if i<0:
+            return self.elements[0][0]
+        if i<len(self.elements):
+            if j<0:
+                #Si la j és més petita que 0, i la i és major que 1, tornem l'últim element de la fila anterior
+                if i>0:
+                    return self.elements[i-1][-1]
+                return self.elements[i][0]
+            if j<len(self.elements[i]):
+                return self.elements[i][j]
+            # return self.elements[i][-1]
+            #Això de sota no es farà
+            if i+1<len(self.elements):
+                return self.elements[i+1][0]
+        else:
+            return self.elements[-1][-1]
+    def y(self):
+        '''Retorna la quantitat de files que té el layout'''
+        return len(self.elements)
+    def x(self,i):
+        '''Retorna la quantitat de columnes que té la fila i (ja que cada fila pot tenir nombre diferent de columnes)'''
+        return len(self.elements[i])
+    def keyPressEvent(self,event):
+        if event.key()==Qt.Key_Left:
+            return
+        super().keyPressEvent(event)
 
