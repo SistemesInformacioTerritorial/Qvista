@@ -59,7 +59,8 @@ class QvConstants:
             widget{QWidget} -- Widget al que afegim la ombra
         """
         return QvConstants.aplicaOmbra(widget, QvConstants.ombraWidget(widget))
-
+    def afegeixOmbraWidgetSeleccionat(widget: QWidget):
+        return QvConstants.aplicaOmbra(widget,QvConstants.ombraWidgetSeleccionat(widget))
     @staticmethod
     def afegeixOmbraHeader(widget: QWidget):
         """Afegeix una ombra de header (offset x=0, y=3) al widget rebut
@@ -93,8 +94,9 @@ class QvConstants:
             parent{QWidget} -- Pare de l'ombra (default: {None})
         Returns:
             ombra{QGraphicsDropShadowEffect} - Ombra amb l'offset indicat"""
-        return QvConstants.ombra(parent, offset=(3, 3))
-
+        return QvConstants.ombra(parent)
+    def ombraWidgetSeleccionat(parent: QWidget=None) -> QGraphicsDropShadowEffect:
+        return QvConstants.ombra(parent,offset=(0,0),radius=20, color=QColor('#444444'))
     @staticmethod
     def ombraHeader(parent: QWidget = None) -> QGraphicsDropShadowEffect:
         """Retorna una ombra pensada per posar a un header (amb un offset de x=0 i y=3)

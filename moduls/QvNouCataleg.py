@@ -11,6 +11,8 @@ from moduls.QvConstants import QvConstants
 from moduls.QvPushButton import QvPushButton
 from moduls.QvRedimLayout import QvRedimLayout
 from typing import Callable 
+import shutil
+from moduls.QvVisorHTML import QvVisorHTML
 
 
 class QvNouCataleg(QWidget):
@@ -144,6 +146,7 @@ class QvNouCataleg(QWidget):
         # self.layoutContingut.addWidget(self.wCataleg)
         self.layoutContingut.addWidget(self.scroll)
         self.oldPos = self.pos()
+        self.esPotMoure=False
         self.clickTots()
     def actualitzaWindowFlags(self):
         self.setWindowFlag(Qt.Window)
@@ -214,7 +217,7 @@ class QvNouCataleg(QWidget):
                 lbl.setFont(QFont('Arial',12))
                 lbl.setSizePolicy(QSizePolicy.Minimum,QSizePolicy.Maximum)
                 layout.addWidget(lbl)
-                nlayout=QvRedimLayout(spacing=20)
+                nlayout=QvRedimLayout()
                 layout.addLayout(nlayout)
                 self.layoutCataleg.addWidget(wid)
                 # self.layoutCataleg.addLayout(layout)
@@ -231,11 +234,32 @@ class QvNouCataleg(QWidget):
                 # x.setParent(None)
                 x.hide()
         return
-
+    def obrirProjecte(self,dir):
+        try:
+            self.parentWidget().obrirProjecte(dir)
+        except:
+            QMessageBox.warning(self,"No s'ha pogut obrir el mapa","El mapa no ha pogut ser obert. Si el problema persisteix, contacteu amb el gestor del catàleg")
+            print('Hauríem obert el projecte '+dir+', però ha fallat quelcom')
+    def obrirEnQGis(self,dir):
+        #Copiem el projecte al directori temporal, per si l'usuari modifica alguna cosa
+        shutil.copy2(dir,tempdir)
+        copiat=tempdir+os.path.basename(dir)
+        # QDesktopServices().openUrl(QUrl(copiat))
+        while not os.path.exists(copiat):
+            print('Copiant')
+            sleep(1)
+        os.startfile(copiat)
+    def obrirInfo(self,dir):
+        visor=QvVisorHTML(dir,'Informació mapa',parent=self)
+        visor.exec()
     def mousePressEvent(self, event):
+        self.esPotMoure=event.windowPos().y()<41
         self.oldPos = event.globalPos()
+    def mouseReleaseEvent(self,event):
+        self.esPotMoure=False
 
     def mouseMoveEvent(self, event):
+        if not self.esPotMoure: return
         if event.buttons() & Qt.LeftButton:
             if self.maximitzada:
                 self.restaurarFunc()
@@ -250,10 +274,13 @@ class QvNouCataleg(QWidget):
     def keyPressEvent(self, event):
         if event.key() == Qt.Key_Escape:
             self.close()
+        # if event.key() == Qt.Key_Left:
+        #     index=
 
 class BotoLateral(QPushButton):
     def __init__(self,text,cataleg,parent=None):
         super().__init__(text,parent)
+        self.setCursor(QvConstants.cursorClick())
         self.cataleg=cataleg
         stylesheet='''
             BotoLateral{
@@ -281,8 +308,7 @@ class BotoLateral(QPushButton):
             pass
         elif event.modifiers()==Qt.ControlModifier:
             #Seleccionar aquest botó mantenint els seleccionats
-            self.setChecked(True)
-            pass
+            self.setChecked(not self.isChecked())
         else:
             for x in self.cataleg.botonsLaterals:
                 if x==self: continue
@@ -297,20 +323,22 @@ class MapaCataleg(QFrame):
     def __init__(self,dir,cataleg=None): #Dir ha de contenir la ruta de l'arxiu (absoluta o relativa) i no només el seu nom. Ha de ser sense extensió
         super().__init__()
         self.setFrameStyle(QFrame.Panel)
+        self.setCursor(QvConstants.cursorClick())
         self.checked=False
         self.cataleg=cataleg
-        midaWidget=QSize(300,241)
+        # midaWidget=QSize(300,241)
+        midaWidget=QSize(320,274)
         self.setFixedSize(midaWidget)
         self.layout=QVBoxLayout(self)
         self.setLayout(self.layout)
 
-        self.layout.setContentsMargins(0,0,0,0)
+        self.layout.setContentsMargins(6,0,6,0)
         self.layout.setSpacing(0)
 
         self.imatge=QPixmap(dir)
         self.lblImatge=QLabel()
         self.lblImatge.setPixmap(self.imatge)
-        self.lblImatge.setFixedSize(300-4,180) #La mida que volem, restant-li el que ocuparà el border
+        self.lblImatge.setFixedSize(300,180) #La mida que volem, restant-li el que ocuparà el border
         self.lblImatge.setScaledContents(True)
         midaLblImatge=self.lblImatge.sizeHint()
         self.layout.addWidget(self.lblImatge)
@@ -329,7 +357,7 @@ class MapaCataleg(QFrame):
 
         self.lblImatge.setSizePolicy(QSizePolicy.Ignored,QSizePolicy.Ignored)
         self.lblText.setAlignment(Qt.AlignTop)
-        self.lblText.setFixedHeight(56)
+        self.lblText.setFixedHeight(66)
         self.lblText.setAlignment(Qt.AlignTop)
 
         stylesheet='''
@@ -338,20 +366,25 @@ class MapaCataleg(QFrame):
             }
         '''
 
+
         self.botoFav=QPushButton('Fav',parent=self)
         self.botoFav.move(230,0)
         self.botoObre=QPushButton(parent=self)
         self.botoObre.setIcon(QIcon('Imatges/cm_play.png'))
         self.botoObre.move(230,100)
+        self.botoObre.clicked.connect(lambda: cataleg.obrirProjecte(dir+'.qgs'))
         self.botoObre.setIconSize(QSize(24,24))
         self.botoQGis=QPushButton(parent=self)
         self.botoQGis.setIcon(QIcon('Imatges/cm_qgis.png'))
         self.botoQGis.move(230,125)
         self.botoQGis.setIconSize(QSize(24,24))
+        self.botoQGis.clicked.connect(lambda: cataleg.obrirEnQGis(dir+'.qgs'))
         self.botoInfo=QPushButton(parent=self)
         self.botoInfo.setIcon(QIcon('Imatges/cm_info.png'))
         self.botoInfo.move(230,150)
         self.botoInfo.setIconSize(QSize(24,24))
+        self.botoInfo.clicked.connect(lambda: cataleg.obrirInfo(dir+'.htm'))
+
 
         self.botoFav.setStyleSheet(stylesheet)
         self.botoObre.setStyleSheet(stylesheet)
@@ -369,14 +402,16 @@ class MapaCataleg(QFrame):
     def setChecked(self,checked):
         self.checked=checked
         if checked:
-            self.setStyleSheet('MapaCataleg{border: 2px solid %s;}'%QvConstants.COLORFOSCHTML)
+            self.setStyleSheet('MapaCataleg{border: 4px solid %s;}'%QvConstants.COLORCLARHTML)
+            # QvConstants.afegeixOmbraWidgetSeleccionat(self)
             self.botoFav.show()
             self.botoObre.show()
             self.botoQGis.show()
             self.botoInfo.show()
             
         else:
-            self.setStyleSheet('MapaCataleg{border: 2px transparent;}')
+            # self.setGraphicsEffect(None)
+            self.setStyleSheet('MapaCataleg{border: 4px solid white;}')
             self.botoFav.hide()
             self.botoObre.hide()
             self.botoQGis.hide()
