@@ -21,6 +21,7 @@ class QvNouCataleg(QWidget):
         super().__init__(parent)
         self.setWindowFlags(Qt.FramelessWindowHint)
         self.actualitzaWindowFlags()
+        self.setWindowTitle('Catàleg de mapes')
         #Layout gran. Tot a dins
         self.layout=QVBoxLayout(self)
 
@@ -41,15 +42,19 @@ class QvNouCataleg(QWidget):
         self.bCerca.setIconSize(QSize(24, 24))
         self.bCerca.setFixedWidth(40)
         self.bCerca.setFixedHeight(40)
-        self.bCerca.setStyleSheet("background-color:%s;" %QvConstants.COLORFOSCHTML)
+        self.bCerca.setStyleSheet("background-color:%s; border: 0px; margin: 0px; padding: 0px;" %QvConstants.COLORFOSCHTML)
         self.leCerca = QLineEdit()
         self.leCerca.setFixedHeight(40)
         self.leCerca.setFixedWidth(240)
         self.leCerca.setStyleSheet("background-color:%s;"
+                                    "color: white;"
                                     "border: 8px solid %s;"
-                                    "padding: 2px;"
-                                    %(QvConstants.COLORCLARHTML,QvConstants.COLORFOSCHTML))
+                                    "padding: 2px"
+                                    # "margin: 8px;"
+                                    %(QvConstants.COLORCLARHTML, QvConstants.COLORFOSCHTML))
         self.leCerca.setFont(QvConstants.FONTTEXT)
+        self.leCerca.setPlaceholderText('Cercar...')
+        self.leCerca.textChanged.connect(self.filtra)
 
         self.layoutCapcalera.addWidget(self.lblLogo)
         self.layoutCapcalera.addWidget(self.lblCapcalera)
@@ -202,7 +207,7 @@ class QvNouCataleg(QWidget):
     def clickTots(self):
         for x in self.botonsLaterals:
             x.setChecked(True)
-        self.tots.setChecked(True)
+        # self.tots.setChecked(False)
         self.mostraMapes()
     def carregaBotons(self,dir):
         f=[]
@@ -231,14 +236,18 @@ class QvNouCataleg(QWidget):
                 layout.addWidget(lbl)
                 nlayout=QvRedimLayout()
                 layout.addLayout(nlayout)
-                self.layoutCataleg.addWidget(wid)
                 # self.layoutCataleg.addLayout(layout)
+                shaMostrat=False
                 for y in self.catalegs[x.text()]:
-                    nlayout.addWidget(y)
+                    if self.esMostra(y):
+                        shaMostrat=True
+                        nlayout.addWidget(y)
                 wid.setLayout(layout)
                 wid.setSizePolicy(QSizePolicy.Expanding,QSizePolicy.Expanding)
-                self.widsCataleg.append(wid)
-                self.nlayouts.append(nlayout)
+                if shaMostrat:
+                    self.layoutCataleg.addWidget(wid)
+                    self.widsCataleg.append(wid)
+                    self.nlayouts.append(nlayout)
         self.indexLayoutSeleccionat=-1
         # scrollArea=QScrollArea()
         # scrollArea.setWidget(self.wCataleg)
@@ -251,6 +260,7 @@ class QvNouCataleg(QWidget):
     def obrirProjecte(self,dir):
         try:
             self.parentWidget().obrirProjecte(dir)
+            self.hide()
         except:
             QMessageBox.warning(self,"No s'ha pogut obrir el mapa","El mapa no ha pogut ser obert. Si el problema persisteix, contacteu amb el gestor del catàleg")
             print('Hauríem obert el projecte '+dir+', però ha fallat quelcom')
@@ -367,6 +377,23 @@ class QvNouCataleg(QWidget):
         if event.type()==QEvent.KeyPress:
             self.keyPressEvent(event)
         return False
+    def arregla(self,txt):
+        trans=str.maketrans('ÁÉÍÓÚáéíóúÀÈÌÒÙàèìòùÂÊÎÔÛâêîôûÄËÏÖÜäëïöü·ºª.',
+                            'AEIOUAEIOUAEIOUAEIOUAEIOUAEIOUAEIOUAEIOU.   ')
+        txt=txt.translate(trans)
+        txt=txt.upper()
+        txt.strip()
+
+        return txt
+    def filtra(self):
+        txt=self.arregla(self.leCerca.text())
+        if txt!='':
+            self.clickTots()
+        self.mostraMapes()
+    def esMostra(self,widget):
+        txt=self.arregla(self.leCerca.text())
+
+        return txt in self.arregla(widget.titol) or txt in self.arregla(widget.titol)
 
 
 class BotoLateral(QPushButton):
@@ -395,6 +422,7 @@ class BotoLateral(QPushButton):
     def mousePressEvent(self,event):
         if self==self.cataleg.tots:
             super().mousePressEvent(event)
+            self.setChecked(False)
         if event.modifiers()==Qt.ShiftModifier:
             #Multiselecció
             pass
@@ -409,6 +437,7 @@ class BotoLateral(QPushButton):
             if self!=self.cataleg.fav:
                 self.cataleg.fav.setChecked(False)
             self.setChecked(True)
+        self.cataleg.leCerca.setText('')
         self.cataleg.mostraMapes()
 
 class MapaCataleg(QFrame):
@@ -418,6 +447,7 @@ class MapaCataleg(QFrame):
         self.setCursor(QvConstants.cursorClick())
         self.checked=False
         self.cataleg=cataleg
+        self.nomMapa=os.path.basename(dir) #Per tenir el nom per les bases de dades
         # midaWidget=QSize(300,241)
         midaWidget=QSize(320,274)
         self.setFixedSize(midaWidget)
@@ -443,6 +473,8 @@ class MapaCataleg(QFrame):
                 self.lblText.setWordWrap(True)
                 self.layout.addWidget(self.lblText)
         except:
+            self.titol=''
+            self.text=''
             self.lblText=QLabel('<p><strong><span style="color: #38474f; font-family: arial, helvetica, sans-serif; font-size: 10pt;">Títol no disponible<br /></span></strong><span style="color: #38474f; font-family: arial, helvetica, sans-serif; font-size: 8pt;">Descripció no disponible</span></p>')
             self.layout.addWidget(self.lblText)
 
@@ -454,28 +486,39 @@ class MapaCataleg(QFrame):
 
         stylesheet='''
             QPushButton{
-                background: solid white; margin: none; height: 40; width: 40;
+                background: rgba(255,255,255,0.66); 
+                margin: 0px; 
+                padding: 0px;
+                border: 0px;
             }
         '''
-
-
-        self.botoFav=QPushButton('Fav',parent=self)
-        self.botoFav.move(230,0)
+        self.favorit=False
+        self.iconaFavDesmarcat=QIcon('Imatges/cm_bookmark_off.png')
+        self.iconaFavMarcat=QIcon('Imatges/cm_bookmark_on.png')
+        self.botoFav=QPushButton(parent=self)
+        self.botoFav.setIcon(self.iconaFavDesmarcat)
+        self.botoFav.move(280,16)
+        self.botoFav.setIconSize(QSize(24,24))
+        self.botoFav.setFixedSize(24,24)
+        self.botoFav.clicked.connect(self.switchFavorit)
         self.botoObre=QPushButton(parent=self)
         self.botoObre.setIcon(QIcon('Imatges/cm_play.png'))
-        self.botoObre.move(230,100)
+        self.botoObre.move(280,100)
         self.botoObre.clicked.connect(lambda: cataleg.obrirProjecte(dir+'.qgs'))
         self.botoObre.setIconSize(QSize(24,24))
+        self.botoObre.setFixedSize(24,24)
         self.botoQGis=QPushButton(parent=self)
         self.botoQGis.setIcon(QIcon('Imatges/cm_qgis.png'))
-        self.botoQGis.move(230,125)
+        self.botoQGis.move(280,130)
         self.botoQGis.setIconSize(QSize(24,24))
         self.botoQGis.clicked.connect(lambda: cataleg.obrirEnQGis(dir+'.qgs'))
+        self.botoQGis.setFixedSize(24,24)
         self.botoInfo=QPushButton(parent=self)
         self.botoInfo.setIcon(QIcon('Imatges/cm_info.png'))
-        self.botoInfo.move(230,150)
+        self.botoInfo.move(280,160)
         self.botoInfo.setIconSize(QSize(24,24))
         self.botoInfo.clicked.connect(lambda: cataleg.obrirInfo(dir+'.htm'))
+        self.botoInfo.setFixedSize(24,24)
 
 
         self.botoFav.setStyleSheet(stylesheet)
@@ -510,6 +553,14 @@ class MapaCataleg(QFrame):
             self.botoQGis.hide()
             self.botoInfo.hide()
         self.update()
+    def switchFavorit(self):
+        if self.favorit:
+            self.botoFav.setIcon(self.iconaFavDesmarcat)
+            pass
+        else:
+            self.botoFav.setIcon(self.iconaFavMarcat)
+            pass
+        self.favorit=not self.favorit
     # def paintEvent(self,event):
     #     if self.checked:
     #         painter=QPainter(self)
