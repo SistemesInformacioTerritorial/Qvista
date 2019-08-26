@@ -193,7 +193,7 @@ class QvNouCataleg(QWidget):
             
             dirs=sorted(dirs)
             for x in dirs:
-                print(x)
+                # print(x)
                 self.catalegs[x]=self.carregaBotons(x) #TODO
                 boto=BotoLateral(x,self)
                 boto.setCheckable(True)
@@ -230,7 +230,7 @@ class QvNouCataleg(QWidget):
                 wid=QWidget()
                 layout=QVBoxLayout()
                 lbl=QLabel(x.text())
-                lbl.setStyleSheet('background: %s; padding: 2px;'%QvConstants.COLORGRISCLARHTML)
+                lbl.setStyleSheet('background: %s; padding: 2px;'%QvConstants.COLORGRISHTML)
                 lbl.setFont(QFont('Arial',12))
                 lbl.setSizePolicy(QSizePolicy.Minimum,QSizePolicy.Maximum)
                 layout.addWidget(lbl)
@@ -274,6 +274,7 @@ class QvNouCataleg(QWidget):
             sleep(1)
         os.startfile(copiat)
     def obrirInfo(self,dir):
+        
         visor=QvVisorHTML(dir,'Informació mapa',parent=self)
         visor.exec()
     def mousePressEvent(self, event):
@@ -416,7 +417,7 @@ class BotoLateral(QPushButton):
                 color: white;
                 border: none;
             }
-        '''%(QvConstants.COLORFOSCHTML,QvConstants.COLORCLARHTML)
+        '''%(QvConstants.COLORFOSCHTML,QvConstants.COLORMIGHTML)
         self.setStyleSheet(stylesheet)
         self.setFont(QFont('Arial',12))
     def mousePressEvent(self,event):
@@ -462,6 +463,7 @@ class MapaCataleg(QFrame):
         self.lblImatge.setPixmap(self.imatge)
         self.lblImatge.setFixedSize(300,180) #La mida que volem, restant-li el que ocuparà el border
         self.lblImatge.setScaledContents(True)
+        self.lblImatge.setToolTip("Obrir mapa en qVista")
         midaLblImatge=self.lblImatge.sizeHint()
         self.layout.addWidget(self.lblImatge)
         try:
@@ -500,31 +502,37 @@ class MapaCataleg(QFrame):
         self.botoFav.move(280,16)
         self.botoFav.setIconSize(QSize(24,24))
         self.botoFav.setFixedSize(24,24)
+        self.botoFav.setToolTip("Marcar/Desmarcar Favorit")
         self.botoFav.clicked.connect(self.switchFavorit)
         self.botoObre=QPushButton(parent=self)
         self.botoObre.setIcon(QIcon('Imatges/cm_play.png'))
         self.botoObre.move(280,100)
-        self.botoObre.clicked.connect(lambda: cataleg.obrirProjecte(dir+'.qgs'))
+        self.botoObre.setToolTip("Obrir el mapa en qVista")
+        self.obreQVista=lambda: cataleg.obrirProjecte(dir+'.qgs')
+        self.botoObre.clicked.connect(self.obreQVista)
         self.botoObre.setIconSize(QSize(24,24))
         self.botoObre.setFixedSize(24,24)
         self.botoQGis=QPushButton(parent=self)
         self.botoQGis.setIcon(QIcon('Imatges/cm_qgis.png'))
-        self.botoQGis.move(280,130)
+        self.botoQGis.move(280,160)
         self.botoQGis.setIconSize(QSize(24,24))
         self.botoQGis.clicked.connect(lambda: cataleg.obrirEnQGis(dir+'.qgs'))
         self.botoQGis.setFixedSize(24,24)
+        self.botoQGis.setToolTip("Obrir el mapa en QGis")
         self.botoInfo=QPushButton(parent=self)
         self.botoInfo.setIcon(QIcon('Imatges/cm_info.png'))
-        self.botoInfo.move(280,160)
+        self.botoInfo.move(280,130)
         self.botoInfo.setIconSize(QSize(24,24))
         self.botoInfo.clicked.connect(lambda: cataleg.obrirInfo(dir+'.htm'))
         self.botoInfo.setFixedSize(24,24)
+        self.botoInfo.setToolTip("Informació sobre el mapa")
 
 
         self.botoFav.setStyleSheet(stylesheet)
         self.botoObre.setStyleSheet(stylesheet)
         self.botoQGis.setStyleSheet(stylesheet)
         self.botoInfo.setStyleSheet(stylesheet)
+        
         
 
         self.setChecked(False)
@@ -535,6 +543,8 @@ class MapaCataleg(QFrame):
             #     for z in y:
             #         z.setChecked(False)
             # self.setChecked(True)
+    def mouseDoubleClickEvent(self,event):
+        self.obreQVista()
     def setChecked(self,checked):
         self.checked=checked
         if checked:
@@ -542,8 +552,9 @@ class MapaCataleg(QFrame):
             # QvConstants.afegeixOmbraWidgetSeleccionat(self)
             self.botoFav.show()
             self.botoObre.show()
-            self.botoQGis.show()
             self.botoInfo.show()
+            self.botoQGis.show()
+            
             
         else:
             # self.setGraphicsEffect(None)
@@ -553,14 +564,15 @@ class MapaCataleg(QFrame):
             self.botoQGis.hide()
             self.botoInfo.hide()
         self.update()
-    def switchFavorit(self):
-        if self.favorit:
+    def setFavorit(self,fav):
+        if fav:
             self.botoFav.setIcon(self.iconaFavDesmarcat)
-            pass
+            #Cridar la classe per fer favorit aquest botó
         else:
             self.botoFav.setIcon(self.iconaFavMarcat)
-            pass
-        self.favorit=not self.favorit
+        self.favorit=fav
+    def switchFavorit(self):
+        self.setFavorit(not self.favorit)
     # def paintEvent(self,event):
     #     if self.checked:
     #         painter=QPainter(self)

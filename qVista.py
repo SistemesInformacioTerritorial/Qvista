@@ -757,7 +757,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         # self.wMapeta.setGeometry(0,0,267,284)
         # self.wMapeta.show()
         self.mapeta = QvMapeta(self.canvas, tamanyPetit=True, pare=self)
-        self.mapeta.setGraphicsEffect(QvConstants.ombra(self,radius=30,color=QvConstants.COLORCLAR))
+        self.mapeta.setGraphicsEffect(QvConstants.ombra(self,radius=30,color=QvConstants.COLOROMBRA))
         self.bOrientacio.clicked.connect(self.editarOrientacio)
         self.mapeta.setParent(self.canvas)
         self.mapeta.move(20,20)
