@@ -123,7 +123,7 @@ class QvUbicacions(QtWidgets.QWidget):
         # Canviem l'extensió del canvas segons el rang recien calculat.
         self.canvas.zoomToFeatureExtent(rang)
 
-    def _prepararBotonera(self):
+    def _prepararBotonera(self): #???
         """Funció reservada per a la gestió de la botonera de ubicacions. En aquest moment no s'utilitza.
         """
         self.botoneraArbre = ['Nou']
