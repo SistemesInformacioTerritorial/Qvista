@@ -13,6 +13,7 @@ from moduls.QvRedimLayout import QvRedimLayout
 from typing import Callable 
 import shutil
 from moduls.QvVisorHTML import QvVisorHTML
+import re
 
 
 class QvNouCataleg(QWidget):
@@ -219,7 +220,6 @@ class QvNouCataleg(QWidget):
                 f+=files
             except:
                 continue
-            # files=[ for x in files]
         return [MapaCataleg(x,self) for x in f]
     def mostraMapes(self):
         self.clearContingut()
@@ -229,6 +229,7 @@ class QvNouCataleg(QWidget):
             if x.isChecked():
                 wid=QWidget()
                 layout=QVBoxLayout()
+                layout.setContentsMargins(0,0,0,0)
                 lbl=QLabel(x.text())
                 lbl.setStyleSheet('background: %s; padding: 2px;'%QvConstants.COLORGRISHTML)
                 lbl.setFont(QFont('Arial',12))
@@ -274,9 +275,11 @@ class QvNouCataleg(QWidget):
             sleep(1)
         os.startfile(copiat)
     def obrirInfo(self,dir):
-        
-        visor=QvVisorHTML(dir,'Informació mapa',parent=self)
-        visor.exec()
+        if os.path.exists(dir):
+            visor=QvVisorHTML(dir,'Informació mapa',parent=self)
+            visor.exec()
+        else:
+            QMessageBox.warning(self,"No s'ha trobat la informació","La informació del mapa no ha pogut ser oberta. Si el problema persisteix, contacteu amb el gestor del catàleg")
     def mousePressEvent(self, event):
         self.esPotMoure=event.windowPos().y()<41
         self.oldPos = event.globalPos()
@@ -379,11 +382,20 @@ class QvNouCataleg(QWidget):
             self.keyPressEvent(event)
         return False
     def arregla(self,txt):
+        '''
+        Arregla els textos per fer que siguin case insensitive, no tinguin en compte accents, no tinguin espais al principi ni al final i ignorin múltiples espais
+
+        Primer de tot, canvia les lletres accentuades per lletres sense accentuar. Canvia també el · per . i elimina º i ª
+        Aleshores passa totes les lletres a majúscules, per poder fer les comparacions case insensitive
+        Després fa un strip que elimina espais al principi i al final
+        Finalment substitueix els múltiples espais per un únic, utilitzant una expressió regular que cerca dos o més espais i els substitueix per un
+        '''
         trans=str.maketrans('ÁÉÍÓÚáéíóúÀÈÌÒÙàèìòùÂÊÎÔÛâêîôûÄËÏÖÜäëïöü·ºª.',
                             'AEIOUAEIOUAEIOUAEIOUAEIOUAEIOUAEIOUAEIOU.   ')
         txt=txt.translate(trans)
         txt=txt.upper()
-        txt.strip()
+        txt=txt.strip(' ')
+        txt=re.sub('\s[\s]+',' ',txt)
 
         return txt
     def filtra(self):
