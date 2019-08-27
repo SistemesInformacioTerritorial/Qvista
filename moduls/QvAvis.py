@@ -9,7 +9,7 @@ class QvAvis(QvVisorHTML):
     '''Crea un diàleg d'avisos i, si n'hi ha algun de nou, el mostra
     '''
     def __init__(self,parent: QtWidgets.QWidget=None):
-        super().__init__(arxiuAvis, 'Avisos qVista',parent)
+        super().__init__(arxiuAvis, 'Atenció',parent)
         if self.calAvis():
             self.exec_()
     def calAvis(self):

@@ -1045,7 +1045,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.actAfegirNivellQlr.setStatusTip("Afegir capa QLR")
         self.actAfegirNivellQlr.triggered.connect(escollirNivellQlr)
 
-        self.actAfegirCapa = QAction("Afegir...", self)
+        self.actAfegirCapa = QAction("Afegir al mapa...", self)
         self.actAfegirCapa.setStatusTip("Afegir capa")
         self.actAfegirCapa.triggered.connect(self.obrirDialegNovaCapa)
 
@@ -1286,6 +1286,12 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.botoMetadades.setStyleSheet(stylesheetBotons)
         self.botoMetadades.setIconSize(QSize(24,24))
         self.botoMetadades.setCursor(QvConstants.cursorClick())
+
+        self.botoFavorits.setIcon(QIcon('Imatges/qv_bookmark_off.png'))
+        self.botoFavorits.setStyleSheet(stylesheetBotons)
+        self.botoFavorits.setIconSize(QSize(24,24))
+        self.botoFavorits.setCursor(QvConstants.cursorClick())
+        #Fer que quan es fa click es marqui o desmarqui com a favorit
 
 
         
@@ -1729,6 +1735,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.menuCapes.setFont(QvConstants.FONTSUBTITOLS)
         self.menuCapes.styleStrategy = QFont.PreferAntialias or QFont.PreferQuality #???
         self.menuCapes.addAction(self.actObrirCataleg)
+        self.menuCapes.addSeparator()
         self.menuCapes.addAction(self.actAfegirCapa)
         
         # self.menuCarregarNivell.styleStrategy = QFont.PreferAntialias or QFont.PreferQuality
