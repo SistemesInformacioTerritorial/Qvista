@@ -21,7 +21,7 @@ from moduls.QvAtributs import QvAtributs
 from moduls.QvMapeta import QvMapeta
 from moduls.QVCercadorAdreca import QCercadorAdreca
 from moduls.QVDistrictesBarris import QVDistrictesBarris
-from moduls.QvCatalegPetit import QvCataleg
+# from moduls.QvCatalegPetit import QvCataleg
 from moduls.QvApp import QvApp
 from moduls.QvLectorCsv import QvLectorCsv
 from moduls.QvPavimentacio import DockPavim
@@ -41,6 +41,7 @@ from moduls.QvVideo import QvVideo
 from moduls.QvNouMapa import QvNouMapa
 from moduls.QvVisorHTML import QvVisorHTML
 from moduls.QvDocumentacio import QvDocumentacio
+from moduls.QvNouCataleg import QvNouCataleg
 # import re
 import csv
 import os
@@ -137,6 +138,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.lblMovie = None #???
         self.ubicacions= None
         self.cAdrec= None
+        self.catalegMapes = QvNouCataleg(self)
 
         #Preparem el mapeta abans de les accions, ja que el necessitarem allà
         self.preparacioMapeta()
@@ -564,7 +566,7 @@ class QVista(QMainWindow, Ui_MainWindow):
 
     def preparacioCataleg(self):
         """ 
-        Genera el cataleg del qVista i l'incorpora a un docWidget.
+        Genera el catàleg de capes del qVista i l'incorpora a un docWidget.
         
         - Instanciem un widget i l'inicialitcem amb el ui importat. 
 
@@ -589,24 +591,6 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.dwCataleg.hide()
         self.addDockWidget( Qt.LeftDockWidgetArea, self.dwCataleg)
         self.cataleg()
-
-
-        self.wCatalegProjectesLlista = QWidget()
-        self.wCatalegProjectesLlista.ui = Ui_Cataleg()
-        self.wCatalegProjectesLlista.ui.setupUi(self.wCatalegProjectesLlista)
-        self.wCatalegProjectesLlista.setWindowTitle("Cataleg d'Informació Territorial")
-        # self.wCataleg.show()
-        #dfgdfgdfg
-
-        self.dwCatalegProjectesLlista = QvDockWidget( "Cataleg de mapes", self )
-        self.dwCatalegProjectesLlista.setContextMenuPolicy(Qt.PreventContextMenu)
-        self.dwCatalegProjectesLlista.setObjectName( "catalegTaula2" )
-        self.dwCatalegProjectesLlista.setAllowedAreas( Qt.RightDockWidgetArea | Qt.LeftDockWidgetArea )
-        self.dwCatalegProjectesLlista.setWidget(self.wCatalegProjectesLlista)
-        self.dwCatalegProjectesLlista.setContentsMargins ( 0,0,0,0 )
-        self.dwCatalegProjectesLlista.hide()
-        self.addDockWidget( Qt.LeftDockWidgetArea, self.dwCatalegProjectesLlista)
-        self.catalegProjectesLlista()
 
     def preparacioCercadorPostal(self):
     
@@ -773,7 +757,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         # self.wMapeta.setGeometry(0,0,267,284)
         # self.wMapeta.show()
         self.mapeta = QvMapeta(self.canvas, tamanyPetit=True, pare=self)
-        self.mapeta.setGraphicsEffect(QvConstants.ombra(self,radius=30,color=QvConstants.COLORCLAR))
+        self.mapeta.setGraphicsEffect(QvConstants.ombra(self,radius=30,color=QvConstants.COLOROMBRA))
         self.bOrientacio.clicked.connect(self.editarOrientacio)
         self.mapeta.setParent(self.canvas)
         self.mapeta.move(20,20)
@@ -1211,11 +1195,6 @@ class QVista(QMainWindow, Ui_MainWindow):
         #self.actObrirCataleg.setIcon(QIcon('imatges/layers_2.png'))
         self.actObrirCataleg.triggered.connect(self.obrirCataleg)
 
-        self.actObrirCatalegProjectesLlista = QAction("Mapes", self)
-        self.actObrirCatalegProjectesLlista.setStatusTip("Catàleg de Mapes")
-        #self.actObrirCatalegProjectesLlista.setIcon(QIcon('imatges/map-plus.png'))
-        self.actObrirCatalegProjectesLlista.triggered.connect(self.obrirCatalegProjectesLlista)
-
         self.actObrirMapeta = QAction("Mapeta", self)
         self.actObrirMapeta.setStatusTip("Mapeta de situació")
         self.actObrirMapeta.triggered.connect(self.obrirMapeta)
@@ -1252,7 +1231,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         #self.actCataleg = QAction(3*' '+"Catàleg"+3*' ', self)
         self.actCataleg = QAction("Catàleg", self)
         self.actCataleg.setStatusTip("Catàleg")
-        self.actCataleg.triggered.connect(self.obrirCatalegProjectesLlista)
+        self.actCataleg.triggered.connect(self.catalegMapes.showMaximized)
 
         self.actTemes = QAction("Temes", self)
         self.actTemes.setStatusTip("Temes")
@@ -1728,15 +1707,10 @@ class QVista(QMainWindow, Ui_MainWindow):
 
 
         spacer = QSpacerItem(9999, 9999, QSizePolicy.Expanding,QSizePolicy.Maximum) #???
-        #self.bar.addAction(self.actCataleg)
         self.menuMapes = self.bar.addMenu ("Mapes")
         self.menuCapes = self.bar.addMenu ("Capes")
-        # self.menuEntorns = self.bar.addMenu("Entorns")
         self.menuUtilitats = self.bar.addMenu("Utilitats")
-        # self.menuFuncions = self.bar.addMenu("  Eines  ")
         self.menuFuncions = QMenu()
-        # self.menuCarregarNivell = self.bar.addMenu("  Finestres  ")
-        # catalegMenu = self.bar.addMenu("                   Catàleg  ")
 
         self.menuMapes.setFont(QvConstants.FONTSUBTITOLS)
         self.menuMapes.styleStrategy = QFont.PreferAntialias or QFont.PreferQuality #???
@@ -1919,10 +1893,6 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         self.dashboardActiu = [dashboard]
         self.layout.addWidget(dashboard)
-
-    def catalegCool(self):
-        self.catalegCool = QvCataleg(self, self.project, self.lblTitolProjecte)
-        self.catalegCool.showMaximized()
     def showLblFlotant(self,txt):
         self.lblFlotant=QLabel(txt)
         self.lblFlotant.setFont(QvConstants.FONTTEXT)
@@ -1998,6 +1968,8 @@ class QVista(QMainWindow, Ui_MainWindow):
         # print(self.distBarris.registre)
 
     def cataleg(self):
+        # catàleg de capes
+
         self.qModel = QFileSystemModel()
         
         # print(self.qModel.rowCount(), self.qModel.columnCount())
@@ -2019,27 +1991,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.wCataleg.ui.treeCataleg.adjustSize()
         self.wCataleg.ui.treeCataleg.setHeaderHidden(True)
 
-    def catalegProjectesLlista(self):
-        self.qModelProjectesLlista = QFileSystemModel()
-        
-        # print(self.qModel.rowCount(), self.qModel.columnCount())
-        rootPath=self.qModelProjectesLlista.setRootPath(carpetaCatalegProjectesLlista)
-        
-        self.wCatalegProjectesLlista.ui.treeCataleg.doubleClicked.connect(carregarProjecteLlista) 
-        self.wCatalegProjectesLlista.ui.treeCataleg.clicked.connect(updateMetadadesCataleg) 
-        self.qModelProjectesLlista.setNameFilters(['*.qgs', '*.qgz'])
-        self.qModelProjectesLlista.setNameFilterDisables(False)
-        self.wCatalegProjectesLlista.ui.treeCataleg.setModel(self.qModelProjectesLlista)
-        self.wCatalegProjectesLlista.ui.treeCataleg.setRootIndex(rootPath)
-        for i in range (1,4):
-            self.wCatalegProjectesLlista.ui.treeCataleg.header().hideSection(i)
-        self.qModelProjectesLlista.setHeaderData(0,Qt.Horizontal,'hola')
-        self.wCatalegProjectesLlista.ui.treeCataleg.setIndentation(20)
-        self.wCatalegProjectesLlista.ui.treeCataleg.setSortingEnabled(False)
-        self.wCatalegProjectesLlista.ui.treeCataleg.setWindowTitle("Catàleg de Mapes")
-        self.wCatalegProjectesLlista.ui.treeCataleg.resize(640, 480)
-        self.wCatalegProjectesLlista.ui.treeCataleg.adjustSize()
-        self.wCatalegProjectesLlista.ui.treeCataleg.setHeaderHidden(True)
+    
 
     def infoQVista(self):
         self.informacio = QDialog()
@@ -2452,10 +2404,8 @@ class QVista(QMainWindow, Ui_MainWindow):
             self.dwArbreDistrictes.hide()
 
     def obrirCataleg(self):
+        # dock widget catàleg de capes
         self.dwCataleg.show()
-
-    def obrirCatalegProjectesLlista(self):
-        self.dwCatalegProjectesLlista.show()
 
     def obrirQgis(self):
         # TODO: Pensar i generalitzar la obertura de QGis segon directori paquetitzat

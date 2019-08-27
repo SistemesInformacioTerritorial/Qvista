@@ -41,7 +41,12 @@ class QvVisorHTML(QDialog):
         # self.layout.addWidget(self.caixaText)
         self.file=file
         self.caixaText=QWebView()
+        # caixaText.onLoadingChanged: {
+        #     if (loadRequest.status == WebView.LoadFailedStatus) 
+        #     console.log("Load failed! Error code: " + loadRequest.errorCode)
+        # }
         self.caixaText.load(QUrl("file:///%s"%file))
+        self.caixaText.loadHtml("no s'ha pogut trobar la informació")
         self.layoutCaixaText=QVBoxLayout()
         self.layoutCaixaText.addWidget(self.caixaText)
         self.layout.addLayout(self.layoutCaixaText)
@@ -117,6 +122,9 @@ class QvVisorHTML(QDialog):
         delattr(self,'timer')
         self.carrega()
     def carrega(self,file=None):
-        if file is None: file=self.file
+        if file is None:
+            file=self.file
+            self.caixaText.setText("No s'ha pogut trobar l'arxiu")
+        else:
+            self.caixaText.load(QUrl("file:///%s"%file))
         print(file)
-        self.caixaText.load(QUrl("file:///%s"%file))
