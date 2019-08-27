@@ -88,11 +88,12 @@ class QvNouCataleg(QWidget):
         iconaRestaurar2=QIcon('imatges/window-maximize.png')
         def restaurar():
             if self.maximitzada:
-                self.setWindowFlag(Qt.FramelessWindowHint,False)
+                self.setWindowFlag(Qt.FramelessWindowHint)
                 self.setWindowState(Qt.WindowActive)
                 amplada=self.width()
                 alcada=self.height()
                 self.resize(0.8*amplada,0.8*alcada)
+                self.move(0,0)
                 self.show()
                 self.botoRestaurar.setIcon(iconaRestaurar2)
             else:
