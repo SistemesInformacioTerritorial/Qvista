@@ -6,14 +6,14 @@ from QtGui import *
 from qgis.core import QgsRectangle
 import sys
 from PyQt5 import QtGui, QtCore, QtWidgets
-from PyQt5.QtCore import QAbstractItemModel, QFile, QIODevice, QModelIndex, Qt
+from PyQt5.QtCore import QAbstractItemModel, QFile, QIODevice, QModelIndex, Qt #QAbstractItemModel, QIODevice (???)
 
 import pickle
 from collections import deque
 import os.path
 
 
-from PyQt5 import QtCore, QtWidgets, QtGui, QStandardItem, QAbstractItemModel, QApplication, QTreeView
+from PyQt5 import QtCore, QtWidgets, QtGui, QStandardItem, QAbstractItemModel, QApplication, QTreeView #QAbstractItemModel (???)
 
 projecteInicial='../dades/projectes/BCN11.qgs'
 fic_guardar_arbre='C:/Temp/QvUbicacions.p'  #Fichero para la lectura/escritura de ubicaciones (serializadas)
@@ -54,7 +54,7 @@ class StandardItemModel_mio(QtGui.QStandardItemModel):
                     i_yymin = self.ubicacions.model.index(row, 2, parent)
                     i_xxmax = self.ubicacions.model.index(row, 3, parent)
                     i_yymax = self.ubicacions.model.index(row, 4, parent)
-                    i_proy = self.ubicacions.model.index(row, 5, parent)
+                    i_proy = self.ubicacions.model.index(row, 5, parent) #???
                     
                     nn=int(str(idx)[38:-1],16)
                     par=int(str(parent)[38:-1],16)
@@ -106,7 +106,7 @@ class StandardItemModel_mio(QtGui.QStandardItemModel):
                 # msg.setInformativeText("OK para salir del programa \nCANCEL para seguir en el programa")
                 msg.setWindowTitle("QvUbicacions")
                
-                retval = msg.exec_()
+                retval = msg.exec_() #No fem res amb el valor de retorn (???)
 
 
         except:
@@ -118,7 +118,7 @@ class StandardItemModel_mio(QtGui.QStandardItemModel):
             msg.setWindowTitle("QvUbicacions ERROR")
             msg.setDetailedText("Comprovar que existeix i es pot escriure en: " + os.path.dirname(fic_guardar_arbre))
             msg.setStandardButtons(QMessageBox.Close)
-            retval = msg.exec_()
+            retval = msg.exec_() #No fem res amb el valor de retorn (???)
             # if retval== 1024:
             #     print('Implementer salida')
             # else:
@@ -385,7 +385,7 @@ class QvUbicacions(QtWidgets.QWidget):
 
 
 
-    def _prepararBotonera(self):
+    def _prepararBotonera(self): #???
         """Funció reservada per a la gestió de la botonera de ubicacions. En aquest moment no s'utilitza.
         """
         self.botoneraArbre = ['Nou']

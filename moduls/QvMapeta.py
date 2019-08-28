@@ -30,7 +30,7 @@ class QvMapeta(QFrame):
         self.xmin_0= 419691.945
         self.ymin_0=4574155.024
         self.xmax_0= 436891.945
-        self.ymax_0=4591355.024  
+        self.ymax_0=4591355.024 #???
 
         # Convertim paràmetres en variables de classe
         self.canvas = canvas
@@ -240,7 +240,7 @@ class QvMapeta(QFrame):
         H= (h*self.coseno_giro)+ (w*self.seno_giro)
         W= (h*self.seno_giro)  + (w*self.coseno_giro)
         Escalax= anchoMundoVerde / W
-        Escalay= altoMundoVerde /  H
+        Escalay= altoMundoVerde /  H #???
 
         Pa1.x = PPa1.x
         Pa1.y = PPa1.y + Escalax*h*self.coseno_giro
