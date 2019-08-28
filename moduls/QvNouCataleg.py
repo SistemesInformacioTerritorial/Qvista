@@ -14,6 +14,7 @@ from typing import Callable
 import shutil
 from moduls.QvVisorHTML import QvVisorHTML
 import re
+from moduls.QvFavorits import QvFavorits
 
 
 class QvNouCataleg(QWidget):
@@ -155,6 +156,7 @@ class QvNouCataleg(QWidget):
         self.oldPos = self.pos()
         self.esPotMoure=False
         self.clickTots()
+
     def actualitzaWindowFlags(self):
         self.setWindowFlag(Qt.Window)
         self.setWindowFlag(Qt.CustomizeWindowHint,True)
@@ -195,7 +197,7 @@ class QvNouCataleg(QWidget):
             dirs=sorted(dirs)
             for x in dirs:
                 # print(x)
-                self.catalegs[x]=self.carregaBotons(x) #TODO
+                self.catalegs[x]=self.carregaBotons(x) 
                 boto=BotoLateral(x,self)
                 boto.setCheckable(True)
                 # boto.clicked.connect(self.mostraMapes)
@@ -220,11 +222,18 @@ class QvNouCataleg(QWidget):
                 f+=files
             except:
                 continue
-        return [MapaCataleg(x,self) for x in f]
+        botons=[MapaCataleg(x,self) for x in f]
+        fav=QvFavorits().getFavorits()
+        print(fav)
+        for x in botons:
+            if x.getNomMapa() in fav:
+                x.setFavorit(True,actualitza=False) #No actualitzem la base de dades perquè no estem modificant-la
+        return botons
     def mostraMapes(self):
         self.clearContingut()
         self.widsCataleg=[]
         self.nlayouts=[]
+
         for x in self.botonsLaterals:
             if x.isChecked():
                 wid=QWidget()
@@ -576,15 +585,21 @@ class MapaCataleg(QFrame):
             self.botoQGis.hide()
             self.botoInfo.hide()
         self.update()
-    def setFavorit(self,fav):
+    def setFavorit(self,fav,actualitza=True):
         if fav:
-            self.botoFav.setIcon(self.iconaFavDesmarcat)
+            self.botoFav.setIcon(self.iconaFavMarcat)
+            if actualitza:
+                QvFavorits().afegeixFavorit(self.getNomMapa())
             #Cridar la classe per fer favorit aquest botó
         else:
-            self.botoFav.setIcon(self.iconaFavMarcat)
+            self.botoFav.setIcon(self.iconaFavDesmarcat)
+            if actualitza:
+                QvFavorits().eliminaFavorit(self.getNomMapa())
         self.favorit=fav
     def switchFavorit(self):
         self.setFavorit(not self.favorit)
+    def getNomMapa(self):
+        return self.nomMapa
     # def paintEvent(self,event):
     #     if self.checked:
     #         painter=QPainter(self)
