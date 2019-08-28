@@ -47,21 +47,31 @@ class QvNouCataleg(QWidget):
         self.bCerca.setStyleSheet("background-color:%s; border: 0px; margin: 0px; padding: 0px;" %QvConstants.COLORFOSCHTML)
         self.leCerca = QLineEdit()
         self.leCerca.setFixedHeight(40)
-        self.leCerca.setFixedWidth(240)
+        self.leCerca.setFixedWidth(320)
         self.leCerca.setStyleSheet("background-color:%s;"
                                     "color: white;"
                                     "border: 8px solid %s;"
+                                    #"border-right: 8px solid %s;"
+                                    #"border-bottom: 40px solid %s;"
+                                    #"border-left: 8px solid %s;"
                                     "padding: 2px"
                                     # "margin: 8px;"
                                     %(QvConstants.COLORCLARHTML, QvConstants.COLORFOSCHTML))
         self.leCerca.setFont(QvConstants.FONTTEXT)
         self.leCerca.setPlaceholderText('Cercar...')
         self.leCerca.textChanged.connect(self.filtra)
+        self.accioEsborra=self.leCerca.addAction(QIcon('Imatges/window_close.png'),QLineEdit.TrailingPosition)
+        self.accioEsborra.triggered.connect(lambda: self.leCerca.setText(''))
+        self.lblSpacer = QLabel()
+        self.lblSpacer.setFixedHeight(40)
+        self.lblSpacer.setFixedWidth(40)
+        self.lblSpacer.setStyleSheet("background-color:%s;"%(QvConstants.COLORFOSCHTML))
 
         self.layoutCapcalera.addWidget(self.lblLogo)
         self.layoutCapcalera.addWidget(self.lblCapcalera)
         self.layoutCapcalera.addWidget(self.bCerca)
         self.layoutCapcalera.addWidget(self.leCerca)
+        self.layoutCapcalera.addWidget(self.lblSpacer)
 
         self.layout.setContentsMargins(0,0,0,0)
         self.layout.setSpacing(0)
@@ -140,6 +150,7 @@ class QvNouCataleg(QWidget):
         self.carregaBandaEsquerra()
         self.wCataleg=QWidget()
         self.layoutCataleg=QVBoxLayout()
+        self.layoutCataleg.setAlignment(Qt.AlignLeft | Qt.AlignTop)
         # self.layoutCataleg.setSpacing(20)
         # self.layoutCataleg.setContentsMargins(20,20,20,20)
         self.wCataleg.setLayout(self.layoutCataleg)
@@ -167,6 +178,7 @@ class QvNouCataleg(QWidget):
         self.setWindowFlag(Qt.WindowMinMaxButtonsHint,False)
         self.setWindowFlag(Qt.WindowCloseButtonHint,False)
     def carregaBandaEsquerra(self):
+        self.favorits=QvFavorits().getFavorits()
         self.wBanda=QWidget()
         self.wBanda.setStyleSheet('background: %s;'%QvConstants.COLORGRISCLARHTML)
         self.wBanda.setFixedWidth(256)
@@ -206,12 +218,42 @@ class QvNouCataleg(QWidget):
         
         
         self.tots.clicked.connect(self.clickTots)
+        self.fav.clicked.connect(self.clickFavorits)
         self.lBanda.addStretch()
     def clickTots(self):
         for x in self.botonsLaterals:
             x.setChecked(True)
         # self.tots.setChecked(False)
         self.mostraMapes()
+    def clickFavorits(self):
+        self.clearContingut()
+        self.widsCataleg=[]
+        self.nlayouts=[]
+        for x in self.botonsLaterals:
+            wid=QWidget()
+            layout=QVBoxLayout()
+            layout.setContentsMargins(0,0,0,0)
+            lbl=QLabel(x.text())
+            lbl.setStyleSheet('background: %s; padding: 2px;'%QvConstants.COLORGRISHTML)
+            lbl.setFont(QFont('Arial',12))
+            lbl.setSizePolicy(QSizePolicy.Minimum,QSizePolicy.Maximum)
+            layout.addWidget(lbl)
+            nlayout=QvRedimLayout()
+            layout.addLayout(nlayout)
+            # self.layoutCataleg.addLayout(layout)
+            shaMostrat=False
+            for y in self.catalegs[x.text()]:
+                if y.esFavorit():
+                    shaMostrat=True
+                    nlayout.addWidget(y)
+            wid.setLayout(layout)
+            wid.setSizePolicy(QSizePolicy.Expanding,QSizePolicy.Maximum)
+            if shaMostrat:
+                self.layoutCataleg.addWidget(wid)
+                self.widsCataleg.append(wid)
+                self.nlayouts.append(nlayout)
+        self.indexLayoutSeleccionat=-1
+        self.fav.setChecked(True)
     def carregaBotons(self,dir):
         f=[]
         for y in carpetaCatalegProjectesLlista:
@@ -223,10 +265,8 @@ class QvNouCataleg(QWidget):
             except:
                 continue
         botons=[MapaCataleg(x,self) for x in f]
-        fav=QvFavorits().getFavorits()
-        print(fav)
         for x in botons:
-            if x.getNomMapa() in fav:
+            if x.getNomMapa() in self.favorits:
                 x.setFavorit(True,actualitza=False) #No actualitzem la base de dades perquè no estem modificant-la
         return botons
     def mostraMapes(self):
@@ -253,7 +293,7 @@ class QvNouCataleg(QWidget):
                         shaMostrat=True
                         nlayout.addWidget(y)
                 wid.setLayout(layout)
-                wid.setSizePolicy(QSizePolicy.Expanding,QSizePolicy.Expanding)
+                wid.setSizePolicy(QSizePolicy.Expanding,QSizePolicy.Maximum)
                 if shaMostrat:
                     self.layoutCataleg.addWidget(wid)
                     self.widsCataleg.append(wid)
@@ -445,6 +485,9 @@ class BotoLateral(QPushButton):
         if self==self.cataleg.tots:
             super().mousePressEvent(event)
             self.setChecked(False)
+        elif self==self.cataleg.fav:
+            super().mousePressEvent(event)
+            # self.setChecked(True)
         if event.modifiers()==Qt.ShiftModifier:
             #Multiselecció
             pass
@@ -596,6 +639,8 @@ class MapaCataleg(QFrame):
             if actualitza:
                 QvFavorits().eliminaFavorit(self.getNomMapa())
         self.favorit=fav
+    def esFavorit(self):
+        return self.favorit
     def switchFavorit(self):
         self.setFavorit(not self.favorit)
     def getNomMapa(self):
