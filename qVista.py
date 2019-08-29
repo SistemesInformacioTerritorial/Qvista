@@ -2952,25 +2952,66 @@ def cartoBCN():
     # process.start(pathChrome)
     # app.processEvents()
 
-    url = QtCore.QUrl('http://www.elpais.es')
+    url = QtCore.QUrl('https://w20.bcn.cat/cartobcn/')
     try:
-        QDesktopServices().openUrl(url)
+        b = QDesktopServices().openUrl(url)
+        if not b:
+            try:
+                os.system('start firefox "https://w20.bcn.cat/cartobcn/" ')
+            except: 
+                QMessageBox.warning(qV,'Error de navegador', "No s'ha pogut obrir el navegador. Si us plau, comproveu la vostre connexió.")
     except:
-        QMessageBox.Error('Network error: No connection', 'Please check your network connection.')
-
-    #os.system('start firefox "https://w20.bcn.cat/cartobcn/" ')
+        QMessageBox.warning(qV,'Error de navegador', "No s'ha pogut obrir el navegador. Si us plau, comproveu la vostre connexió.")
+    
 
 def geoportalBCN():
-    os.system('start firefox "http://www.bcn.cat/geoportal/ca/geoportal.html"')
+    url = QtCore.QUrl('http://www.bcn.cat/geoportal/ca/geoportal.html')
+    try:
+        b = QDesktopServices().openUrl(url)
+        if not b:
+            try:
+                os.system('start firefox "http://www.bcn.cat/geoportal/ca/geoportal.html" ')
+            except: 
+                QMessageBox.warning(qV,'Error de navegador', "No s'ha pogut obrir el navegador. Si us plau, comproveu la vostre connexió.")
+    except:
+        QMessageBox.warning(qV,'Error de navegador', "No s'ha pogut obrir el navegador. Si us plau, comproveu la vostre connexió.")
 
 def opendataBCN():
-    os.system('start firefox "https://opendata-ajuntament.barcelona.cat/" ')
+    url = QtCore.QUrl('https://opendata-ajuntament.barcelona.cat/')
+    try:
+        b = QDesktopServices().openUrl(url)
+        if not b:
+            try:
+                os.system('start firefox "https://opendata-ajuntament.barcelona.cat/" ')
+            except: 
+                QMessageBox.warning(qV,'Error de navegador', "No s'ha pogut obrir el navegador. Si us plau, comproveu la vostre connexió.")
+    except:
+        QMessageBox.warning(qV,'Error de navegador', "No s'ha pogut obrir el navegador. Si us plau, comproveu la vostre connexió.")
 
 def bcnPIC():
-    os.system('start firefox "http://www.bcn.cat/guia/bcnpicc.html" ')
+    url = QtCore.QUrl('http://www.bcn.cat/guia/bcnpicc.html')
+    try:
+        b = QDesktopServices().openUrl(url)
+        if not b:
+            try:
+                os.system('start firefox "http://www.bcn.cat/guia/bcnpicc.html" ')
+            except: 
+                QMessageBox.warning(qV,'Error de navegador', "No s'ha pogut obrir el navegador. Si us plau, comproveu la vostre connexió.")
+    except:
+        QMessageBox.warning(qV,'Error de navegador', "No s'ha pogut obrir el navegador. Si us plau, comproveu la vostre connexió.")
+    
 
 def planolBCN():
-    os.system('start firefox "https://w33.bcn.cat/planolBCN/ca/" ')
+    url = QtCore.QUrl('https://w33.bcn.cat/planolBCN/ca/')
+    try:
+        b = QDesktopServices().openUrl(url)
+        if not b:
+            try:
+                os.system('start firefox "https://w33.bcn.cat/planolBCN/ca/" ')
+            except: 
+                QMessageBox.warning(qV,'Error de navegador', "No s'ha pogut obrir el navegador. Si us plau, comproveu la vostre connexió.")
+    except:
+        QMessageBox.warning(qV,'Error de navegador', "No s'ha pogut obrir el navegador. Si us plau, comproveu la vostre connexió.")
 
 def obreDocumentacio():
     qV.startMovie()
