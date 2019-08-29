@@ -48,6 +48,9 @@ import os
 from pathlib import Path
 import functools #Eines de funcions, per exemple per avaluar-ne parcialment una
 from PyQt5.QtGui import QPainter
+
+from PyQt5.QtGui import QDesktopServices  #aixo a d'anar al qvimports
+
 # Impressió del temps de carrega dels moduls Qv
 print ('Temps de carrega dels moduls Qv:', time.time()-iniciTempsModuls)
 
@@ -1006,10 +1009,22 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.actNouMapa.setShortcut('Ctrl+N')
         self.actNouMapa.triggered.connect(nouMapa)
 
-        self.actExecuteChrome = QAction("Calculadora", self)
-        iconaChrome=QIcon('imatges/calc.png')
-        self.actExecuteChrome.setIcon(iconaChrome)
-        self.actExecuteChrome.triggered.connect(executeChrome)
+        self.actcartoBCN = QAction("CartoBCN", self)
+        #iconaChrome=QIcon('imatges/calc.png') #es poden posar icones
+        #self.actcartoBCN.setIcon(iconaChrome)
+        self.actcartoBCN.triggered.connect(cartoBCN)
+
+        self.actgeoportalBCN = QAction("Geoportal BCN", self)
+        self.actgeoportalBCN.triggered.connect(geoportalBCN)
+
+        self.actopendataBCN = QAction("Open Data BCN", self)
+        self.actopendataBCN.triggered.connect(opendataBCN)
+
+        self.actbcnPIC = QAction("BCN PIC", self)
+        self.actbcnPIC.triggered.connect(bcnPIC)
+
+        self.actplanolBCN = QAction("Plànol BCN", self)
+        self.actplanolBCN.triggered.connect(planolBCN)
         
         self.actDocumentacio=QAction('Documentació',self)
         self.actDocumentacio.setIcon(QIcon('Imatges/file-document.png'))
@@ -1741,7 +1756,11 @@ class QVista(QMainWindow, Ui_MainWindow):
         
         self.menuUtilitats.setFont(QvConstants.FONTSUBTITOLS)
         self.menuUtilitats.styleStrategy = QFont.PreferAntialias or QFont.PreferQuality
-        self.menuUtilitats.addAction(self.actExecuteChrome)
+        self.menuUtilitats.addAction(self.actcartoBCN)
+        self.menuUtilitats.addAction(self.actgeoportalBCN)
+        self.menuUtilitats.addAction(self.actopendataBCN)
+        self.menuUtilitats.addAction(self.actbcnPIC)
+        self.menuUtilitats.addAction(self.actplanolBCN)
         # self.menuUtilitats.addAction(self.actDocumentacio)
 
 
@@ -2927,11 +2946,32 @@ def nouMapa():
     dialegNouMapa.exec()
     # qV.obrirProjecte("./__newProjectTemplate.qgs")
 
-def executeChrome():
-    process = QProcess(qV)
-    pathChrome = "c:/windows/system32/calc.exe"
-    process.start(pathChrome)
-    app.processEvents()
+def cartoBCN():
+    # process = QProcess(qV)
+    # pathChrome = "c:/Users/D062735/AppData/Local/Google/Chrome/Application/chrome.exe"
+    # process.start(pathChrome)
+    # app.processEvents()
+
+    # url = QtCore.QUrl('http://www.elpais.es')
+    # try:
+    #     QDesktopServices().openUrl(url)
+    # except:
+    #     QMessageBox.Error('Network error: No connection', 'Please check your network connection.')
+
+    os.system('start firefox "https://w20.bcn.cat/cartobcn/" ')
+
+def geoportalBCN():
+    os.system('start firefox "http://www.bcn.cat/geoportal/ca/geoportal.html"')
+
+def opendataBCN():
+    os.system('start firefox "https://opendata-ajuntament.barcelona.cat/" ')
+
+def bcnPIC():
+    os.system('start firefox "http://www.bcn.cat/guia/bcnpicc.html" ')
+
+def planolBCN():
+    os.system('start firefox "https://w33.bcn.cat/planolBCN/ca/" ')
+
 def obreDocumentacio():
     qV.startMovie()
     doc=QvDocumentacio(qV)
