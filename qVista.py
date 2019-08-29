@@ -49,6 +49,9 @@ import os
 from pathlib import Path
 import functools #Eines de funcions, per exemple per avaluar-ne parcialment una
 from PyQt5.QtGui import QPainter
+
+from PyQt5.QtGui import QDesktopServices  #aixo a d'anar al qvimports
+
 # Impressió del temps de carrega dels moduls Qv
 print ('Temps de carrega dels moduls Qv:', time.time()-iniciTempsModuls)
 
@@ -1021,10 +1024,25 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.actNouMapa.setShortcut('Ctrl+N')
         self.actNouMapa.triggered.connect(nouMapa)
 
-        self.actExecuteChrome = QAction("Calculadora", self)
-        iconaChrome=QIcon('imatges/calc.png')
-        self.actExecuteChrome.setIcon(iconaChrome)
-        self.actExecuteChrome.triggered.connect(executeChrome)
+        self.actcartoBCN = QAction("CartoBCN", self)
+        #iconaChrome=QIcon('imatges/calc.png') #es poden posar icones
+        #self.actcartoBCN.setIcon(iconaChrome)
+        self.actcartoBCN.triggered.connect(cartoBCN)
+
+        self.actgeoportalBCN = QAction("Geoportal BCN", self)
+        self.actgeoportalBCN.triggered.connect(geoportalBCN)
+
+        self.actopendataBCN = QAction("Open Data BCN", self)
+        self.actopendataBCN.triggered.connect(opendataBCN)
+
+        self.actbcnPIC = QAction("BCN PIC", self)
+        self.actbcnPIC.triggered.connect(bcnPIC)
+
+        self.actplanolBCN = QAction("Plànol BCN", self)
+        self.actplanolBCN.triggered.connect(planolBCN)
+
+        self.actpiuPortal = QAction("Portal PIU info. urb.", self)
+        self.actpiuPortal.triggered.connect(piuPortal)
         
         self.actDocumentacio=QAction('Documentació',self)
         self.actDocumentacio.setIcon(QIcon('Imatges/file-document.png'))
@@ -1779,7 +1797,13 @@ class QVista(QMainWindow, Ui_MainWindow):
         
         self.menuUtilitats.setFont(QvConstants.FONTSUBTITOLS)
         self.menuUtilitats.styleStrategy = QFont.PreferAntialias or QFont.PreferQuality
-        self.menuUtilitats.addAction(self.actExecuteChrome)
+        self.menuUtilitats.addAction(self.actcartoBCN)
+        self.menuUtilitats.addAction(self.actgeoportalBCN)
+        self.menuUtilitats.addAction(self.actopendataBCN)
+        self.menuUtilitats.addAction(self.actbcnPIC)
+        self.menuUtilitats.addAction(self.actplanolBCN)
+        self.menuUtilitats.addSeparator()
+        self.menuUtilitats.addAction(self.actpiuPortal)
         # self.menuUtilitats.addAction(self.actDocumentacio)
 
 
@@ -2967,13 +2991,85 @@ def nouMapa():
     dialegNouMapa.exec()
     # qV.obrirProjecte("./__newProjectTemplate.qgs")
 
-def executeChrome():
-    from PyQt5.QtGui import QDesktopServices
-    url = QtCore.QUrl('http://www.elpais.es')
+def cartoBCN():
+    # process = QProcess(qV)
+    # pathChrome = "c:/Users/D062735/AppData/Local/Google/Chrome/Application/chrome.exe"
+    # process.start(pathChrome)
+    # app.processEvents()
+
+    url = QtCore.QUrl('https://w20.bcn.cat/cartobcn/')
     try:
-        QDesktopServices().openUrl(url)
+        b = QDesktopServices().openUrl(url)
+        if not b:
+            try:
+                os.system('start firefox "https://w20.bcn.cat/cartobcn/" ')
+            except: 
+                QMessageBox.warning(qV,'Error de navegador', "No s'ha pogut obrir el navegador. Si us plau, comproveu la vostre connexió.")
     except:
-        QMessageBox.Error('Network error: No connection', 'Please check your network connection.')
+        QMessageBox.warning(qV,'Error de navegador', "No s'ha pogut obrir el navegador. Si us plau, comproveu la vostre connexió.")
+    
+
+def geoportalBCN():
+    url = QtCore.QUrl('http://www.bcn.cat/geoportal/ca/geoportal.html')
+    try:
+        b = QDesktopServices().openUrl(url)
+        if not b:
+            try:
+                os.system('start firefox "http://www.bcn.cat/geoportal/ca/geoportal.html" ')
+            except: 
+                QMessageBox.warning(qV,'Error de navegador', "No s'ha pogut obrir el navegador. Si us plau, comproveu la vostre connexió.")
+    except:
+        QMessageBox.warning(qV,'Error de navegador', "No s'ha pogut obrir el navegador. Si us plau, comproveu la vostre connexió.")
+
+def opendataBCN():
+    url = QtCore.QUrl('https://opendata-ajuntament.barcelona.cat/')
+    try:
+        b = QDesktopServices().openUrl(url)
+        if not b:
+            try:
+                os.system('start firefox "https://opendata-ajuntament.barcelona.cat/" ')
+            except: 
+                QMessageBox.warning(qV,'Error de navegador', "No s'ha pogut obrir el navegador. Si us plau, comproveu la vostre connexió.")
+    except:
+        QMessageBox.warning(qV,'Error de navegador', "No s'ha pogut obrir el navegador. Si us plau, comproveu la vostre connexió.")
+
+def bcnPIC():
+    url = QtCore.QUrl('http://www.bcn.cat/guia/bcnpicc.html')
+    try:
+        b = QDesktopServices().openUrl(url)
+        if not b:
+            try:
+                os.system('start firefox "http://www.bcn.cat/guia/bcnpicc.html" ')
+            except: 
+                QMessageBox.warning(qV,'Error de navegador', "No s'ha pogut obrir el navegador. Si us plau, comproveu la vostre connexió.")
+    except:
+        QMessageBox.warning(qV,'Error de navegador', "No s'ha pogut obrir el navegador. Si us plau, comproveu la vostre connexió.")
+    
+
+def planolBCN():
+    url = QtCore.QUrl('https://w33.bcn.cat/planolBCN/ca/')
+    try:
+        b = QDesktopServices().openUrl(url)
+        if not b:
+            try:
+                os.system('start firefox "https://w33.bcn.cat/planolBCN/ca/" ')
+            except: 
+                QMessageBox.warning(qV,'Error de navegador', "No s'ha pogut obrir el navegador. Si us plau, comproveu la vostre connexió.")
+    except:
+        QMessageBox.warning(qV,'Error de navegador', "No s'ha pogut obrir el navegador. Si us plau, comproveu la vostre connexió.")
+
+def piuPortal():
+    url = QtCore.QUrl('https://ajuntament.barcelona.cat/informaciourbanistica/cerca/ca/')
+    try:
+        b = QDesktopServices().openUrl(url)
+        if not b:
+            try:
+                os.system('start firefox "https://ajuntament.barcelona.cat/informaciourbanistica/cerca/ca/" ')
+            except: 
+                QMessageBox.warning(qV,'Error de navegador', "No s'ha pogut obrir el navegador. Si us plau, comproveu la vostre connexió.")
+    except:
+        QMessageBox.warning(qV,'Error de navegador', "No s'ha pogut obrir el navegador. Si us plau, comproveu la vostre connexió.")
+
 def obreDocumentacio():
     qV.startMovie()
     doc=QvDocumentacio(qV)
