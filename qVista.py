@@ -42,6 +42,7 @@ from moduls.QvNouMapa import QvNouMapa
 from moduls.QvVisorHTML import QvVisorHTML
 from moduls.QvDocumentacio import QvDocumentacio
 from moduls.QvNouCataleg import QvNouCataleg
+from moduls.QvFavorits import QvFavorits
 # import re
 import csv
 import os
@@ -261,7 +262,19 @@ class QVista(QMainWindow, Ui_MainWindow):
                     self.setDirtyBit()
             elif fext == '.csv':
                 carregarLayerCSV(nfile)
-
+    def obrirProjecteCataleg(self, projecte, fav, widgetAssociat, rang=None):
+        '''Obre un projecte des del catàleg
+        Fa el mateix que la funció obrirProjecte, però mostrant el botó de favorits
+        '''
+        #Fem que aparegui el botó de fav
+        self.obrirProjecte(projecte,rang)
+        self.botoFavorits.show()
+        self.mapaCataleg=True
+        self.actualitzaBotoFav(fav)
+        self.widgetAssociat=widgetAssociat
+    def actualitzaBotoFav(self,fav):
+        self.favorit=fav
+        self.botoFavorits.setIcon(self.iconaFavMarcat if fav else self.iconaFavDesmarcat)
     def obrirProjecte(self, projecte, rang = None):
         """Obre un projecte passat com a parametre, amb un possible rang predeterminat.
         
@@ -271,6 +284,8 @@ class QVista(QMainWindow, Ui_MainWindow):
         Keyword Arguments:
             rang {Rect} -- El rang amb el que s'ha d'obrir el projecte (default: {None})
         """
+        self.botoFavorits.hide()
+        if hasattr(self,'mapaCataleg'): delattr(self,'mapaCataleg')
         if projecte.strip()=='': return
         # Obrir el projecte i col.locarse en rang
         self.project.read(projecte)
@@ -1287,10 +1302,13 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.botoMetadades.setIconSize(QSize(24,24))
         self.botoMetadades.setCursor(QvConstants.cursorClick())
 
-        self.botoFavorits.setIcon(QIcon('Imatges/qv_bookmark_off.png'))
+        self.iconaFavDesmarcat=QIcon('Imatges/qv_bookmark_off.png')
+        self.iconaFavMarcat=QIcon('Imatges/qv_bookmark_on.png')
+        self.botoFavorits.setIcon(self.iconaFavDesmarcat)
         self.botoFavorits.setStyleSheet(stylesheetBotons)
         self.botoFavorits.setIconSize(QSize(24,24))
         self.botoFavorits.setCursor(QvConstants.cursorClick())
+        self.botoFavorits.clicked.connect(self.switchFavorit)
         #Fer que quan es fa click es marqui o desmarqui com a favorit
 
 
@@ -1519,7 +1537,20 @@ class QVista(QMainWindow, Ui_MainWindow):
             elif ret == QMessageBox.DestructiveRole:
                 return
         self.obrirProjecte(self.pathProjecteActual)
-
+    def switchFavorit(self):
+        # nom=os.path.basename(self.pathProjecteActual)
+        nom=Path(self.pathProjecteActual).stem
+        print(QvFavorits().getFavorits())
+        if self.favorit:
+            # QvFavorits().eliminaFavorit(nom)
+            self.botoFavorits.setIcon(self.iconaFavDesmarcat)
+            pass
+        else:
+            # QvFavorits().afegeixFavorit(nom)
+            self.botoFavorits.setIcon(self.iconaFavMarcat)
+            pass
+        self.favorit=not self.favorit
+        self.widgetAssociat.setFavorit(self.favorit)
     def helpQVista(self): #Ara no es fa servir, però en el futur es pot utilitzar per saber què és un element
         QWhatsThis.enterWhatsThisMode()
         pass
@@ -2892,6 +2923,8 @@ def guardarProjecte():
         return guardarDialegProjecte()
     elif qV.pathProjecteActual.startswith( 'n:/9siteb/publicacions/qvista' ):
         return guardarDialegProjecte()
+    elif hasattr(qV,'mapaCataleg'):
+        return guardarDialegProjecte()
     else:
         qV.project.write(qV.pathProjecteActual)
         qV.canvisPendents = False
@@ -2935,10 +2968,12 @@ def nouMapa():
     # qV.obrirProjecte("./__newProjectTemplate.qgs")
 
 def executeChrome():
-    process = QProcess(qV)
-    pathChrome = "c:/windows/system32/calc.exe"
-    process.start(pathChrome)
-    app.processEvents()
+    from PyQt5.QtGui import QDesktopServices
+    url = QtCore.QUrl('http://www.elpais.es')
+    try:
+        QDesktopServices().openUrl(url)
+    except:
+        QMessageBox.Error('Network error: No connection', 'Please check your network connection.')
 def obreDocumentacio():
     qV.startMovie()
     doc=QvDocumentacio(qV)

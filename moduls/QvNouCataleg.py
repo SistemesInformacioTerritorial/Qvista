@@ -20,7 +20,8 @@ from moduls.QvFavorits import QvFavorits
 class QvNouCataleg(QWidget):
     
     def __init__(self,parent: QtWidgets.QWidget=None):
-        super().__init__(parent)
+        super().__init__()
+        self.parent=parent
         self.setWindowFlags(Qt.FramelessWindowHint)
         self.actualitzaWindowFlags()
         self.setWindowTitle('Catàleg de mapes')
@@ -60,8 +61,9 @@ class QvNouCataleg(QWidget):
         self.leCerca.setFont(QvConstants.FONTTEXT)
         self.leCerca.setPlaceholderText('Cercar...')
         self.leCerca.textChanged.connect(self.filtra)
-        self.accioEsborra=self.leCerca.addAction(QIcon('Imatges/window_close.png'),QLineEdit.TrailingPosition)
+        self.accioEsborra=self.leCerca.addAction(QIcon('Imatges/cm_buidar_cercar.png'),QLineEdit.TrailingPosition)
         self.accioEsborra.triggered.connect(lambda: self.leCerca.setText(''))
+        self.accioEsborra.setVisible(False)
         self.lblSpacer = QLabel()
         self.lblSpacer.setFixedHeight(40)
         self.lblSpacer.setFixedWidth(40)
@@ -307,10 +309,11 @@ class QvNouCataleg(QWidget):
                 # x.setParent(None)
                 x.hide()
         return
-    def obrirProjecte(self,dir):
+    def obrirProjecte(self, dir, favorit, widgetAssociat):
         try:
-            self.parentWidget().obrirProjecte(dir)
-            self.hide()
+            self.parent.obrirProjecteCataleg(dir, favorit, widgetAssociat)
+            self.parent.activateWindow()
+            # self.hide()
         except:
             QMessageBox.warning(self,"No s'ha pogut obrir el mapa","El mapa no ha pogut ser obert. Si el problema persisteix, contacteu amb el gestor del catàleg")
             print('Hauríem obert el projecte '+dir+', però ha fallat quelcom')
@@ -351,14 +354,17 @@ class QvNouCataleg(QWidget):
     def keyPressEvent(self, event):
         if event.key() == Qt.Key_Escape:
             self.close()
-        if event.key()==Qt.Key_Left or event.key()==Qt.Key_H:
+        elif event.key()==Qt.Key_Left or event.key()==Qt.Key_H:
             self.mouEsquerra()
-        if event.key()==Qt.Key_Down or event.key()==Qt.Key_J:
+        elif event.key()==Qt.Key_Down or event.key()==Qt.Key_J:
             self.mouBaix()
-        if event.key()==Qt.Key_Up or event.key()==Qt.Key_K:
+        elif event.key()==Qt.Key_Up or event.key()==Qt.Key_K:
             self.mouDalt()
-        if event.key()==Qt.Key_Right or event.key()==Qt.Key_L:
+        elif event.key()==Qt.Key_Right or event.key()==Qt.Key_L:
             self.mouDreta()
+        elif event.key()==Qt.Key_Return or event.key()==Qt.Key_Enter:
+            if hasattr(self,'widgetSeleccionat'):
+                self.widgetSeleccionat.obreQVista()
     def seleccionaElement(self,widget):
         if widget is None: return
         for x, y in self.catalegs.items():
@@ -451,6 +457,9 @@ class QvNouCataleg(QWidget):
         txt=self.arregla(self.leCerca.text())
         if txt!='':
             self.clickTots()
+            self.accioEsborra.setVisible(True)
+        else:
+            self.accioEsborra.setVisible(False)
         self.mostraMapes()
     def esMostra(self,widget):
         txt=self.arregla(self.leCerca.text())
@@ -572,7 +581,7 @@ class MapaCataleg(QFrame):
         self.botoObre.setIcon(QIcon('Imatges/cm_play.png'))
         self.botoObre.move(280,100)
         self.botoObre.setToolTip("Obrir el mapa en qVista")
-        self.obreQVista=lambda: cataleg.obrirProjecte(dir+'.qgs')
+        self.obreQVista=lambda: cataleg.obrirProjecte(dir+'.qgs',self.favorit, self)
         self.botoObre.clicked.connect(self.obreQVista)
         self.botoObre.setIconSize(QSize(24,24))
         self.botoObre.setFixedSize(24,24)
@@ -639,6 +648,8 @@ class MapaCataleg(QFrame):
             if actualitza:
                 QvFavorits().eliminaFavorit(self.getNomMapa())
         self.favorit=fav
+        if hasattr(self.cataleg.parent,'widgetAssociat') and self.cataleg.parent.widgetAssociat==self:
+            self.cataleg.parent.actualitzaBotoFav(fav)
     def esFavorit(self):
         return self.favorit
     def switchFavorit(self):
