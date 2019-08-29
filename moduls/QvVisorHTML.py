@@ -46,7 +46,6 @@ class QvVisorHTML(QDialog):
         #     console.log("Load failed! Error code: " + loadRequest.errorCode)
         # }
         self.caixaText.load(QUrl("file:///%s"%file))
-        self.caixaText.loadHtml("no s'ha pogut trobar la informació")
         self.layoutCaixaText=QVBoxLayout()
         self.layoutCaixaText.addWidget(self.caixaText)
         self.layout.addLayout(self.layoutCaixaText)
