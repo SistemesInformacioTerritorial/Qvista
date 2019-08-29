@@ -1025,6 +1025,9 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         self.actplanolBCN = QAction("Plànol BCN", self)
         self.actplanolBCN.triggered.connect(planolBCN)
+
+        self.actpiuPortal = QAction("Portal PIU info. urb.", self)
+        self.actpiuPortal.triggered.connect(piuPortal)
         
         self.actDocumentacio=QAction('Documentació',self)
         self.actDocumentacio.setIcon(QIcon('Imatges/file-document.png'))
@@ -1761,6 +1764,8 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.menuUtilitats.addAction(self.actopendataBCN)
         self.menuUtilitats.addAction(self.actbcnPIC)
         self.menuUtilitats.addAction(self.actplanolBCN)
+        self.menuUtilitats.addSeparator()
+        self.menuUtilitats.addAction(self.actpiuPortal)
         # self.menuUtilitats.addAction(self.actDocumentacio)
 
 
@@ -3008,6 +3013,18 @@ def planolBCN():
         if not b:
             try:
                 os.system('start firefox "https://w33.bcn.cat/planolBCN/ca/" ')
+            except: 
+                QMessageBox.warning(qV,'Error de navegador', "No s'ha pogut obrir el navegador. Si us plau, comproveu la vostre connexió.")
+    except:
+        QMessageBox.warning(qV,'Error de navegador', "No s'ha pogut obrir el navegador. Si us plau, comproveu la vostre connexió.")
+
+def piuPortal():
+    url = QtCore.QUrl('https://ajuntament.barcelona.cat/informaciourbanistica/cerca/ca/')
+    try:
+        b = QDesktopServices().openUrl(url)
+        if not b:
+            try:
+                os.system('start firefox "https://ajuntament.barcelona.cat/informaciourbanistica/cerca/ca/" ')
             except: 
                 QMessageBox.warning(qV,'Error de navegador', "No s'ha pogut obrir el navegador. Si us plau, comproveu la vostre connexió.")
     except:
