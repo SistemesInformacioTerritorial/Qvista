@@ -2952,13 +2952,13 @@ def cartoBCN():
     # process.start(pathChrome)
     # app.processEvents()
 
-    # url = QtCore.QUrl('http://www.elpais.es')
-    # try:
-    #     QDesktopServices().openUrl(url)
-    # except:
-    #     QMessageBox.Error('Network error: No connection', 'Please check your network connection.')
+    url = QtCore.QUrl('http://www.elpais.es')
+    try:
+        QDesktopServices().openUrl(url)
+    except:
+        QMessageBox.Error('Network error: No connection', 'Please check your network connection.')
 
-    os.system('start firefox "https://w20.bcn.cat/cartobcn/" ')
+    #os.system('start firefox "https://w20.bcn.cat/cartobcn/" ')
 
 def geoportalBCN():
     os.system('start firefox "http://www.bcn.cat/geoportal/ca/geoportal.html"')
