@@ -1264,7 +1264,11 @@ class QVista(QMainWindow, Ui_MainWindow):
         #self.actCataleg = QAction(3*' '+"Catàleg"+3*' ', self)
         self.actCataleg = QAction("Catàleg", self)
         self.actCataleg.setStatusTip("Catàleg")
-        self.actCataleg.triggered.connect(self.catalegMapes.showMaximized)
+        def activaCataleg():
+            if not self.catalegMapes.isVisible():
+                self.catalegMapes.showMaximized()
+            self.catalegMapes.activateWindow()
+        self.actCataleg.triggered.connect(activaCataleg)
 
         self.actTemes = QAction("Temes", self)
         self.actTemes.setStatusTip("Temes")
