@@ -466,7 +466,7 @@ class QvNouCataleg(QWidget):
     def esMostra(self,widget):
         txt=self.arregla(self.leCerca.text())
 
-        return txt in self.arregla(widget.titol) or txt in self.arregla(widget.titol)
+        return txt in self.arregla(widget.titol) or txt in self.arregla(widget.text)
 
 
 class BotoLateral(QPushButton):

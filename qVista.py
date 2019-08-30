@@ -43,6 +43,7 @@ from moduls.QvVisorHTML import QvVisorHTML
 from moduls.QvDocumentacio import QvDocumentacio
 from moduls.QvNouCataleg import QvNouCataleg
 from moduls.QvFavorits import QvFavorits
+from moduls.QvCatalegCapes import QvCatalegCapes
 # import re
 import csv
 import os
@@ -594,11 +595,13 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         - Omplim el widget de les dades llegides a carpetaCataleg
         """
-        self.wCataleg = QWidget()
-        self.wCataleg.ui = Ui_Cataleg()
-        self.wCataleg.ui.setupUi(self.wCataleg)
-        self.wCataleg.setWindowTitle("Cataleg d'Informació Territorial")
+        # self.wCataleg = QWidget()
+        # self.wCataleg.ui = Ui_Cataleg()
+        # self.wCataleg.ui.setupUi(self.wCataleg)
+        # self.wCataleg.setWindowTitle("Cataleg d'Informació Territorial")
         # self.wCataleg.show()
+
+        self.wCataleg=QvCatalegCapes(self,self)
 
         self.dwCataleg = QvDockWidget( "Cataleg de capes", self )
         self.dwCataleg.setContextMenuPolicy(Qt.PreventContextMenu)
@@ -608,7 +611,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.dwCataleg.setContentsMargins ( 0,0,0,0 )
         self.dwCataleg.hide()
         self.addDockWidget( Qt.LeftDockWidgetArea, self.dwCataleg)
-        self.cataleg()
+        # self.cataleg()
 
     def preparacioCercadorPostal(self):
     
