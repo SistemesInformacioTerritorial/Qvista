@@ -17,35 +17,35 @@ class QvVideo(QDialog):
         self.fileName = fileName
         self.resize(xSize, ySize)
         self.setWindowTitle('Reproducció Video')
-        QvConstants.afegeixOmbraWidget(self)
-        self.openButton = QPushButton("Obrir...")
-        self.openButton.clicked.connect(self.openFile)
+        #ombra_ = QvConstants.afegeixOmbraWidget(self)
+        # self.openButton = QPushButton("Obrir...")
+        # self.openButton.clicked.connect(self.openFile)
 
-        self.playButton = QPushButton()
-        self.playButton.setEnabled(False)
-        self.playButton.setIcon(self.style().standardIcon(QStyle.SP_MediaPlay))
-        self.playButton.clicked.connect(self.play)
+        # self.playButton = QPushButton()
+        # self.playButton.setEnabled(False)
+        # self.playButton.setIcon(self.style().standardIcon(QStyle.SP_MediaPlay))
+        # self.playButton.clicked.connect(self.play)
 
-        self.positionSlider = QSlider(Qt.Horizontal)
-        self.positionSlider.setRange(0, 0)
-        self.positionSlider.sliderMoved.connect(self.setPosition)
+        # self.positionSlider = QSlider(Qt.Horizontal)
+        # self.positionSlider.setRange(0, 0)
+        # self.positionSlider.sliderMoved.connect(self.setPosition)
 
-        controlLayout = QHBoxLayout()
-        controlLayout.setContentsMargins(0, 0, 0, 0)
-        controlLayout.addWidget(self.openButton)
-        controlLayout.addWidget(self.playButton)
-        controlLayout.addWidget(self.positionSlider)
+        # controlLayout = QHBoxLayout()
+        # controlLayout.setContentsMargins(0, 0, 0, 0)
+        # controlLayout.addWidget(self.openButton)
+        # controlLayout.addWidget(self.playButton)
+        # controlLayout.addWidget(self.positionSlider)
 
         videoWidget = QVideoWidget()
-        QvConstants.afegeixOmbraWidget(videoWidget)
+        #ombra_ = QvConstants.afegeixOmbraWidget(videoWidget)
 
         # videoWidget.setAttribute(Qt.WA_TranslucentBackground, True)
 
         self.mediaPlayer = QMediaPlayer(None, QMediaPlayer.VideoSurface)
         self.mediaPlayer.setVideoOutput(videoWidget)
-        self.mediaPlayer.stateChanged.connect(self.mediaStateChanged)
-        self.mediaPlayer.positionChanged.connect(self.positionChanged)
-        self.mediaPlayer.durationChanged.connect(self.durationChanged)
+        # self.mediaPlayer.stateChanged.connect(self.mediaStateChanged)
+        # self.mediaPlayer.positionChanged.connect(self.positionChanged)
+        # self.mediaPlayer.durationChanged.connect(self.durationChanged)
 
         layout = QVBoxLayout()
         layout.addWidget(videoWidget)
@@ -59,6 +59,7 @@ class QvVideo(QDialog):
             layout.addLayout(controlLayout)
 
         self.setLayout(layout)
+        self.resize(xSize, ySize)
 
     def setBackgroundColor(self, color): #???
         pal = QPalette()
@@ -72,6 +73,7 @@ class QvVideo(QDialog):
         except:
             f = ''
         if f != '':
+            print("troba l'arxiu de video")
             self.fileName = f
             self.open()
             self.play()
@@ -79,8 +81,9 @@ class QvVideo(QDialog):
     def open(self):
         if self.fileName != '':
             self.mediaPlayer.setMedia(QMediaContent(QUrl.fromLocalFile(self.fileName)))
+            # self.mediaPlayer.resize(xSize, ySize)
             self.setWindowTitle('Reproducció Video - ' + self.fileName)
-            self.playButton.setEnabled(True)
+            # self.playButton.setEnabled(True)
 
     def play(self):
         if self.mediaPlayer.state() == QMediaPlayer.PlayingState:
@@ -96,11 +99,11 @@ class QvVideo(QDialog):
             self.playButton.setIcon(self.style().standardIcon(QStyle.SP_MediaPlay))
             self.openButton.setEnabled(True)
 
-    def positionChanged(self, position):
-        self.positionSlider.setValue(position)
+    # def positionChanged(self, position):
+    #     self.positionSlider.setValue(position)
 
-    def durationChanged(self, duration):
-        self.positionSlider.setRange(0, duration)
+    # def durationChanged(self, duration):
+    #     self.positionSlider.setRange(0, duration)
 
     def setPosition(self, position):
         self.mediaPlayer.setPosition(position)
@@ -111,7 +114,12 @@ if __name__ == '__main__':
 
     with qgisapp(sysexit=False) as app:
 
-        player = QvVideo()
+        # player = QvVideo()
         # player = QvVideo('C:/Users/Public/Videos/Sample Videos/Wildlife.wmv')
-        player = QvVideo('D:/qVista/Codi/imatges/Spinner_2.gif')
+        
+        player = QvVideo('D:/qVista/Codi/imatges/Spinner_2.gif', 128, 128)
+        # player_ = QvConstants.afegeixOmbraWidget(player)
+        #player.setModal(True)
+        #player.activateWindow()
+        player.mediaPlayer.play()
         player.show()

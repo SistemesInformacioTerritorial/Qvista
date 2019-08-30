@@ -21,7 +21,7 @@ from moduls.QvAtributs import QvAtributs
 from moduls.QvMapeta import QvMapeta
 from moduls.QVCercadorAdreca import QCercadorAdreca
 from moduls.QVDistrictesBarris import QVDistrictesBarris
-from moduls.QvCatalegPetit import QvCataleg
+# from moduls.QvCatalegPetit import QvCataleg
 from moduls.QvApp import QvApp
 from moduls.QvLectorCsv import QvLectorCsv
 from moduls.QvPavimentacio import DockPavim
@@ -41,12 +41,17 @@ from moduls.QvVideo import QvVideo
 from moduls.QvNouMapa import QvNouMapa
 from moduls.QvVisorHTML import QvVisorHTML
 from moduls.QvDocumentacio import QvDocumentacio
+from moduls.QvNouCataleg import QvNouCataleg
+from moduls.QvFavorits import QvFavorits
 # import re
 import csv
 import os
 from pathlib import Path
 import functools #Eines de funcions, per exemple per avaluar-ne parcialment una
 from PyQt5.QtGui import QPainter
+
+from PyQt5.QtGui import QDesktopServices  #aixo a d'anar al qvimports
+
 # Impressió del temps de carrega dels moduls Qv
 print ('Temps de carrega dels moduls Qv:', time.time()-iniciTempsModuls)
 
@@ -137,6 +142,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.lblMovie = None #???
         self.ubicacions= None
         self.cAdrec= None
+        self.catalegMapes = QvNouCataleg(self)
 
         #Preparem el mapeta abans de les accions, ja que el necessitarem allà
         self.preparacioMapeta()
@@ -259,7 +265,19 @@ class QVista(QMainWindow, Ui_MainWindow):
                     self.setDirtyBit()
             elif fext == '.csv':
                 carregarLayerCSV(nfile)
-
+    def obrirProjecteCataleg(self, projecte, fav, widgetAssociat, rang=None):
+        '''Obre un projecte des del catàleg
+        Fa el mateix que la funció obrirProjecte, però mostrant el botó de favorits
+        '''
+        #Fem que aparegui el botó de fav
+        self.obrirProjecte(projecte,rang)
+        self.botoFavorits.show()
+        self.mapaCataleg=True
+        self.actualitzaBotoFav(fav)
+        self.widgetAssociat=widgetAssociat
+    def actualitzaBotoFav(self,fav):
+        self.favorit=fav
+        self.botoFavorits.setIcon(self.iconaFavMarcat if fav else self.iconaFavDesmarcat)
     def obrirProjecte(self, projecte, rang = None):
         """Obre un projecte passat com a parametre, amb un possible rang predeterminat.
         
@@ -269,6 +287,8 @@ class QVista(QMainWindow, Ui_MainWindow):
         Keyword Arguments:
             rang {Rect} -- El rang amb el que s'ha d'obrir el projecte (default: {None})
         """
+        self.botoFavorits.hide()
+        if hasattr(self,'mapaCataleg'): delattr(self,'mapaCataleg')
         if projecte.strip()=='': return
         # Obrir el projecte i col.locarse en rang
         self.project.read(projecte)
@@ -564,7 +584,7 @@ class QVista(QMainWindow, Ui_MainWindow):
 
     def preparacioCataleg(self):
         """ 
-        Genera el cataleg del qVista i l'incorpora a un docWidget.
+        Genera el catàleg de capes del qVista i l'incorpora a un docWidget.
         
         - Instanciem un widget i l'inicialitcem amb el ui importat. 
 
@@ -589,24 +609,6 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.dwCataleg.hide()
         self.addDockWidget( Qt.LeftDockWidgetArea, self.dwCataleg)
         self.cataleg()
-
-
-        self.wCatalegProjectesLlista = QWidget()
-        self.wCatalegProjectesLlista.ui = Ui_Cataleg()
-        self.wCatalegProjectesLlista.ui.setupUi(self.wCatalegProjectesLlista)
-        self.wCatalegProjectesLlista.setWindowTitle("Cataleg d'Informació Territorial")
-        # self.wCataleg.show()
-        #dfgdfgdfg
-
-        self.dwCatalegProjectesLlista = QvDockWidget( "Cataleg de mapes", self )
-        self.dwCatalegProjectesLlista.setContextMenuPolicy(Qt.PreventContextMenu)
-        self.dwCatalegProjectesLlista.setObjectName( "catalegTaula2" )
-        self.dwCatalegProjectesLlista.setAllowedAreas( Qt.RightDockWidgetArea | Qt.LeftDockWidgetArea )
-        self.dwCatalegProjectesLlista.setWidget(self.wCatalegProjectesLlista)
-        self.dwCatalegProjectesLlista.setContentsMargins ( 0,0,0,0 )
-        self.dwCatalegProjectesLlista.hide()
-        self.addDockWidget( Qt.LeftDockWidgetArea, self.dwCatalegProjectesLlista)
-        self.catalegProjectesLlista()
 
     def preparacioCercadorPostal(self):
     
@@ -773,7 +775,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         # self.wMapeta.setGeometry(0,0,267,284)
         # self.wMapeta.show()
         self.mapeta = QvMapeta(self.canvas, tamanyPetit=True, pare=self)
-        self.mapeta.setGraphicsEffect(QvConstants.ombra(self,radius=30,color=QvConstants.COLORCLAR))
+        self.mapeta.setGraphicsEffect(QvConstants.ombra(self,radius=30,color=QvConstants.COLOROMBRA))
         self.bOrientacio.clicked.connect(self.editarOrientacio)
         self.mapeta.setParent(self.canvas)
         self.mapeta.move(20,20)
@@ -1022,10 +1024,25 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.actNouMapa.setShortcut('Ctrl+N')
         self.actNouMapa.triggered.connect(nouMapa)
 
-        self.actExecuteChrome = QAction("Calculadora", self)
-        iconaChrome=QIcon('imatges/calc.png')
-        self.actExecuteChrome.setIcon(iconaChrome)
-        self.actExecuteChrome.triggered.connect(executeChrome)
+        self.actcartoBCN = QAction("CartoBCN", self)
+        #iconaChrome=QIcon('imatges/calc.png') #es poden posar icones
+        #self.actcartoBCN.setIcon(iconaChrome)
+        self.actcartoBCN.triggered.connect(cartoBCN)
+
+        self.actgeoportalBCN = QAction("Geoportal BCN", self)
+        self.actgeoportalBCN.triggered.connect(geoportalBCN)
+
+        self.actopendataBCN = QAction("Open Data BCN", self)
+        self.actopendataBCN.triggered.connect(opendataBCN)
+
+        self.actbcnPIC = QAction("BCN PIC", self)
+        self.actbcnPIC.triggered.connect(bcnPIC)
+
+        self.actplanolBCN = QAction("Plànol BCN", self)
+        self.actplanolBCN.triggered.connect(planolBCN)
+
+        self.actpiuPortal = QAction("Portal PIU info. urb.", self)
+        self.actpiuPortal.triggered.connect(piuPortal)
         
         self.actDocumentacio=QAction('Documentació',self)
         self.actDocumentacio.setIcon(QIcon('Imatges/file-document.png'))
@@ -1061,7 +1078,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.actAfegirNivellQlr.setStatusTip("Afegir capa QLR")
         self.actAfegirNivellQlr.triggered.connect(escollirNivellQlr)
 
-        self.actAfegirCapa = QAction("Afegir...", self)
+        self.actAfegirCapa = QAction("Afegir al mapa...", self)
         self.actAfegirCapa.setStatusTip("Afegir capa")
         self.actAfegirCapa.triggered.connect(self.obrirDialegNovaCapa)
 
@@ -1211,11 +1228,6 @@ class QVista(QMainWindow, Ui_MainWindow):
         #self.actObrirCataleg.setIcon(QIcon('imatges/layers_2.png'))
         self.actObrirCataleg.triggered.connect(self.obrirCataleg)
 
-        self.actObrirCatalegProjectesLlista = QAction("Mapes", self)
-        self.actObrirCatalegProjectesLlista.setStatusTip("Catàleg de Mapes")
-        #self.actObrirCatalegProjectesLlista.setIcon(QIcon('imatges/map-plus.png'))
-        self.actObrirCatalegProjectesLlista.triggered.connect(self.obrirCatalegProjectesLlista)
-
         self.actObrirMapeta = QAction("Mapeta", self)
         self.actObrirMapeta.setStatusTip("Mapeta de situació")
         self.actObrirMapeta.triggered.connect(self.obrirMapeta)
@@ -1252,7 +1264,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         #self.actCataleg = QAction(3*' '+"Catàleg"+3*' ', self)
         self.actCataleg = QAction("Catàleg", self)
         self.actCataleg.setStatusTip("Catàleg")
-        self.actCataleg.triggered.connect(self.obrirCatalegProjectesLlista)
+        self.actCataleg.triggered.connect(self.catalegMapes.showMaximized)
 
         self.actTemes = QAction("Temes", self)
         self.actTemes.setStatusTip("Temes")
@@ -1307,6 +1319,15 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.botoMetadades.setStyleSheet(stylesheetBotons)
         self.botoMetadades.setIconSize(QSize(24,24))
         self.botoMetadades.setCursor(QvConstants.cursorClick())
+
+        self.iconaFavDesmarcat=QIcon('Imatges/qv_bookmark_off.png')
+        self.iconaFavMarcat=QIcon('Imatges/qv_bookmark_on.png')
+        self.botoFavorits.setIcon(self.iconaFavDesmarcat)
+        self.botoFavorits.setStyleSheet(stylesheetBotons)
+        self.botoFavorits.setIconSize(QSize(24,24))
+        self.botoFavorits.setCursor(QvConstants.cursorClick())
+        self.botoFavorits.clicked.connect(self.switchFavorit)
+        #Fer que quan es fa click es marqui o desmarqui com a favorit
 
 
         
@@ -1534,7 +1555,20 @@ class QVista(QMainWindow, Ui_MainWindow):
             elif ret == QMessageBox.DestructiveRole:
                 return
         self.obrirProjecte(self.pathProjecteActual)
-
+    def switchFavorit(self):
+        # nom=os.path.basename(self.pathProjecteActual)
+        nom=Path(self.pathProjecteActual).stem
+        print(QvFavorits().getFavorits())
+        if self.favorit:
+            # QvFavorits().eliminaFavorit(nom)
+            self.botoFavorits.setIcon(self.iconaFavDesmarcat)
+            pass
+        else:
+            # QvFavorits().afegeixFavorit(nom)
+            self.botoFavorits.setIcon(self.iconaFavMarcat)
+            pass
+        self.favorit=not self.favorit
+        self.widgetAssociat.setFavorit(self.favorit)
     def helpQVista(self): #Ara no es fa servir, però en el futur es pot utilitzar per saber què és un element
         QWhatsThis.enterWhatsThisMode()
         pass
@@ -1728,15 +1762,10 @@ class QVista(QMainWindow, Ui_MainWindow):
 
 
         spacer = QSpacerItem(9999, 9999, QSizePolicy.Expanding,QSizePolicy.Maximum) #???
-        #self.bar.addAction(self.actCataleg)
         self.menuMapes = self.bar.addMenu ("Mapes")
         self.menuCapes = self.bar.addMenu ("Capes")
-        # self.menuEntorns = self.bar.addMenu("Entorns")
         self.menuUtilitats = self.bar.addMenu("Utilitats")
-        # self.menuFuncions = self.bar.addMenu("  Eines  ")
         self.menuFuncions = QMenu()
-        # self.menuCarregarNivell = self.bar.addMenu("  Finestres  ")
-        # catalegMenu = self.bar.addMenu("                   Catàleg  ")
 
         self.menuMapes.setFont(QvConstants.FONTSUBTITOLS)
         self.menuMapes.styleStrategy = QFont.PreferAntialias or QFont.PreferQuality #???
@@ -1755,6 +1784,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.menuCapes.setFont(QvConstants.FONTSUBTITOLS)
         self.menuCapes.styleStrategy = QFont.PreferAntialias or QFont.PreferQuality #???
         self.menuCapes.addAction(self.actObrirCataleg)
+        self.menuCapes.addSeparator()
         self.menuCapes.addAction(self.actAfegirCapa)
         
         # self.menuCarregarNivell.styleStrategy = QFont.PreferAntialias or QFont.PreferQuality
@@ -1767,7 +1797,13 @@ class QVista(QMainWindow, Ui_MainWindow):
         
         self.menuUtilitats.setFont(QvConstants.FONTSUBTITOLS)
         self.menuUtilitats.styleStrategy = QFont.PreferAntialias or QFont.PreferQuality
-        self.menuUtilitats.addAction(self.actExecuteChrome)
+        self.menuUtilitats.addAction(self.actcartoBCN)
+        self.menuUtilitats.addAction(self.actgeoportalBCN)
+        self.menuUtilitats.addAction(self.actopendataBCN)
+        self.menuUtilitats.addAction(self.actbcnPIC)
+        self.menuUtilitats.addAction(self.actplanolBCN)
+        self.menuUtilitats.addSeparator()
+        self.menuUtilitats.addAction(self.actpiuPortal)
         # self.menuUtilitats.addAction(self.actDocumentacio)
 
 
@@ -1919,10 +1955,6 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         self.dashboardActiu = [dashboard]
         self.layout.addWidget(dashboard)
-
-    def catalegCool(self):
-        self.catalegCool = QvCataleg(self, self.project, self.lblTitolProjecte)
-        self.catalegCool.showMaximized()
     def showLblFlotant(self,txt):
         self.lblFlotant=QLabel(txt)
         self.lblFlotant.setFont(QvConstants.FONTTEXT)
@@ -1998,6 +2030,8 @@ class QVista(QMainWindow, Ui_MainWindow):
         # print(self.distBarris.registre)
 
     def cataleg(self):
+        # catàleg de capes
+
         self.qModel = QFileSystemModel()
         
         # print(self.qModel.rowCount(), self.qModel.columnCount())
@@ -2019,27 +2053,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.wCataleg.ui.treeCataleg.adjustSize()
         self.wCataleg.ui.treeCataleg.setHeaderHidden(True)
 
-    def catalegProjectesLlista(self):
-        self.qModelProjectesLlista = QFileSystemModel()
-        
-        # print(self.qModel.rowCount(), self.qModel.columnCount())
-        rootPath=self.qModelProjectesLlista.setRootPath(carpetaCatalegProjectesLlista)
-        
-        self.wCatalegProjectesLlista.ui.treeCataleg.doubleClicked.connect(carregarProjecteLlista) 
-        self.wCatalegProjectesLlista.ui.treeCataleg.clicked.connect(updateMetadadesCataleg) 
-        self.qModelProjectesLlista.setNameFilters(['*.qgs', '*.qgz'])
-        self.qModelProjectesLlista.setNameFilterDisables(False)
-        self.wCatalegProjectesLlista.ui.treeCataleg.setModel(self.qModelProjectesLlista)
-        self.wCatalegProjectesLlista.ui.treeCataleg.setRootIndex(rootPath)
-        for i in range (1,4):
-            self.wCatalegProjectesLlista.ui.treeCataleg.header().hideSection(i)
-        self.qModelProjectesLlista.setHeaderData(0,Qt.Horizontal,'hola')
-        self.wCatalegProjectesLlista.ui.treeCataleg.setIndentation(20)
-        self.wCatalegProjectesLlista.ui.treeCataleg.setSortingEnabled(False)
-        self.wCatalegProjectesLlista.ui.treeCataleg.setWindowTitle("Catàleg de Mapes")
-        self.wCatalegProjectesLlista.ui.treeCataleg.resize(640, 480)
-        self.wCatalegProjectesLlista.ui.treeCataleg.adjustSize()
-        self.wCatalegProjectesLlista.ui.treeCataleg.setHeaderHidden(True)
+    
 
     def infoQVista(self):
         self.informacio = QDialog()
@@ -2452,10 +2466,8 @@ class QVista(QMainWindow, Ui_MainWindow):
             self.dwArbreDistrictes.hide()
 
     def obrirCataleg(self):
+        # dock widget catàleg de capes
         self.dwCataleg.show()
-
-    def obrirCatalegProjectesLlista(self):
-        self.dwCatalegProjectesLlista.show()
 
     def obrirQgis(self):
         # TODO: Pensar i generalitzar la obertura de QGis segon directori paquetitzat
@@ -2935,6 +2947,8 @@ def guardarProjecte():
         return guardarDialegProjecte()
     elif qV.pathProjecteActual.startswith( 'n:/9siteb/publicacions/qvista' ):
         return guardarDialegProjecte()
+    elif hasattr(qV,'mapaCataleg'):
+        return guardarDialegProjecte()
     else:
         qV.project.write(qV.pathProjecteActual)
         qV.canvisPendents = False
@@ -2977,11 +2991,85 @@ def nouMapa():
     dialegNouMapa.exec()
     # qV.obrirProjecte("./__newProjectTemplate.qgs")
 
-def executeChrome():
-    process = QProcess(qV)
-    pathChrome = "c:/windows/system32/calc.exe"
-    process.start(pathChrome)
-    app.processEvents()
+def cartoBCN():
+    # process = QProcess(qV)
+    # pathChrome = "c:/Users/D062735/AppData/Local/Google/Chrome/Application/chrome.exe"
+    # process.start(pathChrome)
+    # app.processEvents()
+
+    url = QtCore.QUrl('https://w20.bcn.cat/cartobcn/')
+    try:
+        b = QDesktopServices().openUrl(url)
+        if not b:
+            try:
+                os.system('start firefox "https://w20.bcn.cat/cartobcn/" ')
+            except: 
+                QMessageBox.warning(qV,'Error de navegador', "No s'ha pogut obrir el navegador. Si us plau, comproveu la vostre connexió.")
+    except:
+        QMessageBox.warning(qV,'Error de navegador', "No s'ha pogut obrir el navegador. Si us plau, comproveu la vostre connexió.")
+    
+
+def geoportalBCN():
+    url = QtCore.QUrl('http://www.bcn.cat/geoportal/ca/geoportal.html')
+    try:
+        b = QDesktopServices().openUrl(url)
+        if not b:
+            try:
+                os.system('start firefox "http://www.bcn.cat/geoportal/ca/geoportal.html" ')
+            except: 
+                QMessageBox.warning(qV,'Error de navegador', "No s'ha pogut obrir el navegador. Si us plau, comproveu la vostre connexió.")
+    except:
+        QMessageBox.warning(qV,'Error de navegador', "No s'ha pogut obrir el navegador. Si us plau, comproveu la vostre connexió.")
+
+def opendataBCN():
+    url = QtCore.QUrl('https://opendata-ajuntament.barcelona.cat/')
+    try:
+        b = QDesktopServices().openUrl(url)
+        if not b:
+            try:
+                os.system('start firefox "https://opendata-ajuntament.barcelona.cat/" ')
+            except: 
+                QMessageBox.warning(qV,'Error de navegador', "No s'ha pogut obrir el navegador. Si us plau, comproveu la vostre connexió.")
+    except:
+        QMessageBox.warning(qV,'Error de navegador', "No s'ha pogut obrir el navegador. Si us plau, comproveu la vostre connexió.")
+
+def bcnPIC():
+    url = QtCore.QUrl('http://www.bcn.cat/guia/bcnpicc.html')
+    try:
+        b = QDesktopServices().openUrl(url)
+        if not b:
+            try:
+                os.system('start firefox "http://www.bcn.cat/guia/bcnpicc.html" ')
+            except: 
+                QMessageBox.warning(qV,'Error de navegador', "No s'ha pogut obrir el navegador. Si us plau, comproveu la vostre connexió.")
+    except:
+        QMessageBox.warning(qV,'Error de navegador', "No s'ha pogut obrir el navegador. Si us plau, comproveu la vostre connexió.")
+    
+
+def planolBCN():
+    url = QtCore.QUrl('https://w33.bcn.cat/planolBCN/ca/')
+    try:
+        b = QDesktopServices().openUrl(url)
+        if not b:
+            try:
+                os.system('start firefox "https://w33.bcn.cat/planolBCN/ca/" ')
+            except: 
+                QMessageBox.warning(qV,'Error de navegador', "No s'ha pogut obrir el navegador. Si us plau, comproveu la vostre connexió.")
+    except:
+        QMessageBox.warning(qV,'Error de navegador', "No s'ha pogut obrir el navegador. Si us plau, comproveu la vostre connexió.")
+
+def piuPortal():
+    url = QtCore.QUrl('https://ajuntament.barcelona.cat/informaciourbanistica/cerca/ca/')
+    try:
+        b = QDesktopServices().openUrl(url)
+        if not b:
+            try:
+                os.system('start firefox "https://ajuntament.barcelona.cat/informaciourbanistica/cerca/ca/" ')
+            except: 
+                QMessageBox.warning(qV,'Error de navegador', "No s'ha pogut obrir el navegador. Si us plau, comproveu la vostre connexió.")
+    except:
+        QMessageBox.warning(qV,'Error de navegador', "No s'ha pogut obrir el navegador. Si us plau, comproveu la vostre connexió.")
+
 def obreDocumentacio():
     qV.startMovie()
     doc=QvDocumentacio(qV)
