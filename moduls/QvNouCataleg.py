@@ -313,7 +313,8 @@ class QvNouCataleg(QWidget):
     def obrirProjecte(self, dir, favorit, widgetAssociat):
         try:
             self.parent.obrirProjecteCataleg(dir, favorit, widgetAssociat)
-            self.parent.activateWindow()
+            self.parent.show()
+            # self.parent.activateWindow()
             # self.hide()
         except:
             QMessageBox.warning(self,"No s'ha pogut obrir el mapa","El mapa no ha pogut ser obert. Si el problema persisteix, contacteu amb el gestor del catàleg")
@@ -465,7 +466,7 @@ class QvNouCataleg(QWidget):
     def esMostra(self,widget):
         txt=self.arregla(self.leCerca.text())
 
-        return txt in self.arregla(widget.titol) or txt in self.arregla(widget.titol)
+        return txt in self.arregla(widget.titol) or txt in self.arregla(widget.text)
 
 
 class BotoLateral(QPushButton):
@@ -617,6 +618,9 @@ class MapaCataleg(QFrame):
             #     for z in y:
             #         z.setChecked(False)
             # self.setChecked(True)
+    def enterEvent(self,event):
+        super().enterEvent(event)
+        self.cataleg.seleccionaElement(self)
     def mouseDoubleClickEvent(self,event):
         self.obreQVista()
     def setChecked(self,checked):
