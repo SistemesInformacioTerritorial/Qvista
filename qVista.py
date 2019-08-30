@@ -235,10 +235,14 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.dwLlegenda.setObjectName( "layers" )
         self.dwLlegenda.setAllowedAreas( Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea )
         self.dwLlegenda.setContentsMargins ( 0,0,0,0)
+        self.dwLlegenda.setMinimumWidth(0)
+        self.dwLlegenda.setMaximumWidth(9999)
         self.addDockWidget( Qt.LeftDockWidgetArea , self.dwLlegenda )
         self.dwLlegenda.setWidget(self.llegenda)
+        self.dwLlegenda.setWindowFlag(Qt.Window)
         self.dwLlegenda.show()
-        self.ferGran()
+        self.dwLlegenda.setFloating(True)
+        self.ferGran()#self.dwLlegenda.setFloating(False)
 
     
 
@@ -1939,9 +1943,8 @@ class QVista(QMainWindow, Ui_MainWindow):
     def hideLblFlotant(self):
         if hasattr(self,'lblFlotant'):
             self.lblFlotant.hide()
-    def ferGran(self):
-        # print('JOLA')
 
+    def ferGran(self):
         if not self.mapaMaxim:
             self.hideLblFlotant()
             self.showMaximized()
@@ -1953,7 +1956,8 @@ class QVista(QMainWindow, Ui_MainWindow):
             if hasattr(self,'dockWidgetsVisibles'):
                 for x in self.dockWidgetsVisibles: x.showtq()
             else:
-                self.dwLlegenda.show()
+                self.dwLlegenda.setFloating(False)
+                print('show dw')
             self.bar.show()
             self.statusbar.show()
             # self.botoMaxim.setIcon(QIcon('imatges/arrow-expand.png'))
