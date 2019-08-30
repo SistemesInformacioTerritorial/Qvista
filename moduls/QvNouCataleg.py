@@ -13,12 +13,15 @@ from moduls.QvRedimLayout import QvRedimLayout
 from typing import Callable 
 import shutil
 from moduls.QvVisorHTML import QvVisorHTML
+import re
+from moduls.QvFavorits import QvFavorits
 
 
 class QvNouCataleg(QWidget):
     
     def __init__(self,parent: QtWidgets.QWidget=None):
-        super().__init__(parent)
+        super().__init__()
+        self.parent=parent
         self.setWindowFlags(Qt.FramelessWindowHint)
         self.actualitzaWindowFlags()
         self.setWindowTitle('Catàleg de mapes')
@@ -45,21 +48,32 @@ class QvNouCataleg(QWidget):
         self.bCerca.setStyleSheet("background-color:%s; border: 0px; margin: 0px; padding: 0px;" %QvConstants.COLORFOSCHTML)
         self.leCerca = QLineEdit()
         self.leCerca.setFixedHeight(40)
-        self.leCerca.setFixedWidth(240)
+        self.leCerca.setFixedWidth(320)
         self.leCerca.setStyleSheet("background-color:%s;"
                                     "color: white;"
                                     "border: 8px solid %s;"
+                                    #"border-right: 8px solid %s;"
+                                    #"border-bottom: 40px solid %s;"
+                                    #"border-left: 8px solid %s;"
                                     "padding: 2px"
                                     # "margin: 8px;"
                                     %(QvConstants.COLORCLARHTML, QvConstants.COLORFOSCHTML))
         self.leCerca.setFont(QvConstants.FONTTEXT)
         self.leCerca.setPlaceholderText('Cercar...')
         self.leCerca.textChanged.connect(self.filtra)
+        self.accioEsborra=self.leCerca.addAction(QIcon('Imatges/cm_buidar_cercar.png'),QLineEdit.TrailingPosition)
+        self.accioEsborra.triggered.connect(lambda: self.leCerca.setText(''))
+        self.accioEsborra.setVisible(False)
+        self.lblSpacer = QLabel()
+        self.lblSpacer.setFixedHeight(40)
+        self.lblSpacer.setFixedWidth(40)
+        self.lblSpacer.setStyleSheet("background-color:%s;"%(QvConstants.COLORFOSCHTML))
 
         self.layoutCapcalera.addWidget(self.lblLogo)
         self.layoutCapcalera.addWidget(self.lblCapcalera)
         self.layoutCapcalera.addWidget(self.bCerca)
         self.layoutCapcalera.addWidget(self.leCerca)
+        self.layoutCapcalera.addWidget(self.lblSpacer)
 
         self.layout.setContentsMargins(0,0,0,0)
         self.layout.setSpacing(0)
@@ -139,6 +153,7 @@ class QvNouCataleg(QWidget):
         self.carregaBandaEsquerra()
         self.wCataleg=QWidget()
         self.layoutCataleg=QVBoxLayout()
+        self.layoutCataleg.setAlignment(Qt.AlignLeft | Qt.AlignTop)
         # self.layoutCataleg.setSpacing(20)
         # self.layoutCataleg.setContentsMargins(20,20,20,20)
         self.wCataleg.setLayout(self.layoutCataleg)
@@ -155,6 +170,7 @@ class QvNouCataleg(QWidget):
         self.oldPos = self.pos()
         self.esPotMoure=False
         self.clickTots()
+
     def actualitzaWindowFlags(self):
         self.setWindowFlag(Qt.Window)
         self.setWindowFlag(Qt.CustomizeWindowHint,True)
@@ -165,6 +181,7 @@ class QvNouCataleg(QWidget):
         self.setWindowFlag(Qt.WindowMinMaxButtonsHint,False)
         self.setWindowFlag(Qt.WindowCloseButtonHint,False)
     def carregaBandaEsquerra(self):
+        self.favorits=QvFavorits().getFavorits()
         self.wBanda=QWidget()
         self.wBanda.setStyleSheet('background: %s;'%QvConstants.COLORGRISCLARHTML)
         self.wBanda.setFixedWidth(256)
@@ -195,7 +212,7 @@ class QvNouCataleg(QWidget):
             dirs=sorted(dirs)
             for x in dirs:
                 # print(x)
-                self.catalegs[x]=self.carregaBotons(x) #TODO
+                self.catalegs[x]=self.carregaBotons(x) 
                 boto=BotoLateral(x,self)
                 boto.setCheckable(True)
                 # boto.clicked.connect(self.mostraMapes)
@@ -204,12 +221,42 @@ class QvNouCataleg(QWidget):
         
         
         self.tots.clicked.connect(self.clickTots)
+        self.fav.clicked.connect(self.clickFavorits)
         self.lBanda.addStretch()
     def clickTots(self):
         for x in self.botonsLaterals:
             x.setChecked(True)
         # self.tots.setChecked(False)
         self.mostraMapes()
+    def clickFavorits(self):
+        self.clearContingut()
+        self.widsCataleg=[]
+        self.nlayouts=[]
+        for x in self.botonsLaterals:
+            wid=QWidget()
+            layout=QVBoxLayout()
+            layout.setContentsMargins(0,0,0,0)
+            lbl=QLabel(x.text())
+            lbl.setStyleSheet('background: %s; padding: 2px;'%QvConstants.COLORGRISHTML)
+            lbl.setFont(QFont('Arial',12))
+            lbl.setSizePolicy(QSizePolicy.Minimum,QSizePolicy.Maximum)
+            layout.addWidget(lbl)
+            nlayout=QvRedimLayout()
+            layout.addLayout(nlayout)
+            # self.layoutCataleg.addLayout(layout)
+            shaMostrat=False
+            for y in self.catalegs[x.text()]:
+                if y.esFavorit():
+                    shaMostrat=True
+                    nlayout.addWidget(y)
+            wid.setLayout(layout)
+            wid.setSizePolicy(QSizePolicy.Expanding,QSizePolicy.Maximum)
+            if shaMostrat:
+                self.layoutCataleg.addWidget(wid)
+                self.widsCataleg.append(wid)
+                self.nlayouts.append(nlayout)
+        self.indexLayoutSeleccionat=-1
+        self.fav.setChecked(True)
     def carregaBotons(self,dir):
         f=[]
         for y in carpetaCatalegProjectesLlista:
@@ -220,16 +267,21 @@ class QvNouCataleg(QWidget):
                 f+=files
             except:
                 continue
-            # files=[ for x in files]
-        return [MapaCataleg(x,self) for x in f]
+        botons=[MapaCataleg(x,self) for x in f]
+        for x in botons:
+            if x.getNomMapa() in self.favorits:
+                x.setFavorit(True,actualitza=False) #No actualitzem la base de dades perquè no estem modificant-la
+        return botons
     def mostraMapes(self):
         self.clearContingut()
         self.widsCataleg=[]
         self.nlayouts=[]
+
         for x in self.botonsLaterals:
             if x.isChecked():
                 wid=QWidget()
                 layout=QVBoxLayout()
+                layout.setContentsMargins(0,0,0,0)
                 lbl=QLabel(x.text())
                 lbl.setStyleSheet('background: %s; padding: 2px;'%QvConstants.COLORGRISHTML)
                 lbl.setFont(QFont('Arial',12))
@@ -244,7 +296,7 @@ class QvNouCataleg(QWidget):
                         shaMostrat=True
                         nlayout.addWidget(y)
                 wid.setLayout(layout)
-                wid.setSizePolicy(QSizePolicy.Expanding,QSizePolicy.Expanding)
+                wid.setSizePolicy(QSizePolicy.Expanding,QSizePolicy.Maximum)
                 if shaMostrat:
                     self.layoutCataleg.addWidget(wid)
                     self.widsCataleg.append(wid)
@@ -258,10 +310,11 @@ class QvNouCataleg(QWidget):
                 # x.setParent(None)
                 x.hide()
         return
-    def obrirProjecte(self,dir):
+    def obrirProjecte(self, dir, favorit, widgetAssociat):
         try:
-            self.parentWidget().obrirProjecte(dir)
-            self.hide()
+            self.parent.obrirProjecteCataleg(dir, favorit, widgetAssociat)
+            self.parent.activateWindow()
+            # self.hide()
         except:
             QMessageBox.warning(self,"No s'ha pogut obrir el mapa","El mapa no ha pogut ser obert. Si el problema persisteix, contacteu amb el gestor del catàleg")
             print('Hauríem obert el projecte '+dir+', però ha fallat quelcom')
@@ -275,9 +328,11 @@ class QvNouCataleg(QWidget):
             sleep(1)
         os.startfile(copiat)
     def obrirInfo(self,dir):
-        
-        visor=QvVisorHTML(dir,'Informació mapa',parent=self)
-        visor.exec()
+        if os.path.exists(dir):
+            visor=QvVisorHTML(dir,'Informació mapa',parent=self)
+            visor.exec()
+        else:
+            QMessageBox.warning(self,"No s'ha trobat la informació","La informació del mapa no ha pogut ser oberta. Si el problema persisteix, contacteu amb el gestor del catàleg")
     def mousePressEvent(self, event):
         self.esPotMoure=event.windowPos().y()<41
         self.oldPos = event.globalPos()
@@ -300,14 +355,17 @@ class QvNouCataleg(QWidget):
     def keyPressEvent(self, event):
         if event.key() == Qt.Key_Escape:
             self.close()
-        if event.key()==Qt.Key_Left or event.key()==Qt.Key_H:
+        elif event.key()==Qt.Key_Left or event.key()==Qt.Key_H:
             self.mouEsquerra()
-        if event.key()==Qt.Key_Down or event.key()==Qt.Key_J:
+        elif event.key()==Qt.Key_Down or event.key()==Qt.Key_J:
             self.mouBaix()
-        if event.key()==Qt.Key_Up or event.key()==Qt.Key_K:
+        elif event.key()==Qt.Key_Up or event.key()==Qt.Key_K:
             self.mouDalt()
-        if event.key()==Qt.Key_Right or event.key()==Qt.Key_L:
+        elif event.key()==Qt.Key_Right or event.key()==Qt.Key_L:
             self.mouDreta()
+        elif event.key()==Qt.Key_Return or event.key()==Qt.Key_Enter:
+            if hasattr(self,'widgetSeleccionat'):
+                self.widgetSeleccionat.obreQVista()
     def seleccionaElement(self,widget):
         if widget is None: return
         for x, y in self.catalegs.items():
@@ -380,17 +438,29 @@ class QvNouCataleg(QWidget):
             self.keyPressEvent(event)
         return False
     def arregla(self,txt):
+        '''
+        Arregla els textos per fer que siguin case insensitive, no tinguin en compte accents, no tinguin espais al principi ni al final i ignorin múltiples espais
+
+        Primer de tot, canvia les lletres accentuades per lletres sense accentuar. Canvia també el · per . i elimina º i ª
+        Aleshores passa totes les lletres a majúscules, per poder fer les comparacions case insensitive
+        Després fa un strip que elimina espais al principi i al final
+        Finalment substitueix els múltiples espais per un únic, utilitzant una expressió regular que cerca dos o més espais i els substitueix per un
+        '''
         trans=str.maketrans('ÁÉÍÓÚáéíóúÀÈÌÒÙàèìòùÂÊÎÔÛâêîôûÄËÏÖÜäëïöü·ºª.',
                             'AEIOUAEIOUAEIOUAEIOUAEIOUAEIOUAEIOUAEIOU.   ')
         txt=txt.translate(trans)
         txt=txt.upper()
-        txt.strip()
+        txt=txt.strip(' ')
+        txt=re.sub('\s[\s]+',' ',txt)
 
         return txt
     def filtra(self):
         txt=self.arregla(self.leCerca.text())
         if txt!='':
             self.clickTots()
+            self.accioEsborra.setVisible(True)
+        else:
+            self.accioEsborra.setVisible(False)
         self.mostraMapes()
     def esMostra(self,widget):
         txt=self.arregla(self.leCerca.text())
@@ -425,6 +495,9 @@ class BotoLateral(QPushButton):
         if self==self.cataleg.tots:
             super().mousePressEvent(event)
             self.setChecked(False)
+        elif self==self.cataleg.fav:
+            super().mousePressEvent(event)
+            # self.setChecked(True)
         if event.modifiers()==Qt.ShiftModifier:
             #Multiselecció
             pass
@@ -509,7 +582,7 @@ class MapaCataleg(QFrame):
         self.botoObre.setIcon(QIcon('Imatges/cm_play.png'))
         self.botoObre.move(280,100)
         self.botoObre.setToolTip("Obrir el mapa en qVista")
-        self.obreQVista=lambda: cataleg.obrirProjecte(dir+'.qgs')
+        self.obreQVista=lambda: cataleg.obrirProjecte(dir+'.qgs',self.favorit, self)
         self.botoObre.clicked.connect(self.obreQVista)
         self.botoObre.setIconSize(QSize(24,24))
         self.botoObre.setFixedSize(24,24)
@@ -565,15 +638,25 @@ class MapaCataleg(QFrame):
             self.botoQGis.hide()
             self.botoInfo.hide()
         self.update()
-    def setFavorit(self,fav):
+    def setFavorit(self,fav,actualitza=True):
         if fav:
-            self.botoFav.setIcon(self.iconaFavDesmarcat)
+            self.botoFav.setIcon(self.iconaFavMarcat)
+            if actualitza:
+                QvFavorits().afegeixFavorit(self.getNomMapa())
             #Cridar la classe per fer favorit aquest botó
         else:
-            self.botoFav.setIcon(self.iconaFavMarcat)
+            self.botoFav.setIcon(self.iconaFavDesmarcat)
+            if actualitza:
+                QvFavorits().eliminaFavorit(self.getNomMapa())
         self.favorit=fav
+        if hasattr(self.cataleg.parent,'widgetAssociat') and self.cataleg.parent.widgetAssociat==self:
+            self.cataleg.parent.actualitzaBotoFav(fav)
+    def esFavorit(self):
+        return self.favorit
     def switchFavorit(self):
         self.setFavorit(not self.favorit)
+    def getNomMapa(self):
+        return self.nomMapa
     # def paintEvent(self,event):
     #     if self.checked:
     #         painter=QPainter(self)
