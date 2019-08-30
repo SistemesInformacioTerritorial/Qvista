@@ -15,7 +15,7 @@ from moduls.QvAtributs import QvAtributs
 
 
 class QvCanvas(QgsMapCanvas):
-    def __init__(self, llistaBotons, botoneraHoritzontal = False, posicioBotonera = 'NO', mapesBase = False, llegenda = None):
+    def __init__(self, llistaBotons, botoneraHoritzontal = False, posicioBotonera = 'NO', mapesBase = False, llegenda = None): #mapesBase (???)
         QgsMapCanvas.__init__(self)
         self.botoneraHoritzontal = botoneraHoritzontal
         self.llistaBotons = llistaBotons

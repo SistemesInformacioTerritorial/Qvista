@@ -1,6 +1,6 @@
 # "Constants" útils
 from PyQt5.QtGui import QFont, QColor
-from PyQt5.QtWidgets import QGraphicsDropShadowEffect, QWidget, QScrollBar
+from PyQt5.QtWidgets import QGraphicsDropShadowEffect, QWidget
 import tempfile
 from moduls.QvImports import * 
 # Per poder indicar a una funció que rep una seqüència (tupla, llista)
@@ -28,8 +28,8 @@ class QvConstants:
     COLORMIGHTML = '#465A63'
     COLORCLARHTML = '#79909B'
     COLORGRISHTML = '#DDDDDD'
+    COLORGRISCLARHTML='#F0F0F0'
     COLORBLANCHTML = '#F9F9F9'
-    COLORFONSFORMHTML='#F4F4F4'
     COLORDESTACATHTML = '#FF6215'
     # COLOROMBRAHTML = '#666666DD'
     COLOROMBRAHTML = '#66000000'
@@ -39,8 +39,8 @@ class QvConstants:
     COLORCLAR = QColor(COLORCLARHTML)
     COLORCLARSEMITRANS=QColor(121,144,155,70)
     COLORGRIS = QColor(COLORGRISHTML)
+    COLORGRISCLAR=QColor(COLORGRISCLARHTML)
     COLORBLANC = QColor(COLORBLANCHTML)
-    COLORFONSFORM=QColor(COLORFONSFORMHTML)
     COLORDESTACAT = QColor(COLORDESTACATHTML)
     COLOROMBRA = QColor(COLOROMBRAHTML)
 
@@ -59,7 +59,8 @@ class QvConstants:
             widget{QWidget} -- Widget al que afegim la ombra
         """
         return QvConstants.aplicaOmbra(widget, QvConstants.ombraWidget(widget))
-
+    def afegeixOmbraWidgetSeleccionat(widget: QWidget):
+        return QvConstants.aplicaOmbra(widget,QvConstants.ombraWidgetSeleccionat(widget))
     @staticmethod
     def afegeixOmbraHeader(widget: QWidget):
         """Afegeix una ombra de header (offset x=0, y=3) al widget rebut
@@ -93,8 +94,9 @@ class QvConstants:
             parent{QWidget} -- Pare de l'ombra (default: {None})
         Returns:
             ombra{QGraphicsDropShadowEffect} - Ombra amb l'offset indicat"""
-        return QvConstants.ombra(parent, offset=(3, 3))
-
+        return QvConstants.ombra(parent)
+    def ombraWidgetSeleccionat(parent: QWidget=None) -> QGraphicsDropShadowEffect:
+        return QvConstants.ombra(parent,offset=(0,0),radius=20, color=QColor('#444444'))
     @staticmethod
     def ombraHeader(parent: QWidget = None) -> QGraphicsDropShadowEffect:
         """Retorna una ombra pensada per posar a un header (amb un offset de x=0 i y=3)

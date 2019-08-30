@@ -1,18 +1,33 @@
 
-from moduls.QvImports import * 
+# from moduls.QvImports import * 
 
-from qgis.core import QgsRectangle
-from botoinfomapa import Ui_BotoInfoMapa
+from qgis.core import QgsRectangle, QgsProject
+from qgis.gui import QgsMapCanvas
+from qgis.PyQt.QtWidgets import QWidget, QPushButton, QGridLayout,QVBoxLayout, QVBoxLayout, QHBoxLayout, QFrame, QLabel, QLineEdit, QScrollArea
+from qgis.PyQt.QtGui import QFont, QPixmap
+from qgis.PyQt.QtCore import Qt
+from botoInfoMapaPetit import Ui_BotoInfoMapa
+
+from multiprocessing import Process,Queue,Pipe
+
+from qgis.core.contextmanagers import qgisapp
+
+import threading
+import pickle
+import os
 
 
-carpetaCataleg = "..\dades\CatalegProjectes"
-longitudPathCataleg = len(carpetaCataleg)
+carpetaCataleg = "N:/9SITEB/Publicacions/qVista/CATALEG/Projectes/"
+if not os.path.isdir(carpetaCataleg):
+    carpetaCataleg = "../dades/CatalegProjectes/"
+
+longitudPathCataleg = len(carpetaCataleg)-1
 
 class QvColumnaCataleg(QWidget):
     """
         Crea una columna de fichas per cada projecte de la llista amb que s'inicialitza.
  
-    Cada columna porta el títol amb que s'ha inicilaitzat.
+    Cada columna porta el títol amb que s'ha inicilitzat.
     Es un widget amb el que és pot fer el que és vulgui, sempre que sigui legal.
     """
 
@@ -30,16 +45,16 @@ class QvColumnaCataleg(QWidget):
         self.scroll = QScrollArea()
         self.frame1 = QFrame()
 
-        self.frame1.setMinimumWidth(520)
-        self.frame1.setMaximumWidth(520)
+        self.frame1.setMinimumWidth(1000)
+        self.frame1.setMaximumWidth(1000)
 
-        self.layoutScroll = QVBoxLayout(self.frame1)
+        self.layoutScroll = QGridLayout(self.frame1)
         self.layoutScroll.setContentsMargins(8,8,8,8)
         self.frame1.setLayout(self.layoutScroll)
 
         self.numeroBotons = 0
         
-        fnt = QFont("Segoe UI", 22, weight=QFont.Normal)
+        fnt = QFont("Segoe UI", 18, weight=QFont.Normal)
 
         lblTitol = QLabel(self.titol)
         lblTitol.setFont(fnt)
@@ -57,27 +72,28 @@ class QvColumnaCataleg(QWidget):
                 self.layoutScroll.addWidget(botoInfoMapa)
 
                 botoInfoMapa.ui.lblTitol.setText(projecte)
-                imatge = QPixmap(carpetaCataleg+projecte+".png")
+                imatge = QPixmap(carpetaCataleg+self.titol+'/'+projecte+".png")
                 imatge = imatge.scaledToWidth(200)
                 imatge = imatge.scaledToHeight(200)
                 
                 botoInfoMapa.ui.lblImatge.setPixmap(imatge)
 
-                # botoInfoMapa.ui.b4.clicked.connect(lambda: self.obrirEnQgis('../dades/projectes/'+projecte+'.qgs'))
+                # botoInfoMapa.ui.b4.clicked.connect(lambda: self.obrirEnQgis('c:/qVista/dades/projectes/'+projecte+'.qgs'))
 
-                nomProjecte='../dades/projectes/'+projecte+'.qgs'
+                nomProjecte=carpetaCataleg+self.titol+'/'+projecte+'.qgs'
                 # project = QgsProject()
                 # project.read(nomProjecte)
 
                 # botoInfoMapa.ui.label_3.setText('Autor: '+project.metadata().author())
                 botoInfoMapa.ui.b1.clicked.connect(self.obrirEnQVista(nomProjecte))
                 botoInfoMapa.ui.b2.clicked.connect(self.obrirEnQgis(nomProjecte))    
-                doc = QTextDocument()
-                doc.setHtml('../dades/projectes/'+projecte+'.htm')
-                botoInfoMapa.ui.textEdit.setDocument(doc)
-                botoInfoMapa.ui.label_3.hide()
+                botoInfoMapa.ui.b3.clicked.connect(self.miniCanvas(nomProjecte))    
+                # doc=QTextDocument()
+                # doc.setHtml('c:/qVista/dades/'+projecte+'.htm')
+                # botoInfoMapa.ui.textEdit.setDocument(doc)
+                # botoInfoMapa.ui.label_3.hide()
                 # try:
-                #     text=open('../dades/projectes/'+projecte+'.htm').read()
+                #     text=open('c:/qVista/dades/projectes/'+projecte+'.htm').read()
                 #     botoInfoMapa.ui.textEdit.setHtml(text)
                 # except:
                 #     # print ('Error carrega HTML')
@@ -95,12 +111,12 @@ class QvColumnaCataleg(QWidget):
         self.setLayout(self.layoutWidget)
 
         self.layoutWidget.addWidget(lblTitol)
-        self.layoutWidget.addWidget(self.scroll)
+        self.layoutWidget.addWidget(self.frame1)
         # self.viewport().installEventFilter(self.frame1)
-        self.scroll.setMaximumWidth(540)
-        self.scroll.setMinimumWidth(540)
-        self.setMaximumWidth(540)
-        self.setMinimumWidth(540)
+        # self.scroll.setMaximumWidth(270)
+        # self.scroll.setMinimumWidth(270)
+        # self.setMaximumWidth(270)
+        # self.setMinimumWidth(270)
         if self.numeroBotons == 0:
         #     self.show()
         # else:
@@ -119,16 +135,47 @@ class QvColumnaCataleg(QWidget):
                 pass
         return obertura
 
+    
+    def miniCanvas(self, projecte):
+        def obertura():
+            try:
+                instruccio = "python-qgis.bat miniCanvas.py {}".format(projecte)
+                os.system(instruccio)
+            except:
+                pass
+        return obertura
 
     def obrirEnQVista(self, projecte):
         def obertura():
             try:
                 rang = self.qV.canvas.extent()
                 self.projectQgis.read(projecte)
+                self.qV.lblProjecte.setText(self.project.baseName())
                 if rang is not None:
                     self.qV.canvas.setExtent(rang)
                 self.labelProjecte.setText(self.projectQgis.title())
                 self.parent().parent().parent().parent().hide()
+            except:
+                pass
+        return obertura
+
+
+    def obrirCanvasTemp(self, child_conn, prj):
+        with qgisapp() as app:      
+            self.tcanvas = QgsMapCanvas()
+            self.tproject = QgsProject.instance()
+            self.troot = QgsProject.instance().layerTreeRoot()
+            bridge = QgsLayerTreeMapCanvasBridge(self.troot, self.tcanvas)
+            self.tcanvas.show()
+            self.tproject.read(prj)
+
+    def canvasProvisional(self, projecte):
+        
+        def obertura():
+            try:
+                self.parent_conn,self.child_conn = Pipe()
+                self.p = Process(target=self.obrirCanvasTemp, args=(self.child_conn,projecte,))
+                self.p.start()
             except:
                 pass
         return obertura
@@ -167,7 +214,7 @@ class QvCataleg(QWidget):
 
         scrollFull = QScrollArea()
         frame = QFrame()
-        scrollFull.setWidget(frame)
+        # scrollFull.setWidget(frame)
         self.layoutFrame = QHBoxLayout(frame)
         self.layoutFrame.setAlignment(Qt.AlignLeft)
         frame.setLayout(self.layoutFrame)
@@ -210,7 +257,7 @@ class QvCataleg(QWidget):
 
 
         layoutWidgetPrincipal.addWidget(frameCapcalera)
-        layoutWidgetPrincipal.addWidget(scrollFull)
+        layoutWidgetPrincipal.addWidget(frame)
         self.show()
 
 

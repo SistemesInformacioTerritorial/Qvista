@@ -17,7 +17,7 @@ from moduls.QvStreetView import *
 
 
 class QvCanvas(QgsMapCanvas):
-    def __init__(self, pare = None, llistaBotons= None, botoneraHoritzontal = False, posicioBotonera = 'NO', mapesBase = False, llegenda = None):
+    def __init__(self, pare = None, llistaBotons= None, botoneraHoritzontal = False, posicioBotonera = 'NO', mapesBase = False, llegenda = None): #mapesBase (???)
         QgsMapCanvas.__init__(self)
         self.botoneraHoritzontal = botoneraHoritzontal
         self.llistaBotons = llistaBotons
@@ -262,14 +262,14 @@ class QvCanvas(QgsMapCanvas):
                 self.bZoomOut.setCursor(QvConstants.cursorFletxa())  
                 self.bZoomOut.clicked.connect(self.zoomOut)
             if 'enrere' in self.llistaBotons:
-                self.bEnrere=self._botoMapa('Imatges/zoom-previous.png')
+                self.bEnrere=self._botoMapa('Imatges/qv_vista_anterior.png')
                 self.bEnrere.setToolTip('Retrocedeix al zoom previ')
                 self.layoutBotoneraMapa.addWidget(self.bEnrere)
                 self.bEnrere.setCursor(QvConstants.cursorFletxa())
                 self.bEnrere.clicked.connect(self.zoomToPreviousExtent)
                 self.bEnrere.setCheckable(False)
             if 'endavant' in self.llistaBotons:
-                self.bEndavant=self._botoMapa('Imatges/zoom-next.png')
+                self.bEndavant=self._botoMapa('Imatges/qv_vista_seguent.png')
                 self.bEndavant.setToolTip('Avançar al zoom següent')
                 self.layoutBotoneraMapa.addWidget(self.bEndavant)
                 self.bEndavant.setCursor(QvConstants.cursorFletxa())

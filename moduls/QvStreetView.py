@@ -5,7 +5,7 @@ from moduls.QvImports import *
 from qgis.PyQt.QtGui import QStandardItemModel, QStandardItem
 from qgis.core import QgsRectangle
 
-from PyQt5.QtWebKitWidgets import QWebView , QWebPage
+from PyQt5.QtWebKitWidgets import QWebView , QWebPage #QWebPage (???)
 from PyQt5.QtWebKit import QWebSettings
 from moduls.QvPushButton import QvPushButton
 
@@ -50,9 +50,9 @@ class QvBrowser(QWidget):
         # self.botoTancar.clicked.connect(self.tancar)
         # self.botoTancar.show()
 
-        self.botoOSM = BotoQvBrowser()
-        self.botoOSM.setText('OpenStreet Maps')
-        self.botoOSM.clicked.connect(self.openStreetMaps)
+        # self.botoOSM = BotoQvBrowser()
+        # self.botoOSM.setText('OpenStreet Maps')
+        # self.botoOSM.clicked.connect(self.openStreetMaps)
 
         self.botoGoogleMaps = BotoQvBrowser()
         self.botoGoogleMaps.setText('Google Maps')
@@ -62,7 +62,7 @@ class QvBrowser(QWidget):
         self.botoStreetView.setText('Street view')
         self.botoStreetView.clicked.connect(self.openStreetView)
 
-        self.layoutBotonera.addWidget(self.botoOSM)
+        # self.layoutBotonera.addWidget(self.botoOSM)
         self.layoutBotonera.addWidget(self.botoGoogleMaps)
         self.layoutBotonera.addWidget(self.botoStreetView)
         self.layoutBrowser.addWidget(self.botoneraQvBrowser)
@@ -73,6 +73,7 @@ class QvBrowser(QWidget):
     def openGoogleMaps(self):
         self.browser.setUrl(QUrl(self.parent.urlGoogleMaps))
     def openStreetMaps(self):
+        # self.browser.setUrl(QUrl('https://www.openstreetmap.org/#map=16/41.38740/2.17272'))
         self.browser.setUrl(QUrl(self.parent.urlStreetMaps))
     def openStreetView(self):
         self.browser.setUrl(QUrl(self.parent.urlStreetView))
@@ -119,8 +120,8 @@ class PointTool(QgsMapTool):
     def canvasReleaseEvent(self, event):
         
         self.point = self.toMapCoordinates(event.pos())
-        xMon = self.point.x()
-        yMon = self.point.y()
+        xMon = self.point.x() #???
+        yMon = self.point.y() #???
 
         self.transformacio = QgsCoordinateTransform(QgsCoordinateReferenceSystem("EPSG:25831"), 
                              QgsCoordinateReferenceSystem("EPSG:4326"), 
@@ -133,7 +134,7 @@ class PointTool(QgsMapTool):
         # streetView = 'https://www.google.com/maps/@{},{},2a/data=!3m1!1e3'.format(puntTransformat.y(),puntTransformat.x())
         self.parent.urlStreetView = "https://maps.google.com/maps?layer=c&cbll={},{}".format(self.puntTransformat.y(), self.puntTransformat.x())
         self.parent.urlGoogleMaps = 'https://www.google.com/maps/@{},{},2a/data=!3m1!1e3'.format(self.puntTransformat.y(), self.puntTransformat.x())
-        self.parent.urlStreetMaps = "https://www.openstreetmap.org/#map=17/{}/{}".format(self.puntTransformat.y(), self.puntTransformat.x())
+        self.parent.urlStreetMaps = "https://www.openstreetmap.org/#map=16/{}/{}".format(self.puntTransformat.y(), self.puntTransformat.x())
 
         self.parent.qbrowser.browser.setUrl(QUrl(self.parent.urlStreetView))
         self.parent.qbrowser.show()
@@ -205,7 +206,7 @@ class QvStreetView(QWidget):
         self.layoutH.addWidget(self.qbrowser)
 
 
-    def llevame_old(self,xx,yy):
+    def llevame_old(self,xx,yy): #???
       
         try:
             point= QgsPointXY(xx, yy)
