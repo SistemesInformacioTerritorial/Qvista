@@ -3049,7 +3049,7 @@ def planolBCN():
 def piuPortal():
     obreURL('https://ajuntament.barcelona.cat/informaciourbanistica/cerca/ca/')
 
-def obreURL(urlstr=None):
+def obreURL(urlstr=''):
     url = QtCore.QUrl(urlstr)
     try:
         b = QDesktopServices().openUrl(url)
