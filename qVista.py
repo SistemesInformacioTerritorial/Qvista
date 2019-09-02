@@ -1285,20 +1285,19 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         self.frame_15.setContentsMargins(0,0,12,0)
 
-        self.leCercaPerAdreca.setStyleSheet("background-color:%s;"
-                                    "color: grey;"
-                                    "border: 8px solid %s;"
-                                    "padding: 2px"
-                                    %(QvConstants.COLORGRISCLARHTML, QvConstants.COLORCLARHTML))
+        stylesheetLineEdits="""
+            background-color:%s;
+            color: white;
+            border: 1px solid %s;
+            border-radius: 2px;
+            padding: 3px"""%(QvConstants.COLORCLARHTML, QvConstants.COLORMIGHTML)
+        
+        self.leCercaPerAdreca.setStyleSheet(stylesheetLineEdits)
         self.leCercaPerAdreca.setFont(QvConstants.FONTTEXT)
-        self.leCercaPerAdreca.setPlaceholderText('Cercar adreça...')
+        self.leCercaPerAdreca.setPlaceholderText('Carrer, plaça...')
         self.leCercaPerAdreca.setFixedWidth(320)
 
-        self.leNumCerca.setStyleSheet("background-color:%s;"
-                                    "color: grey;"
-                                    "border: 8px solid %s;"
-                                    "padding: 2px"
-                                    %(QvConstants.COLORGRISCLARHTML, QvConstants.COLORCLARHTML))
+        self.leNumCerca.setStyleSheet(stylesheetLineEdits)
         self.leNumCerca.setFont(QvConstants.FONTTEXT)
         self.leNumCerca.setPlaceholderText('Num...')
         self.leNumCerca.setFixedWidth(80)
@@ -1307,7 +1306,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.cAdrec.sHanTrobatCoordenades.connect(self.trobatNumero_oNo)
 
         self.lSpacer.setText("")
-        self.lSpacer.setFixedWidth(64)
+        self.lSpacer.setFixedWidth(40)
 
         #Hem de definir les accions o el que sigui
         stylesheetBotons='''
@@ -1353,10 +1352,8 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.botoMetadades.setIconSize(QSize(24,24))
         self.botoMetadades.setCursor(QvConstants.cursorClick())
 
-        # self.bCercaPerAdreca.setIcon(QIcon('imatges/cerca.png'))
+        self.bCercaPerAdreca.setIcon(QIcon('imatges/magnify.png'))
         self.bCercaPerAdreca.setIconSize(QSize(24, 24))
-        self.bCercaPerAdreca.setFixedWidth(40)
-        self.bCercaPerAdreca.setFixedHeight(40)
         self.bCercaPerAdreca.setStyleSheet("background-color:%s; border: 0px; margin: 0px; padding: 0px;" %QvConstants.COLORCLARHTML)
 
         self.iconaFavDesmarcat=QIcon('Imatges/qv_bookmark_off.png')
