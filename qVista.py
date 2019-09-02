@@ -3028,79 +3028,34 @@ def nouMapa():
     # qV.obrirProjecte("./__newProjectTemplate.qgs")
 
 def cartoBCN():
+    obreURL('https://w20.bcn.cat/cartobcn/')
     # process = QProcess(qV)
     # pathChrome = "c:/Users/D062735/AppData/Local/Google/Chrome/Application/chrome.exe"
     # process.start(pathChrome)
     # app.processEvents()
 
-    url = QtCore.QUrl('https://w20.bcn.cat/cartobcn/')
-    try:
-        b = QDesktopServices().openUrl(url)
-        if not b:
-            try:
-                os.system('start firefox "https://w20.bcn.cat/cartobcn/" ')
-            except: 
-                QMessageBox.warning(qV,'Error de navegador', "No s'ha pogut obrir el navegador. Si us plau, comproveu la vostre connexió.")
-    except:
-        QMessageBox.warning(qV,'Error de navegador', "No s'ha pogut obrir el navegador. Si us plau, comproveu la vostre connexió.")
-    
-
 def geoportalBCN():
-    url = QtCore.QUrl('http://www.bcn.cat/geoportal/ca/geoportal.html')
-    try:
-        b = QDesktopServices().openUrl(url)
-        if not b:
-            try:
-                os.system('start firefox "http://www.bcn.cat/geoportal/ca/geoportal.html" ')
-            except: 
-                QMessageBox.warning(qV,'Error de navegador', "No s'ha pogut obrir el navegador. Si us plau, comproveu la vostre connexió.")
-    except:
-        QMessageBox.warning(qV,'Error de navegador', "No s'ha pogut obrir el navegador. Si us plau, comproveu la vostre connexió.")
+    obreURL('http://www.bcn.cat/geoportal/ca/geoportal.html')
 
 def opendataBCN():
-    url = QtCore.QUrl('https://opendata-ajuntament.barcelona.cat/')
-    try:
-        b = QDesktopServices().openUrl(url)
-        if not b:
-            try:
-                os.system('start firefox "https://opendata-ajuntament.barcelona.cat/" ')
-            except: 
-                QMessageBox.warning(qV,'Error de navegador', "No s'ha pogut obrir el navegador. Si us plau, comproveu la vostre connexió.")
-    except:
-        QMessageBox.warning(qV,'Error de navegador', "No s'ha pogut obrir el navegador. Si us plau, comproveu la vostre connexió.")
+    obreURL('https://opendata-ajuntament.barcelona.cat/')
 
 def bcnPIC():
-    url = QtCore.QUrl('http://www.bcn.cat/guia/bcnpicc.html')
-    try:
-        b = QDesktopServices().openUrl(url)
-        if not b:
-            try:
-                os.system('start firefox "http://www.bcn.cat/guia/bcnpicc.html" ')
-            except: 
-                QMessageBox.warning(qV,'Error de navegador', "No s'ha pogut obrir el navegador. Si us plau, comproveu la vostre connexió.")
-    except:
-        QMessageBox.warning(qV,'Error de navegador', "No s'ha pogut obrir el navegador. Si us plau, comproveu la vostre connexió.")
+    obreURL('http://www.bcn.cat/guia/bcnpicc.html')
     
-
 def planolBCN():
-    url = QtCore.QUrl('https://w33.bcn.cat/planolBCN/ca/')
-    try:
-        b = QDesktopServices().openUrl(url)
-        if not b:
-            try:
-                os.system('start firefox "https://w33.bcn.cat/planolBCN/ca/" ')
-            except: 
-                QMessageBox.warning(qV,'Error de navegador', "No s'ha pogut obrir el navegador. Si us plau, comproveu la vostre connexió.")
-    except:
-        QMessageBox.warning(qV,'Error de navegador', "No s'ha pogut obrir el navegador. Si us plau, comproveu la vostre connexió.")
+    obreURL('https://w33.bcn.cat/planolBCN/ca/')
 
 def piuPortal():
-    url = QtCore.QUrl('https://ajuntament.barcelona.cat/informaciourbanistica/cerca/ca/')
+    obreURL('https://ajuntament.barcelona.cat/informaciourbanistica/cerca/ca/')
+
+def obreURL(urlstr=None):
+    url = QtCore.QUrl(urlstr)
     try:
         b = QDesktopServices().openUrl(url)
         if not b:
             try:
-                os.system('start firefox "https://ajuntament.barcelona.cat/informaciourbanistica/cerca/ca/" ')
+                os.system('start firefox ' + urlstr)
             except: 
                 QMessageBox.warning(qV,'Error de navegador', "No s'ha pogut obrir el navegador. Si us plau, comproveu la vostre connexió.")
     except:
