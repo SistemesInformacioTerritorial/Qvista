@@ -3029,7 +3029,7 @@ def nouMapa():
 
 def cartoBCN():
     obreURL('https://w20.bcn.cat/cartobcn/')
-    # process = QProcess(qV)
+    # process = QProcess(qV) -> es el que permet obrir un altre programa com ara la calculadora
     # pathChrome = "c:/Users/D062735/AppData/Local/Google/Chrome/Application/chrome.exe"
     # process.start(pathChrome)
     # app.processEvents()
