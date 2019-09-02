@@ -943,9 +943,14 @@ class QVista(QMainWindow, Ui_MainWindow):
             retval = msg.exec_() #No fem res amb el valor de retorn (???)
 
     def adreces(self):
-        if self.prepararCercador:
-            self.preparacioCercadorPostal()
-            self.prepararCercador = False
+        self.dwCercador = QvDockWidget( "Cercador", self )              #
+        self.dwCercador.setAllowedAreas(Qt.RightDockWidgetArea)         # Quan el widget estigui a punt, això s'ha de treure
+        self.addDockWidget( Qt.RightDockWidgetArea, self.dwCercador)    # El que hi ha comentat abaix és el que genera el widget antic
+        textInfo = QLabel("Aquest widget encara no està disponible")    #
+        self.dwCercador.setWidget(textInfo)
+        # if self.prepararCercador:
+        #     self.preparacioCercadorPostal()
+        #     self.prepararCercador = False
         self.dwCercador.show()
 
     def menuLlegenda(self, tipus):
@@ -1280,6 +1285,30 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         self.frame_15.setContentsMargins(0,0,12,0)
 
+        self.leCercaPerAdreca.setStyleSheet("background-color:%s;"
+                                    "color: grey;"
+                                    "border: 8px solid %s;"
+                                    "padding: 2px"
+                                    %(QvConstants.COLORGRISCLARHTML, QvConstants.COLORCLARHTML))
+        self.leCercaPerAdreca.setFont(QvConstants.FONTTEXT)
+        self.leCercaPerAdreca.setPlaceholderText('Cercar adreça...')
+        self.leCercaPerAdreca.setFixedWidth(320)
+
+        self.leNumCerca.setStyleSheet("background-color:%s;"
+                                    "color: grey;"
+                                    "border: 8px solid %s;"
+                                    "padding: 2px"
+                                    %(QvConstants.COLORGRISCLARHTML, QvConstants.COLORCLARHTML))
+        self.leNumCerca.setFont(QvConstants.FONTTEXT)
+        self.leNumCerca.setPlaceholderText('Num...')
+        self.leNumCerca.setFixedWidth(80)
+
+        self.cAdrec=QCercadorAdreca(self.leCercaPerAdreca, self.leNumCerca,'SQLITE')    # SQLITE o CSV
+        self.cAdrec.sHanTrobatCoordenades.connect(self.trobatNumero_oNo)
+
+        self.lSpacer.setText("")
+        self.lSpacer.setFixedWidth(64)
+
         #Hem de definir les accions o el que sigui
         stylesheetBotons='''
             QPushButton{
@@ -1323,6 +1352,12 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.botoMetadades.setStyleSheet(stylesheetBotons)
         self.botoMetadades.setIconSize(QSize(24,24))
         self.botoMetadades.setCursor(QvConstants.cursorClick())
+
+        # self.bCercaPerAdreca.setIcon(QIcon('imatges/cerca.png'))
+        self.bCercaPerAdreca.setIconSize(QSize(24, 24))
+        self.bCercaPerAdreca.setFixedWidth(40)
+        self.bCercaPerAdreca.setFixedHeight(40)
+        self.bCercaPerAdreca.setStyleSheet("background-color:%s; border: 0px; margin: 0px; padding: 0px;" %QvConstants.COLORCLARHTML)
 
         self.iconaFavDesmarcat=QIcon('Imatges/qv_bookmark_off.png')
         self.iconaFavMarcat=QIcon('Imatges/qv_bookmark_on.png')
