@@ -1299,14 +1299,14 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         self.leNumCerca.setStyleSheet(stylesheetLineEdits)
         self.leNumCerca.setFont(QvConstants.FONTTEXT)
-        self.leNumCerca.setPlaceholderText('Num...')
+        self.leNumCerca.setPlaceholderText('Núm...')
         self.leNumCerca.setFixedWidth(80)
 
         self.cAdrec=QCercadorAdreca(self.leCercaPerAdreca, self.leNumCerca,'SQLITE')    # SQLITE o CSV
         self.cAdrec.sHanTrobatCoordenades.connect(self.trobatNumero_oNo)
 
         self.lSpacer.setText("")
-        self.lSpacer.setFixedWidth(40)
+        self.lSpacer.setFixedWidth(24)
 
         #Hem de definir les accions o el que sigui
         stylesheetBotons='''
