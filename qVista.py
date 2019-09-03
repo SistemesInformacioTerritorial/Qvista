@@ -65,8 +65,8 @@ class QHLine(QFrame):
         super(QHLine, self).__init__()
         self.setFrameShape(QFrame.HLine)
         self.setFrameShadow(QFrame.Raised)
-
-class QVLine(QFrame):vulture
+        
+class QVLine(QFrame):
     def __init__(self):
         super(QVLine, self).__init__()
         self.setFrameShape(QFrame.VLine)
