@@ -740,7 +740,15 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.marcaLloc.setPenWidth(3)
         self.marcaLloc.show()
         self.marcaLlocPosada = True
+        try:
+            import what3words
 
+            geocoder = what3words.Geocoder("HTD7LNB9")
+            palabras = geocoder.convert_to_3wa(what3words.Coordinates(self.puntTransformat.y(), self.puntTransformat.y()), language='es')
+            # coordenadas = geocoder.convert_to_coordinates('agudo.lista.caja')
+            print(palabras[words])
+        except:
+            print('No va 3 words')
     def preparacioTaulaAtributs(self):
         """ 
         Es prepara la taula d'Atributs sobre un dockWidget.
