@@ -262,8 +262,8 @@ class QvPrint(QWidget):
 
         context = QgsReadWriteContext()
         [items, ok] = layout.loadFromTemplate(doc, context)
-        p=layout.pageCollection().pages()[0]
-        p.setPageSize(midaPagina)
+        # p=layout.pageCollection().pages()[0]
+        # p.setPageSize(midaPagina)
    
         if ok:
             refMap = layout.referenceMap()
