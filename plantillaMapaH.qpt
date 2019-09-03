@@ -40,7 +40,7 @@
   </LayoutItem>
   <GuideCollection visible="1"/>
  </PageCollection>
- <LayoutItem background="false" blendMode="0" position="160.375,8.65816,mm" frameJoinStyle="miter" marginY="0" templateUuid="{e85d99d8-df6a-4926-82c8-c6986ceec13a}" id="idNomMapa" zValue="4" opacity="1" referencePoint="0" visibility="1" type="65641" labelText="Mapa H a partir d'una plantilla genèrica." valign="32" excludeFromExports="0" positionOnPage="160.375,8.65816,mm" size="132.23,8.56049,mm" frame="false" htmlState="0" outlineWidthM="0.3,mm" halign="2" groupUuid="" uuid="{e85d99d8-df6a-4926-82c8-c6986ceec13a}" itemRotation="0" positionLock="false" marginX="0">
+ <LayoutItem background="false" blendMode="0" position="160.375,8.65816,mm" frameJoinStyle="miter" marginY="0" templateUuid="{e85d99d8-df6a-4926-82c8-c6986ceec13a}" id="idNomMapa" zValue="4" opacity="1" referencePoint="0" visibility="1" type="65641" labelText="Mapa a partir d'una plantilla genèrica." valign="32" excludeFromExports="0" positionOnPage="160.375,8.65816,mm" size="132.23,8.56049,mm" frame="false" htmlState="0" outlineWidthM="0.3,mm" halign="2" groupUuid="" uuid="{e85d99d8-df6a-4926-82c8-c6986ceec13a}" itemRotation="0" positionLock="false" marginX="0">
   <FrameColor alpha="255" blue="0" green="0" red="0"/>
   <BackgroundColor alpha="255" blue="255" green="255" red="255"/>
   <LayoutObject>
@@ -78,7 +78,7 @@
   <fillColor2 alpha="255" blue="255" green="255" red="255"/>
   <strokeColor alpha="255" blue="0" green="0" red="0"/>
  </LayoutItem>
- <LayoutItem background="false" blendMode="0" position="34.1808,2.24763,mm" frameJoinStyle="miter" svgFillColor="255,255,255,255" northOffset="0" templateUuid="{15762faf-8abe-4ee9-8ae2-2650ce4217a4}" id="" zValue="2" opacity="1" resizeMode="0" referencePoint="0" visibility="1" file="D:/qVista/codi/Imatges/Ajuntament-Barcelona.jpg" svgBorderWidth="0.2" pictureRotation="0" type="65640" excludeFromExports="0" pictureHeight="14.821" svgBorderColor="0,0,0,255" positionOnPage="34.1808,2.24763,mm" size="58.6513,14.821,mm" anchorPoint="0" frame="false" outlineWidthM="0.3,mm" pictureWidth="51.62" northMode="0" groupUuid="" uuid="{15762faf-8abe-4ee9-8ae2-2650ce4217a4}" itemRotation="0" positionLock="false" mapUuid="">
+ <LayoutItem background="false" blendMode="0" position="5.18084,2.24763,mm" frameJoinStyle="miter" svgFillColor="255,255,255,255" northOffset="0" templateUuid="{15762faf-8abe-4ee9-8ae2-2650ce4217a4}" id="" zValue="2" opacity="1" resizeMode="0" referencePoint="0" visibility="1" file="D:/qVista/codi/Imatges/Ajuntament-Barcelona.jpg" svgBorderWidth="0.2" pictureRotation="0" type="65640" excludeFromExports="0" pictureHeight="14.821" svgBorderColor="0,0,0,255" positionOnPage="5.18084,2.24763,mm" size="58.6513,14.821,mm" anchorPoint="0" frame="false" outlineWidthM="0.3,mm" pictureWidth="51.62" northMode="0" groupUuid="" uuid="{15762faf-8abe-4ee9-8ae2-2650ce4217a4}" itemRotation="0" positionLock="false" mapUuid="">
   <FrameColor alpha="255" blue="0" green="0" red="0"/>
   <BackgroundColor alpha="255" blue="255" green="255" red="255"/>
   <LayoutObject>
