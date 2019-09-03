@@ -139,7 +139,6 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.mapaMaxim = False
         self.layerActiu = None
         self.prepararCercador = True
-        self.lblMovie = None #???
         self.ubicacions= None
         self.cAdrec= None
         self.catalegMapes = QvNouCataleg(self)
@@ -1594,7 +1593,7 @@ class QVista(QMainWindow, Ui_MainWindow):
     def switchFavorit(self):
         # nom=os.path.basename(self.pathProjecteActual)
         nom=Path(self.pathProjecteActual).stem
-        print(QvFavorits().getFavorits())
+        #print(QvFavorits().getFavorits())
         if self.favorit:
             # QvFavorits().eliminaFavorit(nom)
             self.botoFavorits.setIcon(self.iconaFavDesmarcat)
@@ -2027,7 +2026,6 @@ class QVista(QMainWindow, Ui_MainWindow):
                 for x in self.dockWidgetsVisibles: x.showtq()
             else:
                 self.dwLlegenda.setFloating(False)
-                print('show dw')
             self.bar.show()
             self.statusbar.show()
             # self.botoMaxim.setIcon(QIcon('imatges/arrow-expand.png'))
@@ -2063,14 +2061,11 @@ class QVista(QMainWindow, Ui_MainWindow):
     def clickArbre(self):
         rang = self.distBarris.llegirRang()
         self.canvas.zoomToFeatureExtent(rang)
-        # print(self.distBarris.registre)
 
     def cataleg(self):
-        # catàleg de capes
+        """catàleg de capes"""
 
         self.qModel = QFileSystemModel()
-        
-        # print(self.qModel.rowCount(), self.qModel.columnCount())
         rootPath=self.qModel.setRootPath(carpetaCataleg)
         
         self.wCataleg.ui.treeCataleg.doubleClicked.connect(carregarNivellQlr) 
@@ -2131,15 +2126,14 @@ class QVista(QMainWindow, Ui_MainWindow):
         layer.triggerRepaint()
 
     def cercaText(self): #???
-        """Don't pay attention
-        """ 
+        """Don't pay attention""" 
         textCercat=""
         layer=self.llegenda.currentLayer()
         if layer is not None:
             for field in layer.fields():
                 if field.typeName()=='String':
                     textCercat = textCercat + " " + fiel.name()
-            print (textCercat)
+            # print (textCercat)
 
     def nomCapa(self):
         capa = self.llegenda.view.currentLayer()
@@ -2648,7 +2642,7 @@ class QVista(QMainWindow, Ui_MainWindow):
                     self.mapesRecents=list(recents.readlines())
         #Desem els mapes recents, eliminant repeticions i salts de línia que poden portar problemes
         with open(arxiuMapesRecents,'w',encoding='utf-8') as recents:
-            print(self.mapesRecents)
+            # print(self.mapesRecents)
             #Ens carreguem els salts de línia per si n'ha quedat algun, fent un map. Creem un set 
             self.mapesRecents=[x.replace('\n','') for x in self.mapesRecents]
             self.mapesRecents=sorted(set(self.mapesRecents),key=lambda x: self.mapesRecents.index(x))[:9]
@@ -2867,7 +2861,7 @@ def nivellCsv(fitxer: str,delimitador: str,campX: str,campY: str, projeccio: int
         if layer.renderer() is not None: 
             layer.renderer().setSymbol(symbol)
         qV.project.addMapLayer(layer)
-        print("add layer")
+        # print("add layer")
         qV.canvisPendents=True
         qV.botoDesarProjecte.setIcon(qV.iconaAmbCanvisPendents)
     else: print ("no s'ha pogut afegir la nova layer")
@@ -2959,7 +2953,7 @@ def seleccioExpressio():
             layer.setSubsetString(textCercat[:-4])
             ids = [feature.id() for feature in layer.getFeatures()]
             qV.canvas.zoomToFeatureIds(layer, ids)
-            print (textCercat[:-4])
+            # print (textCercat[:-4])
     else:
         missatgeCaixa('Cal tenir seleccionat un nivell per poder fer una selecció.','Marqueu un nivell a la llegenda sobre el que aplicar la consulta.')
 

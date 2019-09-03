@@ -321,7 +321,6 @@ class QvCarregaCsvTriaSep(QvCarregaCsvPage):
         self.layoutCheckButton.addWidget(self.lblSep)
         self.layoutCheckButton.addWidget(self.cbSep)
         self.layoutCheckButton.addStretch(1)
-        print(parent.csv)
         self.parent.setSeparador(infereixSeparadorRegex(parent.getCsv()))
         if not isinstance(self.parent.setSeparador, str):
             self.parent.setSeparador(';')
@@ -434,7 +433,6 @@ class QvCarregaCsvXY(QvCarregaCsvPage):
         self.layout.addLayout(self.layoutCoordY)
         self.layout.addLayout(self.layoutCoordP)
         self.parent.llistaCamps = self.obteCamps()
-        print(self.parent.llistaCamps)
         self.cbX = QComboBox()
         self.cbX.addItems(self.parent.llistaCamps)
         self.cbY = QComboBox()
@@ -462,7 +460,6 @@ class QvCarregaCsvXY(QvCarregaCsvPage):
         def projChanged():
             self.parent.setProjecció(
                 projeccionsDict[self.cbProj.currentText()])
-            print(self.parent.proj)
         self.cbX.currentIndexChanged.connect(xChanged)
         self.cbY.currentIndexChanged.connect(yChanged)
         self.cbProj.currentIndexChanged.connect(projChanged)
@@ -635,9 +632,8 @@ class WindowProgressBar(QWidget):
         self.lblTempsRestant.setText('Temps restant: %s'%tempsTxt)
     
     def cancelar(self):
-        #print("wpg cancelar = true")
         self.cancelat = True
-        #self.close()
+       
 
 
 class QvCarregaCsvGeneraCoords(QvCarregaCsvPage):
@@ -680,7 +676,6 @@ class QvCarregaCsvGeneraCoords(QvCarregaCsvPage):
                     reader = csv.reader(csvfile, delimiter=';')
                     self.TIPUSVIES = [y+' ' for x in reader for y in x]
                     self.TIPUSVIES = list(set(self.TIPUSVIES))
-                    print(self.TIPUSVIES)
             tipusVia = ''
             nomVia = ''
             num = ''
@@ -851,7 +846,6 @@ class QvCarregaCsvGeneraCoords(QvCarregaCsvPage):
                     else:
                         self.lblAdrecesError.setText(
                             tipusVia + " " + nomVia + " " + numI + ' - Fila ' + str(i))
-                    # print(tipusVia, nomVia, numI)
                     row[self.parent.coordX] = ""
                     row[self.parent.coordY] = ""
                     del row[""]
@@ -1073,7 +1067,6 @@ def infereixSeparadorRegex(arxiu):
         return list(set(lst1) & set(lst2))
     lst = []
     for x in arxiu.readlines(1000):
-        print(x)
         act = infereixSeparadorLinia(x)
         if isinstance(act, str):
             arxiu.seek(0)
