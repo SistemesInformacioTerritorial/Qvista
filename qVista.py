@@ -43,6 +43,7 @@ from moduls.QvVisorHTML import QvVisorHTML
 from moduls.QvDocumentacio import QvDocumentacio
 from moduls.QvNouCataleg import QvNouCataleg
 from moduls.QvFavorits import QvFavorits
+from moduls.QvCatalegCapes import QvCatalegCapes
 # import re
 import csv
 import os
@@ -434,7 +435,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.bImprimir =  self.botoLateral(tamany = 25, accio=self.actImprimir)
         self.bTissores = self.botoLateral(tamany = 25, accio=self.actTissores)
         self.bSeleccioGrafica = self.botoLateral(tamany = 25, accio=self.actSeleccioGrafica)
-        self.bReload = self.botoLateral(tamany=25, accio=self.actReload)
+        #self.bReload = self.botoLateral(tamany=25, accio=self.actReload)
 
         spacer2 = QSpacerItem(1000, 1000, QSizePolicy.Expanding,QSizePolicy.Maximum)
         self.lytBotoneraLateral.addItem(spacer2)
@@ -599,13 +600,15 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         - Omplim el widget de les dades llegides a carpetaCataleg
         """
-        self.wCataleg = QWidget()
-        self.wCataleg.ui = Ui_Cataleg()
-        self.wCataleg.ui.setupUi(self.wCataleg)
-        self.wCataleg.setWindowTitle("Cataleg d'Informació Territorial")
+        # self.wCataleg = QWidget()
+        # self.wCataleg.ui = Ui_Cataleg()
+        # self.wCataleg.ui.setupUi(self.wCataleg)
+        # self.wCataleg.setWindowTitle("Cataleg d'Informació Territorial")
         # self.wCataleg.show()
 
-        self.dwCataleg = QvDockWidget( "Cataleg de capes", self )
+        self.wCataleg=QvCatalegCapes(self,self)
+
+        self.dwCataleg = QvDockWidget( "Catàleg de capes", self )
         self.dwCataleg.setContextMenuPolicy(Qt.PreventContextMenu)
         self.dwCataleg.setObjectName( "catalegTaula" )
         self.dwCataleg.setAllowedAreas( Qt.RightDockWidgetArea | Qt.LeftDockWidgetArea )
@@ -613,7 +616,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.dwCataleg.setContentsMargins ( 0,0,0,0 )
         self.dwCataleg.hide()
         self.addDockWidget( Qt.LeftDockWidgetArea, self.dwCataleg)
-        self.cataleg()
+        # self.cataleg()
 
     def preparacioCercadorPostal(self):
     
@@ -1276,7 +1279,11 @@ class QVista(QMainWindow, Ui_MainWindow):
         #self.actCataleg = QAction(3*' '+"Catàleg"+3*' ', self)
         self.actCataleg = QAction("Catàleg", self)
         self.actCataleg.setStatusTip("Catàleg")
-        self.actCataleg.triggered.connect(self.catalegMapes.showMaximized)
+        def activaCataleg():
+            if not self.catalegMapes.isVisible():
+                self.catalegMapes.showMaximized()
+            self.catalegMapes.activateWindow()
+        self.actCataleg.triggered.connect(activaCataleg)
 
         self.actTemes = QAction("Temes", self)
         self.actTemes.setStatusTip("Temes")
@@ -1367,6 +1374,12 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.botoFavorits.setCursor(QvConstants.cursorClick())
         self.botoFavorits.clicked.connect(self.switchFavorit)
         #Fer que quan es fa click es marqui o desmarqui com a favorit
+
+        self.botoReload.setIcon(QIcon('Imatges/reload.png'))
+        self.botoReload.setStyleSheet(stylesheetBotons)
+        self.botoReload.setIconSize(QSize(24,24))
+        self.botoReload.setCursor(QvConstants.cursorClick())
+        self.botoReload.clicked.connect(self.reload)
 
 
         
@@ -1593,11 +1606,14 @@ class QVista(QMainWindow, Ui_MainWindow):
                 pass
             elif ret == QMessageBox.DestructiveRole:
                 return
-        self.obrirProjecte(self.pathProjecteActual)
+        if hasattr(self,'mapaCataleg'):
+            self.obrirProjecteCataleg(self.pathProjecteActual,self.favorit,self.widgetAssociat)
+            pass
+        else:
+            self.obrirProjecte(self.pathProjecteActual)
     def switchFavorit(self):
         # nom=os.path.basename(self.pathProjecteActual)
         nom=Path(self.pathProjecteActual).stem
-        #print(QvFavorits().getFavorits())
         if self.favorit:
             # QvFavorits().eliminaFavorit(nom)
             self.botoFavorits.setIcon(self.iconaFavDesmarcat)
@@ -2636,6 +2652,8 @@ class QVista(QMainWindow, Ui_MainWindow):
                 
         else:
             self.gestioSortida()
+    def closeEvent(self,event):
+        self.provaDeTancar()
     def actualitzaMapesRecents(self,ultim=None):
         #Si no tenim en memòria els mapes recents, si existeixen els carreguem. Si no, doncs una llista buida
         if not hasattr(self,'mapesRecents'):
