@@ -430,7 +430,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.bImprimir =  self.botoLateral(tamany = 25, accio=self.actImprimir)
         self.bTissores = self.botoLateral(tamany = 25, accio=self.actTissores)
         self.bSeleccioGrafica = self.botoLateral(tamany = 25, accio=self.actSeleccioGrafica)
-        self.bReload = self.botoLateral(tamany=25, accio=self.actReload)
+        #self.bReload = self.botoLateral(tamany=25, accio=self.actReload)
 
         spacer2 = QSpacerItem(1000, 1000, QSizePolicy.Expanding,QSizePolicy.Maximum)
         self.lytBotoneraLateral.addItem(spacer2)
@@ -1336,6 +1336,12 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.botoFavorits.clicked.connect(self.switchFavorit)
         #Fer que quan es fa click es marqui o desmarqui com a favorit
 
+        self.botoReload.setIcon(QIcon('Imatges/reload.png'))
+        self.botoReload.setStyleSheet(stylesheetBotons)
+        self.botoReload.setIconSize(QSize(24,24))
+        self.botoReload.setCursor(QvConstants.cursorClick())
+        self.botoReload.clicked.connect(self.reload)
+
 
         
         # self.actBicing = QAction("Bicing", self)
@@ -1561,7 +1567,11 @@ class QVista(QMainWindow, Ui_MainWindow):
                 pass
             elif ret == QMessageBox.DestructiveRole:
                 return
-        self.obrirProjecte(self.pathProjecteActual)
+        if hasattr(self,'mapaCataleg'):
+            self.obrirProjecteCataleg(self.pathProjecteActual,self.favorit,self.widgetAssociat)
+            pass
+        else:
+            self.obrirProjecte(self.pathProjecteActual)
     def switchFavorit(self):
         # nom=os.path.basename(self.pathProjecteActual)
         nom=Path(self.pathProjecteActual).stem
@@ -2608,6 +2618,8 @@ class QVista(QMainWindow, Ui_MainWindow):
                 
         else:
             self.gestioSortida()
+    def closeEvent(self,event):
+        self.provaDeTancar()
     def actualitzaMapesRecents(self,ultim=None):
         #Si no tenim en memòria els mapes recents, si existeixen els carreguem. Si no, doncs una llista buida
         if not hasattr(self,'mapesRecents'):
