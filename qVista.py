@@ -65,7 +65,7 @@ class QHLine(QFrame):
         super(QHLine, self).__init__()
         self.setFrameShape(QFrame.HLine)
         self.setFrameShadow(QFrame.Raised)
-
+        
 class QVLine(QFrame):
     def __init__(self):
         super(QVLine, self).__init__()
@@ -270,6 +270,7 @@ class QVista(QMainWindow, Ui_MainWindow):
                     self.setDirtyBit()
             elif fext == '.csv':
                 carregarLayerCSV(nfile)
+
     def obrirProjecteCataleg(self, projecte, fav, widgetAssociat, rang=None):
         '''Obre un projecte des del catàleg
         Fa el mateix que la funció obrirProjecte, però mostrant el botó de favorits
@@ -280,9 +281,11 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.mapaCataleg=True
         self.actualitzaBotoFav(fav)
         self.widgetAssociat=widgetAssociat
+
     def actualitzaBotoFav(self,fav):
         self.favorit=fav
         self.botoFavorits.setIcon(self.iconaFavMarcat if fav else self.iconaFavDesmarcat)
+        
     def obrirProjecte(self, projecte, rang = None):
         """Obre un projecte passat com a parametre, amb un possible rang predeterminat.
         

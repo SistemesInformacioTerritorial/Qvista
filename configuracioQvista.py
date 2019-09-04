@@ -1,7 +1,7 @@
 import os
 
 #Parametres configuració inicial
-versio="0.3"
+versio="0.4"
 titolFinestra = "qVista %s  Sistema d'Informació Territorial de Barcelona"%versio
 
 carpetaCataleg = "N:/9SITEB/Publicacions/qVista/Cataleg/Capes/"
