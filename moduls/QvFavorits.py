@@ -22,6 +22,8 @@ class QvFavorits(Singleton):
         if not self.db.open():
             #No ens hem pogut connectar
             print(':(')
+            return False
+        return True
             
         
     def __DESCONNECTA_BASE_DADES__(self,usuari,commit=True):
@@ -31,7 +33,8 @@ class QvFavorits(Singleton):
         
     def getFavorits(self,usuari=getpass.getuser().upper()):
         '''Comentari explicant'''
-        self.__CONNECTA_BASE_DADES__(usuari)
+        if not self.__CONNECTA_BASE_DADES__(usuari):
+            return []
         query=QSqlQuery(self.db)
         query.prepare("select nom_mapa from QV_MAPES_FAVORITS where iduser=:IDUSER")
         query.bindValue(':IDUSER',usuari)
@@ -44,7 +47,8 @@ class QvFavorits(Singleton):
         return res
         
     def afegeixFavorit(self,mapa,usuari=getpass.getuser().upper()):
-        self.__CONNECTA_BASE_DADES__(usuari)
+        if not self.__CONNECTA_BASE_DADES__(usuari):
+            return False
         query=QSqlQuery(self.db)
         query.prepare("insert into QV_MAPES_FAVORITS (iduser, nom_mapa) values (:IDUSER,:NOM_MAPA)")
         query.bindValue(':IDUSER',usuari)
@@ -53,9 +57,11 @@ class QvFavorits(Singleton):
             QMessageBox.critical(None,"Atenció","No s'ha pogut afegir el mapa a favorits. Intenteu-ho més tard, si us plau")
             print('Ha fallat la query')
         self.__DESCONNECTA_BASE_DADES__(usuari)
+        return True
         
     def eliminaFavorit(self,mapa,usuari=getpass.getuser().upper()):
-        self.__CONNECTA_BASE_DADES__(usuari)
+        if not self.__CONNECTA_BASE_DADES__(usuari):
+            return False
         query=QSqlQuery(self.db)
         query.prepare("delete from QV_MAPES_FAVORITS where iduser=:IDUSER and nom_mapa=:NOM_MAPA")
         query.bindValue(':IDUSER',usuari)
@@ -64,6 +70,7 @@ class QvFavorits(Singleton):
             QMessageBox.critical("Atenció","No s'ha pogut eliminar el mapa de favorits. Intenteu-ho més tard, si us plau")
             print('Ha fallat la query')
         self.__DESCONNECTA_BASE_DADES__(usuari)
+        return True
         
 
 if __name__=='__main__':
