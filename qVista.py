@@ -133,6 +133,7 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         # Inicialitzacions
         self.printActiu = False #???
+        self.teCanvisPendents = False
         self.qvPrint = 0
         self.mapesOberts = False
         self.primerCop = True #???
@@ -300,6 +301,7 @@ class QVista(QMainWindow, Ui_MainWindow):
             # self.project.setTitle(os.path.basename(projecte))
             self.project.setTitle(Path(projecte).stem)
             self.lblTitolProjecte.setText(self.project.title())
+            self.titolProjecte = self.project.title()
         # self.canvisPendents = False #es el bit Dirty que ens diu si hem de guardar al tancar o no
         self.setDirtyBit(False)
         self.canvas.refresh()
@@ -976,7 +978,9 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.my_tool_tip.createMapTips()
 
     def preparacioImpressio(self):  
-        self.dwPrint = QvDockWidget( "Print", self )
+        
+        estatDirtybit = self.teCanvisPendents
+        self.dwPrint = QvDockWidget( "Imprimir a PDF", self )
         self.dwPrint.setContextMenuPolicy(Qt.PreventContextMenu)
         self.dwPrint.setObjectName( "Print" )
         self.dwPrint.setAllowedAreas( Qt.RightDockWidgetArea | Qt.LeftDockWidgetArea )
@@ -984,19 +988,19 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.addDockWidget(Qt.RightDockWidgetArea, self.dwPrint)
         # self.dwPrint.setMaximumHeight(200)
         self.dwPrint.hide()
+        self.setDirtyBit(estatDirtybit)
 
     def imprimir(self):
-        self.canvisPendentsAnt=self.canvisPendents
-        self.qvPrint = QvPrint(self.project, self.canvas, self.canvas.extent(),parent=self.dwPrint)
+        estatDirtybit = self.teCanvisPendents
+        self.qvPrint = QvPrint(self.project, self.canvas, self.canvas.extent(), parent = self)
         self.dwPrint.setWidget(self.qvPrint)
         self.dwPrint.show()
         self.qvPrint.pucMoure = True #Mala idea modificar atributs des d'aquí
         def destruirQvPrint(x):
             if x: return
             self.qvPrint.oculta()
-            self.dwPrint.setWidget(None)
-            self.setDirtyBit(self.canvisPendentsAnt) #No va :(
         self.dwPrint.visibilityChanged.connect(destruirQvPrint)
+        self.setDirtyBit(estatDirtybit)
 
     def definicioAccions(self):
         """ Definició de les accions que després seran assignades a menús o botons. """
