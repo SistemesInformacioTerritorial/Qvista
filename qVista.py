@@ -603,7 +603,7 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         self.wCataleg=QvCatalegCapes(self,self)
 
-        self.dwCataleg = QvDockWidget( "Cataleg de capes", self )
+        self.dwCataleg = QvDockWidget( "Catàleg de capes", self )
         self.dwCataleg.setContextMenuPolicy(Qt.PreventContextMenu)
         self.dwCataleg.setObjectName( "catalegTaula" )
         self.dwCataleg.setAllowedAreas( Qt.RightDockWidgetArea | Qt.LeftDockWidgetArea )
@@ -1565,7 +1565,6 @@ class QVista(QMainWindow, Ui_MainWindow):
     def switchFavorit(self):
         # nom=os.path.basename(self.pathProjecteActual)
         nom=Path(self.pathProjecteActual).stem
-        print(QvFavorits().getFavorits())
         if self.favorit:
             # QvFavorits().eliminaFavorit(nom)
             self.botoFavorits.setIcon(self.iconaFavDesmarcat)
