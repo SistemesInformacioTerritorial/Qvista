@@ -5,6 +5,7 @@ from PyQt5 import QtCore, QtWidgets
 from moduls.QvConstants import QvConstants
 from moduls.QvPushButton import QvPushButton
 from moduls.QvVisorHTML import QvVisorHTML
+import re
 
 #Hi ha una classe que es diu QFileIconProvider que el que fa és retornar la icona corresponent
 #Sobrecarregant la funció icon podem donar icones diferents
@@ -24,6 +25,68 @@ class DelegatNegreta(QStyledItemDelegate):
             option.font.setWeight(QFont.Bold)
         super().paint(painter,option,index)
 
+class FiltreCarpetesBuides(QSortFilterProxyModel):
+    def __init__(self,cercador,parent=None):
+        super().__init__(parent)
+        self.cercador=cercador
+    def arreglaText(self,txt):
+        trans=str.maketrans('ÁÉÍÓÚáéíóúÀÈÌÒÙàèìòùÂÊÎÔÛâêîôûÄËÏÖÜäëïöü·ºª.',
+                            'AEIOUAEIOUAEIOUAEIOUAEIOUAEIOUAEIOUAEIOU.   ')
+        txt=txt.translate(trans)
+        # txt=txt.upper()
+        txt=txt.strip(' ')
+        txt=re.sub('\s[\s]+',' ',txt)
+        return txt
+    def filterAcceptsRow(self,source_row,source_parent):
+        fs=self.sourceModel()
+        i=fs.index(source_row,0,source_parent)
+        # accept=False
+        text=self.arreglaText(self.cercador.text())
+        if fs.hasChildren(i):
+            for j in range(0,fs.rowCount(i)):
+                if fs.fileInfo(fs.index(j,0,i)).isDir():
+                    print(fs.fileInfo(fs.index(j,0,i)).baseName())
+                if text in fs.fileInfo(fs.index(j,0,i)).baseName():
+                    return True
+        return False
+
+class ModelArxius(QFileSystemModel):
+    def setNameFilters(self,filters):
+        super().setNameFilters(filters)
+        self.getCapesFiltrades()
+        dirsAMostrar=set()
+        for x in self.noSeSap:
+            for y in self.cosesAMostrar:
+                if x in y:
+                    dirsAMostrar.add(x)
+                    break
+            print('No mostrarem '+x)
+        # print('Dirs a mostrar')
+        # print(dirsAMostrar)
+        self.cosesAMostrar|=dirsAMostrar
+        # print('Coses a mostrar')
+        # print(self.cosesAMostrar)
+    def getCapesFiltrades(self):
+        self.cosesAMostrar=set()
+        self.noSeSap=set()
+        it=QDirIterator(self.rootDirectory(),QDirIterator.Subdirectories)
+        while it.hasNext():
+            it.next()
+            fInfo=it.fileInfo()
+            if fInfo.isFile():
+                self.cosesAMostrar.add(fInfo.filePath())
+            else:
+                self.noSeSap.add(fInfo.filePath())
+        print(self.cosesAMostrar)
+    def setData(self,index,value,role=Qt.EditRole):
+        if index.isValid() and role==Qt.EditRole and value.isValid():
+            return super().setData(index,value,role)
+        return False
+    def data(self,index,role=Qt.DisplayRole):
+        if self.isDir(index):
+            if self.filePath(index) not in self.cosesAMostrar:
+                return QVariant(':(')
+        return super().data(index,role)
 
 class QvCatalegCapes(QWidget):
     def __init__(self,qV,parent=None):
@@ -41,6 +104,9 @@ class QvCatalegCapes(QWidget):
         self.setLayout(self.layout)
 
         #Afegir el cercador
+        self.leCercador=QLineEdit(self)
+        self.leCercador.setPlaceholderText('Cercador de capes')
+        self.leCercador.textChanged.connect(self.canviaFiltre)
 
         self.treeCataleg=QTreeView()
         self.treeCataleg.setFixedWidth(300)
@@ -55,24 +121,39 @@ class QvCatalegCapes(QWidget):
         self.treeCataleg.adjustSize()
         self.treeCataleg.setHeaderHidden(True)
 
-        self.model=QFileSystemModel()
+        self.model=ModelArxius()
         self.model.setIconProvider(ProveidorIcones())
-        self.model.setNameFilters(['*.qlr'])
         self.model.setNameFilterDisables(False)
+        # self.model.setNameFilters(['*.qlr'])
         self.model.setReadOnly(True)
         # self.model.selectionChanged.connect(self.actualitzaMetadades)
         rootPath=self.model.setRootPath(carpetaCataleg)
+        # self.treeCataleg.setModel(self.model)
         self.treeCataleg.setModel(self.model)
         self.treeCataleg.selectionModel().selectionChanged.connect(self.actualitzaMetadades)
         self.treeCataleg.setRootIndex(rootPath)
+        self.canviaFiltre()
         for i in range (1,4):
             self.treeCataleg.header().hideSection(i)
 
         self.preview=Preview(self)
 
+        self.layout.addWidget(self.leCercador)
         self.layout.addWidget(self.treeCataleg)
         self.layout.addWidget(self.preview)
 
+    def arreglaText(self,txt):
+        trans=str.maketrans('ÁÉÍÓÚáéíóúÀÈÌÒÙàèìòùÂÊÎÔÛâêîôûÄËÏÖÜäëïöü·ºª.',
+                            'AEIOUAEIOUAEIOUAEIOUAEIOUAEIOUAEIOUAEIOU.   ')
+        txt=txt.translate(trans)
+        # txt=txt.upper()
+        txt=txt.strip(' ')
+        txt=re.sub('\s[\s]+',' ',txt)
+        return txt
+
+    def canviaFiltre(self):
+        txt=self.arreglaText(self.leCercador.text())
+        self.model.setNameFilters(['*%s*.qlr'%txt])
 
 
     def afegirQlr(self):
