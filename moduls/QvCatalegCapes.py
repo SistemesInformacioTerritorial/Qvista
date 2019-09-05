@@ -25,48 +25,22 @@ class DelegatNegreta(QStyledItemDelegate):
             option.font.setWeight(QFont.Bold)
         super().paint(painter,option,index)
 
-class FiltreCarpetesBuides(QSortFilterProxyModel):
-    def __init__(self,cercador,parent=None):
-        super().__init__(parent)
-        self.cercador=cercador
-    def arreglaText(self,txt):
-        trans=str.maketrans('ÁÉÍÓÚáéíóúÀÈÌÒÙàèìòùÂÊÎÔÛâêîôûÄËÏÖÜäëïöü·ºª.',
-                            'AEIOUAEIOUAEIOUAEIOUAEIOUAEIOUAEIOUAEIOU.   ')
-        txt=txt.translate(trans)
-        # txt=txt.upper()
-        txt=txt.strip(' ')
-        txt=re.sub('\s[\s]+',' ',txt)
-        return txt
-    def filterAcceptsRow(self,source_row,source_parent):
-        fs=self.sourceModel()
-        i=fs.index(source_row,0,source_parent)
-        # accept=False
-        text=self.arreglaText(self.cercador.text())
-        if fs.hasChildren(i):
-            for j in range(0,fs.rowCount(i)):
-                if fs.fileInfo(fs.index(j,0,i)).isDir():
-                    print(fs.fileInfo(fs.index(j,0,i)).baseName())
-                if text in fs.fileInfo(fs.index(j,0,i)).baseName():
-                    return True
-        return False
 
 class ModelArxius(QFileSystemModel):
     def setNameFilters(self,filters):
         super().setNameFilters(filters)
-        self.getCapesFiltrades()
-        dirsAMostrar=set()
-        for x in self.noSeSap:
-            for y in self.cosesAMostrar:
-                if x in y:
-                    dirsAMostrar.add(x)
-                    break
-            print('No mostrarem '+x)
-        # print('Dirs a mostrar')
-        # print(dirsAMostrar)
-        self.cosesAMostrar|=dirsAMostrar
-        # print('Coses a mostrar')
-        # print(self.cosesAMostrar)
-    def getCapesFiltrades(self):
+        self.actualitzaFiltre()
+        
+    def actualitzaFiltre(self):
+        '''Crea un set que es diu self.cosesAMostrar que conté totes les coses que mostrarem
+        Coses que es mostraran:
+        -Capa que passi el filtre
+        -Directori que contingui quelcom que es mostrarà
+
+        Per fer-ho, primer itera pels arxius que passen el filtre i els desa en un set
+        Aleshores es recorre tots els directoris i, per cada un d'ells, comprova si té algun arxiu que pengi d'ell, desant-los en un set auxiliar
+
+        '''
         self.cosesAMostrar=set()
         self.noSeSap=set()
         it=QDirIterator(self.rootDirectory(),QDirIterator.Subdirectories)
@@ -74,17 +48,21 @@ class ModelArxius(QFileSystemModel):
             it.next()
             fInfo=it.fileInfo()
             if fInfo.isFile():
-                self.cosesAMostrar.add(fInfo.filePath())
+                self.cosesAMostrar.add(fInfo.dir().path())
             else:
                 self.noSeSap.add(fInfo.filePath())
-        print(self.cosesAMostrar)
-    def setData(self,index,value,role=Qt.EditRole):
-        if index.isValid() and role==Qt.EditRole and value.isValid():
-            return super().setData(index,value,role)
-        return False
+        dirsAMostrar=set()
+        for x in self.noSeSap:
+            for y in self.cosesAMostrar:
+                if x in y:
+                    dirsAMostrar.add(x)
+                    break
+        self.cosesAMostrar|=dirsAMostrar
     def data(self,index,role=Qt.DisplayRole):
         if self.isDir(index):
             if self.filePath(index) not in self.cosesAMostrar:
+                #Si poses un QVariant buit et mostra una fila buida
+                #Si poses qualsevol text, mostra buit però no sé per què
                 return QVariant(':(')
         return super().data(index,role)
 
@@ -105,7 +83,7 @@ class QvCatalegCapes(QWidget):
 
         #Afegir el cercador
         self.leCercador=QLineEdit(self)
-        self.leCercador.setPlaceholderText('Cercador de capes')
+        self.leCercador.setPlaceholderText('Cercar...')
         self.leCercador.textChanged.connect(self.canviaFiltre)
 
         self.treeCataleg=QTreeView()
@@ -174,8 +152,6 @@ class QvCatalegCapes(QWidget):
         '''Pinta la preview de la capa
         '''
         index = self.treeCataleg.currentIndex()
-        # print('Index: ', index)
-        # nom=self.model.fileInfo(index).baseName()
         path=self.model.fileInfo(index).absoluteFilePath()
         if os.path.isfile(path):
             self.preview.setCapa(path)
