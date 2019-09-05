@@ -135,6 +135,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         # Inicialitzacions
         self.printActiu = False #???
         self.canvisPendents = False
+        self.titolProjecte = ""
         self.qvPrint = 0
         self.mapesOberts = False
         self.primerCop = True #???
@@ -305,7 +306,7 @@ class QVista(QMainWindow, Ui_MainWindow):
             # self.project.setTitle(os.path.basename(projecte))
             self.project.setTitle(Path(projecte).stem)
             self.lblTitolProjecte.setText(self.project.title())
-            self.titolProjecte = self.project.title()
+        self.titolProjecte = self.project.title()
         # self.canvisPendents = False #es el bit Dirty que ens diu si hem de guardar al tancar o no
         self.setDirtyBit(False)
         self.canvas.refresh()
@@ -814,7 +815,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.layoutFrameLlegenda = QVBoxLayout(self.frameLlegenda)
         self.llegenda = QvLlegenda(self.canvas, self.taulesAtributs)
         self.llegenda.currentLayerChanged.connect(self.canviLayer)
-        self.llegenda.projecteModificat.connect(lambda: self.setDirtyBit(True))
+        self.llegenda.projecteModificat.connect(lambda: self.setDirtyBit(True)) #Activa el dirty bit al fer servir el dwPrint (i no hauria)
         self.canvas.setLlegenda(self.llegenda)
         self.layoutFrameLlegenda.setContentsMargins ( 5, 13, 5, 0 )
         self.llegenda.setStyleSheet("QvLlegenda {color: #38474f; background-color: #F9F9F9; border: 0px solid red;}")

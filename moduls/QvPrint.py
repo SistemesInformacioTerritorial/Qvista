@@ -105,7 +105,7 @@ class QvPrint(QWidget):
         self.layoutTitol = QHBoxLayout()
         self.lblTitol = QLabel("Títol: ")
         self.leTitol = QLineEdit(self)
-        self.leTitol.setText('')
+        self.leTitol.setText(self.parent.titolProjecte)
         self.layoutTitol.addWidget(self.lblTitol)
         self.layoutTitol.addWidget(self.leTitol)
 
@@ -300,8 +300,8 @@ class QvPrint(QWidget):
             refMap = layout.referenceMap()
 
             titol=layout.itemById('idNomMapa')
-            if self.leTitol.text()!='':
-                titol.setText(self.leTitol.text())
+            # if self.leTitol.text()!='':
+            #     titol.setText(self.leTitol.text()) #comentat pk peta
             # else:
             #     titol.setText('')
             
