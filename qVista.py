@@ -133,7 +133,7 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         # Inicialitzacions
         self.printActiu = False #???
-        self.teCanvisPendents = False
+        self.canvisPendents = False
         self.qvPrint = 0
         self.mapesOberts = False
         self.primerCop = True #???
@@ -979,7 +979,7 @@ class QVista(QMainWindow, Ui_MainWindow):
 
     def preparacioImpressio(self):  
         
-        estatDirtybit = self.teCanvisPendents
+        estatDirtybit = self.canvisPendents
         self.dwPrint = QvDockWidget( "Imprimir a PDF", self )
         self.dwPrint.setContextMenuPolicy(Qt.PreventContextMenu)
         self.dwPrint.setObjectName( "Print" )
@@ -991,7 +991,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.setDirtyBit(estatDirtybit)
 
     def imprimir(self):
-        estatDirtybit = self.teCanvisPendents
+        estatDirtybit = self.canvisPendents
         self.qvPrint = QvPrint(self.project, self.canvas, self.canvas.extent(), parent = self)
         self.dwPrint.setWidget(self.qvPrint)
         self.dwPrint.show()
@@ -2620,7 +2620,6 @@ class QVista(QMainWindow, Ui_MainWindow):
         return msgBox.exec()
     def provaDeTancar(self):
         if self.teCanvisPendents():
-            
             # msgBox.setStandardButtons(QMessageBox.Save | QMessageBox.Discard | QMessageBox.Cancel)
             # msgBox.setDefaultButton(QMessageBox.Save)
             ret = self.missatgeDesar()

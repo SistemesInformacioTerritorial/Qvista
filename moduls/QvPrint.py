@@ -57,7 +57,7 @@ class QvPrint(QWidget):
         QWidget.__init__(self, parent)
         self.parent = parent
         # Creating a memory layer to draw later the rubberband.
-        estatDirtybit = self.parent.teCanvisPendents
+        estatDirtybit = self.parent.canvisPendents
 
         self.layer = QgsVectorLayer('Point?crs=epsg:23031', "Capa temporal d'impressió","memory")
         project.addMapLayer(self.layer)
@@ -184,7 +184,7 @@ class QvPrint(QWidget):
             escala*=math.sqrt(2)*4
 
 
-        if self.cbOrientacio.SelectedItem == "Vertical":
+        if self.cbOrientacio.SelectedItem == "Horitzontal":
             self.incX = escala
             self.incY = escala * 1.5
         else:
@@ -243,11 +243,30 @@ class QvPrint(QWidget):
         #     rotacio=0
         rotacio=self.canvas.rotation()
         if self.cbOrientacio.SelectedItem == "Vertical":
-            self.plantillaMapa = 'plantillaMapa.qpt'
-            print(self.plantillaMapa)
+            if self.cbMida.currentText() == "A4":
+                self.plantillaMapa = 'plantillaMapa.qpt'
+            elif self.cbMida.currentText() == "A3":
+                self.plantillaMapa = 'plantillaMapaA3.qpt'
+            elif self.cbMida.currentText() == "A2":
+                self.plantillaMapa = 'plantillaMapaA2.qpt'
+            elif self.cbMida.currentText() == "A1":
+                self.plantillaMapa = 'plantillaMapaA1.qpt'
+            elif self.cbMida.currentText() == "A0":
+                self.plantillaMapa = 'plantillaMapaA0.qpt'
+            
         else:
-            self.plantillaMapa = 'plantillaMapaH.qpt'
-            print(self.plantillaMapa)
+            if self.cbMida.currentText() == "A4":
+                self.plantillaMapa = 'plantillaMapaH.qpt'
+            elif self.cbMida.currentText() == "A3":
+                self.plantillaMapa = 'plantillaMapaHA3.qpt'
+            elif self.cbMida.currentText() == "A2":
+                self.plantillaMapa = 'plantillaMapaHA2.qpt'
+            elif self.cbMida.currentText() == "A1":
+                self.plantillaMapa = 'plantillaMapaHA1.qpt'
+            elif self.cbMida.currentText() == "A0":
+                self.plantillaMapa = 'plantillaMapaHA0.qpt'
+            
+            
 
         t = time.localtime()
         timestamp = time.strftime('%b-%d-%Y_%H%M%S', t)
@@ -329,14 +348,14 @@ class QvPrint(QWidget):
             segonsEmprats=round(time.time()-tInicial,1) #???
             layersTemporals = self.project.mapLayersByName("Capa temporal d'impressió")
 
-            estatDirtybit = self.parent.teCanvisPendents
+            estatDirtybit = self.parent.canvisPendents
             for layer in layersTemporals:
                 self.project.removeMapLayer(layer.id())
             self.parent.setDirtyBit(estatDirtybit)
 
     def oculta(self):
         #Eliminem la capa temporal
-        estatDirtybit = self.parent.teCanvisPendents
+        estatDirtybit = self.parent.canvisPendents
         layersTemporals = self.project.mapLayersByName("Capa temporal d'impressió")
         for layer in layersTemporals:
             self.project.removeMapLayer(layer.id())
