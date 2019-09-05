@@ -130,7 +130,7 @@ class QvPrint(QWidget):
 
         self.cbMida=QComboBox(self)
         self.cbMida.addItems(['A0','A1','A2','A3','A4'])
-        self.cbMida.currentTextChanged.connect(self.canviEscala)
+        # self.cbMida.currentTextChanged.connect(self.canviEscala)
         self.cbMida.setCurrentIndex(4)
         self.lblCBmida = QLabel("Paper: ")
         self.layoutCBmida = QHBoxLayout()
@@ -139,10 +139,10 @@ class QvPrint(QWidget):
 
         self.boto = QvPushButton(text='Plot',destacat=True, parent=self)
         self.boto.clicked.connect(self.printPlanol)
-        self.boto.setFixedWidth(160)
+        self.boto.setFixedWidth(180)
         self.boto2 = QvPushButton(text='Reposicionar',parent=self)
         self.boto2.clicked.connect(self.potsMoure)
-        self.boto2.setFixedWidth(160)
+        self.boto2.setFixedWidth(180)
 
         self.nota = QLabel("NOTA: Alguns navegadors web alteren l'escala d'impressió dels PDFs. Per màxima exactitud imprimiu des de l'Adobe Acrobat.")
         styleheetLabel='''
@@ -242,7 +242,7 @@ class QvPrint(QWidget):
         # else:
         #     rotacio=0
         rotacio=self.canvas.rotation()
-        if self.cbOrientacio.SelectedItem == "Vertical":
+        if self.cbOrientacio.currentText() == "Vertical":
             if self.cbMida.currentText() == "A4":
                 self.plantillaMapa = 'plantillaMapa.qpt'
             elif self.cbMida.currentText() == "A3":
@@ -258,13 +258,13 @@ class QvPrint(QWidget):
             if self.cbMida.currentText() == "A4":
                 self.plantillaMapa = 'plantillaMapaH.qpt'
             elif self.cbMida.currentText() == "A3":
-                self.plantillaMapa = 'plantillaMapaHA3.qpt'
+                self.plantillaMapa = 'plantillaMapaA3H.qpt'
             elif self.cbMida.currentText() == "A2":
-                self.plantillaMapa = 'plantillaMapaHA2.qpt'
+                self.plantillaMapa = 'plantillaMapaA2H.qpt'
             elif self.cbMida.currentText() == "A1":
-                self.plantillaMapa = 'plantillaMapaHA1.qpt'
+                self.plantillaMapa = 'plantillaMapaA1H.qpt'
             elif self.cbMida.currentText() == "A0":
-                self.plantillaMapa = 'plantillaMapaHA0.qpt'
+                self.plantillaMapa = 'plantillaMapaA0H.qpt'
             
             
 
