@@ -5,6 +5,7 @@ from PyQt5 import QtCore, QtWidgets
 from moduls.QvConstants import QvConstants
 from moduls.QvPushButton import QvPushButton
 from moduls.QvVisorHTML import QvVisorHTML
+import re
 
 #Hi ha una classe que es diu QFileIconProvider que el que fa és retornar la icona corresponent
 #Sobrecarregant la funció icon podem donar icones diferents
@@ -25,6 +26,46 @@ class DelegatNegreta(QStyledItemDelegate):
         super().paint(painter,option,index)
 
 
+class ModelArxius(QFileSystemModel):
+    def setNameFilters(self,filters):
+        super().setNameFilters(filters)
+        self.actualitzaFiltre()
+        
+    def actualitzaFiltre(self):
+        '''Crea un set que es diu self.cosesAMostrar que conté totes les coses que mostrarem
+        Coses que es mostraran:
+        -Capa que passi el filtre
+        -Directori que contingui quelcom que es mostrarà
+
+        Per fer-ho, primer itera pels arxius que passen el filtre i els desa en un set
+        Aleshores es recorre tots els directoris i, per cada un d'ells, comprova si té algun arxiu que pengi d'ell, desant-los en un set auxiliar
+
+        '''
+        self.cosesAMostrar=set()
+        self.noSeSap=set()
+        it=QDirIterator(self.rootDirectory(),QDirIterator.Subdirectories)
+        while it.hasNext():
+            it.next()
+            fInfo=it.fileInfo()
+            if fInfo.isFile():
+                self.cosesAMostrar.add(fInfo.dir().path())
+            else:
+                self.noSeSap.add(fInfo.filePath())
+        dirsAMostrar=set()
+        for x in self.noSeSap:
+            for y in self.cosesAMostrar:
+                if x in y:
+                    dirsAMostrar.add(x)
+                    break
+        self.cosesAMostrar|=dirsAMostrar
+    def data(self,index,role=Qt.DisplayRole):
+        if self.isDir(index):
+            if self.filePath(index) not in self.cosesAMostrar:
+                #Si poses un QVariant buit et mostra una fila buida
+                #Si poses qualsevol text, mostra buit però no sé per què
+                return QVariant(':(')
+        return super().data(index,role)
+
 class QvCatalegCapes(QWidget):
     def __init__(self,qV,parent=None):
         '''Construeix el catàleg de capes
@@ -41,6 +82,9 @@ class QvCatalegCapes(QWidget):
         self.setLayout(self.layout)
 
         #Afegir el cercador
+        self.leCercador=QLineEdit(self)
+        self.leCercador.setPlaceholderText('Cercar...')
+        self.leCercador.textChanged.connect(self.canviaFiltre)
 
         self.treeCataleg=QTreeView()
         self.treeCataleg.setFixedWidth(300)
@@ -55,24 +99,39 @@ class QvCatalegCapes(QWidget):
         self.treeCataleg.adjustSize()
         self.treeCataleg.setHeaderHidden(True)
 
-        self.model=QFileSystemModel()
+        self.model=ModelArxius()
         self.model.setIconProvider(ProveidorIcones())
-        self.model.setNameFilters(['*.qlr'])
         self.model.setNameFilterDisables(False)
+        # self.model.setNameFilters(['*.qlr'])
         self.model.setReadOnly(True)
         # self.model.selectionChanged.connect(self.actualitzaMetadades)
         rootPath=self.model.setRootPath(carpetaCataleg)
+        # self.treeCataleg.setModel(self.model)
         self.treeCataleg.setModel(self.model)
         self.treeCataleg.selectionModel().selectionChanged.connect(self.actualitzaMetadades)
         self.treeCataleg.setRootIndex(rootPath)
+        self.canviaFiltre()
         for i in range (1,4):
             self.treeCataleg.header().hideSection(i)
 
         self.preview=Preview(self)
 
+        self.layout.addWidget(self.leCercador)
         self.layout.addWidget(self.treeCataleg)
         self.layout.addWidget(self.preview)
 
+    def arreglaText(self,txt):
+        trans=str.maketrans('ÁÉÍÓÚáéíóúÀÈÌÒÙàèìòùÂÊÎÔÛâêîôûÄËÏÖÜäëïöü·ºª.',
+                            'AEIOUAEIOUAEIOUAEIOUAEIOUAEIOUAEIOUAEIOU.   ')
+        txt=txt.translate(trans)
+        # txt=txt.upper()
+        txt=txt.strip(' ')
+        txt=re.sub('\s[\s]+',' ',txt)
+        return txt
+
+    def canviaFiltre(self):
+        txt=self.arreglaText(self.leCercador.text())
+        self.model.setNameFilters(['*%s*.qlr'%txt])
 
 
     def afegirQlr(self):
@@ -93,8 +152,6 @@ class QvCatalegCapes(QWidget):
         '''Pinta la preview de la capa
         '''
         index = self.treeCataleg.currentIndex()
-        # print('Index: ', index)
-        # nom=self.model.fileInfo(index).baseName()
         path=self.model.fileInfo(index).absoluteFilePath()
         if os.path.isfile(path):
             self.preview.setCapa(path)
