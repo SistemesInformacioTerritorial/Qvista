@@ -264,9 +264,7 @@ class QvPrint(QWidget):
             elif self.cbMida.currentText() == "A1":
                 self.plantillaMapa = 'plantillaMapaA1H.qpt'
             elif self.cbMida.currentText() == "A0":
-                self.plantillaMapa = 'plantillaMapaA0H.qpt'
-            
-            
+                self.plantillaMapa = 'plantillaMapaA0H.qpt'  
 
         t = time.localtime()
         timestamp = time.strftime('%b-%d-%Y_%H%M%S', t)

@@ -1068,7 +1068,7 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         
         self.actImprimir = QAction("Imprimir", self)
-        self.actImprimir.setStatusTip("Imprimir")
+        self.actImprimir.setStatusTip("Imprimir a PDF")
         icon=QIcon('imatges/printer.png')
         self.actImprimir.setIcon(icon)
         self.actImprimir.triggered.connect(self.imprimir)
