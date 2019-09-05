@@ -1,7 +1,7 @@
 import os
 
 #Parametres configuració inicial
-versio="0.3"
+versio="0.4"
 titolFinestra = "qVista %s  Sistema d'Informació Territorial de Barcelona"%versio
 
 carpetaCataleg = "N:/9SITEB/Publicacions/qVista/Cataleg/Capes/"
@@ -47,7 +47,7 @@ if not os.path.exists(dadesdir):
 
 if not os.path.isdir(carpetaCataleg):
     carpetaCataleg = "../dades/CatalegProjectes/"
-    carpetaCatalegProjectesLlista = "../dades/CatalegProjectes/"
+    carpetaCatalegProjectesLlista = ["../dades/CatalegProjectes/"]
     projecteInicial = 'mapesOffline/qVista default map.qgs'
     estatConnexio = "Xarxa municipal: Desconnectat"
 

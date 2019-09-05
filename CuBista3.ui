@@ -277,6 +277,13 @@ text-align: left;</string>
               </widget>
              </item>
              <item>
+              <widget class="QPushButton" name="botoReload">
+               <property name="text">
+                <string/>
+               </property>
+              </widget>
+             </item>
+             <item>
               <widget class="QPushButton" name="botoDesarProjecte">
                <property name="minimumSize">
                 <size>
