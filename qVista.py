@@ -134,13 +134,13 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         # Inicialitzacions
         self.printActiu = False #???
+        self.teCanvisPendents = False
         self.qvPrint = 0
         self.mapesOberts = False
         self.primerCop = True #???
         self.mapaMaxim = False
         self.layerActiu = None
         self.prepararCercador = True
-        self.lblMovie = None #???
         self.ubicacions= None
         self.cAdrec= None
         self.catalegMapes = QvNouCataleg(self)
@@ -237,10 +237,14 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.dwLlegenda.setObjectName( "layers" )
         self.dwLlegenda.setAllowedAreas( Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea )
         self.dwLlegenda.setContentsMargins ( 0,0,0,0)
+        self.dwLlegenda.setMinimumWidth(0)
+        self.dwLlegenda.setMaximumWidth(9999)
         self.addDockWidget( Qt.LeftDockWidgetArea , self.dwLlegenda )
         self.dwLlegenda.setWidget(self.llegenda)
+        self.dwLlegenda.setWindowFlag(Qt.Window)
         self.dwLlegenda.show()
-        self.ferGran()
+        self.dwLlegenda.setFloating(True)
+        self.ferGran()#self.dwLlegenda.setFloating(False)
 
     
 
@@ -298,6 +302,7 @@ class QVista(QMainWindow, Ui_MainWindow):
             # self.project.setTitle(os.path.basename(projecte))
             self.project.setTitle(Path(projecte).stem)
             self.lblTitolProjecte.setText(self.project.title())
+            self.titolProjecte = self.project.title()
         # self.canvisPendents = False #es el bit Dirty que ens diu si hem de guardar al tancar o no
         self.setDirtyBit(False)
         self.canvas.refresh()
@@ -942,9 +947,14 @@ class QVista(QMainWindow, Ui_MainWindow):
             retval = msg.exec_() #No fem res amb el valor de retorn (???)
 
     def adreces(self):
-        if self.prepararCercador:
-            self.preparacioCercadorPostal()
-            self.prepararCercador = False
+        self.dwCercador = QvDockWidget( "Cercador", self )              #
+        self.dwCercador.setAllowedAreas(Qt.RightDockWidgetArea)         # Quan el widget estigui a punt, això s'ha de treure
+        self.addDockWidget( Qt.RightDockWidgetArea, self.dwCercador)    # El que hi ha comentat abaix és el que genera el widget antic
+        textInfo = QLabel("Aquest widget encara no està disponible")    #
+        self.dwCercador.setWidget(textInfo)
+        # if self.prepararCercador:
+        #     self.preparacioCercadorPostal()
+        #     self.prepararCercador = False
         self.dwCercador.show()
 
     def menuLlegenda(self, tipus):
@@ -971,7 +981,9 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.my_tool_tip.createMapTips()
 
     def preparacioImpressio(self):  
-        self.dwPrint = QvDockWidget( "Print", self )
+        
+        estatDirtybit = self.teCanvisPendents
+        self.dwPrint = QvDockWidget( "Imprimir a PDF", self )
         self.dwPrint.setContextMenuPolicy(Qt.PreventContextMenu)
         self.dwPrint.setObjectName( "Print" )
         self.dwPrint.setAllowedAreas( Qt.RightDockWidgetArea | Qt.LeftDockWidgetArea )
@@ -979,19 +991,19 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.addDockWidget(Qt.RightDockWidgetArea, self.dwPrint)
         # self.dwPrint.setMaximumHeight(200)
         self.dwPrint.hide()
+        self.setDirtyBit(estatDirtybit)
 
     def imprimir(self):
-        self.canvisPendentsAnt=self.canvisPendents
-        self.qvPrint = QvPrint(self.project, self.canvas, self.canvas.extent(),parent=self.dwPrint)
+        estatDirtybit = self.teCanvisPendents
+        self.qvPrint = QvPrint(self.project, self.canvas, self.canvas.extent(), parent = self)
         self.dwPrint.setWidget(self.qvPrint)
         self.dwPrint.show()
         self.qvPrint.pucMoure = True #Mala idea modificar atributs des d'aquí
         def destruirQvPrint(x):
             if x: return
             self.qvPrint.oculta()
-            self.dwPrint.setWidget(None)
-            self.setDirtyBit(self.canvisPendentsAnt) #No va :(
         self.dwPrint.visibilityChanged.connect(destruirQvPrint)
+        self.setDirtyBit(estatDirtybit)
 
     def definicioAccions(self):
         """ Definició de les accions que després seran assignades a menús o botons. """
@@ -1283,6 +1295,29 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         self.frame_15.setContentsMargins(0,0,12,0)
 
+        stylesheetLineEdits="""
+            background-color:%s;
+            color: white;
+            border: 1px solid %s;
+            border-radius: 2px;
+            padding: 3px"""%(QvConstants.COLORCLARHTML, QvConstants.COLORMIGHTML)
+        
+        self.leCercaPerAdreca.setStyleSheet(stylesheetLineEdits)
+        self.leCercaPerAdreca.setFont(QvConstants.FONTTEXT)
+        self.leCercaPerAdreca.setPlaceholderText('Carrer, plaça...')
+        self.leCercaPerAdreca.setFixedWidth(320)
+
+        self.leNumCerca.setStyleSheet(stylesheetLineEdits)
+        self.leNumCerca.setFont(QvConstants.FONTTEXT)
+        self.leNumCerca.setPlaceholderText('Núm...')
+        self.leNumCerca.setFixedWidth(80)
+
+        self.cAdrec=QCercadorAdreca(self.leCercaPerAdreca, self.leNumCerca,'SQLITE')    # SQLITE o CSV
+        self.cAdrec.sHanTrobatCoordenades.connect(self.trobatNumero_oNo)
+
+        self.lSpacer.setText("")
+        self.lSpacer.setFixedWidth(24)
+
         #Hem de definir les accions o el que sigui
         stylesheetBotons='''
             QPushButton{
@@ -1326,6 +1361,10 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.botoMetadades.setStyleSheet(stylesheetBotons)
         self.botoMetadades.setIconSize(QSize(24,24))
         self.botoMetadades.setCursor(QvConstants.cursorClick())
+
+        self.bCercaPerAdreca.setIcon(QIcon('imatges/magnify.png'))
+        self.bCercaPerAdreca.setIconSize(QSize(24, 24))
+        self.bCercaPerAdreca.setStyleSheet("background-color:%s; border: 0px; margin: 0px; padding: 0px;" %QvConstants.COLORCLARHTML)
 
         self.iconaFavDesmarcat=QIcon('Imatges/qv_bookmark_off.png')
         self.iconaFavMarcat=QIcon('Imatges/qv_bookmark_on.png')
@@ -1993,9 +2032,8 @@ class QVista(QMainWindow, Ui_MainWindow):
     def hideLblFlotant(self):
         if hasattr(self,'lblFlotant'):
             self.lblFlotant.hide()
-    def ferGran(self):
-        # print('JOLA')
 
+    def ferGran(self):
         if not self.mapaMaxim:
             self.hideLblFlotant()
             self.showMaximized()
@@ -2007,7 +2045,7 @@ class QVista(QMainWindow, Ui_MainWindow):
             if hasattr(self,'dockWidgetsVisibles'):
                 for x in self.dockWidgetsVisibles: x.showtq()
             else:
-                self.dwLlegenda.show()
+                self.dwLlegenda.setFloating(False)
             self.bar.show()
             self.statusbar.show()
             # self.botoMaxim.setIcon(QIcon('imatges/arrow-expand.png'))
@@ -2043,14 +2081,11 @@ class QVista(QMainWindow, Ui_MainWindow):
     def clickArbre(self):
         rang = self.distBarris.llegirRang()
         self.canvas.zoomToFeatureExtent(rang)
-        # print(self.distBarris.registre)
 
     def cataleg(self):
-        # catàleg de capes
+        """catàleg de capes"""
 
         self.qModel = QFileSystemModel()
-        
-        # print(self.qModel.rowCount(), self.qModel.columnCount())
         rootPath=self.qModel.setRootPath(carpetaCataleg)
         
         self.wCataleg.ui.treeCataleg.doubleClicked.connect(carregarNivellQlr) 
@@ -2111,15 +2146,14 @@ class QVista(QMainWindow, Ui_MainWindow):
         layer.triggerRepaint()
 
     def cercaText(self): #???
-        """Don't pay attention
-        """ 
+        """Don't pay attention""" 
         textCercat=""
         layer=self.llegenda.currentLayer()
         if layer is not None:
             for field in layer.fields():
                 if field.typeName()=='String':
                     textCercat = textCercat + " " + fiel.name()
-            print (textCercat)
+            # print (textCercat)
 
     def nomCapa(self):
         capa = self.llegenda.view.currentLayer()
@@ -2630,7 +2664,7 @@ class QVista(QMainWindow, Ui_MainWindow):
                     self.mapesRecents=list(recents.readlines())
         #Desem els mapes recents, eliminant repeticions i salts de línia que poden portar problemes
         with open(arxiuMapesRecents,'w',encoding='utf-8') as recents:
-            print(self.mapesRecents)
+            # print(self.mapesRecents)
             #Ens carreguem els salts de línia per si n'ha quedat algun, fent un map. Creem un set 
             self.mapesRecents=[x.replace('\n','') for x in self.mapesRecents]
             self.mapesRecents=sorted(set(self.mapesRecents),key=lambda x: self.mapesRecents.index(x))[:9]
@@ -2849,7 +2883,7 @@ def nivellCsv(fitxer: str,delimitador: str,campX: str,campY: str, projeccio: int
         if layer.renderer() is not None: 
             layer.renderer().setSymbol(symbol)
         qV.project.addMapLayer(layer)
-        print("add layer")
+        # print("add layer")
         qV.canvisPendents=True
         qV.botoDesarProjecte.setIcon(qV.iconaAmbCanvisPendents)
     else: print ("no s'ha pogut afegir la nova layer")
@@ -2941,7 +2975,7 @@ def seleccioExpressio():
             layer.setSubsetString(textCercat[:-4])
             ids = [feature.id() for feature in layer.getFeatures()]
             qV.canvas.zoomToFeatureIds(layer, ids)
-            print (textCercat[:-4])
+            # print (textCercat[:-4])
     else:
         missatgeCaixa('Cal tenir seleccionat un nivell per poder fer una selecció.','Marqueu un nivell a la llegenda sobre el que aplicar la consulta.')
 
@@ -3010,79 +3044,34 @@ def nouMapa():
     # qV.obrirProjecte("./__newProjectTemplate.qgs")
 
 def cartoBCN():
-    # process = QProcess(qV)
+    obreURL('https://w20.bcn.cat/cartobcn/')
+    # process = QProcess(qV) -> es el que permet obrir un altre programa com ara la calculadora
     # pathChrome = "c:/Users/D062735/AppData/Local/Google/Chrome/Application/chrome.exe"
     # process.start(pathChrome)
     # app.processEvents()
 
-    url = QtCore.QUrl('https://w20.bcn.cat/cartobcn/')
-    try:
-        b = QDesktopServices().openUrl(url)
-        if not b:
-            try:
-                os.system('start firefox "https://w20.bcn.cat/cartobcn/" ')
-            except: 
-                QMessageBox.warning(qV,'Error de navegador', "No s'ha pogut obrir el navegador. Si us plau, comproveu la vostre connexió.")
-    except:
-        QMessageBox.warning(qV,'Error de navegador', "No s'ha pogut obrir el navegador. Si us plau, comproveu la vostre connexió.")
-    
-
 def geoportalBCN():
-    url = QtCore.QUrl('http://www.bcn.cat/geoportal/ca/geoportal.html')
-    try:
-        b = QDesktopServices().openUrl(url)
-        if not b:
-            try:
-                os.system('start firefox "http://www.bcn.cat/geoportal/ca/geoportal.html" ')
-            except: 
-                QMessageBox.warning(qV,'Error de navegador', "No s'ha pogut obrir el navegador. Si us plau, comproveu la vostre connexió.")
-    except:
-        QMessageBox.warning(qV,'Error de navegador', "No s'ha pogut obrir el navegador. Si us plau, comproveu la vostre connexió.")
+    obreURL('http://www.bcn.cat/geoportal/ca/geoportal.html')
 
 def opendataBCN():
-    url = QtCore.QUrl('https://opendata-ajuntament.barcelona.cat/')
-    try:
-        b = QDesktopServices().openUrl(url)
-        if not b:
-            try:
-                os.system('start firefox "https://opendata-ajuntament.barcelona.cat/" ')
-            except: 
-                QMessageBox.warning(qV,'Error de navegador', "No s'ha pogut obrir el navegador. Si us plau, comproveu la vostre connexió.")
-    except:
-        QMessageBox.warning(qV,'Error de navegador', "No s'ha pogut obrir el navegador. Si us plau, comproveu la vostre connexió.")
+    obreURL('https://opendata-ajuntament.barcelona.cat/')
 
 def bcnPIC():
-    url = QtCore.QUrl('http://www.bcn.cat/guia/bcnpicc.html')
-    try:
-        b = QDesktopServices().openUrl(url)
-        if not b:
-            try:
-                os.system('start firefox "http://www.bcn.cat/guia/bcnpicc.html" ')
-            except: 
-                QMessageBox.warning(qV,'Error de navegador', "No s'ha pogut obrir el navegador. Si us plau, comproveu la vostre connexió.")
-    except:
-        QMessageBox.warning(qV,'Error de navegador', "No s'ha pogut obrir el navegador. Si us plau, comproveu la vostre connexió.")
+    obreURL('http://www.bcn.cat/guia/bcnpicc.html')
     
-
 def planolBCN():
-    url = QtCore.QUrl('https://w33.bcn.cat/planolBCN/ca/')
-    try:
-        b = QDesktopServices().openUrl(url)
-        if not b:
-            try:
-                os.system('start firefox "https://w33.bcn.cat/planolBCN/ca/" ')
-            except: 
-                QMessageBox.warning(qV,'Error de navegador', "No s'ha pogut obrir el navegador. Si us plau, comproveu la vostre connexió.")
-    except:
-        QMessageBox.warning(qV,'Error de navegador', "No s'ha pogut obrir el navegador. Si us plau, comproveu la vostre connexió.")
+    obreURL('https://w33.bcn.cat/planolBCN/ca/')
 
 def piuPortal():
-    url = QtCore.QUrl('https://ajuntament.barcelona.cat/informaciourbanistica/cerca/ca/')
+    obreURL('https://ajuntament.barcelona.cat/informaciourbanistica/cerca/ca/')
+
+def obreURL(urlstr=''):
+    url = QtCore.QUrl(urlstr)
     try:
         b = QDesktopServices().openUrl(url)
         if not b:
             try:
-                os.system('start firefox "https://ajuntament.barcelona.cat/informaciourbanistica/cerca/ca/" ')
+                os.system('start firefox ' + urlstr)
             except: 
                 QMessageBox.warning(qV,'Error de navegador', "No s'ha pogut obrir el navegador. Si us plau, comproveu la vostre connexió.")
     except:
