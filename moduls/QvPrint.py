@@ -130,7 +130,7 @@ class QvPrint(QWidget):
 
         self.cbMida=QComboBox(self)
         self.cbMida.addItems(['A0','A1','A2','A3','A4'])
-        # self.cbMida.currentTextChanged.connect(self.canviEscala)
+        self.cbMida.currentTextChanged.connect(self.canviEscala)
         self.cbMida.setCurrentIndex(4)
         self.lblCBmida = QLabel("Paper: ")
         self.layoutCBmida = QHBoxLayout()
