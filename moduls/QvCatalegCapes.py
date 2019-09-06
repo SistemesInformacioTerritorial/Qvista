@@ -69,8 +69,6 @@ class ModelArxius(QFileSystemModel):
             #Si no hi és, comprovem si hi ha algun arxiu que en pengi
             #La segona comprovació és una mica més costosa, però gairebé mai la farem
             if x in self.cosesAMostrar:
-                print(x)
-                print(os.path.dirname(x))
                 self.cosesAMostrar.add(os.path.dirname(x))
             else:
                 for y in self.cosesAMostrar:

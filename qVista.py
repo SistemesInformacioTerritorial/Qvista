@@ -1301,10 +1301,10 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         stylesheetLineEdits="""
             background-color:%s;
-            color: white;
+            color: %s;
             border: 1px solid %s;
             border-radius: 2px;
-            padding: 3px"""%(QvConstants.COLORCLARHTML, QvConstants.COLORMIGHTML)
+            padding: 1px"""%(QvConstants.COLORCERCADORHTML, QvConstants.COLORFOSCHTML, QvConstants.COLORCERCADORHTML)
         
         self.leCercaPerAdreca.setStyleSheet(stylesheetLineEdits)
         self.leCercaPerAdreca.setFont(QvConstants.FONTTEXT)
