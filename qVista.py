@@ -994,15 +994,15 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.dwPrint.setContentsMargins ( 1, 1, 1, 1 )
         self.addDockWidget(Qt.RightDockWidgetArea, self.dwPrint)
         # self.dwPrint.setMaximumHeight(200)
-        
         self.dwPrint.hide()
         self.setDirtyBit(estatDirtybit)
 
     def imprimir(self):
         estatDirtybit = self.canvisPendents
-        if self.qvPrint == 0:
-            self.qvPrint = QvPrint(self.project, self.canvas, self.canvas.extent(), parent = self)
-            self.dwPrint.setWidget(self.qvPrint)
+        # No és tant fàcil fer que només es creï un cop aquest objecte (i que funcioni bé després)
+        self.qvPrint = QvPrint(self.project, self.canvas, self.canvas.extent(), parent = self)
+        self.dwPrint.setWidget(self.qvPrint)
+
         self.qvPrint.leTitol.setText(self.titolProjecte) #el titol pot haver canviat (o el projecte)
         self.dwPrint.show()
         self.qvPrint.pucMoure = True #Mala idea modificar atributs des d'aquí

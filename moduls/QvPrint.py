@@ -359,6 +359,8 @@ class QvPrint(QWidget):
             self.project.removeMapLayer(layer.id())
         self.parent.setDirtyBit(estatDirtybit)
         #Falta posar el ratolí anterior
+    
+        
 
 
 if __name__ == "__main__":
