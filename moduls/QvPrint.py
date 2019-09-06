@@ -89,10 +89,11 @@ class QvPrint(QWidget):
         self.rubberband = QgsRubberBand(self.canvas)
         self.rubberband.setColor(QColor(0,0,0,50))
         self.rubberband.setWidth(4)
-
+        
         self.canvas.xyCoordinates.connect(self.mocMouse)
         self.pintarRectangle(self.poligon)
-        
+        self.rubberband.hide()
+
         self.parent.setDirtyBit(estatDirtybit)
 
     def setupUI(self):
@@ -225,7 +226,7 @@ class QvPrint(QWidget):
                 self.rubberband.movePoint(2,QgsPointXY(p.x(),p.y()),0)
                 self.rubberband.movePoint(3,QgsPointXY(p.x()+self.incY*math.cos(math.radians(90+45)),p.y()+self.incY*math.sin(math.radians(90+45))),0)
                 self.rubberband.movePoint(4,QgsPointXY(p.x()+d*math.cos(alpha+beta),p.y()+d*math.sin(alpha+beta)),0)
-            
+            self.rubberband.show()
 
 
     def pintarRectangle(self,poligon):
@@ -233,7 +234,8 @@ class QvPrint(QWidget):
         listaPoligonos=[points]
         poligono=QgsGeometry.fromRect(self.poligon)
         self.rubberband.setToGeometry(poligono,self.layer)
-        self.rubberband.show()
+        
+        
 
     def printPlanol(self):
         #
