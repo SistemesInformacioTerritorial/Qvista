@@ -1304,10 +1304,10 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         stylesheetLineEdits="""
             background-color:%s;
-            color: white;
+            color: %s;
             border: 1px solid %s;
             border-radius: 2px;
-            padding: 3px"""%(QvConstants.COLORCLARHTML, QvConstants.COLORMIGHTML)
+            padding: 1px"""%(QvConstants.COLORCERCADORHTML, QvConstants.COLORFOSCHTML, QvConstants.COLORCERCADORHTML)
         
         self.leCercaPerAdreca.setStyleSheet(stylesheetLineEdits)
         self.leCercaPerAdreca.setFont(QvConstants.FONTTEXT)
@@ -2664,8 +2664,10 @@ class QVista(QMainWindow, Ui_MainWindow):
     def closeEvent(self,event):
         self.provaDeTancar()
     def actualitzaMapesRecents(self,ultim=None):
-        #Si no tenim en memòria els mapes recents, si existeixen els carreguem. Si no, doncs una llista buida
+        #Comprovem si tenim carregats en memòria els mapes recents
         if not hasattr(self,'mapesRecents'):
+            #Si no els tenim, mirem si existeix l'arxiu. Si no existeix, carreguem una llista buida
+            #Si existeix, llegim l'arxiu i el carreguem
             if not os.path.isfile(arxiuMapesRecents):
                 self.mapesRecents=[]
             else:

@@ -10,7 +10,12 @@ import re
 #Hi ha una classe que es diu QFileIconProvider que el que fa és retornar la icona corresponent
 #Sobrecarregant la funció icon podem donar icones diferents
 class ProveidorIcones(QFileIconProvider):
+    '''Classe que serveix per proveir d'icones al QFileSystemModel
+    Tenim les nostres icones, que són Material Design
+    '''
     def icon(self,fileInfo):
+        '''Retorna la icona de la carpeta si és un directori.
+        Retorna la icona de la capa si és una capa'''
         if fileInfo.isDir():
             return QIcon('Imatges/cc_folder.png')
         elif fileInfo.completeSuffix()=='qlr':
@@ -20,6 +25,10 @@ class ProveidorIcones(QFileIconProvider):
 
 
 class DelegatNegreta(QStyledItemDelegate):
+    '''Per donar estil al QFileSystemModel
+    Si és un directori, el pinta de negreta
+    Si no, fa el comportament per defecte
+    '''
     def paint(self,painter,option,index):
         if self.parent().model.isDir(index):
             option.font.setWeight(QFont.Bold)
@@ -27,6 +36,9 @@ class DelegatNegreta(QStyledItemDelegate):
 
 
 class ModelArxius(QFileSystemModel):
+    '''Quan ens posem a cercar, no ens interessa mostrar les carpetes buides
+    Fent una subclasse de QFileSystemModel podem comprovar quines carpetes quedarien buides cada vegada que actualitzem el filtre, i no mostrar-les
+    '''
     def setNameFilters(self,filters):
         super().setNameFilters(filters)
         self.actualitzaFiltre()
@@ -42,21 +54,27 @@ class ModelArxius(QFileSystemModel):
 
         '''
         self.cosesAMostrar=set()
-        self.noSeSap=set()
+        noSeSap=set()
         it=QDirIterator(self.rootDirectory(),QDirIterator.Subdirectories)
         while it.hasNext():
             it.next()
             fInfo=it.fileInfo()
             if fInfo.isFile():
-                self.cosesAMostrar.add(fInfo.dir().path())
+                self.cosesAMostrar.add(fInfo.dir().path()) #Desem el path del directori del qual penja
             else:
-                self.noSeSap.add(fInfo.filePath())
+                noSeSap.add(fInfo.filePath())
         dirsAMostrar=set()
-        for x in self.noSeSap:
-            for y in self.cosesAMostrar:
-                if x in y:
-                    dirsAMostrar.add(x)
-                    break
+        for x in noSeSap:
+            #Si el directori està a self.cosesAMostrar, afegim també el seu pare (ja que el pare també el mostrarem)
+            #Si no hi és, comprovem si hi ha algun arxiu que en pengi
+            #La segona comprovació és una mica més costosa, però gairebé mai la farem
+            if x in self.cosesAMostrar:
+                self.cosesAMostrar.add(os.path.dirname(x))
+            else:
+                for y in self.cosesAMostrar:
+                    if x in y:
+                        dirsAMostrar.add(x)
+                        break
         self.cosesAMostrar|=dirsAMostrar
     def data(self,index,role=Qt.DisplayRole):
         if self.isDir(index):
@@ -83,8 +101,12 @@ class QvCatalegCapes(QWidget):
 
         #Afegir el cercador
         self.leCercador=QLineEdit(self)
+        self.leCercador.setStyleSheet('background: white')
         self.leCercador.setPlaceholderText('Cercar...')
         self.leCercador.textChanged.connect(self.canviaFiltre)
+        self.accioEsborra=self.leCercador.addAction(QIcon('Imatges/cc_buidar_cercar.png'),QLineEdit.TrailingPosition)
+        self.accioEsborra.triggered.connect(lambda: self.leCercador.setText(''))
+        self.accioEsborra.setVisible(False)
 
         self.treeCataleg=QTreeView()
         self.treeCataleg.setFixedWidth(300)
@@ -130,7 +152,13 @@ class QvCatalegCapes(QWidget):
         return txt
 
     def canviaFiltre(self):
-        txt=self.arreglaText(self.leCercador.text())
+        txt=self.leCercador.text()
+        if txt=='':
+            self.accioEsborra.setVisible(False)
+        else:
+            self.accioEsborra.setVisible(True)
+
+        txt=self.arreglaText(txt)
         self.model.setNameFilters(['*%s*.qlr'%txt])
 
 
