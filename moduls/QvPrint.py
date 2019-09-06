@@ -137,12 +137,12 @@ class QvPrint(QWidget):
         self.layoutCBmida.addWidget(self.lblCBmida)
         self.layoutCBmida.addWidget(self.cbMida)
 
-        self.boto = QvPushButton(text='Plot',destacat=True, parent=self)
+        self.boto = QvPushButton(text='Generar PDF',destacat=True, parent=self)
         self.boto.clicked.connect(self.printPlanol)
-        self.boto.setFixedWidth(180)
-        self.boto2 = QvPushButton(text='Reposicionar',parent=self)
+        self.boto.setFixedWidth(220)
+        self.boto2 = QvPushButton(text='Emmarcar zona a imprimir',parent=self)
         self.boto2.clicked.connect(self.potsMoure)
-        self.boto2.setFixedWidth(180)
+        self.boto2.setFixedWidth(220)
 
         self.nota = QLabel("NOTA: Alguns navegadors web alteren l'escala d'impressió dels PDFs. Per màxima exactitud imprimiu des de l'Adobe Acrobat.")
         styleheetLabel='''
