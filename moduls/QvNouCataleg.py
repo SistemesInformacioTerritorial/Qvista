@@ -20,6 +20,12 @@ from moduls.QvFavorits import QvFavorits
 class QvNouCataleg(QWidget):
     
     def __init__(self,parent: QtWidgets.QWidget=None):
+        '''Construeix el catàleg
+        El codi és més o menys el mateix que s'utilitza per construir moltes altres finestres frameless. 
+        -Una capçalera amb el títol, botons i icona de qVista
+        -Un layout amb el cos de la finestra
+        El cos conté una botonera lateral a l'esquerra, amb un botó per cada carpeta del catàleg, i un layout redimensionable que mostra el contingut dels directoris seleccionats
+        '''
         super().__init__()
         self.parent=parent
         self.setWindowFlags(Qt.FramelessWindowHint)
@@ -111,7 +117,7 @@ class QvNouCataleg(QWidget):
         iconaRestaurar2=QIcon('imatges/window-maximize.png')
         def restaurar():
             if self.maximitzada:
-                self.setWindowFlag(Qt.FramelessWindowHint)
+                self.setWindowFlag(Qt.FramelessWindowHint,False)
                 self.setWindowState(Qt.WindowActive)
                 self.actualitzaWindowFlags()
                 amplada=self.width()
@@ -181,6 +187,8 @@ class QvNouCataleg(QWidget):
         self.setWindowFlag(Qt.WindowMinMaxButtonsHint,False)
         self.setWindowFlag(Qt.WindowCloseButtonHint,False)
     def carregaBandaEsquerra(self):
+        '''Carrega els botons de la banda esquerra i, per cada directori, tots els seus mapes
+        '''
         self.favorits=QvFavorits().getFavorits()
         self.wBanda=QWidget()
         self.wBanda.setStyleSheet('background: %s;'%QvConstants.COLORGRISCLARHTML)
@@ -205,17 +213,19 @@ class QvNouCataleg(QWidget):
         self.botonsLaterals=[]
         for y in carpetaCatalegProjectesLlista:
             try:
+                #os.walk(dir) ens dóna un generador que es va recorrent tots els nivells d'un directori
+                #Per cada nivell ens dóna tres llistes, que són l'arrel, els directoris i els arxius
+                #Com que només ens interessa el primer nivell, enlloc de recórrer el generador, fem un next i agafem només el primer nivell
+                #Com que només volem els directoris, no desem enlloc les altres llistes
                 _,dirs,_=next(os.walk(y))
             except:
-                continue
+                continue #Si una carpeta no funciona (per exemple, l'usuari no hi té accés) simplement seguim mirant les altres
             
             dirs=sorted(dirs)
             for x in dirs:
-                # print(x)
                 self.catalegs[x]=self.carregaBotons(x) 
                 boto=BotoLateral(x,self)
                 boto.setCheckable(True)
-                # boto.clicked.connect(self.mostraMapes)
                 self.botonsLaterals.append(boto)
                 self.lBanda.addWidget(boto)
         
@@ -229,6 +239,7 @@ class QvNouCataleg(QWidget):
         # self.tots.setChecked(False)
         self.mostraMapes()
     def clickFavorits(self):
+        '''Copiem el contingut de mostraMapes, adaptant-lo perquè només mostri els favorits'''
         self.clearContingut()
         self.widsCataleg=[]
         self.nlayouts=[]
@@ -257,7 +268,7 @@ class QvNouCataleg(QWidget):
                 self.nlayouts.append(nlayout)
         self.indexLayoutSeleccionat=-1
         self.fav.setChecked(True)
-    def carregaBotons(self,dir):
+    def carregaBotons(self,dir: str):
         f=[]
         for y in carpetaCatalegProjectesLlista:
             try:
@@ -273,6 +284,8 @@ class QvNouCataleg(QWidget):
                 x.setFavorit(True,actualitza=False) #No actualitzem la base de dades perquè no estem modificant-la
         return botons
     def mostraMapes(self):
+        '''Es recorre els botons laterals i, per cada un d'ells, mostra els mapes associats
+        '''
         self.clearContingut()
         self.widsCataleg=[]
         self.nlayouts=[]
@@ -305,12 +318,15 @@ class QvNouCataleg(QWidget):
         # scrollArea=QScrollArea()
         # scrollArea.setWidget(self.wCataleg)
     def clearContingut(self):
+        '''Oculta tot el contingut
+        '''
         if hasattr(self,'widsCataleg'):
             for x in self.widsCataleg:
                 # x.setParent(None)
                 x.hide()
         return
-    def obrirProjecte(self, dir, favorit, widgetAssociat):
+    def obrirProjecte(self, dir: str, favorit: bool, widgetAssociat):
+        '''Obre el projecte amb qVista. Li indica a qVista si és favorit o no, perquè pugui posar el botó com toca'''
         try:
             self.parent.obrirProjecteCataleg(dir, favorit, widgetAssociat)
             self.parent.show()
@@ -319,7 +335,8 @@ class QvNouCataleg(QWidget):
         except:
             QMessageBox.warning(self,"No s'ha pogut obrir el mapa","El mapa no ha pogut ser obert. Si el problema persisteix, contacteu amb el gestor del catàleg")
             print('Hauríem obert el projecte '+dir+', però ha fallat quelcom')
-    def obrirEnQGis(self,dir):
+    def obrirEnQGis(self,dir: str):
+        '''Obre el projecte amb QGis. El copia al directori temporal, per si l'usuari modifica alguna cosa'''
         #Copiem el projecte al directori temporal, per si l'usuari modifica alguna cosa
         shutil.copy2(dir,tempdir)
         copiat=tempdir+os.path.basename(dir)
@@ -328,14 +345,15 @@ class QvNouCataleg(QWidget):
             print('Copiant')
             sleep(1)
         os.startfile(copiat)
-    def obrirInfo(self,dir):
+    def obrirInfo(self,dir: str):
+        '''Mostra l'arxiu HTML que conté la informació associada al mapa'''
         if os.path.exists(dir):
             visor=QvVisorHTML(dir,'Informació mapa',parent=self)
             visor.exec()
         else:
             QMessageBox.warning(self,"No s'ha trobat la informació","La informació del mapa no ha pogut ser oberta. Si el problema persisteix, contacteu amb el gestor del catàleg")
     def mousePressEvent(self, event):
-        self.esPotMoure=event.windowPos().y()<41
+        self.esPotMoure=event.windowPos().y()<41 #La capçalera té mida 40. Si fem click a la capçalera, podem moure
         self.oldPos = event.globalPos()
     def mouseReleaseEvent(self,event):
         self.esPotMoure=False
@@ -354,6 +372,10 @@ class QvNouCataleg(QWidget):
             self.restaurarFunc()
 
     def keyPressEvent(self, event):
+        '''Esc tanca.
+        Amb les fletxes ens podem moure
+        També ens podem moure amb les tecles HJKL, com al Vim
+        El botó d'enter i de return obren el projecte seleccionat amb qVista ''' 
         if event.key() == Qt.Key_Escape:
             self.close()
         elif event.key()==Qt.Key_Left or event.key()==Qt.Key_H:
@@ -379,7 +401,7 @@ class QvNouCataleg(QWidget):
             if self.nlayouts[x].indexOf(widget)!=-1:
                 self.indexLayoutSeleccionat=x
                 return
-    def mouHoritzontal(self,despl):
+    def mouHoritzontal(self,despl: int):
         if self.indexLayoutSeleccionat!=-1:
             nlayout=self.nlayouts[self.indexLayoutSeleccionat]
             i, j = nlayout.indexsOf(self.widgetSeleccionat)
@@ -407,7 +429,7 @@ class QvNouCataleg(QWidget):
                     #Agafem el layout anterior
 
             self.seleccionaElement(nlayout.widgetAt(i,j))
-    def mouVertical(self,despl):
+    def mouVertical(self,despl: int):
         if self.indexLayoutSeleccionat!=-1:
             nlayout=self.nlayouts[self.indexLayoutSeleccionat]
             i, j = nlayout.indexsOf(self.widgetSeleccionat)
@@ -435,10 +457,11 @@ class QvNouCataleg(QWidget):
     def mouBaix(self):
         self.mouVertical(1)
     def eventFilter(self,obj,event):
+        '''Si premem una tecla quan tenim el focus en algun widget fill, ho gestionarem aquí abans de passar-li a ell'''
         if event.type()==QEvent.KeyPress:
             self.keyPressEvent(event)
         return False
-    def arregla(self,txt):
+    def arregla(self,txt: str):
         '''
         Arregla els textos per fer que siguin case insensitive, no tinguin en compte accents, no tinguin espais al principi ni al final i ignorin múltiples espais
 
@@ -517,7 +540,16 @@ class BotoLateral(QPushButton):
         self.cataleg.mostraMapes()
 
 class MapaCataleg(QFrame):
-    def __init__(self,dir,cataleg=None): #Dir ha de contenir la ruta de l'arxiu (absoluta o relativa) i no només el seu nom. Ha de ser sense extensió
+    '''Widget que representa la preview del mapa
+    Conté una imatge i un text
+    Es pot seleccionar posant el ratolí a sobre, fent-hi click o amb el teclat
+    Quan es selecciona apareixen quatre botons
+    -Fav: Marca/desmarca el mapa com a favorit
+    -Obrir amb qVista: Obre el mapa amb qVista. Cal, lògicament, haver obert el catàleg amb qVista
+    -Obrir amb QGis: Obre el mapa amb QGis. Cal tenir-lo instal·lat
+    -Info: Mostra la informació associada al mapa
+    '''
+    def __init__(self,dir: str, cataleg: QvNouCataleg=None): #Dir ha de contenir la ruta de l'arxiu (absoluta o relativa) i no només el seu nom. Ha de ser sense extensió
         super().__init__()
         self.setFrameStyle(QFrame.Panel)
         self.setCursor(QvConstants.cursorClick())
@@ -623,7 +655,7 @@ class MapaCataleg(QFrame):
         self.cataleg.seleccionaElement(self)
     def mouseDoubleClickEvent(self,event):
         self.obreQVista()
-    def setChecked(self,checked):
+    def setChecked(self,checked: bool):
         self.checked=checked
         if checked:
             self.setStyleSheet('MapaCataleg{border: 4px solid %s;}'%QvConstants.COLORCLARHTML)
@@ -642,16 +674,18 @@ class MapaCataleg(QFrame):
             self.botoQGis.hide()
             self.botoInfo.hide()
         self.update()
-    def setFavorit(self,fav,actualitza=True):
+    def setFavorit(self,fav: bool,actualitza: bool=True):
         if fav:
+            if actualitza:
+                #Si no podem afegir-lo com a favorit, retornem
+                if not QvFavorits().afegeixFavorit(self.getNomMapa()):
+                    return
             self.botoFav.setIcon(self.iconaFavMarcat)
-            if actualitza:
-                QvFavorits().afegeixFavorit(self.getNomMapa())
-            #Cridar la classe per fer favorit aquest botó
         else:
-            self.botoFav.setIcon(self.iconaFavDesmarcat)
             if actualitza:
-                QvFavorits().eliminaFavorit(self.getNomMapa())
+                if not QvFavorits().eliminaFavorit(self.getNomMapa()):
+                    return
+            self.botoFav.setIcon(self.iconaFavDesmarcat)
         self.favorit=fav
         if hasattr(self.cataleg.parent,'widgetAssociat') and self.cataleg.parent.widgetAssociat==self:
             self.cataleg.parent.actualitzaBotoFav(fav)
@@ -661,17 +695,6 @@ class MapaCataleg(QFrame):
         self.setFavorit(not self.favorit)
     def getNomMapa(self):
         return self.nomMapa
-    # def paintEvent(self,event):
-    #     if self.checked:
-    #         painter=QPainter(self)
-    #         painter.setRenderHint(QPainter.Antialiasing)
-    #         path=QPainterPath()
-    #         path.addRect(QRectF(10,10,100,50))
-    #         pen=QPen(Qt.black,10)
-    #         painter.setPen(pen)
-    #         painter.drawPath(path)
-    #         painter.fillPath(path,Qt.red)
-    #     super().paintEvent(event)
             
 
 

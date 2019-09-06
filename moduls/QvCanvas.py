@@ -11,6 +11,7 @@ from moduls.QvImports  import *
 from qgis.core.contextmanagers import qgisapp
 from moduls.QvConstants import QvConstants
 from moduls.QvPushButton import QvPushButton
+from moduls.QvConstants import QvConstants
 from moduls.QvStreetView import *
 #from qVista import QVista
 
@@ -24,7 +25,7 @@ class QvCanvas(QgsMapCanvas):
         self.posicioBotonera = posicioBotonera
         self.llegenda = llegenda
         self.pare = pare
-       
+        self.setSelectionColor(QvConstants.COLORDESTACAT)
         
         # self.setWhatsThis(QvApp().carregaAjuda(self))
 
