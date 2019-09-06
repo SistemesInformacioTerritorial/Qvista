@@ -386,6 +386,7 @@ class Ui_MainWindow(object):
         self.botoVeureLlegenda.setToolTip(_translate("MainWindow", "<html><head/><body><p>Veure i ocultar llegenda</p></body></html>"))
         self.botoMapeta.setToolTip(_translate("MainWindow", "<html><head/><body><p>Mostrar i ocultar mapeta</p></body></html>"))
         self.botoObrirQGis.setToolTip(_translate("MainWindow", "<html><head/><body><p>Obrir projecte en QGis</p></body></html>"))
+        self.botoReload.setToolTip(_translate("MainWindow", "<html><head/><body><p>Recarregar projecte</p></body></html>"))
         self.botoDesarProjecte.setToolTip(_translate("MainWindow", "<html><head/><body><p>Desar projecte</p></body></html>"))
 
 

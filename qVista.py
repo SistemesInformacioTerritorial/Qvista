@@ -134,7 +134,8 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         # Inicialitzacions
         self.printActiu = False #???
-        self.teCanvisPendents = False
+        self.canvisPendents = False
+        self.titolProjecte = ""
         self.qvPrint = 0
         self.mapesOberts = False
         self.primerCop = True #???
@@ -305,7 +306,7 @@ class QVista(QMainWindow, Ui_MainWindow):
             # self.project.setTitle(os.path.basename(projecte))
             self.project.setTitle(Path(projecte).stem)
             self.lblTitolProjecte.setText(self.project.title())
-            self.titolProjecte = self.project.title()
+        self.titolProjecte = self.project.title()
         # self.canvisPendents = False #es el bit Dirty que ens diu si hem de guardar al tancar o no
         self.setDirtyBit(False)
         self.canvas.refresh()
@@ -814,7 +815,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.layoutFrameLlegenda = QVBoxLayout(self.frameLlegenda)
         self.llegenda = QvLlegenda(self.canvas, self.taulesAtributs)
         self.llegenda.currentLayerChanged.connect(self.canviLayer)
-        self.llegenda.projecteModificat.connect(lambda: self.setDirtyBit(True))
+        self.llegenda.projecteModificat.connect(lambda: self.setDirtyBit(True)) #Activa el dirty bit al fer servir el dwPrint (i no hauria)
         self.canvas.setLlegenda(self.llegenda)
         self.layoutFrameLlegenda.setContentsMargins ( 5, 13, 5, 0 )
         self.llegenda.setStyleSheet("QvLlegenda {color: #38474f; background-color: #F9F9F9; border: 0px solid red;}")
@@ -985,7 +986,7 @@ class QVista(QMainWindow, Ui_MainWindow):
 
     def preparacioImpressio(self):  
         
-        estatDirtybit = self.teCanvisPendents
+        estatDirtybit = self.canvisPendents
         self.dwPrint = QvDockWidget( "Imprimir a PDF", self )
         self.dwPrint.setContextMenuPolicy(Qt.PreventContextMenu)
         self.dwPrint.setObjectName( "Print" )
@@ -997,9 +998,12 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.setDirtyBit(estatDirtybit)
 
     def imprimir(self):
-        estatDirtybit = self.teCanvisPendents
+        estatDirtybit = self.canvisPendents
+        # No és tant fàcil fer que només es creï un cop aquest objecte (i que funcioni bé després)
         self.qvPrint = QvPrint(self.project, self.canvas, self.canvas.extent(), parent = self)
         self.dwPrint.setWidget(self.qvPrint)
+
+        self.qvPrint.leTitol.setText(self.titolProjecte) #el titol pot haver canviat (o el projecte)
         self.dwPrint.show()
         self.qvPrint.pucMoure = True #Mala idea modificar atributs des d'aquí
         def destruirQvPrint(x):
@@ -1068,7 +1072,7 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         
         self.actImprimir = QAction("Imprimir", self)
-        self.actImprimir.setStatusTip("Imprimir")
+        self.actImprimir.setStatusTip("Imprimir a PDF")
         icon=QIcon('imatges/printer.png')
         self.actImprimir.setIcon(icon)
         self.actImprimir.triggered.connect(self.imprimir)
@@ -1300,10 +1304,10 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         stylesheetLineEdits="""
             background-color:%s;
-            color: white;
+            color: %s;
             border: 1px solid %s;
             border-radius: 2px;
-            padding: 3px"""%(QvConstants.COLORCLARHTML, QvConstants.COLORMIGHTML)
+            padding: 1px"""%(QvConstants.COLORCERCADORHTML, QvConstants.COLORFOSCHTML, QvConstants.COLORCERCADORHTML)
         
         self.leCercaPerAdreca.setStyleSheet(stylesheetLineEdits)
         self.leCercaPerAdreca.setFont(QvConstants.FONTTEXT)
@@ -2396,9 +2400,12 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.canvas.refresh()
 
     def editarXY(self):
+        size=self.bXY.size()
+        print(size)
         self.bXY.hide()
         self.leXY.show()
         self.leXY.setText(self.bXY.text())
+        self.leXY.setFixedSize(size)
        
         
     def returnEditarXY(self):
@@ -2639,7 +2646,6 @@ class QVista(QMainWindow, Ui_MainWindow):
         return msgBox.exec()
     def provaDeTancar(self):
         if self.teCanvisPendents():
-            
             # msgBox.setStandardButtons(QMessageBox.Save | QMessageBox.Discard | QMessageBox.Cancel)
             # msgBox.setDefaultButton(QMessageBox.Save)
             ret = self.missatgeDesar()
@@ -2658,8 +2664,10 @@ class QVista(QMainWindow, Ui_MainWindow):
     def closeEvent(self,event):
         self.provaDeTancar()
     def actualitzaMapesRecents(self,ultim=None):
-        #Si no tenim en memòria els mapes recents, si existeixen els carreguem. Si no, doncs una llista buida
+        #Comprovem si tenim carregats en memòria els mapes recents
         if not hasattr(self,'mapesRecents'):
+            #Si no els tenim, mirem si existeix l'arxiu. Si no existeix, carreguem una llista buida
+            #Si existeix, llegim l'arxiu i el carreguem
             if not os.path.isfile(arxiuMapesRecents):
                 self.mapesRecents=[]
             else:
