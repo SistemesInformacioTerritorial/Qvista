@@ -57,7 +57,7 @@ class QvPrint(QWidget):
         QWidget.__init__(self, parent)
         self.parent = parent
         # Creating a memory layer to draw later the rubberband.
-        estatDirtybit = self.parent.teCanvisPendents
+        estatDirtybit = self.parent.canvisPendents
 
         self.layer = QgsVectorLayer('Point?crs=epsg:23031', "Capa temporal d'impressió","memory")
         project.addMapLayer(self.layer)
@@ -105,7 +105,7 @@ class QvPrint(QWidget):
         self.layoutTitol = QHBoxLayout()
         self.lblTitol = QLabel("Títol: ")
         self.leTitol = QLineEdit(self)
-        self.leTitol.setText('')
+        self.leTitol.setText(self.parent.titolProjecte)
         self.layoutTitol.addWidget(self.lblTitol)
         self.layoutTitol.addWidget(self.leTitol)
 
@@ -139,10 +139,10 @@ class QvPrint(QWidget):
 
         self.boto = QvPushButton(text='Plot',destacat=True, parent=self)
         self.boto.clicked.connect(self.printPlanol)
-        self.boto.setFixedWidth(160)
+        self.boto.setFixedWidth(180)
         self.boto2 = QvPushButton(text='Reposicionar',parent=self)
         self.boto2.clicked.connect(self.potsMoure)
-        self.boto2.setFixedWidth(160)
+        self.boto2.setFixedWidth(180)
 
         self.nota = QLabel("NOTA: Alguns navegadors web alteren l'escala d'impressió dels PDFs. Per màxima exactitud imprimiu des de l'Adobe Acrobat.")
         styleheetLabel='''
@@ -184,7 +184,7 @@ class QvPrint(QWidget):
             escala*=math.sqrt(2)*4
 
 
-        if self.cbOrientacio.SelectedItem == "Vertical":
+        if self.cbOrientacio.SelectedItem == "Horitzontal":
             self.incX = escala
             self.incY = escala * 1.5
         else:
@@ -242,12 +242,29 @@ class QvPrint(QWidget):
         # else:
         #     rotacio=0
         rotacio=self.canvas.rotation()
-        if self.cbOrientacio.SelectedItem == "Vertical":
-            self.plantillaMapa = 'plantillaMapa.qpt'
-            print(self.plantillaMapa)
+        if self.cbOrientacio.currentText() == "Vertical":
+            if self.cbMida.currentText() == "A4":
+                self.plantillaMapa = 'plantillaMapa.qpt'
+            elif self.cbMida.currentText() == "A3":
+                self.plantillaMapa = 'plantillaMapaA3.qpt'
+            elif self.cbMida.currentText() == "A2":
+                self.plantillaMapa = 'plantillaMapaA2.qpt'
+            elif self.cbMida.currentText() == "A1":
+                self.plantillaMapa = 'plantillaMapaA1.qpt'
+            elif self.cbMida.currentText() == "A0":
+                self.plantillaMapa = 'plantillaMapaA0.qpt'
+            
         else:
-            self.plantillaMapa = 'plantillaMapaH.qpt'
-            print(self.plantillaMapa)
+            if self.cbMida.currentText() == "A4":
+                self.plantillaMapa = 'plantillaMapaH.qpt'
+            elif self.cbMida.currentText() == "A3":
+                self.plantillaMapa = 'plantillaMapaA3H.qpt'
+            elif self.cbMida.currentText() == "A2":
+                self.plantillaMapa = 'plantillaMapaA2H.qpt'
+            elif self.cbMida.currentText() == "A1":
+                self.plantillaMapa = 'plantillaMapaA1H.qpt'
+            elif self.cbMida.currentText() == "A0":
+                self.plantillaMapa = 'plantillaMapaA0H.qpt'  
 
         t = time.localtime()
         timestamp = time.strftime('%b-%d-%Y_%H%M%S', t)
@@ -283,8 +300,8 @@ class QvPrint(QWidget):
             refMap = layout.referenceMap()
 
             titol=layout.itemById('idNomMapa')
-            if self.leTitol.text()!='':
-                titol.setText(self.leTitol.text())
+            # if self.leTitol.text()!='':
+            #     titol.setText(self.leTitol.text()) #comentat pk peta
             # else:
             #     titol.setText('')
             
@@ -329,14 +346,14 @@ class QvPrint(QWidget):
             segonsEmprats=round(time.time()-tInicial,1) #???
             layersTemporals = self.project.mapLayersByName("Capa temporal d'impressió")
 
-            estatDirtybit = self.parent.teCanvisPendents
+            estatDirtybit = self.parent.canvisPendents
             for layer in layersTemporals:
                 self.project.removeMapLayer(layer.id())
             self.parent.setDirtyBit(estatDirtybit)
 
     def oculta(self):
         #Eliminem la capa temporal
-        estatDirtybit = self.parent.teCanvisPendents
+        estatDirtybit = self.parent.canvisPendents
         layersTemporals = self.project.mapLayersByName("Capa temporal d'impressió")
         for layer in layersTemporals:
             self.project.removeMapLayer(layer.id())

@@ -65,7 +65,7 @@ class QHLine(QFrame):
         super(QHLine, self).__init__()
         self.setFrameShape(QFrame.HLine)
         self.setFrameShadow(QFrame.Raised)
-
+        
 class QVLine(QFrame):
     def __init__(self):
         super(QVLine, self).__init__()
@@ -134,7 +134,8 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         # Inicialitzacions
         self.printActiu = False #???
-        self.teCanvisPendents = False
+        self.canvisPendents = False
+        self.titolProjecte = ""
         self.qvPrint = 0
         self.mapesOberts = False
         self.primerCop = True #???
@@ -270,6 +271,7 @@ class QVista(QMainWindow, Ui_MainWindow):
                     self.setDirtyBit()
             elif fext == '.csv':
                 carregarLayerCSV(nfile)
+
     def obrirProjecteCataleg(self, projecte, fav, widgetAssociat, rang=None):
         '''Obre un projecte des del catàleg
         Fa el mateix que la funció obrirProjecte, però mostrant el botó de favorits
@@ -280,9 +282,11 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.mapaCataleg=True
         self.actualitzaBotoFav(fav)
         self.widgetAssociat=widgetAssociat
+
     def actualitzaBotoFav(self,fav):
         self.favorit=fav
         self.botoFavorits.setIcon(self.iconaFavMarcat if fav else self.iconaFavDesmarcat)
+        
     def obrirProjecte(self, projecte, rang = None):
         """Obre un projecte passat com a parametre, amb un possible rang predeterminat.
         
@@ -302,7 +306,7 @@ class QVista(QMainWindow, Ui_MainWindow):
             # self.project.setTitle(os.path.basename(projecte))
             self.project.setTitle(Path(projecte).stem)
             self.lblTitolProjecte.setText(self.project.title())
-            self.titolProjecte = self.project.title()
+        self.titolProjecte = self.project.title()
         # self.canvisPendents = False #es el bit Dirty que ens diu si hem de guardar al tancar o no
         self.setDirtyBit(False)
         self.canvas.refresh()
@@ -811,7 +815,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.layoutFrameLlegenda = QVBoxLayout(self.frameLlegenda)
         self.llegenda = QvLlegenda(self.canvas, self.taulesAtributs)
         self.llegenda.currentLayerChanged.connect(self.canviLayer)
-        self.llegenda.projecteModificat.connect(lambda: self.setDirtyBit(True))
+        self.llegenda.projecteModificat.connect(lambda: self.setDirtyBit(True)) #Activa el dirty bit al fer servir el dwPrint (i no hauria)
         self.canvas.setLlegenda(self.llegenda)
         self.layoutFrameLlegenda.setContentsMargins ( 5, 13, 5, 0 )
         self.llegenda.setStyleSheet("QvLlegenda {color: #38474f; background-color: #F9F9F9; border: 0px solid red;}")
@@ -982,7 +986,7 @@ class QVista(QMainWindow, Ui_MainWindow):
 
     def preparacioImpressio(self):  
         
-        estatDirtybit = self.teCanvisPendents
+        estatDirtybit = self.canvisPendents
         self.dwPrint = QvDockWidget( "Imprimir a PDF", self )
         self.dwPrint.setContextMenuPolicy(Qt.PreventContextMenu)
         self.dwPrint.setObjectName( "Print" )
@@ -994,7 +998,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.setDirtyBit(estatDirtybit)
 
     def imprimir(self):
-        estatDirtybit = self.teCanvisPendents
+        estatDirtybit = self.canvisPendents
         self.qvPrint = QvPrint(self.project, self.canvas, self.canvas.extent(), parent = self)
         self.dwPrint.setWidget(self.qvPrint)
         self.dwPrint.show()
@@ -1065,7 +1069,7 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         
         self.actImprimir = QAction("Imprimir", self)
-        self.actImprimir.setStatusTip("Imprimir")
+        self.actImprimir.setStatusTip("Imprimir a PDF")
         icon=QIcon('imatges/printer.png')
         self.actImprimir.setIcon(icon)
         self.actImprimir.triggered.connect(self.imprimir)
@@ -2636,7 +2640,6 @@ class QVista(QMainWindow, Ui_MainWindow):
         return msgBox.exec()
     def provaDeTancar(self):
         if self.teCanvisPendents():
-            
             # msgBox.setStandardButtons(QMessageBox.Save | QMessageBox.Discard | QMessageBox.Cancel)
             # msgBox.setDefaultButton(QMessageBox.Save)
             ret = self.missatgeDesar()
