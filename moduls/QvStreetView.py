@@ -99,6 +99,22 @@ class PointTool(QgsMapTool):
             self.parent.boto.move(event.x()-30,event.y()-30)
 
 
+    def tresParaules(self,xx,yy):
+        try:
+            point= QgsPointXY(xx, yy)
+
+            self.transformacio = QgsCoordinateTransform(QgsCoordinateReferenceSystem("EPSG:25831"), 
+                                QgsCoordinateReferenceSystem("EPSG:4326"), 
+                                QgsProject.instance())
+
+            self.puntTransformat=self.transformacio.transform(point) 
+            self.parent.urlStreetView = "https://maps.google.com/maps?layer=c&cbll={},{}".format(self.puntTransformat.y(), self.puntTransformat.x())
+
+            self.parent.qbrowser.browser.setUrl(QUrl(self.parent.urlStreetView))
+            self.parent.qbrowser.show()
+            self.parent.show()
+        except:
+            pass  
 
     def llevame(self,xx,yy):
         try:
@@ -110,6 +126,7 @@ class PointTool(QgsMapTool):
 
             self.puntTransformat=self.transformacio.transform(point) 
             self.parent.urlStreetView = "https://maps.google.com/maps?layer=c&cbll={},{}".format(self.puntTransformat.y(), self.puntTransformat.x())
+
 
             self.parent.qbrowser.browser.setUrl(QUrl(self.parent.urlStreetView))
             self.parent.qbrowser.show()
@@ -138,7 +155,16 @@ class PointTool(QgsMapTool):
 
         self.parent.qbrowser.browser.setUrl(QUrl(self.parent.urlStreetView))
         self.parent.qbrowser.show()
-        self.parent.show()
+        self.parent.show()            
+        try:
+            import what3words
+
+            geocoder = what3words.Geocoder("HTD7LNB9")
+            palabras = geocoder.convert_to_3wa(what3words.Coordinates(self.puntTransformat.y(), self.puntTransformat.x()), language='es')
+            # coordenadas = geocoder.convert_to_coordinates('agudo.lista.caja')
+            print(palabras['words'])
+        except:
+            print('No va 3 words')
         try:
             self.parent.parent.dwSV.show()
         
