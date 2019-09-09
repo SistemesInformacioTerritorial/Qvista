@@ -47,7 +47,7 @@ if not os.path.exists(dadesdir):
 
 if not os.path.isdir(carpetaCataleg):
     carpetaCataleg = "../dades/CatalegProjectes/"
-    carpetaCatalegProjectesLlista = "../dades/CatalegProjectes/"
+    carpetaCatalegProjectesLlista = ["../dades/CatalegProjectes/"]
     projecteInicial = 'mapesOffline/qVista default map.qgs'
     estatConnexio = "Xarxa municipal: Desconnectat"
 
