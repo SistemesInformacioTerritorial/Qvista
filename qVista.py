@@ -703,13 +703,13 @@ class QVista(QMainWindow, Ui_MainWindow):
           
         self.cAdrec.sHanTrobatCoordenades.connect(self.trobatNumero_oNo) 
 
-        self.dwCercador = QvDockWidget( "Cercador", self )
-        self.dwCercador.setContextMenuPolicy(Qt.PreventContextMenu)
-        self.dwCercador.hide()
-        self.dwCercador.setAllowedAreas( Qt.RightDockWidgetArea | Qt.LeftDockWidgetArea )
-        self.dwCercador.setWidget( self.fCercador)
-        self.dwCercador.setContentsMargins ( 2, 2, 2, 2 )
-        self.addDockWidget( Qt.RightDockWidgetArea, self.dwCercador)
+        # self.dwCercador = QvDockWidget( "Cercador", self )
+        # self.dwCercador.setContextMenuPolicy(Qt.PreventContextMenu)
+        # self.dwCercador.hide()
+        # self.dwCercador.setAllowedAreas( Qt.RightDockWidgetArea | Qt.LeftDockWidgetArea )
+        # self.dwCercador.setWidget( self.fCercador)
+        # self.dwCercador.setContentsMargins ( 2, 2, 2, 2 )
+        # self.addDockWidget( Qt.RightDockWidgetArea, self.dwCercador)
 
     def CopiarA_Ubicacions(self):       
          # self.ubicacions.leUbicacions.setText("->"+self.leCarrer.text()+"  "+self.leNumero.text())
@@ -962,11 +962,13 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.dwCercador = QvDockWidget( "Cercador", self )              #
         self.dwCercador.setAllowedAreas(Qt.RightDockWidgetArea)         # Quan el widget estigui a punt, això s'ha de treure
         self.addDockWidget( Qt.RightDockWidgetArea, self.dwCercador)    # El que hi ha comentat abaix és el que genera el widget antic
-        textInfo = QLabel("Aquest widget encara no està disponible")    #
-        self.dwCercador.setWidget(textInfo)
-        # if self.prepararCercador:
-        #     self.preparacioCercadorPostal()
-        #     self.prepararCercador = False
+
+        # textInfo = QLabel("Aquest widget encara no està disponible")    #
+        # self.dwCercador.setWidget(textInfo)
+        if self.prepararCercador:
+            self.preparacioCercadorPostal()        
+            self.dwCercador.setWidget( self.fCercador)
+            self.prepararCercador = False
         self.dwCercador.show()
 
     def menuLlegenda(self, tipus):
@@ -987,7 +989,6 @@ class QVista(QMainWindow, Ui_MainWindow):
             self.mapesOberts = True
 
     def preparacioMapTips(self):
-        
         layer = self.llegenda.currentLayer()
         self.my_tool_tip = QvToolTip(self.canvas,layer)
         self.my_tool_tip.createMapTips()
