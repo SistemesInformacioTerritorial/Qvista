@@ -302,10 +302,10 @@ class QvPrint(QWidget):
             refMap = layout.referenceMap()
 
             titol=layout.itemById('idNomMapa')
-            # if self.leTitol.text()!='':
-            #     titol.setText(self.leTitol.text()) #comentat pk peta
-            # else:
-            #     titol.setText('')
+            if self.leTitol.text()!='':
+                titol.setText(self.leTitol.text()) #comentat pk peta
+            else:
+                titol.setText('')
             
             rect = refMap.extent()
             vector = QgsVector(x - rect.center().x(), y - rect.center().y())
