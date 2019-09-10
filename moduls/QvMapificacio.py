@@ -41,6 +41,15 @@ _DISTRIBUCIO = {
     "Per habitant": "/ Z.POBLACIO"
 }
 
+# _COLORS = {
+#     "Blau": QColor(0, 128, 255),
+#     "Taronja": QColor(255, 128, 0),
+#     "Gris": QColor(128, 128, 128),
+#     "Vermell" : QColor(255, 32, 32),
+#     "Verd" : QColor(32, 160, 32),
+#     "Groc" : QColor(255, 192, 0)
+# }
+
 class QvMapificacio(QObject):
 
     afegintZona = pyqtSignal(int)  # Porcentaje cubierto (0 - 100)
