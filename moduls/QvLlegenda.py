@@ -972,6 +972,23 @@ if __name__ == "__main__":
                 if botonera is not None:
                     botonera.close()
 
+        def testMapificacio():
+            from moduls.QvMapificacio import QvMapificacio
+
+            z = QvMapificacio('D:/qVista/CarrecsANSI_BARRI.csv', 'Barri')
+
+            # z = QvMapificacio('D:/qVista/CarrecsANSI.csv', 'Barri')
+            # print(z.rows, 'filas en', z.fDades)
+            # print('Muestra:', z.mostra)
+
+            # camps = ('', 'NOM_CARRER_GPL', 'NUM_I_GPL', '', 'NUM_F_GPL')
+            # z.zonificacio(camps,
+            #     afegintZona=lambda n: print('... Procesado', str(n), '% ...'),
+            #     errorAdreca=lambda f: print('Fila sin geocodificar -', f),
+            #     zonaAfegida=lambda n: print('Zona', z.zona, 'procesada en', str(n), 'segs. en ' + z.fZones + ' -', str(z.rows), 'registros,', str(z.errors), 'errores'))
+
+            z.agregacio('Càrrecs per Barri', 'Nombre')
+
         def testJoin():
 
             import sys
@@ -1045,6 +1062,7 @@ if __name__ == "__main__":
 
             tipusJoin = 'left' if showErrors else 'inner'
 
+            # Nombre fichero antes de ?quuery= !!!!!
             vlayer = QgsVectorLayer( "?query="
                "select C.NUM_CARRECS, B.CODI_BARRI, B.NOM_BARRI, B.DISTRICTE, B.GEOMETRY as GEOM from "
                 "(select count(*) AS NUM_CARRECS, QVISTA_BARRI from " + fich + " group by "
@@ -1194,6 +1212,11 @@ if __name__ == "__main__":
         leyenda.accions.afegirAccio('testJoin', act)
 
         act = QAction()
+        act.setText("Test Mapificacio")
+        act.triggered.connect(testMapificacio)
+        leyenda.accions.afegirAccio('testMapificacio', act)
+
+        act = QAction()
         act.setText("Abrir proyecto")
         act.triggered.connect(openProject)
         leyenda.accions.afegirAccio('openProject', act)
@@ -1207,6 +1230,7 @@ if __name__ == "__main__":
                 leyenda.menuAccions.append('testCapas')
                 # leyenda.menuAccions.append('testSimbologia')
                 leyenda.menuAccions.append('testJoin')
+                leyenda.menuAccions.append('testMapificacio')
                 leyenda.menuAccions.append('editable')
                 leyenda.menuAccions.append('openProject')
 
