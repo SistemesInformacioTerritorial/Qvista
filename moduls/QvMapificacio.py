@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from qgis.core import (QgsProject, QgsVectorLayer, QgsLayerDefinition, QgsVectorFileWriter,
+from qgis.core import (QgsApplication, QgsProject, QgsVectorLayer, QgsLayerDefinition, QgsVectorFileWriter,
                        QgsSymbol, QgsRendererCategory, QgsCategorizedSymbolRenderer,
                        QgsGraduatedSymbolRenderer, QgsRendererRange, QgsAggregateCalculator,
                        QgsGradientColorRamp, QgsRendererRangeLabelFormat, QgsReadWriteContext)
@@ -41,14 +41,14 @@ _DISTRIBUCIO = {
     "Per habitant": "/ Z.POBLACIO"
 }
 
-# _COLORS = {
-#     "Blau": QColor(0, 128, 255),
-#     "Taronja": QColor(255, 128, 0),
-#     "Gris": QColor(128, 128, 128),
-#     "Vermell" : QColor(255, 32, 32),
-#     "Verd" : QColor(32, 160, 32),
-#     "Groc" : QColor(255, 192, 0)
-# }
+_COLORS = {
+    "Blau": QColor(0, 128, 255),
+    "Taronja": QColor(255, 128, 0),
+    "Gris": QColor(128, 128, 128),
+    "Vermell" : QColor(255, 32, 32),
+    "Verd" : QColor(32, 160, 32),
+    "Groc" : QColor(255, 192, 0)
+}
 
 _TRANS = str.maketrans('ÁÉÍÓÚáéíóúÀÈÌÒÙàèìòùÂÊÎÔÛâêîôûÄËÏÖÜäëïöü·ºª.€@$',
                        'AEIOUaeiouAEIOUaeiouAEIOUaeiouAEIOUaeiou.oa_EaD')
@@ -264,15 +264,15 @@ class QvMapificacio(QObject):
                 layers = QgsLayerDefinition.loadLayerDefinitionLayers(ruta + 'Mapificacio.qlr')
                 QgsProject.instance().addMapLayers(layers, True)
 
-    def calcColors(self, colorBase, iniAlpha):
-        colorIni = QColor(colorBase)
+    def calcColors(self, iniAlpha):
+        colorIni = QColor(self.colorBase)
         colorIni.setAlpha(iniAlpha)
-        colorFi = QColor(colorBase)
+        colorFi = QColor(self.colorBase)
         colorFi.setAlpha(255 - iniAlpha)
         return colorIni, colorFi
 
-    def calcRenderer(self, mapLyr, numCategories, format, colorBase, iniAlpha=8):
-        colorIni, colorFi = self.calcColors(colorBase, iniAlpha)
+    def calcRenderer(self, mapLyr, numCategories, format, iniAlpha=8):
+        colorIni, colorFi = self.calcColors(iniAlpha)
         colorRamp = QgsGradientColorRamp(colorIni, colorFi)
         labelFormat = QgsRendererRangeLabelFormat(format, self.numDecimals)
         symbol = QgsSymbol.defaultSymbol(mapLyr.geometryType())
@@ -281,16 +281,26 @@ class QvMapificacio(QObject):
         return renderer
 
     def calcSelect(self):
+        if self.filtre is None or self.filtre == '':
+            filtre = ''
+        else:
+            filtre = ' WHERE ' + self.filtre
         select = "select round(I.AGREGAT " + self.tipusDistribucio + ", " + str(self.numDecimals) + ") AS " + self.campCalculat + ", " + \
                  "Z.CODI, Z.DESCRIPCIO, Z.AREA, Z.GEOMETRY as GEOM from Zona AS Z, " + \
                  "(SELECT " + self.tipusAgregacio + " AS AGREGAT, " + self.campZona + " AS CODI " + \
-                 "FROM Info GROUP BY " + self.campZona + ") AS I WHERE Z.CODI = I.CODI"
-        if self.filtre != '':
-            select += ' AND ' + self.filtre
+                 "FROM Info" + filtre + " GROUP BY " + self.campZona + ") AS I WHERE Z.CODI = I.CODI"
         return select
 
+    def calcColor(self, color):
+        defColor = _COLORS["Blau"]
+        if isinstance(color, str) and color in _COLORS.keys():
+            return _COLORS[color]
+        if isinstance(color, QColor):
+            return color
+        return defColor
+
     def agregacio(self, nomCapa, tipusAgregacio, campCalculat='RESULTAT', campAgregat='', tipusDistribucio="Total",
-                  filtre='', numDecimals=0, numCategories=5, colorBase=QColor(0, 128, 255), format='%1 - %2', veure=True):
+                  filtre='', numDecimals=-1, numCategories=5, colorBase='Blau', format='%1 - %2', veure=True):
 
         self.fMapa = ''
 
@@ -309,9 +319,17 @@ class QvMapificacio(QObject):
             return
         self.tipusDistribucio = _DISTRIBUCIO[tipusDistribucio]
 
+        self.colorBase = self.calcColor(colorBase)            
+
+        if numDecimals >= 0:
+            self.numDecimals = numDecimals
+        elif self.tipusAgregacio.startswith('COUNT'):
+            self.numDecimals = 0
+        else:
+            self.numDecimals = 2
+
         self.filtre = filtre
         self.campCalculat = campCalculat
-        self.numDecimals = numDecimals
         nom = nomCapa.strip()
         nom = nom.replace(' ', '_')
         nom = nom.translate(_TRANS)
@@ -319,7 +337,7 @@ class QvMapificacio(QObject):
         rutaDades = 'Dades/'
         rutaMapes = 'C:/temp/qVista/temp/'
 
-        # Carga de capa base de zona
+        # Carga de capa base de zona<
         zonaLyr = QgsVectorLayer(rutaDades + self.valZona[2], 'Zona', 'ogr')
         zonaLyr.setProviderEncoding("UTF-8")
         if zonaLyr.isValid():
@@ -350,7 +368,7 @@ class QvMapificacio(QObject):
             if mapLyr.isValid():
 
                 # Renderer para mapificar
-                renderer = self.calcRenderer(mapLyr, numCategories, format, colorBase)
+                renderer = self.calcRenderer(mapLyr, numCategories, format)
                 mapLyr.setRenderer(renderer)
 
                 # Guarda capa qlr con agregación + mapificación
@@ -366,6 +384,7 @@ class QvMapificacio(QObject):
                 if veure and self.fMapa != '':
                     layers = QgsLayerDefinition.loadLayerDefinitionLayers(self.fMapa)
                     QgsProject.instance().addMapLayers(layers, True)
+                    QgsApplication.processEvents()
 
 
 if __name__ == "__main__":
