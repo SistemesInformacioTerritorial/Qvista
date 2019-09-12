@@ -29,8 +29,8 @@ _ZONES = {
 }
 
 _AGREGACIO = {
-    "Nombre": "COUNT({})",
-    "Nombre diferents": "COUNT(DISTINCT {})",
+    "Recompte": "COUNT({})",
+    "Recompte diferents": "COUNT(DISTINCT {})",
     "Suma": "SUM({})",
     "Mitjana": "AVG({})"
 }
@@ -49,6 +49,9 @@ _DISTRIBUCIO = {
 #     "Verd" : QColor(32, 160, 32),
 #     "Groc" : QColor(255, 192, 0)
 # }
+
+_TRANS = str.maketrans('ÁÉÍÓÚáéíóúÀÈÌÒÙàèìòùÂÊÎÔÛâêîôûÄËÏÖÜäëïöü·ºª.€@$',
+                       'AEIOUaeiouAEIOUaeiouAEIOUaeiouAEIOUaeiou.oa_EaD')
 
 class QvMapificacio(QObject):
 
@@ -223,8 +226,8 @@ class QvMapificacio(QObject):
 
         # mapLayer = QgsVectorLayer( "?query=select * from Zona Z, Info I where Z.codi = I." + self.campZona, "Mapificacio", "virtual" )
 
-        vlayer = QgsVectorLayer("?query=select A.NOMBRE, Z.CODI, Z.DESCRIPCIO, Z.GEOMETRY as GEOM from Zona AS Z, "
-            "(SELECT COUNT(*) AS NOMBRE, QVISTA_BARRI AS CODI FROM INFO GROUP BY QVISTA_BARRI) AS A "
+        vlayer = QgsVectorLayer("?query=select A.RECOMPTE, Z.CODI, Z.DESCRIPCIO, Z.GEOMETRY as GEOM from Zona AS Z, "
+            "(SELECT COUNT(*) AS RECOMPTE, QVISTA_BARRI AS CODI FROM INFO GROUP BY QVISTA_BARRI) AS A "
             "WHERE Z.CODI = A.CODI",
             "Mapificacio", "virtual" )
         vlayer.setProviderEncoding("UTF-8")            
@@ -247,7 +250,7 @@ class QvMapificacio(QObject):
                 colorRamp = QgsGradientColorRamp(QColor(0, 128, 255, iniAlpha),
                                                 QColor(0, 128, 255, 255 - iniAlpha))
                 format = QgsRendererRangeLabelFormat('%1 - %2', numDecimals)
-                renderer = QgsGraduatedSymbolRenderer.createRenderer(mapLayer, "NOMBRE", numItems, 
+                renderer = QgsGraduatedSymbolRenderer.createRenderer(mapLayer, "RECOMPTE", numItems, 
                     QgsGraduatedSymbolRenderer.Pretty, symbol, colorRamp, format)
 
                 mapLayer.setRenderer(renderer)
@@ -282,16 +285,18 @@ class QvMapificacio(QObject):
                  "Z.CODI, Z.DESCRIPCIO, Z.AREA, Z.GEOMETRY as GEOM from Zona AS Z, " + \
                  "(SELECT " + self.tipusAgregacio + " AS AGREGAT, " + self.campZona + " AS CODI " + \
                  "FROM Info GROUP BY " + self.campZona + ") AS I WHERE Z.CODI = I.CODI"
+        if self.filtre != '':
+            select += ' AND ' + self.filtre
         return select
 
     def agregacio(self, nomCapa, tipusAgregacio, campCalculat='RESULTAT', campAgregat='', tipusDistribucio="Total",
-                  numDecimals=0, numCategories=5, colorBase=QColor(0, 128, 255), format='%1 - %2', veure=True):
+                  filtre='', numDecimals=0, numCategories=5, colorBase=QColor(0, 128, 255), format='%1 - %2', veure=True):
 
         self.fMapa = ''
 
         if campAgregat is not None and campAgregat != '':
             self.campAgregat = campAgregat
-        elif tipusAgregacio == 'Nombre' and campAgregat == '':
+        elif tipusAgregacio == 'Recompte' and campAgregat == '':
             self.campAgregat = '*'
         else:
             return
@@ -304,11 +309,12 @@ class QvMapificacio(QObject):
             return
         self.tipusDistribucio = _DISTRIBUCIO[tipusDistribucio]
 
+        self.filtre = filtre
         self.campCalculat = campCalculat
         self.numDecimals = numDecimals
         nom = nomCapa.strip()
         nom = nom.replace(' ', '_')
-        # nom = unicodedata.normalize('NFKD', nom) # .encode('UTF-8', 'ignore')
+        nom = nom.translate(_TRANS)
         self.nomCapa = nom
         rutaDades = 'Dades/'
         rutaMapes = 'C:/temp/qVista/temp/'
@@ -327,7 +333,7 @@ class QvMapificacio(QObject):
 
         # Creación de capa virtual que construye la agregación
         select = self.calcSelect()
-        virtLyr = QgsVectorLayer("?query=" + select, self.nomCapa, "virtual")
+        virtLyr = QgsVectorLayer("?query=" + select, nomCapa, "virtual")
         virtLyr.setProviderEncoding("UTF-8")            
 
         if virtLyr.isValid():

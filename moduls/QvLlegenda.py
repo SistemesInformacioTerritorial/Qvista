@@ -987,7 +987,11 @@ if __name__ == "__main__":
             #     errorAdreca=lambda f: print('Fila sin geocodificar -', f),
             #     zonaAfegida=lambda n: print('Zona', z.zona, 'procesada en', str(n), 'segs. en ' + z.fZones + ' -', str(z.rows), 'registros,', str(z.errors), 'errores'))
 
-            z.agregacio('Càrrecs per Barri', 'Nombre')
+            # z.agregacio('Càrrecs per Barri', 'Recompte')
+
+            z.agregacio('Quota Mitjana UR per m2', 'Mitjana',
+                        campAgregat="QUOTA_TOTAL / SUPERFICIE", filtre="TIPUS_DE_BE='UR'",
+                        numCategories=4, numDecimals=2)
 
         def testJoin():
 
