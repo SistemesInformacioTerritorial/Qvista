@@ -701,7 +701,7 @@ class QvCarregaCsvGeneraCoords(QvCarregaCsvPage):
             if not self.parent.readerTmp:
                 try:
                     # mida = len(list(reader))-1
-                    with tempfile.NamedTemporaryFile(suffix='.csv',mode='w',errors='ignore',encoding=self.csvEncoding,delete=True) as jajasalu2:
+                    with tempfile.NamedTemporaryFile(suffix='.csv',mode='w',delete=True) as jajasalu2:
                         i=0
                         linies_a_mirar=500
                         wrt=csv.DictWriter(jajasalu2,fieldnames=reader.fieldnames)
@@ -716,8 +716,7 @@ class QvCarregaCsvGeneraCoords(QvCarregaCsvPage):
                         jajasalu2.seek(0)
                     mida=os.path.getsize(fileCsv.name)
                     #for _ in reader: mida+=1
-                except Exception as e:
-                    print(e)
+                except:
                     mida=-1
                 fileCsv.seek(0)
             if self.parent.numeroLinies == -1:
