@@ -24,7 +24,7 @@
     </data_defined_properties>
    </layer>
   </symbol>
-  <LayoutItem type="65638" uuid="{0385d0c4-6dc4-41df-bf23-8e41079b5106}" size="210,297,mm" excludeFromExports="0" outlineWidthM="0.3,mm" background="true" positionLock="false" itemRotation="0" groupUuid="" blendMode="0" referencePoint="0" templateUuid="{0385d0c4-6dc4-41df-bf23-8e41079b5106}" opacity="1" visibility="1" frameJoinStyle="miter" id="" position="0,0,mm" frame="false" positionOnPage="0,0,mm" zValue="0">
+  <LayoutItem type="65638" uuid="{e0520f94-7b1b-4ce3-b216-ebc00f0b4a33}" size="210,297,mm" excludeFromExports="0" outlineWidthM="0.3,mm" background="true" positionLock="false" itemRotation="0" groupUuid="" blendMode="0" referencePoint="0" templateUuid="{e0520f94-7b1b-4ce3-b216-ebc00f0b4a33}" opacity="1" visibility="1" frameJoinStyle="miter" id="" position="0,0,mm" frame="false" positionOnPage="0,0,mm" zValue="0">
    <FrameColor alpha="255" blue="0" green="0" red="0"/>
    <BackgroundColor alpha="255" blue="255" green="255" red="255"/>
    <LayoutObject>
@@ -40,7 +40,7 @@
   </LayoutItem>
   <GuideCollection visible="1"/>
  </PageCollection>
- <LayoutItem type="65641" labelText="Mapa a partir d'una plantilla genèrica." uuid="{153bdd61-5fb4-46e0-a424-6bf7f74f3725}" size="132.23,8.56052,mm" excludeFromExports="0" outlineWidthM="0.3,mm" background="false" positionLock="false" itemRotation="0" groupUuid="" blendMode="0" referencePoint="0" templateUuid="{153bdd61-5fb4-46e0-a424-6bf7f74f3725}" opacity="1" visibility="1" frameJoinStyle="miter" id="idNomMapa" position="72.8559,5.37789,mm" halign="2" frame="false" marginX="0" positionOnPage="72.8559,5.37789,mm" marginY="0" htmlState="0" zValue="4" valign="32">
+ <LayoutItem type="65641" labelText="Lorem ipsum" uuid="{b98fe80d-178f-4409-9089-eea4043a25ae}" size="78.1696,6.79487,mm" excludeFromExports="0" outlineWidthM="0.3,mm" background="false" positionLock="false" itemRotation="0" groupUuid="" blendMode="0" referencePoint="0" templateUuid="{b98fe80d-178f-4409-9089-eea4043a25ae}" opacity="1" visibility="1" frameJoinStyle="miter" id="idData" position="5.18084,287.65,mm" halign="8" frame="false" marginX="0" positionOnPage="5.18084,287.65,mm" marginY="0" htmlState="0" zValue="5" valign="32">
   <FrameColor alpha="255" blue="0" green="0" red="0"/>
   <BackgroundColor alpha="255" blue="255" green="255" red="255"/>
   <LayoutObject>
@@ -56,7 +56,23 @@
   <LabelFont description="MS Shell Dlg 2,10,-1,5,50,0,0,0,0,0" style=""/>
   <FontColor blue="0" green="0" red="0"/>
  </LayoutItem>
- <LayoutItem outlineWidthM="0.3,mm" labelBarSpace="3" excludeFromExports="0" groupUuid="" unitLabel="m" mapUuid="{f2a26f55-a1c8-4681-b171-1a283d852eaa}" background="false" numMapUnitsPerScaleBarUnit="1" visibility="1" outlineWidth="0.3" lineCapStyle="square" maxBarWidth="150" boxContentSpace="1" blendMode="0" numSegmentsLeft="0" size="144.503,12.2,mm" id="" unitType="meters" templateUuid="{e9044f33-854f-4a4f-9079-b56aeab38451}" type="65646" itemRotation="0" positionLock="false" alignment="0" segmentSizeMode="1" frame="false" positionOnPage="0,284.8,mm" position="0,284.8,mm" numSegments="5" height="3" zValue="3" segmentMillimeters="25.9706" numUnitsPerSegment="600000" opacity="1" frameJoinStyle="miter" lineJoinStyle="miter" style="Single Box" uuid="{e9044f33-854f-4a4f-9079-b56aeab38451}" minBarWidth="50" referencePoint="0">
+ <LayoutItem type="65641" labelText="Mapa a partir d'una plantilla genèrica." uuid="{4b41ec19-e6be-4215-b397-32dae3d68749}" size="132.23,8.56052,mm" excludeFromExports="0" outlineWidthM="0.3,mm" background="false" positionLock="false" itemRotation="0" groupUuid="" blendMode="0" referencePoint="0" templateUuid="{4b41ec19-e6be-4215-b397-32dae3d68749}" opacity="1" visibility="1" frameJoinStyle="miter" id="idNomMapa" position="72.8559,7.37789,mm" halign="2" frame="false" marginX="0" positionOnPage="72.8559,7.37789,mm" marginY="0" htmlState="0" zValue="4" valign="32">
+  <FrameColor alpha="255" blue="0" green="0" red="0"/>
+  <BackgroundColor alpha="255" blue="255" green="255" red="255"/>
+  <LayoutObject>
+   <dataDefinedProperties>
+    <Option type="Map">
+     <Option value="" type="QString" name="name"/>
+     <Option name="properties"/>
+     <Option value="collection" type="QString" name="type"/>
+    </Option>
+   </dataDefinedProperties>
+   <customproperties/>
+  </LayoutObject>
+  <LabelFont description="MS Shell Dlg 2,10,-1,5,50,0,0,0,0,0" style=""/>
+  <FontColor blue="0" green="0" red="0"/>
+ </LayoutItem>
+ <LayoutItem outlineWidthM="0.3,mm" labelBarSpace="3" excludeFromExports="0" groupUuid="" unitLabel="m" mapUuid="{7cb858be-96d0-43a2-b46f-649448273760}" background="false" numMapUnitsPerScaleBarUnit="1" visibility="1" outlineWidth="0.3" lineCapStyle="square" maxBarWidth="100" boxContentSpace="1" blendMode="0" numSegmentsLeft="0" size="80.1163,12.2,mm" id="" unitType="meters" templateUuid="{4ddede2e-e022-4d0b-be5d-a9187266eed2}" type="65646" itemRotation="0" positionLock="false" alignment="0" segmentSizeMode="1" frame="false" positionOnPage="125,284.8,mm" position="125,284.8,mm" numSegments="4" height="2" zValue="3" segmentMillimeters="16.7416" numUnitsPerSegment="2000" opacity="1" frameJoinStyle="miter" lineJoinStyle="miter" style="Double Box" uuid="{4ddede2e-e022-4d0b-be5d-a9187266eed2}" minBarWidth="50" referencePoint="0">
   <FrameColor alpha="255" blue="0" green="0" red="0"/>
   <BackgroundColor alpha="255" blue="255" green="255" red="255"/>
   <LayoutObject>
@@ -78,7 +94,7 @@
   <fillColor2 alpha="255" blue="255" green="255" red="255"/>
   <strokeColor alpha="255" blue="0" green="0" red="0"/>
  </LayoutItem>
- <LayoutItem anchorPoint="0" type="65640" pictureWidth="14.7306" pictureRotation="0" uuid="{ec680d7c-63cd-484e-a0db-80ba1c219b71}" size="58.6513,14.821,mm" excludeFromExports="0" mapUuid="" outlineWidthM="0.3,mm" background="false" positionLock="false" itemRotation="0" file="Ajuntament-Barcelona.jpg" svgFillColor="255,255,255,255" groupUuid="" blendMode="0" referencePoint="0" templateUuid="{ec680d7c-63cd-484e-a0db-80ba1c219b71}" opacity="1" resizeMode="0" visibility="1" frameJoinStyle="miter" id="" northOffset="0" position="5.18084,2.24763,mm" frame="false" northMode="0" svgBorderWidth="0.2" pictureHeight="14.821" positionOnPage="5.18084,2.24763,mm" svgBorderColor="0,0,0,255" zValue="2">
+ <LayoutItem anchorPoint="0" type="65640" pictureWidth="45.6031" pictureRotation="0" uuid="{ab45b4ef-3f31-43a8-bfaf-19b5ff89e8fa}" size="58.6513,14.821,mm" excludeFromExports="0" mapUuid="" outlineWidthM="0.3,mm" background="false" positionLock="false" itemRotation="0" file="D:/qVista/Codi/Imatges/logo-ajuntament-de-barcelona-png-3.png" svgFillColor="255,255,255,255" groupUuid="" blendMode="0" referencePoint="0" templateUuid="{ab45b4ef-3f31-43a8-bfaf-19b5ff89e8fa}" opacity="1" resizeMode="0" visibility="1" frameJoinStyle="miter" id="" northOffset="0" position="5.18084,2.24763,mm" frame="false" northMode="0" svgBorderWidth="0.2" pictureHeight="14.821" positionOnPage="5.18084,2.24763,mm" svgBorderColor="0,0,0,255" zValue="2">
   <FrameColor alpha="255" blue="0" green="0" red="0"/>
   <BackgroundColor alpha="255" blue="255" green="255" red="255"/>
   <LayoutObject>
@@ -92,7 +108,7 @@
    <customproperties/>
   </LayoutObject>
  </LayoutItem>
- <LayoutItem type="65639" followPreset="false" uuid="{f2a26f55-a1c8-4681-b171-1a283d852eaa}" size="199.755,266.282,mm" excludeFromExports="0" outlineWidthM="0.3,mm" background="true" positionLock="false" itemRotation="0" groupUuid="" blendMode="0" referencePoint="0" templateUuid="{f2a26f55-a1c8-4681-b171-1a283d852eaa}" opacity="1" followPresetName="" mapRotation="0" visibility="1" frameJoinStyle="miter" id="" position="5.18084,18.3687,mm" keepLayerSet="false" frame="true" drawCanvasItems="true" positionOnPage="5.18084,18.3687,mm" zValue="1">
+ <LayoutItem type="65639" followPreset="false" uuid="{7cb858be-96d0-43a2-b46f-649448273760}" size="199.755,266.282,mm" excludeFromExports="0" outlineWidthM="0.3,mm" background="true" positionLock="false" itemRotation="0" groupUuid="" blendMode="0" referencePoint="0" templateUuid="{7cb858be-96d0-43a2-b46f-649448273760}" opacity="1" followPresetName="" mapRotation="0" visibility="1" frameJoinStyle="miter" id="" position="5.18084,18.3687,mm" keepLayerSet="false" frame="true" drawCanvasItems="true" positionOnPage="5.18084,18.3687,mm" zValue="1">
   <FrameColor alpha="255" blue="0" green="0" red="0"/>
   <BackgroundColor alpha="255" blue="255" green="255" red="255"/>
   <LayoutObject>

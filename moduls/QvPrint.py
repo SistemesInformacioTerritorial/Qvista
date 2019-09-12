@@ -15,6 +15,7 @@ from moduls.QvApp import QvApp
 from moduls.QvPushButton import QvPushButton
 
 import time
+from time import gmtime, strftime
 import math
 projecteInicial='../dades/projectes/BCN11_nord.qgs'
 
@@ -60,7 +61,7 @@ class QvPrint(QWidget):
         estatDirtybit = self.parent.canvisPendents
 
         self.layer = QgsVectorLayer('Point?crs=epsg:23031', "Capa temporal d'impressió","memory")
-        project.addMapLayer(self.layer)
+        project.addMapLayer(self.layer, False)
         
 
         # We store safely the parameters as class variables.
@@ -269,7 +270,7 @@ class QvPrint(QWidget):
                 self.plantillaMapa = 'plantillaMapaA0H.qpt'  
 
         t = time.localtime()
-        timestamp = time.strftime('%b-%d-%Y_%H%M%S', t)
+        timestamp = time.strftime('%a, %b-%d-%Y_%H%M%S', t)
         sortida=tempdir+'sortida_'+timestamp
         
         self.imprimirPlanol(self.posXY[0], self.posXY[1], int(self.combo.currentText()), rotacio, self.cbMida.currentText(), self.plantillaMapa , sortida, 'PDF')
@@ -302,11 +303,13 @@ class QvPrint(QWidget):
             refMap = layout.referenceMap()
 
             titol=layout.itemById('idNomMapa')
+            dataMapa=layout.itemById('idData')
             if self.leTitol.text()!='':
                 titol.setText(self.leTitol.text()) #comentat pk peta
             else:
                 titol.setText('')
             
+            # dataMapa.setText(strftime("%d %b %Y %H:%M:%S +0000", gmtime()))
             rect = refMap.extent()
             vector = QgsVector(x - rect.center().x(), y - rect.center().y())
             rect += vector
