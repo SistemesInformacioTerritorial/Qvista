@@ -2,9 +2,11 @@
 
 from qgis.core import (QgsProject, QgsLegendModel, QgsLayerDefinition, QgsMapLayer, QgsVectorLayer,
                        QgsVectorFileWriter, QgsVectorLayerJoinInfo, QgsLayerTree, QgsLayerTreeNode,
-                       QgsLayerTreeUtils, QgsVectorDataProvider)
+                       QgsLayerTreeUtils, QgsVectorDataProvider, QgsSymbol, QgsRendererCategory, QgsCategorizedSymbolRenderer,
+                       QgsGraduatedSymbolRenderer, QgsRendererRange, QgsAggregateCalculator,
+                       QgsGradientColorRamp, QgsRendererRangeLabelFormat)
 from qgis.gui import (QgsLayerTreeView, QgsLayerTreeViewMenuProvider, QgsLayerTreeMapCanvasBridge,
-                      QgsLayerTreeViewIndicator, QgsLayerTreeViewDefaultActions)
+                      QgsLayerTreeViewIndicator, QgsLayerTreeViewDefaultActions, QgsGradientColorRampDialog)
 from qgis.PyQt.QtWidgets import QAction, QFileDialog, QWidget, QPushButton, QVBoxLayout, QHBoxLayout
 from qgis.PyQt.QtGui import QIcon, QColor
 from qgis.PyQt.QtCore import Qt, pyqtSignal, QUrl
@@ -970,50 +972,218 @@ if __name__ == "__main__":
                 if botonera is not None:
                     botonera.close()
 
+        def testMapificacio():
+            from moduls.QvMapificacio import QvMapificacio
+
+            z = QvMapificacio('D:/qVista/CarrecsANSI_BARRI.csv', 'Barri')
+
+            # z = QvMapificacio('D:/qVista/CarrecsANSI.csv', 'Barri')
+            # print(z.rows, 'filas en', z.fDades)
+            # print('Muestra:', z.mostra)
+
+            # camps = ('', 'NOM_CARRER_GPL', 'NUM_I_GPL', '', 'NUM_F_GPL')
+            # z.zonificacio(camps,
+            #     afegintZona=lambda n: print('... Procesado', str(n), '% ...'),
+            #     errorAdreca=lambda f: print('Fila sin geocodificar -', f),
+            #     zonaAfegida=lambda n: print('Zona', z.zona, 'procesada en', str(n), 'segs. en ' + z.fZones + ' -', str(z.rows), 'registros,', str(z.errors), 'errores'))
+
+            z.agregacio('Càrrecs per Barri', 'Nombre')
+
         def testJoin():
 
-            print(QgsVectorDataProvider.availableEncodings())
+            import sys
+            import csv
+            import time
+            from moduls.QvSqlite import QvSqlite
 
-            vectorLyr = QgsVectorLayer('D:/qVista/Barris.gpkg', 'Barris' , "ogr")
+            ruta = 'D:/qVista/'
+            fich = 'CarrecsANSI'
+            code = 'ANSI'
+            camp = 'BARRI'
+            showErrors = False
+
+            # TODO: Método de cálculo de zonas de Geocod
+            # TODO: Probar la geocodificación en una layer directamente
+
+            # ini = time.time()
+
+            # # Fichero de salida de errores
+            # # sys.stdout = open(ruta + fich + '_ERR.txt', 'w')
+            # print('*** FICHERO:', fich)
+
+            # # Fichero CSV de entrada
+            # with open(ruta + fich + '.csv', encoding=code) as csvInput:
+
+            #     # Fichero CSV de salida con columna extra
+            #     with open(ruta + fich + '_' + camp + '.csv', 'w', encoding=code) as csvOutput:
+
+            #         # Cabeceras
+            #         data = csv.DictReader(csvInput, delimiter=';')
+            #         fields = data.fieldnames
+            #         fields.append('QVISTA_' + camp)
+
+            #         writer = csv.DictWriter(csvOutput, fieldnames=fields, lineterminator='\n')
+            #         writer.writeheader()
+
+            #         # Lectura de filas y geocodificación
+            #         tot = num = 0
+            #         dbgeo = QvSqlite()
+            #         for row in data:
+            #             tot += 1
+            #             val = dbgeo.geoCampCarrerNum(camp, '', row['NOM_CARRER_GPL'], row['NUM_I_GPL'], '', row['NUM_F_GPL'], '')
+            #             # Error en geocodificación
+            #             if val is None:
+            #                 num += 1
+            #                 print('- ERROR', '|', row['NFIXE'], row['NOM_CARRER_GPL'], row['NUM_I_GPL'], '', row['NUM_F_GPL'])
+
+            #             # Escritura de fila con X e Y
+            #             row.update([('QVISTA_' + camp, val)])
+            #             writer.writerow(row)
+
+            #     fin = time.time()
+            #     print('==> REGISTROS:', str(tot), '- ERRORES:', str(num))
+            #     print('==> TIEMPO:', str(fin - ini), 'segundos')
+
+            # print(QgsVectorDataProvider.availableEncodings())
+            # ANSI / ISO-8859-1 / latin1
+            # CP1252 /  windows-1252
+            # UTF-8
+
+            vectorLyr = QgsVectorLayer('D:/qVista/Barris.sqlite', 'Barris' , "ogr")
             vectorLyr.setProviderEncoding("UTF-8")
-            infoLyr = QgsVectorLayer('D:/qVista/CarrecsBarri.csv', 'Carrecs' , "ogr")
-            vectorLyr.setProviderEncoding("windows-1252")
+            if vectorLyr.isValid():
+                leyenda.project.addMapLayer(vectorLyr, True)
 
-            QgsVectorFileWriter.writeAsVectorFormat(vectorLyr,
-                "D:/qVista/Barris", "UTF-8", vectorLyr.crs(), "SQLite")
 
-            leyenda.project.addMapLayers([infoLyr, vectorLyr], False)
+            infoLyr = QgsVectorLayer(ruta + fich + '_' + camp + '.csv', fich , "ogr")
+            infoLyr.setProviderEncoding("System")
+            if infoLyr.isValid():
+                leyenda.project.addMapLayer(infoLyr, False)
 
+            tipusJoin = 'left' if showErrors else 'inner'
+
+            # Nombre fichero antes de ?quuery= !!!!!
             vlayer = QgsVectorLayer( "?query="
-                "select C.*, B.NOM_BARRI, B.DISTRICTE, B.GEOMETRY as GEOM from Carrecs as C "
-                "left join Barris as B on C.CODI_BARRI = B.CODI_BARRI", "CarrecsBarri", "virtual" )
-            QgsVectorFileWriter.writeAsVectorFormat(vlayer,
-                "D:/qVista/CarrecsBarri.gpkg", "UTF-8", vectorLyr.crs(), "C")
+               "select C.NUM_CARRECS, B.CODI_BARRI, B.NOM_BARRI, B.DISTRICTE, B.GEOMETRY as GEOM from "
+                "(select count(*) AS NUM_CARRECS, QVISTA_BARRI from " + fich + " group by "
+                "QVISTA_BARRI) as C " + tipusJoin + " join "
+                "Barris as B on C.QVISTA_BARRI = B.CODI_BARRI", "CarrecsBarriGroup", "virtual" )
+            #    "select C.NUM_CARRECS, C.TIPUS_PROPI, C.DESC_TIPUS_PROPI, B.CODI_BARRI, B.NOM_BARRI, B.DISTRICTE, B.GEOMETRY as GEOM from "
+            #     "(select count(*) AS NUM_CARRECS, QVISTA_BARRI, TIPUS_PROPI, DESC_TIPUS_PROPI from " + fich + " group by "
+            #     "QVISTA_BARRI, TIPUS_PROPI, DESC_TIPUS_PROPI) as C " + tipusJoin + " join "
+            #     "Barris as B on C.QVISTA_BARRI = B.CODI_BARRI", "CarrecsBarriGroup", "virtual" )
+            vlayer.setProviderEncoding("UTF-8")            
+            if not vlayer.isValid():
+                return
 
-            vlayer = QgsVectorLayer( "?query="
-                "select C.*, B.NOM_BARRI, B.DISTRICTE, B.GEOMETRY as GEOM from "
-                "(select count(*) AS NUM_CARRECS, CODI_BARRI from Carrecs group by CODI_BARRI) as C "
-                "left join Barris as B on C.CODI_BARRI = B.CODI_BARRI", "CarrecsBarriGroup", "virtual" )
+            QgsVectorFileWriter.writeAsVectorFormat(vlayer, "D:/qVista/CarrecsBarriGroup.sqlite", "UTF-8", vectorLyr.crs(), "SQLite")
+            leyenda.project.removeMapLayer(infoLyr.id())
 
-            # vlayer = QgsVectorLayer( "?query="
-            #     "select C.*, B.NOM_BARRI, B.DISTRICTE, B.GEOMETRY as GEOM from "
-            #     "(select count(*) AS NUM_CARRECS, CODI_BARRI from Carrecs group by CODI_BARRI) as C "
-            #     "left join Barris as B on C.CODI_BARRI = B.CODI_BARRI", "CarrecsBarriGroup", "virtual" )
-            QgsVectorFileWriter.writeAsVectorFormat(vlayer,
-                "D:/qVista/CarrecsBarriGroup", "UTF-8", vectorLyr.crs(), "SQLite")
-            QgsVectorFileWriter.writeAsVectorFormat(vlayer,
-                "D:/qVista/CarrecsBarriGroup", "UTF-8", vectorLyr.crs(), "GPKG")
+            joinLyr = QgsVectorLayer('D:/qVista/CarrecsBarriGroup.sqlite', 'Càrrecs per Barri' , "ogr")
+            joinLyr.setProviderEncoding("UTF-8")
+            if joinLyr.isValid():
 
-            leyenda.project.removeMapLayers([infoLyr.id(), vectorLyr.id()])
-            joinLyr = QgsVectorLayer('D:/qVista/CarrecsBarri.gpkg', 'CarrecsBarri' , "ogr")
-            joinLyr.setProviderEncoding("UTF-8")
-            leyenda.project.addMapLayer(joinLyr, True)
-            joinLyr = QgsVectorLayer('D:/qVista/CarrecsBarriGroup.gpkg', 'CarrecsBarriGroupGPKG' , "ogr")
-            joinLyr.setProviderEncoding("UTF-8")
-            leyenda.project.addMapLayer(joinLyr, True)
-            joinLyr = QgsVectorLayer('D:/qVista/CarrecsBarriGroup.sqlite', 'CarrecsBarriGroupSQLite' , "ogr")
-            joinLyr.setProviderEncoding("UTF-8")
-            leyenda.project.addMapLayer(joinLyr, True)
+                field = "NUM_CARRECS"
+
+            #     minRango, _ = joinLyr.aggregate(QgsAggregateCalculator.Min, 'NUM_CARRECS')
+            #     maxRango, _ = joinLyr.aggregate(QgsAggregateCalculator.Max, 'NUM_CARRECS')
+
+            # # TODO: Método de simbología por rangos
+            # # TODO: Calcular valores mínimo y máximo y step correspondiente para un número de elementos
+
+            #     elements = [
+            #         ("Menys de 1000", 0.0, 1000.0),
+            #         ("1000 - 2000", 1000.0, 2000.0),
+            #         ("2000 - 3000", 2000.0, 3000.0),
+            #         ("3000 - 4000", 3000.0, 4000.0),
+            #         ("Més de 4000", 4000.0, 5000.0)
+            #     ]
+
+            #     categories = []
+
+            #     total = len(elements)
+            #     step = 256 // total
+            #     color = QColor(0, 128, 255)
+            #     alpha = 0
+
+            #     for label, lower, upper in elements:
+            #         sym = QgsSymbol.defaultSymbol(joinLyr.geometryType())
+            #         if alpha == 0:
+            #             alpha += step // 2
+            #             primero = False
+            #         else:
+            #             alpha += step
+            #         color.setAlpha(alpha)
+            #         sym.setColor(color)
+            #         category = QgsRendererRange(lower, upper, sym, label)
+            #         categories.append(category)
+
+                # renderer = QgsGraduatedSymbolRenderer(field, categories)
+                
+                
+                # QgsGradientColorRampDialog 
+
+                numItems = 5
+                numDecimals = 0
+                iniAlpha = 8
+                symbol = QgsSymbol.defaultSymbol(joinLyr.geometryType())
+                colorRamp = QgsGradientColorRamp(QColor(0, 128, 255, iniAlpha),
+                                                 QColor(0, 128, 255, 255 - iniAlpha))
+                    # , 'stops':'0.25;255,255,0,255:0.50;0,255,0,255:0.75;0,255,255,255')
+                # QgsGradientColorRampDialog(colorRamp)
+                format = QgsRendererRangeLabelFormat('%1 - %2', numDecimals)
+                renderer = QgsGraduatedSymbolRenderer.createRenderer(joinLyr, field, numItems,
+                    QgsGraduatedSymbolRenderer.Pretty, symbol, colorRamp, format)
+
+                joinLyr.setRenderer(renderer)
+                leyenda.project.addMapLayer(joinLyr, True) 
+
+            # TODO: Método de simbología por categorías
+
+                # elements = {
+                #     "0001": (QColor(0, 128, 255, 21), "Tipus 1"),
+                #     "0002": (QColor(0, 128, 255, 63), "Tipus 2"),
+                #     "0003": (QColor(0, 128, 255, 105), "Tipus 3"),
+                #     "0004": (QColor(0, 128, 255, 147), "Tipus 4"),
+                #     "0005": (QColor(0, 128, 255, 189), "Tipus 5"),
+                #     "0006": (QColor(0, 128, 255, 231), "Tipus 6"),
+                # }
+
+                # categories = []
+                # for num, (color, label) in elements.items():
+                #     sym = QgsSymbol.defaultSymbol(joinLyr.geometryType())
+                #     sym.setColor(color)
+                #     category = QgsRendererCategory(num, sym, label)
+                #     categories.append(category)
+
+                # field = "TIPUS_PROPI"
+                # renderer = QgsCategorizedSymbolRenderer(field, categories)
+                # joinLyr.setRenderer(renderer)
+
+
+                # elements = {
+                #     "1": ("yellow"  , "1 càrrec"),
+                #     "2": ("darkcyan", "2 càrrecs"),
+                #     "3": ("green"   , "3 càrrecs")
+                # }
+
+                # elements = {
+                #     "1": (QColor(0, 128, 255, 43), "1 càrrec"),
+                #     "2": (QColor(0, 128, 255, 128), "2 càrrecs"),
+                #     "3": (QColor(0, 128, 255, 213), "3 càrrecs")
+                # }
+
+                # categories = []
+                # for num, (color, label) in elements.items():
+                #     sym = QgsSymbol.defaultSymbol(joinLyr.geometryType())
+                #     # sym.setColor(QColor(color))
+                #     sym.setColor(color)
+                #     category = QgsRendererCategory(num, sym, label)
+                #     categories.append(category)
+
+                # field = "NUM_CARRECS"
+                # renderer = QgsCategorizedSymbolRenderer(field, categories)
+                # joinLyr.setRenderer(renderer)
 
         # Acciones de usuario para el menú
         act = QAction()
@@ -1042,6 +1212,11 @@ if __name__ == "__main__":
         leyenda.accions.afegirAccio('testJoin', act)
 
         act = QAction()
+        act.setText("Test Mapificacio")
+        act.triggered.connect(testMapificacio)
+        leyenda.accions.afegirAccio('testMapificacio', act)
+
+        act = QAction()
         act.setText("Abrir proyecto")
         act.triggered.connect(openProject)
         leyenda.accions.afegirAccio('openProject', act)
@@ -1055,6 +1230,7 @@ if __name__ == "__main__":
                 leyenda.menuAccions.append('testCapas')
                 # leyenda.menuAccions.append('testSimbologia')
                 leyenda.menuAccions.append('testJoin')
+                leyenda.menuAccions.append('testMapificacio')
                 leyenda.menuAccions.append('editable')
                 leyenda.menuAccions.append('openProject')
 
