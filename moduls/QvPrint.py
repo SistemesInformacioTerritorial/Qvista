@@ -270,7 +270,7 @@ class QvPrint(QWidget):
                 self.plantillaMapa = 'plantillaMapaA0H.qpt'  
 
         t = time.localtime()
-        timestamp = time.strftime('%a, %b-%d-%Y_%H%M%S', t)
+        timestamp = time.strftime('%d-%b-%Y_%H%M%S', t)
         sortida=tempdir+'sortida_'+timestamp
         
         self.imprimirPlanol(self.posXY[0], self.posXY[1], int(self.combo.currentText()), rotacio, self.cbMida.currentText(), self.plantillaMapa , sortida, 'PDF')
@@ -308,8 +308,8 @@ class QvPrint(QWidget):
                 titol.setText(self.leTitol.text()) #comentat pk peta
             else:
                 titol.setText('')
-            
-            # dataMapa.setText(strftime("%d %b %Y %H:%M:%S +0000", gmtime()))
+            t = time.localtime()
+            dataMapa.setText(strftime('%b-%d-%Y %H:%M', t))
             rect = refMap.extent()
             vector = QgsVector(x - rect.center().x(), y - rect.center().y())
             rect += vector
