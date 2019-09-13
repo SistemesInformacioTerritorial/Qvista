@@ -199,16 +199,17 @@ class QvNouCataleg(QWidget):
         self.lBanda.setSpacing(0)
         self.wBanda.setLayout(self.lBanda)
 
-        self.fav=BotoLateral('Favorits',self)
-        self.fav.setCheckable(True)
-        self.lBanda.addWidget(self.fav)
-        
-        
         self.tots=BotoLateral('Tots',self)
         self.tots.setIcon(QIcon('Imatges/cm_check_all.png'))
         self.tots.setCheckable(True)
         self.lBanda.addWidget(self.tots)
 
+        self.fav=BotoLateral('Favorits',self)
+        self.fav.setIcon(QIcon('Imatges/star.png'))
+        self.fav.setCheckable(True)
+        self.lBanda.addWidget(self.fav)
+        
+        
         self.catalegs={} #Serà un dict on la clau serà el nom del directori, i el valor una llista de botons
         self.botonsLaterals=[]
         for y in carpetaCatalegProjectesLlista:
