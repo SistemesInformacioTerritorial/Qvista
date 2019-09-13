@@ -3271,12 +3271,16 @@ def escollirNivellQlr():
 
 def afegirQlr(nom): 
 
-    layers = QgsLayerDefinition.loadLayerDefinitionLayers(nom)
+    # layers = QgsLayerDefinition.loadLayerDefinitionLayers(nom)
+    # qV.project.addMapLayers(layers, True)
 
-    qV.project.addMapLayers(layers, True)
-    qV.canvisPendents=True
-    qV.botoDesarProjecte.setIcon(qV.iconaAmbCanvisPendents)
-    # QgsLayerDefinition().loadLayerDefinition(nom, qV.project, qV.llegenda.root)
+    ok, txt = QgsLayerDefinition().loadLayerDefinition(nom, qV.project, qV.llegenda.root)
+    if ok:
+        qV.canvisPendents=True
+        qV.botoDesarProjecte.setIcon(qV.iconaAmbCanvisPendents)
+    else:
+        print('No se pudo importar capas', txt)
+
     return
 
 def afegirNivellSHP():
