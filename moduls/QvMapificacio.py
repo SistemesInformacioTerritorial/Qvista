@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from qgis.core import (QgsApplication, QgsProject, QgsVectorLayer, QgsLayerDefinition, QgsVectorFileWriter,
+from qgis.core import (QgsApplication, QgsVectorLayer, QgsLayerDefinition, QgsVectorFileWriter,
                        QgsSymbol, QgsRendererCategory, QgsCategorizedSymbolRenderer,
                        QgsGraduatedSymbolRenderer, QgsRendererRange, QgsAggregateCalculator,
                        QgsGradientColorRamp, QgsRendererRangeLabelFormat, QgsReadWriteContext)
@@ -53,7 +53,8 @@ _COLORS = {
 _TRANS = str.maketrans('ÁÉÍÓÚáéíóúÀÈÌÒÙàèìòùÂÊÎÔÛâêîôûÄËÏÖÜäëïöüºª€@$·.,;:()[]¡!¿?|@#%&ç*',
                        'AEIOUaeiouAEIOUaeiouAEIOUaeiouAEIOUaeiouoaEaD____________________')
 
-_RUTA_LOCAL = 'C:/temp/qVista/temp/'
+_RUTA_LOCAL = 'C:/temp/qVista/dades/'
+_RUTA_DADES = 'D:/qVista/Codi/Dades/'
 
 class QvMapificacio(QObject):
 
@@ -255,7 +256,7 @@ class QvMapificacio(QObject):
         s = s.translate(_TRANS)
         return s
 
-    def agregacio(self, nomCapa, tipusAgregacio, campCalculat='RESULTAT', campAgregat='', tipusDistribucio="Total",
+    def agregacio(self, llegenda, nomCapa, tipusAgregacio, campCalculat='RESULTAT', campAgregat='', tipusDistribucio="Total",
                   filtre='', numDecimals=-1, numCategories=5, colorBase='Blau', format='%1 - %2', veure=True):
 
         self.fMapa = ''
@@ -289,16 +290,16 @@ class QvMapificacio(QObject):
         self.nomCapa = self.netejaString(nomCapa)
 
         # Carga de capa base de zona
-        zonaLyr = QgsVectorLayer('Dades/' + self.valZona[2], 'Zona', 'ogr')
+        zonaLyr = QgsVectorLayer(_RUTA_DADES + self.valZona[2], 'Zona', 'ogr')
         zonaLyr.setProviderEncoding("UTF-8")
         if zonaLyr.isValid():
-            QgsProject.instance().addMapLayer(zonaLyr, False)
+            llegenda.project.addMapLayer(zonaLyr, False)
 
         # Carga de capa de datos zonificados
         infoLyr = QgsVectorLayer(self.fZones, 'Info', 'ogr')
         infoLyr.setProviderEncoding(self.code)
         if infoLyr.isValid():
-            QgsProject.instance().addMapLayer(infoLyr, False)
+            llegenda.project.addMapLayer(infoLyr, False)
 
         # Creación de capa virtual que construye la agregación
         select = self.calcSelect()
@@ -310,8 +311,8 @@ class QvMapificacio(QObject):
             QgsVectorFileWriter.writeAsVectorFormat(virtLyr, _RUTA_LOCAL + self.nomCapa + ".sqlite", "UTF-8", zonaLyr.crs(), "SQLite")
 
             # Elimina capas de base y datos
-            QgsProject.instance().removeMapLayer(zonaLyr.id())
-            QgsProject.instance().removeMapLayer(infoLyr.id())
+            llegenda.project.removeMapLayer(zonaLyr.id())
+            llegenda.project.removeMapLayer(infoLyr.id())
 
             # Carga capa SQLite de agregación
             mapLyr = QgsVectorLayer(_RUTA_LOCAL + self.nomCapa + ".sqlite", nomCapa , "ogr")
@@ -326,15 +327,19 @@ class QvMapificacio(QObject):
                 self.fMapa = _RUTA_LOCAL + self.nomCapa + '.qlr'
                 try:
                     domDoc = QgsLayerDefinition.exportLayerDefinitionLayers([mapLyr], QgsReadWriteContext())
+                    txt = domDoc.toString()
+                    txt = txt.replace(_RUTA_LOCAL, '')
                     with open(self.fMapa, "w+", encoding="UTF-8") as qlr:
-                        qlr.write(domDoc.toString())
-                except Exception:
+                        qlr.write(txt)
+                except Exception as e:
                     self.fMapa = ''
+                    print(e)
 
                 # Mostar qlr de mapificación, si es el caso
                 if veure and self.fMapa != '':
-                    layers = QgsLayerDefinition.loadLayerDefinitionLayers(self.fMapa)
-                    QgsProject.instance().addMapLayers(layers, True)
+                    ok, txt = QgsLayerDefinition.loadLayerDefinition(self.fMapa, llegenda.project, llegenda.root)
+                    if not ok:
+                        print('No se pudo importar mapificación')
                     QgsApplication.processEvents()
 
 

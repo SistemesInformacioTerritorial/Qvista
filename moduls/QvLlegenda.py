@@ -996,14 +996,14 @@ if __name__ == "__main__":
             #     errorAdreca=lambda f: print('Fila sin geocodificar -', f),
             #     zonaAfegida=lambda n: print('Zona', z.zona, 'procesada en', str(n), 'segs. en ' + z.fZones + ' -', str(z.rows), 'registros,', str(z.errors), 'errores'))
 
-            z.agregacio('Càrrecs per Barri', 'Recompte')
+            z.agregacio(leyenda, 'Càrrecs per Barri', 'Recompte')
 
-            z.agregacio('Recaudació urbans (milers €)', 'Suma',
+            z.agregacio(leyenda, 'Recaudació urbans (milers €)', 'Suma',
                         campAgregat="QUOTA_TOTAL / 1000",
                         filtre="TIPUS_DE_BE = 'UR'",
                         colorBase='Taronja')
 
-            z.agregacio('Valor cadastral m2 (€)', 'Mitjana',
+            z.agregacio(leyenda, 'Valor cadastral m2 (€)', 'Mitjana',
                         campAgregat="V_CAD_ANY_ACTUAL / SUPERFICIE",
                         colorBase='Verd')
 
