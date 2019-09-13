@@ -975,7 +975,7 @@ if __name__ == "__main__":
         def testMapificacio():
             from moduls.QvMapificacio import QvMapificacio
 
-            z = QvMapificacio('D:/qVista/CarrecsANSI_BARRI.csv', 'Barri')
+            z = QvMapificacio('CarrecsANSI_BARRI.csv', 'Barri')
 
             # z = QvMapificacio('D:/qVista/CarrecsANSI.csv', 'Barri')
             # print(z.rows, 'filas en', z.fDades)
@@ -989,10 +989,14 @@ if __name__ == "__main__":
 
             z.agregacio('Càrrecs per Barri', 'Recompte')
 
-            z.agregacio('Quota Mitjana per m2', 'Mitjana',
-                        campAgregat="QUOTA_TOTAL / SUPERFICIE",
+            z.agregacio('Recaudació urbans (milers €)', 'Suma',
+                        campAgregat="QUOTA_TOTAL / 1000",
                         filtre="TIPUS_DE_BE = 'UR'",
                         colorBase='Taronja')
+
+            z.agregacio('Valor cadastral m2 (€)', 'Mitjana',
+                        campAgregat="V_CAD_ANY_ACTUAL / SUPERFICIE",
+                        colorBase='Verd')
 
         def testJoin():
 

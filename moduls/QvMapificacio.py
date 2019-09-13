@@ -19,7 +19,7 @@ import unicodedata
 _ZONES = {
     # Nom: (Camp, Taula, Arxiu)
     "Codi postal": "CODI_POSTAL",
-    "Districte": "DISTRICTE",
+    "Districte": ("DISTRICTE", "Districte", "Districtes.sqlite"),
     "Illa": "ILLA",
     "Solar": "SOLAR",
     "Barri": ("BARRI", "Barris", "Barris.sqlite"),
@@ -50,8 +50,10 @@ _COLORS = {
     "Groc" : QColor(255, 192, 0)
 }
 
-_TRANS = str.maketrans('ÁÉÍÓÚáéíóúÀÈÌÒÙàèìòùÂÊÎÔÛâêîôûÄËÏÖÜäëïöü·ºª.€@$',
-                       'AEIOUaeiouAEIOUaeiouAEIOUaeiouAEIOUaeiou.oa_EaD')
+_TRANS = str.maketrans('ÁÉÍÓÚáéíóúÀÈÌÒÙàèìòùÂÊÎÔÛâêîôûÄËÏÖÜäëïöüºª€@$·.,;:()[]¡!¿?|@#%&ç*',
+                       'AEIOUaeiouAEIOUaeiouAEIOUaeiouAEIOUaeiouoaEaD____________________')
+
+_RUTA_LOCAL = 'C:/temp/qVista/temp/'
 
 class QvMapificacio(QObject):
 
@@ -61,8 +63,7 @@ class QvMapificacio(QObject):
 
     def __init__(self, fDades, zona, campZona='', code='ANSI', delimiter=';', prefixe='QVISTA_', numMostra=60):
         super().__init__()
-        self.fDades = fDades
-        self.fZones = fDades
+        self.fDades = self.fZones = fDades
         self.zona = zona
         self.campZona = campZona
         self.code = code
@@ -78,7 +79,12 @@ class QvMapificacio(QObject):
 
     def iniDades(self):
         if not os.path.isfile(self.fDades):
-            return
+            splitFile = os.path.split(self.fDades)
+            local = _RUTA_LOCAL + splitFile[1]
+            if not os.path.isfile(local):
+                return
+            else:
+                self.fDades = self.fZones = local
 
         if self.zona is None or self.zona not in _ZONES.keys():
             return
@@ -141,8 +147,9 @@ class QvMapificacio(QObject):
             return
 
         if fZones is None or fZones == '':
-            splitFile = os.path.splitext(self.fDades)
-            self.fZones = splitFile[0] + '_' + self.valZona[0] + splitFile[1]
+            base = os.path.basename(self.fDades)
+            splitFile = os.path.splitext(base)
+            self.fZones = _RUTA_LOCAL + splitFile[0] + '_' + self.valZona[0] + splitFile[1]
         else:
             self.fZones = fZones
 
@@ -207,64 +214,7 @@ class QvMapificacio(QObject):
             self.afegintZona.emit(100)
             self.zonaAfegida.emit(fin - ini)
 
-    def prueba(self, ruta='D:/qVista/'):
-        # Cargamos capa base de zona
-        zonaLyr = QgsVectorLayer(ruta + 'Barris.sqlite', 'Zona', 'ogr')
-        zonaLyr.setProviderEncoding("UTF-8")
-        if zonaLyr.isValid():
-            QgsProject.instance().addMapLayer(zonaLyr, False)
-
-        # layers = QgsLayerDefinition.loadLayerDefinitionLayers(ruta + self.valZona + '.qlr')
-        # QgsProject.instance().addMapLayers(layers, False)
-        # zonaLyr = layers[0]
-
-        # Cargamos capa de datos zonificados
-        infoLyr = QgsVectorLayer(self.fZones, 'Info', 'ogr')
-        infoLyr.setProviderEncoding(self.code)
-        if infoLyr.isValid():
-            QgsProject.instance().addMapLayer(infoLyr, False)
-
-        # mapLayer = QgsVectorLayer( "?query=select * from Zona Z, Info I where Z.codi = I." + self.campZona, "Mapificacio", "virtual" )
-
-        vlayer = QgsVectorLayer("?query=select A.RECOMPTE, Z.CODI, Z.DESCRIPCIO, Z.GEOMETRY as GEOM from Zona AS Z, "
-            "(SELECT COUNT(*) AS RECOMPTE, QVISTA_BARRI AS CODI FROM INFO GROUP BY QVISTA_BARRI) AS A "
-            "WHERE Z.CODI = A.CODI",
-            "Mapificacio", "virtual" )
-        vlayer.setProviderEncoding("UTF-8")            
-
-        if vlayer.isValid():
-            QgsVectorFileWriter.writeAsVectorFormat(vlayer, ruta + "Mapificacio.sqlite", "UTF-8", zonaLyr.crs(), "SQLite")
-
-            QgsProject.instance().removeMapLayer(zonaLyr.id())
-            QgsProject.instance().removeMapLayer(infoLyr.id())
-
-            mapLayer = QgsVectorLayer(ruta + "Mapificacio.sqlite", 'Mapificacio' , "ogr")
-            mapLayer.setProviderEncoding("UTF-8")
-            if mapLayer.isValid():
-
-                numItems = 5
-                numDecimals = 0
-                iniAlpha = 8
-
-                symbol = QgsSymbol.defaultSymbol(mapLayer.geometryType())
-                colorRamp = QgsGradientColorRamp(QColor(0, 128, 255, iniAlpha),
-                                                QColor(0, 128, 255, 255 - iniAlpha))
-                format = QgsRendererRangeLabelFormat('%1 - %2', numDecimals)
-                renderer = QgsGraduatedSymbolRenderer.createRenderer(mapLayer, "RECOMPTE", numItems, 
-                    QgsGraduatedSymbolRenderer.Pretty, symbol, colorRamp, format)
-
-                mapLayer.setRenderer(renderer)
-                domDoc = QgsLayerDefinition.exportLayerDefinitionLayers([mapLayer], QgsReadWriteContext())
-
-                with open(ruta + 'Mapificacio.qlr', "w+", encoding="UTF-8") as qlr:
-                    qlr.write(domDoc.toString())
-
-                # layers = QgsLayerDefinition.loadLayerDefinitionLayers(ruta + self.valZona + '.qlr')
-                # QgsProject.instance().addMapLayers(layers, True)
-                layers = QgsLayerDefinition.loadLayerDefinitionLayers(ruta + 'Mapificacio.qlr')
-                QgsProject.instance().addMapLayers(layers, True)
-
-    def calcColors(self, iniAlpha):
+    def calcColorsGradient(self, iniAlpha):
         colorIni = QColor(self.colorBase)
         colorIni.setAlpha(iniAlpha)
         colorFi = QColor(self.colorBase)
@@ -272,7 +222,7 @@ class QvMapificacio(QObject):
         return colorIni, colorFi
 
     def calcRenderer(self, mapLyr, numCategories, format, iniAlpha=8):
-        colorIni, colorFi = self.calcColors(iniAlpha)
+        colorIni, colorFi = self.calcColorsGradient(iniAlpha)
         colorRamp = QgsGradientColorRamp(colorIni, colorFi)
         labelFormat = QgsRendererRangeLabelFormat(format, self.numDecimals)
         symbol = QgsSymbol.defaultSymbol(mapLyr.geometryType())
@@ -298,6 +248,12 @@ class QvMapificacio(QObject):
         if isinstance(color, QColor):
             return color
         return defColor
+
+    def netejaString(self, txt):
+        s = txt.strip()
+        s = s.replace(' ', '_')
+        s = s.translate(_TRANS)
+        return s
 
     def agregacio(self, nomCapa, tipusAgregacio, campCalculat='RESULTAT', campAgregat='', tipusDistribucio="Total",
                   filtre='', numDecimals=-1, numCategories=5, colorBase='Blau', format='%1 - %2', veure=True):
@@ -330,15 +286,10 @@ class QvMapificacio(QObject):
 
         self.filtre = filtre
         self.campCalculat = campCalculat
-        nom = nomCapa.strip()
-        nom = nom.replace(' ', '_')
-        nom = nom.translate(_TRANS)
-        self.nomCapa = nom
-        rutaDades = 'Dades/'
-        rutaMapes = 'C:/temp/qVista/temp/'
+        self.nomCapa = self.netejaString(nomCapa)
 
-        # Carga de capa base de zona<
-        zonaLyr = QgsVectorLayer(rutaDades + self.valZona[2], 'Zona', 'ogr')
+        # Carga de capa base de zona
+        zonaLyr = QgsVectorLayer('Dades/' + self.valZona[2], 'Zona', 'ogr')
         zonaLyr.setProviderEncoding("UTF-8")
         if zonaLyr.isValid():
             QgsProject.instance().addMapLayer(zonaLyr, False)
@@ -356,14 +307,14 @@ class QvMapificacio(QObject):
 
         if virtLyr.isValid():
             # Guarda capa de agregación en SQLite
-            QgsVectorFileWriter.writeAsVectorFormat(virtLyr, rutaMapes + self.nomCapa + ".sqlite", "UTF-8", zonaLyr.crs(), "SQLite")
+            QgsVectorFileWriter.writeAsVectorFormat(virtLyr, _RUTA_LOCAL + self.nomCapa + ".sqlite", "UTF-8", zonaLyr.crs(), "SQLite")
 
             # Elimina capas de base y datos
             QgsProject.instance().removeMapLayer(zonaLyr.id())
             QgsProject.instance().removeMapLayer(infoLyr.id())
 
             # Carga capa SQLite de agregación
-            mapLyr = QgsVectorLayer(rutaMapes + self.nomCapa + ".sqlite", nomCapa , "ogr")
+            mapLyr = QgsVectorLayer(_RUTA_LOCAL + self.nomCapa + ".sqlite", nomCapa , "ogr")
             mapLyr.setProviderEncoding("UTF-8")
             if mapLyr.isValid():
 
@@ -372,7 +323,7 @@ class QvMapificacio(QObject):
                 mapLyr.setRenderer(renderer)
 
                 # Guarda capa qlr con agregación + mapificación
-                self.fMapa = rutaMapes + self.nomCapa + '.qlr'
+                self.fMapa = _RUTA_LOCAL + self.nomCapa + '.qlr'
                 try:
                     domDoc = QgsLayerDefinition.exportLayerDefinitionLayers([mapLyr], QgsReadWriteContext())
                     with open(self.fMapa, "w+", encoding="UTF-8") as qlr:
