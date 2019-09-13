@@ -205,6 +205,7 @@ class QvNouCataleg(QWidget):
         self.lBanda.addWidget(self.tots)
 
         self.fav=BotoLateral('Favorits',self)
+        self.fav.setIcon(QIcon('Imatges/star.png'))
         self.fav.setCheckable(True)
         self.lBanda.addWidget(self.fav)
         
