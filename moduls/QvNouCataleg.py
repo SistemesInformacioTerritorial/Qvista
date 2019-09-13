@@ -234,11 +234,14 @@ class QvNouCataleg(QWidget):
         self.tots.clicked.connect(self.clickTots)
         self.fav.clicked.connect(self.clickFavorits)
         self.lBanda.addStretch()
+
     def clickTots(self):
         for x in self.botonsLaterals:
             x.setChecked(True)
+            
         # self.tots.setChecked(False)
         self.mostraMapes()
+        
     def clickFavorits(self):
         '''Copiem el contingut de mostraMapes, adaptant-lo perquè només mostri els favorits'''
         self.clearContingut()
@@ -269,6 +272,7 @@ class QvNouCataleg(QWidget):
                 self.nlayouts.append(nlayout)
         self.indexLayoutSeleccionat=-1
         self.fav.setChecked(True)
+
     def carregaBotons(self,dir: str):
         f=[]
         for y in carpetaCatalegProjectesLlista:
@@ -284,6 +288,7 @@ class QvNouCataleg(QWidget):
             if x.getNomMapa() in self.favorits:
                 x.setFavorit(True,actualitza=False) #No actualitzem la base de dades perquè no estem modificant-la
         return botons
+
     def mostraMapes(self):
         '''Es recorre els botons laterals i, per cada un d'ells, mostra els mapes associats
         '''
@@ -479,6 +484,7 @@ class QvNouCataleg(QWidget):
         txt=re.sub('\s[\s]+',' ',txt)
 
         return txt
+
     def filtra(self):
         txt=self.arregla(self.leCerca.text())
         if txt!='':
@@ -487,6 +493,7 @@ class QvNouCataleg(QWidget):
         else:
             self.accioEsborra.setVisible(False)
         self.mostraMapes()
+
     def esMostra(self,widget):
         txt=self.arregla(self.leCerca.text())
 
