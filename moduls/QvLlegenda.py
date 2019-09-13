@@ -699,18 +699,21 @@ class QvLlegenda(QgsLayerTreeView):
         nfile, ok = dlgLayers.getOpenFileName(None, "Afegir Capes Qgis", self.directory, "Capes Qgis (*.qlr)")
         if ok and nfile != '':
             self.directory = os.path.dirname(nfile)
-            try:
-                ok, err = QgsLayerDefinition.loadLayerDefinition(nfile, self.project, self.root)
-                # layers = QgsLayerDefinition.loadLayerDefinitionLayers(nfile)
-                # if layers is not None and len(layers) > 0:
-                #     loaded = self.project.addMapLayers(layers, True)
-                #     if loaded is not None and len(loaded) > 0:
-                #         if set(layers) != set(loaded):
-                #             print('Alguna capa no se pudo cargar')
-                if not ok:
-                    print(err)
-            except Exception as e:
-                 print(e)
+            ok, txt = QgsLayerDefinition.loadLayerDefinition(nfile, self.project, self.root)
+            if not ok:
+                print('No se pudo importar capas', txt)
+
+    # def addLayersFromFile(self):
+    #     dlgLayers = QFileDialog()
+    #     nfile, ok = dlgLayers.getOpenFileName(None, "Afegir Capes Qgis", self.directory, "Capes Qgis (*.qlr)")
+    #     if ok and nfile != '':
+    #         layers = QgsLayerDefinition.loadLayerDefinitionLayers(nfile)
+    #         if layers is not None and len(layers) > 0:
+    #             loaded = self.project.addMapLayers(layers, True)
+    #             if loaded is not None and len(loaded) > 0:
+    #                 if set(layers) != set(loaded):
+    #                     print('Alguna capa no se pudo cargar')
+    #         self.directory = os.path.dirname(nfile)
 
     # def addCustomCSV(self):
     #     dlgLayers = QFileDialog()
