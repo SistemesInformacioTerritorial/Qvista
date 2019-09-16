@@ -2038,6 +2038,37 @@ class QVista(QMainWindow, Ui_MainWindow):
         try:
             qV.canvas.scene().removeItem(qV.toolSelect.rubberband)
             qV.canvas.scene().removeItem(qV.toolSelect.rubberband2)
+            qV.lwMesuresHist.clear()
+            # taulaAtributs('Total',layer)
+
+           
+            for ver in qV.toolSelect.markers:
+                #if ver in  qV.canvas.scene().items():
+                qV.canvas.scene().removeItem(ver)
+        except:
+            pass
+
+    def esborrarMesures(self, tambePanCanvas = True):
+        'Esborra les seleccions (no els elements) de qualsevol layer del canvas.'
+        layers = self.canvas.layers() 
+        for layer in layers:
+            if layer.type() == QgsMapLayer.VectorLayer:
+                layer.removeSelection()
+
+        self.lblNombreElementsSeleccionats.setText('No hi ha elements seleccionats.')
+        self.idsElementsSeleccionats = []
+
+        if tambePanCanvas:
+            self.canvas.panCanvas()
+
+        try:
+            qV.canvas.scene().removeItem(qV.toolSelect.rubberband)
+            qV.canvas.scene().removeItem(qV.toolSelect.rubberband2)
+            qV.lwMesuresHist.clear()
+
+            for ver in qV.toolSelect.markers:
+                #if ver in  qV.canvas.scene().items():
+                qV.canvas.scene().removeItem(ver)
             # taulaAtributs('Total',layer)
         except:
             pass
