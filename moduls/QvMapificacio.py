@@ -4,11 +4,14 @@ from qgis.core import (QgsApplication, QgsVectorLayer, QgsLayerDefinition, QgsVe
                        QgsSymbol, QgsRendererCategory, QgsCategorizedSymbolRenderer,
                        QgsGraduatedSymbolRenderer, QgsRendererRange, QgsAggregateCalculator,
                        QgsGradientColorRamp, QgsRendererRangeLabelFormat, QgsReadWriteContext)
-from qgis.PyQt.QtCore import QObject, pyqtSignal
+from qgis.gui import QgsFileWidget
+from qgis.PyQt.QtCore import QObject, pyqtSignal, pyqtSlot
 from qgis.PyQt.QtGui import QColor
 from qgis.PyQt.QtXml import QDomDocument
-
 from moduls.QvSqlite import QvSqlite
+
+
+from qgis.PyQt.QtWidgets import QFileDialog, QWidget, QPushButton, QFormLayout, QComboBox, QLabel, QLineEdit
 
 import os
 import sys
@@ -18,14 +21,14 @@ import unicodedata
 
 _ZONES = {
     # Nom: (Camp, Taula, Arxiu)
-    "Codi postal": "CODI_POSTAL",
     "Districte": ("DISTRICTE", "Districte", "Districtes.sqlite"),
-    "Illa": "ILLA",
-    "Solar": "SOLAR",
-    "Barri": ("BARRI", "Barris", "Barris.sqlite"),
-    "Àrea estadística bàsica": "AEB",
-    "Secció censal": "SECCIO_CENSAL",
-    "Sector policial operatiu": "SPO"
+    "Barri": ("BARRI", "Barris", "Barris.sqlite")
+    # "Codi postal": "CODI_POSTAL",
+    # "Illa": "ILLA",
+    # "Solar": "SOLAR",
+    # "Àrea estadística bàsica": "AEB",
+    # "Secció censal": "SECCIO_CENSAL",
+    # "Sector policial operatiu": "SPO"
 }
 
 _AGREGACIO = {
@@ -36,9 +39,9 @@ _AGREGACIO = {
 }
 
 _DISTRIBUCIO = {
-    "Total": "",
-    "Per m2": "/ Z.AREA",
-    "Per habitant": "/ Z.POBLACIO"
+    "Total": ""
+    # "Per m2": "/ Z.AREA",
+    # "Per habitant": "/ Z.POBLACIO"
 }
 
 _COLORS = {
@@ -62,11 +65,10 @@ class QvMapificacio(QObject):
     zonaAfegida = pyqtSignal(int)  # Tiempo transcurrido (segundos)
     errorAdreca = pyqtSignal(dict) # Registro que no se pudo geocodificar
 
-    def __init__(self, fDades, zona, campZona='', code='ANSI', delimiter=';', prefixe='QVISTA_', numMostra=60):
+    def __init__(self, fDades, zona, code='ANSI', delimiter=';', prefixe='QVISTA_', numMostra=60):
         super().__init__()
         self.fDades = self.fZones = fDades
         self.zona = zona
-        self.campZona = campZona
         self.code = code
         self.delimiter = delimiter
         self.prefixe = prefixe
@@ -92,8 +94,7 @@ class QvMapificacio(QObject):
         else:
             self.valZona = _ZONES[self.zona]
 
-        if self.campZona is None or self.campZona == '':
-            self.campZona = self.prefixe + self.valZona[0]
+        self.campZona = self.prefixe + self.valZona[0]
 
         with open(self.fDades, "r", encoding=self.code) as csvInput:
             lenFile = os.path.getsize(self.fDades)
@@ -222,22 +223,36 @@ class QvMapificacio(QObject):
         colorFi.setAlpha(255 - iniAlpha)
         return colorIni, colorFi
 
-    def calcRenderer(self, mapLyr, numCategories, format, iniAlpha=8):
+    def calcRenderer(self, mapLyr, numCategories, modeCategories, format, iniAlpha=8):
         colorIni, colorFi = self.calcColorsGradient(iniAlpha)
         colorRamp = QgsGradientColorRamp(colorIni, colorFi)
         labelFormat = QgsRendererRangeLabelFormat(format, self.numDecimals)
         symbol = QgsSymbol.defaultSymbol(mapLyr.geometryType())
-        renderer = QgsGraduatedSymbolRenderer.createRenderer(mapLyr, self.campCalculat, numCategories, 
-            QgsGraduatedSymbolRenderer.Pretty, symbol, colorRamp, labelFormat)
+        # modeCategories:
+        # QgsGraduatedSymbolRenderer.EqualInterval,
+        # QgsGraduatedSymbolRenderer.Quantile,
+        # QgsGraduatedSymbolRenderer.Jenks,
+        # QgsGraduatedSymbolRenderer.StdDev,
+        # QgsGraduatedSymbolRenderer.Pretty
+        renderer = QgsGraduatedSymbolRenderer.createRenderer(mapLyr, self.campCalculat,
+            numCategories, modeCategories, symbol, colorRamp, labelFormat)
         return renderer
 
-    def calcSelect(self):
+    def calcSelect(self, llistaCamps=[]):
+        # Calculamos filtro
         if self.filtre is None or self.filtre == '':
             filtre = ''
         else:
             filtre = ' WHERE ' + self.filtre
-        select = "select round(I.AGREGAT " + self.tipusDistribucio + ", " + str(self.numDecimals) + ") AS " + self.campCalculat + ", " + \
-                 "Z.CODI, Z.DESCRIPCIO, Z.AREA, Z.GEOMETRY as GEOM from Zona AS Z, " + \
+        # Calculamos lista de campos de la zona
+        camps = ''
+        if llistaCamps is not None and len(llistaCamps) > 0:
+            for item in llistaCamps:
+                camps += ", Z." + item
+        camps += ', Z.GEOMETRY as GEOM'
+        # Calculamos SELECT comlpeto de agrupación
+        select = "select round(I.AGREGAT " + self.tipusDistribucio + ", " + str(self.numDecimals) + ") AS " + self.campCalculat + \
+                 camps + " from Zona AS Z, " + \
                  "(SELECT " + self.tipusAgregacio + " AS AGREGAT, " + self.campZona + " AS CODI " + \
                  "FROM Info" + filtre + " GROUP BY " + self.campZona + ") AS I WHERE Z.CODI = I.CODI"
         return select
@@ -257,7 +272,8 @@ class QvMapificacio(QObject):
         return s
 
     def agregacio(self, llegenda, nomCapa, tipusAgregacio, campCalculat='RESULTAT', campAgregat='', tipusDistribucio="Total",
-                  filtre='', numDecimals=-1, numCategories=5, colorBase='Blau', format='%1 - %2', veure=True):
+                  filtre='', numDecimals=-1, numCategories=4, modeCategories=QgsGraduatedSymbolRenderer.Pretty,
+                  colorBase='Blau', format='%1 - %2', veure=True):
 
         self.fMapa = ''
 
@@ -295,6 +311,13 @@ class QvMapificacio(QObject):
         if zonaLyr.isValid():
             llegenda.project.addMapLayer(zonaLyr, False)
 
+        # Lista de campos de zona que se incluirán en la mapificación
+        zonaCamps = []
+        for field in zonaLyr.fields():
+            name = field.name().upper()
+            if not name.startswith('QVISTA_') and not name.startswith('OGC_'):
+                zonaCamps.append(name)
+
         # Carga de capa de datos zonificados
         infoLyr = QgsVectorLayer(self.fZones, 'Info', 'ogr')
         infoLyr.setProviderEncoding(self.code)
@@ -302,7 +325,7 @@ class QvMapificacio(QObject):
             llegenda.project.addMapLayer(infoLyr, False)
 
         # Creación de capa virtual que construye la agregación
-        select = self.calcSelect()
+        select = self.calcSelect(zonaCamps)
         virtLyr = QgsVectorLayer("?query=" + select, nomCapa, "virtual")
         virtLyr.setProviderEncoding("UTF-8")            
 
@@ -320,7 +343,7 @@ class QvMapificacio(QObject):
             if mapLyr.isValid():
 
                 # Renderer para mapificar
-                renderer = self.calcRenderer(mapLyr, numCategories, format)
+                renderer = self.calcRenderer(mapLyr, numCategories, modeCategories, format)
                 mapLyr.setRenderer(renderer)
 
                 # Guarda capa qlr con agregación + mapificación
@@ -343,6 +366,38 @@ class QvMapificacio(QObject):
                     QgsApplication.processEvents()
 
 
+class QvFormMapificacio(QWidget):
+
+    def __init__(self):
+
+        super().__init__(minimumWidth=400)
+        self.setWindowTitle('Afegir capa de mapificació')
+
+        self.layout = QFormLayout()
+        self.setLayout(self.layout)
+
+        self.zona = QComboBox(self)
+        self.zona.addItems(_ZONES.keys())
+
+        self.capa = QLineEdit(self)
+
+        self.arxiu = QgsFileWidget()
+        
+        self.layout.addRow('Zona:', self.zona)
+        self.layout.addRow('Nom capa:', self.capa)
+        self.layout.addRow('Arxiu dades:', self.arxiu)
+
+    @pyqtSlot()
+    def seleccionaArxiu(self):
+       filename, ok = QFileDialog.getOpenFileName(
+           self,
+           "Selecciona arxiu amb les dades a mapificar…",
+           _RUTA_LOCAL,
+           'Arxius Csv (*.csv)',
+           'Arxius Csv (*.csv)')
+       if ok:
+          self.leArxiu.setText(filename)
+
 if __name__ == "__main__":
 
     from qgis.core.contextmanagers import qgisapp
@@ -355,7 +410,7 @@ if __name__ == "__main__":
 
         app = QvApp()
 
-        z = QvMapificacio('D:/qVista/CarrecsANSI.csv', 'Barri')
+        z = QvMapificacio('CarrecsANSI.csv', 'Barri')
         print(z.rows, 'filas en', z.fDades)
         print('Muestra:', z.mostra)
 

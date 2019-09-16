@@ -982,9 +982,14 @@ if __name__ == "__main__":
                     botonera.close()
 
         def testMapificacio():
-            from moduls.QvMapificacio import QvMapificacio
+            from moduls.QvMapificacio import QvMapificacio, QvFormMapificacio
 
-            z = QvMapificacio('CarrecsANSI_BARRI.csv', 'Barri')
+            f = QvFormMapificacio()
+            f.show()
+
+
+            # z = QvMapificacio('CarrecsANSI_BARRI.csv', 'Barri')
+
 
             # z = QvMapificacio('D:/qVista/CarrecsANSI.csv', 'Barri')
             # print(z.rows, 'filas en', z.fDades)
@@ -995,17 +1000,34 @@ if __name__ == "__main__":
             #     afegintZona=lambda n: print('... Procesado', str(n), '% ...'),
             #     errorAdreca=lambda f: print('Fila sin geocodificar -', f),
             #     zonaAfegida=lambda n: print('Zona', z.zona, 'procesada en', str(n), 'segs. en ' + z.fZones + ' -', str(z.rows), 'registros,', str(z.errors), 'errores'))
+  
 
-            z.agregacio(leyenda, 'Càrrecs per Barri', 'Recompte')
+            # z.agregacio(leyenda, 'Càrrecs per Barri EI', 'Recompte',
+            #     colorBase='Taronja', modeCategories=QgsGraduatedSymbolRenderer.EqualInterval)
 
-            z.agregacio(leyenda, 'Recaudació urbans (milers €)', 'Suma',
-                        campAgregat="QUOTA_TOTAL / 1000",
-                        filtre="TIPUS_DE_BE = 'UR'",
-                        colorBase='Taronja')
+            # z.agregacio(leyenda, 'Càrrecs per Barri QU', 'Recompte',
+            #     colorBase='Vermell', modeCategories=QgsGraduatedSymbolRenderer.Quantile)
 
-            z.agregacio(leyenda, 'Valor cadastral m2 (€)', 'Mitjana',
-                        campAgregat="V_CAD_ANY_ACTUAL / SUPERFICIE",
-                        colorBase='Verd')
+            # z.agregacio(leyenda, 'Càrrecs per Barri JE', 'Recompte',
+            #     colorBase='Groc',  modeCategories=QgsGraduatedSymbolRenderer.Jenks)
+
+            # z.agregacio(leyenda, 'Càrrecs per Barri SD', 'Recompte',
+            #     colorBase='Verd', modeCategories=QgsGraduatedSymbolRenderer.StdDev)
+
+            # z.agregacio(leyenda, 'Càrrecs per Barri PB', 'Recompte',
+            #     colorBase='Blau', modeCategories=QgsGraduatedSymbolRenderer.Pretty)
+
+
+            # z.agregacio(leyenda, 'Càrrecs per Barri', 'Recompte')
+
+            # z.agregacio(leyenda, 'Recaudació urbans (milers €)', 'Suma',
+            #             campAgregat="QUOTA_TOTAL / 1000",
+            #             filtre="TIPUS_DE_BE = 'UR'",
+            #             colorBase='Taronja')
+
+            # z.agregacio(leyenda, 'Valor cadastral m2 (€)', 'Mitjana',
+            #             campAgregat="V_CAD_ANY_ACTUAL / SUPERFICIE",
+            #             colorBase='Verd')
 
         def testJoin():
 
