@@ -87,7 +87,7 @@
         <ymax>4591060</ymax>
       </extent>
       <id>qVista_default_map_27f67d6e_e424_4fcb_2019060409444021926581</id>
-      <datasource>./qVista default map.gpkg|layername=num_postal</datasource>
+      <datasource>qVista default map.gpkg|layername=num_postal</datasource>
       <keywordList>
         <value></value>
       </keywordList>
@@ -310,7 +310,7 @@
         <ymax>4591060</ymax>
       </extent>
       <id>qVista_default_map_66e60ed9_718c_4de4_2019060409444021914016</id>
-      <datasource>./qVista default map.gpkg|layername=pol_illa</datasource>
+      <datasource>qVista default map.gpkg|layername=pol_illa</datasource>
       <keywordList>
         <value></value>
       </keywordList>
@@ -569,7 +569,7 @@ def my_form_open(dialog, layer, feature):
         <ymax>4591050</ymax>
       </extent>
       <id>qVista_default_map_e55f4646_1a54_4785_201906040944402191406</id>
-      <datasource>./qVista default map.gpkg|layername=noms_carrers</datasource>
+      <datasource>qVista default map.gpkg|layername=noms_carrers</datasource>
       <keywordList>
         <value></value>
       </keywordList>
@@ -1688,7 +1688,7 @@ def my_form_open(dialog, layer, feature):
         <ymax>4591060</ymax>
       </extent>
       <id>qVista_default_map_eb4bcfd3_44cc_4ffa_2019060409444021926618</id>
-      <datasource>./qVista default map.gpkg|layername=pol_parc</datasource>
+      <datasource>qVista default map.gpkg|layername=pol_parc</datasource>
       <keywordList>
         <value></value>
       </keywordList>
@@ -1954,7 +1954,7 @@ def my_form_open(dialog, layer, feature):
         <ymax>4591070</ymax>
       </extent>
       <id>qVista_default_map_f891068c_424f_4eac_97ef_4b81344800a4</id>
-      <datasource>./qVista default map.gpkg|layername=Districtes</datasource>
+      <datasource>qVista default map.gpkg|layername=Districtes</datasource>
       <keywordList>
         <value></value>
       </keywordList>
