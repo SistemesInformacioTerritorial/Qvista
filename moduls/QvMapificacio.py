@@ -20,9 +20,9 @@ import time
 import unicodedata
 
 _ZONES = {
-    # Nom: (Camp, Taula, Arxiu)
-    "Districte": ("DISTRICTE", "Districte", "Districtes.sqlite"),
-    "Barri": ("BARRI", "Barris", "Barris.sqlite")
+    # Nom: (Camp, Arxiu)
+    "Districte": ("DISTRICTE", "Districtes.sqlite"),
+    "Barri": ("BARRI", "Barris.sqlite")
     # "Codi postal": "CODI_POSTAL",
     # "Illa": "ILLA",
     # "Solar": "SOLAR",
@@ -77,6 +77,7 @@ class QvMapificacio(QObject):
         self.fields = []
         self.rows = 0
         self.errors = 0
+        self.cancel = False
         self.iniDades()
         self.db = QvSqlite()
 
@@ -100,19 +101,20 @@ class QvMapificacio(QObject):
             lenFile = os.path.getsize(self.fDades)
             data = csvInput.readline()
             self.fields = data.rstrip(csvInput.newlines).split(self.delimiter)
-            lenMuestra = 0
-            maxMuestra = self.numMostra
             self.mostra = []
-            num = 0
-            for data in csvInput:
-                num += 1
-                data = data.encode(self.code)
-                self.mostra.append(data)
-                lenMuestra += len(data)
-                if num == maxMuestra:
-                    break
-            lenRow = lenMuestra / num
-            self.rows = int(round(lenFile / lenRow))
+            if self.numMostra > 0:
+                lenMuestra = 0
+                maxMuestra = self.numMostra
+                num = 0
+                for data in csvInput:
+                    num += 1
+                    data = data.encode(self.code)
+                    self.mostra.append(data)
+                    lenMuestra += len(data)
+                    if num == maxMuestra:
+                        break
+                lenRow = lenMuestra / num
+                self.rows = int(round(lenFile / lenRow))
 
     def verifCampsAdreca(self, camps):
         try:
@@ -140,6 +142,10 @@ class QvMapificacio(QObject):
                 return fila[camp]
         except Exception:
             return ''
+    
+    @pyqtSlot()
+    def cancelZonificacio(self):
+        self.cancel = True
 
     def zonificacio(self, campsAdreca=(), fZones='', substituir=True, afegintZona=None, zonaAfegida=None, errorAdreca=None):
 
@@ -151,7 +157,7 @@ class QvMapificacio(QObject):
         if fZones is None or fZones == '':
             base = os.path.basename(self.fDades)
             splitFile = os.path.splitext(base)
-            self.fZones = _RUTA_LOCAL + splitFile[0] + '_' + self.valZona[0] + splitFile[1]
+            self.fZones = _RUTA_LOCAL + splitFile[0] + '_' + self.zona + splitFile[1]
         else:
             self.fZones = fZones
 
@@ -169,6 +175,7 @@ class QvMapificacio(QObject):
         if errorAdreca is not None:
             self.errorAdreca.connect(errorAdreca)
 
+        self.cancel = False
         ini = time.time()
 
         # Fichero CSV de entrada
@@ -205,15 +212,20 @@ class QvMapificacio(QObject):
                     
                     writer.writerow(row)
                     # Informe de progreso cada 1% o cada fila si hay menos de 100
-                    if tot % nSignal == 0:
+                    if self.rows > 0 and tot % nSignal == 0:
                         self.afegintZona.emit(int(round(tot * 100 / self.rows)))
+
+                    # Cancelación del proceso via slot
+                    if self.cancel:
+                        break
 
             fin = time.time()
             self.rows = tot
             self.errors = num
 
             # Informe de fin de proceso y segundos transcurridos
-            self.afegintZona.emit(100)
+            if not self.cancel:
+                self.afegintZona.emit(100)
             self.zonaAfegida.emit(fin - ini)
 
     def calcColorsGradient(self, iniAlpha):
@@ -306,7 +318,7 @@ class QvMapificacio(QObject):
         self.nomCapa = self.netejaString(nomCapa)
 
         # Carga de capa base de zona
-        zonaLyr = QgsVectorLayer(_RUTA_DADES + self.valZona[2], 'Zona', 'ogr')
+        zonaLyr = QgsVectorLayer(_RUTA_DADES + self.valZona[1], 'Zona', 'ogr')
         zonaLyr.setProviderEncoding("UTF-8")
         if zonaLyr.isValid():
             llegenda.project.addMapLayer(zonaLyr, False)
@@ -376,27 +388,27 @@ class QvFormMapificacio(QWidget):
         self.layout = QFormLayout()
         self.setLayout(self.layout)
 
+        self.arxiu = QgsFileWidget()
+        self.arxiu.setDialogTitle('Selecciona fitxer de dades…')
+        self.arxiu.setDefaultRoot(_RUTA_LOCAL)
+        self.arxiu.setFilter('Arxius CSV (*.csv)')
+        self.arxiu.setSelectedFilter('Arxius CSV (*.csv)')
+
+        self.arxiu.fileChanged.connect(self.nouArxiu)
+
         self.zona = QComboBox(self)
         self.zona.addItems(_ZONES.keys())
 
         self.capa = QLineEdit(self)
 
-        self.arxiu = QgsFileWidget()
         
+        self.layout.addRow('Arxiu dades:', self.arxiu)
         self.layout.addRow('Zona:', self.zona)
         self.layout.addRow('Nom capa:', self.capa)
-        self.layout.addRow('Arxiu dades:', self.arxiu)
 
-    @pyqtSlot()
-    def seleccionaArxiu(self):
-       filename, ok = QFileDialog.getOpenFileName(
-           self,
-           "Selecciona arxiu amb les dades a mapificar…",
-           _RUTA_LOCAL,
-           'Arxius Csv (*.csv)',
-           'Arxius Csv (*.csv)')
-       if ok:
-          self.leArxiu.setText(filename)
+    @pyqtSlot(str)
+    def nouArxiu(self, nom):
+          self.capa.setText(nom)
 
 if __name__ == "__main__":
 
