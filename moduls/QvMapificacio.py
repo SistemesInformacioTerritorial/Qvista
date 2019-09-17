@@ -11,7 +11,8 @@ from qgis.PyQt.QtXml import QDomDocument
 from moduls.QvSqlite import QvSqlite
 
 
-from qgis.PyQt.QtWidgets import QFileDialog, QWidget, QPushButton, QFormLayout, QComboBox, QLabel, QLineEdit
+from qgis.PyQt.QtWidgets import (QFileDialog, QWidget, QPushButton, QFormLayout, QComboBox, QLabel, QLineEdit,
+                                 QMessageBox, QDialogButtonBox)
 
 import os
 import sys
@@ -46,11 +47,11 @@ _DISTRIBUCIO = {
 
 _COLORS = {
     "Blau": QColor(0, 128, 255),
-    "Taronja": QColor(255, 128, 0),
     "Gris": QColor(128, 128, 128),
-    "Vermell" : QColor(255, 32, 32),
+    "Groc" : QColor(255, 192, 0),
+    "Taronja": QColor(255, 128, 0),
     "Verd" : QColor(32, 160, 32),
-    "Groc" : QColor(255, 192, 0)
+    "Vermell" : QColor(255, 32, 32)
 }
 
 _TRANS = str.maketrans('ÁÉÍÓÚáéíóúÀÈÌÒÙàèìòùÂÊÎÔÛâêîôûÄËÏÖÜäëïöüºª€@$·.,;:()[]¡!¿?|@#%&ç*',
@@ -380,35 +381,128 @@ class QvMapificacio(QObject):
 
 class QvFormMapificacio(QWidget):
 
-    def __init__(self):
+    def __init__(self, llegenda):
 
-        super().__init__(minimumWidth=400)
+        super().__init__(minimumWidth=360)
+        self.llegenda = llegenda
         self.setWindowTitle('Afegir capa de mapificació')
 
         self.layout = QFormLayout()
         self.setLayout(self.layout)
 
         self.arxiu = QgsFileWidget()
+        self.arxiu.setStorageMode(QgsFileWidget.GetFile)
         self.arxiu.setDialogTitle('Selecciona fitxer de dades…')
         self.arxiu.setDefaultRoot(_RUTA_LOCAL)
         self.arxiu.setFilter('Arxius CSV (*.csv)')
         self.arxiu.setSelectedFilter('Arxius CSV (*.csv)')
+        self.arxiu.lineEdit().setReadOnly(True)
 
-        self.arxiu.fileChanged.connect(self.nouArxiu)
+        self.arxiu.fileChanged.connect(self.arxiuSeleccionat)
 
         self.zona = QComboBox(self)
+        self.zona.setEditable(False)
+        self.zona.addItem('Selecciona zona…')
         self.zona.addItems(_ZONES.keys())
+        # self.zona.model().item(0).setEnabled(False)
 
         self.capa = QLineEdit(self)
+        self.capa.setMaxLength(30)
 
-        
+        self.tipus = QComboBox(self)
+        self.tipus.setEditable(False)
+        self.tipus.addItem('Selecciona tipus…')
+        self.tipus.addItems(_AGREGACIO.keys())
+
+        self.calcul = QLineEdit(self)
+
+        self.filtre = QLineEdit(self)
+
+        self.color = QComboBox(self)
+        self.color.setEditable(False)
+        self.color.addItem('Selecciona color…')
+        self.color.addItems(_COLORS.keys())
+
+        self.buttons = QDialogButtonBox()
+        self.buttons.addButton(QDialogButtonBox.Ok)
+        self.buttons.accepted.connect(self.ok)
+        self.buttons.addButton(QDialogButtonBox.Cancel)
+        self.buttons.rejected.connect(self.cancel)
+
         self.layout.addRow('Arxiu dades:', self.arxiu)
         self.layout.addRow('Zona:', self.zona)
+        self.layout.addRow('Tipus agregació:', self.tipus)
         self.layout.addRow('Nom capa:', self.capa)
+        self.layout.addRow('Formula càlcul :', self.calcul)
+        self.layout.addRow('Filtre:', self.filtre)
+        self.layout.addRow('Color mapa:', self.color)
+        self.layout.addWidget(self.buttons)
+
+    def nouArxiu(self, nItem):
+        self.zona.setCurrentIndex(nItem)
+        self.tipus.setCurrentIndex(0)
 
     @pyqtSlot(str)
-    def nouArxiu(self, nom):
-          self.capa.setText(nom)
+    def arxiuSeleccionat(self, nom):
+        n = 0
+        if nom != '':
+            fNom = os.path.splitext(os.path.basename(nom))[0]
+            nItems = self.zona.count()
+            for i in range(1, nItems):
+                item = self.zona.itemText(i)
+                if fNom.upper().endswith('_' + item.upper()):
+                    n = i
+                    break
+        self.nouArxiu(n)
+
+    def avis(self, txt):
+        msgBox = QMessageBox()
+        msgBox.setText(txt)
+        msgBox.exec()
+
+    def valida(self):
+        ok = False
+        if self.arxiu.filePath() == '':
+            self.avis("S'ha de seleccionar un arxiu de dades")
+            self.arxiu.setFocus()
+        elif self.zona.currentIndex() <= 0:
+            self.avis("S'ha de seleccionar una zona")
+            self.zona.setFocus()
+        elif self.tipus.currentIndex() <= 0:
+            self.avis("S'ha de seleccionar un tipus d'agregació")
+            self.tipus.setFocus()
+        elif self.capa.text().strip() == '':
+            self.avis("S'ha de introduir un nom de capa")
+            self.capa.setFocus()
+        elif self.calcul.text().strip() == '' and self.tipus.currentText() != 'Recompte':
+            self.avis("S'ha de introduir un cálcul per fer l'agreagació")
+            self.calcul.setFocus()
+        elif self.color.currentIndex() <= 0:
+            self.avis("S'ha de seleccionar una color per al mapa")
+            self.color.setFocus()
+        else:
+            ok = True
+        return ok
+
+    def mapifica(self):
+        z = QvMapificacio(self.arxiu.filePath(), self.zona.currentText(), numMostra=0)
+        z.agregacio(self.llegenda, self.capa.text().strip(), self.tipus.currentText(),
+                    campAgregat=self.calcul.text().strip(),
+                    filtre=self.filtre.text().strip(),
+                    colorBase=self.color.currentText())
+
+        # Falta: num categorias, metodo de clasificacion, desactivar formulario, progreso...
+
+    @pyqtSlot()
+    def ok(self):
+        if self.valida():
+            self.mapifica()
+            self.close()
+
+    @pyqtSlot()
+    def cancel(self):
+        self.close()
+
 
 if __name__ == "__main__":
 

@@ -984,7 +984,7 @@ if __name__ == "__main__":
         def testMapificacio():
             from moduls.QvMapificacio import QvMapificacio, QvFormMapificacio
 
-            f = QvFormMapificacio()
+            f = QvFormMapificacio(leyenda)
             f.show()
 
 
