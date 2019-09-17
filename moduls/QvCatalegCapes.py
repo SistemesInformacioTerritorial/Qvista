@@ -172,10 +172,20 @@ class QvCatalegCapes(QWidget):
         # self.qV.afegirQlr(path)
 
         #Copio el codi de la funció afegirQlr de l'arxiu qVista.py, ja que no se m'acudeix cap manera de cridar-la des d'aquí que no sigui barroera
-        layers = QgsLayerDefinition.loadLayerDefinitionLayers(path)
-        self.qV.project.addMapLayers(layers, True)
-        self.qV.canvisPendents=True
-        self.qV.botoDesarProjecte.setIcon(self.qV.iconaAmbCanvisPendents)
+        # layers = QgsLayerDefinition.loadLayerDefinitionLayers(path)
+        # self.qV.project.addMapLayers(layers, True)
+
+        ok, txt = QgsLayerDefinition().loadLayerDefinition(path, self.qV.project, self.qV.llegenda.root)
+        if ok:
+            self.qV.canvisPendents=True
+            self.qV.botoDesarProjecte.setIcon(self.qV.iconaAmbCanvisPendents)
+        else:
+            print('No se pudo importar capas', txt)
+
+
+        # self.qV.canvisPendents=True
+        # self.qV.botoDesarProjecte.setIcon(self.qV.iconaAmbCanvisPendents)
+
     def actualitzaMetadades(self):
         '''Pinta la preview de la capa
         '''
