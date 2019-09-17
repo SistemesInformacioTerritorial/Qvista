@@ -35,13 +35,13 @@
       <property name="minimumSize">
        <size>
         <width>0</width>
-        <height>50</height>
+        <height>40</height>
        </size>
       </property>
       <property name="maximumSize">
        <size>
         <width>16777215</width>
-        <height>50</height>
+        <height>40</height>
        </size>
       </property>
       <property name="frameShape">
@@ -153,12 +153,44 @@ color: #FFFFFF</string>
               <number>1</number>
              </property>
              <item>
-              <widget class="QLabel" name="lblTitolProjecte">
+              <widget class="QLineEdit" name="leTitolProjecte">
                <property name="font">
                 <font>
-                 <family>Segoe UI Light</family>
-                 <pointsize>21</pointsize>
+                 <family>Arial</family>
+                 <pointsize>14</pointsize>
                 </font>
+               </property>
+               <property name="styleSheet">
+                <string notr="true">background-color: #F9F9F9 transparent;
+    color: #38474F;
+    margin: 0px;
+    border: 0px;</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="lblTitolProjecte">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="font">
+                <font>
+                 <family>Arial</family>
+                 <pointsize>14</pointsize>
+                </font>
+               </property>
+               <property name="toolTip">
+                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt; color:#38474f;&quot;&gt;Feu clic per canviar el títol del projecte&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+               </property>
+               <property name="styleSheet">
+                <string notr="true">background-color: #F9F9F9 transparent;
+color: white;
+margin: 0px;
+border: 0px;
+text-align: left;</string>
                </property>
                <property name="text">
                 <string>Qualificacions urbanístiques i suspensions</string>
@@ -166,66 +198,117 @@ color: #FFFFFF</string>
               </widget>
              </item>
              <item>
-              <widget class="QToolButton" name="tbEnrera">
-               <property name="minimumSize">
-                <size>
-                 <width>30</width>
-                 <height>30</height>
-                </size>
-               </property>
-               <property name="maximumSize">
-                <size>
-                 <width>30</width>
-                 <height>30</height>
-                </size>
-               </property>
-               <property name="styleSheet">
-                <string notr="true">border-color: rgb(121, 144, 155);</string>
-               </property>
+              <widget class="QPushButton" name="bCercaPerAdreca">
                <property name="text">
-                <string>...</string>
+                <string/>
                </property>
                <property name="icon">
                 <iconset>
-                 <normaloff>../../Users/Jo/Dropbox/qVistaProd/Imatges/arrow-left.png</normaloff>../../Users/Jo/Dropbox/qVistaProd/Imatges/arrow-left.png</iconset>
-               </property>
-               <property name="iconSize">
-                <size>
-                 <width>40</width>
-                 <height>40</height>
-                </size>
+                 <normaloff>Imatges/cm_cercar2.png</normaloff>Imatges/cm_cercar2.png</iconset>
                </property>
               </widget>
              </item>
              <item>
-              <widget class="QToolButton" name="tbEndevant">
+              <widget class="QLineEdit" name="leCercaPerAdreca"/>
+             </item>
+             <item>
+              <widget class="QLineEdit" name="leNumCerca"/>
+             </item>
+             <item>
+              <widget class="QLabel" name="lSpacer">
+               <property name="text">
+                <string>TextLabel</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="botoMetadades">
+               <property name="text">
+                <string/>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="botoVeureLlegenda">
                <property name="minimumSize">
                 <size>
-                 <width>30</width>
-                 <height>30</height>
+                 <width>24</width>
+                 <height>24</height>
                 </size>
                </property>
-               <property name="maximumSize">
-                <size>
-                 <width>30</width>
-                 <height>30</height>
-                </size>
+               <property name="toolTip">
+                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Veure i ocultar llegenda&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                </property>
                <property name="styleSheet">
-                <string notr="true">border-color: rgb(121, 144, 155);</string>
+                <string notr="true"/>
                </property>
                <property name="text">
-                <string>...</string>
+                <string/>
                </property>
-               <property name="icon">
-                <iconset>
-                 <normaloff>../../Users/Jo/Dropbox/qVistaProd/Imatges/arrow-right.png</normaloff>../../Users/Jo/Dropbox/qVistaProd/Imatges/arrow-right.png</iconset>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="botoMapeta">
+               <property name="toolTip">
+                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Mostrar i ocultar mapeta&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                </property>
-               <property name="iconSize">
+               <property name="text">
+                <string/>
+               </property>
+              </widget>
+             </item>
+             <item alignment="Qt::AlignRight">
+              <widget class="QPushButton" name="botoObrirQGis">
+               <property name="minimumSize">
                 <size>
-                 <width>40</width>
-                 <height>40</height>
+                 <width>24</width>
+                 <height>24</height>
                 </size>
+               </property>
+               <property name="toolTip">
+                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Obrir projecte en QGis&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+               </property>
+               <property name="styleSheet">
+                <string notr="true"/>
+               </property>
+               <property name="text">
+                <string/>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="botoReload">
+               <property name="toolTip">
+                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Recarregar projecte&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+               </property>
+               <property name="text">
+                <string/>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="botoDesarProjecte">
+               <property name="minimumSize">
+                <size>
+                 <width>24</width>
+                 <height>0</height>
+                </size>
+               </property>
+               <property name="toolTip">
+                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Desar projecte&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+               </property>
+               <property name="styleSheet">
+                <string notr="true"/>
+               </property>
+               <property name="text">
+                <string/>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="botoFavorits">
+               <property name="text">
+                <string/>
                </property>
               </widget>
              </item>
@@ -443,13 +526,13 @@ color: #FFFFFF</string>
          <property name="minimumSize">
           <size>
            <width>250</width>
-           <height>20</height>
+           <height>2</height>
           </size>
          </property>
          <property name="maximumSize">
           <size>
            <width>16777215</width>
-           <height>20</height>
+           <height>2</height>
           </size>
          </property>
          <property name="styleSheet">
@@ -494,7 +577,7 @@ color: #FFFFFF</string>
      <x>0</x>
      <y>0</y>
      <width>1233</width>
-     <height>41</height>
+     <height>34</height>
     </rect>
    </property>
    <property name="minimumSize">

@@ -16,10 +16,16 @@
 } */
 
 
-QWidget::window {
-    border: 1px solid #79909B;
-    background-color: #F9F9F9;
+QWidget::window, QDialog {
+    background-color: #F4F4F4;
+    margin: 2px #38474F;
 } 
+
+QvVideo, QMediaPlayer{
+    background: transparent;
+    margin: 0px;
+    border: 0px;
+}
 
 QWidget #layoutFosc {
     background-color: #38474F solid; 
@@ -32,6 +38,9 @@ QWidget #layout {
 
 QDockWidget{
     color: white;
+    background-color: #F9F9F9;
+    border: 0px;
+    margin: 0px;
     titlebar-close-icon: url("Imatges/window_close.png");
     titlebar-normal-icon: url("Imatges/window-restore.png");
 }
@@ -87,10 +96,27 @@ QScrollArea{
 	background: white;
 }
 
+QSlider{
+    background: #F9F9F9;
+}
+
+/* QSlider::groove:horizontal{
+    
+} */
+
+/* QSlider::handle:horizontal{
+    background: #FF6215;
+} */
+
+QSlider::add-page:horizontal {
+    background: #FF6215;
+}
+
 QLabel {
     background-color: #F9F9F9 transparent;
     color: #38474F;
     margin: 0px;
+    border: 0px;
 }
 
 QLabel#fosca{
@@ -100,12 +126,12 @@ QLabel#fosca{
 }
 
 QLineEdit {
-    border: 1px solid #79909B; 
+    border: 1px solid #DDDDDD; 
     background-color: white;
 }
 
 QTextEdit {
-    border:1px solid #38474F;
+    border:1px solid #DDDDDD;
     background-color: white;
 }
 
@@ -160,9 +186,9 @@ QProgressBar::chunk{
 }
 
 /* QDialog, QWizard{
-    border: 5px #38474F;
-    margin: 5px;
+    border: 0px;
     background-color: #F9F9F9;
+    color: #38474F;
 } */
 
 
@@ -177,16 +203,20 @@ QvPushButton {
 QvPushButton:checked{
     background-color: #DDDDDD;
     color: #38474F;
-	border: 0px;
+	border: 1px solid #FF6215;
 	padding: 2px 2px;
 } 
 
-QvToolButton {
+/* QvToolButton {
 	background-color: transparent;
 	color: #38474F;
 	border: 0px;
 	padding: 1px 1px;
 }
+
+QvToolButton[marcat=true]{
+    background-color: #FF6215 solid;
+} */
 
 QStatusBar {
     background-color: #DDDDDD;
@@ -226,3 +256,12 @@ QMenu::item:selected{
     background-color: #FF6215;
     color: #F9F9F9;
 }
+
+QStatusBar{
+    padding: 0px;
+}
+
+/* QTreeView{
+    margin: 20px 2px 0px 20px;
+    border: none;
+} */

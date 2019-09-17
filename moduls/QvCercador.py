@@ -123,7 +123,7 @@ class QvUbicacions(QtWidgets.QWidget):
         # Canviem l'extensió del canvas segons el rang recien calculat.
         self.canvas.zoomToFeatureExtent(rang)
 
-    def _prepararBotonera(self):
+    def _prepararBotonera(self): #???
         """Funció reservada per a la gestió de la botonera de ubicacions. En aquest moment no s'utilitza.
         """
         self.botoneraArbre = ['Nou']
@@ -169,6 +169,7 @@ if __name__ == "__main__":
 
         # Creem un dockWdget i definim les característiques
         dwUbicacions = QDockWidget( "Ubicacions", windowTest )
+        dwUbicacions.setContextMenuPolicy(Qt.PreventContextMenu)
         dwUbicacions.setAllowedAreas( Qt.RightDockWidgetArea | Qt.LeftDockWidgetArea )
         dwUbicacions.setContentsMargins ( 1, 1, 1, 1 )
 

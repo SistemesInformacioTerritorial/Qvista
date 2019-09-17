@@ -6,10 +6,10 @@ class MarxesCiutat(QDockWidget):
     def __init__(self, parent):
         self.parent = parent
         super().__init__("Marxes exploratòries")
+        self.setContextMenuPolicy(Qt.PreventContextMenu)
         
         fMarxes = QFrame()
         fMarxes.setStyleSheet("QFrame {background-image: url('c:/qvistaProd/imatges/pavim.jpg');}")
-        # fPavim.setStyleSheet("QFrame {background-color: #010101 'd:/dropbox/qvistaProd/imatges/pavim.jpg'}")
         lytMarxes = QVBoxLayout(fMarxes)
         lytMarxes.setAlignment(Qt.AlignTop)
 

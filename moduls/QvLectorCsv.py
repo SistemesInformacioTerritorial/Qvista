@@ -1,12 +1,12 @@
 #!/usr/bin/python3
 # -*- coding:utf-8 -*-
 import csv
-import codecs
+import codecs #???
 import os
 import sys
 
 from PyQt5 import QtCore, QtGui, QtWidgets, QtPrintSupport
-from PyQt5.QtGui import QImage, QPainter
+from PyQt5.QtGui import QImage, QPainter #QImage (???)
 from PyQt5.QtCore import QFile
 from moduls.QvPushButton import QvPushButton
 import io
@@ -20,7 +20,6 @@ class QvLectorCsv(QtWidgets.QWidget):
         self.fileName = csvName
         self.model = QtGui.QStandardItemModel(self)
         self.tableView = QtWidgets.QTableView(self)
-        # self.tableView.setStyleSheet(stylesheet(self))
         self.tableView.setModel(self.model)
         self.tableView.horizontalHeader().setStretchLastSection(True)
         self.tableView.setShowGrid(True)
@@ -128,7 +127,7 @@ class QvLectorCsv(QtWidgets.QWidget):
 
     def horizontalScrollBar(self):
         return self.tableView.horizontalScrollBar()
-    def handlePrint(self):
+    def handlePrint(self): 
         dialog = QtPrintSupport.QPrintDialog()
         if dialog.exec_() == QtWidgets.QDialog.Accepted:
             self.handlePaintRequest(dialog.printer())

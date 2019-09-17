@@ -1,15 +1,15 @@
-from moduls.QvNews import QvNewsFinestra
+from moduls.QvVisorHTML import QvVisorHTML
 from PyQt5 import QtCore, QtWidgets
 import tempfile
 import os
 from moduls.QvConstants import QvConstants
 from configuracioQvista import *
 
-class QvAvis(QvNewsFinestra):
+class QvAvis(QvVisorHTML):
     '''Crea un diàleg d'avisos i, si n'hi ha algun de nou, el mostra
     '''
-    def __init__(self,parent=None):
-        super().__init__(arxiuAvis, 'Avisos qVista',parent)
+    def __init__(self,parent: QtWidgets.QWidget=None):
+        super().__init__(arxiuAvis, 'Atenció',parent)
         if self.calAvis():
             self.exec_()
     def calAvis(self):
