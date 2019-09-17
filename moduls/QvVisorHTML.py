@@ -1,7 +1,7 @@
 from moduls.QvImports import *
 from PyQt5 import QtCore
 from PyQt5 import QtGui
-from PyQt5.QtCore import pyqtProperty
+from PyQt5.QtCore import pyqtProperty #???
 from PyQt5 import QtCore, QtWidgets
 from PyQt5.QtGui import QColor, QKeySequence
 from moduls.QvConstants import QvConstants
@@ -41,6 +41,10 @@ class QvVisorHTML(QDialog):
         # self.layout.addWidget(self.caixaText)
         self.file=file
         self.caixaText=QWebView()
+        # caixaText.onLoadingChanged: {
+        #     if (loadRequest.status == WebView.LoadFailedStatus) 
+        #     console.log("Load failed! Error code: " + loadRequest.errorCode)
+        # }
         self.caixaText.load(QUrl("file:///%s"%file))
         self.layoutCaixaText=QVBoxLayout()
         self.layoutCaixaText.addWidget(self.caixaText)
@@ -117,6 +121,9 @@ class QvVisorHTML(QDialog):
         delattr(self,'timer')
         self.carrega()
     def carrega(self,file=None):
-        if file is None: file=self.file
+        if file is None:
+            file=self.file
+            self.caixaText.setText("No s'ha pogut trobar l'arxiu")
+        else:
+            self.caixaText.load(QUrl("file:///%s"%file))
         print(file)
-        self.caixaText.load(QUrl("file:///%s"%file))

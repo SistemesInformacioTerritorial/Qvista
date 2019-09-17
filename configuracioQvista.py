@@ -1,11 +1,11 @@
 import os
 
 #Parametres configuració inicial
-versio="0.3"
+versio="0.4"
 titolFinestra = "qVista %s  Sistema d'Informació Territorial de Barcelona"%versio
 
 carpetaCataleg = "N:/9SITEB/Publicacions/qVista/Cataleg/Capes/"
-carpetaCatalegProjectesLlista = "N:/9SITEB/Publicacions/qVista/Cataleg/Mapes/"
+carpetaCatalegProjectesLlista = ["N:/9SITEB/Publicacions/qVista/Cataleg/Mapes publics/","N:/9SITEB/Publicacions/qVista/Cataleg/Mapes privats/"]
 projecteInicial = 'mapesOffline/qVista default map.qgs'
 
 estatConnexio = "Xarxa municipal: Connectat"
@@ -15,6 +15,7 @@ tempdir=QvTempdir+'temp/' #Seran els arxius temporals de qVista que no s'han de 
 dadesdir=QvTempdir+'dades/' #Arxius temporals que volem conservar, amb configuracions i similars
 
 docdir='n:/siteb/apl/pyqgis/qvista/dades/'
+imatgesDir = 'imatges/'
 docdirPlantilles=docdir+'plantilles/'
 
 arxiuAvis=docdir+'Avisos.htm'
@@ -47,7 +48,7 @@ if not os.path.exists(dadesdir):
 
 if not os.path.isdir(carpetaCataleg):
     carpetaCataleg = "../dades/CatalegProjectes/"
-    carpetaCatalegProjectesLlista = "../dades/CatalegProjectes/"
+    carpetaCatalegProjectesLlista = ["../dades/CatalegProjectes/"]
     projecteInicial = 'mapesOffline/qVista default map.qgs'
     estatConnexio = "Xarxa municipal: Desconnectat"
 

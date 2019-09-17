@@ -162,7 +162,7 @@ class QvAtributs(QTabWidget):
                 taula.deleteLater()
                 self.removeTab(i)
 
-    def tancarTaula(self, layer):
+    def tancarTaula(self, layer): #???
         # Cerrar tabla por layer
         if layer is None:
             return

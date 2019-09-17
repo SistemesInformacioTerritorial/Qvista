@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 
 from qgis.core import (QgsProject, QgsLegendModel, QgsLayerDefinition, QgsMapLayer, QgsVectorLayer,
-                       QgsVectorFileWriter, QgsVectorLayerJoinInfo, QgsLayerTree, QgsLayerTreeNode,
+                       QgsVectorFileWriter, QgsVectorLayerJoinInfo, QgsLayerTree, QgsLayerTreeNode, #QgsVectorLayerJoinInfo (???)
                        QgsLayerTreeUtils, QgsVectorDataProvider)
 from qgis.gui import (QgsLayerTreeView, QgsLayerTreeViewMenuProvider, QgsLayerTreeMapCanvasBridge,
-                      QgsLayerTreeViewIndicator, QgsLayerTreeViewDefaultActions)
+                      QgsLayerTreeViewIndicator, QgsLayerTreeViewDefaultActions) #QgsLayerTreeViewDefaultActions (???)
 from qgis.PyQt.QtWidgets import QAction, QFileDialog, QWidget, QPushButton, QVBoxLayout, QHBoxLayout
 from qgis.PyQt.QtGui import QIcon, QColor
 from qgis.PyQt.QtCore import Qt, pyqtSignal, QUrl
@@ -19,7 +19,7 @@ import os
 
 # Resultado de compilacion de recursos del fuente de qgis (directorio images)
 # pyrcc5 images.qrc >images_rc.py
-import images_rc  # NOQA
+import images_rc  # NOQA #???
 
 
 class QvBotoneraLlegenda(QWidget):
@@ -488,7 +488,7 @@ class QvLlegenda(QgsLayerTreeView):
         else:
             self.bridges.append((canvas, bridge))
 
-    def temes(self):
+    def temes(self): #???
         return self.project.mapThemeCollection().mapThemes()
 
     def capaPerNom(self, nomCapa):
@@ -696,13 +696,22 @@ class QvLlegenda(QgsLayerTreeView):
         dlgLayers = QFileDialog()
         nfile, ok = dlgLayers.getOpenFileName(None, "Afegir Capes Qgis", self.directory, "Capes Qgis (*.qlr)")
         if ok and nfile != '':
-            layers = QgsLayerDefinition.loadLayerDefinitionLayers(nfile)
-            if layers is not None and len(layers) > 0:
-                loaded = self.project.addMapLayers(layers, True)
-                if loaded is not None and len(loaded) > 0:
-                    if set(layers) != set(loaded):
-                        print('Alguna capa no se pudo cargar')
             self.directory = os.path.dirname(nfile)
+            ok, txt = QgsLayerDefinition.loadLayerDefinition(nfile, self.project, self.root)
+            if not ok:
+                print('No se pudo importar capas', txt)
+
+    # def addLayersFromFile(self):
+    #     dlgLayers = QFileDialog()
+    #     nfile, ok = dlgLayers.getOpenFileName(None, "Afegir Capes Qgis", self.directory, "Capes Qgis (*.qlr)")
+    #     if ok and nfile != '':
+    #         layers = QgsLayerDefinition.loadLayerDefinitionLayers(nfile)
+    #         if layers is not None and len(layers) > 0:
+    #             loaded = self.project.addMapLayers(layers, True)
+    #             if loaded is not None and len(loaded) > 0:
+    #                 if set(layers) != set(loaded):
+    #                     print('Alguna capa no se pudo cargar')
+    #         self.directory = os.path.dirname(nfile)
 
     # def addCustomCSV(self):
     #     dlgLayers = QFileDialog()
@@ -782,7 +791,7 @@ class QvLlegenda(QgsLayerTreeView):
             yield node
             yield from recurse(node)
 
-    def nodePerNom(self, nom, filtre='none'):
+    def nodePerNom(self, nom, filtre='none'): #???
         if filtre == 'group':
             tipus = QgsLayerTreeNode.NodeGroup
         elif filtre == 'layer':
