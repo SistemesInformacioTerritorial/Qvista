@@ -984,8 +984,9 @@ if __name__ == "__main__":
         def testMapificacio():
             from moduls.QvMapificacio import QvMapificacio, QvFormMapificacio
 
-            f = QvFormMapificacio(leyenda)
-            f.show()
+            global fMap
+            fMap = QvFormMapificacio(leyenda)
+            fMap.show()
 
 
             # z = QvMapificacio('CarrecsANSI_BARRI.csv', 'Barri')
