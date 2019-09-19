@@ -2,16 +2,17 @@
 
 from qgis.core import (QgsApplication, QgsVectorLayer, QgsLayerDefinition, QgsVectorFileWriter,
                        QgsSymbol, QgsRendererCategory, QgsCategorizedSymbolRenderer,
-                       QgsGraduatedSymbolRenderer, QgsRendererRange, QgsAggregateCalculator,
-                       QgsGradientColorRamp, QgsRendererRangeLabelFormat, QgsReadWriteContext)
+                       QgsGraduatedSymbolRenderer, QgsRendererRange, QgsAggregateCalculator, QgsError,
+                       QgsGradientColorRamp, QgsRendererRangeLabelFormat, QgsReadWriteContext, QgsObjectCustomProperties)
 from qgis.gui import QgsFileWidget
 from qgis.PyQt.QtCore import Qt, QObject, pyqtSignal, pyqtSlot
-from qgis.PyQt.QtGui import QColor
+from qgis.PyQt.QtGui import QColor, QValidator
 from qgis.PyQt.QtXml import QDomDocument
 from moduls.QvSqlite import QvSqlite
 
 
-from qgis.PyQt.QtWidgets import (QFileDialog, QWidget, QPushButton, QFormLayout, QComboBox, QLabel, QLineEdit, QSpinBox,
+from qgis.PyQt.QtWidgets import (QFileDialog, QWidget, QPushButton, QFormLayout, QVBoxLayout, QHBoxLayout,
+                                 QComboBox, QLabel, QLineEdit, QSpinBox, QGroupBox,
                                  QMessageBox, QDialogButtonBox)
 
 import os
@@ -291,6 +292,7 @@ class QvMapificacio(QObject):
                   colorBase='Blau', format='%1 - %2', veure=True):
 
         self.fMapa = ''
+        self.fSQL = ''
 
         if campAgregat is not None and campAgregat != '':
             self.campAgregat = campAgregat
@@ -322,16 +324,26 @@ class QvMapificacio(QObject):
         else:
             self.numDecimals = 2
 
+        self.numCategories = numCategories
         self.filtre = filtre
         self.campCalculat = campCalculat
         self.nomCapa = self.netejaString(nomCapa)
 
+        # Carga de capa de datos zonificados
+        infoLyr = QgsVectorLayer(self.fZones, 'Info', 'ogr')
+        infoLyr.setProviderEncoding(self.code)
+        if not infoLyr.isValid():
+            return False, "No s'ha pogut carregar capa de dades: " + self.fZones
+
         # Carga de capa base de zona
-        fich = _RUTA_DADES + self.valZona[1]
-        zonaLyr = QgsVectorLayer(fich, 'Zona', 'ogr')
+        self.fBase = _RUTA_DADES + self.valZona[1]
+        zonaLyr = QgsVectorLayer(self.fBase, 'Zona', 'ogr')
         zonaLyr.setProviderEncoding("UTF-8")
         if not zonaLyr.isValid():
-            return False, "No s'ha pogut carregar capa de zones: " + fich
+            return False, "No s'ha pogut carregar capa de zones: " + self.fBase
+
+        # Añadimos capas auxiliares a la leyenda (de forma no visible) para procesarlas
+        llegenda.project.addMapLayer(infoLyr, False)
         llegenda.project.addMapLayer(zonaLyr, False)
 
         # Lista de campos de zona que se incluirán en la mapificación
@@ -341,44 +353,62 @@ class QvMapificacio(QObject):
             if not name.startswith('QVISTA_') and not name.startswith('OGC_'):
                 zonaCamps.append(name)
 
-        # Carga de capa de datos zonificados
-        infoLyr = QgsVectorLayer(self.fZones, 'Info', 'ogr')
-        infoLyr.setProviderEncoding(self.code)
-        if not infoLyr.isValid():
-            return False, "No s'ha pogut carregar capa de dades: " + self.fZones
-        llegenda.project.addMapLayer(infoLyr, False)
-
         # Creación de capa virtual que construye la agregación
         select = self.calcSelect(zonaCamps)
         virtLyr = QgsVectorLayer("?query=" + select, nomCapa, "virtual")
         virtLyr.setProviderEncoding("UTF-8")            
 
         if not virtLyr.isValid():
+            llegenda.project.removeMapLayer(zonaLyr.id())
+            llegenda.project.removeMapLayer(infoLyr.id())
             return False, "No s'ha pogut generar capa de agregació"
 
         # Guarda capa de agregación en SQLite
-        fich = _RUTA_LOCAL + self.nomCapa + ".sqlite"
-        ret, msg = QgsVectorFileWriter.writeAsVectorFormat(virtLyr, fich, "UTF-8", zonaLyr.crs(), "SQLite")
+        self.fSQL = _RUTA_LOCAL + self.nomCapa + ".sqlite"
+        ret, msg = QgsVectorFileWriter.writeAsVectorFormat(virtLyr, self.fSQL, "UTF-8", zonaLyr.crs(), "SQLite")
         if ret != QgsVectorFileWriter.NoError:
-            return False, "No s'ha pogut desar capa de agregació: " + fich + " (Error - " + msg + ")"
+            llegenda.project.removeMapLayer(zonaLyr.id())
+            llegenda.project.removeMapLayer(infoLyr.id())
+            return False, "No s'ha pogut desar capa de agregació: " + self.fSQL + " (Error - " + msg + ")"
 
         # Elimina capas de base y datos
         llegenda.project.removeMapLayer(zonaLyr.id())
         llegenda.project.removeMapLayer(infoLyr.id())
 
         # Carga capa SQLite de agregación
-        mapLyr = QgsVectorLayer(fich, nomCapa , "ogr")
+        mapLyr = QgsVectorLayer(self.fSQL, nomCapa , "ogr")
         mapLyr.setProviderEncoding("UTF-8")
         if not mapLyr.isValid():
-            return False, "No s'ha pogut carregar capa de agregació: " + fich
+            return False, "No s'ha pogut carregar capa de agregació: " + self.fSQL
 
         # Renderer para mapificar
-        renderer = self.calcRenderer(mapLyr, numCategories, self.modeCategories, format)
+        renderer = self.calcRenderer(mapLyr, self.numCategories, self.modeCategories, format)
         mapLyr.setRenderer(renderer)
 
         # Guarda capa qlr con agregación + mapificación
         self.fMapa = _RUTA_LOCAL + self.nomCapa + '.qlr'
         try:
+            # Tipo de capa para qVista
+            mapLyr.setCustomProperty('tipusCapa','MAPIFICACIÓ')
+            # Ficheros implicados
+            mapLyr.setCustomProperty('rutaLocal', _RUTA_LOCAL.upper()) # En mayúsculas para que no se elimine
+            mapLyr.setCustomProperty('arxiuDades', self.fZones)
+            mapLyr.setCustomProperty('arxiuBase', self.fBase)
+            mapLyr.setCustomProperty('arxiuSQL', self.fSQL)
+            mapLyr.setCustomProperty('arxiuMapa', self.fMapa)
+            # Parámetros
+            mapLyr.setCustomProperty('nomCapa', self.nomCapa)
+            mapLyr.setCustomProperty('tipusAgregacio', tipusAgregacio)
+            mapLyr.setCustomProperty('campCalculat', self.campCalculat)
+            mapLyr.setCustomProperty('campAgregat', self.campAgregat)
+            mapLyr.setCustomProperty('tipusDistribucio', tipusDistribucio)
+            mapLyr.setCustomProperty('filtre', self.filtre)
+            mapLyr.setCustomProperty('numDecimals', self.numDecimals)
+            mapLyr.setCustomProperty('numCategories', self.numCategories)
+            mapLyr.setCustomProperty('modeCategories', modeCategories)
+            mapLyr.setCustomProperty('colorBase', colorBase)
+            mapLyr.setCustomProperty('format', format)
+            # Leer DOM, eliminar paths y guardar en fichero
             domDoc = QgsLayerDefinition.exportLayerDefinitionLayers([mapLyr], QgsReadWriteContext())
             txt = domDoc.toString()
             txt = txt.replace(_RUTA_LOCAL, '')
@@ -399,16 +429,25 @@ class QvMapificacio(QObject):
 
         return True, ''
 
+# class verifNumero(QValidator):
+#     def validate(self, string, index):
+#         txt = string.strip()
+#         if txt == '':
+#             state = QValidator.Intermediate
+#         elif txt.isnumeric():
+#             state = QValidator.Acceptable
+#         else:
+#             state = QValidator.Invalid
+#         return (state, string, index)
 
 class QvFormMapificacio(QWidget):
-
     def __init__(self, llegenda):
 
         super().__init__(minimumWidth=360)
         self.llegenda = llegenda
         self.setWindowTitle('Afegir capa de mapificació')
 
-        self.layout = QFormLayout()
+        self.layout = QVBoxLayout()
         self.layout.setSpacing(12)
         self.setLayout(self.layout)
 
@@ -461,17 +500,108 @@ class QvFormMapificacio(QWidget):
         self.buttons.addButton(QDialogButtonBox.Cancel)
         self.buttons.rejected.connect(self.cancel)
 
-        self.layout.addRow('Arxiu dades:', self.arxiu)
-        self.layout.addRow('Zona:', self.zona)
-        self.layout.addRow('Nom capa:', self.capa)
-        self.layout.addRow('Tipus agregació:', self.tipus)
-        self.layout.addRow('Fòrmula càlcul :', self.calcul)
-        self.layout.addRow('Filtre:', self.filtre)  
-        self.layout.addRow('Color mapa:', self.color)
-        self.layout.addRow('Mètode classificació:', self.metode)
-        self.layout.addRow('Nombre intervals:', self.intervals)
+        self.gZona = QGroupBox('Definició zona')
+        self.lZona = QFormLayout()
+        self.lZona.setSpacing(10)
+        self.gZona.setLayout(self.lZona)
 
+        self.lZona.addRow('Arxiu dades:', self.arxiu)
+        self.lZona.addRow('Zona:', self.zona)
+        self.lZona.addRow('Nom capa:', self.capa)
+
+        self.gDades = QGroupBox('Dades agregació')
+        self.lDades = QFormLayout()
+        self.lDades.setSpacing(10)
+        self.gDades.setLayout(self.lDades)
+
+        self.lDades.addRow('Tipus agregació:', self.tipus)
+        self.lDades.addRow('Fòrmula càlcul :', self.calcul)
+        self.lDades.addRow('Filtre:', self.filtre) 
+
+        self.gSimb = QGroupBox('Simbologia mapificació')
+        self.lSimb = QFormLayout()
+        self.lSimb.setSpacing(10)
+        self.gSimb.setLayout(self.lSimb)
+
+        self.lSimb.addRow('Color mapa:', self.color)
+        self.lSimb.addRow('Mètode classificació:', self.metode)
+        self.lSimb.addRow('Nombre intervals:', self.intervals)
+
+        self.layout.addWidget(self.gZona)
+        self.layout.addWidget(self.gDades)
+        self.layout.addWidget(self.gSimb)
         self.layout.addWidget(self.buttons)
+
+    # def __init__(self, llegenda):
+
+    #     super().__init__(minimumWidth=360)
+    #     self.llegenda = llegenda
+    #     self.setWindowTitle('Afegir capa de mapificació')
+
+    #     self.layout = QFormLayout()
+    #     self.layout.setSpacing(12)
+    #     self.setLayout(self.layout)
+
+    #     self.arxiu = QgsFileWidget()
+    #     self.arxiu.setStorageMode(QgsFileWidget.GetFile)
+    #     self.arxiu.setDialogTitle('Selecciona fitxer de dades…')
+    #     self.arxiu.setDefaultRoot(_RUTA_LOCAL)
+    #     self.arxiu.setFilter('Arxius CSV (*.csv)')
+    #     self.arxiu.setSelectedFilter('Arxius CSV (*.csv)')
+    #     self.arxiu.lineEdit().setReadOnly(True)
+    #     self.arxiu.fileChanged.connect(self.arxiuSeleccionat)
+
+    #     self.zona = QComboBox(self)
+    #     self.zona.setEditable(False)
+    #     self.zona.addItem('Selecciona zona…')
+    #     self.zona.addItems(_ZONES.keys())
+    #     # self.zona.model().item(0).setEnabled(False)
+
+    #     self.capa = QLineEdit(self)
+    #     self.capa.setMaxLength(40)
+
+    #     self.tipus = QComboBox(self)
+    #     self.tipus.setEditable(False)
+    #     self.tipus.addItem('Selecciona tipus…')
+    #     self.tipus.addItems(_AGREGACIO.keys())
+
+    #     self.calcul = QLineEdit(self)
+
+    #     self.filtre = QLineEdit(self)
+
+    #     self.color = QComboBox(self)
+    #     self.color.setEditable(False)
+    #     self.color.addItems(_COLORS.keys())
+
+    #     self.metode = QComboBox(self)
+    #     self.metode.setEditable(False)
+    #     self.metode.addItems(_METODES.keys())
+
+    #     self.intervals = QSpinBox()
+    #     self.intervals.setMinimum(2)
+    #     self.intervals.setMaximum(6)
+    #     self.intervals.setSingleStep(1)
+    #     self.intervals.setValue(4)
+    #     self.intervals.setSuffix("  (depèn del mètode)")
+    #     # self.intervals.valueChanged.connect(self.deselectValue)
+
+    #     self.buttons = QDialogButtonBox()
+    #     self.buttons.addButton(QDialogButtonBox.Ok)
+    #     self.buttons.accepted.connect(self.ok)
+    #     self.buttons.addButton(QDialogButtonBox.Cancel)
+    #     self.buttons.rejected.connect(self.cancel)
+
+    #     self.layout.addRow('Arxiu dades:', self.arxiu)
+    #     self.layout.addRow('Zona:', self.zona)
+    #     self.layout.addRow('Nom capa:', self.capa)
+    #     self.layout.addRow('Tipus agregació:', self.tipus)
+    #     self.layout.addRow('Fòrmula càlcul :', self.calcul)
+    #     self.layout.addRow('Filtre:', self.filtre)  
+    #     self.layout.addRow('Color mapa:', self.color)
+    #     self.layout.addRow('Mètode classificació:', self.metode)
+    #     self.layout.addRow('Nombre intervals:', self.intervals)
+
+    #     self.layout.addWidget(self.buttons)
 
     # @pyqtSlot()
     # def deselectValue(self):
@@ -497,27 +627,31 @@ class QvFormMapificacio(QWidget):
                     break
         self.nouArxiu(n)
 
-    def avis(self, txt):
-        msgBox = QMessageBox()
-        msgBox.setText(txt)
-        msgBox.exec()
+    def msgInfo(self, txt):
+        QMessageBox.information(self, 'Informació', txt)
+
+    def msgAvis(self, txt):
+        QMessageBox.warning(self, 'Avís', txt)
+
+    def msgError(self, txt):
+        QMessageBox.critical(self, 'Error', txt)
 
     def valida(self):
         ok = False
         if self.arxiu.filePath() == '':
-            self.avis("S'ha de seleccionar un arxiu de dades")
+            self.msgInfo("S'ha de seleccionar un arxiu de dades")
             self.arxiu.setFocus()
         elif self.zona.currentIndex() <= 0:
-            self.avis("S'ha de seleccionar una zona")
+            self.msgInfo("S'ha de seleccionar una zona")
             self.zona.setFocus()
         elif self.capa.text().strip() == '':
-            self.avis("S'ha de introduir un nom de capa")
+            self.msgInfo("S'ha de introduir un nom de capa")
             self.capa.setFocus()
         elif self.tipus.currentIndex() <= 0:
-            self.avis("S'ha de seleccionar un tipus d'agregació")
+            self.msgInfo("S'ha de seleccionar un tipus d'agregació")
             self.tipus.setFocus()
         elif self.calcul.text().strip() == '' and self.tipus.currentText() != 'Recompte':
-            self.avis("S'ha de introduir un cálcul per fer l'agregació")
+            self.msgInfo("S'ha de introduir un cálcul per fer l'agregació")
             self.calcul.setFocus()
         else:
             ok = True
@@ -543,7 +677,7 @@ class QvFormMapificacio(QWidget):
             if msg == '':
                 self.close()
             else:
-                self.avis('ERROR - ' + msg)
+                self.msgError(msg)
 
     @pyqtSlot()
     def cancel(self):
