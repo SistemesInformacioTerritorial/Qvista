@@ -1572,7 +1572,7 @@ class QVista(QMainWindow, Ui_MainWindow):
 
 
         self.bm1 = QvPushButton(flat=True) 
-        self.bm1.setIcon(QIcon('imatges/cursor-pointer.png'))
+        self.bm1.setIcon(QIcon('imatges/apuntar.png'))
         self.bm4 = QvPushButton(flat=True)
         # self.bs4.setCheckable(True)
         self.bm4.setIcon(QIcon('imatges/trash-can-outline.png'))

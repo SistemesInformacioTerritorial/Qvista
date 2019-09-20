@@ -279,7 +279,7 @@ class QvMesuraMultiLinia(QgsMapTool):
         self.hoverSartMarker = False
         
         self.rubberband2.hide()
-        self.qV.lblDistanciaTempsReal.setText('Distáncia últim tram: 0')       
+        self.qV.lblDistanciaTempsReal.setText('Distáncia últim tram: 0 m')       
 
     def canvasPressEvent(self, e):
                 
@@ -323,8 +323,8 @@ class QvMesuraMultiLinia(QgsMapTool):
             area = geomP.area()
 
             self.qV.lwMesuresHist.addItem(str(round(self.lastLine.length(),2)))
-            self.qV.lblDistanciaTotal.setText('Distància total: ' + str(round(distancia,2)))
-            self.qV.lblMesuraArea.setText('Àrea: ' + str(round(area,2)))
+            self.qV.lblDistanciaTotal.setText('Distància total: ' + str(round(distancia,2)) + ' m')
+            self.qV.lblMesuraArea.setText('Àrea: ' + str(round(area,2)) + ' m²')
 
             self.treuUltimtram()
 
@@ -350,7 +350,7 @@ class QvMesuraMultiLinia(QgsMapTool):
 
                 self.markers = []
 
-            self.qV.lblDistanciaTotal.setText('Distància total: ' + str(round(distancia,2)))
+            self.qV.lblDistanciaTotal.setText('Distància total: ' + str(round(distancia,2)) + ' m')
             
             if distancia > 0 and (self.lastLine is not None and round(self.lastLine.length(),2) > 0):
                 """
@@ -359,7 +359,7 @@ class QvMesuraMultiLinia(QgsMapTool):
                 self.qV.twResultatsMesura.setItem(rowPosition , 0, QTableWidgetItem(str(round(distancia,2))))
                 """
                 self.qV.lwMesuresHist.addItem(str(round(self.lastLine.length(),2)))
-                self.qV.lblDistanciaTempsReal.setText('Distáncia últim tram: 0')
+                self.qV.lblDistanciaTempsReal.setText('Distáncia últim tram: 0 m')
 
                 self.lastLine = QgsGeometry.fromPolylineXY([self.lastPoint, self.lastPoint])
 
@@ -396,7 +396,7 @@ class QvMesuraMultiLinia(QgsMapTool):
         distancia = self.lastLine.length()
         if distancia <= 0:
             distancia = 0
-        self.qV.lblDistanciaTempsReal.setText('Distáncia últim tram: ' + str(round(distancia,2)))
+        self.qV.lblDistanciaTempsReal.setText('Distáncia últim tram: ' + str(round(distancia,2)) + ' m')
         
 class QvMarcador (QgsVertexMarker):
     def __init__(self, canvas):
