@@ -221,7 +221,6 @@ class QvMesuraMultiLinia(QgsMapTool):
         self.rubberband = QgsRubberBand(self.canvas)
         self.rubberband.setColor(QColor(36,97,50))
         self.rubberband.setWidth(4)
-        self.snapIndicator = QgsSnapIndicator(self.canvas)
         #self.rubberband.setIconType(QgsVertexMarker.ICON_CIRCLE)
 
         self.rubberband2 = QgsRubberBand(self.canvas)
@@ -268,6 +267,7 @@ class QvMesuraMultiLinia(QgsMapTool):
                     self.hoverSartMarker = False
                     self.showlastLine()
             else:
+                self.hoverSartMarker = False
                 self.startMarker.mouseOverRelease()
                 self.showlastLine()
 
@@ -343,6 +343,7 @@ class QvMesuraMultiLinia(QgsMapTool):
             if distancia <= 0:
                 distancia = 0
                 self.qV.lwMesuresHist.clear()
+                self.qV.lblMesuraArea.setText('Àrea: ')
                 firstMarker = True
 
                 for ver in self.markers:

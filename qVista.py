@@ -1589,7 +1589,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.twResultatsMesura = QTableWidget()
 
         self.bm1.clicked.connect(mesuraDistancies)
-        self.bm4.clicked.connect(lambda: self.esborrarSeleccio(True))
+        self.bm4.clicked.connect(lambda: self.esborrarMesures(True))
 
         self.lytBotonsMesura.addWidget(self.bm1)
         self.lytBotonsMesura.addWidget(self.bm4)
@@ -1659,6 +1659,8 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.layerActiu = self.llegenda.currentLayer()        
         self.lwFieldsSelect.clear()
         self.esborrarSeleccio(True)
+        self.esborrarMesures(True)
+        
         if self.layerActiu is not None:
             self.lblCapaSeleccionada.setText("Capa activa: "+ self.layerActiu.name())
             if self.layerActiu.type() == QgsMapLayer.VectorLayer:
@@ -2324,39 +2326,27 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         try:
             qV.canvas.scene().removeItem(qV.toolSelect.rubberband)
-            qV.canvas.scene().removeItem(qV.toolSelect.rubberband2)
-            qV.lwMesuresHist.clear()
-            # taulaAtributs('Total',layer)
-
-           
-            for ver in qV.toolSelect.markers:
-                #if ver in  qV.canvas.scene().items():
-                qV.canvas.scene().removeItem(ver)
         except:
             pass
 
     def esborrarMesures(self, tambePanCanvas = True):
-        'Esborra les seleccions (no els elements) de qualsevol layer del canvas.'
-        layers = self.canvas.layers() 
-        for layer in layers:
-            if layer.type() == QgsMapLayer.VectorLayer:
-                layer.removeSelection()
-
-        self.lblNombreElementsSeleccionats.setText('No hi ha elements seleccionats.')
-        self.idsElementsSeleccionats = []
 
         if tambePanCanvas:
             self.canvas.panCanvas()
 
         try:
-            qV.canvas.scene().removeItem(qV.toolSelect.rubberband)
-            qV.canvas.scene().removeItem(qV.toolSelect.rubberband2)
+            qV.canvas.scene().removeItem(qV.toolMesura.rubberband)
+            qV.canvas.scene().removeItem(qV.toolMesura.rubberband2)
             qV.lwMesuresHist.clear()
 
-            for ver in qV.toolSelect.markers:
+            for ver in qV.toolMesura.markers:
                 #if ver in  qV.canvas.scene().items():
                 qV.canvas.scene().removeItem(ver)
             # taulaAtributs('Total',layer)
+
+            qV.lblDistanciaTotal.setText('Distància total: ')
+            qV.lblMesuraArea.setText('Àrea: ')
+            qV.lblDistanciaTempsReal.setText('Distáncia últim tram: ')
         except:
             pass
 
@@ -2906,22 +2896,24 @@ def mesuraDistancies():
     layer=qV.llegenda.currentLayer()
     qV.markers.hide()
     try:
-        qV.canvas.scene().removeItem(qV.toolSelect.rubberband)
+        self.esborrarSeleccio()
+        self.esborrarMesures()
     except:
         pass
 
-    qV.actionMapSelect = QAction('Seleccionar dibuixant', qV)
-    qV.toolSelect = QvMesuraMultiLinia(qV,qV.canvas, layer)
+    qV.actionMapMesura = QAction('Mesura dibuixant', qV)
+    qV.toolMesura = QvMesuraMultiLinia(qV,qV.canvas, layer)
 
-    qV.toolSelect.setAction(qV.actionMapSelect)
-    qV.canvas.setMapTool(qV.toolSelect)
+    qV.toolMesura.setAction(qV.actionMapMesura)
+    qV.canvas.setMapTool(qV.toolMesura)
     # taulaAtributs('Seleccionats', layer)
 
 def seleccioLliure():
     layer=qV.llegenda.currentLayer()
     qV.markers.hide()
     try:
-        qV.canvas.scene().removeItem(qV.toolSelect.rubberband)
+        self.esborrarSeleccio()
+        self.esborrarMesures()
     except:
         pass
 
@@ -2941,7 +2933,11 @@ def seleccioLliure():
     else:
         missatgeCaixa('Cal tenir seleccionat un nivell per poder fer una selecció.','Marqueu un nivell a la llegenda sobre el que aplicar la consulta.')
 
-def seleccioClick():    
+def seleccioClick():
+    try:
+        self.esborrarMesures()
+    except:
+        pass    
     tool = QvSeleccioElement(qV.canvas, qV.llegenda)
     qV.canvas.setMapTool(tool)
     # qV.taulesAtributs.taula.toggleSelection(True)
