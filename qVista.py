@@ -959,14 +959,14 @@ class QVista(QMainWindow, Ui_MainWindow):
             retval = msg.exec_() #No fem res amb el valor de retorn (???)
 
     def adreces(self):
-        self.dwCercador = QvDockWidget( "Cercador", self )              #
-        self.dwCercador.setAllowedAreas(Qt.RightDockWidgetArea)         # Quan el widget estigui a punt, això s'ha de treure
-        self.addDockWidget( Qt.RightDockWidgetArea, self.dwCercador)    # El que hi ha comentat abaix és el que genera el widget antic
-        textInfo = QLabel("Aquest widget encara no està disponible")    #
-        self.dwCercador.setWidget(textInfo)
-        # if self.prepararCercador:
-        #     self.preparacioCercadorPostal()
-        #     self.prepararCercador = False
+        # self.dwCercador = QvDockWidget( "Cercador", self )              #
+        # self.dwCercador.setAllowedAreas(Qt.RightDockWidgetArea)         # Quan el widget estigui a punt, això s'ha de treure
+        # self.addDockWidget( Qt.RightDockWidgetArea, self.dwCercador)    # El que hi ha comentat abaix és el que genera el widget antic
+        # textInfo = QLabel("Aquest widget encara no està disponible")    #
+        # self.dwCercador.setWidget(textInfo)
+        if self.prepararCercador:
+            self.preparacioCercadorPostal()
+            self.prepararCercador = True
         self.dwCercador.show()
 
     def menuLlegenda(self, tipus):
