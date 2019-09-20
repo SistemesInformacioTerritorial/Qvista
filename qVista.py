@@ -969,7 +969,7 @@ class QVista(QMainWindow, Ui_MainWindow):
             self.prepararCercador = True
         self.dwCercador.show()
 
-    def menuLlegenda(self, tipus):
+    def menuLlegenda(self, tipus):                                 
         #   (Tipos: none, group, layer, symb)
         if tipus == 'layer':
             self.llegenda.menuAccions.append('separator')
