@@ -246,6 +246,11 @@ class QvLlegenda(QgsLayerTreeView):
         self.iconaFiltre.setIcon(QIcon('imatges/filter.png'))
         self.iconaFiltre.setToolTip('Filtre actiu')
 
+        self.iconaMap = QgsLayerTreeViewIndicator()
+        # self.iconaFiltre.setIcon(QIcon(':/Icones/ic_file_upload_black_48dp.png'))
+        self.iconaMap.setIcon(QIcon('imatges/filter.png'))
+        self.iconaMap.setToolTip('Paràmetres del mapa')
+
         if self.atributs is not None:
             self.atributs.modificatFiltreCapa.connect(self.actIconaFiltre)
 
@@ -982,10 +987,10 @@ if __name__ == "__main__":
                     botonera.close()
 
         def testMapificacio():
-            from moduls.QvMapificacio import QvMapificacio, QvFormMapificacio
+            from moduls.QvMapificacio import QvMapificacio, QvFormNovaMapificacio
 
             global fMap
-            fMap = QvFormMapificacio(leyenda)
+            fMap = QvFormNovaMapificacio(leyenda)
             fMap.show()
 
 

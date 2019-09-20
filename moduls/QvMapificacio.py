@@ -69,6 +69,37 @@ _TRANS = str.maketrans('ÁÉÍÓÚáéíóúÀÈÌÒÙàèìòùÂÊÎÔÛâêî
 _RUTA_LOCAL = 'C:/temp/qVista/dades/'
 _RUTA_DADES = 'D:/qVista/Codi/Dades/'
 
+class QvMapRender():
+
+    @staticmethod
+    def calcColorsGradient(colorBase, iniAlpha=8):
+        colorIni = QColor(colorBase)
+        colorIni.setAlpha(iniAlpha)
+        colorFi = QColor(colorBase)
+        colorFi.setAlpha(255 - iniAlpha)
+        return colorIni, colorFi
+
+    @staticmethod
+    def calcRender(mapLyr, campCalculat, numDecimals, colorBase,
+                   numCategories, modeCategories, format):
+        try:
+            colorIni, colorFi = QvMapRender().calcColorsGradient(colorBase)
+            colorRamp = QgsGradientColorRamp(colorIni, colorFi)
+            labelFormat = QgsRendererRangeLabelFormat(format, numDecimals)
+            symbol = QgsSymbol.defaultSymbol(mapLyr.geometryType())
+            renderer = QgsGraduatedSymbolRenderer.createRenderer(mapLyr, campCalculat,
+                numCategories, modeCategories, symbol, colorRamp, labelFormat)
+            mapLyr.setRenderer(renderer)
+            return True
+        except Exception as e:
+            return False
+
+    @staticmethod
+    def modifyRenderer(llegenda, mapLyr):
+        global f
+        f = QvFormSimbMapificacio(llegenda, mapLyr)
+        f.show()
+
 class QvMapificacio(QObject):
 
     afegintZona = pyqtSignal(int)  # Porcentaje cubierto (0 - 100)
@@ -238,22 +269,6 @@ class QvMapificacio(QObject):
                 self.afegintZona.emit(100)
             self.zonaAfegida.emit(fin - ini)
 
-    def calcColorsGradient(self, iniAlpha):
-        colorIni = QColor(self.colorBase)
-        colorIni.setAlpha(iniAlpha)
-        colorFi = QColor(self.colorBase)
-        colorFi.setAlpha(255 - iniAlpha)
-        return colorIni, colorFi
-
-    def calcRenderer(self, mapLyr, numCategories, modeCategories, format, iniAlpha=8):
-        colorIni, colorFi = self.calcColorsGradient(iniAlpha)
-        colorRamp = QgsGradientColorRamp(colorIni, colorFi)
-        labelFormat = QgsRendererRangeLabelFormat(format, self.numDecimals)
-        symbol = QgsSymbol.defaultSymbol(mapLyr.geometryType())
-        renderer = QgsGraduatedSymbolRenderer.createRenderer(mapLyr, self.campCalculat,
-            numCategories, modeCategories, symbol, colorRamp, labelFormat)
-        return renderer
-
     def calcSelect(self, llistaCamps=[]):
         # Calculamos filtro
         if self.filtre is None or self.filtre == '':
@@ -272,14 +287,6 @@ class QvMapificacio(QObject):
                  "(SELECT " + self.tipusAgregacio + " AS AGREGAT, " + self.campZona + " AS CODI " + \
                  "FROM Info" + filtre + " GROUP BY " + self.campZona + ") AS I WHERE Z.CODI = I.CODI"
         return select
-
-    def calcColor(self, color):
-        defColor = _COLORS["Blau"]
-        if isinstance(color, str) and color in _COLORS.keys():
-            return _COLORS[color]
-        if isinstance(color, QColor):
-            return color
-        return defColor
 
     def netejaString(self, txt):
         s = txt.strip()
@@ -311,11 +318,11 @@ class QvMapificacio(QObject):
 
         if modeCategories is None or modeCategories not in _METODES.keys():
             return False, "Error en modeCategories"
-        self.modeCategories =  _METODES[modeCategories]            
+        self.modeCategories = _METODES[modeCategories]
 
         if colorBase is None or colorBase not in _COLORS.keys():
             return False, "Error en colorBase"
-        self.colorBase = self.calcColor(colorBase)            
+        self.colorBase = _COLORS[colorBase]
 
         if numDecimals >= 0:
             self.numDecimals = numDecimals
@@ -382,33 +389,37 @@ class QvMapificacio(QObject):
             return False, "No s'ha pogut carregar capa de agregació: " + self.fSQL
 
         # Renderer para mapificar
-        renderer = self.calcRenderer(mapLyr, self.numCategories, self.modeCategories, format)
-        mapLyr.setRenderer(renderer)
+        ok = QvMapRender().calcRender(mapLyr, self.campCalculat, self.numDecimals,
+            self.colorBase, self.numCategories, self.modeCategories, format)
+        if not ok:
+            return False, "No s'ha pogut elaborar el mapa"
 
         # Guarda capa qlr con agregación + mapificación
         self.fMapa = _RUTA_LOCAL + self.nomCapa + '.qlr'
+
+        # Tipo de capa para qVista
+        mapLyr.setCustomProperty('tipusCapa','MAPIFICACIÓ')
+        # Ficheros implicados
+        mapLyr.setCustomProperty('rutaLocal', _RUTA_LOCAL.upper()) # En mayúsculas para que no se elimine
+        mapLyr.setCustomProperty('arxiuDades', self.fZones)
+        mapLyr.setCustomProperty('arxiuBase', self.fBase)
+        mapLyr.setCustomProperty('arxiuSQL', self.fSQL)
+        mapLyr.setCustomProperty('arxiuMapa', self.fMapa)
+        # Parámetros
+        mapLyr.setCustomProperty('nomCapa', self.nomCapa)
+        mapLyr.setCustomProperty('tipusAgregacio', tipusAgregacio)
+        mapLyr.setCustomProperty('campCalculat', self.campCalculat)
+        mapLyr.setCustomProperty('campAgregat', self.campAgregat)
+        mapLyr.setCustomProperty('tipusDistribucio', tipusDistribucio)
+        mapLyr.setCustomProperty('filtre', self.filtre)
+        mapLyr.setCustomProperty('numDecimals', self.numDecimals)
+        mapLyr.setCustomProperty('numCategories', self.numCategories)
+        mapLyr.setCustomProperty('modeCategories', modeCategories)
+        mapLyr.setCustomProperty('colorBase', colorBase)
+        mapLyr.setCustomProperty('format', format)
+
         try:
-            # Tipo de capa para qVista
-            mapLyr.setCustomProperty('tipusCapa','MAPIFICACIÓ')
-            # Ficheros implicados
-            mapLyr.setCustomProperty('rutaLocal', _RUTA_LOCAL.upper()) # En mayúsculas para que no se elimine
-            mapLyr.setCustomProperty('arxiuDades', self.fZones)
-            mapLyr.setCustomProperty('arxiuBase', self.fBase)
-            mapLyr.setCustomProperty('arxiuSQL', self.fSQL)
-            mapLyr.setCustomProperty('arxiuMapa', self.fMapa)
-            # Parámetros
-            mapLyr.setCustomProperty('nomCapa', self.nomCapa)
-            mapLyr.setCustomProperty('tipusAgregacio', tipusAgregacio)
-            mapLyr.setCustomProperty('campCalculat', self.campCalculat)
-            mapLyr.setCustomProperty('campAgregat', self.campAgregat)
-            mapLyr.setCustomProperty('tipusDistribucio', tipusDistribucio)
-            mapLyr.setCustomProperty('filtre', self.filtre)
-            mapLyr.setCustomProperty('numDecimals', self.numDecimals)
-            mapLyr.setCustomProperty('numCategories', self.numCategories)
-            mapLyr.setCustomProperty('modeCategories', modeCategories)
-            mapLyr.setCustomProperty('colorBase', colorBase)
-            mapLyr.setCustomProperty('format', format)
-            # Leer DOM, eliminar paths y guardar en fichero
+            # Leer DOM, eliminar path local y guardar en fichero
             domDoc = QgsLayerDefinition.exportLayerDefinitionLayers([mapLyr], QgsReadWriteContext())
             txt = domDoc.toString()
             txt = txt.replace(_RUTA_LOCAL, '')
@@ -422,10 +433,17 @@ class QvMapificacio(QObject):
 
         # Mostar qlr de mapificación, si es el caso
         if veure and self.fMapa != '':
+            # Cargar qlr
             ok, txt = QgsLayerDefinition.loadLayerDefinition(self.fMapa, llegenda.project, llegenda.root)
             if not ok:
                 return False, "No s'ha pogut carregar capa mapificació: " + self.fMapa
             QgsApplication.processEvents()
+            # Incluir icono de modificación de simbologia en leyenda
+            node = llegenda.nodePerNom(mapLyr.name(), 'layer')
+            if node is not None:
+                llegenda.addIndicator(node, llegenda.iconaMap)
+                llegenda.iconaMap.clicked.connect(lambda: QvMapRender().modifyRenderer(llegenda, mapLyr))
+                mapLyr.nameChanged.emit()
 
         return True, ''
 
@@ -440,7 +458,7 @@ class QvMapificacio(QObject):
 #             state = QValidator.Invalid
 #         return (state, string, index)
 
-class QvFormMapificacio(QWidget):
+class QvFormNovaMapificacio(QWidget):
     def __init__(self, llegenda):
 
         super().__init__(minimumWidth=360)
@@ -532,84 +550,6 @@ class QvFormMapificacio(QWidget):
         self.layout.addWidget(self.gSimb)
         self.layout.addWidget(self.buttons)
 
-    # def __init__(self, llegenda):
-
-    #     super().__init__(minimumWidth=360)
-    #     self.llegenda = llegenda
-    #     self.setWindowTitle('Afegir capa de mapificació')
-
-    #     self.layout = QFormLayout()
-    #     self.layout.setSpacing(12)
-    #     self.setLayout(self.layout)
-
-    #     self.arxiu = QgsFileWidget()
-    #     self.arxiu.setStorageMode(QgsFileWidget.GetFile)
-    #     self.arxiu.setDialogTitle('Selecciona fitxer de dades…')
-    #     self.arxiu.setDefaultRoot(_RUTA_LOCAL)
-    #     self.arxiu.setFilter('Arxius CSV (*.csv)')
-    #     self.arxiu.setSelectedFilter('Arxius CSV (*.csv)')
-    #     self.arxiu.lineEdit().setReadOnly(True)
-    #     self.arxiu.fileChanged.connect(self.arxiuSeleccionat)
-
-    #     self.zona = QComboBox(self)
-    #     self.zona.setEditable(False)
-    #     self.zona.addItem('Selecciona zona…')
-    #     self.zona.addItems(_ZONES.keys())
-    #     # self.zona.model().item(0).setEnabled(False)
-
-    #     self.capa = QLineEdit(self)
-    #     self.capa.setMaxLength(40)
-
-    #     self.tipus = QComboBox(self)
-    #     self.tipus.setEditable(False)
-    #     self.tipus.addItem('Selecciona tipus…')
-    #     self.tipus.addItems(_AGREGACIO.keys())
-
-    #     self.calcul = QLineEdit(self)
-
-    #     self.filtre = QLineEdit(self)
-
-    #     self.color = QComboBox(self)
-    #     self.color.setEditable(False)
-    #     self.color.addItems(_COLORS.keys())
-
-    #     self.metode = QComboBox(self)
-    #     self.metode.setEditable(False)
-    #     self.metode.addItems(_METODES.keys())
-
-    #     self.intervals = QSpinBox()
-    #     self.intervals.setMinimum(2)
-    #     self.intervals.setMaximum(6)
-    #     self.intervals.setSingleStep(1)
-    #     self.intervals.setValue(4)
-    #     self.intervals.setSuffix("  (depèn del mètode)")
-    #     # self.intervals.valueChanged.connect(self.deselectValue)
-
-    #     self.buttons = QDialogButtonBox()
-    #     self.buttons.addButton(QDialogButtonBox.Ok)
-    #     self.buttons.accepted.connect(self.ok)
-    #     self.buttons.addButton(QDialogButtonBox.Cancel)
-    #     self.buttons.rejected.connect(self.cancel)
-
-    #     self.layout.addRow('Arxiu dades:', self.arxiu)
-    #     self.layout.addRow('Zona:', self.zona)
-    #     self.layout.addRow('Nom capa:', self.capa)
-    #     self.layout.addRow('Tipus agregació:', self.tipus)
-    #     self.layout.addRow('Fòrmula càlcul :', self.calcul)
-    #     self.layout.addRow('Filtre:', self.filtre)  
-    #     self.layout.addRow('Color mapa:', self.color)
-    #     self.layout.addRow('Mètode classificació:', self.metode)
-    #     self.layout.addRow('Nombre intervals:', self.intervals)
-
-    #     self.layout.addWidget(self.buttons)
-
-    # @pyqtSlot()
-    # def deselectValue(self):
-    #     le = self.intervals.findChild(QLineEdit)
-    #     le.deselect()
-
-#     spinBox->findChild<QLineEdit*>()->deselect();
-
     def nouArxiu(self, nItem):
         self.zona.setCurrentIndex(nItem)
         self.tipus.setCurrentIndex(0)
@@ -668,7 +608,7 @@ class QvFormMapificacio(QWidget):
         else: 
             return err
 
-        # Falta: num categorias, metodo de clasificacion, desactivar formulario, progreso...
+        # Falta: desactivar formulario, indicar progreso...
 
     @pyqtSlot()
     def ok(self):
@@ -678,6 +618,122 @@ class QvFormMapificacio(QWidget):
                 self.close()
             else:
                 self.msgError(msg)
+
+    @pyqtSlot()
+    def cancel(self):
+        self.close()
+
+class QvFormSimbMapificacio(QWidget):
+    def __init__(self, llegenda, capa):
+
+        super().__init__(minimumWidth=400)
+        self.llegenda = llegenda
+        self.capa = capa
+        if not self.iniParams():
+            return
+
+        self.setWindowTitle('Modificar simbologia de mapificació')
+
+        self.layout = QFormLayout()
+        self.layout.setSpacing(10)
+        self.setLayout(self.layout)
+
+        self.color = QComboBox(self)
+        self.color.setEditable(False)
+        self.color.addItems(_COLORS.keys())
+
+        self.metode = QComboBox(self)
+        self.metode.setEditable(False)
+        self.metode.addItems(_METODES.keys())
+
+        self.intervals = QSpinBox()
+        self.intervals.setMinimum(2)
+        self.intervals.setMaximum(6)
+        self.intervals.setSingleStep(1)
+        self.intervals.setValue(4)
+        self.intervals.setSuffix("  (depèn del mètode)")
+        # self.intervals.valueChanged.connect(self.deselectValue)
+
+        self.buttons = QDialogButtonBox()
+        self.buttons.addButton(QDialogButtonBox.Ok)
+        self.buttons.accepted.connect(self.ok)
+        self.buttons.addButton(QDialogButtonBox.Cancel)
+        self.buttons.rejected.connect(self.cancel)
+
+        self.layout.addRow('Color mapa:', self.color)
+        self.layout.addRow('Mètode classificació:', self.metode)
+        self.layout.addRow('Nombre intervals:', self.intervals)
+
+        self.layout.addWidget(self.buttons)
+
+        self.valorsInicials()
+
+    def iniParams(self):
+        try:
+            # Verificar tipo
+            self.tipusCapa = self.capa.customProperty('tipusCapa')
+            if self.tipusCapa != 'MAPIFICACIÓ':
+                return False
+            # Parámetros de las custom properties
+            self.campCalculat = self.capa.customProperty('campCalculat')
+            self.numDecimals = self.capa.customProperty('numDecimals')
+            self.colorBase = self.capa.customProperty('colorBase')
+            self.numCategories = self.capa.customProperty('numCategories')
+            self.modeCategories = self.capa.customProperty('modeCategories')
+            self.format = self.capa.customProperty('format')
+            return True
+        except Exception as e:
+            return False
+
+    def valorsInicials(self):
+        self.color.setCurrentText(self.colorBase)
+        self.metode.setCurrentText(self.modeCategories)
+        self.intervals.setValue(self.numCategories)
+
+    def valorsFinals(self):
+        self.colorBase = self.color.currentText()
+        self.modeCategories = self.metode.currentText()
+        self.numCategories = self.intervals.value()
+
+    def desaParams(self):
+        try:
+            self.capa.setCustomProperty('campCalculat', self.campCalculat)
+            self.capa.setCustomProperty('numDecimals', self.numDecimals)
+            self.capa.setCustomProperty('colorBase', self.colorBase)
+            self.capa.setCustomProperty('numCategories', self.numCategories)
+            self.capa.setCustomProperty('modeCategories', self.modeCategories)
+            self.capa.setCustomProperty('format', self.format)
+            return True
+        except Exception as e:
+            return False
+
+    def msgInfo(self, txt):
+        QMessageBox.information(self, 'Informació', txt)
+
+    def msgAvis(self, txt):
+        QMessageBox.warning(self, 'Avís', txt)
+
+    def msgError(self, txt):
+        QMessageBox.critical(self, 'Error', txt)
+
+    def mapifica(self):
+        self.valorsFinals()
+        ok = QvMapRender().calcRender(self.capa, self.campCalculat, self.numDecimals,
+            _COLORS[self.colorBase], self.numCategories, _METODES[self.modeCategories], self.format)
+        if ok:
+            self.desaParams()
+            self.llegenda.modificacioProjecte('maprModified')
+            return ''
+        else: 
+            return "No s'ha pogut modificar la simbologia"
+
+    @pyqtSlot()
+    def ok(self):
+        msg = self.mapifica()
+        if msg == '':
+            self.close()
+        else:
+            self.msgError(msg)
 
     @pyqtSlot()
     def cancel(self):
