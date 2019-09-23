@@ -213,6 +213,7 @@ class QvLlegenda(QgsLayerTreeView):
 
         self.project.readProject.connect(self.nouProjecte)
         # self.project.loadingLayerMessageReceived.connect(self.msgCapes)
+        self.root.layerOrderChanged.connect(self.actIcones)
 
         self.setWhatsThis(QvApp().carregaAjuda(self))
 
@@ -420,8 +421,19 @@ class QvLlegenda(QgsLayerTreeView):
             if capa.hasScaleBasedVisibility():
                 capa.nameChanged.emit()
 
+    def actIcones(self):
+        for capa in self.capes():
+            if capa.type() == QgsMapLayer.VectorLayer:
+                node = self.root.findLayer(capa.id())
+                if node is not None:
+                    if capa.subsetString() == '':
+                        self.removeIndicator(node, self.iconaFiltre)
+                    else:
+                        self.addIndicator(node, self.iconaFiltre)
+                    capa.nameChanged.emit()
+
     def actIconaFiltre(self, capa):
-        if capa.type() != QgsMapLayer.VectorLayer:
+        if capa is None or capa.type() != QgsMapLayer.VectorLayer:
             return
         node = self.root.findLayer(capa.id())
         if node is not None:
