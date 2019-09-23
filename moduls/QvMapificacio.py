@@ -432,7 +432,7 @@ class QvMapificacio(QObject):
             # Leer DOM, eliminar path local y guardar en fichero
             domDoc = QgsLayerDefinition.exportLayerDefinitionLayers([mapLyr], QgsReadWriteContext())
             txt = domDoc.toString()
-            txt = txt.replace(_RUTA_LOCAL, '')
+            txt = txt.replace(_RUTA_LOCAL, './')
             with open(self.fMapa, "w+", encoding="UTF-8") as qlr:
                 qlr.write(txt)
         except Exception as e:
