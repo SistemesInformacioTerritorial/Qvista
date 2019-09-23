@@ -4,7 +4,7 @@ from qgis.core import (QgsProject, QgsLegendModel, QgsLayerDefinition, QgsMapLay
                        QgsVectorFileWriter, QgsVectorLayerJoinInfo, QgsLayerTree, QgsLayerTreeNode,
                        QgsLayerTreeUtils, QgsVectorDataProvider, QgsSymbol, QgsRendererCategory, QgsCategorizedSymbolRenderer,
                        QgsGraduatedSymbolRenderer, QgsRendererRange, QgsAggregateCalculator,
-                       QgsGradientColorRamp, QgsRendererRangeLabelFormat)
+                       QgsGradientColorRamp, QgsRendererRangeLabelFormat, QgsExpressionContextUtils)
 from qgis.gui import (QgsLayerTreeView, QgsLayerTreeViewMenuProvider, QgsLayerTreeMapCanvasBridge,
                       QgsLayerTreeViewIndicator, QgsLayerTreeViewDefaultActions, QgsGradientColorRampDialog)
 from qgis.PyQt.QtWidgets import QAction, QFileDialog, QWidget, QPushButton, QVBoxLayout, QHBoxLayout
@@ -15,6 +15,7 @@ from moduls.QvAtributs import QvAtributs
 from moduls.QvApp import QvApp
 from moduls.QvVideo import QvVideo
 from moduls.QvEscala import QvEscala
+from moduls.QvMapificacio import QvMapRender
 
 import os
 
@@ -214,6 +215,8 @@ class QvLlegenda(QgsLayerTreeView):
         # print('restoreExtent', self.restoreExtent)
 
         self.project.readProject.connect(self.nouProjecte)
+        self.project.legendLayersAdded.connect(self.actIcones)
+        self.root.layerOrderChanged.connect(self.actIcones)
         # self.project.loadingLayerMessageReceived.connect(self.msgCapes)
 
         self.setWhatsThis(QvApp().carregaAjuda(self))
@@ -242,14 +245,13 @@ class QvLlegenda(QgsLayerTreeView):
         self.setMenuProvider(QvMenuLlegenda(self))
 
         self.iconaFiltre = QgsLayerTreeViewIndicator()
-        # self.iconaFiltre.setIcon(QIcon(':/Icones/ic_file_upload_black_48dp.png'))
         self.iconaFiltre.setIcon(QIcon('imatges/filter.png'))
         self.iconaFiltre.setToolTip('Filtre actiu')
 
         self.iconaMap = QgsLayerTreeViewIndicator()
-        # self.iconaFiltre.setIcon(QIcon(':/Icones/ic_file_upload_black_48dp.png'))
-        self.iconaMap.setIcon(QIcon('imatges/filter.png'))
-        self.iconaMap.setToolTip('Paràmetres del mapa')
+        self.iconaMap.setIcon(QIcon('imatges/categories2.png'))
+        self.iconaMap.setToolTip('Categories de mapificació')
+        self.iconaMap.clicked.connect(lambda: QvMapRender().modifyRenderer(self))
 
         if self.atributs is not None:
             self.atributs.modificatFiltreCapa.connect(self.actIconaFiltre)
@@ -427,8 +429,30 @@ class QvLlegenda(QgsLayerTreeView):
             if capa.hasScaleBasedVisibility():
                 capa.nameChanged.emit()
 
+    def actIcones(self):
+        if not self.editable:
+            return
+        for capa in self.capes():
+            if capa.type() == QgsMapLayer.VectorLayer:
+                node = self.root.findLayer(capa.id())
+                if node is not None:
+                    # Filtro
+                    if capa.subsetString() != '':
+                        self.addIndicator(node, self.iconaFiltre)
+                    else:
+                        self.removeIndicator(node, self.iconaFiltre)
+                    # Mapificacón
+                    tipus = QgsExpressionContextUtils.layerScope(capa).variable('qv_tipusCapa')
+                    if tipus == 'MAPIFICACIÓ':
+                        self.addIndicator(node, self.iconaMap)
+                    else:
+                        self.removeIndicator(node, self.iconaMap)
+                    capa.nameChanged.emit()
+
     def actIconaFiltre(self, capa):
-        if capa.type() != QgsMapLayer.VectorLayer:
+        if not self.editable:
+            return
+        if capa is None or capa.type() != QgsMapLayer.VectorLayer:
             return
         node = self.root.findLayer(capa.id())
         if node is not None:
@@ -987,12 +1011,15 @@ if __name__ == "__main__":
                     botonera.close()
 
         def testMapificacio():
-            from moduls.QvMapificacio import QvMapificacio, QvFormNovaMapificacio
+            from moduls.QvMapificacio import QvMapificacio, QvFormNovaMapificacio, QvFormSimbMapificacio
 
             global fMap
             fMap = QvFormNovaMapificacio(leyenda)
             fMap.show()
 
+            # global fMap
+            # fMap = QvFormSimbMapificacio(leyenda, leyenda.currentLayer())
+            # fMap.show()
 
             # z = QvMapificacio('CarrecsANSI_BARRI.csv', 'Barri')
 
@@ -1269,6 +1296,7 @@ if __name__ == "__main__":
 
         # Adaptación del menú
         def menuContexte(tipo):
+            # leyenda.menuAccions.append('testMapificacio')
             if tipo == 'none':
                 leyenda.menuAccions.append('addLayersFromFile')
                 leyenda.menuAccions.append('separator')

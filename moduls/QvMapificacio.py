@@ -3,7 +3,7 @@
 from qgis.core import (QgsApplication, QgsVectorLayer, QgsLayerDefinition, QgsVectorFileWriter,
                        QgsSymbol, QgsRendererCategory, QgsCategorizedSymbolRenderer,
                        QgsGraduatedSymbolRenderer, QgsRendererRange, QgsAggregateCalculator, QgsError,
-                       QgsGradientColorRamp, QgsRendererRangeLabelFormat, QgsReadWriteContext, QgsObjectCustomProperties)
+                       QgsGradientColorRamp, QgsRendererRangeLabelFormat, QgsReadWriteContext, QgsExpressionContextUtils)
 from qgis.gui import QgsFileWidget
 from qgis.PyQt.QtCore import Qt, QObject, pyqtSignal, pyqtSlot
 from qgis.PyQt.QtGui import QColor, QValidator
@@ -80,8 +80,8 @@ class QvMapRender():
         return colorIni, colorFi
 
     @staticmethod
-    def calcRender(mapLyr, campCalculat, numDecimals, colorBase,
-                   numCategories, modeCategories, format):
+    def calcRender(mapLyr, campCalculat='RESULTAT', numDecimals=0, colorBase='Blau',
+                   numCategories=4, modeCategories='Endreçat', format='%1 - %2'):
         try:
             colorIni, colorFi = QvMapRender().calcColorsGradient(colorBase)
             colorRamp = QgsGradientColorRamp(colorIni, colorFi)
@@ -89,15 +89,18 @@ class QvMapRender():
             symbol = QgsSymbol.defaultSymbol(mapLyr.geometryType())
             renderer = QgsGraduatedSymbolRenderer.createRenderer(mapLyr, campCalculat,
                 numCategories, modeCategories, symbol, colorRamp, labelFormat)
-            mapLyr.setRenderer(renderer)
-            return True
+            return renderer
         except Exception as e:
-            return False
+            return None
 
     @staticmethod
-    def modifyRenderer(llegenda, mapLyr):
+    def modifyRenderer(llegenda, capa=None):
         global f
-        f = QvFormSimbMapificacio(llegenda, mapLyr)
+        if capa is None:
+            capa = llegenda.currentLayer()
+            if capa is None:
+                return
+        f = QvFormSimbMapificacio(llegenda, capa)
         f.show()
 
 class QvMapificacio(QObject):
@@ -299,7 +302,9 @@ class QvMapificacio(QObject):
                   colorBase='Blau', format='%1 - %2', veure=True):
 
         self.fMapa = ''
+        self.capaMapa = None
         self.fSQL = ''
+        self.llegenda = llegenda
 
         if campAgregat is not None and campAgregat != '':
             self.campAgregat = campAgregat
@@ -350,8 +355,8 @@ class QvMapificacio(QObject):
             return False, "No s'ha pogut carregar capa de zones: " + self.fBase
 
         # Añadimos capas auxiliares a la leyenda (de forma no visible) para procesarlas
-        llegenda.project.addMapLayer(infoLyr, False)
-        llegenda.project.addMapLayer(zonaLyr, False)
+        self.llegenda.project.addMapLayer(infoLyr, False)
+        self.llegenda.project.addMapLayer(zonaLyr, False)
 
         # Lista de campos de zona que se incluirán en la mapificación
         zonaCamps = []
@@ -366,21 +371,21 @@ class QvMapificacio(QObject):
         virtLyr.setProviderEncoding("UTF-8")            
 
         if not virtLyr.isValid():
-            llegenda.project.removeMapLayer(zonaLyr.id())
-            llegenda.project.removeMapLayer(infoLyr.id())
+            self.llegenda.project.removeMapLayer(zonaLyr.id())
+            self.llegenda.project.removeMapLayer(infoLyr.id())
             return False, "No s'ha pogut generar capa de agregació"
 
         # Guarda capa de agregación en SQLite
         self.fSQL = _RUTA_LOCAL + self.nomCapa + ".sqlite"
         ret, msg = QgsVectorFileWriter.writeAsVectorFormat(virtLyr, self.fSQL, "UTF-8", zonaLyr.crs(), "SQLite")
         if ret != QgsVectorFileWriter.NoError:
-            llegenda.project.removeMapLayer(zonaLyr.id())
-            llegenda.project.removeMapLayer(infoLyr.id())
+            self.llegenda.project.removeMapLayer(zonaLyr.id())
+            self.llegenda.project.removeMapLayer(infoLyr.id())
             return False, "No s'ha pogut desar capa de agregació: " + self.fSQL + " (Error - " + msg + ")"
 
         # Elimina capas de base y datos
-        llegenda.project.removeMapLayer(zonaLyr.id())
-        llegenda.project.removeMapLayer(infoLyr.id())
+        self.llegenda.project.removeMapLayer(zonaLyr.id())
+        self.llegenda.project.removeMapLayer(infoLyr.id())
 
         # Carga capa SQLite de agregación
         mapLyr = QgsVectorLayer(self.fSQL, nomCapa , "ogr")
@@ -389,34 +394,39 @@ class QvMapificacio(QObject):
             return False, "No s'ha pogut carregar capa de agregació: " + self.fSQL
 
         # Renderer para mapificar
-        ok = QvMapRender().calcRender(mapLyr, self.campCalculat, self.numDecimals,
+        self.renderer = QvMapRender().calcRender(mapLyr, self.campCalculat, self.numDecimals,
             self.colorBase, self.numCategories, self.modeCategories, format)
-        if not ok:
+        if self.renderer is None:
             return False, "No s'ha pogut elaborar el mapa"
+        else:
+            mapLyr.setRenderer(self.renderer)
 
         # Guarda capa qlr con agregación + mapificación
         self.fMapa = _RUTA_LOCAL + self.nomCapa + '.qlr'
 
         # Tipo de capa para qVista
-        mapLyr.setCustomProperty('tipusCapa','MAPIFICACIÓ')
-        # Ficheros implicados
-        mapLyr.setCustomProperty('rutaLocal', _RUTA_LOCAL.upper()) # En mayúsculas para que no se elimine
-        mapLyr.setCustomProperty('arxiuDades', self.fZones)
-        mapLyr.setCustomProperty('arxiuBase', self.fBase)
-        mapLyr.setCustomProperty('arxiuSQL', self.fSQL)
-        mapLyr.setCustomProperty('arxiuMapa', self.fMapa)
-        # Parámetros
-        mapLyr.setCustomProperty('nomCapa', self.nomCapa)
-        mapLyr.setCustomProperty('tipusAgregacio', tipusAgregacio)
-        mapLyr.setCustomProperty('campCalculat', self.campCalculat)
-        mapLyr.setCustomProperty('campAgregat', self.campAgregat)
-        mapLyr.setCustomProperty('tipusDistribucio', tipusDistribucio)
-        mapLyr.setCustomProperty('filtre', self.filtre)
-        mapLyr.setCustomProperty('numDecimals', self.numDecimals)
-        mapLyr.setCustomProperty('numCategories', self.numCategories)
-        mapLyr.setCustomProperty('modeCategories', modeCategories)
-        mapLyr.setCustomProperty('colorBase', colorBase)
-        mapLyr.setCustomProperty('format', format)
+        QgsExpressionContextUtils.setLayerVariable(mapLyr, 'qv_tipusCapa', 'MAPIFICACIÓ')
+
+        # # Tipo de capa para qVista
+        # mapLyr.setCustomProperty('tipusCapa','MAPIFICACIÓ')
+        # # Ficheros implicados
+        # mapLyr.setCustomProperty('rutaLocal', _RUTA_LOCAL.upper()) # En mayúsculas para que no se elimine
+        # mapLyr.setCustomProperty('arxiuDades', self.fZones)
+        # mapLyr.setCustomProperty('arxiuBase', self.fBase)
+        # mapLyr.setCustomProperty('arxiuSQL', self.fSQL)
+        # mapLyr.setCustomProperty('arxiuMapa', self.fMapa)
+        # # Parámetros
+        # mapLyr.setCustomProperty('nomCapa', self.nomCapa)
+        # mapLyr.setCustomProperty('tipusAgregacio', tipusAgregacio)
+        # mapLyr.setCustomProperty('campCalculat', self.campCalculat)
+        # mapLyr.setCustomProperty('campAgregat', self.campAgregat)
+        # mapLyr.setCustomProperty('tipusDistribucio', tipusDistribucio)
+        # mapLyr.setCustomProperty('filtre', self.filtre)
+        # mapLyr.setCustomProperty('numDecimals', self.numDecimals)
+        # mapLyr.setCustomProperty('numCategories', self.numCategories)
+        # mapLyr.setCustomProperty('modeCategories', modeCategories)
+        # mapLyr.setCustomProperty('colorBase', colorBase)
+        # mapLyr.setCustomProperty('format', format)
 
         try:
             # Leer DOM, eliminar path local y guardar en fichero
@@ -434,16 +444,19 @@ class QvMapificacio(QObject):
         # Mostar qlr de mapificación, si es el caso
         if veure and self.fMapa != '':
             # Cargar qlr
-            ok, txt = QgsLayerDefinition.loadLayerDefinition(self.fMapa, llegenda.project, llegenda.root)
+            ok, txt = QgsLayerDefinition.loadLayerDefinition(self.fMapa,
+                self.llegenda.project, self.llegenda.root)
             if not ok:
                 return False, "No s'ha pogut carregar capa mapificació: " + self.fMapa
             QgsApplication.processEvents()
+
             # Incluir icono de modificación de simbologia en leyenda
-            node = llegenda.nodePerNom(mapLyr.name(), 'layer')
-            if node is not None:
-                llegenda.addIndicator(node, llegenda.iconaMap)
-                llegenda.iconaMap.clicked.connect(lambda: QvMapRender().modifyRenderer(llegenda, mapLyr))
-                mapLyr.nameChanged.emit()
+            # node = self.llegenda.nodePerNom(mapLyr.name(), 'layer')
+            # if node is not None:
+            #     self.capaMapa = node.layer()
+            #     self.llegenda.addIndicator(node, self.llegenda.iconaMap)
+            #     self.llegenda.iconaMap.clicked.connect(lambda: QvMapRender().modifyRenderer(self.llegenda, self.capaMapa))
+            #     self.capaMapa.nameChanged.emit()
 
         return True, ''
 
@@ -632,7 +645,7 @@ class QvFormSimbMapificacio(QWidget):
         if not self.iniParams():
             return
 
-        self.setWindowTitle('Modificar simbologia de mapificació')
+        self.setWindowTitle('Modificar categories de mapificació')
 
         self.layout = QFormLayout()
         self.layout.setSpacing(10)
@@ -669,6 +682,14 @@ class QvFormSimbMapificacio(QWidget):
         self.valorsInicials()
 
     def iniParams(self):
+        self.campCalculat = 'RESULTAT'
+        self.numDecimals = 0
+        self.colorBase = 'Blau'
+        self.numCategories = 4
+        self.modeCategories = 'Endreçat'
+        self.format = '%1 - %2'
+        return True # -------------------------------------------------------------------
+
         try:
             # Verificar tipo
             self.tipusCapa = self.capa.customProperty('tipusCapa')
@@ -686,6 +707,8 @@ class QvFormSimbMapificacio(QWidget):
             return False
 
     def valorsInicials(self):
+        return # -------------------------------------------------------------------
+
         self.color.setCurrentText(self.colorBase)
         self.metode.setCurrentText(self.modeCategories)
         self.intervals.setValue(self.numCategories)
@@ -696,6 +719,8 @@ class QvFormSimbMapificacio(QWidget):
         self.numCategories = self.intervals.value()
 
     def desaParams(self):
+        return True # -------------------------------------------------------------------
+
         try:
             self.capa.setCustomProperty('campCalculat', self.campCalculat)
             self.capa.setCustomProperty('numDecimals', self.numDecimals)
@@ -718,14 +743,15 @@ class QvFormSimbMapificacio(QWidget):
 
     def mapifica(self):
         self.valorsFinals()
-        ok = QvMapRender().calcRender(self.capa, self.campCalculat, self.numDecimals,
+        self.renderer = QvMapRender().calcRender(self.capa, self.campCalculat, self.numDecimals,
             _COLORS[self.colorBase], self.numCategories, _METODES[self.modeCategories], self.format)
-        if ok:
-            self.desaParams()
-            self.llegenda.modificacioProjecte('maprModified')
-            return ''
-        else: 
+        if self.renderer is None:
             return "No s'ha pogut modificar la simbologia"
+        self.capa.setRenderer(self.renderer)
+        self.capa.triggerRepaint()
+        self.desaParams()
+        self.llegenda.modificacioProjecte('mapModified')
+        return ''
 
     @pyqtSlot()
     def ok(self):
