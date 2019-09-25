@@ -407,27 +407,6 @@ class QvMapificacio(QObject):
         # Tipo de capa para qVista
         QgsExpressionContextUtils.setLayerVariable(mapLyr, 'qv_tipusCapa', 'MAPIFICACIÓ')
 
-        # # Tipo de capa para qVista
-        # mapLyr.setCustomProperty('tipusCapa','MAPIFICACIÓ')
-        # # Ficheros implicados
-        # mapLyr.setCustomProperty('rutaLocal', _RUTA_LOCAL.upper()) # En mayúsculas para que no se elimine
-        # mapLyr.setCustomProperty('arxiuDades', self.fZones)
-        # mapLyr.setCustomProperty('arxiuBase', self.fBase)
-        # mapLyr.setCustomProperty('arxiuSQL', self.fSQL)
-        # mapLyr.setCustomProperty('arxiuMapa', self.fMapa)
-        # # Parámetros
-        # mapLyr.setCustomProperty('nomCapa', self.nomCapa)
-        # mapLyr.setCustomProperty('tipusAgregacio', tipusAgregacio)
-        # mapLyr.setCustomProperty('campCalculat', self.campCalculat)
-        # mapLyr.setCustomProperty('campAgregat', self.campAgregat)
-        # mapLyr.setCustomProperty('tipusDistribucio', tipusDistribucio)
-        # mapLyr.setCustomProperty('filtre', self.filtre)
-        # mapLyr.setCustomProperty('numDecimals', self.numDecimals)
-        # mapLyr.setCustomProperty('numCategories', self.numCategories)
-        # mapLyr.setCustomProperty('modeCategories', modeCategories)
-        # mapLyr.setCustomProperty('colorBase', colorBase)
-        # mapLyr.setCustomProperty('format', format)
-
         try:
             # Leer DOM, eliminar path local y guardar en fichero
             domDoc = QgsLayerDefinition.exportLayerDefinitionLayers([mapLyr], QgsReadWriteContext())
@@ -679,58 +658,23 @@ class QvFormSimbMapificacio(QWidget):
 
         self.layout.addWidget(self.buttons)
 
-        self.valorsInicials()
-
     def iniParams(self):
+        tipus = QgsExpressionContextUtils.layerScope(self.capa).variable('qv_tipusCapa')
+        if tipus != 'MAPIFICACIÓ':
+            return False
+
         self.campCalculat = 'RESULTAT'
         self.numDecimals = 0
         self.colorBase = 'Blau'
         self.numCategories = 4
         self.modeCategories = 'Endreçat'
         self.format = '%1 - %2'
-        return True # -------------------------------------------------------------------
-
-        try:
-            # Verificar tipo
-            self.tipusCapa = self.capa.customProperty('tipusCapa')
-            if self.tipusCapa != 'MAPIFICACIÓ':
-                return False
-            # Parámetros de las custom properties
-            self.campCalculat = self.capa.customProperty('campCalculat')
-            self.numDecimals = self.capa.customProperty('numDecimals')
-            self.colorBase = self.capa.customProperty('colorBase')
-            self.numCategories = self.capa.customProperty('numCategories')
-            self.modeCategories = self.capa.customProperty('modeCategories')
-            self.format = self.capa.customProperty('format')
-            return True
-        except Exception as e:
-            return False
-
-    def valorsInicials(self):
-        return # -------------------------------------------------------------------
-
-        self.color.setCurrentText(self.colorBase)
-        self.metode.setCurrentText(self.modeCategories)
-        self.intervals.setValue(self.numCategories)
+        return True
 
     def valorsFinals(self):
         self.colorBase = self.color.currentText()
         self.modeCategories = self.metode.currentText()
         self.numCategories = self.intervals.value()
-
-    def desaParams(self):
-        return True # -------------------------------------------------------------------
-
-        try:
-            self.capa.setCustomProperty('campCalculat', self.campCalculat)
-            self.capa.setCustomProperty('numDecimals', self.numDecimals)
-            self.capa.setCustomProperty('colorBase', self.colorBase)
-            self.capa.setCustomProperty('numCategories', self.numCategories)
-            self.capa.setCustomProperty('modeCategories', self.modeCategories)
-            self.capa.setCustomProperty('format', self.format)
-            return True
-        except Exception as e:
-            return False
 
     def msgInfo(self, txt):
         QMessageBox.information(self, 'Informació', txt)
@@ -749,7 +693,6 @@ class QvFormSimbMapificacio(QWidget):
             return "No s'ha pogut modificar la simbologia"
         self.capa.setRenderer(self.renderer)
         self.capa.triggerRepaint()
-        self.desaParams()
         self.llegenda.modificacioProjecte('mapModified')
         return ''
 
@@ -778,7 +721,8 @@ if __name__ == "__main__":
 
         app = QvApp()
 
-        z = QvMapificacio('CarrecsANSI.csv', 'Barri')
+        z = QvMapificacio('CarrecsANSI.csv', 'Districte')
+        # z = QvMapificacio('CarrecsANSI.csv', 'Barri')
         print(z.rows, 'filas en', z.fDades)
         print('Muestra:', z.mostra)
 

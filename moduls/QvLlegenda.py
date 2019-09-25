@@ -247,6 +247,7 @@ class QvLlegenda(QgsLayerTreeView):
         self.iconaFiltre = QgsLayerTreeViewIndicator()
         self.iconaFiltre.setIcon(QIcon('imatges/filter.png'))
         self.iconaFiltre.setToolTip('Filtre actiu')
+        self.iconaFiltre.clicked.connect(self.filterElements)
 
         self.iconaMap = QgsLayerTreeViewIndicator()
         self.iconaMap.setIcon(QIcon('imatges/categories2.png'))
@@ -888,8 +889,9 @@ if __name__ == "__main__":
         # leyenda.printSignals() # Para debug
 
         # leyenda.project.read('../Dades/Projectes/Imatge satel·lit 2011 AMB.qgs')
-        leyenda.project.read('../dades/projectes/bcn11.qgs')
+        # leyenda.project.read('../dades/projectes/bcn11.qgs')
         # leyenda.project.read('../dades/projectes/Prototip GUIA OracleSpatial_WMS.qgz')
+        leyenda.project.read('D:/qVista/Codi/mapesOffline/qVista default map.qgs')
 
     # Al cargar un proyecto o capa:
     # - Ver si tiene filtro de datos para actualizar el icono del embudo

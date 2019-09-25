@@ -1,4 +1,5 @@
 
-- Hay que incluir el icono de leyenda al cargar una capa de mapificacion
-- No se refleja el nuevo renderer en la capa
-- Hay que guardar las customProperties en el fuchero QLR
+- Indicador de progreso
+- Mostrar campos disponibles para cálculos
+- Leer render activo para parámetros modificación
+- Paths de qlr's interfieren?? QGS con path absoluto, QLR con ./
