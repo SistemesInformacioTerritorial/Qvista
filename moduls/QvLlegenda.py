@@ -443,7 +443,7 @@ class QvLlegenda(QgsLayerTreeView):
                     else:
                         self.removeIndicator(node, self.iconaFiltre)
                     # Mapificacón
-                    tipus = QgsExpressionContextUtils.layerScope(capa).variable('qv_tipusCapa')
+                    tipus = QgsExpressionContextUtils.layerScope(capa).variable('qV_tipusCapa')
                     if tipus == 'MAPIFICACIÓ':
                         self.addIndicator(node, self.iconaMap)
                     else:

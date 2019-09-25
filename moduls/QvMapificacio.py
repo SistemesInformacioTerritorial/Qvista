@@ -41,8 +41,8 @@ _AGREGACIO = {
 }
 
 _DISTRIBUCIO = {
-    "Total": ""
-    # "Per m2": "/ Z.AREA",
+    "Total": "",
+    "Per m2": "/ Z.AREA"
     # "Per habitant": "/ Z.POBLACIO"
 }
 
@@ -56,11 +56,11 @@ _COLORS = {
 }
 
 _METODES = {
-        "Endreçat": QgsGraduatedSymbolRenderer.Pretty,
-        "Intervals iguals": QgsGraduatedSymbolRenderer.EqualInterval,
-        "Quantils": QgsGraduatedSymbolRenderer.Quantile,
-        "Jenks": QgsGraduatedSymbolRenderer.Jenks,
-        "Desviació estàndard": QgsGraduatedSymbolRenderer.StdDev
+    "Endreçat": QgsGraduatedSymbolRenderer.Pretty,
+    "Intervals equivalents": QgsGraduatedSymbolRenderer.EqualInterval,
+    "Quantils": QgsGraduatedSymbolRenderer.Quantile,
+    "Divisions naturals (Jenks)": QgsGraduatedSymbolRenderer.Jenks,
+    "Desviació estàndard": QgsGraduatedSymbolRenderer.StdDev
 }
 
 _TRANS = str.maketrans('ÁÉÍÓÚáéíóúÀÈÌÒÙàèìòùÂÊÎÔÛâêîôûÄËÏÖÜäëïöüºª€@$·.,;:()[]¡!¿?|@#%&ç*',
@@ -71,13 +71,21 @@ _RUTA_DADES = 'D:/qVista/Codi/Dades/'
 
 class QvMapRender():
 
+    _INI_ALPHA = 8
+
     @staticmethod
-    def calcColorsGradient(colorBase, iniAlpha=8):
+    def calcColorsGradient(colorBase):
         colorIni = QColor(colorBase)
-        colorIni.setAlpha(iniAlpha)
+        colorIni.setAlpha(_INI_ALPHA)
         colorFi = QColor(colorBase)
-        colorFi.setAlpha(255 - iniAlpha)
+        colorFi.setAlpha(255 - _INI_ALPHA)
         return colorIni, colorFi
+
+    def nomColor(color):
+        for nom, qcolor in _COLORS:
+            if qcolor == color:
+                return nom
+        return _COLORS.keys()[0]
 
     @staticmethod
     def calcRender(mapLyr, campCalculat='RESULTAT', numDecimals=0, colorBase='Blau',
@@ -90,6 +98,27 @@ class QvMapRender():
             renderer = QgsGraduatedSymbolRenderer.createRenderer(mapLyr, campCalculat,
                 numCategories, modeCategories, symbol, colorRamp, labelFormat)
             return renderer
+        except Exception as e:
+            return None
+
+    @staticmethod
+    def paramsRender(mapLyr)
+    # campCalculat='RESULTAT', numDecimals=0, colorBase='Blau',
+    # numCategories=4, modeCategories='Endreçat', format='%1 - %2'
+        try:
+            renderer = mapLyr.renderer()
+            campCalculat = renderer.classAttribute()
+            numDecimals = renderer.labelFormat().precision()
+            colorBase = nomColor(renderer.sourceColorRamp().color1().setAlpha(0))
+
+            return (campCalculat, numDecimals, colorBase)
+            # colorIni, colorFi = QvMapRender().calcColorsGradient(colorBase)   
+            # colorRamp = QgsGradientColorRamp(colorIni, colorFi)
+            # labelFormat = QgsRendererRangeLabelFormat(format, numDecimals)
+            # symbol = QgsSymbol.defaultSymbol(mapLyr.geometryType())
+            # renderer = QgsGraduatedSymbolRenderer.createRenderer(mapLyr, campCalculat,
+            #     numCategories, modeCategories, symbol, colorRamp, labelFormat)
+            # return renderer
         except Exception as e:
             return None
 
@@ -405,7 +434,7 @@ class QvMapificacio(QObject):
         self.fMapa = _RUTA_LOCAL + self.nomCapa + '.qlr'
 
         # Tipo de capa para qVista
-        QgsExpressionContextUtils.setLayerVariable(mapLyr, 'qv_tipusCapa', 'MAPIFICACIÓ')
+        QgsExpressionContextUtils.setLayerVariable(mapLyr, 'qV_tipusCapa', 'MAPIFICACIÓ')
 
         try:
             # Leer DOM, eliminar path local y guardar en fichero
@@ -484,6 +513,10 @@ class QvFormNovaMapificacio(QWidget):
         self.tipus.addItem('Selecciona tipus…')
         self.tipus.addItems(_AGREGACIO.keys())
 
+        self.distribucio = QComboBox(self)
+        self.distribucio.setEditable(False)
+        self.distribucio.addItems(_DISTRIBUCIO.keys())
+
         self.calcul = QLineEdit(self)
 
         self.filtre = QLineEdit(self)
@@ -525,8 +558,9 @@ class QvFormNovaMapificacio(QWidget):
         self.gDades.setLayout(self.lDades)
 
         self.lDades.addRow('Tipus agregació:', self.tipus)
-        self.lDades.addRow('Fòrmula càlcul :', self.calcul)
+        self.lDades.addRow('Camp o fòrmula càlcul:', self.calcul)
         self.lDades.addRow('Filtre:', self.filtre) 
+        self.lDades.addRow('Distribució:', self.distribucio)
 
         self.gSimb = QGroupBox('Simbologia mapificació')
         self.lSimb = QFormLayout()
@@ -591,8 +625,8 @@ class QvFormNovaMapificacio(QWidget):
 
     def mapifica(self):
         z = QvMapificacio(self.arxiu.filePath(), self.zona.currentText(), numMostra=0)
-        ok, err = z.agregacio(self.llegenda, self.capa.text().strip(), self.tipus.currentText(),
-                              campAgregat=self.calcul.text().strip(), filtre=self.filtre.text().strip(),
+        ok, err = z.agregacio(self.llegenda, self.capa.text().strip(), self.tipus.currentText(), campAgregat=self.calcul.text().strip(),
+                              filtre=self.filtre.text().strip(), tipusDistribucio=self.distribucio.currentText(),
                               modeCategories=self.metode.currentText(), numCategories=self.intervals.value(),
                               colorBase=self.color.currentText())
         if ok:
@@ -600,17 +634,17 @@ class QvFormNovaMapificacio(QWidget):
         else: 
             return err
 
-        # Falta: desactivar formulario, indicar progreso...
-
     @pyqtSlot()
     def ok(self):
         if self.valida():
+            self.setDisabled(True)
             msg = self.mapifica()
             if msg == '':
                 self.close()
             else:
                 self.msgError(msg)
-
+                self.setDisabled(False)
+    
     @pyqtSlot()
     def cancel(self):
         self.close()
@@ -659,7 +693,7 @@ class QvFormSimbMapificacio(QWidget):
         self.layout.addWidget(self.buttons)
 
     def iniParams(self):
-        tipus = QgsExpressionContextUtils.layerScope(self.capa).variable('qv_tipusCapa')
+        tipus = QgsExpressionContextUtils.layerScope(self.capa).variable('qV_tipusCapa')
         if tipus != 'MAPIFICACIÓ':
             return False
 
@@ -698,11 +732,13 @@ class QvFormSimbMapificacio(QWidget):
 
     @pyqtSlot()
     def ok(self):
+        self.setDisabled(True)
         msg = self.mapifica()
         if msg == '':
             self.close()
         else:
             self.msgError(msg)
+            self.setDisabled(False)
 
     @pyqtSlot()
     def cancel(self):
