@@ -1,7 +1,9 @@
 from moduls.QvImports import *
 from moduls.QvConstants import QvConstants
 class QvMenuBar(QMenuBar):
-    def __init__(self,parent=None):
+    '''Classe per fer que la menubar del qVista faci arrossegable el programa
+    '''
+    def __init__(self,parent: QWidget=None):
         super().__init__(parent)
         self.setContextMenuPolicy(Qt.PreventContextMenu)
 
@@ -14,7 +16,7 @@ class QvMenuBar(QMenuBar):
         super().mouseMoveEvent(event)
         if event.buttons() & Qt.LeftButton:
             delta = QPoint(event.globalPos() - self.parentWidget().oldPos)
-            if abs(delta.y())<30: return
+            if abs(delta.y())<15: return
             if self.parentWidget().maximitzada:
                 self.parentWidget().restaurarFunc()
                 #Desmaximitzar

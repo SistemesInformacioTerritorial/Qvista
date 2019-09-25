@@ -9,9 +9,10 @@ import os
 import tempfile
 from moduls.QvConstants import QvConstants
 from moduls.QvPushButton import QvPushButton
+from typing import Callable
 
 class QvSuggeriments(QDialog):
-    def __init__(self, acceptAction=QWidget.close, parent=None):
+    def __init__(self, acceptAction: Callable[[str,str],None]=QWidget.close, parent: QtWidgets.QWidget=None):
         super().__init__(parent)
         #Layout gran. Tot a dins
         self.layout=QVBoxLayout(self)
@@ -32,7 +33,8 @@ class QvSuggeriments(QDialog):
         #info
         self.info = QLabel()
         self.info.setContentsMargins(20,20,20,20)
-        self.info.setText("Heu trobat algun problema? Voleu fer-nos algun suggeriment? \nSi us plau, descriviu-lo breument a continuació. El vostre suport ens ajudarà a\nmillorar.")
+        self.info.setText("Heu trobat algun problema? Voleu fer-nos algun suggeriment? \nSi us plau, descriviu-lo breument a continuació. El vostre suport ens ajudarà a millorar.")
+        self.info.setWordWrap(True)
         self.layout.addWidget(self.info)
 
         #TITOL + DESCRIPCIO

@@ -12,7 +12,11 @@ from moduls.QvPushButton import QvPushButton
 from moduls.QvToolButton import QvToolButton
 
 class QvNouMapa(QDialog):
-    def __init__(self, parent=None):
+    '''Diàleg de creació del mapa. Mostra uns mapes base i una line edit perquè l'usuari triï base i títol del projecte, i els carrega en el qVista quan sortim del diàleg'''
+    def __init__(self, parent):
+        '''Construeix un QvNouMapa. Rep obligatòriament el widget pare, que ha de ser el qVista
+        Arguments:
+            parent{QVista} -- Instància de qVista que estem executant'''
         super().__init__(parent)
         self.setWindowFlags(Qt.Window | Qt.FramelessWindowHint)
         self.layout=QVBoxLayout(self)
@@ -68,21 +72,21 @@ class QvNouMapa(QDialog):
         self.mapaBuit=QvToolButton(self)
         self.mapaBuit.setToolButtonStyle(Qt.ToolButtonTextUnderIcon)
         self.mapaBuit.setText('Parcel·lari')
-        self.mapaBuit.setIcon(QIcon('./Imatges/nou_parcel·lari.png'))
+        self.mapaBuit.setIcon(QIcon('imatges/nou_parcel·lari.png'))
         self.mapaBuit.setIconSize(QSize(wImage, hImage))
         self.mapaBuit.clicked.connect(lambda: self.botoClick(self.mapaBuit))
 
         self.mapa1=QvToolButton(self)
         self.mapa1.setToolButtonStyle(Qt.ToolButtonTextUnderIcon)
         self.mapa1.setText('Topogràfic')
-        self.mapa1.setIcon(QIcon('./Imatges/nou_topogràfic.png'))
+        self.mapa1.setIcon(QIcon('imatges/nou_topogràfic.png'))
         self.mapa1.setIconSize(QSize(wImage, hImage))
         self.mapa1.clicked.connect(lambda: self.botoClick(self.mapa1))
 
         self.mapa2=QvToolButton(self)
         self.mapa2.setToolButtonStyle(Qt.ToolButtonTextUnderIcon)
         self.mapa2.setText('Plànol guia')
-        self.mapa2.setIcon(QIcon('./Imatges/nou_guia.png'))
+        self.mapa2.setIcon(QIcon('imatges/nou_guia.png'))
         self.mapa2.setIconSize(QSize(wImage, hImage))
         self.mapa2.clicked.connect(lambda: self.botoClick(self.mapa2))
         
@@ -91,21 +95,21 @@ class QvNouMapa(QDialog):
         self.mapa3=QvToolButton(self)
         self.mapa3.setToolButtonStyle(Qt.ToolButtonTextUnderIcon)
         self.mapa3.setText('Ortofotos 1:1000')
-        self.mapa3.setIcon(QIcon('./Imatges/nou_ortofoto.png'))
+        self.mapa3.setIcon(QIcon('imatges/nou_ortofoto.png'))
         self.mapa3.setIconSize(QSize(wImage, hImage))
         self.mapa3.clicked.connect(lambda: self.botoClick(self.mapa3))
 
         self.mapa4=QvToolButton(self)
         self.mapa4.setToolButtonStyle(Qt.ToolButtonTextUnderIcon)
         self.mapa4.setText('Unitats administratives')
-        self.mapa4.setIcon(QIcon('./Imatges/nou_divisions_administratives.png'))
+        self.mapa4.setIcon(QIcon('imatges/nou_divisions_administratives.png'))
         self.mapa4.setIconSize(QSize(wImage, hImage))
         self.mapa4.clicked.connect(lambda: self.botoClick(self.mapa4))
 
         self.mapa5=QvToolButton(self)
         self.mapa5.setToolButtonStyle(Qt.ToolButtonTextUnderIcon)
         self.mapa5.setText('Mapa buit')
-        self.mapa5.setIcon(QIcon('./Imatges/nou_buit.png'))
+        self.mapa5.setIcon(QIcon('imatges/nou_buit.png'))
         self.mapa5.setIconSize(QSize(wImage, hImage))
         self.mapa5.clicked.connect(lambda: self.botoClick(self.mapa5))
 
@@ -136,6 +140,10 @@ class QvNouMapa(QDialog):
         self.layout.addLayout(self.layoutContingut)
 
     def botoClick(self,boto):
+        '''Funció que rep un dels botons del diàleg, i fa click sobre ell. Marca la resta com a no clicats
+        Arguments:
+            boto{QvToolButton} -- Botó que volem marcar. Ha de ser un dels sis que té el diàleg
+        '''
         botons=set([self.mapaBuit,self.mapa1,self.mapa2,self.mapa3,self.mapa4,self.mapa5])
         boto.setMarcat(True)
         botons.remove(boto)
@@ -154,10 +162,18 @@ class QvNouMapa(QDialog):
             self.setAdreca(docdirPlantilles+'MapaEnBlanc.qgs')
 
     def setAdreca(self,adreca):
+        '''Selecciona l'adreça del mapa que volem posar
+        Arguments:
+            adreca{str} -- Adreça a posar. Ha de ser un projecte qGis, i en teoria hauria d'equivaldre a la icona del botó a la que s'asocia
+        '''
         self.adreca=adreca
         if self.leTitol.text()!='': 
             self.botoAcceptar.setEnabled(True)
     def setTitol(self,titol):
+        '''Posa títol al projecte que farem
+        Arguments:
+            titol{str} -- Títol. Pot ser buit, i en aquest cas es desactivarà el botó d'acceptar
+        '''
         self.titol=titol
         if titol!='':
             if hasattr(self,'adreca'):
@@ -180,23 +196,8 @@ class QvNouMapa(QDialog):
         self.oldPos = event.globalPos()
 
     def keyPressEvent(self, event):
-        if event.key() == Qt.Key_Escape or event.key() == Qt.Key_Return:
+        if event.key() == Qt.Key_Escape:
             self.close()
-
-# class QvToolButton(QToolButton):
-#     def __init__(self,parent=None):
-#         super().__init__(parent)
-#         self.setStyleSheet('''
-#             QToolButton{
-#                 padding: 0px;
-#                 background: transparent;
-#                 margin: 0px;
-#                 border: 0px;
-#             }
-#         ''')
-#     def enterEvent(self,event):
-#         super().enterEvent(event)
-#         self.setCursor(QvConstants.cursorClick())
-#     def leaveEvent(self,event):
-#         super().leaveEvent(event)
-#         self.setCursor(QvConstants.cursorFletxa())
+        if event.key() == Qt.Key_Return:
+            if self.botoAcceptar.isEnabled(): #Si el botó d'acceptar està enabled, podem acceptar
+                self.carrega()
