@@ -71,56 +71,59 @@ _RUTA_DADES = 'D:/qVista/Codi/Dades/'
 
 class QvMapRender():
 
-    _INI_ALPHA = 8
+    INI_ALPHA = 8
 
     @staticmethod
     def calcColorsGradient(colorBase):
         colorIni = QColor(colorBase)
-        colorIni.setAlpha(_INI_ALPHA)
+        colorIni.setAlpha(QvMapRender().INI_ALPHA)
         colorFi = QColor(colorBase)
-        colorFi.setAlpha(255 - _INI_ALPHA)
+        colorFi.setAlpha(255 - QvMapRender().INI_ALPHA)
         return colorIni, colorFi
 
-    def nomColor(color):
-        for nom, qcolor in _COLORS:
-            if qcolor == color:
-                return nom
-        return _COLORS.keys()[0]
-
     @staticmethod
-    def calcRender(mapLyr, campCalculat='RESULTAT', numDecimals=0, colorBase='Blau',
-                   numCategories=4, modeCategories='Endreçat', format='%1 - %2'):
+    def calcRender(capa, campCalculat, numDecimals, colorBase,
+                   numCategories, modeCategories, format):
         try:
             colorIni, colorFi = QvMapRender().calcColorsGradient(colorBase)
             colorRamp = QgsGradientColorRamp(colorIni, colorFi)
             labelFormat = QgsRendererRangeLabelFormat(format, numDecimals)
-            symbol = QgsSymbol.defaultSymbol(mapLyr.geometryType())
-            renderer = QgsGraduatedSymbolRenderer.createRenderer(mapLyr, campCalculat,
+            symbol = QgsSymbol.defaultSymbol(capa.geometryType())
+            renderer = QgsGraduatedSymbolRenderer.createRenderer(capa, campCalculat,
                 numCategories, modeCategories, symbol, colorRamp, labelFormat)
             return renderer
         except Exception as e:
             return None
 
     @staticmethod
-    def paramsRender(mapLyr)
-    # campCalculat='RESULTAT', numDecimals=0, colorBase='Blau',
-    # numCategories=4, modeCategories='Endreçat', format='%1 - %2'
+    def nomParam(param, llista):
+        for nom, valor in llista.items():
+            if param == valor:
+                return nom
+        return list(llista.keys())[0]
+
+    @staticmethod
+    def nomColor(param, llista):
+        for nom, valor in llista.items():
+            if param.red() == valor.red() and param.green() == valor.green() and param.blue() == valor.blue():
+                return nom
+        return list(llista.keys())[0]
+
+    @staticmethod
+    def paramsRender(capa):
         try:
-            renderer = mapLyr.renderer()
+            renderer = capa.renderer()
             campCalculat = renderer.classAttribute()
             numDecimals = renderer.labelFormat().precision()
-            colorBase = nomColor(renderer.sourceColorRamp().color1().setAlpha(0))
-
-            return (campCalculat, numDecimals, colorBase)
-            # colorIni, colorFi = QvMapRender().calcColorsGradient(colorBase)   
-            # colorRamp = QgsGradientColorRamp(colorIni, colorFi)
-            # labelFormat = QgsRendererRangeLabelFormat(format, numDecimals)
-            # symbol = QgsSymbol.defaultSymbol(mapLyr.geometryType())
-            # renderer = QgsGraduatedSymbolRenderer.createRenderer(mapLyr, campCalculat,
-            #     numCategories, modeCategories, symbol, colorRamp, labelFormat)
-            # return renderer
+            color = renderer.sourceColorRamp().color1()
+            color.setAlpha(0)
+            colorBase = QvMapRender().nomColor(color, _COLORS)
+            numCategories = len(renderer.ranges())
+            modeCategories = QvMapRender().nomParam(renderer.mode(), _METODES)
+            format = renderer.labelFormat().format()
+            return campCalculat, numDecimals, colorBase, numCategories, modeCategories, format
         except Exception as e:
-            return None
+            return 'RESULTAT', 0, 'Blau', 4, 'Endreçat', '%1 - %2'
 
     @staticmethod
     def modifyRenderer(llegenda, capa=None):
@@ -692,18 +695,20 @@ class QvFormSimbMapificacio(QWidget):
 
         self.layout.addWidget(self.buttons)
 
+        self.valorsInicials()
+
     def iniParams(self):
         tipus = QgsExpressionContextUtils.layerScope(self.capa).variable('qV_tipusCapa')
         if tipus != 'MAPIFICACIÓ':
             return False
-
-        self.campCalculat = 'RESULTAT'
-        self.numDecimals = 0
-        self.colorBase = 'Blau'
-        self.numCategories = 4
-        self.modeCategories = 'Endreçat'
-        self.format = '%1 - %2'
+        self.campCalculat, self.numDecimals, self.colorBase, self.numCategories, \
+            self.modeCategories, self.format = QvMapRender().paramsRender(self.capa)
         return True
+
+    def valorsInicials(self):        
+        self.color.setCurrentIndex(self.color.findText(self.colorBase))
+        self.metode.setCurrentIndex(self.metode.findText(self.modeCategories))
+        self.intervals.setValue(self.numCategories)
 
     def valorsFinals(self):
         self.colorBase = self.color.currentText()
