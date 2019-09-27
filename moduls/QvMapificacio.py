@@ -677,6 +677,7 @@ class QvFormSimbMapificacio(QWidget):
         self.metode = QComboBox(self)
         self.metode.setEditable(False)
         self.metode.addItems(_METODES_MODIF.keys())
+        self.metode.currentIndexChanged.connect(self.canviaMetode)
 
         self.intervals = QSpinBox()
         self.intervals.setMinimum(2)
@@ -751,6 +752,14 @@ class QvFormSimbMapificacio(QWidget):
     @pyqtSlot()
     def cancel(self):
         self.close()
+
+    @pyqtSlot()
+    def canviaMetode(self):
+        ok = (self.metode.currentIndex() != QgsGraduatedSymbolRenderer.Custom)
+        self.intervals.setEnabled(ok)
+        # label = self.layout.labelForField(self.intervals)
+        # if label is not None:
+        #     label.setVisible(ok)
 
 
 if __name__ == "__main__":
