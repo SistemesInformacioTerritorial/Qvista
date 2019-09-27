@@ -63,6 +63,9 @@ _METODES = {
     "Desviació estàndard": QgsGraduatedSymbolRenderer.StdDev
 }
 
+_METODES_MODIF = _METODES.copy()
+_METODES_MODIF["Personalitzat"] = QgsGraduatedSymbolRenderer.Custom
+
 _TRANS = str.maketrans('ÁÉÍÓÚáéíóúÀÈÌÒÙàèìòùÂÊÎÔÛâêîôûÄËÏÖÜäëïöüºª€@$·.,;:()[]¡!¿?|@#%&ç*',
                        'AEIOUaeiouAEIOUaeiouAEIOUaeiouAEIOUaeiouoaEaD____________________')
 
@@ -119,7 +122,7 @@ class QvMapRender():
             color.setAlpha(0)
             colorBase = QvMapRender().nomColor(color, _COLORS)
             numCategories = len(renderer.ranges())
-            modeCategories = QvMapRender().nomParam(renderer.mode(), _METODES)
+            modeCategories = QvMapRender().nomParam(renderer.mode(), _METODES_MODIF)
             format = renderer.labelFormat().format()
             return campCalculat, numDecimals, colorBase, numCategories, modeCategories, format
         except Exception as e:
@@ -673,7 +676,7 @@ class QvFormSimbMapificacio(QWidget):
 
         self.metode = QComboBox(self)
         self.metode.setEditable(False)
-        self.metode.addItems(_METODES.keys())
+        self.metode.addItems(_METODES_MODIF.keys())
 
         self.intervals = QSpinBox()
         self.intervals.setMinimum(2)
@@ -727,7 +730,7 @@ class QvFormSimbMapificacio(QWidget):
     def mapifica(self):
         self.valorsFinals()
         self.renderer = QvMapRender().calcRender(self.capa, self.campCalculat, self.numDecimals,
-            _COLORS[self.colorBase], self.numCategories, _METODES[self.modeCategories], self.format)
+            _COLORS[self.colorBase], self.numCategories, _METODES_MODIF[self.modeCategories], self.format)
         if self.renderer is None:
             return "No s'ha pogut modificar la simbologia"
         self.capa.setRenderer(self.renderer)

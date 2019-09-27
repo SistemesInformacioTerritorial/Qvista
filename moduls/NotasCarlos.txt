@@ -1,5 +1,6 @@
 
 - Indicador de progreso
+- Threads
+- Editor categorías
 - Mostrar campos disponibles para cálculos
-- Leer render activo para parámetros modificación
 - Paths de qlr's interfieren?? QGS con path absoluto, QLR con ./
