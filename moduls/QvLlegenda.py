@@ -7,7 +7,7 @@ from qgis.core import (QgsProject, QgsLegendModel, QgsLayerDefinition, QgsMapLay
                        QgsGradientColorRamp, QgsRendererRangeLabelFormat, QgsExpressionContextUtils)
 from qgis.gui import (QgsLayerTreeView, QgsLayerTreeViewMenuProvider, QgsLayerTreeMapCanvasBridge,
                       QgsLayerTreeViewIndicator, QgsLayerTreeViewDefaultActions, QgsGradientColorRampDialog)
-from qgis.PyQt.QtWidgets import QAction, QFileDialog, QWidget, QPushButton, QVBoxLayout, QHBoxLayout
+from qgis.PyQt.QtWidgets import QAction, QFileDialog, QWidget, QPushButton, QVBoxLayout, QHBoxLayout, QGridLayout
 from qgis.PyQt.QtGui import QIcon, QColor
 from qgis.PyQt.QtCore import Qt, pyqtSignal, QUrl
 from moduls.QvAccions import QvAccions

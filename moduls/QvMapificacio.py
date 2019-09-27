@@ -6,13 +6,13 @@ from qgis.core import (QgsApplication, QgsVectorLayer, QgsLayerDefinition, QgsVe
                        QgsGradientColorRamp, QgsRendererRangeLabelFormat, QgsReadWriteContext, QgsExpressionContextUtils)
 from qgis.gui import QgsFileWidget
 from qgis.PyQt.QtCore import Qt, QObject, pyqtSignal, pyqtSlot
-from qgis.PyQt.QtGui import QColor, QValidator
+from qgis.PyQt.QtGui import QColor, QValidator, QIcon
 from qgis.PyQt.QtXml import QDomDocument
 from moduls.QvSqlite import QvSqlite
 
 
 from qgis.PyQt.QtWidgets import (QFileDialog, QWidget, QPushButton, QFormLayout, QVBoxLayout, QHBoxLayout,
-                                 QComboBox, QLabel, QLineEdit, QSpinBox, QGroupBox,
+                                 QComboBox, QLabel, QLineEdit, QSpinBox, QGroupBox, QGridLayout,
                                  QMessageBox, QDialogButtonBox)
 
 import os
@@ -535,7 +535,7 @@ class QvFormNovaMapificacio(QWidget):
         self.metode.setEditable(False)
         self.metode.addItems(_METODES.keys())
 
-        self.intervals = QSpinBox()
+        self.intervals = QSpinBox(self)
         self.intervals.setMinimum(2)
         self.intervals.setMaximum(6)
         self.intervals.setSingleStep(1)
@@ -666,8 +666,8 @@ class QvFormSimbMapificacio(QWidget):
 
         self.setWindowTitle('Modificar categories de mapificació')
 
-        self.layout = QFormLayout()
-        self.layout.setSpacing(10)
+        self.layout = QVBoxLayout()
+        self.layout.setSpacing(12)
         self.setLayout(self.layout)
 
         self.color = QComboBox(self)
@@ -679,7 +679,7 @@ class QvFormSimbMapificacio(QWidget):
         self.metode.addItems(_METODES_MODIF.keys())
         self.metode.currentIndexChanged.connect(self.canviaMetode)
 
-        self.intervals = QSpinBox()
+        self.intervals = QSpinBox(self)
         self.intervals.setMinimum(2)
         self.intervals.setMaximum(6)
         self.intervals.setSingleStep(1)
@@ -693,13 +693,57 @@ class QvFormSimbMapificacio(QWidget):
         self.buttons.addButton(QDialogButtonBox.Cancel)
         self.buttons.rejected.connect(self.cancel)
 
-        self.layout.addRow('Color mapa:', self.color)
-        self.layout.addRow('Mètode classificació:', self.metode)
-        self.layout.addRow('Nombre intervals:', self.intervals)
+        self.gSimb = QGroupBox('Simbologia mapificació')
+        self.lSimb = QFormLayout()
+        self.lSimb.setSpacing(10)
+        self.gSimb.setLayout(self.lSimb)
 
+        self.lSimb.addRow('Color mapa:', self.color)
+        self.lSimb.addRow('Mètode classificació:', self.metode)
+        self.lSimb.addRow('Nombre intervals:', self.intervals)
+
+        self.gInter = QGroupBox('Definició intervals')
+        self.lInter = QGridLayout()
+        self.lInter.setSpacing(10)
+        self.gInter.setLayout(self.lInter)
+
+        self.wInterval = []
+        self.gridIntervals()
+
+        self.layout.addWidget(self.gSimb)
+        self.layout.addWidget(self.gInter)
         self.layout.addWidget(self.buttons)
 
         self.valorsInicials()
+
+    def afegirFila(self):
+        print('afegirFila')
+
+    def eliminarFila(self):
+        print('eliminarFila')
+
+    def gridIntervals(self, maxSize=28):
+        for fila in range(self.numCategories):
+            ini = QLineEdit(self)
+            sep = QLabel('-', self)
+            fin = QLineEdit(self)
+            add = QPushButton('+', self)
+            add.setMaximumSize(maxSize, maxSize)
+            add.clicked.connect(self.afegirFila)   
+            # Primera y última fila no se pueden borrar
+            if fila > 0 and fila < (self.numCategories - 1):
+                rem = QPushButton('-', self)
+                rem.setMaximumSize(maxSize, maxSize)
+                rem.clicked.connect(self.eliminarFila)
+                widgets = (ini, sep, fin, add, rem)
+            else:
+                widgets = (ini, sep, fin, add)
+            # Añadir widgets a la fila
+            for col, w in enumerate(widgets):
+                self.lInter.addWidget(w, fila, col)
+            # Guardar widgets
+            self.wInterval.append(widgets)
+                
 
     def iniParams(self):
         tipus = QgsExpressionContextUtils.layerScope(self.capa).variable('qV_tipusCapa')
@@ -755,9 +799,13 @@ class QvFormSimbMapificacio(QWidget):
 
     @pyqtSlot()
     def canviaMetode(self):
-        ok = (self.metode.currentIndex() != QgsGraduatedSymbolRenderer.Custom)
-        self.intervals.setEnabled(ok)
-        # label = self.layout.labelForField(self.intervals)
+        custom = (self.metode.currentIndex() == QgsGraduatedSymbolRenderer.Custom)
+        self.intervals.setEnabled(not custom)
+        if custom: 
+            self.intervals.setValue(self.numCategories)
+        self.gInter.setVisible(custom)
+
+        # label = self.lParms.labelForField(self.intervals)
         # if label is not None:
         #     label.setVisible(ok)
 
