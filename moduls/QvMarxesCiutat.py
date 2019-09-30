@@ -19,8 +19,10 @@ class MarxesCiutat(QDockWidget):
 
         bMarxes = QvPushButton('Marxes exploratories',flat=True)
         bMapa = QvPushButton('Mapa de les marxes',flat=True)
+        bMapaXarxa = QvPushButton('Xarxa quotidiana',flat=True)
         lytMarxes.addWidget(bMarxes)
         lytMarxes.addWidget(bMapa)
+        lytMarxes.addWidget(bMapaXarxa)
         spacer = QSpacerItem(50, 50, QSizePolicy.Expanding,QSizePolicy.Maximum)
         lytMarxes.addItem(spacer)
         bMarxes1 = QvPushButton('El Coll', flat=True)
@@ -43,18 +45,19 @@ class MarxesCiutat(QDockWidget):
         lytMarxes.addWidget(bMarxes9)
         bMarxes.clicked.connect(self.mostrarInstruccions)
         bMapa.clicked.connect(self.mostrarMapa)
+        bMapaXarxa.clicked.connect(self.mostrarMapaXarxa)
         bMarxes1.clicked.connect(self.mostrarColl)
         bMarxes2.clicked.connect(self.mostrarSalut)
 
-        self.browserMarxes = QWebView()
-        self.browserMarxes.settings().setAttribute(QWebSettings.PluginsEnabled, True)
-        self.browserMarxes.settings().setAttribute(QWebSettings.JavascriptEnabled, True)
-        self.browserMarxes.settings().setAttribute(QWebSettings.LocalContentCanAccessFileUrls, True)
-        self.browserMarxes.show()
+        # self.browserMarxes = QWebView()
+        # self.browserMarxes.settings().setAttribute(QWebSettings.PluginsEnabled, True)
+        # self.browserMarxes.settings().setAttribute(QWebSettings.JavascriptEnabled, True)
+        # self.browserMarxes.settings().setAttribute(QWebSettings.LocalContentCanAccessFileUrls, True)
+        # self.browserMarxes.show()
 
-        # browserPavim.setUrl(QUrl('CatalegPavim.pdf'))
-        # QDesktopServices().openUrl(QUrl('CatalegPavim.pdf'))
-        lytMarxes.addWidget(self.browserMarxes)
+        # # browserPavim.setUrl(QUrl('CatalegPavim.pdf'))
+        # # QDesktopServices().openUrl(QUrl('CatalegPavim.pdf'))
+        # lytMarxes.addWidget(self.browserMarxes)
 
         self.setAllowedAreas( Qt.RightDockWidgetArea | Qt.LeftDockWidgetArea )
         self.setWidget(fMarxes)
@@ -67,7 +70,7 @@ class MarxesCiutat(QDockWidget):
         """
     def mostrarInstruccions(self):
         
-        QDesktopServices().openUrl(QUrl('N:/9SITEB/Publicacions/qVista/CATALEG/MAPES PRIVATS/Marxes de ciutat/PdfFitxes/12_El_Besos_el_Maresme.pdf'))
+        # QDesktopServices().openUrl(QUrl('N:/9SITEB/Publicacions/qVista/CATALEG/MAPES PRIVATS/Marxes de ciutat/PdfFitxes/12_El_Besos_el_Maresme.pdf'))
         PDF = 'file:///' + 'N:/9SITEB/Publicacions/qVista/CATALEG/MAPES PRIVATS/Marxes de ciutat/PdfFitxes/12_El_Besos_el_Maresme.pdf'
         self.w = QvPDF(PDF)
         self.w.setGeometry(50, 50, 1200, 800)
@@ -83,8 +86,28 @@ class MarxesCiutat(QDockWidget):
         self.w.setWindowTitle('Mapa de les marxes')
         self.w.show()
 
+    def mostrarMapaXarxa(self):
+        # QDesktopServices().openUrl(QUrl('N:\9SITEB\Publicacions\qVista\CATALEG\MAPES PRIVATS\Marxes de ciutat\PdfFitxes\190228_Marxes_exploratories_A4.pdf'))
+        PDF = 'file:///' + 'N:\9SITEB\Publicacions\qVista\CATALEG\MAPES PRIVATS\Marxes de ciutat\PdfFitxes\Marxes_xarxa_quotidiana_A4.pdf'
+
+        self.w = QvPDF(PDF)
+        self.w.setGeometry(50, 50, 1200, 800)
+        self.w.setWindowTitle('Xarxa quotidiana')
+        self.w.show()
+
     def mostrarColl(self):
-        QDesktopServices().openUrl(QUrl('d:/MarxesCiutat/ElColl_resultats.png'))
+        # QDesktopServices().openUrl(QUrl('d:/MarxesCiutat/ElColl_resultats.png'))
+        QDesktopServices().openUrl(QUrl('N:/9SITEB/Publicacions/qVista/CATALEG/MAPES PRIVATS/Marxes de ciutat/PdfFitxes/02_El_coll.pdf'))
+        PDF = 'file:///' + 'N:/9SITEB/Publicacions/qVista/CATALEG/MAPES PRIVATS/Marxes de ciutat/PdfFitxes/02_El_coll.pdf'
+
+        self.w = QvPDF(PDF)
+        self.w.setGeometry(50, 50, 1200, 800)
+        self.w.setWindowTitle('Marxa del Coll')
+        self.w.show()
 
     def mostrarSalut(self):
-        QDesktopServices().openUrl(QUrl('d:/MarxesCiutat/Salut_resultats.png'))
+        PDF = 'file:///' + 'N:/9SITEB/Publicacions/qVista/CATALEG/MAPES PRIVATS/Marxes de ciutat/PdfFitxes/03_La_salut.pdf'
+        self.w = QvPDF(PDF)
+        self.w.setGeometry(50, 50, 1200, 800)
+        self.w.setWindowTitle('Marxa de la Salut')
+        self.w.show()
