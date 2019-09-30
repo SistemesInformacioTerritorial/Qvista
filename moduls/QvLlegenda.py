@@ -15,7 +15,7 @@ from moduls.QvAtributs import QvAtributs
 from moduls.QvApp import QvApp
 from moduls.QvVideo import QvVideo
 from moduls.QvEscala import QvEscala
-from moduls.QvMapificacio import QvMapRender
+from moduls.QvMapRenderer import QvMapRenderer
 
 import os
 
@@ -227,6 +227,9 @@ class QvLlegenda(QgsLayerTreeView):
         # Evento de nueva capa seleccionada
         self.connectaCanviCapaActiva(canviCapaActiva)
 
+        # Mapificaciones
+        self.mapRenderer = QvMapRenderer(self)
+
         # Model
         self.model = QvLlegendaModel(self.root)
         self.model.setFlag(QgsLegendModel.ShowLegend, True)
@@ -252,7 +255,7 @@ class QvLlegenda(QgsLayerTreeView):
         self.iconaMap = QgsLayerTreeViewIndicator()
         self.iconaMap.setIcon(QIcon('imatges/categories2.png'))
         self.iconaMap.setToolTip('Categories de mapificació')
-        self.iconaMap.clicked.connect(lambda: QvMapRender().modifyRenderer(self))
+        self.iconaMap.clicked.connect(self.mapRenderer.modifyRenderer)
 
         if self.atributs is not None:
             self.atributs.modificatFiltreCapa.connect(self.actIconaFiltre)

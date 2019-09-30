@@ -72,71 +72,112 @@ _TRANS = str.maketrans('ÁÉÍÓÚáéíóúÀÈÌÒÙàèìòùÂÊÎÔÛâêî
 _RUTA_LOCAL = 'C:/temp/qVista/dades/'
 _RUTA_DADES = 'D:/qVista/Codi/Dades/'
 
-class QvMapRender():
+# class QvMapRender():
 
-    INI_ALPHA = 8
+#     INI_ALPHA = 8
 
-    @staticmethod
-    def calcColorsGradient(colorBase):
-        colorIni = QColor(colorBase)
-        colorIni.setAlpha(QvMapRender().INI_ALPHA)
-        colorFi = QColor(colorBase)
-        colorFi.setAlpha(255 - QvMapRender().INI_ALPHA)
-        return colorIni, colorFi
+#     @staticmethod
+#     def calcColorsGradient(colorBase):
+#         colorIni = QColor(colorBase)
+#         colorIni.setAlpha(QvMapRender().INI_ALPHA)
+#         colorFi = QColor(colorBase)
+#         colorFi.setAlpha(255 - QvMapRender().INI_ALPHA)
+#         return colorIni, colorFi
 
-    @staticmethod
-    def calcRender(capa, campCalculat, numDecimals, colorBase,
-                   numCategories, modeCategories, format):
-        try:
-            colorIni, colorFi = QvMapRender().calcColorsGradient(colorBase)
-            colorRamp = QgsGradientColorRamp(colorIni, colorFi)
-            labelFormat = QgsRendererRangeLabelFormat(format, numDecimals)
-            symbol = QgsSymbol.defaultSymbol(capa.geometryType())
-            renderer = QgsGraduatedSymbolRenderer.createRenderer(capa, campCalculat,
-                numCategories, modeCategories, symbol, colorRamp, labelFormat)
-            return renderer
-        except Exception as e:
-            return None
+#     @staticmethod
+#     def calcRender(capa, campCalculat, numDecimals, colorBase,
+#                    numCategories, modeCategories, format):
+#         try:
+#             colorIni, colorFi = QvMapRender().calcColorsGradient(colorBase)
+#             colorRamp = QgsGradientColorRamp(colorIni, colorFi)
+#             labelFormat = QgsRendererRangeLabelFormat(format, numDecimals)
+#             symbol = QgsSymbol.defaultSymbol(capa.geometryType())
+#             renderer = QgsGraduatedSymbolRenderer.createRenderer(capa, campCalculat,
+#                 numCategories, modeCategories, symbol, colorRamp, labelFormat)
+#             return renderer
+#         except Exception as e:
+#             return None
 
-    @staticmethod
-    def nomParam(param, llista):
-        for nom, valor in llista.items():
-            if param == valor:
-                return nom
-        return list(llista.keys())[0]
+#     @staticmethod
+#     def numRang(txt, numDecimals):
+#         if numDecimals == 0:
+#             v = int(txt)
+#         else:
+#             v = round(float(num), numDecimals)
+#         return v
 
-    @staticmethod
-    def nomColor(param, llista):
-        for nom, valor in llista.items():
-            if param.red() == valor.red() and param.green() == valor.green() and param.blue() == valor.blue():
-                return nom
-        return list(llista.keys())[0]
+#     @staticmethod
+#     def customRender(capa, campCalculat, numDecimals, colorBase, rangs, format):
+#         try:
+#             total = len(rangs)
+#             alpha = QvMapRender().INI_ALPHA
+#             step = (256 - (2 * alpha)) // total
+#             color = QColor(colorBase)
+#             primero = True
+#             categories = []
+#             for r in rangs:
+#                 if primero:
+#                     primero = False
+#                 else:
+#                     alpha += step
+#                 color.setAlpha(alpha)
+#                 sym = QgsSymbol.defaultSymbol(capa.geometryType())
+#                 sym.setColor(color)
+#                 label = r[0] + ' - ' + r[1]
+#                 category = QgsRendererRange(QvMapRender().numRang(r[0], numDecimals),
+#                     QvMapRender().numRang(r[1], numDecimals), sym, label)
+#                 categories.append(category)
+#             renderer = QgsGraduatedSymbolRenderer(campCalculat, categories)
+#             renderer.setMode(QgsGraduatedSymbolRenderer.Custom)
+#             return renderer
+#         except Exception as e:
+#             return None
 
-    @staticmethod
-    def paramsRender(capa):
-        try:
-            renderer = capa.renderer()
-            campCalculat = renderer.classAttribute()
-            numDecimals = renderer.labelFormat().precision()
-            color = renderer.sourceColorRamp().color1()
-            color.setAlpha(0)
-            colorBase = QvMapRender().nomColor(color, _COLORS)
-            numCategories = len(renderer.ranges())
-            modeCategories = QvMapRender().nomParam(renderer.mode(), _METODES_MODIF)
-            format = renderer.labelFormat().format()
-            return campCalculat, numDecimals, colorBase, numCategories, modeCategories, format
-        except Exception as e:
-            return 'RESULTAT', 0, 'Blau', 4, 'Endreçat', '%1 - %2'
+#     @staticmethod
+#     def nomParam(param, llista):
+#         for nom, valor in llista.items():
+#             if param == valor:
+#                 return nom
+#         return list(llista.keys())[0]
 
-    @staticmethod
-    def modifyRenderer(llegenda, capa=None):
-        global f
-        if capa is None:
-            capa = llegenda.currentLayer()
-            if capa is None:
-                return
-        f = QvFormSimbMapificacio(llegenda, capa)
-        f.show()
+#     @staticmethod
+#     def nomColor(param, llista):
+#         for nom, valor in llista.items():
+#             if param.red() == valor.red() and param.green() == valor.green() and param.blue() == valor.blue():
+#                 return nom
+#         return list(llista.keys())[0]
+
+#     @staticmethod
+#     def paramsRender(capa):
+#         try:
+#             renderer = capa.renderer()
+#             campCalculat = renderer.classAttribute()
+#             cats = renderer.ranges()
+#             numCategories = len(cats)
+#             modeCategories = QvMapRender().nomParam(renderer.mode(), _METODES_MODIF)
+
+#             if modeCategories == 'Personalitzat':
+# # TODO:
+#             else:
+#                 numDecimals = renderer.labelFormat().precision()
+#                 color = renderer.sourceColorRamp().color1()
+#                 color.setAlpha(0)
+#                 colorBase = QvMapRender().nomColor(color, _COLORS)
+#                 format = renderer.labelFormat().format()
+
+#             return campCalculat, numDecimals, colorBase, numCategories, modeCategories, format
+#         except Exception as e:
+#             return 'RESULTAT', 0, 'Blau', 4, 'Endreçat', '%1 - %2'
+
+#     @staticmethod
+#     def modifyRenderer(llegenda, capa=None):
+#         global f
+#         if capa is None:
+#             capa = llegenda.currentLayer()
+#             if capa is None:
+#                 return
+#         f = QvFormSimbMapificacio(llegenda, capa)
+#         f.show()
 
 class QvMapificacio(QObject):
 
@@ -429,7 +470,7 @@ class QvMapificacio(QObject):
             return False, "No s'ha pogut carregar capa de agregació: " + self.fSQL
 
         # Renderer para mapificar
-        self.renderer = QvMapRender().calcRender(mapLyr, self.campCalculat, self.numDecimals,
+        self.renderer = self.llegenda.mapRenderer.calcRender(mapLyr, self.campCalculat, self.numDecimals,
             self.colorBase, self.numCategories, self.modeCategories, format)
         if self.renderer is None:
             return False, "No s'ha pogut elaborar el mapa"
@@ -735,8 +776,8 @@ class QvFormSimbMapificacio(QWidget):
             ini.setText(w.text())
             w.setModified(False)
 
-    def valRang(self, val):
-        v = round(val, self.numDecimals)
+    def txtRang(self, num):
+        v = round(num, self.numDecimals)
         if self.numDecimals == 0:
             v = int(v)
         return str(v)
@@ -747,12 +788,12 @@ class QvFormSimbMapificacio(QWidget):
         numCats = len(cats)
         for fila, cat in enumerate(cats):
             ini = QLineEdit(self)
-            ini.setText(self.valRang(cat.lowerValue()))
+            ini.setText(self.txtRang(cat.lowerValue()))
             if fila != 0:
                 ini.setDisabled(True)
             sep = QLabel('-', self)
             fin = QLineEdit(self)
-            fin.setText(self.valRang(cat.upperValue()))
+            fin.setText(self.txtRang(cat.upperValue()))
             # Ultima fila: no hay + ni -
             if fila == (numCats - 1):
                 widgets = (ini, sep, fin)
@@ -786,7 +827,7 @@ class QvFormSimbMapificacio(QWidget):
         if tipus != 'MAPIFICACIÓ':
             return False
         self.campCalculat, self.numDecimals, self.colorBase, self.numCategories, \
-            self.modeCategories, self.format = QvMapRender().paramsRender(self.capa)
+            self.modeCategories, self.format = self.llegenda.mapRenderer.paramsRender(self.capa)
         return True
 
     def valorsInicials(self):        
@@ -798,6 +839,10 @@ class QvFormSimbMapificacio(QWidget):
         self.colorBase = self.color.currentText()
         self.modeCategories = self.metode.currentText()
         self.numCategories = self.intervals.value()
+        if self.custom:
+            self.rangs = []
+            for fila in self.wInterval:
+                self.rangs.append((fila[0].text(), fila[2].text()))
 
     def msgInfo(self, txt):
         QMessageBox.information(self, 'Informació', txt)
@@ -810,8 +855,12 @@ class QvFormSimbMapificacio(QWidget):
 
     def mapifica(self):
         self.valorsFinals()
-        self.renderer = QvMapRender().calcRender(self.capa, self.campCalculat, self.numDecimals,
-            _COLORS[self.colorBase], self.numCategories, _METODES_MODIF[self.modeCategories], self.format)
+        if self.custom:
+            self.renderer = self.llegenda.mapRenderer.customRender(self.capa, self.campCalculat, self.numDecimals,
+                self.colorBase, self.rangs, self.format)
+        else:
+            self.renderer = self.llegenda.mapRenderer.calcRender(self.capa, self.campCalculat, self.numDecimals,
+                _COLORS[self.colorBase], self.numCategories, _METODES_MODIF[self.modeCategories], self.format)
         if self.renderer is None:
             return "No s'ha pogut modificar la simbologia"
         self.capa.setRenderer(self.renderer)
@@ -835,11 +884,11 @@ class QvFormSimbMapificacio(QWidget):
 
     @pyqtSlot()
     def canviaMetode(self):
-        custom = (self.metode.currentIndex() == QgsGraduatedSymbolRenderer.Custom)
-        self.intervals.setEnabled(not custom)
-        if custom: 
+        self.custom = (self.metode.currentIndex() == QgsGraduatedSymbolRenderer.Custom)
+        self.intervals.setEnabled(not self.custom)
+        if self.custom: 
             self.intervals.setValue(self.numCategories)
-        self.gInter.setVisible(custom)
+        self.gInter.setVisible(self.custom)
 
         # label = self.lParms.labelForField(self.intervals)
         # if label is not None:
