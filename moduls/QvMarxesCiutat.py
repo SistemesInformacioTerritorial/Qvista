@@ -97,7 +97,7 @@ class MarxesCiutat(QDockWidget):
 
     def mostrarColl(self):
         # QDesktopServices().openUrl(QUrl('d:/MarxesCiutat/ElColl_resultats.png'))
-        QDesktopServices().openUrl(QUrl('N:/9SITEB/Publicacions/qVista/CATALEG/MAPES PRIVATS/Marxes de ciutat/PdfFitxes/02_El_coll.pdf'))
+        # QDesktopServices().openUrl(QUrl('N:/9SITEB/Publicacions/qVista/CATALEG/MAPES PRIVATS/Marxes de ciutat/PdfFitxes/02_El_coll.pdf'))
         PDF = 'file:///' + 'N:/9SITEB/Publicacions/qVista/CATALEG/MAPES PRIVATS/Marxes de ciutat/PdfFitxes/02_El_coll.pdf'
 
         self.w = QvPDF(PDF)
