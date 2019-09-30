@@ -17,8 +17,10 @@ class MarxesCiutat(QDockWidget):
         self.setMaximumWidth(500)
         self.setMinimumWidth(500)
 
-        bMarxes = QvPushButton('Resum operatiu',flat=True)
+        bMarxes = QvPushButton('Marxes exploratories',flat=True)
+        bMapa = QvPushButton('Mapa de les marxes',flat=True)
         lytMarxes.addWidget(bMarxes)
+        lytMarxes.addWidget(bMapa)
         spacer = QSpacerItem(50, 50, QSizePolicy.Expanding,QSizePolicy.Maximum)
         lytMarxes.addItem(spacer)
         bMarxes1 = QvPushButton('El Coll', flat=True)
@@ -40,6 +42,7 @@ class MarxesCiutat(QDockWidget):
         lytMarxes.addWidget(bMarxes8)
         lytMarxes.addWidget(bMarxes9)
         bMarxes.clicked.connect(self.mostrarInstruccions)
+        bMapa.clicked.connect(self.mostrarMapa)
         bMarxes1.clicked.connect(self.mostrarColl)
         bMarxes2.clicked.connect(self.mostrarSalut)
 
@@ -63,12 +66,21 @@ class MarxesCiutat(QDockWidget):
         QDesktopServices().openUrl(QUrl('c:/temp/tempQgis.qgs'))
         """
     def mostrarInstruccions(self):
-        # QDesktopServices().openUrl(QUrl('d:/MarxesCiutat/Guia_lectura_el_coll.pdf'))
-        PDF = 'file:///' + 'd:/MarxesCiutat/Guia_lectura_el_coll.pdf'
-
+        
+        QDesktopServices().openUrl(QUrl('N:/9SITEB/Publicacions/qVista/CATALEG/MAPES PRIVATS/Marxes de ciutat/PdfFitxes/12_El_Besos_el_Maresme.pdf'))
+        PDF = 'file:///' + 'N:/9SITEB/Publicacions/qVista/CATALEG/MAPES PRIVATS/Marxes de ciutat/PdfFitxes/12_El_Besos_el_Maresme.pdf'
         self.w = QvPDF(PDF)
         self.w.setGeometry(50, 50, 1200, 800)
         self.w.setWindowTitle('Marxes exploratóries')
+        self.w.show()
+
+    def mostrarMapa(self):
+        # QDesktopServices().openUrl(QUrl('N:\9SITEB\Publicacions\qVista\CATALEG\MAPES PRIVATS\Marxes de ciutat\PdfFitxes\190228_Marxes_exploratories_A4.pdf'))
+        PDF = 'file:///' + 'N:\9SITEB\Publicacions\qVista\CATALEG\MAPES PRIVATS\Marxes de ciutat\PdfFitxes\Mapa_Marxes_exploratoriesA3.pdf'
+
+        self.w = QvPDF(PDF)
+        self.w.setGeometry(50, 50, 1200, 800)
+        self.w.setWindowTitle('Mapa de les marxes')
         self.w.show()
 
     def mostrarColl(self):
