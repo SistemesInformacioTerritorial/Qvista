@@ -708,7 +708,7 @@ class QvFormSimbMapificacio(QWidget):
         self.gInter.setLayout(self.lInter)
 
         self.wInterval = []
-        self.gridIntervals()
+        self.iniIntervals()
 
         self.layout.addWidget(self.gSimb)
         self.layout.addWidget(self.gInter)
@@ -726,19 +726,44 @@ class QvFormSimbMapificacio(QWidget):
         f = self.sender().property('Fila')
         print('eliminarFila', f)
 
-    def gridIntervals(self, maxSize=28):
-        for fila in range(self.numCategories):
+    @pyqtSlot()
+    def nouTall(self):
+        w = self.sender()
+        if w.isModified():
+            f = w.property('Fila')
+            ini = self.wInterval[f+1][0]
+            ini.setText(w.text())
+            w.setModified(False)
+
+    def valRang(self, val):
+        v = round(val, self.numDecimals)
+        if self.numDecimals == 0:
+            v = int(v)
+        return str(v)
+
+    def iniIntervals(self, maxSize=28):
+        renderer = self.capa.renderer()
+        cats = renderer.ranges()
+        numCats = len(cats)
+        for fila, cat in enumerate(cats):
             ini = QLineEdit(self)
+            ini.setText(self.valRang(cat.lowerValue()))
+            if fila != 0:
+                ini.setDisabled(True)
             sep = QLabel('-', self)
             fin = QLineEdit(self)
+            fin.setText(self.valRang(cat.upperValue()))
             # Ultima fila: no hay + ni -
-            if fila == (self.numCategories - 1):
+            if fila == (numCats - 1):
                 widgets = (ini, sep, fin)
             else:
+                fin.setProperty('Fila', fila)
+                fin.editingFinished.connect(self.nouTall)
                 add = QPushButton('+', self)
                 add.setMaximumSize(maxSize, maxSize)
                 add.setProperty('Fila', fila)
-                add.clicked.connect(self.afegirFila)   
+                add.clicked.connect(self.afegirFila)
+                add.setFocusPolicy(Qt.NoFocus)
                 # Primera fila: solo +
                 if fila == 0:
                     widgets = (ini, sep, fin, add)
@@ -748,15 +773,13 @@ class QvFormSimbMapificacio(QWidget):
                     rem.setMaximumSize(maxSize, maxSize)
                     rem.setProperty('Fila', fila)
                     rem.clicked.connect(self.eliminarFila)
+                    rem.setFocusPolicy(Qt.NoFocus)
                     widgets = (ini, sep, fin, add, rem)
             # Añadir widgets a la fila
             for col, w in enumerate(widgets):
                 self.lInter.addWidget(w, fila, col)
             # Guardar widgets
             self.wInterval.append(widgets)
-
-# https://stackoverflow.com/questions/22641306/get-index-of-qpushbutton-on-2d-array-qpushbutton
-                
 
     def iniParams(self):
         tipus = QgsExpressionContextUtils.layerScope(self.capa).variable('qV_tipusCapa')
