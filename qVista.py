@@ -336,6 +336,9 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         
         metadades=Path(self.pathProjecteActual).with_suffix('.htm')
+        entorn = QgsExpressionContextUtils.projectScope(self.project).variable('qV_entorn')
+        if entorn == "'MarxesExploratories'":
+            self.marxesCiutat()
         if os.path.isfile(metadades):
             def obrirMetadades():
                 visor=QvVisorHTML(metadades,'Informació del mapa',logo=False,parent=self)
@@ -2753,10 +2756,6 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.dwPavim.show()    
         
     def marxesCiutat(self): 
-        self.project.read('d:/MarxesCiutat/MarxesCiutat.qgs')      
-        # self.lblTitolProjecte.setFont(QvConstants.FONTTITOLS)
-        # self.lblTitolProjecte.setText(self.project.title())
-        self.lblTitolProjecte.setText("Marxes exploratòries")
         self.dwMarxes = MarxesCiutat(self)
         self.addDockWidget( Qt.RightDockWidgetArea, self.dwMarxes)
         self.dwMarxes.show()    
