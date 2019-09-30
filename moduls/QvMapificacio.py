@@ -716,33 +716,46 @@ class QvFormSimbMapificacio(QWidget):
 
         self.valorsInicials()
 
+    @pyqtSlot()
     def afegirFila(self):
-        print('afegirFila')
+        f = self.sender().property('Fila')
+        print('afegirFila', f)
 
+    @pyqtSlot()
     def eliminarFila(self):
-        print('eliminarFila')
+        f = self.sender().property('Fila')
+        print('eliminarFila', f)
 
     def gridIntervals(self, maxSize=28):
         for fila in range(self.numCategories):
             ini = QLineEdit(self)
             sep = QLabel('-', self)
             fin = QLineEdit(self)
-            add = QPushButton('+', self)
-            add.setMaximumSize(maxSize, maxSize)
-            add.clicked.connect(self.afegirFila)   
-            # Primera y última fila no se pueden borrar
-            if fila > 0 and fila < (self.numCategories - 1):
-                rem = QPushButton('-', self)
-                rem.setMaximumSize(maxSize, maxSize)
-                rem.clicked.connect(self.eliminarFila)
-                widgets = (ini, sep, fin, add, rem)
+            # Ultima fila: no hay + ni -
+            if fila == (self.numCategories - 1):
+                widgets = (ini, sep, fin)
             else:
-                widgets = (ini, sep, fin, add)
+                add = QPushButton('+', self)
+                add.setMaximumSize(maxSize, maxSize)
+                add.setProperty('Fila', fila)
+                add.clicked.connect(self.afegirFila)   
+                # Primera fila: solo +
+                if fila == 0:
+                    widgets = (ini, sep, fin, add)
+                # Resto de filas: + y -
+                else:
+                    rem = QPushButton('-', self)
+                    rem.setMaximumSize(maxSize, maxSize)
+                    rem.setProperty('Fila', fila)
+                    rem.clicked.connect(self.eliminarFila)
+                    widgets = (ini, sep, fin, add, rem)
             # Añadir widgets a la fila
             for col, w in enumerate(widgets):
                 self.lInter.addWidget(w, fila, col)
             # Guardar widgets
             self.wInterval.append(widgets)
+
+# https://stackoverflow.com/questions/22641306/get-index-of-qpushbutton-on-2d-array-qpushbutton
                 
 
     def iniParams(self):
