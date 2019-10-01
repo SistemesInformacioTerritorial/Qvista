@@ -485,7 +485,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.canvas = QvCanvas(llistaBotons=llistaBotons, posicioBotonera = 'SE', botoneraHoritzontal = True, pare=self)
 
         self.preparacioStreetView()     #fa el qvSv. necessita el canvas
-        self.canvas.bstreetview.clicked.connect(self.qvSv.segueixBoto)
+        #self.canvas.bstreetview.clicked.connect(self.qvSv.segueixBoto)
 
         self.canvas.setCanvasColor(QColor(253,253,255))
         self.canvas.setAnnotationsVisible(True)

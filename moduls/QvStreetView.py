@@ -116,27 +116,10 @@ class PointTool(QgsMapTool):
         except:
             pass  
 
-    def llevame(self,xx,yy):
-        try:
-            point= QgsPointXY(xx, yy)
-
-            self.transformacio = QgsCoordinateTransform(QgsCoordinateReferenceSystem("EPSG:25831"), 
-                                QgsCoordinateReferenceSystem("EPSG:4326"), 
-                                QgsProject.instance())
-
-            self.puntTransformat=self.transformacio.transform(point) 
-            self.parent.urlStreetView = "https://maps.google.com/maps?layer=c&cbll={},{}".format(self.puntTransformat.y(), self.puntTransformat.x())
 
 
-            self.parent.qbrowser.browser.setUrl(QUrl(self.parent.urlStreetView))
-            self.parent.qbrowser.show()
-            self.parent.show()
-        except:
-            pass  
-
-    def canvasReleaseEvent(self, event):
-        
-        self.point = self.toMapCoordinates(event.pos())
+    def portam(self,point):
+        self.point = self.toMapCoordinates(point)
         xMon = self.point.x() #???
         yMon = self.point.y() #???
 
@@ -180,10 +163,9 @@ class PointTool(QgsMapTool):
         self.parent.m.setIconType(QgsVertexMarker.ICON_BOX) # or ICON_CROSS, ICON_X
         self.parent.m.setPenWidth(3)
         self.parent.m.show()
-        self.parent.boto.move(8, 713)
-        self.parent.boto.hide()
         self.moureBoto = False
-        self.parent.boto.hide()
+    def canvasReleaseEvent(self, event):
+        self.portam(event.pos())
 
 class QvStreetView(QWidget):
     """Una classe del tipus QWidget 
@@ -201,14 +183,14 @@ class QvStreetView(QWidget):
         self.parent = parent
         self.rp = PointTool(self, self.canvas)
         self.canvas.setMapTool(self.rp)
-        self.boto = QvPushButton(parent = self.canvas, flat = True)
-        self.icon=QIcon('imatges/littleMan.png')
-        self.boto.setIcon(self.icon)
-        self.boto.clicked.connect(self.segueixBoto)
-        self.boto.setGeometry(8,713,25,25)
-        self.boto.hide()
-        self.boto.setIconSize(QSize(25,25))
-        self.boto.hide()
+        # self.boto = QvPushButton(parent = self.canvas, flat = True)
+        # self.icon=QIcon('imatges/littleMan.png')
+        # self.boto.setIcon(self.icon)
+        # # self.boto.clicked.connect(self.segueixBoto)
+        # self.boto.setGeometry(8,713,25,25)
+        # self.boto.hide()
+        # self.boto.setIconSize(QSize(25,25))
+        # self.boto.hide()
         
 
         self.setupUI()
@@ -216,6 +198,7 @@ class QvStreetView(QWidget):
     def getBoto(self):
         return self.boto
     def segueixBoto(self):
+        return
         self.boto.show()
         self.canvas.setMapTool(self.rp)
         self.rp.moureBoto = True
@@ -231,29 +214,6 @@ class QvStreetView(QWidget):
 
         self.layoutH.addWidget(self.qbrowser)
 
-
-    def llevame_old(self,xx,yy): #???
-      
-        try:
-            point= QgsPointXY(xx, yy)
-
-            self.transformacio = QgsCoordinateTransform(QgsCoordinateReferenceSystem("EPSG:25831"), 
-                                QgsCoordinateReferenceSystem("EPSG:4326"), 
-                                QgsProject.instance())
-
-            self.puntTransformat=self.transformacio.transform(point) 
-            self.parent.urlStreetView = "https://maps.google.com/maps?layer=c&cbll={},{}".format(self.puntTransformat.y(), self.puntTransformat.x())
-
-            # self.parent.qbrowser = QvBrowser(self)
-          
-
-            qbrowser.browser.setUrl(QUrl(self.parent.urlStreetView))
-            
-            self.show()
-            self.boto.hide()
-            self.parent.show()
-        except:
-            pass        
      
 
 

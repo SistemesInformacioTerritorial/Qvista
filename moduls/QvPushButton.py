@@ -1,5 +1,7 @@
 from moduls.QvImports import * 
 from moduls.QvConstants import QvConstants
+from PyQt5.QtCore import Qt, QMimeData
+from PyQt5.QtGui import QDrag
 
 
 
@@ -22,6 +24,8 @@ class QvPushButton(QPushButton):
         QPushButton.__init__(self,icon,text,parent)
         self.flat=flat
         self.setDestacat(destacat)
+        self.setDragable(False)
+        # self.icona=icon
     def __init__(self, text: str='', destacat: bool=False, flat: bool=False, parent: QWidget=None):
         '''Crea un botó sense icona
         Arguments:
@@ -34,6 +38,7 @@ class QvPushButton(QPushButton):
         super().__init__(text,parent)
         self.flat=flat
         self.setDestacat(destacat)
+        self.setDragable(False)
     
     def formata(self,destacat: bool):
         if self.flat: return
@@ -68,3 +73,34 @@ class QvPushButton(QPushButton):
     def showEvent(self,event):
         super().showEvent(event)
         self.formata(self.destacat)
+    
+    def setDragable(self,drag=True):
+        self.drag=drag
+    
+    def mouseMoveEvent(self,e):
+        '''Arrosseguem el botó. Per exemple, per emular el funcionament de la Google Street View
+        '''
+        if not self.drag:
+            return
+
+        #Ens guardem la icona i posem una icona buida al botó
+        self.icona=self.icon()
+        self.setIcon(QIcon())
+
+        mimeData = QMimeData()
+        drag = QDrag(self)
+        drag.setMimeData(mimeData)
+        drag.setPixmap(self.icona.pixmap(self.size())) #Posem a l'arrossegament la mateixa icona del botó
+        drag.setHotSpot(e.pos() - self.rect().topLeft())
+        dropAction = drag.exec_(Qt.MoveAction)
+        self.setIcon(self.icona) #Restablim la icona
+
+
+    def mousePressEvent(self, e):
+      
+        super().mousePressEvent(e)
+        
+        if e.button() == Qt.LeftButton:
+            print('press')
+
+

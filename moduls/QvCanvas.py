@@ -26,6 +26,7 @@ class QvCanvas(QgsMapCanvas):
         self.llegenda = llegenda
         self.pare = pare
         self.setSelectionColor(QvConstants.COLORDESTACAT)
+        self.setAcceptDrops(True)
         
         # self.setWhatsThis(QvApp().carregaAjuda(self))
 
@@ -135,7 +136,7 @@ class QvCanvas(QgsMapCanvas):
         self.llegenda = llegenda
     def setStreetView(self,streetView):
         self.qvSv=streetView
-        self.bstreetview.clicked.connect(self.qvSv.segueixBoto)
+        #self.bstreetview.clicked.connect(self.qvSv.segueixBoto)
     def _botoMapa(self,imatge = None):
         boto = QvPushButton(flat=True)
         boto.setStyleSheet('background: rgba(255,255,255,168); padding: 1px;')
@@ -278,10 +279,12 @@ class QvCanvas(QgsMapCanvas):
                 self.bEndavant.setCheckable(False)
             if "streetview" in self.llistaBotons:
                 self.bstreetview = self._botoMapa('imatges/littleMan.png') 
+                self.bstreetview.setDragable(True)
+                self.bstreetview.setCheckable(False)
                 self.bstreetview.setToolTip('Google Street view')
                 self.layoutBotoneraMapa.addWidget(self.bstreetview)   
                 self.bstreetview.setCursor(QvConstants.cursorFletxa()) 
-                self.bstreetview.clicked.connect(self.amagaStreetView)  
+                # self.bstreetview.clicked.connect(self.amagaStreetView)  
                 #self.bstreetview.clicked.connect(QvStreetView.segueixBoto)
             if 'maximitza' in self.llistaBotons:
                 self.iconaMaximitza=QIcon('imatges/fullscreen.png')
@@ -329,6 +332,20 @@ class QvCanvas(QgsMapCanvas):
         self.layoutBotoneraMostres.setAlignment(Qt.AlignRight)
         # self.layoutCanvas.addWidget(self.botoneraMapa)
         # self.layoutCanvas.addWidget(self.botoneraMostres)    
+    def dragEnterEvent(self, e):
+      
+        e.accept()
+        
+
+    def dropEvent(self, e):
+
+        position = e.pos()
+        self.qvSv.rp.portam(position)
+        # self.button.move(position)
+
+        e.setDropAction(Qt.MoveAction)
+        e.accept()
+ 
 
 
 class Marc(QFrame):
@@ -344,6 +361,27 @@ class Marc(QFrame):
         painter.setBrush(Qt.QColor(100,100,100))
         painter.drawRoundedRect(self.rect(), 10.0, 10.0)
         # painter.end()
+
+class BotoStreetView(QPushButton):
+  
+    def __init__(self, title, parent):
+        super().__init__(title, parent)
+        
+        self.setAcceptDrops(True)
+        
+
+    def dragEnterEvent(self, e):
+      
+        if e.mimeData().hasFormat('text/plain'):
+            e.accept()
+        else:
+            e.ignore() 
+
+    def dropEvent(self, e):
+        
+        self.setText(e.mimeData().text()) 
+
+
 
 if __name__ == "__main__":
     from qgis.core import QgsProject
