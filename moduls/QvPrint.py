@@ -15,6 +15,7 @@ from moduls.QvApp import QvApp
 from moduls.QvPushButton import QvPushButton
 
 import time
+from time import gmtime, strftime
 import math
 projecteInicial='../dades/projectes/BCN11_nord.qgs'
 
@@ -60,7 +61,7 @@ class QvPrint(QWidget):
         estatDirtybit = self.parent.canvisPendents
 
         self.layer = QgsVectorLayer('Point?crs=epsg:23031', "Capa temporal d'impressió","memory")
-        project.addMapLayer(self.layer)
+        project.addMapLayer(self.layer, False)
         
 
         # We store safely the parameters as class variables.
@@ -89,10 +90,11 @@ class QvPrint(QWidget):
         self.rubberband = QgsRubberBand(self.canvas)
         self.rubberband.setColor(QColor(0,0,0,50))
         self.rubberband.setWidth(4)
-
+        
         self.canvas.xyCoordinates.connect(self.mocMouse)
         self.pintarRectangle(self.poligon)
-        
+        self.rubberband.hide()
+
         self.parent.setDirtyBit(estatDirtybit)
 
     def setupUI(self):
@@ -137,12 +139,12 @@ class QvPrint(QWidget):
         self.layoutCBmida.addWidget(self.lblCBmida)
         self.layoutCBmida.addWidget(self.cbMida)
 
-        self.boto = QvPushButton(text='Plot',destacat=True, parent=self)
+        self.boto = QvPushButton(text='Generar PDF',destacat=True, parent=self)
         self.boto.clicked.connect(self.printPlanol)
-        self.boto.setFixedWidth(180)
-        self.boto2 = QvPushButton(text='Reposicionar',parent=self)
+        self.boto.setFixedWidth(220)
+        self.boto2 = QvPushButton(text='Emmarcar zona a imprimir',parent=self)
         self.boto2.clicked.connect(self.potsMoure)
-        self.boto2.setFixedWidth(180)
+        self.boto2.setFixedWidth(220)
 
         self.nota = QLabel("NOTA: Alguns navegadors web alteren l'escala d'impressió dels PDFs. Per màxima exactitud imprimiu des de l'Adobe Acrobat.")
         styleheetLabel='''
@@ -225,7 +227,7 @@ class QvPrint(QWidget):
                 self.rubberband.movePoint(2,QgsPointXY(p.x(),p.y()),0)
                 self.rubberband.movePoint(3,QgsPointXY(p.x()+self.incY*math.cos(math.radians(90+45)),p.y()+self.incY*math.sin(math.radians(90+45))),0)
                 self.rubberband.movePoint(4,QgsPointXY(p.x()+d*math.cos(alpha+beta),p.y()+d*math.sin(alpha+beta)),0)
-            
+            self.rubberband.show()
 
 
     def pintarRectangle(self,poligon):
@@ -233,7 +235,8 @@ class QvPrint(QWidget):
         listaPoligonos=[points]
         poligono=QgsGeometry.fromRect(self.poligon)
         self.rubberband.setToGeometry(poligono,self.layer)
-        self.rubberband.show()
+        
+        
 
     def printPlanol(self):
         #
@@ -267,7 +270,7 @@ class QvPrint(QWidget):
                 self.plantillaMapa = 'plantillaMapaA0H.qpt'  
 
         t = time.localtime()
-        timestamp = time.strftime('%b-%d-%Y_%H%M%S', t)
+        timestamp = time.strftime('%d-%b-%Y_%H%M%S', t)
         sortida=tempdir+'sortida_'+timestamp
         
         self.imprimirPlanol(self.posXY[0], self.posXY[1], int(self.combo.currentText()), rotacio, self.cbMida.currentText(), self.plantillaMapa , sortida, 'PDF')
@@ -300,11 +303,13 @@ class QvPrint(QWidget):
             refMap = layout.referenceMap()
 
             titol=layout.itemById('idNomMapa')
-            # if self.leTitol.text()!='':
-            #     titol.setText(self.leTitol.text()) #comentat pk peta
-            # else:
-            #     titol.setText('')
-            
+            dataMapa=layout.itemById('idData')
+            if self.leTitol.text()!='':
+                titol.setText(self.leTitol.text()) #comentat pk peta
+            else:
+                titol.setText('')
+            t = time.localtime()
+            dataMapa.setText(strftime('%b-%d-%Y %H:%M', t))
             rect = refMap.extent()
             vector = QgsVector(x - rect.center().x(), y - rect.center().y())
             rect += vector
@@ -359,6 +364,8 @@ class QvPrint(QWidget):
             self.project.removeMapLayer(layer.id())
         self.parent.setDirtyBit(estatDirtybit)
         #Falta posar el ratolí anterior
+    
+        
 
 
 if __name__ == "__main__":

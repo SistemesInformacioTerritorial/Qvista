@@ -305,7 +305,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         if self.project.title().strip()=='':
             # self.project.setTitle(os.path.basename(projecte))
             self.project.setTitle(Path(projecte).stem)
-            self.lblTitolProjecte.setText(self.project.title())
+        self.lblTitolProjecte.setText(self.project.title())
         self.titolProjecte = self.project.title()
         # self.canvisPendents = False #es el bit Dirty que ens diu si hem de guardar al tancar o no
         self.setDirtyBit(False)
@@ -335,6 +335,9 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         
         metadades=Path(self.pathProjecteActual).with_suffix('.htm')
+        entorn = QgsExpressionContextUtils.projectScope(self.project).variable('qV_entorn')
+        if entorn == "'MarxesExploratories'":
+            self.marxesCiutat()
         if os.path.isfile(metadades):
             def obrirMetadades():
                 visor=QvVisorHTML(metadades,'Informació del mapa',logo=False,parent=self)
@@ -746,7 +749,15 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.marcaLloc.setPenWidth(3)
         self.marcaLloc.show()
         self.marcaLlocPosada = True
+        try:
+            import what3words
 
+            geocoder = what3words.Geocoder("HTD7LNB9")
+            palabras = geocoder.convert_to_3wa(what3words.Coordinates(self.puntTransformat.y(), self.puntTransformat.y()), language='es')
+            # coordenadas = geocoder.convert_to_coordinates('agudo.lista.caja')
+            print(palabras[words])
+        except:
+            print('No va 3 words')
     def preparacioTaulaAtributs(self):
         """ 
         Es prepara la taula d'Atributs sobre un dockWidget.
@@ -951,17 +962,17 @@ class QVista(QMainWindow, Ui_MainWindow):
             retval = msg.exec_() #No fem res amb el valor de retorn (???)
 
     def adreces(self):
-        self.dwCercador = QvDockWidget( "Cercador", self )              #
-        self.dwCercador.setAllowedAreas(Qt.RightDockWidgetArea)         # Quan el widget estigui a punt, això s'ha de treure
-        self.addDockWidget( Qt.RightDockWidgetArea, self.dwCercador)    # El que hi ha comentat abaix és el que genera el widget antic
-        textInfo = QLabel("Aquest widget encara no està disponible")    #
-        self.dwCercador.setWidget(textInfo)
-        # if self.prepararCercador:
-        #     self.preparacioCercadorPostal()
-        #     self.prepararCercador = False
+        # self.dwCercador = QvDockWidget( "Cercador", self )              #
+        # self.dwCercador.setAllowedAreas(Qt.RightDockWidgetArea)         # Quan el widget estigui a punt, això s'ha de treure
+        # self.addDockWidget( Qt.RightDockWidgetArea, self.dwCercador)    # El que hi ha comentat abaix és el que genera el widget antic
+        # textInfo = QLabel("Aquest widget encara no està disponible")    #
+        # self.dwCercador.setWidget(textInfo)
+        if self.prepararCercador:
+            self.preparacioCercadorPostal()
+            self.prepararCercador = True
         self.dwCercador.show()
 
-    def menuLlegenda(self, tipus):
+    def menuLlegenda(self, tipus):                                 
         #   (Tipos: none, group, layer, symb)
         if tipus == 'layer':
             self.llegenda.menuAccions.append('separator')
@@ -999,8 +1010,11 @@ class QVista(QMainWindow, Ui_MainWindow):
 
     def imprimir(self):
         estatDirtybit = self.canvisPendents
+        # No és tant fàcil fer que només es creï un cop aquest objecte (i que funcioni bé després)
         self.qvPrint = QvPrint(self.project, self.canvas, self.canvas.extent(), parent = self)
         self.dwPrint.setWidget(self.qvPrint)
+
+        self.qvPrint.leTitol.setText(self.titolProjecte) #el titol pot haver canviat (o el projecte)
         self.dwPrint.show()
         self.qvPrint.pucMoure = True #Mala idea modificar atributs des d'aquí
         def destruirQvPrint(x):
@@ -2397,9 +2411,12 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.canvas.refresh()
 
     def editarXY(self):
+        size=self.bXY.size()
+        print(size)
         self.bXY.hide()
         self.leXY.show()
         self.leXY.setText(self.bXY.text())
+        self.leXY.setFixedSize(size)
        
         
     def returnEditarXY(self):
@@ -2738,10 +2755,6 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.dwPavim.show()    
         
     def marxesCiutat(self): 
-        self.project.read('d:/MarxesCiutat/MarxesCiutat.qgs')      
-        # self.lblTitolProjecte.setFont(QvConstants.FONTTITOLS)
-        # self.lblTitolProjecte.setText(self.project.title())
-        self.lblTitolProjecte.setText("Marxes exploratòries")
         self.dwMarxes = MarxesCiutat(self)
         self.addDockWidget( Qt.RightDockWidgetArea, self.dwMarxes)
         self.dwMarxes.show()    
@@ -3257,12 +3270,16 @@ def escollirNivellQlr():
 
 def afegirQlr(nom): 
 
-    layers = QgsLayerDefinition.loadLayerDefinitionLayers(nom)
+    # layers = QgsLayerDefinition.loadLayerDefinitionLayers(nom)
+    # qV.project.addMapLayers(layers, True)
 
-    qV.project.addMapLayers(layers, True)
-    qV.canvisPendents=True
-    qV.botoDesarProjecte.setIcon(qV.iconaAmbCanvisPendents)
-    # QgsLayerDefinition().loadLayerDefinition(nom, qV.project, qV.llegenda.root)
+    ok, txt = QgsLayerDefinition().loadLayerDefinition(nom, qV.project, qV.llegenda.root)
+    if ok:
+        qV.canvisPendents=True
+        qV.botoDesarProjecte.setIcon(qV.iconaAmbCanvisPendents)
+    else:
+        print('No se pudo importar capas', txt)
+
     return
 
 def afegirNivellSHP():

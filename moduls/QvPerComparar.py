@@ -672,7 +672,7 @@ class QvCarregaCsvGeneraCoords(QvCarregaCsvPage):
 
         def splitCarrer(nomComplet: str):
             if not hasattr(self, 'TIPUSVIES'):
-                with open('dades/Tipusvia.csv') as csvfile:
+                with open('U:/QUOTA/Comu_imi/Becaris/Tipusvia.csv') as csvfile:
                     reader = csv.reader(csvfile, delimiter=';')
                     self.TIPUSVIES = [y+' ' for x in reader for y in x]
                     self.TIPUSVIES = list(set(self.TIPUSVIES))

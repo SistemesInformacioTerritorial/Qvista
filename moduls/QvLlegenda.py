@@ -213,6 +213,7 @@ class QvLlegenda(QgsLayerTreeView):
 
         self.project.readProject.connect(self.nouProjecte)
         # self.project.loadingLayerMessageReceived.connect(self.msgCapes)
+        self.root.layerOrderChanged.connect(self.actIcones)
 
         self.setWhatsThis(QvApp().carregaAjuda(self))
 
@@ -420,8 +421,19 @@ class QvLlegenda(QgsLayerTreeView):
             if capa.hasScaleBasedVisibility():
                 capa.nameChanged.emit()
 
+    def actIcones(self):
+        for capa in self.capes():
+            if capa.type() == QgsMapLayer.VectorLayer:
+                node = self.root.findLayer(capa.id())
+                if node is not None:
+                    if capa.subsetString() == '':
+                        self.removeIndicator(node, self.iconaFiltre)
+                    else:
+                        self.addIndicator(node, self.iconaFiltre)
+                    capa.nameChanged.emit()
+
     def actIconaFiltre(self, capa):
-        if capa.type() != QgsMapLayer.VectorLayer:
+        if capa is None or capa.type() != QgsMapLayer.VectorLayer:
             return
         node = self.root.findLayer(capa.id())
         if node is not None:
@@ -696,13 +708,22 @@ class QvLlegenda(QgsLayerTreeView):
         dlgLayers = QFileDialog()
         nfile, ok = dlgLayers.getOpenFileName(None, "Afegir Capes Qgis", self.directory, "Capes Qgis (*.qlr)")
         if ok and nfile != '':
-            layers = QgsLayerDefinition.loadLayerDefinitionLayers(nfile)
-            if layers is not None and len(layers) > 0:
-                loaded = self.project.addMapLayers(layers, True)
-                if loaded is not None and len(loaded) > 0:
-                    if set(layers) != set(loaded):
-                        print('Alguna capa no se pudo cargar')
             self.directory = os.path.dirname(nfile)
+            ok, txt = QgsLayerDefinition.loadLayerDefinition(nfile, self.project, self.root)
+            if not ok:
+                print('No se pudo importar capas', txt)
+
+    # def addLayersFromFile(self):
+    #     dlgLayers = QFileDialog()
+    #     nfile, ok = dlgLayers.getOpenFileName(None, "Afegir Capes Qgis", self.directory, "Capes Qgis (*.qlr)")
+    #     if ok and nfile != '':
+    #         layers = QgsLayerDefinition.loadLayerDefinitionLayers(nfile)
+    #         if layers is not None and len(layers) > 0:
+    #             loaded = self.project.addMapLayers(layers, True)
+    #             if loaded is not None and len(loaded) > 0:
+    #                 if set(layers) != set(loaded):
+    #                     print('Alguna capa no se pudo cargar')
+    #         self.directory = os.path.dirname(nfile)
 
     # def addCustomCSV(self):
     #     dlgLayers = QFileDialog()

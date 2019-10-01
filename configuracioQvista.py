@@ -15,6 +15,7 @@ tempdir=QvTempdir+'temp/' #Seran els arxius temporals de qVista que no s'han de 
 dadesdir=QvTempdir+'dades/' #Arxius temporals que volem conservar, amb configuracions i similars
 
 docdir='n:/siteb/apl/pyqgis/qvista/dades/'
+imatgesDir = 'imatges/'
 docdirPlantilles=docdir+'plantilles/'
 
 arxiuAvis=docdir+'Avisos.htm'
