@@ -9,7 +9,7 @@ from qgis.PyQt.QtCore import Qt, QObject, pyqtSignal, pyqtSlot
 from qgis.PyQt.QtGui import QColor
 
 from moduls.QvMapVars import *
-from moduls.QvMapificacio import QvFormSimbMapificacio
+from moduls.QvMapForms import QvFormSimbMapificacio
 
 # TODO: arrays globales
 
