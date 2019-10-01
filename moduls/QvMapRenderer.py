@@ -8,6 +8,7 @@ from qgis.core import (QgsApplication, QgsVectorLayer, QgsLayerDefinition,
 from qgis.PyQt.QtCore import Qt, QObject, pyqtSignal, pyqtSlot
 from qgis.PyQt.QtGui import QColor
 
+from moduls.QvMapVars import *
 from moduls.QvMapificacio import QvFormSimbMapificacio
 
 # TODO: arrays globales
@@ -90,7 +91,7 @@ class QvMapRenderer(QObject):
             campCalculat = renderer.classAttribute()
             cats = renderer.ranges()
             numCategories = len(cats)
-            modeCategories = self.nomParam(renderer.mode(), _METODES_MODIF)
+            modeCategories = self.nomParam(renderer.mode(), MAP_METODES_MODIF)
 
             if modeCategories == 'Personalitzat':
                 pass
@@ -99,7 +100,7 @@ class QvMapRenderer(QObject):
                 numDecimals = renderer.labelFormat().precision()
                 color = renderer.sourceColorRamp().color1()
                 color.setAlpha(0)
-                colorBase = self.nomColor(color, _COLORS)
+                colorBase = self.nomColor(color, MAP_COLORS)
                 format = renderer.labelFormat().format()
 
             return campCalculat, numDecimals, colorBase, numCategories, modeCategories, format

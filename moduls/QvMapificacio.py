@@ -8,9 +8,6 @@ from qgis.gui import QgsFileWidget
 from qgis.PyQt.QtCore import Qt, QObject, pyqtSignal, pyqtSlot
 from qgis.PyQt.QtGui import QColor, QValidator, QIcon
 from qgis.PyQt.QtXml import QDomDocument
-from moduls.QvSqlite import QvSqlite
-
-
 from qgis.PyQt.QtWidgets import (QFileDialog, QWidget, QPushButton, QFormLayout, QVBoxLayout, QHBoxLayout,
                                  QComboBox, QLabel, QLineEdit, QSpinBox, QGroupBox, QGridLayout,
                                  QMessageBox, QDialogButtonBox)
@@ -21,50 +18,8 @@ import csv
 import time
 import unicodedata
 
-_ZONES = {
-    # Nom: (Camp, Arxiu)
-    "Districte": ("DISTRICTE", "Districtes.sqlite"),
-    "Barri": ("BARRI", "Barris.sqlite")
-    # "Codi postal": "CODI_POSTAL",
-    # "Illa": "ILLA",
-    # "Solar": "SOLAR",
-    # "Àrea estadística bàsica": "AEB",
-    # "Secció censal": "SECCIO_CENSAL",
-    # "Sector policial operatiu": "SPO"
-}
-
-_AGREGACIO = {
-    "Recompte": "COUNT({})",
-    "Recompte diferents": "COUNT(DISTINCT {})",
-    "Suma": "SUM({})",
-    "Mitjana": "AVG({})"
-}
-
-_DISTRIBUCIO = {
-    "Total": "",
-    "Per m2": "/ Z.AREA"
-    # "Per habitant": "/ Z.POBLACIO"
-}
-
-_COLORS = {
-    "Blau": QColor(0, 128, 255),
-    "Gris": QColor(128, 128, 128),
-    "Groc" : QColor(255, 192, 0),
-    "Taronja": QColor(255, 128, 0),
-    "Verd" : QColor(32, 160, 32),
-    "Vermell" : QColor(255, 32, 32)
-}
-
-_METODES = {
-    "Endreçat": QgsGraduatedSymbolRenderer.Pretty,
-    "Intervals equivalents": QgsGraduatedSymbolRenderer.EqualInterval,
-    "Quantils": QgsGraduatedSymbolRenderer.Quantile,
-    "Divisions naturals (Jenks)": QgsGraduatedSymbolRenderer.Jenks,
-    "Desviació estàndard": QgsGraduatedSymbolRenderer.StdDev
-}
-
-_METODES_MODIF = _METODES.copy()
-_METODES_MODIF["Personalitzat"] = QgsGraduatedSymbolRenderer.Custom
+from moduls.QvSqlite import QvSqlite
+from moduls.QvMapVars import *
 
 _TRANS = str.maketrans('ÁÉÍÓÚáéíóúÀÈÌÒÙàèìòùÂÊÎÔÛâêîôûÄËÏÖÜäëïöüºª€@$·.,;:()[]¡!¿?|@#%&ç*',
                        'AEIOUaeiouAEIOUaeiouAEIOUaeiouAEIOUaeiouoaEaD____________________')
@@ -210,10 +165,10 @@ class QvMapificacio(QObject):
             else:
                 self.fDades = self.fZones = local
 
-        if self.zona is None or self.zona not in _ZONES.keys():
+        if self.zona is None or self.zona not in MAP_ZONES.keys():
             return
         else:
-            self.valZona = _ZONES[self.zona]
+            self.valZona = MAP_ZONES[self.zona]
 
         self.campZona = self.prefixe + self.valZona[0]
 
@@ -389,21 +344,21 @@ class QvMapificacio(QObject):
         else:
             return False, "Error en campAgregat"
 
-        if tipusAgregacio is None or tipusAgregacio not in _AGREGACIO.keys():
+        if tipusAgregacio is None or tipusAgregacio not in MAP_AGREGACIO.keys():
             return False, "Error en tipusAgregacio"
-        self.tipusAgregacio = _AGREGACIO[tipusAgregacio].format(self.campAgregat)
+        self.tipusAgregacio = MAP_AGREGACIO[tipusAgregacio].format(self.campAgregat)
 
-        if tipusDistribucio is None or tipusDistribucio not in _DISTRIBUCIO.keys():
+        if tipusDistribucio is None or tipusDistribucio not in MAP_DISTRIBUCIO.keys():
             return False, "Error en tipusDistribucio"
-        self.tipusDistribucio = _DISTRIBUCIO[tipusDistribucio]
+        self.tipusDistribucio = MAP_DISTRIBUCIO[tipusDistribucio]
 
-        if modeCategories is None or modeCategories not in _METODES.keys():
+        if modeCategories is None or modeCategories not in MAP_METODES.keys():
             return False, "Error en modeCategories"
-        self.modeCategories = _METODES[modeCategories]
+        self.modeCategories = MAP_METODES[modeCategories]
 
-        if colorBase is None or colorBase not in _COLORS.keys():
+        if colorBase is None or colorBase not in MAP_COLORS.keys():
             return False, "Error en colorBase"
-        self.colorBase = _COLORS[colorBase]
+        self.colorBase = MAP_COLORS[colorBase]
 
         if numDecimals >= 0:
             self.numDecimals = numDecimals
@@ -570,7 +525,7 @@ class QvFormNovaMapificacio(QWidget):
 
         self.color = QComboBox(self)
         self.color.setEditable(False)
-        self.color.addItems(_COLORS.keys())
+        self.color.addItems(MAP_COLORS.keys())
 
         self.metode = QComboBox(self)
         self.metode.setEditable(False)
@@ -713,11 +668,11 @@ class QvFormSimbMapificacio(QWidget):
 
         self.color = QComboBox(self)
         self.color.setEditable(False)
-        self.color.addItems(_COLORS.keys())
+        self.color.addItems(MAP_COLORS.keys())
 
         self.metode = QComboBox(self)
         self.metode.setEditable(False)
-        self.metode.addItems(_METODES_MODIF.keys())
+        self.metode.addItems(MAP_METODES_MODIF.keys())
         self.metode.currentIndexChanged.connect(self.canviaMetode)
 
         self.intervals = QSpinBox(self)
@@ -860,7 +815,7 @@ class QvFormSimbMapificacio(QWidget):
                 self.colorBase, self.rangs, self.format)
         else:
             self.renderer = self.llegenda.mapRenderer.calcRender(self.capa, self.campCalculat, self.numDecimals,
-                _COLORS[self.colorBase], self.numCategories, _METODES_MODIF[self.modeCategories], self.format)
+                MAP_COLORS[self.colorBase], self.numCategories, MAP_METODES_MODIF[self.modeCategories], self.format)
         if self.renderer is None:
             return "No s'ha pogut modificar la simbologia"
         self.capa.setRenderer(self.renderer)
