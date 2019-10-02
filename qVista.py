@@ -1284,7 +1284,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.actGrafiques.setStatusTip("Gràfiques")
         self.actGrafiques.triggered.connect(self.obrirBrowserGrafiques)
 
-        self.actCanvasImg = QAction("Desar imatge del canvas", self)
+        self.actCanvasImg = QAction("Capturar imatge del mapa", self)
         self.actCanvasImg.setIcon(QIcon('imatges/camera.png'))
         self.actCanvasImg.setStatusTip("Imatge del canvas")
         self.actCanvasImg.triggered.connect(self.canvasImg)
