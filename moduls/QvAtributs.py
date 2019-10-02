@@ -2,9 +2,9 @@
 
 from qgis.core import QgsMapLayer, QgsVectorLayerCache
 from qgis.PyQt import QtWidgets  # , uic
-from qgis.PyQt.QtCore import Qt, pyqtSignal
-from qgis.PyQt.QtGui import QCursor
-from qgis.PyQt.QtWidgets import QTabWidget, QVBoxLayout, QAction, QMenuBar
+from qgis.PyQt.QtCore import Qt, pyqtSignal, QSize
+from qgis.PyQt.QtGui import QCursor, QIcon
+from qgis.PyQt.QtWidgets import QTabWidget, QVBoxLayout, QAction, QMenuBar, QWidget, QHBoxLayout
 from qgis.gui import (QgsGui,
                       QgsAttributeTableModel,
                       QgsAttributeTableView,
@@ -14,6 +14,7 @@ from qgis.gui import (QgsGui,
                       QgsActionMenu)
 from moduls.QvAccions import QvAccions
 from moduls.QvApp import QvApp
+from moduls.QvPushButton import QvPushButton
 # import images_rc  # NOQA
 # import recursos
 import csv
@@ -97,7 +98,7 @@ class QvAtributs(QTabWidget):
     def __init__(self, canvas):
         super().__init__()
         self.canvas = canvas
-        self.layout = QVBoxLayout(self)
+        # self.layout = QVBoxLayout(self)
         self.setMovable(True)
         self.setUsesScrollButtons(True)
         self.setTabsClosable(True)
@@ -109,6 +110,29 @@ class QvAtributs(QTabWidget):
         self.accions = QvAccions()
         # Lista de acciones en el menú de contexto
         self.menuAccions = []
+        self.cwidget=QWidget(self) #Corner Widget
+        clayout=QHBoxLayout()
+        clayout.setContentsMargins(0,0,0,0)
+        self.cwidget.setLayout(clayout)
+        self.setCornerWidget(self.cwidget,Qt.TopLeftCorner)
+        self.desaCsv=QvPushButton(flat=True,parent=self)
+        self.desaCsv.setIcon(QIcon('Imatges/file-delimited.png'))
+        self.desaCsv.setIconSize(QSize(24,24))
+        self.desaCsv.setToolTip('Desar taula com a csv')
+        self.filtra=QvPushButton(flat=True,parent=self)
+        self.filtra.setIcon(QIcon('Imatges/filter.png'))
+        self.filtra.setIconSize(QSize(24,24))
+        self.filtra.setToolTip('Filtrar/modificar filtre')
+        self.eliminaFiltre=QvPushButton(flat=True,parent=self)
+        self.eliminaFiltre.setIcon(QIcon('Imatges/filter-remove.png'))
+        self.eliminaFiltre.setIconSize(QSize(24,24))
+        self.eliminaFiltre.setToolTip('Eliminar filtre')
+        self.eliminaFiltre.hide()
+        clayout.addWidget(self.desaCsv,Qt.AlignCenter)
+        clayout.addWidget(self.filtra,Qt.AlignCenter)
+        clayout.addWidget(self.eliminaFiltre,Qt.AlignCenter)
+        # self.filtra.clicked.connect(self.filterElements)
+
 
     def setMenuAccions(self, layer):
         self.menuAccions = ['showFeature', 'selectElement', 'selectAll']
@@ -149,6 +173,12 @@ class QvAtributs(QTabWidget):
             return
         # Si no se ha encontrado la tabla, añadirla
         taula = QvTaulaAtributs(self, layer, self.canvas)
+        self.filtra.disconnect()
+        self.desaCsv.disconnect()
+        self.eliminaFiltre.disconnect()
+        self.filtra.clicked.connect(taula.filterElements)
+        self.desaCsv.clicked.connect(taula.saveToCSV)
+        self.eliminaFiltre.clicked.connect(taula.removeFilter)
         i = self.addTab(taula, taula.layerNom())
         taula.canviNomTaula.connect(self.setTabText)
         self.setCurrentIndex(i)
@@ -208,9 +238,15 @@ class QvAtributs(QTabWidget):
                 ok = dlgFiltre.exec_()
                 if ok != 1:
                     return
-                nuevoFiltro = dlgFiltre.searchString()                   
+                nuevoFiltro = dlgFiltre.searchString()     
             else:
                 nuevoFiltro = ''
+            
+            #Podria semblar que podem aprofitar l'if-else anterior. Però si ho féssim no estaríem tenint en compte el cas d'aplicar un filtre buit
+            if nuevoFiltro=='':
+                self.eliminaFiltre.hide()
+            else:              
+                self.eliminaFiltre.show()
 
             if nuevoFiltro != filtro:
                 layer.setSubsetString(nuevoFiltro)

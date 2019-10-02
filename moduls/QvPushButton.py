@@ -97,10 +97,7 @@ class QvPushButton(QPushButton):
 
 
     def mousePressEvent(self, e):
-      
+        #Podríem utilitzar-ho per controlar coses. De moment no ho fem
         super().mousePressEvent(e)
-        
-        if e.button() == Qt.LeftButton:
-            print('press')
 
 
