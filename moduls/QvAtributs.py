@@ -4,7 +4,7 @@ from qgis.core import QgsMapLayer, QgsVectorLayerCache
 from qgis.PyQt import QtWidgets  # , uic
 from qgis.PyQt.QtCore import Qt, pyqtSignal, QSize
 from qgis.PyQt.QtGui import QCursor, QIcon
-from qgis.PyQt.QtWidgets import QTabWidget, QVBoxLayout, QAction, QMenuBar, QWidget, QHBoxLayout
+from qgis.PyQt.QtWidgets import QTabWidget, QVBoxLayout, QAction, QMenuBar, QWidget, QHBoxLayout, QLabel
 from qgis.gui import (QgsGui,
                       QgsAttributeTableModel,
                       QgsAttributeTableView,
@@ -112,7 +112,7 @@ class QvAtributs(QTabWidget):
         self.menuAccions = []
         self.cwidget=QWidget(self) #Corner Widget
         clayout=QHBoxLayout()
-        clayout.setContentsMargins(0,0,0,0)
+        clayout.setContentsMargins(10,0,0,0)
         self.cwidget.setLayout(clayout)
         self.setCornerWidget(self.cwidget,Qt.TopLeftCorner)
         self.desaCsv=QvPushButton(flat=True,parent=self)
@@ -182,6 +182,9 @@ class QvAtributs(QTabWidget):
         i = self.addTab(taula, taula.layerNom())
         taula.canviNomTaula.connect(self.setTabText)
         self.setCurrentIndex(i)
+        self.setTabText(i,self.tabText(i))
+    def setTabText(self,i,text):
+        super().setTabText(i,text+' (%i)'%len(self.widget(i)))
 
     def tancarTab(self, i):
         # Cerrar tabla por número de tab
@@ -275,6 +278,9 @@ class QvAtributs(QTabWidget):
         except Exception as e:
             print(str(e))
             return None
+    # def setCurrentIndex(self,i):
+    #     super().setCurrentIndex(i)
+    #     self.lblCount.setText(str(len(self.currentWidget()))+' ')
 
 
 class QvTaulaAtributs(QgsAttributeTableView):
@@ -524,6 +530,8 @@ class QvTaulaAtributs(QgsAttributeTableView):
             self.layer,
             self.filter.filterMode() ==
             QgsAttributeTableFilterModel.ShowSelected)
+    def __len__(self):
+        return self.layer.featureCount()
 
 
 if __name__ == "__main__":
