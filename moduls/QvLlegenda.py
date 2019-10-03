@@ -89,7 +89,6 @@ class QvBotoneraLlegenda(QWidget):
         self.actBotons()
         self.clicatBoto.emit(i)
 
-
 class QvItemLlegenda(object):
 
     def __init__(self, item, nivell):

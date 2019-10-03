@@ -2,7 +2,7 @@
 
 from qgis.gui import QgsFileWidget
 from qgis.PyQt.QtCore import Qt, QObject, pyqtSignal, pyqtSlot
-from qgis.PyQt.QtGui import QColor, QValidator, QIcon
+from qgis.PyQt.QtGui import QColor, QValidator, QIcon, QDoubleValidator
 from qgis.PyQt.QtWidgets import (QFileDialog, QWidget, QPushButton, QFormLayout, QVBoxLayout, QHBoxLayout,
                                  QComboBox, QLabel, QLineEdit, QSpinBox, QGroupBox, QGridLayout,
                                  QMessageBox, QDialogButtonBox)
@@ -77,7 +77,7 @@ class QvFormNovaMapificacio(QWidget):
 
         self.intervals = QSpinBox(self)
         self.intervals.setMinimum(2)
-        self.intervals.setMaximum(9)
+        self.intervals.setMaximum(MAP_MAX_CATEGORIES)
         self.intervals.setSingleStep(1)
         self.intervals.setValue(4)
         self.intervals.setSuffix("  (depèn del mètode)")
@@ -198,7 +198,7 @@ class QvFormNovaMapificacio(QWidget):
 class QvFormSimbMapificacio(QWidget):
     def __init__(self, llegenda, capa):
 
-        super().__init__(minimumWidth=400)
+        super().__init__()
         self.llegenda = llegenda
         self.capa = capa
         if not self.iniParams():
@@ -223,7 +223,7 @@ class QvFormSimbMapificacio(QWidget):
         self.nomIntervals = QLabel('Nombre intervals:', self)
         self.intervals = QSpinBox(self)
         self.intervals.setMinimum(2)
-        self.intervals.setMaximum(9)
+        self.intervals.setMaximum(MAP_MAX_CATEGORIES)
         self.intervals.setSingleStep(1)
         self.intervals.setValue(4)
         self.intervals.setSuffix("  (depèn del mètode)")
@@ -238,20 +238,17 @@ class QvFormSimbMapificacio(QWidget):
         self.gSimb = QGroupBox('Simbologia mapificació')
         self.lSimb = QFormLayout()
         self.lSimb.setSpacing(10)
-        self.gSimb.setMinimumWidth(378)
+        self.gSimb.setMinimumWidth(400)
         self.gSimb.setLayout(self.lSimb)
 
         self.lSimb.addRow('Color mapa:', self.color)
         self.lSimb.addRow('Mètode classificació:', self.metode)
         self.lSimb.addRow(self.nomIntervals, self.intervals)
 
-        self.gInter = QGroupBox('Definició intervals')
-        self.lInter = QGridLayout()
-        self.lInter.setSpacing(10)
-        self.gInter.setLayout(self.lInter)
-
         self.wInterval = []
-        self.iniIntervals()
+        for w in self.iniIntervals():
+            self.wInterval.append(w)
+        self.gInter = self.grupIntervals()
 
         self.layout.addWidget(self.gSimb)
         self.layout.addWidget(self.gInter)
@@ -259,81 +256,127 @@ class QvFormSimbMapificacio(QWidget):
 
         self.valorsInicials()
 
-    @pyqtSlot()
-    def afegirFila(self):
-        f = self.sender().property('Fila')
-        print('afegirFila', f)
-
-    @pyqtSlot()
-    def eliminarFila(self):
-        f = self.sender().property('Fila')
-        print('eliminarFila', f)
-
-    @pyqtSlot()
-    def nouTall(self):
-        w = self.sender()
-        if w.isModified():
-            f = w.property('Fila')
-            ini = self.wInterval[f+1][0]
-            ini.setText(w.text())
-            w.setModified(False)
-
     def txtRang(self, num):
+        if type(num) == str:
+            return num
         v = round(num, self.numDecimals)
         if self.numDecimals == 0:
             v = int(v)
         return str(v)
 
-    def iniIntervals(self):
-        maxSizeE = 130
+    def iniFilaInterval(self, iniValor, finValor):
         maxSizeB = 27
-        renderer = self.capa.renderer()
-        cats = renderer.ranges()
-        numCats = len(cats)
-        for fila, cat in enumerate(cats):
-            ini = QLineEdit(self)
-            ini.setText(self.txtRang(cat.lowerValue()))
-            ini.setMaximumWidth(maxSizeE)
-            if fila != 0:
-                ini.setDisabled(True)
-            sep = QLabel('-', self)
-            fin = QLineEdit(self)
-            fin.setText(self.txtRang(cat.upperValue()))
-            fin.setMaximumWidth(maxSizeE)
-            # Ultima fila: no hay + ni -
-            if fila == (numCats - 1):
-                widgets = (ini, sep, fin)
-            else:
-                fin.setProperty('Fila', fila)
-                fin.editingFinished.connect(self.nouTall)
-                add = QPushButton('+', self)
-                add.setMaximumSize(maxSizeB, maxSizeB)
-                add.setProperty('Fila', fila)
-                add.clicked.connect(self.afegirFila)
-                add.setFocusPolicy(Qt.NoFocus)
-                # Primera fila: solo +
-                if fila == 0:
-                    widgets = (ini, sep, fin, add)
-                # Resto de filas: + y -
-                else:
-                    rem = QPushButton('-', self)
-                    rem.setMaximumSize(maxSizeB, maxSizeB)
-                    rem.setProperty('Fila', fila)
-                    rem.clicked.connect(self.eliminarFila)
-                    rem.setFocusPolicy(Qt.NoFocus)
-                    widgets = (ini, sep, fin, add, rem)
-            # Añadir widgets a la fila
+        validator = QDoubleValidator(self)
+        validator.setNotation(QDoubleValidator.StandardNotation)
+        validator.setDecimals(5)
+        ini = QLineEdit(self)
+        ini.setText(self.txtRang(iniValor))
+        ini.setValidator(validator)
+        sep = QLabel('-', self)
+        fin = QLineEdit(self)
+        fin.setText(self.txtRang(finValor))
+        fin.setValidator(validator)
+        fin.editingFinished.connect(self.nouTall)
+        add = QPushButton('+', self)
+        add.setMaximumSize(maxSizeB, maxSizeB)
+        add.clicked.connect(self.afegirFila)
+        add.setFocusPolicy(Qt.NoFocus)
+        rem = QPushButton('-', self)
+        rem.setMaximumSize(maxSizeB, maxSizeB)
+        rem.clicked.connect(self.eliminarFila)
+        rem.setFocusPolicy(Qt.NoFocus)
+        return [ini, sep, fin, add, rem]
+
+    def iniIntervals(self):
+        for cat in self.rangsCategories:
+            yield self.iniFilaInterval(cat.lowerValue(), cat.upperValue())
+
+    def grupIntervals(self):
+        group = QGroupBox('Definició intervals')
+        group.setMinimumWidth(400)
+        layout = QGridLayout()
+        layout.setSpacing(8)
+        # layout.setColumnMinimumWidth(4, 40)
+        numFilas = len(self.wInterval)
+        for fila, widgets in enumerate(self.wInterval):
             for col, w in enumerate(widgets):
-                self.lInter.addWidget(w, fila, col)
-            # Guardar widgets
-            self.wInterval.append(widgets)
+                # Primera fila: solo +
+                if fila == 0 and col > 3:
+                    w.setVisible(False)
+                # # Ultima fila: no hay + ni -
+                elif fila == (numFilas - 1) and col > 2:
+                    w.setVisible(False)
+                else:
+                    w.setVisible(True)
+                # Valor inicial deshabilitado (menos 1a fila)
+                if col == 0 and fila != 0:
+                    w.setDisabled(True)
+                w.setProperty('Fila', fila)
+                layout.addWidget(w, fila, col)
+        group.setLayout(layout)
+        return group
+
+    def actGrupIntervals(self):
+        self.setUpdatesEnabled(False)
+        self.buttons.setVisible(False)
+        self.gInter.setVisible(False)
+
+        self.layout.removeWidget(self.buttons)
+        self.layout.removeWidget(self.gInter)
+
+        self.gInter.deleteLater()
+        self.gInter = self.grupIntervals()
+
+        self.layout.addWidget(self.gInter)
+        self.layout.addWidget(self.buttons)
+
+        self.gInter.setVisible(True)
+        self.buttons.setVisible(True)
+
+        self.adjustSize()
+        self.setUpdatesEnabled(True)
+
+    @pyqtSlot()
+    def afegirFila(self):
+        masFilas = (len(self.wInterval) < MAP_MAX_CATEGORIES)
+        if masFilas:
+            f = self.sender().property('Fila') + 1
+            ini = self.wInterval[f][0]
+            val = ini.text()
+            ini.setText('')
+            w = self.iniFilaInterval(val, '')
+            self.wInterval.insert(f, w)
+            self.actGrupIntervals()
+        else:
+            self.msgInfo("S'ha arribat al màxim d'intervals possibles")
+
+    @pyqtSlot()
+    def eliminarFila(self):
+        f = self.sender().property('Fila')
+        ini = self.wInterval[f][0]
+        val = ini.text()
+        del self.wInterval[f]
+        ini = self.wInterval[f][0]
+        ini.setText(val)
+        self.actGrupIntervals()
+
+    @pyqtSlot()
+    def nouTall(self):
+        w = self.sender()
+        if w.isModified():
+            f = w.property('Fila') + 1
+            if f < len(self.wInterval):
+                ini = self.wInterval[f][0]
+                ini.setText(w.text())
+            w.setModified(False)
 
     def iniParams(self):
         tipus = QgsExpressionContextUtils.layerScope(self.capa).variable('qV_tipusCapa')
         if tipus != 'MAPIFICACIÓ':
             return False
         self.campCalculat, self.numDecimals, self.colorBase, self.numCategories, \
-            self.modeCategories, self.format = self.llegenda.mapRenderer.paramsRender(self.capa)
+            self.modeCategories, self.rangsCategories = self.llegenda.mapRenderer.paramsRender(self.capa)
+        self.custom = (self.modeCategories == 'Personalitzat')
         return True
 
     def valorsInicials(self):        
@@ -362,16 +405,15 @@ class QvFormSimbMapificacio(QWidget):
 
     def mapifica(self):
         self.valorsFinals()
-        if self.custom:
-            self.renderer = self.llegenda.mapRenderer.customRender(self.capa, self.campCalculat, self.numDecimals,
-                MAP_COLORS[self.colorBase], self.rangs, self.format)
-        else:
-            self.renderer = self.llegenda.mapRenderer.calcRender(self.capa, self.campCalculat, self.numDecimals,
-                MAP_COLORS[self.colorBase], self.numCategories, MAP_METODES_MODIF[self.modeCategories], self.format)
-        if self.renderer is None:
-            return "No s'ha pogut modificar la simbologia"
-        self.capa.setRenderer(self.renderer)
-        self.capa.triggerRepaint()
+        try:
+            if self.custom:
+                self.renderer = self.llegenda.mapRenderer.customRender(self.capa, self.campCalculat, self.numDecimals,
+                    MAP_COLORS[self.colorBase], self.rangs)
+            else:
+                self.renderer = self.llegenda.mapRenderer.calcRender(self.capa, self.campCalculat, self.numDecimals,
+                    MAP_COLORS[self.colorBase], self.numCategories, MAP_METODES_MODIF[self.modeCategories])
+        except Exception as e:
+            return "No s'ha pogut modificar la simbologia\n ({})".format(str(e))
         self.llegenda.modificacioProjecte('mapModified')
         return ''
 
@@ -391,16 +433,10 @@ class QvFormSimbMapificacio(QWidget):
 
     @pyqtSlot()
     def canviaMetode(self):
-        self.custom = (self.metode.currentIndex() == QgsGraduatedSymbolRenderer.Custom)
+        self.custom = (self.metode.currentText() == 'Personalitzat')
         self.nomIntervals.setVisible(not self.custom)
         self.intervals.setVisible(not self.custom)
         self.gSimb.adjustSize()
-        # if self.custom: 
-        #     self.intervals.setValue(self.numCategories)
         self.gInter.setVisible(self.custom)
         self.adjustSize()
-
-        # label = self.lParms.labelForField(self.intervals)
-        # if label is not None:
-        #     label.setVisible(ok)
 

@@ -11,67 +11,64 @@ from qgis.PyQt.QtGui import QColor
 from moduls.QvMapVars import *
 from moduls.QvMapForms import QvFormSimbMapificacio
 
-# TODO: arrays globales
+_LABEL_FORMAT = '%1 - %2'
+_INI_ALPHA = 8
 
 class QvMapRenderer(QObject):
 
-    def __init__(self, llegenda, iniAlpha=8):
+    def __init__(self, llegenda):
         super().__init__()
         self.llegenda = llegenda
-        self.iniAlpha = iniAlpha
     
     def calcColorsGradient(self, colorBase):
         colorIni = QColor(colorBase)
-        colorIni.setAlpha(self.iniAlpha)
+        colorIni.setAlpha(_INI_ALPHA)
         colorFi = QColor(colorBase)
-        colorFi.setAlpha(255 - self.iniAlpha)
+        colorFi.setAlpha(255 - _INI_ALPHA)
         return colorIni, colorFi
 
     def calcRender(self, capa, campCalculat, numDecimals, colorBase,
-                   numCategories, modeCategories, format):
-        try:
-            colorIni, colorFi = self.calcColorsGradient(colorBase)
-            colorRamp = QgsGradientColorRamp(colorIni, colorFi)
-            labelFormat = QgsRendererRangeLabelFormat(format, numDecimals)
-            symbol = QgsSymbol.defaultSymbol(capa.geometryType())
-            renderer = QgsGraduatedSymbolRenderer.createRenderer(capa, campCalculat,
-                numCategories, modeCategories, symbol, colorRamp, labelFormat)
-            return renderer
-        except Exception as e:
-            return None
+                   numCategories, modeCategories):
+        colorIni, colorFi = self.calcColorsGradient(colorBase)
+        colorRamp = QgsGradientColorRamp(colorIni, colorFi)
+        labelFormat = QgsRendererRangeLabelFormat(_LABEL_FORMAT, numDecimals)
+        symbol = QgsSymbol.defaultSymbol(capa.geometryType())
+        renderer = QgsGraduatedSymbolRenderer.createRenderer(capa, campCalculat,
+            numCategories, modeCategories, symbol, colorRamp, labelFormat)
+        capa.setRenderer(renderer)
+        capa.triggerRepaint()
+        return renderer
 
     def numRang(self, txt, numDecimals):
+        v = round(float(txt), numDecimals)
         if numDecimals == 0:
-            v = int(txt)
-        else:
-            v = round(float(num), numDecimals)
+            v = int(v)
         return v
 
-    def customRender(self, capa, campCalculat, numDecimals, colorBase, rangs, format):
-        try:
-            total = len(rangs)
-            alpha = self.iniAlpha
-            step = (256 - (2 * alpha)) // total
-            color = QColor(colorBase)
-            primero = True
-            categories = []
-            for r in rangs:
-                if primero:
-                    primero = False
-                else:
-                    alpha += step
-                color.setAlpha(alpha)
-                sym = QgsSymbol.defaultSymbol(capa.geometryType())
-                sym.setColor(color)
-                label = r[0] + ' - ' + r[1]
-                category = QgsRendererRange(self.numRang(r[0], numDecimals),
-                    self.numRang(r[1], numDecimals), sym, label)
-                categories.append(category)
-            renderer = QgsGraduatedSymbolRenderer(campCalculat, categories)
-            renderer.setMode(QgsGraduatedSymbolRenderer.Custom)
-            return renderer
-        except Exception as e:
-            return None
+    def customRender(self, capa, campCalculat, numDecimals, colorBase, rangs):
+        total = len(rangs)
+        alpha = _INI_ALPHA
+        step = (256 - (2 * alpha)) // total - 1
+        color = QColor(colorBase)
+        primero = True
+        categories = []
+        for r in rangs:
+            if primero:
+                primero = False
+            else:
+                alpha += step
+            color.setAlpha(alpha)
+            sym = QgsSymbol.defaultSymbol(capa.geometryType())
+            sym.setColor(color)
+            label = r[0] + ' - ' + r[1]
+            category = QgsRendererRange(self.numRang(r[0], numDecimals),
+                self.numRang(r[1], numDecimals), sym, label)
+            categories.append(category)
+        renderer = QgsGraduatedSymbolRenderer(campCalculat, categories)
+        renderer.setMode(QgsGraduatedSymbolRenderer.Custom)
+        capa.setRenderer(renderer)
+        capa.triggerRepaint()
+        return renderer
 
     def nomParam(self, param, llista):
         for nom, valor in llista.items():
@@ -89,23 +86,24 @@ class QvMapRenderer(QObject):
         try:
             renderer = capa.renderer()
             campCalculat = renderer.classAttribute()
-            cats = renderer.ranges()
-            numCategories = len(cats)
+            rangsCategories = renderer.ranges()
+            numCategories = len(rangsCategories)
             modeCategories = self.nomParam(renderer.mode(), MAP_METODES_MODIF)
 
             if modeCategories == 'Personalitzat':
-                pass
 # TODO:
+                numDecimals = 0
+                cat = rangsCategories[0]
+                color = cat.symbol().color()
             else:
                 numDecimals = renderer.labelFormat().precision()
                 color = renderer.sourceColorRamp().color1()
-                color.setAlpha(0)
-                colorBase = self.nomColor(color, MAP_COLORS)
-                format = renderer.labelFormat().format()
+                # color.setAlpha(0)
 
-            return campCalculat, numDecimals, colorBase, numCategories, modeCategories, format
+            colorBase = self.nomColor(color, MAP_COLORS)
+            return campCalculat, numDecimals, colorBase, numCategories, modeCategories, rangsCategories
         except Exception as e:
-            return 'RESULTAT', 0, 'Blau', 4, 'Endreçat', '%1 - %2'
+            return 'RESULTAT', 0, 'Blau', 4, 'Endreçat', []
 
     def modifyRenderer(self):
         global f
