@@ -801,7 +801,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.mapeta.setGraphicsEffect(QvConstants.ombra(self,radius=30,color=QvConstants.COLOROMBRA))
         self.bOrientacio.clicked.connect(self.editarOrientacio)
         self.mapeta.setParent(self.canvas)
-        self.mapeta.move(240,20)
+        self.mapeta.move(20,20)
         self.mapeta.show()
         # self.dwMapeta = QvDockWidget("4situació", self)
         # self.dwMapeta.setMinimumWidth(180)
