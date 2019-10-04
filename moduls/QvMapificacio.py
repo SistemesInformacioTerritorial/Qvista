@@ -18,12 +18,13 @@ import unicodedata
 from moduls.QvSqlite import QvSqlite
 from moduls.QvMapVars import *
 
+from typing import List, Tuple, Iterable
+
 _TRANS = str.maketrans('ÁÉÍÓÚáéíóúÀÈÌÒÙàèìòùÂÊÎÔÛâêîôûÄËÏÖÜäëïöüºª€@$·.,;:()[]¡!¿?|@#%&ç*',
                        'AEIOUaeiouAEIOUaeiouAEIOUaeiouAEIOUaeiouoaEaD____________________')
 
 _RUTA_LOCAL = 'C:/temp/qVista/dades/'
 _RUTA_DADES = 'D:/qVista/Codi/Dades/'
-
 
 class QvMapificacio(QObject):
 
@@ -31,7 +32,7 @@ class QvMapificacio(QObject):
     zonaAfegida = pyqtSignal(int)  # Tiempo transcurrido (segundos)
     errorAdreca = pyqtSignal(dict) # Registro que no se pudo geocodificar
 
-    def __init__(self, fDades, zona, code='ANSI', delimiter=';', prefixe='QVISTA_', numMostra=60):
+    def __init__(self, fDades: str, zona: str, code: str = 'ANSI', delimiter: str = ';', prefixe: str = 'QVISTA_', numMostra: int = 60):
         super().__init__()
         self.fDades = self.fZones = fDades
         self.zona = zona
@@ -43,11 +44,12 @@ class QvMapificacio(QObject):
         self.fields = []
         self.rows = 0
         self.errors = 0
+        self.msgError = ''
         self.cancel = False
         self.iniDades()
         self.db = QvSqlite()
 
-    def iniDades(self):
+    def iniDades(self) -> None:
         if not os.path.isfile(self.fDades):
             splitFile = os.path.split(self.fDades)
             local = _RUTA_LOCAL + splitFile[1]
@@ -82,7 +84,7 @@ class QvMapificacio(QObject):
                 lenRow = lenMuestra / num
                 self.rows = int(round(lenFile / lenRow))
 
-    def verifCampsAdreca(self, camps):
+    def verifCampsAdreca(self, camps: List[str]) -> bool:
         try:
             if len(camps) not in list(range(3, 6+1)):
                 return False
@@ -99,7 +101,7 @@ class QvMapificacio(QObject):
         except Exception:
             return False
     
-    def valorCampAdreca(self, fila, num):
+    def valorCampAdreca(self, fila: csv.OrderedDict, num: int) -> str:
         try:
             camp = self.campsAdreca[num]
             if camp is None or camp == '':
@@ -110,10 +112,11 @@ class QvMapificacio(QObject):
             return ''
     
     @pyqtSlot()
-    def cancelZonificacio(self):
+    def cancelZonificacio(self) -> None:
         self.cancel = True
 
-    def zonificacio(self, campsAdreca=(), fZones='', substituir=True, afegintZona=None, zonaAfegida=None, errorAdreca=None):
+    def zonificacio(self, campsAdreca: List[str] = [], fZones: str ='', substituir: bool =True,
+        afegintZona: pyqtSignal = None, zonaAfegida: pyqtSignal = None, errorAdreca: pyqtSignal = None) -> None:
 
         if self.verifCampsAdreca(campsAdreca):
             self.campsAdreca = campsAdreca
@@ -194,7 +197,7 @@ class QvMapificacio(QObject):
                 self.afegintZona.emit(100)
             self.zonaAfegida.emit(fin - ini)
 
-    def calcSelect(self, llistaCamps=[]):
+    def calcSelect(self, llistaCamps: List[str] = []) -> str:
         # Calculamos filtro
         if self.filtre is None or self.filtre == '':
             filtre = ''
@@ -213,42 +216,49 @@ class QvMapificacio(QObject):
                  "FROM Info" + filtre + " GROUP BY " + self.campZona + ") AS I WHERE Z.CODI = I.CODI"
         return select
 
-    def netejaString(self, txt):
+    def netejaString(self, txt: str) -> str:
         s = txt.strip()
         s = s.replace(' ', '_')
         s = s.translate(_TRANS)
         return s
-
-    def agregacio(self, llegenda, nomCapa, tipusAgregacio, campCalculat='RESULTAT', campAgregat='', tipusDistribucio="Total",
-                  filtre='', numDecimals=-1, numCategories=4, modeCategories="Endreçat",
-                  colorBase='Blau', format='%1 - %2', veure=True):
+  
+    def agregacio(self, llegenda, nomCapa: str, tipusAgregacio: str,
+        campCalculat: str = 'RESULTAT', campAgregat: str = '', tipusDistribucio: str = "Total", filtre: str = '', numDecimals: int = -1,
+        numCategories: int = 4, modeCategories: str = "Endreçat", colorBase: str ='Blau', format: str = '%1 - %2',
+        veure: bool = True) -> bool:
 
         self.fMapa = ''
         self.capaMapa = None
         self.fSQL = ''
         self.llegenda = llegenda
+        self.msgError = ''
 
         if campAgregat is not None and campAgregat != '':
             self.campAgregat = campAgregat
         elif tipusAgregacio == 'Recompte' and campAgregat == '':
             self.campAgregat = '*'
         else:
-            return False, "Error en campAgregat"
+            self.msgError = "Error en campAgregat"
+            return False
 
         if tipusAgregacio is None or tipusAgregacio not in MAP_AGREGACIO.keys():
-            return False, "Error en tipusAgregacio"
+            self.msgError = "Error en tipusAgregacio"
+            return False
         self.tipusAgregacio = MAP_AGREGACIO[tipusAgregacio].format(self.campAgregat)
 
         if tipusDistribucio is None or tipusDistribucio not in MAP_DISTRIBUCIO.keys():
-            return False, "Error en tipusDistribucio"
+            self.msgError = "Error en tipusDistribucio"
+            return False
         self.tipusDistribucio = MAP_DISTRIBUCIO[tipusDistribucio]
 
         if modeCategories is None or modeCategories not in MAP_METODES.keys():
-            return False, "Error en modeCategories"
+            self.msgError = "Error en modeCategories"
+            return False
         self.modeCategories = MAP_METODES[modeCategories]
 
         if colorBase is None or colorBase not in MAP_COLORS.keys():
-            return False, "Error en colorBase"
+            self.msgError = "Error en colorBase"
+            return False
         self.colorBase = MAP_COLORS[colorBase]
 
         if numDecimals >= 0:
@@ -267,14 +277,16 @@ class QvMapificacio(QObject):
         infoLyr = QgsVectorLayer(self.fZones, 'Info', 'ogr')
         infoLyr.setProviderEncoding(self.code)
         if not infoLyr.isValid():
-            return False, "No s'ha pogut carregar capa de dades: " + self.fZones
+            self.msgError = "No s'ha pogut carregar capa de dades: " + self.fZones
+            return False
 
         # Carga de capa base de zona
         self.fBase = _RUTA_DADES + self.valZona[1]
         zonaLyr = QgsVectorLayer(self.fBase, 'Zona', 'ogr')
         zonaLyr.setProviderEncoding("UTF-8")
         if not zonaLyr.isValid():
-            return False, "No s'ha pogut carregar capa de zones: " + self.fBase
+            self.msgError = "No s'ha pogut carregar capa de zones: " + self.fBase
+            return False
 
         # Añadimos capas auxiliares a la leyenda (de forma no visible) para procesarlas
         self.llegenda.project.addMapLayer(infoLyr, False)
@@ -295,7 +307,8 @@ class QvMapificacio(QObject):
         if not virtLyr.isValid():
             self.llegenda.project.removeMapLayer(zonaLyr.id())
             self.llegenda.project.removeMapLayer(infoLyr.id())
-            return False, "No s'ha pogut generar capa de agregació"
+            self.msgError = "No s'ha pogut generar capa de agregació"
+            return False
 
         # Guarda capa de agregación en SQLite
         self.fSQL = _RUTA_LOCAL + self.nomCapa + ".sqlite"
@@ -303,7 +316,8 @@ class QvMapificacio(QObject):
         if ret != QgsVectorFileWriter.NoError:
             self.llegenda.project.removeMapLayer(zonaLyr.id())
             self.llegenda.project.removeMapLayer(infoLyr.id())
-            return False, "No s'ha pogut desar capa de agregació: " + self.fSQL + " (Error - " + msg + ")"
+            self.msgError = "No s'ha pogut desar capa de agregació: " + self.fSQL + " (Error - " + msg + ")"
+            return False
 
         # Elimina capas de base y datos
         self.llegenda.project.removeMapLayer(zonaLyr.id())
@@ -313,13 +327,15 @@ class QvMapificacio(QObject):
         mapLyr = QgsVectorLayer(self.fSQL, nomCapa , "ogr")
         mapLyr.setProviderEncoding("UTF-8")
         if not mapLyr.isValid():
-            return False, "No s'ha pogut carregar capa de agregació: " + self.fSQL
+            self.msgError = "No s'ha pogut carregar capa de agregació: " + self.fSQL
+            return False
 
         # Renderer para mapificar
         self.renderer = self.llegenda.mapRenderer.calcRender(mapLyr, self.campCalculat, self.numDecimals,
             self.colorBase, self.numCategories, self.modeCategories, format)
         if self.renderer is None:
-            return False, "No s'ha pogut elaborar el mapa"
+            self.msgError = "No s'ha pogut elaborar el mapa"
+            return False
         else:
             mapLyr.setRenderer(self.renderer)
 
@@ -340,7 +356,8 @@ class QvMapificacio(QObject):
             fich = self.fMapa
             self.fMapa = ''
             print(e)
-            return False, "No s'ha pogut desar capa mapificació: " + fich
+            self.msgError = "No s'ha pogut desar capa mapificació: " + fich
+            return False
 
         # Mostar qlr de mapificación, si es el caso
         if veure and self.fMapa != '':
@@ -348,18 +365,11 @@ class QvMapificacio(QObject):
             ok, txt = QgsLayerDefinition.loadLayerDefinition(self.fMapa,
                 self.llegenda.project, self.llegenda.root)
             if not ok:
-                return False, "No s'ha pogut carregar capa mapificació: " + self.fMapa
+                self.msgError = "No s'ha pogut carregar capa mapificació: " + self.fMapa
+                return False
             QgsApplication.processEvents()
 
-            # Incluir icono de modificación de simbologia en leyenda
-            # node = self.llegenda.nodePerNom(mapLyr.name(), 'layer')
-            # if node is not None:
-            #     self.capaMapa = node.layer()
-            #     self.llegenda.addIndicator(node, self.llegenda.iconaMap)
-            #     self.llegenda.iconaMap.clicked.connect(lambda: QvMapRender().modifyRenderer(self.llegenda, self.capaMapa))
-            #     self.capaMapa.nameChanged.emit()
-
-        return True, ''
+        return True
 
 if __name__ == "__main__":
 
@@ -373,25 +383,16 @@ if __name__ == "__main__":
 
         app = QvApp()
 
-        z = QvMapificacio('CarrecsANSI.csv', 'Districte')
-        # z = QvMapificacio('CarrecsANSI.csv', 'Barri')
+        z = QvMapificacio('CarrecsANSI.csv', 'Barri')
         print(z.rows, 'filas en', z.fDades)
         print('Muestra:', z.mostra)
 
         camps = ('', 'NOM_CARRER_GPL', 'NUM_I_GPL', '', 'NUM_F_GPL')
-        z.zonificacio(camps,
+        ok = z.zonificacio(camps,
             afegintZona=lambda n: print('... Procesado', str(n), '% ...'),
             errorAdreca=lambda f: print('Fila sin geocodificar -', f),
             zonaAfegida=lambda n: print('Zona', z.zona, 'procesada en', str(n), 'segs. en ' + z.fZones + ' -', str(z.rows), 'registros,', str(z.errors), 'errores'))
-
-        # zona = 'Barri'
-        # camps = ('', 'NOM_CARRER_GPL', 'NUM_I_GPL', '', 'NUM_F_GPL', '')
-        # z.zonificacio(zona, camps)
-
-        # exit(0)
-
-        # z = QvZonificacio('D:/qVista/CarrecsUTF8.csv', 'UTF-8')
-        # print(z.rows, 'filas en', z.fDades)
-
-        # z = QvZonificacio('D:/qVista/GossosBCN.csv')
-        # print(z.rows, 'filas en', z.fDades)
+        if ok:
+            print('OK')
+        else:
+            print('Error', z.msgError)
