@@ -388,11 +388,7 @@ if __name__ == "__main__":
         print('Muestra:', z.mostra)
 
         camps = ('', 'NOM_CARRER_GPL', 'NUM_I_GPL', '', 'NUM_F_GPL')
-        ok = z.zonificacio(camps,
+        z.zonificacio(camps,
             afegintZona=lambda n: print('... Procesado', str(n), '% ...'),
             errorAdreca=lambda f: print('Fila sin geocodificar -', f),
             zonaAfegida=lambda n: print('Zona', z.zona, 'procesada en', str(n), 'segs. en ' + z.fZones + ' -', str(z.rows), 'registros,', str(z.errors), 'errores'))
-        if ok:
-            print('OK')
-        else:
-            print('Error', z.msgError)
