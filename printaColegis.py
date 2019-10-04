@@ -106,14 +106,14 @@ with qgisapp() as app:
 
     # layer = LAYER DE COLEGIS
     for feature in layer.getFeatures():
-        colegi = feature.attributes()[layer.fields().lookupField('LOCAL')]
-        cole = feature.attributes()[layer.fields().lookupField('CODI_COLE')]
-        seccions = feature.attributes()[layer.fields().lookupField('SECCIONS')]
-        meses = feature.attributes()[layer.fields().lookupField('MESES')]
-        x_min = feature.attributes()[layer.fields().lookupField('XMIN')]
-        y_min = feature.attributes()[layer.fields().lookupField('YMIN')]
-        x_max = feature.attributes()[layer.fields().lookupField('XMAX')]
-        y_max = feature.attributes()[layer.fields().lookupField('YMAX')]
+        colegi      = feature.attributes()[layer.fields().lookupField('LOCAL')]
+        cole        = feature.attributes()[layer.fields().lookupField('CODI_COLE')]
+        seccions    = feature.attributes()[layer.fields().lookupField('SECCIONS')]
+        meses       = feature.attributes()[layer.fields().lookupField('MESES')]
+        x_min       = feature.attributes()[layer.fields().lookupField('XMIN')]
+        y_min       = feature.attributes()[layer.fields().lookupField('YMIN')]
+        x_max       = feature.attributes()[layer.fields().lookupField('XMAX')]
+        y_max       = feature.attributes()[layer.fields().lookupField('YMAX')]
 
 
         textFiltre = "INSTR('"+seccions+"',DISTRICTE||SEC_CENS)>0"
@@ -121,7 +121,8 @@ with qgisapp() as app:
         layerSeccions.setSubsetString(textFiltre) 
         layer.setSubsetString(textFiltre2)    
         coles = ['00816','00811']
+        
         if cole in coles:
-            imprimirPlanol(colegi, cole, meses, x_min, y_min, x_max, y_max, 0, plantillaMapa , 'd:/EUREKA.pdf', 'PDF')
+            imprimirPlanol(colegi, cole, meses, x_min, y_min, x_max, y_max, 0, plantillaMapa , '', 'PDF')
     
     canvas.show()
