@@ -12,7 +12,6 @@ from moduls.QvMapVars import *
 from moduls.QvMapForms import QvFormSimbMapificacio
 
 _LABEL_FORMAT = '%1 - %2'
-_INI_ALPHA = 8
 
 class QvMapRenderer(QObject):
 
@@ -22,9 +21,9 @@ class QvMapRenderer(QObject):
     
     def calcColorsGradient(self, colorBase):
         colorIni = QColor(colorBase)
-        colorIni.setAlpha(_INI_ALPHA)
+        colorIni.setAlpha(0)
         colorFi = QColor(colorBase)
-        colorFi.setAlpha(255 - _INI_ALPHA)
+        colorFi.setAlpha(255)
         return colorIni, colorFi
 
     def calcRender(self, capa, campCalculat, numDecimals, colorBase,
@@ -47,17 +46,13 @@ class QvMapRenderer(QObject):
 
     def customRender(self, capa, campCalculat, numDecimals, colorBase, rangs):
         total = len(rangs)
-        alpha = _INI_ALPHA
-        step = (256 - (2 * alpha)) // total - 1
+        step = 256 // (total - 1)
+        alpha = 0
         color = QColor(colorBase)
-        primero = True
         categories = []
         for r in rangs:
-            if primero:
-                primero = False
-            else:
-                alpha += step
             color.setAlpha(alpha)
+            alpha += step
             sym = QgsSymbol.defaultSymbol(capa.geometryType())
             sym.setColor(color)
             label = r[0] + ' - ' + r[1]

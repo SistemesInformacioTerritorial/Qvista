@@ -317,6 +317,8 @@ class QvFormSimbMapificacio(QWidget):
         return group
 
     def actGrupIntervals(self):
+        self.intervals.setValue(len(self.wInterval))
+
         self.setUpdatesEnabled(False)
         self.buttons.setVisible(False)
         self.gInter.setVisible(False)
@@ -347,6 +349,7 @@ class QvFormSimbMapificacio(QWidget):
             w = self.iniFilaInterval(val, '')
             self.wInterval.insert(f, w)
             self.actGrupIntervals()
+            self.wInterval[f][2].setFocus()
         else:
             self.msgInfo("S'ha arribat al màxim d'intervals possibles")
 

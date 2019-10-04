@@ -4,7 +4,7 @@ from qgis.PyQt.QtGui import QColor
 
 from qgis.core import QgsGraduatedSymbolRenderer
 
-MAP_MAX_CATEGORIES = 9
+MAP_MAX_CATEGORIES = 10
 
 MAP_ZONES = {
     # Nom: (Camp, Arxiu)

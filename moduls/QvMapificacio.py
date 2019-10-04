@@ -27,12 +27,26 @@ _RUTA_LOCAL = 'C:/temp/qVista/dades/'
 _RUTA_DADES = 'D:/qVista/Codi/Dades/'
 
 class QvMapificacio(QObject):
-
-    afegintZona = pyqtSignal(int)  # Porcentaje cubierto (0 - 100)
-    zonaAfegida = pyqtSignal(int)  # Tiempo transcurrido (segundos)
-    errorAdreca = pyqtSignal(dict) # Registro que no se pudo geocodificar
+    """Clase que, a partir de un CSV con campos de dirección postal es capaz de:
+       - Añadir a cada registro del CSV un código de zona (distrito, barrio...) correspondiente a la dirección
+       - Calcular una agregación a partir del código de zona para una posterior mapificación
+    """
 
     def __init__(self, fDades: str, zona: str, code: str = 'ANSI', delimiter: str = ';', prefixe: str = 'QVISTA_', numMostra: int = 60):
+        """Abre y prepara el fichero CSV para la mapificación
+        
+        Arguments:
+            fDades {str} -- Nombre del fichero CSV a tratar
+            zona {str} -- Nombre de la zona a añadir (ver MAP_ZONES en QvMapVars.py)
+        
+        Keyword Arguments:
+            code {str} -- Codificación de los caracteres del CSV (default: {'ANSI'})
+            delimiter {str} -- Caracter separador de campos en el CSV (default: {';'})
+            prefixe {str} -- Prefijo del campo añadido que contendra el codigo de zona;
+                             el sufijo será el nombre de la zona escogida (default: {'QVISTA_'})
+            numMostra {int} -- Número de filas de muestra a leer del CSV para hacer una estimación del número total
+                               de registros. Útil solo para la zonificación (default: {60})
+        """
         super().__init__()
         self.fDades = self.fZones = fDades
         self.zona = zona
@@ -115,13 +129,37 @@ class QvMapificacio(QObject):
     def cancelZonificacio(self) -> None:
         self.cancel = True
 
-    def zonificacio(self, campsAdreca: List[str] = [], fZones: str ='', substituir: bool =True,
-        afegintZona: pyqtSignal = None, zonaAfegida: pyqtSignal = None, errorAdreca: pyqtSignal = None) -> None:
+    afegintZona = pyqtSignal(int)  # Porcentaje cubierto (0 - 100)
+    zonaAfegida = pyqtSignal(int)  # Tiempo transcurrido en zonificar (segundos)
+    errorAdreca = pyqtSignal(dict) # Registro que no se pudo geocodificar
 
+    def zonificacio(self, campsAdreca: List[str], fZones: str ='', substituir: bool =True,
+        afegintZona: pyqtSignal = None, zonaAfegida: pyqtSignal = None, errorAdreca: pyqtSignal = None) -> bool:
+        """Añade un código de zona a cada uno de los registros del CSV, a partir de los campos de dirección postal
+
+        Arguments:
+            campsAdreca {List[str]} -- Nombre de los campos que definen la dirección postal, en este orden:
+                                       TipusVia, Variant, NumIni, LletraIni, NumFi, LletraFi (mínimo 2º y 3º)
+        
+        Keyword Arguments:
+            fZones {str} -- Nombre del fichero CSV de salida. Si no se indica, se usa el nombre del fichero
+                            de entrada añadiendo el nombre de la zona (default: {''})
+            substituir {bool} -- En el caso de que el campo de código de zona ya exista y tenga un valor,
+                                 indica si se ha de machacar o no su contenido (default: {True})
+            afegintZona {pyqtSignal} -- Señal de progreso con el porcentaje transcurrido (default: {None})
+            zonaAfegida {pyqtSignal} -- Señal de finalización con tiempo transcurrido (default: {None})
+            errorAdreca {pyqtSignal} -- Señal con registro erróno (default: {None})
+
+        Returns:
+            bool -- True si ha ido bien, False si hay errores (mensaje en self.msgError)
+
+        """
+        self.msgError = ''
         if self.verifCampsAdreca(campsAdreca):
             self.campsAdreca = campsAdreca
         else:
-            return
+            self.msgError = "Error als camps d'adreça"
+            return False
 
         if fZones is None or fZones == '':
             base = os.path.basename(self.fDades)
@@ -184,7 +222,7 @@ class QvMapificacio(QObject):
                     if self.rows > 0 and tot % nSignal == 0:
                         self.afegintZona.emit(int(round(tot * 100 / self.rows)))
 
-                    # Cancelación del proceso via slot
+                    # Cancelación del proceso via slot -- SIN PROBAR
                     if self.cancel:
                         break
 
@@ -196,6 +234,7 @@ class QvMapificacio(QObject):
             if not self.cancel:
                 self.afegintZona.emit(100)
             self.zonaAfegida.emit(fin - ini)
+            return True
 
     def calcSelect(self, llistaCamps: List[str] = []) -> str:
         # Calculamos filtro
@@ -226,6 +265,30 @@ class QvMapificacio(QObject):
         campCalculat: str = 'RESULTAT', campAgregat: str = '', tipusDistribucio: str = "Total", filtre: str = '', numDecimals: int = -1,
         numCategories: int = 4, modeCategories: str = "Endreçat", colorBase: str ='Blau', format: str = '%1 - %2',
         veure: bool = True) -> bool:
+        """ ***********************************************************************************************************
+            EN DESARROLLO *********************************************************************************************
+            ***********************************************************************************************************
+        
+        Arguments:
+            llegenda {[type]} -- [description]
+            nomCapa {str} -- [description]
+            tipusAgregacio {str} -- [description]
+        
+        Keyword Arguments:
+            campCalculat {str} -- [description] (default: {'RESULTAT'})
+            campAgregat {str} -- [description] (default: {''})
+            tipusDistribucio {str} -- [description] (default: {"Total"})
+            filtre {str} -- [description] (default: {''})
+            numDecimals {int} -- [description] (default: {-1})
+            numCategories {int} -- [description] (default: {4})
+            modeCategories {str} -- [description] (default: {"Endreçat"})
+            colorBase {str} -- [description] (default: {'Blau'})
+            format {str} -- [description] (default: {'%1 - %2'})
+            veure {bool} -- [description] (default: {True})
+        
+        Returns:
+            bool -- [description]
+        """
 
         self.fMapa = ''
         self.capaMapa = None
@@ -392,7 +455,5 @@ if __name__ == "__main__":
             afegintZona=lambda n: print('... Procesado', str(n), '% ...'),
             errorAdreca=lambda f: print('Fila sin geocodificar -', f),
             zonaAfegida=lambda n: print('Zona', z.zona, 'procesada en', str(n), 'segs. en ' + z.fZones + ' -', str(z.rows), 'registros,', str(z.errors), 'errores'))
-        if ok:
-            print('OK')
-        else:
-            print('Error', z.msgError)
+        if not ok:
+            print('ERROR:', z.msgError)
