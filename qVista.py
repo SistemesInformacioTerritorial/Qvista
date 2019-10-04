@@ -1209,9 +1209,6 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.actDisgregarDirele.setStatusTip("Disgregar Fichero Direcciones")
         self.actDisgregarDirele.triggered.connect(disgregarDirele)
 
-
-
-
         self.actEsborrarSeleccio = QAction("Esborrar seleccio", self)
         self.actEsborrarSeleccio.setStatusTip("Esborrar seleccio")
         self.actEsborrarSeleccio.triggered.connect(lambda: self.esborrarSeleccio(True))
