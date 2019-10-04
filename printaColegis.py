@@ -115,7 +115,6 @@ with qgisapp() as app:
         x_max       = feature.attributes()[layer.fields().lookupField('XMAX')]
         y_max       = feature.attributes()[layer.fields().lookupField('YMAX')]
 
-
         textFiltre = "INSTR('"+seccions+"',DISTRICTE||SEC_CENS)>0"
         textFiltre2 = 'CODI_COLE'+"='"+cole+"'"
         layerSeccions.setSubsetString(textFiltre) 
