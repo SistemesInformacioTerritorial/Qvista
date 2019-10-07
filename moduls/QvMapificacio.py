@@ -448,6 +448,7 @@ if __name__ == "__main__":
 
         z = QvMapificacio('CarrecsANSI.csv', 'Barri')
         print(z.rows, 'filas en', z.fDades)
+        print('Campos:', z.fields)
         print('Muestra:', z.mostra)
 
         camps = ('', 'NOM_CARRER_GPL', 'NUM_I_GPL', '', 'NUM_F_GPL')
