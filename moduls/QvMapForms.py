@@ -10,7 +10,7 @@ from qgis.PyQt.QtWidgets import (QFileDialog, QWidget, QPushButton, QFormLayout,
 from qgis.core import QgsApplication, QgsGraduatedSymbolRenderer, QgsExpressionContextUtils
 
 from moduls.QvMapVars import *
-from moduls.QvMapificacio import QvMapificacio
+from moduls.QvMapificacio import *
 
 # class verifNumero(QValidator):
 #     def validate(self, string, index):
@@ -39,7 +39,7 @@ class QvFormNovaMapificacio(QWidget):
         self.arxiu = QgsFileWidget()
         self.arxiu.setStorageMode(QgsFileWidget.GetFile)
         self.arxiu.setDialogTitle('Selecciona fitxer de dades…')
-        self.arxiu.setDefaultRoot(_RUTA_LOCAL)
+        self.arxiu.setDefaultRoot(RUTA_LOCAL)
         self.arxiu.setFilter('Arxius CSV (*.csv)')
         self.arxiu.setSelectedFilter('Arxius CSV (*.csv)')
         self.arxiu.lineEdit().setReadOnly(True)
@@ -48,7 +48,7 @@ class QvFormNovaMapificacio(QWidget):
         self.zona = QComboBox(self)
         self.zona.setEditable(False)
         self.zona.addItem('Selecciona zona…')
-        self.zona.addItems(_ZONES.keys())
+        self.zona.addItems(MAP_ZONES.keys())
         # self.zona.model().item(0).setEnabled(False)
 
         self.capa = QLineEdit(self)
@@ -57,11 +57,11 @@ class QvFormNovaMapificacio(QWidget):
         self.tipus = QComboBox(self)
         self.tipus.setEditable(False)
         self.tipus.addItem('Selecciona tipus…')
-        self.tipus.addItems(_AGREGACIO.keys())
+        self.tipus.addItems(MAP_AGREGACIO.keys())
 
         self.distribucio = QComboBox(self)
         self.distribucio.setEditable(False)
-        self.distribucio.addItems(_DISTRIBUCIO.keys())
+        self.distribucio.addItems(MAP_DISTRIBUCIO.keys())
 
         self.calcul = QLineEdit(self)
 
@@ -73,7 +73,7 @@ class QvFormNovaMapificacio(QWidget):
 
         self.metode = QComboBox(self)
         self.metode.setEditable(False)
-        self.metode.addItems(_METODES.keys())
+        self.metode.addItems(MAP_METODES.keys())
 
         self.intervals = QSpinBox(self)
         self.intervals.setMinimum(2)
@@ -170,15 +170,16 @@ class QvFormNovaMapificacio(QWidget):
         return ok
 
     def mapifica(self):
-        z = QvMapificacio(self.arxiu.filePath(), self.zona.currentText(), numMostra=0)
-        ok, err = z.agregacio(self.llegenda, self.capa.text().strip(), self.tipus.currentText(), campAgregat=self.calcul.text().strip(),
-                              filtre=self.filtre.text().strip(), tipusDistribucio=self.distribucio.currentText(),
-                              modeCategories=self.metode.currentText(), numCategories=self.intervals.value(),
-                              colorBase=self.color.currentText())
+        z = QvMapificacio(self.arxiu.filePath(), numMostra=0)
+        z.selectZona(self.zona.currentText())
+        ok = z.agregacio(self.llegenda, self.capa.text().strip(), self.tipus.currentText(), campAgregat=self.calcul.text().strip(),
+                         filtre=self.filtre.text().strip(), tipusDistribucio=self.distribucio.currentText(),
+                         modeCategories=self.metode.currentText(), numCategories=self.intervals.value(),
+                         colorBase=self.color.currentText())
         if ok:
             return ''
         else: 
-            return err
+            return z.msgError
 
     @pyqtSlot()
     def ok(self):
@@ -280,11 +281,11 @@ class QvFormSimbMapificacio(QWidget):
         add = QPushButton('+', self)
         add.setMaximumSize(maxSizeB, maxSizeB)
         add.clicked.connect(self.afegirFila)
-        add.setFocusPolicy(Qt.NoFocus)
+        # add.setFocusPolicy(Qt.NoFocus)
         rem = QPushButton('-', self)
         rem.setMaximumSize(maxSizeB, maxSizeB)
         rem.clicked.connect(self.eliminarFila)
-        rem.setFocusPolicy(Qt.NoFocus)
+        # rem.setFocusPolicy(Qt.NoFocus)
         return [ini, sep, fin, add, rem]
 
     def iniIntervals(self):

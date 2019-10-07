@@ -73,7 +73,8 @@ class QvMapRenderer(QObject):
 
     def nomColor(self, param, llista):
         for nom, valor in llista.items():
-            if param.red() == valor.red() and param.green() == valor.green() and param.blue() == valor.blue():
+            # if param.red() == valor.red() and param.green() == valor.green() and param.blue() == valor.blue():
+            if param.name() == valor.name():
                 return nom
         return list(llista.keys())[0]
 

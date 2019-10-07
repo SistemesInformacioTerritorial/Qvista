@@ -23,8 +23,8 @@ from typing import List, Tuple, Iterable
 _TRANS = str.maketrans('ÁÉÍÓÚáéíóúÀÈÌÒÙàèìòùÂÊÎÔÛâêîôûÄËÏÖÜäëïöüºª€@$·.,;:()[]¡!¿?|@#%&ç*',
                        'AEIOUaeiouAEIOUaeiouAEIOUaeiouAEIOUaeiouoaEaD____________________')
 
-_RUTA_LOCAL = 'C:/temp/qVista/dades/'
-_RUTA_DADES = 'D:/qVista/Codi/Dades/'
+RUTA_LOCAL = 'C:/temp/qVista/dades/'
+RUTA_DADES = 'D:/qVista/Codi/Dades/'
 
 class QvMapificacio(QObject):
     """Clase que, a partir de un CSV con campos de dirección postal es capaz de:
@@ -32,27 +32,22 @@ class QvMapificacio(QObject):
        - Calcular una agregación a partir del código de zona para una posterior mapificación
     """
 
-    def __init__(self, fDades: str, zona: str, code: str = 'ANSI', delimiter: str = ';', prefixe: str = 'QVISTA_', numMostra: int = 60):
+    def __init__(self, fDades: str, code: str = 'ANSI', delimiter: str = ';', numMostra: int = 60):
         """Abre y prepara el fichero CSV para la mapificación
         
         Arguments:
             fDades {str} -- Nombre del fichero CSV a tratar
-            zona {str} -- Nombre de la zona a añadir (ver MAP_ZONES en QvMapVars.py)
         
         Keyword Arguments:
             code {str} -- Codificación de los caracteres del CSV (default: {'ANSI'})
             delimiter {str} -- Caracter separador de campos en el CSV (default: {';'})
-            prefixe {str} -- Prefijo del campo añadido que contendra el codigo de zona;
-                             el sufijo será el nombre de la zona escogida (default: {'QVISTA_'})
             numMostra {int} -- Número de filas de muestra a leer del CSV para hacer una estimación del número total
                                de registros. Útil solo para la zonificación (default: {60})
         """
         super().__init__()
         self.fDades = self.fZones = fDades
-        self.zona = zona
         self.code = code
         self.delimiter = delimiter
-        self.prefixe = prefixe
         self.numMostra = numMostra
         self.mostra = []
         self.fields = []
@@ -66,18 +61,11 @@ class QvMapificacio(QObject):
     def iniDades(self) -> None:
         if not os.path.isfile(self.fDades):
             splitFile = os.path.split(self.fDades)
-            local = _RUTA_LOCAL + splitFile[1]
+            local = RUTA_LOCAL + splitFile[1]
             if not os.path.isfile(local):
                 return
             else:
                 self.fDades = self.fZones = local
-
-        if self.zona is None or self.zona not in MAP_ZONES.keys():
-            return
-        else:
-            self.valZona = MAP_ZONES[self.zona]
-
-        self.campZona = self.prefixe + self.valZona[0]
 
         with open(self.fDades, "r", encoding=self.code) as csvInput:
             lenFile = os.path.getsize(self.fDades)
@@ -133,15 +121,28 @@ class QvMapificacio(QObject):
     zonaAfegida = pyqtSignal(int)  # Tiempo transcurrido en zonificar (segundos)
     errorAdreca = pyqtSignal(dict) # Registro que no se pudo geocodificar
 
-    def zonificacio(self, campsAdreca: List[str], fZones: str ='', substituir: bool =True,
+    def selectZona(self, zona: str, prefixe: str = 'QVISTA_') -> bool:
+        self.zona = zona
+        self.prefixe = prefixe
+        if self.zona is None or self.zona not in MAP_ZONES.keys():
+            return False
+        else:
+            self.valZona = MAP_ZONES[self.zona]
+        self.campZona = self.prefixe + self.valZona[0]
+        return True
+
+    def zonificacio(self, campsAdreca: List[str], zona: str, prefixe: str = 'QVISTA_', fZones: str ='', substituir: bool = True,
         afegintZona: pyqtSignal = None, zonaAfegida: pyqtSignal = None, errorAdreca: pyqtSignal = None) -> bool:
         """Añade un código de zona a cada uno de los registros del CSV, a partir de los campos de dirección postal
 
         Arguments:
             campsAdreca {List[str]} -- Nombre de los campos que definen la dirección postal, en este orden:
                                        TipusVia, Variant, NumIni, LletraIni, NumFi, LletraFi (mínimo 2º y 3º)
+            zona {str} -- Nombre de la zona a añadir (ver MAP_ZONES en QvMapVars.py)
         
         Keyword Arguments:
+            prefixe {str} -- Prefijo del campo añadido que contendra el codigo de zona;
+                             el sufijo será el nombre de la zona escogida (default: {'QVISTA_'})
             fZones {str} -- Nombre del fichero CSV de salida. Si no se indica, se usa el nombre del fichero
                             de entrada añadiendo el nombre de la zona (default: {''})
             substituir {bool} -- En el caso de que el campo de código de zona ya exista y tenga un valor,
@@ -155,16 +156,21 @@ class QvMapificacio(QObject):
 
         """
         self.msgError = ''
+
         if self.verifCampsAdreca(campsAdreca):
             self.campsAdreca = campsAdreca
         else:
             self.msgError = "Error als camps d'adreça"
             return False
 
+        if not self.selectZona(zona, prefixe):
+            self.msgError = "Error paràmetre zona"
+            return False
+
         if fZones is None or fZones == '':
             base = os.path.basename(self.fDades)
             splitFile = os.path.splitext(base)
-            self.fZones = _RUTA_LOCAL + splitFile[0] + '_' + self.zona + splitFile[1]
+            self.fZones = RUTA_LOCAL + splitFile[0] + '_' + self.zona + splitFile[1]
         else:
             self.fZones = fZones
 
@@ -260,7 +266,7 @@ class QvMapificacio(QObject):
         s = s.replace(' ', '_')
         s = s.translate(_TRANS)
         return s
-  
+
     def agregacio(self, llegenda, nomCapa: str, tipusAgregacio: str,
         campCalculat: str = 'RESULTAT', campAgregat: str = '', tipusDistribucio: str = "Total", filtre: str = '', numDecimals: int = -1,
         numCategories: int = 4, modeCategories: str = "Endreçat", colorBase: str ='Blau', format: str = '%1 - %2',
@@ -344,7 +350,7 @@ class QvMapificacio(QObject):
             return False
 
         # Carga de capa base de zona
-        self.fBase = _RUTA_DADES + self.valZona[1]
+        self.fBase = RUTA_DADES + self.valZona[1]
         zonaLyr = QgsVectorLayer(self.fBase, 'Zona', 'ogr')
         zonaLyr.setProviderEncoding("UTF-8")
         if not zonaLyr.isValid():
@@ -374,7 +380,7 @@ class QvMapificacio(QObject):
             return False
 
         # Guarda capa de agregación en SQLite
-        self.fSQL = _RUTA_LOCAL + self.nomCapa + ".sqlite"
+        self.fSQL = RUTA_LOCAL + self.nomCapa + ".sqlite"
         ret, msg = QgsVectorFileWriter.writeAsVectorFormat(virtLyr, self.fSQL, "UTF-8", zonaLyr.crs(), "SQLite")
         if ret != QgsVectorFileWriter.NoError:
             self.llegenda.project.removeMapLayer(zonaLyr.id())
@@ -395,7 +401,7 @@ class QvMapificacio(QObject):
 
         # Renderer para mapificar
         self.renderer = self.llegenda.mapRenderer.calcRender(mapLyr, self.campCalculat, self.numDecimals,
-            self.colorBase, self.numCategories, self.modeCategories, format)
+            self.colorBase, self.numCategories, self.modeCategories)
         if self.renderer is None:
             self.msgError = "No s'ha pogut elaborar el mapa"
             return False
@@ -403,7 +409,7 @@ class QvMapificacio(QObject):
             mapLyr.setRenderer(self.renderer)
 
         # Guarda capa qlr con agregación + mapificación
-        self.fMapa = _RUTA_LOCAL + self.nomCapa + '.qlr'
+        self.fMapa = RUTA_LOCAL + self.nomCapa + '.qlr'
 
         # Tipo de capa para qVista
         QgsExpressionContextUtils.setLayerVariable(mapLyr, 'qV_tipusCapa', 'MAPIFICACIÓ')
@@ -412,7 +418,7 @@ class QvMapificacio(QObject):
             # Leer DOM, eliminar path local y guardar en fichero
             domDoc = QgsLayerDefinition.exportLayerDefinitionLayers([mapLyr], QgsReadWriteContext())
             txt = domDoc.toString()
-            txt = txt.replace(_RUTA_LOCAL, './')
+            txt = txt.replace(RUTA_LOCAL, './')
             with open(self.fMapa, "w+", encoding="UTF-8") as qlr:
                 qlr.write(txt)
         except Exception as e:
@@ -446,13 +452,13 @@ if __name__ == "__main__":
 
         app = QvApp()
 
-        z = QvMapificacio('CarrecsANSI.csv', 'Barri')
+        z = QvMapificacio('CarrecsANSI.csv')
         print(z.rows, 'filas en', z.fDades)
         print('Campos:', z.fields)
         print('Muestra:', z.mostra)
 
         camps = ('', 'NOM_CARRER_GPL', 'NUM_I_GPL', '', 'NUM_F_GPL')
-        ok = z.zonificacio(camps,
+        ok = z.zonificacio(camps, 'Barri',
             afegintZona=lambda n: print('... Procesado', str(n), '% ...'),
             errorAdreca=lambda f: print('Fila sin geocodificar -', f),
             zonaAfegida=lambda n: print('Zona', z.zona, 'procesada en', str(n), 'segs. en ' + z.fZones + ' -', str(z.rows), 'registros,', str(z.errors), 'errores'))

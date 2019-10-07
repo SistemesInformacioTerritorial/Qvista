@@ -50,3 +50,14 @@ MAP_METODES = {
 
 MAP_METODES_MODIF = MAP_METODES.copy()
 MAP_METODES_MODIF["Personalitzat"] = QgsGraduatedSymbolRenderer.Custom
+
+if __name__ == "__main__":
+
+    from qgis.core.contextmanagers import qgisapp
+
+    gui = False
+
+    with qgisapp(guienabled=gui) as app:
+
+        for nom, col in MAP_COLORS.items():
+            print(nom, col.name())

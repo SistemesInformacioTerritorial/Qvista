@@ -9,7 +9,7 @@ from qgis.gui import (QgsLayerTreeView, QgsLayerTreeViewMenuProvider, QgsLayerTr
                       QgsLayerTreeViewIndicator, QgsLayerTreeViewDefaultActions, QgsGradientColorRampDialog)
 from qgis.PyQt.QtWidgets import QAction, QFileDialog, QWidget, QPushButton, QVBoxLayout, QHBoxLayout, QGridLayout
 from qgis.PyQt.QtGui import QIcon, QColor
-from qgis.PyQt.QtCore import Qt, pyqtSignal, QUrl
+from qgis.PyQt.QtCore import Qt, pyqtSignal, QUrl, QLocale
 from moduls.QvAccions import QvAccions
 from moduls.QvAtributs import QvAtributs
 from moduls.QvApp import QvApp
@@ -1015,7 +1015,7 @@ if __name__ == "__main__":
                     botonera.close()
 
         def testMapificacio():
-            from moduls.QvMapificacio import QvMapificacio, QvFormNovaMapificacio, QvFormSimbMapificacio
+            from moduls.QvMapForms import QvFormNovaMapificacio, QvFormSimbMapificacio
 
             global fMap
             fMap = QvFormNovaMapificacio(leyenda)
