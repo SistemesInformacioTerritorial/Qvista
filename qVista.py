@@ -387,7 +387,7 @@ class QVista(QMainWindow, Ui_MainWindow):
             self.canvas.refresh()
             print('refresh')
 
-    def botoLateral(self, text = None, tamany = 40, imatge = None, accio=None):
+    def botoLateral(self, text = None, tamany = 40, imatge = None, accio=None, menu=None):
         """Crea un boto per a la botonera lateral.
        
         Keyword Arguments:
@@ -412,6 +412,12 @@ class QVista(QMainWindow, Ui_MainWindow):
         if imatge is not None:
             icon = QIcon(imatge)
             boto.setIcon(icon)
+        if menu is not None:
+            boto.setPopupMode(QToolButton.InstantPopup) 
+            # boto.setArrowType(Qt.DownArrow)
+            # boto.setStyleSheet('background: transparent')
+            
+            boto.setMenu(menu)
         # elif accio is not None:
         #     boto.setIcon(accio.icon())
         # boto.clicked.connect(accio)
@@ -439,7 +445,16 @@ class QVista(QMainWindow, Ui_MainWindow):
         #self.bCataleg = self.botoLateral(tamany = 25, accio=self.actObrirCataleg)
         #self.bCatalegProjectesLlista = self.botoLateral(tamany = 25, accio=self.actObrirCatalegProjectesLlista)
         #self.bObrirEnQgis = self.botoLateral(tamany = 25, accio=self.actObrirEnQgis)
-        self.bFoto =  self.botoLateral(tamany = 25, accio=self.actCanvasImg) 
+        menuFoto=QMenu()
+        accioCopia=QAction('Copia al portaretalls',self)
+        accioCopia.setIcon(QIcon('imatges/content-copy.png'))
+        accioCopia.triggered.connect(self.canvas.copyToClipboard)
+        menuFoto.addAction(self.actCanvasImg)
+        menuFoto.addAction(accioCopia)
+        self.bFoto =  self.botoLateral(tamany = 25, accio=self.actCanvasImg, menu=menuFoto)
+        #TODO: Moure d'aquí
+        
+
         self.bImprimir =  self.botoLateral(tamany = 25, accio=self.actImprimir)
         self.bTissores = self.botoLateral(tamany = 25, accio=self.actTissores)
         self.bSeleccioGrafica = self.botoLateral(tamany = 25, accio=self.actSeleccioGrafica)
@@ -1285,10 +1300,12 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.actGrafiques.setStatusTip("Gràfiques")
         self.actGrafiques.triggered.connect(self.obrirBrowserGrafiques)
 
-        self.actCanvasImg = QAction("Capturar imatge del mapa", self)
+        self.actCanvasImg = QAction("Desar imatge del mapa", self)
         self.actCanvasImg.setIcon(QIcon('imatges/camera.png'))
         self.actCanvasImg.setStatusTip("Imatge del canvas")
         self.actCanvasImg.triggered.connect(self.canvasImg)
+        #Definim que el botó de fer foto tingui també un menú amb l'opció de copiar al portarretalls
+        
 
         self.actFavorit = QAction("Favorit", self)
         self.actFavorit.setIcon(QIcon('imatges/star.png'))

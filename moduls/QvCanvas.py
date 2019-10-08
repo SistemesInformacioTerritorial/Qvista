@@ -130,7 +130,11 @@ class QvCanvas(QgsMapCanvas):
             self.bApuntar.setChecked(True)
         
         self.setCursor(QvConstants.cursorDit())
-
+    def copyToClipboard(self):
+        '''Potser no és la millor manera, però el que fa és desar la imatge temporalment i copiar-la d'allà'''
+        nom=tempdir+str(time.time())+'.png'
+        self.saveAsImage(nom)
+        qApp.clipboard().setImage(QImage(nom))
 
     def setLlegenda(self, llegenda):
         self.llegenda = llegenda
