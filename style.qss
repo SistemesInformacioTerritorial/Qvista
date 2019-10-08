@@ -16,8 +16,10 @@
 } */
 
 
+
+
 QWidget::window, QDialog {
-    background-color: #F4F4F4;
+    background-color: solid #F4F4F4;
     margin: 2px #38474F;
 } 
 
@@ -264,4 +266,8 @@ QStatusBar{
 /* QTreeView{
     margin: 20px 2px 0px 20px;
     border: none;
+} */
+/* QvCarregaCsv, CsvPagina{
+    background: solid white;
+    border: 1px solid black;
 } */

@@ -32,7 +32,8 @@ from moduls.QvNews import QvNews
 from moduls.QvPushButton import QvPushButton
 # from moduls.QvGeocod import QvGeocod
 from moduls.QvSuggeriments import QvSuggeriments
-from moduls.QvCarregaCsv import QvCarregaCsv
+#from moduls.QvCarregaCsv import QvCarregaCsv
+from moduls.QvCarregadorCsv import QvCarregaCsv
 from moduls.QvConstants import QvConstants
 from moduls.QvAvis import QvAvis
 from moduls.QvToolButton import QvToolButton
@@ -3215,7 +3216,7 @@ def carregarLayerCSV(nfile):
             qApp.setOverrideCursor(Qt.WaitCursor)
             assistent=QvCarregaCsv(nfile,nivellCsv,qV)
             qApp.restoreOverrideCursor()
-            assistent.setModal(True)
+            #assistent.setModal(True)
             #assistent.setGraphicsEffect(QvConstants.ombra(assistent,radius=30,color=QvConstants.COLORCLAR))
             #assistent.setWindowFlags(assistent.windowFlags() | Qt.Popup)
             #assistent.setWindowFlags(assistent.windowFlags() | Qt.WindowStaysOnTopHint)
