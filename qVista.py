@@ -344,6 +344,7 @@ class QVista(QMainWindow, Ui_MainWindow):
                 visor=QvVisorHTML(metadades,'Informació del mapa',logo=False,parent=self)
                 visor.exec_()
             self.botoMetadades.show()
+            self.botoMetadades.disconnect()
             self.botoMetadades.clicked.connect(obrirMetadades)
         else:
             self.botoMetadades.hide()
@@ -446,7 +447,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         #self.bCatalegProjectesLlista = self.botoLateral(tamany = 25, accio=self.actObrirCatalegProjectesLlista)
         #self.bObrirEnQgis = self.botoLateral(tamany = 25, accio=self.actObrirEnQgis)
         menuFoto=QMenu()
-        accioCopia=QAction('Copia al portaretalls',self)
+        accioCopia=QAction('Copiar al portaretalls',self)
         accioCopia.setIcon(QIcon('imatges/content-copy.png'))
         accioCopia.triggered.connect(self.canvas.copyToClipboard)
         menuFoto.addAction(self.actCanvasImg)
@@ -1300,7 +1301,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.actGrafiques.setStatusTip("Gràfiques")
         self.actGrafiques.triggered.connect(self.obrirBrowserGrafiques)
 
-        self.actCanvasImg = QAction("Desar imatge del mapa", self)
+        self.actCanvasImg = QAction("Capturar imatge del mapa", self)
         self.actCanvasImg.setIcon(QIcon('imatges/camera.png'))
         self.actCanvasImg.setStatusTip("Imatge del canvas")
         self.actCanvasImg.triggered.connect(self.canvasImg)

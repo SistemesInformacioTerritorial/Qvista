@@ -105,6 +105,10 @@ class QvCarregaCsv(QDialog):
         self.layout.replaceWidget(wid,self.widgetActual)
         wid.hide()
         self.actualitzaBotons()
+        if self.widgetActual.calTaula():
+            self.taula.show()
+        else:
+            self.taula.hide()
         self.widgetActual.show()
         self.update()
     def seguent(self):
@@ -142,13 +146,11 @@ class QvCarregaCsv(QDialog):
         if lletraI=='': lletraI=None 
         if lletraF=='': lletraF=None
         self.dades=(tipusVia,via,numI,numF,lletraI,lletraF)
-        print(self.dades)
     def getDadesAdreca(self):
         return self.dades
     def separador(self):
         return self._separador
     def setCoordenades(self,x,y,proj):
-        print(x,y,proj)
         self.coordX=x
         self.coordY=y
         self.proj=proj
@@ -212,6 +214,8 @@ class CsvPagina(QWidget):
         return self.parentWidget().rutaCsvOrig()
     def csvOrig(self):
         return self.parentWidget().csvOrig()
+    def calTaula(self):
+        return True
     pass
 
 class CsvPrefab(CsvPagina):
@@ -521,23 +525,35 @@ class CsvGeneraCoords(CsvPagina):
         mida=calculaNumLinies(self.parentWidget().csv())
         wpb=WindowProgressBar(mida,self)
         self.layout.addWidget(wpb)
+        lblErrors=QTextEdit('Files no geocodificades:\n')
+        lblErrors.setReadOnly(True)
+        self.layout.addWidget(lblErrors)
         arxiuCsv=self.parentWidget().csv()
         reader=csv.DictReader(arxiuCsv,delimiter=self.parentWidget().separador())
         with open(tempdir+str(time.time())+'.csv','w',newline='') as nouCsv:
             writer=csv.DictWriter(nouCsv,fieldnames=reader.fieldnames+['XCalculadaqVista','YCalculadaqVista'],delimiter=self.parentWidget().separador())
             writer.writeheader()
+            fila=1
             for row in reader:
-                x, y = QvGeocod.coordsCarrerNum(*adreca(row))
-                row['XCalculadaqVista']=x
-                row['YCalculadaqVista']=y
+                adr=adreca(row)
+                x, y = QvGeocod.coordsCarrerNum(*adr)
+                if x is None or y is None:
+                    lblErrors.setText(lblErrors.toPlainText()+'Fila %i\n'%fila)
+                    wpb.error()
+                    # print(adr)
+                else:
+                    row['XCalculadaqVista']=x
+                    row['YCalculadaqVista']=y
                 writer.writerow(row)
                 wpb.seg()
+                fila+=1
                 qApp.processEvents()
             wpb.fi()
             self.nouCsv=nouCsv.name
             self.seg=True
             self.parentWidget().actualitzaBotons()
-
+    def calTaula(self):
+        return False
     pass
 
 class CsvPersonalitza(CsvPagina):
@@ -607,7 +623,7 @@ class WindowProgressBar(QWidget):
         self.lblAdrInfo = QLabel()
         self.lblAdrInfo.setText("Adreces Processades: 0")
         self.lblAdrErrors = QLabel()
-        self.lblAdrErrors.setText("Adreces no geolocalitzades: 0")
+        self.lblAdrErrors.setText("Adreces no geocodificades: 0")
         self.layProgressW.addWidget(self.progress)
         self.layProgressW.addWidget(self.lblAdrInfo)
         self.layProgressW.addWidget(self.lblAdrErrors)
@@ -616,6 +632,10 @@ class WindowProgressBar(QWidget):
         self.timeB=time.time()
         self.lblTempsRestant=QLabel()
         self.layProgressW.addWidget(self.lblTempsRestant)
+
+        self.timer=QTimer()
+        self.timer.timeout.connect(self.actualitza)
+        self.timer.start(1000)
         # self.bCancelar = QvPushButton('Cancel·lar', destacat = False)
         # self.layCancelar = QHBoxLayout()
         # self.layCancelar.setAlignment(Qt.AlignRight)
@@ -623,6 +643,11 @@ class WindowProgressBar(QWidget):
         # self.layCancelar.addWidget(self.bCancelar)
         # self.bCancelar.clicked.connect(self.cancelar)
         # self.cancelat = False
+    def actualitza(self):
+        self.progress.setValue(self.count)
+        self.actualitzaLBL()
+        self.update()
+        qApp.processEvents()
 
     def actualitzaLBL(self):
         self.lblAdrInfo.setText(
@@ -637,12 +662,10 @@ class WindowProgressBar(QWidget):
         self.lblTempsRestant.setText('Temps restant: %s'%tempsTxt)
     def seg(self):
         self.count+=1
-        print(self.count, self.mida)
         if self.count%self.salt==0:
-            self.progress.setValue(self.count)
-            self.actualitzaLBL()
-            self.update()
-            qApp.processEvents()
+            self.actualitza()
+    def error(self):
+        self.errors+=1
     def fi(self):
         self.count=self.mida
         self.actualitzaLBL()
