@@ -453,6 +453,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         menuFoto.addAction(self.actCanvasImg)
         menuFoto.addAction(accioCopia)
         self.bFoto =  self.botoLateral(tamany = 25, accio=self.actCanvasImg, menu=menuFoto)
+        self.bFoto.setToolTip('Capturar imatge del mapa')
         #TODO: Moure d'aquí
         
 
@@ -1301,7 +1302,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.actGrafiques.setStatusTip("Gràfiques")
         self.actGrafiques.triggered.connect(self.obrirBrowserGrafiques)
 
-        self.actCanvasImg = QAction("Capturar imatge del mapa", self)
+        self.actCanvasImg = QAction("Desar com a PNG", self)
         self.actCanvasImg.setIcon(QIcon('imatges/camera.png'))
         self.actCanvasImg.setStatusTip("Imatge del canvas")
         self.actCanvasImg.triggered.connect(self.canvasImg)

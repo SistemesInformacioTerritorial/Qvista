@@ -3,6 +3,7 @@
 from moduls.QvImports import *
 
 from qgis.PyQt.QtGui import QStandardItemModel, QStandardItem
+from qgis.PyQt.QtCore import pyqtSignal
 from qgis.core import QgsRectangle
 
 from PyQt5.QtWebKitWidgets import QWebView , QWebPage #QWebPage (???)
@@ -18,7 +19,7 @@ class BotoQvBrowser(QvPushButton):
         # self.setMaximumWidth(100)
 
 class QvBrowser(QWidget):
-
+    svMogut=pyqtSignal(float,float)
     def __init__(self, parent):
         QWidget.__init__(self)
         self.parent = parent
@@ -62,6 +63,8 @@ class QvBrowser(QWidget):
         self.botoStreetView.setText('Street view')
         self.botoStreetView.clicked.connect(self.openStreetView)
 
+        self.browser.urlChanged.connect(self.extreuCoordenades)
+
         # self.layoutBotonera.addWidget(self.botoOSM)
         self.layoutBotonera.addWidget(self.botoGoogleMaps)
         self.layoutBotonera.addWidget(self.botoStreetView)
@@ -78,7 +81,27 @@ class QvBrowser(QWidget):
     def openStreetView(self):
         self.browser.setUrl(QUrl(self.parent.urlStreetView))
 
-
+    def extreuCoordenades(self,url):
+        urlStr=url.url()
+        URLMAPS='https://www.google.com/maps/@'
+        URLSV='https://www.google.com/maps?layer=c&cbll='
+        URLOSM='https://www.openstreetmap.org/#map=16/'
+        if URLSV in urlStr:
+            print(urlStr)
+            urlStr=urlStr.replace(URLSV,'')
+            x, y = urlStr.split(',')
+        elif URLMAPS in urlStr:
+            urlStr=urlStr.replace(URLMAPS,'')
+            sp=urlStr.split(',')
+            x, y = sp[0], sp[1]
+            
+        elif URLOSM in urlStr:
+            #Fer el que toqui
+            return
+        else:
+            return
+        x, y = float(x), float(y)
+        self.svMogut.emit(x,y)
     
     def tancar(self):
         print('sortir')
@@ -211,6 +234,7 @@ class QvStreetView(QWidget):
 
         self.qbrowser = QvBrowser(self)
         self.qbrowser.show()
+        # self.qbrowser.svMogut.connect()
 
         self.layoutH.addWidget(self.qbrowser)
 
