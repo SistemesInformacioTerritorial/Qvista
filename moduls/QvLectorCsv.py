@@ -35,6 +35,11 @@ class QvLectorCsv(QtWidgets.QWidget):
         #     bGuardar.setText("Guardar CSV")
         #     bGuardar.clicked.connect(self.writeCsv)
         #     grid.addWidget(bGuardar, 0, 0, 2, 9)
+        if guardar:
+            bGuardar=QvPushButton(text='Desar CSV',parent=self)
+            bGuardar.clicked.connect(lambda: self.writeCsv(self.fileName))
+            grid.addWidget(bGuardar,0,0,2,9)
+
         self.setLayout(grid)
 
         item = QtGui.QStandardItem()
@@ -117,10 +122,12 @@ class QvLectorCsv(QtWidgets.QWidget):
                 writer=csv.writer(sortida,delimiter=';')
                 for x in reader:
                     writer.writerow(x)
-
+    def getFile(self):
+        self.file.seek(0)
+        return self.file
     def recarrega(self, separador, completa=False):
         self.separador = separador
-        self.carregaCsv(self.file, self.separador, completa)
+        self.carregaCsv(self.fileName,self.getFile(), separador=self.separador, completa=completa)
 
     def verticalScrollBar(self):
         return self.tableView.verticalScrollBar()
