@@ -77,6 +77,12 @@ if __name__ == "__main__":
 
     with qgisapp(guienabled=gui) as app:
 
+        x, y = QvGeocod().coordsCarrerNum('C', 'SANT ANTONI MARIA CLARET', '272')
+        if x is None or y is None:
+            print('No coords')
+        else:
+            print('SQLite', 'C', 'SANT ANTONI MARIA CLARET', '272', str(x), str(y))
+
         import sys
         import csv
         import time

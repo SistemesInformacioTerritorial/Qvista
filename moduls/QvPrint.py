@@ -308,8 +308,13 @@ class QvPrint(QWidget):
                 titol.setText(self.leTitol.text()) #comentat pk peta
             else:
                 titol.setText('')
-            t = time.localtime()
-            dataMapa.setText(strftime('%b-%d-%Y %H:%M', t))
+            try:
+                t = time.localtime()
+                dataMapa.setText(strftime('%b-%d-%Y %H:%M', t))
+            except:
+                pass
+
+        
             rect = refMap.extent()
             vector = QgsVector(x - rect.center().x(), y - rect.center().y())
             rect += vector

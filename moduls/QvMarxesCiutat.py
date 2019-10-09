@@ -16,12 +16,13 @@ class MarxesCiutat(QDockWidget):
         fMarxes.setLayout(lytMarxes)
         self.setMaximumWidth(500)
         self.setMinimumWidth(500)
-
-        bMarxes = QvPushButton('Marxes exploratories',flat=True)
-        bMapa = QvPushButton('Mapa de les marxes',flat=True)
+        bGuia = QvPushButton('Marxes exploratòries: Qué és el projecte?',flat=True)
+        bMarxes = QvPushButton('Recull marxes exploratòries dones 2017-18',flat=True)
+        bMapa = QvPushButton('Mapa Barcelona de les marxes',flat=True)
         bMapaXarxa = QvPushButton('Xarxa quotidiana',flat=True)
+        lytMarxes.addWidget(bGuia) 
+        lytMarxes.addWidget(bMapa) 
         lytMarxes.addWidget(bMarxes)
-        lytMarxes.addWidget(bMapa)
         lytMarxes.addWidget(bMapaXarxa)
         spacer = QSpacerItem(50, 50, QSizePolicy.Expanding,QSizePolicy.Maximum)
         lytMarxes.addItem(spacer)
@@ -43,6 +44,7 @@ class MarxesCiutat(QDockWidget):
         lytMarxes.addWidget(bMarxes7)
         lytMarxes.addWidget(bMarxes8)
         lytMarxes.addWidget(bMarxes9)
+        bGuia.clicked.connect(self.mostrarGuia)
         bMarxes.clicked.connect(self.mostrarInstruccions)
         bMapa.clicked.connect(self.mostrarMapa)
         bMapaXarxa.clicked.connect(self.mostrarMapaXarxa)
@@ -68,10 +70,12 @@ class MarxesCiutat(QDockWidget):
         
         QDesktopServices().openUrl(QUrl('c:/temp/tempQgis.qgs'))
         """
+    def mostrarGuia(self):
+        pass
     def mostrarInstruccions(self):
         
         # QDesktopServices().openUrl(QUrl('N:/9SITEB/Publicacions/qVista/CATALEG/MAPES PRIVATS/Marxes de ciutat/PdfFitxes/12_El_Besos_el_Maresme.pdf'))
-        PDF = 'file:///' + 'N:/9SITEB/Publicacions/qVista/CATALEG/MAPES PRIVATS/Marxes de ciutat/PdfFitxes/12_El_Besos_el_Maresme.pdf'
+        PDF = 'file:///' + 'N:/9SITEB/Publicacions/qVista/CATALEG/MAPES PRIVATS/Marxes de ciutat/PdfFitxes/2017-18-190228_Marxes_exploratories_A3.pdf'
         self.w = QvPDF(PDF)
         self.w.setGeometry(50, 50, 1200, 800)
         self.w.setWindowTitle('Marxes exploratóries')
@@ -79,7 +83,7 @@ class MarxesCiutat(QDockWidget):
 
     def mostrarMapa(self):
         # QDesktopServices().openUrl(QUrl('N:\9SITEB\Publicacions\qVista\CATALEG\MAPES PRIVATS\Marxes de ciutat\PdfFitxes\190228_Marxes_exploratories_A4.pdf'))
-        PDF = 'file:///' + 'N:\9SITEB\Publicacions\qVista\CATALEG\MAPES PRIVATS\Marxes de ciutat\PdfFitxes\Mapa_Marxes_exploratoriesA3.pdf'
+        PDF = 'file:///' + 'N:\9SITEB\Publicacions\qVista\CATALEG\MAPES PRIVATS\Marxes de ciutat\PdfFitxes\Mapa BCN_v2.pdf'
 
         self.w = QvPDF(PDF)
         self.w.setGeometry(50, 50, 1200, 800)
