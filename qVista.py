@@ -3046,7 +3046,7 @@ def guardarProjecte():
         
 #Anomena i desa (AKA Guardar como)
 def guardarDialegProjecte():
-    nfile,_ = QFileDialog.getSaveFileName(None,"Guardar Projecte Qgis", ".", "Projectes Qgis (*.qgs)")
+    nfile,_ = QFileDialog.getSaveFileName(None,"Guardar Projecte Qgis", "./"+qV.project.baseName(), "Projectes Qgis (*.qgs)")
     if nfile=='': return False
     elif nfile.endswith('mapesOffline/qVista default map.qgs') or nfile.startswith( 'n:/siteb/apl/pyqgis/qvista' ) or nfile.startswith( 'n:/9siteb/publicacions/qvista' ):
         msgBox = QMessageBox()
