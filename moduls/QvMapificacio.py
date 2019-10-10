@@ -129,14 +129,15 @@ class QvMapificacio(QObject):
         for zona in self.zones:
             if zona not in MAP_ZONES_COORD.keys():
                 return False
-        else:
-            self.valZones.append(MAP_ZONES_COORD[zona])
-        for camp in self.valZones:
+            else:
+                self.valZones.append(MAP_ZONES_COORD[zona])
+        for v in self.valZones:
+            camp = v[0]
             if isinstance(camp, str):
-                self.campsZones.append(self.prefixe + camp)
+                self.campsZones.append(camp)
             else:
                 for c in camp:
-                    self.campsZones.append(self.prefixe + c)
+                    self.campsZones.append(c)
         return True
 
     def geocodificacio(self, campsAdreca: List[str], zones: List[str], prefixe: str = 'QVISTA_', fZones: str ='', substituir: bool = True,
@@ -171,14 +172,14 @@ class QvMapificacio(QObject):
             self.msgError = "Error als camps d'adreça"
             return False
 
-        if not self.verifZones(zonaes, prefixe):
+        if not self.verifZones(zones, prefixe):
             self.msgError = "Error paràmetre de zones"
             return False
 
         if fZones is None or fZones == '':
             base = os.path.basename(self.fDades)
             splitFile = os.path.splitext(base)
-            self.fZones = RUTA_LOCAL + splitFile[0] + '_' + self.zona + splitFile[1]
+            self.fZones = RUTA_LOCAL + splitFile[0] + '_Geo' + splitFile[1]
         else:
             self.fZones = fZones
 
@@ -209,8 +210,9 @@ class QvMapificacio(QObject):
                 data = csv.DictReader(csvInput, delimiter=self.delimiter)
 
                 for campZona in self.campsZones:
-                    if campZona not in self.fields:
-                        self.fields.append(campZona)
+                    campSortida = self.prefixe + campZona
+                    if campSortida not in self.fields:
+                        self.fields.append(campSortida)
 
                 writer = csv.DictWriter(csvOutput, delimiter=self.delimiter, fieldnames=self.fields, lineterminator='\n')
                 writer.writeheader()
@@ -228,10 +230,12 @@ class QvMapificacio(QObject):
                         self.errorAdreca.emit(dict(row))
                         num += 1
                     # Escritura de fila con campos
-                    for campZona in self.campsZones:
-                        campoNuevo =  (campZona not in self.fields)
-                        if campoNuevo or self.substituir or row[campZona] is None or row[campZona] == '':
-                            row.update([(campZona, val[campZona])])
+                    else:
+                        for campZona in self.campsZones:
+                            campSortida = self.prefixe + campZona
+                            campNou = (campSortida not in row.keys())
+                            if campNou or self.substituir or row[campSortida] is None or row[campSortida] == '':
+                                row.update([(campSortida, val[campZona])])
 
                     # if campoNuevo or self.substituir or row[self.campZona] is None or row[self.campZona] == '':
                     #     val = self.db.geoCampCarrerNum(self.valZona[0],

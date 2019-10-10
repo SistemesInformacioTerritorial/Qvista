@@ -287,7 +287,7 @@ class QvSqlite(Singleton):
             return None
 
     def campsAdreca(self, camps, tipusVia, variant, num=''):
-        if variant == '' or variant is None or camp == '' or camps is None:
+        if variant == '' or variant is None or camps is None:
             return None
         try:
             codi = self.codiCarrerVariant(tipusVia, variant)
