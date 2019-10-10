@@ -32,7 +32,7 @@ class QvMapificacio(QObject):
        - Calcular una agregación a partir del código de zona para una posterior mapificación
     """
 
-    def __init__(self, fDades: str, code: str = 'ANSI', delimiter: str = ';', numMostra: int = 60):
+    def __init__(self, fDades: str, code: str = 'ANSI', delimiter: str = ';', prefixe: str = 'QVISTA_', numMostra: int = 60):
         """Abre y prepara el fichero CSV para la mapificación
         
         Arguments:
@@ -41,6 +41,8 @@ class QvMapificacio(QObject):
         Keyword Arguments:
             code {str} -- Codificación de los caracteres del CSV (default: {'ANSI'})
             delimiter {str} -- Caracter separador de campos en el CSV (default: {';'})
+            prefixe {str} -- Prefijo del campo añadido que contendra el codigo de zona;
+                             el sufijo será el nombre de la zona escogida (default: {'QVISTA_'})
             numMostra {int} -- Número de filas de muestra a leer del CSV para hacer una estimación del número total
                                de registros. Útil solo para la geocodificación (default: {60})
         """
@@ -48,6 +50,7 @@ class QvMapificacio(QObject):
         self.fDades = self.fZones = fDades
         self.code = code
         self.delimiter = delimiter
+        self.prefixe = prefixe
         self.numMostra = numMostra
         self.mostra = []
         self.fields = []
@@ -114,16 +117,15 @@ class QvMapificacio(QObject):
             return ''
     
     @pyqtSlot()
-    def cancelZonificacio(self) -> None:
+    def cancelProces(self) -> None:
         self.cancel = True
 
     percentatgeProces = pyqtSignal(int)  # Porcentaje cubierto (0 - 100)
     procesAcabat = pyqtSignal(int)  # Tiempo transcurrido en zonificar (segundos)
     errorAdreca = pyqtSignal(dict) # Registro que no se pudo geocodificar
 
-    def verifZones(self, zones: List[str], prefixe: str = 'QVISTA_') -> bool:
+    def verifZones(self, zones: List[str]) -> bool:
         self.zones = zones
-        self.prefixe = prefixe
         self.valZones = []
         self.campsZones = []
         for zona in self.zones:
@@ -140,18 +142,16 @@ class QvMapificacio(QObject):
                     self.campsZones.append(c)
         return True
 
-    def geocodificacio(self, campsAdreca: List[str], zones: List[str], prefixe: str = 'QVISTA_', fZones: str ='', substituir: bool = True,
+    def geocodificacio(self, campsAdreca: List[str], zones: List[str], fZones: str ='', substituir: bool = True,
         percentatgeProces: pyqtSignal = None, procesAcabat: pyqtSignal = None, errorAdreca: pyqtSignal = None) -> bool:
         """Añade coordenadas y códigos de zona a cada uno de los registros del CSV, a partir de los campos de dirección postal
 
         Arguments:
             campsAdreca {List[str]} -- Nombre de los campos que definen la dirección postal, en este orden:
                                        TipusVia, Variant, NumIni, LletraIni, NumFi, LletraFi (mínimo 2º y 3º)
-            zona List[str] -- Nombre de las zonas a añadir (ver MAP_ZONES_COORD en QvMapVars.py)
+            zones List[str] -- Nombre de las zonas a añadir (ver MAP_ZONES_COORD en QvMapVars.py)
         
         Keyword Arguments:
-            prefixe {str} -- Prefijo del campo añadido que contendra el codigo de zona;
-                             el sufijo será el nombre de la zona escogida (default: {'QVISTA_'})
             fZones {str} -- Nombre del fichero CSV de salida. Si no se indica, se usa el nombre del fichero
                             de entrada añadiendo el nombre de la zona (default: {''})
             substituir {bool} -- En el caso de que el campo de código de zona ya exista y tenga un valor,
@@ -172,7 +172,7 @@ class QvMapificacio(QObject):
             self.msgError = "Error als camps d'adreça"
             return False
 
-        if not self.verifZones(zones, prefixe):
+        if not self.verifZones(zones):
             self.msgError = "Error paràmetre de zones"
             return False
 
@@ -292,7 +292,18 @@ class QvMapificacio(QObject):
         s = s.translate(_TRANS)
         return s
 
-    def agregacio(self, llegenda, nomCapa: str, tipusAgregacio: str,
+    def verifZona(self, zona: str) -> bool:
+        self.zona = zona
+        if self.zona is None or self.zona not in MAP_ZONES.keys():
+            return False
+        else:
+            self.valZona = MAP_ZONES[self.zona]
+        self.campZona = self.prefixe + self.valZona[0]
+        if self.campZona not in self.fields:
+            return False
+        return True
+
+    def agregacio(self, llegenda, nomCapa: str, zona: str, tipusAgregacio: str,
         campCalculat: str = 'RESULTAT', campAgregat: str = '', tipusDistribucio: str = "Total", filtre: str = '', numDecimals: int = -1,
         numCategories: int = 4, modeCategories: str = "Endreçat", colorBase: str ='Blau', format: str = '%1 - %2',
         veure: bool = True) -> bool:
@@ -303,6 +314,7 @@ class QvMapificacio(QObject):
         Arguments:
             llegenda {[type]} -- [description]
             nomCapa {str} -- [description]
+            zona {str} -- [description]
             tipusAgregacio {str} -- [description]
         
         Keyword Arguments:
@@ -326,6 +338,10 @@ class QvMapificacio(QObject):
         self.fSQL = ''
         self.llegenda = llegenda
         self.msgError = ''
+
+        if not self.verifZona(zona):
+            self.msgError = "Error en zona"
+            return False
 
         if campAgregat is not None and campAgregat != '':
             self.campAgregat = campAgregat

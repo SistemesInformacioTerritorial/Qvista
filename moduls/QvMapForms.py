@@ -171,11 +171,10 @@ class QvFormNovaMapificacio(QWidget):
 
     def mapifica(self):
         z = QvMapificacio(self.arxiu.filePath(), numMostra=0)
-        z.selectZona(self.zona.currentText())
-        ok = z.agregacio(self.llegenda, self.capa.text().strip(), self.tipus.currentText(), campAgregat=self.calcul.text().strip(),
-                         filtre=self.filtre.text().strip(), tipusDistribucio=self.distribucio.currentText(),
-                         modeCategories=self.metode.currentText(), numCategories=self.intervals.value(),
-                         colorBase=self.color.currentText())
+        ok = z.agregacio(self.llegenda, self.capa.text().strip(), self.zona.currentText(), self.tipus.currentText(),
+                         campAgregat=self.calcul.text().strip(), filtre=self.filtre.text().strip(),
+                         tipusDistribucio=self.distribucio.currentText(), modeCategories=self.metode.currentText(),
+                         numCategories=self.intervals.value(), colorBase=self.color.currentText())
         if ok:
             return ''
         else: 
