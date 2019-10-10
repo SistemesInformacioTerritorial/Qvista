@@ -32,7 +32,8 @@ from moduls.QvNews import QvNews
 from moduls.QvPushButton import QvPushButton
 # from moduls.QvGeocod import QvGeocod
 from moduls.QvSuggeriments import QvSuggeriments
-from moduls.QvCarregaCsv import QvCarregaCsv
+#from moduls.QvCarregaCsv import QvCarregaCsv
+from moduls.QvCarregadorCsv import QvCarregaCsv
 from moduls.QvConstants import QvConstants
 from moduls.QvAvis import QvAvis
 from moduls.QvToolButton import QvToolButton
@@ -343,6 +344,7 @@ class QVista(QMainWindow, Ui_MainWindow):
                 visor=QvVisorHTML(metadades,'Informació del mapa',logo=False,parent=self)
                 visor.exec_()
             self.botoMetadades.show()
+            self.botoMetadades.disconnect()
             self.botoMetadades.clicked.connect(obrirMetadades)
         else:
             self.botoMetadades.hide()
@@ -386,7 +388,7 @@ class QVista(QMainWindow, Ui_MainWindow):
             self.canvas.refresh()
             print('refresh')
 
-    def botoLateral(self, text = None, tamany = 40, imatge = None, accio=None):
+    def botoLateral(self, text = None, tamany = 40, imatge = None, accio=None, menu=None):
         """Crea un boto per a la botonera lateral.
        
         Keyword Arguments:
@@ -411,6 +413,12 @@ class QVista(QMainWindow, Ui_MainWindow):
         if imatge is not None:
             icon = QIcon(imatge)
             boto.setIcon(icon)
+        if menu is not None:
+            boto.setPopupMode(QToolButton.InstantPopup) 
+            # boto.setArrowType(Qt.DownArrow)
+            # boto.setStyleSheet('background: transparent')
+            
+            boto.setMenu(menu)
         # elif accio is not None:
         #     boto.setIcon(accio.icon())
         # boto.clicked.connect(accio)
@@ -438,7 +446,17 @@ class QVista(QMainWindow, Ui_MainWindow):
         #self.bCataleg = self.botoLateral(tamany = 25, accio=self.actObrirCataleg)
         #self.bCatalegProjectesLlista = self.botoLateral(tamany = 25, accio=self.actObrirCatalegProjectesLlista)
         #self.bObrirEnQgis = self.botoLateral(tamany = 25, accio=self.actObrirEnQgis)
-        self.bFoto =  self.botoLateral(tamany = 25, accio=self.actCanvasImg) 
+        menuFoto=QMenu()
+        accioCopia=QAction('Copiar al portaretalls',self)
+        accioCopia.setIcon(QIcon('imatges/content-copy.png'))
+        accioCopia.triggered.connect(self.canvas.copyToClipboard)
+        menuFoto.addAction(self.actCanvasImg)
+        menuFoto.addAction(accioCopia)
+        self.bFoto =  self.botoLateral(tamany = 25, accio=self.actCanvasImg, menu=menuFoto)
+        self.bFoto.setToolTip('Capturar imatge del mapa')
+        #TODO: Moure d'aquí
+        
+
         self.bImprimir =  self.botoLateral(tamany = 25, accio=self.actImprimir)
         self.bTissores = self.botoLateral(tamany = 25, accio=self.actTissores)
         self.bSeleccioGrafica = self.botoLateral(tamany = 25, accio=self.actSeleccioGrafica)
@@ -485,7 +503,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.canvas = QvCanvas(llistaBotons=llistaBotons, posicioBotonera = 'SE', botoneraHoritzontal = True, pare=self)
 
         self.preparacioStreetView()     #fa el qvSv. necessita el canvas
-        self.canvas.bstreetview.clicked.connect(self.qvSv.segueixBoto)
+        #self.canvas.bstreetview.clicked.connect(self.qvSv.segueixBoto)
 
         self.canvas.setCanvasColor(QColor(253,253,255))
         self.canvas.setAnnotationsVisible(True)
@@ -1281,10 +1299,12 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.actGrafiques.setStatusTip("Gràfiques")
         self.actGrafiques.triggered.connect(self.obrirBrowserGrafiques)
 
-        self.actCanvasImg = QAction("Desar imatge del canvas", self)
+        self.actCanvasImg = QAction("Desar com a PNG", self)
         self.actCanvasImg.setIcon(QIcon('imatges/camera.png'))
         self.actCanvasImg.setStatusTip("Imatge del canvas")
         self.actCanvasImg.triggered.connect(self.canvasImg)
+        #Definim que el botó de fer foto tingui també un menú amb l'opció de copiar al portarretalls
+        
 
         self.actFavorit = QAction("Favorit", self)
         self.actFavorit.setIcon(QIcon('imatges/star.png'))
@@ -3024,7 +3044,7 @@ def guardarProjecte():
         
 #Anomena i desa (AKA Guardar como)
 def guardarDialegProjecte():
-    nfile,_ = QFileDialog.getSaveFileName(None,"Guardar Projecte Qgis", ".", "Projectes Qgis (*.qgs)")
+    nfile,_ = QFileDialog.getSaveFileName(None,"Guardar Projecte Qgis", "./"+qV.project.baseName(), "Projectes Qgis (*.qgs)")
     if nfile=='': return False
     elif nfile.endswith('mapesOffline/qVista default map.qgs') or nfile.startswith( 'n:/siteb/apl/pyqgis/qvista' ) or nfile.startswith( 'n:/9siteb/publicacions/qvista' ):
         msgBox = QMessageBox()
@@ -3212,7 +3232,7 @@ def carregarLayerCSV(nfile):
             qApp.setOverrideCursor(Qt.WaitCursor)
             assistent=QvCarregaCsv(nfile,nivellCsv,qV)
             qApp.restoreOverrideCursor()
-            assistent.setModal(True)
+            #assistent.setModal(True)
             #assistent.setGraphicsEffect(QvConstants.ombra(assistent,radius=30,color=QvConstants.COLORCLAR))
             #assistent.setWindowFlags(assistent.windowFlags() | Qt.Popup)
             #assistent.setWindowFlags(assistent.windowFlags() | Qt.WindowStaysOnTopHint)
