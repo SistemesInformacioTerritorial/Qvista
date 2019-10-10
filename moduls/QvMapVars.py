@@ -7,9 +7,9 @@ from qgis.core import QgsGraduatedSymbolRenderer
 MAP_MAX_CATEGORIES = 10
 
 MAP_ZONES = {
-    # Nom: (Camp, Arxiu)
-    "Districte": ("DISTRICTE", "Districtes.sqlite"),
-    "Barri": ("BARRI", "Barris.sqlite")
+    # Nom: (Camps, Arxiu)
+    "Districte": (("DISTRICTE"), "Districtes.sqlite"),
+    "Barri": (("BARRI"), "Barris.sqlite")
     # "Codi postal": "CODI_POSTAL",
     # "Illa": "ILLA",
     # "Solar": "SOLAR",
@@ -17,6 +17,9 @@ MAP_ZONES = {
     # "Secció censal": "SECCIO_CENSAL",
     # "Sector policial operatiu": "SPO"
 }
+
+MAP_ZONES_COORD = MAP_ZONES.copy()
+MAP_ZONES_COORD["Coordenada"] = ("ETRS89_COORD_X", "ETRS89_COORD_Y")
 
 MAP_AGREGACIO = {
     "Recompte": "COUNT({})",

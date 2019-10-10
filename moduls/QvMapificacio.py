@@ -28,7 +28,7 @@ RUTA_DADES = 'D:/qVista/Codi/Dades/'
 
 class QvMapificacio(QObject):
     """Clase que, a partir de un CSV con campos de dirección postal es capaz de:
-       - Añadir a cada registro del CSV un código de zona (distrito, barrio...) correspondiente a la dirección
+       - Añadir a cada registro del CSV coordenadas y códigos de zona (distrito, barrio...) correspondientes a la dirección
        - Calcular una agregación a partir del código de zona para una posterior mapificación
     """
 
@@ -42,7 +42,7 @@ class QvMapificacio(QObject):
             code {str} -- Codificación de los caracteres del CSV (default: {'ANSI'})
             delimiter {str} -- Caracter separador de campos en el CSV (default: {';'})
             numMostra {int} -- Número de filas de muestra a leer del CSV para hacer una estimación del número total
-                               de registros. Útil solo para la zonificación (default: {60})
+                               de registros. Útil solo para la geocodificación (default: {60})
         """
         super().__init__()
         self.fDades = self.fZones = fDades
@@ -117,28 +117,36 @@ class QvMapificacio(QObject):
     def cancelZonificacio(self) -> None:
         self.cancel = True
 
-    afegintZona = pyqtSignal(int)  # Porcentaje cubierto (0 - 100)
-    zonaAfegida = pyqtSignal(int)  # Tiempo transcurrido en zonificar (segundos)
+    percentatgeProces = pyqtSignal(int)  # Porcentaje cubierto (0 - 100)
+    procesAcabat = pyqtSignal(int)  # Tiempo transcurrido en zonificar (segundos)
     errorAdreca = pyqtSignal(dict) # Registro que no se pudo geocodificar
 
-    def selectZona(self, zona: str, prefixe: str = 'QVISTA_') -> bool:
-        self.zona = zona
+    def verifZones(self, zones: List[str], prefixe: str = 'QVISTA_') -> bool:
+        self.zones = zones
         self.prefixe = prefixe
-        if self.zona is None or self.zona not in MAP_ZONES.keys():
-            return False
+        self.valZones = []
+        self.campsZones = []
+        for zona in self.zones:
+            if zona not in MAP_ZONES_COORD.keys():
+                return False
         else:
-            self.valZona = MAP_ZONES[self.zona]
-        self.campZona = self.prefixe + self.valZona[0]
+            self.valZones.append(MAP_ZONES_COORD[zona])
+        for camp in self.valZones:
+            if isinstance(camp, str):
+                self.campsZones.append(self.prefixe + camp)
+            else:
+                for c in camp:
+                    self.campsZones.append(self.prefixe + c)
         return True
 
-    def zonificacio(self, campsAdreca: List[str], zona: str, prefixe: str = 'QVISTA_', fZones: str ='', substituir: bool = True,
-        afegintZona: pyqtSignal = None, zonaAfegida: pyqtSignal = None, errorAdreca: pyqtSignal = None) -> bool:
-        """Añade un código de zona a cada uno de los registros del CSV, a partir de los campos de dirección postal
+    def geocodificacio(self, campsAdreca: List[str], zones: List[str], prefixe: str = 'QVISTA_', fZones: str ='', substituir: bool = True,
+        percentatgeProces: pyqtSignal = None, procesAcabat: pyqtSignal = None, errorAdreca: pyqtSignal = None) -> bool:
+        """Añade coordenadas y códigos de zona a cada uno de los registros del CSV, a partir de los campos de dirección postal
 
         Arguments:
             campsAdreca {List[str]} -- Nombre de los campos que definen la dirección postal, en este orden:
                                        TipusVia, Variant, NumIni, LletraIni, NumFi, LletraFi (mínimo 2º y 3º)
-            zona {str} -- Nombre de la zona a añadir (ver MAP_ZONES en QvMapVars.py)
+            zona List[str] -- Nombre de las zonas a añadir (ver MAP_ZONES_COORD en QvMapVars.py)
         
         Keyword Arguments:
             prefixe {str} -- Prefijo del campo añadido que contendra el codigo de zona;
@@ -147,8 +155,8 @@ class QvMapificacio(QObject):
                             de entrada añadiendo el nombre de la zona (default: {''})
             substituir {bool} -- En el caso de que el campo de código de zona ya exista y tenga un valor,
                                  indica si se ha de machacar o no su contenido (default: {True})
-            afegintZona {pyqtSignal} -- Señal de progreso con el porcentaje transcurrido (default: {None})
-            zonaAfegida {pyqtSignal} -- Señal de finalización con tiempo transcurrido (default: {None})
+            percentatgeProces {pyqtSignal} -- Señal de progreso con el porcentaje transcurrido (default: {None})
+            procesAcabat {pyqtSignal} -- Señal de finalización con tiempo transcurrido (default: {None})
             errorAdreca {pyqtSignal} -- Señal con registro erróno (default: {None})
 
         Returns:
@@ -163,8 +171,8 @@ class QvMapificacio(QObject):
             self.msgError = "Error als camps d'adreça"
             return False
 
-        if not self.selectZona(zona, prefixe):
-            self.msgError = "Error paràmetre zona"
+        if not self.verifZones(zonaes, prefixe):
+            self.msgError = "Error paràmetre de zones"
             return False
 
         if fZones is None or fZones == '':
@@ -181,10 +189,10 @@ class QvMapificacio(QObject):
         else:
             nSignal = 1
 
-        if afegintZona is not None:
-            self.afegintZona.connect(afegintZona)
-        if zonaAfegida is not None:
-            self.zonaAfegida.connect(zonaAfegida)
+        if percentatgeProces is not None:
+            self.percentatgeProces.connect(percentatgeProces)
+        if procesAcabat is not None:
+            self.procesAcabat.connect(procesAcabat)
         if errorAdreca is not None:
             self.errorAdreca.connect(errorAdreca)
 
@@ -194,39 +202,52 @@ class QvMapificacio(QObject):
         # Fichero CSV de entrada
         with open(self.fDades, "r", encoding=self.code) as csvInput:
 
-            # Fichero CSV de salida zonificado
+            # Fichero CSV de salida geocodificado
             with open(self.fZones, "w", encoding=self.code) as csvOutput:
 
                 # Cabeceras
-                campoNuevo = False
                 data = csv.DictReader(csvInput, delimiter=self.delimiter)
-                if self.campZona not in self.fields:
-                    self.fields.append(self.campZona)
-                    campoNuevo = True
+
+                for campZona in self.campsZones:
+                    if campZona not in self.fields:
+                        self.fields.append(campZona)
 
                 writer = csv.DictWriter(csvOutput, delimiter=self.delimiter, fieldnames=self.fields, lineterminator='\n')
                 writer.writeheader()
 
-                # Lectura de filas y zonificación
+                # Lectura de filas y geocodificación
                 tot = num = 0
                 for row in data:
                     tot += 1
 
-                    if campoNuevo or self.substituir or row[self.campZona] is None or row[self.campZona] == '':
-                        val = self.db.geoCampCarrerNum(self.valZona[0],
-                              self.valorCampAdreca(row, 0), self.valorCampAdreca(row, 1), self.valorCampAdreca(row, 2),
-                              self.valorCampAdreca(row, 3), self.valorCampAdreca(row, 4), self.valorCampAdreca(row, 5))
-                        # Error en zonificación
-                        if val is None:
-                            self.errorAdreca.emit(dict(row))
-                            num += 1
-                        # Escritura de fila con campo
-                        row.update([(self.campZona, val)])
+                    val = self.db.geoCampsCarrerNum(self.campsZones,
+                            self.valorCampAdreca(row, 0), self.valorCampAdreca(row, 1), self.valorCampAdreca(row, 2),
+                            self.valorCampAdreca(row, 3), self.valorCampAdreca(row, 4), self.valorCampAdreca(row, 5))
+                    # Error en geocodificación
+                    if val is None:
+                        self.errorAdreca.emit(dict(row))
+                        num += 1
+                    # Escritura de fila con campos
+                    for campZona in self.campsZones:
+                        campoNuevo =  (campZona not in self.fields)
+                        if campoNuevo or self.substituir or row[campZona] is None or row[campZona] == '':
+                            row.update([(campZona, val[campZona])])
+
+                    # if campoNuevo or self.substituir or row[self.campZona] is None or row[self.campZona] == '':
+                    #     val = self.db.geoCampCarrerNum(self.valZona[0],
+                    #           self.valorCampAdreca(row, 0), self.valorCampAdreca(row, 1), self.valorCampAdreca(row, 2),
+                    #           self.valorCampAdreca(row, 3), self.valorCampAdreca(row, 4), self.valorCampAdreca(row, 5))
+                    #     # Error en geocodificación
+                    #     if val is None:
+                    #         self.errorAdreca.emit(dict(row))
+                    #         num += 1
+                    #     # Escritura de fila con campo
+                    #     row.update([(self.campZona, val)])
                     
                     writer.writerow(row)
                     # Informe de progreso cada 1% o cada fila si hay menos de 100
                     if self.rows > 0 and tot % nSignal == 0:
-                        self.afegintZona.emit(int(round(tot * 100 / self.rows)))
+                        self.percentatgeProces.emit(int(round(tot * 100 / self.rows)))
 
                     # Cancelación del proceso via slot -- SIN PROBAR
                     if self.cancel:
@@ -238,8 +259,8 @@ class QvMapificacio(QObject):
 
             # Informe de fin de proceso y segundos transcurridos
             if not self.cancel:
-                self.afegintZona.emit(100)
-            self.zonaAfegida.emit(fin - ini)
+                self.percentatgeProces.emit(100)
+            self.procesAcabat.emit(fin - ini)
             return True
 
     def calcSelect(self, llistaCamps: List[str] = []) -> str:
@@ -342,7 +363,7 @@ class QvMapificacio(QObject):
         self.campCalculat = campCalculat
         self.nomCapa = self.netejaString(nomCapa)
 
-        # Carga de capa de datos zonificados
+        # Carga de capa de datos geocodificados
         infoLyr = QgsVectorLayer(self.fZones, 'Info', 'ogr')
         infoLyr.setProviderEncoding(self.code)
         if not infoLyr.isValid():
@@ -458,9 +479,10 @@ if __name__ == "__main__":
         print('Muestra:', z.mostra)
 
         camps = ('', 'NOM_CARRER_GPL', 'NUM_I_GPL', '', 'NUM_F_GPL')
-        ok = z.zonificacio(camps, 'Barri',
-            afegintZona=lambda n: print('... Procesado', str(n), '% ...'),
+        zones = ('Coordenada', 'Barri')
+        ok = z.geocodificacio(camps, zones,
+            percentatgeProces=lambda n: print('... Procesado', str(n), '% ...'),
             errorAdreca=lambda f: print('Fila sin geocodificar -', f),
-            zonaAfegida=lambda n: print('Zona', z.zona, 'procesada en', str(n), 'segs. en ' + z.fZones + ' -', str(z.rows), 'registros,', str(z.errors), 'errores'))
+            procesAcabat=lambda n: print('Zonas', z.zones, 'procesadas en', str(n), 'segs. en ' + z.fZones + ' -', str(z.rows), 'registros,', str(z.errors), 'errores'))
         if not ok:
             print('ERROR:', z.msgError)
