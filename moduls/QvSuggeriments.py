@@ -61,7 +61,7 @@ class QvSuggeriments(QDialog):
         #Botons
         self.layoutBoto=QHBoxLayout()
         self.hSpacerL = QSpacerItem(80, 5, QSizePolicy.Minimum, QSizePolicy.Expanding)
-        self.acceptButton=QvPushButton('Acceptar',destacat=True)
+        self.acceptButton=QvPushButton('Enviar',destacat=True)
         self.acceptAction=acceptAction
         self.acceptButton.clicked.connect(self.acceptar)
         self.leTitle.textChanged.connect(lambda: self.acceptButton.setEnabled(self.leTitle.toPlainText()!=''))

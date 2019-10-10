@@ -238,7 +238,7 @@ class QvNouCataleg(QWidget):
     def clickTots(self):
         for x in self.botonsLaterals:
             x.setChecked(True)
-            
+        self.fav.setChecked(False)
         # self.tots.setChecked(False)
         self.mostraMapes()
         
