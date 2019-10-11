@@ -1596,6 +1596,7 @@ class QVista(QMainWindow, Ui_MainWindow):
                 self.lytMesuraGrafica.addWidget(self.lblMesuraArea)
                 
                 self.lytMesuraGrafica.addWidget(self.lwMesuresHist)
+                self.setMinimumWidth(350)
             def clear(self):
                 self.lwMesuresHist.clear()
             def addItem(self,item):
