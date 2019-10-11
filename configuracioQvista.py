@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 
 #Parametres configuració inicial
 versio="0.4"
@@ -26,6 +27,14 @@ arxiuInfoQVista=docdir+'InfoQVista.pdf'
 arxiuTmpAvis=dadesdir+'ultimAvisObert'
 arxiuTmpNews=dadesdir+'ultimaNewOberta'
 arxiuMapesRecents=dadesdir+'mapesRecents'
+
+
+#Per defecte desarem els arxius al directori home de l'usuari, si no ens indica una altra cosa
+# Un cop desi un arxiu, qVista recordarà el directori on l'ha desat i intentarà desar el següent allà
+try:
+    pathDesarPerDefecte=str(Path.home().resolve())
+except:
+    pathDesarPerDefecte='.'
 
 
 if not os.path.exists(QvTempdir):
