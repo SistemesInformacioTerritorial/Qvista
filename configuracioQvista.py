@@ -6,7 +6,10 @@ versio="0.4"
 titolFinestra = "qVista %s  Sistema d'Informació Territorial de Barcelona"%versio
 
 carpetaCataleg = "N:/9SITEB/Publicacions/qVista/Cataleg/Capes/"
-carpetaCatalegProjectesLlista = ["N:/9SITEB/Publicacions/qVista/Cataleg/Mapes publics/","N:/9SITEB/Publicacions/qVista/Cataleg/Mapes privats/"]
+#Definim per separat els directoris de projectes públics i privats, de manera que puguem comprovar en qualsevol moment si un directori és de projectes públics o privats
+carpetaCatalegProjectesPublics=["N:/9SITEB/Publicacions/qVista/Cataleg/Mapes publics/"]
+carpetaCatalegProjectesPrivats=["N:/9SITEB/Publicacions/qVista/Cataleg/Mapes privats/"]
+carpetaCatalegProjectesLlista = [*carpetaCatalegProjectesPublics,*carpetaCatalegProjectesPrivats]
 projecteInicial = 'mapesOffline/qVista default map.qgs'
 
 estatConnexio = "Xarxa municipal: Connectat"
