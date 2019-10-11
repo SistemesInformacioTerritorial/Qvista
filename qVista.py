@@ -1559,45 +1559,68 @@ class QVista(QMainWindow, Ui_MainWindow):
         class QvMesuraGrafica(QWidget):
             def __init__(self):
                 QWidget.__init__(self)
+                self.setWhatsThis(QvApp().carregaAjuda(self))
+                self.lytMesuraGrafica = QVBoxLayout()
+                self.lytMesuraGrafica.setAlignment(Qt.AlignTop)
+                self.setLayout(self.lytMesuraGrafica)
+                self.lytBotonsMesura = QHBoxLayout()
+
+                self.lytMesuraGrafica.addLayout(self.lytBotonsMesura)
+
+
+                self.bm1 = QvPushButton(flat=True) 
+                self.bm1.setIcon(QIcon('imatges/apuntar.png'))
+                self.bm4 = QvPushButton(flat=True)
+                # self.bs4.setCheckable(True)
+                self.bm4.setIcon(QIcon('imatges/trash-can-outline.png'))
+
+                self.lblDistanciaTotal = QLabel('Distància total:')
+                self.lblDistanciaTotal.setFixedWidth(230)
+                self.lblDistanciaTempsReal = QLabel('Distáncia últim tram:')
+                self.lblMesuraArea = QLabel('Àrea:')
+
+                
+                self.lwMesuresHist = QListWidget()
+                self.lwMesuresHist.setSelectionMode(QAbstractItemView.ExtendedSelection)
+
+                self.twResultatsMesura = QTableWidget()
+
+                self.bm1.clicked.connect(mesuraDistancies)
+                #Si eventualment ho movem a un altre arxiu això no funcionarà
+                self.bm4.clicked.connect(lambda: qV.esborrarMesures(True))
+
+                self.lytBotonsMesura.addWidget(self.bm1)
+                self.lytBotonsMesura.addWidget(self.bm4)
+                self.lytMesuraGrafica.addWidget(self.lblDistanciaTotal)
+                self.lytMesuraGrafica.addWidget(self.lblDistanciaTempsReal)
+                self.lytMesuraGrafica.addWidget(self.lblMesuraArea)
+                
+                self.lytMesuraGrafica.addWidget(self.lwMesuresHist)
+            def clear(self):
+                self.lwMesuresHist.clear()
+            def addItem(self,item):
+                self.lwMesuresHist.addItem(item)
+            def setDistanciaTotal(self,dist):
+                self.lblDistanciaTotal.setText('Distància total: ' + str(round(dist,2)) + ' m')
+            def setDistanciaTempsReal(self,dist):
+                self.lblDistanciaTempsReal.setText('Distáncia últim tram: ' + str(round(dist,2)) + ' m')
+            def setArea(self,area):
+                self.lblMesuraArea.setText('Àrea: ' + str(round(area,2)) + ' m²')
+            def addMesuresHist(self,mesura):
+                self.lwMesuresHist.addItem(str(round(mesura,2)))
+            def obrir(self):
+                self.bm1.animateClick()
+            def tancar(self):
+                self.bm4.animateClick()
+            def canviaVisibilitatDw(self,visibilitat):
+                if visibilitat:
+                    self.obrir()
+                else:
+                    self.tancar()
 
         self.wMesuraGrafica = QvMesuraGrafica()
         
-        self.wMesuraGrafica.setWhatsThis(QvApp().carregaAjuda(self))
-        self.lytMesuraGrafica = QVBoxLayout()
-        self.lytMesuraGrafica.setAlignment(Qt.AlignTop)
-        self.wMesuraGrafica.setLayout(self.lytMesuraGrafica)
-        self.lytBotonsMesura = QHBoxLayout()
-
-        self.lytMesuraGrafica.addLayout(self.lytBotonsMesura)
-
-
-        self.bm1 = QvPushButton(flat=True) 
-        self.bm1.setIcon(QIcon('imatges/apuntar.png'))
-        self.bm4 = QvPushButton(flat=True)
-        # self.bs4.setCheckable(True)
-        self.bm4.setIcon(QIcon('imatges/trash-can-outline.png'))
-
-        self.lblDistanciaTotal = QLabel('Distància total:')
-        self.lblDistanciaTotal.setFixedWidth(230)
-        self.lblDistanciaTempsReal = QLabel('Distáncia últim tram:')
-        self.lblMesuraArea = QLabel('Àrea:')
-
         
-        self.lwMesuresHist = QListWidget()
-        self.lwMesuresHist.setSelectionMode(QAbstractItemView.ExtendedSelection)
-
-        self.twResultatsMesura = QTableWidget()
-
-        self.bm1.clicked.connect(mesuraDistancies)
-        self.bm4.clicked.connect(lambda: self.esborrarMesures(True))
-
-        self.lytBotonsMesura.addWidget(self.bm1)
-        self.lytBotonsMesura.addWidget(self.bm4)
-        self.lytMesuraGrafica.addWidget(self.lblDistanciaTotal)
-        self.lytMesuraGrafica.addWidget(self.lblDistanciaTempsReal)
-        self.lytMesuraGrafica.addWidget(self.lblMesuraArea)
-        
-        self.lytMesuraGrafica.addWidget(self.lwMesuresHist)
         
         self.dwMesuraGrafica = QDockWidget("Mesura gràfica", self)
         self.dwMesuraGrafica.hide()
@@ -1607,6 +1630,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.addDockWidget( Qt.RightDockWidgetArea, self.dwMesuraGrafica )
         #self.dwMesuraGrafica.setStyleSheet('QDockWidget {color: #465A63; background-color: #909090;}')
         self.dwMesuraGrafica.hide()
+        self.dwMesuraGrafica.visibilityChanged.connect(self.wMesuraGrafica.canviaVisibilitatDw)
 
     def crearCsv(self):
         nomTriat = self.taulesAtributs.desarCSV(self.llegenda.currentLayer(), selected = True)
@@ -2337,16 +2361,19 @@ class QVista(QMainWindow, Ui_MainWindow):
         try:
             qV.canvas.scene().removeItem(qV.toolMesura.rubberband)
             qV.canvas.scene().removeItem(qV.toolMesura.rubberband2)
-            qV.lwMesuresHist.clear()
+            qV.wMesuraGrafica.clear()
+            # qV.lwMesuresHist.clear()
 
             for ver in qV.toolMesura.markers:
                 #if ver in  qV.canvas.scene().items():
                 qV.canvas.scene().removeItem(ver)
             # taulaAtributs('Total',layer)
-
-            qV.lblDistanciaTotal.setText('Distància total: ')
-            qV.lblMesuraArea.setText('Àrea: ')
-            qV.lblDistanciaTempsReal.setText('Distáncia últim tram: ')
+            qV.wMesuraGrafica.setDistanciaTotal(0)
+            qV.wMesuraGrafica.setArea(0)
+            qv.wMesuraGrafica.setDistanciaTempsReal(0)
+            # qV.lblDistanciaTotal.setText('Distància total: ')
+            # qV.lblMesuraArea.setText('Àrea: ')
+            # qV.lblDistanciaTempsReal.setText('Distáncia últim tram: ')
         except:
             pass
 
@@ -2896,8 +2923,8 @@ def mesuraDistancies():
     layer=qV.llegenda.currentLayer()
     qV.markers.hide()
     try:
-        self.esborrarSeleccio()
-        self.esborrarMesures()
+        qV.esborrarSeleccio()
+        qV.esborrarMesures()
     except:
         pass
 
@@ -2912,6 +2939,7 @@ def seleccioLliure():
     layer=qV.llegenda.currentLayer()
     qV.markers.hide()
     try:
+        #Això no hauria de funcionar
         self.esborrarSeleccio()
         self.esborrarMesures()
     except:

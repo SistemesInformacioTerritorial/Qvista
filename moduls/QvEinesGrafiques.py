@@ -237,7 +237,8 @@ class QvMesuraMultiLinia(QgsMapTool):
         self.lastLine = None
         self.hoverSartMarker = None
 
-        self.qV.lwMesuresHist.clear()
+        self.qV.wMesuraGrafica.clear()
+        # self.qV.lwMesuresHist.clear()
 
     def setOverlap(self,overlap):
         self.overlap = overlap
@@ -279,7 +280,8 @@ class QvMesuraMultiLinia(QgsMapTool):
         self.hoverSartMarker = False
         
         self.rubberband2.hide()
-        self.qV.lblDistanciaTempsReal.setText('Distáncia últim tram: 0 m')       
+        self.qV.wMesuraGrafica.setDistanciaTempsReal(0)
+        # self.qV.lblDistanciaTempsReal.setText('Distáncia últim tram: 0 m')       
 
     def canvasPressEvent(self, e):
                 
@@ -322,9 +324,13 @@ class QvMesuraMultiLinia(QgsMapTool):
             distancia = geomP.length()
             area = geomP.area()
 
-            self.qV.lwMesuresHist.addItem(str(round(self.lastLine.length(),2)))
-            self.qV.lblDistanciaTotal.setText('Distància total: ' + str(round(distancia,2)) + ' m')
-            self.qV.lblMesuraArea.setText('Àrea: ' + str(round(area,2)) + ' m²')
+            self.qV.wMesuraGrafica.addItem(str(round(self.lastLine.length(),2)))
+            self.qV.wMesuraGrafica.setDistanciaTotal(distancia)
+            self.qV.wMesuraGrafica.setArea(area)
+
+            # self.qV.lwMesuresHist.addItem(str(round(self.lastLine.length(),2)))
+            # self.qV.lblDistanciaTotal.setText('Distància total: ' + str(round(distancia,2)) + ' m')
+            # self.qV.lblMesuraArea.setText('Àrea: ' + str(round(area,2)) + ' m²')
 
             self.treuUltimtram()
 
@@ -342,16 +348,19 @@ class QvMesuraMultiLinia(QgsMapTool):
             distancia = poligono.length()
             if distancia <= 0:
                 distancia = 0
-                self.qV.lwMesuresHist.clear()
-                self.qV.lblMesuraArea.setText('Àrea: ')
+                self.qV.wMesuraGrafica.clear()
+                #
+
+                # self.qV.lwMesuresHist.clear()
+                # self.qV.lblMesuraArea.setText('Àrea: ')
                 firstMarker = True
 
                 for ver in self.markers:
                     self.canvas.scene().removeItem(ver)
 
                 self.markers = []
-
-            self.qV.lblDistanciaTotal.setText('Distància total: ' + str(round(distancia,2)) + ' m')
+            self.qV.wMesuraGrafica.setDistanciaTotal(distancia)
+            # self.qV.lblDistanciaTotal.setText('Distància total: ' + str(round(distancia,2)) + ' m')
             
             if distancia > 0 and (self.lastLine is not None and round(self.lastLine.length(),2) > 0):
                 """
@@ -359,8 +368,10 @@ class QvMesuraMultiLinia(QgsMapTool):
                 self.qV.twResultatsMesura.insertRow(rowPosition)
                 self.qV.twResultatsMesura.setItem(rowPosition , 0, QTableWidgetItem(str(round(distancia,2))))
                 """
-                self.qV.lwMesuresHist.addItem(str(round(self.lastLine.length(),2)))
-                self.qV.lblDistanciaTempsReal.setText('Distáncia últim tram: 0 m')
+                self.qV.wMesuraGrafica.addMesuresHist(self.lastLine.length())
+                self.qV.wMesuraGrafica.setDistanciaTempsReal(0)
+                # self.qV.lwMesuresHist.addItem(str(round(self.lastLine.length(),2)))
+                # self.qV.lblDistanciaTempsReal.setText('Distáncia últim tram: 0 m')
 
                 self.lastLine = QgsGeometry.fromPolylineXY([self.lastPoint, self.lastPoint])
 
@@ -397,7 +408,8 @@ class QvMesuraMultiLinia(QgsMapTool):
         distancia = self.lastLine.length()
         if distancia <= 0:
             distancia = 0
-        self.qV.lblDistanciaTempsReal.setText('Distáncia últim tram: ' + str(round(distancia,2)) + ' m')
+        self.qV.wMesuraGrafica.setDistanciaTempsReal(distancia)
+        # self.qV.lblDistanciaTempsReal.setText('Distáncia últim tram: ' + str(round(distancia,2)) + ' m')
         
 class QvMarcador (QgsVertexMarker):
     def __init__(self, canvas):
