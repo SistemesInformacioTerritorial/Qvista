@@ -14,7 +14,7 @@ iniciTempsModuls = time.time()
 from moduls.QvUbicacions import QvUbicacions
 from moduls.QvPrint import QvPrint
 from moduls.QvCanvas import QvCanvas
-from moduls.QvEinesGrafiques import QvSeleccioElement, QvSeleccioPerPoligon, QvSeleccioCercle, QvSeleccioPunt
+from moduls.QvEinesGrafiques import QvSeleccioElement, QvSeleccioPerPoligon, QvMesuraMultiLinia, QvSeleccioCercle, QvSeleccioPunt
 from moduls.QvStreetView import QvStreetView
 from moduls.QvLlegenda import QvLlegenda
 from moduls.QvAtributs import QvAtributs
@@ -167,6 +167,7 @@ class QVista(QMainWindow, Ui_MainWindow):
        
         # self.preparacioMapTips()
         self.preparacioImpressio()
+        self.preparacioMesura()
         # self.preparacioGrafiques()
         self.preparacioSeleccio()
         # self.preparacioEntorns()
@@ -185,6 +186,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         # Aquestes línies son necesaries per que funcionin bé els widgets de qGis, com ara la fitxa d'atributs
         if len(QgsGui.editorWidgetRegistry().factories()) == 0:
             QgsGui.editorWidgetRegistry().initEditors()
+        
         
         # Final del cronometratge d'arrancada
         endGlobal = time.time()
@@ -460,6 +462,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.bImprimir =  self.botoLateral(tamany = 25, accio=self.actImprimir)
         self.bTissores = self.botoLateral(tamany = 25, accio=self.actTissores)
         self.bSeleccioGrafica = self.botoLateral(tamany = 25, accio=self.actSeleccioGrafica)
+        self.bMesuraGrafica = self.botoLateral(tamany = 25, accio=self.actMesuraGrafica)
         #self.bReload = self.botoLateral(tamany=25, accio=self.actReload)
 
         spacer2 = QSpacerItem(1000, 1000, QSizePolicy.Expanding,QSizePolicy.Maximum)
@@ -1197,6 +1200,13 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.actSeleccioGrafica.setIcon(icon)
         self.actSeleccioGrafica.triggered.connect(self.seleccioGrafica)
 
+        #Eina de mesura -nexus-
+        self.actMesuraGrafica = QAction("Mesura gràfica del mapa", self)
+        self.actMesuraGrafica.setStatusTip("Mesura gràfica del mapa")
+        icon=QIcon('imatges/regle.png')
+        self.actMesuraGrafica.setIcon(icon)
+        self.actMesuraGrafica.triggered.connect(self.mesuraGrafica)
+        
         self.actReload = QAction('Recàrrega del mapa',self)
         self.actReload.setStatusTip('Recàrrega del mapa')
         self.actReload.setIcon(QIcon('Imatges/reload.png'))
@@ -1566,10 +1576,92 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         self.idsElementsSeleccionats = []
 
+    #Eina de mesura sobre el mapa -nexus-
+    def preparacioMesura(self):
+
+        # Disseny del interface
+        class QvMesuraGrafica(QWidget):
+            def __init__(self):
+                QWidget.__init__(self)
+                self.setWhatsThis(QvApp().carregaAjuda(self))
+                self.lytMesuraGrafica = QVBoxLayout()
+                self.lytMesuraGrafica.setAlignment(Qt.AlignTop)
+                self.setLayout(self.lytMesuraGrafica)
+                self.lytBotonsMesura = QHBoxLayout()
+
+                self.lytMesuraGrafica.addLayout(self.lytBotonsMesura)
+
+
+                self.bm1 = QvPushButton(flat=True) 
+                self.bm1.setIcon(QIcon('imatges/apuntar.png'))
+                self.bm4 = QvPushButton(flat=True)
+                # self.bs4.setCheckable(True)
+                self.bm4.setIcon(QIcon('imatges/trash-can-outline.png'))
+
+                self.lblDistanciaTotal = QLabel('Distància total:')
+                self.lblDistanciaTotal.setFixedWidth(230)
+                self.lblDistanciaTempsReal = QLabel('Distáncia últim tram:')
+                self.lblMesuraArea = QLabel('Àrea:')
+
+                
+                self.lwMesuresHist = QListWidget()
+                self.lwMesuresHist.setSelectionMode(QAbstractItemView.ExtendedSelection)
+
+                self.twResultatsMesura = QTableWidget()
+
+                self.bm1.clicked.connect(mesuraDistancies)
+                #Si eventualment ho movem a un altre arxiu això no funcionarà
+                self.bm4.clicked.connect(lambda: qV.esborrarMesures(True))
+
+                self.lytBotonsMesura.addWidget(self.bm1)
+                self.lytBotonsMesura.addWidget(self.bm4)
+                self.lytMesuraGrafica.addWidget(self.lblDistanciaTotal)
+                self.lytMesuraGrafica.addWidget(self.lblDistanciaTempsReal)
+                self.lytMesuraGrafica.addWidget(self.lblMesuraArea)
+                
+                self.lytMesuraGrafica.addWidget(self.lwMesuresHist)
+                self.setMinimumWidth(350)
+            def clear(self):
+                self.lwMesuresHist.clear()
+            def addItem(self,item):
+                self.lwMesuresHist.addItem(item)
+            def setDistanciaTotal(self,dist):
+                self.lblDistanciaTotal.setText('Distància total: ' + str(round(dist,2)) + ' m')
+            def setDistanciaTempsReal(self,dist):
+                self.lblDistanciaTempsReal.setText('Distáncia últim tram: ' + str(round(dist,2)) + ' m')
+            def setArea(self,area):
+                self.lblMesuraArea.setText('Àrea: ' + str(round(area,2)) + ' m²')
+            def addMesuresHist(self,mesura):
+                self.lwMesuresHist.addItem(str(round(mesura,2)))
+            def obrir(self):
+                self.bm1.animateClick()
+            def tancar(self):
+                self.bm4.animateClick()
+            def canviaVisibilitatDw(self,visibilitat):
+                if visibilitat:
+                    self.obrir()
+                else:
+                    self.tancar()
+
+        self.wMesuraGrafica = QvMesuraGrafica()
+        
+        
+        
+        self.dwMesuraGrafica = QDockWidget("Mesura gràfica", self)
+        self.dwMesuraGrafica.hide()
+        self.dwMesuraGrafica.setAllowedAreas( Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea )
+        self.dwMesuraGrafica.setWidget( self.wMesuraGrafica)
+        self.dwMesuraGrafica.setContentsMargins ( 2, 2, 2, 2 )
+        self.addDockWidget( Qt.RightDockWidgetArea, self.dwMesuraGrafica )
+        #self.dwMesuraGrafica.setStyleSheet('QDockWidget {color: #465A63; background-color: #909090;}')
+        self.dwMesuraGrafica.hide()
+        self.dwMesuraGrafica.visibilityChanged.connect(self.wMesuraGrafica.canviaVisibilitatDw)
+
     def crearCsv(self):
         nomTriat = self.taulesAtributs.desarCSV(self.llegenda.currentLayer(), selected = True)
         self.finestraCSV = QvLectorCsv(nomTriat)
         self.finestraCSV.show()
+
 
     def calcularSeleccio(self):
         layer = self.llegenda.currentLayer()
@@ -1616,6 +1708,8 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.layerActiu = self.llegenda.currentLayer()        
         self.lwFieldsSelect.clear()
         self.esborrarSeleccio(True)
+        self.esborrarMesures(True)
+        
         if self.layerActiu is not None:
             self.lblCapaSeleccionada.setText("Capa activa: "+ self.layerActiu.name())
             if self.layerActiu.type() == QgsMapLayer.VectorLayer:
@@ -1632,6 +1726,10 @@ class QVista(QMainWindow, Ui_MainWindow):
 
     def seleccioGrafica(self):
         self.dwSeleccioGrafica.show()
+        self.canviLayer()
+
+    def mesuraGrafica(self):
+        self.dwMesuraGrafica.show()
         self.canviLayer()
     
     def reload(self):
@@ -1663,6 +1761,7 @@ class QVista(QMainWindow, Ui_MainWindow):
             pass
         self.favorit=not self.favorit
         self.widgetAssociat.setFavorit(self.favorit)
+
     def helpQVista(self): #Ara no es fa servir, però en el futur es pot utilitzar per saber què és un element
         QWhatsThis.enterWhatsThisMode()
         pass
@@ -2276,7 +2375,30 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         try:
             qV.canvas.scene().removeItem(qV.toolSelect.rubberband)
+        except:
+            pass
+
+    def esborrarMesures(self, tambePanCanvas = True):
+
+        if tambePanCanvas:
+            self.canvas.panCanvas()
+
+        try:
+            qV.canvas.scene().removeItem(qV.toolMesura.rubberband)
+            qV.canvas.scene().removeItem(qV.toolMesura.rubberband2)
+            qV.wMesuraGrafica.clear()
+            # qV.lwMesuresHist.clear()
+
+            for ver in qV.toolMesura.markers:
+                #if ver in  qV.canvas.scene().items():
+                qV.canvas.scene().removeItem(ver)
             # taulaAtributs('Total',layer)
+            qV.wMesuraGrafica.setDistanciaTotal(0)
+            qV.wMesuraGrafica.setArea(0)
+            qv.wMesuraGrafica.setDistanciaTempsReal(0)
+            # qV.lblDistanciaTotal.setText('Distància total: ')
+            # qV.lblMesuraArea.setText('Àrea: ')
+            # qV.lblDistanciaTempsReal.setText('Distáncia últim tram: ')
         except:
             pass
 
@@ -2818,12 +2940,29 @@ class QVista(QMainWindow, Ui_MainWindow):
 #             return QProxyStyle.pixelMetric(self, QStyle_PixelMetric, option, widget)
 
 # funcions globals QVista --------------------------------------------------------
+def mesuraDistancies():
+    layer=qV.llegenda.currentLayer()
+    qV.markers.hide()
+    try:
+        qV.esborrarSeleccio()
+        qV.esborrarMesures()
+    except:
+        pass
+
+    qV.actionMapMesura = QAction('Mesura dibuixant', qV)
+    qV.toolMesura = QvMesuraMultiLinia(qV,qV.canvas, layer)
+
+    qV.toolMesura.setAction(qV.actionMapMesura)
+    qV.canvas.setMapTool(qV.toolMesura)
+    # taulaAtributs('Seleccionats', layer)
 
 def seleccioLliure():
     layer=qV.llegenda.currentLayer()
     qV.markers.hide()
     try:
-        qV.canvas.scene().removeItem(qV.toolSelect.rubberband)
+        #Això no hauria de funcionar
+        self.esborrarSeleccio()
+        self.esborrarMesures()
     except:
         pass
 
@@ -2843,7 +2982,11 @@ def seleccioLliure():
     else:
         missatgeCaixa('Cal tenir seleccionat un nivell per poder fer una selecció.','Marqueu un nivell a la llegenda sobre el que aplicar la consulta.')
 
-def seleccioClick():    
+def seleccioClick():
+    try:
+        self.esborrarMesures()
+    except:
+        pass    
     tool = QvSeleccioElement(qV.canvas, qV.llegenda)
     qV.canvas.setMapTool(tool)
     # qV.taulesAtributs.taula.toggleSelection(True)

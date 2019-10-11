@@ -44,6 +44,7 @@ class QvCanvas(QgsMapCanvas):
                     self.pare.ferGran()
                 try:
                     self.pare.esborrarSeleccio(tambePanCanvas = False)
+                    self.pare.esborrarMesures(tambePanCanvas = False)
                     self.tool.fitxaAtributs.close()
                 except:
                     pass
@@ -117,6 +118,7 @@ class QvCanvas(QgsMapCanvas):
 
             try:
                 self.pare.esborrarSeleccio(tambePanCanvas = False)
+                self.pare.esborrarMesures(tambePanCanvas = False)
                 self.tool.fitxaAtributs.close()
             except:
                 pass

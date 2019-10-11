@@ -1,6 +1,7 @@
 from moduls.QvImports import *
 from moduls.QvAtributs import QvFitxesAtributs
 import math
+from PyQt5 import QtGui
 # from qgis.core import QgsFeatureRequest, QgsPointXY, QgsGeometry, QgsRectangle
 # from qgis.gui import QgsMapTool, QgsMapToolEmitPoint, QgsMapToolZoom, QgsMapToolPan, QgsRubberBand, QgsAttributeDialog
 # from qgis.PyQt.QtWidgets import QMessageBox
@@ -179,14 +180,8 @@ class QvSeleccioPerPoligon(QgsMapToolEmitPoint):
 
     def canvasPressEvent(self, e):
         self.point = self.toMapCoordinates(e.pos())
-        # self.markers = QgsVertexMarker(self.canvas)
-        # self.markers.setCenter(self.point)
-        # self.markers.setColor(QtGui.QColor(0,255,0))q
-        # self.markers.setIconSize(5)
-        # self.markers.setIconType(QgsVertexMarker.ICON_BOX)
-        # self.markers.setPenWidth(3)
+        
         self.points.append(QgsPointXY(self.point))
-        self.isEmittingPoint = True
         self.selectPoly()
 
     def selectPoly(self):
@@ -214,6 +209,221 @@ class QvSeleccioPerPoligon(QgsMapToolEmitPoint):
             
 
             self.qV.lblNombreElementsSeleccionats.setText('Elements seleccionats: '+str(len(set(self.qV.idsElementsSeleccionats))))
+
+class QvMesuraMultiLinia(QgsMapTool):
+    def __init__(self, qV, canvas, layer):
+        self.canvas = canvas
+        self.layer = layer
+        self.qV = qV
+        #dock = QgsAdvancedDigitizingDockWidget(self.canvas)
+        #QgsMapToolAdvancedDigitizing.__init__(self, self.canvas, dock)
+        QgsMapTool.__init__(self, self.canvas)
+        self.rubberband = QgsRubberBand(self.canvas)
+        self.rubberband.setColor(QColor(36,97,50))
+        self.rubberband.setWidth(4)
+        #self.rubberband.setIconType(QgsVertexMarker.ICON_CIRCLE)
+
+        self.rubberband2 = QgsRubberBand(self.canvas)
+        self.rubberband2.setColor(QColor(36,97,50))
+        self.rubberband2.setWidth(4)
+
+        self.point = None
+        self.lastPoint = None
+        self.points = []
+        self.overlap = False
+        self.markers = []
+        self.startMarker = None
+        self.startPoint = None
+        self.lastLine = None
+        self.hoverSartMarker = None
+
+        self.qV.wMesuraGrafica.clear()
+        # self.qV.lwMesuresHist.clear()
+
+    def setOverlap(self,overlap):
+        self.overlap = overlap
+
+    def qpointsDistance(self, p, q):
+        dx = p.x() - q.x()     
+        dy = p.y() - q.y()     
+        dist = math.sqrt( dx*dx + dy*dy )
+        return dist
+
+    def canvasDoubleClickEvent(self, e):
+        print('Tancant polygon')
+    
+    def canvasMoveEvent(self, e):
+        self.lastPoint = self.toMapCoordinates(e.pos())
+        startPos = None
+
+        if self.point is not None:
+            startPos = self.toCanvasCoordinates(self.startPoint)
+            distance = self.qpointsDistance(e.pos(), startPos)
+            if distance < 9:
+                if len(self.points) > 2:
+                    self.hoverSartMarker = True
+                    self.startMarker.mouseMoveOver()
+                    self.showlastLine(self.startPoint)
+                else:
+                    self.hoverSartMarker = False
+                    self.showlastLine()
+            else:
+                self.hoverSartMarker = False
+                self.startMarker.mouseOverRelease()
+                self.showlastLine()
+
+
+        #if self.point != None:
+    def treuUltimtram(self):
+        self.point = None
+        self.points = []
+        self.hoverSartMarker = False
+        
+        self.rubberband2.hide()
+        self.qV.wMesuraGrafica.setDistanciaTempsReal(0)
+        # self.qV.lblDistanciaTempsReal.setText('Distáncia últim tram: 0 m')       
+
+    def canvasPressEvent(self, e):
+                
+        
+        if e.button() == Qt.RightButton:
+            self.treuUltimtram()
+            
+        else:
+            if self.hoverSartMarker:
+                self.point = self.startPoint
+                self.points.append(QgsPointXY(self.point))
+
+                self.tancarPoligon()
+
+            else:
+                self.point = self.toMapCoordinates(e.pos())
+                self.points.append(QgsPointXY(self.point))
+                
+                self.selectPoly(e)
+                print('Afegir tram')
+
+
+    def tancarPoligon(self):
+        try:
+            
+            point = QPointF()
+            # create  float polygon --> construcet out of 'point'
+            list_polygon = QPolygonF()
+
+            for x in self.points:
+                # since there is no distinction between x and y values we only want every second value 
+                    list_polygon.append(x.toQPointF())
+            
+            geomP = QgsGeometry.fromQPolygonF(list_polygon)
+            
+            poligono = QgsGeometry.fromPolylineXY(self.points)
+            self.rubberband.setToGeometry(poligono,self.layer)
+            self.rubberband.show()
+
+            distancia = geomP.length()
+            area = geomP.area()
+
+            self.qV.wMesuraGrafica.addItem(str(round(self.lastLine.length(),2)))
+            self.qV.wMesuraGrafica.setDistanciaTotal(distancia)
+            self.qV.wMesuraGrafica.setArea(area)
+
+            # self.qV.lwMesuresHist.addItem(str(round(self.lastLine.length(),2)))
+            # self.qV.lblDistanciaTotal.setText('Distància total: ' + str(round(distancia,2)) + ' m')
+            # self.qV.lblMesuraArea.setText('Àrea: ' + str(round(area,2)) + ' m²')
+
+            self.treuUltimtram()
+
+        except Exception as e:
+            print('Error al tancar el polygon')
+            print(e.__str__)
+
+    def selectPoly(self, e):
+        try:
+
+            firstMarker = False
+            poligono=QgsGeometry.fromPolylineXY(self.points)
+            self.rubberband.setToGeometry(poligono,self.layer)
+            self.rubberband.show()
+            distancia = poligono.length()
+            if distancia <= 0:
+                distancia = 0
+                self.qV.wMesuraGrafica.clear()
+                #
+
+                # self.qV.lwMesuresHist.clear()
+                # self.qV.lblMesuraArea.setText('Àrea: ')
+                firstMarker = True
+
+                for ver in self.markers:
+                    self.canvas.scene().removeItem(ver)
+
+                self.markers = []
+            self.qV.wMesuraGrafica.setDistanciaTotal(distancia)
+            # self.qV.lblDistanciaTotal.setText('Distància total: ' + str(round(distancia,2)) + ' m')
+            
+            if distancia > 0 and (self.lastLine is not None and round(self.lastLine.length(),2) > 0):
+                """
+                rowPosition = self.qV.twResultatsMesura.rowCount()
+                self.qV.twResultatsMesura.insertRow(rowPosition)
+                self.qV.twResultatsMesura.setItem(rowPosition , 0, QTableWidgetItem(str(round(distancia,2))))
+                """
+                self.qV.wMesuraGrafica.addMesuresHist(self.lastLine.length())
+                self.qV.wMesuraGrafica.setDistanciaTempsReal(0)
+                # self.qV.lwMesuresHist.addItem(str(round(self.lastLine.length(),2)))
+                # self.qV.lblDistanciaTempsReal.setText('Distáncia últim tram: 0 m')
+
+                self.lastLine = QgsGeometry.fromPolylineXY([self.lastPoint, self.lastPoint])
+
+            m = QvMarcador(self.canvas)
+
+            m.setColor(QColor(36,97,50))
+            m.setFillColor(QColor(36,97,50))
+            m.setIconSize(9)
+            m.setIconType(QvMarcador.ICON_CIRCLE)
+            m.setPenWidth(5)
+
+            m.setCenter(QgsPointXY(self.point))
+
+            if firstMarker:
+                self.startMarker = m
+                self.startPoint = QgsPointXY(self.point)
+
+                #point = QgsPoint(self.canvas.getCoordinateTransform().toMapCoordinates(x, y))
+
+            self.markers.append(m)
+            
+        except Exception as e:
+            print('ERROR. Error al mesurar ')
+        
+    
+    def showlastLine(self, snapingPoint = None):
+        if snapingPoint is None:
+            listaPoligonos=[self.point, self.lastPoint]
+        else:
+            listaPoligonos=[self.point, snapingPoint]
+        self.lastLine = QgsGeometry.fromPolylineXY(listaPoligonos)
+        self.rubberband2.setToGeometry(self.lastLine,self.layer)
+        self.rubberband2.show()
+        distancia = self.lastLine.length()
+        if distancia <= 0:
+            distancia = 0
+        self.qV.wMesuraGrafica.setDistanciaTempsReal(distancia)
+        # self.qV.lblDistanciaTempsReal.setText('Distáncia últim tram: ' + str(round(distancia,2)) + ' m')
+        
+class QvMarcador (QgsVertexMarker):
+    def __init__(self, canvas):
+        self.canvas = canvas
+        QgsVertexMarker.__init__(self, self.canvas)
+
+    def mouseMoveOver(self):
+        self.setColor(QColor(199, 239, 61))
+        self.setFillColor(QColor(199, 239, 61))
+
+
+    def mouseOverRelease(self):
+        self.setColor(QColor(36,97,50))
+        self.setFillColor(QColor(36,97,50))
 
 
 class QvSeleccioElement(QgsMapTool):
