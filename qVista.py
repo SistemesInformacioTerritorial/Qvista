@@ -1599,7 +1599,7 @@ class QVista(QMainWindow, Ui_MainWindow):
                 self.bm4.setIcon(QIcon('imatges/trash-can-outline.png'))
 
                 self.lblDistanciaTotal = QLabel('Distància total:')
-                self.lblDistanciaTotal.setFixedWidth(230)
+                # self.lblDistanciaTotal.setFixedWidth(230)
                 self.lblDistanciaTempsReal = QLabel('Distáncia últim tram:')
                 self.lblMesuraArea = QLabel('Àrea:')
 
