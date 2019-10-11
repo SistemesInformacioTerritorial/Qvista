@@ -825,7 +825,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.mapeta.setParent(self.canvas)
         self.mapeta.move(20,20)
         self.mapeta.show()
-        # self.dwMapeta = QvDockWidget("Mapa de situació", self)
+        # self.dwMapeta = QvDockWidget("4situació", self)
         # self.dwMapeta.setMinimumWidth(180)
         # self.dwMapeta.setMaximumWidth(180)
         # self.dwMapeta.setMaximumHeight(200)
@@ -1237,9 +1237,6 @@ class QVista(QMainWindow, Ui_MainWindow):
         # self.actSeleccioClick.setIcon(icon)
         self.actDisgregarDirele.setStatusTip("Disgregar Fichero Direcciones")
         self.actDisgregarDirele.triggered.connect(disgregarDirele)
-
-
-
 
         self.actEsborrarSeleccio = QAction("Esborrar seleccio", self)
         self.actEsborrarSeleccio.setStatusTip("Esborrar seleccio")
@@ -3616,8 +3613,8 @@ def main(argv):
         ok = qVapp.logInici()            # Por defecto: family='QVISTA', logname='DESKTOP'
         if not ok:
             print('ERROR LOG >>', qVapp.logError())
-            ok = qVapp.logRegistre('Capa1')
-            ok = qVapp.logRegistre('Atributs')
+            # ok = qVapp.logRegistre('Capa1')
+            # ok = qVapp.logRegistre('Atributs')
 
         
 
