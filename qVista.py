@@ -553,6 +553,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.leTitolProjecte.hide()
         self.lblTitolProjecte.setText(self.leTitolProjecte.text())
         self.project.setTitle(self.leTitolProjecte.text())
+        self.titolProjecte=self.leTitolProjecte.text()
         if self.titolAnterior!=self.leTitolProjecte.text(): 
             self.setDirtyBit()
     def setDirtyBit(self,bit=True):
@@ -3049,8 +3050,13 @@ def guardarProjecte():
 def guardarDialegProjecte():
     #variable definida al configuracioQvista
     global pathDesarPerDefecte
-    nfile,_ = QFileDialog.getSaveFileName(None,"Guardar Projecte Qgis", pathDesarPerDefecte+'/'+qV.titolProjecte, "Projectes Qgis (*.qgs)")
-    pathDesarPerDefecte=str(Path(nfile).parent)
+    trans=str.maketrans('<>:"/\|?*','---------')
+
+    pathOnDesem=pathDesarPerDefecte+'/'+qV.titolProjecte.translate(trans).replace('-','')
+    pathOnDesem=pathOnDesem.replace('.','') #Fora punts, per si de cas, ja que Windows li dóna massa importància
+    pathOnDesem=pathOnDesem.strip() #Fora espais al principi (que no n'hi haurà) i al final (que poden haver-n'hi)
+    nfile,_ = QFileDialog.getSaveFileName(None,"Guardar Projecte Qgis", pathOnDesem, "Projectes Qgis (*.qgs)")
+    
     if nfile=='': return False
     elif nfile.endswith('mapesOffline/qVista default map.qgs') or nfile.startswith( 'n:/siteb/apl/pyqgis/qvista' ) or nfile.startswith( 'n:/9siteb/publicacions/qvista' ):
         msgBox = QMessageBox()
@@ -3067,6 +3073,7 @@ def guardarDialegProjecte():
     qV.lblProjecte.setText(qV.project.baseName())
     qV.botoDesarProjecte.setIcon(qV.iconaSenseCanvisPendents)
     qV.canvisPendents = False
+    pathDesarPerDefecte=str(Path(nfile).parent) #Ens desem el nou directori
     return True
     #print(scale)
 
