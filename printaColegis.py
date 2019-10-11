@@ -76,7 +76,7 @@ def imprimirPlanol(colegi, cole, meses, x_min, y_min, x_max, y_max, rotacion, te
             settings = QgsLayoutExporter.ImageExportSettings()
             settings.dpi = 300
 
-            fitxerSortida='d:/sortida_'+timestamp+'.PNG'
+            fitxerSortinda='d:/sortida_'+timestamp+'.PNG'
             result = exporter.exportToImage(fitxerSortida, settings)
     
         #Obra el document si està marcat checkObrirResultat
@@ -120,8 +120,8 @@ with qgisapp() as app:
         textFiltre2 = 'CODI_COLE'+"='"+cole+"'"
         layerSeccions.setSubsetString(textFiltre) 
         layer.setSubsetString(textFiltre2)    
-        coles = ['00816','00811']
-        if cole in coles:
-            imprimirPlanol(colegi, cole, meses, x_min, y_min, x_max, y_max, 0, plantillaMapa , 'd:/EUREKA.pdf', 'PDF')
+        # coles = ['00816','00811']
+        # if cole in coles:
+        imprimirPlanol(colegi, cole, meses, x_min, y_min, x_max, y_max, 0, plantillaMapa , 'd:/EUREKA.pdf', 'PDF')
     
     canvas.show()
