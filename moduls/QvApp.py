@@ -8,6 +8,7 @@ from moduls.QvSingleton import Singleton
 from moduls.QvPythonRunner import QvPythonRunner
 from moduls.QvGithub import QvGithub
 from moduls.QvSqlite import QvSqlite
+from PyQt5.QtWidgets import QApplication
 from pathlib import Path
 import sys
 import getpass
@@ -237,7 +238,9 @@ class QvApp(Singleton):
         except Exception as e:
             print(str(e))
             return ''
-
+    def zoomFactor(self):
+        zoomFactor=QApplication.desktop().screen().logicalDpiX()/96
+        return zoomFactor
     # Metodos db QVISTA
 
     def dbLogConnexio(self):

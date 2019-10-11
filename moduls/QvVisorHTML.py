@@ -6,6 +6,7 @@ from PyQt5 import QtCore, QtWidgets
 from PyQt5.QtGui import QColor, QKeySequence
 from moduls.QvConstants import QvConstants
 from moduls.QvPushButton import QvPushButton
+from moduls.QvApp import QvApp
 
 class QvVisorHTML(QDialog):
     '''Diàleg per visualitzar les notícies (que, per extensió, podem usar sempre que vulguem per visualitzar arxius HTML)'''
@@ -95,6 +96,7 @@ class QvVisorHTML(QDialog):
         # self.ombraHeader.setEnabled(True)
 
         self.setWindowTitle("qVista - Noticies")
+        self.caixaText.setZoomFactor(QvApp().zoomFactor())
         self.resize(640, 480)
         self.oldPos = self.pos()
         # QvConstants.afegeixOmbraWidget(self)
