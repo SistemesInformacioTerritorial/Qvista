@@ -45,6 +45,7 @@ from moduls.QvDocumentacio import QvDocumentacio
 from moduls.QvNouCataleg import QvNouCataleg
 from moduls.QvFavorits import QvFavorits
 from moduls.QvCatalegCapes import QvCatalegCapes
+from moduls.QvSabiesQue import QvSabiesQue
 # import re
 import csv
 import os
@@ -3647,6 +3648,10 @@ def main(argv):
             avisos=QvAvis()
         except:
             print('no es pot accedir als avisos')
+        try:
+            sabiesque=QvSabiesQue(qV)
+        except:
+            print('No hem pogut mostrar el "sabies que..."')
         qVapp.logRegistre('LOG_TEMPS', qV.lblTempsArrencada.text())
         app.aboutToQuit.connect(qV.gestioSortida)
 
