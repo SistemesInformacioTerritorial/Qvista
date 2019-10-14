@@ -25,6 +25,7 @@ _TRANS = str.maketrans('ÁÉÍÓÚáéíóúÀÈÌÒÙàèìòùÂÊÎÔÛâêî
 
 RUTA_LOCAL = 'C:/temp/qVista/dades/'
 RUTA_DADES = 'D:/qVista/Codi/Dades/'
+CAMP_QVISTA = 'QVISTA_'
 
 class QvMapificacio(QObject):
     """Clase que, a partir de un CSV con campos de dirección postal es capaz de:
@@ -32,7 +33,7 @@ class QvMapificacio(QObject):
        - Calcular una agregación a partir del código de zona para una posterior mapificación
     """
 
-    def __init__(self, fDades: str, code: str = 'ANSI', delimiter: str = ';', prefixe: str = 'QVISTA_', numMostra: int = 60):
+    def __init__(self, fDades: str, code: str = 'ANSI', delimiter: str = ';', prefixe: str = CAMP_QVISTA, numMostra: int = 60):
         """Abre y prepara el fichero CSV para la mapificación
         
         Arguments:
@@ -42,7 +43,7 @@ class QvMapificacio(QObject):
             code {str} -- Codificación de los caracteres del CSV (default: {'ANSI'})
             delimiter {str} -- Caracter separador de campos en el CSV (default: {';'})
             prefixe {str} -- Prefijo del campo añadido que contendra el codigo de zona;
-                             el sufijo será el nombre de la zona escogida (default: {'QVISTA_'})
+                             el sufijo será el nombre de la zona escogida (default: {CAMP_QVISTA})
             numMostra {int} -- Número de filas de muestra a leer del CSV para hacer una estimación del número total
                                de registros. Útil solo para la geocodificación (default: {60})
         """
@@ -59,7 +60,7 @@ class QvMapificacio(QObject):
         self.msgError = ''
         self.cancel = False
         self.iniDades()
-        self.db = QvSqlite()
+        self.db = None
 
     def iniDades(self) -> None:
         if not os.path.isfile(self.fDades):
@@ -164,6 +165,8 @@ class QvMapificacio(QObject):
             bool -- True si ha ido bien, False si hay errores (mensaje en self.msgError)
 
         """
+        if self.db is None:
+            self.db = QvSqlite()
         self.msgError = ''
 
         if self.verifCampsAdreca(campsAdreca):
@@ -303,6 +306,7 @@ class QvMapificacio(QObject):
             return False
         return True
 
+    
     def agregacio(self, llegenda, nomCapa: str, zona: str, tipusAgregacio: str,
         campCalculat: str = 'RESULTAT', campAgregat: str = '', tipusDistribucio: str = "Total", filtre: str = '', numDecimals: int = -1,
         numCategories: int = 4, modeCategories: str = "Endreçat", colorBase: str ='Blau', format: str = '%1 - %2',
@@ -406,7 +410,7 @@ class QvMapificacio(QObject):
         zonaCamps = []
         for field in zonaLyr.fields():
             name = field.name().upper()
-            if not name.startswith('QVISTA_') and not name.startswith('OGC_'):
+            if not name.startswith(self.prefixe) and not name.startswith('OGC_'):
                 zonaCamps.append(name)
 
         # Creación de capa virtual que construye la agregación

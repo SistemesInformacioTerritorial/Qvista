@@ -3460,8 +3460,8 @@ def main(argv):
         ok = qVapp.logInici()            # Por defecto: family='QVISTA', logname='DESKTOP'
         if not ok:
             print('ERROR LOG >>', qVapp.logError())
-            ok = qVapp.logRegistre('Capa1')
-            ok = qVapp.logRegistre('Atributs')
+            # ok = qVapp.logRegistre('Capa1')
+            # ok = qVapp.logRegistre('Atributs')
 
         
 
