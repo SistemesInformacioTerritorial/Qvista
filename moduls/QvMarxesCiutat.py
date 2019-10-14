@@ -111,8 +111,14 @@ class MarxesCiutat(QDockWidget):
         
         QDesktopServices().openUrl(QUrl('c:/temp/tempQgis.qgs'))
         """
-    def mostrarGuia(self):
-        pass
+    def mostrarGuia(self):        
+        # QDesktopServices().openUrl(QUrl('N:/9SITEB/Publicacions/qVista/CATALEG/MAPES PRIVATS/Marxes de ciutat/PdfFitxes/12_El_Besos_el_Maresme.pdf'))
+        PDF = 'file:///' + 'N:/9SITEB/Publicacions/qVista/CATALEG/MAPES PRIVATS/Marxes de ciutat/PdfFitxes/2017-18-190228_Marxes_exploratories_A3.pdf'
+        self.w = QvPDF(PDF)
+        self.w.setGeometry(50, 50, 1200, 800)
+        self.w.setWindowTitle('Marxes exploratóries')
+        self.w.show()
+        
     def mostrarInstruccions(self):
         
         # QDesktopServices().openUrl(QUrl('N:/9SITEB/Publicacions/qVista/CATALEG/MAPES PRIVATS/Marxes de ciutat/PdfFitxes/12_El_Besos_el_Maresme.pdf'))
