@@ -28,6 +28,7 @@ class QvFormNovaMapificacio(QWidget):
 
         super().__init__(minimumWidth=360)
         self.llegenda = llegenda
+        self.fCSV = None
 
         self.setWindowFlags(Qt.Dialog | Qt.MSWindowsFixedSizeDialogHint)
         self.setWindowTitle('Afegir capa de mapificació')
@@ -48,7 +49,7 @@ class QvFormNovaMapificacio(QWidget):
         self.zona = QComboBox(self)
         self.zona.setEditable(False)
         self.zona.addItem('Selecciona zona…')
-        self.zona.addItems(MAP_ZONES.keys())
+        # self.zona.addItems(MAP_ZONES.keys())
         # self.zona.model().item(0).setEnabled(False)
 
         self.capa = QLineEdit(self)
@@ -122,22 +123,43 @@ class QvFormNovaMapificacio(QWidget):
         self.layout.addWidget(self.gSimb)
         self.layout.addWidget(self.buttons)
 
-    def nouArxiu(self, nItem):
-        self.zona.setCurrentIndex(nItem)
+    def borrarZones(self):
         self.tipus.setCurrentIndex(0)
+        self.zona.setCurrentIndex(0)
+        for n in range(1, self.zona.count()):
+            self.zona.removeItem(n)
 
     @pyqtSlot(str)
     def arxiuSeleccionat(self, nom):
-        n = 0
-        if nom != '':
-            fNom = os.path.splitext(os.path.basename(nom))[0]
-            nItems = self.zona.count()
-            for i in range(1, nItems):
-                item = self.zona.itemText(i)
-                if fNom.upper().endswith('_' + item.upper()):
-                    n = i
-                    break
-        self.nouArxiu(n)
+        if nom == '':
+            return
+        self.borrarZones()
+        self.fCSV = QvMapificacio(nom, numMostra=0)
+        num = 0
+        for zona, val in MAP_ZONES.items():
+            if self.fCSV.prefixe + val[0] in self.fCSV.fields:
+                self.zona.addItem(zona)
+                num = num + 1
+        if num == 0:
+            self.msgInfo("El fitxer " + nom + " no té cap camp de zona")
+            self.arxiu.lineEdit().clear()
+            self.arxiu.setFocus()
+            return
+        if num == 1:
+            self.zona.setCurrentIndex(1)
+            self.capa.setFocus()
+        else:
+            self.zona.setFocus()
+
+            # fNom = os.path.splitext(os.path.basename(nom))[0]
+            # nItems = self.zona.count()
+            # for i in range(1, nItems):
+            #     item = self.zona.itemText(i)
+            #     if fNom.upper().endswith('_' + item.upper()):
+            #         n = i
+            #         break
+        # self.zona.setCurrentIndex(nItem)
+        # self.tipus.setCurrentIndex(0)
 
     def msgInfo(self, txt):
         QMessageBox.information(self, 'Informació', txt)
@@ -170,16 +192,16 @@ class QvFormNovaMapificacio(QWidget):
         return ok
 
     def mapifica(self):
-        z = QvMapificacio(self.arxiu.filePath(), numMostra=0)
-        z.selectZona(self.zona.currentText())
-        ok = z.agregacio(self.llegenda, self.capa.text().strip(), self.tipus.currentText(), campAgregat=self.calcul.text().strip(),
-                         filtre=self.filtre.text().strip(), tipusDistribucio=self.distribucio.currentText(),
-                         modeCategories=self.metode.currentText(), numCategories=self.intervals.value(),
-                         colorBase=self.color.currentText())
+        if self.fCSV is None:
+            return "No hi ha cap fitxer seleccionat"
+        ok = self.fCSV.agregacio(self.llegenda, self.capa.text().strip(), self.zona.currentText(), self.tipus.currentText(),
+                                 campAgregat=self.calcul.text().strip(), filtre=self.filtre.text().strip(),
+                                 tipusDistribucio=self.distribucio.currentText(), modeCategories=self.metode.currentText(),
+                                 numCategories=self.intervals.value(), colorBase=self.color.currentText())
         if ok:
             return ''
         else: 
-            return z.msgError
+            return self.fCSV.msgError
 
     @pyqtSlot()
     def ok(self):
