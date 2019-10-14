@@ -88,20 +88,20 @@ class QvBrowser(QWidget):
         URLOSM='https://www.openstreetmap.org/#map=16/'
         if URLSV in urlStr:
             urlStr=urlStr.replace(URLSV,'')
-            x, y = urlStr.split(',')
+            y,x = urlStr.split(',')
         elif URLMAPS in urlStr:
             urlStr=urlStr.replace(URLMAPS,'')
             sp=urlStr.split(',')
-            x, y = sp[0], sp[1]
+            y, x = sp[0], sp[1]
             
         elif URLOSM in urlStr:
             #Fer el que toqui
             return
         else:
             return
-        x, y = float(x), float(y)
+        x,y = float(x), float(y)
         # self.svMogut.emit(x,y)
-        self.svMogut.emit(y,x)
+        self.svMogut.emit(x,y)
     
     def tancar(self):
         print('sortir')
