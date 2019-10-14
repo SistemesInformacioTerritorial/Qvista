@@ -1,6 +1,7 @@
 from moduls.QvImports import *
 from moduls.QvPDF import QvPDF
 from moduls.QvPushButton import QvPushButton
+from PyQt5.QtGui import QFont
 
 class MarxesCiutat(QDockWidget):
     def __init__(self, parent):
@@ -17,7 +18,16 @@ class MarxesCiutat(QDockWidget):
         self.setMaximumWidth(500)
         self.setMinimumWidth(500)
         lDocuments = QLabel('Documents generals del projecte')
-        lDocuments.setAlignment(Qt.AlignRight)
+        lDocuments.setAlignment(Qt.AlignCenter)
+        f = QFont()
+        f.setBold(True)
+        lDocuments.setFont(f)
+
+        lBarris = QLabel('Resultats de cada marxa')
+        lBarris.setAlignment(Qt.AlignCenter)
+        f = QFont()
+        f.setBold(True)
+        lBarris.setFont(f)
 
         bGuia = QvPushButton('Marxes exploratòries: Qué és el projecte?',flat=True)
         bGuia.setStyleSheet("Text-align: left")
@@ -28,13 +38,15 @@ class MarxesCiutat(QDockWidget):
         bMapa.setStyleSheet("Text-align: left")
         bMapaXarxa = QvPushButton('Xarxa quotidiana',flat=True)
         bMapaXarxa.setStyleSheet("Text-align: left")
-
+        
+        lytMarxes.addWidget(lDocuments) 
         lytMarxes.addWidget(bGuia) 
         lytMarxes.addWidget(bMapa) 
         # lytMarxes.addWidget(bMarxes)
         lytMarxes.addWidget(bMapaXarxa)
         spacer = QSpacerItem(50, 50, QSizePolicy.Expanding,QSizePolicy.Maximum)
         lytMarxes.addItem(spacer)
+        lytMarxes.addWidget(lBarris) 
         bMarxes1 = QvPushButton('El Coll', flat=True)
         bMarxes1.setStyleSheet("Text-align: left")
         bMarxes2 = QvPushButton('La Salut', flat=True)
