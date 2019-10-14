@@ -1202,8 +1202,8 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.actSeleccioGrafica.triggered.connect(self.seleccioGrafica)
 
         #Eina de mesura -nexus-
-        self.actMesuraGrafica = QAction("Mesura gràfica del mapa", self)
-        self.actMesuraGrafica.setStatusTip("Mesura gràfica del mapa")
+        self.actMesuraGrafica = QAction("Medicions", self)
+        self.actMesuraGrafica.setStatusTip("Medicions")
         icon=QIcon('imatges/regle.png')
         self.actMesuraGrafica.setIcon(icon)
         self.actMesuraGrafica.triggered.connect(self.mesuraGrafica)
@@ -1645,7 +1645,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         
         
         
-        self.dwMesuraGrafica = QDockWidget("Mesura gràfica", self)
+        self.dwMesuraGrafica = QDockWidget("Medició de distàncies i àrees", self)
         self.dwMesuraGrafica.hide()
         self.dwMesuraGrafica.setAllowedAreas( Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea )
         self.dwMesuraGrafica.setWidget( self.wMesuraGrafica)
@@ -3649,7 +3649,8 @@ def main(argv):
         except:
             print('no es pot accedir als avisos')
         try:
-            sabiesque=QvSabiesQue(qV)
+            # sabiesque=QvSabiesQue(qV)
+            pass
         except:
             print('No hem pogut mostrar el "sabies que..."')
         qVapp.logRegistre('LOG_TEMPS', qV.lblTempsArrencada.text())

@@ -228,7 +228,7 @@ class QvNouCataleg(QWidget):
                 boto=BotoLateral(x,self)
                 boto.setCheckable(True)
                 if y in carpetaCatalegProjectesPrivats:
-                    boto.setIcon(QIcon('Imatges/lock-blanc.png'))
+                    boto.setIcon(QIcon('Imatges/lock-open-blanc.png'))
                 self.botonsLaterals.append(boto)
                 self.lBanda.addWidget(boto)
         
