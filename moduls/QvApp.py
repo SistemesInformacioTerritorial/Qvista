@@ -239,6 +239,8 @@ class QvApp(Singleton):
             print(str(e))
             return ''
     def zoomFactor(self):
+        #Windows per defecte utilitza un dpi de 96. Si hem aplicat un factor de zoom, serà més
+        #Per tant, dividint entre 96 tindrem l'escalat en tant per 1
         zoomFactor=QApplication.desktop().screen().logicalDpiX()/96
         return zoomFactor
     # Metodos db QVISTA

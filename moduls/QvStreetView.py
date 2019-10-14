@@ -87,7 +87,6 @@ class QvBrowser(QWidget):
         URLSV='https://www.google.com/maps?layer=c&cbll='
         URLOSM='https://www.openstreetmap.org/#map=16/'
         if URLSV in urlStr:
-            print(urlStr)
             urlStr=urlStr.replace(URLSV,'')
             x, y = urlStr.split(',')
         elif URLMAPS in urlStr:
@@ -101,7 +100,8 @@ class QvBrowser(QWidget):
         else:
             return
         x, y = float(x), float(y)
-        self.svMogut.emit(x,y)
+        # self.svMogut.emit(x,y)
+        self.svMogut.emit(y,x)
     
     def tancar(self):
         print('sortir')
@@ -234,11 +234,16 @@ class QvStreetView(QWidget):
 
         self.qbrowser = QvBrowser(self)
         self.qbrowser.show()
-        # self.qbrowser.svMogut.connect()
+        self.qbrowser.svMogut.connect(self.mogut)
 
         self.layoutH.addWidget(self.qbrowser)
 
-     
+    def mogut(self, x, y):
+        transformacio = QgsCoordinateTransform(QgsCoordinateReferenceSystem("EPSG:4326"), 
+                            QgsCoordinateReferenceSystem("EPSG:25831"), 
+                            QgsProject.instance())
+        transformat=transformacio.transform(x,y)
+        self.m.setCenter( QgsPointXY( transformat.x(), transformat.y() ) )
 
 
 
