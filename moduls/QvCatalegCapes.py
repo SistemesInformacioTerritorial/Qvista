@@ -120,6 +120,8 @@ class QvCatalegCapes(QWidget):
         self.treeCataleg.setWindowTitle("Catàleg d'Informació Territorial")
         self.treeCataleg.adjustSize()
         self.treeCataleg.setHeaderHidden(True)
+        self.treeCataleg.setStyleSheet('background: transparent')
+        # self.treeCataleg.setAutoFillBackground(False)
 
         self.model=ModelArxius()
         self.model.setIconProvider(ProveidorIcones())
@@ -251,4 +253,5 @@ class PreviewCapa(QWidget):
             self.text="Text no disponible"
         self.lblText=QLabel('<p><strong><span style="color: #38474f; font-family: arial, helvetica, sans-serif; font-size: 10pt;">%s<br /></span></strong><span style="color: #38474f; font-family: arial, helvetica, sans-serif; font-size: 8pt;">%s</span></p>'%(self.titol,self.text))
         self.lblText.setWordWrap(True)
+        self.lblText.setStyleSheet('background: transparent')
         self.layout.addWidget(self.lblText)
