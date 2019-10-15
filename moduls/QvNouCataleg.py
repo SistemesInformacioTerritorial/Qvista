@@ -225,9 +225,10 @@ class QvNouCataleg(QWidget):
             dirs=sorted(dirs)
             for x in dirs:
                 self.catalegs[x]=self.carregaBotons(x) 
-                boto=BotoLateral(x,self)
+                privat = y in carpetaCatalegProjectesPrivats
+                boto=BotoLateral(x,self,privat)
                 boto.setCheckable(True)
-                if y in carpetaCatalegProjectesPrivats:
+                if privat:
                     boto.setIcon(QIcon('Imatges/lock-open-blanc.png'))
                 self.botonsLaterals.append(boto)
                 self.lBanda.addWidget(boto)
@@ -503,7 +504,7 @@ class QvNouCataleg(QWidget):
 
 
 class BotoLateral(QPushButton):
-    def __init__(self,text,cataleg,parent=None):
+    def __init__(self,text,cataleg,privat=False,parent=None):
         super().__init__(text,parent)
         self.setCursor(QvConstants.cursorClick())
         self.cataleg=cataleg
@@ -525,12 +526,14 @@ class BotoLateral(QPushButton):
         '''%(QvConstants.COLORFOSCHTML,QvConstants.COLORMIGHTML)
         self.setStyleSheet(stylesheet)
         self.setFont(QFont('Arial',12))
+        self.privat=privat
     def mousePressEvent(self,event):
         if self==self.cataleg.tots:
             super().mousePressEvent(event)
             self.setChecked(False)
         elif self==self.cataleg.fav:
             super().mousePressEvent(event)
+            self.setIcon(QIcon('Imatges/star-blanc.png'))
             # self.setChecked(True)
         if event.modifiers()==Qt.ShiftModifier:
             #Multiselecció
@@ -542,12 +545,20 @@ class BotoLateral(QPushButton):
             for x in self.cataleg.botonsLaterals:
                 if x==self: continue
                 x.setChecked(False)
+                if x.esPrivat():
+                    x.setIcon(QIcon('Imatges/lock-open-fosc.png'))
             self.cataleg.tots.setChecked(False)
             if self!=self.cataleg.fav:
                 self.cataleg.fav.setChecked(False)
             self.setChecked(True)
         self.cataleg.leCerca.setText('')
         self.cataleg.mostraMapes()
+        if self.esPrivat():
+            self.setIcon(QIcon('Imatges/lock-open-blanc.png'))
+        if self!=self.cataleg.fav:
+            self.cataleg.fav.setIcon(QIcon('Imatges/star.png'))
+    def esPrivat(self):
+        return self.privat
 
 class MapaCataleg(QFrame):
     '''Widget que representa la preview del mapa
