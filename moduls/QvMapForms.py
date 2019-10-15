@@ -261,7 +261,7 @@ class QvFormSimbMapificacio(QWidget):
         self.gSimb = QGroupBox('Simbologia mapificació')
         self.lSimb = QFormLayout()
         self.lSimb.setSpacing(10)
-        self.gSimb.setMinimumWidth(400)
+        # self.gSimb.setMinimumWidth(400)
         self.gSimb.setLayout(self.lSimb)
 
         self.lSimb.addRow('Color mapa:', self.color)
@@ -316,7 +316,7 @@ class QvFormSimbMapificacio(QWidget):
 
     def grupIntervals(self):
         group = QGroupBox('Definició intervals')
-        group.setMinimumWidth(400)
+        # group.setMinimumWidth(400)
         layout = QGridLayout()
         layout.setSpacing(8)
         # layout.setColumnMinimumWidth(4, 40)
@@ -460,9 +460,12 @@ class QvFormSimbMapificacio(QWidget):
     @pyqtSlot()
     def canviaMetode(self):
         self.custom = (self.metode.currentText() == 'Personalitzat')
-        self.nomIntervals.setVisible(not self.custom)
-        self.intervals.setVisible(not self.custom)
-        self.gSimb.adjustSize()
+        if self.custom:
+            self.intervals.setValue(len(self.wInterval))
+        self.intervals.setEnabled(not self.custom)
+        # self.nomIntervals.setVisible(not self.custom)
+        # self.intervals.setVisible(not self.custom)
+        # self.gSimb.adjustSize()
         self.gInter.setVisible(self.custom)
         self.adjustSize()
 

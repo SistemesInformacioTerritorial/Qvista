@@ -106,7 +106,7 @@ class QvMapificacio(QObject):
             return True
         except Exception:
             return False
-    
+
     def valorCampAdreca(self, fila: csv.OrderedDict, num: int) -> str:
         try:
             camp = self.campsAdreca[num]
@@ -116,7 +116,7 @@ class QvMapificacio(QObject):
                 return fila[camp]
         except Exception:
             return ''
-    
+
     @pyqtSlot()
     def cancelProces(self) -> None:
         self.cancel = True
@@ -143,7 +143,7 @@ class QvMapificacio(QObject):
                     self.campsZones.append(c)
         return True
 
-    def geocodificacio(self, campsAdreca: List[str], zones: List[str], fZones: str ='', substituir: bool = True,
+    def geocodificacio(self, campsAdreca: List[str], zones: List[str], fZones: str='', substituir: bool = True,
         percentatgeProces: pyqtSignal = None, procesAcabat: pyqtSignal = None, errorAdreca: pyqtSignal = None) -> bool:
         """Añade coordenadas y códigos de zona a cada uno de los registros del CSV, a partir de los campos de dirección postal
 
@@ -306,7 +306,7 @@ class QvMapificacio(QObject):
             return False
         return True
 
-    
+
     def agregacio(self, llegenda, nomCapa: str, zona: str, tipusAgregacio: str,
         campCalculat: str = 'RESULTAT', campAgregat: str = '', tipusDistribucio: str = "Total", filtre: str = '', numDecimals: int = -1,
         numCategories: int = 4, modeCategories: str = "Endreçat", colorBase: str ='Blau', format: str = '%1 - %2',
@@ -364,6 +364,8 @@ class QvMapificacio(QObject):
             self.msgError = "Error en tipusDistribucio"
             return False
         self.tipusDistribucio = MAP_DISTRIBUCIO[tipusDistribucio]
+        if self.tipusDistribucio != '':
+            self.tipusDistribucio = 'Z.' + self.tipusDistribucio
 
         if modeCategories is None or modeCategories not in MAP_METODES.keys():
             self.msgError = "Error en modeCategories"
