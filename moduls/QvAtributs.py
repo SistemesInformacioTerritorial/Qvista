@@ -131,6 +131,7 @@ class QvAtributs(QTabWidget):
         clayout.addWidget(self.desaCsv,Qt.AlignCenter)
         clayout.addWidget(self.filtra,Qt.AlignCenter)
         clayout.addWidget(self.eliminaFiltre,Qt.AlignCenter)
+        self.currentChanged.connect(self.setCurrentIndex)
         # self.filtra.clicked.connect(self.filterElements)
 
 
@@ -173,12 +174,12 @@ class QvAtributs(QTabWidget):
             return
         # Si no se ha encontrado la tabla, añadirla
         taula = QvTaulaAtributs(self, layer, self.canvas)
-        self.filtra.disconnect()
-        self.desaCsv.disconnect()
-        self.eliminaFiltre.disconnect()
-        self.filtra.clicked.connect(taula.filterElements)
-        self.desaCsv.clicked.connect(taula.saveToCSV)
-        self.eliminaFiltre.clicked.connect(taula.removeFilter)
+        # self.filtra.disconnect()
+        # self.desaCsv.disconnect()
+        # self.eliminaFiltre.disconnect()
+        # self.filtra.clicked.connect(taula.filterElements)
+        # self.desaCsv.clicked.connect(taula.saveToCSV)
+        # self.eliminaFiltre.clicked.connect(taula.removeFilter)
         i = self.addTab(taula, taula.layerNom())
         taula.canviNomTaula.connect(self.setTabText)
         self.setCurrentIndex(i)
@@ -278,9 +279,21 @@ class QvAtributs(QTabWidget):
         except Exception as e:
             print(str(e))
             return None
-    # def setCurrentIndex(self,i):
-    #     super().setCurrentIndex(i)
-    #     self.lblCount.setText(str(len(self.currentWidget()))+' ')
+    def setCurrentIndex(self,i):
+        super().setCurrentIndex(i)
+        taula=self.currentWidget()
+        if taula.layer.subsetString()=='':
+            self.eliminaFiltre.hide()
+        else:
+            self.eliminaFiltre.show()
+        taula=self.currentWidget()
+        self.filtra.disconnect()
+        self.desaCsv.disconnect()
+        self.eliminaFiltre.disconnect()
+        self.filtra.clicked.connect(taula.filterElements)
+        self.desaCsv.clicked.connect(taula.saveToCSV)
+        self.eliminaFiltre.clicked.connect(taula.removeFilter)
+        #Mirar si està filtrat
 
 
 class QvTaulaAtributs(QgsAttributeTableView):
