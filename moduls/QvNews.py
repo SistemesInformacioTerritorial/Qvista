@@ -10,6 +10,7 @@ import tempfile
 from moduls.QvConstants import QvConstants
 from moduls.QvPushButton import QvPushButton
 from moduls.QvVisorHTML import QvVisorHTML
+from moduls.QvMemoria import QvMemoria
 import errno
 
 
@@ -58,10 +59,7 @@ class QvNews(QtWidgets.QAction):
         self.news = QvVisorHTML(arxiuNews, 'Novetats qVista')
         self.news.exec_()
         self.setIcon(self.ICONA)
-        with open(arxiuTmpNews, 'w') as arxiu:
-            # Escrivim alguna cosa. Realment no caldria que fos el temps
-            import time
-            arxiu.write(str(time.time()))
+        QvMemoria().setUltimaNew()
 
     def calNoticiaNova(self) -> bool:
         '''Comprova si hi ha notícies noves. 
@@ -70,9 +68,7 @@ class QvNews(QtWidgets.QAction):
         # Si no existeix l'arxiu temporal vol dir que mai hem obert notícies :(
         if not os.path.isfile(arxiuNews):
             return False
-        if not os.path.isfile(arxiuTmpNews):
-            return True
-        return os.path.getmtime(arxiuTmpNews) < os.path.getmtime(arxiuNews)
+        return QvMemoria().getUltimaNew() < os.path.getmtime(arxiuNews)
 
 # QFrame no permet fer exec. QDialog sí
 

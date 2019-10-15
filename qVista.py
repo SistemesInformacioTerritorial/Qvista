@@ -46,6 +46,7 @@ from moduls.QvNouCataleg import QvNouCataleg
 from moduls.QvFavorits import QvFavorits
 from moduls.QvCatalegCapes import QvCatalegCapes
 from moduls.QvSabiesQue import QvSabiesQue
+from moduls.QvMemoria import QvMemoria
 # import re
 import csv
 import os
@@ -2797,6 +2798,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         msgBox.addButton(QvPushButton(txtCancelar),QMessageBox.RejectRole)
         return msgBox.exec()
     def provaDeTancar(self):
+        QvMemoria().pafuera()
         if self.teCanvisPendents():
             # msgBox.setStandardButtons(QMessageBox.Save | QMessageBox.Discard | QMessageBox.Cancel)
             # msgBox.setDefaultButton(QMessageBox.Save)
@@ -2816,23 +2818,12 @@ class QVista(QMainWindow, Ui_MainWindow):
     def closeEvent(self,event):
         self.provaDeTancar()
     def actualitzaMapesRecents(self,ultim=None):
-        #Comprovem si tenim carregats en memòria els mapes recents
-        if not hasattr(self,'mapesRecents'):
-            #Si no els tenim, mirem si existeix l'arxiu. Si no existeix, carreguem una llista buida
-            #Si existeix, llegim l'arxiu i el carreguem
-            if not os.path.isfile(arxiuMapesRecents):
-                self.mapesRecents=[]
-            else:
-                with open(arxiuMapesRecents,'r',encoding='utf-8') as recents:
-                    self.mapesRecents=list(recents.readlines())
+        self.mapesRecents=QvMemoria().getMapesRecents()
         #Desem els mapes recents, eliminant repeticions i salts de línia que poden portar problemes
-        with open(arxiuMapesRecents,'w',encoding='utf-8') as recents:
-            # print(self.mapesRecents)
-            #Ens carreguem els salts de línia per si n'ha quedat algun, fent un map. Creem un set 
-            self.mapesRecents=[x.replace('\n','') for x in self.mapesRecents]
-            self.mapesRecents=sorted(set(self.mapesRecents),key=lambda x: self.mapesRecents.index(x))[:9]
-            for x in self.mapesRecents:
-                recents.write(x+'\n')
+        
+        self.mapesRecents=[x.replace('\n','') for x in self.mapesRecents]
+        self.mapesRecents=sorted(set(self.mapesRecents),key=lambda x: self.mapesRecents.index(x))[:9]
+        QvMemoria().setMapesRecents(self.mapesRecents)
         #Finalment creem les accions
         # self.menuRecents=QMenu('Mapes recents',self.menuMapes)
         self.menuRecents.clear()
@@ -3190,7 +3181,7 @@ def guardarProjecte():
 #Anomena i desa (AKA Guardar como)
 def guardarDialegProjecte():
     #variable definida al configuracioQvista
-    global pathDesarPerDefecte
+    pathDesarPerDefecte=QvMemoria().getDirectoriDesar()
     trans=str.maketrans('<>:"/\|?*','---------')
 
     pathOnDesem=pathDesarPerDefecte+'/'+qV.titolProjecte.translate(trans).replace('-','')
@@ -3203,7 +3194,7 @@ def guardarDialegProjecte():
         msgBox = QMessageBox()
         msgBox.setWindowTitle("Advertència")
         msgBox.setIcon(QMessageBox.Warning)
-        msgBox.setText("No pots guardar el teu mapa en aquesta direcció.")
+        msgBox.setText("No pots guardar el teu mapa en aquesta adreça.")
         msgBox.setInformativeText("Prova de fer-ho en una altre.")
         msgBox.setStandardButtons(QMessageBox.Ok)
         msgBox.setDefaultButton(QMessageBox.Ok)
@@ -3214,7 +3205,8 @@ def guardarDialegProjecte():
     qV.lblProjecte.setText(qV.project.baseName())
     qV.botoDesarProjecte.setIcon(qV.iconaSenseCanvisPendents)
     qV.canvisPendents = False
-    pathDesarPerDefecte=str(Path(nfile).parent) #Ens desem el nou directori
+    # pathDesarPerDefecte=str(Path(nfile).parent) #Ens desem el nou directori
+    QvMemoria().setDirectoriDesar(str(Path(nfile).parent))
     return True
     #print(scale)
 
