@@ -2,6 +2,7 @@ from moduls.QvImports  import *
 from qgis.core import QgsRectangle
 from moduls.QvConstants import QvConstants
 from moduls.QvPushButton import QvPushButton
+from configuracioQvista import *
 
 
 # import time
@@ -51,7 +52,7 @@ class QvMapeta(QFrame):
         if self.tamanyPetit:
             self.xTamany = 185
             self.yTamany = 185
-            self.setStyleSheet('QFrame {opacity: 50; background-image: url("imatges/QVista_Mapeta_0graus_peque.png");}')
+            self.setStyleSheet('QFrame {opacity: 50; background-image: url("Imatges/QVista_Mapeta_0graus_peque.png");}')
         else:
             # De entrada cargo el mapeta no girado
             self.seno_antigiro= 0
@@ -61,7 +62,7 @@ class QvMapeta(QFrame):
 
             self.xTamany = 250
             self.yTamany = 250            
-            self.setStyleSheet('QFrame {opacity: 50; background-image: url("imatges/QVista_Mapeta_0graus.png");}')
+            self.setStyleSheet('QFrame {opacity: 50; background-image: url("Imatges/QVista_Mapeta_0graus.png");}')
 
             # Ya puedo calcular la escala entre el mapeta y la realidad, basandome en las X (presupongo que la escala Y sera la misma)
             # Las coordenadas mundo son un dato obtenido con qgis
@@ -92,7 +93,7 @@ class QvMapeta(QFrame):
 
         # BOTON QUE INVOCA EL CAMBIO DE ROTACION MEDIANTE LA FUNCION self.cambiarRotacion
         # self.botocambiarRotacion = QPushButton(self)
-        # icon = QIcon('imatges/giro_0_44.png')
+        # icon = QIcon(imatgesDir+'giro_0_44.png')
         # self.botocambiarRotacion.setIcon(icon)
         # self.botocambiarRotacion.setGeometry(0,0,25,25)
         # self.botocambiarRotacion.move(20,0)
@@ -114,7 +115,7 @@ class QvMapeta(QFrame):
         if self.tamanyPetit == False:
             if self.canvas.rotation() == 44.5:
                 self.canvas.setRotation(0)
-                self.setStyleSheet('QFrame {background-image: url("imatges/QVista_Mapeta_0graus.png");}')
+                self.setStyleSheet('QFrame {background-image: url("Imatges/QVista_Mapeta_0graus.png");}')
             else:
                 self.canvas.setRotation(44.5)
                 if self.petit == False:
@@ -124,11 +125,11 @@ class QvMapeta(QFrame):
                     self.setGeometry(20,20,25,25)
                     self.move(20,20)
                 # self.setGeometry(0,0,self.xTamany,self.yTamany)
-                self.setStyleSheet('QFrame {background-image: url("imatges/QVista_Mapeta_44_5graus_mio.png");}')
+                self.setStyleSheet('QFrame {background-image: url("Imatges/QVista_Mapeta_44_5graus_mio.png");}')
         else:
             if self.canvas.rotation() == 44.5:
                 self.canvas.setRotation(0)
-                self.setStyleSheet('QFrame {background-image: url("imatges/QVista_Mapeta_0graus_peque.png");}')
+                self.setStyleSheet('QFrame {background-image: url("Imatges/QVista_Mapeta_0graus_peque.png");}')
             else:
                 self.canvas.setRotation(44.5)
                 if self.petit == False:
@@ -137,7 +138,7 @@ class QvMapeta(QFrame):
                 else:
                     self.setGeometry(20,20,25,25)
                     self.move(20,20)
-                self.setStyleSheet('QFrame {background-image: url("imatges/QVista_Mapeta_44_5graus_mio_peque.png");}')
+                self.setStyleSheet('QFrame {background-image: url("Imatges/QVista_Mapeta_44_5graus_mio_peque.png");}')
 
 
         self.canvas.refresh()
@@ -172,16 +173,16 @@ class QvMapeta(QFrame):
             # self.move(20,20)
             self.show()
             self.petit = False
-            # icon = QIcon('imatges/arrow-collapse.png')
+            # icon = QIcon(imatgesDir+'arrow-collapse.png')
 
-            icon = QIcon('imatges/mapeta-collapse.png')
+            icon = QIcon(imatgesDir+'mapeta-collapse.png')
             # self.botoFerPetit.setIcon(icon)
         else:
             # self.setGeometry(0,0,25,25)
             # self.move(20,20)
             self.hide()
             self.petit = True
-            # icon = QIcon('imatges/mapetaPetit.jpg')
+            # icon = QIcon(imatgesDir+'mapetaPetit.jpg')
         #     self.botoFerPetit.setIcon(icon)
         # self.botoFerPetit.setChecked(False)
 
@@ -322,8 +323,8 @@ class QvMapeta(QFrame):
 
     def mouseMoveEvent(self, event):
         # self.pare.app.restoreOverrideCursor()
-        # self.pare.app.setOverrideCursor(QCursor(QPixmap('imatges/cruz.cur'))) 
-        # self.setCursor(QCursor(QPixmap('imatges/cruz.cur')))
+        # self.pare.app.setOverrideCursor(QCursor(QPixmap(imatgesDir+'cruz.cur'))) 
+        # self.setCursor(QCursor(QPixmap(imatgesDir+'cruz.cur')))
         if self.MousePressFlag== True:        
             self.end = event.pos()
             self.MouseMoveFlag= True
@@ -341,8 +342,8 @@ class QvMapeta(QFrame):
         pass
 
     def enterEvent(self, event):
-        # self.pare.app.setOverrideCursor(QCursor(QPixmap('imatges/cruz.cur')))  
-        self.setCursor(QCursor(QPixmap('imatges/cruz.cur')))     
+        # self.pare.app.setOverrideCursor(QCursor(QPixmap(imatgesDir+'cruz.cur')))  
+        self.setCursor(QCursor(QPixmap(imatgesDir+'cruz.cur')))     
 
     def mouseReleaseEvent(self, event):
         Paux1=QPoint() #  Pto arriba izquierda
