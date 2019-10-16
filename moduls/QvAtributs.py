@@ -22,6 +22,7 @@ import csv
 from PyQt5.QtWidgets import QDialog
 
 from moduls.Ui_AtributsForm import Ui_AtributsForm
+from configuracioQvista import *
 
 
 class QvFitxesAtributs(QDialog):
@@ -116,15 +117,15 @@ class QvAtributs(QTabWidget):
         self.cwidget.setLayout(clayout)
         self.setCornerWidget(self.cwidget,Qt.TopLeftCorner)
         self.desaCsv=QvPushButton(flat=True,parent=self)
-        self.desaCsv.setIcon(QIcon('Imatges/file-delimited.png'))
+        self.desaCsv.setIcon(QIcon(imatgesDir+'file-delimited.png'))
         self.desaCsv.setIconSize(QSize(24,24))
         self.desaCsv.setToolTip('Desar taula com a csv')
         self.filtra=QvPushButton(flat=True,parent=self)
-        self.filtra.setIcon(QIcon('Imatges/filter.png'))
+        self.filtra.setIcon(QIcon(imatgesDir+'filter.png'))
         self.filtra.setIconSize(QSize(24,24))
         self.filtra.setToolTip('Filtrar/modificar filtre')
         self.eliminaFiltre=QvPushButton(flat=True,parent=self)
-        self.eliminaFiltre.setIcon(QIcon('Imatges/filter-remove.png'))
+        self.eliminaFiltre.setIcon(QIcon(imatgesDir+'filter-remove.png'))
         self.eliminaFiltre.setIconSize(QSize(24,24))
         self.eliminaFiltre.setToolTip('Eliminar filtre')
         self.eliminaFiltre.hide()

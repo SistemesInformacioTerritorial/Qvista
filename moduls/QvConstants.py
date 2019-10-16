@@ -118,17 +118,17 @@ class QvConstants:
     @staticmethod
     def cursorZoomIn():
         if QvConstants.CURSORZOOMIN is None:
-            QvConstants.CURSORZOOMIN=QCursor(QPixmap('imatges/zoom_in.cur'))
+            QvConstants.CURSORZOOMIN=QCursor(QPixmap(imatgesDir+'zoom_in.cur'))
         return QvConstants.CURSORZOOMIN
     @staticmethod
     def cursorZoomOut():
         if QvConstants.CURSORZOOMOUT is None:
-            QvConstants.CURSORZOOMOUT=QCursor(QPixmap('imatges/zoom_out.cur'))
+            QvConstants.CURSORZOOMOUT=QCursor(QPixmap(imatgesDir+'zoom_out.cur'))
         return QvConstants.CURSORZOOMOUT
     @staticmethod
     def cursorDit():
         if QvConstants.CURSORDIT is None:
-            QvConstants.CURSORDIT=QCursor(QPixmap('imatges/dedo.cur'))
+            QvConstants.CURSORDIT=QCursor(QPixmap(imatgesDir+'dedo.cur'))
         return QvConstants.CURSORDIT
     @staticmethod
     def cursorFletxa():

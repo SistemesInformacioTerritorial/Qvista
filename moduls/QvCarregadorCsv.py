@@ -52,7 +52,7 @@ class QvCarregaCsv(QDialog):
         self.lblCapcalera.setText('  Carregador de csv')
         self.lblLogo = QLabel()
         self.lblLogo.setPixmap(
-            QPixmap('imatges/QVistaLogo_40_32.png'))
+            QPixmap(imatgesDir+'QVistaLogo_40_32.png'))
         self.layoutCapcalera.addWidget(self.lblLogo)
         self.layoutCapcalera.addWidget(self.lblCapcalera)
         self.lblLogo.setFixedSize(40,40)

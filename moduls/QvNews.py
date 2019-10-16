@@ -18,8 +18,8 @@ class QvNews(QtWidgets.QAction):
     '''Acció de les notícies. Ella mateixa comprova si hi ha notícies noves, i si hi són, les mostra'''
 
     def __init__(self, parent: QWidget = None):
-        self.ICONA = QIcon('Imatges/News.png')
-        self.ICONADESTACADA = QIcon('Imatges/NewsDestacada.png')
+        self.ICONA = QIcon(imatgesDir+'News.png')
+        self.ICONADESTACADA = QIcon(imatgesDir+'NewsDestacada.png')
         # QtWidgets.QAction.__init__(self,self.ICONA,'Notícies',parent)
         super().__init__(self.ICONA, 'Notícies', parent)
         if self.calNoticiaNova():

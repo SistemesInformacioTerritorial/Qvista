@@ -32,7 +32,7 @@ class QvVisorHTML(QDialog):
         self.lblLogo = QLabel()
         if logo:
             self.lblLogo.setPixmap(
-                QPixmap('imatges/QVistaLogo_40_32.png'))
+                QPixmap(imatgesDir+'QVistaLogo_40_32.png'))
             self.layoutCapcalera.addWidget(self.lblLogo)
         self.layoutCapcalera.addWidget(self.lblCapcalera)
 
@@ -114,7 +114,7 @@ class QvVisorHTML(QDialog):
         if event.key() == Qt.Key_Escape or event.key() == Qt.Key_Return:
             self.close()
     def easterEgg(self):
-        self.carrega(os.getcwd()+'/easterEgg.htm')
+        self.carrega(os.getcwd()+'/easterEgg.html')
         #Delay
         self.timer=QTimer()
         self.timer.timeout.connect(self.easterEggExit)
@@ -125,7 +125,8 @@ class QvVisorHTML(QDialog):
     def carrega(self,file=None):
         if file is None:
             file=self.file
-            self.caixaText.setText("No s'ha pogut trobar l'arxiu")
+            self.caixaText.load(QUrl('file:///%s'%self.file))
+            # self.caixaText.setText("No s'ha pogut trobar l'arxiu")
         else:
             self.caixaText.load(QUrl("file:///%s"%file))
         print(file)
