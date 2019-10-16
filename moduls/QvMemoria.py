@@ -54,7 +54,7 @@ class QvMemoria(Singleton):
         self.directoriDesar=directori
     def getVolHints(self):
         return False
-        #Quan implementem 
+        #Quan vulguem posar les hints només cal que traguem la línia superior i descomentem la inferior
         # return self.volHints
     def setVolHints(self,enVol=True):
         self.volHints=enVol

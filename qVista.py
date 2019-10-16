@@ -266,7 +266,8 @@ class QVista(QMainWindow, Ui_MainWindow):
             _, fext = os.path.splitext(nfile)
             fext = fext.lower()
             if fext in ('.qgs', '.qgz'):
-                self.obrirProjecte(nfile, self.canvas.extent())
+                self.obrirProjecteAmbRang(nfile)
+                # self.obrirProjecte(nfile)
             elif fext == '.qlr':
                 afegirQlr(nfile)
             elif fext in ('.shp', '.gpkg'):
@@ -277,12 +278,15 @@ class QVista(QMainWindow, Ui_MainWindow):
             elif fext == '.csv':
                 carregarLayerCSV(nfile)
 
-    def obrirProjecteCataleg(self, projecte, fav, widgetAssociat, rang=None):
+    def obrirProjecteCataleg(self, projecte, fav, widgetAssociat, volemRang=True):
         '''Obre un projecte des del catàleg
         Fa el mateix que la funció obrirProjecte, però mostrant el botó de favorits
         '''
         #Fem que aparegui el botó de fav
-        self.obrirProjecte(projecte,rang)
+        if volemRang:
+            self.obrirProjecteAmbRang(projecte)
+        else:
+            self.obrirProjecte(projecte)
         self.botoFavorits.show()
         self.mapaCataleg=True
         self.actualitzaBotoFav(fav)
@@ -291,7 +295,10 @@ class QVista(QMainWindow, Ui_MainWindow):
     def actualitzaBotoFav(self,fav):
         self.favorit=fav
         self.botoFavorits.setIcon(self.iconaFavMarcat if fav else self.iconaFavDesmarcat)
-        
+    
+    def obrirProjecteAmbRang(self,projecte):
+        '''Obre un projecte passant-li el rang que tingui el projecte actual '''
+        self.obrirProjecte(projecte, self.canvas.extent())
     def obrirProjecte(self, projecte, rang = None):
         """Obre un projecte passat com a parametre, amb un possible rang predeterminat.
         
@@ -1063,7 +1070,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         # self.actObrirProjecte.setIcon(icon)
         self.actObrirProjecte.setShortcut("Ctrl+O")
         self.actObrirProjecte.setStatusTip("Obrir mapa QGis")
-        self.actObrirProjecte.triggered.connect(self.obrirDialegProjecte)
+        self.actObrirProjecte.triggered.connect(lambda x: self.obrirDialegProjecte(x))
         
         self.actGuardarProjecte = QAction("Desar", self)
         # icon=QIcon(':/Icones/Icones/ic_file_download_black_48dp.png')
@@ -1746,7 +1753,7 @@ class QVista(QMainWindow, Ui_MainWindow):
             self.obrirProjecteCataleg(self.pathProjecteActual,self.favorit,self.widgetAssociat)
             pass
         else:
-            self.obrirProjecte(self.pathProjecteActual)
+            self.obrirProjecteAmbRang(self.pathProjecteActual)
     def switchFavorit(self):
         # nom=os.path.basename(self.pathProjecteActual)
         nom=Path(self.pathProjecteActual).stem
@@ -2704,7 +2711,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         nfile,_ = dialegObertura.getOpenFileName(None,"Obrir mapa Qgis", "../dades/projectes/", "Tots els mapes acceptats (*.qgs *.qgz);; Mapes Qgis (*.qgs);;Mapes Qgis comprimits (*.qgz)")
 
         if nfile is not None:
-            self.obrirProjecte(nfile, rect)
+            self.obrirProjecteAmbRang(nfile)
            
     def obrirDialegNovaCapa(self):
         dialegObertura=QFileDialog()
@@ -2833,7 +2840,7 @@ class QVista(QMainWindow, Ui_MainWindow):
             #functools.partial crea una funció a partir de passar-li uns determinats paràmetres a una altra
             #Teòricament serveix per passar-li només una part, però whatever
             #Si fèiem connect a lambda: self.obrirProjecte(y) o similars, no funcionava i sempre rebia com a paràmetre la última y :'(
-            x.triggered.connect(functools.partial(self.obrirProjecte,y,None))
+            x.triggered.connect(functools.partial(self.obrirProjecteAmbRang,y))
             self.menuRecents.addAction(x)
         if ultim is not None:
             self.mapesRecents.insert(0,ultim)
@@ -3397,7 +3404,7 @@ def carregarNivellQlr():
 def carregarProjecteLlista():
     index = qV.wCatalegProjectesLlista.ui.treeCataleg.currentIndex()
     mpath=qV.qModelProjectesLlista.fileInfo(index).absoluteFilePath()
-    qV.obrirProjecte(mpath)
+    qV.obrirProjecteAmbRang(mpath)
 
 def updateMetadadesCataleg():
     index = qV.wCataleg.ui.treeCataleg.currentIndex()
