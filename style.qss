@@ -43,8 +43,8 @@ QDockWidget{
     background-color: #F9F9F9;
     border: 0px;
     margin: 0px;
-    titlebar-close-icon: url("Imatges/window_close.png");
-    titlebar-normal-icon: url("Imatges/window-restore.png");
+    titlebar-close-icon: url(imatgesDir+"window_close.png");
+    titlebar-normal-icon: url(imatgesDir+"window-restore.png");
 }
 
 QDockWidget::title {

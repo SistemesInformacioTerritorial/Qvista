@@ -52,7 +52,7 @@ class QvCarregaCsv(QDialog):
         self.lblCapcalera.setText('  Carregador de csv')
         self.lblLogo = QLabel()
         self.lblLogo.setPixmap(
-            QPixmap('imatges/QVistaLogo_40_32.png'))
+            QPixmap(imatgesDir+'QVistaLogo_40_32.png'))
         self.layoutCapcalera.addWidget(self.lblLogo)
         self.layoutCapcalera.addWidget(self.lblCapcalera)
         self.lblLogo.setFixedSize(40,40)
@@ -538,7 +538,7 @@ class CsvGeneraCoords(CsvPagina):
                 adr=adreca(row)
                 x, y = QvGeocod.coordsCarrerNum(*adr)
                 if x is None or y is None:
-                    lblErrors.setText(lblErrors.toPlainText()+'Fila %i\n'%fila)
+                    lblErrors.setText(lblErrors.toPlainText()+'-Fila %i\n'%fila)
                     wpb.error()
                     # print(adr)
                 else:
@@ -594,6 +594,8 @@ class CsvPersonalitza(CsvPagina):
         return True
     def actualitzaDades(self):
         self.parentWidget().setAspecte(self.leNom.text(),self.color,'circle')
+    def calTaula(self):
+        return False
     pass
 
 class QvtLectorCsv(QvLectorCsv):
@@ -632,6 +634,8 @@ class WindowProgressBar(QWidget):
         self.timeB=time.time()
         self.lblTempsRestant=QLabel()
         self.layProgressW.addWidget(self.lblTempsRestant)
+        self.lblTempsTotal=QLabel()
+        self.layProgressW.addWidget(self.lblTempsTotal)
 
         self.timer=QTimer()
         self.timer.timeout.connect(self.actualitza)
@@ -657,9 +661,15 @@ class WindowProgressBar(QWidget):
         if self.count>=self.mida:
             tempsR=0
         else:
-            tempsR=(time.time()-self.timeB)*max(self.mida/self.count,1)*(1-self.count/self.mida)
+            #Temps passat
+            self.tempsP=time.time()-self.timeB
+            #Regla de 3. 
+            tempsR=self.tempsP*max(self.mida/self.count,1)*(1-self.count/self.mida)
         tempsTxt=time.strftime("%H:%M:%S", time.gmtime(tempsR))
+        tempsTotalTxt=time.strftime('%H:%M:%S',time.gmtime(self.tempsP))
         self.lblTempsRestant.setText('Temps restant: %s'%tempsTxt)
+        self.lblTempsTotal.setText('Temps total: %s'%tempsTotalTxt)
+
     def seg(self):
         self.count+=1
         if self.count%self.salt==0:
