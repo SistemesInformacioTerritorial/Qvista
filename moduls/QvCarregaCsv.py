@@ -85,7 +85,7 @@ class QvCarregaCsv(QWizard):
             QLabel {border: 0px}*/
             QRadioButton {background-color: transparent}
             ''' % (QvConstants.COLORBLANCHTML, QvConstants.COLORFOSCHTML))
-        self.setPixmap(QWizard.LogoPixmap, QPixmap('imatges/layers.png'))
+        self.setPixmap(QWizard.LogoPixmap, QPixmap(imatgesDir+'layers.png'))
         self.setFont(QvConstants.FONTTEXT)
         self.oldPos = self.pos()
 
@@ -927,7 +927,7 @@ class QvCarregaCsvPersonalitza(QvCarregaCsvPage):
         radio1.toggled.connect(fradio1)
         self.layIMGS1.addWidget(radio1)
         self.img1 = QLabel()
-        self.img1.setPixmap(QPixmap('imatges/squareW.png'))
+        self.img1.setPixmap(QPixmap(imatgesDir+'squareW.png'))
         self.layIMGS1.addWidget(self.img1)
         radio2 = QRadioButton()
 
@@ -936,7 +936,7 @@ class QvCarregaCsvPersonalitza(QvCarregaCsvPage):
         radio2.toggled.connect(fradio2)
         self.layIMGS1.addWidget(radio2)
         self.img2 = QLabel()
-        self.img2.setPixmap(QPixmap('imatges/rhombusW.png'))
+        self.img2.setPixmap(QPixmap(imatgesDir+'rhombusW.png'))
         self.layIMGS1.addWidget(self.img2)
         radio3 = QRadioButton()
 
@@ -945,7 +945,7 @@ class QvCarregaCsvPersonalitza(QvCarregaCsvPage):
         radio3.toggled.connect(fradio3)
         self.layIMGS1.addWidget(radio3)
         self.img3 = QLabel()
-        self.img3.setPixmap(QPixmap('imatges/pentagonW.png'))
+        self.img3.setPixmap(QPixmap(imatgesDir+'pentagonW.png'))
         self.layIMGS1.addWidget(self.img3)
         # self.layout.addLayout(self.layIMGS1)
         radio7 = QRadioButton()
@@ -955,7 +955,7 @@ class QvCarregaCsvPersonalitza(QvCarregaCsvPage):
         radio7.toggled.connect(fradio7)
         self.layIMGS1.addWidget(radio7)
         self.img7 = QLabel()
-        self.img7.setPixmap(QPixmap('imatges/starW.png'))
+        self.img7.setPixmap(QPixmap(imatgesDir+'starW.png'))
         self.layIMGS1.addWidget(self.img7)
         self.layIMGS2 = QHBoxLayout()
         radio4 = QRadioButton()
@@ -965,7 +965,7 @@ class QvCarregaCsvPersonalitza(QvCarregaCsvPage):
         radio4.toggled.connect(fradio4)
         self.layIMGS2.addWidget(radio4)
         self.img4 = QLabel()
-        self.img4.setPixmap(QPixmap('imatges/triangleW.png'))
+        self.img4.setPixmap(QPixmap(imatgesDir+'triangleW.png'))
         self.layIMGS2.addWidget(self.img4)
         radio5 = QRadioButton()
 
@@ -974,7 +974,7 @@ class QvCarregaCsvPersonalitza(QvCarregaCsvPage):
         radio5.toggled.connect(fradio5)
         self.layIMGS2.addWidget(radio5)
         self.img5 = QLabel()
-        self.img5.setPixmap(QPixmap('imatges/circleW.png'))
+        self.img5.setPixmap(QPixmap(imatgesDir+'circleW.png'))
         self.layIMGS2.addWidget(self.img5)
         radio6 = QRadioButton()
 
@@ -983,7 +983,7 @@ class QvCarregaCsvPersonalitza(QvCarregaCsvPage):
         radio6.toggled.connect(fradio6)
         self.layIMGS2.addWidget(radio6)
         self.img6 = QLabel()
-        self.img6.setPixmap(QPixmap('imatges/hexagonW.png'))
+        self.img6.setPixmap(QPixmap(imatgesDir+'hexagonW.png'))
         self.layIMGS2.addWidget(self.img6)
         radio8 = QRadioButton()
 
@@ -992,7 +992,7 @@ class QvCarregaCsvPersonalitza(QvCarregaCsvPage):
         radio8.toggled.connect(fradio8)
         self.layIMGS2.addWidget(radio8)
         self.img8 = QLabel()
-        self.img8.setPixmap(QPixmap('imatges/crossW.png'))
+        self.img8.setPixmap(QPixmap(imatgesDir+'crossW.png'))
         self.layIMGS2.addWidget(self.img8)
         self.layIMGS1.setSpacing(25)
         self.layIMGS2.setSpacing(25)

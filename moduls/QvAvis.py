@@ -4,6 +4,7 @@ import tempfile
 import os
 from moduls.QvConstants import QvConstants
 from configuracioQvista import *
+from moduls.QvMemoria import QvMemoria
 
 class QvAvis(QvVisorHTML):
     '''Crea un diàleg d'avisos i, si n'hi ha algun de nou, el mostra
@@ -15,15 +16,11 @@ class QvAvis(QvVisorHTML):
     def calAvis(self):
         if not os.path.isfile(arxiuAvis):
             return False
-        if not os.path.isfile(arxiuTmpAvis):
-            return True
-        return os.path.getmtime(arxiuTmpAvis)<os.path.getmtime(arxiuAvis)
+        
+        return QvMemoria().getUltimAvis()<os.path.getmtime(arxiuAvis)
     def exec_(self):
         super().exec_()
-        with open(arxiuTmpAvis,'w') as arxiu:
-            #Escrivim alguna cosa. Realment no caldria que fos el temps
-            import time
-            arxiu.write(str(time.time()))
+        QvMemoria().setUltimAvis()
 
 if __name__=='__main__':
     import sys
