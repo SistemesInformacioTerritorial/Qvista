@@ -173,6 +173,7 @@ class QvAtributs(QTabWidget):
         # Si la tabla está abierta, mostrarla y actualizar nomnbre
         if self.tabTaula(layer, True):
             return
+        layer.subsetStringChanged.connect(self.actualitzaBoto)
         # Si no se ha encontrado la tabla, añadirla
         taula = QvTaulaAtributs(self, layer, self.canvas)
         # self.filtra.disconnect()
@@ -283,11 +284,7 @@ class QvAtributs(QTabWidget):
     def setCurrentIndex(self,i):
         super().setCurrentIndex(i)
         try:
-            taula=self.currentWidget()
-            if taula.layer.subsetString()=='':
-                self.eliminaFiltre.hide()
-            else:
-                self.eliminaFiltre.show()
+            
             taula=self.currentWidget()
             self.filtra.disconnect()
             self.desaCsv.disconnect()
@@ -298,6 +295,13 @@ class QvAtributs(QTabWidget):
         except:
             pass
         #Mirar si està filtrat
+    def actualitzaBoto(self):
+        taula=self.currentWidget()
+        filtre=taula.layer.subsetString()
+        if filtre=='':
+            self.eliminaFiltre.hide()
+        else:
+            self.eliminaFiltre.show()
 
 
 class QvTaulaAtributs(QgsAttributeTableView):

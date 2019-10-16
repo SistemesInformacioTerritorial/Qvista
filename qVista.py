@@ -3147,12 +3147,13 @@ def seleccioExpressio():
         textCercat=""
         layer=qV.llegenda.currentLayer()
         if layer is not None:
-            for field in layer.fields():
-                if field.typeName()=='String' or field.typeName()=='text'  or field.typeName()[0:4]=='VARC':
-                    textCercat = textCercat + field.name()+" LIKE '%" + qV.leSeleccioExpressio.text()+ "%'"
-                    textCercat = textCercat + ' OR '
-
-            layer.setSubsetString(textCercat[:-4])
+            if qV.leSeleccioExpressio.text()!='':
+                for field in layer.fields():
+                    if field.typeName()=='String' or field.typeName()=='text'  or field.typeName()[0:4]=='VARC':
+                        textCercat = textCercat + field.name()+" LIKE '%" + qV.leSeleccioExpressio.text()+ "%'"
+                        textCercat = textCercat + ' OR '
+                textCercat=textCercat[:-4]
+            layer.setSubsetString(textCercat)
             ids = [feature.id() for feature in layer.getFeatures()]
             qV.canvas.zoomToFeatureIds(layer, ids)
             # print (textCercat[:-4])
