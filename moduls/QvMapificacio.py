@@ -14,6 +14,9 @@ import sys
 import csv
 import time
 import unicodedata
+import chardet
+import collections
+import operator
 
 from moduls.QvSqlite import QvSqlite
 from moduls.QvMapVars import *
@@ -33,7 +36,7 @@ class QvMapificacio(QObject):
        - Calcular una agregación a partir del código de zona para una posterior mapificación
     """
 
-    def __init__(self, fDades: str, code: str = 'ANSI', delimiter: str = ';', prefixe: str = CAMP_QVISTA, numMostra: int = 60):
+    def __init__(self, fDades: str, code: str = 'ANSI', delimiter: str = '', prefixe: str = CAMP_QVISTA, numMostra: int = 60):
         """Abre y prepara el fichero CSV para la mapificación
         
         Arguments:
@@ -74,7 +77,7 @@ class QvMapificacio(QObject):
         with open(self.fDades, "r", encoding=self.code) as csvInput:
             lenFile = os.path.getsize(self.fDades)
             data = csvInput.readline()
-            self.fields = data.rstrip(csvInput.newlines).split(self.delimiter)
+            self.fields = data.rstrip(csvInput.newlines)
             self.mostra = []
             if self.numMostra > 0:
                 lenMuestra = 0
@@ -82,13 +85,16 @@ class QvMapificacio(QObject):
                 num = 0
                 for data in csvInput:
                     num += 1
-                    data = data.encode(self.code)
-                    self.mostra.append(data)
                     lenMuestra += len(data)
+                    data.rstrip(csvInput.newlines)
+                    self.mostra.append(data)
                     if num == maxMuestra:
                         break
                 lenRow = lenMuestra / num
                 self.rows = int(round(lenFile / lenRow))
+                if self.delimiter == '':
+                    self.delimiter = self.infereixSeparador()
+            self.fields = self.fields.split(self.delimiter)
 
     def verifCampsAdreca(self, camps: List[str]) -> bool:
         try:
@@ -116,6 +122,54 @@ class QvMapificacio(QObject):
                 return fila[camp]
         except Exception:
             return ''
+
+    def infereixSeparador(self):
+        '''Infereix el separador d'un arxiu csv
+        Returns:
+            separador{str} -- El separador inferit
+        '''
+        def eliminaRepOrd(lst):
+            '''Rep una llista i la retorna sense repeticions i ordenada'''
+            return sorted(set(lst))
+
+        # Utilitzant expressions regulars
+        # Un substring serà tot allò que comenci per ", i acabi amb ", sense contenir-ne cap a dins, de manera que ens ho carreguem
+        # Un nombre serà [0-9]+, cosa que també ens carreguem
+
+        def infereixSeparadorLinia(line):
+            import re
+
+            aux = line.strip()
+            aux = re.sub('"[^"]*"', '', aux)
+            aux = ''.join([i for i in line if not i.isalnum()])
+            auxSenseRep = eliminaRepOrd(aux)  # Eliminem repeticions
+            # Diccionario ordenado con caracteres y número de apariciones
+            lst = collections.OrderedDict()
+            for char in auxSenseRep:
+                lst[char] = aux.count(char)
+            return lst
+
+        def uneixLlistesAp(lst1, lst2):
+            if len(lst1) == 0:
+                return lst2
+            lst = collections.OrderedDict()
+            # Acumular los totales ya existentes
+            for char in lst1:
+                if char in lst2:
+                    lst[char] = lst1[char] + lst2[char]
+            # Añadir totales nuevos
+            for char in lst2:
+                if char not in lst1:
+                    lst[char] = lst2[char]
+            return lst
+ 
+        lst = collections.OrderedDict()
+        for linia in self.mostra:
+            act = infereixSeparadorLinia(linia)
+            lst = uneixLlistesAp(lst, act)
+        # Retornamos el caracter con más apariciones en total
+        elem = max(lst.items(), key=operator.itemgetter(1))
+        return elem[0]
 
     @pyqtSlot()
     def cancelProces(self) -> None:
@@ -500,9 +554,11 @@ if __name__ == "__main__":
         app = QvApp()
 
         z = QvMapificacio('CarrecsANSI.csv')
-        print(z.rows, 'filas en', z.fDades)
-        print('Campos:', z.fields)
+        print('Num. líneas muestra:', z.numMostra)
+        print('Delimitador:', z.delimiter)
         print('Muestra:', z.mostra)
+        print('Campos:', z.fields)
+        print(z.rows, 'filas en', z.fDades)
 
         camps = ('', 'NOM_CARRER_GPL', 'NUM_I_GPL', '', 'NUM_F_GPL')
         zones = ('Coordenada', 'Barri')
