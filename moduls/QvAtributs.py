@@ -281,18 +281,21 @@ class QvAtributs(QTabWidget):
             return None
     def setCurrentIndex(self,i):
         super().setCurrentIndex(i)
-        taula=self.currentWidget()
-        if taula.layer.subsetString()=='':
-            self.eliminaFiltre.hide()
-        else:
-            self.eliminaFiltre.show()
-        taula=self.currentWidget()
-        self.filtra.disconnect()
-        self.desaCsv.disconnect()
-        self.eliminaFiltre.disconnect()
-        self.filtra.clicked.connect(taula.filterElements)
-        self.desaCsv.clicked.connect(taula.saveToCSV)
-        self.eliminaFiltre.clicked.connect(taula.removeFilter)
+        try:
+            taula=self.currentWidget()
+            if taula.layer.subsetString()=='':
+                self.eliminaFiltre.hide()
+            else:
+                self.eliminaFiltre.show()
+            taula=self.currentWidget()
+            self.filtra.disconnect()
+            self.desaCsv.disconnect()
+            self.eliminaFiltre.disconnect()
+            self.filtra.clicked.connect(taula.filterElements)
+            self.desaCsv.clicked.connect(taula.saveToCSV)
+            self.eliminaFiltre.clicked.connect(taula.removeFilter)
+        except:
+            pass
         #Mirar si està filtrat
 
 

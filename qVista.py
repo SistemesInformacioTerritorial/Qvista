@@ -297,7 +297,9 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.botoFavorits.setIcon(self.iconaFavMarcat if fav else self.iconaFavDesmarcat)
     
     def obrirProjecteAmbRang(self,projecte):
-        '''Obre un projecte passant-li el rang que tingui el projecte actual '''
+        '''Obre un projecte passant-li el rang que tingui el projecte actual
+            Si el projecte té definida la variable qV_useProjectExtent amb valor True el projecte s'obrirà amb tota l'extensió
+            Si no la té o té valor False s'obrirà mostrant l'extensió que estava mostrant actualment '''
         self.obrirProjecte(projecte, self.canvas.extent())
     def obrirProjecte(self, projecte, rang = None):
         """Obre un projecte passat com a parametre, amb un possible rang predeterminat.
@@ -323,7 +325,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.setDirtyBit(False)
         self.canvas.refresh()
 
-        if rang is not None:
+        if rang is not None and QgsExpressionContextUtils.projectScope(self.project).variable('qV_useProjectExtent') != 'True':
             self.canvas.setExtent(rang)
 
         # Labels de la statusbar (Projecció i nom del projecte)
