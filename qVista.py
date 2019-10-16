@@ -3641,7 +3641,7 @@ def main(argv):
         except:
             print('no es pot accedir als avisos')
         try:
-            # sabiesque=QvSabiesQue(qV)
+            sabiesque=QvSabiesQue(qV)
             pass
         except:
             print('No hem pogut mostrar el "sabies que..."')

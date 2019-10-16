@@ -5,6 +5,7 @@ arxiuTmpAvis=dadesdir+'ultimAvisObert'
 arxiuTmpNews=dadesdir+'ultimaNewOberta'
 arxiuMapesRecents=dadesdir+'mapesRecents'
 arxiuDirectoriDesar=dadesdir+'directoriDesar'
+arxiuVolHints=dadesdir+'volHints'
 
 class QvMemoria(Singleton):
     def __init__(self):
@@ -15,6 +16,8 @@ class QvMemoria(Singleton):
             self.mapesRecents=open(arxiuMapesRecents,encoding='utf-8').readlines()
         if os.path.isfile(arxiuDirectoriDesar):
             self.directoriDesar=open(arxiuDirectoriDesar,encoding='utf-8').read()
+        self.volHints=not os.path.isfile(arxiuVolHints) or open(arxiuVolHints).read()!='False'
+
         pass
     def getUltimaNew(self):
         try:
@@ -49,6 +52,12 @@ class QvMemoria(Singleton):
             return str(Path.home().resolve())
     def setDirectoriDesar(self,directori):
         self.directoriDesar=directori
+    def getVolHints(self):
+        return False
+        #Quan implementem 
+        # return self.volHints
+    def setVolHints(self,enVol=True):
+        self.volHints=enVol
     def pafuera(self):
         if hasattr(self,'mapesRecents'):
             with open(arxiuMapesRecents,'w',encoding='utf-8') as f:
@@ -57,3 +66,5 @@ class QvMemoria(Singleton):
         if hasattr(self,'directoriDesar'):
             with open(arxiuDirectoriDesar,'w',encoding='utf-8') as f:
                 f.write(self.directoriDesar)
+        with open(arxiuVolHints,'w') as f:
+            f.write(str(self.volHints))
