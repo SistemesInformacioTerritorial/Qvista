@@ -2346,7 +2346,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         # dialegFitxer.setDirectoryUrl(QUrl('c:/Temp/'))
 
         titol=self.lblTitolProjecte.text()
-        nfile,_ = dialegFitxer.getSaveFileName(None,"Guardar imatge", tempdir+titol, "(*.png)")
+        nfile,_ = dialegFitxer.getSaveFileName(None,"Guardar imatge", QvMemoria().getDirectoriDesar()+'/'+titol, "(*.png)")
 
         self.canvas.saveAsImage(nfile)	
 
