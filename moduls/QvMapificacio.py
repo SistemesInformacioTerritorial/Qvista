@@ -181,14 +181,6 @@ class QvMapificacio(QObject):
         except Exception:
             return ''
 
-    @pyqtSlot()
-    def cancelProces(self) -> None:
-        self.cancel = True
-
-    percentatgeProces = pyqtSignal(int)  # Porcentaje cubierto (0 - 100)
-    procesAcabat = pyqtSignal(int)  # Tiempo transcurrido en zonificar (segundos)
-    errorAdreca = pyqtSignal(dict) # Registro que no se pudo geocodificar
-
     def verifZones(self, zones: List[str]) -> bool:
         self.zones = zones
         self.valZones = []
@@ -206,6 +198,14 @@ class QvMapificacio(QObject):
                 for c in camp:
                     self.campsZones.append(c)
         return True
+
+    @pyqtSlot()
+    def cancelProces(self) -> None:
+        self.cancel = True
+
+    percentatgeProces = pyqtSignal(int)  # Porcentaje cubierto (0 - 100)
+    procesAcabat = pyqtSignal(int)  # Tiempo transcurrido en zonificar (segundos)
+    errorAdreca = pyqtSignal(dict) # Registro que no se pudo geocodificar
 
     def geocodificacio(self, campsAdreca: List[str], zones: List[str], fZones: str = '', substituir: bool = True,
         percentatgeProces: pyqtSignal = None, procesAcabat: pyqtSignal = None, errorAdreca: pyqtSignal = None) -> bool:

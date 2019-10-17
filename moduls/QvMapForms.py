@@ -137,7 +137,7 @@ class QvFormNovaMapificacio(QWidget):
         self.fCSV = QvMapificacio(nom, numMostra=0)
         num = 0
         for zona, val in MAP_ZONES.items():
-            if self.fCSV.prefixe + val[0] in self.fCSV.fields:
+            if self.fCSV.prefixe + val[0] in self.fCSV.camps:
                 self.zona.addItem(zona)
                 num = num + 1
         if num == 0:
@@ -465,7 +465,7 @@ class QvFormSimbMapificacio(QWidget):
         self.intervals.setEnabled(not self.custom)
         # self.nomIntervals.setVisible(not self.custom)
         # self.intervals.setVisible(not self.custom)
-        # self.gSimb.adjustSize()
+        self.gSimb.adjustSize()
         self.gInter.setVisible(self.custom)
         self.adjustSize()
 
