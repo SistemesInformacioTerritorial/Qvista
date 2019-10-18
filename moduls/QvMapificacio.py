@@ -62,14 +62,15 @@ class QvMapificacio(QObject):
         self.errors = 0
         self.msgError = ''
         self.cancel = False
-        self.iniDades()
         self.db = None
+        self.iniDades()
 
     def iniDades(self) -> None:
         if not os.path.isfile(self.fDades):
             splitFile = os.path.split(self.fDades)
             local = RUTA_LOCAL + splitFile[1]
             if not os.path.isfile(local):
+                self.msgError = 'Arxiu CSV no existeix'
                 return
             else:
                 self.fDades = self.fZones = local
@@ -563,8 +564,11 @@ if __name__ == "__main__":
 
         app = QvApp()
 
-        # z = QvMapificacio('CarrecsANSI.csv')
-        z = QvMapificacio('CarrecsUTF8.csv')
+        z = QvMapificacio('CarrecsANSI.csv')
+        # z = QvMapificacio('CarrecsUTF8.csv')
+        if z.msgError != '':
+            print('Error:', z.msgError)
+            exit(1)
         print('Código caracteres:', z.codi)
         print('Num. líneas muestra:', z.numMostra)
         print('Delimitador:', z.separador)
@@ -572,9 +576,9 @@ if __name__ == "__main__":
         print('Campos:', z.camps)
         print(z.rows, 'filas en', z.fDades)
 
-        camps = ('', 'NOM_CARRER_GPL', 'NUM_I_GPL', '', 'NUM_F_GPL')
+        campsAdreca = ('', 'NOM_CARRER_GPL', 'NUM_I_GPL', '', 'NUM_F_GPL')
         zones = ('Coordenada', 'Barri')
-        ok = z.geocodificacio(camps, zones,
+        ok = z.geocodificacio(campsAdreca, zones,
             percentatgeProces=lambda n: print('... Procesado', str(n), '% ...'),
             errorAdreca=lambda f: print('Fila sin geocodificar -', f),
             procesAcabat=lambda n: print('Zonas', z.zones, 'procesadas en', str(n), 'segs. en ' + z.fZones + ' -', str(z.rows), 'registros,', str(z.errors), 'errores'))
