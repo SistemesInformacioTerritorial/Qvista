@@ -58,7 +58,7 @@ class QvMapificacio(QObject):
         self.numMostra = numMostra
         self.mostra = []
         self.camps = []
-        self.rows = 0
+        self.files = 0
         self.errors = 0
         self.msgError = ''
         self.cancel = False
@@ -96,7 +96,7 @@ class QvMapificacio(QObject):
                 if num == self.numMostra:
                     break
             lenRow = lenMuestra / num
-            self.rows = int(round(lenFile / lenRow))
+            self.files = int(round(lenFile / lenRow))
             if self.separador == '':
                 self.separador = self.infereixSeparador()
             self.camps = self.camps.split(self.separador)
@@ -253,8 +253,8 @@ class QvMapificacio(QObject):
 
         self.substituir = substituir
 
-        if self.rows >= 100:
-            nSignal = int(round(self.rows / 100))
+        if self.files >= 100:
+            nSignal = int(round(self.files / 100))
         else:
             nSignal = 1
 
@@ -318,15 +318,15 @@ class QvMapificacio(QObject):
                     
                     writer.writerow(row)
                     # Informe de progreso cada 1% o cada fila si hay menos de 100
-                    if self.rows > 0 and tot % nSignal == 0:
-                        self.percentatgeProces.emit(int(round(tot * 100 / self.rows)))
+                    if self.files > 0 and tot % nSignal == 0:
+                        self.percentatgeProces.emit(int(round(tot * 100 / self.files)))
 
                     # Cancelación del proceso via slot -- SIN PROBAR
                     if self.cancel:
                         break
 
             fin = time.time()
-            self.rows = tot
+            self.files = tot
             self.errors = num
 
             # Informe de fin de proceso y segundos transcurridos
@@ -574,13 +574,13 @@ if __name__ == "__main__":
         print('Delimitador:', z.separador)
         print('Muestra:', z.mostra)
         print('Campos:', z.camps)
-        print(z.rows, 'filas en', z.fDades)
+        print(z.files, 'filas en', z.fDades)
 
         campsAdreca = ('', 'NOM_CARRER_GPL', 'NUM_I_GPL', '', 'NUM_F_GPL')
         zones = ('Coordenada', 'Barri')
         ok = z.geocodificacio(campsAdreca, zones,
             percentatgeProces=lambda n: print('... Procesado', str(n), '% ...'),
             errorAdreca=lambda f: print('Fila sin geocodificar -', f),
-            procesAcabat=lambda n: print('Zonas', z.zones, 'procesadas en', str(n), 'segs. en ' + z.fZones + ' -', str(z.rows), 'registros,', str(z.errors), 'errores'))
+            procesAcabat=lambda n: print('Zonas', z.zones, 'procesadas en', str(n), 'segs. en ' + z.fZones + ' -', str(z.files), 'registros,', str(z.errors), 'errores'))
         if not ok:
             print('ERROR:', z.msgError)
