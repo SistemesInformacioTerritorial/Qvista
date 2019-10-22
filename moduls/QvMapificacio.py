@@ -53,7 +53,6 @@ class QvMapificacio(QObject):
         super().__init__()
         self.fDades = self.fZones = fDades
         self.codi = codi
-        self.separador = separador
         self.prefixe = prefixe
         self.numMostra = numMostra
         self.mostra = []
@@ -63,43 +62,59 @@ class QvMapificacio(QObject):
         self.msgError = ''
         self.cancel = False
         self.db = None
-        self.iniDades()
+        self.iniDades(separador)
 
-    def iniDades(self) -> None:
-        if not os.path.isfile(self.fDades):
-            splitFile = os.path.split(self.fDades)
-            local = RUTA_LOCAL + splitFile[1]
-            if not os.path.isfile(local):
-                self.msgError = 'Arxiu CSV no existeix'
-                return
-            else:
-                self.fDades = self.fZones = local
+    def iniDades(self, sep: str) -> None:
+        try:
+            if not os.path.isfile(self.fDades):
+                splitFile = os.path.split(self.fDades)
+                local = RUTA_LOCAL + splitFile[1]
+                if not os.path.isfile(local):
+                    self.msgError = 'Arxiu CSV no existeix'
+                    return
+                else:
+                    self.fDades = self.fZones = local
 
-        if self.numMostra < 10:
-            self.numMostra = 10
+            if self.numMostra < 10:
+                self.numMostra = 10
 
-        if self.codi == '':
-            self.codi = self.infereixCodi()
+            if self.codi == '':
+                self.codi = self.infereixCodi()
 
-        with open(self.fDades, "r", encoding=self.codi) as csvInput:
-            lenFile = os.path.getsize(self.fDades)
-            data = csvInput.readline()
-            self.camps = data.rstrip(csvInput.newlines)
-            self.mostra = []
-            lenMuestra = 0
-            num = 0
-            for data in csvInput:
-                num += 1
-                lenMuestra += len(data)
-                data.rstrip(csvInput.newlines)
+            with open(self.fDades, "r", encoding=self.codi) as csvInput:
+                lenFile = os.path.getsize(self.fDades)
+                # Cabecera con nombres de campos
+                data = csvInput.readline()
+                data = data.rstrip(csvInput.newlines)
+                self.mostra = []
                 self.mostra.append(data)
-                if num == self.numMostra:
-                    break
-            lenRow = lenMuestra / num
-            self.files = int(round(lenFile / lenRow))
-            if self.separador == '':
-                self.separador = self.infereixSeparador()
-            self.camps = self.camps.split(self.separador)
+                # Lineas de muestra
+                lenMuestra = 0
+                num = 0
+                for data in csvInput:
+                    num += 1
+                    lenMuestra += len(data)
+                    data = data.rstrip(csvInput.newlines)
+                    self.mostra.append(data)
+                    if num == self.numMostra:
+                        break
+                # Estimación de longitud de fichero y separador de campos
+                lenRow = lenMuestra / num
+                self.files = int(round(lenFile / lenRow))
+                if sep == '':
+                    sep = self.infereixSeparador()
+                self.setSeparador(sep)
+        except Exception as err:
+            self.msgError = str(err)
+
+    def setSeparador(self, sep: str) -> None:
+        """Establece separador de campos
+        
+        Arguments:
+            sep {str} -- Caracter separador
+        """
+        self.separador = sep
+        self.camps = self.mostra[0].split(self.separador)
 
     def infereixCodi(self) -> str:
         '''Infereix la codificació d'un arxiu csv
