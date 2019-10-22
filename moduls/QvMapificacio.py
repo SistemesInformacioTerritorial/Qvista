@@ -14,6 +14,9 @@ import sys
 import csv
 import time
 import unicodedata
+import chardet
+import collections
+import operator
 
 from moduls.QvSqlite import QvSqlite
 from moduls.QvMapVars import *
@@ -25,6 +28,7 @@ _TRANS = str.maketrans('ÁÉÍÓÚáéíóúÀÈÌÒÙàèìòùÂÊÎÔÛâêî
 
 RUTA_LOCAL = 'C:/temp/qVista/dades/'
 RUTA_DADES = 'D:/qVista/Codi/Dades/'
+CAMP_QVISTA = 'QVISTA_'
 
 class QvMapificacio(QObject):
     """Clase que, a partir de un CSV con campos de dirección postal es capaz de:
@@ -32,62 +36,124 @@ class QvMapificacio(QObject):
        - Calcular una agregación a partir del código de zona para una posterior mapificación
     """
 
-    def __init__(self, fDades: str, code: str = 'ANSI', delimiter: str = ';', prefixe: str = 'QVISTA_', numMostra: int = 60):
+    def __init__(self, fDades: str, codi: str = '', separador: str = '', prefixe: str = CAMP_QVISTA, numMostra: int = 60):
         """Abre y prepara el fichero CSV para la mapificación
         
         Arguments:
             fDades {str} -- Nombre del fichero CSV a tratar
         
         Keyword Arguments:
-            code {str} -- Codificación de los caracteres del CSV (default: {'ANSI'})
-            delimiter {str} -- Caracter separador de campos en el CSV (default: {';'})
+            codi {str} -- Codificación de los caracteres del CSV. Por defecto, se infiere del fichero (default: {''})
+            separador {str} -- Caracter separador de campos en el CSV. Por defecto, se infiere del fichero (default: {''})
             prefixe {str} -- Prefijo del campo añadido que contendra el codigo de zona;
-                             el sufijo será el nombre de la zona escogida (default: {'QVISTA_'})
+                             el sufijo será el nombre de la zona escogida (default: {CAMP_QVISTA})
             numMostra {int} -- Número de filas de muestra a leer del CSV para hacer una estimación del número total
                                de registros. Útil solo para la geocodificación (default: {60})
         """
         super().__init__()
         self.fDades = self.fZones = fDades
-        self.code = code
-        self.delimiter = delimiter
+        self.codi = codi
+        self.separador = separador
         self.prefixe = prefixe
         self.numMostra = numMostra
         self.mostra = []
-        self.fields = []
-        self.rows = 0
+        self.camps = []
+        self.files = 0
         self.errors = 0
         self.msgError = ''
         self.cancel = False
+        self.db = None
         self.iniDades()
-        self.db = QvSqlite()
 
     def iniDades(self) -> None:
         if not os.path.isfile(self.fDades):
             splitFile = os.path.split(self.fDades)
             local = RUTA_LOCAL + splitFile[1]
             if not os.path.isfile(local):
+                self.msgError = 'Arxiu CSV no existeix'
                 return
             else:
                 self.fDades = self.fZones = local
 
-        with open(self.fDades, "r", encoding=self.code) as csvInput:
+        if self.numMostra < 10:
+            self.numMostra = 10
+
+        if self.codi == '':
+            self.codi = self.infereixCodi()
+
+        with open(self.fDades, "r", encoding=self.codi) as csvInput:
             lenFile = os.path.getsize(self.fDades)
             data = csvInput.readline()
-            self.fields = data.rstrip(csvInput.newlines).split(self.delimiter)
+            self.camps = data.rstrip(csvInput.newlines)
             self.mostra = []
-            if self.numMostra > 0:
-                lenMuestra = 0
-                maxMuestra = self.numMostra
-                num = 0
-                for data in csvInput:
-                    num += 1
-                    data = data.encode(self.code)
-                    self.mostra.append(data)
-                    lenMuestra += len(data)
-                    if num == maxMuestra:
-                        break
-                lenRow = lenMuestra / num
-                self.rows = int(round(lenFile / lenRow))
+            lenMuestra = 0
+            num = 0
+            for data in csvInput:
+                num += 1
+                lenMuestra += len(data)
+                data.rstrip(csvInput.newlines)
+                self.mostra.append(data)
+                if num == self.numMostra:
+                    break
+            lenRow = lenMuestra / num
+            self.files = int(round(lenFile / lenRow))
+            if self.separador == '':
+                self.separador = self.infereixSeparador()
+            self.camps = self.camps.split(self.separador)
+
+    def infereixCodi(self) -> str:
+        '''Infereix la codificació d'un arxiu csv
+        Returns:
+            codi{str} -- El codi inferit
+        '''
+        with open(self.fDades, "rb") as csvInput:
+            buf = csvInput.read(1000)
+        val = chardet.detect(buf)
+        return val['encoding']
+
+    def infereixSeparador(self) -> str:
+        '''Infereix el separador d'un arxiu csv
+        Returns:
+            separador{str} -- El separador inferit
+        '''
+        def eliminaRepOrd(lst):
+            '''Rep una llista i la retorna sense repeticions i ordenada'''
+            return sorted(set(lst))
+
+        def infereixSeparadorLinia(line):
+            import re
+
+            aux = line.strip()
+            aux = re.sub('"[^"]*"', '', aux) # Elimina strings entre comillas dobles
+            aux = ''.join([i for i in line if not i.isalnum()]) # Elimina caracteres alfanumércios
+            auxSenseRep = eliminaRepOrd(aux)  # Eliminem repeticions
+            # Diccionario ordenado con caracteres y número de apariciones
+            lst = collections.OrderedDict()
+            for char in auxSenseRep:
+                lst[char] = aux.count(char)
+            return lst
+
+        def uneixLlistesAp(lst1, lst2):
+            if len(lst1) == 0:
+                return lst2
+            lst = collections.OrderedDict()
+            # Acumular los totales ya existentes
+            for char in lst1:
+                if char in lst2:
+                    lst[char] = lst1[char] + lst2[char]
+            # Añadir totales nuevos
+            for char in lst2:
+                if char not in lst1:
+                    lst[char] = lst2[char]
+            return lst
+ 
+        lst = collections.OrderedDict()
+        for linia in self.mostra:
+            act = infereixSeparadorLinia(linia)
+            lst = uneixLlistesAp(lst, act)
+        # Retornamos el caracter con más apariciones en total
+        elem = max(lst.items(), key=operator.itemgetter(1))
+        return elem[0]
 
     def verifCampsAdreca(self, camps: List[str]) -> bool:
         try:
@@ -97,15 +163,15 @@ class QvMapificacio(QObject):
             for camp in camps:
                 num += 1
                 if num in (2, 3): # Obligatorio
-                    if camp is None or camp not in self.fields:
+                    if camp is None or camp not in self.camps:
                         return False
                 else: # Opcional
-                    if camp is not None and camp != '' and camp not in self.fields:
+                    if camp is not None and camp != '' and camp not in self.camps:
                         return False
             return True
         except Exception:
             return False
-    
+
     def valorCampAdreca(self, fila: csv.OrderedDict, num: int) -> str:
         try:
             camp = self.campsAdreca[num]
@@ -115,14 +181,6 @@ class QvMapificacio(QObject):
                 return fila[camp]
         except Exception:
             return ''
-    
-    @pyqtSlot()
-    def cancelProces(self) -> None:
-        self.cancel = True
-
-    percentatgeProces = pyqtSignal(int)  # Porcentaje cubierto (0 - 100)
-    procesAcabat = pyqtSignal(int)  # Tiempo transcurrido en zonificar (segundos)
-    errorAdreca = pyqtSignal(dict) # Registro que no se pudo geocodificar
 
     def verifZones(self, zones: List[str]) -> bool:
         self.zones = zones
@@ -142,7 +200,15 @@ class QvMapificacio(QObject):
                     self.campsZones.append(c)
         return True
 
-    def geocodificacio(self, campsAdreca: List[str], zones: List[str], fZones: str ='', substituir: bool = True,
+    @pyqtSlot()
+    def cancelProces(self) -> None:
+        self.cancel = True
+
+    percentatgeProces = pyqtSignal(int)  # Porcentaje cubierto (0 - 100)
+    procesAcabat = pyqtSignal(int)  # Tiempo transcurrido en zonificar (segundos)
+    errorAdreca = pyqtSignal(dict) # Registro que no se pudo geocodificar
+
+    def geocodificacio(self, campsAdreca: List[str], zones: List[str], fZones: str = '', substituir: bool = True,
         percentatgeProces: pyqtSignal = None, procesAcabat: pyqtSignal = None, errorAdreca: pyqtSignal = None) -> bool:
         """Añade coordenadas y códigos de zona a cada uno de los registros del CSV, a partir de los campos de dirección postal
 
@@ -164,6 +230,8 @@ class QvMapificacio(QObject):
             bool -- True si ha ido bien, False si hay errores (mensaje en self.msgError)
 
         """
+        if self.db is None:
+            self.db = QvSqlite()
         self.msgError = ''
 
         if self.verifCampsAdreca(campsAdreca):
@@ -185,8 +253,8 @@ class QvMapificacio(QObject):
 
         self.substituir = substituir
 
-        if self.rows >= 100:
-            nSignal = int(round(self.rows / 100))
+        if self.files >= 100:
+            nSignal = int(round(self.files / 100))
         else:
             nSignal = 1
 
@@ -201,20 +269,20 @@ class QvMapificacio(QObject):
         ini = time.time()
 
         # Fichero CSV de entrada
-        with open(self.fDades, "r", encoding=self.code) as csvInput:
+        with open(self.fDades, "r", encoding=self.codi) as csvInput:
 
             # Fichero CSV de salida geocodificado
-            with open(self.fZones, "w", encoding=self.code) as csvOutput:
+            with open(self.fZones, "w", encoding=self.codi) as csvOutput:
 
                 # Cabeceras
-                data = csv.DictReader(csvInput, delimiter=self.delimiter)
+                data = csv.DictReader(csvInput, delimiter=self.separador)
 
                 for campZona in self.campsZones:
                     campSortida = self.prefixe + campZona
-                    if campSortida not in self.fields:
-                        self.fields.append(campSortida)
+                    if campSortida not in self.camps:
+                        self.camps.append(campSortida)
 
-                writer = csv.DictWriter(csvOutput, delimiter=self.delimiter, fieldnames=self.fields, lineterminator='\n')
+                writer = csv.DictWriter(csvOutput, delimiter=self.separador, fieldnames=self.camps, lineterminator='\n')
                 writer.writeheader()
 
                 # Lectura de filas y geocodificación
@@ -250,15 +318,15 @@ class QvMapificacio(QObject):
                     
                     writer.writerow(row)
                     # Informe de progreso cada 1% o cada fila si hay menos de 100
-                    if self.rows > 0 and tot % nSignal == 0:
-                        self.percentatgeProces.emit(int(round(tot * 100 / self.rows)))
+                    if self.files > 0 and tot % nSignal == 0:
+                        self.percentatgeProces.emit(int(round(tot * 100 / self.files)))
 
                     # Cancelación del proceso via slot -- SIN PROBAR
                     if self.cancel:
                         break
 
             fin = time.time()
-            self.rows = tot
+            self.files = tot
             self.errors = num
 
             # Informe de fin de proceso y segundos transcurridos
@@ -299,9 +367,10 @@ class QvMapificacio(QObject):
         else:
             self.valZona = MAP_ZONES[self.zona]
         self.campZona = self.prefixe + self.valZona[0]
-        if self.campZona not in self.fields:
+        if self.campZona not in self.camps:
             return False
         return True
+
 
     def agregacio(self, llegenda, nomCapa: str, zona: str, tipusAgregacio: str,
         campCalculat: str = 'RESULTAT', campAgregat: str = '', tipusDistribucio: str = "Total", filtre: str = '', numDecimals: int = -1,
@@ -360,6 +429,8 @@ class QvMapificacio(QObject):
             self.msgError = "Error en tipusDistribucio"
             return False
         self.tipusDistribucio = MAP_DISTRIBUCIO[tipusDistribucio]
+        if self.tipusDistribucio != '':
+            self.tipusDistribucio = 'Z.' + self.tipusDistribucio
 
         if modeCategories is None or modeCategories not in MAP_METODES.keys():
             self.msgError = "Error en modeCategories"
@@ -385,7 +456,7 @@ class QvMapificacio(QObject):
 
         # Carga de capa de datos geocodificados
         infoLyr = QgsVectorLayer(self.fZones, 'Info', 'ogr')
-        infoLyr.setProviderEncoding(self.code)
+        infoLyr.setProviderEncoding(self.codi)
         if not infoLyr.isValid():
             self.msgError = "No s'ha pogut carregar capa de dades: " + self.fZones
             return False
@@ -406,7 +477,7 @@ class QvMapificacio(QObject):
         zonaCamps = []
         for field in zonaLyr.fields():
             name = field.name().upper()
-            if not name.startswith('QVISTA_') and not name.startswith('OGC_'):
+            if not name.startswith(self.prefixe) and not name.startswith('OGC_'):
                 zonaCamps.append(name)
 
         # Creación de capa virtual que construye la agregación
@@ -494,15 +565,22 @@ if __name__ == "__main__":
         app = QvApp()
 
         z = QvMapificacio('CarrecsANSI.csv')
-        print(z.rows, 'filas en', z.fDades)
-        print('Campos:', z.fields)
+        # z = QvMapificacio('CarrecsUTF8.csv')
+        if z.msgError != '':
+            print('Error:', z.msgError)
+            exit(1)
+        print('Código caracteres:', z.codi)
+        print('Num. líneas muestra:', z.numMostra)
+        print('Delimitador:', z.separador)
         print('Muestra:', z.mostra)
+        print('Campos:', z.camps)
+        print(z.files, 'filas en', z.fDades)
 
-        camps = ('', 'NOM_CARRER_GPL', 'NUM_I_GPL', '', 'NUM_F_GPL')
+        campsAdreca = ('', 'NOM_CARRER_GPL', 'NUM_I_GPL', '', 'NUM_F_GPL')
         zones = ('Coordenada', 'Barri')
-        ok = z.geocodificacio(camps, zones,
+        ok = z.geocodificacio(campsAdreca, zones,
             percentatgeProces=lambda n: print('... Procesado', str(n), '% ...'),
             errorAdreca=lambda f: print('Fila sin geocodificar -', f),
-            procesAcabat=lambda n: print('Zonas', z.zones, 'procesadas en', str(n), 'segs. en ' + z.fZones + ' -', str(z.rows), 'registros,', str(z.errors), 'errores'))
+            procesAcabat=lambda n: print('Zonas', z.zones, 'procesadas en', str(n), 'segs. en ' + z.fZones + ' -', str(z.files), 'registros,', str(z.errors), 'errores'))
         if not ok:
             print('ERROR:', z.msgError)
