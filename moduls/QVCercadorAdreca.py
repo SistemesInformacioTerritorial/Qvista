@@ -10,6 +10,7 @@ import re
 import csv
 from PyQt5.QtSql import *
 from moduls.QvApp import QvApp
+from moduls.QvBafarada import QvBafarada
 
 
 
@@ -191,7 +192,10 @@ class QCercadorAdreca(QObject):
         if not self.carrerActivat:
             self.txto = self.completerCarrer.currentCompletion()
             self.habilitaLeNum()
-            if self.txto=='': return
+            if self.txto=='': 
+                # baf=QvBafarada("L'adreça introduïda no existeix",self.leCarrer)
+                # baf.show()
+                return
 
             nn= self.txto.find(chr(30))
             if nn==-1:
