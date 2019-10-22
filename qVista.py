@@ -983,13 +983,26 @@ class QVista(QMainWindow, Ui_MainWindow):
             self.marcaLloc.show()
             self.marcaLlocPosada = True
         else:
+            return
             msg = QMessageBox()
             msg.setIcon(QMessageBox.Warning)
+
+            missatges={
+                       1: '',
+                       2: '',
+                       3: '',
+                       4: "No existeix cap carrer amb aquest nom",
+                       5: '',
+                       6: '',
+                       7: '',
+                       8: '',
+                       9: '',
+            }
             
-            msg.setText(info_rsc)
+            msg.setText(missatges[rsc])
             # msg.setInformativeText("OK para salir del programa \nCANCEL para seguir en el programa")
             msg.setWindowTitle("ERROR: qVista")
-            msg.setDetailedText("Posa el cursor sobre els camps d'edició i segueix les instruccions.")
+            msg.setDetailedText(info_rsc)
             msg.setStandardButtons(QMessageBox.Close)
             retval = msg.exec_() #No fem res amb el valor de retorn (???)
 

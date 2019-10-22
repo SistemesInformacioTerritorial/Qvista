@@ -51,6 +51,9 @@ class QCercadorAdreca(QObject):
 
         self.query = QSqlQuery(self.db) # Intancia del Query
         self.txto =''
+        self.habilitaLeNum()
+
+
 
         self.iniAdreca()
 
@@ -58,7 +61,8 @@ class QCercadorAdreca(QObject):
             # si se ha podido leer las direciones... creando el diccionario...
             self.prepararCompleterCarrer()
 
-      
+    def habilitaLeNum(self):
+        self.leNumero.setEnabled(self.txto!='')
 
     def cercadorAdrecaFi(self):
         if self.db.isOpen():
@@ -98,11 +102,11 @@ class QCercadorAdreca(QObject):
         self.infoAdreca = None
 
     def connectarLineEdits(self):
-        self.leCarrer.returnPressed.connect(self.trobatCarrer)
+        self.leCarrer.editingFinished.connect(self.trobatCarrer)
         self.leCarrer.textChanged.connect(self.esborrarNumero)
         self.leCarrer.mouseDoubleClickEvent = self.clear_leNumero_leCarrer
 
-        self.leNumero.returnPressed.connect(self.trobatNumero)
+        self.leNumero.editingFinished.connect(self.trobatNumero)
         # self.leNumero.returnPressed.connect(self.trobatNumero)
 
     def clear_leNumero_leCarrer(self, carrer):
@@ -182,9 +186,12 @@ class QCercadorAdreca(QObject):
             self.sHanTrobatCoordenades.emit(1,info) #adreça vacia
 
     def trobatCarrer(self):
+        # if self.leCarrer.text()=='': return
         self.carrerActivat = False
         if not self.carrerActivat:
             self.txto = self.completerCarrer.currentCompletion()
+            self.habilitaLeNum()
+            if self.txto=='': return
 
             nn= self.txto.find(chr(30))
             if nn==-1:
@@ -334,6 +341,7 @@ class QCercadorAdreca(QObject):
             self.sHanTrobatCoordenades.emit(5,info)  #numero          
 
     def trobatNumero(self):
+        if self.leNumero.text()=='': return
         self.txto = self.completerCarrer.currentCompletion()
         try:
             # if self.leCarrer.text() in self.dictCarrers:
