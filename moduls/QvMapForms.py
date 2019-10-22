@@ -4,7 +4,7 @@ from qgis.gui import QgsFileWidget
 from qgis.PyQt.QtCore import Qt, QObject, pyqtSignal, pyqtSlot
 from qgis.PyQt.QtGui import QColor, QValidator, QIcon, QDoubleValidator
 from qgis.PyQt.QtWidgets import (QFileDialog, QWidget, QPushButton, QFormLayout, QVBoxLayout, QHBoxLayout,
-                                 QComboBox, QLabel, QLineEdit, QSpinBox, QGroupBox, QGridLayout,
+                                 QComboBox, QLabel, QLineEdit, QSpinBox, QGroupBox, QGridLayout, QDialog,
                                  QMessageBox, QDialogButtonBox)
 
 from qgis.core import QgsApplication, QgsGraduatedSymbolRenderer, QgsExpressionContextUtils
@@ -34,7 +34,7 @@ class QvFormNovaMapificacio(QWidget):
         self.setWindowTitle('Afegir capa de mapificació')
 
         self.layout = QVBoxLayout()
-        self.layout.setSpacing(12)
+        self.layout.setSpacing(14)
         self.setLayout(self.layout)
 
         self.arxiu = QgsFileWidget()
@@ -92,7 +92,7 @@ class QvFormNovaMapificacio(QWidget):
 
         self.gZona = QGroupBox('Definició zona')
         self.lZona = QFormLayout()
-        self.lZona.setSpacing(10)
+        self.lZona.setSpacing(14)
         self.gZona.setLayout(self.lZona)
 
         self.lZona.addRow('Arxiu dades:', self.arxiu)
@@ -101,7 +101,7 @@ class QvFormNovaMapificacio(QWidget):
 
         self.gDades = QGroupBox('Dades agregació')
         self.lDades = QFormLayout()
-        self.lDades.setSpacing(10)
+        self.lDades.setSpacing(14)
         self.gDades.setLayout(self.lDades)
 
         self.lDades.addRow('Tipus agregació:', self.tipus)
@@ -111,7 +111,7 @@ class QvFormNovaMapificacio(QWidget):
 
         self.gSimb = QGroupBox('Simbologia mapificació')
         self.lSimb = QFormLayout()
-        self.lSimb.setSpacing(10)
+        self.lSimb.setSpacing(14)
         self.gSimb.setLayout(self.lSimb)
 
         self.lSimb.addRow('Color mapa:', self.color)
@@ -122,6 +122,8 @@ class QvFormNovaMapificacio(QWidget):
         self.layout.addWidget(self.gDades)
         self.layout.addWidget(self.gSimb)
         self.layout.addWidget(self.buttons)
+
+        self.adjustSize()
 
     def borrarZones(self):
         self.tipus.setCurrentIndex(0)
@@ -219,19 +221,21 @@ class QvFormNovaMapificacio(QWidget):
         self.close()
 
 class QvFormSimbMapificacio(QWidget):
-    def __init__(self, llegenda, capa):
+    def __init__(self, llegenda, capa, amplada=450):
 
         super().__init__()
+        self.setMinimumWidth(amplada)
+        self.setMaximumWidth(amplada)
         self.llegenda = llegenda
         self.capa = capa
         if not self.iniParams():
             return
 
         self.setWindowFlags(Qt.Dialog | Qt.MSWindowsFixedSizeDialogHint)
-        self.setWindowTitle('Modificar categories de mapificació')
+        self.setWindowTitle('Modificar mapificació')
 
         self.layout = QVBoxLayout()
-        self.layout.setSpacing(12)
+        self.layout.setSpacing(14)
         self.setLayout(self.layout)
 
         self.color = QComboBox(self)
@@ -241,12 +245,13 @@ class QvFormSimbMapificacio(QWidget):
         self.metode = QComboBox(self)
         self.metode.setEditable(False)
         self.metode.addItems(MAP_METODES_MODIF.keys())
+        self.metode.setCurrentIndex(-1)
         self.metode.currentIndexChanged.connect(self.canviaMetode)
 
         self.nomIntervals = QLabel('Nombre intervals:', self)
         self.intervals = QSpinBox(self)
         self.intervals.setMinimum(2)
-        self.intervals.setMaximum(MAP_MAX_CATEGORIES)
+        self.intervals.setMaximum(max(MAP_MAX_CATEGORIES, self.numCategories))
         self.intervals.setSingleStep(1)
         self.intervals.setValue(4)
         self.intervals.setSuffix("  (depèn del mètode)")
@@ -260,7 +265,7 @@ class QvFormSimbMapificacio(QWidget):
 
         self.gSimb = QGroupBox('Simbologia mapificació')
         self.lSimb = QFormLayout()
-        self.lSimb.setSpacing(10)
+        self.lSimb.setSpacing(14)
         # self.gSimb.setMinimumWidth(400)
         self.gSimb.setLayout(self.lSimb)
 
@@ -282,14 +287,12 @@ class QvFormSimbMapificacio(QWidget):
     def txtRang(self, num):
         if type(num) == str:
             return num
-        v = round(num, self.numDecimals)
-        if self.numDecimals == 0:
-            v = int(v)
-        return str(v)
+        return MAP_LOCALE.toString(num, 'f', self.numDecimals)
 
     def iniFilaInterval(self, iniValor, finValor):
         maxSizeB = 27
         validator = QDoubleValidator(self)
+        validator.setLocale(MAP_LOCALE)
         validator.setNotation(QDoubleValidator.StandardNotation)
         validator.setDecimals(5)
         ini = QLineEdit(self)
@@ -318,7 +321,7 @@ class QvFormSimbMapificacio(QWidget):
         group = QGroupBox('Definició intervals')
         # group.setMinimumWidth(400)
         layout = QGridLayout()
-        layout.setSpacing(8)
+        layout.setSpacing(10)
         # layout.setColumnMinimumWidth(4, 40)
         numFilas = len(self.wInterval)
         for fila, widgets in enumerate(self.wInterval):
@@ -407,9 +410,8 @@ class QvFormSimbMapificacio(QWidget):
 
     def valorsInicials(self):        
         self.color.setCurrentIndex(self.color.findText(self.colorBase))
-        self.metode.setCurrentIndex(self.metode.findText(self.modeCategories))
         self.intervals.setValue(self.numCategories)
-        self.canviaMetode()
+        self.metode.setCurrentIndex(self.metode.findText(self.modeCategories))
 
     def valorsFinals(self):
         self.colorBase = self.color.currentText()
@@ -433,7 +435,7 @@ class QvFormSimbMapificacio(QWidget):
         self.valorsFinals()
         try:
             if self.custom:
-                self.renderer = self.llegenda.mapRenderer.customRender(self.capa, self.campCalculat, self.numDecimals,
+                self.renderer = self.llegenda.mapRenderer.customRender(self.capa, self.campCalculat,
                     MAP_COLORS[self.colorBase], self.rangs)
             else:
                 self.renderer = self.llegenda.mapRenderer.calcRender(self.capa, self.campCalculat, self.numDecimals,
@@ -463,9 +465,8 @@ class QvFormSimbMapificacio(QWidget):
         if self.custom:
             self.intervals.setValue(len(self.wInterval))
         self.intervals.setEnabled(not self.custom)
-        # self.nomIntervals.setVisible(not self.custom)
-        # self.intervals.setVisible(not self.custom)
-        self.gSimb.adjustSize()
         self.gInter.setVisible(self.custom)
         self.adjustSize()
+        # print('GSIMB -> Ancho:', self.gSimb.size().width(), '- Alto:', self.gSimb.size().height())
+        # print('FORM -> Ancho:', self.size().width(), '- Alto:', self.size().height())
 

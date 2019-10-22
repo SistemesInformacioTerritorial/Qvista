@@ -4,6 +4,8 @@ from qgis.PyQt.QtGui import QColor
 
 from qgis.core import QgsGraduatedSymbolRenderer
 
+from qgis.PyQt.QtCore import QLocale
+
 MAP_MAX_CATEGORIES = 10
 
 MAP_ZONES = {
@@ -53,6 +55,8 @@ MAP_METODES = {
 
 MAP_METODES_MODIF = MAP_METODES.copy()
 MAP_METODES_MODIF["Personalitzat"] = QgsGraduatedSymbolRenderer.Custom
+
+MAP_LOCALE = QLocale(QLocale.Catalan, QLocale.Spain)
 
 if __name__ == "__main__":
 

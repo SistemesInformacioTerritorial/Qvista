@@ -3,9 +3,9 @@
 from qgis.core import (QgsApplication, QgsVectorLayer, QgsLayerDefinition,
                        QgsSymbol, QgsRendererCategory, QgsCategorizedSymbolRenderer,
                        QgsGraduatedSymbolRenderer, QgsRendererRange,
-                       QgsGradientColorRamp, QgsRendererRangeLabelFormat)
+                       QgsGradientColorRamp, QgsRendererRangeLabelFormat,)
 
-from qgis.PyQt.QtCore import Qt, QObject, pyqtSignal, pyqtSlot
+from qgis.PyQt.QtCore import Qt, QObject, pyqtSignal, pyqtSlot, QLocale
 from qgis.PyQt.QtGui import QColor
 
 from moduls.QvMapVars import *
@@ -38,29 +38,51 @@ class QvMapRenderer(QObject):
         capa.triggerRepaint()
         return renderer
 
-    def numRang(self, txt, numDecimals):
-        v = round(float(txt), numDecimals)
-        if numDecimals == 0:
-            v = int(v)
-        return v
+    # def numRang(self, txt, decimals):
+    #     num = MAP_LOCALE.toFloat(txt)
+    #     val = round(num, decimals)
+    #     if decimals == 0:
+    #         val = int(val)
+    #     return val
 
-    def customRender(self, capa, campCalculat, numDecimals, colorBase, rangs):
+    def numDecimals(self, num):
+        num = num.strip()
+        pos = num.rfind(MAP_LOCALE.decimalPoint())
+        if pos == -1:
+            return 0
+        else:
+            return len(num) - pos - 1
+
+    def maxDecimals(self, rangs):
+        res = 0
+        for r in rangs:
+            for i in (0, 1):
+                n = self.numDecimals(r[i])
+                res = max(res, n)
+        return res
+
+    def customRender(self, capa, campCalculat, colorBase, rangs):
         total = len(rangs)
         step = 256 // (total - 1)
         alpha = 0
         color = QColor(colorBase)
+        decimals = self.maxDecimals(rangs)
         categories = []
         for r in rangs:
             color.setAlpha(alpha)
             alpha += step
             sym = QgsSymbol.defaultSymbol(capa.geometryType())
             sym.setColor(color)
-            label = r[0] + ' - ' + r[1]
-            category = QgsRendererRange(self.numRang(r[0], numDecimals),
-                self.numRang(r[1], numDecimals), sym, label)
+            f0, _ = MAP_LOCALE.toFloat(r[0])
+            f1, _ = MAP_LOCALE.toFloat(r[1])
+            lab0 = MAP_LOCALE.toString(f0, 'f', decimals)
+            lab1 = MAP_LOCALE.toString(f1, 'f', decimals)
+            label = lab0 + ' - ' + lab1
+            category = QgsRendererRange(f0, f1, sym, label)
             categories.append(category)
         renderer = QgsGraduatedSymbolRenderer(campCalculat, categories)
         renderer.setMode(QgsGraduatedSymbolRenderer.Custom)
+        # renderer.setClassAttribute(str(decimals))
         capa.setRenderer(renderer)
         capa.triggerRepaint()
         return renderer
@@ -87,17 +109,19 @@ class QvMapRenderer(QObject):
             modeCategories = self.nomParam(renderer.mode(), MAP_METODES_MODIF)
 
             if modeCategories == 'Personalitzat':
-# TODO:
+# TODO
+                # txt = renderer.classAttribute()
+                # numDecimals = int(txt)
                 numDecimals = 0
                 cat = rangsCategories[0]
                 color = cat.symbol().color()
             else:
                 numDecimals = renderer.labelFormat().precision()
                 color = renderer.sourceColorRamp().color1()
-                # color.setAlpha(0)
 
             colorBase = self.nomColor(color, MAP_COLORS)
             return campCalculat, numDecimals, colorBase, numCategories, modeCategories, rangsCategories
+
         except Exception as e:
             return 'RESULTAT', 0, 'Blau', 4, 'Endreçat', []
 
