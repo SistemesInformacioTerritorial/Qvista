@@ -137,7 +137,7 @@ class QvFormNovaMapificacio(QWidget):
         self.fCSV = QvMapificacio(nom, numMostra=0)
         num = 0
         for zona, val in MAP_ZONES.items():
-            if self.fCSV.prefixe + val[0] in self.fCSV.fields:
+            if self.fCSV.prefixe + val[0] in self.fCSV.camps:
                 self.zona.addItem(zona)
                 num = num + 1
         if num == 0:
@@ -261,7 +261,7 @@ class QvFormSimbMapificacio(QWidget):
         self.gSimb = QGroupBox('Simbologia mapificació')
         self.lSimb = QFormLayout()
         self.lSimb.setSpacing(10)
-        self.gSimb.setMinimumWidth(400)
+        # self.gSimb.setMinimumWidth(400)
         self.gSimb.setLayout(self.lSimb)
 
         self.lSimb.addRow('Color mapa:', self.color)
@@ -316,7 +316,7 @@ class QvFormSimbMapificacio(QWidget):
 
     def grupIntervals(self):
         group = QGroupBox('Definició intervals')
-        group.setMinimumWidth(400)
+        # group.setMinimumWidth(400)
         layout = QGridLayout()
         layout.setSpacing(8)
         # layout.setColumnMinimumWidth(4, 40)
@@ -460,8 +460,11 @@ class QvFormSimbMapificacio(QWidget):
     @pyqtSlot()
     def canviaMetode(self):
         self.custom = (self.metode.currentText() == 'Personalitzat')
-        self.nomIntervals.setVisible(not self.custom)
-        self.intervals.setVisible(not self.custom)
+        if self.custom:
+            self.intervals.setValue(len(self.wInterval))
+        self.intervals.setEnabled(not self.custom)
+        # self.nomIntervals.setVisible(not self.custom)
+        # self.intervals.setVisible(not self.custom)
         self.gSimb.adjustSize()
         self.gInter.setVisible(self.custom)
         self.adjustSize()
