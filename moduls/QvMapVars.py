@@ -30,8 +30,8 @@ MAP_AGREGACIO = {
 
 MAP_DISTRIBUCIO = {
     "Total": "",
-    "Per m2": "/ Z.AREA"
-    # "Per habitant": "/ Z.POBLACIO"
+    "Per m2": "/ AREA"
+    # "Per habitant": "/ POBLACIO"
 }
 
 MAP_COLORS = {

@@ -68,7 +68,7 @@ class QHLine(QFrame):
         super(QHLine, self).__init__()
         self.setFrameShape(QFrame.HLine)
         self.setFrameShadow(QFrame.Raised)
-        
+
 class QVLine(QFrame):
     def __init__(self):
         super(QVLine, self).__init__()
@@ -76,7 +76,6 @@ class QVLine(QFrame):
         self.setFrameShadow(QFrame.Sunken)
 
 # Classe principal QVista
-
 class QVista(QMainWindow, Ui_MainWindow):
     """
     Aquesta és la classe principal del QVista. 

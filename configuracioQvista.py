@@ -8,7 +8,7 @@ titolFinestra = "qVista %s  Sistema d'Informació Territorial de Barcelona"%vers
 carpetaCataleg = "N:/9SITEB/Publicacions/qVista/Cataleg/Capes/"
 #Definim per separat els directoris de projectes públics i privats, de manera que puguem comprovar en qualsevol moment si un directori és de projectes públics o privats
 carpetaCatalegProjectesPublics=["N:/9SITEB/Publicacions/qVista/Cataleg/Mapes publics/"]
-carpetaCatalegProjectesPrivats=['L:/DADES/SIT/qVista/CATALEG/MAPES PRIVATS']
+carpetaCatalegProjectesPrivats=['L:/DADES/SIT/qVista/CATALEG/MAPES PRIVATS/']
 carpetaCatalegProjectesLlista = [*carpetaCatalegProjectesPublics,*carpetaCatalegProjectesPrivats]
 projecteInicial = os.path.abspath('mapesOffline/qVista default map.qgs')
 
