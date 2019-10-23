@@ -52,6 +52,7 @@ class QCercadorAdreca(QObject):
 
         self.query = QSqlQuery(self.db) # Intancia del Query
         self.txto =''
+        self.calle_con_acentos=''
         self.habilitaLeNum()
 
 
@@ -63,7 +64,8 @@ class QCercadorAdreca(QObject):
             self.prepararCompleterCarrer()
 
     def habilitaLeNum(self):
-        self.leNumero.setEnabled(self.txto!='')
+        #Hauria de funcionar només amb la primera condició, però per raons que escapen al meu coneixement, no anava :()
+        self.leNumero.setEnabled(self.calle_con_acentos!='' or self.txto!='')
 
     def cercadorAdrecaFi(self):
         if self.db.isOpen():
@@ -103,8 +105,8 @@ class QCercadorAdreca(QObject):
         self.infoAdreca = None
 
     def connectarLineEdits(self):
-        self.leCarrer.editingFinished.connect(self.trobatCarrer)
         self.leCarrer.textChanged.connect(self.esborrarNumero)
+        self.leCarrer.editingFinished.connect(self.trobatCarrer)
         self.leCarrer.mouseDoubleClickEvent = self.clear_leNumero_leCarrer
 
         self.leNumero.editingFinished.connect(self.trobatNumero)
@@ -185,13 +187,16 @@ class QCercadorAdreca(QObject):
         else:
             info= "ERROR >> [1]" 
             self.sHanTrobatCoordenades.emit(1,info) #adreça vacia
+        self.habilitaLeNum()
+        # self.prepararCompleterNumero()
+        # self.focusANumero()
 
     def trobatCarrer(self):
         # if self.leCarrer.text()=='': return
-        self.carrerActivat = False
+        # self.carrerActivat = False
         if not self.carrerActivat:
+            print(self.leCarrer.text())
             self.txto = self.completerCarrer.currentCompletion()
-            self.habilitaLeNum()
             if self.txto=='': 
                 # baf=QvBafarada("L'adreça introduïda no existeix",self.leCarrer)
                 # baf.show()
@@ -209,61 +214,63 @@ class QCercadorAdreca(QObject):
             self.leCarrer.setAlignment(Qt.AlignLeft)  
             self.leCarrer.setText(self.calle_con_acentos)
 
-            if self.txto != '':
-                self.iniAdreca()
-                if self.txto != self.nomCarrer:
-                    # self.iniAdreca()
-                    if self.txto in self.dictCarrers:
-                        self.nomCarrer = self.txto
-                        self.codiCarrer = self.dictCarrers[self.nomCarrer]
+        if self.txto != '':
+            self.iniAdreca()
+            if self.txto != self.nomCarrer:
+                # self.iniAdreca()
+                if self.txto in self.dictCarrers:
+                    self.nomCarrer = self.txto
+                    self.codiCarrer = self.dictCarrers[self.nomCarrer]
+                    self.focusANumero()
+
+
+                    try:
+                        index = 0
+                        # self.query = QSqlQuery() # Intancia del Query
+                        # self.query.exec_("select codi, num_lletra_post, etrs89_coord_x, etrs89_coord_y, num_oficial  from Numeros where codi = '" + self.codiCarrer +"'")
+                        self.query.exec_("select codi,case num_lletra_post when '0' then ' ' else num_lletra_post end,  etrs89_coord_x, etrs89_coord_y, num_oficial  from Numeros   where codi = '" + self.codiCarrer +"'")   
+
+                        while self.query.next():
+                            row= collections.OrderedDict()
+                            row['NUM_LLETRA_POST']=  self.query.value(1) # Numero y Letra
+                            row['ETRS89_COORD_X']=   self.query.value(2) # coor x
+                            row['ETRS89_COORD_Y']=   self.query.value(3) # coor y
+                            row['NUM_OFICIAL']=      self.query.value(4) # numero oficial
+
+                            self.dictNumeros[self.codiCarrer][self.query.value(1)] = row
+                            index += 1
+                        
+                        self.query.finish()
+                        # self.db.close()
+                        self.prepararCompleterNumero()
                         self.focusANumero()
+                        
+                    except Exception as e:
+                        print(str(e))
+                        msg = QMessageBox()
+                        msg.setIcon(QMessageBox.Warning)
+                        
+                        msg.setText(str(sys.exc_info()[1]))
+                        # msg.setInformativeText("OK para salir del programa \nCANCEL para seguir en el programa")
+                        msg.setWindowTitle("qVista ERROR")
+                        msg.setStandardButtons(QMessageBox.Close)
+                        retval = msg.exec_() #No fem res amb el valor de retorn (???)
 
+                        print('QCercadorAdreca.iniAdreca(): ', sys.exc_info()[0], sys.exc_info()[1])
+                        return False
 
-                        try:
-                            index = 0
-                            # self.query = QSqlQuery() # Intancia del Query
-                            # self.query.exec_("select codi, num_lletra_post, etrs89_coord_x, etrs89_coord_y, num_oficial  from Numeros where codi = '" + self.codiCarrer +"'")
-                            self.query.exec_("select codi,case num_lletra_post when '0' then ' ' else num_lletra_post end,  etrs89_coord_x, etrs89_coord_y, num_oficial  from Numeros   where codi = '" + self.codiCarrer +"'")   
-
-                            while self.query.next():
-                                row= collections.OrderedDict()
-                                row['NUM_LLETRA_POST']=  self.query.value(1) # Numero y Letra
-                                row['ETRS89_COORD_X']=   self.query.value(2) # coor x
-                                row['ETRS89_COORD_Y']=   self.query.value(3) # coor y
-                                row['NUM_OFICIAL']=      self.query.value(4) # numero oficial
-
-                                self.dictNumeros[self.codiCarrer][self.query.value(1)] = row
-                                index += 1
-                            
-                            self.query.finish()
-                            # self.db.close()
-                            self.prepararCompleterNumero()
-                            self.focusANumero()
-                            
-                        except Exception as e:
-                            print(str(e))
-                            msg = QMessageBox()
-                            msg.setIcon(QMessageBox.Warning)
-                            
-                            msg.setText(str(sys.exc_info()[1]))
-                            # msg.setInformativeText("OK para salir del programa \nCANCEL para seguir en el programa")
-                            msg.setWindowTitle("qVista ERROR")
-                            msg.setStandardButtons(QMessageBox.Close)
-                            retval = msg.exec_() #No fem res amb el valor de retorn (???)
-
-                            print('QCercadorAdreca.iniAdreca(): ', sys.exc_info()[0], sys.exc_info()[1])
-                            return False
-
-                    else:
-                        info="ERROR >> [2]"
-                        self.sHanTrobatCoordenades.emit(2,info) #direccion no está en diccicionario
-                        self.iniAdreca()
                 else:
-                    info="ERROR >> [3]"
-                    self.sHanTrobatCoordenades.emit(3,info)    #nunca
+                    info="ERROR >> [2]"
+                    self.sHanTrobatCoordenades.emit(2,info) #direccion no está en diccicionario
+                    self.iniAdreca()
             else:
-                info="ERROR >> [4]"
-                self.sHanTrobatCoordenades.emit(4,info) #adreça vac       
+                info="ERROR >> [3]"
+                self.sHanTrobatCoordenades.emit(3,info)    #nunca
+        else:
+            info="ERROR >> [4]"
+            self.sHanTrobatCoordenades.emit(4,info) #adreça vac 
+        self.habilitaLeNum() 
+        
 
             
     def llegirAdreces(self):
@@ -401,6 +408,8 @@ class QCercadorAdreca(QObject):
         self.leNumero.setFocus()
 
     def esborrarNumero(self):
+        self.carrerActivat = False
+        self.calle_con_acentos=''
         self.leNumero.clear()
         #self.leNumero.setCompleter(None)
 
