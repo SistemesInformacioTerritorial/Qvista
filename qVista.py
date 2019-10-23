@@ -1601,6 +1601,7 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         # Disseny del interface
         class QvMesuraGrafica(QWidget):
+            colorCanviat=pyqtSignal(QColor)
             def __init__(self):
                 QWidget.__init__(self)
                 self.setWhatsThis(QvApp().carregaAjuda(self))
@@ -1611,52 +1612,81 @@ class QVista(QMainWindow, Ui_MainWindow):
 
                 self.lytMesuraGrafica.addLayout(self.lytBotonsMesura)
 
+                self.lytDistanciesArees=QVBoxLayout()
+                self.lytBotonsMesura.addLayout(self.lytDistanciesArees)
+                self.lytBotonsMesura.addStretch()
 
-                self.bm1 = QvPushButton(flat=True) 
-                self.bm1.setIcon(QIcon(imatgesDir+'apuntar.png'))
-                self.bm4 = QvPushButton(flat=True)
-                # self.bs4.setCheckable(True)
-                self.bm4.setIcon(QIcon(imatgesDir+'trash-can-outline.png'))
 
-                self.lblDistanciaTotal = QLabel('Distància total:')
-                # self.lblDistanciaTotal.setFixedWidth(230)
-                self.lblDistanciaTempsReal = QLabel('Distáncia últim tram:')
-                self.lblMesuraArea = QLabel('Àrea:')
+                self.color=QvConstants.COLORDESTACAT
+                self.bmSeleccioColor=QvPushButton(flat=True)
+                self.bmSeleccioColor.setIcon(QIcon('Imatges/da_color.png'))
+                self.bmSeleccioColor.setStyleSheet('background: solid %s; border: none'%self.color.name())
+                self.bmSeleccioColor.setIconSize(QSize(25,25))
+                QvConstants.afegeixOmbraWidget(self.bmSeleccioColor)
+                def canviColor(color):
+                    self.color=color
+                    self.bmSeleccioColor.setStyleSheet('background: solid %s; border: none'%color.name())
+                    self.colorCanviat.emit(color)
+                def openColorDialog():
+                    canviColor(QColorDialog().getColor())
+                self.bm4 = QvPushButton(destacat=True)
+                self.bm4.setText('Netejar')
+
+                self.lblDistanciaTotal = QLabel('Distància total: 0')
+                self.lblMesuraArea = QLabel('')
 
                 
                 self.lwMesuresHist = QListWidget()
                 self.lwMesuresHist.setSelectionMode(QAbstractItemView.ExtendedSelection)
+                self.lwMesuresHist.setMinimumHeight(50)
 
                 self.twResultatsMesura = QTableWidget()
 
-                self.bm1.clicked.connect(mesuraDistancies)
+                self.bmSeleccioColor.clicked.connect(openColorDialog)
                 #Si eventualment ho movem a un altre arxiu això no funcionarà
+                #Fer el doble connect sembla cutre (i ho és)
+                #Però com que esborrarMesures deixava de mesurar, i volem seguir mesurant, doncs ho fem a mà i ja
+                #Caldria refactoritzar en algun moment
                 self.bm4.clicked.connect(lambda: qV.esborrarMesures(True))
+                self.bm4.clicked.connect(mesuraDistancies)
 
-                self.lytBotonsMesura.addWidget(self.bm1)
+                self.lytBotonsMesura.addWidget(self.bmSeleccioColor)
                 self.lytBotonsMesura.addWidget(self.bm4)
-                self.lytMesuraGrafica.addWidget(self.lblDistanciaTotal)
-                self.lytMesuraGrafica.addWidget(self.lblDistanciaTempsReal)
-                self.lytMesuraGrafica.addWidget(self.lblMesuraArea)
+                self.lytDistanciesArees.addWidget(self.lblDistanciaTotal)
+                self.lytDistanciesArees.addWidget(self.lblMesuraArea)
                 
                 self.lytMesuraGrafica.addWidget(self.lwMesuresHist)
                 self.setMinimumWidth(350)
+                self.setMinimumHeight(100)
+                self.setSizePolicy(QSizePolicy.Minimum,QSizePolicy.Minimum)
+                self.resize(350,100)
             def clear(self):
+                return
                 self.lwMesuresHist.clear()
-            def addItem(self,item):
-                self.lwMesuresHist.addItem(item)
             def setDistanciaTotal(self,dist):
-                self.lblDistanciaTotal.setText('Distància total: ' + str(round(dist,2)) + ' m')
+                self.dist=round(dist,2)
+                self.lblDistanciaTotal.setText('Distància total: ' + str(self.dist) + ' m')
             def setDistanciaTempsReal(self,dist):
-                self.lblDistanciaTempsReal.setText('Distáncia últim tram: ' + str(round(dist,2)) + ' m')
+                return
             def setArea(self,area):
-                self.lblMesuraArea.setText('Àrea: ' + str(round(area,2)) + ' m²')
-            def addMesuresHist(self,mesura):
-                self.lwMesuresHist.addItem(str(round(mesura,2)))
+                if area is None:
+                    self.lblMesuraArea.setText('')
+                    self.area=None
+                else:
+                    self.area=round(area,2)
+                    self.lblMesuraArea.setText('Àrea: ' + str(self.area) + ' m²')
+            def actualitzaHistorial(self):
+                if self.area is not None:
+                    self.lwMesuresHist.insertItem(0,'Distància: %.2f m --- Àrea: %.2f m²'%(self.dist,self.area))
+                else:
+                    self.lwMesuresHist.insertItem(0,'Distància: %.2f m'%self.dist)
             def obrir(self):
-                self.bm1.animateClick()
-            def tancar(self):
+                #Redundant, perquè se suposa que quan comencem a mesurar s'esborra tot, però no anava :(
                 self.bm4.animateClick()
+                pos=qV.bMesuraGrafica.mapToGlobal(qV.bMesuraGrafica.pos())
+                self.parentWidget().move(pos.x()-375,pos.y()-200)
+            def tancar(self):
+                qV.esborrarMesures(True)
             def canviaVisibilitatDw(self,visibilitat):
                 if visibilitat:
                     self.obrir()
@@ -1673,7 +1703,10 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.dwMesuraGrafica.setWidget( self.wMesuraGrafica)
         self.dwMesuraGrafica.setContentsMargins ( 2, 2, 2, 2 )
         self.addDockWidget( Qt.RightDockWidgetArea, self.dwMesuraGrafica )
+        self.dwMesuraGrafica.setFloating(True)
+        self.dwMesuraGrafica.resize(350,130)
         #self.dwMesuraGrafica.setStyleSheet('QDockWidget {color: #465A63; background-color: #909090;}')
+        
         self.dwMesuraGrafica.hide()
         self.dwMesuraGrafica.visibilityChanged.connect(self.wMesuraGrafica.canviaVisibilitatDw)
 
@@ -2406,6 +2439,10 @@ class QVista(QMainWindow, Ui_MainWindow):
         try:
             qV.canvas.scene().removeItem(qV.toolMesura.rubberband)
             qV.canvas.scene().removeItem(qV.toolMesura.rubberband2)
+            for x in qV.toolMesura.rubberbands:
+                qV.canvas.scene().removeItem(x)
+            for x in qV.toolMesura.cercles:
+                qV.canvas.scene().removeItem(x)
             qV.wMesuraGrafica.clear()
             # qV.lwMesuresHist.clear()
 

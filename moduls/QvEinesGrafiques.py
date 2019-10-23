@@ -1,7 +1,10 @@
 from moduls.QvImports import *
 from moduls.QvAtributs import QvFitxesAtributs
+from moduls.QvConstants import QvConstants
 import math
 from PyQt5 import QtGui
+from qgis.utils import iface
+
 # from qgis.core import QgsFeatureRequest, QgsPointXY, QgsGeometry, QgsRectangle
 # from qgis.gui import QgsMapTool, QgsMapToolEmitPoint, QgsMapToolZoom, QgsMapToolPan, QgsRubberBand, QgsAttributeDialog
 # from qgis.PyQt.QtWidgets import QMessageBox
@@ -218,14 +221,15 @@ class QvMesuraMultiLinia(QgsMapTool):
         #dock = QgsAdvancedDigitizingDockWidget(self.canvas)
         #QgsMapToolAdvancedDigitizing.__init__(self, self.canvas, dock)
         QgsMapTool.__init__(self, self.canvas)
-        self.rubberband = QgsRubberBand(self.canvas)
-        self.rubberband.setColor(QColor(36,97,50))
-        self.rubberband.setWidth(4)
+        self.rubberband = self.creaRubberband()
         #self.rubberband.setIconType(QgsVertexMarker.ICON_CIRCLE)
 
-        self.rubberband2 = QgsRubberBand(self.canvas)
-        self.rubberband2.setColor(QColor(36,97,50))
-        self.rubberband2.setWidth(4)
+        self.rubberband2 = self.creaRubberband()
+
+        self.rubberbandCercle=self.creaRubberband(cercle=True)
+
+        self.rubberbands=[]
+        self.cercles=[]
 
         self.point = None
         self.lastPoint = None
@@ -238,8 +242,20 @@ class QvMesuraMultiLinia(QgsMapTool):
         self.hoverSartMarker = None
 
         self.qV.wMesuraGrafica.clear()
-        # self.qV.lwMesuresHist.clear()
 
+        self.qV.wMesuraGrafica.colorCanviat.connect(self.canviColor)
+
+        # self.qV.lwMesuresHist.clear()
+    def canviColor(self,color):
+        #De moment conservem el color del que ja teníem dibuixat
+        #Si més endavant es vol modificar només cal descomentar les línies inferiors
+        # for x in self.rubberbands:
+        #     x.setColor(color)
+        # for x in self.cercles:
+        #     x.setColor(color)
+        self.rubberband.setColor(color)
+        self.rubberband2.setColor(color)
+        self.rubberbandCercle.setColor(color)
     def setOverlap(self,overlap):
         self.overlap = overlap
 
@@ -250,7 +266,9 @@ class QvMesuraMultiLinia(QgsMapTool):
         return dist
 
     def canvasDoubleClickEvent(self, e):
-        print('Tancant polygon')
+        #Tancar polígon (de moment no es fa)
+        pass
+        # self.tancarPoligon()
     
     def canvasMoveEvent(self, e):
         self.lastPoint = self.toMapCoordinates(e.pos())
@@ -280,9 +298,39 @@ class QvMesuraMultiLinia(QgsMapTool):
         self.hoverSartMarker = False
         
         self.rubberband2.hide()
+        self.qV.wMesuraGrafica.actualitzaHistorial()
         self.qV.wMesuraGrafica.setDistanciaTempsReal(0)
+        self.qV.wMesuraGrafica.setDistanciaTotal(0)
+        self.qV.wMesuraGrafica.setArea(0)
         # self.qV.lblDistanciaTempsReal.setText('Distáncia últim tram: 0 m')       
-
+    def novaRubberband(self):
+        self.rubberbands.append(self.rubberband)
+        self.rubberband=None
+        self.rubberband=self.creaRubberband()
+    def creaRubberband(self,cercle=False): 
+        rubberband=QgsRubberBand(self.canvas)
+        rubberband.setColor(self.qV.wMesuraGrafica.color)
+        if cercle:
+            rubberband.setWidth(1)
+            rubberband.setLineStyle(Qt.DashLine)
+        else:
+            rubberband.setWidth(2)
+        rubberband.setIconSize(4)
+        return rubberband
+    def rbcircle(self, center,edgePoint,desar=False,segments=100):
+        r = math.sqrt(center.sqrDist(edgePoint))
+        self.rubberbandCercle.reset( True )
+        pi =3.1416
+        llistaPunts=[]
+        for itheta in range(segments+1):
+            theta = itheta*(2.0 * pi/segments)
+            self.rubberbandCercle.addPoint(QgsPointXY(center.x()+r*math.cos(theta),center.y()+r*math.sin(theta)))
+            llistaPunts.append(QgsPointXY(center.x()+r*math.cos(theta),center.y()+r*math.sin(theta)))
+        self.poligono=QgsGeometry.fromPolygonXY([llistaPunts])
+        if desar:
+            self.cercles.append(self.rubberbandCercle)
+            self.rubberbandCercle=self.creaRubberband(cercle=True)
+            # self.cercles.append(QgsRubberBand(rb))
     def canvasPressEvent(self, e):
                 
         
@@ -291,17 +339,20 @@ class QvMesuraMultiLinia(QgsMapTool):
             
         else:
             if self.hoverSartMarker:
+                self.rbcircle(self.point,self.startPoint, desar=True)
                 self.point = self.startPoint
                 self.points.append(QgsPointXY(self.point))
-
                 self.tancarPoligon()
 
             else:
+                pointOld=self.point
                 self.point = self.toMapCoordinates(e.pos())
+                if pointOld is not None: self.rbcircle(pointOld,self.point, desar=True)
                 self.points.append(QgsPointXY(self.point))
                 
                 self.selectPoly(e)
-                print('Afegir tram')
+                self.qV.wMesuraGrafica.setArea(None)
+                
 
 
     def tancarPoligon(self):
@@ -320,11 +371,11 @@ class QvMesuraMultiLinia(QgsMapTool):
             poligono = QgsGeometry.fromPolylineXY(self.points)
             self.rubberband.setToGeometry(poligono,self.layer)
             self.rubberband.show()
+            self.novaRubberband()
 
             distancia = geomP.length()
             area = geomP.area()
 
-            self.qV.wMesuraGrafica.addItem(str(round(self.lastLine.length(),2)))
             self.qV.wMesuraGrafica.setDistanciaTotal(distancia)
             self.qV.wMesuraGrafica.setArea(area)
 
@@ -332,11 +383,19 @@ class QvMesuraMultiLinia(QgsMapTool):
             # self.qV.lblDistanciaTotal.setText('Distància total: ' + str(round(distancia,2)) + ' m')
             # self.qV.lblMesuraArea.setText('Àrea: ' + str(round(area,2)) + ' m²')
 
-            self.treuUltimtram()
+            self.point = None
+            self.points = []
+            self.hoverSartMarker = False
+            
+            self.rubberband2.hide()
+            self.qV.wMesuraGrafica.actualitzaHistorial()
+            # self.treuUltimtram()
 
         except Exception as e:
-            print('Error al tancar el polygon')
-            print(e.__str__)
+            #error tancant el polígon
+            pass
+            # print('Error al tancar el polygon')
+            # print(e.__str__)
 
     def selectPoly(self, e):
         try:
@@ -368,8 +427,8 @@ class QvMesuraMultiLinia(QgsMapTool):
                 self.qV.twResultatsMesura.insertRow(rowPosition)
                 self.qV.twResultatsMesura.setItem(rowPosition , 0, QTableWidgetItem(str(round(distancia,2))))
                 """
-                self.qV.wMesuraGrafica.addMesuresHist(self.lastLine.length())
                 self.qV.wMesuraGrafica.setDistanciaTempsReal(0)
+                self.qV.wMesuraGrafica.setDistanciaTotal(distancia)
                 # self.qV.lwMesuresHist.addItem(str(round(self.lastLine.length(),2)))
                 # self.qV.lblDistanciaTempsReal.setText('Distáncia últim tram: 0 m')
 
@@ -392,9 +451,12 @@ class QvMesuraMultiLinia(QgsMapTool):
                 #point = QgsPoint(self.canvas.getCoordinateTransform().toMapCoordinates(x, y))
 
             self.markers.append(m)
+            self.novaRubberband()
             
         except Exception as e:
-            print('ERROR. Error al mesurar ')
+            #Error mesurant
+            pass
+            # print('ERROR. Error al mesurar ')
         
     
     def showlastLine(self, snapingPoint = None):
@@ -405,10 +467,14 @@ class QvMesuraMultiLinia(QgsMapTool):
         self.lastLine = QgsGeometry.fromPolylineXY(listaPoligonos)
         self.rubberband2.setToGeometry(self.lastLine,self.layer)
         self.rubberband2.show()
+        self.rbcircle(self.point,self.lastPoint)
         distancia = self.lastLine.length()
         if distancia <= 0:
             distancia = 0
+        poligono=QgsGeometry.fromPolylineXY(self.points)
+        distTotal=poligono.length()
         self.qV.wMesuraGrafica.setDistanciaTempsReal(distancia)
+        self.qV.wMesuraGrafica.setDistanciaTotal(distTotal+distancia)
         # self.qV.lblDistanciaTempsReal.setText('Distáncia últim tram: ' + str(round(distancia,2)) + ' m')
         
 class QvMarcador (QgsVertexMarker):
@@ -482,7 +548,7 @@ class QvSeleccioElement(QgsMapTool):
 
 
     def canvasReleaseEvent(self, event):
-        print("CANVAS RELEASE")
+        # print("CANVAS RELEASE")
         if self.fitxaAtributs is not None:
             self.fitxaAtributs.accept()
             self.fitxaAtributs = None
