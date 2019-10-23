@@ -1018,9 +1018,8 @@ if __name__ == "__main__":
         def testMapificacio():
             from moduls.QvMapForms import QvFormNovaMapificacio, QvFormSimbMapificacio
 
-            global fMap
             fMap = QvFormNovaMapificacio(leyenda)
-            fMap.show()
+            fMap.exec()
 
             # global fMap
             # fMap = QvFormSimbMapificacio(leyenda, leyenda.currentLayer())
