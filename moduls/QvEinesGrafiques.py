@@ -298,6 +298,7 @@ class QvMesuraMultiLinia(QgsMapTool):
         self.hoverSartMarker = False
         
         self.rubberband2.hide()
+        self.rubberbandCercle.hide()
         self.qV.wMesuraGrafica.actualitzaHistorial()
         self.qV.wMesuraGrafica.setDistanciaTempsReal(0)
         self.qV.wMesuraGrafica.setDistanciaTotal(0)

@@ -7,16 +7,24 @@ arxiuMapesRecents=dadesdir+'mapesRecents'
 arxiuDirectoriDesar=dadesdir+'directoriDesar'
 arxiuVolHints=dadesdir+'volHints'
 
+def llegirArxiu(f,encoding='utf-8'):
+    with open(f,encoding=encoding) as arxiu:
+        return arxiu.read()
+def llegirArxiuLinies(f,encoding='utf-8'):
+    with open(f,encoding=encoding) as arxiu:
+        return arxiu.readlines()
+
+
 class QvMemoria(Singleton):
     def __init__(self):
         if hasattr(self,'jaCreat'):
             return
         self.jaCreat=True
         if os.path.isfile(arxiuMapesRecents):
-            self.mapesRecents=open(arxiuMapesRecents,encoding='utf-8').readlines()
+            self.mapesRecents=llegirArxiuLinies(arxiuMapesRecents)
         if os.path.isfile(arxiuDirectoriDesar):
-            self.directoriDesar=open(arxiuDirectoriDesar,encoding='utf-8').read()
-        self.volHints=not os.path.isfile(arxiuVolHints) or open(arxiuVolHints).read()!='False'
+            self.directoriDesar=llegirArxiu(arxiuDirectoriDesar,encoding='utf-8')
+        self.volHints=not os.path.isfile(arxiuVolHints) or llegirArxiu(arxiuVolHints)!='False'
 
         pass
     def getUltimaNew(self):
