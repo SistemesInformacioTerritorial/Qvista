@@ -11,13 +11,13 @@ MAP_MAX_CATEGORIES = 10
 MAP_ZONES = {
     # Nom: (Camps, Arxiu)
     "Districte": ("DISTRICTE", "Districtes.sqlite"),
-    "Barri": ("BARRI", "Barris.sqlite")
-    # "Codi postal": "CODI_POSTAL",
-    # "Illa": "ILLA",
-    # "Solar": "SOLAR",
-    # "Àrea estadística bàsica": "AEB",
-    # "Secció censal": "SECCIO_CENSAL",
-    # "Sector policial operatiu": "SPO"
+    "Barri": ("BARRI", "Barris.sqlite"),
+    "Codi postal": ("CODI_POSTAL", ""),
+    "Illa": ("ILLA", ""),
+    "Solar": ("SOLAR", ""),
+    "Àrea estadística bàsica": ("AEB", ""),
+    "Secció censal": ("SECCIO_CENSAL", ""),
+    "Sector policial operatiu": ("SPO", "")
 }
 
 MAP_ZONES_COORD = MAP_ZONES.copy()

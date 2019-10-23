@@ -592,7 +592,7 @@ if __name__ == "__main__":
         print(z.files, 'filas en', z.fDades)
 
         campsAdreca = ('', 'NOM_CARRER_GPL', 'NUM_I_GPL', '', 'NUM_F_GPL')
-        zones = ('Coordenada', 'Barri')
+        zones = ('Coordenada', 'Districte', 'Barri', 'Codi postal')
         ok = z.geocodificacio(campsAdreca, zones,
             percentatgeProces=lambda n: print('... Procesado', str(n), '% ...'),
             errorAdreca=lambda f: print('Fila sin geocodificar -', f),
