@@ -471,8 +471,8 @@ class QvFormSimbMapificacio(QvFormBaseMapificacio):
         if res[0] == QValidator.Acceptable:
             return True
         else:
-            self.msgInfo("Cal introduir un nombre amb o sense decimals.\n"
-                "Com separador de decimals es farà servir la coma (,).\n"
+            self.msgInfo("Cal introduir un nombre enter o amb decimals.\n"
+                "Es farà servir la coma (,) per separar els decimals\n"
                 "I pels milers, opcionalment, el punt (.)")
             l = len(wLineEdit.text())
             if l > 0:
