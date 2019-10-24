@@ -8,6 +8,11 @@ from qgis.PyQt.QtCore import QLocale
 
 MAP_MAX_CATEGORIES = 10
 
+# TODO
+# - Datos de las diferentes zonas (tablas o bbdd?)
+# - Area y poblacion en zonas (distribución dinámica según tabla?)
+# - Revisar desviacion estándar
+
 MAP_ZONES = {
     # Nom: (Camps, Arxiu)
     "Districte": ("DISTRICTE", "Districtes.sqlite"),

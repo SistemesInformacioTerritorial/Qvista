@@ -19,6 +19,7 @@ class QvFormBaseMapificacio(QDialog):
         if amplada is not None:
             self.setMinimumWidth(amplada)
             self.setMaximumWidth(amplada)
+        self.setWindowFlags(Qt.MSWindowsFixedSizeDialogHint)
 
     def msgInfo(self, txt):
         QMessageBox.information(self, 'Informació', txt)
@@ -86,7 +87,6 @@ class QvFormNovaMapificacio(QvFormBaseMapificacio):
 
         self.fCSV = None
 
-        self.setWindowFlags(Qt.Dialog | Qt.MSWindowsFixedSizeDialogHint)
         self.setWindowTitle('Afegir capa de mapificació')
 
         self.layout = QVBoxLayout()
@@ -259,7 +259,6 @@ class QvFormSimbMapificacio(QvFormBaseMapificacio):
         if not self.iniParams():
             return
 
-        self.setWindowFlags(Qt.Dialog | Qt.MSWindowsFixedSizeDialogHint)
         self.setWindowTitle('Modificar mapificació')
 
         self.layout = QVBoxLayout()
@@ -464,26 +463,30 @@ class QvFormSimbMapificacio(QvFormBaseMapificacio):
         # print('GSIMB -> Ancho:', self.gSimb.size().width(), '- Alto:', self.gSimb.size().height())
         # print('FORM -> Ancho:', self.size().width(), '- Alto:', self.size().height())
 
+    def validaNum(self, wLineEdit):
+        val = wLineEdit.validator()
+        if val is None:
+            return True
+        res = val.validate(wLineEdit.text(), 0)
+        if res[0] == QValidator.Acceptable:
+            return True
+        else:
+            self.msgInfo("Cal introduir un nombre amb o sense decimals.\n"
+                "Com separador de decimals es farà servir la coma (,).\n"
+                "I pels milers, opcionalment, el punt (.)")
+            l = len(wLineEdit.text())
+            if l > 0:
+                wLineEdit.setSelection(0, l)
+            wLineEdit.setFocus()
+            return False
+
     def valida(self):
-        # ok = False
-        # if self.arxiu.filePath() == '':
-        #     self.msgInfo("S'ha de seleccionar un arxiu de dades")
-        #     self.arxiu.setFocus()
-        # elif self.zona.currentIndex() <= 0:
-        #     self.msgInfo("S'ha de seleccionar una zona")
-        #     self.zona.setFocus()
-        # elif self.capa.text().strip() == '':
-        #     self.msgInfo("S'ha de introduir un nom de capa")
-        #     self.capa.setFocus()
-        # elif self.tipus.currentIndex() <= 0:
-        #     self.msgInfo("S'ha de seleccionar un tipus d'agregació")
-        #     self.tipus.setFocus()
-        # elif self.calcul.text().strip() == '' and self.tipus.currentText() != 'Recompte':
-        #     self.msgInfo("S'ha de introduir un cálcul per fer l'agregació")
-        #     self.calcul.setFocus()
-        # else:
-        #     ok = True
-        # return ok
+        if self.custom:
+            for fila in self.wInterval:
+                if not self.validaNum(fila[0]):
+                    return False
+                if not self.validaNum(fila[2]):
+                    return False
         return True
 
     def mapifica(self):
@@ -496,7 +499,7 @@ class QvFormSimbMapificacio(QvFormBaseMapificacio):
                 self.renderer = self.llegenda.mapRenderer.calcRender(self.capa, self.campCalculat, self.numDecimals,
                     MAP_COLORS[self.colorBase], self.numCategories, MAP_METODES_MODIF[self.modeCategories])
         except Exception as e:
-            return "No s'ha pogut modificar la simbologia\n ({})".format(str(e))
+            return "No s'ha pogut modificar la simbologia\n({})".format(str(e))
         self.llegenda.modificacioProjecte('mapModified')
         return ''
 
