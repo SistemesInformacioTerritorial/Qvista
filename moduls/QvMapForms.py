@@ -12,6 +12,9 @@ from qgis.core import QgsApplication, QgsGraduatedSymbolRenderer, QgsExpressionC
 from moduls.QvMapVars import *
 from moduls.QvMapificacio import *
 
+import os
+import sqlite3
+
 class QvFormBaseMapificacio(QDialog):
     def __init__(self, llegenda, amplada=None, parent=None, modal=True):
         super().__init__(parent, modal=modal)
@@ -105,8 +108,7 @@ class QvFormNovaMapificacio(QvFormBaseMapificacio):
         self.zona = QComboBox(self)
         self.zona.setEditable(False)
         self.zona.addItem('Selecciona zona…')
-        # self.zona.addItems(MAP_ZONES.keys())
-        # self.zona.model().item(0).setEnabled(False)
+        self.zona.currentIndexChanged.connect(self.canviaZona)
 
         self.capa = QLineEdit(self)
         self.capa.setMaxLength(40)
@@ -118,7 +120,7 @@ class QvFormNovaMapificacio(QvFormBaseMapificacio):
 
         self.distribucio = QComboBox(self)
         self.distribucio.setEditable(False)
-        self.distribucio.addItems(MAP_DISTRIBUCIO.keys())
+        self.distribucio.addItem(next(iter(MAP_DISTRIBUCIO.keys())))
 
         self.calcul = QLineEdit(self)
 
@@ -181,21 +183,52 @@ class QvFormNovaMapificacio(QvFormBaseMapificacio):
 
         self.adjustSize()
 
-    def borrarZones(self):
+    def campsDB(self, nom):
+        res = []
+        if nom != '':
+            fich = RUTA_DADES + nom
+            if os.path.isfile(fich):
+                conn = sqlite3.connect('file:' + fich + '?mode=ro', uri=True)
+                conn.row_factory = sqlite3.Row
+                c = conn.cursor()
+                c.execute('select * from ' + nom.split('.')[0])
+                row = c.fetchone()
+                # res = [i[0].upper() for i in c.description]
+                res = [i.upper() for i in row.keys()]
+                conn.close()
+        return res
+
+    @pyqtSlot()
+    def canviaZona(self):
+        self.distribucio.setCurrentIndex(0)
+        ultimo = self.distribucio.count() - 1
+        for n in range(ultimo, 0, -1):
+            self.distribucio.removeItem(n)
+        if self.zona.currentIndex() > 0:
+            z = self.zona.currentText()
+            campsZona = self.campsDB(MAP_ZONES[z][1])
+            # Carga combo con distribuciones si el campo correspondiente está en la BBDD
+            for dist, campo in MAP_DISTRIBUCIO.items():
+                if campo != '' and campo in campsZona:
+                    self.distribucio.addItem(dist)
+
+    def borrarZonas(self):
         self.tipus.setCurrentIndex(0)
         self.zona.setCurrentIndex(0)
-        for n in range(1, self.zona.count()):
+        ultimo = self.zona.count() - 1
+        for n in range(ultimo, 0, -1):
             self.zona.removeItem(n)
 
     @pyqtSlot(str)
     def arxiuSeleccionat(self, nom):
         if nom == '':
             return
-        self.borrarZones()
+        self.borrarZonas()
         self.fCSV = QvMapificacio(nom, numMostra=0)
+        # Carga combo con zonas si el campo correspondiente está en el fichero CSV
         num = 0
         for zona, val in MAP_ZONES.items():
-            if self.fCSV.prefixe + val[0] in self.fCSV.camps:
+            if val[1] != '' and self.fCSV.prefixe + val[0] in self.fCSV.camps:
                 self.zona.addItem(zona)
                 num = num + 1
         if num == 0:
@@ -208,16 +241,6 @@ class QvFormNovaMapificacio(QvFormBaseMapificacio):
             self.capa.setFocus()
         else:
             self.zona.setFocus()
-
-            # fNom = os.path.splitext(os.path.basename(nom))[0]
-            # nItems = self.zona.count()
-            # for i in range(1, nItems):
-            #     item = self.zona.itemText(i)
-            #     if fNom.upper().endswith('_' + item.upper()):
-            #         n = i
-            #         break
-        # self.zona.setCurrentIndex(nItem)
-        # self.tipus.setCurrentIndex(0)
 
     def valida(self):
         ok = False

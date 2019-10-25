@@ -17,6 +17,7 @@ import unicodedata
 import chardet
 import collections
 import operator
+import re
 
 from moduls.QvSqlite import QvSqlite
 from moduls.QvMapVars import *
@@ -90,9 +91,7 @@ class QvMapificacio(QObject):
                 self.mostra.append(data)
                 # Lineas de muestra
                 lenMuestra = 0
-                num = 0
-                for data in csvInput:
-                    num += 1
+                for num, data in enumerate(csvInput, start=1):
                     lenMuestra += len(data)
                     data = data.rstrip(csvInput.newlines)
                     self.mostra.append(data)
@@ -114,7 +113,10 @@ class QvMapificacio(QObject):
             sep {str} -- Caracter separador
         """
         self.separador = sep
-        self.camps = self.mostra[0].split(self.separador)
+        if self.separador == '':
+            self.msgError = 'Cal establir un caracter separador dels camps'
+        else:
+            self.camps = self.mostra[0].split(self.separador)
 
     def infereixCodi(self) -> str:
         '''Infereix la codificació d'un arxiu csv
@@ -131,44 +133,18 @@ class QvMapificacio(QObject):
         Returns:
             separador{str} -- El separador inferit
         '''
-        def eliminaRepOrd(lst):
-            '''Rep una llista i la retorna sense repeticions i ordenada'''
-            return sorted(set(lst))
-
-        def infereixSeparadorLinia(line):
-            import re
-
-            aux = line.strip()
-            aux = re.sub('"[^"]*"', '', aux) # Elimina strings entre comillas dobles
-            aux = ''.join([i for i in line if not i.isalnum()]) # Elimina caracteres alfanumércios
-            auxSenseRep = eliminaRepOrd(aux)  # Eliminem repeticions
-            # Diccionario ordenado con caracteres y número de apariciones
-            lst = collections.OrderedDict()
-            for char in auxSenseRep:
-                lst[char] = aux.count(char)
-            return lst
-
-        def uneixLlistesAp(lst1, lst2):
-            if len(lst1) == 0:
-                return lst2
-            lst = collections.OrderedDict()
-            # Acumular los totales ya existentes
-            for char in lst1:
-                if char in lst2:
-                    lst[char] = lst1[char] + lst2[char]
-            # Añadir totales nuevos
-            for char in lst2:
-                if char not in lst1:
-                    lst[char] = lst2[char]
-            return lst
- 
-        lst = collections.OrderedDict()
+        cont = collections.Counter()
         for linia in self.mostra:
-            act = infereixSeparadorLinia(linia)
-            lst = uneixLlistesAp(lst, act)
+            aux = linia.strip()
+            aux = re.sub('"[^"]*"', '', aux) # Elimina strings entre comillas dobles
+            aux = ''.join([i for i in aux if not i.isalnum()]) # Elimina caracteres alfanuméricos
+            cont.update(aux)
         # Retornamos el caracter con más apariciones en total
-        elem = max(lst.items(), key=operator.itemgetter(1))
-        return elem[0]
+        elems = cont.most_common(1)
+        if len(elems) > 0:
+            return elems[0][0]
+        else:
+            return ''
 
     def verifCampsAdreca(self, camps: List[str]) -> bool:
         try:
@@ -362,8 +338,12 @@ class QvMapificacio(QObject):
             for item in llistaCamps:
                 camps += ", Z." + item
         camps += ', Z.GEOMETRY as GEOM'
-        # Calculamos SELECT comlpeto de agrupación
-        select = "select round(I.AGREGAT " + self.tipusDistribucio + ", " + str(self.numDecimals) + ") AS " + self.campCalculat + \
+        if self.tipusDistribucio == '':
+            dist = ''
+        else:
+            dist = '/ Z.' + self.tipusDistribucio
+        # Calculamos SELECT completo de agrupación
+        select = "select round(I.AGREGAT " + dist + ", " + str(self.numDecimals) + ") AS " + self.campCalculat + \
                  camps + " from Zona AS Z, " + \
                  "(SELECT " + self.tipusAgregacio + " AS AGREGAT, " + self.campZona + " AS CODI " + \
                  "FROM Info" + filtre + " GROUP BY " + self.campZona + ") AS I WHERE Z.CODI = I.CODI"
@@ -444,8 +424,6 @@ class QvMapificacio(QObject):
             self.msgError = "Error en tipusDistribucio"
             return False
         self.tipusDistribucio = MAP_DISTRIBUCIO[tipusDistribucio]
-        if self.tipusDistribucio != '':
-            self.tipusDistribucio = 'Z.' + self.tipusDistribucio
 
         if modeCategories is None or modeCategories not in MAP_METODES.keys():
             self.msgError = "Error en modeCategories"
