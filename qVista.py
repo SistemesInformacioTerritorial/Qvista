@@ -329,7 +329,7 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         # Labels de la statusbar (Projecció i nom del projecte)
         self.lblProjeccio.setText(self.project.crs().description())
-        self.lblProjecte.setText(self.project.baseName())
+        self.lblProjecte.setText('QGS: '+self.project.baseName())
         self.lblProjecte.setToolTip(self.project.fileName())
         if self.canvas.rotation() == 0:
             self.bOrientacio.setText(' Orientació: Nord')
@@ -1765,6 +1765,8 @@ class QVista(QMainWindow, Ui_MainWindow):
         
         if self.layerActiu is not None:
             self.lblCapaSeleccionada.setText("Capa activa: "+ self.layerActiu.name())
+            self.lblCapaSeleccionadaInf.setText("Capa activa: "+ self.layerActiu.name())
+            #self.lbl
             if self.layerActiu.type() == QgsMapLayer.VectorLayer:
                 fields = self.layerActiu.fields()
                 for field in fields:
@@ -1774,8 +1776,10 @@ class QVista(QMainWindow, Ui_MainWindow):
                         self.lwFieldsSelect.addItem(field.name())
             else:
                 self.lblCapaSeleccionada.setText("Capa activa sense dades.")
+                self.lblCapaSeleccionadaInf.setText("Capa activa sense dades.")
         else:
             self.lblCapaSeleccionada.setText("No hi ha capa activa.")
+            self.lblCapaSeleccionadaInf.setText("No hi ha capa activa.")
 
     def seleccioGrafica(self):
         self.dwSeleccioGrafica.show()
@@ -2487,20 +2491,6 @@ class QVista(QMainWindow, Ui_MainWindow):
             self.leScale.setParent(None)
 
     def definirLabelsStatus(self):    
-        
-
-        self.leSeleccioExpressio = QLineEdit()
-        self.leSeleccioExpressio.setStyleSheet("QLineEdit {margin: 0px; border: 0px; padding: 0px; background-color: white;}")  #Per la barra de cerca inferior, així queda millor integrada
-        
-        # self.leSeleccioExpressio.setGraphicsEffect(self._menuBarShadow)
-        self.leSeleccioExpressio.returnPressed.connect(seleccioExpressio)
-        self.statusbar.addPermanentWidget(self.leSeleccioExpressio, 50)
-        self.statusbar.setSizeGripEnabled( False )
-        self.leSeleccioExpressio.setPlaceholderText('Cerca un text per filtrar elements')
-        self.leSeleccioExpressio.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Minimum)
-        self.leSeleccioExpressio.show()
-        # spacer = QSpacerItem(1000, 1000, QSizePolicy.Expanding,QSizePolicy.Maximum)
-        # self.statusbar.addPermanentWidget(spacer)
         styleheetLabel='''
             QLabel {
                 background-color: #F9F9F9;
@@ -2520,16 +2510,31 @@ class QVista(QMainWindow, Ui_MainWindow):
         stylesheetLineEdit='''
             margin: 0px; border: 0px; padding: 0px;
             '''
+        
+        self.lblCapaSeleccionadaInf=QLabel('No hi capa seleccionada.')
+        self.lblCapaSeleccionadaInf.setStyleSheet(styleheetLabel)
+        self.lblCapaSeleccionadaInf.setFrameStyle(QFrame.StyledPanel )
+
+        self.leSeleccioExpressio = QLineEdit()
+        self.leSeleccioExpressio.setStyleSheet("QLineEdit {margin: 0px; border: 0px; padding: 0px; background-color: white;}")  #Per la barra de cerca inferior, així queda millor integrada
+        
+        # self.leSeleccioExpressio.setGraphicsEffect(self._menuBarShadow)
+        self.leSeleccioExpressio.returnPressed.connect(seleccioExpressio)
+        self.statusbar.setSizeGripEnabled( False )
+        self.leSeleccioExpressio.setPlaceholderText('Introduiu un text per filtrar elements a la capa seleccionada')
+        self.leSeleccioExpressio.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Minimum)
+        self.leSeleccioExpressio.show()
+        # spacer = QSpacerItem(1000, 1000, QSizePolicy.Expanding,QSizePolicy.Maximum)
+        # self.statusbar.addPermanentWidget(spacer)
+        
 
         self.sbCarregantCanvas = QProgressBar()
         self.sbCarregantCanvas.setRange(0,0)
-        self.statusbar.addPermanentWidget( self.sbCarregantCanvas, 0 )
         # self.sbCarregantCanvas.hide()
 
         self.lblConnexio = QLabel()
         self.lblConnexio.setStyleSheet(styleheetLabel)
         self.lblConnexio.setFrameStyle(QFrame.StyledPanel )
-        self.statusbar.addPermanentWidget( self.lblConnexio, 0 )
         self.lblConnexio.setText(estatConnexio)
 
         self.wXY = QWidget()
@@ -2548,14 +2553,12 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.leXY.editingFinished.connect(self.returnEditarXY)
         self.lXY.addWidget(self.leXY)
         self.leXY.hide()
-        self.statusbar.addPermanentWidget(self.wXY, 0 )
         # self.showXY(QCursor.pos())
 
         self.lblProjeccio = QLabel()
         self.lblProjeccio.setStyleSheet(styleheetLabel)
         self.lblProjeccio.setFrameStyle(QFrame.StyledPanel )
         # self.lblProjeccio.setMinimumWidth( 140 )
-        self.statusbar.addPermanentWidget( self.lblProjeccio, 0 )
 
 
         #Per no haver de posar un Line Edit a sobre del botó, fem un widget que contingui un layout. Aquest layout contindrà el botó, i a vegades el Line Edit
@@ -2570,7 +2573,6 @@ class QVista(QMainWindow, Ui_MainWindow):
         # self.bScale.setFrameStyle(QFrame.StyledPanel )
         # self.bScale.setMinimumWidth( 140 )
         self.bScale.clicked.connect(self.editarEscala)
-        self.statusbar.addPermanentWidget( self.wScale, 0 )
         self.editantEscala = False
         self.comboEscales = QComboBox()
         self.lScale.addWidget(self.comboEscales)
@@ -2580,13 +2582,24 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.bOrientacio.setStyleSheet(stylesheetButton)
         # self.bScale.setFrameStyle(QFrame.StyledPanel )
         # self.bOrientacio.setMinimumWidth( 140 )
-        self.statusbar.addPermanentWidget( self.bOrientacio, 0 )
 
         self.lblProjecte = QLabel()
         self.lblProjecte.setStyleSheet(styleheetLabel)
         self.lblProjecte.setFrameStyle(QFrame.StyledPanel )
         # self.lblProjecte.setMinimumWidth( 140 )
+
+        #Afegim tots els widgets de cop
+        #Així fer una reordenació serà més senzill
         self.statusbar.addPermanentWidget( self.lblProjecte, 0 )
+        self.statusbar.addPermanentWidget(self.lblCapaSeleccionadaInf)
+        self.statusbar.addPermanentWidget(self.leSeleccioExpressio, 50)
+        # self.statusbar.addStretch()
+        self.statusbar.addPermanentWidget( self.sbCarregantCanvas, 0 )
+        self.statusbar.addPermanentWidget( self.lblConnexio, 0 )
+        self.statusbar.addPermanentWidget(self.wXY, 0 )
+        self.statusbar.addPermanentWidget( self.lblProjeccio, 0 )
+        self.statusbar.addPermanentWidget( self.wScale, 0 )
+        self.statusbar.addPermanentWidget( self.bOrientacio, 0 )
     
     def connectarProgressBarCanvas(self):
         self.canvas.mapCanvasRefreshed.connect(self.hideSB)
