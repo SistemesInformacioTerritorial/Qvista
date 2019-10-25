@@ -136,7 +136,7 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         # Inicialitzacions
         self.printActiu = False #???
-        self.canvisPendents = False
+        self.canvisPendents=False
         self.titolProjecte = ""
         self.qvPrint = 0
         self.mapesOberts = False
@@ -300,7 +300,7 @@ class QVista(QMainWindow, Ui_MainWindow):
             Si el projecte té definida la variable qV_useProjectExtent amb valor True el projecte s'obrirà amb tota l'extensió
             Si no la té o té valor False s'obrirà mostrant l'extensió que estava mostrant actualment '''
         self.obrirProjecte(projecte, self.canvas.extent())
-    def obrirProjecte(self, projecte, rang = None):
+    def obrirProjecte(self, projecte, rang = None, nou=False):
         """Obre un projecte passat com a parametre, amb un possible rang predeterminat.
         
         Arguments:
@@ -314,6 +314,10 @@ class QVista(QMainWindow, Ui_MainWindow):
         if projecte.strip()=='': return
         # Obrir el projecte i col.locarse en rang
         self.project.read(projecte)
+        if nou:
+            md=self.project.metadata()
+            md.setCreationDateTime(QDateTime.currentDateTime())
+            self.project.setMetadata(md)
         self.pathProjecteActual = projecte
         if self.project.title().strip()=='':
             # self.project.setTitle(os.path.basename(projecte))
@@ -1084,7 +1088,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         # self.actObrirProjecte.setIcon(icon)
         self.actObrirProjecte.setShortcut("Ctrl+O")
         self.actObrirProjecte.setStatusTip("Obrir mapa QGis")
-        self.actObrirProjecte.triggered.connect(lambda x: self.obrirDialegProjecte(x))
+        self.actObrirProjecte.triggered.connect(lambda: self.obrirDialegProjecte())
         
         self.actGuardarProjecte = QAction("Desar", self)
         # icon=QIcon(':/Icones/Icones/ic_file_download_black_48dp.png')
@@ -3126,8 +3130,7 @@ def nivellCsv(fitxer: str,delimitador: str,campX: str,campY: str, projeccio: int
             layer.renderer().setSymbol(symbol)
         qV.project.addMapLayer(layer)
         # print("add layer")
-        qV.canvisPendents=True
-        qV.botoDesarProjecte.setIcon(qV.iconaAmbCanvisPendents)
+        qV.setDirtyBit(True)
     else: print ("no s'ha pogut afegir la nova layer")
 
     #symbol = QgsMarkerSymbol.createSimple({'name': 'square', 'color': 'red'})
@@ -3245,9 +3248,12 @@ def guardarProjecte():
     elif hasattr(qV,'mapaCataleg'):
         return guardarDialegProjecte()
     else:
-        qV.project.write(qV.pathProjecteActual)
-        qV.canvisPendents = False
-        qV.botoDesarProjecte.setIcon(qV.iconaSenseCanvisPendents)
+        # md=qV.project.metadata()
+        # md.setAuthor(QvApp().nomUsuari())
+        # qV.project.setMetadata(md)
+        # qV.project.write(qV.pathProjecteActual)
+        # qV.setDirtyBit(False)
+        desaElProjecte(qV.pathProjecteActual)
         return True
         
 #Anomena i desa (AKA Guardar como)
@@ -3272,15 +3278,31 @@ def guardarDialegProjecte():
         msgBox.setDefaultButton(QMessageBox.Ok)
         msgBox.exec()
         return False 
-    qV.project.write(nfile)
-    qV.pathProjecteActual = nfile
-    qV.lblProjecte.setText(qV.project.baseName())
-    qV.botoDesarProjecte.setIcon(qV.iconaSenseCanvisPendents)
-    qV.canvisPendents = False
+    # md=qV.project.metadata()
+    # md.setAuthor(QvApp().nomUsuari())
+    # qV.project.setMetadata(md)
+    # qV.project.write(nfile)
+    # qV.pathProjecteActual = nfile
+    # qV.lblProjecte.setText(qV.project.baseName())
+    # qV.setDirtyBit(False)
+    desaElProjecte(nfile)
     # pathDesarPerDefecte=str(Path(nfile).parent) #Ens desem el nou directori
     QvMemoria().setDirectoriDesar(str(Path(nfile).parent))
     return True
     #print(scale)
+
+def desaElProjecte(proj):
+    '''La funció que desa el projecte com a tal'''
+    #TODO: desactivar readonly
+    QgsExpressionContextUtils.setProjectVariable(qV.project,'qV_readOnly','False')
+    md=qV.project.metadata()
+    md.setAuthor(QvApp().nomUsuari())
+    qV.project.setMetadata(md)
+    qV.project.write(proj)
+    if proj!=qV.pathProjecteActual:
+        qV.pathProjecteActual=proj
+        qV.lblProjecte.setText(qV.project.baseName())
+    qV.setDirtyBit(False)
 
 def nouMapa():
     if qV.teCanvisPendents(): #Posar la comprovació del dirty bit
@@ -3388,8 +3410,7 @@ def escollirNivellGPX():
     # print(renderer.type())
     
     qV.project.addMapLayer(layer)
-    qV.canvisPendents=True
-    qV.botoDesarProjecte.setIcon(qV.iconaAmbCanvisPendents)
+    qV.setDirtyBit(True)
     # features=layer.getFeatures()
     # taulaAtributs('Total',layer)
 
@@ -3514,8 +3535,7 @@ def afegirQlr(nom):
 
     ok, txt = QgsLayerDefinition().loadLayerDefinition(nom, qV.project, qV.llegenda.root)
     if ok:
-        qV.canvisPendents=True
-        qV.botoDesarProjecte.setIcon(qV.iconaAmbCanvisPendents)
+        qV.setDirtyBit(True)
     else:
         print('No se pudo importar capas', txt)
     os.chdir(dir)
@@ -3531,8 +3551,7 @@ def afegirNivellSHP():
     # print(renderer.type())
     
     qV.project.addMapLayer(layer)
-    qV.canvisPendents=True
-    qV.botoDesarProjecte.setIcon(qV.iconaAmbCanvisPendents)
+    qV.setDirtyBit(True)
     # features=layer.getFeatures()
     # taulaAtributs('Total',layer)
 
