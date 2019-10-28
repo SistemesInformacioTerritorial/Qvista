@@ -2,7 +2,7 @@
 
 from qgis.gui import QgsFileWidget
 from qgis.PyQt.QtCore import Qt, QObject, pyqtSignal, pyqtSlot
-from qgis.PyQt.QtGui import QColor, QValidator, QIcon, QDoubleValidator
+from qgis.PyQt.QtGui import QColor, QValidator, QIcon, QDoubleValidator, QPixmap
 from qgis.PyQt.QtWidgets import (QFileDialog, QWidget, QPushButton, QFormLayout, QVBoxLayout, QHBoxLayout,
                                  QComboBox, QLabel, QLineEdit, QSpinBox, QGroupBox, QGridLayout, QDialog,
                                  QMessageBox, QDialogButtonBox, QApplication)
@@ -40,6 +40,13 @@ class QvFormBaseMapificacio(QDialog):
     def play(self):
         self.setDisabled(False)
         QApplication.instance().restoreOverrideCursor()
+
+    def comboColors(self, combo):
+        for nom, col in MAP_COLORS.items():
+            pixmap = QPixmap(80, 45)
+            pixmap.fill(col)
+            icon = QIcon(pixmap)
+            combo.addItem(icon, nom)
 
     def valida(self):
         return True
@@ -128,7 +135,7 @@ class QvFormNovaMapificacio(QvFormBaseMapificacio):
 
         self.color = QComboBox(self)
         self.color.setEditable(False)
-        self.color.addItems(MAP_COLORS.keys())
+        self.comboColors(self.color)
 
         self.metode = QComboBox(self)
         self.metode.setEditable(False)
@@ -291,7 +298,7 @@ class QvFormSimbMapificacio(QvFormBaseMapificacio):
 
         self.color = QComboBox(self)
         self.color.setEditable(False)
-        self.color.addItems(MAP_COLORS.keys())
+        self.comboColors(self.color)
 
         self.metode = QComboBox(self)
         self.metode.setEditable(False)
@@ -382,14 +389,14 @@ class QvFormSimbMapificacio(QvFormBaseMapificacio):
         fin.editingFinished.connect(self.nouTall)
         add = QPushButton('+', self)
         add.setMaximumSize(maxSizeB, maxSizeB)
-        add.setToolTip('Afegeix interval')
+        add.setToolTip('Afegeix nou interval')
         add.clicked.connect(self.afegirFila)
-        # add.setFocusPolicy(Qt.NoFocus)
+        add.setFocusPolicy(Qt.NoFocus)
         rem = QPushButton('-', self)
         rem.setMaximumSize(maxSizeB, maxSizeB)
         rem.setToolTip('Esborra interval')
         rem.clicked.connect(self.eliminarFila)
-        # rem.setFocusPolicy(Qt.NoFocus)
+        rem.setFocusPolicy(Qt.NoFocus)
         return [ini, sep, fin, add, rem]
 
     def iniIntervals(self):

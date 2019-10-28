@@ -41,6 +41,8 @@ MAP_COLORS = OrderedDict({
     "Blau": QColor(0, 128, 255),
     "Gris": QColor(128, 128, 128),
     "Groc" : QColor(255, 192, 0),
+    "Marró" : QColor(203, 134, 101),
+    "Porpra" : QColor(156, 41, 161),
     "Taronja": QColor(255, 128, 0),
     "Verd" : QColor(32, 160, 32),
     "Vermell" : QColor(255, 32, 32)
