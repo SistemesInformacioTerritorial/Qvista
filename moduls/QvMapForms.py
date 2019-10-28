@@ -198,12 +198,16 @@ class QvFormNovaMapificacio(QvFormBaseMapificacio):
                 conn.close()
         return res
 
+    def soloPrimerItem(self, combo):
+        combo.setCurrentIndex(0)
+        ultimo = combo.count() - 1
+        for n in range(ultimo, 0, -1):
+            combo.removeItem(n)
+    
     @pyqtSlot()
     def canviaZona(self):
         self.distribucio.setCurrentIndex(0)
-        ultimo = self.distribucio.count() - 1
-        for n in range(ultimo, 0, -1):
-            self.distribucio.removeItem(n)
+        self.soloPrimerItem(self.distribucio)
         if self.zona.currentIndex() > 0:
             z = self.zona.currentText()
             campsZona = self.campsDB(MAP_ZONES[z][1])
@@ -214,10 +218,7 @@ class QvFormNovaMapificacio(QvFormBaseMapificacio):
 
     def borrarZonas(self):
         self.tipus.setCurrentIndex(0)
-        self.zona.setCurrentIndex(0)
-        ultimo = self.zona.count() - 1
-        for n in range(ultimo, 0, -1):
-            self.zona.removeItem(n)
+        self.soloPrimerItem(self.zona)
 
     @pyqtSlot(str)
     def arxiuSeleccionat(self, nom):
@@ -381,10 +382,12 @@ class QvFormSimbMapificacio(QvFormBaseMapificacio):
         fin.editingFinished.connect(self.nouTall)
         add = QPushButton('+', self)
         add.setMaximumSize(maxSizeB, maxSizeB)
+        add.setToolTip('Afegeix interval')
         add.clicked.connect(self.afegirFila)
         # add.setFocusPolicy(Qt.NoFocus)
         rem = QPushButton('-', self)
         rem.setMaximumSize(maxSizeB, maxSizeB)
+        rem.setToolTip('Esborra interval')
         rem.clicked.connect(self.eliminarFila)
         # rem.setFocusPolicy(Qt.NoFocus)
         return [ini, sep, fin, add, rem]
@@ -406,7 +409,7 @@ class QvFormSimbMapificacio(QvFormBaseMapificacio):
                 if fila == 0 and col > 3:
                     w.setVisible(False)
                 # # Ultima fila: no hay + ni -
-                elif fila == (numFilas - 1) and col > 2:
+                elif fila > 0 and fila == (numFilas - 1) and col > 2:
                     w.setVisible(False)
                 else:
                     w.setVisible(True)
@@ -495,7 +498,7 @@ class QvFormSimbMapificacio(QvFormBaseMapificacio):
             return True
         else:
             self.msgInfo("Cal introduir un nombre enter o amb decimals.\n"
-                "Es farà servir la coma (,) per separar els decimals\n"
+                "Es farà servir la coma (,) per separar els decimals.\n"
                 "I pels milers, opcionalment, el punt (.)")
             l = len(wLineEdit.text())
             if l > 0:

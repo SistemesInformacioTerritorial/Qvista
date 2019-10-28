@@ -7,11 +7,6 @@ from collections import OrderedDict
 
 MAP_MAX_CATEGORIES = 10
 
-# TODO
-# - Datos de las diferentes zonas (tablas o bbdd?)
-# - Area y poblacion en zonas (distribución dinámica según tabla?)
-# - Revisar desviacion estándar
-
 MAP_ZONES = OrderedDict({
     # Nom: (Camps, Arxiu)
     "Districte": ("DISTRICTE", "Districtes.sqlite"),
@@ -55,8 +50,8 @@ MAP_METODES = OrderedDict({
     "Endreçat": QgsGraduatedSymbolRenderer.Pretty,
     "Intervals equivalents": QgsGraduatedSymbolRenderer.EqualInterval,
     "Quantils": QgsGraduatedSymbolRenderer.Quantile,
-    "Divisions naturals (Jenks)": QgsGraduatedSymbolRenderer.Jenks,
-    "Desviació estàndard": QgsGraduatedSymbolRenderer.StdDev
+    "Divisions naturals (Jenks)": QgsGraduatedSymbolRenderer.Jenks
+    # "Desviació estàndard": QgsGraduatedSymbolRenderer.StdDev
 })
 
 MAP_METODES_MODIF = OrderedDict({
