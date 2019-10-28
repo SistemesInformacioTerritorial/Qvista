@@ -47,6 +47,7 @@ from moduls.QvFavorits import QvFavorits
 from moduls.QvCatalegCapes import QvCatalegCapes
 from moduls.QvSabiesQue import QvSabiesQue
 from moduls.QvMemoria import QvMemoria
+from moduls.QvMascara import *
 # import re
 import csv
 import os
@@ -3200,6 +3201,15 @@ def seleccioExpressio():
 
     if (qV.leSeleccioExpressio.text().lower() == 'qvtemps') :
         missatgeCaixa('Temps per arrancar:', str('%.1f'%qV.tempsTotal))
+        return
+    
+    if qV.leSeleccioExpressio.text().lower()=='mascara':
+        qV.tool = QvMascaraEinaClick(qV, qV.canvas)
+        qV.canvas.setMapTool(qV.tool)
+        return
+    if qV.leSeleccioExpressio.text().lower()=='mascarad':
+        qV.tool=QvMascaraEinaDibuixa(qV,qV.canvas)
+        qV.canvas.setMapTool(qV.tool)
         return
 
     layer=qV.llegenda.currentLayer()
