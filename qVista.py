@@ -3132,6 +3132,13 @@ def seleccioExpressio():
         qV.modeDebug()
         return
 
+    if (qV.leSeleccioExpressio.text().lower() == 'mapificacio') :
+        from moduls.QvMapForms import QvFormNovaMapificacio
+
+        fMap = QvFormNovaMapificacio(qV.llegenda)
+        fMap.exec()
+        return
+
     if (qV.leSeleccioExpressio.text().lower() == 'qvtemps') :
         missatgeCaixa('Temps per arrancar:', str('%.1f'%qV.tempsTotal))
         return
