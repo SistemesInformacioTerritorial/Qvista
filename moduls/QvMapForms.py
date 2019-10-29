@@ -92,7 +92,7 @@ class QvVerifNumero(QValidator):
         return (state, string, index)
 
 class QvFormNovaMapificacio(QvFormBaseMapificacio):
-    def __init__(self, llegenda, amplada=400):
+    def __init__(self, llegenda, amplada=450):
         super().__init__(llegenda, amplada)
 
         self.fCSV = None
