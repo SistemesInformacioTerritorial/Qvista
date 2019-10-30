@@ -3204,13 +3204,21 @@ def seleccioExpressio():
         return
     
     if qV.leSeleccioExpressio.text().lower()=='mascara':
-        qV.tool = QvMascaraEinaClick(qV, qV.canvas)
-        qV.canvas.setMapTool(qV.tool)
+        try:
+            qV.tool = QvMascaraEinaClick(qV, qV.canvas)
+            qV.canvas.setMapTool(qV.tool)
+        except:
+            pass
         return
     if qV.leSeleccioExpressio.text().lower()=='mascarad':
         qV.tool=QvMascaraEinaDibuixa(qV,qV.canvas)
         qV.canvas.setMapTool(qV.tool)
         return
+    if qV.leSeleccioExpressio.text().lower()=='mascarac':
+        qV.tool=QvMascaraEinaCercle(qV,qV.canvas)
+        qV.canvas.setMapTool(qV.tool)
+        return
+
 
     layer=qV.llegenda.currentLayer()
     if layer is not None:

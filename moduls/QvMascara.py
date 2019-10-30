@@ -5,12 +5,16 @@ import math
 
 
 class QvMascaraEinaPlantilla(QgsMapTool):
-    def __init__(self, qV, canvas, color=QvConstants.COLORDESTACAT, opacitat=0.5):
+    def __init__(self, qV, canvas, color=QColor(255,255,255), opacitat=0.70, emmascarar=True, seleccionar=True, overlap=True):
         QgsMapTool.__init__(self, canvas)
         self.canvas = canvas
         self.qV = qV
-        self.color=color
-        self.opacitat=opacitat
+        self.setColor(color)
+        self.setOpacitat(opacitat)
+        self.afegida=True
+        self.seleccionar=seleccionar
+        self.overlap=overlap
+        self.emmascarar=emmascarar
 
     def canvasPressEvent(self, event):
         pass
@@ -33,12 +37,20 @@ class QvMascaraEinaPlantilla(QgsMapTool):
     def getCapa(self):
         if hasattr(self,'mascara'):
             return self.mascara
-        mascares=self.qV.project.mapLayersByName('Màscares')
+        if not self.emmascarar:
+            layer = self.qV.llegenda.currentLayer()
+            if layer is None or layer.type()!=QgsMapLayer.VectorLayer:
+                self.missatgeCaixa('Cal tenir seleccionat un nivell per poder fer una selecció.','Marqueu un nivell a la llegenda sobre el que aplicar la consulta.')
+                return None
+            return layer
+        mascares=self.qV.project.mapLayersByName('Màscara')
         if len(mascares)==0:
-            self.mascara=QgsVectorLayer('Polygon?crs=epsg:25831','Màscares','memory')
+            self.mascara=QgsVectorLayer('Polygon?crs=epsg:25831','Màscara','memory')
             self.mascara.renderer().symbol().setColor(self.color)
+            self.mascara.renderer().symbol().symbolLayer(0).setStrokeColor(self.color)
             self.mascara.setRenderer(QgsInvertedPolygonRenderer.convertFromRenderer(self.mascara.renderer()))
             self.mascara.setOpacity(self.opacitat)
+            self.afegida=False
         elif len(mascares)==1:
             self.mascara=mascares[0]
         else:
@@ -46,22 +58,37 @@ class QvMascaraEinaPlantilla(QgsMapTool):
             self.mascara=mascares[0]
         return self.mascara
     def actualitza(self):
-        self.mascara.updateExtents()
-        self.qV.project.addMapLayers([self.mascara])
+        if self.emmascarar:
+            self.mascara.updateExtents()
+            # if self.qV.project.mapLayersByName('Màscara') is None:
+            if not self.afegida:
+                self.qV.project.addMapLayers([self.mascara])
+                self.afegida=True
+            self.mascara.renderer().embeddedRenderer().symbol().setColor(self.color)
+            self.mascara.setOpacity(self.opacitat)
+        # self.canvas.refresh()
         self.canvas.refreshAllLayers()
+    def setColor(self,color):
+        self.color=color
+    def setOpacitat(self,opacitat):
+        self.opacitat=opacitat
         
 
 #Copiat del QvSeleccioPunt de QvEinesGrafiques.py i adaptat a les nostres necessitats
 class QvMascaraEinaClick(QvMascaraEinaPlantilla):
+
+    def __init__(self, qV, canvas, **kwargs):
+        layer=qV.llegenda.currentLayer()
+        if layer is None or layer.type()!=QgsMapLayer.VectorLayer:
+            self.missatgeCaixa('Cal tenir seleccionat un nivell per poder fer una selecció.','Marqueu un nivell a la llegenda sobre el que aplicar la consulta.')
+            raise Exception("No hi havia nivell seleccionat") #TODO: Crear una altra excepció més específica
+        super().__init__(qV,canvas,**kwargs)
 
     def canvasReleaseEvent(self, event):
         #Get the click
         x = event.pos().x()
         y = event.pos().y()
         layer = self.qV.llegenda.currentLayer()
-        # layerList = QgsMapLayerRegistry.instance().mapLayersByName("Illes")
-        # if layerList: 
-        #     layer = layerList[0]
         point = self.canvas.getCoordinateTransform().toMapCoordinates(x, y)
         radius = 10
         rect = QgsRectangle(point.x() - radius, point.y() - radius, point.x() + radius, point.y() + radius)
@@ -70,30 +97,30 @@ class QvMascaraEinaClick(QvMascaraEinaPlantilla):
             items=[i for i in it] #Ens guardem una llista dels items seleccionats
             ids = [i.id() for i in items]
             if len(ids)==0:
-                # self.missatgeCaixa('Perdoneu, no he entès quin element volíeu seleccionar','Intenteu ser més precisos fent-hi click')
                 return
             try:
-                # layer.selectByIds(ids)
-                # geom=items[0].geometry()
-                mascara=self.getCapa()
-                pr=mascara.dataProvider()
-                polys=[]
-                for x in items:
-                    geom=x.geometry()
-                    poly=QgsFeature()
-                    poly.setGeometry(geom)
-                    polys.append(poly)
-                pr.addFeatures(polys)
-                # mascara.renderer().symbol().setOpacity(self.opacitat)
+                if self.emmascarar:
+                    mascara=self.getCapa()
+                    pr=mascara.dataProvider()
+                    polys=[]
+                    polysTreure=[]
+                    # features=[x.id() for x in mascara.getFeatures(QgsFeatureRequest().setFilterRect(rect))] #Items 
+                    for x in items:
+                        # if x.id() in features:
+                        #     polysTreure.append(x.id)
+                        geom=x.geometry()
+                        poly=QgsFeature()
+                        poly.setGeometry(geom)
+                        polys.append(poly)
+                    pr.addFeatures(polys)
+                if self.seleccionar:
+                    seleccionats=layer.selectedFeatureIds()
+                    layer.selectByIds(seleccionats+ids)
+                #La part d'eliminar funciona màgicament. No existeix cap raó lògica que ens digui que s'eliminarà, però ho fa
+                # if not pr.deleteFeatures(polysTreure):
+                #     #Ens hauríem de queixar? No? Tractar?
+                #     pass
                 self.actualitza()
-                
-
-                
-                # self.rubberband=QgsRubberBand(self.canvas)
-                # self.rubberband.setColor(QColor(255,98,21,50))
-                # self.rubberband.setWidth(4)
-                # self.rubberband.setToGeometry(geom,mascara)
-                print(':D')
             except Exception as e:
                 print(e)
                 pass
@@ -117,13 +144,16 @@ class QvMascaraEinaClick(QvMascaraEinaPlantilla):
 
 class QvMascaraEinaDibuixa(QvMascaraEinaPlantilla):
 
-    def __init__(self,qV, canvas, color=QvConstants.COLORDESTACAT, opacitat=0.5):
-        super().__init__(qV,canvas,color,opacitat)
+    def __init__(self,*args, **kwargs):
+        super().__init__(*args,**kwargs)
         self.points=[]
         self.rubberband=self.novaRubberband()
+        layer=self.qV.llegenda.currentLayer()
+        if layer is None:
+            self.missatgeCaixa('Cal tenir seleccionat un nivell per poder fer una selecció','Podeu emmascarar però no es seleccionaran els elements')
     def novaRubberband(self):
         rb=QgsRubberBand(self.canvas,True)
-        rb.setColor(self.color)
+        rb.setColor(QvConstants.COLORDESTACAT)
         rb.setWidth(2)
         return rb
 
@@ -133,11 +163,18 @@ class QvMascaraEinaDibuixa(QvMascaraEinaPlantilla):
             return
         self.point=self.toMapCoordinates(event.pos())
         self.points.append(QgsPointXY(self.point))
+        if len(self.points)==1:
+            self.posB=event.pos()
         self.selectPoly(event)
-        if self.qpointsDistance(self.points[0],self.point)<10 and len(self.points)>2:
+        if self.qpointsDistance(self.posB,event.pos())<10 and len(self.points)>2:
             self.tancarPoligon()
+    def canvasMoveEvent(self,event):
+        poligono=QgsGeometry.fromPolylineXY(self.points+[self.toMapCoordinates(event.pos())])
+        self.rubberband.setToGeometry(poligono,self.getCapa()) #falta establir la layer
     def tancarPoligon(self):
         try:
+            
+            
             list_polygon = []
             mascara=self.getCapa()
             pr=mascara.dataProvider()
@@ -148,7 +185,22 @@ class QvMascaraEinaDibuixa(QvMascaraEinaPlantilla):
             poly=QgsFeature()
             poly.setGeometry(geom)
             print(geom)
-            pr.addFeatures([poly])
+            if self.emmascarar:
+                pr.addFeatures([poly])
+
+            layer=self.qV.llegenda.currentLayer()
+            if self.seleccionar and layer is not None:
+                #Seleccionem coses
+                featsPnt = layer.getFeatures(QgsFeatureRequest().setFilterRect(geom.boundingBox()))
+                for featPnt in featsPnt:
+                    if self.overlap:
+                        if featPnt.geometry().intersects(geom):
+                            layer.select(featPnt.id())
+                        pass
+                    else:
+                        if featPnt.geometry().within(geom):
+                            layer.select(featPnt.id())
+                        pass
             self.rubberband.hide()
             self.rubberband=self.novaRubberband()
             self.actualitza()
@@ -166,26 +218,71 @@ class QvMascaraEinaDibuixa(QvMascaraEinaPlantilla):
             self.rubberband.show()
             print(':D')
             
-            # m = QvMarcador(self.canvas)
-
-            # m.setColor(QColor(36,97,50))
-            # m.setFillColor(QColor(36,97,50))
-            # m.setIconSize(9)
-            # m.setIconType(QvMarcador.ICON_CIRCLE)
-            # m.setPenWidth(5)
-
-            # m.setCenter(QgsPointXY(self.point))
-
-            # if firstMarker:
-            #     self.startMarker = m
-            #     self.startPoint = QgsPointXY(self.point)
-
-            #     #point = QgsPoint(self.canvas.getCoordinateTransform().toMapCoordinates(x, y))
-
-            # self.markers.append(m)
-            # self.novaRubberband()
             
         except Exception as e:
-            #Error mesurant
             pass
-            # print('ERROR. Error al mesurar ')
+
+class QvMascaraEinaCercle(QvMascaraEinaPlantilla):
+
+    def __init__(self,*args, **kwargs):
+        super().__init__(*args,**kwargs)
+        self.rubberbandRadi=self.novaRubberband()
+        self.rubberbandCercle=self.novaRubberband()
+        layer=self.qV.llegenda.currentLayer()
+        self.centre=None
+        if layer is None and self.seleccionar==True:
+            self.missatgeCaixa('Cal tenir seleccionat un nivell per poder fer una selecció','Podeu emmascarar però no es seleccionaran els elements')
+    def novaRubberband(self):
+        rb=QgsRubberBand(self.canvas,True)
+        rb.setColor(QvConstants.COLORDESTACAT)
+        rb.setWidth(2)
+        return rb
+
+    def canvasPressEvent(self,event):
+        if event.button()==Qt.RightButton:
+            #Tancar polígon??
+            return
+        self.centre=self.toMapCoordinates(event.pos())
+
+    def canvasMoveEvent(self,event):
+        if self.centre is not None:
+            self.rbcircle(self.centre,self.toMapCoordinates(event.pos()))
+            pass
+    def canvasReleaseEvent(self,event):
+        mascara=self.getCapa()
+        pr=mascara.dataProvider()
+        poligon,_=self.getPoligon(self.centre,self.toMapCoordinates(event.pos()),100)
+        poly=QgsFeature()
+        poly.setGeometry(poligon)
+        if self.emmascarar:
+            pr.addFeatures([poly])
+
+        layer=self.qV.llegenda.currentLayer()
+        if self.seleccionar and layer is not None:
+            #Seleccionem coses
+            featsPnt = layer.getFeatures(QgsFeatureRequest().setFilterRect(poligon.boundingBox()))
+            for featPnt in featsPnt:
+                if self.overlap:
+                    if featPnt.geometry().intersects(poligon):
+                        layer.select(featPnt.id())
+                    pass
+                else:
+                    if featPnt.geometry().within(poligon):
+                        layer.select(featPnt.id())
+                    pass
+        self.centre=None
+        self.actualitza()
+
+    def rbcircle(self, center,edgePoint,segments=100):
+        self.rubberbandCercle.reset( True )
+        self.poligon, llistaPunts = self.getPoligon(center,edgePoint,segments)
+        for x in llistaPunts:
+            self.rubberbandCercle.addPoint(x)
+    def getPoligon(self,center,edgePoint,segments):
+        r = math.sqrt(center.sqrDist(edgePoint))
+        llistaPunts=[]
+        pi =3.1416
+        for itheta in range(segments+1):
+            theta = itheta*(2.0 * pi/segments)
+            llistaPunts.append(QgsPointXY(center.x()+r*math.cos(theta),center.y()+r*math.sin(theta)))
+        return QgsGeometry.fromPolygonXY([llistaPunts]), llistaPunts
