@@ -16,6 +16,7 @@ from moduls.QvApp import QvApp
 from moduls.QvVideo import QvVideo
 from moduls.QvEscala import QvEscala
 from moduls.QvMapRenderer import QvMapRenderer
+from moduls.QvMapVars import *
 from configuracioQvista import *
 
 import os
@@ -446,8 +447,8 @@ class QvLlegenda(QgsLayerTreeView):
                     else:
                         self.removeIndicator(node, self.iconaFiltre)
                     # Mapificacón
-                    tipus = QgsExpressionContextUtils.layerScope(capa).variable('qV_tipusCapa')
-                    if tipus == 'MAPIFICACIÓ':
+                    tipus = QgsExpressionContextUtils.layerScope(capa).variable(MAP_ID)
+                    if tipus == 'True':
                         self.addIndicator(node, self.iconaMap)
                     else:
                         self.removeIndicator(node, self.iconaMap)

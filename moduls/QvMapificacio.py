@@ -369,7 +369,7 @@ class QvMapificacio(QObject):
 
     def agregacio(self, llegenda, nomCapa: str, zona: str, tipusAgregacio: str,
         campCalculat: str = 'RESULTAT', campAgregat: str = '', tipusDistribucio: str = "Total", filtre: str = '', numDecimals: int = -1,
-        numCategories: int = 4, modeCategories: str = "Endreçat", colorBase: str ='Blau', format: str = '%1 - %2',
+        numCategories: int = 4, modeCategories: str = "Endreçat", colorBase: str = 'Blau', format: str = '%1 - %2',
         veure: bool = True) -> bool:
         """ ***********************************************************************************************************
             EN DESARROLLO *********************************************************************************************
@@ -398,7 +398,6 @@ class QvMapificacio(QObject):
         """
 
         self.fMapa = ''
-        self.capaMapa = None
         self.fSQL = ''
         self.llegenda = llegenda
         self.msgError = ''
@@ -476,7 +475,7 @@ class QvMapificacio(QObject):
         # Creación de capa virtual que construye la agregación
         select = self.calcSelect(zonaCamps)
         virtLyr = QgsVectorLayer("?query=" + select, nomCapa, "virtual")
-        virtLyr.setProviderEncoding("UTF-8")            
+        virtLyr.setProviderEncoding("UTF-8")
 
         if not virtLyr.isValid():
             self.llegenda.project.removeMapLayer(zonaLyr.id())
@@ -484,9 +483,9 @@ class QvMapificacio(QObject):
             self.msgError = "No s'ha pogut generar capa de agregació"
             return False
 
-        # Guarda capa de agregación en SQLite
-        self.fSQL = RUTA_LOCAL + self.nomCapa + ".sqlite"
-        ret, msg = QgsVectorFileWriter.writeAsVectorFormat(virtLyr, self.fSQL, "UTF-8", zonaLyr.crs(), "SQLite")
+        # Guarda capa de agregación en GPKG
+        self.fSQL = RUTA_LOCAL + self.nomCapa + ".gpkg"
+        ret, msg = QgsVectorFileWriter.writeAsVectorFormat(virtLyr, self.fSQL, "UTF-8", zonaLyr.crs(), "GPKG")
         if ret != QgsVectorFileWriter.NoError:
             self.llegenda.project.removeMapLayer(zonaLyr.id())
             self.llegenda.project.removeMapLayer(infoLyr.id())
@@ -497,8 +496,8 @@ class QvMapificacio(QObject):
         self.llegenda.project.removeMapLayer(zonaLyr.id())
         self.llegenda.project.removeMapLayer(infoLyr.id())
 
-        # Carga capa SQLite de agregación
-        mapLyr = QgsVectorLayer(self.fSQL, nomCapa , "ogr")
+        # Carga capa de agregación
+        mapLyr = QgsVectorLayer(self.fSQL, nomCapa, "ogr")
         mapLyr.setProviderEncoding("UTF-8")
         if not mapLyr.isValid():
             self.msgError = "No s'ha pogut carregar capa de agregació: " + self.fSQL
@@ -513,37 +512,46 @@ class QvMapificacio(QObject):
         else:
             mapLyr.setRenderer(self.renderer)
 
-        # Guarda capa qlr con agregación + mapificación
-        self.fMapa = RUTA_LOCAL + self.nomCapa + '.qlr'
+        # Identificador de mapificación para qVista
+        QgsExpressionContextUtils.setLayerVariable(mapLyr, MAP_ID, 'True')
 
-        # Tipo de capa para qVista
-        QgsExpressionContextUtils.setLayerVariable(mapLyr, 'qV_tipusCapa', 'MAPIFICACIÓ')
-
-        try:
-            # Leer DOM, eliminar path local y guardar en fichero
-            domDoc = QgsLayerDefinition.exportLayerDefinitionLayers([mapLyr], QgsReadWriteContext())
-            txt = domDoc.toString()
-            txt = txt.replace(RUTA_LOCAL, './')
-            with open(self.fMapa, "w+", encoding="UTF-8") as qlr:
-                qlr.write(txt)
-        except Exception as e:
-            fich = self.fMapa
-            self.fMapa = ''
-            print(e)
-            self.msgError = "No s'ha pogut desar capa mapificació: " + fich
+        # Guarda simbología en GPKG
+        err = mapLyr.saveStyleToDatabase("", "", True, "")
+        if err != '':
+            self.msgError = "No s'ha pogut desar el mapa\n({})".format(err)
             return False
 
-        # Mostar qlr de mapificación, si es el caso
-        if veure and self.fMapa != '':
-            # Cargar qlr
-            ok, txt = QgsLayerDefinition.loadLayerDefinition(self.fMapa,
-                self.llegenda.project, self.llegenda.root)
-            if not ok:
-                self.msgError = "No s'ha pogut carregar capa mapificació: " + self.fMapa
-                return False
-            QgsApplication.processEvents()
-
+        # Fin correcto
+        self.fMapa = self.fSQL
+        if veure:
+            self.llegenda.project.addMapLayer(mapLyr)
         return True
+
+        # try:
+        #     # Leer DOM, eliminar path local y guardar en fichero
+        #     domDoc = QgsLayerDefinition.exportLayerDefinitionLayers([mapLyr], QgsReadWriteContext())
+        #     txt = domDoc.toString()
+        #     txt = txt.replace(RUTA_LOCAL, './')
+        #     with open(self.fMapa, "w+", encoding="UTF-8") as qlr:
+        #         qlr.write(txt)
+        # except Exception as e:
+        #     fich = self.fMapa
+        #     self.fMapa = ''
+        #     print(e)
+        #     self.msgError = "No s'ha pogut desar capa mapificació: " + fich
+        #     return False
+
+        # # Mostar qlr de mapificación, si es el caso
+        # if veure and self.fMapa != '':
+        #     # Cargar qlr
+        #     ok, txt = QgsLayerDefinition.loadLayerDefinition(self.fMapa,
+        #         self.llegenda.project, self.llegenda.root)
+        #     if not ok:
+        #         self.msgError = "No s'ha pogut carregar capa mapificació: " + self.fMapa
+        #         return False
+        #     QgsApplication.processEvents()
+
+        # return True
 
 if __name__ == "__main__":
 

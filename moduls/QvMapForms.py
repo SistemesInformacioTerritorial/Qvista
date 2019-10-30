@@ -343,8 +343,8 @@ class QvFormSimbMapificacio(QvFormBaseMapificacio):
         self.valorsInicials()
 
     def iniParams(self):
-        tipus = QgsExpressionContextUtils.layerScope(self.capa).variable('qV_tipusCapa')
-        if tipus != 'MAPIFICACIÓ':
+        map = QgsExpressionContextUtils.layerScope(self.capa).variable(MAP_ID)
+        if map != 'True':
             return False
         ok, (self.campCalculat, self.numDecimals, self.colorBase, self.numCategories, \
             self.modeCategories, self.rangsCategories) = self.llegenda.mapRenderer.paramsRender(self.capa)
@@ -530,9 +530,14 @@ class QvFormSimbMapificacio(QvFormBaseMapificacio):
                     MAP_COLORS[self.colorBase], self.rangs)
             else:
                 self.renderer = self.llegenda.mapRenderer.calcRender(self.capa, self.campCalculat, self.numDecimals,
-                    MAP_COLORS[self.colorBase], self.numCategories, MAP_METODES_MODIF[self.modeCategories])
+                    MAP_COLORS[self.colorBase], self.numCategories, MAP_METODES_MODIF[self.modeCategories])            
+            if self.renderer is None:
+                return "No s'ha pogut elaborar el mapa"
+            err = self.capa.saveStyleToDatabase("", "", True, "")
+            if err != '':
+                return "No s'ha pogut desar el mapa\n({})".format(err)
+            # self.llegenda.modificacioProjecte('mapModified')
+            return ''
         except Exception as e:
-            return "No s'ha pogut modificar la simbologia\n({})".format(str(e))
-        self.llegenda.modificacioProjecte('mapModified')
-        return ''
+            return "No s'ha pogut modificar em mapa\n({})".format(str(e))
 
