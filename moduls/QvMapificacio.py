@@ -514,6 +514,7 @@ class QvMapificacio(QObject):
 
         # Identificador de mapificación para qVista
         QgsExpressionContextUtils.setLayerVariable(mapLyr, MAP_ID, 'True')
+        mapLyr.setDisplayExpression('RESULTAT')
 
         # Guarda simbología en GPKG
         err = self.llegenda.saveStyleToGeoPackage(mapLyr, MAP_ID)
