@@ -516,9 +516,9 @@ class QvMapificacio(QObject):
         QgsExpressionContextUtils.setLayerVariable(mapLyr, MAP_ID, 'True')
 
         # Guarda simbología en GPKG
-        err = mapLyr.saveStyleToDatabase("", "", True, "")
+        err = self.llegenda.saveStyleToGeoPackage(mapLyr, MAP_ID)
         if err != '':
-            self.msgError = "No s'ha pogut desar el mapa\n({})".format(err)
+            self.msgError = "No s'ha pogut desar la simbologia\n({})".format(err)
             return False
 
         # Fin correcto

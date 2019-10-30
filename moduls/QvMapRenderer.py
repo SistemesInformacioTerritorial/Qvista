@@ -21,9 +21,9 @@ class QvMapRenderer(QObject):
     
     def calcColorsGradient(self, colorBase):
         colorIni = QColor(colorBase)
-        colorIni.setAlpha(0)
+        colorIni.setAlpha(MAP_ALPHA_INI)
         colorFi = QColor(colorBase)
-        colorFi.setAlpha(255)
+        colorFi.setAlpha(255 - MAP_ALPHA_FIN)
         return colorIni, colorFi
 
     def calcRender(self, capa, campCalculat, numDecimals, colorBase,
@@ -63,8 +63,8 @@ class QvMapRenderer(QObject):
 
     def customRender(self, capa, campCalculat, colorBase, rangs):
         total = len(rangs)
-        step = 255 // (total - 1)
-        alpha = 0
+        alpha = MAP_ALPHA_INI
+        step = (255 - MAP_ALPHA_FIN) // (total - 1)
         color = QColor(colorBase)
         decimals = self.maxDecimals(rangs)
         categories = []

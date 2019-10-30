@@ -496,6 +496,12 @@ class QvFormSimbMapificacio(QvFormBaseMapificacio):
         # print('GSIMB -> Ancho:', self.gSimb.size().width(), '- Alto:', self.gSimb.size().height())
         # print('FORM -> Ancho:', self.size().width(), '- Alto:', self.size().height())
 
+    def leSelectFocus(self, wLineEdit):
+        lon = len(wLineEdit.text())
+        if lon > 0:
+            wLineEdit.setSelection(0, lon)
+        wLineEdit.setFocus()
+
     def validaNum(self, wLineEdit):
         val = wLineEdit.validator()
         if val is None:
@@ -507,18 +513,34 @@ class QvFormSimbMapificacio(QvFormBaseMapificacio):
             self.msgInfo("Cal introduir un nombre enter o amb decimals.\n"
                 "Es farà servir la coma (,) per separar els decimals.\n"
                 "I pels milers, opcionalment, el punt (.)")
-            l = len(wLineEdit.text())
-            if l > 0:
-                wLineEdit.setSelection(0, l)
-            wLineEdit.setFocus()
+            self.leSelectFocus(wLineEdit)
             return False
+
+    def validaInterval(self, wLineEdit1, wLineEdit2):
+        num1, _ = MAP_LOCALE.toFloat(wLineEdit1.text())
+        num2, _ = MAP_LOCALE.toFloat(wLineEdit2.text())
+        if num2 > num1:
+            return True
+        else:
+            self.msgInfo("El segon nombre de l'interval ha de ser major que el primer")
+            self.leSelectFocus(wLineEdit2)
+            return False
+
+    def validaFila(self, fila):
+        wLineEdit1 = fila[0]
+        wLineEdit2 = fila[2]
+        if not self.validaNum(wLineEdit1):
+            return False
+        if not self.validaNum(wLineEdit2):
+            return False
+        if not self.validaInterval(wLineEdit1, wLineEdit2):
+            return False
+        return True
 
     def valida(self):
         if self.custom:
             for fila in self.wInterval:
-                if not self.validaNum(fila[0]):
-                    return False
-                if not self.validaNum(fila[2]):
+                if not self.validaFila(fila):
                     return False
         return True
 
@@ -533,9 +555,9 @@ class QvFormSimbMapificacio(QvFormBaseMapificacio):
                     MAP_COLORS[self.colorBase], self.numCategories, MAP_METODES_MODIF[self.modeCategories])            
             if self.renderer is None:
                 return "No s'ha pogut elaborar el mapa"
-            err = self.capa.saveStyleToDatabase("", "", True, "")
+            err = self.llegenda.saveStyleToGeoPackage(self.capa, MAP_ID)
             if err != '':
-                return "No s'ha pogut desar el mapa\n({})".format(err)
+                return "No s'ha pogut desar la simbologia\n({})".format(err)
             # self.llegenda.modificacioProjecte('mapModified')
             return ''
         except Exception as e:

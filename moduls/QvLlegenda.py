@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from qgis.core import (QgsProject, QgsLegendModel, QgsLayerDefinition, QgsMapLayer, QgsVectorLayer,
+from qgis.core import (QgsProject, QgsSettings, QgsLegendModel, QgsLayerDefinition, QgsMapLayer, QgsVectorLayer,
                        QgsVectorFileWriter, QgsVectorLayerJoinInfo, QgsLayerTree, QgsLayerTreeNode,
                        QgsLayerTreeUtils, QgsVectorDataProvider, QgsSymbol, QgsRendererCategory, QgsCategorizedSymbolRenderer,
                        QgsGraduatedSymbolRenderer, QgsRendererRange, QgsAggregateCalculator,
@@ -761,6 +761,11 @@ class QvLlegenda(QgsLayerTreeView):
     #         if addLayer is None:
     #             print('Error al añadir capa')
     #         self.directory = os.path.dirname(nfile)
+
+    def saveStyleToGeoPackage(self, capa, nom="", desc="", default=True):
+        s = QgsSettings()
+        s.setValue("qgis/overwriteStyle", True)
+        return capa.saveStyleToDatabase(nom, desc, default, "")
 
     def saveLayersToFile(self):
         nodes = self.selectedNodes()
