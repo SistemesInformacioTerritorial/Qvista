@@ -5,16 +5,12 @@ import math
 
 
 class QvMascaraEinaPlantilla(QgsMapTool):
-    def __init__(self, qV, canvas, color=QColor(255,255,255), opacitat=0.70, emmascarar=True, seleccionar=True, overlap=True):
+    def __init__(self, qV, canvas, **kwargs):
         QgsMapTool.__init__(self, canvas)
         self.canvas = canvas
         self.qV = qV
-        self.setColor(color)
-        self.setOpacitat(opacitat)
         self.afegida=True
-        self.seleccionar=seleccionar
-        self.overlap=overlap
-        self.emmascarar=emmascarar
+        self.setParametres(**kwargs)
 
     def canvasPressEvent(self, event):
         pass
@@ -72,6 +68,15 @@ class QvMascaraEinaPlantilla(QgsMapTool):
         self.color=color
     def setOpacitat(self,opacitat):
         self.opacitat=opacitat
+    def setOverlap(self,overlap):
+        self.overlap=overlap
+    def setParametres(self,color=QColor(255,255,255), opacitat=70, emmascarar=True, seleccionar=True, overlap=False):
+        self.seleccionar=seleccionar
+        self.setOverlap(overlap)
+        self.emmascarar=emmascarar
+        self.setColor(color)
+        self.setOpacitat(opacitat/100)
+
         
 
 #Copiat del QvSeleccioPunt de QvEinesGrafiques.py i adaptat a les nostres necessitats
@@ -116,6 +121,7 @@ class QvMascaraEinaClick(QvMascaraEinaPlantilla):
                 if self.seleccionar:
                     seleccionats=layer.selectedFeatureIds()
                     layer.selectByIds(seleccionats+ids)
+                    self.qV.calcularSeleccio()
                 #La part d'eliminar funciona màgicament. No existeix cap raó lògica que ens digui que s'eliminarà, però ho fa
                 # if not pr.deleteFeatures(polysTreure):
                 #     #Ens hauríem de queixar? No? Tractar?
@@ -125,7 +131,8 @@ class QvMascaraEinaClick(QvMascaraEinaPlantilla):
                 print(e)
                 pass
         else:
-          self.missatgeCaixa('Cal tenir seleccionat un nivell per poder fer una selecció.','Marqueu un nivell a la llegenda sobre el que aplicar la consulta.')
+            self.missatgeCaixa('Cal tenir seleccionat un nivell per poder fer una selecció.','Marqueu un nivell a la llegenda sobre el que aplicar la consulta.')
+            raise Exception("No hi havia nivell seleccionat") #TODO: Crear una altra excepció més específica
 
     # def activate(self): #???
     #     pass
@@ -149,8 +156,9 @@ class QvMascaraEinaDibuixa(QvMascaraEinaPlantilla):
         self.points=[]
         self.rubberband=self.novaRubberband()
         layer=self.qV.llegenda.currentLayer()
-        if layer is None:
-            self.missatgeCaixa('Cal tenir seleccionat un nivell per poder fer una selecció','Podeu emmascarar però no es seleccionaran els elements')
+        if layer is None and self.seleccionar:
+            self.missatgeCaixa('Cal tenir seleccionat un nivell per poder fer una selecció','Marqueu un nivell a la llegenda sobre el que aplicar la consulta.')
+            raise Exception("No hi havia nivell seleccionat") #TODO: Crear una altra excepció més específica
     def novaRubberband(self):
         rb=QgsRubberBand(self.canvas,True)
         rb.setColor(QvConstants.COLORDESTACAT)
@@ -201,6 +209,7 @@ class QvMascaraEinaDibuixa(QvMascaraEinaPlantilla):
                         if featPnt.geometry().within(geom):
                             layer.select(featPnt.id())
                         pass
+                self.qV.calcularSeleccio()
             self.rubberband.hide()
             self.rubberband=self.novaRubberband()
             self.actualitza()
@@ -230,8 +239,9 @@ class QvMascaraEinaCercle(QvMascaraEinaPlantilla):
         self.rubberbandCercle=self.novaRubberband()
         layer=self.qV.llegenda.currentLayer()
         self.centre=None
-        if layer is None and self.seleccionar==True:
-            self.missatgeCaixa('Cal tenir seleccionat un nivell per poder fer una selecció','Podeu emmascarar però no es seleccionaran els elements')
+        if layer is None and self.seleccionar:
+            self.missatgeCaixa('Cal tenir seleccionat un nivell per poder fer una selecció','Marqueu un nivell a la llegenda sobre el que aplicar la consulta.')
+            raise Exception("No hi havia nivell seleccionat") #TODO: Crear una altra excepció més específica
     def novaRubberband(self):
         rb=QgsRubberBand(self.canvas,True)
         rb.setColor(QvConstants.COLORDESTACAT)
@@ -270,8 +280,10 @@ class QvMascaraEinaCercle(QvMascaraEinaPlantilla):
                     if featPnt.geometry().within(poligon):
                         layer.select(featPnt.id())
                     pass
+            self.qV.calcularSeleccio()
         self.centre=None
         self.actualitza()
+        self.rubberbandCercle.hide()
 
     def rbcircle(self, center,edgePoint,segments=100):
         self.rubberbandCercle.reset( True )

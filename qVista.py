@@ -1527,6 +1527,21 @@ class QVista(QMainWindow, Ui_MainWindow):
         class QvSeleccioGrafica(QWidget):
             def __init__(self):
                 QWidget.__init__(self)
+                self.color=QColor('white')
+            def getParametres(self):
+                #Falta incloure color i opacitat
+                return {'overlap': qV.checkOverlap.isChecked(),
+                        'seleccionar': qV.checkSeleccio.isChecked(),
+                        'emmascarar': qV.checkMascara.isChecked(),
+                        'color':self.color,
+                        'opacitat':qV.sliderOpacitat.value()}
+            def setTool(self,tool):
+                self.tool=tool
+            def actualitzaTool(self):
+                qV.gbOverlap.setVisible(qV.checkSeleccio.isChecked())
+                qV.frameColorOpacitat.setVisible(qV.checkMascara.isChecked())
+                if hasattr(self,'tool'):
+                    self.tool.setParametres(**self.getParametres())
 
         self.wSeleccioGrafica = QvSeleccioGrafica()
         
@@ -1554,7 +1569,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         # self.bs4.setCheckable(True)
         self.bs4.setIcon(QIcon(imatgesDir+'trash-can-outline.png'))
 
-        self.lblNombreElementsSeleccionats = QLabel('No hi ha elements seleccionats.')
+        # self.lblNombreElementsSeleccionats = QLabel('No hi ha elements seleccionats.')
         self.lblCapaSeleccionada = QLabel('No hi capa seleccionada.')
         
         self.lwFieldsSelect = QListWidget()
@@ -1568,7 +1583,35 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         self.twResultats = QTableWidget()
 
-        self.checkOverlap = QCheckBox('Overlap')
+        #Ja no són checkbox però no els canviem el nom jaja salu2
+        self.checkOverlap = QRadioButton('Solapant')
+        self.checkNoOverlap = QRadioButton('Totalment dins')
+        self.checkNoOverlap.setChecked(True)
+        self.checkSeleccio = QRadioButton('Seleccionar')
+        self.checkSeleccio.setChecked(True)
+        self.checkMascara = QRadioButton('Emmascarar')
+
+        self.sliderOpacitat=QSlider(Qt.Horizontal,self.wSeleccioGrafica)
+        self.sliderOpacitat.setMinimum(0)
+        self.sliderOpacitat.setMaximum(100)
+        self.sliderOpacitat.setSingleStep(1)
+        self.sliderOpacitat.setValue(70)
+        def canviColor(color):
+            self.wSeleccioGrafica.color=color
+            self.bsSeleccioColor.setStyleSheet('background: solid %s; border: none'%color.name())
+            self.wSeleccioGrafica.actualitzaTool()
+        def openColorDialog():
+            canviColor(QColorDialog().getColor())
+        self.bsSeleccioColor=QvPushButton(flat=True)
+        self.bsSeleccioColor.setIcon(QIcon('Imatges/da_color.png'))
+        self.bsSeleccioColor.setStyleSheet('background: solid white; border: none')
+        self.bsSeleccioColor.setIconSize(QSize(25,25))
+        self.bsSeleccioColor.clicked.connect(openColorDialog)
+        QvConstants.afegeixOmbraWidget(self.bsSeleccioColor)
+
+        self.checkOverlap.toggled.connect(self.wSeleccioGrafica.actualitzaTool)
+        self.checkSeleccio.toggled.connect(self.wSeleccioGrafica.actualitzaTool)
+        self.checkMascara.toggled.connect(self.wSeleccioGrafica.actualitzaTool)
         self.bs1.clicked.connect(seleccioClicks)
         self.bs2.clicked.connect(seleccioLliure)
         self.bs3.clicked.connect(seleccioCercle)
@@ -1579,8 +1622,29 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.lytBotonsSeleccio.addWidget(self.bs3)
         self.lytBotonsSeleccio.addWidget(self.bs4)
         
-        self.lytSeleccioGrafica.addWidget(self.checkOverlap)
-        self.lytSeleccioGrafica.addWidget(self.lblNombreElementsSeleccionats)
+        lytSelMasc=QHBoxLayout()
+        lytSelMasc.addWidget(self.checkSeleccio)
+        lytSelMasc.addWidget(self.checkMascara)
+        gbSelMasc=QGroupBox()
+        gbSelMasc.setLayout(lytSelMasc)
+        lytOverlap=QHBoxLayout()
+        lytOverlap.addWidget(self.checkNoOverlap)
+        lytOverlap.addWidget(self.checkOverlap)
+
+        lytColorOpacitat=QHBoxLayout()
+        lytColorOpacitat.addWidget(self.sliderOpacitat)
+        lytColorOpacitat.addWidget(self.bsSeleccioColor)
+        self.frameColorOpacitat=QFrame(self.wSeleccioGrafica)
+        self.frameColorOpacitat.setLayout(lytColorOpacitat)
+        self.frameColorOpacitat.hide()
+        self.frameColorOpacitat.setFrameStyle(QFrame.StyledPanel)
+
+        self.gbOverlap=QGroupBox()
+        self.gbOverlap.setLayout(lytOverlap)
+        self.lytSeleccioGrafica.addWidget(gbSelMasc)
+        self.lytSeleccioGrafica.addWidget(self.gbOverlap)
+        self.lytSeleccioGrafica.addWidget(self.frameColorOpacitat)
+        # self.lytSeleccioGrafica.addWidget(self.lblNombreElementsSeleccionats)
         self.lytSeleccioGrafica.addWidget(self.lblCapaSeleccionada)
         self.lytSeleccioGrafica.addWidget(self.lwFieldsSelect)
         # self.lytSeleccioGrafica.addWidget(self.bs5)
@@ -1599,7 +1663,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.addDockWidget( Qt.RightDockWidgetArea, self.dwSeleccioGrafica )
         self.dwSeleccioGrafica.hide()
 
-        self.idsElementsSeleccionats = []
+        # self.idsElementsSeleccionats = []
 
     #Eina de mesura sobre el mapa -nexus-
     def preparacioMesura(self):
@@ -2429,8 +2493,8 @@ class QVista(QMainWindow, Ui_MainWindow):
             if layer.type() == QgsMapLayer.VectorLayer:
                 layer.removeSelection()
 
-        self.lblNombreElementsSeleccionats.setText('No hi ha elements seleccionats.')
-        self.idsElementsSeleccionats = []
+        # self.lblNombreElementsSeleccionats.setText('No hi ha elements seleccionats.')
+        # self.idsElementsSeleccionats = []
 
         if tambePanCanvas:
             self.canvas.panCanvas()
@@ -2438,6 +2502,11 @@ class QVista(QMainWindow, Ui_MainWindow):
         try:
             qV.canvas.scene().removeItem(qV.toolSelect.rubberband)
         except:
+            pass
+        try:
+            qV.project.removeMapLayer(qV.project.mapLayersByName('Màscara')[0])
+        except Exception as e:
+            print(e)
             pass
 
     def esborrarMesures(self, tambePanCanvas = True):
@@ -3026,8 +3095,8 @@ def seleccioLliure():
     qV.markers.hide()
     try:
         #Això no hauria de funcionar
-        self.esborrarSeleccio()
-        self.esborrarMesures()
+        qV.esborrarSeleccio()
+        # qV.esborrarMesures()
     except:
         pass
 
@@ -3035,28 +3104,28 @@ def seleccioLliure():
     # if layerList:
     #     lyr = layerList[0]
 
-    if layer is not None:
+    try:
         qV.actionMapSelect = QAction('Seleccionar dibuixant', qV)
-        qV.toolSelect = QvSeleccioPerPoligon(qV,qV.canvas, layer)
+        # qV.toolSelect = QvSeleccioPerPoligon(qV,qV.canvas, layer)
+        qV.tool = QvMascaraEinaDibuixa(qV,qV.canvas, **qV.wSeleccioGrafica.getParametres())
+        qV.wSeleccioGrafica.setTool(qV.tool)
 
-        qV.toolSelect.setOverlap(qV.checkOverlap.checkState())
+        # qV.tool.setOverlap(qV.checkOverlap.checkState())
 
-        qV.toolSelect.setAction(qV.actionMapSelect)
-        qV.canvas.setMapTool(qV.toolSelect)
+        qV.tool.setAction(qV.actionMapSelect)
+        qV.canvas.setMapTool(qV.tool)
         # taulaAtributs('Seleccionats', layer)
-    else:
-        missatgeCaixa('Cal tenir seleccionat un nivell per poder fer una selecció.','Marqueu un nivell a la llegenda sobre el que aplicar la consulta.')
+    except:
+        pass
+    
 
 def seleccioClick():
     try:
         self.esborrarMesures()
     except:
         pass    
-    tool = QvSeleccioElement(qV.canvas, qV.llegenda)
-    qV.canvas.setMapTool(tool)
-    # qV.taulesAtributs.taula.toggleSelection(True)
-    # taulaAtributs('Seleccionats', layer)
-    # taulaAtributsSeleccionats()
+    # tool = QvSeleccioElement(qV.canvas, qV.llegenda)
+    # qV.canvas.setMapTool(tool)
 
 
 def createFolder(directory):
@@ -3155,9 +3224,14 @@ def seleccioCercle():
         qV.canvas.scene().removeItem(qV.toolSelect.rubberband)
     except:
         pass
-    qV.toolSelect = QvSeleccioCercle(qV, 10, 10, 30)
-    qV.toolSelect.setOverlap(qV.checkOverlap.checkState())
-    qV.canvas.setMapTool(qV.toolSelect)
+    # qV.toolSelect = QvSeleccioCercle(qV, 10, 10, 30)
+    try:
+        qV.toolSelect = QvMascaraEinaCercle(qV, qV.canvas, **qV.wSeleccioGrafica.getParametres())
+        qV.wSeleccioGrafica.setTool(qV.toolSelect)
+        # qV.toolSelect.setOverlap(qV.checkOverlap.checkState())
+        qV.canvas.setMapTool(qV.toolSelect)
+    except:
+        pass
 
 def seleccioClicks():
     seleccioClick()
@@ -3167,8 +3241,12 @@ def seleccioClicks():
     except:
         pass
 
-    tool = QvSeleccioPunt(qV, qV.canvas)
-    qV.canvas.setMapTool(tool)
+    try:
+        tool = QvMascaraEinaClick(qV,qV.canvas, **qV.wSeleccioGrafica.getParametres())
+        qV.wSeleccioGrafica.setTool(tool)
+        qV.canvas.setMapTool(tool)
+    except:
+        pass
     # taulaAtributsSeleccionats()
 
 # def plotMapa():
@@ -3205,17 +3283,17 @@ def seleccioExpressio():
     
     if qV.leSeleccioExpressio.text().lower()=='mascara':
         try:
-            qV.tool = QvMascaraEinaClick(qV, qV.canvas)
+            qV.tool = QvMascaraEinaClick(qV, qV.canvas, **qV.wSeleccioGrafica.getParametres())
             qV.canvas.setMapTool(qV.tool)
         except:
             pass
         return
     if qV.leSeleccioExpressio.text().lower()=='mascarad':
-        qV.tool=QvMascaraEinaDibuixa(qV,qV.canvas)
+        qV.tool=QvMascaraEinaDibuixa(qV,qV.canvas, **qV.wSeleccioGrafica.getParametres())
         qV.canvas.setMapTool(qV.tool)
         return
     if qV.leSeleccioExpressio.text().lower()=='mascarac':
-        qV.tool=QvMascaraEinaCercle(qV,qV.canvas)
+        qV.tool=QvMascaraEinaCercle(qV,qV.canvas, **qV.wSeleccioGrafica.getParametres())
         qV.canvas.setMapTool(qV.tool)
         return
 
