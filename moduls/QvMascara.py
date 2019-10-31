@@ -4,18 +4,21 @@ from qgis.gui import QgsMapTool, QgsRubberBand
 import math
 
 #polys ha de ser una llista de QgsFeatures
-def aplicaMascara(qV,polys):
-    mascares=qV.project.mapLayersByName('Màscara')
-    if len(mascares)==0:
-        mascara=QvMascaraEinaPlantilla(qV,qV.canvas).getCapa() #No ho desem enlloc però així crea la capa
-        tocaAfegir=True
+def aplicaMascara(qV,polys,mascara=None):
+    if mascara is None:
+        mascares=qV.project.mapLayersByName('Màscara')
+        if len(mascares)==0:
+            mascara=QvMascaraEinaPlantilla(qV,qV.canvas).getCapa() #No ho desem enlloc però així crea la capa
+            tocaAfegir=True
+        else:
+            mascara=mascares[0]
+            tocaAfegir=False
     else:
-        mascara=mascares[0]
         tocaAfegir=False
     pr=mascara.dataProvider()
     pr.addFeatures(polys)
-    if tocaAfegir:
-        qV.project.addMapLayers([mascara])
+    # if tocaAfegir:
+    qV.project.addMapLayers([mascara])
 
 class QvMascaraEinaPlantilla(QgsMapTool):
     def __init__(self, qV, canvas, **kwargs):
@@ -55,6 +58,7 @@ class QvMascaraEinaPlantilla(QgsMapTool):
         mascares=self.qV.project.mapLayersByName('Màscara')
         if len(mascares)==0:
             self.mascara=QgsVectorLayer('Polygon?crs=epsg:25831','Màscara','memory')
+            print(self.color.name())
             self.mascara.renderer().symbol().setColor(self.color)
             self.mascara.renderer().symbol().symbolLayer(0).setStrokeColor(self.color)
             self.mascara.setRenderer(QgsInvertedPolygonRenderer.convertFromRenderer(self.mascara.renderer()))
@@ -67,7 +71,7 @@ class QvMascaraEinaPlantilla(QgsMapTool):
             self.mascara=mascares[0]
         return self.mascara
     def actualitza(self):
-        if self.emmascarar:
+        if self.emmascarar and hasattr(self,'mascara'):
             self.mascara.updateExtents()
             # if self.qV.project.mapLayersByName('Màscara') is None:
             if not self.afegida:
@@ -78,6 +82,7 @@ class QvMascaraEinaPlantilla(QgsMapTool):
         # self.canvas.refresh()
         self.canvas.refreshAllLayers()
     def setColor(self,color):
+        print(color.name())
         self.color=color
     def setOpacitat(self,opacitat):
         self.opacitat=opacitat
@@ -89,6 +94,7 @@ class QvMascaraEinaPlantilla(QgsMapTool):
         self.emmascarar=emmascarar
         self.setColor(color)
         self.setOpacitat(opacitat/100)
+        self.actualitza()
 
         
 
@@ -131,7 +137,7 @@ class QvMascaraEinaClick(QvMascaraEinaPlantilla):
                         poly.setGeometry(geom)
                         polys.append(poly)
                     # pr.addFeatures(polys)
-                    aplicaMascara(self.qV,polys)
+                    aplicaMascara(self.qV,polys,self.getCapa())
                 if self.seleccionar:
                     seleccionats=layer.selectedFeatureIds()
                     layer.selectByIds(seleccionats+ids)
@@ -208,7 +214,7 @@ class QvMascaraEinaDibuixa(QvMascaraEinaPlantilla):
             poly.setGeometry(geom)
             print(geom)
             if self.emmascarar:
-                aplicaMascara(self.qV,[poly])
+                aplicaMascara(self.qV,[poly],self.getCapa())
                 # pr.addFeatures([poly])
 
             layer=self.qV.llegenda.currentLayer()
@@ -280,7 +286,7 @@ class QvMascaraEinaCercle(QvMascaraEinaPlantilla):
         poly=QgsFeature()
         poly.setGeometry(poligon)
         if self.emmascarar:
-            aplicaMascara(self.qV,[poly])
+            aplicaMascara(self.qV,[poly],self.getCapa())
             # pr.addFeatures([poly])
 
         layer=self.qV.llegenda.currentLayer()
