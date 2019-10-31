@@ -3,6 +3,19 @@ from moduls.QvConstants import QvConstants
 from qgis.gui import QgsMapTool, QgsRubberBand
 import math
 
+#polys ha de ser una llista de QgsFeatures
+def aplicaMascara(qV,polys):
+    mascares=qV.project.mapLayersByName('Màscara')
+    if len(mascares)==0:
+        mascara=QvMascaraEinaPlantilla(qV,qV.canvas).getCapa() #No ho desem enlloc però així crea la capa
+        tocaAfegir=True
+    else:
+        mascara=mascares[0]
+        tocaAfegir=False
+    pr=mascara.dataProvider()
+    pr.addFeatures(polys)
+    if tocaAfegir:
+        qV.project.addMapLayers([mascara])
 
 class QvMascaraEinaPlantilla(QgsMapTool):
     def __init__(self, qV, canvas, **kwargs):
@@ -58,7 +71,7 @@ class QvMascaraEinaPlantilla(QgsMapTool):
             self.mascara.updateExtents()
             # if self.qV.project.mapLayersByName('Màscara') is None:
             if not self.afegida:
-                self.qV.project.addMapLayers([self.mascara])
+                # self.qV.project.addMapLayers([self.mascara])
                 self.afegida=True
             self.mascara.renderer().embeddedRenderer().symbol().setColor(self.color)
             self.mascara.setOpacity(self.opacitat)
@@ -70,7 +83,7 @@ class QvMascaraEinaPlantilla(QgsMapTool):
         self.opacitat=opacitat
     def setOverlap(self,overlap):
         self.overlap=overlap
-    def setParametres(self,color=QColor(255,255,255), opacitat=70, emmascarar=True, seleccionar=True, overlap=False):
+    def setParametres(self,color=QColor(255,255,255), opacitat=70, emmascarar=True, seleccionar=False, overlap=False):
         self.seleccionar=seleccionar
         self.setOverlap(overlap)
         self.emmascarar=emmascarar
@@ -117,7 +130,8 @@ class QvMascaraEinaClick(QvMascaraEinaPlantilla):
                         poly=QgsFeature()
                         poly.setGeometry(geom)
                         polys.append(poly)
-                    pr.addFeatures(polys)
+                    # pr.addFeatures(polys)
+                    aplicaMascara(self.qV,polys)
                 if self.seleccionar:
                     seleccionats=layer.selectedFeatureIds()
                     layer.selectByIds(seleccionats+ids)
@@ -194,7 +208,8 @@ class QvMascaraEinaDibuixa(QvMascaraEinaPlantilla):
             poly.setGeometry(geom)
             print(geom)
             if self.emmascarar:
-                pr.addFeatures([poly])
+                aplicaMascara(self.qV,[poly])
+                # pr.addFeatures([poly])
 
             layer=self.qV.llegenda.currentLayer()
             if self.seleccionar and layer is not None:
@@ -265,7 +280,8 @@ class QvMascaraEinaCercle(QvMascaraEinaPlantilla):
         poly=QgsFeature()
         poly.setGeometry(poligon)
         if self.emmascarar:
-            pr.addFeatures([poly])
+            aplicaMascara(self.qV,[poly])
+            # pr.addFeatures([poly])
 
         layer=self.qV.llegenda.currentLayer()
         if self.seleccionar and layer is not None:

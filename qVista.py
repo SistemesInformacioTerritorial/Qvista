@@ -2345,6 +2345,9 @@ class QVista(QMainWindow, Ui_MainWindow):
     def clickArbre(self):
         rang = self.distBarris.llegirRang()
         self.canvas.zoomToFeatureExtent(rang)
+        # poly=QgsFeature()
+        # poly.setGeometry(QgsGeometry.fromRect(rang))
+        # aplicaMascara(self,[poly])
 
     def cataleg(self):
         """catàleg de capes"""
