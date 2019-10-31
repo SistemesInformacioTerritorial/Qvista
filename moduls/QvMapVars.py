@@ -5,7 +5,10 @@ from qgis.core import QgsGraduatedSymbolRenderer
 from qgis.PyQt.QtCore import QLocale
 from collections import OrderedDict
 
+MAP_ID = "qV_mapificacio"
 MAP_MAX_CATEGORIES = 10
+MAP_ALPHA_INI = 4
+MAP_ALPHA_FIN = 28
 
 MAP_ZONES = OrderedDict({
     # Nom: (Camps, Arxiu)

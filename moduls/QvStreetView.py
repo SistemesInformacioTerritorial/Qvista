@@ -140,9 +140,22 @@ class PointTool(QgsMapTool):
             pass  
 
 
+    
+    def llevame(self,x,y):
+        self.portam(QPoint(x,y))
+    # def llevame(self,point):
+    #     self.portam(point)
+    
+    def llevameP(self,x,y):
+        self.llevameP(QPoint(x,y))
+    def llevameP(self,point):
+        '''Obre streetview donada una posició de la pantalla
+        '''
+        self.portam(self.toMapCoordinates(point))
 
     def portam(self,point):
-        self.point = self.toMapCoordinates(point)
+        self.point=QgsPointXY(point)
+        # self.point = self.toMapCoordinates(point)
         xMon = self.point.x() #???
         yMon = self.point.y() #???
 
@@ -188,7 +201,7 @@ class PointTool(QgsMapTool):
         self.parent.m.show()
         self.moureBoto = False
     def canvasReleaseEvent(self, event):
-        self.portam(event.pos())
+        self.llevameP(event.pos())
 
 class QvStreetView(QWidget):
     """Una classe del tipus QWidget 

@@ -545,18 +545,21 @@ class BotoLateral(QPushButton):
             for x in self.cataleg.botonsLaterals:
                 if x==self: continue
                 x.setChecked(False)
-                if x.esPrivat():
-                    x.setIcon(QIcon(imatgesDir+'lock-open-fosc.png'))
             self.cataleg.tots.setChecked(False)
             if self!=self.cataleg.fav:
                 self.cataleg.fav.setChecked(False)
             self.setChecked(True)
         self.cataleg.leCerca.setText('')
         self.cataleg.mostraMapes()
-        if self.esPrivat():
-            self.setIcon(QIcon(imatgesDir+'lock-open-blanc.png'))
         if self!=self.cataleg.fav:
             self.cataleg.fav.setIcon(QIcon(imatgesDir+'star.png'))
+    def setChecked(self,checked=True):
+        super().setChecked(checked)
+        if self.esPrivat():
+            if checked:
+                self.setIcon(QIcon(imatgesDir+'lock-open-blanc.png'))
+            else:
+                self.setIcon(QIcon(imatgesDir+'lock-open-fosc.png'))
     def esPrivat(self):
         return self.privat
 
