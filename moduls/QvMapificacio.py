@@ -519,7 +519,7 @@ class QvMapificacio(QObject):
         # Guarda simbología en GPKG
         err = self.llegenda.saveStyleToGeoPackage(mapLyr, MAP_ID)
         if err != '':
-            self.msgError = "No s'ha pogut desar la simbologia\n({})".format(err)
+            self.msgError = "Hi ha hagut problemes al desar la simbologia\n({})".format(err)
             return False
 
         # Fin correcto

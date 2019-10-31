@@ -557,7 +557,7 @@ class QvFormSimbMapificacio(QvFormBaseMapificacio):
                 return "No s'ha pogut elaborar el mapa"
             err = self.llegenda.saveStyleToGeoPackage(self.capa, MAP_ID)
             if err != '':
-                return "No s'ha pogut desar la simbologia\n({})".format(err)
+                return "Hi ha hagut problemes al desar la simbologia\n({})".format(err)
             # self.llegenda.modificacioProjecte('mapModified')
             return ''
         except Exception as e:
