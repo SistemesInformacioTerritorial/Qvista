@@ -1612,6 +1612,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.checkOverlap.toggled.connect(self.wSeleccioGrafica.actualitzaTool)
         self.checkSeleccio.toggled.connect(self.wSeleccioGrafica.actualitzaTool)
         self.checkMascara.toggled.connect(self.wSeleccioGrafica.actualitzaTool)
+        self.sliderOpacitat.valueChanged.connect(self.wSeleccioGrafica.actualitzaTool)
         self.bs1.clicked.connect(seleccioClicks)
         self.bs2.clicked.connect(seleccioLliure)
         self.bs3.clicked.connect(seleccioCercle)
@@ -1631,11 +1632,14 @@ class QVista(QMainWindow, Ui_MainWindow):
         lytOverlap.addWidget(self.checkNoOverlap)
         lytOverlap.addWidget(self.checkOverlap)
 
+        lytColorOpacitatLbl=QVBoxLayout()
+        lytColorOpacitatLbl.addWidget(QLabel('Opacitat i color de la màscara'))
         lytColorOpacitat=QHBoxLayout()
         lytColorOpacitat.addWidget(self.sliderOpacitat)
         lytColorOpacitat.addWidget(self.bsSeleccioColor)
+        lytColorOpacitatLbl.addLayout(lytColorOpacitat)
         self.frameColorOpacitat=QFrame(self.wSeleccioGrafica)
-        self.frameColorOpacitat.setLayout(lytColorOpacitat)
+        self.frameColorOpacitat.setLayout(lytColorOpacitatLbl)
         self.frameColorOpacitat.hide()
         self.frameColorOpacitat.setFrameStyle(QFrame.StyledPanel)
 
