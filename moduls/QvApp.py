@@ -8,6 +8,7 @@ from moduls.QvSingleton import Singleton
 from moduls.QvPythonRunner import QvPythonRunner
 from moduls.QvGithub import QvGithub
 from moduls.QvSqlite import QvSqlite
+from PyQt5.QtWidgets import QApplication
 from pathlib import Path
 import sys
 import getpass
@@ -237,7 +238,29 @@ class QvApp(Singleton):
         except Exception as e:
             print(str(e))
             return ''
+    def zoomFactor(self):
+        #Windows per defecte utilitza un dpi de 96. Si hem aplicat un factor de zoom, serà més
+        #Per tant, dividint entre 96 tindrem l'escalat en tant per 1
+        zoomFactor=QApplication.desktop().screen().logicalDpiX()/96
+        return zoomFactor
+    def nomUsuari(self):
+        try:
+            #Copia-pega de https://sjohannes.wordpress.com/2010/06/19/win32-python-getting-users-display-name-using-ctypes/
+            #No sé per què va, però va
+            import ctypes
+            GetUserNameEx = ctypes.windll.secur32.GetUserNameExW
+            NameDisplay = 3
 
+            size = ctypes.pointer(ctypes.c_ulong(0))
+            GetUserNameEx(NameDisplay, None, size)
+
+            nameBuffer = ctypes.create_unicode_buffer(size.contents.value)
+            GetUserNameEx(NameDisplay, nameBuffer, size)
+            return nameBuffer.value
+        except:
+            print('Sembla que no estàs a Windows :D')
+            #Si no funciona l'anterior, posem l'usuari del login
+            return self.usuari
     # Metodos db QVISTA
 
     def dbLogConnexio(self):

@@ -3,6 +3,7 @@
 from moduls.QvImports import *
 
 from qgis.PyQt.QtGui import QStandardItemModel, QStandardItem
+from qgis.PyQt.QtCore import pyqtSignal
 from qgis.core import QgsRectangle
 
 from PyQt5.QtWebKitWidgets import QWebView , QWebPage #QWebPage (???)
@@ -18,7 +19,7 @@ class BotoQvBrowser(QvPushButton):
         # self.setMaximumWidth(100)
 
 class QvBrowser(QWidget):
-
+    svMogut=pyqtSignal(float,float)
     def __init__(self, parent):
         QWidget.__init__(self)
         self.parent = parent
@@ -62,6 +63,8 @@ class QvBrowser(QWidget):
         self.botoStreetView.setText('Street view')
         self.botoStreetView.clicked.connect(self.openStreetView)
 
+        self.browser.urlChanged.connect(self.extreuCoordenades)
+
         # self.layoutBotonera.addWidget(self.botoOSM)
         self.layoutBotonera.addWidget(self.botoGoogleMaps)
         self.layoutBotonera.addWidget(self.botoStreetView)
@@ -78,7 +81,27 @@ class QvBrowser(QWidget):
     def openStreetView(self):
         self.browser.setUrl(QUrl(self.parent.urlStreetView))
 
-
+    def extreuCoordenades(self,url):
+        urlStr=url.url()
+        URLMAPS='https://www.google.com/maps/@'
+        URLSV='https://www.google.com/maps?layer=c&cbll='
+        URLOSM='https://www.openstreetmap.org/#map=16/'
+        if URLSV in urlStr:
+            urlStr=urlStr.replace(URLSV,'')
+            y,x = urlStr.split(',')
+        elif URLMAPS in urlStr:
+            urlStr=urlStr.replace(URLMAPS,'')
+            sp=urlStr.split(',')
+            y, x = sp[0], sp[1]
+            
+        elif URLOSM in urlStr:
+            #Fer el que toqui
+            return
+        else:
+            return
+        x,y = float(x), float(y)
+        # self.svMogut.emit(x,y)
+        self.svMogut.emit(x,y)
     
     def tancar(self):
         print('sortir')
@@ -117,9 +140,22 @@ class PointTool(QgsMapTool):
             pass  
 
 
+    
+    def llevame(self,x,y):
+        self.portam(QPoint(x,y))
+    # def llevame(self,point):
+    #     self.portam(point)
+    
+    def llevameP(self,x,y):
+        self.llevameP(QPoint(x,y))
+    def llevameP(self,point):
+        '''Obre streetview donada una posició de la pantalla
+        '''
+        self.portam(self.toMapCoordinates(point))
 
     def portam(self,point):
-        self.point = self.toMapCoordinates(point)
+        self.point=QgsPointXY(point)
+        # self.point = self.toMapCoordinates(point)
         xMon = self.point.x() #???
         yMon = self.point.y() #???
 
@@ -165,7 +201,7 @@ class PointTool(QgsMapTool):
         self.parent.m.show()
         self.moureBoto = False
     def canvasReleaseEvent(self, event):
-        self.portam(event.pos())
+        self.llevameP(event.pos())
 
 class QvStreetView(QWidget):
     """Una classe del tipus QWidget 
@@ -184,7 +220,7 @@ class QvStreetView(QWidget):
         self.rp = PointTool(self, self.canvas)
         self.canvas.setMapTool(self.rp)
         # self.boto = QvPushButton(parent = self.canvas, flat = True)
-        # self.icon=QIcon('imatges/littleMan.png')
+        # self.icon=QIcon(imatgesDir+'littleMan.png')
         # self.boto.setIcon(self.icon)
         # # self.boto.clicked.connect(self.segueixBoto)
         # self.boto.setGeometry(8,713,25,25)
@@ -211,10 +247,16 @@ class QvStreetView(QWidget):
 
         self.qbrowser = QvBrowser(self)
         self.qbrowser.show()
+        self.qbrowser.svMogut.connect(self.mogut)
 
         self.layoutH.addWidget(self.qbrowser)
 
-     
+    def mogut(self, x, y):
+        transformacio = QgsCoordinateTransform(QgsCoordinateReferenceSystem("EPSG:4326"), 
+                            QgsCoordinateReferenceSystem("EPSG:25831"), 
+                            QgsProject.instance())
+        transformat=transformacio.transform(x,y)
+        self.m.setCenter( QgsPointXY( transformat.x(), transformat.y() ) )
 
 
 

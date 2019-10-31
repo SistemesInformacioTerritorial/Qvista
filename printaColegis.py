@@ -80,7 +80,7 @@ def imprimirPlanol(colegi, cole, meses, x_min, y_min, x_max, y_max, rotacion, te
             result = exporter.exportToImage(fitxerSortida, settings)
     
         #Obra el document si està marcat checkObrirResultat
-        # QDesktopServices().openUrl(QUrl(fitxerSortida))
+        QDesktopServices().openUrl(QUrl(fitxerSortida))
         
         segonsEmprats=round(time.time()-tInicial,1)
         layersTemporals = project.mapLayersByName("Capa temporal d'impressió")
@@ -120,8 +120,8 @@ with qgisapp() as app:
         textFiltre2 = 'CODI_COLE'+"='"+cole+"'"
         layerSeccions.setSubsetString(textFiltre) 
         layer.setSubsetString(textFiltre2)    
-        coles = ['00816','00811']
+        coles = ['00698']
         if cole in coles:
-            imprimirPlanol(colegi, cole, meses, x_min, y_min, x_max, y_max, 0, plantillaMapa , 'd:/EUREKA.pdf', 'PDF')
+            imprimirPlanol(colegi, cole, meses, x_min, y_min, x_max, y_max, 0, plantillaMapa , 'd:/EUREKA.png', 'PNG')
     
     canvas.show()
