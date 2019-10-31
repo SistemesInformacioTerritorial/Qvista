@@ -47,6 +47,11 @@ QDockWidget{
     titlebar-normal-icon: url("Imatges/window-restore.png");
 }
 
+QListWidget{
+    color: #38474f;
+    
+}
+
 QDockWidget::title {
     background-color: #79909B;
     padding: 4px;

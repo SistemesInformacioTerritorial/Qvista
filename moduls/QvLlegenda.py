@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from qgis.core import (QgsProject, QgsLegendModel, QgsLayerDefinition, QgsMapLayer, QgsVectorLayer,
+from qgis.core import (QgsProject, QgsSettings, QgsLegendModel, QgsLayerDefinition, QgsMapLayer, QgsVectorLayer,
                        QgsVectorFileWriter, QgsVectorLayerJoinInfo, QgsLayerTree, QgsLayerTreeNode,
                        QgsLayerTreeUtils, QgsVectorDataProvider, QgsSymbol, QgsRendererCategory, QgsCategorizedSymbolRenderer,
                        QgsGraduatedSymbolRenderer, QgsRendererRange, QgsAggregateCalculator,
@@ -9,13 +9,14 @@ from qgis.gui import (QgsLayerTreeView, QgsLayerTreeViewMenuProvider, QgsLayerTr
                       QgsLayerTreeViewIndicator, QgsLayerTreeViewDefaultActions, QgsGradientColorRampDialog)
 from qgis.PyQt.QtWidgets import QAction, QFileDialog, QWidget, QPushButton, QVBoxLayout, QHBoxLayout, QGridLayout
 from qgis.PyQt.QtGui import QIcon, QColor
-from qgis.PyQt.QtCore import Qt, pyqtSignal, QUrl, QLocale
+from qgis.PyQt.QtCore import Qt, pyqtSignal, QUrl
 from moduls.QvAccions import QvAccions
 from moduls.QvAtributs import QvAtributs
 from moduls.QvApp import QvApp
 from moduls.QvVideo import QvVideo
 from moduls.QvEscala import QvEscala
 from moduls.QvMapRenderer import QvMapRenderer
+from moduls.QvMapVars import *
 from configuracioQvista import *
 
 import os
@@ -446,8 +447,8 @@ class QvLlegenda(QgsLayerTreeView):
                     else:
                         self.removeIndicator(node, self.iconaFiltre)
                     # Mapificacón
-                    tipus = QgsExpressionContextUtils.layerScope(capa).variable('qV_tipusCapa')
-                    if tipus == 'MAPIFICACIÓ':
+                    tipus = QgsExpressionContextUtils.layerScope(capa).variable(MAP_ID)
+                    if tipus == 'True':
                         self.addIndicator(node, self.iconaMap)
                     else:
                         self.removeIndicator(node, self.iconaMap)
@@ -761,6 +762,11 @@ class QvLlegenda(QgsLayerTreeView):
     #             print('Error al añadir capa')
     #         self.directory = os.path.dirname(nfile)
 
+    def saveStyleToGeoPackage(self, capa, nom="", desc="", default=True):
+        s = QgsSettings()
+        s.setValue("qgis/overwriteStyle", True)
+        return capa.saveStyleToDatabase(nom, desc, default, "")
+
     def saveLayersToFile(self):
         nodes = self.selectedNodes()
         if len(nodes) > 0:
@@ -1018,9 +1024,8 @@ if __name__ == "__main__":
         def testMapificacio():
             from moduls.QvMapForms import QvFormNovaMapificacio, QvFormSimbMapificacio
 
-            global fMap
             fMap = QvFormNovaMapificacio(leyenda)
-            fMap.show()
+            fMap.exec()
 
             # global fMap
             # fMap = QvFormSimbMapificacio(leyenda, leyenda.currentLayer())

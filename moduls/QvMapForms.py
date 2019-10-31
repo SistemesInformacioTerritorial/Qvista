@@ -2,39 +2,105 @@
 
 from qgis.gui import QgsFileWidget
 from qgis.PyQt.QtCore import Qt, QObject, pyqtSignal, pyqtSlot
-from qgis.PyQt.QtGui import QColor, QValidator, QIcon, QDoubleValidator
+from qgis.PyQt.QtGui import QColor, QValidator, QIcon, QDoubleValidator, QPixmap
 from qgis.PyQt.QtWidgets import (QFileDialog, QWidget, QPushButton, QFormLayout, QVBoxLayout, QHBoxLayout,
-                                 QComboBox, QLabel, QLineEdit, QSpinBox, QGroupBox, QGridLayout,
-                                 QMessageBox, QDialogButtonBox)
+                                 QComboBox, QLabel, QLineEdit, QSpinBox, QGroupBox, QGridLayout, QDialog,
+                                 QMessageBox, QDialogButtonBox, QApplication)
 
 from qgis.core import QgsApplication, QgsGraduatedSymbolRenderer, QgsExpressionContextUtils
 
 from moduls.QvMapVars import *
 from moduls.QvMapificacio import *
 
-# class verifNumero(QValidator):
-#     def validate(self, string, index):
-#         txt = string.strip()
-#         if txt == '':
-#             state = QValidator.Intermediate
-#         elif txt.isnumeric():
-#             state = QValidator.Acceptable
-#         else:
-#             state = QValidator.Invalid
-#         return (state, string, index)
+import os
+import sqlite3
 
-class QvFormNovaMapificacio(QWidget):
-    def __init__(self, llegenda):
-
-        super().__init__(minimumWidth=360)
+class QvFormBaseMapificacio(QDialog):
+    def __init__(self, llegenda, amplada=None, parent=None, modal=True):
+        super().__init__(parent, modal=modal)
         self.llegenda = llegenda
+        if amplada is not None:
+            self.setMinimumWidth(amplada)
+            self.setMaximumWidth(amplada)
+        self.setWindowFlags(Qt.MSWindowsFixedSizeDialogHint)
+
+    def msgInfo(self, txt):
+        QMessageBox.information(self, 'Informació', txt)
+
+    def msgAvis(self, txt):
+        QMessageBox.warning(self, 'Avís', txt)
+
+    def msgError(self, txt):
+        QMessageBox.critical(self, 'Error', txt)
+
+    def pause(self):
+        QApplication.instance().setOverrideCursor(Qt.WaitCursor)
+        self.setDisabled(True)
+
+    def play(self):
+        self.setDisabled(False)
+        QApplication.instance().restoreOverrideCursor()
+
+    def comboColors(self, combo):
+        for nom, col in MAP_COLORS.items():
+            pixmap = QPixmap(80, 45)
+            pixmap.fill(col)
+            icon = QIcon(pixmap)
+            combo.addItem(icon, nom)
+
+    def valida(self):
+        return True
+
+    def mapifica(self):
+        return ''
+
+    @pyqtSlot()
+    def accept(self):
+        if self.valida():
+            self.pause()
+            msg = self.mapifica()
+            if msg == '':
+                self.play()
+                super().accept()
+            else:
+                self.play()
+                self.msgError(msg)
+
+    @pyqtSlot()
+    def cancel(self):
+        self.close()
+
+class QvVerifNumero(QValidator):
+
+    def verifCharsNumero(self, string):
+        for char in string:
+            if char.isdigit() or char in ('.', ',', '-'):
+                pass
+            else:
+                return False
+        return True
+
+    def validate(self, string, index):
+        txt = string.strip()
+        num, ok = MAP_LOCALE.toFloat(txt)
+        if ok:
+            state = QValidator.Acceptable
+        elif self.verifCharsNumero(txt):
+            state = QValidator.Intermediate
+        else:
+            state = QValidator.Invalid
+        return (state, string, index)
+
+class QvFormNovaMapificacio(QvFormBaseMapificacio):
+    def __init__(self, llegenda, amplada=450):
+        super().__init__(llegenda, amplada)
+
         self.fCSV = None
 
-        self.setWindowFlags(Qt.Dialog | Qt.MSWindowsFixedSizeDialogHint)
         self.setWindowTitle('Afegir capa de mapificació')
 
         self.layout = QVBoxLayout()
-        self.layout.setSpacing(12)
+        self.layout.setSpacing(14)
         self.setLayout(self.layout)
 
         self.arxiu = QgsFileWidget()
@@ -49,8 +115,7 @@ class QvFormNovaMapificacio(QWidget):
         self.zona = QComboBox(self)
         self.zona.setEditable(False)
         self.zona.addItem('Selecciona zona…')
-        # self.zona.addItems(MAP_ZONES.keys())
-        # self.zona.model().item(0).setEnabled(False)
+        self.zona.currentIndexChanged.connect(self.canviaZona)
 
         self.capa = QLineEdit(self)
         self.capa.setMaxLength(40)
@@ -62,7 +127,7 @@ class QvFormNovaMapificacio(QWidget):
 
         self.distribucio = QComboBox(self)
         self.distribucio.setEditable(False)
-        self.distribucio.addItems(MAP_DISTRIBUCIO.keys())
+        self.distribucio.addItem(next(iter(MAP_DISTRIBUCIO.keys())))
 
         self.calcul = QLineEdit(self)
 
@@ -70,7 +135,7 @@ class QvFormNovaMapificacio(QWidget):
 
         self.color = QComboBox(self)
         self.color.setEditable(False)
-        self.color.addItems(MAP_COLORS.keys())
+        self.comboColors(self.color)
 
         self.metode = QComboBox(self)
         self.metode.setEditable(False)
@@ -86,13 +151,13 @@ class QvFormNovaMapificacio(QWidget):
 
         self.buttons = QDialogButtonBox()
         self.buttons.addButton(QDialogButtonBox.Ok)
-        self.buttons.accepted.connect(self.ok)
+        self.buttons.accepted.connect(self.accept)
         self.buttons.addButton(QDialogButtonBox.Cancel)
         self.buttons.rejected.connect(self.cancel)
 
         self.gZona = QGroupBox('Definició zona')
         self.lZona = QFormLayout()
-        self.lZona.setSpacing(10)
+        self.lZona.setSpacing(14)
         self.gZona.setLayout(self.lZona)
 
         self.lZona.addRow('Arxiu dades:', self.arxiu)
@@ -101,7 +166,7 @@ class QvFormNovaMapificacio(QWidget):
 
         self.gDades = QGroupBox('Dades agregació')
         self.lDades = QFormLayout()
-        self.lDades.setSpacing(10)
+        self.lDades.setSpacing(14)
         self.gDades.setLayout(self.lDades)
 
         self.lDades.addRow('Tipus agregació:', self.tipus)
@@ -111,7 +176,7 @@ class QvFormNovaMapificacio(QWidget):
 
         self.gSimb = QGroupBox('Simbologia mapificació')
         self.lSimb = QFormLayout()
-        self.lSimb.setSpacing(10)
+        self.lSimb.setSpacing(14)
         self.gSimb.setLayout(self.lSimb)
 
         self.lSimb.addRow('Color mapa:', self.color)
@@ -123,21 +188,55 @@ class QvFormNovaMapificacio(QWidget):
         self.layout.addWidget(self.gSimb)
         self.layout.addWidget(self.buttons)
 
-    def borrarZones(self):
+        self.adjustSize()
+
+    def campsDB(self, nom):
+        res = []
+        if nom != '':
+            fich = RUTA_DADES + nom
+            if os.path.isfile(fich):
+                conn = sqlite3.connect('file:' + fich + '?mode=ro', uri=True)
+                conn.row_factory = sqlite3.Row
+                c = conn.cursor()
+                c.execute('select * from ' + nom.split('.')[0])
+                row = c.fetchone()
+                # res = [i[0].upper() for i in c.description]
+                res = [i.upper() for i in row.keys()]
+                conn.close()
+        return res
+
+    def soloPrimerItem(self, combo):
+        combo.setCurrentIndex(0)
+        ultimo = combo.count() - 1
+        for n in range(ultimo, 0, -1):
+            combo.removeItem(n)
+    
+    @pyqtSlot()
+    def canviaZona(self):
+        self.distribucio.setCurrentIndex(0)
+        self.soloPrimerItem(self.distribucio)
+        if self.zona.currentIndex() > 0:
+            z = self.zona.currentText()
+            campsZona = self.campsDB(MAP_ZONES[z][1])
+            # Carga combo con distribuciones si el campo correspondiente está en la BBDD
+            for dist, campo in MAP_DISTRIBUCIO.items():
+                if campo != '' and campo in campsZona:
+                    self.distribucio.addItem(dist)
+
+    def borrarZonas(self):
         self.tipus.setCurrentIndex(0)
-        self.zona.setCurrentIndex(0)
-        for n in range(1, self.zona.count()):
-            self.zona.removeItem(n)
+        self.soloPrimerItem(self.zona)
 
     @pyqtSlot(str)
     def arxiuSeleccionat(self, nom):
         if nom == '':
             return
-        self.borrarZones()
+        self.borrarZonas()
         self.fCSV = QvMapificacio(nom, numMostra=0)
+        # Carga combo con zonas si el campo correspondiente está en el fichero CSV
         num = 0
         for zona, val in MAP_ZONES.items():
-            if self.fCSV.prefixe + val[0] in self.fCSV.camps:
+            if val[1] != '' and self.fCSV.prefixe + val[0] in self.fCSV.camps:
                 self.zona.addItem(zona)
                 num = num + 1
         if num == 0:
@@ -150,25 +249,6 @@ class QvFormNovaMapificacio(QWidget):
             self.capa.setFocus()
         else:
             self.zona.setFocus()
-
-            # fNom = os.path.splitext(os.path.basename(nom))[0]
-            # nItems = self.zona.count()
-            # for i in range(1, nItems):
-            #     item = self.zona.itemText(i)
-            #     if fNom.upper().endswith('_' + item.upper()):
-            #         n = i
-            #         break
-        # self.zona.setCurrentIndex(nItem)
-        # self.tipus.setCurrentIndex(0)
-
-    def msgInfo(self, txt):
-        QMessageBox.information(self, 'Informació', txt)
-
-    def msgAvis(self, txt):
-        QMessageBox.warning(self, 'Avís', txt)
-
-    def msgError(self, txt):
-        QMessageBox.critical(self, 'Error', txt)
 
     def valida(self):
         ok = False
@@ -203,50 +283,33 @@ class QvFormNovaMapificacio(QWidget):
         else: 
             return self.fCSV.msgError
 
-    @pyqtSlot()
-    def ok(self):
-        if self.valida():
-            self.setDisabled(True)
-            msg = self.mapifica()
-            if msg == '':
-                self.close()
-            else:
-                self.msgError(msg)
-                self.setDisabled(False)
-    
-    @pyqtSlot()
-    def cancel(self):
-        self.close()
-
-class QvFormSimbMapificacio(QWidget):
-    def __init__(self, llegenda, capa):
-
-        super().__init__()
-        self.llegenda = llegenda
+class QvFormSimbMapificacio(QvFormBaseMapificacio):
+    def __init__(self, llegenda, capa, amplada=450):
+        super().__init__(llegenda, amplada)
         self.capa = capa
         if not self.iniParams():
             return
 
-        self.setWindowFlags(Qt.Dialog | Qt.MSWindowsFixedSizeDialogHint)
-        self.setWindowTitle('Modificar categories de mapificació')
+        self.setWindowTitle('Modificar mapificació')
 
         self.layout = QVBoxLayout()
-        self.layout.setSpacing(12)
+        self.layout.setSpacing(14)
         self.setLayout(self.layout)
 
         self.color = QComboBox(self)
         self.color.setEditable(False)
-        self.color.addItems(MAP_COLORS.keys())
+        self.comboColors(self.color)
 
         self.metode = QComboBox(self)
         self.metode.setEditable(False)
         self.metode.addItems(MAP_METODES_MODIF.keys())
+        self.metode.setCurrentIndex(-1)
         self.metode.currentIndexChanged.connect(self.canviaMetode)
 
         self.nomIntervals = QLabel('Nombre intervals:', self)
         self.intervals = QSpinBox(self)
         self.intervals.setMinimum(2)
-        self.intervals.setMaximum(MAP_MAX_CATEGORIES)
+        self.intervals.setMaximum(max(MAP_MAX_CATEGORIES, self.numCategories))
         self.intervals.setSingleStep(1)
         self.intervals.setValue(4)
         self.intervals.setSuffix("  (depèn del mètode)")
@@ -254,13 +317,13 @@ class QvFormSimbMapificacio(QWidget):
 
         self.buttons = QDialogButtonBox()
         self.buttons.addButton(QDialogButtonBox.Ok)
-        self.buttons.accepted.connect(self.ok)
+        self.buttons.accepted.connect(self.accept)
         self.buttons.addButton(QDialogButtonBox.Cancel)
         self.buttons.rejected.connect(self.cancel)
 
         self.gSimb = QGroupBox('Simbologia mapificació')
         self.lSimb = QFormLayout()
-        self.lSimb.setSpacing(10)
+        self.lSimb.setSpacing(14)
         # self.gSimb.setMinimumWidth(400)
         self.gSimb.setLayout(self.lSimb)
 
@@ -279,19 +342,43 @@ class QvFormSimbMapificacio(QWidget):
 
         self.valorsInicials()
 
+    def iniParams(self):
+        map = QgsExpressionContextUtils.layerScope(self.capa).variable(MAP_ID)
+        if map != 'True':
+            return False
+        ok, (self.campCalculat, self.numDecimals, self.colorBase, self.numCategories, \
+            self.modeCategories, self.rangsCategories) = self.llegenda.mapRenderer.paramsRender(self.capa)
+        self.custom = (self.modeCategories == 'Personalitzat')
+        if not ok:
+            self.msgInfo("No s'han pogut recuperar els paràmetres de mapificació")
+        return True
+
+    def valorsInicials(self):        
+        self.color.setCurrentIndex(self.color.findText(self.colorBase))
+        self.intervals.setValue(self.numCategories)
+        self.metode.setCurrentIndex(self.metode.findText(self.modeCategories))
+
+    def valorsFinals(self):
+        self.colorBase = self.color.currentText()
+        self.modeCategories = self.metode.currentText()
+        self.numCategories = self.intervals.value()
+        if self.custom:
+            self.rangs = []
+            for fila in self.wInterval:
+                self.rangs.append((fila[0].text(), fila[2].text()))
+
     def txtRang(self, num):
         if type(num) == str:
             return num
-        v = round(num, self.numDecimals)
-        if self.numDecimals == 0:
-            v = int(v)
-        return str(v)
+        return MAP_LOCALE.toString(num, 'f', self.numDecimals)
 
     def iniFilaInterval(self, iniValor, finValor):
         maxSizeB = 27
-        validator = QDoubleValidator(self)
-        validator.setNotation(QDoubleValidator.StandardNotation)
-        validator.setDecimals(5)
+        # validator = QDoubleValidator(self)
+        # validator.setLocale(MAP_LOCALE)
+        # validator.setNotation(QDoubleValidator.StandardNotation)
+        # validator.setDecimals(5)
+        validator = QvVerifNumero(self)
         ini = QLineEdit(self)
         ini.setText(self.txtRang(iniValor))
         ini.setValidator(validator)
@@ -302,12 +389,14 @@ class QvFormSimbMapificacio(QWidget):
         fin.editingFinished.connect(self.nouTall)
         add = QPushButton('+', self)
         add.setMaximumSize(maxSizeB, maxSizeB)
+        add.setToolTip('Afegeix nou interval')
         add.clicked.connect(self.afegirFila)
-        # add.setFocusPolicy(Qt.NoFocus)
+        add.setFocusPolicy(Qt.NoFocus)
         rem = QPushButton('-', self)
         rem.setMaximumSize(maxSizeB, maxSizeB)
+        rem.setToolTip('Esborra interval')
         rem.clicked.connect(self.eliminarFila)
-        # rem.setFocusPolicy(Qt.NoFocus)
+        rem.setFocusPolicy(Qt.NoFocus)
         return [ini, sep, fin, add, rem]
 
     def iniIntervals(self):
@@ -318,7 +407,7 @@ class QvFormSimbMapificacio(QWidget):
         group = QGroupBox('Definició intervals')
         # group.setMinimumWidth(400)
         layout = QGridLayout()
-        layout.setSpacing(8)
+        layout.setSpacing(10)
         # layout.setColumnMinimumWidth(4, 40)
         numFilas = len(self.wInterval)
         for fila, widgets in enumerate(self.wInterval):
@@ -327,7 +416,7 @@ class QvFormSimbMapificacio(QWidget):
                 if fila == 0 and col > 3:
                     w.setVisible(False)
                 # # Ultima fila: no hay + ni -
-                elif fila == (numFilas - 1) and col > 2:
+                elif fila > 0 and fila == (numFilas - 1) and col > 2:
                     w.setVisible(False)
                 else:
                     w.setVisible(True)
@@ -396,76 +485,81 @@ class QvFormSimbMapificacio(QWidget):
                 ini.setText(w.text())
             w.setModified(False)
 
-    def iniParams(self):
-        tipus = QgsExpressionContextUtils.layerScope(self.capa).variable('qV_tipusCapa')
-        if tipus != 'MAPIFICACIÓ':
-            return False
-        self.campCalculat, self.numDecimals, self.colorBase, self.numCategories, \
-            self.modeCategories, self.rangsCategories = self.llegenda.mapRenderer.paramsRender(self.capa)
-        self.custom = (self.modeCategories == 'Personalitzat')
-        return True
-
-    def valorsInicials(self):        
-        self.color.setCurrentIndex(self.color.findText(self.colorBase))
-        self.metode.setCurrentIndex(self.metode.findText(self.modeCategories))
-        self.intervals.setValue(self.numCategories)
-        self.canviaMetode()
-
-    def valorsFinals(self):
-        self.colorBase = self.color.currentText()
-        self.modeCategories = self.metode.currentText()
-        self.numCategories = self.intervals.value()
-        if self.custom:
-            self.rangs = []
-            for fila in self.wInterval:
-                self.rangs.append((fila[0].text(), fila[2].text()))
-
-    def msgInfo(self, txt):
-        QMessageBox.information(self, 'Informació', txt)
-
-    def msgAvis(self, txt):
-        QMessageBox.warning(self, 'Avís', txt)
-
-    def msgError(self, txt):
-        QMessageBox.critical(self, 'Error', txt)
-
-    def mapifica(self):
-        self.valorsFinals()
-        try:
-            if self.custom:
-                self.renderer = self.llegenda.mapRenderer.customRender(self.capa, self.campCalculat, self.numDecimals,
-                    MAP_COLORS[self.colorBase], self.rangs)
-            else:
-                self.renderer = self.llegenda.mapRenderer.calcRender(self.capa, self.campCalculat, self.numDecimals,
-                    MAP_COLORS[self.colorBase], self.numCategories, MAP_METODES_MODIF[self.modeCategories])
-        except Exception as e:
-            return "No s'ha pogut modificar la simbologia\n ({})".format(str(e))
-        self.llegenda.modificacioProjecte('mapModified')
-        return ''
-
-    @pyqtSlot()
-    def ok(self):
-        self.setDisabled(True)
-        msg = self.mapifica()
-        if msg == '':
-            self.close()
-        else:
-            self.msgError(msg)
-            self.setDisabled(False)
-
-    @pyqtSlot()
-    def cancel(self):
-        self.close()
-
     @pyqtSlot()
     def canviaMetode(self):
         self.custom = (self.metode.currentText() == 'Personalitzat')
         if self.custom:
             self.intervals.setValue(len(self.wInterval))
         self.intervals.setEnabled(not self.custom)
-        # self.nomIntervals.setVisible(not self.custom)
-        # self.intervals.setVisible(not self.custom)
-        self.gSimb.adjustSize()
         self.gInter.setVisible(self.custom)
         self.adjustSize()
+        # print('GSIMB -> Ancho:', self.gSimb.size().width(), '- Alto:', self.gSimb.size().height())
+        # print('FORM -> Ancho:', self.size().width(), '- Alto:', self.size().height())
+
+    def leSelectFocus(self, wLineEdit):
+        lon = len(wLineEdit.text())
+        if lon > 0:
+            wLineEdit.setSelection(0, lon)
+        wLineEdit.setFocus()
+
+    def validaNum(self, wLineEdit):
+        val = wLineEdit.validator()
+        if val is None:
+            return True
+        res = val.validate(wLineEdit.text(), 0)
+        if res[0] == QValidator.Acceptable:
+            return True
+        else:
+            self.msgInfo("Cal introduir un nombre enter o amb decimals.\n"
+                "Es farà servir la coma (,) per separar els decimals.\n"
+                "I pels milers, opcionalment, el punt (.)")
+            self.leSelectFocus(wLineEdit)
+            return False
+
+    def validaInterval(self, wLineEdit1, wLineEdit2):
+        num1, _ = MAP_LOCALE.toFloat(wLineEdit1.text())
+        num2, _ = MAP_LOCALE.toFloat(wLineEdit2.text())
+        if num2 > num1:
+            return True
+        else:
+            self.msgInfo("El segon nombre de l'interval ha de ser major que el primer")
+            self.leSelectFocus(wLineEdit2)
+            return False
+
+    def validaFila(self, fila):
+        wLineEdit1 = fila[0]
+        wLineEdit2 = fila[2]
+        if not self.validaNum(wLineEdit1):
+            return False
+        if not self.validaNum(wLineEdit2):
+            return False
+        if not self.validaInterval(wLineEdit1, wLineEdit2):
+            return False
+        return True
+
+    def valida(self):
+        if self.custom:
+            for fila in self.wInterval:
+                if not self.validaFila(fila):
+                    return False
+        return True
+
+    def mapifica(self):
+        self.valorsFinals()
+        try:
+            if self.custom:
+                self.renderer = self.llegenda.mapRenderer.customRender(self.capa, self.campCalculat,
+                    MAP_COLORS[self.colorBase], self.rangs)
+            else:
+                self.renderer = self.llegenda.mapRenderer.calcRender(self.capa, self.campCalculat, self.numDecimals,
+                    MAP_COLORS[self.colorBase], self.numCategories, MAP_METODES_MODIF[self.modeCategories])            
+            if self.renderer is None:
+                return "No s'ha pogut elaborar el mapa"
+            err = self.llegenda.saveStyleToGeoPackage(self.capa, MAP_ID)
+            if err != '':
+                return "Hi ha hagut problemes al desar la simbologia\n({})".format(err)
+            # self.llegenda.modificacioProjecte('mapModified')
+            return ''
+        except Exception as e:
+            return "No s'ha pogut modificar em mapa\n({})".format(str(e))
 

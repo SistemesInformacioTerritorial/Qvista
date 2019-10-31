@@ -243,6 +243,24 @@ class QvApp(Singleton):
         #Per tant, dividint entre 96 tindrem l'escalat en tant per 1
         zoomFactor=QApplication.desktop().screen().logicalDpiX()/96
         return zoomFactor
+    def nomUsuari(self):
+        try:
+            #Copia-pega de https://sjohannes.wordpress.com/2010/06/19/win32-python-getting-users-display-name-using-ctypes/
+            #No sé per què va, però va
+            import ctypes
+            GetUserNameEx = ctypes.windll.secur32.GetUserNameExW
+            NameDisplay = 3
+
+            size = ctypes.pointer(ctypes.c_ulong(0))
+            GetUserNameEx(NameDisplay, None, size)
+
+            nameBuffer = ctypes.create_unicode_buffer(size.contents.value)
+            GetUserNameEx(NameDisplay, nameBuffer, size)
+            return nameBuffer.value
+        except:
+            print('Sembla que no estàs a Windows :D')
+            #Si no funciona l'anterior, posem l'usuari del login
+            return self.usuari
     # Metodos db QVISTA
 
     def dbLogConnexio(self):

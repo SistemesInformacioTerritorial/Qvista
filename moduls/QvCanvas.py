@@ -346,7 +346,7 @@ class QvCanvas(QgsMapCanvas):
     def dropEvent(self, e):
 
         position = e.pos()
-        self.qvSv.rp.portam(position)
+        self.qvSv.rp.llevameP(position)
         # self.button.move(position)
 
         e.setDropAction(Qt.MoveAction)
