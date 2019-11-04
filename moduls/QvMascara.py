@@ -6,19 +6,43 @@ import math
 #polys ha de ser una llista de QgsFeatures
 def aplicaMascara(qV,polys,mascara=None):
     if mascara is None:
-        mascares=qV.project.mapLayersByName('Màscara')
-        if len(mascares)==0:
+        mascara=obteMascara(qV)
+        # mascares=qV.project.mapLayersByName('Màscara')
+        if mascara is None:
             mascara=QvMascaraEinaPlantilla(qV,qV.canvas).getCapa() #No ho desem enlloc però així crea la capa
             tocaAfegir=True
         else:
-            mascara=mascares[0]
             tocaAfegir=False
     else:
         tocaAfegir=False
     pr=mascara.dataProvider()
     pr.addFeatures(polys)
     # if tocaAfegir:
+    mascara.commitChanges()
     qV.project.addMapLayers([mascara])
+    qV.canvas.refresh()
+
+def obteMascara(qV):
+    mascares=qV.project.mapLayersByName('Màscara')
+    if len(mascares)==0:
+        return None
+    return mascares[0]
+
+def carregaMascara(qV):
+    try:
+        rutaMasc=qV.pathProjecteActual[:-4]+'mascara'+'.gpkg'
+        if not os.path.exists(rutaMasc): return
+        mascara=QgsVectorLayer(rutaMasc,'Màscara','ogr')
+        aplicaParametresMascara(mascara,QColor('#ffffff'),0.7)
+        qV.project.addMapLayers([mascara])
+    except:
+        print('Jaja salu2')
+
+def aplicaParametresMascara(mascara,color,opacitat):
+    mascara.renderer().symbol().setColor(color)
+    mascara.renderer().symbol().symbolLayer(0).setStrokeColor(color)
+    mascara.setRenderer(QgsInvertedPolygonRenderer.convertFromRenderer(mascara.renderer()))
+    mascara.setOpacity(opacitat)
 
 class QvMascaraEinaPlantilla(QgsMapTool):
     def __init__(self, qV, canvas, **kwargs):
@@ -57,12 +81,9 @@ class QvMascaraEinaPlantilla(QgsMapTool):
             return layer
         mascares=self.qV.project.mapLayersByName('Màscara')
         if len(mascares)==0:
-            self.mascara=QgsVectorLayer('Polygon?crs=epsg:25831','Màscara','memory')
+            self.mascara=QgsVectorLayer('MultiPolygon?crs=epsg:25831','Màscara','memory')
             print(self.color.name())
-            self.mascara.renderer().symbol().setColor(self.color)
-            self.mascara.renderer().symbol().symbolLayer(0).setStrokeColor(self.color)
-            self.mascara.setRenderer(QgsInvertedPolygonRenderer.convertFromRenderer(self.mascara.renderer()))
-            self.mascara.setOpacity(self.opacitat)
+            aplicaParametresMascara(self.mascara,self.color,self.opacitat)
             self.afegida=False
         elif len(mascares)==1:
             self.mascara=mascares[0]

@@ -365,6 +365,7 @@ class QVista(QMainWindow, Ui_MainWindow):
             self.botoMetadades.clicked.connect(obrirMetadades)
         else:
             self.botoMetadades.hide()
+        carregaMascara(self)
 
         # self.metadata = self.project.metadata()
         # print ('Author: '+self.metadata.author())
@@ -2510,11 +2511,12 @@ class QVista(QMainWindow, Ui_MainWindow):
             qV.canvas.scene().removeItem(qV.toolSelect.rubberband)
         except:
             pass
-        try:
-            qV.project.removeMapLayer(qV.project.mapLayersByName('Màscara')[0])
-        except Exception as e:
-            print(e)
-            pass
+        if tambePanCanvas:
+            try:
+                qV.project.removeMapLayer(qV.project.mapLayersByName('Màscara')[0])
+            except Exception as e:
+                print(e)
+                pass
 
     def esborrarMesures(self, tambePanCanvas = True):
 
@@ -3408,10 +3410,20 @@ def desaElProjecte(proj):
     md=qV.project.metadata()
     md.setAuthor(QvApp().nomUsuari())
     qV.project.setMetadata(md)
-    qV.project.write(proj)
     if proj!=qV.pathProjecteActual:
         qV.pathProjecteActual=proj
         qV.lblProjecte.setText(qV.project.baseName())
+    #Desem la màscara
+    mascara=obteMascara(qV)
+    if mascara is not None:
+        pr=mascara.dataProvider()
+        print(proj[:-4])
+        writer=QgsVectorFileWriter.writeAsVectorFormat(mascara,proj[:-4]+'mascara',pr.encoding(),pr.crs())
+        print(writer)
+        # writer=QgsVectorFileWriter(qV.project.baseName(),pr.encoding(),pr.fields(),QGis.WKBPolygon, pr.crs())
+        qV.project.removeMapLayer(qV.project.mapLayersByName('Màscara')[0])
+    qV.project.write(proj)
+    app.processEvents()
     qV.setDirtyBit(False)
 
 def nouMapa():
