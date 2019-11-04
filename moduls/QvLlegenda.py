@@ -20,6 +20,8 @@ from moduls.QvMapVars import *
 from configuracioQvista import *
 
 import os
+import win32file
+
 
 
 # Resultado de compilacion de recursos del fuente de qgis (directorio images)
@@ -434,6 +436,14 @@ class QvLlegenda(QgsLayerTreeView):
             if capa.hasScaleBasedVisibility():
                 capa.nameChanged.emit()
 
+    def capaLocal(self, capa):
+        try:
+            uri = capa.dataProvider().dataSourceUri()
+            drive = uri.split(':')[0]
+            return (win32file.GetDriveType(drive + ':') == win32file.DRIVE_FIXED)
+        except:
+            return False
+
     def actIcones(self):
         if not self.editable:
             return
@@ -448,7 +458,7 @@ class QvLlegenda(QgsLayerTreeView):
                         self.removeIndicator(node, self.iconaFiltre)
                     # Mapificacón
                     tipus = QgsExpressionContextUtils.layerScope(capa).variable(MAP_ID)
-                    if tipus == 'True':
+                    if tipus == 'True' and self.capaLocal(capa):
                         self.addIndicator(node, self.iconaMap)
                     else:
                         self.removeIndicator(node, self.iconaMap)
@@ -886,7 +896,14 @@ if __name__ == "__main__":
         def printCapaActiva():
             cLayer = leyenda.currentLayer()
             if cLayer:
-                print('Capa activa:', leyenda.currentLayer().name())
+                print('Capa activa:', cLayer.name())
+                uri = cLayer.dataProvider().dataSourceUri()
+                drive = uri.split(':')[0]
+                print('URI:', uri)
+                txt = ''
+                if (win32file.GetDriveType(drive + ':') == win32file.DRIVE_FIXED):
+                    txt = '(Disco fijo)'
+                print('Disco:', drive, txt)
             else:
                 print('Capa activa: None')
 
