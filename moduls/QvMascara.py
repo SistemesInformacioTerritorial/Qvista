@@ -1,5 +1,6 @@
 from moduls.QvImports import *
 from moduls.QvConstants import QvConstants
+from moduls.QvMemoria import QvMemoria 
 from qgis.gui import QgsMapTool, QgsRubberBand
 import math
 
@@ -33,7 +34,8 @@ def carregaMascara(qV):
         rutaMasc=qV.pathProjecteActual[:-4]+'mascara'+'.gpkg'
         if not os.path.exists(rutaMasc): return
         mascara=QgsVectorLayer(rutaMasc,'Màscara','ogr')
-        aplicaParametresMascara(mascara,QColor('#ffffff'),0.7)
+        color, opacitat = QvMemoria().getParametresMascara()
+        aplicaParametresMascara(mascara,color,opacitat/100)
         qV.project.addMapLayers([mascara])
     except:
         print('Jaja salu2')
@@ -72,8 +74,8 @@ class QvMascaraEinaPlantilla(QgsMapTool):
         msgBox.setInformativeText(textInformacio)
         ret = msgBox.exec()
     def getCapa(self):
-        if hasattr(self,'mascara'):
-            return self.mascara
+        # if hasattr(self,'mascara'):
+        #     return self.mascara
         if not self.emmascarar:
             layer = self.qV.llegenda.currentLayer()
             if layer is None or layer.type()!=QgsMapLayer.VectorLayer:
@@ -93,16 +95,19 @@ class QvMascaraEinaPlantilla(QgsMapTool):
             self.mascara=mascares[0]
         return self.mascara
     def actualitza(self):
-        if self.emmascarar and hasattr(self,'mascara'):
-            self.mascara.updateExtents()
-            # if self.qV.project.mapLayersByName('Màscara') is None:
-            if not self.afegida:
-                # self.qV.project.addMapLayers([self.mascara])
-                self.afegida=True
-            self.mascara.renderer().embeddedRenderer().symbol().setColor(self.color)
-            self.mascara.setOpacity(self.opacitat)
-        # self.canvas.refresh()
-        self.canvas.refreshAllLayers()
+        try:
+            if self.emmascarar and hasattr(self,'mascara'):
+                self.mascara.updateExtents()
+                # if self.qV.project.mapLayersByName('Màscara') is None:
+                if not self.afegida:
+                    # self.qV.project.addMapLayers([self.mascara])
+                    self.afegida=True
+                self.mascara.renderer().embeddedRenderer().symbol().setColor(self.color)
+                self.mascara.setOpacity(self.opacitat)
+            # self.canvas.refresh()
+            self.canvas.refreshAllLayers()
+        except:
+            pass
     def setColor(self,color):
         print(color.name())
         self.color=color
@@ -220,7 +225,10 @@ class QvMascaraEinaDibuixa(QvMascaraEinaPlantilla):
             self.tancarPoligon()
     def canvasMoveEvent(self,event):
         poligono=QgsGeometry.fromPolylineXY(self.points+[self.toMapCoordinates(event.pos())])
-        self.rubberband.setToGeometry(poligono,self.getCapa()) #falta establir la layer
+        try:
+            self.rubberband.setToGeometry(poligono,self.getCapa()) #falta establir la layer
+        except Exception as e:
+            print(e)
     def tancarPoligon(self):
         try:
             

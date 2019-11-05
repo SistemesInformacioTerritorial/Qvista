@@ -1539,6 +1539,7 @@ class QVista(QMainWindow, Ui_MainWindow):
             def setTool(self,tool):
                 self.tool=tool
             def actualitzaTool(self):
+                QvMemoria().setParametresMascara(self.color,qV.sliderOpacitat.value())
                 qV.gbOverlap.setVisible(qV.checkSeleccio.isChecked())
                 qV.frameColorOpacitat.setVisible(qV.checkMascara.isChecked())
                 if hasattr(self,'tool'):
@@ -1591,12 +1592,13 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.checkSeleccio = QRadioButton('Seleccionar')
         self.checkSeleccio.setChecked(True)
         self.checkMascara = QRadioButton('Emmascarar')
-
+        
+        color, opacitat = QvMemoria().getParametresMascara()
         self.sliderOpacitat=QSlider(Qt.Horizontal,self.wSeleccioGrafica)
         self.sliderOpacitat.setMinimum(0)
         self.sliderOpacitat.setMaximum(100)
         self.sliderOpacitat.setSingleStep(1)
-        self.sliderOpacitat.setValue(70)
+        self.sliderOpacitat.setValue(opacitat)
         def canviColor(color):
             self.wSeleccioGrafica.color=color
             self.bsSeleccioColor.setStyleSheet('background: solid %s; border: none'%color.name())
@@ -1605,9 +1607,10 @@ class QVista(QMainWindow, Ui_MainWindow):
             canviColor(QColorDialog().getColor())
         self.bsSeleccioColor=QvPushButton(flat=True)
         self.bsSeleccioColor.setIcon(QIcon('Imatges/da_color.png'))
-        self.bsSeleccioColor.setStyleSheet('background: solid white; border: none')
+        self.bsSeleccioColor.setStyleSheet('background: solid %s; border: none'%color.name())
         self.bsSeleccioColor.setIconSize(QSize(25,25))
         self.bsSeleccioColor.clicked.connect(openColorDialog)
+        self.wSeleccioGrafica.color=color
         QvConstants.afegeixOmbraWidget(self.bsSeleccioColor)
 
         self.checkOverlap.toggled.connect(self.wSeleccioGrafica.actualitzaTool)
@@ -3407,6 +3410,8 @@ def guardarDialegProjecte():
 def desaElProjecte(proj):
     '''La funció que desa el projecte com a tal'''
     #TODO: desactivar readonly
+    qApp.setOverrideCursor(QvConstants.cursorOcupat())
+    qV.startMovie()
     QgsExpressionContextUtils.setProjectVariable(qV.project,'qV_readOnly','False')
     md=qV.project.metadata()
     md.setAuthor(QvApp().nomUsuari())
@@ -3419,11 +3424,14 @@ def desaElProjecte(proj):
     if mascara is not None:
         pr=mascara.dataProvider()
         print(proj[:-4])
-        writer=QgsVectorFileWriter.writeAsVectorFormat(mascara,proj[:-4]+'mascara',pr.encoding(),pr.crs())
+        writer=QgsVectorFileWriter.writeAsVectorFormat(mascara,proj[:-4]+'mascara',pr.encoding(),pr.crs(),symbologyExport=QgsVectorFileWriter.SymbolLayerSymbology)
         print(writer)
         # writer=QgsVectorFileWriter(qV.project.baseName(),pr.encoding(),pr.fields(),QGis.WKBPolygon, pr.crs())
         qV.project.removeMapLayer(qV.project.mapLayersByName('Màscara')[0])
     qV.project.write(proj)
+    carregaMascara(qV)
+    qV.stopMovie()
+    qApp.restoreOverrideCursor()
     app.processEvents()
     qV.setDirtyBit(False)
 
