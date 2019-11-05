@@ -42,6 +42,7 @@ def aplicaParametresMascara(mascara,color,opacitat):
     mascara.renderer().symbol().setColor(color)
     mascara.renderer().symbol().symbolLayer(0).setStrokeColor(color)
     mascara.setRenderer(QgsInvertedPolygonRenderer.convertFromRenderer(mascara.renderer()))
+    mascara.renderer().setPreprocessingEnabled(True) #Si es posa aquesta línia les màscares no se solaparan
     mascara.setOpacity(opacitat)
 
 class QvMascaraEinaPlantilla(QgsMapTool):

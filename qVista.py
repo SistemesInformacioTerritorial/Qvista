@@ -1617,7 +1617,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.bs1.clicked.connect(seleccioClicks)
         self.bs2.clicked.connect(seleccioLliure)
         self.bs3.clicked.connect(seleccioCercle)
-        self.bs4.clicked.connect(lambda: self.esborrarSeleccio(True))
+        self.bs4.clicked.connect(lambda: self.esborrarSeleccio(True, True))
 
         self.lytBotonsSeleccio.addWidget(self.bs1)
         self.lytBotonsSeleccio.addWidget(self.bs2)
@@ -2494,7 +2494,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.dlgProperties = LayerProperties( self, layer)
         self.dlgProperties.show()
 
-    def esborrarSeleccio(self, tambePanCanvas = True):
+    def esborrarSeleccio(self, tambePanCanvas = True, mascara=False):
         'Esborra les seleccions (no els elements) de qualsevol layer del canvas.'
         layers = self.canvas.layers() 
         for layer in layers:
@@ -2511,9 +2511,10 @@ class QVista(QMainWindow, Ui_MainWindow):
             qV.canvas.scene().removeItem(qV.toolSelect.rubberband)
         except:
             pass
-        if tambePanCanvas:
+        if mascara:
             try:
                 qV.project.removeMapLayer(qV.project.mapLayersByName('Màscara')[0])
+                qV.canvas.refresh()
             except Exception as e:
                 print(e)
                 pass
