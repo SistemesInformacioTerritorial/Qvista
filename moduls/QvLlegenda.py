@@ -23,7 +23,6 @@ import os
 import win32file
 
 
-
 # Resultado de compilacion de recursos del fuente de qgis (directorio images)
 # pyrcc5 images.qrc >images_rc.py
 import images_rc  # NOQA

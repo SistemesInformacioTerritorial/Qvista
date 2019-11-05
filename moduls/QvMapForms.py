@@ -91,6 +91,36 @@ class QvVerifNumero(QValidator):
             state = QValidator.Invalid
         return (state, string, index)
 
+class QvComboBoxEdited(QComboBox):
+    def __init__(self, parent):
+        super().__init__(parent)
+        self.setEditable(True)
+        self.setInsertPolicy(QComboBox.NoInsert)
+        self.oldText = ''
+        self.newText = ''
+        self.editTextChanged.connect(self.copyText)
+        self.currentIndexChanged.connect(self.copyItem)
+
+    def setItems(self, items):
+        self.addItems(items)
+        self.setCurrentIndex(-1)
+        self.setCurrentText('')
+
+    @pyqtSlot(str)
+    def copyText(self, txt):
+        self.oldText = self.newText
+        self.newText = txt
+
+    @pyqtSlot(int)
+    def copyItem(self, i):
+        if i == -1:
+            return
+        txt = self.oldText
+        item = self.currentText()
+        if txt != '' and txt[-1] != ' ':
+            txt += ' '
+        self.setCurrentText(txt + item)
+
 class QvFormNovaMapificacio(QvFormBaseMapificacio):
     def __init__(self, llegenda, amplada=450):
         super().__init__(llegenda, amplada)
@@ -129,9 +159,9 @@ class QvFormNovaMapificacio(QvFormBaseMapificacio):
         self.distribucio.setEditable(False)
         self.distribucio.addItem(next(iter(MAP_DISTRIBUCIO.keys())))
 
-        self.calcul = QLineEdit(self)
+        self.calcul = QvComboBoxEdited(self)
 
-        self.filtre = QLineEdit(self)
+        self.filtre = QvComboBoxEdited(self)
 
         self.color = QComboBox(self)
         self.color.setEditable(False)
@@ -226,6 +256,8 @@ class QvFormNovaMapificacio(QvFormBaseMapificacio):
     def borrarZonas(self):
         self.tipus.setCurrentIndex(0)
         self.soloPrimerItem(self.zona)
+        self.calcul.clear()
+        self.filtre.clear()
 
     @pyqtSlot(str)
     def arxiuSeleccionat(self, nom):
@@ -249,6 +281,8 @@ class QvFormNovaMapificacio(QvFormBaseMapificacio):
             self.capa.setFocus()
         else:
             self.zona.setFocus()
+        self.calcul.setItems(self.fCSV.camps)
+        self.filtre.setItems(self.fCSV.camps)
 
     def valida(self):
         ok = False
@@ -264,7 +298,7 @@ class QvFormNovaMapificacio(QvFormBaseMapificacio):
         elif self.tipus.currentIndex() <= 0:
             self.msgInfo("S'ha de seleccionar un tipus d'agregació")
             self.tipus.setFocus()
-        elif self.calcul.text().strip() == '' and self.tipus.currentText() != 'Recompte':
+        elif self.calcul.currentText().strip() == '' and self.tipus.currentText() != 'Recompte':
             self.msgInfo("S'ha de introduir un cálcul per fer l'agregació")
             self.calcul.setFocus()
         else:
@@ -275,7 +309,7 @@ class QvFormNovaMapificacio(QvFormBaseMapificacio):
         if self.fCSV is None:
             return "No hi ha cap fitxer seleccionat"
         ok = self.fCSV.agregacio(self.llegenda, self.capa.text().strip(), self.zona.currentText(), self.tipus.currentText(),
-                                 campAgregat=self.calcul.text().strip(), filtre=self.filtre.text().strip(),
+                                 campAgregat=self.calcul.currentText().strip(), filtre=self.filtre.currentText().strip(),
                                  tipusDistribucio=self.distribucio.currentText(), modeCategories=self.metode.currentText(),
                                  numCategories=self.intervals.value(), colorBase=self.color.currentText())
         if ok:
