@@ -56,6 +56,8 @@ import functools #Eines de funcions, per exemple per avaluar-ne parcialment una
 from PyQt5.QtGui import QPainter
 
 from PyQt5.QtGui import QDesktopServices  #aixo ha d'anar al qvimports
+from qgis.PyQt.QtSql import QSqlDatabase, QSqlQuery, QSql
+# from qgis.core import QgsDataSourceUri
 
 # Impressió del temps de carrega dels moduls Qv
 print ('Temps de carrega dels moduls Qv:', time.time()-iniciTempsModuls)
@@ -1533,9 +1535,10 @@ class QVista(QMainWindow, Ui_MainWindow):
                 #Falta incloure color i opacitat
                 return {'overlap': qV.checkOverlap.isChecked(),
                         'seleccionar': qV.checkSeleccio.isChecked(),
-                        'emmascarar': qV.checkMascara.isChecked(),
-                        'color':self.color,
-                        'opacitat':qV.sliderOpacitat.value()}
+                        # 'color':self.color,
+                        # 'opacitat':qV.sliderOpacitat.value(),
+                        'emmascarar': qV.checkMascara.isChecked()
+                        }
             def setTool(self,tool):
                 self.tool=tool
             def actualitzaTool(self):
@@ -1658,6 +1661,10 @@ class QVista(QMainWindow, Ui_MainWindow):
         # self.lytSeleccioGrafica.addWidget(self.bs5)
         self.lytSeleccioGrafica.addWidget(self.bs6)
         self.lytSeleccioGrafica.addWidget(self.twResultats)
+        
+        self.distBarrisSelMasc = QVDistrictesBarris()
+        self.distBarrisSelMasc.view.clicked.connect(self.clickArbreSelMasc)
+        self.lytSeleccioGrafica.addWidget(self.distBarrisSelMasc.view)
 
 
         
@@ -2353,9 +2360,44 @@ class QVista(QMainWindow, Ui_MainWindow):
     def clickArbre(self):
         rang = self.distBarris.llegirRang()
         self.canvas.zoomToFeatureExtent(rang)
-        # poly=QgsFeature()
-        # poly.setGeometry(QgsGeometry.fromRect(rang))
-        # aplicaMascara(self,[poly])
+
+    def clickArbreSelMasc(self):
+        rang = self.distBarrisSelMasc.llegirRang()
+        # self.canvas.zoomToFeatureExtent(rang)
+
+        ID=self.distBarrisSelMasc.llegirID()
+        if self.distBarrisSelMasc.esDistricte():
+            vLayer = QgsVectorLayer('Dades/Districtes.sqlite', 'Districtes_aux', 'ogr')
+        else:
+            vLayer = QgsVectorLayer('Dades/Barris.sqlite', 'Barris_aux', 'ogr')
+        vLayer.setProviderEncoding("UTF-8")
+        if not vLayer.isValid():
+            print(':(')
+            return
+        vLayer.setSubsetString('CODI="%s"'%ID)
+        feats=vLayer.getFeatures()
+
+        if self.checkSeleccio.isChecked():
+            #Selecció gràfica
+            layer = self.llegenda.currentLayer()
+            if layer is None:
+                return
+            feat=next(feats)
+            featsPnt = layer.getFeatures(QgsFeatureRequest().setFilterRect(rang))
+            for f in featsPnt:
+                if self.checkOverlap:
+                    if f.geometry().intersects(feat.geometry()): #Within? Intersects?
+                        layer.select(f.id())
+                else:
+                    if f.geometry().within(feat.geometry()): #Within? Intersects?
+                        layer.select(f.id())
+            self.calcularSeleccio()
+            
+        else:
+            eliminaMascara(self)
+            mascara=obteMascara(self)
+            aplicaMascara(self,feats)
+            
 
     def cataleg(self):
         """catàleg de capes"""
@@ -2516,7 +2558,8 @@ class QVista(QMainWindow, Ui_MainWindow):
             pass
         if mascara:
             try:
-                qV.project.removeMapLayer(qV.project.mapLayersByName('Màscara')[0])
+                # qV.project.removeMapLayer(qV.project.mapLayersByName('Màscara')[0])
+                eliminaMascara(qV)
                 qV.canvas.refresh()
             except Exception as e:
                 print(e)
@@ -3300,21 +3343,8 @@ def seleccioExpressio():
     if (qV.leSeleccioExpressio.text().lower() == 'qvtemps') :
         missatgeCaixa('Temps per arrancar:', str('%.1f'%qV.tempsTotal))
         return
-    
     if qV.leSeleccioExpressio.text().lower()=='mascara':
-        try:
-            qV.tool = QvMascaraEinaClick(qV, qV.canvas, **qV.wSeleccioGrafica.getParametres())
-            qV.canvas.setMapTool(qV.tool)
-        except:
-            pass
-        return
-    if qV.leSeleccioExpressio.text().lower()=='mascarad':
-        qV.tool=QvMascaraEinaDibuixa(qV,qV.canvas, **qV.wSeleccioGrafica.getParametres())
-        qV.canvas.setMapTool(qV.tool)
-        return
-    if qV.leSeleccioExpressio.text().lower()=='mascarac':
-        qV.tool=QvMascaraEinaCercle(qV,qV.canvas, **qV.wSeleccioGrafica.getParametres())
-        qV.canvas.setMapTool(qV.tool)
+        qV.emmascaraDivisions=True
         return
 
 
@@ -3423,11 +3453,10 @@ def desaElProjecte(proj):
     mascara=obteMascara(qV)
     if mascara is not None:
         pr=mascara.dataProvider()
-        print(proj[:-4])
         writer=QgsVectorFileWriter.writeAsVectorFormat(mascara,proj[:-4]+'mascara',pr.encoding(),pr.crs(),symbologyExport=QgsVectorFileWriter.SymbolLayerSymbology)
-        print(writer)
         # writer=QgsVectorFileWriter(qV.project.baseName(),pr.encoding(),pr.fields(),QGis.WKBPolygon, pr.crs())
-        qV.project.removeMapLayer(qV.project.mapLayersByName('Màscara')[0])
+        # qV.project.removeMapLayer(qV.project.mapLayersByName('Màscara')[0])
+        eliminaMascara(qV)
     qV.project.write(proj)
     carregaMascara(qV)
     qV.stopMovie()

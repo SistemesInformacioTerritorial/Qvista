@@ -47,6 +47,13 @@ def aplicaParametresMascara(mascara,color,opacitat):
     mascara.renderer().setPreprocessingEnabled(True) #Si es posa aquesta línia les màscares no se solaparan
     mascara.setOpacity(opacitat)
 
+def eliminaMascara(qV):
+    try:
+        qV.project.removeMapLayer(qV.project.mapLayersByName('Màscara')[0])
+    except:
+        #Si no hi ha màscara, suda
+        pass
+
 class QvMascaraEinaPlantilla(QgsMapTool):
     def __init__(self, qV, canvas, **kwargs):
         QgsMapTool.__init__(self, canvas)
@@ -115,10 +122,11 @@ class QvMascaraEinaPlantilla(QgsMapTool):
         self.opacitat=opacitat
     def setOverlap(self,overlap):
         self.overlap=overlap
-    def setParametres(self,color=QColor(255,255,255), opacitat=70, emmascarar=True, seleccionar=False, overlap=False):
+    def setParametres(self, emmascarar=True, seleccionar=False, overlap=False):
         self.seleccionar=seleccionar
         self.setOverlap(overlap)
         self.emmascarar=emmascarar
+        color, opacitat = QvMemoria().getParametresMascara()
         self.setColor(color)
         self.setOpacitat(opacitat/100)
         self.actualitza()
