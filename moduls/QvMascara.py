@@ -38,7 +38,7 @@ def carregaMascara(qV):
         aplicaParametresMascara(mascara,color,opacitat/100)
         qV.project.addMapLayers([mascara])
     except:
-        print('Jaja salu2')
+        pass
 
 def aplicaParametresMascara(mascara,color,opacitat):
     mascara.renderer().symbol().setColor(color)
@@ -92,13 +92,11 @@ class QvMascaraEinaPlantilla(QgsMapTool):
         mascares=self.qV.project.mapLayersByName('Màscara')
         if len(mascares)==0:
             self.mascara=QgsVectorLayer('MultiPolygon?crs=epsg:25831','Màscara','memory')
-            print(self.color.name())
             aplicaParametresMascara(self.mascara,self.color,self.opacitat)
             self.afegida=False
         elif len(mascares)==1:
             self.mascara=mascares[0]
         else:
-            print(':(')
             self.mascara=mascares[0]
         return self.mascara
     def actualitza(self):
@@ -116,7 +114,6 @@ class QvMascaraEinaPlantilla(QgsMapTool):
         except:
             pass
     def setColor(self,color):
-        print(color.name())
         self.color=color
     def setOpacitat(self,opacitat):
         self.opacitat=opacitat
@@ -250,7 +247,6 @@ class QvMascaraEinaDibuixa(QvMascaraEinaPlantilla):
             geom = QgsGeometry.fromPolygonXY([list_polygon])
             poly=QgsFeature()
             poly.setGeometry(geom)
-            print(geom)
             if self.emmascarar:
                 aplicaMascara(self.qV,[poly],self.getCapa())
                 # pr.addFeatures([poly])
@@ -284,7 +280,6 @@ class QvMascaraEinaDibuixa(QvMascaraEinaPlantilla):
             poligono=QgsGeometry.fromPolylineXY(self.points)
             self.rubberband.setToGeometry(poligono,self.getCapa()) #falta establir la layer
             self.rubberband.show()
-            print(':D')
             
             
         except Exception as e:

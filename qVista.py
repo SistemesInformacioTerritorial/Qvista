@@ -588,7 +588,10 @@ class QVista(QMainWindow, Ui_MainWindow):
         if self.marcaLlocPosada:
             self.marcaLlocPosada = False
         else:
-            self.canvas.scene().removeItem(self.marcaLloc)
+            try:
+                self.canvas.scene().removeItem(self.marcaLloc)
+            except Exception as e:
+                print(e)
             
     # def preparacioCalculadora(self):
     #     self.calculadora = QWidget()
@@ -2372,7 +2375,6 @@ class QVista(QMainWindow, Ui_MainWindow):
             vLayer = QgsVectorLayer('Dades/Barris.sqlite', 'Barris_aux', 'ogr')
         vLayer.setProviderEncoding("UTF-8")
         if not vLayer.isValid():
-            print(':(')
             return
         vLayer.setSubsetString('CODI="%s"'%ID)
         feats=vLayer.getFeatures()
@@ -2752,7 +2754,6 @@ class QVista(QMainWindow, Ui_MainWindow):
 
     def editarXY(self):
         size=self.bXY.size()
-        print(size)
         self.bXY.hide()
         self.leXY.show()
         self.leXY.setText(self.bXY.text())

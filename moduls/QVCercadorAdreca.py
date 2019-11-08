@@ -198,7 +198,7 @@ class QCercadorAdreca(QObject):
             self.leNumero.setCompleter(None)
             return
         if not self.carrerActivat:
-            print(self.leCarrer.text())
+            # print(self.leCarrer.text())
             #així obtenim el carrer on estàvem encara que no l'haguem seleccionat explícitament
             self.txto=self.completerCarrer.popup().currentIndex().data()
             if self.txto is None:

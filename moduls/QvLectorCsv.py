@@ -185,7 +185,7 @@ class QvLectorCsv(QtWidgets.QWidget):
 
     def addColumn(self):
         count = self.model.columnCount()
-        print(count)
+        # print(count)
         self.model.setColumnCount(count + 1)
         self.model.setData(self.model.index(0, count), "", 0)
         self.tableView.resizeColumnsToContents()
@@ -237,40 +237,40 @@ class QvLectorCsv(QtWidgets.QWidget):
         for i in self.tableView.selectionModel().selection().indexes():
             row = i.row()
             self.model.removeRow(row)
-            print("Row " + str(row) + " deleted")
+            # print("Row " + str(row) + " deleted")
             self.tableView.selectRow(row)
 
     def addRowByContext(self, event):
         for i in self.tableView.selectionModel().selection().indexes():
             row = i.row() + 1
             self.model.insertRow(row)
-            print("Row at " + str(row) + " inserted")
+            # print("Row at " + str(row) + " inserted")
             self.tableView.selectRow(row)
 
     def addRowByContext2(self, event):
         for i in self.tableView.selectionModel().selection().indexes():
             row = i.row()
             self.model.insertRow(row)
-            print("Row at " + str(row) + " inserted")
+            # print("Row at " + str(row) + " inserted")
             self.tableView.selectRow(row)
 
     def addColumnBeforeByContext(self, event):
         for i in self.tableView.selectionModel().selection().indexes():
             col = i.column()
             self.model.insertColumn(col)
-            print("Column at " + str(col) + " inserted")
+            # print("Column at " + str(col) + " inserted")
 
     def addColumnAfterByContext(self, event):
         for i in self.tableView.selectionModel().selection().indexes():
             col = i.column() + 1
             self.model.insertColumn(col)
-            print("Column at " + str(col) + " inserted")
+            # print("Column at " + str(col) + " inserted")
 
     def deleteColumnByContext(self, event):
         for i in self.tableView.selectionModel().selection().indexes():
             col = i.column()
             self.model.removeColumn(col)
-            print("Column at " + str(col) + " removed")
+            # print("Column at " + str(col) + " removed")
 
     def copyByContext(self, event):
         for i in self.tableView.selectionModel().selection().indexes():

@@ -189,7 +189,7 @@ class QvCatalegCapes(QWidget):
         # self.qV.canvisPendents=True
         # self.qV.botoDesarProjecte.setIcon(self.qV.iconaAmbCanvisPendents)
         os.chdir(dir)
-        print(dir)
+        # print(dir)
 
     def actualitzaMetadades(self):
         '''Pinta la preview de la capa
