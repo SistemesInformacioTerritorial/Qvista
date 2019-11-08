@@ -1771,7 +1771,8 @@ class QVista(QMainWindow, Ui_MainWindow):
                 #Redundant, perquè se suposa que quan comencem a mesurar s'esborra tot, però no anava :(
                 self.bm4.animateClick()
                 pos=qV.bMesuraGrafica.mapToGlobal(qV.bMesuraGrafica.pos())
-                self.parentWidget().move(pos.x()-375,pos.y()-200)
+                zoomFactor=QvApp().zoomFactor()
+                self.parentWidget().move(pos.x()-375*zoomFactor,pos.y()-200)
             def tancar(self):
                 qV.esborrarMesures(True)
             def canviaVisibilitatDw(self,visibilitat):
@@ -1791,7 +1792,8 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.dwMesuraGrafica.setContentsMargins ( 2, 2, 2, 2 )
         self.addDockWidget( Qt.RightDockWidgetArea, self.dwMesuraGrafica )
         self.dwMesuraGrafica.setFloating(True)
-        self.dwMesuraGrafica.resize(350,130)
+        zoomFactor = QvApp().zoomFactor()
+        self.dwMesuraGrafica.resize(zoomFactor*350,zoomFactor*130)
         #self.dwMesuraGrafica.setStyleSheet('QDockWidget {color: #465A63; background-color: #909090;}')
         
         self.dwMesuraGrafica.hide()
