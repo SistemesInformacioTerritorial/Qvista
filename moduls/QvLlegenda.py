@@ -1161,7 +1161,7 @@ if __name__ == "__main__":
 
             tipusJoin = 'left' if showErrors else 'inner'
 
-            # Nombre fichero antes de ?quuery= !!!!!
+            # Nombre fichero antes de ?query= !!!!!
             vlayer = QgsVectorLayer( "?query="
                "select C.NUM_CARRECS, B.CODI_BARRI, B.NOM_BARRI, B.DISTRICTE, B.GEOMETRY as GEOM from "
                 "(select count(*) AS NUM_CARRECS, QVISTA_BARRI from " + fich + " group by "

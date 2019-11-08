@@ -99,7 +99,7 @@ class QvComboBoxEdited(QComboBox):
         self.oldText = ''
         self.newText = ''
         self.editTextChanged.connect(self.copyText)
-        self.currentIndexChanged.connect(self.copyItem)
+        self.activated.connect(self.copyItem)
 
     def setItems(self, items):
         self.addItems(items)
@@ -116,10 +116,17 @@ class QvComboBoxEdited(QComboBox):
         if i == -1:
             return
         txt = self.oldText
-        item = self.currentText()
-        if txt != '' and txt[-1] != ' ':
-            txt += ' '
-        self.setCurrentText(txt + item)
+        self.item = self.currentText()
+        lenItem = len(self.item)
+        if txt.rstrip().upper().endswith(self.item.upper()):
+            txt = txt.rstrip()
+            txt = txt[0:len(txt)-lenItem] + self.item
+        else:
+            if txt != '' and txt[-1] != ' ':
+                txt += ' '
+            txt += self.item
+        self.setCurrentText(txt)
+        self.lineEdit().setSelection(len(txt) - lenItem, lenItem)
 
 class QvFormNovaMapificacio(QvFormBaseMapificacio):
     def __init__(self, llegenda, amplada=450):
