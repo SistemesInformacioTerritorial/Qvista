@@ -1716,10 +1716,11 @@ class QVista(QMainWindow, Ui_MainWindow):
                     self.colorCanviat.emit(color)
                 def openColorDialog():
                     canviColor(QColorDialog().getColor())
-                self.bm4 = QvPushButton(destacat=True)
+                self.bm4 = QvPushButton(destacat=False)
                 self.bm4.setText('Netejar')
 
-                self.lblDistanciaTotal = QLabel('Distància total: 0')
+                self.lblDistanciaTotal = QLabel()
+                self.setDistanciaTotal(0)
                 self.lblMesuraArea = QLabel('')
 
                 
@@ -1757,7 +1758,7 @@ class QVista(QMainWindow, Ui_MainWindow):
                 return
             def setArea(self,area):
                 if area is None:
-                    self.lblMesuraArea.setText('')
+                    self.lblMesuraArea.setText("Tanqueu un polígon per calcular l'àrea")
                     self.area=None
                 else:
                     self.area=round(area,2)
@@ -1914,7 +1915,13 @@ class QVista(QMainWindow, Ui_MainWindow):
     
     def infoQVistaPDF(self):
         ''' Obre un pdf amb informació de qVista, utilitzant l'aplicació per defecte del sistema '''
-        os.startfile(arxiuInfoQVista)
+        try:
+            os.startfile(arxiuInfoQVista)
+        except:
+            msg=QMessageBox()
+            msg.setText("No s'ha pogut accedir a l'arxiu de help      ")
+            msg.setWindowTitle('qVista')
+            msg.exec_()
 
 
     def activarDashboard(self,nom): #???
