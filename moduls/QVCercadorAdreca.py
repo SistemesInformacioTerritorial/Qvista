@@ -64,6 +64,7 @@ class QCercadorAdreca(QObject):
             self.prepararCompleterCarrer()
 
     def habilitaLeNum(self):
+        return #De moment no es desactivarà mai
         #Hauria de funcionar només amb la primera condició, però per raons que escapen al meu coneixement, no anava :()
         self.leNumero.setEnabled(self.calle_con_acentos!='' or self.txto!='')
 
@@ -113,6 +114,7 @@ class QCercadorAdreca(QObject):
         # self.leNumero.returnPressed.connect(self.trobatNumero)
 
     def clear_leNumero_leCarrer(self, carrer):
+        self.carrerActivat=False
         self.leNumero.clear()
         self.leCarrer.clear()
 
@@ -192,14 +194,16 @@ class QCercadorAdreca(QObject):
         # self.focusANumero()
 
     def trobatCarrer(self):
-        # if self.leCarrer.text()=='': return
-        # self.carrerActivat = False
+        if self.leCarrer.text()=='': 
+            self.leNumero.setCompleter(None)
+            return
         if not self.carrerActivat:
             print(self.leCarrer.text())
-            self.txto = self.completerCarrer.currentCompletion()
+            #així obtenim el carrer on estàvem encara que no l'haguem seleccionat explícitament
+            self.txto=self.completerCarrer.popup().currentIndex().data()
+            if self.txto is None:
+                self.txto = self.completerCarrer.currentCompletion()
             if self.txto=='': 
-                # baf=QvBafarada("L'adreça introduïda no existeix",self.leCarrer)
-                # baf.show()
                 return
 
             nn= self.txto.find(chr(30))
@@ -352,14 +356,21 @@ class QCercadorAdreca(QObject):
             self.sHanTrobatCoordenades.emit(5,info)  #numero          
 
     def trobatNumero(self):
-        if self.leNumero.text()=='': return
-        self.txto = self.completerCarrer.currentCompletion()
+        #Si no hi ha carrer, eliminem el completer del número
+        if self.leCarrer.text()=='':
+            self.leNumero.setCompleter(None)
+        if self.leNumero.text()=='':
+            return
+        # self.txto = self.completerCarrer.currentCompletion()
         try:
             # if self.leCarrer.text() in self.dictCarrers:
             if self.txto in self.dictCarrers:
                 
                 if self.leNumero.text() != '':
-                    txt = self.completerNumero.currentCompletion()
+                    txt=self.completerNumero.popup().currentIndex().data()
+                    if txt is None:
+                        txt = self.completerNumero.currentCompletion()
+                    # txt = self.completerNumero.currentCompletion()
                     self.leNumero.setText(txt)
                 else:
                     txt = ' '
@@ -408,7 +419,7 @@ class QCercadorAdreca(QObject):
         self.leNumero.setFocus()
 
     def esborrarNumero(self):
-        self.carrerActivat = False
+        # self.carrerActivat = False
         self.calle_con_acentos=''
         self.leNumero.clear()
         #self.leNumero.setCompleter(None)
