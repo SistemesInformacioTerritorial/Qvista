@@ -2704,9 +2704,6 @@ class QVista(QMainWindow, Ui_MainWindow):
         # self.bScale.setMinimumWidth( 140 )
         self.bScale.clicked.connect(self.editarEscala)
         self.editantEscala = False
-        self.comboEscales = QComboBox()
-        self.lScale.addWidget(self.comboEscales)
-        self.comboEscales.hide()
 
         self.bOrientacio = QvPushButton(flat=True)
         self.bOrientacio.setStyleSheet(stylesheetButton)
@@ -2780,19 +2777,17 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.leXY.setText("")
 
     def editarEscala(self):
-        if QgsExpressionContextUtils.projectScope(self.project).variable('qV_escales'):
-            if self.comboEscales.count() == 0:
-                valors = QgsExpressionContextUtils.projectScope(self.project).variable('qV_escales').split(' ')
-                self.comboEscales.addItems(valors)
-            self.comboEscales.show()
-            def comboClickat():
-                self.leScale.setText(self.comboEscales.currentText())
-                self.escalaEditada()
-            self.comboEscales.activated.connect(comboClickat)
-            # self.comboEscales.hide()
-            # print("aqui posem les escales")
+        # if QgsExpressionContextUtils.projectScope(self.project).variable('qV_escales'):
+            # if self.comboEscales.count() == 0:
+            #     valors = QgsExpressionContextUtils.projectScope(self.project).variable('qV_escales').split(' ')
+            #     self.comboEscales.addItems(valors)
+            # self.comboEscales.show()
+            # def comboClickat():
+            #     self.leScale.setText(self.comboEscales.currentText())
+            #     self.escalaEditada()
+            # self.comboEscales.activated.connect(comboClickat)
 
-        if self.editantEscala == False:
+        if not self.editantEscala:
             self.editantEscala = True
             self.bScale.setText(' Escala 1: ')
             self.leScale = QLineEdit()
@@ -2807,6 +2802,12 @@ class QVista(QMainWindow, Ui_MainWindow):
             self.leScale.setFocus()
             self.onlyInt = QIntValidator()
             self.leScale.setValidator(self.onlyInt)
+            #Estem recalculant cada vegada. Podríem fer-ho només quan canviem de projecte, però no va lent
+            if QgsExpressionContextUtils.projectScope(self.project).variable('qV_escales'):
+                escalesPossibles=valors = QgsExpressionContextUtils.projectScope(self.project).variable('qV_escales').split(' ')
+                self.completerEscales=QCompleter(escalesPossibles,self.leScale)
+                self.completerEscales.activated.connect(self.escalaEditada)
+                self.leScale.setCompleter(self.completerEscales)
 
     def escalaEditada(self):
         escala = self.leScale.text()
@@ -2814,7 +2815,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.lScale.removeWidget(self.leScale)
         self.canvas.zoomScale(int(escala))
         self.editantEscala = False
-        self.comboEscales.hide()
+        # self.comboEscales.hide()
 
     def centrarMapa(self):
         qV.canvas.zoomToFullExtent()
