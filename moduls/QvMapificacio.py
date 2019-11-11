@@ -558,7 +558,7 @@ if __name__ == "__main__":
 
     from qgis.core.contextmanagers import qgisapp
 
-    gui = False
+    gui = True
 
     with qgisapp(guienabled=gui) as app:
 
@@ -584,5 +584,27 @@ if __name__ == "__main__":
             percentatgeProces=lambda n: print('... Procesado', str(n), '% ...'),
             errorAdreca=lambda f: print('Fila sin geocodificar -', f),
             procesAcabat=lambda n: print('Zonas', z.zones, 'procesadas en', str(n), 'segs. en ' + z.fZones + ' -', str(z.files), 'registros,', str(z.errors), 'errores'))
-        if not ok:
+            
+        if ok:
+            from qgis.gui import QgsMapCanvas
+            from moduls.QvLlegenda import QvLlegenda
+            from moduls.QvAtributs import QvAtributs
+            from moduls.QvMapForms import QvFormNovaMapificacio
+
+            canv = QgsMapCanvas()
+            canv.setWindowTitle('Canvas')
+            canv.show()
+
+            atrib = QvAtributs(canv)
+
+            leyenda = QvLlegenda(canv, atrib)
+            leyenda.project.read('mapesOffline/qVista default map.qgs')
+            leyenda.setWindowTitle('Llegenda')
+            leyenda.show()
+
+            fMap = QvFormNovaMapificacio(leyenda, mapificacio=z)
+            fMap.exec()
+        else:
             print('ERROR:', z.msgError)
+
+

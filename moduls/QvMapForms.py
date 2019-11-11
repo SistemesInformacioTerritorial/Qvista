@@ -129,10 +129,10 @@ class QvComboBoxEdited(QComboBox):
         self.lineEdit().setSelection(len(txt) - lenItem, lenItem)
 
 class QvFormNovaMapificacio(QvFormBaseMapificacio):
-    def __init__(self, llegenda, amplada=450):
+    def __init__(self, llegenda, amplada=450, mapificacio=None):
         super().__init__(llegenda, amplada)
 
-        self.fCSV = None
+        self.fCSV = mapificacio
 
         self.setWindowTitle('Afegir capa de mapificació')
 
@@ -140,14 +140,15 @@ class QvFormNovaMapificacio(QvFormBaseMapificacio):
         self.layout.setSpacing(14)
         self.setLayout(self.layout)
 
-        self.arxiu = QgsFileWidget()
-        self.arxiu.setStorageMode(QgsFileWidget.GetFile)
-        self.arxiu.setDialogTitle('Selecciona fitxer de dades…')
-        self.arxiu.setDefaultRoot(RUTA_LOCAL)
-        self.arxiu.setFilter('Arxius CSV (*.csv)')
-        self.arxiu.setSelectedFilter('Arxius CSV (*.csv)')
-        self.arxiu.lineEdit().setReadOnly(True)
-        self.arxiu.fileChanged.connect(self.arxiuSeleccionat)
+        if self.fCSV is None:
+            self.arxiu = QgsFileWidget()
+            self.arxiu.setStorageMode(QgsFileWidget.GetFile)
+            self.arxiu.setDialogTitle('Selecciona fitxer de dades…')
+            self.arxiu.setDefaultRoot(RUTA_LOCAL)
+            self.arxiu.setFilter('Arxius CSV (*.csv)')
+            self.arxiu.setSelectedFilter('Arxius CSV (*.csv)')
+            self.arxiu.lineEdit().setReadOnly(True)
+            self.arxiu.fileChanged.connect(self.arxiuSeleccionat)
 
         self.zona = QComboBox(self)
         self.zona.setEditable(False)
@@ -197,7 +198,8 @@ class QvFormNovaMapificacio(QvFormBaseMapificacio):
         self.lZona.setSpacing(14)
         self.gZona.setLayout(self.lZona)
 
-        self.lZona.addRow('Arxiu dades:', self.arxiu)
+        if self.fCSV is None:
+            self.lZona.addRow('Arxiu dades:', self.arxiu)
         self.lZona.addRow('Zona:', self.zona)
         self.lZona.addRow('Nom capa:', self.capa)
 
@@ -226,6 +228,8 @@ class QvFormNovaMapificacio(QvFormBaseMapificacio):
         self.layout.addWidget(self.buttons)
 
         self.adjustSize()
+
+        self.nouArxiu()
 
     def campsDB(self, nom):
         res = []
@@ -266,12 +270,9 @@ class QvFormNovaMapificacio(QvFormBaseMapificacio):
         self.calcul.clear()
         self.filtre.clear()
 
-    @pyqtSlot(str)
-    def arxiuSeleccionat(self, nom):
-        if nom == '':
+    def nouArxiu(self):
+        if self.fCSV is None:
             return
-        self.borrarZonas()
-        self.fCSV = QvMapificacio(nom, numMostra=0)
         # Carga combo con zonas si el campo correspondiente está en el fichero CSV
         num = 0
         for zona, val in MAP_ZONES.items():
@@ -280,8 +281,9 @@ class QvFormNovaMapificacio(QvFormBaseMapificacio):
                 num = num + 1
         if num == 0:
             self.msgInfo("El fitxer " + nom + " no té cap camp de zona")
-            self.arxiu.lineEdit().clear()
-            self.arxiu.setFocus()
+            if hasattr(self, 'arxiu'):
+                self.arxiu.lineEdit().clear()
+                self.arxiu.setFocus()
             return
         if num == 1:
             self.zona.setCurrentIndex(1)
@@ -291,9 +293,17 @@ class QvFormNovaMapificacio(QvFormBaseMapificacio):
         self.calcul.setItems(self.fCSV.camps)
         self.filtre.setItems(self.fCSV.camps)
 
+    @pyqtSlot(str)
+    def arxiuSeleccionat(self, nom):
+        if nom == '':
+            return
+        self.borrarZonas()
+        self.fCSV = QvMapificacio(nom, numMostra=0)
+        self.nouArxiu()
+
     def valida(self):
         ok = False
-        if self.arxiu.filePath() == '':
+        if hasattr(self, 'arxiu') and self.arxiu.filePath() == '':
             self.msgInfo("S'ha de seleccionar un arxiu de dades")
             self.arxiu.setFocus()
         elif self.zona.currentIndex() <= 0:
