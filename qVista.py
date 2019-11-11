@@ -588,7 +588,10 @@ class QVista(QMainWindow, Ui_MainWindow):
         if self.marcaLlocPosada:
             self.marcaLlocPosada = False
         else:
-            self.canvas.scene().removeItem(self.marcaLloc)
+            try:
+                self.canvas.scene().removeItem(self.marcaLloc)
+            except Exception as e:
+                print(e)
             
     # def preparacioCalculadora(self):
     #     self.calculadora = QWidget()
@@ -1713,10 +1716,11 @@ class QVista(QMainWindow, Ui_MainWindow):
                     self.colorCanviat.emit(color)
                 def openColorDialog():
                     canviColor(QColorDialog().getColor())
-                self.bm4 = QvPushButton(destacat=True)
+                self.bm4 = QvPushButton(destacat=False)
                 self.bm4.setText('Netejar')
 
-                self.lblDistanciaTotal = QLabel('Distància total: 0')
+                self.lblDistanciaTotal = QLabel()
+                self.setDistanciaTotal(0)
                 self.lblMesuraArea = QLabel('')
 
                 
@@ -1754,7 +1758,7 @@ class QVista(QMainWindow, Ui_MainWindow):
                 return
             def setArea(self,area):
                 if area is None:
-                    self.lblMesuraArea.setText('')
+                    self.lblMesuraArea.setText("Tanqueu un polígon per calcular l'àrea")
                     self.area=None
                 else:
                     self.area=round(area,2)
@@ -1768,7 +1772,8 @@ class QVista(QMainWindow, Ui_MainWindow):
                 #Redundant, perquè se suposa que quan comencem a mesurar s'esborra tot, però no anava :(
                 self.bm4.animateClick()
                 pos=qV.bMesuraGrafica.mapToGlobal(qV.bMesuraGrafica.pos())
-                self.parentWidget().move(pos.x()-375,pos.y()-200)
+                zoomFactor=QvApp().zoomFactor()
+                self.parentWidget().move(pos.x()-375*zoomFactor,pos.y()-200)
             def tancar(self):
                 qV.esborrarMesures(True)
             def canviaVisibilitatDw(self,visibilitat):
@@ -1788,7 +1793,8 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.dwMesuraGrafica.setContentsMargins ( 2, 2, 2, 2 )
         self.addDockWidget( Qt.RightDockWidgetArea, self.dwMesuraGrafica )
         self.dwMesuraGrafica.setFloating(True)
-        self.dwMesuraGrafica.resize(350,130)
+        zoomFactor = QvApp().zoomFactor()
+        self.dwMesuraGrafica.resize(zoomFactor*350,zoomFactor*130)
         #self.dwMesuraGrafica.setStyleSheet('QDockWidget {color: #465A63; background-color: #909090;}')
         
         self.dwMesuraGrafica.hide()
@@ -1909,7 +1915,13 @@ class QVista(QMainWindow, Ui_MainWindow):
     
     def infoQVistaPDF(self):
         ''' Obre un pdf amb informació de qVista, utilitzant l'aplicació per defecte del sistema '''
-        os.startfile(arxiuInfoQVista)
+        try:
+            os.startfile(arxiuInfoQVista)
+        except:
+            msg=QMessageBox()
+            msg.setText("No s'ha pogut accedir a l'arxiu de help      ")
+            msg.setWindowTitle('qVista')
+            msg.exec_()
 
 
     def activarDashboard(self,nom): #???
@@ -2372,7 +2384,6 @@ class QVista(QMainWindow, Ui_MainWindow):
             vLayer = QgsVectorLayer('Dades/Barris.sqlite', 'Barris_aux', 'ogr')
         vLayer.setProviderEncoding("UTF-8")
         if not vLayer.isValid():
-            print(':(')
             return
         vLayer.setSubsetString('CODI="%s"'%ID)
         feats=vLayer.getFeatures()
@@ -2704,9 +2715,6 @@ class QVista(QMainWindow, Ui_MainWindow):
         # self.bScale.setMinimumWidth( 140 )
         self.bScale.clicked.connect(self.editarEscala)
         self.editantEscala = False
-        self.comboEscales = QComboBox()
-        self.lScale.addWidget(self.comboEscales)
-        self.comboEscales.hide()
 
         self.bOrientacio = QvPushButton(flat=True)
         self.bOrientacio.setStyleSheet(stylesheetButton)
@@ -2755,7 +2763,6 @@ class QVista(QMainWindow, Ui_MainWindow):
 
     def editarXY(self):
         size=self.bXY.size()
-        print(size)
         self.bXY.hide()
         self.leXY.show()
         self.leXY.setText(self.bXY.text())
@@ -2780,19 +2787,17 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.leXY.setText("")
 
     def editarEscala(self):
-        if QgsExpressionContextUtils.projectScope(self.project).variable('qV_escales'):
-            if self.comboEscales.count() == 0:
-                valors = QgsExpressionContextUtils.projectScope(self.project).variable('qV_escales').split(' ')
-                self.comboEscales.addItems(valors)
-            self.comboEscales.show()
-            def comboClickat():
-                self.leScale.setText(self.comboEscales.currentText())
-                self.escalaEditada()
-            self.comboEscales.activated.connect(comboClickat)
-            # self.comboEscales.hide()
-            # print("aqui posem les escales")
+        # if QgsExpressionContextUtils.projectScope(self.project).variable('qV_escales'):
+            # if self.comboEscales.count() == 0:
+            #     valors = QgsExpressionContextUtils.projectScope(self.project).variable('qV_escales').split(' ')
+            #     self.comboEscales.addItems(valors)
+            # self.comboEscales.show()
+            # def comboClickat():
+            #     self.leScale.setText(self.comboEscales.currentText())
+            #     self.escalaEditada()
+            # self.comboEscales.activated.connect(comboClickat)
 
-        if self.editantEscala == False:
+        if not self.editantEscala:
             self.editantEscala = True
             self.bScale.setText(' Escala 1: ')
             self.leScale = QLineEdit()
@@ -2807,6 +2812,12 @@ class QVista(QMainWindow, Ui_MainWindow):
             self.leScale.setFocus()
             self.onlyInt = QIntValidator()
             self.leScale.setValidator(self.onlyInt)
+            #Estem recalculant cada vegada. Podríem fer-ho només quan canviem de projecte, però no va lent
+            if QgsExpressionContextUtils.projectScope(self.project).variable('qV_escales'):
+                escalesPossibles=valors = QgsExpressionContextUtils.projectScope(self.project).variable('qV_escales').split(' ')
+                self.completerEscales=QCompleter(escalesPossibles,self.leScale)
+                self.completerEscales.activated.connect(self.escalaEditada)
+                self.leScale.setCompleter(self.completerEscales)
 
     def escalaEditada(self):
         escala = self.leScale.text()
@@ -2814,7 +2825,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.lScale.removeWidget(self.leScale)
         self.canvas.zoomScale(int(escala))
         self.editantEscala = False
-        self.comboEscales.hide()
+        # self.comboEscales.hide()
 
     def centrarMapa(self):
         qV.canvas.zoomToFullExtent()

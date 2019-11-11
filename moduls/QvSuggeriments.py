@@ -88,7 +88,6 @@ class QvSuggeriments(QDialog):
 
     def acceptar(self):
         res=self.acceptAction(self.leTitle.toPlainText(),self.caixaText.toPlainText())
-        print(res)
         self.close()
 
     #determina el format dels diferents components de la window

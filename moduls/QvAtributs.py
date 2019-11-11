@@ -160,7 +160,7 @@ class QvAtributs(QTabWidget):
             if taula.layer.id() == layer.id():
                 txt = taula.layerNom()
                 self.setTabText(i, txt)
-                print('tabTaula:', txt)
+                # print('tabTaula:', txt)
                 if current:
                     self.setCurrentIndex(i)
                 return True
