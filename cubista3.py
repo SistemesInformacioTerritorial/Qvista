@@ -383,9 +383,9 @@ class Ui_MainWindow(object):
         self.lblTitolProjecte.setToolTip(_translate("MainWindow", "<html><head/><body><p><span style=\" font-size:10pt; color:#38474f;\">Feu clic per canviar el títol del projecte</span></p></body></html>"))
         self.lblTitolProjecte.setText(_translate("MainWindow", "Qualificacions urbanístiques i suspensions"))
         self.lSpacer.setText(_translate("MainWindow", "TextLabel"))
-        self.botoVeureLlegenda.setToolTip(_translate("MainWindow", "<html><head/><body><p>Veure i ocultar llegenda</p></body></html>"))
-        self.botoMapeta.setToolTip(_translate("MainWindow", "<html><head/><body><p>Mostrar i ocultar mapa de situació</p></body></html>"))
-        self.botoObrirQGis.setToolTip(_translate("MainWindow", "<html><head/><body><p>Obrir projecte en QGis</p></body></html>"))
+        self.botoVeureLlegenda.setToolTip(_translate("MainWindow", "<html><head/><body><p>Mostrar/ocultar llegenda</p></body></html>"))
+        self.botoMapeta.setToolTip(_translate("MainWindow", "<html><head/><body><p>Mostrar/ocultar mapa de situació</p></body></html>"))
+        self.botoObrirQGis.setToolTip(_translate("MainWindow", "<html><head/><body><p>Obrir projecte en QGIS</p></body></html>"))
         self.botoReload.setToolTip(_translate("MainWindow", "<html><head/><body><p>Recarregar projecte</p></body></html>"))
         self.botoDesarProjecte.setToolTip(_translate("MainWindow", "<html><head/><body><p>Desar projecte</p></body></html>"))
 

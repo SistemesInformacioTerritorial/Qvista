@@ -1225,15 +1225,15 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.actTissores.setIcon(icon)
         self.actTissores.triggered.connect(self.tissores)
 
-        self.actSeleccioGrafica = QAction("Selecció gràfica d'elements", self)
-        self.actSeleccioGrafica.setStatusTip("Selecció gràfica d'elements")
+        self.actSeleccioGrafica = QAction("Seleccionar/emmascarar", self)
+        self.actSeleccioGrafica.setStatusTip("Seleccionar/emmascarar")
         icon=QIcon(imatgesDir+'select.png')
         self.actSeleccioGrafica.setIcon(icon)
         self.actSeleccioGrafica.triggered.connect(self.seleccioGrafica)
 
         #Eina de mesura -nexus-
-        self.actMesuraGrafica = QAction("Medicions", self)
-        self.actMesuraGrafica.setStatusTip("Medicions")
+        self.actMesuraGrafica = QAction("Mesurar", self)
+        self.actMesuraGrafica.setStatusTip("Mesurar")
         icon=QIcon(imatgesDir+'regle.png')
         self.actMesuraGrafica.setIcon(icon)
         self.actMesuraGrafica.triggered.connect(self.mesuraGrafica)
@@ -1304,7 +1304,7 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         #bEnviar.clicked.connect(lambda: reportarProblema(leTitol.text(), leDescripcio.text()))
         self.suggeriments=QvSuggeriments(reportarProblema,self)
-        self.actBug = QAction("Problemes o suggeriments ", self)
+        self.actBug = QAction("Problemes i suggeriments ", self)
         icon=QIcon(imatgesDir+'bug.png')
         self.actBug.setIcon(icon)
         self.actBug.triggered.connect(self.suggeriments.show)
@@ -1477,7 +1477,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.actDashStandard.setStatusTip("Restaurar")
         self.actDashStandard.triggered.connect(self.dashStandard)
 
-        self.actAdreces = QAction("Cerca per adreça", self)
+        self.actAdreces = QAction("Cercar per adreça", self)
         self.actAdreces.setIcon(QIcon(imatgesDir+'map-search.png'))
         self.actAdreces.setStatusTip("Adreces")
         self.actAdreces.triggered.connect(self.adreces)
