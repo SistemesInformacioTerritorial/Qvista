@@ -5,6 +5,8 @@ from qgis.core import QgsGraduatedSymbolRenderer
 from qgis.PyQt.QtCore import QLocale
 from collections import OrderedDict
 
+from configuracioQvista import *
+
 MAP_ID = "qV_mapificacio"
 MAP_MAX_CATEGORIES = 10
 MAP_ALPHA_INI = 4

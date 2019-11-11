@@ -27,8 +27,8 @@ from typing import List, Tuple, Iterable
 _TRANS = str.maketrans('ÁÉÍÓÚáéíóúÀÈÌÒÙàèìòùÂÊÎÔÛâêîôûÄËÏÖÜäëïöüºª€@$·.,;:()[]¡!¿?|@#%&ç*',
                        'AEIOUaeiouAEIOUaeiouAEIOUaeiouAEIOUaeiouoaEaD____________________')
 
-RUTA_LOCAL = 'C:/temp/qVista/dades/'
-RUTA_DADES = 'D:/qVista/Codi/Dades/'
+RUTA_LOCAL = dadesdir
+RUTA_DADES = os.path.abspath('Dades').replace('\\', '/') + '/'
 CAMP_QVISTA = 'QVISTA_'
 
 class QvMapificacio(QObject):

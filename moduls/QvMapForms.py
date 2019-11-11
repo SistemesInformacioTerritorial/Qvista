@@ -247,7 +247,7 @@ class QvFormNovaMapificacio(QvFormBaseMapificacio):
         ultimo = combo.count() - 1
         for n in range(ultimo, 0, -1):
             combo.removeItem(n)
-    
+
     @pyqtSlot()
     def canviaZona(self):
         self.distribucio.setCurrentIndex(0)
