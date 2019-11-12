@@ -3,9 +3,9 @@
 from qgis.gui import QgsFileWidget
 from qgis.PyQt.QtCore import Qt, QObject, pyqtSignal, pyqtSlot
 from qgis.PyQt.QtGui import QColor, QValidator, QIcon, QDoubleValidator, QPixmap
-from qgis.PyQt.QtWidgets import (QFileDialog, QWidget, QPushButton, QFormLayout, QVBoxLayout, QHBoxLayout,
-                                 QComboBox, QLabel, QLineEdit, QSpinBox, QGroupBox, QGridLayout, QDialog,
-                                 QMessageBox, QDialogButtonBox, QApplication)
+from qgis.PyQt.QtWidgets import (QFileDialog, QWidget, QPushButton, QFormLayout, QVBoxLayout, QHBoxLayout, QSplitter,
+                                 QComboBox, QLabel, QLineEdit, QSpinBox, QGroupBox, QFrame, QGridLayout, QDialog, QSizePolicy,
+                                 QTableWidget, QTableWidgetItem, QMessageBox, QDialogButtonBox, QApplication)
 
 from qgis.core import QgsApplication, QgsGraduatedSymbolRenderer, QgsExpressionContextUtils
 
@@ -91,7 +91,7 @@ class QvVerifNumero(QValidator):
             state = QValidator.Invalid
         return (state, string, index)
 
-class QvComboBoxEdited(QComboBox):
+class QvComboBoxCamps(QComboBox):
     def __init__(self, parent):
         super().__init__(parent)
         self.setEditable(True)
@@ -100,6 +100,11 @@ class QvComboBoxEdited(QComboBox):
         self.newText = ''
         self.editTextChanged.connect(self.copyText)
         self.activated.connect(self.copyItem)
+
+    def clear(self):
+        super().clear()
+        self.oldText = ''
+        self.newText = ''
 
     def setItems(self, items):
         self.addItems(items)
@@ -128,11 +133,35 @@ class QvComboBoxEdited(QComboBox):
         self.setCurrentText(txt)
         self.lineEdit().setSelection(len(txt) - lenItem, lenItem)
 
+class QvVeureMostra(QTableWidget):
+    def __init__(self, map):
+        super().__init__(None)
+        self.map = map
+        self.setRowCount(self.map.numMostra)
+        self.setColumnCount(len(self.map.camps))
+        self.setHorizontalHeaderLabels(self.map.camps)
+        for fila, reg in enumerate(self.map.mostra):
+            cols = reg.split(self.map.separador)
+            for col, val in enumerate(cols):
+                item = QTableWidgetItem(val)
+                self.setItem(fila, col, item)
+
+class QvFormMostra(QDialog):
+    def __init__(self, map, amplada=800, alcada=500, parent=None, modal=False):
+        super().__init__(parent, modal=modal)
+        self.taula = QvVeureMostra(map)
+        self.resize(amplada, alcada)
+        self.setWindowTitle("Mostra de " + str(map.numMostra) + " registres de l'arxiu " + os.path.basename(map.fZones))
+        self.layout = QVBoxLayout()
+        self.setLayout(self.layout)
+        self.layout.addWidget(self.taula)
+
 class QvFormNovaMapificacio(QvFormBaseMapificacio):
-    def __init__(self, llegenda, amplada=450, mapificacio=None):
+    def __init__(self, llegenda, amplada=500, mapificacio=None):
         super().__init__(llegenda, amplada)
 
         self.fCSV = mapificacio
+        self.taulaMostra = None
 
         self.setWindowTitle('Afegir capa de mapificació')
 
@@ -167,9 +196,9 @@ class QvFormNovaMapificacio(QvFormBaseMapificacio):
         self.distribucio.setEditable(False)
         self.distribucio.addItem(next(iter(MAP_DISTRIBUCIO.keys())))
 
-        self.calcul = QvComboBoxEdited(self)
+        self.calcul = QvComboBoxCamps(self)
 
-        self.filtre = QvComboBoxEdited(self)
+        self.filtre = QvComboBoxCamps(self)
 
         self.color = QComboBox(self)
         self.color.setEditable(False)
@@ -187,40 +216,45 @@ class QvFormNovaMapificacio(QvFormBaseMapificacio):
         self.intervals.setSuffix("  (depèn del mètode)")
         # self.intervals.valueChanged.connect(self.deselectValue)
 
+        self.bTaula = QPushButton('Veure arxiu')
+        self.bTaula.setEnabled(False)
+        self.bTaula.clicked.connect(self.veureArxiu)
+
         self.buttons = QDialogButtonBox()
         self.buttons.addButton(QDialogButtonBox.Ok)
         self.buttons.accepted.connect(self.accept)
         self.buttons.addButton(QDialogButtonBox.Cancel)
         self.buttons.rejected.connect(self.cancel)
+        self.buttons.addButton(self.bTaula, QDialogButtonBox.ResetRole)
 
-        self.gZona = QGroupBox('Definició zona')
+        self.gZona = QGroupBox('Definició de zona')
         self.lZona = QFormLayout()
         self.lZona.setSpacing(14)
         self.gZona.setLayout(self.lZona)
 
         if self.fCSV is None:
-            self.lZona.addRow('Arxiu dades:', self.arxiu)
+            self.lZona.addRow('Arxiu de dades:', self.arxiu)
         self.lZona.addRow('Zona:', self.zona)
-        self.lZona.addRow('Nom capa:', self.capa)
+        self.lZona.addRow('Nom nova capa:', self.capa)
 
-        self.gDades = QGroupBox('Dades agregació')
+        self.gDades = QGroupBox('Agregació de dades')
         self.lDades = QFormLayout()
         self.lDades.setSpacing(14)
         self.gDades.setLayout(self.lDades)
 
-        self.lDades.addRow('Tipus agregació:', self.tipus)
-        self.lDades.addRow('Camp o fòrmula càlcul:', self.calcul)
+        self.lDades.addRow("Tipus d'agregació:", self.tipus)
+        self.lDades.addRow('Camp o fòrmula de càlcul:', self.calcul)
         self.lDades.addRow('Filtre:', self.filtre) 
         self.lDades.addRow('Distribució:', self.distribucio)
 
-        self.gSimb = QGroupBox('Simbologia mapificació')
+        self.gSimb = QGroupBox('Simbologia de mapificació')
         self.lSimb = QFormLayout()
         self.lSimb.setSpacing(14)
         self.gSimb.setLayout(self.lSimb)
 
-        self.lSimb.addRow('Color mapa:', self.color)
-        self.lSimb.addRow('Mètode classificació:', self.metode)
-        self.lSimb.addRow('Nombre intervals:', self.intervals)
+        self.lSimb.addRow('Color base:', self.color)
+        self.lSimb.addRow('Mètode de classificació:', self.metode)
+        self.lSimb.addRow("Nombre d'intervals:", self.intervals)
 
         self.layout.addWidget(self.gZona)
         self.layout.addWidget(self.gDades)
@@ -230,6 +264,12 @@ class QvFormNovaMapificacio(QvFormBaseMapificacio):
         self.adjustSize()
 
         self.nouArxiu()
+
+    @pyqtSlot()
+    def veureArxiu(self):
+        if self.taulaMostra is not None:
+            self.taulaMostra.show()
+            self.taulaMostra.activateWindow()
 
     def campsDB(self, nom):
         res = []
@@ -264,7 +304,11 @@ class QvFormNovaMapificacio(QvFormBaseMapificacio):
                 if campo != '' and campo in campsZona:
                     self.distribucio.addItem(dist)
 
-    def borrarZonas(self):
+    def borrarArxiu(self):
+        if self.taulaMostra is not None:
+            self.taulaMostra.hide()
+            self.taulaMostra = None
+        self.bTaula.setEnabled(False)
         self.tipus.setCurrentIndex(0)
         self.soloPrimerItem(self.zona)
         self.calcul.clear()
@@ -280,7 +324,7 @@ class QvFormNovaMapificacio(QvFormBaseMapificacio):
                 self.zona.addItem(zona)
                 num = num + 1
         if num == 0:
-            self.msgInfo("El fitxer " + nom + " no té cap camp de zona")
+            self.msgInfo("El fitxer " + self.fCSV.fZones + " no té cap camp de zona")
             if hasattr(self, 'arxiu'):
                 self.arxiu.lineEdit().clear()
                 self.arxiu.setFocus()
@@ -290,6 +334,8 @@ class QvFormNovaMapificacio(QvFormBaseMapificacio):
             self.capa.setFocus()
         else:
             self.zona.setFocus()
+        self.taulaMostra = QvFormMostra(self.fCSV, parent=self)
+        self.bTaula.setEnabled(True)
         self.calcul.setItems(self.fCSV.camps)
         self.filtre.setItems(self.fCSV.camps)
 
@@ -297,8 +343,8 @@ class QvFormNovaMapificacio(QvFormBaseMapificacio):
     def arxiuSeleccionat(self, nom):
         if nom == '':
             return
-        self.borrarZonas()
-        self.fCSV = QvMapificacio(nom, numMostra=0)
+        self.borrarArxiu()
+        self.fCSV = QvMapificacio(nom)
         self.nouArxiu()
 
     def valida(self):
@@ -320,6 +366,8 @@ class QvFormNovaMapificacio(QvFormBaseMapificacio):
             self.calcul.setFocus()
         else:
             ok = True
+        if ok and self.taulaMostra is not None:
+            self.taulaMostra.hide()
         return ok
 
     def mapifica(self):
@@ -357,7 +405,7 @@ class QvFormSimbMapificacio(QvFormBaseMapificacio):
         self.metode.setCurrentIndex(-1)
         self.metode.currentIndexChanged.connect(self.canviaMetode)
 
-        self.nomIntervals = QLabel('Nombre intervals:', self)
+        self.nomIntervals = QLabel("Nombre d'intervals:", self)
         self.intervals = QSpinBox(self)
         self.intervals.setMinimum(2)
         self.intervals.setMaximum(max(MAP_MAX_CATEGORIES, self.numCategories))
@@ -372,14 +420,14 @@ class QvFormSimbMapificacio(QvFormBaseMapificacio):
         self.buttons.addButton(QDialogButtonBox.Cancel)
         self.buttons.rejected.connect(self.cancel)
 
-        self.gSimb = QGroupBox('Simbologia mapificació')
+        self.gSimb = QGroupBox('Simbologia de mapificació')
         self.lSimb = QFormLayout()
         self.lSimb.setSpacing(14)
         # self.gSimb.setMinimumWidth(400)
         self.gSimb.setLayout(self.lSimb)
 
-        self.lSimb.addRow('Color mapa:', self.color)
-        self.lSimb.addRow('Mètode classificació:', self.metode)
+        self.lSimb.addRow('Color de mapa:', self.color)
+        self.lSimb.addRow('Mètode de classificació:', self.metode)
         self.lSimb.addRow(self.nomIntervals, self.intervals)
 
         self.wInterval = []

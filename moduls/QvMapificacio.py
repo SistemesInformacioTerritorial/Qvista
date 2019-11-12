@@ -48,8 +48,7 @@ class QvMapificacio(QObject):
             separador {str} -- Caracter separador de campos en el CSV. Por defecto, se infiere del fichero (default: {''})
             prefixe {str} -- Prefijo del campo añadido que contendra el codigo de zona;
                              el sufijo será el nombre de la zona escogida (default: {CAMP_QVISTA})
-            numMostra {int} -- Número de filas de muestra a leer del CSV para hacer una estimación del número total
-                               de registros. Útil solo para la geocodificación (default: {60})
+            numMostra {int} -- Número de filas de muestra a leer del CSV (default: {60})
         """
         super().__init__()
         self.fDades = self.fZones = fDades
@@ -57,6 +56,7 @@ class QvMapificacio(QObject):
         self.prefixe = prefixe
         self.numMostra = numMostra
         self.mostra = []
+        self.mostraCols = ''
         self.camps = []
         self.files = 0
         self.errors = 0
@@ -88,10 +88,10 @@ class QvMapificacio(QObject):
                 data = csvInput.readline()
                 data = data.rstrip(csvInput.newlines)
                 self.mostra = []
-                self.mostra.append(data)
+                self.mostraCols = data
                 # Lineas de muestra
                 lenMuestra = 0
-                for num, data in enumerate(csvInput, start=1):
+                for num, data in enumerate(csvInput):
                     lenMuestra += len(data)
                     data = data.rstrip(csvInput.newlines)
                     self.mostra.append(data)
@@ -116,7 +116,7 @@ class QvMapificacio(QObject):
         if self.separador == '':
             self.msgError = 'Cal establir un caracter separador dels camps'
         else:
-            self.camps = self.mostra[0].split(self.separador)
+            self.camps = self.mostraCols.split(self.separador)
 
     def infereixCodi(self) -> str:
         '''Infereix la codificació d'un arxiu csv
@@ -272,12 +272,14 @@ class QvMapificacio(QObject):
                     campSortida = self.prefixe + campZona
                     if campSortida not in self.camps:
                         self.camps.append(campSortida)
+                        self.mostraCols += self.separador + campSortida
 
                 writer = csv.DictWriter(csvOutput, delimiter=self.separador, fieldnames=self.camps, lineterminator='\n')
                 writer.writeheader()
 
                 # Lectura de filas y geocodificación
                 tot = num = 0
+                self.mostra = []
                 for row in data:
                     tot += 1
 
@@ -308,6 +310,10 @@ class QvMapificacio(QObject):
                     #     row.update([(self.campZona, val)])
                     
                     writer.writerow(row)
+
+                    if self.numMostra >= tot:
+                        self.mostra.append(self.separador.join(row.values()))
+
                     # Informe de progreso cada 1% o cada fila si hay menos de 100
                     if self.files > 0 and tot % nSignal == 0:
                         self.percentatgeProces.emit(int(round(tot * 100 / self.files)))
@@ -563,6 +569,7 @@ if __name__ == "__main__":
     with qgisapp(guienabled=gui) as app:
 
         from moduls.QvApp import QvApp
+        from moduls.QvMapForms import QvFormMostra
 
         app = QvApp()
 
@@ -578,33 +585,40 @@ if __name__ == "__main__":
         print('Campos:', z.camps)
         print(z.files, 'filas en', z.fDades)
 
-        campsAdreca = ('', 'NOM_CARRER_GPL', 'NUM_I_GPL', '', 'NUM_F_GPL')
-        zones = ('Coordenada', 'Districte', 'Barri', 'Codi postal')
-        ok = z.geocodificacio(campsAdreca, zones,
-            percentatgeProces=lambda n: print('... Procesado', str(n), '% ...'),
-            errorAdreca=lambda f: print('Fila sin geocodificar -', f),
-            procesAcabat=lambda n: print('Zonas', z.zones, 'procesadas en', str(n), 'segs. en ' + z.fZones + ' -', str(z.files), 'registros,', str(z.errors), 'errores'))
+        w = QvFormMostra(z)
+        w.show()
+
+        # campsAdreca = ('', 'NOM_CARRER_GPL', 'NUM_I_GPL', '', 'NUM_F_GPL')
+        # zones = ('Coordenada', 'Districte', 'Barri', 'Codi postal')
+        # ok = z.geocodificacio(campsAdreca, zones,
+        #     percentatgeProces=lambda n: print('... Procesado', str(n), '% ...'),
+        #     errorAdreca=lambda f: print('Fila sin geocodificar -', f),
+        #     procesAcabat=lambda n: print('Zonas', z.zones, 'procesadas en', str(n), 'segs. en ' + z.fZones + ' -', str(z.files), 'registros,', str(z.errors), 'errores'))
             
-        if ok:
-            from qgis.gui import QgsMapCanvas
-            from moduls.QvLlegenda import QvLlegenda
-            from moduls.QvAtributs import QvAtributs
-            from moduls.QvMapForms import QvFormNovaMapificacio
+        # if ok:
 
-            canv = QgsMapCanvas()
-            canv.setWindowTitle('Canvas')
-            canv.show()
+        #     w = QvFormMostra(z)
+        #     w.show()
 
-            atrib = QvAtributs(canv)
+        #     # from qgis.gui import QgsMapCanvas
+        #     # from moduls.QvLlegenda import QvLlegenda
+        #     # from moduls.QvAtributs import QvAtributs
+        #     # from moduls.QvMapForms import QvFormNovaMapificacio
 
-            leyenda = QvLlegenda(canv, atrib)
-            leyenda.project.read('mapesOffline/qVista default map.qgs')
-            leyenda.setWindowTitle('Llegenda')
-            leyenda.show()
+        #     # canv = QgsMapCanvas()
+        #     # canv.setWindowTitle('Canvas')
+        #     # canv.show()
 
-            fMap = QvFormNovaMapificacio(leyenda, mapificacio=z)
-            fMap.exec()
-        else:
-            print('ERROR:', z.msgError)
+        #     # atrib = QvAtributs(canv)
+
+        #     # leyenda = QvLlegenda(canv, atrib)
+        #     # leyenda.project.read('mapesOffline/qVista default map.qgs')
+        #     # leyenda.setWindowTitle('Llegenda')
+        #     # leyenda.show()
+
+        #     # fMap = QvFormNovaMapificacio(leyenda, mapificacio=z)
+        #     # fMap.exec()
+        # else:
+        #     print('ERROR:', z.msgError)
 
 
