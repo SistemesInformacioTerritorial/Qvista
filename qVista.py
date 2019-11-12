@@ -1393,6 +1393,8 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.leNumCerca.setFixedWidth(80)
 
         self.cAdrec=QCercadorAdreca(self.leCercaPerAdreca, self.leNumCerca,'SQLITE')    # SQLITE o CSV
+        self.bCercaPerAdreca.clicked.connect(lambda: self.leCercaPerAdreca.setText(''))
+        self.leCercaPerAdreca.textChanged.connect(lambda x: self.bCercaPerAdreca.setIcon(QIcon(imatgesDir+('magnify.png' if x=='' else 'cp_elimina.png'))))
         self.cAdrec.sHanTrobatCoordenades.connect(self.trobatNumero_oNo)
 
         self.lSpacer.setText("")

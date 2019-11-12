@@ -198,6 +198,12 @@ text-align: left;</string>
               </widget>
              </item>
              <item>
+              <widget class="QLineEdit" name="leCercaPerAdreca"/>
+             </item>
+             <item>
+              <widget class="QLineEdit" name="leNumCerca"/>
+             </item>
+             <item>
               <widget class="QPushButton" name="bCercaPerAdreca">
                <property name="text">
                 <string/>
@@ -207,12 +213,6 @@ text-align: left;</string>
                  <normaloff>Imatges/cm_cercar2.png</normaloff>Imatges/cm_cercar2.png</iconset>
                </property>
               </widget>
-             </item>
-             <item>
-              <widget class="QLineEdit" name="leCercaPerAdreca"/>
-             </item>
-             <item>
-              <widget class="QLineEdit" name="leNumCerca"/>
              </item>
              <item>
               <widget class="QLabel" name="lSpacer">

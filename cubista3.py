@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'cubista3.ui'
+# Form implementation generated from reading ui file 'Cubista3.ui'
 #
 # Created by: PyQt5 UI code generator 5.11.3
 #
@@ -85,6 +85,12 @@ class Ui_MainWindow(object):
 "text-align: left;")
         self.lblTitolProjecte.setObjectName("lblTitolProjecte")
         self.horizontalLayout_4.addWidget(self.lblTitolProjecte)
+        self.leCercaPerAdreca = QtWidgets.QLineEdit(self.frame_15)
+        self.leCercaPerAdreca.setObjectName("leCercaPerAdreca")
+        self.horizontalLayout_4.addWidget(self.leCercaPerAdreca)
+        self.leNumCerca = QtWidgets.QLineEdit(self.frame_15)
+        self.leNumCerca.setObjectName("leNumCerca")
+        self.horizontalLayout_4.addWidget(self.leNumCerca)
         self.bCercaPerAdreca = QtWidgets.QPushButton(self.frame_15)
         self.bCercaPerAdreca.setText("")
         icon = QtGui.QIcon()
@@ -92,12 +98,6 @@ class Ui_MainWindow(object):
         self.bCercaPerAdreca.setIcon(icon)
         self.bCercaPerAdreca.setObjectName("bCercaPerAdreca")
         self.horizontalLayout_4.addWidget(self.bCercaPerAdreca)
-        self.leCercaPerAdreca = QtWidgets.QLineEdit(self.frame_15)
-        self.leCercaPerAdreca.setObjectName("leCercaPerAdreca")
-        self.horizontalLayout_4.addWidget(self.leCercaPerAdreca)
-        self.leNumCerca = QtWidgets.QLineEdit(self.frame_15)
-        self.leNumCerca.setObjectName("leNumCerca")
-        self.horizontalLayout_4.addWidget(self.leNumCerca)
         self.lSpacer = QtWidgets.QLabel(self.frame_15)
         self.lSpacer.setObjectName("lSpacer")
         self.horizontalLayout_4.addWidget(self.lSpacer)
