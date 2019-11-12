@@ -585,40 +585,40 @@ if __name__ == "__main__":
         print('Campos:', z.camps)
         print(z.files, 'filas en', z.fDades)
 
-        w = QvFormMostra(z)
-        w.show()
+        # w = QvFormMostra(z)
+        # w.show()
 
-        # campsAdreca = ('', 'NOM_CARRER_GPL', 'NUM_I_GPL', '', 'NUM_F_GPL')
-        # zones = ('Coordenada', 'Districte', 'Barri', 'Codi postal')
-        # ok = z.geocodificacio(campsAdreca, zones,
-        #     percentatgeProces=lambda n: print('... Procesado', str(n), '% ...'),
-        #     errorAdreca=lambda f: print('Fila sin geocodificar -', f),
-        #     procesAcabat=lambda n: print('Zonas', z.zones, 'procesadas en', str(n), 'segs. en ' + z.fZones + ' -', str(z.files), 'registros,', str(z.errors), 'errores'))
+        campsAdreca = ('', 'NOM_CARRER_GPL', 'NUM_I_GPL', '', 'NUM_F_GPL')
+        zones = ('Coordenada', 'Districte', 'Barri', 'Codi postal')
+        ok = z.geocodificacio(campsAdreca, zones,
+            percentatgeProces=lambda n: print('... Procesado', str(n), '% ...'),
+            errorAdreca=lambda f: print('Fila sin geocodificar -', f),
+            procesAcabat=lambda n: print('Zonas', z.zones, 'procesadas en', str(n), 'segs. en ' + z.fZones + ' -', str(z.files), 'registros,', str(z.errors), 'errores'))
             
-        # if ok:
+        if ok:
 
-        #     w = QvFormMostra(z)
-        #     w.show()
+            # w = QvFormMostra(z)
+            # w.show()
 
-        #     # from qgis.gui import QgsMapCanvas
-        #     # from moduls.QvLlegenda import QvLlegenda
-        #     # from moduls.QvAtributs import QvAtributs
-        #     # from moduls.QvMapForms import QvFormNovaMapificacio
+            from qgis.gui import QgsMapCanvas
+            from moduls.QvLlegenda import QvLlegenda
+            from moduls.QvAtributs import QvAtributs
+            from moduls.QvMapForms import QvFormNovaMapificacio
 
-        #     # canv = QgsMapCanvas()
-        #     # canv.setWindowTitle('Canvas')
-        #     # canv.show()
+            canv = QgsMapCanvas()
+            canv.setWindowTitle('Canvas')
+            canv.show()
 
-        #     # atrib = QvAtributs(canv)
+            atrib = QvAtributs(canv)
 
-        #     # leyenda = QvLlegenda(canv, atrib)
-        #     # leyenda.project.read('mapesOffline/qVista default map.qgs')
-        #     # leyenda.setWindowTitle('Llegenda')
-        #     # leyenda.show()
+            leyenda = QvLlegenda(canv, atrib)
+            leyenda.project.read('mapesOffline/qVista default map.qgs')
+            leyenda.setWindowTitle('Llegenda')
+            leyenda.show()
 
-        #     # fMap = QvFormNovaMapificacio(leyenda, mapificacio=z)
-        #     # fMap.exec()
-        # else:
-        #     print('ERROR:', z.msgError)
+            fMap = QvFormNovaMapificacio(leyenda, mapificacio=z)
+            fMap.exec()
+        else:
+            print('ERROR:', z.msgError)
 
 

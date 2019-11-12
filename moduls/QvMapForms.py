@@ -101,6 +101,9 @@ class QvComboBoxCamps(QComboBox):
         self.editTextChanged.connect(self.copyText)
         self.activated.connect(self.copyItem)
 
+    def wheelEvent(self, event):
+        event.ignore()
+        
     def clear(self):
         super().clear()
         self.oldText = ''
