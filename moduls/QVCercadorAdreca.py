@@ -343,6 +343,7 @@ class QCercadorAdreca(QObject):
                                             float(self.infoAdreca['ETRS89_COORD_Y']))
 
                 self.NumeroOficial= self.infoAdreca['NUM_OFICIAL']
+                self.leNumero.setText(self.NumeroOficial)
                 self.leNumero.clearFocus()
 
                 info="[0]"
@@ -385,6 +386,7 @@ class QCercadorAdreca(QObject):
                                                         float(self.infoAdreca['ETRS89_COORD_Y']))
                             self.NumeroOficial= self.infoAdreca['NUM_OFICIAL']
                             self.leNumero.clearFocus()
+                            self.leNumero.setText(self.NumeroOficial)
                             info="[0]"
                             self.sHanTrobatCoordenades.emit(0,info) 
                             if self.leNumero.text()==' ':
