@@ -1735,6 +1735,7 @@ class QVista(QMainWindow, Ui_MainWindow):
                 self.lblDistanciaTotal = QLabel()
                 self.setDistanciaTotal(0)
                 self.lblMesuraArea = QLabel('')
+                self.cbCercles=QCheckBox('Dibuixar cercle')
 
                 
                 self.lwMesuresHist = QListWidget()
@@ -1755,6 +1756,7 @@ class QVista(QMainWindow, Ui_MainWindow):
                 self.lytBotonsMesura.addWidget(self.bm4)
                 self.lytDistanciesArees.addWidget(self.lblDistanciaTotal)
                 self.lytDistanciesArees.addWidget(self.lblMesuraArea)
+                self.lytDistanciesArees.addWidget(self.cbCercles)
                 
                 self.lytMesuraGrafica.addWidget(self.lwMesuresHist)
                 self.setMinimumWidth(350)
@@ -1786,7 +1788,7 @@ class QVista(QMainWindow, Ui_MainWindow):
                 self.bm4.animateClick()
                 pos=qV.bMesuraGrafica.mapToGlobal(qV.bMesuraGrafica.pos())
                 zoomFactor=QvApp().zoomFactor()
-                self.parentWidget().move(pos.x()-375*zoomFactor,pos.y()-200)
+                self.parentWidget().move(pos.x()-425*zoomFactor,pos.y()-200)
             def tancar(self):
                 qV.esborrarMesures(True)
             def canviaVisibilitatDw(self,visibilitat):
@@ -1807,7 +1809,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.addDockWidget( Qt.RightDockWidgetArea, self.dwMesuraGrafica )
         self.dwMesuraGrafica.setFloating(True)
         zoomFactor = QvApp().zoomFactor()
-        self.dwMesuraGrafica.resize(zoomFactor*350,zoomFactor*130)
+        self.dwMesuraGrafica.resize(zoomFactor*400,zoomFactor*130)
         #self.dwMesuraGrafica.setStyleSheet('QDockWidget {color: #465A63; background-color: #909090;}')
         
         self.dwMesuraGrafica.hide()
@@ -2705,7 +2707,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         # self.lXY.addWidget(self.bXY)
         self.leXY = QLineEdit()
         self.leXY.setFixedHeight(24)
-        self.leXY.setFixedWidth(142)
+        self.leXY.setFixedWidth(QvApp().zoomFactor()*142)
         self.leXY.setStyleSheet(stylesheetLineEdit)
         # self.leXY.editingFinished.connect(self.returnEditarXY)
         self.leXY.returnPressed.connect(self.returnEditarXY)
@@ -2782,7 +2784,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.bXY.hide()
         self.leXY.show()
         self.leXY.setText(self.bXY.text())
-        self.leXY.setFixedSize(size)
+        # self.leXY.setFixedSize(size)
        
         
     def returnEditarXY(self):

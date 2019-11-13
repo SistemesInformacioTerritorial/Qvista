@@ -293,12 +293,16 @@ class QvMesuraMultiLinia(QgsMapTool):
 
         #if self.point != None:
     def treuUltimtram(self):
+        poligono=QgsGeometry.fromPolylineXY(self.points)
+        distancia = poligono.length()
         self.point = None
         self.points = []
         self.hoverSartMarker = False
         
         self.rubberband2.hide()
         self.rubberbandCercle.hide()
+
+        self.qV.wMesuraGrafica.setDistanciaTotal(distancia)
         self.qV.wMesuraGrafica.actualitzaHistorial()
         self.qV.wMesuraGrafica.setDistanciaTempsReal(0)
         self.qV.wMesuraGrafica.setDistanciaTotal(0)
@@ -321,6 +325,8 @@ class QvMesuraMultiLinia(QgsMapTool):
     def rbcircle(self, center,edgePoint,desar=False,segments=100):
         r = math.sqrt(center.sqrDist(edgePoint))
         self.rubberbandCercle.reset( True )
+        if not self.qV.wMesuraGrafica.cbCercles.isChecked():
+            return
         pi =3.1416
         llistaPunts=[]
         for itheta in range(segments+1):
