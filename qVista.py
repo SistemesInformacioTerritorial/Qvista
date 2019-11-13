@@ -1767,7 +1767,7 @@ class QVista(QMainWindow, Ui_MainWindow):
                 return
                 self.lwMesuresHist.clear()
             def setDistanciaTotal(self,dist):
-                self.dist=round(dist,2)
+                self.dist=max(round(dist,2),0)
                 self.lblDistanciaTotal.setText('Distància total: ' + str(self.dist) + ' m')
             def setDistanciaTempsReal(self,dist):
                 return
@@ -1809,7 +1809,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.addDockWidget( Qt.RightDockWidgetArea, self.dwMesuraGrafica )
         self.dwMesuraGrafica.setFloating(True)
         zoomFactor = QvApp().zoomFactor()
-        self.dwMesuraGrafica.resize(zoomFactor*400,zoomFactor*130)
+        self.dwMesuraGrafica.resize(zoomFactor*400,zoomFactor*150)
         #self.dwMesuraGrafica.setStyleSheet('QDockWidget {color: #465A63; background-color: #909090;}')
         
         self.dwMesuraGrafica.hide()
