@@ -316,7 +316,7 @@ class QvMesuraMultiLinia(QgsMapTool):
         rubberband=QgsRubberBand(self.canvas)
         rubberband.setColor(self.qV.wMesuraGrafica.color)
         if cercle:
-            rubberband.setWidth(1)
+            rubberband.setWidth(0.25)
             rubberband.setLineStyle(Qt.DashLine)
         else:
             rubberband.setWidth(2)

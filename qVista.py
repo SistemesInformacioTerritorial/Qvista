@@ -1735,7 +1735,7 @@ class QVista(QMainWindow, Ui_MainWindow):
                 self.lblDistanciaTotal = QLabel()
                 self.setDistanciaTotal(0)
                 self.lblMesuraArea = QLabel('')
-                self.cbCercles=QCheckBox('Dibuixar cercle')
+                self.cbCercles=QCheckBox('Mostrar cercles auxiliars')
 
                 
                 self.lwMesuresHist = QListWidget()
@@ -1779,6 +1779,7 @@ class QVista(QMainWindow, Ui_MainWindow):
                     self.area=round(area,2)
                     self.lblMesuraArea.setText('Àrea: ' + str(self.area) + ' m²')
             def actualitzaHistorial(self):
+                if self.dist==0: return
                 if self.area is not None:
                     self.lwMesuresHist.insertItem(0,'Distància: %.2f m --- Àrea: %.2f m²'%(self.dist,self.area))
                 else:
@@ -2834,10 +2835,12 @@ class QVista(QMainWindow, Ui_MainWindow):
             #Estem recalculant cada vegada. Podríem fer-ho només quan canviem de projecte, però no va lent
             if QgsExpressionContextUtils.projectScope(self.project).variable('qV_escales'):
                 escalesPossibles=valors = QgsExpressionContextUtils.projectScope(self.project).variable('qV_escales').split(' ')
-                self.completerEscales=QCompleter(escalesPossibles,self.leScale)
-                self.completerEscales.activated.connect(self.escalaEditada)
-                self.leScale.setCompleter(self.completerEscales)
-                self.completerEscales.complete()
+            else:
+                escalesPossibles=['100','200','250','500','1000','2000','2500','5000','10000','25000','50000','100000','250000']
+            self.completerEscales=QCompleter(escalesPossibles,self.leScale)
+            self.completerEscales.activated.connect(self.escalaEditada)
+            self.leScale.setCompleter(self.completerEscales)
+            self.completerEscales.complete()
     #això de sota no va, però hauria de forçar que es vegi el completer sempre
     def mostraCompleterEscala(self, txt):
         if not hasattr(self,'completerEscales'): return
