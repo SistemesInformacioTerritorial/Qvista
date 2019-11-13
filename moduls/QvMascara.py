@@ -4,21 +4,29 @@ from moduls.QvMemoria import QvMemoria
 from qgis.gui import QgsMapTool, QgsRubberBand
 import math
 
-#polys ha de ser una llista de QgsFeatures
-def aplicaMascara(qV,polys,mascara=None):
-    if mascara is None:
-        mascara=obteMascara(qV)
-        # mascares=qV.project.mapLayersByName('Màscara')
-        if mascara is None:
-            mascara=QvMascaraEinaPlantilla(qV,qV.canvas).getCapa() #No ho desem enlloc però així crea la capa
-            tocaAfegir=True
-        else:
-            tocaAfegir=False
-    else:
-        tocaAfegir=False
+
+class MascaraAux:
+    #Una classe per encapsular variables i coses
+    teAux=False
+    geom=None
+
+#geoms: iterable de QgsGeometry
+def aplicaMascara(qV,geoms,mascara=None):
+    
+    eliminaMascara(qV,False)
+    mascara=obteMascara(qV)
+    mascaraAux=qV.project.mapLayersByName('Màscara auxiliar')[0]
+    if MascaraAux.geom is None:
+        primera_feature=next(mascaraAux.getFeatures())
+        MascaraAux.geom=primera_feature.geometry()
+    for x in geoms:
+        MascaraAux.geom=MascaraAux.geom.difference(x)
+    feat=QgsFeature()
+    feat.setGeometry(MascaraAux.geom)
     pr=mascara.dataProvider()
-    pr.addFeatures(polys)
-    # if tocaAfegir:
+    # for feat in mascara.getFeatures():
+    #     mascara.deleteFeature(feat.id())
+    pr.addFeatures([feat])
     mascara.commitChanges()
     qV.project.addMapLayers([mascara])
     qV.canvas.refresh()
@@ -26,8 +34,30 @@ def aplicaMascara(qV,polys,mascara=None):
 def obteMascara(qV):
     mascares=qV.project.mapLayersByName('Màscara')
     if len(mascares)==0:
-        return None
+        return creaMascara(qV)
     return mascares[0]
+
+def creaMascara(qV):
+    epsg=qV.canvas.mapSettings().destinationCrs().authid()
+    mascara=QgsVectorLayer('MultiPolygon?crs=%s'%epsg,'Màscara','memory')
+    aplicaParametresMascara(mascara,*QvMemoria().getParametresMascara()) 
+    if not MascaraAux.teAux:
+        mascaraAux=QgsVectorLayer('MultiPolygon?crs=%s'%epsg,'Màscara auxiliar','memory')
+        punts=[(0.,0.),(0.,10000000.),(10000000.,10000000.),(10000000.,0.)]
+        punts=[QgsPointXY(*x) for x in punts]
+        geom=QgsGeometry.fromPolygonXY([punts])
+        feat=QgsFeature()
+        feat.setGeometry(geom)
+
+        pr=mascaraAux.dataProvider()
+        pr.addFeatures([feat])
+        mascaraAux.commitChanges()
+        qV.project.addMapLayers([mascaraAux],False)
+        MascaraAux.teAux=True
+    qV.project.addMapLayers([mascara])
+    qV.canvas.refresh()
+
+    return mascara
 
 def carregaMascara(qV):
     try:
@@ -41,16 +71,19 @@ def carregaMascara(qV):
         pass
 
 def aplicaParametresMascara(mascara,color,opacitat):
+    if opacitat>1: opacitat/=100 #Si és més que 1 vol dir que està en %
     mascara.renderer().symbol().setColor(color)
     mascara.renderer().symbol().symbolLayer(0).setStrokeColor(color)
-    mascara.setRenderer(QgsInvertedPolygonRenderer.convertFromRenderer(mascara.renderer()))
-    mascara.renderer().setPreprocessingEnabled(True) #Si es posa aquesta línia les màscares no se solaparan
     mascara.setOpacity(opacitat)
 
-def eliminaMascara(qV):
+def eliminaMascara(qV, tambeAuxiliar=True):
     try:
         qV.project.removeMapLayer(qV.project.mapLayersByName('Màscara')[0])
-    except:
+        if tambeAuxiliar:
+            qV.project.removeMapLayer(qV.project.mapLayersByName('Màscara auxiliar')[0])
+            MascaraAux.teAux=False
+            MascaraAux.geom=None
+    except Exception as e:
         #Si no hi ha màscara, suda
         pass
 
@@ -59,7 +92,6 @@ class QvMascaraEinaPlantilla(QgsMapTool):
         QgsMapTool.__init__(self, canvas)
         self.canvas = canvas
         self.qV = qV
-        self.afegida=True
         self.setParametres(**kwargs)
 
     def canvasPressEvent(self, event):
@@ -81,38 +113,23 @@ class QvMascaraEinaPlantilla(QgsMapTool):
         msgBox.setInformativeText(textInformacio)
         ret = msgBox.exec()
     def getCapa(self):
-        # if hasattr(self,'mascara'):
-        #     return self.mascara
         if not self.emmascarar:
             layer = self.qV.llegenda.currentLayer()
             if layer is None or layer.type()!=QgsMapLayer.VectorLayer:
                 self.missatgeCaixa('Cal tenir seleccionat un nivell per poder fer una selecció.','Marqueu un nivell a la llegenda sobre el que aplicar la consulta.')
                 return None
             return layer
-        mascares=self.qV.project.mapLayersByName('Màscara')
-        if len(mascares)==0:
-            self.mascara=QgsVectorLayer('MultiPolygon?crs=epsg:25831','Màscara','memory')
-            aplicaParametresMascara(self.mascara,self.color,self.opacitat)
-            self.afegida=False
-        elif len(mascares)==1:
-            self.mascara=mascares[0]
-        else:
-            self.mascara=mascares[0]
+        self.mascara=obteMascara(self.qV)
         return self.mascara
     def actualitza(self):
         try:
             if self.emmascarar and hasattr(self,'mascara'):
+                self.mascara=self.getCapa()
                 self.mascara.updateExtents()
-                # if self.qV.project.mapLayersByName('Màscara') is None:
-                if not self.afegida:
-                    # self.qV.project.addMapLayers([self.mascara])
-                    self.afegida=True
-                self.mascara.renderer().embeddedRenderer().symbol().setColor(self.color)
-                self.mascara.setOpacity(self.opacitat)
-            # self.canvas.refresh()
+                aplicaParametresMascara(self.mascara,self.color,self.opacitat)
             self.canvas.refreshAllLayers()
-        except:
-            pass
+        except Exception as e:
+            print(e)
     def setColor(self,color):
         self.color=color
     def setOpacitat(self,opacitat):
@@ -158,18 +175,9 @@ class QvMascaraEinaClick(QvMascaraEinaPlantilla):
                 if self.emmascarar:
                     mascara=self.getCapa()
                     pr=mascara.dataProvider()
-                    polys=[]
-                    polysTreure=[]
-                    # features=[x.id() for x in mascara.getFeatures(QgsFeatureRequest().setFilterRect(rect))] #Items 
-                    for x in items:
-                        # if x.id() in features:
-                        #     polysTreure.append(x.id)
-                        geom=x.geometry()
-                        poly=QgsFeature()
-                        poly.setGeometry(geom)
-                        polys.append(poly)
-                    # pr.addFeatures(polys)
-                    aplicaMascara(self.qV,polys,self.getCapa())
+                    geoms=(x.geometry() for x in items)
+                    
+                    aplicaMascara(self.qV,geoms,self.getCapa())
                 if self.seleccionar:
                     seleccionats=layer.selectedFeatureIds()
                     layer.selectByIds(seleccionats+ids)
@@ -245,10 +253,8 @@ class QvMascaraEinaDibuixa(QvMascaraEinaPlantilla):
             for x in self.points:
                 list_polygon.append(QgsPointXY(x))
             geom = QgsGeometry.fromPolygonXY([list_polygon])
-            poly=QgsFeature()
-            poly.setGeometry(geom)
             if self.emmascarar:
-                aplicaMascara(self.qV,[poly],self.getCapa())
+                aplicaMascara(self.qV,[geom],self.getCapa())
                 # pr.addFeatures([poly])
 
             layer=self.qV.llegenda.currentLayer()
@@ -316,10 +322,8 @@ class QvMascaraEinaCercle(QvMascaraEinaPlantilla):
         mascara=self.getCapa()
         pr=mascara.dataProvider()
         poligon,_=self.getPoligon(self.centre,self.toMapCoordinates(event.pos()),100)
-        poly=QgsFeature()
-        poly.setGeometry(poligon)
         if self.emmascarar:
-            aplicaMascara(self.qV,[poly],self.getCapa())
+            aplicaMascara(self.qV,[poligon],self.getCapa())
             # pr.addFeatures([poly])
 
         layer=self.qV.llegenda.currentLayer()
@@ -352,4 +356,4 @@ class QvMascaraEinaCercle(QvMascaraEinaPlantilla):
         for itheta in range(segments+1):
             theta = itheta*(2.0 * pi/segments)
             llistaPunts.append(QgsPointXY(center.x()+r*math.cos(theta),center.y()+r*math.sin(theta)))
-        return QgsGeometry.fromPolygonXY([llistaPunts]), llistaPunts
+        return QgsGeometry.fromPolygonXY([llistaPunts[:-2]]), llistaPunts

@@ -1552,6 +1552,10 @@ class QVista(QMainWindow, Ui_MainWindow):
                 qV.frameColorOpacitat.setVisible(qV.checkMascara.isChecked())
                 if hasattr(self,'tool'):
                     self.tool.setParametres(**self.getParametres())
+            def setVisible(self,visible):
+                super().setVisible(visible)
+                if not visible:
+                    qV.foraEinaSeleccio()
 
         self.wSeleccioGrafica = QvSeleccioGrafica()
         
@@ -1569,15 +1573,18 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.bs1 = QvPushButton(flat=True)
         # self.bs1.setCheckable(True)
         self.bs1.setIcon(QIcon(imatgesDir+'apuntar.png'))
+        self.bs1.setToolTip('Seleccionar elements de la capa activa')
         self.bs2 = QvPushButton(flat=True)
         # self.bs2.setCheckable(True)
         self.bs2.setIcon(QIcon(imatgesDir+'shape-polygon-plus.png'))
+        self.bs2.setToolTip('Dibuixar un polígon')
         self.bs3 = QvPushButton(flat=True)
         # self.bs3.setCheckable(True)
         self.bs3.setIcon(QIcon(imatgesDir+'vector-circle-variant.png'))
-        self.bs4 = QvPushButton(flat=True)
+        self.bs3.setToolTip('Dibuixar un cercle')
+        self.bs4 = QvPushButton('Netejar')
         # self.bs4.setCheckable(True)
-        self.bs4.setIcon(QIcon(imatgesDir+'trash-can-outline.png'))
+        # self.bs4.setIcon(QIcon(imatgesDir+'trash-can-outline.png'))
 
         # self.lblNombreElementsSeleccionats = QLabel('No hi ha elements seleccionats.')
         self.lblCapaSeleccionada = QLabel('No hi capa seleccionada.')
@@ -1602,10 +1609,12 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.checkMascara = QRadioButton('Emmascarar')
         
         color, opacitat = QvMemoria().getParametresMascara()
+        self.lblOpacitat=QLabel('70 %')
         self.sliderOpacitat=QSlider(Qt.Horizontal,self.wSeleccioGrafica)
         self.sliderOpacitat.setMinimum(0)
         self.sliderOpacitat.setMaximum(100)
         self.sliderOpacitat.setSingleStep(1)
+        self.sliderOpacitat.valueChanged.connect(lambda x: self.lblOpacitat.setText(str(x)+' %'))
         self.sliderOpacitat.setValue(opacitat)
         def canviColor(color):
             self.wSeleccioGrafica.color=color
@@ -1647,6 +1656,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         lytColorOpacitatLbl=QVBoxLayout()
         lytColorOpacitatLbl.addWidget(QLabel('Opacitat i color de la màscara'))
         lytColorOpacitat=QHBoxLayout()
+        lytColorOpacitat.addWidget(self.lblOpacitat)
         lytColorOpacitat.addWidget(self.sliderOpacitat)
         lytColorOpacitat.addWidget(self.bsSeleccioColor)
         lytColorOpacitatLbl.addLayout(lytColorOpacitat)
@@ -1682,6 +1692,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.dwSeleccioGrafica.setContentsMargins ( 2, 2, 2, 2 )
         self.addDockWidget( Qt.RightDockWidgetArea, self.dwSeleccioGrafica )
         self.dwSeleccioGrafica.hide()
+        self.dwSeleccioGrafica.visibilityChanged.connect(self.foraEines)
 
         # self.idsElementsSeleccionats = []
 
@@ -2408,8 +2419,8 @@ class QVista(QMainWindow, Ui_MainWindow):
             
         else:
             eliminaMascara(self)
-            mascara=obteMascara(self)
-            aplicaMascara(self,feats)
+            # mascara=obteMascara(self)
+            aplicaMascara(self,[x.geometry() for x in feats])
             
 
     def cataleg(self):
@@ -2558,12 +2569,11 @@ class QVista(QMainWindow, Ui_MainWindow):
         for layer in layers:
             if layer.type() == QgsMapLayer.VectorLayer:
                 layer.removeSelection()
-
         # self.lblNombreElementsSeleccionats.setText('No hi ha elements seleccionats.')
         # self.idsElementsSeleccionats = []
-
+        #Movem el self.canvas.panCanvas a una funció que es diu foraEines per poder treure les eines del mapa sense treure les seleccions, màscares...
         if tambePanCanvas:
-            self.canvas.panCanvas()
+            self.foraEines()
 
         try:
             qV.canvas.scene().removeItem(qV.toolSelect.rubberband)
@@ -2577,6 +2587,9 @@ class QVista(QMainWindow, Ui_MainWindow):
             except Exception as e:
                 print(e)
                 pass
+    def foraEines(self):
+        self.canvas.panCanvas()
+
 
     def esborrarMesures(self, tambePanCanvas = True):
 
@@ -2618,7 +2631,8 @@ class QVista(QMainWindow, Ui_MainWindow):
             missatgeCaixa('Cal tenir seleccionat un nivell per poder fer una selecció.','Marqueu un nivell a la llegenda sobre el que aplicar la consulta.')
 
     def showXY(self,p):
-        self.bXY.setText( str("%.2f" % p.x()) + ", " + str("%.2f" % p.y() ))
+        self.leXY.setText( str("%.2f" % p.x()) + ", " + str("%.2f" % p.y() ))
+        # self.bXY.setText( str("%.2f" % p.x()) + ", " + str("%.2f" % p.y() ))
         # try:
         #     if self.qvPrint.pucMoure:
         #         self.dwPrint.move(self.qvPrint.dockX-100, self.qvPrint.dockY-120)
@@ -2685,18 +2699,18 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.lXY.setContentsMargins(0,0,0,0)
         self.lXY.setSpacing(0)
         self.wXY.setLayout(self.lXY)
-        self.bXY = QvPushButton(flat=True)
-        self.bXY.clicked.connect(self.editarXY)
-        self.bXY.setStyleSheet(stylesheetButton)
-        self.lXY.addWidget(self.bXY)
+        # self.bXY = QvPushButton(flat=True)
+        # self.bXY.clicked.connect(self.editarXY)
+        # self.bXY.setStyleSheet(stylesheetButton)
+        # self.lXY.addWidget(self.bXY)
         self.leXY = QLineEdit()
         self.leXY.setFixedHeight(24)
         self.leXY.setFixedWidth(142)
         self.leXY.setStyleSheet(stylesheetLineEdit)
-        self.leXY.editingFinished.connect(self.returnEditarXY)
+        # self.leXY.editingFinished.connect(self.returnEditarXY)
+        self.leXY.returnPressed.connect(self.returnEditarXY)
         self.lXY.addWidget(self.leXY)
-        self.leXY.hide()
-        # self.showXY(QCursor.pos())
+        # self.leXY.hide()
 
         self.lblProjeccio = QLabel()
         self.lblProjeccio.setStyleSheet(styleheetLabel)
@@ -2763,7 +2777,7 @@ class QVista(QMainWindow, Ui_MainWindow):
  
         self.canvas.refresh()
 
-    def editarXY(self):
+    def editarXY(self): #TODO: això ja no hauria de caldre
         size=self.bXY.size()
         self.bXY.hide()
         self.leXY.show()
@@ -2784,9 +2798,9 @@ class QVista(QMainWindow, Ui_MainWindow):
                     self.canvas.refresh()
         except:
             print("ERROR >> Coordenades mal escrites")
-        self.bXY.show()
-        self.leXY.hide()
-        self.leXY.setText("")
+        # self.bXY.show()
+        # self.leXY.hide()
+        # self.leXY.setText("")
 
     def editarEscala(self):
         # if QgsExpressionContextUtils.projectScope(self.project).variable('qV_escales'):
@@ -2810,6 +2824,7 @@ class QVista(QMainWindow, Ui_MainWindow):
             self.leScale.setMaximumWidth(70)
             self.leScale.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Minimum)
             self.leScale.returnPressed.connect(self.escalaEditada)
+            self.leScale.textChanged.connect(self.mostraCompleterEscala)
             self.leScale.show()
             self.leScale.setFocus()
             self.onlyInt = QIntValidator()
@@ -2820,6 +2835,13 @@ class QVista(QMainWindow, Ui_MainWindow):
                 self.completerEscales=QCompleter(escalesPossibles,self.leScale)
                 self.completerEscales.activated.connect(self.escalaEditada)
                 self.leScale.setCompleter(self.completerEscales)
+                self.completerEscales.complete()
+    #això de sota no va, però hauria de forçar que es vegi el completer sempre
+    def mostraCompleterEscala(self, txt):
+        if not hasattr(self,'completerEscales'): return
+        self.completerEscales.complete()
+        if txt=='' and self.leScale.isVisible():
+            print('Completat')
 
     def escalaEditada(self):
         escala = self.leScale.text()
