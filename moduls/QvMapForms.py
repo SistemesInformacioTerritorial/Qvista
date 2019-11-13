@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from qgis.gui import QgsFileWidget
-from qgis.PyQt.QtCore import Qt, QObject, pyqtSignal, pyqtSlot
+from qgis.PyQt.QtCore import Qt, QObject, pyqtSignal, pyqtSlot, QSize
 from qgis.PyQt.QtGui import QColor, QValidator, QIcon, QDoubleValidator, QPixmap
 from qgis.PyQt.QtWidgets import (QFileDialog, QWidget, QPushButton, QFormLayout, QVBoxLayout, QHBoxLayout, QSplitter,
                                  QComboBox, QLabel, QLineEdit, QSpinBox, QGroupBox, QFrame, QGridLayout, QDialog, QSizePolicy,
@@ -154,7 +154,7 @@ class QvFormMostra(QDialog):
         super().__init__(parent, modal=modal)
         self.taula = QvVeureMostra(map)
         self.resize(amplada, alcada)
-        self.setWindowTitle("Mostra de " + str(map.numMostra) + " registres de l'arxiu " + os.path.basename(map.fZones))
+        self.setWindowTitle("Mostra de " + map.fZones)
         self.layout = QVBoxLayout()
         self.setLayout(self.layout)
         self.layout.addWidget(self.taula)
@@ -238,7 +238,7 @@ class QvFormNovaMapificacio(QvFormBaseMapificacio):
         if self.fCSV is None:
             self.lZona.addRow('Arxiu de dades:', self.arxiu)
         self.lZona.addRow('Zona:', self.zona)
-        self.lZona.addRow('Nom nova capa:', self.capa)
+        self.lZona.addRow('Nom de capa:', self.capa)
 
         self.gDades = QGroupBox('Agregació de dades')
         self.lDades = QFormLayout()
@@ -350,6 +350,15 @@ class QvFormNovaMapificacio(QvFormBaseMapificacio):
         self.fCSV = QvMapificacio(nom)
         self.nouArxiu()
 
+    def validaSortida(self, nom):
+        fSalida = self.fCSV.nomArxiuSortida(self.fCSV.netejaString(nom))
+        if os.path.isfile(fSalida):
+            res = QMessageBox.question(self, 'Atenció',
+                "La capa " + fSalida + " ja existeix.\nVol sobreescriure aquest arxiu?")
+            return res == QMessageBox.Yes
+        else:
+            return True
+        
     def valida(self):
         ok = False
         if hasattr(self, 'arxiu') and self.arxiu.filePath() == '':
@@ -367,15 +376,17 @@ class QvFormNovaMapificacio(QvFormBaseMapificacio):
         elif self.calcul.currentText().strip() == '' and self.tipus.currentText() != 'Recompte':
             self.msgInfo("S'ha de introduir un cálcul per fer l'agregació")
             self.calcul.setFocus()
+        elif self.fCSV is None:
+            return self.msgInfo("No hi ha cap fitxer seleccionat")
+        elif not self.validaSortida(self.capa.text().strip()):
+            self.capa.setFocus()
         else:
             ok = True
-        if ok and self.taulaMostra is not None:
-            self.taulaMostra.hide()
         return ok
 
     def mapifica(self):
-        if self.fCSV is None:
-            return "No hi ha cap fitxer seleccionat"
+        if self.taulaMostra is not None:
+            self.taulaMostra.hide()
         ok = self.fCSV.agregacio(self.llegenda, self.capa.text().strip(), self.zona.currentText(), self.tipus.currentText(),
                                  campAgregat=self.calcul.currentText().strip(), filtre=self.filtre.currentText().strip(),
                                  tipusDistribucio=self.distribucio.currentText(), modeCategories=self.metode.currentText(),
@@ -389,6 +400,7 @@ class QvFormSimbMapificacio(QvFormBaseMapificacio):
     def __init__(self, llegenda, capa, amplada=450):
         super().__init__(llegenda, amplada)
         self.capa = capa
+        self.info = None
         if not self.iniParams():
             return
 
@@ -417,19 +429,22 @@ class QvFormSimbMapificacio(QvFormBaseMapificacio):
         self.intervals.setSuffix("  (depèn del mètode)")
         # self.intervals.valueChanged.connect(self.deselectValue)
 
+        self.bInfo = QPushButton('Info')
+        self.bInfo.clicked.connect(self.veureInfo)
+
         self.buttons = QDialogButtonBox()
         self.buttons.addButton(QDialogButtonBox.Ok)
         self.buttons.accepted.connect(self.accept)
         self.buttons.addButton(QDialogButtonBox.Cancel)
         self.buttons.rejected.connect(self.cancel)
+        self.buttons.addButton(self.bInfo, QDialogButtonBox.ResetRole)
 
         self.gSimb = QGroupBox('Simbologia de mapificació')
         self.lSimb = QFormLayout()
         self.lSimb.setSpacing(14)
-        # self.gSimb.setMinimumWidth(400)
         self.gSimb.setLayout(self.lSimb)
 
-        self.lSimb.addRow('Color de mapa:', self.color)
+        self.lSimb.addRow('Color base:', self.color)
         self.lSimb.addRow('Mètode de classificació:', self.metode)
         self.lSimb.addRow(self.nomIntervals, self.intervals)
 
@@ -445,8 +460,8 @@ class QvFormSimbMapificacio(QvFormBaseMapificacio):
         self.valorsInicials()
 
     def iniParams(self):
-        map = QgsExpressionContextUtils.layerScope(self.capa).variable(MAP_ID)
-        if map != 'True':
+        self.info = QgsExpressionContextUtils.layerScope(self.capa).variable(MAP_ID)
+        if self.info is None:
             return False
         ok, (self.campCalculat, self.numDecimals, self.colorBase, self.numCategories, \
             self.modeCategories, self.rangsCategories) = self.llegenda.mapRenderer.paramsRender(self.capa)
@@ -454,6 +469,26 @@ class QvFormSimbMapificacio(QvFormBaseMapificacio):
         if not ok:
             self.msgInfo("No s'han pogut recuperar els paràmetres de mapificació")
         return True
+
+    def veureInfo(self):
+        if self.info is not None:
+            box = QMessageBox(self)
+            box.setWindowTitle('Info de mapificació')
+            params = self.info.split('\n')
+            txt = '<html><ul type="circle" style="margin-right: 80px">'
+            for param in params:
+                linea = param.strip()
+                if linea.endswith(':'):
+                    linea += ' ---'
+                txt += '<li style="margin-bottom: 6px"><nobr>' + linea + '</nobr></li>'
+            txt += '</ul></html>'
+            box.setTextFormat(Qt.RichText)
+            box.setText("Paràmetres d'agregació de dades:")
+            box.setInformativeText(txt)
+            box.setIcon(QMessageBox.Information)
+            box.setStandardButtons(QMessageBox.Ok)
+            box.setDefaultButton(QMessageBox.Ok)
+            box.exec()
 
     def valorsInicials(self):        
         self.color.setCurrentIndex(self.color.findText(self.colorBase))

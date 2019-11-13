@@ -361,6 +361,9 @@ class QvMapificacio(QObject):
         s = s.translate(_TRANS)
         return s
 
+    def nomArxiuSortida(self, nom: str) -> str:
+         return RUTA_LOCAL + nom + ".gpkg"
+
     def verifZona(self, zona: str) -> bool:
         self.zona = zona
         if self.zona is None or self.zona not in MAP_ZONES.keys():
@@ -407,6 +410,11 @@ class QvMapificacio(QObject):
         self.fSQL = ''
         self.llegenda = llegenda
         self.msgError = ''
+        self.descripcio =  "Zona: " + zona + '\n' + \
+            "Tipus d'agregació: " + tipusAgregacio + '\n' + \
+            "Camp o fòrmula de càlcul: " + campAgregat + '\n' + \
+            "Filtre: " + filtre + '\n' + \
+            "Distribució: " + tipusDistribucio
 
         if not self.verifZona(zona):
             self.msgError = "Error en zona"
@@ -490,7 +498,7 @@ class QvMapificacio(QObject):
             return False
 
         # Guarda capa de agregación en GPKG
-        self.fSQL = RUTA_LOCAL + self.nomCapa + ".gpkg"
+        self.fSQL = self.nomArxiuSortida(self.nomCapa)
         ret, msg = QgsVectorFileWriter.writeAsVectorFormat(virtLyr, self.fSQL, "UTF-8", zonaLyr.crs(), "GPKG")
         if ret != QgsVectorFileWriter.NoError:
             self.llegenda.project.removeMapLayer(zonaLyr.id())
@@ -519,8 +527,8 @@ class QvMapificacio(QObject):
             mapLyr.setRenderer(self.renderer)
 
         # Identificador de mapificación para qVista
-        QgsExpressionContextUtils.setLayerVariable(mapLyr, MAP_ID, 'True')
-        mapLyr.setDisplayExpression('RESULTAT')
+        QgsExpressionContextUtils.setLayerVariable(mapLyr, MAP_ID, self.descripcio)
+        mapLyr.setDisplayExpression(self.campCalculat)
 
         # Guarda simbología en GPKG
         err = self.llegenda.saveStyleToGeoPackage(mapLyr, MAP_ID)
