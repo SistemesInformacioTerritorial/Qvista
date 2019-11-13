@@ -475,7 +475,7 @@ class QvFormSimbMapificacio(QvFormBaseMapificacio):
             box = QMessageBox(self)
             box.setWindowTitle('Info de mapificació')
             params = self.info.split('\n')
-            txt = '<html><ul type="circle" style="margin-right: 80px">'
+            txt = '<html><ul type="disc" style="margin-right: 80px">'
             for param in params:
                 linea = param.strip()
                 if linea.endswith(':'):

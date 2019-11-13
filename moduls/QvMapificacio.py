@@ -578,14 +578,30 @@ if __name__ == "__main__":
 
         from moduls.QvApp import QvApp
         from moduls.QvMapForms import QvFormMostra
+        from qgis.gui import QgsMapCanvas
+        from moduls.QvLlegenda import QvLlegenda
+        from moduls.QvAtributs import QvAtributs
+        from moduls.QvMapForms import QvFormNovaMapificacio
 
         app = QvApp()
+
+        canv = QgsMapCanvas()
+        canv.setWindowTitle('Canvas')
+        canv.show()
+
+        atrib = QvAtributs(canv)
+
+        leyenda = QvLlegenda(canv, atrib)
+        leyenda.project.read('mapesOffline/qVista default map.qgs')
+        leyenda.setWindowTitle('Llegenda')
+        leyenda.show()
 
         z = QvMapificacio('CarrecsANSI.csv')
         # z = QvMapificacio('CarrecsUTF8.csv')
         if z.msgError != '':
             print('Error:', z.msgError)
             exit(1)
+            
         print('Código caracteres:', z.codi)
         print('Num. líneas muestra:', z.numMostra)
         print('Delimitador:', z.separador)
@@ -604,25 +620,8 @@ if __name__ == "__main__":
             procesAcabat=lambda n: print('Zonas', z.zones, 'procesadas en', str(n), 'segs. en ' + z.fZones + ' -', str(z.files), 'registros,', str(z.errors), 'errores'))
             
         if ok:
-
             # w = QvFormMostra(z)
             # w.show()
-
-            from qgis.gui import QgsMapCanvas
-            from moduls.QvLlegenda import QvLlegenda
-            from moduls.QvAtributs import QvAtributs
-            from moduls.QvMapForms import QvFormNovaMapificacio
-
-            canv = QgsMapCanvas()
-            canv.setWindowTitle('Canvas')
-            canv.show()
-
-            atrib = QvAtributs(canv)
-
-            leyenda = QvLlegenda(canv, atrib)
-            leyenda.project.read('mapesOffline/qVista default map.qgs')
-            leyenda.setWindowTitle('Llegenda')
-            leyenda.show()
 
             fMap = QvFormNovaMapificacio(leyenda, mapificacio=z)
             fMap.exec()
