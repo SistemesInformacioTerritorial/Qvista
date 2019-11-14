@@ -362,7 +362,7 @@ class QvMapificacio(QObject):
         return s
 
     def nomArxiuSortida(self, nom: str) -> str:
-         return RUTA_LOCAL + nom + ".gpkg"
+        return RUTA_LOCAL + nom + ".gpkg"
 
     def verifZona(self, zona: str) -> bool:
         self.zona = zona
