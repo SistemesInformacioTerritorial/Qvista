@@ -3411,6 +3411,7 @@ def seleccioExpressio():
                         textCercat = textCercat + ' OR '
                 textCercat=textCercat[:-4]
             layer.setSubsetString(textCercat)
+            qV.llegenda.actIconaFiltre(layer)
             ids = [feature.id() for feature in layer.getFeatures()]
             qV.canvas.zoomToFeatureIds(layer, ids)
             # print (textCercat[:-4])
