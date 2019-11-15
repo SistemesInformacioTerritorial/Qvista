@@ -1,6 +1,6 @@
 from qgis.core import QgsPointXY
 from qgis.PyQt import QtCore
-from qgis.PyQt.QtCore import QObject, pyqtSignal
+from qgis.PyQt.QtCore import QObject, pyqtSignal, QSortFilterProxyModel
 from qgis.PyQt.QtWidgets import QCompleter
 import sys
 import csv
@@ -12,9 +12,94 @@ from PyQt5.QtSql import *
 from moduls.QvApp import QvApp
 from moduls.QvBafarada import QvBafarada
 
+def encaixa(sub,string):
+    subs=sub.split(' ')
+    words=string.split(' ')
+    encaixaUna=False
+    for x in subs:
+        if len(x)<3: continue #no té sentit si escrius "av d" que et posi a dalt de tot el Carrer d'Aiguablava perquè la d encaixa exactament amb una paraula
+        trobat=(x in string)
+        if not trobat: return False
+        for y in words:
+            if x==y:
+                encaixaUna=True
+    return encaixaUna
 
+def conte(sub, string):
+    '''Retorna true si string conté tots els strings representats a subs '''
+    subs=sub.split(' ')
+    for x in subs:
+        if x not in string:
+            return False
+    return True
 
+def comenca(sub,string):
+    subs=sub.split(' ')
+    words=string.split(' ')
+    comencaUna=False
+    for x in subs:
+        if x=='': 
+            continue
+        trobat=(x in string)
+        for y in words:
+            if y.startswith(x):
+                comencaUna=True
+                break
+            # elif 
+        if not trobat: return False
+    return comencaUna
 
+class CompleterAdreces(QCompleter):
+    def __init__(self,elems,widget):
+        super().__init__(elems, widget)
+        self.elements=elems
+    def update(self,word):
+        '''Funció que actualitza els elements'''
+        encaixen=[]
+        comencen=[]
+        contenen=[]
+        altres=[]
+        self.word=word.lower()
+        # pars=self.word.split(' ')
+        for x in self.elements:
+            y=x.lower()
+            if encaixa(self.word,y):
+                encaixen.append(x)
+            elif comenca(self.word,y):
+                comencen.append(x)
+            elif conte(self.word,y):
+                contenen.append(x)
+            else:
+                altres.append(x)
+        
+        #cal ordenar les llistes? No cal?
+        self.model().setStringList(encaixen+comencen+contenen)
+        self.m_word=word
+        self.complete()
+    def splitPath(self,path):
+        # self.updateModel()
+        # res=super().splitPath(path)
+        # return res
+        self.update(path)
+        # return super().splitPath(path)
+        res=path.split(' ')
+        return [res[-1]]
+
+class FiltreCarrers(QSortFilterProxyModel):
+    def filterAcceptsRow(self,sourceRow,sourceParent):
+        index0 = self.sourceModel().index(sourceRow, 0, sourceParent)
+
+    def setFilter(self,filter):
+        self.m_filter=filter
+        super().setFilterFixedString(filter)
+        #app->showPopup() ??
+
+# class ModelAdreces(QStringListModel):
+#     def data(self,index,role):
+#         d=super().data(index,role)
+#         print(d)
+
+        
 
 class QCercadorAdreca(QObject):
 
@@ -74,7 +159,8 @@ class QCercadorAdreca(QObject):
 
     def prepararCompleterCarrer(self):
         # creo instancia de completer que relaciona diccionario de calles con lineEdit
-        self.completerCarrer = QCompleter(self.dictCarrers, self.leCarrer)
+        # self.completerCarrer = QCompleter(self.dictCarrers, self.leCarrer)
+        self.completerCarrer = CompleterAdreces(self.dictCarrers, self.leCarrer)
         # Determino funcionamiento del completer
         self.completerCarrer.setFilterMode(QtCore.Qt.MatchContains)
         self.completerCarrer.setCaseSensitivity(QtCore.Qt.CaseInsensitive)

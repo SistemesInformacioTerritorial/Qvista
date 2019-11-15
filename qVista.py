@@ -2820,7 +2820,7 @@ class QVista(QMainWindow, Ui_MainWindow):
             self.editantEscala = True
             self.bScale.setText(' Escala 1: ')
             self.leScale = QLineEdit()
-            self.leScale.setStyleSheet('margin: 0px; border: 0px; padding: 0px;')
+            self.leScale.setStyleSheet('QLineEdit{margin: 0px; border: 0px; padding: 0px;}')
             self.lScale.addWidget(self.leScale)
             # self.leScale.setGeometry(48,0,100,20)
             self.leScale.setMinimumWidth(10)
@@ -2839,6 +2839,11 @@ class QVista(QMainWindow, Ui_MainWindow):
                 escalesPossibles=['100','200','250','500','1000','2000','2500','5000','10000','25000','50000','100000','250000']
             self.completerEscales=QCompleter(escalesPossibles,self.leScale)
             self.completerEscales.activated.connect(self.escalaEditada)
+            popup=self.completerEscales.popup()
+            popup.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+            print(self.completerEscales.popup().sizePolicy().verticalPolicy())
+            popup.setMinimumHeight(popup.sizeHintForRow(0)*len(escalesPossibles)+4)
+            popup.verticalScrollBar().setEnabled(False)
             self.leScale.setCompleter(self.completerEscales)
             self.completerEscales.complete()
     #això de sota no va, però hauria de forçar que es vegi el completer sempre
