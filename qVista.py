@@ -330,9 +330,12 @@ class QVista(QMainWindow, Ui_MainWindow):
         # self.canvisPendents = False #es el bit Dirty que ens diu si hem de guardar al tancar o no
         self.setDirtyBit(False)
         self.canvas.refresh()
-
+        
         if rang is not None and QgsExpressionContextUtils.projectScope(self.project).variable('qV_useProjectExtent') != 'True':
-            self.canvas.setExtent(rang)
+            def posaExtent():
+                self.canvas.setExtent(rang)
+                self.canvas.mapCanvasRefreshed.disconnect()
+            self.canvas.mapCanvasRefreshed.connect(posaExtent)
 
         # Labels de la statusbar (Projecció i nom del projecte)
         self.lblProjeccio.setText(self.project.crs().description())
