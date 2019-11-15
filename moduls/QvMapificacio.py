@@ -410,7 +410,8 @@ class QvMapificacio(QObject):
         self.fSQL = ''
         self.llegenda = llegenda
         self.msgError = ''
-        self.descripcio =  "Zona: " + zona + '\n' + \
+        self.descripcio = "Arxiu de dades: " + self.fZones + '\n' + \
+            "Zona: " + zona + '\n' + \
             "Tipus d'agregació: " + tipusAgregacio + '\n' + \
             "Camp o fòrmula de càlcul: " + campAgregat + '\n' + \
             "Filtre: " + filtre + '\n' + \

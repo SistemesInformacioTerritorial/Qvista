@@ -33,6 +33,14 @@ class QvFormBaseMapificacio(QDialog):
     def msgError(self, txt):
         QMessageBox.critical(self, 'Error', txt)
 
+    def msgSobreescriure(self, txt):
+        if os.path.isfile(txt):
+            res = QMessageBox.question(self, 'Atenció',
+                txt + " ja existeix.\nVol sobreescriure aquest arxiu?")
+            return res == QMessageBox.Yes
+        else:
+            return True
+
     def pause(self):
         QApplication.instance().setOverrideCursor(Qt.WaitCursor)
         self.setDisabled(True)
@@ -148,6 +156,7 @@ class QvVeureMostra(QTableWidget):
             for col, val in enumerate(cols):
                 item = QTableWidgetItem(val)
                 self.setItem(fila, col, item)
+        self.resizeColumnsToContents()
 
 class QvFormMostra(QDialog):
     def __init__(self, map, amplada=800, alcada=500, parent=None, modal=False):
@@ -352,12 +361,7 @@ class QvFormNovaMapificacio(QvFormBaseMapificacio):
 
     def validaSortida(self, nom):
         fSalida = self.fCSV.nomArxiuSortida(self.fCSV.netejaString(nom))
-        if os.path.isfile(fSalida):
-            res = QMessageBox.question(self, 'Atenció',
-                "La capa " + fSalida + " ja existeix.\nVol sobreescriure aquest arxiu?")
-            return res == QMessageBox.Yes
-        else:
-            return True
+        return self.msgSobreescriure(fSalida)
         
     def valida(self):
         ok = False
@@ -470,18 +474,19 @@ class QvFormSimbMapificacio(QvFormBaseMapificacio):
             self.msgInfo("No s'han pogut recuperar els paràmetres de mapificació")
         return True
 
+    @pyqtSlot()
     def veureInfo(self):
         if self.info is not None:
             box = QMessageBox(self)
             box.setWindowTitle('Info de mapificació')
+            txt = '<table width="500">'
             params = self.info.split('\n')
-            txt = '<html><ul type="disc" style="margin-right: 80px">'
             for param in params:
                 linea = param.strip()
                 if linea.endswith(':'):
                     linea += ' ---'
-                txt += '<li style="margin-bottom: 6px"><nobr>' + linea + '</nobr></li>'
-            txt += '</ul></html>'
+                txt += '<tr><td><nobr>&middot;&nbsp;{}</nobr></td></tr>'.format(linea)
+            txt += '</table>'
             box.setTextFormat(Qt.RichText)
             box.setText("Paràmetres d'agregació de dades:")
             box.setInformativeText(txt)
