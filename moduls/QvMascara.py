@@ -9,10 +9,11 @@ class MascaraAux:
     #Una classe per encapsular variables i coses
     teAux=False
     geom=None
+    qV=None
 
 #geoms: iterable de QgsGeometry
 def aplicaMascara(qV,geoms,mascara=None):
-    
+    MascaraAux.qV=qV
     eliminaMascara(qV,False)
     mascara=obteMascara(qV)
     mascaraAux=qV.project.mapLayersByName('Màscara auxiliar')[0]
@@ -32,12 +33,14 @@ def aplicaMascara(qV,geoms,mascara=None):
     qV.canvas.refresh()
 
 def obteMascara(qV):
+    MascaraAux.qV=qV
     mascares=qV.project.mapLayersByName('Màscara')
     if len(mascares)==0:
         return creaMascara(qV)
     return mascares[0]
 
 def creaMascara(qV):
+    MascaraAux.qV=qV
     epsg=qV.canvas.mapSettings().destinationCrs().authid()
     mascara=QgsVectorLayer('MultiPolygon?crs=%s'%epsg,'Màscara','memory')
     aplicaParametresMascara(mascara,*QvMemoria().getParametresMascara()) 
@@ -60,6 +63,7 @@ def creaMascara(qV):
     return mascara
 
 def carregaMascara(qV):
+    MascaraAux.qV=qV
     try:
         rutaMasc=qV.pathProjecteActual[:-4]+'mascara'+'.gpkg'
         if not os.path.exists(rutaMasc): return
@@ -75,8 +79,10 @@ def aplicaParametresMascara(mascara,color,opacitat):
     mascara.renderer().symbol().setColor(color)
     mascara.renderer().symbol().symbolLayer(0).setStrokeColor(color)
     mascara.setOpacity(opacitat)
+    MascaraAux.qV.canvas.refreshAllLayers()
 
 def eliminaMascara(qV, tambeAuxiliar=True):
+    MascaraAux.qV=qV
     try:
         qV.project.removeMapLayer(qV.project.mapLayersByName('Màscara')[0])
         if tambeAuxiliar:
@@ -127,7 +133,7 @@ class QvMascaraEinaPlantilla(QgsMapTool):
                 self.mascara=self.getCapa()
                 self.mascara.updateExtents()
                 aplicaParametresMascara(self.mascara,self.color,self.opacitat)
-            self.canvas.refreshAllLayers()
+            # self.canvas.refreshAllLayers()
         except Exception as e:
             print(e)
     def setColor(self,color):

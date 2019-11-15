@@ -1550,8 +1550,9 @@ class QVista(QMainWindow, Ui_MainWindow):
                 QvMemoria().setParametresMascara(self.color,qV.sliderOpacitat.value())
                 qV.gbOverlap.setVisible(qV.checkSeleccio.isChecked())
                 qV.frameColorOpacitat.setVisible(qV.checkMascara.isChecked())
-                if hasattr(self,'tool'):
-                    self.tool.setParametres(**self.getParametres())
+                masc=obteMascara(qV)
+                pars=QvMemoria().getParametresMascara()
+                aplicaParametresMascara(masc,*pars)
             def setVisible(self,visible):
                 super().setVisible(visible)
                 if not visible:
