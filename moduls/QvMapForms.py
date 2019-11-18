@@ -33,10 +33,10 @@ class QvFormBaseMapificacio(QDialog):
     def msgError(self, txt):
         QMessageBox.critical(self, 'Error', txt)
 
-    def msgSobreescriure(self, txt):
-        if os.path.isfile(txt):
+    def msgSobreescriure(self, arxiu):
+        if os.path.isfile(arxiu):
             res = QMessageBox.question(self, 'Atenció',
-                txt + " ja existeix.\nVol sobreescriure aquest arxiu?")
+                arxiu + " ja existeix.\nVol sobreescriure aquest arxiu?")
             return res == QMessageBox.Yes
         else:
             return True
@@ -59,14 +59,14 @@ class QvFormBaseMapificacio(QDialog):
     def valida(self):
         return True
 
-    def mapifica(self):
+    def procesa(self):
         return ''
 
     @pyqtSlot()
     def accept(self):
         if self.valida():
             self.pause()
-            msg = self.mapifica()
+            msg = self.procesa()
             if msg == '':
                 self.play()
                 super().accept()
@@ -388,7 +388,7 @@ class QvFormNovaMapificacio(QvFormBaseMapificacio):
             ok = True
         return ok
 
-    def mapifica(self):
+    def procesa(self):
         if self.taulaMostra is not None:
             self.taulaMostra.hide()
         ok = self.fCSV.agregacio(self.llegenda, self.capa.text().strip(), self.zona.currentText(), self.tipus.currentText(),
@@ -686,7 +686,7 @@ class QvFormSimbMapificacio(QvFormBaseMapificacio):
                     return False
         return True
 
-    def mapifica(self):
+    def procesa(self):
         self.valorsFinals()
         try:
             if self.custom:

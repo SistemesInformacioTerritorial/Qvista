@@ -20,8 +20,8 @@ MAP_ZONES = OrderedDict({
     "Illa": ("ILLA", ""),
     "Solar": ("SOLAR", ""),
     "Àrea estadística bàsica": ("AEB", ""),
-    "Secció censal": ("SECCIO_CENSAL", ""),
-    "Sector policial operatiu": ("SPO", "")
+    "Secció censal": ("SECCIO_CENSAL", "")
+    # "Sector policial operatiu": ("SPO", "")
 })
 
 MAP_ZONES_COORD = OrderedDict({
