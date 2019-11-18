@@ -11,17 +11,18 @@ MAP_ID = "qV_mapificacio"
 MAP_MAX_CATEGORIES = 10
 MAP_ALPHA_INI = 4
 MAP_ALPHA_FIN = 28
+MAP_ZONES_DB = "Zones.db"
 
 MAP_ZONES = OrderedDict({
-    # Nom: (Camps, Arxiu)
-    "Districte": ("DISTRICTE", "Districtes.sqlite"),
-    "Barri": ("BARRI", "Barris.sqlite"),
+    # Nom: (Camps, Taula)
+    "Districte": ("DISTRICTE", "districtes"),
+    "Barri": ("BARRI", "barris"),
     "Codi postal": ("CODI_POSTAL", ""),
     "Illa": ("ILLA", ""),
     "Solar": ("SOLAR", ""),
-    "Àrea estadística bàsica": ("AEB", ""),
-    "Secció censal": ("SECCIO_CENSAL", "")
-    # "Sector policial operatiu": ("SPO", "")
+    "Àrea estadística bàsica": ("AEB", "aeb"),
+    "Secció censal": ("SECCIO_CENSAL", ""),
+    "Sector policial operatiu": ("SPO", "")
 })
 
 MAP_ZONES_COORD = OrderedDict({

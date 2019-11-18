@@ -332,18 +332,12 @@ class QvMapificacio(QObject):
             self.procesAcabat.emit(fin - ini)
             return True
 
-    def calcSelect(self, llistaCamps: List[str] = []) -> str:
+    def calcSelect(self, camps: str = '') -> str:
         # Calculamos filtro
         if self.filtre is None or self.filtre == '':
             filtre = ''
         else:
             filtre = ' WHERE ' + self.filtre
-        # Calculamos lista de campos de la zona
-        camps = ''
-        if llistaCamps is not None and len(llistaCamps) > 0:
-            for item in llistaCamps:
-                camps += ", Z." + item
-        camps += ', Z.GEOMETRY as GEOM'
         if self.tipusDistribucio == '':
             dist = ''
         else:
@@ -451,7 +445,7 @@ class QvMapificacio(QObject):
 
         if numDecimals >= 0:
             self.numDecimals = numDecimals
-        elif self.tipusAgregacio.startswith('COUNT'):
+        elif self.tipusAgregacio.startswith('COUNT') and self.tipusDistribucio == "":
             self.numDecimals = 0
         else:
             self.numDecimals = 2
@@ -469,7 +463,7 @@ class QvMapificacio(QObject):
             return False
 
         # Carga de capa base de zona
-        self.fBase = RUTA_DADES + self.valZona[1]
+        self.fBase = RUTA_DADES + MAP_ZONES_DB + "|layername=" + self.valZona[1]
         zonaLyr = QgsVectorLayer(self.fBase, 'Zona', 'ogr')
         zonaLyr.setProviderEncoding("UTF-8")
         if not zonaLyr.isValid():
@@ -481,11 +475,15 @@ class QvMapificacio(QObject):
         self.llegenda.project.addMapLayer(zonaLyr, False)
 
         # Lista de campos de zona que se incluirán en la mapificación
-        zonaCamps = []
+        zonaCamps = ''
         for field in zonaLyr.fields():
             name = field.name().upper()
             if not name.startswith(self.prefixe) and not name.startswith('OGC_'):
-                zonaCamps.append(name)
+                if field.typeName() == "Real":
+                    zonaCamps += ", round(Z." + name + ", 2) as " + name
+                else:
+                    zonaCamps += ", Z." + name
+        zonaCamps += ', Z.GEOMETRY as GEOM'
 
         # Creación de capa virtual que construye la agregación
         select = self.calcSelect(zonaCamps)
@@ -614,7 +612,7 @@ if __name__ == "__main__":
         # w.show()
 
         campsAdreca = ('', 'NOM_CARRER_GPL', 'NUM_I_GPL', '', 'NUM_F_GPL')
-        zones = ('Coordenada', 'Districte', 'Barri', 'Codi postal')
+        zones = ('Coordenada', 'Districte', 'Barri', 'Codi postal', "Àrea estadística bàsica")
         ok = z.geocodificacio(campsAdreca, zones,
             percentatgeProces=lambda n: print('... Procesado', str(n), '% ...'),
             errorAdreca=lambda f: print('Fila sin geocodificar -', f),

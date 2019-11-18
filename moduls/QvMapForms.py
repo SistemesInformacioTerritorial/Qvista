@@ -286,12 +286,12 @@ class QvFormNovaMapificacio(QvFormBaseMapificacio):
     def campsDB(self, nom):
         res = []
         if nom != '':
-            fich = RUTA_DADES + nom
+            fich = RUTA_DADES + MAP_ZONES_DB
             if os.path.isfile(fich):
                 conn = sqlite3.connect('file:' + fich + '?mode=ro', uri=True)
                 conn.row_factory = sqlite3.Row
                 c = conn.cursor()
-                c.execute('select * from ' + nom.split('.')[0])
+                c.execute('select * from ' + nom)   # nom.split('.')[0])
                 row = c.fetchone()
                 # res = [i[0].upper() for i in c.description]
                 res = [i.upper() for i in row.keys()]
