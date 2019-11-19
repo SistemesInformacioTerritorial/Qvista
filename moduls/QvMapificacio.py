@@ -2,7 +2,7 @@
 
 from qgis.core import (QgsApplication, QgsVectorLayer, QgsLayerDefinition, QgsVectorFileWriter,
                        QgsSymbol, QgsRendererCategory, QgsCategorizedSymbolRenderer,
-                       QgsGraduatedSymbolRenderer, QgsRendererRange, QgsAggregateCalculator, QgsError,
+                       QgsGraduatedSymbolRenderer, QgsRendererRange, QgsAggregateCalculator, QgsError, QgsWkbTypes,
                        QgsGradientColorRamp, QgsRendererRangeLabelFormat, QgsReadWriteContext, QgsExpressionContextUtils)
 from qgis.gui import QgsFileWidget
 from qgis.PyQt.QtCore import Qt, QObject, pyqtSignal, pyqtSlot
@@ -498,7 +498,8 @@ class QvMapificacio(QObject):
 
         # Guarda capa de agregación en GPKG
         self.fSQL = self.nomArxiuSortida(self.nomCapa)
-        ret, msg = QgsVectorFileWriter.writeAsVectorFormat(virtLyr, self.fSQL, "UTF-8", zonaLyr.crs(), "GPKG")
+        ret, msg = QgsVectorFileWriter.writeAsVectorFormat(virtLyr, self.fSQL, "UTF-8", zonaLyr.crs(), "GPKG",
+            overrideGeometryType=QgsWkbTypes.MultiPolygon)
         if ret != QgsVectorFileWriter.NoError:
             self.llegenda.project.removeMapLayer(zonaLyr.id())
             self.llegenda.project.removeMapLayer(infoLyr.id())
