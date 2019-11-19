@@ -334,7 +334,11 @@ class QVista(QMainWindow, Ui_MainWindow):
         if rang is not None and QgsExpressionContextUtils.projectScope(self.project).variable('qV_useProjectExtent') != 'True':
             def posaExtent():
                 self.canvas.setExtent(rang)
-                self.canvas.mapCanvasRefreshed.disconnect()
+                try:
+                    self.canvas.mapCanvasRefreshed.disconnect()
+                except:
+                    pass
+            posaExtent()
             self.canvas.mapCanvasRefreshed.connect(posaExtent)
 
         # Labels de la statusbar (Projecció i nom del projecte)
@@ -2831,6 +2835,7 @@ class QVista(QMainWindow, Ui_MainWindow):
             self.editantEscala = True
             self.bScale.setText(' Escala 1: ')
             self.leScale = QLineEdit()
+            self.leScale.setCursor(QvConstants.cursorDit())
             self.leScale.setStyleSheet('QLineEdit{margin: 0px; border: 0px; padding: 0px;}')
             self.lScale.addWidget(self.leScale)
             # self.leScale.setGeometry(48,0,100,20)
