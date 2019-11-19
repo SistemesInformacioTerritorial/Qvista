@@ -293,12 +293,16 @@ class QvMesuraMultiLinia(QgsMapTool):
 
         #if self.point != None:
     def treuUltimtram(self):
+        poligono=QgsGeometry.fromPolylineXY(self.points)
+        distancia = poligono.length()
         self.point = None
         self.points = []
         self.hoverSartMarker = False
         
         self.rubberband2.hide()
         self.rubberbandCercle.hide()
+
+        self.qV.wMesuraGrafica.setDistanciaTotal(distancia)
         self.qV.wMesuraGrafica.actualitzaHistorial()
         self.qV.wMesuraGrafica.setDistanciaTempsReal(0)
         self.qV.wMesuraGrafica.setDistanciaTotal(0)
@@ -312,7 +316,7 @@ class QvMesuraMultiLinia(QgsMapTool):
         rubberband=QgsRubberBand(self.canvas)
         rubberband.setColor(self.qV.wMesuraGrafica.color)
         if cercle:
-            rubberband.setWidth(1)
+            rubberband.setWidth(0.25)
             rubberband.setLineStyle(Qt.DashLine)
         else:
             rubberband.setWidth(2)
@@ -321,6 +325,8 @@ class QvMesuraMultiLinia(QgsMapTool):
     def rbcircle(self, center,edgePoint,desar=False,segments=100):
         r = math.sqrt(center.sqrDist(edgePoint))
         self.rubberbandCercle.reset( True )
+        if not self.qV.wMesuraGrafica.cbCercles.isChecked():
+            return
         pi =3.1416
         llistaPunts=[]
         for itheta in range(segments+1):
@@ -499,7 +505,7 @@ class QvSeleccioElement(QgsMapTool):
        Si la llegenda no té un layer actiu, és treballa amb el primer visible al canvas.
     """
 
-    def __init__(self, canvas, llegenda, radi = 10):
+    def __init__(self, canvas, llegenda, radi = 4):
         """[summary]
         
         Arguments:
@@ -554,16 +560,28 @@ class QvSeleccioElement(QgsMapTool):
             self.fitxaAtributs.accept()
             self.fitxaAtributs = None
         # Lllegim posició del mouse
-        x = event.pos().x()
-        y = event.pos().y()
+        x = event.pos().x()-1
+        y = event.pos().y()-8
         try:
             layer = self.llegenda.currentLayer()
             if layer is None:
                 layer = self.canvas.layers()[0]
 
-            point = self.canvas.getCoordinateTransform().toMapCoordinates(x, y)
+            # point = self.canvas.getCoordinateTransform().toMapCoordinates(x, y)
+            esquerraDalt = self.canvas.getCoordinateTransform().toMapCoordinates(x-self.radi, y-self.radi)
+            dretaBaix = self.canvas.getCoordinateTransform().toMapCoordinates(x+self.radi, y+self.radi)
 
-            rect = QgsRectangle(point.x() - self.radi, point.y() - self.radi, point.x() + self.radi, point.y() + self.radi)
+            # marcaLloc = QgsVertexMarker(self.canvas)
+            # marcaLloc.setCenter( point )
+            # marcaLloc.setColor(QColor(255, 0, 0))
+            # marcaLloc.setIconSize(15)
+            # marcaLloc.setIconType(QgsVertexMarker.ICON_CROSS) # or ICON_CROSS, ICON_X
+            # marcaLloc.setPenWidth(0)
+            # marcaLloc.show()
+            # return
+
+            # rect = QgsRectangle(point.x() - self.radi, point.y() - self.radi, point.x() + self.radi, point.y() + self.radi)
+            rect = QgsRectangle(esquerraDalt.x(), esquerraDalt.y(), dretaBaix.x(), dretaBaix.y())
             # ids=[]
             features=[]
             if layer is not None and layer.type() == QgsMapLayer.VectorLayer:

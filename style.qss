@@ -165,6 +165,10 @@ QComboBox QAbstractItemView {
     border: 1px solid #38474F;
 } */
 
+QAbstractItemView {
+    color: #38474F;
+}
+
 QTableView {
     background-color: solid white;
     selection-background-color: #FF6215;

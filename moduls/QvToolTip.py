@@ -32,7 +32,6 @@ class QvToolTip:
             point_qt = self.canvas.mouseLastXY()
             point_qt.setX(point_qt.x()+10)
             point_qt.setY(point_qt.y()+10)
-            print(point_qt.x())
             if self.layer:
                 self.map_tip.showMapTip(
                     self.layer,

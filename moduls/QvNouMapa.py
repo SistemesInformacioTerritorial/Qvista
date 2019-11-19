@@ -10,6 +10,7 @@ import tempfile
 from moduls.QvConstants import QvConstants
 from moduls.QvPushButton import QvPushButton
 from moduls.QvToolButton import QvToolButton
+from moduls.QvApp import QvApp
 
 class QvNouMapa(QDialog):
     '''Diàleg de creació del mapa. Mostra uns mapes base i una line edit perquè l'usuari triï base i títol del projecte, i els carrega en el qVista quan sortim del diàleg'''
@@ -192,7 +193,6 @@ class QvNouMapa(QDialog):
 
     def mouseMoveEvent(self, event):
         delta = QPoint(event.globalPos() - self.oldPos)
-        # print(delta)
         self.move(self.x() + delta.x(), self.y() + delta.y())
         self.oldPos = event.globalPos()
 
@@ -202,3 +202,9 @@ class QvNouMapa(QDialog):
         if event.key() == Qt.Key_Return:
             if self.botoAcceptar.isEnabled(): #Si el botó d'acceptar està enabled, podem acceptar
                 self.carrega()
+    
+    def exec(self):
+        if QvApp().intranet:
+            super().exec()
+        else:
+            QMessageBox.warning(self,'No teniu accés a la xarxa','No esteu connectat a la xarxa. La creació d\'un mapa requereix de connexió')

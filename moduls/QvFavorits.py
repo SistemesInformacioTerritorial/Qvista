@@ -21,7 +21,6 @@ class QvFavorits(Singleton):
     def __CONNECTA_BASE_DADES__(self,usuari):
         if not self.db.open():
             #No ens hem pogut connectar
-            print(':(')
             return False
         return True
             
@@ -55,7 +54,6 @@ class QvFavorits(Singleton):
         query.bindValue(':NOM_MAPA',mapa)
         if not query.exec():
             QMessageBox.critical(None,"Atenció","No s'ha pogut afegir el mapa a favorits. Intenteu-ho més tard, si us plau")
-            print('Ha fallat la query')
         self.__DESCONNECTA_BASE_DADES__(usuari)
         return True
         
@@ -68,7 +66,6 @@ class QvFavorits(Singleton):
         query.bindValue(':NOM_MAPA',mapa)
         if not query.exec():
             QMessageBox.critical("Atenció","No s'ha pogut eliminar el mapa de favorits. Intenteu-ho més tard, si us plau")
-            print('Ha fallat la query')
         self.__DESCONNECTA_BASE_DADES__(usuari)
         return True
         
