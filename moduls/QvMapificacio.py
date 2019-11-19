@@ -2,7 +2,7 @@
 
 from qgis.core import (QgsApplication, QgsVectorLayer, QgsLayerDefinition, QgsVectorFileWriter,
                        QgsSymbol, QgsRendererCategory, QgsCategorizedSymbolRenderer,
-                       QgsGraduatedSymbolRenderer, QgsRendererRange, QgsAggregateCalculator, QgsError,
+                       QgsGraduatedSymbolRenderer, QgsRendererRange, QgsAggregateCalculator, QgsError, QgsWkbTypes,
                        QgsGradientColorRamp, QgsRendererRangeLabelFormat, QgsReadWriteContext, QgsExpressionContextUtils)
 from qgis.gui import QgsFileWidget
 from qgis.PyQt.QtCore import Qt, QObject, pyqtSignal, pyqtSlot
@@ -27,8 +27,8 @@ from typing import List, Tuple, Iterable
 _TRANS = str.maketrans('ÁÉÍÓÚáéíóúÀÈÌÒÙàèìòùÂÊÎÔÛâêîôûÄËÏÖÜäëïöüºª€@$·.,;:()[]¡!¿?|@#%&ç*',
                        'AEIOUaeiouAEIOUaeiouAEIOUaeiouAEIOUaeiouoaEaD____________________')
 
-RUTA_LOCAL = 'C:/temp/qVista/dades/'
-RUTA_DADES = 'D:/qVista/Codi/Dades/'
+RUTA_LOCAL = dadesdir
+RUTA_DADES = os.path.abspath('Dades').replace('\\', '/') + '/'
 CAMP_QVISTA = 'QVISTA_'
 
 class QvMapificacio(QObject):
@@ -48,8 +48,7 @@ class QvMapificacio(QObject):
             separador {str} -- Caracter separador de campos en el CSV. Por defecto, se infiere del fichero (default: {''})
             prefixe {str} -- Prefijo del campo añadido que contendra el codigo de zona;
                              el sufijo será el nombre de la zona escogida (default: {CAMP_QVISTA})
-            numMostra {int} -- Número de filas de muestra a leer del CSV para hacer una estimación del número total
-                               de registros. Útil solo para la geocodificación (default: {60})
+            numMostra {int} -- Número de filas de muestra a leer del CSV (default: {60})
         """
         super().__init__()
         self.fDades = self.fZones = fDades
@@ -57,6 +56,7 @@ class QvMapificacio(QObject):
         self.prefixe = prefixe
         self.numMostra = numMostra
         self.mostra = []
+        self.mostraCols = ''
         self.camps = []
         self.files = 0
         self.errors = 0
@@ -88,10 +88,10 @@ class QvMapificacio(QObject):
                 data = csvInput.readline()
                 data = data.rstrip(csvInput.newlines)
                 self.mostra = []
-                self.mostra.append(data)
+                self.mostraCols = data
                 # Lineas de muestra
                 lenMuestra = 0
-                for num, data in enumerate(csvInput, start=1):
+                for num, data in enumerate(csvInput):
                     lenMuestra += len(data)
                     data = data.rstrip(csvInput.newlines)
                     self.mostra.append(data)
@@ -116,7 +116,7 @@ class QvMapificacio(QObject):
         if self.separador == '':
             self.msgError = 'Cal establir un caracter separador dels camps'
         else:
-            self.camps = self.mostra[0].split(self.separador)
+            self.camps = self.mostraCols.split(self.separador)
 
     def infereixCodi(self) -> str:
         '''Infereix la codificació d'un arxiu csv
@@ -272,12 +272,14 @@ class QvMapificacio(QObject):
                     campSortida = self.prefixe + campZona
                     if campSortida not in self.camps:
                         self.camps.append(campSortida)
+                        self.mostraCols += self.separador + campSortida
 
                 writer = csv.DictWriter(csvOutput, delimiter=self.separador, fieldnames=self.camps, lineterminator='\n')
                 writer.writeheader()
 
                 # Lectura de filas y geocodificación
                 tot = num = 0
+                self.mostra = []
                 for row in data:
                     tot += 1
 
@@ -308,6 +310,10 @@ class QvMapificacio(QObject):
                     #     row.update([(self.campZona, val)])
                     
                     writer.writerow(row)
+
+                    if self.numMostra >= tot:
+                        self.mostra.append(self.separador.join(row.values()))
+
                     # Informe de progreso cada 1% o cada fila si hay menos de 100
                     if self.files > 0 and tot % nSignal == 0:
                         self.percentatgeProces.emit(int(round(tot * 100 / self.files)))
@@ -326,18 +332,12 @@ class QvMapificacio(QObject):
             self.procesAcabat.emit(fin - ini)
             return True
 
-    def calcSelect(self, llistaCamps: List[str] = []) -> str:
+    def calcSelect(self, camps: str = '') -> str:
         # Calculamos filtro
         if self.filtre is None or self.filtre == '':
             filtre = ''
         else:
             filtre = ' WHERE ' + self.filtre
-        # Calculamos lista de campos de la zona
-        camps = ''
-        if llistaCamps is not None and len(llistaCamps) > 0:
-            for item in llistaCamps:
-                camps += ", Z." + item
-        camps += ', Z.GEOMETRY as GEOM'
         if self.tipusDistribucio == '':
             dist = ''
         else:
@@ -354,6 +354,9 @@ class QvMapificacio(QObject):
         s = s.replace(' ', '_')
         s = s.translate(_TRANS)
         return s
+
+    def nomArxiuSortida(self, nom: str) -> str:
+        return RUTA_LOCAL + nom + ".gpkg"
 
     def verifZona(self, zona: str) -> bool:
         self.zona = zona
@@ -401,6 +404,12 @@ class QvMapificacio(QObject):
         self.fSQL = ''
         self.llegenda = llegenda
         self.msgError = ''
+        self.descripcio = "Arxiu de dades: " + self.fZones + '\n' + \
+            "Zona: " + zona + '\n' + \
+            "Tipus d'agregació: " + tipusAgregacio + '\n' + \
+            "Camp o fòrmula de càlcul: " + campAgregat + '\n' + \
+            "Filtre: " + filtre + '\n' + \
+            "Distribució: " + tipusDistribucio
 
         if not self.verifZona(zona):
             self.msgError = "Error en zona"
@@ -436,7 +445,7 @@ class QvMapificacio(QObject):
 
         if numDecimals >= 0:
             self.numDecimals = numDecimals
-        elif self.tipusAgregacio.startswith('COUNT'):
+        elif self.tipusAgregacio.startswith('COUNT') and self.tipusDistribucio == "":
             self.numDecimals = 0
         else:
             self.numDecimals = 2
@@ -454,7 +463,7 @@ class QvMapificacio(QObject):
             return False
 
         # Carga de capa base de zona
-        self.fBase = RUTA_DADES + self.valZona[1]
+        self.fBase = RUTA_DADES + MAP_ZONES_DB + "|layername=" + self.valZona[1]
         zonaLyr = QgsVectorLayer(self.fBase, 'Zona', 'ogr')
         zonaLyr.setProviderEncoding("UTF-8")
         if not zonaLyr.isValid():
@@ -466,11 +475,15 @@ class QvMapificacio(QObject):
         self.llegenda.project.addMapLayer(zonaLyr, False)
 
         # Lista de campos de zona que se incluirán en la mapificación
-        zonaCamps = []
+        zonaCamps = ''
         for field in zonaLyr.fields():
             name = field.name().upper()
             if not name.startswith(self.prefixe) and not name.startswith('OGC_'):
-                zonaCamps.append(name)
+                if field.typeName() == "Real":
+                    zonaCamps += ", round(Z." + name + ", 2) as " + name
+                else:
+                    zonaCamps += ", Z." + name
+        zonaCamps += ', Z.GEOMETRY as GEOM'
 
         # Creación de capa virtual que construye la agregación
         select = self.calcSelect(zonaCamps)
@@ -484,8 +497,9 @@ class QvMapificacio(QObject):
             return False
 
         # Guarda capa de agregación en GPKG
-        self.fSQL = RUTA_LOCAL + self.nomCapa + ".gpkg"
-        ret, msg = QgsVectorFileWriter.writeAsVectorFormat(virtLyr, self.fSQL, "UTF-8", zonaLyr.crs(), "GPKG")
+        self.fSQL = self.nomArxiuSortida(self.nomCapa)
+        ret, msg = QgsVectorFileWriter.writeAsVectorFormat(virtLyr, self.fSQL, "UTF-8", zonaLyr.crs(), "GPKG",
+            overrideGeometryType=QgsWkbTypes.MultiPolygon)
         if ret != QgsVectorFileWriter.NoError:
             self.llegenda.project.removeMapLayer(zonaLyr.id())
             self.llegenda.project.removeMapLayer(infoLyr.id())
@@ -513,8 +527,8 @@ class QvMapificacio(QObject):
             mapLyr.setRenderer(self.renderer)
 
         # Identificador de mapificación para qVista
-        QgsExpressionContextUtils.setLayerVariable(mapLyr, MAP_ID, 'True')
-        mapLyr.setDisplayExpression('RESULTAT')
+        QgsExpressionContextUtils.setLayerVariable(mapLyr, MAP_ID, self.descripcio)
+        mapLyr.setDisplayExpression(self.campCalculat)
 
         # Guarda simbología en GPKG
         err = self.llegenda.saveStyleToGeoPackage(mapLyr, MAP_ID)
@@ -558,19 +572,36 @@ if __name__ == "__main__":
 
     from qgis.core.contextmanagers import qgisapp
 
-    gui = False
+    gui = True
 
     with qgisapp(guienabled=gui) as app:
 
         from moduls.QvApp import QvApp
+        from moduls.QvMapForms import QvFormMostra
+        from qgis.gui import QgsMapCanvas
+        from moduls.QvLlegenda import QvLlegenda
+        from moduls.QvAtributs import QvAtributs
+        from moduls.QvMapForms import QvFormNovaMapificacio
 
         app = QvApp()
+
+        canv = QgsMapCanvas()
+        canv.setWindowTitle('Canvas')
+        canv.show()
+
+        atrib = QvAtributs(canv)
+
+        leyenda = QvLlegenda(canv, atrib)
+        leyenda.project.read('mapesOffline/qVista default map.qgs')
+        leyenda.setWindowTitle('Llegenda')
+        leyenda.show()
 
         z = QvMapificacio('CarrecsANSI.csv')
         # z = QvMapificacio('CarrecsUTF8.csv')
         if z.msgError != '':
             print('Error:', z.msgError)
             exit(1)
+            
         print('Código caracteres:', z.codi)
         print('Num. líneas muestra:', z.numMostra)
         print('Delimitador:', z.separador)
@@ -578,11 +609,23 @@ if __name__ == "__main__":
         print('Campos:', z.camps)
         print(z.files, 'filas en', z.fDades)
 
+        # w = QvFormMostra(z)
+        # w.show()
+
         campsAdreca = ('', 'NOM_CARRER_GPL', 'NUM_I_GPL', '', 'NUM_F_GPL')
-        zones = ('Coordenada', 'Districte', 'Barri', 'Codi postal')
+        zones = ('Coordenada', 'Districte', 'Barri', 'Codi postal', "Àrea estadística bàsica")
         ok = z.geocodificacio(campsAdreca, zones,
             percentatgeProces=lambda n: print('... Procesado', str(n), '% ...'),
             errorAdreca=lambda f: print('Fila sin geocodificar -', f),
             procesAcabat=lambda n: print('Zonas', z.zones, 'procesadas en', str(n), 'segs. en ' + z.fZones + ' -', str(z.files), 'registros,', str(z.errors), 'errores'))
-        if not ok:
+            
+        if ok:
+            # w = QvFormMostra(z)
+            # w.show()
+
+            fMap = QvFormNovaMapificacio(leyenda, mapificacio=z)
+            fMap.exec()
+        else:
             print('ERROR:', z.msgError)
+
+

@@ -20,6 +20,7 @@ from moduls.QvMapVars import *
 from configuracioQvista import *
 
 import os
+import win32file
 
 
 # Resultado de compilacion de recursos del fuente de qgis (directorio images)
@@ -434,6 +435,14 @@ class QvLlegenda(QgsLayerTreeView):
             if capa.hasScaleBasedVisibility():
                 capa.nameChanged.emit()
 
+    def capaLocal(self, capa):
+        try:
+            uri = capa.dataProvider().dataSourceUri()
+            drive = uri.split(':')[0]
+            return (win32file.GetDriveType(drive + ':') == win32file.DRIVE_FIXED)
+        except:
+            return False
+
     def actIcones(self):
         if not self.editable:
             return
@@ -447,8 +456,8 @@ class QvLlegenda(QgsLayerTreeView):
                     else:
                         self.removeIndicator(node, self.iconaFiltre)
                     # Mapificacón
-                    tipus = QgsExpressionContextUtils.layerScope(capa).variable(MAP_ID)
-                    if tipus == 'True':
+                    var = QgsExpressionContextUtils.layerScope(capa).variable(MAP_ID)
+                    if var is not None and self.capaLocal(capa):
                         self.addIndicator(node, self.iconaMap)
                     else:
                         self.removeIndicator(node, self.iconaMap)
@@ -886,7 +895,14 @@ if __name__ == "__main__":
         def printCapaActiva():
             cLayer = leyenda.currentLayer()
             if cLayer:
-                print('Capa activa:', leyenda.currentLayer().name())
+                print('Capa activa:', cLayer.name())
+                uri = cLayer.dataProvider().dataSourceUri()
+                drive = uri.split(':')[0]
+                print('URI:', uri)
+                txt = ''
+                if (win32file.GetDriveType(drive + ':') == win32file.DRIVE_FIXED):
+                    txt = '(Disco fijo)'
+                print('Disco:', drive, txt)
             else:
                 print('Capa activa: None')
 
@@ -1145,7 +1161,7 @@ if __name__ == "__main__":
 
             tipusJoin = 'left' if showErrors else 'inner'
 
-            # Nombre fichero antes de ?quuery= !!!!!
+            # Nombre fichero antes de ?query= !!!!!
             vlayer = QgsVectorLayer( "?query="
                "select C.NUM_CARRECS, B.CODI_BARRI, B.NOM_BARRI, B.DISTRICTE, B.GEOMETRY as GEOM from "
                 "(select count(*) AS NUM_CARRECS, QVISTA_BARRI from " + fich + " group by "
