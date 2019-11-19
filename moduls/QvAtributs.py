@@ -187,7 +187,8 @@ class QvAtributs(QTabWidget):
         self.setCurrentIndex(i)
         self.setTabText(i,self.tabText(i))
     def setTabText(self,i,text):
-        super().setTabText(i,text+' (%i)'%len(self.widget(i)))
+        l=len(self.widget(i))
+        super().setTabText(i,text+(' (%i)'%l if l!=0 else ''))
 
     def tancarTab(self, i):
         # Cerrar tabla por número de tab
@@ -552,7 +553,7 @@ class QvTaulaAtributs(QgsAttributeTableView):
             self.filter.filterMode() ==
             QgsAttributeTableFilterModel.ShowSelected)
     def __len__(self):
-        return self.layer.featureCount()
+        return max(0,self.layer.featureCount())
 
 
 if __name__ == "__main__":
