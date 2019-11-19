@@ -77,7 +77,7 @@ class CompleterAdreces(QCompleter):
         # print(text)
     def update(self,word):
         '''Funció que actualitza els elements'''
-        if ' ' not in word and self.modelCanviat: 
+        if len(word)<3 and self.modelCanviat: 
             self.model().setStringList(self.elements)
             self.modelCanviat=False
             return
@@ -177,6 +177,7 @@ class QCercadorAdreca(QObject):
             self.prepararCompleterCarrer()
 
     def habilitaLeNum(self):
+        self.carrerActivat=False
         return #De moment no es desactivarà mai
         #Hauria de funcionar només amb la primera condició, però per raons que escapen al meu coneixement, no anava :()
         self.leNumero.setEnabled(self.calle_con_acentos!='' or self.txto!='')
