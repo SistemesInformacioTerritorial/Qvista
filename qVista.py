@@ -751,7 +751,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         # Activem la clase de cerca d'adreces
         self.cAdrec=QCercadorAdreca(self.leCarrer, self.leNumero,'SQLITE')    # SQLITE o CSV
           
-        self.cAdrec.sHanTrobatCoordenades.connect(self.trobatNumero_oNo) 
+        self.cAdrec.sHanTrobatCoordenades.connect(self.trobatNumero_oNoLat) 
 
         self.dwCercador = QvDockWidget( "Cercador", self )
         self.dwCercador.setContextMenuPolicy(Qt.PreventContextMenu)
@@ -982,15 +982,15 @@ class QVista(QMainWindow, Ui_MainWindow):
         else:
             pass
 
-    def trobatNumero_oNo(self,rsc,info_rsc):
+    def trobatNumero_oNo(self,rsc,info_rsc,cercador):
         if rsc==0:
-            self.canvas.setCenter(self.cAdrec.coordAdreca)
+            self.canvas.setCenter(cercador.coordAdreca)
             self.canvas.zoomScale(1000)
             # colocación de marca (cuadradito) en lugar de ubicacion
             self.canvas.scene().removeItem(self.marcaLloc)
 
             self.marcaLloc = QgsVertexMarker(self.canvas)
-            self.marcaLloc.setCenter( self.cAdrec.coordAdreca )
+            self.marcaLloc.setCenter( cercador.coordAdreca )
             self.marcaLloc.setColor(QColor(255, 0, 0))
             self.marcaLloc.setIconSize(15)
             self.marcaLloc.setIconType(QgsVertexMarker.ICON_BOX) # or ICON_CROSS, ICON_X
@@ -1020,6 +1020,10 @@ class QVista(QMainWindow, Ui_MainWindow):
             msg.setDetailedText(info_rsc)
             msg.setStandardButtons(QMessageBox.Close)
             retval = msg.exec_() #No fem res amb el valor de retorn (???)
+    def trobatNumero_oNoLat(self, rsc,info_rsc):
+        self.trobatNumero_oNo(rsc,info_rsc,self.cAdrec)
+    def trobatNumero_oNoSup(self,rsc,info_rsc):
+        self.trobatNumero_oNo(rsc,info_rsc,self.cAdrecSup)
 
     def adreces(self):
         # self.dwCercador = QvDockWidget( "Cercador", self )              #
@@ -1396,12 +1400,12 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.leNumCerca.setPlaceholderText('Núm...')
         self.leNumCerca.setFixedWidth(80)
 
-        self.cAdrec=QCercadorAdreca(self.leCercaPerAdreca, self.leNumCerca,'SQLITE')    # SQLITE o CSV
+        self.cAdrecSup=QCercadorAdreca(self.leCercaPerAdreca, self.leNumCerca,'SQLITE')    # SQLITE o CSV
         self.bCercaPerAdreca.clicked.connect(lambda: self.leCercaPerAdreca.setText(''))
         self.bCercaPerAdreca.clicked.connect(self.leCercaPerAdreca.setFocus)
         self.bCercaPerAdreca.setCursor(QvConstants.cursorClick())
         self.leCercaPerAdreca.textChanged.connect(lambda x: self.bCercaPerAdreca.setIcon(QIcon(imatgesDir+('magnify.png' if x=='' else 'cp_elimina.png'))))
-        self.cAdrec.sHanTrobatCoordenades.connect(self.trobatNumero_oNo)
+        self.cAdrecSup.sHanTrobatCoordenades.connect(self.trobatNumero_oNoSup)
 
         self.lSpacer.setText("")
         self.lSpacer.setFixedWidth(24)
