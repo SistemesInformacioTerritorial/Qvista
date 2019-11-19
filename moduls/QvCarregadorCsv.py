@@ -595,7 +595,7 @@ class CsvPersonalitza(CsvPagina):
     def actualitzaDades(self):
         self.parentWidget().setAspecte(self.leNom.text(),self.color,'circle')
     def calTaula(self):
-        return False
+        return True
     pass
 
 class QvtLectorCsv(QvLectorCsv):

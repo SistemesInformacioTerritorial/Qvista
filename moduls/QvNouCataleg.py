@@ -343,7 +343,6 @@ class QvNouCataleg(QWidget):
             # self.hide()
         except:
             QMessageBox.warning(self,"No s'ha pogut obrir el mapa","El mapa no ha pogut ser obert. Si el problema persisteix, contacteu amb el gestor del catàleg")
-            print('Hauríem obert el projecte '+dir+', però ha fallat quelcom')
     def obrirEnQGis(self,dir: str):
         '''Obre el projecte amb QGis. El copia al directori temporal, per si l'usuari modifica alguna cosa'''
         #Copiem el projecte al directori temporal, per si l'usuari modifica alguna cosa

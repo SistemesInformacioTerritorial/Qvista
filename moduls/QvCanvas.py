@@ -241,13 +241,13 @@ class QvCanvas(QgsMapCanvas):
         if self.llistaBotons is not None:
             if "apuntar" in self.llistaBotons:
                 self.bApuntar = self._botoMapa(imatgesDir+'apuntar.png')
-                self.bApuntar.setToolTip('Seleccioneu objectes per veure la seva informació')
+                self.bApuntar.setToolTip("Veure informació d'un objecte")
                 self.layoutBotoneraMapa.addWidget(self.bApuntar)  
                 self.bApuntar.setCursor(QvConstants.cursorFletxa())       
                 self.bApuntar.clicked.connect(self.seleccioClick)
             if "panning" in self.llistaBotons:
                 self.bPanning = self._botoMapa(imatgesDir+'pan_tool_black_24x24.png')
-                self.bPanning.setToolTip('Desplaçament sobre el mapa')
+                self.bPanning.setToolTip('Desplaçar el mapa')
                 self.layoutBotoneraMapa.addWidget(self.bPanning)   
                 self.bPanning.setCursor(QvConstants.cursorFletxa())   
                 self.bPanning.clicked.connect(self.panCanvas)
@@ -271,7 +271,7 @@ class QvCanvas(QgsMapCanvas):
                 self.bZoomOut.clicked.connect(self.zoomOut)
             if 'enrere' in self.llistaBotons:
                 self.bEnrere=self._botoMapa(imatgesDir+'qv_vista_anterior.png')
-                self.bEnrere.setToolTip('Retrocedeix al zoom previ')
+                self.bEnrere.setToolTip('Retrocedir al zoom anterior')
                 self.layoutBotoneraMapa.addWidget(self.bEnrere)
                 self.bEnrere.setCursor(QvConstants.cursorFletxa())
                 self.bEnrere.clicked.connect(self.zoomToPreviousExtent)

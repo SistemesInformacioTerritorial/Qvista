@@ -1,11 +1,14 @@
 from configuracioQvista import *
 from moduls.QvSingleton import Singleton
 
+from PyQt5.QtGui import QColor
+
 arxiuTmpAvis=dadesdir+'ultimAvisObert'
 arxiuTmpNews=dadesdir+'ultimaNewOberta'
 arxiuMapesRecents=dadesdir+'mapesRecents'
 arxiuDirectoriDesar=dadesdir+'directoriDesar'
 arxiuVolHints=dadesdir+'volHints'
+arxiuDadesMascara=dadesdir+'dadesMascara'
 
 def llegirArxiu(f,encoding='utf-8'):
     with open(f,encoding=encoding) as arxiu:
@@ -66,6 +69,15 @@ class QvMemoria(Singleton):
         # return self.volHints
     def setVolHints(self,enVol=True):
         self.volHints=enVol
+    def getParametresMascara(self):
+        if not os.path.exists(arxiuDadesMascara):
+            return QColor('white'),70
+        with open(arxiuDadesMascara) as f:
+            color, opacitat = f.read().split(' ')
+            return QColor(color),int(opacitat)
+    def setParametresMascara(self,color,opacitat):
+        with open(arxiuDadesMascara,'w') as f:
+            f.write('%s %i'%(color.name(),opacitat))
     def pafuera(self):
         if hasattr(self,'mapesRecents'):
             with open(arxiuMapesRecents,'w',encoding='utf-8') as f:
