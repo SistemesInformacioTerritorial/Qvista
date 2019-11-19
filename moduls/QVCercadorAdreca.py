@@ -1,6 +1,7 @@
 from qgis.core import QgsPointXY
 from qgis.PyQt import QtCore
 from qgis.PyQt.QtCore import QObject, pyqtSignal, QSortFilterProxyModel
+from qgis.PyQt.QtGui import QValidator
 from qgis.PyQt.QtWidgets import QCompleter
 import sys
 import csv
@@ -12,21 +13,21 @@ from PyQt5.QtSql import *
 from moduls.QvApp import QvApp
 from moduls.QvBafarada import QvBafarada
 
+
 def encaixa(sub,string):
+    string=string.lower()
     subs=sub.split(' ')
     words=string.split(' ')
     encaixaUna=False
     for x in subs:
         if len(x)<3: continue #no té sentit si escrius "av d" que et posi a dalt de tot el Carrer d'Aiguablava perquè la d encaixa exactament amb una paraula
-        trobat=(x in string)
-        if not trobat: return False
-        for y in words:
-            if x==y:
-                encaixaUna=True
+        if x not in string: return False #Un dels substrings de la cerca no apareix dins de l'adreça
+        if x in words: encaixaUna=True #Hem trobat una que encaixa
     return encaixaUna
 
 def conte(sub, string):
     '''Retorna true si string conté tots els strings representats a subs '''
+    string=string.lower()
     subs=sub.split(' ')
     for x in subs:
         if x not in string:
@@ -34,6 +35,8 @@ def conte(sub, string):
     return True
 
 def comenca(sub,string):
+    #TODO: Canviar per expressions regulars per millorar eficiència
+    string=string.lower()
     subs=sub.split(' ')
     words=string.split(' ')
     comencaUna=False
@@ -41,63 +44,88 @@ def comenca(sub,string):
         if x=='': 
             continue
         trobat=(x in string)
+        if not trobat: return False
         for y in words:
             if y.startswith(x):
                 comencaUna=True
                 break
             # elif 
-        if not trobat: return False
     return comencaUna
+
 
 class CompleterAdreces(QCompleter):
     def __init__(self,elems,widget):
         super().__init__(elems, widget)
         self.elements=elems
+        self.le=widget
+        # Aparellem cada carrer amb el rang del seu codi
+        aux=zip(self.obteRangCodis(),self.elements)
+        # Creem un diccionari que conté com a clau el nom del carrer i com a valor el codi
+        # Així podrem ordenar els carrers en funció d'aquests codis
+        self.dicElems={y:y[x[0]:x[1]] for x, y in aux}
+        self.popup().selectionModel().selectionChanged.connect(self.seleccioCanviada)
+        self.modelCanviat=False
+    def obteRangCodis(self):
+        #Fem servir una expressió regular per buscar el rang dels codis. Creem un generador que conté el resultat
+        return (re.search("\([0-9]*\)",x).span() for x in self.elements)
+    def seleccioCanviada(self,nova,antiga):
+        text=self.popup().currentIndex().data()
+        ind=text.find(chr(30))
+        if ind!=-1:
+            text=text[:ind-1]
+        self.le.setText(text.strip())
+        # print(text)
     def update(self,word):
         '''Funció que actualitza els elements'''
-        encaixen=[]
-        comencen=[]
-        contenen=[]
-        altres=[]
+        if ' ' not in word and self.modelCanviat: 
+            self.model().setStringList(self.elements)
+            self.modelCanviat=False
+            return
         self.word=word.lower()
-        # pars=self.word.split(' ')
-        for x in self.elements:
-            y=x.lower()
-            if encaixa(self.word,y):
-                encaixen.append(x)
-            elif comenca(self.word,y):
-                comencen.append(x)
-            elif conte(self.word,y):
-                contenen.append(x)
-            else:
-                altres.append(x)
+        
+        # Volem dividir la llista en quatre llistes
+        # -Carrers on un dels elements cercats encaixen amb una paraula del carrer
+        # -Carrers on una de les paraules del carrer comencen per un dels elements cercats
+        # -Carrers que contenen les paraules cercades
+        # -La resta
+        # Podria semblar que la millor manera és crear quatre llistes, fer un for, una cadena if-then-else i posar cada element en una de les quatre. Però això és molt lent 
+        # Aprofitant-nos de que les coses definides per python són molt ràpides (ja que es programen en C) podem resoldre el problema utilitzant funcions d'ordre superior i operacions sobre sets
+        # Bàsicament farem servir filter per filtrar els elements que compleixen la funció, desar-los, i els extreurem dels restants.
+
+        altres=set(self.elements)
+        encaixen=set(filter(lambda x: encaixa(self.word,x), altres))
+        altres=altres-encaixen
+        comencen=set(filter(lambda x: comenca(self.word,x),altres))
+        altres=altres-comencen
+        contenen=set(filter(lambda x: conte(self.word,x), altres))
+        altres=altres-contenen
+        
         
         #cal ordenar les llistes? No cal?
-        self.model().setStringList(encaixen+comencen+contenen)
+        ordenacio=lambda x: self.dicElems[x]
+        self.model().setStringList(sorted(encaixen,key=ordenacio)+sorted(comencen,key=ordenacio)+sorted(contenen,key=ordenacio))
         self.m_word=word
         self.complete()
+        self.modelCanviat=True
     def splitPath(self,path):
-        # self.updateModel()
-        # res=super().splitPath(path)
-        # return res
         self.update(path)
-        # return super().splitPath(path)
         res=path.split(' ')
         return [res[-1]]
 
-class FiltreCarrers(QSortFilterProxyModel):
-    def filterAcceptsRow(self,sourceRow,sourceParent):
-        index0 = self.sourceModel().index(sourceRow, 0, sourceParent)
+class ValidadorNums(QValidator):
+    '''NO UTILITZADA. Serviria per poder impedir que es posin números no existents per l'adreça'''
+    def __init__(self,elems,parent):
+        super().__init__(parent)
+        self.permesos=elems.keys()
+    def validate(self,input,pos):
+        if input in self.permesos:
+            return QValidator.Acceptable, input, pos
+        filt=filter(lambda x: x.startswith(input), self.permesos)
+        if any(True for _ in filt):
+            return QValidator.Intermediate, input, pos
+        return QValidator.Invalid, input, pos
 
-    def setFilter(self,filter):
-        self.m_filter=filter
-        super().setFilterFixedString(filter)
-        #app->showPopup() ??
 
-# class ModelAdreces(QStringListModel):
-#     def data(self,index,role):
-#         d=super().data(index,role)
-#         print(d)
 
         
 
@@ -176,6 +204,7 @@ class QCercadorAdreca(QObject):
         self.completerNumero.setFilterMode(QtCore.Qt.MatchStartsWith)
         self.completerNumero.setCaseSensitivity(QtCore.Qt.CaseInsensitive)
         self.leNumero.setCompleter(self.completerNumero)  
+        # self.leNumero.setValidator(ValidadorNums(self.dictNumeros[self.codiCarrer],self))
 
 
     def iniAdreca(self):
@@ -195,6 +224,7 @@ class QCercadorAdreca(QObject):
         self.leCarrer.textChanged.connect(self.esborrarNumero)
         self.leCarrer.editingFinished.connect(self.trobatCarrer)
         self.leCarrer.mouseDoubleClickEvent = self.clear_leNumero_leCarrer
+        self.leCarrer.setAlignment(Qt.AlignLeft)
 
         self.leNumero.editingFinished.connect(self.trobatNumero)
         # self.leNumero.returnPressed.connect(self.trobatNumero)
@@ -304,7 +334,6 @@ class QCercadorAdreca(QObject):
             self.leCarrer.setAlignment(Qt.AlignLeft)  
             self.leCarrer.setText(self.calle_con_acentos)
 
-        if self.txto != '':
             self.iniAdreca()
             if self.txto != self.nomCarrer:
                 # self.iniAdreca()
@@ -492,7 +521,7 @@ class QCercadorAdreca(QObject):
                 info="ERROR >> [9]"
                 self.sHanTrobatCoordenades.emit(9,info)   #numero en blanco
         except: 
-            
+            return
             msg = QMessageBox()
             msg.setIcon(QMessageBox.Warning)
             info_rsc= 'ERROR: '+ str(sys.exc_info()[0])
