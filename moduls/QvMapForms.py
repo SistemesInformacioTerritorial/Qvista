@@ -11,6 +11,7 @@ from qgis.core import QgsApplication, QgsGraduatedSymbolRenderer, QgsExpressionC
 
 from moduls.QvMapVars import *
 from moduls.QvMapificacio import *
+from moduls.QvSqlite import QvSqlite
 
 import os
 import sqlite3
@@ -332,7 +333,7 @@ class QvFormNovaMapificacio(QvFormBaseMapificacio):
         # Carga combo con zonas si el campo correspondiente está en el fichero CSV
         num = 0
         for zona, val in MAP_ZONES.items():
-            if val[1] != '' and self.fCSV.prefixe + val[0] in self.fCSV.camps:
+            if val[1] != '' and self.fCSV.prefixe + QvSqlite.getAlias(val[0]) in self.fCSV.camps:
                 self.zona.addItem(zona)
                 num = num + 1
         if num == 0:
@@ -401,7 +402,7 @@ class QvFormNovaMapificacio(QvFormBaseMapificacio):
             return self.fCSV.msgError
 
 class QvFormSimbMapificacio(QvFormBaseMapificacio):
-    def __init__(self, llegenda, capa, amplada=450):
+    def __init__(self, llegenda, capa, amplada=500):
         super().__init__(llegenda, amplada)
         self.capa = capa
         self.info = None
@@ -546,7 +547,7 @@ class QvFormSimbMapificacio(QvFormBaseMapificacio):
             yield self.iniFilaInterval(cat.lowerValue(), cat.upperValue())
 
     def grupIntervals(self):
-        group = QGroupBox('Definició intervals')
+        group = QGroupBox('Definició dels intervals')
         # group.setMinimumWidth(400)
         layout = QGridLayout()
         layout.setSpacing(10)

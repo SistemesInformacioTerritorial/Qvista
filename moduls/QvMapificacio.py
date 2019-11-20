@@ -269,6 +269,7 @@ class QvMapificacio(QObject):
                 data = csv.DictReader(csvInput, delimiter=self.separador)
 
                 for campZona in self.campsZones:
+                    campZona = QvSqlite.getAlias(campZona)
                     campSortida = self.prefixe + campZona
                     if campSortida not in self.camps:
                         self.camps.append(campSortida)
@@ -293,6 +294,7 @@ class QvMapificacio(QObject):
                     # Escritura de fila con campos
                     else:
                         for campZona in self.campsZones:
+                            campZona = QvSqlite.getAlias(campZona)
                             campSortida = self.prefixe + campZona
                             campNou = (campSortida not in row.keys())
                             if campNou or self.substituir or row[campSortida] is None or row[campSortida] == '':
@@ -364,7 +366,7 @@ class QvMapificacio(QObject):
             return False
         else:
             self.valZona = MAP_ZONES[self.zona]
-        self.campZona = self.prefixe + self.valZona[0]
+        self.campZona = self.prefixe + QvSqlite.getAlias(self.valZona[0])
         if self.campZona not in self.camps:
             return False
         return True
@@ -613,7 +615,7 @@ if __name__ == "__main__":
         # w.show()
 
         campsAdreca = ('', 'NOM_CARRER_GPL', 'NUM_I_GPL', '', 'NUM_F_GPL')
-        zones = ('Coordenada', 'Districte', 'Barri', 'Codi postal', "Àrea estadística bàsica")
+        zones = ('Coordenada', 'Districte', 'Barri', 'Codi postal', "Àrea estadística bàsica", "Secció censal")
         ok = z.geocodificacio(campsAdreca, zones,
             percentatgeProces=lambda n: print('... Procesado', str(n), '% ...'),
             errorAdreca=lambda f: print('Fila sin geocodificar -', f),

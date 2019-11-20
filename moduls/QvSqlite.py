@@ -7,6 +7,14 @@ import os
 
 class QvSqlite(Singleton):
 
+    @staticmethod
+    def getAlias(camp):
+        txt = camp.upper().split(" AS ")
+        if len(txt) > 1:
+            return txt[1].strip()
+        else:
+            return camp
+
     def __init__(self):
         if hasattr(self, 'db'):  # Se inicializa una vez
             return
@@ -223,6 +231,7 @@ class QvSqlite(Singleton):
             if self.query.exec_(select) and self.query.next():
                 result = {}
                 for i, camp in enumerate(camps):
+                    camp = QvSqlite.getAlias(camp)
                     result[camp] = self.query.value(i)
                 self.query.finish()
                 return result
