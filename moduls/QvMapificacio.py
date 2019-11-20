@@ -615,7 +615,7 @@ if __name__ == "__main__":
         # w.show()
 
         campsAdreca = ('', 'NOM_CARRER_GPL', 'NUM_I_GPL', '', 'NUM_F_GPL')
-        zones = ('Coordenada', 'Districte', 'Barri', 'Codi postal', "Àrea estadística bàsica", "Secció censal")
+        zones = ('Coordenada', 'Districte', 'Barri', 'Codi postal', "Illa", "Solar", "Àrea estadística bàsica", "Secció censal")
         ok = z.geocodificacio(campsAdreca, zones,
             percentatgeProces=lambda n: print('... Procesado', str(n), '% ...'),
             errorAdreca=lambda f: print('Fila sin geocodificar -', f),

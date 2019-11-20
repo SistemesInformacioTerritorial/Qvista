@@ -18,7 +18,7 @@ MAP_ZONES = OrderedDict({
     "Districte": ("DISTRICTE", "districtes"),
     "Barri": ("BARRI", "barris"),
     "Codi postal": ("CODI_POSTAL", ""),
-    "Illa": ("ILLA", ""),
+    "Illa": ("ILLA", "illes"),
     "Solar": ("SOLAR", ""),
     "Àrea estadística bàsica": ("AEB", "aeb"),
     "Secció censal": ("DISTRICTE || SECCIO_CENSAL AS SECCIO_CENSAL", "seccions_censals"),
