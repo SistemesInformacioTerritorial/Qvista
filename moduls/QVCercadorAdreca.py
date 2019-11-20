@@ -38,18 +38,20 @@ def comenca(sub,string):
     #TODO: Canviar per expressions regulars per millorar eficiència
     string=string.lower()
     subs=sub.split(' ')
-    words=string.split(' ')
+    # words=string.split(' ')
     comencaUna=False
     for x in subs:
         if x=='': 
             continue
         trobat=(x in string)
         if not trobat: return False
-        for y in words:
-            if y.startswith(x):
-                comencaUna=True
-                break
-            # elif 
+        #Si ja hem trobat que comença amb una no cal tornar a comprovar-ho. Seguim iterant només perquè la resta han d'estar contingudes
+        if not comencaUna and re.search(' '+x,' '+string) is not None:
+            comencaUna=True
+        # for y in words:
+        #     if y.startswith(x):
+        #         comencaUna=True
+        #         break
     return comencaUna
 
 
