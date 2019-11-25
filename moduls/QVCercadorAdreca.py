@@ -406,11 +406,12 @@ class QCercadorAdreca(QObject):
         try:
             index = 0
             # self.query = QSqlQuery() # Intancia del Query
-            self.query.exec_("select codi , nom_oficial  from Carrers") 
+            self.query.exec_("select codi , nom_oficial , variants  from Carrers") 
 
             while self.query.next():
                 codi_carrer = self.query.value(0) # Codigo calle
                 nombre = self.query.value(1) # numero oficial
+                variants = self.query.value(2) #Variants del nom
                 nombre_sin_acentos= self.remove_accents(nombre)
                 if nombre == nombre_sin_acentos:
                     clave= nombre + "  (" + codi_carrer + ")"
@@ -418,6 +419,8 @@ class QCercadorAdreca(QObject):
                 else:
                     clave= nombre + "  (" + codi_carrer + ")                                                  "+chr(30)+"                                                         " + nombre_sin_acentos
                     # asignacion al diccionario
+                variants.replace(',',50*' ')
+                clave+=50*' '+variants
                 self.dictCarrers[clave] = codi_carrer
                 
                 index += 1
