@@ -3407,6 +3407,9 @@ def seleccioExpressio():
     if qV.leSeleccioExpressio.text().lower()=='mascara':
         qV.emmascaraDivisions=True
         return
+    if qV.leSeleccioExpressio.text().lower()=='filtramascara':
+        filtraMascara(qV)
+        return
 
 
     layer=qV.llegenda.currentLayer()
