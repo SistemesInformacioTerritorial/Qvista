@@ -414,8 +414,8 @@ class QCercadorAdreca(QObject):
                 variants = self.query.value(2) #Variants del nom
                 nombre_sin_acentos= self.remove_accents(nombre)
                 if nombre == nombre_sin_acentos:
-                    clave= nombre + "  (" + codi_carrer + ")"
-                    # clave= nombre + "  (" + codi_carrer + ")                                                  "+chr(30)
+                    # clave= nombre + "  (" + codi_carrer + ")"
+                    clave= nombre + "  (" + codi_carrer + ")                                                  "+chr(30)
                 else:
                     clave= nombre + "  (" + codi_carrer + ")                                                  "+chr(30)+"                                                         " + nombre_sin_acentos
                     # asignacion al diccionario
