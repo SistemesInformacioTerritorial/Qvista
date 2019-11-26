@@ -16,6 +16,8 @@ from moduls.QvBafarada import QvBafarada
 
 def encaixa(sub,string):
     string=string.lower()
+    pos=string.find(chr(29))
+    string=string[:pos]
     subs=sub.split(' ')
     words=string.split(' ')
     encaixaUna=False
@@ -37,6 +39,8 @@ def conte(sub, string):
 def comenca(sub,string):
     #TODO: Canviar per expressions regulars per millorar eficiència
     string=string.lower()
+    pos=string.find(chr(29))
+    string=string[:pos]
     subs=sub.split(' ')
     # words=string.split(' ')
     comencaUna=False
@@ -420,7 +424,7 @@ class QCercadorAdreca(QObject):
                     clave= nombre + "  (" + codi_carrer + ")                                                  "+chr(30)+"                                                         " + nombre_sin_acentos
                     # asignacion al diccionario
                 variants.replace(',',50*' ')
-                clave+=50*' '+variants
+                clave+=chr(29)+50*' '+variants
                 self.dictCarrers[clave] = codi_carrer
                 
                 index += 1
