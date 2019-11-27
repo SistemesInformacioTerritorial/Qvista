@@ -60,6 +60,7 @@ def filtraMascara(qV):
         if subsetAnt != '':
             subs = '('+subsetAnt+')'+' AND '+'('+subs+')'
         layer.setSubsetString(subs)
+        qV.llegenda.actIconaFiltre(layer)
 
 
 def creaMascara(qV):
