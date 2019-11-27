@@ -15,9 +15,10 @@ from moduls.QvBafarada import QvBafarada
 
 
 def encaixa(sub,string):
+    '''Retorna True si alguna de les paraules de sub encaixa exactament dins de string (és a dir, a sub hi ha "... xxx ..." i a string també) i la resta apareixen però no necessàriament encaixant'''
     string=string.lower()
-    pos=string.find(chr(29))
-    string=string[:pos]
+    # pos=string.find(chr(29))
+    # string=string[:pos]
     subs=sub.split(' ')
     words=string.split(' ')
     encaixaUna=False
@@ -37,12 +38,9 @@ def conte(sub, string):
     return True
 
 def comenca(sub,string):
-    #TODO: Canviar per expressions regulars per millorar eficiència
+    '''Retorna True si alguna de les paraules de string comença per alguna de les paraules de sub'''
     string=string.lower()
-    pos=string.find(chr(29))
-    string=string[:pos]
     subs=sub.split(' ')
-    # words=string.split(' ')
     comencaUna=False
     for x in subs:
         if x=='': 
@@ -52,17 +50,30 @@ def comenca(sub,string):
         #Si ja hem trobat que comença amb una no cal tornar a comprovar-ho. Seguim iterant només perquè la resta han d'estar contingudes
         if not comencaUna and re.search(' '+x,' '+string) is not None:
             comencaUna=True
-        # for y in words:
-        #     if y.startswith(x):
-        #         comencaUna=True
-        #         break
     return comencaUna
+
+def variant(sub,string,variants):
+    #TODO: Fer test de velocitat. Si va massa lent, busquem simplement que sub estigui dins d'una variant
+    subs=sub.split(' ')
+    for x in variants.split(','):
+        esVariant=True
+        for y in subs:
+            if y not in x:
+                esVariant=False
+                break
+        if esVariant: 
+            return True
+    return False
 
 
 class CompleterAdreces(QCompleter):
     def __init__(self,elems,widget):
         super().__init__(elems, widget)
-        self.elements=elems
+        #self.elements=elems
+        #Tindrem un diccionari on la clau serà el carrer i el valor les variants
+        aux=[x.split(chr(29)) for x in elems]
+        self.variants={x[0]:x[1].lower() for x in aux} 
+        self.elements=list(self.variants.keys())
         self.le=widget
         # Aparellem cada carrer amb el rang del seu codi
         aux=zip(self.obteRangCodis(),self.elements)
@@ -89,14 +100,17 @@ class CompleterAdreces(QCompleter):
             return
         self.word=word.lower()
         
-        # Volem dividir la llista en quatre llistes
+        # Volem dividir la llista en cinc llistes
         # -Carrers on un dels elements cercats encaixen amb una paraula del carrer
         # -Carrers on una de les paraules del carrer comencen per un dels elements cercats
         # -Carrers que contenen les paraules cercades
+        # -Carrers que tenen una variant que contingui les paraules cercades
         # -La resta
         # Podria semblar que la millor manera és crear quatre llistes, fer un for, una cadena if-then-else i posar cada element en una de les quatre. Però això és molt lent 
         # Aprofitant-nos de que les coses definides per python són molt ràpides (ja que es programen en C) podem resoldre el problema utilitzant funcions d'ordre superior i operacions sobre sets
         # Bàsicament farem servir filter per filtrar els elements que compleixen la funció, desar-los, i els extreurem dels restants.
+
+
 
         altres=set(self.elements)
         encaixen=set(filter(lambda x: encaixa(self.word,x), altres))
@@ -105,11 +119,13 @@ class CompleterAdreces(QCompleter):
         altres=altres-comencen
         contenen=set(filter(lambda x: conte(self.word,x), altres))
         altres=altres-contenen
+        variants=set(filter(lambda x: variant(self.word,x,self.variants[x]), altres))
         
         
-        #cal ordenar les llistes? No cal?
         ordenacio=lambda x: self.dicElems[x]
-        self.model().setStringList(sorted(encaixen,key=ordenacio)+sorted(comencen,key=ordenacio)+sorted(contenen,key=ordenacio))
+        #No mola posar-li les variants al string, però el completer ho necessita
+        variants=[x+chr(29)+self.variants[x] for x in variants] 
+        self.model().setStringList(sorted(encaixen,key=ordenacio)+sorted(comencen,key=ordenacio)+sorted(contenen,key=ordenacio)+sorted(variants))
         self.m_word=word
         self.complete()
         self.modelCanviat=True
