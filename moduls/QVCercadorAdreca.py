@@ -64,13 +64,14 @@ def variant(sub, string, variants):
     # TODO: Fer test de velocitat. Si va massa lent, busquem simplement que sub estigui dins d'una variant
     subs = sub.split(' ')
     for x in variants.split(','):
-        esVariant = True
-        for y in subs:
-            if y not in x:
-                esVariant = False
-                break
-        if esVariant:
-            return True
+        # esVariant = True
+        # for y in subs:
+        #     if y not in x:
+        #         esVariant = False
+        #         break
+        # if esVariant:
+        #     return True
+        if sub in x: return True
     return False
 
 
@@ -133,9 +134,11 @@ class CompleterAdreces(QCompleter):
 
         def ordenacio(x): return self.dicElems[x]
         # No mola posar-li les variants al string, però el completer ho necessita
-        variants = [x+chr(29)+self.variants[x] for x in variants]
-        self.model().setStringList(sorted(encaixen, key=ordenacio)+sorted(comencen,
-                                                                          key=ordenacio)+sorted(contenen, key=ordenacio)+sorted(variants))
+        encaixen = [x+chr(29)+self.variants[x] for x in sorted(encaixen, key=ordenacio)]
+        comencen = [x+chr(29)+self.variants[x] for x in sorted(comencen, key=ordenacio)]
+        contenen = [x+chr(29)+self.variants[x] for x in sorted(contenen, key=ordenacio)]
+        variants = ['(var) '+x+chr(29)+self.variants[x] for x in sorted(variants, key=ordenacio)]
+        self.model().setStringList(encaixen+comencen+contenen+variants)
         self.m_word = word
         self.complete()
         self.modelCanviat = True
@@ -272,11 +275,15 @@ class QCercadorAdreca(QObject):
         self.carrerActivat = True
         # print(carrer)
 
+        carrer=carrer.replace('(var) ','')
+        # if chr(29) in carrer:
+        #     carrer=carrer.split(chr(29))[0]
         nn = carrer.find(chr(30))
         if nn == -1:
             ss = carrer
         else:
             ss = carrer[0:nn-1]
+        # ss=ss.replace('(var) ','')
 
         self.calle_con_acentos = ss.rstrip()
 
@@ -352,12 +359,15 @@ class QCercadorAdreca(QObject):
                 self.txto = self.completerCarrer.currentCompletion()
             if self.txto == '':
                 return
+            # self.txto=self.txto.split(chr(29))[0]
 
             nn = self.txto.find(chr(30))
+            self.txto=self.txto.replace('(var) ','')
             if nn == -1:
                 ss = self.txto
             else:
                 ss = self.txto[0:nn-1]
+            # ss=ss.replace('(var) ','')
 
             # ss= self.txto[0:nn-1]
             self.calle_con_acentos = ss.rstrip()
@@ -445,7 +455,7 @@ class QCercadorAdreca(QObject):
             while self.query.next():
                 codi_carrer = self.query.value(0)  # Codigo calle
                 nombre = self.query.value(1)  # numero oficial
-                variants = self.query.value(2)  # Variants del nom
+                variants = self.query.value(2).lower()  # Variants del nom
                 nombre_sin_acentos = self.remove_accents(nombre)
                 if nombre == nombre_sin_acentos:
                     # clave= nombre + "  (" + codi_carrer + ")"
@@ -492,7 +502,11 @@ class QCercadorAdreca(QObject):
         self.leNumero.setText(txt)
         self.iniAdrecaNumero()
         # if self.leCarrer.text() in self.dictCarrers:
-        self.txto = self.completerCarrer.currentCompletion()
+        # self.txto = self.completerCarrer.currentCompletion()
+        self.txto = self.completerCarrer.popup().currentIndex().data()
+        if self.txto is None:
+            self.txto = self.completerCarrer.currentCompletion()
+        self.txto=self.txto.replace('(var) ','')
         if self.txto in self.dictCarrers:
             if txt in self.dictNumerosFiltre:
                 self.numeroCarrer = txt
@@ -522,6 +536,10 @@ class QCercadorAdreca(QObject):
         # self.txto = self.completerCarrer.currentCompletion()
         try:
             # if self.leCarrer.text() in self.dictCarrers:
+            self.txto = self.completerCarrer.popup().currentIndex().data()
+            if self.txto is None:
+                self.txto = self.completerCarrer.currentCompletion()
+            self.txto=self.txto.replace('(var) ','')
             if self.txto in self.dictCarrers:
 
                 if self.leNumero.text() != '':
