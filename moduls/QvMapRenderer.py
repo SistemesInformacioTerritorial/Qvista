@@ -3,7 +3,7 @@
 from qgis.core import (QgsApplication, QgsVectorLayer, QgsLayerDefinition,
                        QgsSymbol, QgsRendererCategory, QgsCategorizedSymbolRenderer,
                        QgsGraduatedSymbolRenderer, QgsRendererRange,
-                       QgsGradientColorRamp, QgsRendererRangeLabelFormat,)
+                       QgsGradientColorRamp, QgsRendererRangeLabelFormat, QgsUnitTypes)
 
 from qgis.PyQt.QtCore import Qt, QObject, pyqtSignal, pyqtSlot, QLocale
 from qgis.PyQt.QtGui import QColor
@@ -18,7 +18,7 @@ class QvMapRenderer(QObject):
     def __init__(self, llegenda):
         super().__init__()
         self.llegenda = llegenda
-    
+
     def calcColorsGradient(self, colorBase):
         colorIni = QColor(colorBase)
         colorIni.setAlpha(MAP_ALPHA_INI)
@@ -26,12 +26,19 @@ class QvMapRenderer(QObject):
         colorFi.setAlpha(255 - MAP_ALPHA_FIN)
         return colorIni, colorFi
 
+    def setStrokeSymbology(self, symbol, color, width=1):
+        symbolLayer = symbol.symbolLayer(0)
+        symbolLayer.setStrokeColor(QColor(color))
+        symbolLayer.setStrokeWidthUnit(QgsUnitTypes.RenderPixels)
+        symbolLayer.setStrokeWidth(width)
+
     def calcRender(self, capa, campCalculat, numDecimals, colorBase,
                    numCategories, modeCategories):
         colorIni, colorFi = self.calcColorsGradient(colorBase)
         colorRamp = QgsGradientColorRamp(colorIni, colorFi)
         labelFormat = QgsRendererRangeLabelFormat(_LABEL_FORMAT, numDecimals)
         symbol = QgsSymbol.defaultSymbol(capa.geometryType())
+        self.setStrokeSymbology(symbol, colorBase)
         renderer = QgsGraduatedSymbolRenderer.createRenderer(capa, campCalculat,
             numCategories, modeCategories, symbol, colorRamp, labelFormat)
         capa.setRenderer(renderer)
@@ -64,19 +71,22 @@ class QvMapRenderer(QObject):
     def customRender(self, capa, campCalculat, colorBase, rangs):
         total = len(rangs)
         alpha = MAP_ALPHA_INI
-        step = (255 - MAP_ALPHA_FIN) // (total - 1)
+        maxAlpha = (255 - MAP_ALPHA_FIN)
+        step =  maxAlpha // (total - 1)
         color = QColor(colorBase)
         decimals = self.maxDecimals(rangs)
         categories = []
-        for r in rangs:
+        for i, r in enumerate(rangs):
             color.setAlpha(alpha)
             alpha += step
-            sym = QgsSymbol.defaultSymbol(capa.geometryType())
-            sym.setColor(color)
+            alpha = min(alpha, maxAlpha)
+            symbol = QgsSymbol.defaultSymbol(capa.geometryType())
+            symbol.setColor(color)
+            self.setStrokeSymbology(symbol, colorBase)
             f0 = self.numRang(r[0])
             f1 = self.numRang(r[1])
             label = MAP_LOCALE.toString(f0, 'f', decimals) + ' - ' + MAP_LOCALE.toString(f1, 'f', decimals)
-            category = QgsRendererRange(f0, f1, sym, label)
+            category = QgsRendererRange(f0, f1, symbol, label)
             categories.append(category)
         renderer = QgsGraduatedSymbolRenderer(campCalculat, categories)
         renderer.setMode(QgsGraduatedSymbolRenderer.Custom)

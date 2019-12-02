@@ -9,19 +9,19 @@ from configuracioQvista import *
 
 MAP_ID = "qV_mapificacio"
 MAP_MAX_CATEGORIES = 10
-MAP_ALPHA_INI = 4
-MAP_ALPHA_FIN = 28
+MAP_ALPHA_INI = 18
+MAP_ALPHA_FIN = 18
 MAP_ZONES_DB = "Zones.gpkg"
 
 MAP_ZONES = OrderedDict({
     # Nom: (Camps, Taula)
     "Districte": ("DISTRICTE", "districtes"),
     "Barri": ("BARRI", "barris"),
-    "Codi postal": ("CODI_POSTAL", ""),
-    "Illa": ("ILLA", "illes"),
-    "Solar": ("SOLAR", ""),
     "Àrea estadística bàsica": ("AEB", "aeb"),
     "Secció censal": ("DISTRICTE || SECCIO_CENSAL AS SECCIO_CENSAL", "seccions_censals"),
+    "Codi postal": ("CODI_POSTAL", ""),
+    "Illa": ("ILLA", "illes"),
+    "Solar": ("SOLAR", "solars"),
     "Sector policial operatiu": ("SPO", "")
 })
 

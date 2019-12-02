@@ -19,6 +19,10 @@ import collections
 import operator
 import re
 
+import numpy as np
+import pandas as pd
+import geopandas as gpd
+
 from moduls.QvSqlite import QvSqlite
 from moduls.QvMapVars import *
 
@@ -371,6 +375,95 @@ class QvMapificacio(QObject):
             return False
         return True
 
+    def generaCapaQgis(self, nomCapa: str) -> bool:
+        # Carga de capa de datos geocodificados
+        infoLyr = QgsVectorLayer(self.fZones, 'Info', 'ogr')
+        infoLyr.setProviderEncoding(self.codi)
+        if not infoLyr.isValid():
+            self.msgError = "No s'ha pogut carregar capa de dades: " + self.fZones
+            return False
+
+        # Carga de capa base de zona
+        self.fBase = RUTA_DADES + MAP_ZONES_DB + "|layername=" + self.valZona[1]
+        zonaLyr = QgsVectorLayer(self.fBase, 'Zona', 'ogr')
+        zonaLyr.setProviderEncoding("UTF-8")
+        if not zonaLyr.isValid():
+            self.msgError = "No s'ha pogut carregar capa de zones: " + self.fBase
+            return False
+
+        # Añadimos capas auxiliares a la leyenda (de forma no visible) para procesarlas
+        self.llegenda.project.addMapLayer(infoLyr, False)
+        self.llegenda.project.addMapLayer(zonaLyr, False)
+
+        # Lista de campos de zona que se incluirán en la mapificación
+        zonaCamps = ''
+        for field in zonaLyr.fields():
+            name = field.name().upper()
+            if not name.startswith(self.prefixe) and not name.startswith('OGC_'):
+                if field.typeName() == "Real":
+                    zonaCamps += ", round(Z." + name + ", 2) as " + name
+                else:
+                    zonaCamps += ", Z." + name
+        zonaCamps += ', Z.GEOMETRY as GEOM'
+
+        # Creación de capa virtual que construye la agregación
+        select = self.calcSelect(zonaCamps)
+        virtLyr = QgsVectorLayer("?query=" + select, nomCapa, "virtual")
+        virtLyr.setProviderEncoding("UTF-8")
+
+        if not virtLyr.isValid():
+            self.llegenda.project.removeMapLayer(zonaLyr.id())
+            self.llegenda.project.removeMapLayer(infoLyr.id())
+            self.msgError = "No s'ha pogut generar capa de agregació"
+            return False
+
+        # Guarda capa de agregación en GPKG
+        self.fSQL = self.nomArxiuSortida(self.nomCapa)
+        ret, msg = QgsVectorFileWriter.writeAsVectorFormat(virtLyr, self.fSQL, "UTF-8", zonaLyr.crs(), "GPKG",
+            overrideGeometryType=QgsWkbTypes.MultiPolygon)
+        if ret != QgsVectorFileWriter.NoError:
+            self.llegenda.project.removeMapLayer(zonaLyr.id())
+            self.llegenda.project.removeMapLayer(infoLyr.id())
+            self.msgError = "No s'ha pogut desar capa de agregació: " + self.fSQL + " (Error - " + msg + ")"
+            return False
+
+        # Elimina capas de base y datos
+        self.llegenda.project.removeMapLayer(zonaLyr.id())
+        self.llegenda.project.removeMapLayer(infoLyr.id())
+        return True
+
+    def generaCapaGpd(self, nomCapa: str) -> bool:
+        try:
+            # Carga de capa de datos geocodificados
+            csv = pd.read_csv(self.fZones, sep=self.separador, encoding=self.codi,
+                              decimal=MAP_LOCALE.decimalPoint(), dtype={self.campZona: np.string_})
+
+            # Cálculo agregación por zona
+            agreg = csv.groupby(self.campZona).size()
+            agreg.index.names = ['CODI']
+            res = agreg.to_frame(name='RESULTAT')
+
+            # Carga de capa base de zona
+            self.fBase = RUTA_DADES + MAP_ZONES_DB
+            pols = gpd.read_file(self.fBase, driver="GPKG", layer=self.valZona[1], mode='r')
+
+            # Join
+            out = pols.merge(res, on='CODI', how='left')
+            out['RESULTAT'].fillna(0, inplace=True)
+
+            # Guarda capa de agregación en GPKG
+            self.fSQL = self.nomArxiuSortida(self.nomCapa)
+            out.to_file(self.fSQL, driver="GPKG", layer=nomCapa)
+            return True
+        except Exception as err:
+            self.msgError = str(err)
+            return False
+
+    def generaCapa(self, nomCapa: str, qGis : bool = False) -> bool:
+        if qGis:
+            return self.generaCapaQgis(nomCapa)
+        else:
+            return self.generaCapaGpd(nomCapa)
 
     def agregacio(self, llegenda, nomCapa: str, zona: str, tipusAgregacio: str,
         campCalculat: str = 'RESULTAT', campAgregat: str = '', tipusDistribucio: str = "Total", filtre: str = '', numDecimals: int = -1,
@@ -457,60 +550,8 @@ class QvMapificacio(QObject):
         self.campCalculat = campCalculat
         self.nomCapa = self.netejaString(nomCapa)
 
-        # Carga de capa de datos geocodificados
-        infoLyr = QgsVectorLayer(self.fZones, 'Info', 'ogr')
-        infoLyr.setProviderEncoding(self.codi)
-        if not infoLyr.isValid():
-            self.msgError = "No s'ha pogut carregar capa de dades: " + self.fZones
+        if not self.generaCapa(nomCapa):
             return False
-
-        # Carga de capa base de zona
-        self.fBase = RUTA_DADES + MAP_ZONES_DB + "|layername=" + self.valZona[1]
-        zonaLyr = QgsVectorLayer(self.fBase, 'Zona', 'ogr')
-        zonaLyr.setProviderEncoding("UTF-8")
-        if not zonaLyr.isValid():
-            self.msgError = "No s'ha pogut carregar capa de zones: " + self.fBase
-            return False
-
-        # Añadimos capas auxiliares a la leyenda (de forma no visible) para procesarlas
-        self.llegenda.project.addMapLayer(infoLyr, False)
-        self.llegenda.project.addMapLayer(zonaLyr, False)
-
-        # Lista de campos de zona que se incluirán en la mapificación
-        zonaCamps = ''
-        for field in zonaLyr.fields():
-            name = field.name().upper()
-            if not name.startswith(self.prefixe) and not name.startswith('OGC_'):
-                if field.typeName() == "Real":
-                    zonaCamps += ", round(Z." + name + ", 2) as " + name
-                else:
-                    zonaCamps += ", Z." + name
-        zonaCamps += ', Z.GEOMETRY as GEOM'
-
-        # Creación de capa virtual que construye la agregación
-        select = self.calcSelect(zonaCamps)
-        virtLyr = QgsVectorLayer("?query=" + select, nomCapa, "virtual")
-        virtLyr.setProviderEncoding("UTF-8")
-
-        if not virtLyr.isValid():
-            self.llegenda.project.removeMapLayer(zonaLyr.id())
-            self.llegenda.project.removeMapLayer(infoLyr.id())
-            self.msgError = "No s'ha pogut generar capa de agregació"
-            return False
-
-        # Guarda capa de agregación en GPKG
-        self.fSQL = self.nomArxiuSortida(self.nomCapa)
-        ret, msg = QgsVectorFileWriter.writeAsVectorFormat(virtLyr, self.fSQL, "UTF-8", zonaLyr.crs(), "GPKG",
-            overrideGeometryType=QgsWkbTypes.MultiPolygon)
-        if ret != QgsVectorFileWriter.NoError:
-            self.llegenda.project.removeMapLayer(zonaLyr.id())
-            self.llegenda.project.removeMapLayer(infoLyr.id())
-            self.msgError = "No s'ha pogut desar capa de agregació: " + self.fSQL + " (Error - " + msg + ")"
-            return False
-
-        # Elimina capas de base y datos
-        self.llegenda.project.removeMapLayer(zonaLyr.id())
-        self.llegenda.project.removeMapLayer(infoLyr.id())
 
         # Carga capa de agregación
         mapLyr = QgsVectorLayer(self.fSQL, nomCapa, "ogr")
