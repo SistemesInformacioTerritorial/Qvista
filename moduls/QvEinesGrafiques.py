@@ -295,6 +295,8 @@ class QvMesuraMultiLinia(QgsMapTool):
     def treuUltimtram(self):
         poligono=QgsGeometry.fromPolylineXY(self.points)
         distancia = poligono.length()
+        if self.point is None:
+            return False
         self.point = None
         self.points = []
         self.hoverSartMarker = False
@@ -308,6 +310,7 @@ class QvMesuraMultiLinia(QgsMapTool):
         self.qV.wMesuraGrafica.setDistanciaTotal(0)
         self.qV.wMesuraGrafica.setArea(0)
         # self.qV.lblDistanciaTempsReal.setText('Distáncia últim tram: 0 m')       
+        return True
     def novaRubberband(self):
         self.rubberbands.append(self.rubberband)
         self.rubberband=None
@@ -342,7 +345,10 @@ class QvMesuraMultiLinia(QgsMapTool):
                 
         
         if e.button() == Qt.RightButton:
-            self.treuUltimtram()
+            if not self.treuUltimtram():
+                # self.qV.wMesuraGrafica.tancar()
+                self.qV.dwMesuraGrafica.hide()
+                # self.canvas.unsetMapTool()
             
         else:
             if self.hoverSartMarker:

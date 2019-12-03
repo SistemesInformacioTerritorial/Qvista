@@ -397,13 +397,13 @@ class QvNouCataleg(QWidget):
         elif event.key()==Qt.Key_Return or event.key()==Qt.Key_Enter:
             if hasattr(self,'widgetSeleccionat'):
                 self.widgetSeleccionat.obreQVista()
-    def seleccionaElement(self,widget):
+    def seleccionaElement(self,widget, teclat=False):
         if widget is None: return
         for x, y in self.catalegs.items():
             for z in y:
                 z.setChecked(False)
         widget.setChecked(True)
-        self.scroll.ensureWidgetVisible(widget)
+        if teclat: self.scroll.ensureWidgetVisible(widget)
         self.widgetSeleccionat=widget
         for x in range(0,len(self.nlayouts)):
             if self.nlayouts[x].indexOf(widget)!=-1:
@@ -436,7 +436,7 @@ class QvNouCataleg(QWidget):
                         j=nlayout.x(i)-1
                     #Agafem el layout anterior
 
-            self.seleccionaElement(nlayout.widgetAt(i,j))
+            self.seleccionaElement(nlayout.widgetAt(i,j), True)
     def mouVertical(self,despl: int):
         if self.indexLayoutSeleccionat!=-1:
             nlayout=self.nlayouts[self.indexLayoutSeleccionat]
@@ -455,7 +455,7 @@ class QvNouCataleg(QWidget):
                 else:
                     j=nlayout.x(i)-1
             wid=nlayout.widgetAt(i,j)
-            self.seleccionaElement(wid)
+            self.seleccionaElement(wid, True)
     def mouEsquerra(self):
         self.mouHoritzontal(-1)  
     def mouDreta(self):

@@ -133,6 +133,7 @@ class QvMascaraEinaPlantilla(QgsMapTool):
         self.canvas = canvas
         self.qV = qV
         self.setParametres(**kwargs)
+        self.rubberbands=[]
 
     def canvasPressEvent(self, event):
         pass
@@ -194,6 +195,16 @@ class QvMascaraEinaPlantilla(QgsMapTool):
         self.setColor(color)
         self.setOpacitat(opacitat/100)
         self.actualitza()
+
+    def novaRubberband(self):
+        rb = QgsRubberBand(self.canvas, True)
+        rb.setColor(QvConstants.COLORDESTACAT)
+        rb.setWidth(2)
+        self.rubberbands.append(rb)
+        return rb
+    def eliminaRubberbands(self):
+        for x in self.rubberbands: x.hide()
+        pass
 
 
 # Copiat del QvSeleccioPunt de QvEinesGrafiques.py i adaptat a les nostres necessitats
@@ -279,12 +290,6 @@ class QvMascaraEinaDibuixa(QvMascaraEinaPlantilla):
             # TODO: Crear una altra excepció més específica
             raise Exception("No hi havia nivell seleccionat")
 
-    def novaRubberband(self):
-        rb = QgsRubberBand(self.canvas, True)
-        rb.setColor(QvConstants.COLORDESTACAT)
-        rb.setWidth(2)
-        return rb
-
     def canvasPressEvent(self, event):
         if event.button() == Qt.RightButton:
             # Tancar polígon??
@@ -294,7 +299,7 @@ class QvMascaraEinaDibuixa(QvMascaraEinaPlantilla):
         if len(self.points) == 1:
             self.posB = event.pos()
         self.selectPoly(event)
-        if self.qpointsDistance(self.posB, event.pos()) < 10 and len(self.points) > 2:
+        if len(self.points) > 2 and self.qpointsDistance(self.toCanvasCoordinates(self.points[0]), event.pos()) < 10:
             self.tancarPoligon()
 
     def canvasMoveEvent(self, event):
@@ -368,12 +373,6 @@ class QvMascaraEinaCercle(QvMascaraEinaPlantilla):
                                'Marqueu un nivell a la llegenda sobre el que aplicar la consulta.')
             # TODO: Crear una altra excepció més específica
             raise Exception("No hi havia nivell seleccionat")
-
-    def novaRubberband(self):
-        rb = QgsRubberBand(self.canvas, True)
-        rb.setColor(QvConstants.COLORDESTACAT)
-        rb.setWidth(2)
-        return rb
 
     def canvasPressEvent(self, event):
         if event.button() == Qt.RightButton:

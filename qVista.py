@@ -1807,6 +1807,7 @@ class QVista(QMainWindow, Ui_MainWindow):
                 self.parentWidget().move(pos.x()-425*zoomFactor,pos.y()-200)
             def tancar(self):
                 qV.esborrarMesures(True)
+                qV.canvas.unsetMapTool(qV.toolMesura)
             def canviaVisibilitatDw(self,visibilitat):
                 if visibilitat:
                     self.obrir()
