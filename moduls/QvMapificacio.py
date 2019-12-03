@@ -562,7 +562,7 @@ class QvMapificacio(QObject):
 
         # Renderer para mapificar
         self.renderer = self.llegenda.mapRenderer.calcRender(mapLyr, self.campCalculat, self.numDecimals,
-            self.colorBase, self.numCategories, self.modeCategories)
+            self.colorBase, self.colorBase, self.numCategories, self.modeCategories)
         if self.renderer is None:
             self.msgError = "No s'ha pogut elaborar el mapa"
             return False

@@ -50,8 +50,14 @@ class QvFormBaseMapificacio(QDialog):
         self.setDisabled(False)
         QApplication.instance().restoreOverrideCursor()
 
-    def comboColors(self, combo):
-        for nom, col in MAP_COLORS.items():
+    def comboColors(self, combo, llista=MAP_COLORS, colorBase=None):
+        combo.clear()
+        for nom, col in llista.items():
+            if col is None:
+                if colorBase is None:
+                    col = MAP_COLORS[self.colorBase]
+                else:
+                    col = colorBase
             pixmap = QPixmap(80, 45)
             pixmap.fill(col)
             icon = QIcon(pixmap)
@@ -419,6 +425,12 @@ class QvFormSimbMapificacio(QvFormBaseMapificacio):
         self.color.setEditable(False)
         self.comboColors(self.color)
 
+        self.contorn = QComboBox(self)
+        self.contorn.setEditable(False)
+        self.comboColors(self.contorn, MAP_CONTORNS)
+
+        self.color.currentIndexChanged.connect(self.canviaContorns)
+
         self.metode = QComboBox(self)
         self.metode.setEditable(False)
         self.metode.addItems(MAP_METODES_MODIF.keys())
@@ -450,6 +462,7 @@ class QvFormSimbMapificacio(QvFormBaseMapificacio):
         self.gSimb.setLayout(self.lSimb)
 
         self.lSimb.addRow('Color base:', self.color)
+        self.lSimb.addRow('Color contorn:', self.contorn)
         self.lSimb.addRow('Mètode de classificació:', self.metode)
         self.lSimb.addRow(self.nomIntervals, self.intervals)
 
@@ -468,8 +481,12 @@ class QvFormSimbMapificacio(QvFormBaseMapificacio):
         self.info = QgsExpressionContextUtils.layerScope(self.capa).variable(MAP_ID)
         if self.info is None:
             return False
-        ok, (self.campCalculat, self.numDecimals, self.colorBase, self.numCategories, \
-            self.modeCategories, self.rangsCategories) = self.llegenda.mapRenderer.paramsRender(self.capa)
+        ok, (self.campCalculat, self.numDecimals, self.colorBase, self.iniColorContorn, self.numCategories, self.modeCategories,
+            self.rangsCategories, self.sourceSymbol) = self.llegenda.mapRenderer.paramsRender(self.capa)
+
+#### CONTINUARA..............
+
+        [k for k,v in MAP_CONTORNS.items() if v == Qt.white][0]
         self.custom = (self.modeCategories == 'Personalitzat')
         if not ok:
             self.msgInfo("No s'han pogut recuperar els paràmetres de mapificació")
@@ -503,6 +520,7 @@ class QvFormSimbMapificacio(QvFormBaseMapificacio):
 
     def valorsFinals(self):
         self.colorBase = self.color.currentText()
+        self.colorContorn = self.contorn.currentText()
         self.modeCategories = self.metode.currentText()
         self.numCategories = self.intervals.value()
         if self.custom:
@@ -639,6 +657,10 @@ class QvFormSimbMapificacio(QvFormBaseMapificacio):
         # print('GSIMB -> Ancho:', self.gSimb.size().width(), '- Alto:', self.gSimb.size().height())
         # print('FORM -> Ancho:', self.size().width(), '- Alto:', self.size().height())
 
+    @pyqtSlot()
+    def canviaContorns(self):        
+        self.comboColors(self.contorn, MAP_CONTORNS, MAP_COLORS[self.color.currentText()])
+
     def leSelectFocus(self, wLineEdit):
         lon = len(wLineEdit.text())
         if lon > 0:
@@ -692,10 +714,11 @@ class QvFormSimbMapificacio(QvFormBaseMapificacio):
         try:
             if self.custom:
                 self.renderer = self.llegenda.mapRenderer.customRender(self.capa, self.campCalculat,
-                    MAP_COLORS[self.colorBase], self.rangs)
+                    MAP_COLORS[self.colorBase], MAP_CONTORNS[self.colorContorn], self.rangs, self.sourceSymbol)
             else:
                 self.renderer = self.llegenda.mapRenderer.calcRender(self.capa, self.campCalculat, self.numDecimals,
-                    MAP_COLORS[self.colorBase], self.numCategories, MAP_METODES_MODIF[self.modeCategories])            
+                    MAP_COLORS[self.colorBase], MAP_CONTORNS[self.colorContorn], self.numCategories, MAP_METODES_MODIF[self.modeCategories],
+                    self.sourceSymbol)
             if self.renderer is None:
                 return "No s'ha pogut elaborar el mapa"
             err = self.llegenda.saveStyleToGeoPackage(self.capa, MAP_ID)

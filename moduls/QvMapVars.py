@@ -2,7 +2,7 @@
 
 from qgis.PyQt.QtGui import QColor
 from qgis.core import QgsGraduatedSymbolRenderer
-from qgis.PyQt.QtCore import QLocale
+from qgis.PyQt.QtCore import QLocale, Qt
 from collections import OrderedDict
 
 from configuracioQvista import *
@@ -51,6 +51,14 @@ MAP_COLORS = OrderedDict({
     "Taronja": QColor(255, 128, 0),
     "Verd" : QColor(32, 160, 32),
     "Vermell" : QColor(255, 32, 32)
+})
+
+MAP_CONTORNS = OrderedDict({
+    "Base": None,
+    "Negre": Qt.black,
+    "Gris": Qt.gray,
+    "Blanc": Qt.white,
+    "Cap" : Qt.transparent
 })
 
 MAP_METODES = OrderedDict({
