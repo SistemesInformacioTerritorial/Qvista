@@ -13,6 +13,8 @@ from moduls.QvConstants import QvConstants
 from moduls.QvPushButton import QvPushButton
 from moduls.QvConstants import QvConstants
 from moduls.QvStreetView import *
+from moduls.QvMascara import QvMascaraEinaPlantilla
+from moduls.QvEinesGrafiques import QvMesuraMultiLinia
 #from qVista import QVista
 
 
@@ -33,6 +35,7 @@ class QvCanvas(QgsMapCanvas):
         self._preparacioBotonsCanvas()
         if self.llistaBotons is not None:
             self.panCanvas()
+        self.eines=[]
             
 
     def keyPressEvent(self, event):
@@ -351,6 +354,36 @@ class QvCanvas(QgsMapCanvas):
 
         e.setDropAction(Qt.MoveAction)
         e.accept()
+    def setMapTool(self,tool):
+        if isinstance(tool,QvMascaraEinaPlantilla):
+            while tool in self.eines: 
+                self.unsetLastMapTool()
+        super().setMapTool(tool)
+        if len(self.eines)>0 and self.eines[-1]==tool: return
+        self.eines.append(tool)
+    def unsetMapTool(self,eina, ultima=False):
+        super().unsetMapTool(eina)
+        if isinstance(eina,QvMascaraEinaPlantilla):
+            eina.eliminaRubberbands()
+        if not ultima:
+            #Eliminar l'aparició de més al final d'aquesta eina
+            indexes = [i for i,x in enumerate(self.eines) if x == eina]
+            del(self.eines[indexes[-1]])
+
+        if len(self.eines)>0:
+            if self.eines[-1] is None or self.eines[-1]==eina:
+                self.unsetLastMapTool()
+                return
+            super().setMapTool(self.eines[-1])
+    def unsetLastMapTool(self):
+        eina=self.eines.pop()
+        self.unsetMapTool(eina,True)
+
+    def mousePressEvent(self,event):
+        super().mousePressEvent(event)
+        if event.button()==Qt.RightButton:
+            if not isinstance(self.eines[-1],QvMesuraMultiLinia):
+                self.unsetLastMapTool()
  
 
 
