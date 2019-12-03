@@ -229,7 +229,7 @@ class QvNouCataleg(QWidget):
                 boto=BotoLateral(x,self,privat)
                 boto.setCheckable(True)
                 if privat:
-                    boto.setIcon(QIcon(imatgesDir+'lock-open-blanc.png'))
+                    boto.setIcon(QIcon(imatgesDir+'lock-clar.png'))
                 self.botonsLaterals.append(boto)
                 self.lBanda.addWidget(boto)
         
@@ -556,9 +556,9 @@ class BotoLateral(QPushButton):
         super().setChecked(checked)
         if self.esPrivat():
             if checked:
-                self.setIcon(QIcon(imatgesDir+'lock-open-blanc.png'))
+                self.setIcon(QIcon(imatgesDir+'lock-clar.png'))
             else:
-                self.setIcon(QIcon(imatgesDir+'lock-open-fosc.png'))
+                self.setIcon(QIcon(imatgesDir+'lock-fosc.png'))
     def esPrivat(self):
         return self.privat
 
