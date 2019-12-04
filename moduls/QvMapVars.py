@@ -13,6 +13,10 @@ MAP_ALPHA_INI = 18
 MAP_ALPHA_FIN = 18
 MAP_ZONES_DB = "Zones.gpkg"
 
+# TODO
+# Si se recalcula la capa y está en la leyenda, quitarla
+# A veces hay decimales en la leyenda que no se ven
+
 MAP_ZONES = OrderedDict({
     # Nom: (Camps, Taula)
     "Districte": ("DISTRICTE", "districtes"),

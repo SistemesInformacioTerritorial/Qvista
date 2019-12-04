@@ -128,7 +128,7 @@ class QvMapificacio(QObject):
             codi{str} -- El codi inferit
         '''
         with open(self.fDades, "rb") as csvInput:
-            buf = csvInput.read(1000)
+            buf = csvInput.read(10000)
         val = chardet.detect(buf)
         return val['encoding']
 
@@ -349,7 +349,7 @@ class QvMapificacio(QObject):
         else:
             dist = '/ Z.' + self.tipusDistribucio
         # Calculamos SELECT completo de agrupación
-        select = "select round(I.AGREGAT " + dist + ", " + str(self.numDecimals) + ") AS " + self.campCalculat + \
+        select = "select round(I.AGREGAT " + dist + ", " + str(self.renderParams.numDecimals) + ") AS " + self.renderParams.campCalculat + \
                  camps + " from Zona AS Z, " + \
                  "(SELECT " + self.tipusAgregacio + " AS AGREGAT, " + self.campZona + " AS CODI " + \
                  "FROM Info" + filtre + " GROUP BY " + self.campZona + ") AS I WHERE Z.CODI = I.CODI"
@@ -494,6 +494,7 @@ class QvMapificacio(QObject):
         Returns:
             bool -- [description]
         """
+        from moduls.QvMapRenderer import QvMapRendererParams
 
         self.fMapa = ''
         self.fSQL = ''
@@ -505,6 +506,8 @@ class QvMapificacio(QObject):
             "Camp o fòrmula de càlcul: " + campAgregat + '\n' + \
             "Filtre: " + filtre + '\n' + \
             "Distribució: " + tipusDistribucio
+
+        self.renderParams = QvMapRendererParams()
 
         if not self.verifZona(zona):
             self.msgError = "Error en zona"
@@ -531,23 +534,23 @@ class QvMapificacio(QObject):
         if modeCategories is None or modeCategories not in MAP_METODES.keys():
             self.msgError = "Error en modeCategories"
             return False
-        self.modeCategories = MAP_METODES[modeCategories]
+        self.renderParams.modeCategories = MAP_METODES[modeCategories]
 
         if colorBase is None or colorBase not in MAP_COLORS.keys():
             self.msgError = "Error en colorBase"
             return False
-        self.colorBase = MAP_COLORS[colorBase]
+        self.renderParams.colorBase = MAP_COLORS[colorBase]
 
         if numDecimals >= 0:
-            self.numDecimals = numDecimals
+            self.renderParams.numDecimals = numDecimals
         elif self.tipusAgregacio.startswith('COUNT') and self.tipusDistribucio == "":
-            self.numDecimals = 0
+            self.renderParams.numDecimals = 0
         else:
-            self.numDecimals = 2
+            self.renderParams.numDecimals = 2
 
-        self.numCategories = numCategories
+        self.renderParams.numCategories = numCategories
         self.filtre = filtre
-        self.campCalculat = campCalculat
+        self.renderParams.campCalculat = campCalculat
         self.nomCapa = self.netejaString(nomCapa)
 
         if not self.generaCapa(nomCapa):
@@ -561,8 +564,7 @@ class QvMapificacio(QObject):
             return False
 
         # Renderer para mapificar
-        self.renderer = self.llegenda.mapRenderer.calcRender(mapLyr, self.campCalculat, self.numDecimals,
-            self.colorBase, self.colorBase, self.numCategories, self.modeCategories)
+        self.renderer = self.llegenda.mapRenderer.calcRender(mapLyr, self.renderParams)
         if self.renderer is None:
             self.msgError = "No s'ha pogut elaborar el mapa"
             return False
@@ -571,7 +573,7 @@ class QvMapificacio(QObject):
 
         # Identificador de mapificación para qVista
         QgsExpressionContextUtils.setLayerVariable(mapLyr, MAP_ID, self.descripcio)
-        mapLyr.setDisplayExpression(self.campCalculat)
+        mapLyr.setDisplayExpression(self.renderParams.campCalculat)
 
         # Guarda simbología en GPKG
         err = self.llegenda.saveStyleToGeoPackage(mapLyr, MAP_ID)
