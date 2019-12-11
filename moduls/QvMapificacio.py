@@ -124,7 +124,7 @@ class QvMapificacio(QObject):
             codi{str} -- El codi inferit
         '''
         with open(self.fDades, "rb") as csvInput:
-            buf = csvInput.read(1000)
+            buf = csvInput.read(10000)
         val = chardet.detect(buf)
         return val['encoding']
 
@@ -598,7 +598,7 @@ if __name__ == "__main__":
         leyenda.setWindowTitle('Llegenda')
         leyenda.show()
 
-        z = QvMapificacio('CarrecsANSI.csv')
+        z = QvMapificacio('U:/QUOTA/Comu_imi/Becaris/CarrecsAnsi100.csv')
         # z = QvMapificacio('CarrecsUTF8.csv')
         if z.msgError != '':
             print('Error:', z.msgError)

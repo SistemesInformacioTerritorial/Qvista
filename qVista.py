@@ -1179,9 +1179,19 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.actAfegirNivellQlr.setStatusTip("Afegir capa QLR")
         self.actAfegirNivellQlr.triggered.connect(escollirNivellQlr)
 
-        self.actAfegirCapa = QAction("Afegir al mapa...", self)
+        self.actAfegirCapa = QAction("Afegir capa QGIS (qlr)", self)
         self.actAfegirCapa.setStatusTip("Afegir capa")
-        self.actAfegirCapa.triggered.connect(self.obrirDialegNovaCapa)
+        self.actAfegirCapa.triggered.connect(self.obrirDialegNovaCapaQLR)
+
+        self.actCrearCapa1 = QAction("Crear capa des d'arxiu GIS", self)
+        self.actCrearCapa1.setStatusTip("Crea una capa des d'un geopackage o un shapefile")
+        self.actCrearCapa1.triggered.connect(self.obrirDialegNovaCapaGIS)
+        #El triggered
+
+        self.actCrearCapa2 = QAction("Crear capa des d'arxiu CSV", self)
+        self.actCrearCapa2.setStatusTip("Crea una capa des d'un arxiu csv amb adreces o coordenades")
+        self.actCrearCapa2.triggered.connect(self.obrirDialegNovaCapaCSV)
+        #El triggered
 
         self.actSeleccioExpressio= QAction("Selecció per expressió", self)
         self.actSeleccioExpressio.setStatusTip("Selecció per expressió")
@@ -2164,6 +2174,8 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.menuCapes.addAction(self.actObrirCataleg)
         self.menuCapes.addSeparator()
         self.menuCapes.addAction(self.actAfegirCapa)
+        self.menuCapes.addAction(self.actCrearCapa1)
+        self.menuCapes.addAction(self.actCrearCapa2)
         
         # self.menuCarregarNivell.styleStrategy = QFont.PreferAntialias or QFont.PreferQuality
 
@@ -2970,6 +2982,7 @@ class QVista(QMainWindow, Ui_MainWindow):
             self.obrirProjecteAmbRang(nfile)
            
     def obrirDialegNovaCapa(self):
+        '''JA NO ES FA SERVIR'''
         dialegObertura=QFileDialog()
         dialegObertura.setDirectoryUrl(QUrl('../Dades/Capes/'))
         dialegObertura.setSupportedSchemes(["Projectes Qgis (*.qgs)", "Otro esquema"])
@@ -2994,6 +3007,39 @@ class QVista(QMainWindow, Ui_MainWindow):
                 # QgsLayerDefinition().loadLayerDefinition(nfile, self.project, self.root)
                 elif extensio.lower() == '.csv':
                     carregarLayerCSV(nfile)
+    def obrirDialegNovaCapaQLR(self):
+        dialegObertura=QFileDialog()
+        dialegObertura.setDirectoryUrl(QUrl('../Dades/Capes/'))
+        dialegObertura.setSupportedSchemes(["Projectes Qgis (*.qgs)", "Otro esquema"])
+
+        nfile,_ = dialegObertura.getOpenFileName(None,"Nova capa", '../Dades/Capes/', "Capes QGIS (*.qlr);;Tots els arxius (*.*)")
+
+        if nfile is not None:
+            afegirQlr(nfile)
+    def obrirDialegNovaCapaGIS(self):
+        dialegObertura=QFileDialog()
+        dialegObertura.setDirectoryUrl(QUrl('../Dades/Capes/'))
+        dialegObertura.setSupportedSchemes(["Arxius GIS (*.shp *.gpkg)", "Otro esquema"])
+
+        nfile,_ = dialegObertura.getOpenFileName(None,"Nova capa", '../Dades/Capes/', "Arxius GIS (*.shp *.gpkg);; ShapeFile (*.shp);; Geopackage (*.gpkg);;Tots els arxius (*.*)")
+
+        if nfile is not None:
+            layer = QgsVectorLayer(nfile, os.path.basename(nfile), "ogr")
+            if not layer.isValid():
+                return
+            renderer=layer.renderer()
+            self.project.addMapLayer(layer)
+            self.setDirtyBit()
+        pass
+    def obrirDialegNovaCapaCSV(self):
+        dialegObertura=QFileDialog()
+        dialegObertura.setDirectoryUrl(QUrl('../Dades/Capes/'))
+        dialegObertura.setSupportedSchemes(["Arxius csv (*.csv)", "Otro esquema"])
+
+        nfile,_ = dialegObertura.getOpenFileName(None,"Nova capa", '../Dades/Capes/', "CSV (*.csv);;Tots els arxius (*.*)")
+
+        if nfile is not None:
+            carregarLayerCSV(nfile)
 
     def recorrerFields(self):
         if self.potsRecorrer:
