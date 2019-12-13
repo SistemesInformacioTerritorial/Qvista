@@ -459,7 +459,7 @@ class QvMapificacio(QObject):
             self.msgError = str(err)
             return False
 
-    def generaCapa(self, nomCapa: str, qGis : bool = False) -> bool:
+    def generaCapa(self, nomCapa: str, qGis: bool = False) -> bool:
         if qGis:
             return self.generaCapaQgis(nomCapa)
         else:
@@ -503,7 +503,7 @@ class QvMapificacio(QObject):
         self.descripcio = "Arxiu de dades: " + self.fZones + '\n' + \
             "Zona: " + zona + '\n' + \
             "Tipus d'agregació: " + tipusAgregacio + '\n' + \
-            "Camp o fòrmula de càlcul: " + campAgregat + '\n' + \
+            "Camp de càlcul: " + campAgregat + '\n' + \
             "Filtre: " + filtre + '\n' + \
             "Distribució: " + tipusDistribucio
 
