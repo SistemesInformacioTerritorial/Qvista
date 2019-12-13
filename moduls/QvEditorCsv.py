@@ -15,14 +15,14 @@ class QvEditorCsv(QDialog):
         super().__init__(parent)
         # self.setMinimumWidth(800)
         # self.setMinimumHeight(600)
-        self.resize(800,600)
+        self.resize(800, 600)
         # Declaració d'atributs de l'objecte
         self._arxiu = arxiu
         self._codificacio = codificacio
         self._errors = sorted(errors)
         self._separador = separador
         self._i = 0
-        self._teErrors=len(self._errors)!=0
+        self._teErrors = len(self._errors) != 0
 
         # Definició gràfica
         self._lay = QVBoxLayout()
@@ -93,17 +93,22 @@ class QvEditorCsv(QDialog):
                 item = QTableWidgetItem(str(i+1))
                 if self._teErrors and i+1 in self._errors:
                     item.setBackground(QBrush(QvConstants.COLORDESTACAT))
-                    item.setForeground(QBrush(QvConstants.COLORDESTACAT))
-                    font=item.font()
+                    # item.setForeground(QBrush(QvConstants.COLORDESTACAT))
+                    font = item.font()
                     font.setBold(True)
                     item.setFont(font)
-                self._taula.setVerticalHeaderItem(i,item)
+                self._taula.setVerticalHeaderItem(i, item)
+
     def exec(self):
         self._mostraErrorActual()
         return super().exec()
+
     def _mostraErrorActual(self, click=False):
-        if not self._teErrors: return # si no hi ha errors no farem res
-        if not click: self._taula.scrollToItem(self._taula.item(self._errors[self._i]-1, 0))
+        if not self._teErrors:
+            return  # si no hi ha errors no farem res
+        if not click:
+            self._taula.scrollToItem(
+                self._taula.item(self._errors[self._i]-1, 0))
         self._spinErrors.setValue(self._i+1)
 
     def _setError(self, i, click=False):
@@ -131,20 +136,22 @@ class QvEditorCsv(QDialog):
                 files = ((self._taula.item(i, j).data(Qt.DisplayRole) for j in range(
                     self._taula.columnCount())) for i in range(self._taula.rowCount()))
                 writer.writerows(files)
-            if nfile!=self._arxiu:
+            if nfile != self._arxiu:
                 self.rutaCanviada.emit(nfile)
-            #Assumim que si el desem és que s'ha modificat
+            # Assumim que si el desem és que s'ha modificat
             self.modificat.emit()
             self.close()
-    def _errorProper(self,x,y):
+
+    def _errorProper(self, x, y):
         if self._teErrors:
             if x+1 in self._errors:
                 self._setError(self._errors.index(x+1), True)
             else:
                 return
-                distancies=enumerate(map(lambda xx: abs(xx-x),self._errors))
-                index=sorted(distancies,key=lambda x:x[1])[0][0]
+                distancies = enumerate(map(lambda xx: abs(xx-x), self._errors))
+                index = sorted(distancies, key=lambda x: x[1])[0][0]
                 self._setError(index, True)
+
     def show(self):
         super().show()
         if self._teErrors:
@@ -167,7 +174,7 @@ if __name__ == '__main__':
         taula = QvEditorCsv(
             arxiu, [10, 20, 30, 40, 50, 60, 70], val['encoding'], ';')
         taula.rutaCanviada.connect(print)
-        #Posem el stylesheet de qVista. Així forcem a que es vegi com es veurà a qVista
+        # Posem el stylesheet de qVista. Així forcem a que es vegi com es veurà a qVista
         with open('style.qss') as f:
             taula.setStyleSheet(f.read())
         taula.show()
