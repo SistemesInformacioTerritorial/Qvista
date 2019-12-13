@@ -9,6 +9,7 @@ from moduls.QvImports import *
 
 class QvEditorCsv(QDialog):
     rutaCanviada = pyqtSignal(str)
+    modificat = pyqtSignal()
 
     def __init__(self, arxiu: str, errors: Iterable[int], codificacio: str, separador: str, parent: QWidget = None):
         super().__init__(parent)
@@ -97,9 +98,11 @@ class QvEditorCsv(QDialog):
                     font.setBold(True)
                     item.setFont(font)
                 self._taula.setVerticalHeaderItem(i,item)
-
+    def exec(self):
+        self._mostraErrorActual()
+        return super().exec()
     def _mostraErrorActual(self, click=False):
-        if self._teErrors: return # si no hi ha errors no farem res
+        if not self._teErrors: return # si no hi ha errors no farem res
         if not click: self._taula.scrollToItem(self._taula.item(self._errors[self._i]-1, 0))
         self._spinErrors.setValue(self._i+1)
 
@@ -128,7 +131,10 @@ class QvEditorCsv(QDialog):
                 files = ((self._taula.item(i, j).data(Qt.DisplayRole) for j in range(
                     self._taula.columnCount())) for i in range(self._taula.rowCount()))
                 writer.writerows(files)
-            self.rutaCanviada.emit(nfile)
+            if nfile!=self._arxiu:
+                self.rutaCanviada.emit(nfile)
+            #Assumim que si el desem és que s'ha modificat
+            self.modificat.emit()
             self.close()
     def _errorProper(self,x,y):
         if self._teErrors:
