@@ -432,24 +432,46 @@ class QvMapificacio(QObject):
         self.llegenda.project.removeMapLayer(infoLyr.id())
         return True
 
-    def generaCapaGpd(self, nomCapa: str) -> bool:
+    def generaCapaGpd(self, nomCapa: str, tipusAgregacio: str) -> bool:
         try:
             # Carga de capa de datos geocodificados
             csv = pd.read_csv(self.fZones, sep=self.separador, encoding=self.codi,
                               decimal=MAP_LOCALE.decimalPoint(), dtype={self.campZona: np.string_})
 
+            # Aplicar filtro
+            if self.filtre != '':
+                csv.query(self.filtre, inplace=True)
+
             # Cálculo agregación por zona
-            agreg = csv.groupby(self.campZona).size()
+            if tipusAgregacio == "Recompte":
+                agreg = csv.groupby(self.campZona).size()
+            elif tipusAgregacio == "Recompte diferents":
+                agreg = csv.groupby(self.campZona)[self.campAgregat].nunique()
+            elif tipusAgregacio == "Suma":
+                agreg = csv.groupby(self.campZona)[self.campAgregat].sum().round(self.renderParams.numDecimals)
+            elif tipusAgregacio == "Mitjana":
+                agreg = csv.groupby(self.campZona)[self.campAgregat].mean().round(self.renderParams.numDecimals)
+            else:
+                self.msgError = "Tipus de agregació '{}' incorrecte.".format(tipusAgregacio)
+                return False
             agreg.index.names = ['CODI']
             res = agreg.to_frame(name='RESULTAT')
 
             # Carga de capa base de zona
             self.fBase = RUTA_DADES + MAP_ZONES_DB
             pols = gpd.read_file(self.fBase, driver="GPKG", layer=self.valZona[1], mode='r')
+            if "AREA" in pols.columns:
+                pols["AREA"] = pd.to_numeric(pols["AREA"]).round(3)
+            if "HABITANTS" in pols.columns:
+                pols["HABITANTS"] = pd.to_numeric(pols["HABITANTS"], downcast='integer')
 
             # Join
             out = pols.merge(res, on='CODI', how='left')
             out['RESULTAT'].fillna(0, inplace=True)
+
+            # Aplicar distribución
+            if self.tipusDistribucio != '':
+                out["RESULTAT"] = (out["RESULTAT"] / out[self.tipusDistribucio]).round(self.renderParams.numDecimals)
 
             # Guarda capa de agregación en GPKG
             self.fSQL = self.nomArxiuSortida(self.nomCapa)
@@ -459,16 +481,10 @@ class QvMapificacio(QObject):
             self.msgError = str(err)
             return False
 
-    def generaCapa(self, nomCapa: str, qGis: bool = False) -> bool:
-        if qGis:
-            return self.generaCapaQgis(nomCapa)
-        else:
-            return self.generaCapaGpd(nomCapa)
-
     def agregacio(self, llegenda, nomCapa: str, zona: str, tipusAgregacio: str,
-        campCalculat: str = 'RESULTAT', campAgregat: str = '', tipusDistribucio: str = "Total", filtre: str = '', numDecimals: int = -1,
-        numCategories: int = 4, modeCategories: str = "Endreçat", colorBase: str = 'Blau', format: str = '%1 - %2',
-        veure: bool = True) -> bool:
+        campCalculat: str = 'RESULTAT', campAgregat: str = '', tipusDistribucio: str = "Total", filtre: str = '',
+        numDecimals: int = -1, numCategories: int = 4, modeCategories: str = "Endreçat", colorBase: str = 'Blau',
+        format: str = '%1 - %2', veure: bool = True) -> bool:
         """ ***********************************************************************************************************
             EN DESARROLLO *********************************************************************************************
             ***********************************************************************************************************
@@ -553,7 +569,10 @@ class QvMapificacio(QObject):
         self.renderParams.campCalculat = campCalculat
         self.nomCapa = self.netejaString(nomCapa)
 
-        if not self.generaCapa(nomCapa):
+        # if not self.generaCapaQgis(nomCapa):
+        #     return False
+
+        if not self.generaCapaGpd(nomCapa, tipusAgregacio):
             return False
 
         # Carga capa de agregación

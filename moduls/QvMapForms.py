@@ -127,7 +127,7 @@ class QvComboBoxCamps(QComboBox):
     def wheelEvent(self, event):
         if self.multiple:
             event.ignore()
-        
+
     def clear(self):
         super().clear()
         self.oldText = ''
@@ -225,7 +225,7 @@ class QvFormNovaMapificacio(QvFormBaseMapificacio):
         self.distribucio.addItem(next(iter(MAP_DISTRIBUCIO.keys())))
 
         self.calcul = QvComboBoxCamps(self)
-        # self.filtre = QvComboBoxCamps(self)
+        self.filtre = QvComboBoxCamps(self, multiple=True)
 
         self.color = QComboBox(self)
         self.color.setEditable(False)
@@ -271,7 +271,7 @@ class QvFormNovaMapificacio(QvFormBaseMapificacio):
 
         self.lDades.addRow("Tipus d'agregació:", self.tipus)
         self.lDades.addRow('Camp de càlcul:', self.calcul)
-        # self.lDades.addRow('Filtre:', self.filtre) 
+        self.lDades.addRow('Filtre:', self.filtre) 
         self.lDades.addRow('Distribució:', self.distribucio)
 
         self.gSimb = QGroupBox('Simbologia de mapificació')
@@ -339,7 +339,7 @@ class QvFormNovaMapificacio(QvFormBaseMapificacio):
         self.tipus.setCurrentIndex(0)
         self.soloPrimerItem(self.zona)
         self.calcul.clear()
-        # self.filtre.clear()
+        self.filtre.clear()
 
     def nouArxiu(self):
         if self.fCSV is None:
@@ -364,7 +364,7 @@ class QvFormNovaMapificacio(QvFormBaseMapificacio):
         self.taulaMostra = QvFormMostra(self.fCSV, parent=self)
         self.bTaula.setEnabled(True)
         self.calcul.setItems(self.fCSV.camps)
-        # self.filtre.setItems(self.fCSV.camps)
+        self.filtre.setItems(self.fCSV.camps)
 
     @pyqtSlot(str)
     def arxiuSeleccionat(self, nom):
@@ -407,9 +407,12 @@ class QvFormNovaMapificacio(QvFormBaseMapificacio):
         if self.taulaMostra is not None:
             self.taulaMostra.hide()
         ok = self.fCSV.agregacio(self.llegenda, self.capa.text().strip(), self.zona.currentText(), self.tipus.currentText(),
-                                 campAgregat=self.calcul.currentText().strip(), # filtre=self.filtre.currentText().strip(),
-                                 tipusDistribucio=self.distribucio.currentText(), modeCategories=self.metode.currentText(),
-                                 numCategories=self.intervals.value(), colorBase=self.color.currentText())
+                                 campAgregat=self.calcul.currentText().strip(),
+                                 filtre=self.filtre.currentText().strip(),
+                                 tipusDistribucio=self.distribucio.currentText(),
+                                 modeCategories=self.metode.currentText(),
+                                 numCategories=self.intervals.value(),
+                                 colorBase=self.color.currentText())
         if ok:
             return ''
         else: 
