@@ -462,8 +462,8 @@ class QvMapificacio(QObject):
             pols = gpd.read_file(self.fBase, driver="GPKG", layer=self.valZona[1], mode='r')
             if "AREA" in pols.columns:
                 pols["AREA"] = pd.to_numeric(pols["AREA"]).round(3)
-            if "HABITANTS" in pols.columns:
-                pols["HABITANTS"] = pd.to_numeric(pols["HABITANTS"], downcast='integer')
+            if "POBLACIO" in pols.columns:
+                pols["POBLACIO"] = pd.to_numeric(pols["POBLACIO"], downcast='integer')
 
             # Join
             out = pols.merge(res, on='CODI', how='left')
