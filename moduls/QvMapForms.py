@@ -28,6 +28,11 @@ class QvFormBaseMapificacio(QDialog):
     def msgInfo(self, txt):
         QMessageBox.information(self, 'Informació', txt)
 
+    def msgProces(self, txt):
+        QApplication.instance().restoreOverrideCursor()
+        self.msgInfo(txt)
+        QApplication.instance().setOverrideCursor(Qt.WaitCursor)
+
     def msgAvis(self, txt):
         QMessageBox.warning(self, 'Avís', txt)
 
@@ -412,7 +417,8 @@ class QvFormNovaMapificacio(QvFormBaseMapificacio):
                                  tipusDistribucio=self.distribucio.currentText(),
                                  modeCategories=self.metode.currentText(),
                                  numCategories=self.intervals.value(),
-                                 colorBase=self.color.currentText())
+                                 colorBase=self.color.currentText(),
+                                 form=self)
         if ok:
             return ''
         else: 

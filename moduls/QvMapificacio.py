@@ -8,6 +8,7 @@ from qgis.gui import QgsFileWidget
 from qgis.PyQt.QtCore import Qt, QObject, pyqtSignal, pyqtSlot
 from qgis.PyQt.QtGui import QColor, QValidator, QIcon
 from qgis.PyQt.QtXml import QDomDocument
+from qgis.PyQt.QtWidgets import QMessageBox
 
 import os
 import sys
@@ -432,6 +433,18 @@ class QvMapificacio(QObject):
         self.llegenda.project.removeMapLayer(infoLyr.id())
         return True
 
+    # def saveGPKG(self, df, nomCapa):
+    #     import fiona
+    #     try:
+    #         from fiona import Env as fiona_env
+    #     except ImportError:
+    #         from fiona import drivers as fiona_env
+    #
+    #     schema = gpd.io.file.infer_schema(df)
+    #     with fiona_env(OGR_SQLITE_CACHE=512, OGR_SQLITE_SYNCHRONOUS=False):
+    #         with fiona.open(self.fSQL, "w", driver="GPKG", crs=df.crs, schema=schema, layer=nomCapa, gt=65536) as colxn:
+    #             colxn.writerecords(df.iterfeatures())
+
     def generaCapaGpd(self, nomCapa: str, tipusAgregacio: str) -> bool:
         try:
             # Carga de capa de datos geocodificados
@@ -463,17 +476,31 @@ class QvMapificacio(QObject):
             if "AREA" in pols.columns:
                 pols["AREA"] = pd.to_numeric(pols["AREA"]).round(3)
             if "POBLACIO" in pols.columns:
-                pols["POBLACIO"] = pd.to_numeric(pols["POBLACIO"], downcast='integer')
+                pols["POBLACIO"] = pd.to_numeric(pols["POBLACIO"], downcast='integer', errors='coerce')
 
             # Join
-            out = pols.merge(res, on='CODI', how='left')
-            out['RESULTAT'].fillna(0, inplace=True)
+            join = pols.merge(res, on='CODI', how='left')
+            join['RESULTAT'].fillna(0, inplace=True)
+            lenJoin = len(join)
 
             # Aplicar distribución
-            if self.tipusDistribucio != '':
+            if self.tipusDistribucio == '':
+                out = join
+            else:
+                # Filtrar elementos para evitar division por 0
+                out = join[join[self.tipusDistribucio].notnull() & (join[self.tipusDistribucio] > 0)]
                 out["RESULTAT"] = (out["RESULTAT"] / out[self.tipusDistribucio]).round(self.renderParams.numDecimals)
+                lenOut = len(out)
+                if lenJoin > lenOut:
+                    msg = "Hi ha {} elements de la zona {} que no tenen \n" \
+                          "informació de {}. Aquests elements seran \n" \
+                          "ignorats i no sortiran a la mapificació.".format(lenJoin-lenOut, self.zona, self.tipusDistribucio)
+                    if self.form is None:
+                        print(msg)
+                    else:
+                        self.form.msgProces(msg)
 
-            # Guarda capa de agregación en GPKG
+            # Guardar como Geopackage
             self.fSQL = self.nomArxiuSortida(self.nomCapa)
             out.to_file(self.fSQL, driver="GPKG", layer=nomCapa)
             return True
@@ -484,7 +511,7 @@ class QvMapificacio(QObject):
     def agregacio(self, llegenda, nomCapa: str, zona: str, tipusAgregacio: str,
         campCalculat: str = 'RESULTAT', campAgregat: str = '', tipusDistribucio: str = "Total", filtre: str = '',
         numDecimals: int = -1, numCategories: int = 4, modeCategories: str = "Endreçat", colorBase: str = 'Blau',
-        format: str = '%1 - %2', veure: bool = True) -> bool:
+        format: str = '%1 - %2', veure: bool = True, form=None) -> bool:
         """ ***********************************************************************************************************
             EN DESARROLLO *********************************************************************************************
             ***********************************************************************************************************
@@ -516,6 +543,7 @@ class QvMapificacio(QObject):
         self.fSQL = ''
         self.llegenda = llegenda
         self.msgError = ''
+        self.form = form
         self.descripcio = "Arxiu de dades: " + self.fZones + '\n' + \
             "Zona: " + zona + '\n' + \
             "Tipus d'agregació: " + tipusAgregacio + '\n' + \
