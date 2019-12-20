@@ -33,6 +33,12 @@ class QvFormBaseMapificacio(QDialog):
         self.msgInfo(txt)
         QApplication.instance().setOverrideCursor(Qt.WaitCursor)
 
+    def msgContinuarProces(self, txt):
+        QApplication.instance().restoreOverrideCursor()
+        res = QMessageBox.question(self, 'Atenció', txt + "\n\nVol continuar?")
+        QApplication.instance().setOverrideCursor(Qt.WaitCursor)
+        return res == QMessageBox.Yes
+
     def msgAvis(self, txt):
         QMessageBox.warning(self, 'Avís', txt)
 

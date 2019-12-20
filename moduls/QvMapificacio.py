@@ -445,7 +445,7 @@ class QvMapificacio(QObject):
     #         with fiona.open(self.fSQL, "w", driver="GPKG", crs=df.crs, schema=schema, layer=nomCapa, gt=65536) as colxn:
     #             colxn.writerecords(df.iterfeatures())
 
-    def generaCapaGpd(self, nomCapa: str, tipusAgregacio: str) -> bool:
+    def generaCapaGpd(self, nomCapa: str, tipusAgregacio: str, tipusDistribucio: str) -> bool:
         try:
             # Carga de capa de datos geocodificados
             csv = pd.read_csv(self.fZones, sep=self.separador, encoding=self.codi,
@@ -481,7 +481,6 @@ class QvMapificacio(QObject):
             # Join
             join = pols.merge(res, on='CODI', how='left')
             join['RESULTAT'].fillna(0, inplace=True)
-            lenJoin = len(join)
 
             # Aplicar distribución
             if self.tipusDistribucio == '':
@@ -490,15 +489,19 @@ class QvMapificacio(QObject):
                 # Filtrar elementos para evitar division por 0
                 out = join[join[self.tipusDistribucio].notnull() & (join[self.tipusDistribucio] > 0)]
                 out["RESULTAT"] = (out["RESULTAT"] / out[self.tipusDistribucio]).round(self.renderParams.numDecimals)
-                lenOut = len(out)
-                if lenJoin > lenOut:
-                    msg = "Hi ha {} elements de la zona {} que no tenen \n" \
-                          "informació de {}. Aquests elements seran \n" \
-                          "ignorats i no sortiran a la mapificació.".format(lenJoin-lenOut, self.zona, self.tipusDistribucio)
+                filtrats = len(join) - len(out)
+                if filtrats > 0:
+                    msg = "Hi ha {} elements de la zona {} que \n" \
+                          "no tenen informació al camp {}.\n\n" \
+                          "Amb aquests elements no és possible\n" \
+                          "fer la distribució {} i per tant\n" \
+                          "no sortiran a la mapificació.".format(filtrats, self.zona, self.tipusDistribucio,
+                                                                 tipusDistribucio.lower())
                     if self.form is None:
                         print(msg)
                     else:
-                        self.form.msgProces(msg)
+                        if not self.form.msgContinuarProces(msg):
+                            return False
 
             # Guardar como Geopackage
             self.fSQL = self.nomArxiuSortida(self.nomCapa)
@@ -600,7 +603,7 @@ class QvMapificacio(QObject):
         # if not self.generaCapaQgis(nomCapa):
         #     return False
 
-        if not self.generaCapaGpd(nomCapa, tipusAgregacio):
+        if not self.generaCapaGpd(nomCapa, tipusAgregacio, tipusDistribucio):
             return False
 
         # Carga capa de agregación
