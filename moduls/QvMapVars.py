@@ -35,6 +35,7 @@ MAP_ZONES_COORD = OrderedDict({
 })
 
 MAP_AGREGACIO = OrderedDict({
+    "Cap": "",
     "Recompte": "COUNT({})",
     "Recompte diferents": "COUNT(DISTINCT {})",
     "Suma": "SUM({})",

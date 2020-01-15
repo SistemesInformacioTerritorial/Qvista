@@ -455,8 +455,9 @@ class QvMapificacio(QObject):
             if self.filtre != '':
                 csv.query(self.filtre, inplace=True)
 
-            # Cálculo agregación por zona
-            if tipusAgregacio == "Recompte":
+            if tipusAgregacio == "Cap":
+                pass
+            elif tipusAgregacio == "Recompte":
                 agreg = csv.groupby(self.campZona).size()
             elif tipusAgregacio == "Recompte diferents":
                 agreg = csv.groupby(self.campZona)[self.campAgregat].nunique()
