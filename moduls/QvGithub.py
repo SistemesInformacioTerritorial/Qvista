@@ -7,9 +7,10 @@ from moduls.QvError import QvError
 
 class QvGithub:
 
+    # __ID = 'qVistaHost'
     __ID = 'qVistaHost'
-    __USER = 'JCAIMI'
-    __TOKEN = '67f51d7305895e199759b3f294065c6ce65eb3c4'
+    __USER = 'CPCIMI'
+    __TOKEN = 'c0d24366f9beccd2c3192fc26b59c085f07a6c01'
 
     def __init__(self, dataApp='', github=None):
         self.dataApp = dataApp
