@@ -10,11 +10,11 @@ class QvGithub:
     # __ID = 'qVistaHost'
     __ID = 'CPCIMI'
     __USER = 'JCAIMI'
-    __TOKEN = 'c0d24366f9beccd2c3192fc26b59c085f07a6c01'
 
-    def __init__(self, dataApp='', github=None):
+    def __init__(self, dataApp='', github=None, token=''):
         self.dataApp = dataApp
         self.branch = github
+        self.token = token
         self.conn = 'https://api.github.com'
         self.calc = lambda s, n: s[-(n+1):] + s[0].upper() + s[1:n*2] + str((n*14-1)*n)
         self.headGet = {
@@ -28,7 +28,7 @@ class QvGithub:
         }
         self.repo = 'SistemesInformacioTerritorial/QVista'
         # self.auth = HTTPBasicAuth(QvGithub.__ID, self.calc(QvGithub.__ID, 3))
-        self.auth = HTTPBasicAuth(QvGithub.__ID, QvGithub.__TOKEN)
+        self.auth = HTTPBasicAuth(QvGithub.__ID, self.token)
         self.timeout = 2
         self.error = ''
 
@@ -143,7 +143,9 @@ class QvGithub:
 
 if __name__ == "__main__":
 
-    gh = QvGithub()
+    from moduls.QvApp import QvApp
+
+    gh = QvApp().gh
 
     num = gh.getBug('Bug desde app qVista')
     print('Bug:', num)
@@ -154,8 +156,6 @@ if __name__ == "__main__":
     ok = gh.postBug('Bug desde app qVista', 'Descripción del error', 'CPCIMI')
 
     ok = gh.postUser('Post de usuario', 'Prueba de sugerencia / petición')
-
-    from moduls.QvApp import QvApp
 
     def pp():
         a = 0
