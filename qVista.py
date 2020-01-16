@@ -1807,6 +1807,7 @@ class QVista(QMainWindow, Ui_MainWindow):
                 self.parentWidget().move(pos.x()-425*zoomFactor,pos.y()-200)
             def tancar(self):
                 qV.esborrarMesures(True)
+                qV.canvas.unsetMapTool(qV.toolMesura)
             def canviaVisibilitatDw(self,visibilitat):
                 if visibilitat:
                     self.obrir()
@@ -3372,15 +3373,16 @@ def seleccioClicks():
 #     c.setPlotStyle(QgsComposition.print())
 
 def seleccioExpressio():
-    if qV.leSeleccioExpressio.text().lower() == 'help':
+    command=qV.leSeleccioExpressio.text().lower()
+    if command == 'help':
         qV.infoQVista()
         return
 
-    if qV.leSeleccioExpressio.text().lower() == 'direle':
+    if command == 'direle':
         disgregarDirele()
         return
 
-    if qV.leSeleccioExpressio.text().lower() == 'version':
+    if command == 'version':
         msg = QMessageBox()
         msg.setIcon(QMessageBox.Warning)
         
@@ -3390,22 +3392,25 @@ def seleccioExpressio():
         msg.setStandardButtons(QMessageBox.Close)
         retval = msg.exec_()
         return     
-    if (qV.leSeleccioExpressio.text().lower() == 'qvdebug') :
+    if command == 'qvdebug' :
         qV.modeDebug()
         return
 
-    if (qV.leSeleccioExpressio.text().lower() == 'mapificacio') :
+    if command == 'mapificacio':
         from moduls.QvMapForms import QvFormNovaMapificacio
 
         fMap = QvFormNovaMapificacio(qV.llegenda)
         fMap.exec()
         return
 
-    if (qV.leSeleccioExpressio.text().lower() == 'qvtemps') :
+    if command == 'qvtemps':
         missatgeCaixa('Temps per arrancar:', str('%.1f'%qV.tempsTotal))
         return
-    if qV.leSeleccioExpressio.text().lower()=='mascara':
+    if command=='mascara':
         qV.emmascaraDivisions=True
+        return
+    if command=='filtramascara':
+        filtraMascara(qV)
         return
 
 

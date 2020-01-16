@@ -7,8 +7,10 @@ from moduls.QvError import QvError
 
 class QvGithub:
 
-    __ID = 'qVistaHost'
+    # __ID = 'qVistaHost'
+    __ID = 'CPCIMI'
     __USER = 'JCAIMI'
+    __TOKEN = 'c0d24366f9beccd2c3192fc26b59c085f07a6c01'
 
     def __init__(self, dataApp='', github=None):
         self.dataApp = dataApp
@@ -25,7 +27,8 @@ class QvGithub:
             'content-type': "application/json"
         }
         self.repo = 'SistemesInformacioTerritorial/QVista'
-        self.auth = HTTPBasicAuth(QvGithub.__ID, self.calc(QvGithub.__ID, 3))
+        # self.auth = HTTPBasicAuth(QvGithub.__ID, self.calc(QvGithub.__ID, 3))
+        self.auth = HTTPBasicAuth(QvGithub.__ID, QvGithub.__TOKEN)
         self.timeout = 2
         self.error = ''
 
@@ -140,17 +143,17 @@ class QvGithub:
 
 if __name__ == "__main__":
 
-    # gh = QvGithub()
+    gh = QvGithub()
 
-    # num = gh.getBug('Bug desde app qVista')
-    # print('Bug:', num)
+    num = gh.getBug('Bug desde app qVista')
+    print('Bug:', num)
 
-    # com = gh.getCommitter('moduls/QvLlegenda.py')
-    # print('Committer:', com)
+    com = gh.getCommitter('moduls/QvLlegenda.py')
+    print('Committer:', com)
 
-    # ok = gh.postBug('Bug desde app qVista', 'Descripción del error', 'CPCIMI')
+    ok = gh.postBug('Bug desde app qVista', 'Descripción del error', 'CPCIMI')
 
-    # ok = gh.postUser('Post de usuario', 'Prueba de sugerencia / petición')
+    ok = gh.postUser('Post de usuario', 'Prueba de sugerencia / petición')
 
     from moduls.QvApp import QvApp
 

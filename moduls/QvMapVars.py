@@ -2,26 +2,30 @@
 
 from qgis.PyQt.QtGui import QColor
 from qgis.core import QgsGraduatedSymbolRenderer
-from qgis.PyQt.QtCore import QLocale
+from qgis.PyQt.QtCore import QLocale, Qt
 from collections import OrderedDict
 
 from configuracioQvista import *
 
 MAP_ID = "qV_mapificacio"
 MAP_MAX_CATEGORIES = 10
-MAP_ALPHA_INI = 4
-MAP_ALPHA_FIN = 28
+MAP_ALPHA_INI = 18
+MAP_ALPHA_FIN = 18
 MAP_ZONES_DB = "Zones.gpkg"
+
+# TODO
+# Si se recalcula la capa y está en la leyenda, quitarla
+# A veces hay decimales en la leyenda que no se ven
 
 MAP_ZONES = OrderedDict({
     # Nom: (Camps, Taula)
     "Districte": ("DISTRICTE", "districtes"),
     "Barri": ("BARRI", "barris"),
-    "Codi postal": ("CODI_POSTAL", ""),
-    "Illa": ("ILLA", ""),
-    "Solar": ("SOLAR", ""),
     "Àrea estadística bàsica": ("AEB", "aeb"),
-    "Secció censal": ("SECCIO_CENSAL", ""),
+    "Secció censal": ("DISTRICTE || SECCIO_CENSAL AS SECCIO_CENSAL", "seccions_censals"),
+    "Codi postal": ("CODI_POSTAL", ""),
+    "Illa": ("ILLA", "illes"),
+    "Solar": ("SOLAR", "solars"),
     "Sector policial operatiu": ("SPO", "")
 })
 
@@ -31,6 +35,7 @@ MAP_ZONES_COORD = OrderedDict({
 })
 
 MAP_AGREGACIO = OrderedDict({
+    "Cap": "",
     "Recompte": "COUNT({})",
     "Recompte diferents": "COUNT(DISTINCT {})",
     "Suma": "SUM({})",
@@ -51,6 +56,14 @@ MAP_COLORS = OrderedDict({
     "Taronja": QColor(255, 128, 0),
     "Verd" : QColor(32, 160, 32),
     "Vermell" : QColor(255, 32, 32)
+})
+
+MAP_CONTORNS = OrderedDict({
+    "Base": None,
+    "Negre": Qt.black,
+    "Gris": Qt.gray,
+    "Blanc": Qt.white,
+    "Cap" : Qt.transparent
 })
 
 MAP_METODES = OrderedDict({
