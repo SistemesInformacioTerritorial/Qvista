@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
 import requests
+import base64
 from requests.auth import HTTPBasicAuth
 from moduls.QvError import QvError
-
 
 class QvGithub:
 
@@ -11,12 +11,14 @@ class QvGithub:
     __ID = 'CPCIMI'
     __USER = 'JCAIMI'
 
-    def __init__(self, dataApp='', github=None, token=''):
+    def __init__(self, dataApp='', github=None, id=''):
         self.dataApp = dataApp
         self.branch = github
-        self.token = token
+        self.id = id
         self.conn = 'https://api.github.com'
-        self.calc = lambda s, n: s[-(n+1):] + s[0].upper() + s[1:n*2] + str((n*14-1)*n)
+        # self.calc = lambda s, n: s[-(n+1):] + s[0].upper() + s[1:n*2] + str((n*14-1)*n)
+        # self.save = lambda s: str(base64.b64encode(s.encode('raw_unicode_escape')), 'utf8')
+        self.load = lambda s: str(base64.b64decode(bytes(s, 'utf8')), 'utf8')
         self.headGet = {
             'accept': "application/json",
             'time-zone': "Europe/Madrid",
@@ -28,7 +30,7 @@ class QvGithub:
         }
         self.repo = 'SistemesInformacioTerritorial/QVista'
         # self.auth = HTTPBasicAuth(QvGithub.__ID, self.calc(QvGithub.__ID, 3))
-        self.auth = HTTPBasicAuth(QvGithub.__ID, self.token)
+        self.auth = HTTPBasicAuth(QvGithub.__ID, self.load(self.id))
         self.timeout = 2
         self.error = ''
 
