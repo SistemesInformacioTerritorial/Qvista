@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
-import requests
 import base64
+import requests
 from requests.auth import HTTPBasicAuth
 from moduls.QvError import QvError
 

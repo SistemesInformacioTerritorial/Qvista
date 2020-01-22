@@ -449,14 +449,20 @@ class QvMapificacio(QObject):
         try:
             # Carga de capa de datos geocodificados
             csv = pd.read_csv(self.fZones, sep=self.separador, encoding=self.codi,
-                              decimal=MAP_LOCALE.decimalPoint(), dtype={self.campZona: np.string_})
+                              decimal=MAP_LOCALE.decimalPoint(),
+                              dtype={self.campZona: np.string_, self.campAgregat: np.float_})
 
             # Aplicar filtro
             if self.filtre != '':
                 csv.query(self.filtre, inplace=True)
 
             if tipusAgregacio == "Cap":
-                pass
+                agreg = pd.Series(csv[self.campAgregat].values.round(self.renderParams.numDecimals), index=csv[self.campZona])
+                if not agreg.index.is_unique:
+                    msg = "El camp {} conté valors duplicats.\n" \
+                          "Per poder mapificar, s'haurà de fer algun tipus d'agregació.".format(self.campZona)
+                    self.msgError = msg
+                    return False
             elif tipusAgregacio == "Recompte":
                 agreg = csv.groupby(self.campZona).size()
             elif tipusAgregacio == "Recompte diferents":
