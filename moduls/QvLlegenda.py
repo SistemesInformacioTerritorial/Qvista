@@ -4,7 +4,8 @@ from qgis.core import (QgsProject, QgsSettings, QgsLegendModel, QgsLayerDefiniti
                        QgsVectorFileWriter, QgsVectorLayerJoinInfo, QgsLayerTree, QgsLayerTreeNode,
                        QgsLayerTreeUtils, QgsVectorDataProvider, QgsSymbol, QgsRendererCategory, QgsCategorizedSymbolRenderer,
                        QgsGraduatedSymbolRenderer, QgsRendererRange, QgsAggregateCalculator,
-                       QgsGradientColorRamp, QgsRendererRangeLabelFormat, QgsExpressionContextUtils)
+                       QgsGradientColorRamp, QgsRendererRangeLabelFormat, QgsExpressionContextUtils,
+                       QgsVectorLayerSimpleLabeling, QgsPalLayerSettings, QgsPropertyCollection, QgsProperty)
 from qgis.gui import (QgsLayerTreeView, QgsLayerTreeViewMenuProvider, QgsLayerTreeMapCanvasBridge,
                       QgsLayerTreeViewIndicator, QgsLayerTreeViewDefaultActions, QgsGradientColorRampDialog)
 from qgis.PyQt.QtWidgets import QAction, QFileDialog, QWidget, QPushButton, QVBoxLayout, QHBoxLayout, QGridLayout
@@ -916,7 +917,8 @@ if __name__ == "__main__":
         # leyenda.project.read('../Dades/Projectes/Imatge satel·lit 2011 AMB.qgs')
         # leyenda.project.read('../dades/projectes/bcn11.qgs')
         # leyenda.project.read('../dades/projectes/Prototip GUIA OracleSpatial_WMS.qgz')
-        leyenda.project.read('D:/qVista/Codi/mapesOffline/qVista default map.qgs')
+        # leyenda.project.read('D:/qVista/Codi/mapesOffline/qVista default map.qgs')
+        leyenda.project.read('D:/qVista/EjemploMapSin.qgs')
 
     # Al cargar un proyecto o capa:
     # - Ver si tiene filtro de datos para actualizar el icono del embudo
@@ -1036,6 +1038,68 @@ if __name__ == "__main__":
                     rangos.close()
                 if botonera is not None:
                     botonera.close()
+
+        def testLabels():
+            print("Test Labels")
+            capa = leyenda.currentLayer()
+            if capa is None or capa.type() != QgsMapLayer.VectorLayer:
+                return
+            print("Capa: {}".format(capa.name()))
+            if not capa.labelsEnabled():
+                print("- Sin etiquetas")
+                return
+
+            labs = capa.labeling()
+            sets = labs.settings()
+            props = sets.dataDefinedProperties()
+
+            ok = False
+            key = QgsPalLayerSettings.Property.Show
+            if props.hasProperty(key):
+                prop = props.property(key)
+                if prop.isActive() and prop.propertyType() == QgsProperty.ExpressionBasedProperty:
+                    ok = True
+            if ok:
+                print("- Expresion: {}".format(prop.expressionString()))
+                print("  Tipo: {}".format(prop.propertyType()))
+            else:
+                print("- No definido")
+
+        def maskLabels():
+            print("Mask Labels")
+            capa = leyenda.currentLayer()
+            if capa is None or capa.type() != QgsMapLayer.VectorLayer:
+                return
+            print("Capa: {}".format(capa.name()))
+            if not capa.labelsEnabled():
+                print("- Sin etiquetas")
+                return
+
+            labs = capa.labeling()
+            sets = labs.settings()
+            props = sets.dataDefinedProperties()
+            if props is None:
+                props = QgsPropertyCollection()
+
+            # Si existe, está activa y es válida, se borra; si no, se crea
+            borrar = False
+            key = QgsPalLayerSettings.Property.Show
+            if props.hasProperty(key):
+                prop = props.property(key)
+                if prop.isActive() and prop.propertyType() == QgsProperty.ExpressionBasedProperty:
+                    borrar = True
+            if borrar:
+                props.setProperty(QgsPalLayerSettings.Property.Show, None)
+            else:
+                newProp = QgsProperty()
+                newProp.setExpressionString("within(centroid($geometry), geometry(get_feature_by_id('Màscara', 1)))")
+                props.setProperty(QgsPalLayerSettings.Property.Show, newProp)
+
+            # sets = QgsPalLayerSettings()
+            sets.setDataDefinedProperties(props)
+
+            labs.setSettings(sets)
+            capa.setLabeling(labs)
 
         def testMapificacio():
             from moduls.QvMapForms import QvFormNovaMapificacio, QvFormSimbMapificacio
@@ -1316,6 +1380,16 @@ if __name__ == "__main__":
         leyenda.accions.afegirAccio('testMapificacio', act)
 
         act = QAction()
+        act.setText("Test Labels")
+        act.triggered.connect(testLabels)
+        leyenda.accions.afegirAccio('testLabels', act)
+
+        act = QAction()
+        act.setText("Mask Labels")
+        act.triggered.connect(maskLabels)
+        leyenda.accions.afegirAccio('maskLabels', act)
+
+        act = QAction()
         act.setText("Abrir proyecto")
         act.triggered.connect(openProject)
         leyenda.accions.afegirAccio('openProject', act)
@@ -1323,6 +1397,9 @@ if __name__ == "__main__":
         # Adaptación del menú
         def menuContexte(tipo):
             # leyenda.menuAccions.append('testMapificacio')
+            if tipo == 'layer':
+                leyenda.menuAccions.append('testLabels')
+                leyenda.menuAccions.append('maskLabels')
             if tipo == 'none':
                 leyenda.menuAccions.append('addLayersFromFile')
                 leyenda.menuAccions.append('separator')
