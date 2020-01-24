@@ -1040,6 +1040,8 @@ if __name__ == "__main__":
                     botonera.close()
 
         def testLabels():
+            from moduls.QvEtiquetes import QvMaskLabels
+            
             print("Test Labels")
             capa = leyenda.currentLayer()
             if capa is None or capa.type() != QgsMapLayer.VectorLayer:
@@ -1049,57 +1051,36 @@ if __name__ == "__main__":
                 print("- Sin etiquetas")
                 return
 
-            labs = capa.labeling()
-            sets = labs.settings()
-            props = sets.dataDefinedProperties()
-
-            ok = False
-            key = QgsPalLayerSettings.Property.Show
-            if props.hasProperty(key):
-                prop = props.property(key)
-                if prop.isActive() and prop.propertyType() == QgsProperty.ExpressionBasedProperty:
-                    ok = True
-            if ok:
-                print("- Expresion: {}".format(prop.expressionString()))
-                print("  Tipo: {}".format(prop.propertyType()))
+            mask = QvMaskLabels()
+            on = mask.isEnabled(capa)
+            if on:
+                print("- Activada")
             else:
-                print("- No definido")
+                print("- No activada")
 
         def maskLabels():
-            print("Mask Labels")
+            from moduls.QvEtiquetes import QvMaskLabels
+
             capa = leyenda.currentLayer()
-            if capa is None or capa.type() != QgsMapLayer.VectorLayer:
-                return
-            print("Capa: {}".format(capa.name()))
-            if not capa.labelsEnabled():
-                print("- Sin etiquetas")
-                return
+            mask = QvMaskLabels()
+            on = mask.isEnabled(capa)
+            mask.switch(capa, not on)
+            if leyenda.capaVisible(capa):
+                leyenda.canvas.refresh()
 
-            labs = capa.labeling()
-            sets = labs.settings()
-            props = sets.dataDefinedProperties()
-            if props is None:
-                props = QgsPropertyCollection()
+        def maskOn():
+            from moduls.QvEtiquetes import QvMaskLabels
 
-            # Si existe, está activa y es válida, se borra; si no, se crea
-            borrar = False
-            key = QgsPalLayerSettings.Property.Show
-            if props.hasProperty(key):
-                prop = props.property(key)
-                if prop.isActive() and prop.propertyType() == QgsProperty.ExpressionBasedProperty:
-                    borrar = True
-            if borrar:
-                props.setProperty(QgsPalLayerSettings.Property.Show, None)
-            else:
-                newProp = QgsProperty()
-                newProp.setExpressionString("within(centroid($geometry), geometry(get_feature_by_id('Màscara', 1)))")
-                props.setProperty(QgsPalLayerSettings.Property.Show, newProp)
+            mask = QvMaskLabels()
+            mask.enableAll()
+            leyenda.canvas.refresh()
 
-            # sets = QgsPalLayerSettings()
-            sets.setDataDefinedProperties(props)
+        def maskOff():
+            from moduls.QvEtiquetes import QvMaskLabels
 
-            labs.setSettings(sets)
-            capa.setLabeling(labs)
+            mask = QvMaskLabels()
+            mask.disableAll()
+            leyenda.canvas.refresh()
 
         def testMapificacio():
             from moduls.QvMapForms import QvFormNovaMapificacio, QvFormSimbMapificacio
@@ -1390,6 +1371,16 @@ if __name__ == "__main__":
         leyenda.accions.afegirAccio('maskLabels', act)
 
         act = QAction()
+        act.setText("Mask Labels On")
+        act.triggered.connect(maskOn)
+        leyenda.accions.afegirAccio('maskOn', act)
+
+        act = QAction()
+        act.setText("Mask Labels Off")
+        act.triggered.connect(maskOff)
+        leyenda.accions.afegirAccio('maskOff', act)
+
+        act = QAction()
         act.setText("Abrir proyecto")
         act.triggered.connect(openProject)
         leyenda.accions.afegirAccio('openProject', act)
@@ -1408,6 +1399,8 @@ if __name__ == "__main__":
                 # leyenda.menuAccions.append('testSimbologia')
                 leyenda.menuAccions.append('testJoin')
                 leyenda.menuAccions.append('testMapificacio')
+                leyenda.menuAccions.append('maskOn')
+                leyenda.menuAccions.append('maskOff')
                 leyenda.menuAccions.append('editable')
                 leyenda.menuAccions.append('openProject')
 
