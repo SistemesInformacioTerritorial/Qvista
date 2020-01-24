@@ -191,7 +191,7 @@ class QCercadorAdreca(QObject):
         # self.db.setDatabaseName(self.__CarrersNum_sqlite) # Le asignamos un nombre
 
         # self.db.setConnectOptions("QSQLITE_OPEN_READONLY")
-
+        self.numClick=0
         self.db = QvApp().dbGeo
 
         if self.db is None:  # not self.db.open(): # En caso de que no se abra
@@ -259,16 +259,45 @@ class QCercadorAdreca(QObject):
     def connectarLineEdits(self):
         self.leCarrer.textChanged.connect(self.esborrarNumero)
         self.leCarrer.editingFinished.connect(self.trobatCarrer)
-        self.leCarrer.mouseDoubleClickEvent = self.clear_leNumero_leCarrer
+        # CUARENTENA
+        # self.leCarrer.mouseDoubleClickEvent = self.clear_leNumero_leCarrer
+        self.leCarrer.mouseDoubleClickEvent = self.SeleccPalabraOTodoEnFrase
         self.leCarrer.setAlignment(Qt.AlignLeft)
 
         self.leNumero.editingFinished.connect(self.trobatNumero)
         # self.leNumero.returnPressed.connect(self.trobatNumero)
 
-    def clear_leNumero_leCarrer(self, carrer):
-        self.carrerActivat = False
-        self.leNumero.clear()
-        self.leCarrer.clear()
+    def SeleccPalabraOTodoEnFrase(self, event):
+        """
+          Funcion conectada al dobleclick.
+          Si se dobleclica 1 vez---> selecciona la palabra (lo que hay entre dos blancos)
+          Se se dobleclica 2 veces---> selecciona toda la frase 
+        """
+        self.carrerActivat=False
+        #  self.numClick en def __init__ se inicializa a 0
+        if self.numClick == 1:  # segundo doble click => seleccionar toda la frase
+            self.leCarrer.selectAll()
+            self.numClick =-1
+        else:      # primer doble click selecciona la palabra
+            # Limite de la palabra por la izquierda (blanco o inicio por izquierda)
+            self.ii = self.leCarrer.cursorPosition() - 1
+            while self.ii >=0 and self.leCarrer.text()[self.ii] != ' ': 
+                self.ii -= 1 ;   self.inicio= self.ii
+
+            # Limite de la palabra por la derecha (blanco o fin por derecha)
+            self.ii= self.leCarrer.cursorPosition() - 1 
+            while self.ii < len(self.leCarrer.text()) and self.leCarrer.text()[self.ii] != ' ': 
+                self.ii += 1 ;   self.fin= self.ii                
+
+            # selecciona palabra en frase por posicion
+            self.leCarrer.setSelection(self.inicio+1,self.fin-self.inicio-1)
+            
+        self.numClick += 1  
+    # CUARENTENA
+    # def clear_leNumero_leCarrer(self, carrer):
+    #     self.carrerActivat = False
+    #     self.leNumero.clear()
+    #     self.leCarrer.clear()
 
     # Venimos del completer, un click en desplegable ....
     def activatCarrer(self, carrer):
