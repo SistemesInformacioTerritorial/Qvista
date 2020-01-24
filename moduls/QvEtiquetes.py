@@ -9,7 +9,7 @@ class QvMaskLabels:
     def __init__(self, layer="Màscara", id="1"):
         self.layer = layer  # Nombre o ID
         self.id = id        # ID del polígono
-        self.key = QgsPalLayerSettings.Property.Show
+        self.key = QgsPalLayerSettings.Show
         self.expression = self.calcExpression()
 
     def calcExpression(self, template="within(centroid($geometry), geometry(get_feature_by_id('{}', {})))"):
