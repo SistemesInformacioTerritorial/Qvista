@@ -1,19 +1,18 @@
 # -*- coding: utf-8 -*-
 
-from qgis.core import (QgsMapLayer, QgsProject, 
-                       QgsVectorLayerSimpleLabeling, QgsPalLayerSettings, QgsPropertyCollection, QgsProperty)
+from qgis.core import QgsMapLayer, QgsProject, QgsPalLayerSettings, QgsPropertyCollection, QgsProperty
 
 
 class QvMaskLabels:
 
-    def __init__(self, layer="Màscara", id="1"):
-        self.layer = layer  # Nombre o ID
-        self.id = id        # ID del polígono
+    def __init__(self, layerMask="Màscara", idPolygon=1):
+        self.layerMask = layerMask  # Nombre o ID
+        self.idPolygon = idPolygon        # ID del polígono
         self.key = QgsPalLayerSettings.Show
         self.expression = self.calcExpression()
 
     def calcExpression(self, template="within(centroid($geometry), geometry(get_feature_by_id('{}', {})))"):
-        return template.format(self.layer, self.id)
+        return template.format(self.layerMask, self.idPolygon)
 
     def labelsEnabled(self, layer):
         if layer is None or layer.type() != QgsMapLayer.VectorLayer:
@@ -30,8 +29,9 @@ class QvMaskLabels:
 
         if props.hasProperty(self.key):
             prop = props.property(self.key)
-            if prop.isActive() and prop.propertyType() == QgsProperty.ExpressionBasedProperty and prop.expressionString() == self.expression:
-               return True
+            if prop.isActive() and prop.propertyType() == QgsProperty.ExpressionBasedProperty and \
+               prop.expressionString() == self.expression:
+                return True
         return False
 
     def switch(self, layer, on):
@@ -41,7 +41,6 @@ class QvMaskLabels:
         labels = layer.labeling()
         sets = labels.settings()
         props = sets.dataDefinedProperties()
-
         if props is None:
             props = QgsPropertyCollection()
 

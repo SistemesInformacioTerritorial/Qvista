@@ -1039,9 +1039,11 @@ if __name__ == "__main__":
                 if botonera is not None:
                     botonera.close()
 
-        def testLabels():
-            from moduls.QvEtiquetes import QvMaskLabels
-            
+        from moduls.QvEtiquetes import QvMaskLabels
+        # mask = QvMaskLabels("Zones districtes", 3)
+        mask = QvMaskLabels()
+
+        def testLabels():           
             print("Test Labels")
             capa = leyenda.currentLayer()
             if capa is None or capa.type() != QgsMapLayer.VectorLayer:
@@ -1051,7 +1053,6 @@ if __name__ == "__main__":
                 print("- Sin etiquetas")
                 return
 
-            mask = QvMaskLabels()
             on = mask.isEnabled(capa)
             if on:
                 print("- Activada")
@@ -1059,26 +1060,17 @@ if __name__ == "__main__":
                 print("- No activada")
 
         def maskLabels():
-            from moduls.QvEtiquetes import QvMaskLabels
-
             capa = leyenda.currentLayer()
-            mask = QvMaskLabels()
             on = mask.isEnabled(capa)
             mask.switch(capa, not on)
             if leyenda.capaVisible(capa):
                 leyenda.canvas.refresh()
 
         def maskOn():
-            from moduls.QvEtiquetes import QvMaskLabels
-
-            mask = QvMaskLabels()
             mask.enableAll()
             leyenda.canvas.refresh()
 
         def maskOff():
-            from moduls.QvEtiquetes import QvMaskLabels
-
-            mask = QvMaskLabels()
             mask.disableAll()
             leyenda.canvas.refresh()
 
