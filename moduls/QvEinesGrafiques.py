@@ -485,7 +485,10 @@ class QvMesuraMultiLinia(QgsMapTool):
         if distancia <= 0:
             distancia = 0
         poligono=QgsGeometry.fromPolylineXY(self.points)
-        distTotal=poligono.length()
+        if poligono.isGeosValid():
+            distTotal=poligono.length()
+        else:
+            distTotal=0
         self.qV.wMesuraGrafica.setDistanciaTempsReal(distancia)
         self.qV.wMesuraGrafica.setDistanciaTotal(distTotal+distancia)
         # self.qV.lblDistanciaTempsReal.setText('Distáncia últim tram: ' + str(round(distancia,2)) + ' m')
