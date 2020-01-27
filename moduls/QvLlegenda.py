@@ -5,7 +5,7 @@ from qgis.core import (QgsProject, QgsSettings, QgsLegendModel, QgsLayerDefiniti
                        QgsLayerTreeUtils, QgsVectorDataProvider, QgsSymbol, QgsRendererCategory, QgsCategorizedSymbolRenderer,
                        QgsGraduatedSymbolRenderer, QgsRendererRange, QgsAggregateCalculator,
                        QgsGradientColorRamp, QgsRendererRangeLabelFormat, QgsExpressionContextUtils,
-                       QgsVectorLayerSimpleLabeling, QgsPalLayerSettings, QgsPropertyCollection, QgsProperty)
+                       QgsVectorLayerSimpleLabeling, QgsPalLayerSettings, QgsPropertyCollection, QgsProperty, QgsAbstractGeometry)
 from qgis.gui import (QgsLayerTreeView, QgsLayerTreeViewMenuProvider, QgsLayerTreeMapCanvasBridge,
                       QgsLayerTreeViewIndicator, QgsLayerTreeViewDefaultActions, QgsGradientColorRampDialog)
 from qgis.PyQt.QtWidgets import QAction, QFileDialog, QWidget, QPushButton, QVBoxLayout, QHBoxLayout, QGridLayout
@@ -908,6 +908,13 @@ if __name__ == "__main__":
                 print('Capa activa: None')
 
         canv = QgsMapCanvas()
+        canv.enableAntiAliasing(True)
+        canv.setWheelFactor(2)
+        canv.setCachingEnabled(True)
+        canv.setParallelRenderingEnabled(True)
+        canv.setMapUpdateInterval(250)
+        canv.setSegmentationTolerance(0.01745)
+        canv.setSegmentationToleranceType(QgsAbstractGeometry.MaximumAngle)
 
         atrib = QvAtributs(canv)
 
@@ -931,6 +938,14 @@ if __name__ == "__main__":
 
         leyenda.setWindowTitle('Llegenda')
         leyenda.show()
+
+        # set = QgsSettings()
+        # print(set.value('qgis/map_update_interval'))
+        # print(set.value('qgis/enable_render_caching'))
+        # print(set.value('qgis/parallel_rendering'))
+        # print(set.value('qgis/enable_anti_aliasing'))
+        # print(set.value('qgis/segmentationTolerance'))
+        # print(set.value('qgis/segmentationToleranceType'))
 
         #
         # Funciones de capes:
@@ -1064,15 +1079,15 @@ if __name__ == "__main__":
             on = mask.isEnabled(capa)
             mask.switch(capa, not on)
             if leyenda.capaVisible(capa):
-                leyenda.canvas.refresh()
+                canv.refresh()
 
         def maskOn():
             mask.enableAll()
-            leyenda.canvas.refresh()
+            canv.refresh()
 
         def maskOff():
             mask.disableAll()
-            leyenda.canvas.refresh()
+            canv.refresh()
 
         def testMapificacio():
             from moduls.QvMapForms import QvFormNovaMapificacio, QvFormSimbMapificacio

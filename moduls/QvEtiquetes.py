@@ -6,8 +6,8 @@ from qgis.core import QgsMapLayer, QgsProject, QgsPalLayerSettings, QgsPropertyC
 class QvMaskLabels:
 
     def __init__(self, layerMask="Màscara", idPolygon=1):
-        self.layerMask = layerMask  # Nombre o ID
-        self.idPolygon = idPolygon        # ID del polígono
+        self.layerMask = layerMask  # Nombre o Id
+        self.idPolygon = idPolygon
         self.key = QgsPalLayerSettings.Show
         self.expression = self.calcExpression()
 
