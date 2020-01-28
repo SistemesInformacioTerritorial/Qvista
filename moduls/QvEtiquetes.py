@@ -5,55 +5,60 @@ from qgis.core import QgsMapLayer, QgsProject, QgsPalLayerSettings, QgsPropertyC
 
 class QvMaskLabels:
 
-    def __init__(self, layerMask="Màscara", idPolygon=1):
-        self.layerMask = layerMask  # Nombre o Id
-        self.idPolygon = idPolygon
+    def __init__(self, layer, polygonId):
+        self.layer = layer
+        self.polygonId = polygonId
+        self.template = "within(centroid($geometry), geometry(get_feature_by_id('{}', {})))"
         self.key = QgsPalLayerSettings.Show
-        self.expression = self.calcExpression()
+        self.on = False
+        self.labels = None
+        self.sets = None
+        self.props = None
 
-    def calcExpression(self, template="within(centroid($geometry), geometry(get_feature_by_id('{}', {})))"):
-        return template.format(self.layerMask, self.idPolygon)
+    def calcExpression(self):
+        return self.template.format(self.layer.id(), self.polygonId)
 
     def labelsEnabled(self, layer):
         if layer is None or layer.type() != QgsMapLayer.VectorLayer:
             return False
         return layer.labelsEnabled()
 
-    def isEnabled(self, layer):
-        if not self.labelsEnabled(layer):
+    def getLabelsProps(self, layer):
+        if self.labelsEnabled(layer):
+            self.labels = layer.labeling() # QgsVectorLayerSimpleLabeling
+            self.sets = self.labels.settings() # QgsPalLayerSettings
+            self.props = self.sets.dataDefinedProperties() # QgsPropertyCollection
+            if self.props is None:
+                self.props = QgsPropertyCollection()
+            return True
+        else:
             return False
 
-        labels = layer.labeling()
-        sets = labels.settings()
-        props = sets.dataDefinedProperties()
+    def isEnabled(self, layer):
+        if not self.getLabelsProps(layer):
+            return False
 
-        if props.hasProperty(self.key):
-            prop = props.property(self.key)
+        if self.props.hasProperty(self.key):
+            prop = self.props.property(self.key)
             if prop.isActive() and prop.propertyType() == QgsProperty.ExpressionBasedProperty and \
-               prop.expressionString() == self.expression:
+               prop.expressionString() == self.calcExpression():
                 return True
         return False
 
     def switch(self, layer, on):
-        if not self.labelsEnabled(layer):
+        if not self.getLabelsProps(layer):
             return
-
-        labels = layer.labeling()
-        sets = labels.settings()
-        props = sets.dataDefinedProperties()
-        if props is None:
-            props = QgsPropertyCollection()
 
         if on:
             prop = QgsProperty()
-            prop.setExpressionString(self.expression)
-            props.setProperty(self.key, prop)
+            prop.setExpressionString(self.calcExpression())
+            self.props.setProperty(self.key, prop)
         else:
-            props.setProperty(self.key, None)
+            self.props.setProperty(self.key, None)
 
-        sets.setDataDefinedProperties(props)
-        labels.setSettings(sets)
-        layer.setLabeling(labels)
+        self.sets.setDataDefinedProperties(self.props)
+        self.labels.setSettings(self.sets)
+        layer.setLabeling(self.labels)
 
     def enable(self, layer):
         self.switch(layer, True)
@@ -62,8 +67,9 @@ class QvMaskLabels:
         self.switch(layer, False)
 
     def switchAll(self, on):
-        for layerId in QgsProject.instance().mapLayers():
-            self.switch(QgsProject.instance().mapLayer(layerId), on)
+        self.on = on
+        for layer in QgsProject.instance().mapLayers():
+            self.switch(QgsProject.instance().mapLayer(layer), on)
 
     def enableAll(self):
         self.switchAll(True)

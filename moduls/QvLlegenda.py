@@ -18,6 +18,7 @@ from moduls.QvVideo import QvVideo
 from moduls.QvEscala import QvEscala
 from moduls.QvMapRenderer import QvMapRenderer
 from moduls.QvMapVars import *
+from moduls.QvEtiquetes import QvMaskLabels
 from configuracioQvista import *
 
 import os
@@ -214,6 +215,7 @@ class QvLlegenda(QgsLayerTreeView):
         self.lastExtent = None
         self.escales = None
         self.directory = '.'
+        self.mask = None
         # self.restoreExtent = 0
         # print('restoreExtent', self.restoreExtent)
 
@@ -529,10 +531,20 @@ class QvLlegenda(QgsLayerTreeView):
             return
         bridge = QgsLayerTreeMapCanvasBridge(self.root, canvas)
         if self.canvas is None:  # Canvas principal
+            self.canvasSettings(canvas)
             self.canvas = canvas
             self.bridge = bridge
         else:
             self.bridges.append((canvas, bridge))
+
+    def canvasSettings(self, canvas):
+        canvas.enableAntiAliasing(True)
+        canvas.setWheelFactor(2)
+        canvas.setCachingEnabled(True)
+        canvas.setParallelRenderingEnabled(True)
+        canvas.setMapUpdateInterval(250)
+        canvas.setSegmentationTolerance(0.01745)
+        canvas.setSegmentationToleranceType(QgsAbstractGeometry.MaximumAngle)
 
     def temes(self):
         return self.project.mapThemeCollection().mapThemes()
@@ -868,7 +880,23 @@ class QvLlegenda(QgsLayerTreeView):
             index = self.model.index(row, 0)
             item = self.model.index2node(index)
             yield from recurse(item, 0)
+        
+# TODO:
+# - conectar con visibilidad de máscara - QgsLayerTreeNode::visibilityChanged() 	
 
+    def maskOn(self, layer, polygonId):
+        if self.capaVisible(layer):
+            self.mask = QvMaskLabels(layer, polygonId)
+            if self.mask is not None:
+                self.mask.enableAll()
+                self.canvas.clearCache()
+                self.canvas.refresh()
+
+    def maskOff(self):
+        if self.canvas is not None and self.mask is not None:
+            self.mask.disableAll()
+            self.canvas.clearCache()
+            self.canvas.refresh()
 
 class QvMenuLlegenda(QgsLayerTreeViewMenuProvider):
 
@@ -908,13 +936,6 @@ if __name__ == "__main__":
                 print('Capa activa: None')
 
         canv = QgsMapCanvas()
-        canv.enableAntiAliasing(True)
-        canv.setWheelFactor(2)
-        canv.setCachingEnabled(True)
-        canv.setParallelRenderingEnabled(True)
-        canv.setMapUpdateInterval(250)
-        canv.setSegmentationTolerance(0.01745)
-        canv.setSegmentationToleranceType(QgsAbstractGeometry.MaximumAngle)
 
         atrib = QvAtributs(canv)
 
@@ -1055,8 +1076,8 @@ if __name__ == "__main__":
                     botonera.close()
 
         from moduls.QvEtiquetes import QvMaskLabels
-        # mask = QvMaskLabels("Zones districtes", 3)
-        mask = QvMaskLabels()
+        # mask = QvMaskLabels(leyenda.capaPerNom("Zones districtes"), 3)
+        mask = QvMaskLabels(leyenda.capaPerNom("Màscara"), 1)
 
         def testLabels():           
             print("Test Labels")
@@ -1079,15 +1100,14 @@ if __name__ == "__main__":
             on = mask.isEnabled(capa)
             mask.switch(capa, not on)
             if leyenda.capaVisible(capa):
+                canv.clearCache()
                 canv.refresh()
 
         def maskOn():
-            mask.enableAll()
-            canv.refresh()
+            leyenda.maskOn(leyenda.capaPerNom("Màscara"), 1)
 
         def maskOff():
-            mask.disableAll()
-            canv.refresh()
+            leyenda.maskOff()
 
         def testMapificacio():
             from moduls.QvMapForms import QvFormNovaMapificacio, QvFormSimbMapificacio
