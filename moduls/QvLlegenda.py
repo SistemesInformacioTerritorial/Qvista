@@ -534,8 +534,38 @@ class QvLlegenda(QgsLayerTreeView):
             self.canvasSettings(canvas)
             self.canvas = canvas
             self.bridge = bridge
+            self.bridge.canvasLayersChanged.connect(self.maskUpdate)
         else:
             self.bridges.append((canvas, bridge))
+
+    def setMask(self, layer, polygonId):
+        self.mask = QvMaskLabels(layer, polygonId)
+        self.maskUpdate()
+
+    def maskUpdate(self):
+        if self.mask is None:
+            return
+        node = self.root.findLayer(self.mask.layer.id())
+        if node is None:
+            self.maskOff()
+            self.mask = None
+            return
+        if node.isVisible():
+            self.maskOn()
+        else:
+            self.maskOff()
+
+    def maskOn(self):
+        if self.mask is not None and not self.mask.on:
+            self.mask.enableAll()
+            self.canvas.clearCache()
+            self.canvas.refresh()
+
+    def maskOff(self):
+        if self.mask is not None and self.mask.on:
+            self.mask.disableAll()
+            self.canvas.clearCache()
+            self.canvas.refresh()
 
     def canvasSettings(self, canvas):
         canvas.enableAntiAliasing(True)
@@ -880,23 +910,6 @@ class QvLlegenda(QgsLayerTreeView):
             index = self.model.index(row, 0)
             item = self.model.index2node(index)
             yield from recurse(item, 0)
-        
-# TODO:
-# - conectar con visibilidad de máscara - QgsLayerTreeNode::visibilityChanged() 	
-
-    def maskOn(self, layer, polygonId):
-        if self.capaVisible(layer):
-            self.mask = QvMaskLabels(layer, polygonId)
-            if self.mask is not None:
-                self.mask.enableAll()
-                self.canvas.clearCache()
-                self.canvas.refresh()
-
-    def maskOff(self):
-        if self.canvas is not None and self.mask is not None:
-            self.mask.disableAll()
-            self.canvas.clearCache()
-            self.canvas.refresh()
 
 class QvMenuLlegenda(QgsLayerTreeViewMenuProvider):
 
@@ -1076,8 +1089,8 @@ if __name__ == "__main__":
                     botonera.close()
 
         from moduls.QvEtiquetes import QvMaskLabels
-        # mask = QvMaskLabels(leyenda.capaPerNom("Zones districtes"), 3)
-        mask = QvMaskLabels(leyenda.capaPerNom("Màscara"), 1)
+        # leyenda.mask = QvMaskLabels(leyenda.capaPerNom("Zones districtes"), 3)
+        leyenda.mask = QvMaskLabels(leyenda.capaPerNom("Màscara"), 1)
 
         def testLabels():           
             print("Test Labels")
@@ -1089,7 +1102,7 @@ if __name__ == "__main__":
                 print("- Sin etiquetas")
                 return
 
-            on = mask.isEnabled(capa)
+            on = leyenda.mask.isEnabled(capa)
             if on:
                 print("- Activada")
             else:
@@ -1097,14 +1110,14 @@ if __name__ == "__main__":
 
         def maskLabels():
             capa = leyenda.currentLayer()
-            on = mask.isEnabled(capa)
-            mask.switch(capa, not on)
+            on = leyenda.mask.isEnabled(capa)
+            leyenda.mask.switch(capa, not on)
             if leyenda.capaVisible(capa):
                 canv.clearCache()
                 canv.refresh()
 
         def maskOn():
-            leyenda.maskOn(leyenda.capaPerNom("Màscara"), 1)
+            leyenda.maskOn()
 
         def maskOff():
             leyenda.maskOff()
