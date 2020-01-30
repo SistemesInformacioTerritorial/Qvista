@@ -539,13 +539,19 @@ class QvLlegenda(QgsLayerTreeView):
             self.bridges.append((canvas, bridge))
 
     def setMask(self, layer, polygonId):
-        self.mask = QvMaskLabels(layer, polygonId)
-        self.maskUpdate()
+        if layer is None or polygonId is None:
+            self.mask = None
+        else:
+            self.mask = QvMaskLabels(layer, polygonId)
+            self.maskUpdate()
 
     def maskUpdate(self):
         if self.mask is None:
             return
-        node = self.root.findLayer(self.mask.layer.id())
+        try:
+            node = self.root.findLayer(self.mask.layer.id())
+        except:
+            node = None
         if node is None:
             self.maskOff()
             self.mask = None

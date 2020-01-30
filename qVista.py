@@ -3404,7 +3404,7 @@ def seleccioExpressio():
         return
 
     if command == 'masklabels':
-        qV.llegenda.setMask(qV.llegenda.capaPerNom("Màscara"), 1)
+        qV.llegenda.setMask(qV.llegenda.capaPerNom("MaskLabels"), 1)
         return
 
     if command == 'qvtemps':
