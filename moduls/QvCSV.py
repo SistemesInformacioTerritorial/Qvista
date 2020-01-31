@@ -236,6 +236,7 @@ class CsvCoords(CsvPagina):
         self._bAdreces.clicked.connect(
             lambda: self.salta.emit(CsvAdreca(self.parentWidget())))
         self._lay.addWidget(self._bAdreces)
+        self._lay.addStretch()
 
         # Botons per fer coses
         self._layBotons = QHBoxLayout()
@@ -262,6 +263,7 @@ class CsvAdreca(CsvPagina):
         self._setTitol("Sel·lecció dels camps d'adreça")
         self._lay.addWidget(QLabel(
             "Tria dels camps que defineixen l'adreça.\nNomés són obligatoris el nom de la via i el número inicial"))
+        self._lay.addStretch()
         self._gbCamps = QGroupBox(self)
         self._layCamps = QGridLayout(self._gbCamps)
         self._gbCamps.setLayout(self._layCamps)
@@ -313,6 +315,7 @@ class CsvAdreca(CsvPagina):
         self._bCoords.clicked.connect(
             lambda: self.salta.emit(CsvCoords(self.parentWidget())))
         self._lay.addWidget(self._bCoords)
+        self._lay.addStretch()
 
         self._layBotons = QHBoxLayout()
         self._bVeure = QvPushButton('Veure')
@@ -448,7 +451,7 @@ class CsvAfegir(CsvPagina):
         # Forma
 
         def setForma(imatge):
-            self._forma = imatgesDir+imatge
+            self._forma = str(Path(imatgesDir+imatge).resolve())
         gbForma = QGroupBox()
         self._lay.addWidget(gbForma)
         layForma = QGridLayout()
@@ -513,7 +516,7 @@ class CsvAfegir(CsvPagina):
 
     def afegir(self):
         nivellCsv(self.parentWidget()._qV, self.parentWidget()._csv, self.parentWidget()._separador,
-                  self._campCoordX, self._campCoordY, self._projeccio, self._leNomCapa.text(), self._color, self._forma)
+                  self._campCoordX, self._campCoordY, self._projeccio, self._leNomCapa.text(), self._color, symbol=self._forma)
         self.parentWidget().close()
 
 
