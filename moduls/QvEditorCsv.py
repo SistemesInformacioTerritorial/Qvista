@@ -98,6 +98,7 @@ class QvEditorCsv(QDialog):
                     font.setBold(True)
                     item.setFont(font)
                 self._taula.setVerticalHeaderItem(i, item)
+        self._taula.resizeColumnsToContents()
 
     def exec(self):
         self._mostraErrorActual()

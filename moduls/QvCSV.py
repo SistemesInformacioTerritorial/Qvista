@@ -6,6 +6,7 @@ from moduls.QvPushButton import QvPushButton
 from moduls.QvEditorCsv import QvEditorCsv
 from moduls.QvMapForms import QvFormNovaMapificacio
 from moduls.QvConstants import QvConstants
+from moduls.QvApp import QvApp
 
 # Còpia de la funció definida dins de qVista.py. Millor aquí???
 
@@ -91,7 +92,7 @@ class QvCarregaCsv(QDialog):
     def __init__(self, rutaCsv: str, qV=None):
         super().__init__(qV)
         self.setWindowTitle('Carregador d\'arxius CSV')
-        self.setFixedSize(700, 450)
+        self.setFixedSize(QvApp().zoomFactor()*700, QvApp().zoomFactor()*450)
         if qV is not None:
             self._qV = qV
         self._mapificador = QvMapificacio(rutaCsv)
@@ -123,11 +124,11 @@ class QvCarregaCsv(QDialog):
             self._csv, self._separador, self._codificacio)
         if campX is not None and campY is not None:
             self._widgetActual = CsvCoords(self, campX, campY)
-            self._widgetActual.salta.connect(self.salta)
         else:
             self._widgetActual = CsvAdreca(self)
             pass
             # self._widgetActual = CsvAdreca()
+        self._widgetActual.salta.connect(self.salta)
 
     def formata(self):
         self._layoutGran.addWidget(self._widgetActual)
@@ -451,7 +452,7 @@ class CsvAfegir(CsvPagina):
         # Forma
 
         def setForma(imatge):
-            self._forma = str(Path(imatgesDir+imatge).resolve())
+            self._forma = imatge
         gbForma = QGroupBox()
         self._lay.addWidget(gbForma)
         layForma = QGridLayout()
@@ -459,50 +460,50 @@ class CsvAfegir(CsvPagina):
         rbCreu = QRadioButton()
         rbCreu.setIcon(QIcon(imatgesDir+'crossW.png'))
         rbCreu.toggled.connect(lambda x: setForma(
-            'crossW.png') if x else print(':D'))
+            'cross') if x else print(':D'))
         layForma.addWidget(rbCreu, 0, 0)
 
         rbQuadrat = QRadioButton()
         rbQuadrat.setIcon(QIcon(imatgesDir+'squareW.png'))
         rbQuadrat.toggled.connect(lambda x: setForma(
-            'squareW.png') if x else print(':D'))
+            'square') if x else print(':D'))
         layForma.addWidget(rbQuadrat, 0, 1)
 
         rbRombe = QRadioButton()
         rbRombe.setIcon(QIcon(imatgesDir+'rhombusW.png'))
         rbRombe.toggled.connect(lambda x: setForma(
-            'rhombusW.png') if x else print(':D'))
+            'diamond') if x else print(':D'))
         layForma.addWidget(rbRombe, 0, 2)
 
         rbPentagon = QRadioButton()
         rbPentagon.setIcon(QIcon(imatgesDir+'pentagonW.png'))
         rbPentagon.toggled.connect(lambda x: setForma(
-            'pentagonW.png') if x else print(':D'))
+            'pentagon') if x else print(':D'))
         layForma.addWidget(rbPentagon, 0, 3)
 
         rbEstrella = QRadioButton()
         rbEstrella.setIcon(QIcon(imatgesDir+'starW.png'))
         rbEstrella.toggled.connect(lambda x: setForma(
-            'starW.png') if x else print(':D'))
+            'star') if x else print(':D'))
         layForma.addWidget(rbEstrella, 1, 0)
 
         rbTriangle = QRadioButton()
         rbTriangle.setIcon(QIcon(imatgesDir+'triangleW.png'))
         rbTriangle.toggled.connect(lambda x: setForma(
-            'triangleW.png') if x else print(':D'))
+            'triangle') if x else print(':D'))
         layForma.addWidget(rbTriangle, 1, 1)
 
         rbCercle = QRadioButton()
         rbCercle.setIcon(QIcon(imatgesDir+'circleW.png'))
         rbCercle.toggled.connect(lambda x: setForma(
-            'circleW.png') if x else print(':D'))
+            'circle') if x else print(':D'))
         rbCercle.click()
         layForma.addWidget(rbCercle, 1, 2)
 
         rbHexagon = QRadioButton()
         rbHexagon.setIcon(QIcon(imatgesDir+'hexagonW.png'))
         rbHexagon.toggled.connect(lambda x: setForma(
-            'hexagonW.png') if x else print(':D'))
+            'hexagon') if x else print(':D'))
         layForma.addWidget(rbHexagon, 1, 3)
         # Afegim els botons
         layBotons = QHBoxLayout()
