@@ -3450,6 +3450,10 @@ def seleccioExpressio():
         fMap.exec()
         return
 
+    if command == 'masklabels':
+        qV.llegenda.setMask(qV.llegenda.capaPerNom("MaskLabels"), 1)
+        return
+
     if command == 'qvtemps':
         missatgeCaixa('Temps per arrancar:', str('%.1f'%qV.tempsTotal))
         return

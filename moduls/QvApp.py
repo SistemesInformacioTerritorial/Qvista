@@ -97,7 +97,8 @@ class QvApp(Singleton):
         if self.github is None:
             self.gh = None
         else:
-            self.gh = QvGithub(self.data(), self.github)
+            val = self.paramCfg('Id', '')
+            self.gh = QvGithub(self.data(), self.github, val)
 
         val = self.paramCfg('Stdout', 'False')      # Activación fichero salida
         if val == 'True':

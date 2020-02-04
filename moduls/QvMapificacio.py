@@ -8,6 +8,7 @@ from qgis.gui import QgsFileWidget
 from qgis.PyQt.QtCore import Qt, QObject, pyqtSignal, pyqtSlot
 from qgis.PyQt.QtGui import QColor, QValidator, QIcon
 from qgis.PyQt.QtXml import QDomDocument
+from qgis.PyQt.QtWidgets import QMessageBox
 
 import os
 import sys
@@ -18,6 +19,10 @@ import chardet
 import collections
 import operator
 import re
+
+import numpy as np
+import pandas as pd
+import geopandas as gpd
 
 from moduls.QvSqlite import QvSqlite
 from moduls.QvMapVars import *
@@ -345,7 +350,7 @@ class QvMapificacio(QObject):
         else:
             dist = '/ Z.' + self.tipusDistribucio
         # Calculamos SELECT completo de agrupación
-        select = "select round(I.AGREGAT " + dist + ", " + str(self.numDecimals) + ") AS " + self.campCalculat + \
+        select = "select round(I.AGREGAT " + dist + ", " + str(self.renderParams.numDecimals) + ") AS " + self.renderParams.campCalculat + \
                  camps + " from Zona AS Z, " + \
                  "(SELECT " + self.tipusAgregacio + " AS AGREGAT, " + self.campZona + " AS CODI " + \
                  "FROM Info" + filtre + " GROUP BY " + self.campZona + ") AS I WHERE Z.CODI = I.CODI"
@@ -371,92 +376,7 @@ class QvMapificacio(QObject):
             return False
         return True
 
-
-    def agregacio(self, llegenda, nomCapa: str, zona: str, tipusAgregacio: str,
-        campCalculat: str = 'RESULTAT', campAgregat: str = '', tipusDistribucio: str = "Total", filtre: str = '', numDecimals: int = -1,
-        numCategories: int = 4, modeCategories: str = "Endreçat", colorBase: str = 'Blau', format: str = '%1 - %2',
-        veure: bool = True) -> bool:
-        """ ***********************************************************************************************************
-            EN DESARROLLO *********************************************************************************************
-            ***********************************************************************************************************
-        
-        Arguments:
-            llegenda {[type]} -- [description]
-            nomCapa {str} -- [description]
-            zona {str} -- [description]
-            tipusAgregacio {str} -- [description]
-        
-        Keyword Arguments:
-            campCalculat {str} -- [description] (default: {'RESULTAT'})
-            campAgregat {str} -- [description] (default: {''})
-            tipusDistribucio {str} -- [description] (default: {"Total"})
-            filtre {str} -- [description] (default: {''})
-            numDecimals {int} -- [description] (default: {-1})
-            numCategories {int} -- [description] (default: {4})
-            modeCategories {str} -- [description] (default: {"Endreçat"})
-            colorBase {str} -- [description] (default: {'Blau'})
-            format {str} -- [description] (default: {'%1 - %2'})
-            veure {bool} -- [description] (default: {True})
-        
-        Returns:
-            bool -- [description]
-        """
-
-        self.fMapa = ''
-        self.fSQL = ''
-        self.llegenda = llegenda
-        self.msgError = ''
-        self.descripcio = "Arxiu de dades: " + self.fZones + '\n' + \
-            "Zona: " + zona + '\n' + \
-            "Tipus d'agregació: " + tipusAgregacio + '\n' + \
-            "Camp o fòrmula de càlcul: " + campAgregat + '\n' + \
-            "Filtre: " + filtre + '\n' + \
-            "Distribució: " + tipusDistribucio
-
-        if not self.verifZona(zona):
-            self.msgError = "Error en zona"
-            return False
-
-        if campAgregat is not None and campAgregat != '':
-            self.campAgregat = campAgregat
-        elif tipusAgregacio == 'Recompte' and campAgregat == '':
-            self.campAgregat = '*'
-        else:
-            self.msgError = "Error en campAgregat"
-            return False
-
-        if tipusAgregacio is None or tipusAgregacio not in MAP_AGREGACIO.keys():
-            self.msgError = "Error en tipusAgregacio"
-            return False
-        self.tipusAgregacio = MAP_AGREGACIO[tipusAgregacio].format(self.campAgregat)
-
-        if tipusDistribucio is None or tipusDistribucio not in MAP_DISTRIBUCIO.keys():
-            self.msgError = "Error en tipusDistribucio"
-            return False
-        self.tipusDistribucio = MAP_DISTRIBUCIO[tipusDistribucio]
-
-        if modeCategories is None or modeCategories not in MAP_METODES.keys():
-            self.msgError = "Error en modeCategories"
-            return False
-        self.modeCategories = MAP_METODES[modeCategories]
-
-        if colorBase is None or colorBase not in MAP_COLORS.keys():
-            self.msgError = "Error en colorBase"
-            return False
-        self.colorBase = MAP_COLORS[colorBase]
-
-        if numDecimals >= 0:
-            self.numDecimals = numDecimals
-        elif self.tipusAgregacio.startswith('COUNT') and self.tipusDistribucio == "":
-            self.numDecimals = 0
-        else:
-            self.numDecimals = 2
-
-        self.numCategories = numCategories
-        self.filtre = filtre
-        self.campCalculat = campCalculat
-        self.nomCapa = self.netejaString(nomCapa)
-
+    def generaCapaQgis(self, nomCapa: str) -> bool:
         # Carga de capa de datos geocodificados
         infoLyr = QgsVectorLayer(self.fZones, 'Info', 'ogr')
         infoLyr.setProviderEncoding(self.codi)
@@ -511,6 +431,187 @@ class QvMapificacio(QObject):
         # Elimina capas de base y datos
         self.llegenda.project.removeMapLayer(zonaLyr.id())
         self.llegenda.project.removeMapLayer(infoLyr.id())
+        return True
+
+    # def saveGPKG(self, df, nomCapa):
+    #     import fiona
+    #     try:
+    #         from fiona import Env as fiona_env
+    #     except ImportError:
+    #         from fiona import drivers as fiona_env
+    #
+    #     schema = gpd.io.file.infer_schema(df)
+    #     with fiona_env(OGR_SQLITE_CACHE=512, OGR_SQLITE_SYNCHRONOUS=False):
+    #         with fiona.open(self.fSQL, "w", driver="GPKG", crs=df.crs, schema=schema, layer=nomCapa, gt=65536) as colxn:
+    #             colxn.writerecords(df.iterfeatures())
+
+    def generaCapaGpd(self, nomCapa: str, tipusAgregacio: str, tipusDistribucio: str) -> bool:
+        try:
+            # Carga de capa de datos geocodificados
+            csv = pd.read_csv(self.fZones, sep=self.separador, encoding=self.codi,
+                              decimal=MAP_LOCALE.decimalPoint(),
+                              dtype={self.campZona: np.string_, self.campAgregat: np.float_})
+
+            # Aplicar filtro
+            if self.filtre != '':
+                csv.query(self.filtre, inplace=True)
+
+            if tipusAgregacio == "Cap":
+                agreg = pd.Series(csv[self.campAgregat].values.round(self.renderParams.numDecimals), index=csv[self.campZona])
+                if not agreg.index.is_unique:
+                    msg = "El camp {} conté valors duplicats.\n" \
+                          "Per poder mapificar, s'haurà de fer algun tipus d'agregació.".format(self.campZona)
+                    self.msgError = msg
+                    return False
+            elif tipusAgregacio == "Recompte":
+                agreg = csv.groupby(self.campZona).size()
+            elif tipusAgregacio == "Recompte diferents":
+                agreg = csv.groupby(self.campZona)[self.campAgregat].nunique()
+            elif tipusAgregacio == "Suma":
+                agreg = csv.groupby(self.campZona)[self.campAgregat].sum().round(self.renderParams.numDecimals)
+            elif tipusAgregacio == "Mitjana":
+                agreg = csv.groupby(self.campZona)[self.campAgregat].mean().round(self.renderParams.numDecimals)
+            else:
+                self.msgError = "Tipus de agregació '{}' incorrecte.".format(tipusAgregacio)
+                return False
+            agreg.index.names = ['CODI']
+            res = agreg.to_frame(name='RESULTAT')
+
+            # Carga de capa base de zona
+            self.fBase = RUTA_DADES + MAP_ZONES_DB
+            pols = gpd.read_file(self.fBase, driver="GPKG", layer=self.valZona[1], mode='r')
+            if "AREA" in pols.columns:
+                pols["AREA"] = pd.to_numeric(pols["AREA"]).round(3)
+            if "POBLACIO" in pols.columns:
+                pols["POBLACIO"] = pd.to_numeric(pols["POBLACIO"], downcast='integer', errors='coerce')
+
+            # Join
+            join = pols.merge(res, on='CODI', how='left')
+            join['RESULTAT'].fillna(0, inplace=True)
+
+            # Aplicar distribución
+            if self.tipusDistribucio == '':
+                out = join
+            else:
+                # Filtrar elementos para evitar division por 0
+                out = join[join[self.tipusDistribucio].notnull() & (join[self.tipusDistribucio] > 0)]
+                out["RESULTAT"] = (out["RESULTAT"] / out[self.tipusDistribucio]).round(self.renderParams.numDecimals)
+                filtrats = len(join) - len(out)
+                if filtrats > 0:
+                    msg = "Hi ha {} elements de la zona {} que \n" \
+                          "no tenen informació al camp {}.\n\n" \
+                          "Amb aquests elements no és possible\n" \
+                          "fer la distribució {} i per tant\n" \
+                          "no sortiran a la mapificació.".format(filtrats, self.zona, self.tipusDistribucio,
+                                                                 tipusDistribucio.lower())
+                    if self.form is None:
+                        print(msg)
+                    else:
+                        if not self.form.msgContinuarProces(msg):
+                            return False
+
+            # Guardar como Geopackage
+            self.fSQL = self.nomArxiuSortida(self.nomCapa)
+            out.to_file(self.fSQL, driver="GPKG", layer=nomCapa)
+            return True
+        except Exception as err:
+            self.msgError = str(err)
+            return False
+
+    def agregacio(self, llegenda, nomCapa: str, zona: str, tipusAgregacio: str,
+        campCalculat: str = 'RESULTAT', campAgregat: str = '', tipusDistribucio: str = "Total", filtre: str = '',
+        numDecimals: int = -1, numCategories: int = 4, modeCategories: str = "Endreçat", colorBase: str = 'Blau',
+        format: str = '%1 - %2', veure: bool = True, form=None) -> bool:
+        """ ***********************************************************************************************************
+            EN DESARROLLO *********************************************************************************************
+            ***********************************************************************************************************
+        
+        Arguments:
+            llegenda {[type]} -- [description]
+            nomCapa {str} -- [description]
+            zona {str} -- [description]
+            tipusAgregacio {str} -- [description]
+        
+        Keyword Arguments:
+            campCalculat {str} -- [description] (default: {'RESULTAT'})
+            campAgregat {str} -- [description] (default: {''})
+            tipusDistribucio {str} -- [description] (default: {"Total"})
+            filtre {str} -- [description] (default: {''})
+            numDecimals {int} -- [description] (default: {-1})
+            numCategories {int} -- [description] (default: {4})
+            modeCategories {str} -- [description] (default: {"Endreçat"})
+            colorBase {str} -- [description] (default: {'Blau'})
+            format {str} -- [description] (default: {'%1 - %2'})
+            veure {bool} -- [description] (default: {True})
+        
+        Returns:
+            bool -- [description]
+        """
+        from moduls.QvMapRenderer import QvMapRendererParams
+
+        self.fMapa = ''
+        self.fSQL = ''
+        self.llegenda = llegenda
+        self.msgError = ''
+        self.form = form
+        self.descripcio = "Arxiu de dades: " + self.fZones + '\n' + \
+            "Zona: " + zona + '\n' + \
+            "Tipus d'agregació: " + tipusAgregacio + '\n' + \
+            "Camp de càlcul: " + campAgregat + '\n' + \
+            "Filtre: " + filtre + '\n' + \
+            "Distribució: " + tipusDistribucio
+
+        self.renderParams = QvMapRendererParams()
+
+        if not self.verifZona(zona):
+            self.msgError = "Error en zona"
+            return False
+
+        if campAgregat is not None and campAgregat != '':
+            self.campAgregat = campAgregat
+        elif tipusAgregacio == 'Recompte' and campAgregat == '':
+            self.campAgregat = '*'
+        else:
+            self.msgError = "Error en campAgregat"
+            return False
+
+        if tipusAgregacio is None or tipusAgregacio not in MAP_AGREGACIO.keys():
+            self.msgError = "Error en tipusAgregacio"
+            return False
+        self.tipusAgregacio = MAP_AGREGACIO[tipusAgregacio].format(self.campAgregat)
+
+        if tipusDistribucio is None or tipusDistribucio not in MAP_DISTRIBUCIO.keys():
+            self.msgError = "Error en tipusDistribucio"
+            return False
+        self.tipusDistribucio = MAP_DISTRIBUCIO[tipusDistribucio]
+
+        if modeCategories is None or modeCategories not in MAP_METODES.keys():
+            self.msgError = "Error en modeCategories"
+            return False
+        self.renderParams.modeCategories = MAP_METODES[modeCategories]
+
+        if colorBase is None or colorBase not in MAP_COLORS.keys():
+            self.msgError = "Error en colorBase"
+            return False
+        self.renderParams.colorBase = MAP_COLORS[colorBase]
+
+        if numDecimals >= 0:
+            self.renderParams.numDecimals = numDecimals
+        elif self.tipusAgregacio.startswith('COUNT') and self.tipusDistribucio == "":
+            self.renderParams.numDecimals = 0
+        else:
+            self.renderParams.numDecimals = 2
+
+        self.renderParams.numCategories = numCategories
+        self.filtre = filtre
+        self.renderParams.campCalculat = campCalculat
+        self.nomCapa = self.netejaString(nomCapa)
+
+        # if not self.generaCapaQgis(nomCapa):
+        #     return False
+
+        if not self.generaCapaGpd(nomCapa, tipusAgregacio, tipusDistribucio):
+            return False
 
         # Carga capa de agregación
         mapLyr = QgsVectorLayer(self.fSQL, nomCapa, "ogr")
@@ -520,8 +621,7 @@ class QvMapificacio(QObject):
             return False
 
         # Renderer para mapificar
-        self.renderer = self.llegenda.mapRenderer.calcRender(mapLyr, self.campCalculat, self.numDecimals,
-            self.colorBase, self.numCategories, self.modeCategories)
+        self.renderer = self.llegenda.mapRenderer.calcRender(mapLyr, self.renderParams)
         if self.renderer is None:
             self.msgError = "No s'ha pogut elaborar el mapa"
             return False
@@ -530,7 +630,7 @@ class QvMapificacio(QObject):
 
         # Identificador de mapificación para qVista
         QgsExpressionContextUtils.setLayerVariable(mapLyr, MAP_ID, self.descripcio)
-        mapLyr.setDisplayExpression(self.campCalculat)
+        mapLyr.setDisplayExpression(self.renderParams.campCalculat)
 
         # Guarda simbología en GPKG
         err = self.llegenda.saveStyleToGeoPackage(mapLyr, MAP_ID)

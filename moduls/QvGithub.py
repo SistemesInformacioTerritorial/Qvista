@@ -1,20 +1,24 @@
 # -*- coding: utf-8 -*-
 
+import base64
 import requests
 from requests.auth import HTTPBasicAuth
 from moduls.QvError import QvError
 
-
 class QvGithub:
 
-    __ID = 'qVistaHost'
+    # __ID = 'qVistaHost'
+    __ID = 'CPCIMI'
     __USER = 'JCAIMI'
 
-    def __init__(self, dataApp='', github=None):
+    def __init__(self, dataApp='', github=None, id=''):
         self.dataApp = dataApp
         self.branch = github
+        self.id = id
         self.conn = 'https://api.github.com'
-        self.calc = lambda s, n: s[-(n+1):] + s[0].upper() + s[1:n*2] + str((n*14-1)*n)
+        # self.calc = lambda s, n: s[-(n+1):] + s[0].upper() + s[1:n*2] + str((n*14-1)*n)
+        # self.save = lambda s: str(base64.b64encode(s.encode('raw_unicode_escape')), 'utf8')
+        self.load = lambda s: str(base64.b64decode(bytes(s, 'utf8')), 'utf8')
         self.headGet = {
             'accept': "application/json",
             'time-zone': "Europe/Madrid",
@@ -25,7 +29,8 @@ class QvGithub:
             'content-type': "application/json"
         }
         self.repo = 'SistemesInformacioTerritorial/QVista'
-        self.auth = HTTPBasicAuth(QvGithub.__ID, self.calc(QvGithub.__ID, 3))
+        # self.auth = HTTPBasicAuth(QvGithub.__ID, self.calc(QvGithub.__ID, 3))
+        self.auth = HTTPBasicAuth(QvGithub.__ID, self.load(self.id))
         self.timeout = 2
         self.error = ''
 
@@ -140,19 +145,19 @@ class QvGithub:
 
 if __name__ == "__main__":
 
-    # gh = QvGithub()
-
-    # num = gh.getBug('Bug desde app qVista')
-    # print('Bug:', num)
-
-    # com = gh.getCommitter('moduls/QvLlegenda.py')
-    # print('Committer:', com)
-
-    # ok = gh.postBug('Bug desde app qVista', 'Descripción del error', 'CPCIMI')
-
-    # ok = gh.postUser('Post de usuario', 'Prueba de sugerencia / petición')
-
     from moduls.QvApp import QvApp
+
+    gh = QvApp().gh
+
+    num = gh.getBug('Bug desde app qVista')
+    print('Bug:', num)
+
+    com = gh.getCommitter('moduls/QvLlegenda.py')
+    print('Committer:', com)
+
+    ok = gh.postBug('Bug desde app qVista', 'Descripción del error', 'CPCIMI')
+
+    ok = gh.postUser('Post de usuario', 'Prueba de sugerencia / petición')
 
     def pp():
         a = 0

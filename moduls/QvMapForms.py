@@ -28,6 +28,17 @@ class QvFormBaseMapificacio(QDialog):
     def msgInfo(self, txt):
         QMessageBox.information(self, 'Informació', txt)
 
+    def msgProces(self, txt):
+        QApplication.instance().restoreOverrideCursor()
+        self.msgInfo(txt)
+        QApplication.instance().setOverrideCursor(Qt.WaitCursor)
+
+    def msgContinuarProces(self, txt):
+        QApplication.instance().restoreOverrideCursor()
+        res = QMessageBox.question(self, 'Atenció', txt + "\n\nVol continuar?")
+        QApplication.instance().setOverrideCursor(Qt.WaitCursor)
+        return res == QMessageBox.Yes
+
     def msgAvis(self, txt):
         QMessageBox.warning(self, 'Avís', txt)
 
@@ -50,12 +61,23 @@ class QvFormBaseMapificacio(QDialog):
         self.setDisabled(False)
         QApplication.instance().restoreOverrideCursor()
 
-    def comboColors(self, combo):
-        for nom, col in MAP_COLORS.items():
+    def comboColors(self, combo, llista=MAP_COLORS, colorBase=None, mantenirIndex=False):
+        idx = -1
+        if mantenirIndex:
+            idx = combo.currentIndex()
+        combo.clear()
+        for nom, col in llista.items():
+            if col is None:
+                if colorBase is None:
+                    col = MAP_COLORS[self.renderParams.colorBase]
+                else:
+                    col = colorBase
             pixmap = QPixmap(80, 45)
             pixmap.fill(col)
             icon = QIcon(pixmap)
             combo.addItem(icon, nom)
+        if mantenirIndex:
+            combo.setCurrentIndex(idx)
 
     def valida(self):
         return True
@@ -101,18 +123,22 @@ class QvVerifNumero(QValidator):
         return (state, string, index)
 
 class QvComboBoxCamps(QComboBox):
-    def __init__(self, parent):
+    def __init__(self, parent, multiple=False):
         super().__init__(parent)
-        self.setEditable(True)
+        self.multiple = multiple
+        self.setEditable(False)
         self.setInsertPolicy(QComboBox.NoInsert)
         self.oldText = ''
         self.newText = ''
-        self.editTextChanged.connect(self.copyText)
-        self.activated.connect(self.copyItem)
+        if self.multiple:
+            self.setEditable(True)
+            self.editTextChanged.connect(self.copyText)
+            self.activated.connect(self.copyItem)
 
     def wheelEvent(self, event):
-        event.ignore()
-        
+        if self.multiple:
+            event.ignore()
+
     def clear(self):
         super().clear()
         self.oldText = ''
@@ -210,8 +236,7 @@ class QvFormNovaMapificacio(QvFormBaseMapificacio):
         self.distribucio.addItem(next(iter(MAP_DISTRIBUCIO.keys())))
 
         self.calcul = QvComboBoxCamps(self)
-
-        self.filtre = QvComboBoxCamps(self)
+        self.filtre = QvComboBoxCamps(self, multiple=True)
 
         self.color = QComboBox(self)
         self.color.setEditable(False)
@@ -256,7 +281,7 @@ class QvFormNovaMapificacio(QvFormBaseMapificacio):
         self.gDades.setLayout(self.lDades)
 
         self.lDades.addRow("Tipus d'agregació:", self.tipus)
-        self.lDades.addRow('Camp o fòrmula de càlcul:', self.calcul)
+        self.lDades.addRow('Camp de càlcul:', self.calcul)
         self.lDades.addRow('Filtre:', self.filtre) 
         self.lDades.addRow('Distribució:', self.distribucio)
 
@@ -393,9 +418,13 @@ class QvFormNovaMapificacio(QvFormBaseMapificacio):
         if self.taulaMostra is not None:
             self.taulaMostra.hide()
         ok = self.fCSV.agregacio(self.llegenda, self.capa.text().strip(), self.zona.currentText(), self.tipus.currentText(),
-                                 campAgregat=self.calcul.currentText().strip(), filtre=self.filtre.currentText().strip(),
-                                 tipusDistribucio=self.distribucio.currentText(), modeCategories=self.metode.currentText(),
-                                 numCategories=self.intervals.value(), colorBase=self.color.currentText())
+                                 campAgregat=self.calcul.currentText().strip(),
+                                 filtre=self.filtre.currentText().strip(),
+                                 tipusDistribucio=self.distribucio.currentText(),
+                                 modeCategories=self.metode.currentText(),
+                                 numCategories=self.intervals.value(),
+                                 colorBase=self.color.currentText(),
+                                 form=self)
         if ok:
             return ''
         else: 
@@ -419,6 +448,12 @@ class QvFormSimbMapificacio(QvFormBaseMapificacio):
         self.color.setEditable(False)
         self.comboColors(self.color)
 
+        self.contorn = QComboBox(self)
+        self.contorn.setEditable(False)
+        self.comboColors(self.contorn, MAP_CONTORNS)
+
+        self.color.currentIndexChanged.connect(self.canviaContorns)
+
         self.metode = QComboBox(self)
         self.metode.setEditable(False)
         self.metode.addItems(MAP_METODES_MODIF.keys())
@@ -428,7 +463,7 @@ class QvFormSimbMapificacio(QvFormBaseMapificacio):
         self.nomIntervals = QLabel("Nombre d'intervals:", self)
         self.intervals = QSpinBox(self)
         self.intervals.setMinimum(2)
-        self.intervals.setMaximum(max(MAP_MAX_CATEGORIES, self.numCategories))
+        self.intervals.setMaximum(max(MAP_MAX_CATEGORIES, self.renderParams.numCategories))
         self.intervals.setSingleStep(1)
         self.intervals.setValue(4)
         self.intervals.setSuffix("  (depèn del mètode)")
@@ -450,6 +485,7 @@ class QvFormSimbMapificacio(QvFormBaseMapificacio):
         self.gSimb.setLayout(self.lSimb)
 
         self.lSimb.addRow('Color base:', self.color)
+        self.lSimb.addRow('Color contorn:', self.contorn)
         self.lSimb.addRow('Mètode de classificació:', self.metode)
         self.lSimb.addRow(self.nomIntervals, self.intervals)
 
@@ -468,11 +504,13 @@ class QvFormSimbMapificacio(QvFormBaseMapificacio):
         self.info = QgsExpressionContextUtils.layerScope(self.capa).variable(MAP_ID)
         if self.info is None:
             return False
-        ok, (self.campCalculat, self.numDecimals, self.colorBase, self.numCategories, \
-            self.modeCategories, self.rangsCategories) = self.llegenda.mapRenderer.paramsRender(self.capa)
-        self.custom = (self.modeCategories == 'Personalitzat')
-        if not ok:
-            self.msgInfo("No s'han pogut recuperar els paràmetres de mapificació")
+        # ok, (self.campCalculat, self.numDecimals, self.colorBase, self.iniColorContorn, self.numCategories, self.modeCategories,
+        #     self.rangsCategories, self.sourceSymbol) = self.llegenda.mapRenderer.paramsRender(self.capa)
+        self.renderParams = self.llegenda.mapRenderer.paramsRender(self.capa)
+        self.custom = (self.renderParams.modeCategories == 'Personalitzat')
+        if self.renderParams.msgError != '':
+            self.msgInfo("No s'han pogut recuperar els paràmetres de mapificació\n" + self.renderParams.msgError)
+            self.renderParams.msgError = ''
         return True
 
     @pyqtSlot()
@@ -497,23 +535,26 @@ class QvFormSimbMapificacio(QvFormBaseMapificacio):
             box.exec()
 
     def valorsInicials(self):        
-        self.color.setCurrentIndex(self.color.findText(self.colorBase))
-        self.intervals.setValue(self.numCategories)
-        self.metode.setCurrentIndex(self.metode.findText(self.modeCategories))
+        self.color.setCurrentIndex(self.color.findText(self.renderParams.colorBase))
+        self.contorn.setCurrentIndex(self.contorn.findText(self.renderParams.colorContorn))
+        self.intervals.setValue(self.renderParams.numCategories)
+        self.metode.setCurrentIndex(self.metode.findText(self.renderParams.modeCategories))
 
     def valorsFinals(self):
-        self.colorBase = self.color.currentText()
-        self.modeCategories = self.metode.currentText()
-        self.numCategories = self.intervals.value()
+        self.renderParams.colorBase = self.color.currentText()
+        self.renderParams.colorContorn = self.contorn.currentText()
+        self.renderParams.modeCategories = self.metode.currentText()
+        self.renderParams.numCategories = self.intervals.value()
         if self.custom:
-            self.rangs = []
+            self.renderParams.rangsCategories = []
             for fila in self.wInterval:
-                self.rangs.append((fila[0].text(), fila[2].text()))
+                self.renderParams.rangsCategories.append((fila[0].text(), fila[2].text()))
+            self.renderParams.numCategories = len(self.renderParams.rangsCategories)
 
     def txtRang(self, num):
         if type(num) == str:
             return num
-        return MAP_LOCALE.toString(num, 'f', self.numDecimals)
+        return MAP_LOCALE.toString(num, 'f', self.renderParams.numDecimals)
 
     def iniFilaInterval(self, iniValor, finValor):
         maxSizeB = 27
@@ -543,7 +584,7 @@ class QvFormSimbMapificacio(QvFormBaseMapificacio):
         return [ini, sep, fin, add, rem]
 
     def iniIntervals(self):
-        for cat in self.rangsCategories:
+        for cat in self.renderParams.rangsCategories:
             yield self.iniFilaInterval(cat.lowerValue(), cat.upperValue())
 
     def grupIntervals(self):
@@ -639,6 +680,10 @@ class QvFormSimbMapificacio(QvFormBaseMapificacio):
         # print('GSIMB -> Ancho:', self.gSimb.size().width(), '- Alto:', self.gSimb.size().height())
         # print('FORM -> Ancho:', self.size().width(), '- Alto:', self.size().height())
 
+    @pyqtSlot()
+    def canviaContorns(self):        
+        self.comboColors(self.contorn, MAP_CONTORNS, MAP_COLORS[self.color.currentText()], True)
+
     def leSelectFocus(self, wLineEdit):
         lon = len(wLineEdit.text())
         if lon > 0:
@@ -691,11 +736,14 @@ class QvFormSimbMapificacio(QvFormBaseMapificacio):
         self.valorsFinals()
         try:
             if self.custom:
-                self.renderer = self.llegenda.mapRenderer.customRender(self.capa, self.campCalculat,
-                    MAP_COLORS[self.colorBase], self.rangs)
+                self.renderParams.colorBase = MAP_COLORS[self.renderParams.colorBase]
+                self.renderParams.colorContorn = MAP_CONTORNS[self.renderParams.colorContorn]
+                self.renderer = self.llegenda.mapRenderer.customRender(self.capa, self.renderParams)
             else:
-                self.renderer = self.llegenda.mapRenderer.calcRender(self.capa, self.campCalculat, self.numDecimals,
-                    MAP_COLORS[self.colorBase], self.numCategories, MAP_METODES_MODIF[self.modeCategories])            
+                self.renderParams.colorBase = MAP_COLORS[self.renderParams.colorBase]
+                self.renderParams.colorContorn = MAP_CONTORNS[self.renderParams.colorContorn]
+                self.renderParams.modeCategories = MAP_METODES_MODIF[self.renderParams.modeCategories]
+                self.renderer = self.llegenda.mapRenderer.calcRender(self.capa, self.renderParams)
             if self.renderer is None:
                 return "No s'ha pogut elaborar el mapa"
             err = self.llegenda.saveStyleToGeoPackage(self.capa, MAP_ID)
@@ -704,5 +752,5 @@ class QvFormSimbMapificacio(QvFormBaseMapificacio):
             # self.llegenda.modificacioProjecte('mapModified')
             return ''
         except Exception as e:
-            return "No s'ha pogut modificar em mapa\n({})".format(str(e))
+            return "No s'ha pogut modificar el mapa\n({})".format(str(e))
 
