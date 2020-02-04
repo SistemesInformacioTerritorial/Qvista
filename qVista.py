@@ -2669,24 +2669,30 @@ class QVista(QMainWindow, Ui_MainWindow):
     def definirLabelsStatus(self):    
         styleheetLabel='''
             QLabel {
-                background-color: #F9F9F9;
-                color: #38474F;
+                background-color: %s;
+                color: %s;
                 border: 0px;
                 margin: 0px;
                 padding: 4px;
-            }'''
+            }'''%(QvConstants.COLORBLANCHTML,QvConstants.COLORFOSCHTML)
         stylesheetButton='''
             QvPushButton {
-                background-color: #F9F9F9;
-                color: #38474F;
+                background-color: %s;
+                color: %s;
                 margin: 0px;
                 border: 0px;
                 padding: 4px;
-            }'''
+            }'''%(QvConstants.COLORBLANCHTML,QvConstants.COLORFOSCHTML)
         stylesheetLineEdit='''
-            margin: 0px; border: 0px; padding: 0px;
+            QLineEdit {
+                margin: 0px; border: 0px; padding: 0px;
+            }
             '''
-        
+        stylesheetLineEditFiltre=stylesheetLineEdit+'''
+            QLineEdit[text=""] {
+                color: %s;
+            }'''%QvConstants.COLORTEXTHINTHTML
+        alcada=24
         self.lblCapaSeleccionadaInf=QLabel('No hi capa seleccionada.')
         self.lblCapaSeleccionadaInf.setStyleSheet(styleheetLabel)
         self.lblCapaSeleccionadaInf.setFrameStyle(QFrame.StyledPanel )
@@ -2699,6 +2705,8 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.statusbar.setSizeGripEnabled( False )
         self.leSeleccioExpressio.setPlaceholderText('Introduiu un text per filtrar elements a la capa seleccionada')
         self.leSeleccioExpressio.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Minimum)
+        self.leSeleccioExpressio.setStyleSheet(stylesheetLineEditFiltre)
+        self.leSeleccioExpressio.textChanged.connect(lambda: self.leSeleccioExpressio.style().polish(self.leSeleccioExpressio))
         self.leSeleccioExpressio.show()
         # spacer = QSpacerItem(1000, 1000, QSizePolicy.Expanding,QSizePolicy.Maximum)
         # self.statusbar.addPermanentWidget(spacer)
@@ -2723,8 +2731,8 @@ class QVista(QMainWindow, Ui_MainWindow):
         # self.bXY.setStyleSheet(stylesheetButton)
         # self.lXY.addWidget(self.bXY)
         self.leXY = QLineEdit()
-        self.leXY.setFixedHeight(24)
-        self.leXY.setFixedWidth(QvApp().zoomFactor()*142)
+        self.leXY.setFixedHeight(alcada)
+        self.leXY.setFixedWidth(QvApp().zoomFactor()*150)
         self.leXY.setStyleSheet(stylesheetLineEdit)
         # self.leXY.editingFinished.connect(self.returnEditarXY)
         self.leXY.returnPressed.connect(self.returnEditarXY)
@@ -2734,6 +2742,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.lblProjeccio = QLabel()
         self.lblProjeccio.setStyleSheet(styleheetLabel)
         self.lblProjeccio.setFrameStyle(QFrame.StyledPanel )
+        self.lblProjeccio.setFixedHeight(alcada)
         # self.lblProjeccio.setMinimumWidth( 140 )
 
 
@@ -2745,6 +2754,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.wScale.setLayout(self.lScale)
         self.bScale = QvPushButton(flat=True)
         self.bScale.setStyleSheet(stylesheetButton)
+        self.bScale.setFixedHeight(alcada)
         self.lScale.addWidget(self.bScale)
         # self.bScale.setFrameStyle(QFrame.StyledPanel )
         # self.bScale.setMinimumWidth( 140 )
@@ -2753,12 +2763,14 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         self.bOrientacio = QvPushButton(flat=True)
         self.bOrientacio.setStyleSheet(stylesheetButton)
+        self.bOrientacio.setFixedHeight(alcada)
         # self.bScale.setFrameStyle(QFrame.StyledPanel )
         # self.bOrientacio.setMinimumWidth( 140 )
 
         self.lblProjecte = QLabel()
         self.lblProjecte.setStyleSheet(styleheetLabel)
         self.lblProjecte.setFrameStyle(QFrame.StyledPanel )
+        self.lblProjecte.setFixedHeight(alcada)
         # self.lblProjecte.setMinimumWidth( 140 )
 
         #Afegim tots els widgets de cop
