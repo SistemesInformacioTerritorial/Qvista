@@ -2664,7 +2664,8 @@ class QVista(QMainWindow, Ui_MainWindow):
         #Per tant, deixem d'editar-la
         if self.editantEscala:  
             self.editantEscala=False
-            self.leScale.setParent(None)
+            # self.leScale.setParent(None)
+            self.leScale.hide()
 
     def definirLabelsStatus(self):    
         styleheetLabel='''
@@ -2760,6 +2761,21 @@ class QVista(QMainWindow, Ui_MainWindow):
         # self.bScale.setMinimumWidth( 140 )
         self.bScale.clicked.connect(self.editarEscala)
         self.editantEscala = False
+        
+        self.leScale = QLineEdit()
+        self.leScale.setCursor(QvConstants.cursorDit())
+        self.leScale.setStyleSheet('QLineEdit{margin: 0px; border: 0px; padding: 0px;}')
+        self.lScale.addWidget(self.leScale)
+        # self.leScale.setGeometry(48,0,100,20)
+        self.leScale.setMinimumWidth(10)
+        self.leScale.setMaximumWidth(70)
+        self.leScale.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Minimum)
+        self.leScale.returnPressed.connect(self.escalaEditada)
+        self.leScale.textChanged.connect(self.mostraCompleterEscala)
+        self.leScale.setFocus()
+        self.onlyInt = QIntValidator()
+        self.leScale.setValidator(self.onlyInt)
+        self.leScale.hide()
 
         self.bOrientacio = QvPushButton(flat=True)
         self.bOrientacio.setStyleSheet(stylesheetButton)
@@ -2847,20 +2863,8 @@ class QVista(QMainWindow, Ui_MainWindow):
         if not self.editantEscala:
             self.editantEscala = True
             self.bScale.setText(' Escala 1: ')
-            self.leScale = QLineEdit()
-            self.leScale.setCursor(QvConstants.cursorDit())
-            self.leScale.setStyleSheet('QLineEdit{margin: 0px; border: 0px; padding: 0px;}')
-            self.lScale.addWidget(self.leScale)
-            # self.leScale.setGeometry(48,0,100,20)
-            self.leScale.setMinimumWidth(10)
-            self.leScale.setMaximumWidth(70)
-            self.leScale.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Minimum)
-            self.leScale.returnPressed.connect(self.escalaEditada)
-            self.leScale.textChanged.connect(self.mostraCompleterEscala)
             self.leScale.show()
-            self.leScale.setFocus()
-            self.onlyInt = QIntValidator()
-            self.leScale.setValidator(self.onlyInt)
+            
             #Estem recalculant cada vegada. Podríem fer-ho només quan canviem de projecte, però no va lent
             if QgsExpressionContextUtils.projectScope(self.project).variable('qV_escales'):
                 escalesPossibles=valors = QgsExpressionContextUtils.projectScope(self.project).variable('qV_escales').split(' ')
@@ -2870,7 +2874,6 @@ class QVista(QMainWindow, Ui_MainWindow):
             self.completerEscales.activated.connect(self.escalaEditada)
             popup=self.completerEscales.popup()
             popup.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-            print(self.completerEscales.popup().sizePolicy().verticalPolicy())
             popup.setMinimumHeight(popup.sizeHintForRow(0)*len(escalesPossibles)+4)
             popup.verticalScrollBar().setEnabled(False)
             self.leScale.setCompleter(self.completerEscales)
@@ -2884,8 +2887,9 @@ class QVista(QMainWindow, Ui_MainWindow):
 
     def escalaEditada(self):
         escala = self.leScale.text()
-        self.leScale.setParent(None)
-        self.lScale.removeWidget(self.leScale)
+        # self.leScale.setParent(None)
+        self.leScale.hide()
+        # self.lScale.removeWidget(self.leScale)
         self.canvas.zoomScale(int(escala))
         self.editantEscala = False
         # self.comboEscales.hide()
