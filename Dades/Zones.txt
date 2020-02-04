@@ -1,7 +1,0 @@
-cd \\NAS_CORP.imi.bcn\CORP\APPS9
-cd DADES\SIT\PyQgis\Apl\qVista\Codi
-git checkout prePro
-copy D:\qVista\Zonas\Zones.txt .\Dades
-git add Dades\Zones.txt
-git commit -am "BBDD Zones"
-git pull

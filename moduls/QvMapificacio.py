@@ -294,7 +294,8 @@ class QvMapificacio(QObject):
                             self.valorCampAdreca(row, 3), self.valorCampAdreca(row, 4), self.valorCampAdreca(row, 5))
                     # Error en geocodificación
                     if val is None:
-                        self.errorAdreca.emit(dict(row))
+                        # self.errorAdreca.emit(dict(row))
+                        self.errorAdreca.emit(dict(row, **{'_fila':tot}))
                         num += 1
                     # Escritura de fila con campos
                     else:
@@ -698,7 +699,7 @@ if __name__ == "__main__":
         leyenda.setWindowTitle('Llegenda')
         leyenda.show()
 
-        z = QvMapificacio('CarrecsANSI.csv')
+        z = QvMapificacio('U:/QUOTA/Comu_imi/Becaris/CarrecsAnsi100.csv')
         # z = QvMapificacio('CarrecsUTF8.csv')
         if z.msgError != '':
             print('Error:', z.msgError)
