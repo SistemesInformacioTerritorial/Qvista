@@ -353,8 +353,11 @@ class CsvGeocod(CsvPagina):
         super().showEvent(e)
         # Falta mirar què fem amb els errors
         self.parentWidget()._mapificador.geocodificacio(self._camps, ('Coordenada', 'Districte', 'Barri', 'Codi postal', "Illa", "Solar", "Àrea estadística bàsica",
-                                                                      "Secció censal"), percentatgeProces=lambda x: self._progress.setValue(x), errorAdreca=self._unErrorMes, procesAcabat=self.acabat)
-
+                                                                      "Secció censal"), percentatgeProces=self._canviPercentatge, procesAcabat=self.acabat)
+        qApp.processEvents()
+    def _canviPercentatge(self,p):
+        self._progress.setValue(p)
+        qApp.processEvents()
     def _unErrorMes(self, err):
         self._errors.append(err)
         self._numErr += 1
@@ -362,6 +365,7 @@ class CsvGeocod(CsvPagina):
 
     def _modificaLblErr(self):
         self._lblNumErrors.setText("Número d'errors: %i" % self._numErr)
+        qApp.processEvents()
 
     def acabat(self, n):
         # Aquí saltar al resultat
