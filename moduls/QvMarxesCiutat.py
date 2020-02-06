@@ -10,7 +10,7 @@ class MarxesCiutat(QDockWidget):
         self.setContextMenuPolicy(Qt.PreventContextMenu)
         
         fMarxes = QFrame()
-        fMarxes.setStyleSheet("QFrame {background-image: url('c:/qvistaProd/imatges/pavim.jpg');}")
+        # fMarxes.setStyleSheet("QFrame {background-image: url('c:/qvistaProd/imatges/pavim.jpg');}")
         lytMarxes = QVBoxLayout(fMarxes)
         lytMarxes.setAlignment(Qt.AlignTop)
 
@@ -187,9 +187,10 @@ class MarxesCiutat(QDockWidget):
         self.w.show()
     def mostrarVallcarca(self):
         PDF = 'file:///' + 'L:\DADES\SIT\qVista\CATALEG\MAPES PRIVATS\Marxes de ciutat/PdfFitxes/06_Vallcarca.pdf'
-     
-        QDesktopServices().openUrl(QUrl('file:///L:/DADES/SIT/qVista/CATALEG/MAPES%20PRIVATS/Marxes%20de%20ciutat/PdfFitxes/06_Vallcarca.pdf'))
-       
+        self.w = QvPDF(PDF)
+        self.w.setGeometry(50, 50, 1200, 800)
+        self.w.setWindowTitle('Marxa de la Vila de Gràcia')
+        self.w.show()
     def mostrarMarina(self):
         PDF = 'file:///L:/DADES/SIT/qVista/CATALEG/MAPES PRIVATS/Marxes de ciutat/PdfFitxes/11_La_Marina.pdf'
         self.w = QvPDF(PDF)
