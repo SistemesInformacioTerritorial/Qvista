@@ -4,7 +4,8 @@ from qgis.core import (QgsProject, QgsSettings, QgsLegendModel, QgsLayerDefiniti
                        QgsVectorFileWriter, QgsVectorLayerJoinInfo, QgsLayerTree, QgsLayerTreeNode,
                        QgsLayerTreeUtils, QgsVectorDataProvider, QgsSymbol, QgsRendererCategory, QgsCategorizedSymbolRenderer,
                        QgsGraduatedSymbolRenderer, QgsRendererRange, QgsAggregateCalculator,
-                       QgsGradientColorRamp, QgsRendererRangeLabelFormat, QgsExpressionContextUtils)
+                       QgsGradientColorRamp, QgsRendererRangeLabelFormat, QgsExpressionContextUtils,
+                       QgsVectorLayerSimpleLabeling, QgsPalLayerSettings, QgsPropertyCollection, QgsProperty, QgsAbstractGeometry)
 from qgis.gui import (QgsLayerTreeView, QgsLayerTreeViewMenuProvider, QgsLayerTreeMapCanvasBridge,
                       QgsLayerTreeViewIndicator, QgsLayerTreeViewDefaultActions, QgsGradientColorRampDialog)
 from qgis.PyQt.QtWidgets import QAction, QFileDialog, QWidget, QPushButton, QVBoxLayout, QHBoxLayout, QGridLayout
@@ -17,6 +18,7 @@ from moduls.QvVideo import QvVideo
 from moduls.QvEscala import QvEscala
 from moduls.QvMapRenderer import QvMapRenderer
 from moduls.QvMapVars import *
+from moduls.QvEtiquetes import QvMaskLabels
 from configuracioQvista import *
 
 import os
@@ -213,6 +215,7 @@ class QvLlegenda(QgsLayerTreeView):
         self.lastExtent = None
         self.escales = None
         self.directory = '.'
+        self.mask = None
         # self.restoreExtent = 0
         # print('restoreExtent', self.restoreExtent)
 
@@ -528,10 +531,56 @@ class QvLlegenda(QgsLayerTreeView):
             return
         bridge = QgsLayerTreeMapCanvasBridge(self.root, canvas)
         if self.canvas is None:  # Canvas principal
+            self.canvasSettings(canvas)
             self.canvas = canvas
             self.bridge = bridge
+            self.bridge.canvasLayersChanged.connect(self.maskUpdate)
         else:
             self.bridges.append((canvas, bridge))
+
+    def setMask(self, layer, polygonId):
+        if layer is None or polygonId is None:
+            self.mask = None
+        else:
+            self.mask = QvMaskLabels(layer, polygonId)
+            self.maskUpdate()
+
+    def maskUpdate(self):
+        if self.mask is None:
+            return
+        try:
+            node = self.root.findLayer(self.mask.layer.id())
+        except:
+            node = None
+        if node is None:
+            self.maskOff()
+            self.mask = None
+            return
+        if node.isVisible():
+            self.maskOn()
+        else:
+            self.maskOff()
+
+    def maskOn(self):
+        if self.mask is not None and not self.mask.on:
+            self.mask.enableAll()
+            self.canvas.clearCache()
+            self.canvas.refresh()
+
+    def maskOff(self):
+        if self.mask is not None and self.mask.on:
+            self.mask.disableAll()
+            self.canvas.clearCache()
+            self.canvas.refresh()
+
+    def canvasSettings(self, canvas):
+        canvas.enableAntiAliasing(True)
+        canvas.setWheelFactor(2)
+        canvas.setCachingEnabled(True)
+        canvas.setParallelRenderingEnabled(True)
+        canvas.setMapUpdateInterval(250)
+        canvas.setSegmentationTolerance(0.01745)
+        canvas.setSegmentationToleranceType(QgsAbstractGeometry.MaximumAngle)
 
     def temes(self):
         return self.project.mapThemeCollection().mapThemes()
@@ -868,7 +917,6 @@ class QvLlegenda(QgsLayerTreeView):
             item = self.model.index2node(index)
             yield from recurse(item, 0)
 
-
 class QvMenuLlegenda(QgsLayerTreeViewMenuProvider):
 
     def __init__(self, llegenda):
@@ -916,7 +964,8 @@ if __name__ == "__main__":
         # leyenda.project.read('../Dades/Projectes/Imatge satel·lit 2011 AMB.qgs')
         # leyenda.project.read('../dades/projectes/bcn11.qgs')
         # leyenda.project.read('../dades/projectes/Prototip GUIA OracleSpatial_WMS.qgz')
-        leyenda.project.read('D:/qVista/Codi/mapesOffline/qVista default map.qgs')
+        # leyenda.project.read('D:/qVista/Codi/mapesOffline/qVista default map.qgs')
+        leyenda.project.read('D:/qVista/EjemploMapSin.qgs')
 
     # Al cargar un proyecto o capa:
     # - Ver si tiene filtro de datos para actualizar el icono del embudo
@@ -929,6 +978,14 @@ if __name__ == "__main__":
 
         leyenda.setWindowTitle('Llegenda')
         leyenda.show()
+
+        # set = QgsSettings()
+        # print(set.value('qgis/map_update_interval'))
+        # print(set.value('qgis/enable_render_caching'))
+        # print(set.value('qgis/parallel_rendering'))
+        # print(set.value('qgis/enable_anti_aliasing'))
+        # print(set.value('qgis/segmentationTolerance'))
+        # print(set.value('qgis/segmentationToleranceType'))
 
         #
         # Funciones de capes:
@@ -1036,6 +1093,40 @@ if __name__ == "__main__":
                     rangos.close()
                 if botonera is not None:
                     botonera.close()
+
+        from moduls.QvEtiquetes import QvMaskLabels
+        # leyenda.mask = QvMaskLabels(leyenda.capaPerNom("Zones districtes"), 3)
+        leyenda.mask = QvMaskLabels(leyenda.capaPerNom("Màscara"), 1)
+
+        def testLabels():           
+            print("Test Labels")
+            capa = leyenda.currentLayer()
+            if capa is None or capa.type() != QgsMapLayer.VectorLayer:
+                return
+            print("Capa: {}".format(capa.name()))
+            if not capa.labelsEnabled():
+                print("- Sin etiquetas")
+                return
+
+            on = leyenda.mask.isEnabled(capa)
+            if on:
+                print("- Activada")
+            else:
+                print("- No activada")
+
+        def maskLabels():
+            capa = leyenda.currentLayer()
+            on = leyenda.mask.isEnabled(capa)
+            leyenda.mask.switch(capa, not on)
+            if leyenda.capaVisible(capa):
+                canv.clearCache()
+                canv.refresh()
+
+        def maskOn():
+            leyenda.maskOn()
+
+        def maskOff():
+            leyenda.maskOff()
 
         def testMapificacio():
             from moduls.QvMapForms import QvFormNovaMapificacio, QvFormSimbMapificacio
@@ -1316,6 +1407,26 @@ if __name__ == "__main__":
         leyenda.accions.afegirAccio('testMapificacio', act)
 
         act = QAction()
+        act.setText("Test Labels")
+        act.triggered.connect(testLabels)
+        leyenda.accions.afegirAccio('testLabels', act)
+
+        act = QAction()
+        act.setText("Mask Labels")
+        act.triggered.connect(maskLabels)
+        leyenda.accions.afegirAccio('maskLabels', act)
+
+        act = QAction()
+        act.setText("Mask Labels On")
+        act.triggered.connect(maskOn)
+        leyenda.accions.afegirAccio('maskOn', act)
+
+        act = QAction()
+        act.setText("Mask Labels Off")
+        act.triggered.connect(maskOff)
+        leyenda.accions.afegirAccio('maskOff', act)
+
+        act = QAction()
         act.setText("Abrir proyecto")
         act.triggered.connect(openProject)
         leyenda.accions.afegirAccio('openProject', act)
@@ -1323,6 +1434,9 @@ if __name__ == "__main__":
         # Adaptación del menú
         def menuContexte(tipo):
             # leyenda.menuAccions.append('testMapificacio')
+            if tipo == 'layer':
+                leyenda.menuAccions.append('testLabels')
+                leyenda.menuAccions.append('maskLabels')
             if tipo == 'none':
                 leyenda.menuAccions.append('addLayersFromFile')
                 leyenda.menuAccions.append('separator')
@@ -1331,6 +1445,8 @@ if __name__ == "__main__":
                 # leyenda.menuAccions.append('testSimbologia')
                 leyenda.menuAccions.append('testJoin')
                 leyenda.menuAccions.append('testMapificacio')
+                leyenda.menuAccions.append('maskOn')
+                leyenda.menuAccions.append('maskOff')
                 leyenda.menuAccions.append('editable')
                 leyenda.menuAccions.append('openProject')
 
