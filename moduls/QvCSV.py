@@ -7,6 +7,7 @@ from moduls.QvEditorCsv import QvEditorCsv
 from moduls.QvMapForms import QvFormNovaMapificacio
 from moduls.QvConstants import QvConstants
 from moduls.QvApp import QvApp
+from moduls.QvFuncioFil import QvFuncioFil
 
 # Còpia de la funció definida dins de qVista.py. Millor aquí???
 
@@ -423,8 +424,8 @@ class CsvGeocod(CsvPagina):
         self.setCursor(QvConstants.CURSOROCUPAT)
         if self.parentWidget()._mapificador.files>50000:
             self._lblExplicativa.show()
-        if self._cancelat:
-            self.parentWidget().loadMap()
+        # if self._cancelat:
+        #     self.parentWidget().loadMap()
         fil=QvFuncioFil(lambda: self.parentWidget()._mapificador.geocodificacio(self._camps, ('Coordenada', 'Districte', 'Barri', 'Codi postal', "Illa", "Solar", "Àrea estadística bàsica",
                                                                       "Secció censal"), percentatgeProces=self._canviPercentatge, procesAcabat=self.acabat))
         fil.start()

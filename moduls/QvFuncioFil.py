@@ -1,7 +1,7 @@
 from PyQt5.QtCore import QThread
 
 class QvFuncioFil(QThread):
-'''Classe per executar una funció (sense paràmetres) en un fil. Si volem passar-hi paràmetres, haurem de fer una nova funció sense paràmetres que ho gestioni
+    '''Classe per executar una funció (sense paràmetres) en un fil. Si volem passar-hi paràmetres, haurem de fer una nova funció sense paràmetres que ho gestioni
 Per fer-la servir només cal fer una cosa així:
 def funcio_molt_costosa(arg1,arg2):
     ...
