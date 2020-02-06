@@ -1,4 +1,5 @@
 from PyQt5.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QTableWidget, QTableWidgetItem
+from PyQt5.QtGui import QDesktopServices
 from moduls.QvPushButton import QvPushButton
 from moduls.QvConstants import QvConstants
 import csv
@@ -23,6 +24,7 @@ class QvEditorCsv(QDialog):
         self._separador = separador
         self._i = 0
         self._teErrors = len(self._errors) != 0
+        self._MAXIMFILES = 500
 
         # Definició gràfica
         self._lay = QVBoxLayout()
@@ -44,6 +46,10 @@ class QvEditorCsv(QDialog):
             # self._layErrors.addStretch()
             self._lay.addLayout(self._layErrors)
         # Declarem la taula
+        self._lblAvisPreview = QLabel("Només es mostren els primers %i elements. Per veure l'arxiu complet premeu el botó \"obrir com a full de càlcul\""%self._MAXIMFILES)
+        self._lblAvisPreview.setWordWrap(True)
+        self._lay.addWidget(self._lblAvisPreview)
+        self._lblAvisPreview.hide()
         self._taula = QTableWidget()
         self._taula.currentCellChanged.connect(self._errorProper)
         self._lay.addWidget(self._taula)
@@ -55,6 +61,8 @@ class QvEditorCsv(QDialog):
             self._mostraErrorActual()
 
     def _defBotons(self):
+        self._bFullCalcul = QvPushButton('Obre com a full de càlcul')
+        self._bFullCalcul.clicked.connect(self._obreFullCalcul)
         self._bDesar = QvPushButton('Desar', destacat=True)
         self._bDesar.clicked.connect(self._desar)
         self._bCancelar = QvPushButton('Cancel·lar')
@@ -69,10 +77,13 @@ class QvEditorCsv(QDialog):
             self._layErrors.addWidget(self._spinErrors)
             self._layErrors.addWidget(self._bSeg)
             self._layErrors.addStretch()
+        self._layBotons.addWidget(self._bFullCalcul)
         self._layBotons.addStretch()
         self._layBotons.addWidget(self._bDesar)
         self._layBotons.addWidget(self._bCancelar)
-
+    def _obreFullCalcul(self):
+        QDesktopServices.openUrl(QUrl(self._arxiu))
+        self.close()
     def _carregaTaula(self):
         self._taula.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
         with open(self._arxiu, 'r', encoding=self._codificacio) as f:
@@ -83,6 +94,11 @@ class QvEditorCsv(QDialog):
                     self._taula.setColumnCount(len(self._capcalera))
                     self._taula.setHorizontalHeaderLabels(self._capcalera)
                 else:
+                    if i>self._MAXIMFILES: 
+                        self._lblAvisPreview.show()
+                        self._bDesar.setEnabled(False)
+                        # Mostrar avís de que és una preview
+                        break
                     self._taula.setRowCount(i)
                     for j, x in enumerate(row):
                         item = QTableWidgetItem(x)

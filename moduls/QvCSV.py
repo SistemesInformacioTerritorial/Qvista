@@ -87,18 +87,34 @@ def campsCoords(csvPath, sep, cod):
         except StopIteration:
             return None, None
 
+def campsPref(csvPath,sep,cod,nomCamps):
+    with open(csvPath) as f:
+        reader=csv.DictReader(f,delimiter=sep)
+        comencen=filter(lambda x: any(map(lambda y: x.lower().startswith(y),nomCamps)),reader.fieldnames)
+        try:
+            return next(comencen)
+        except StopIteration:
+            return None
+
+def campsAdreces(csvPath,sep,cod):
+    nomCamps = ('nom','via','carr')
+    return campsPref(csvPath,sep,cod,nomCamps)
+def campsNum(csvPath,sep,cod):
+    nomCamps = ('num','npost','n_post','n post','núm')
+    return campsPref(csvPath,sep,cod,nomCamps)
 
 class QvCarregaCsv(QDialog):
     def __init__(self, rutaCsv: str, qV=None):
-        super().__init__(qV)
+        super().__init__(qV,Qt.WindowSystemMenuHint | Qt.WindowTitleHint | Qt.WindowCloseButtonHint)
         self.setWindowTitle('Carregador d\'arxius CSV')
         self.setFixedSize(QvApp().zoomFactor()*700, QvApp().zoomFactor()*450)
         if qV is not None:
             self._qV = qV
-        self._mapificador = QvMapificacio(rutaCsv)
+        self._csv = rutaCsv
+        self.loadMap()
+        # self._mapificador = QvMapificacio(rutaCsv)
         self.setSeparador()
         self._codificacio = self._mapificador.codi
-        self._csv = rutaCsv
         self._widgetSup = QWidget(objectName='layout')
         self._layoutGran = QVBoxLayout()
         self.setLayout(self._layoutGran)
@@ -115,19 +131,20 @@ class QvCarregaCsv(QDialog):
 
         self.formata()
         self.oldPos = self.pos()
-
+    def loadMap(self):
+        self._mapificador = QvMapificacio(self._csv)
     def setSeparador(self):
         self._separador = self._mapificador.separador
-
-    def triaPrimeraPantalla(self):
+    def getPrimeraPantalla(self):
         campX, campY = campsCoords(
             self._csv, self._separador, self._codificacio)
         if campX is not None and campY is not None:
-            self._widgetActual = CsvCoords(self, campX, campY)
+            return CsvCoords(self, campX, campY)
         else:
-            self._widgetActual = CsvAdreca(self)
-            pass
-            # self._widgetActual = CsvAdreca()
+            return CsvAdreca(self)
+
+    def triaPrimeraPantalla(self):
+        self._widgetActual=self.getPrimeraPantalla()
         self._widgetActual.salta.connect(self.salta)
 
     def formata(self):
@@ -164,7 +181,7 @@ class CsvPagina(QWidget):
         print(self.parentWidget()._csv)
         wid = QvEditorCsv(self.parentWidget()._csv, errors, self.parentWidget(
         )._codificacio, self.parentWidget()._separador)
-        wid.setWindowTitle('Veure taula')
+        wid.setWindowTitle("Vista prèvia de l'arxiu csv")
         self._canviat = False
         wid.rutaCanviada.connect(self.parentWidget().setCsv)
 
@@ -194,7 +211,7 @@ class CsvPagina(QWidget):
 class CsvCoords(CsvPagina):
     def __init__(self, parent=None, campX=None, campY=None):
         super().__init__(parent)
-        self._setTitol('Sel·lecció dels camps de coordenades')
+        self._setTitol('Sel·leccioneu dels camps de coordenades')
         self._lay.addWidget(
             QLabel("Introduiu els camps que defineixen les coordenades"))
         self._lay.addStretch()
@@ -203,26 +220,34 @@ class CsvCoords(CsvPagina):
         self._layCamps = QVBoxLayout(self._gbCoords)
         self._gbCoords.setLayout(self._layCamps)
         camps = self.getCamps()
+        if campX is None:
+            campX, campY = campsCoords(self.parentWidget()._csv, self.parentWidget()._separador, self.parentWidget()._codificacio)
         self._proj = {'EPSG:25831 UTM ETRS89 31N': 25831,
                       'EPSG:3857 Pseudo Mercator (Google)': 3857,
                       'EPSG:4326 WGS 84': 4326,
                       'EPSG:23031 ED50 31N': 23031}
         layX = QHBoxLayout()
-        layX.addWidget(QLabel('Coordenades X:'))
+        lblX = QLabel('Coordenades X:')
+        lblX.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
+        layX.addWidget(lblX)
         self._cbX = QComboBox()
         self._cbX.addItems(camps)
         self._cbX.setCurrentText(campX)
         layX.addWidget(self._cbX)
 
         layY = QHBoxLayout()
-        layY.addWidget(QLabel('Coordenades Y:'))
+        lblY = QLabel('Coordenades Y:')
+        lblY.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
+        layY.addWidget(lblY)
         self._cbY = QComboBox()
         self._cbY.addItems(camps)
         self._cbY.setCurrentText(campY)
         layY.addWidget(self._cbY)
 
         layProj = QHBoxLayout()
-        layProj.addWidget(QLabel('Projecció:'))
+        lblProj = QLabel('Projecció:')
+        lblProj.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
+        layProj.addWidget(lblProj)
         self._cbProj = QComboBox()
         self._cbProj.addItems(self._proj.keys())
         layProj.addWidget(self._cbProj)
@@ -233,7 +258,8 @@ class CsvCoords(CsvPagina):
         self._lay.addWidget(self._gbCoords)
 
         # Botó per anar a la pantalla de les adreces
-        self._bAdreces = QvPushButton('Té adreces')
+        self._bAdreces = QvPushButton("Hi ha camps d'adreces?")
+        self._bAdreces.setToolTip("Si no disposeu de camps de coordenades, premeu aquí per geocodificar-les a partir d'adreces")
         self._bAdreces.clicked.connect(
             lambda: self.salta.emit(CsvAdreca(self.parentWidget())))
         self._lay.addWidget(self._bAdreces)
@@ -241,11 +267,14 @@ class CsvCoords(CsvPagina):
 
         # Botons per fer coses
         self._layBotons = QHBoxLayout()
-        self._bVeure = QvPushButton('Veure')
+        self._bVeure = QvPushButton("Vista prèvia de l'arxiu csv")
+        self._bVeure.setToolTip("Premeu aquest botó per visualitzar l'arxiu csv")
         self._bVeure.clicked.connect(self._mostraTaula)
-        self._bAfegir = QvPushButton('Afegir')
+        self._bAfegir = QvPushButton('Afegir com a capa de punts')
+        self._bAfegir.setToolTip('Afegeix al mapa com a capa de punts')
         self._bAfegir.clicked.connect(self.afegir)
         self._bMapifica = QvPushButton('Mapificar')
+        self._bMapifica.setToolTip('Crea una mapificació a partir de la taula per visualitzar-la sobre el mapa')
         self._bMapifica.clicked.connect(self._mapifica)
         self._layBotons.addWidget(self._bVeure)
         self._layBotons.addStretch()
@@ -261,9 +290,9 @@ class CsvCoords(CsvPagina):
 class CsvAdreca(CsvPagina):
     def __init__(self, parent=None, **camps):
         super().__init__(parent)
-        self._setTitol("Sel·lecció dels camps d'adreça")
+        self._setTitol("Sel·leccioneu els camps d'adreça")
         self._lay.addWidget(QLabel(
-            "Tria dels camps que defineixen l'adreça.\nNomés són obligatoris el nom de la via i el número inicial"))
+            "Trieu els camps que defineixen l'adreça.\nNomés són obligatoris el nom de la via i el número inicial"))
         self._lay.addStretch()
         self._gbCamps = QGroupBox(self)
         self._layCamps = QGridLayout(self._gbCamps)
@@ -272,37 +301,57 @@ class CsvAdreca(CsvPagina):
         self._cbTipusVia = QComboBox()
         self._cbTipusVia.addItems(['']+camps)
         layTipusVia = QHBoxLayout()
-        layTipusVia.addWidget(QLabel('Tipus via:'))
+        lblTipusVia = QLabel('Tipus via (carrer, avinguda...):')
+        lblTipusVia.setAlignment(Qt.AlignRight | Qt.AlignVCenter) #Cal alinear a la dreta i al centre, ja que si no, queda mal alineat respecte la combobox
+        layTipusVia.addWidget(lblTipusVia)
         layTipusVia.addWidget(self._cbTipusVia)
 
         self._cbVia = QComboBox()
         self._cbVia.addItems(camps)
         layVia = QHBoxLayout()
-        layVia.addWidget(QLabel('Via:'))
+        lblVia = QLabel('Via:')
+        lblVia.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
+        layVia.addWidget(lblVia)
         layVia.addWidget(self._cbVia)
+        c=campsAdreces(self.parentWidget()._csv,self.parentWidget()._separador, self.parentWidget()._codificacio)
+        if c is not None:
+            i=self._cbVia.findText(c)
+            self._cbVia.setCurrentIndex(i)
 
         self._cbNumI = QComboBox()
         self._cbNumI.addItems(camps)
         layNumI = QHBoxLayout()
-        layNumI.addWidget(QLabel('Número inicial:'))
+        lblNumI = QLabel('Número postal inicial:')
+        lblNumI.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
+        layNumI.addWidget(lblNumI)
         layNumI.addWidget(self._cbNumI)
+        c=campsNum(self.parentWidget()._csv,self.parentWidget()._separador, self.parentWidget()._codificacio)
+        if c is not None:
+            i=self._cbNumI.findText(c)
+            self._cbNumI.setCurrentIndex(i)
 
         self._cbNumF = QComboBox()
         self._cbNumF.addItems(['']+camps)
         layNumF = QHBoxLayout()
-        layNumF.addWidget(QLabel('Número final:'))
+        lblNumF = QLabel('Número postal final:')
+        lblNumF.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
+        layNumF.addWidget(lblNumF)
         layNumF.addWidget(self._cbNumF)
 
         self._cbLletraI = QComboBox()
         self._cbLletraI.addItems(['']+camps)
         layLletraI = QHBoxLayout()
-        layLletraI.addWidget(QLabel('Lletra inicial:'))
+        lblLletraI = QLabel('Lletra inicial:')
+        lblLletraI.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
+        layLletraI.addWidget(lblLletraI)
         layLletraI.addWidget(self._cbLletraI)
 
         self._cbLletraF = QComboBox()
         self._cbLletraF.addItems(['']+camps)
         layLletraF = QHBoxLayout()
-        layLletraF.addWidget(QLabel('Lletra final:'))
+        lblLletraF = QLabel('Lletra final:')
+        lblLletraF.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
+        layLletraF.addWidget(lblLletraF)
         layLletraF.addWidget(self._cbLletraF)
         self._layCamps.addLayout(layTipusVia, 0, 0)
         self._layCamps.addLayout(layVia, 0, 1)
@@ -312,16 +361,19 @@ class CsvAdreca(CsvPagina):
         self._layCamps.addLayout(layLletraF, 2, 1)
         self._lay.addWidget(self._gbCamps)
 
-        self._bCoords = QvPushButton('Té coordenades')
+        self._bCoords = QvPushButton('Hi ha camps de coordenades?')
+        self._bCoords.setToolTip('Si ja es disposa de camps de coordenades, premeu aquí per carregar-les directament')
         self._bCoords.clicked.connect(
             lambda: self.salta.emit(CsvCoords(self.parentWidget())))
         self._lay.addWidget(self._bCoords)
         self._lay.addStretch()
 
         self._layBotons = QHBoxLayout()
-        self._bVeure = QvPushButton('Veure')
+        self._bVeure = QvPushButton("Vista prèvia de l'arxiu csv")
+        self._bVeure.setToolTip("Premeu aquest botó per visualitzar l'arxiu csv")
         self._bVeure.clicked.connect(self._mostraTaula)
         self._bGeocod = QvPushButton('Geocodificar')
+        self._bGeocod.setToolTip("Obté les coordenades a partir d'adreces postals")
         self._bGeocod.clicked.connect(self.geocodifica)
         self._layBotons.addWidget(self._bVeure)
         self._layBotons.addStretch()
@@ -347,17 +399,41 @@ class CsvGeocod(CsvPagina):
         self._progress.setMaximum(100)
         self._lay.addWidget(self._progress)
         self._lay.addStretch()
+        self._lblExplicativa=QLabel('Aquest procés pot trigar uns minuts. Espereu, si us plau...')
+        self._lblExplicativa.setAlignment(Qt.AlignCenter)
+        self._lay.addWidget(self._lblExplicativa)
+        self._lay.addStretch()
+        self._lblExplicativa.hide()
+        self._lay.addStretch()
+        layH=QHBoxLayout()
+        self._bCancelar=QvPushButton('Cancel·lar')
+        self._bCancelar.clicked.connect(self.cancela)
+        layH.addWidget(self._bCancelar)
+        self._lay.addLayout(layH)
         self._camps = campsAdreca
+        self._cancelat=False
+
+    def cancela(self):
+        self.parentWidget()._mapificador.cancelProces()
+        
 
     def showEvent(self, e):
         super().showEvent(e)
         # Falta mirar què fem amb els errors
-        self.parentWidget()._mapificador.geocodificacio(self._camps, ('Coordenada', 'Districte', 'Barri', 'Codi postal', "Illa", "Solar", "Àrea estadística bàsica",
-                                                                      "Secció censal"), percentatgeProces=self._canviPercentatge, procesAcabat=self.acabat)
+        self.setCursor(QvConstants.CURSOROCUPAT)
+        if self.parentWidget()._mapificador.files>50000:
+            self._lblExplicativa.show()
+        if self._cancelat:
+            self.parentWidget().loadMap()
+        fil=QvFuncioFil(lambda: self.parentWidget()._mapificador.geocodificacio(self._camps, ('Coordenada', 'Districte', 'Barri', 'Codi postal', "Illa", "Solar", "Àrea estadística bàsica",
+                                                                      "Secció censal"), percentatgeProces=self._canviPercentatge, procesAcabat=self.acabat))
+        fil.start()
+        # self.parentWidget()._mapificador.geocodificacio(self._camps, ('Coordenada', 'Districte', 'Barri', 'Codi postal', "Illa", "Solar", "Àrea estadística bàsica",
+        #                                                               "Secció censal"), percentatgeProces=self._canviPercentatge, procesAcabat=self.acabat)
         qApp.processEvents()
     def _canviPercentatge(self,p):
         self._progress.setValue(p)
-        qApp.processEvents()
+        # qApp.processEvents()
     def _unErrorMes(self, err):
         self._errors.append(err)
         self._numErr += 1
@@ -365,14 +441,17 @@ class CsvGeocod(CsvPagina):
 
     def _modificaLblErr(self):
         self._lblNumErrors.setText("Número d'errors: %i" % self._numErr)
-        qApp.processEvents()
+        # qApp.processEvents()
 
     def acabat(self, n):
-        # Aquí saltar al resultat
-        self.parentWidget().setCsv(self.parentWidget()._mapificador.fZones)
-        # self.parentWidget()._csv=self.parentWidget()._mapificador.fDades
-        self.salta.emit(CsvGeocodificat(self._errors, self.parentWidget()))
-        print(n)
+        if self.parentWidget()._mapificador.cancel:
+            self.salta.emit(self.parentWidget().getPrimeraPantalla())
+        else:
+            # Aquí saltar al resultat
+            self.parentWidget().setCsv(self.parentWidget()._mapificador.fZones)
+            # self.parentWidget()._csv=self.parentWidget()._mapificador.fDades
+            self.salta.emit(CsvGeocodificat(self._errors, self.parentWidget()))
+            print(n)
         pass
 
 
@@ -386,21 +465,29 @@ class CsvGeocodificat(CsvPagina):
         self._definirErrors(self._errors)
         self._layBotons = QHBoxLayout()
         # Definició de la botonera
-        self._bVeure = QvPushButton('Veure')
+        self._bEnrere= QvPushButton('Enrere')
+        self._bEnrere.clicked.connect(self._enrere)
+        self._bVeure = QvPushButton("Vista prèvia de l'arxiu csv")
+        self._bVeure.setToolTip("Premeu aquest botó per visualitzar l'arxiu csv")
         self._bVeure.clicked.connect(self._mostraTaula)
-        self._bAfegir = QvPushButton('Afegir')
+        self._bAfegir = QvPushButton('Afegir com a capa de punts')
+        self._bAfegir.setToolTip('Afegeix al mapa com a capa de punts')
         self._bAfegir.clicked.connect(lambda: self.salta.emit(CsvAfegir(
             'QVISTA_ETRS89_COORD_X', 'QVISTA_ETRS89_COORD_Y', 25831, self.parentWidget())))
         # self._bAfegir.clicked.connect()
         self._bMapifica = QvPushButton('Mapificar')
+        self._bMapifica.setToolTip('Crea una mapificació a partir de la taula per visualitzar-la sobre el mapa')
         self._bMapifica.clicked.connect(self._mapifica)
         # self._bMapifica.clicked.connect()
         self._layBotons.addWidget(self._bVeure)
+        self._layBotons.addWidget(self._bEnrere)
         self._layBotons.addStretch()
         self._layBotons.addWidget(self._bAfegir)
         self._layBotons.addWidget(self._bMapifica)
         self._lay.addLayout(self._layBotons)
-
+    def _enrere(self):
+        self.salta.emit(self.parentWidget().getPrimeraPantalla())
+        
     def _definirErrors(self, errors):
         errorsStr = ''
         for x in errors:
@@ -420,14 +507,13 @@ class CsvGeocodificat(CsvPagina):
 class CsvAfegir(CsvPagina):
     def __init__(self, campCoordX, campCoordY, projeccio, parent=None):
         super().__init__(parent)
-        self._setTitol('Afegir com a capa puntual')
+        self._setTitol('Afegir com a capa de punts')
         self._campCoordX = campCoordX
         self._campCoordY = campCoordY
         self._projeccio = projeccio
-        self._setTitol('Afegir com a capa puntual')
         # Nom de la capa
         layNom = QHBoxLayout()
-        layNom.addWidget(QLabel('Nom de la capa'))
+        layNom.addWidget(QLabel('Nom de la capa: '))
         self._leNomCapa = QLineEdit()
         self._leNomCapa.setText(Path(self.parentWidget()._csv).stem)
         layNom.addWidget(self._leNomCapa)
@@ -435,7 +521,7 @@ class CsvAfegir(CsvPagina):
         # Color de la representació
         self._color = 'red'
         layColor = QHBoxLayout()
-        layColor.addWidget(QLabel('Color'))
+        layColor.addWidget(QLabel('Color: '))
 
         def setColorBoto():
             self._bColor.setStyleSheet(
@@ -448,8 +534,14 @@ class CsvAfegir(CsvPagina):
             setColorBoto()
 
         self._bColor = QvPushButton(flat=True)
+        self._bColor.setIcon(QIcon('Imatges/da_color.png'))
+        self._bColor.setStyleSheet('background: solid %s; border: none'%self._color)
+        self._bColor.setIconSize(QSize(25,25))
+        self._bColor.setFixedSize(25,25)
+        QvConstants.afegeixOmbraWidget(self._bColor)
         self._bColor.clicked.connect(obrirDialegColor)
         layColor.addWidget(self._bColor)
+        layColor.addStretch()
         setColorBoto()
         self._lay.addLayout(layColor)
         self._lay.addStretch()
@@ -465,7 +557,7 @@ class CsvAfegir(CsvPagina):
         rbCreu.setIcon(QIcon(imatgesDir+'crossW.png'))
         rbCreu.toggled.connect(lambda x: setForma(
             'cross') if x else print(':D'))
-        layForma.addWidget(rbCreu, 0, 0)
+        layForma.addWidget(rbCreu, 1, 2)
 
         rbQuadrat = QRadioButton()
         rbQuadrat.setIcon(QIcon(imatgesDir+'squareW.png'))
@@ -502,7 +594,7 @@ class CsvAfegir(CsvPagina):
         rbCercle.toggled.connect(lambda x: setForma(
             'circle') if x else print(':D'))
         rbCercle.click()
-        layForma.addWidget(rbCercle, 1, 2)
+        layForma.addWidget(rbCercle, 0, 0)
 
         rbHexagon = QRadioButton()
         rbHexagon.setIcon(QIcon(imatgesDir+'hexagonW.png'))
@@ -512,13 +604,17 @@ class CsvAfegir(CsvPagina):
         # Afegim els botons
         layBotons = QHBoxLayout()
         layBotons.addStretch()
-        self._bAfegir = QvPushButton('Afegir', destacat=True)
+        self._bAfegir = QvPushButton('Afegir com a capa de punts', destacat=True)
+        self._bAfegir.setToolTip('Afegeix al mapa com a capa de punts')
         self._bAfegir.clicked.connect(self.afegir)
         self._leNomCapa.textChanged.connect(
             lambda x: self._bAfegir.setEnabled(x != ''))
         layBotons.addWidget(self._bAfegir)
         self._lay.addLayout(layBotons)
-
+    def showEvent(self, e):
+        super().showEvent(e)
+        self._leNomCapa.setFocus()
+        self._leNomCapa.selectAll()
     def afegir(self):
         nivellCsv(self.parentWidget()._qV, self.parentWidget()._csv, self.parentWidget()._separador,
                   self._campCoordX, self._campCoordY, self._projeccio, self._leNomCapa.text(), self._color, symbol=self._forma)
