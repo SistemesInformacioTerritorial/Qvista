@@ -1,7 +1,7 @@
 from moduls.QvImports import *
 from moduls.QvPDF import QvPDF
 from moduls.QvPushButton import QvPushButton
-from PyQt5.QtGui import QFont
+from PyQt5.QtGui import QFont, QDesktopServices
 
 class MarxesCiutat(QDockWidget):
     def __init__(self, parent):
@@ -38,7 +38,7 @@ class MarxesCiutat(QDockWidget):
         bMapa.setStyleSheet("Text-align: left")
         bMapaXarxa = QvPushButton('Xarxa quotidiana',flat=True)
         bMapaXarxa.setStyleSheet("Text-align: left")
-        
+        bMapaXarxa.hide()
         lytMarxes.addWidget(lDocuments) 
         lytMarxes.addWidget(bGuia) 
         lytMarxes.addWidget(bMapa) 
@@ -112,30 +112,17 @@ class MarxesCiutat(QDockWidget):
         QDesktopServices().openUrl(QUrl('c:/temp/tempQgis.qgs'))
         """
     def mostrarGuia(self):        
-        # QDesktopServices().openUrl(QUrl('N:/9SITEB/Publicacions/qVista/CATALEG/MAPES PRIVATS/Marxes de ciutat/PdfFitxes/12_El_Besos_el_Maresme.pdf'))
-        PDF = 'file:///' + 'N:/9SITEB/Publicacions/qVista/CATALEG/MAPES PRIVATS/Marxes de ciutat/PdfFitxes/2017-18-190228_Marxes_exploratories_A3.pdf'
-        self.w = QvPDF(PDF)
-        self.w.setGeometry(50, 50, 1200, 800)
-        self.w.setWindowTitle('Marxes exploratóries')
-        self.w.show()
+        QDesktopServices().openUrl(QUrl('file:///L:/DADES/SIT/qVista/CATALEG/MAPES%20PRIVATS/Marxes%20de%20ciutat/PdfFitxes/2017-18-190228_Marxes_exploratories_A3.pdf'))
+
+
         
     def mostrarInstruccions(self):
-        
-        # QDesktopServices().openUrl(QUrl('N:/9SITEB/Publicacions/qVista/CATALEG/MAPES PRIVATS/Marxes de ciutat/PdfFitxes/12_El_Besos_el_Maresme.pdf'))
-        PDF = 'file:///' + 'N:/9SITEB/Publicacions/qVista/CATALEG/MAPES PRIVATS/Marxes de ciutat/PdfFitxes/2017-18-190228_Marxes_exploratories_A3.pdf'
-        self.w = QvPDF(PDF)
-        self.w.setGeometry(50, 50, 1200, 800)
-        self.w.setWindowTitle('Marxes exploratóries')
-        self.w.show()
+        QDesktopServices().openUrl(QUrl('file:///L:/DADES/SIT/qVista/CATALEG/MAPES%20PRIVATS/Marxes%20de%20ciutat/PdfFitxes/2017-18-190228_Marxes_exploratories_A3.pdf'))
+
 
     def mostrarMapa(self):
-        # QDesktopServices().openUrl(QUrl('N:\9SITEB\Publicacions\qVista\CATALEG\MAPES PRIVATS\Marxes de ciutat\PdfFitxes\190228_Marxes_exploratories_A4.pdf'))
-        PDF = 'file:///' + 'N:\9SITEB\Publicacions\qVista\CATALEG\MAPES PRIVATS\Marxes de ciutat\PdfFitxes\Mapa BCN_v2.pdf'
-
-        self.w = QvPDF(PDF)
-        self.w.setGeometry(50, 50, 1200, 800)
-        self.w.setWindowTitle('Mapa de les marxes')
-        self.w.show()
+        QDesktopServices().openUrl(QUrl('file:///L:/DADES/SIT/qVista/CATALEG/MAPES%20PRIVATS/Marxes%20de%20ciutat/PdfFitxes/190228_Marxes_exploratories_A4.pdf'))
+       
 
     def mostrarMapaXarxa(self):
         # QDesktopServices().openUrl(QUrl('N:\9SITEB\Publicacions\qVista\CATALEG\MAPES PRIVATS\Marxes de ciutat\PdfFitxes\190228_Marxes_exploratories_A4.pdf'))
@@ -148,64 +135,63 @@ class MarxesCiutat(QDockWidget):
 
     def mostrarColl(self):
         # QDesktopServices().openUrl(QUrl('d:/MarxesCiutat/ElColl_resultats.png'))
-        # QDesktopServices().openUrl(QUrl('N:/9SITEB/Publicacions/qVista/CATALEG/MAPES PRIVATS/Marxes de ciutat/PdfFitxes/02_El_coll.pdf'))
-        PDF = 'file:///' + 'N:/9SITEB/Publicacions/qVista/CATALEG/MAPES PRIVATS/Marxes de ciutat/PdfFitxes/02_El_coll.pdf'
-
-        self.w = QvPDF(PDF)
-        self.w.setGeometry(50, 50, 1200, 800)
-        self.w.setWindowTitle('Marxa del Coll')
-        self.w.show()
-
-    def mostrarSalut(self):
-        PDF = 'file:///' + 'N:/9SITEB/Publicacions/qVista/CATALEG/MAPES PRIVATS/Marxes de ciutat/PdfFitxes/03_La_salut.pdf'
+        # QDesktopServices().openUrl(QUrl('L:/DADES/SIT/qVista/CATALEG/MAPES PRIVATS/Marxes de ciutat/PdfFitxes/02_El_coll.pdf'))
+        PDF = 'file:///' + 'L:/DADES/SIT/qVista/CATALEG/MAPES PRIVATS/Marxes de ciutat/PdfFitxes/02_El_coll.pdf'
         self.w = QvPDF(PDF)
         self.w.setGeometry(50, 50, 1200, 800)
         self.w.setWindowTitle('Marxa de la Salut')
         self.w.show()
+
+    def mostrarSalut(self):
+        PDF = 'file:///' + 'L:/DADES/SIT/qVista/CATALEG/MAPES PRIVATS/Marxes de ciutat/PdfFitxes/03_La_salut.pdf'
+        self.w = QvPDF(PDF)
+        self.w.setGeometry(50, 50, 1200, 800)
+        self.w.setWindowTitle('Marxa de la Salut')
+        self.w.show()
+
     def mostrarGrassot(self):
-        PDF = 'file:///' + 'N:/9SITEB/Publicacions/qVista/CATALEG/MAPES PRIVATS/Marxes de ciutat/PdfFitxes/05_el_Camp_den_Grassot.pdf'
+        PDF = 'file:///' + 'L:/DADES/SIT/qVista/CATALEG/MAPES PRIVATS/Marxes de ciutat/PdfFitxes/05_el_Camp_den_Grassot.pdf'
         self.w = QvPDF(PDF)
         self.w.setGeometry(50, 50, 1200, 800)
         self.w.setWindowTitle("Marxa del Camp d'en Grassot")
         self.w.show()
     def mostrarBesos(self):
-        PDF = 'file:///' + 'N:/9SITEB/Publicacions/qVista/CATALEG/MAPES PRIVATS/Marxes de ciutat/PdfFitxes/12_El_Besos_el_Maresme.pdf'
+        PDF = 'file:///' + 'L:/DADES/SIT/qVista/CATALEG/MAPES PRIVATS/Marxes de ciutat/PdfFitxes/12_El_Besos_el_Maresme.pdf'
         self.w = QvPDF(PDF)
         self.w.setGeometry(50, 50, 1200, 800)
         self.w.setWindowTitle('Marxa del Besós i el Maresme')
         self.w.show()
     def mostrarBonPastor(self):
-        PDF = 'file:///' + 'N:/9SITEB/Publicacions/qVista/CATALEG/MAPES PRIVATS/Marxes de ciutat/PdfFitxes/09_Bon_Pastor.pdf'
+        PDF = 'file:///' + 'L:/DADES/SIT/qVista/CATALEG/MAPES PRIVATS/Marxes de ciutat/PdfFitxes/09_Bon_Pastor.pdf'
         self.w = QvPDF(PDF)
         self.w.setGeometry(50, 50, 1200, 800)
         self.w.setWindowTitle('Marxa del Bon Pastor')
         self.w.show()
     def mostrarTNova(self):
-        PDF = 'file:///' + 'N:/9SITEB/Publicacions/qVista/CATALEG/MAPES PRIVATS/Marxes de ciutat/PdfFitxes/07_Trinitat_nova.pdf'
+        PDF = 'file:///' + 'L:/DADES/SIT/qVista/CATALEG/MAPES PRIVATS/Marxes de ciutat/PdfFitxes/07_Trinitat_nova.pdf'
         self.w = QvPDF(PDF)
         self.w.setGeometry(50, 50, 1200, 800)
         self.w.setWindowTitle('Marxa de Trinitat Nova')
         self.w.show()
     def mostrarTVella(self):
-        PDF = 'file:///' + 'N:/9SITEB/Publicacions/qVista/CATALEG/MAPES PRIVATS/Marxes de ciutat/PdfFitxes/08_Trinitat_Vella.pdf'
+        PDF = 'file:///' + 'L:/DADES/SIT/qVista/CATALEG/MAPES PRIVATS/Marxes de ciutat/PdfFitxes/08_Trinitat_Vella.pdf'
         self.w = QvPDF(PDF)
         self.w.setGeometry(50, 50, 1200, 800)
         self.w.setWindowTitle('Marxa de Trinitat Vella')
         self.w.show()
     def mostrarGracia(self):
-        PDF = 'file:///' + 'N:/9SITEB/Publicacions/qVista/CATALEG/MAPES PRIVATS/Marxes de ciutat/PdfFitxes/04_Vila_de_gracia.pdf'
+        PDF = 'file:///' + 'L:/DADES/SIT/qVista/CATALEG/MAPES PRIVATS/Marxes de ciutat/PdfFitxes/04_Vila_de_gracia.pdf'
         self.w = QvPDF(PDF)
         self.w.setGeometry(50, 50, 1200, 800)
         self.w.setWindowTitle('Marxa de la Vila de Gràcia')
         self.w.show()
     def mostrarVallcarca(self):
-        PDF = 'file:///' + 'N:/9SITEB/Publicacions/qVista/CATALEG/MAPES PRIVATS/Marxes de ciutat/PdfFitxes/06_Vallcarca.pdf'
-        self.w = QvPDF(PDF)
-        self.w.setGeometry(50, 50, 1200, 800)
-        self.w.setWindowTitle('Marxa de Vallcarca')
-        self.w.show()
+        PDF = 'file:///' + 'L:\DADES\SIT\qVista\CATALEG\MAPES PRIVATS\Marxes de ciutat/PdfFitxes/06_Vallcarca.pdf'
+     
+        QDesktopServices().openUrl(QUrl('file:///L:/DADES/SIT/qVista/CATALEG/MAPES%20PRIVATS/Marxes%20de%20ciutat/PdfFitxes/06_Vallcarca.pdf'))
+       
     def mostrarMarina(self):
-        PDF = 'file:///' + 'N:/9SITEB/Publicacions/qVista/CATALEG/MAPES PRIVATS/Marxes de ciutat/PdfFitxes/11_La_Marina.pdf'
+        PDF = 'file:///L:/DADES/SIT/qVista/CATALEG/MAPES PRIVATS/Marxes de ciutat/PdfFitxes/11_La_Marina.pdf'
         self.w = QvPDF(PDF)
         self.w.setGeometry(50, 50, 1200, 800)
         self.w.setWindowTitle('Marxa de la Marina del Port Vermell')
