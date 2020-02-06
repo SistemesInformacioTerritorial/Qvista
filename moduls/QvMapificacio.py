@@ -223,11 +223,12 @@ class QvMapificacio(QObject):
             errorAdreca {pyqtSignal} -- Señal con registro erróno (default: {None})
 
         Returns:
-            bool -- True si ha ido bien, False si hay errores (mensaje en self.msgError)
+            bool -- True si ha ido bien, False si hay errores o se canceló el proceso (mensaje en self.msgError)
 
         """
         if self.db is None:
             self.db = QvSqlite()
+        self.errors = 0
         self.msgError = ''
 
         if self.verifCampsAdreca(campsAdreca):
@@ -330,14 +331,25 @@ class QvMapificacio(QObject):
                         break
 
             fin = time.time()
-            self.files = tot
             self.errors = num
 
             # Informe de fin de proceso y segundos transcurridos
-            if not self.cancel:
+            if self.cancel:
+                self.msgError = "Procés geocodificació cancel·lat"
+            else:
+                self.files = tot
                 self.percentatgeProces.emit(100)
+
             self.procesAcabat.emit(fin - ini)
-            return True
+
+            if percentatgeProces is not None:
+                self.percentatgeProces.disconnect()
+            if procesAcabat is not None:
+                self.procesAcabat.disconnect()
+            if errorAdreca is not None:
+                self.errorAdreca.disconnect()
+
+            return not self.cancel
 
     def calcSelect(self, camps: str = '') -> str:
         # Calculamos filtro
@@ -728,6 +740,16 @@ if __name__ == "__main__":
             fMap = QvFormNovaMapificacio(leyenda, mapificacio=z)
             fMap.exec()
         else:
-            print('ERROR:', z.msgError)
+            print(z.msgError)
+            ok = z.geocodificacio(campsAdreca, zones,
+                percentatgeProces=lambda n: print('... Procesado', str(n), '% ...'),
+                errorAdreca=lambda f: print('Fila sin geocodificar -', f),
+                procesAcabat=lambda n: print('Zonas', z.zones, 'procesadas en', str(n), 'segs. en ' + z.fZones + ' -', str(z.files), 'registros,', str(z.errors), 'errores'))
+            if ok:
+                fMap = QvFormNovaMapificacio(leyenda, mapificacio=z)
+                fMap.exec()
+            else:
+                print(z.msgError)
+
 
 
