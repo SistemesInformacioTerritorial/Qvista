@@ -204,6 +204,16 @@ class QvMapificacio(QObject):
     procesAcabat = pyqtSignal(int)  # Tiempo transcurrido en zonificar (segundos)
     errorAdreca = pyqtSignal(dict) # Registro que no se pudo geocodificar
 
+    def asincGeocodificacio(self, campsAdreca: List[str], zones: List[str], fZones: str = '', substituir: bool = True,
+        percentatgeProces: pyqtSignal = None, procesAcabat: pyqtSignal = None, errorAdreca: pyqtSignal = None) -> bool:
+
+        from multiprocessing.pool import ThreadPool
+        pool = ThreadPool(processes=1)
+
+        async_result = pool.apply_async(self.geocodificacio, (campsAdreca, zones, fZones, substituir, percentatgeProces, procesAcabat, errorAdreca))
+
+        return async_result.get()
+
     def geocodificacio(self, campsAdreca: List[str], zones: List[str], fZones: str = '', substituir: bool = True,
         percentatgeProces: pyqtSignal = None, procesAcabat: pyqtSignal = None, errorAdreca: pyqtSignal = None) -> bool:
         """Añade coordenadas y códigos de zona a cada uno de los registros del CSV, a partir de los campos de dirección postal
@@ -326,7 +336,7 @@ class QvMapificacio(QObject):
                     if self.files > 0 and tot % nSignal == 0:
                         self.percentatgeProces.emit(int(round(tot * 100 / self.files)))
 
-                    # Cancelación del proceso via slot -- SIN PROBAR
+                    # Cancelación del proceso via slot
                     if self.cancel:
                         break
 
@@ -728,7 +738,7 @@ if __name__ == "__main__":
 
         campsAdreca = ('', 'NOM_CARRER_GPL', 'NUM_I_GPL', '', 'NUM_F_GPL')
         zones = ('Coordenada', 'Districte', 'Barri', 'Codi postal', "Illa", "Solar", "Àrea estadística bàsica", "Secció censal")
-        ok = z.geocodificacio(campsAdreca, zones,
+        ok = z.asincGeocodificacio(campsAdreca, zones,
             percentatgeProces=lambda n: print('... Procesado', str(n), '% ...'),
             errorAdreca=lambda f: print('Fila sin geocodificar -', f),
             procesAcabat=lambda n: print('Zonas', z.zones, 'procesadas en', str(n), 'segs. en ' + z.fZones + ' -', str(z.files), 'registros,', str(z.errors), 'errores'))
