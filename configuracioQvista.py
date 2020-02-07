@@ -1,6 +1,13 @@
 import os
 from pathlib import Path
 
+
+# Així forcem que es pugui escalar segons el DPI https://stackoverflow.com/questions/43904594/pyqt-adjusting-for-different-screen-resolution
+if hasattr(QtCore.Qt, 'AA_EnableHighDpiScaling'):
+    QApplication.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling,  True)
+if hasattr(QtCore.Qt, 'AA_UseHighDpiPixmaps'):
+    QApplication.setAttribute(QtCore.Qt.AA_UseHighDpiPixmaps, True)
+
 #Parametres configuració inicial
 versio="0.7"
 titolFinestra = "qVista %s  Sistema d'Informació Territorial de Barcelona"%versio
