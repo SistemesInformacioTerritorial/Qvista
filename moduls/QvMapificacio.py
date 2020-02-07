@@ -206,12 +206,12 @@ class QvMapificacio(QObject):
 
     def asincGeocodificacio(self, campsAdreca: List[str], zones: List[str], fZones: str = '', substituir: bool = True,
         percentatgeProces: pyqtSignal = None, procesAcabat: pyqtSignal = None, errorAdreca: pyqtSignal = None) -> bool:
-
+        """ Versión asíncrona de la función geocodificacio, con los mismos parámetros
+        """
         from multiprocessing.pool import ThreadPool
         pool = ThreadPool(processes=1)
 
         async_result = pool.apply_async(self.geocodificacio, (campsAdreca, zones, fZones, substituir, percentatgeProces, procesAcabat, errorAdreca))
-
         return async_result.get()
 
     def geocodificacio(self, campsAdreca: List[str], zones: List[str], fZones: str = '', substituir: bool = True,
@@ -225,12 +225,12 @@ class QvMapificacio(QObject):
         
         Keyword Arguments:
             fZones {str} -- Nombre del fichero CSV de salida. Si no se indica, se usa el nombre del fichero
-                            de entrada añadiendo el nombre de la zona (default: {''})
+                            de entrada añadiendo el sufijo '_Geo' (default: {''})
             substituir {bool} -- En el caso de que el campo de código de zona ya exista y tenga un valor,
                                  indica si se ha de machacar o no su contenido (default: {True})
             percentatgeProces {pyqtSignal} -- Señal de progreso con el porcentaje transcurrido (default: {None})
             procesAcabat {pyqtSignal} -- Señal de finalización con tiempo transcurrido (default: {None})
-            errorAdreca {pyqtSignal} -- Señal con registro erróno (default: {None})
+            errorAdreca {pyqtSignal} -- Señal con registro erróneo (default: {None})
 
         Returns:
             bool -- True si ha ido bien, False si hay errores o se canceló el proceso (mensaje en self.msgError)
