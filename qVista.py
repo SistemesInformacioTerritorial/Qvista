@@ -2002,7 +2002,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         # QDesktopServices().openUrl(QUrl('c:\windows\system32\SnippingTool.exe'))
         # subprocess.check_call([r'c:\windows\system32\SnippingTool.exe'])
         process = QProcess(self)
-        pathApp = "c:\windows\system32\SnippingTool.exe"
+        pathApp = r"c:\windows\system32\SnippingTool.exe"
         process.start(pathApp)
         app.processEvents()
 
@@ -3493,7 +3493,7 @@ def guardarProjecte():
 def guardarDialegProjecte():
     #variable definida al configuracioQvista
     pathDesarPerDefecte=QvMemoria().getDirectoriDesar()
-    trans=str.maketrans('<>:"/\|?*','---------')
+    trans=str.maketrans(r'<>:"/\|?*',r'---------')
 
     pathOnDesem=pathDesarPerDefecte+'/'+qV.titolProjecte.translate(trans).replace('-','')
     pathOnDesem=pathOnDesem.replace('.','') #Fora punts, per si de cas, ja que Windows li dóna massa importància
@@ -3665,7 +3665,7 @@ def escollirNivellCSV():
     # layer = qV.llegenda.view.currentLayer()
     # qV.project.removeMapLayer(layer)
     # qV.canvas.refresh()
-    nfile,_ = QFileDialog.getOpenFileName(None, "Obrir fitxer CSV", "U:\QUOTA\Comu_imi\Becaris", "CSV (*.csv)")
+    nfile,_ = QFileDialog.getOpenFileName(None, "Obrir fitxer CSV", r"U:\QUOTA\Comu_imi\Becaris", "CSV (*.csv)")
    
     # print(dCSV.ui.cbDelimitador.currentText())
     # print("D"+dCSV.ui.cbDelimitador.currentText()+"D")
