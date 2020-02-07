@@ -236,6 +236,18 @@ class QvMapificacio(QObject):
             bool -- True si ha ido bien, False si hay errores o se canceló el proceso (mensaje en self.msgError)
 
         """
+        try:
+            self.percentatgeProces.disconnect()
+        except:
+            pass
+        try:
+            self.procesAcabat.disconnect()
+        except:
+            pass
+        try:
+            self.errorAdreca.disconnect()
+        except:
+            pass
         if self.db is None:
             self.db = QvSqlite()
         self.errors = 0
@@ -352,12 +364,12 @@ class QvMapificacio(QObject):
 
             self.procesAcabat.emit(fin - ini)
 
-            if percentatgeProces is not None:
-                self.percentatgeProces.disconnect()
-            if procesAcabat is not None:
-                self.procesAcabat.disconnect()
-            if errorAdreca is not None:
-                self.errorAdreca.disconnect()
+            # if percentatgeProces is not None:
+            #     self.percentatgeProces.disconnect()
+            # if procesAcabat is not None:
+            #     self.procesAcabat.disconnect()
+            # if errorAdreca is not None:
+            #     self.errorAdreca.disconnect()
 
             return not self.cancel
 

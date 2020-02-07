@@ -426,9 +426,9 @@ class CsvGeocod(CsvPagina):
             self._lblExplicativa.show()
         # if self._cancelat:
         #     self.parentWidget().loadMap()
-        fil=QvFuncioFil(lambda: self.parentWidget()._mapificador.geocodificacio(self._camps, ('Coordenada', 'Districte', 'Barri', 'Codi postal', "Illa", "Solar", "Àrea estadística bàsica",
+        self.fil=QvFuncioFil(lambda: self.parentWidget()._mapificador.geocodificacio(self._camps, ('Coordenada', 'Districte', 'Barri', 'Codi postal', "Illa", "Solar", "Àrea estadística bàsica",
                                                                       "Secció censal"), percentatgeProces=self._canviPercentatge, procesAcabat=self.acabat))
-        fil.start()
+        self.fil.start()
         # self.parentWidget()._mapificador.geocodificacio(self._camps, ('Coordenada', 'Districte', 'Barri', 'Codi postal', "Illa", "Solar", "Àrea estadística bàsica",
         #                                                               "Secció censal"), percentatgeProces=self._canviPercentatge, procesAcabat=self.acabat)
         qApp.processEvents()
