@@ -362,14 +362,15 @@ class QvMapificacio(QObject):
                 self.files = tot
                 self.percentatgeProces.emit(100)
 
+            
             self.procesAcabat.emit(fin - ini)
-
             # if percentatgeProces is not None:
             #     self.percentatgeProces.disconnect()
             # if procesAcabat is not None:
             #     self.procesAcabat.disconnect()
             # if errorAdreca is not None:
             #     self.errorAdreca.disconnect()
+
 
             return not self.cancel
 

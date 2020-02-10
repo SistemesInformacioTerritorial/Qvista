@@ -12,7 +12,7 @@ from PyQt5.QtGui import QDrag
 #En ambdós casos té estil Material Design i una ombra. El destacat té el color destacat, i el normal el color fosc
 #NOTA: S'haurien de canviar tots els QPushButton del programa per QvPushButton, amb l'estil que decidim
 class QvPushButton(QPushButton):
-    def __init__(self, icon: QIcon=None, text: str='', destacat: bool=False, flat: bool=False, parent: QWidget=None):
+    def __init__(self, icon: QIcon=None, text: str='', destacat: bool=False, discret=False, flat: bool=False, parent: QWidget=None):
         '''Crea un botó amb icona
         Arguments:
             icon{QIcon} -- Icona del botó
@@ -24,9 +24,10 @@ class QvPushButton(QPushButton):
         QPushButton.__init__(self,icon,text,parent)
         self.flat=flat
         self.setDestacat(destacat)
+        self.setDiscret(discret)
         self.setDragable(False)
         # self.icona=icon
-    def __init__(self, text: str='', destacat: bool=False, flat: bool=False, parent: QWidget=None):
+    def __init__(self, text: str='', destacat: bool=False, discret=False, flat: bool=False, parent: QWidget=None):
         '''Crea un botó sense icona
         Arguments:
             icon{QIcon} -- Icona del botó
@@ -38,15 +39,20 @@ class QvPushButton(QPushButton):
         super().__init__(text,parent)
         self.flat=flat
         self.setDestacat(destacat)
+        self.setDiscret(discret)
         self.setDragable(False)
     
-    def formata(self,destacat: bool):
+    def formata(self,destacat: bool, discret: bool):
         if self.flat: return
         if self.isEnabled():
             if destacat:
                 colors=(QvConstants.COLORBLANCHTML,QvConstants.COLORDESTACATHTML)
             else:
-                colors=(QvConstants.COLORBLANCHTML,QvConstants.COLORFOSCHTML)
+                if discret:
+                    pass
+                    colors=(QvConstants.COLORBLANCHTML,QvConstants.COLORCERCADORHTML)
+                else:
+                    colors=(QvConstants.COLORBLANCHTML,QvConstants.COLORFOSCHTML)
         else:
             colors=(QvConstants.COLORCLARHTML,QvConstants.COLORGRISHTML)
         self.setStyleSheet(
@@ -59,7 +65,11 @@ class QvPushButton(QPushButton):
         QvConstants.afegeixOmbraWidget(self)
     def setDestacat(self,destacat: bool):
         self.destacat=destacat
-        self.formata(destacat)
+        self.formata(destacat,False)
+    def setDiscret(self,discret: bool):
+        self.discret=discret
+        self.formata(False,discret)
+
     def setEnabled(self,enabled: bool):
         super().setEnabled(enabled)
         self.formata(self.destacat)
@@ -72,7 +82,7 @@ class QvPushButton(QPushButton):
         self.setCursor(QvConstants.cursorFletxa())
     def showEvent(self,event):
         super().showEvent(event)
-        self.formata(self.destacat)
+        # self.formata(self.destacat)
     
     def setDragable(self,drag=True):
         self.drag=drag

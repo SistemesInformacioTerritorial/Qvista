@@ -1,5 +1,6 @@
 from configuracioQvista import *
 from moduls.QvSingleton import Singleton
+import json
 
 from PyQt5.QtGui import QColor
 
@@ -9,6 +10,7 @@ arxiuMapesRecents=dadesdir+'mapesRecents'
 arxiuDirectoriDesar=dadesdir+'directoriDesar'
 arxiuVolHints=dadesdir+'volHints'
 arxiuDadesMascara=dadesdir+'dadesMascara'
+arxiuCampsGeocod=dadesdir+'geocod.json'
 
 def llegirArxiu(f,encoding='utf-8'):
     with open(f,encoding=encoding) as arxiu:
@@ -28,7 +30,10 @@ class QvMemoria(Singleton):
         if os.path.isfile(arxiuDirectoriDesar):
             self.directoriDesar=llegirArxiu(arxiuDirectoriDesar,encoding='utf-8')
         self.volHints=not os.path.isfile(arxiuVolHints) or llegirArxiu(arxiuVolHints)!='False'
-
+        if os.path.isfile(arxiuCampsGeocod):
+            self.campsGeocod=json.loads(open(arxiuCampsGeocod).read())
+        else:
+            self.campsGeocod={}
         pass
     def getUltimaNew(self):
         try:
@@ -78,6 +83,13 @@ class QvMemoria(Singleton):
     def setParametresMascara(self,color,opacitat):
         with open(arxiuDadesMascara,'w') as f:
             f.write('%s %i'%(color.name(),opacitat))
+    def getCampsGeocod(self,file):
+        if file in self.campsGeocod:
+            return self.campsGeocod[file]
+        return None
+    def setCampsGeocod(self,file,camps):
+        self.campsGeocod[file]=camps
+        
     def pafuera(self):
         if hasattr(self,'mapesRecents'):
             with open(arxiuMapesRecents,'w',encoding='utf-8') as f:
@@ -88,3 +100,5 @@ class QvMemoria(Singleton):
                 f.write(self.directoriDesar)
         with open(arxiuVolHints,'w') as f:
             f.write(str(self.volHints))
+        with open(arxiuCampsGeocod,'w') as f:
+            f.write(json.dumps(self.campsGeocod))
