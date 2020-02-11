@@ -20,11 +20,11 @@ class QvEditorCsv(QDialog):
         # Declaració d'atributs de l'objecte
         self._arxiu = arxiu
         self._codificacio = codificacio
-        self._errors = sorted(errors)
+        self._MAXIMFILES = 500
+        self._errors = sorted(filter(lambda x: x<self._MAXIMFILES,errors))
         self._separador = separador
         self._i = 0
         self._teErrors = len(self._errors) != 0
-        self._MAXIMFILES = 500
 
         # Definició gràfica
         self._lay = QVBoxLayout()

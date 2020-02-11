@@ -13,7 +13,7 @@ from moduls.QvMemoria import QvMemoria
 # Còpia de la funció definida dins de qVista.py. Millor aquí???
 
 
-def nivellCsv(qV, fitxer: str, delimitador: str, campX: str, campY: str, projeccio: int = 23031, nomCapa: str = 'Capa sense nom', color='red', symbol='circle'):
+def nivellCsv(qV, fitxer: str, delimitador: str, campX: str, campY: str, projeccio: int = 25831, nomCapa: str = 'Capa sense nom', color='red', symbol='circle'):
     uri = "file:///"+fitxer + \
         "?type=csv&delimiter=%s&xField=%s&yField=%s" % (
             delimitador, campX, campY)
@@ -52,10 +52,10 @@ def esCoordY(coord):
 def campsCoords(csvPath, sep, cod):
     # TODO: mirar si comencen o acaben amb X
     nomsCampsX = ('X89AB', 'XTRETRS89A', 'COORDX', 'COORD_X', 'XUTM', 'X_UTM',
-                  'XETRS89', 'X_ETRS89', 'ETRS89_X', 'ETRS89X', 'X', 'LONG', 'LONGITUD')
+                  'XETRS89', 'X_ETRS89', 'ETRS89_X', 'ETRS89X', 'X', 'LAT', 'LATITUD')
     # nomsCampsX=(':D')
     nomsCampsY = ('Y89AB', 'YTRETRS89A', 'COORDY', 'COORD_Y', 'YUTM', 'Y_UTM',
-                  'YETRS89', 'Y_ETRS89', 'ETRS89_Y', 'ETRS89Y', 'Y', 'LAT', 'LATITUD')
+                  'YETRS89', 'Y_ETRS89', 'ETRS89_Y', 'ETRS89Y', 'Y', 'LON', 'LONGITUD')
     with open(csvPath) as f:
         reader = csv.DictReader(f, delimiter=sep)
 
@@ -109,7 +109,7 @@ class QvCarregaCsv(QDialog):
     def __init__(self, rutaCsv: str, qV=None):
         super().__init__(qV,Qt.WindowSystemMenuHint | Qt.WindowTitleHint | Qt.WindowCloseButtonHint)
         self.setWindowTitle('Carregador d\'arxius CSV')
-        self.setFixedSize(QvApp().zoomFactor()*700, QvApp().zoomFactor()*450)
+        self.setFixedSize(QvApp().zoomFactor()*750, QvApp().zoomFactor()*450)
         if qV is not None:
             self._qV = qV
         self._csv = rutaCsv
@@ -124,7 +124,9 @@ class QvCarregaCsv(QDialog):
         self._layoutGran.addWidget(self._widgetSup)
         self._layoutGran.addLayout(self._layout)
         self._layoutGran.setContentsMargins(20, 20, 20, 20)
-        self._layoutGran.setSpacing(0)
+        # self._layoutGran.setSpacing(0)
+        self._layout.setContentsMargins(0,0,0,0)
+        # self._layout.setSpacing(0)
         self.triaPrimeraPantalla()
         #TODO: REVISAR
         # self._finestres=[x(self) for x in (CsvPrefab,CsvTriaSeparador, CsvTriaGeom ,CsvXY, CsvAdreca, CsvGeneraCoords, CsvPersonalitza)]
@@ -175,6 +177,8 @@ class CsvPagina(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
         self._lay = QVBoxLayout(self)
+        # self._lay.setContentsMargins(0,0,0,0)
+        # self._lay.setSpacing(0)
         self.setLayout(self._lay)
         self._lblTitol = QLabel()  # falta posar-li l'estil i tal
         self._lblTitol.setFont(QvConstants.FONTTITOLS)
@@ -219,9 +223,9 @@ class CsvPagina(QWidget):
 class CsvCoords(CsvPagina):
     def __init__(self, parent=None, campX=None, campY=None, proj=None):
         super().__init__(parent)
-        self._setTitol('Sel·leccioneu dels camps de coordenades')
+        self._setTitol('Sel·leccioneu els camps de coordenades')
         self._lay.addWidget(
-            QLabel("Introduiu els camps que defineixen les coordenades"))
+            QLabel("Depenent del sistema de referència podran ser coordenades X,Y UTM o Latitud/Longitud"))
         self._lay.addStretch()
         # Creem una groupbox per triar els paràmetres de les coordenades
         self._gbCoords = QGroupBox(self)
@@ -303,8 +307,9 @@ class CsvAdreca(CsvPagina):
     def __init__(self, parent=None, **campsAdreca):
         super().__init__(parent)
         self._setTitol("Sel·leccioneu els camps d'adreça")
-        self._lay.addWidget(QLabel(
-            "Trieu els camps que defineixen l'adreça.\nNomés són obligatoris el nom de la via i el número inicial"))
+        lblExpl = QLabel("Especifiqueu com a mínim el nom de la via i el número inicial. La resta de camps, si els teniu, serviran per accel·lerar i optimitzar la geocodificació.")
+        lblExpl.setWordWrap(True)
+        self._lay.addWidget(lblExpl)
         self._lay.addStretch()
         self._gbCamps = QGroupBox(self)
         self._layCamps = QGridLayout(self._gbCamps)
@@ -313,7 +318,7 @@ class CsvAdreca(CsvPagina):
         self._cbTipusVia = QComboBox()
         self._cbTipusVia.addItems(['']+camps)
         layTipusVia = QHBoxLayout()
-        lblTipusVia = QLabel('Tipus via (carrer, avinguda...):')
+        lblTipusVia = QLabel('Tipus de via (carrer, plaça...):')
         lblTipusVia.setAlignment(Qt.AlignRight | Qt.AlignVCenter) #Cal alinear a la dreta i al centre, ja que si no, queda mal alineat respecte la combobox
         layTipusVia.addWidget(lblTipusVia)
         layTipusVia.addWidget(self._cbTipusVia)
@@ -540,16 +545,24 @@ class CsvAfegir(CsvPagina):
         self._campCoordY = campCoordY
         self._projeccio = projeccio
         # Nom de la capa
-        layNom = QHBoxLayout()
-        layNom.addWidget(QLabel('Nom de la capa: '))
+        layLbls = QVBoxLayout()
+        layTries = QVBoxLayout()
+        layGrup = QHBoxLayout()
+        layGrup.addLayout(layLbls)
+        layGrup.addLayout(layTries)
+        self._lay.addLayout(layGrup)
+        # layNom = QHBoxLayout()
+        layLbls.addWidget(QLabel('Nom de la capa: '))
         self._leNomCapa = QLineEdit()
         self._leNomCapa.setText(Path(self.parentWidget()._csv).stem)
-        layNom.addWidget(self._leNomCapa)
-        self._lay.addLayout(layNom)
+        layTries.addWidget(self._leNomCapa)
+        # self._lay.addLayout(layNom)
         # Color de la representació
         self._color = 'red'
-        layColor = QHBoxLayout()
-        layColor.addWidget(QLabel('Color: '))
+        # layColor = QHBoxLayout()
+        lblColor = QLabel('Color: ')
+        lblColor.setAlignment(Qt.AlignRight)
+        layLbls.addWidget(lblColor)
 
         def setColorBoto():
             self._bColor.setStyleSheet(
@@ -568,10 +581,10 @@ class CsvAfegir(CsvPagina):
         self._bColor.setFixedSize(25,25)
         QvConstants.afegeixOmbraWidget(self._bColor)
         self._bColor.clicked.connect(obrirDialegColor)
-        layColor.addWidget(self._bColor)
-        layColor.addStretch()
+        layTries.addWidget(self._bColor)
+        # layColor.addStretch()
         setColorBoto()
-        self._lay.addLayout(layColor)
+        # self._lay.addLayout(layColor)
         self._lay.addStretch()
         # Forma
 

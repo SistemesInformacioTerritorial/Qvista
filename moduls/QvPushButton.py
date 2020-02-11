@@ -56,7 +56,9 @@ class QvPushButton(QPushButton):
         else:
             colors=(QvConstants.COLORCLARHTML,QvConstants.COLORGRISHTML)
         self.setStyleSheet(
-            "margin: 10px;"
+            # "margin-right: 20px;"
+            # "margin-top: 10px;"
+            # "margin-bottom: 10px;"
             "border: none;"
             "padding: 5px 20px;"
             "color: %s;"
@@ -72,7 +74,7 @@ class QvPushButton(QPushButton):
 
     def setEnabled(self,enabled: bool):
         super().setEnabled(enabled)
-        self.formata(self.destacat)
+        self.formata(self.destacat,self.discret)
     def enterEvent(self,event):
         super().enterEvent(event)
         if not self.isEnabled(): return
@@ -82,7 +84,7 @@ class QvPushButton(QPushButton):
         self.setCursor(QvConstants.cursorFletxa())
     def showEvent(self,event):
         super().showEvent(event)
-        # self.formata(self.destacat)
+        self.formata(self.destacat,self.discret)
     
     def setDragable(self,drag=True):
         self.drag=drag
