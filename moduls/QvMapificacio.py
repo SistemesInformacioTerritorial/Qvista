@@ -482,10 +482,15 @@ class QvMapificacio(QObject):
 
     def generaCapaGpd(self, nomCapa: str, tipusAgregacio: str, tipusDistribucio: str) -> bool:
         try:
+            # El cmapo de zona se carga como string, y el de agregacion como float si hay acumulados
+            if tipusAgregacio in ("Suma", "Mitjana"):
+                dtypes = {self.campZona: np.string_, self.campAgregat: np.float_}
+            else:
+                dtypes = {self.campZona: np.string_}
+
             # Carga de capa de datos geocodificados
             csv = pd.read_csv(self.fZones, sep=self.separador, encoding=self.codi,
-                              decimal=MAP_LOCALE.decimalPoint(),
-                              dtype={self.campZona: np.string_, self.campAgregat: np.float_})
+                              decimal=MAP_LOCALE.decimalPoint(), dtype=dtypes)
 
             # Aplicar filtro
             if self.filtre != '':
@@ -550,7 +555,7 @@ class QvMapificacio(QObject):
             out.to_file(self.fSQL, driver="GPKG", layer=nomCapa)
             return True
         except Exception as err:
-            self.msgError = str(err)
+            self.msgError = "Error al calcular l'agregació de dades.\n\n" + str(err)
             return False
 
     def agregacio(self, llegenda, nomCapa: str, zona: str, tipusAgregacio: str,
