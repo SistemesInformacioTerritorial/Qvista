@@ -412,6 +412,15 @@ class CsvAdreca(CsvPagina):
             self._cbNumI.setCurrentIndex(i)
         pass
     def geocodifica(self):
+        geocod=QvMemoria().getGeocodificat(self.parentWidget()._csv)
+        if geocod is not None:
+            #Preguntar si volem carregar directament el geocodificat
+            resposta=QMessageBox.question(self,"Aquest arxiu ja ha sigut geocodificat prèviament","Vol carregar-lo directament, sense geocodificar de nou?",QMessageBox.Yes|QMessageBox.No)
+            if resposta==QMessageBox.Yes:
+                self.parentWidget().setCsv(geocod)
+                self.salta.emit(CsvGeocodificat([], self.parentWidget()))
+                return
+            print(':D')
         QvMemoria().setCampsGeocod(self.parentWidget()._csv,{'teCoords':False,'camps':{'tipusVia':self._cbTipusVia.currentText(),'via':self._cbVia.currentText(),'numI':self._cbNumI.currentText(),
             'lletraI':self._cbLletraI.currentText(),'numF':self._cbNumF.currentText(),'lletraF':self._cbLletraF.currentText()}})
         self.salta.emit(CsvGeocod([x.currentText() for x in (self._cbTipusVia, self._cbVia,
@@ -481,6 +490,7 @@ class CsvGeocod(CsvPagina):
             self.salta.emit(self.parentWidget().getPrimeraPantalla())
         else:
             # Aquí saltar al resultat
+            QvMemoria().setGeocodificat(self.parentWidget()._csv)
             self.parentWidget().setCsv(self.parentWidget()._mapificador.fZones)
             # self.parentWidget()._csv=self.parentWidget()._mapificador.fDades
             self.salta.emit(CsvGeocodificat(self._errors, self.parentWidget()))
@@ -648,14 +658,20 @@ class CsvAfegir(CsvPagina):
         self._bAfegir = QvPushButton('Afegir com a capa de punts', destacat=True)
         self._bAfegir.setToolTip('Afegeix al mapa com a capa de punts')
         self._bAfegir.clicked.connect(self.afegir)
+        self._bEnrere = QvPushButton('Enrere',discret=True)
+        self._bEnrere.setToolTip('Retrocedeix a la pantalla anterior')
+        self._bEnrere.clicked.connect(self._enrere)
         self._leNomCapa.textChanged.connect(
             lambda x: self._bAfegir.setEnabled(x != ''))
+        layBotons.addWidget(self._bEnrere)
         layBotons.addWidget(self._bAfegir)
         self._lay.addLayout(layBotons)
     def showEvent(self, e):
         super().showEvent(e)
         self._leNomCapa.setFocus()
         self._leNomCapa.selectAll()
+    def _enrere(self):
+        self.salta.emit(CsvGeocodificat([],self.parentWidget()))
     def afegir(self):
         nivellCsv(self.parentWidget()._qV, self.parentWidget()._csv, self.parentWidget()._separador,
                   self._campCoordX, self._campCoordY, self._projeccio, self._leNomCapa.text(), self._color, symbol=self._forma)

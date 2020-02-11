@@ -1,6 +1,7 @@
 from configuracioQvista import *
 from moduls.QvSingleton import Singleton
 import json
+import hashlib
 
 from PyQt5.QtGui import QColor
 
@@ -11,6 +12,7 @@ arxiuDirectoriDesar=dadesdir+'directoriDesar'
 arxiuVolHints=dadesdir+'volHints'
 arxiuDadesMascara=dadesdir+'dadesMascara'
 arxiuCampsGeocod=dadesdir+'geocod.json'
+arxiuGeocodificats=dadesdir+'geocodificats.json'
 
 def llegirArxiu(f,encoding='utf-8'):
     with open(f,encoding=encoding) as arxiu:
@@ -19,6 +21,12 @@ def llegirArxiuLinies(f,encoding='utf-8'):
     with open(f,encoding=encoding) as arxiu:
         return arxiu.readlines()
 
+def md5sum(arxiu):
+    hash_sum=hashlib.md5()
+    with open(arxiu,'rb') as f:
+        for bloc in iter(lambda: f.read(8192),b''):
+            hash_sum.update(bloc)
+    return hash_sum.hexdigest()
 
 class QvMemoria(Singleton):
     def __init__(self):
@@ -34,7 +42,10 @@ class QvMemoria(Singleton):
             self.campsGeocod=json.loads(open(arxiuCampsGeocod).read())
         else:
             self.campsGeocod={}
-        pass
+        if os.path.isfile(arxiuGeocodificats):
+            self.geocodificats=json.loads(open(arxiuGeocodificats).read())
+        else:
+            self.geocodificats={}
     def getUltimaNew(self):
         try:
             return os.path.getmtime(arxiuTmpNews)
@@ -89,7 +100,18 @@ class QvMemoria(Singleton):
         return None
     def setCampsGeocod(self,file,camps):
         self.campsGeocod[file]=camps
-        
+    def setGeocodificat(self,path):
+        ruta=dadesdir+Path(path).stem+'_Geo.csv'
+        self.geocodificats[md5sum(path)]=md5sum(ruta)
+    def getGeocodificat(self,path):
+        ruta=dadesdir+Path(path).stem+'_Geo.csv'
+        if os.path.isfile(ruta):
+            suma_orig=md5sum(path)
+            if suma_orig in self.geocodificats:
+                if md5sum(ruta)==self.geocodificats[suma_orig]:
+                    return ruta
+        return None
+        pass
     def pafuera(self):
         if hasattr(self,'mapesRecents'):
             with open(arxiuMapesRecents,'w',encoding='utf-8') as f:
@@ -102,3 +124,5 @@ class QvMemoria(Singleton):
             f.write(str(self.volHints))
         with open(arxiuCampsGeocod,'w') as f:
             f.write(json.dumps(self.campsGeocod))
+        with open(arxiuGeocodificats,'w') as f:
+            f.write(json.dumps(self.geocodificats))
