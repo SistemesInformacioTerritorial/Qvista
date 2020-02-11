@@ -12,6 +12,7 @@ from qgis.core import QgsApplication, QgsGraduatedSymbolRenderer, QgsExpressionC
 from moduls.QvMapVars import *
 from moduls.QvMapificacio import *
 from moduls.QvSqlite import QvSqlite
+from moduls.QvEditorCsv import QvEditorCsv
 
 import os
 import sqlite3
@@ -372,7 +373,10 @@ class QvFormNovaMapificacio(QvFormBaseMapificacio):
             self.capa.setFocus()
         else:
             self.zona.setFocus()
-        self.taulaMostra = QvFormMostra(self.fCSV, parent=self)
+        # self.taulaMostra = QvFormMostra(self.fCSV, parent=self)
+        self.taulaMostra = QvEditorCsv(self.fCSV.fZones, [], self.fCSV.codi, self.fCSV.separador, self)
+        self.taulaMostra.setWindowTitle("Vista prèvia de " + self.fCSV.fZones)
+
         self.bTaula.setEnabled(True)
         self.calcul.setItems(self.fCSV.camps)
         self.filtre.setItems(self.fCSV.camps)
