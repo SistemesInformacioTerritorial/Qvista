@@ -291,6 +291,9 @@ class CsvCoords(CsvPagina):
         self._bMapifica = QvPushButton('Mapificar')
         self._bMapifica.setToolTip('Crea una mapificació a partir de la taula per visualitzar-la sobre el mapa')
         self._bMapifica.clicked.connect(self._mapifica)
+        with open(self.parentWidget()._csv) as f:
+            self._bMapifica.setEnabled('QVISTA_' in f.readline())
+        #TODO: comprovar si hi ha camps de zona
         self._layBotons.addWidget(self._bVeure)
         self._layBotons.addStretch()
         self._layBotons.addWidget(self._bAfegir)
@@ -418,6 +421,7 @@ class CsvAdreca(CsvPagina):
             resposta=QMessageBox.question(self,"Aquest arxiu ja ha sigut geocodificat prèviament","Vol carregar-lo directament, sense geocodificar de nou?",QMessageBox.Yes|QMessageBox.No)
             if resposta==QMessageBox.Yes:
                 self.parentWidget().setCsv(geocod)
+                self.parentWidget()._mapificador=QvMapificacio(geocod)
                 self.salta.emit(CsvGeocodificat([], self.parentWidget()))
                 return
             print(':D')
