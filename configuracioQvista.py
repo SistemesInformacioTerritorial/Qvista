@@ -1,5 +1,7 @@
 import os
 from pathlib import Path
+from qgis.PyQt import QtCore
+from qgis.PyQt.QtWidgets import QApplication
 
 
 # Així forcem que es pugui escalar segons el DPI https://stackoverflow.com/questions/43904594/pyqt-adjusting-for-different-screen-resolution
