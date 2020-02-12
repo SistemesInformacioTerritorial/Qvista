@@ -47,7 +47,8 @@ def imprimirPlanol(colegi, meses, x_min, y_min, x_max, y_max, rotacion, template
         newOffsetY = newOffsetY / 2
         newOffsetX = newOffsetX / 2
 
-        rectangle = QgsRectangle(x_min - newOffsetX, y_min - newOffsetY, x_max + newOffsetX, y_max + newOffsetY)
+        # rectangle = QgsRectangle(x_min - newOffsetX, y_min - newOffsetY, x_max + newOffsetX, y_max + newOffsetY)
+        rectangle = QgsRectangle(421961, 4574139, 437207, 4591839)
 
         refMap.setExtent(rectangle)
         refMap.setMapRotation(rotacion)
@@ -100,7 +101,7 @@ with qgisapp() as app:
     llegenda = QvLlegenda(canvas)
     llegenda.show()
 
-    plantillaMapa = 'MapaEscolar.qpt'
+    plantillaMapa = 'plantillaColegisA3.qpt'
 
     posXY = [430036,4583163]    
     
@@ -129,10 +130,10 @@ with qgisapp() as app:
         yCentre = feature.attributes()[layerCentres.fields().lookupField('YCENT')]
         # if codi_centre == '08077101':
         textFiltre = "CODI_CENTRE = '"+codi_centre+"'"
-        print (textFiltre)
+        print (textFiltre, xCentre, yCentre)
         layerIlles.setSubsetString(textFiltre) 
         layerCentres.setSubsetString(textFiltre)
         canvas.refresh()        
         # layer.setSubsetString(textFiltre2)     
-        # imprimirPlanol(nom, codi_centre, xCentre-10000, yCentre-10000, xCentre+10000, yCentre+10000, 0, plantillaMapa , 'd:/EUREKA.pdf', 'PDF')
+        imprimirPlanol(nom, codi_centre, xCentre-1000000, yCentre-1000000, xCentre+1000000, yCentre+1000000, 0, plantillaMapa , 'd:/EUREKA.pdf', 'PDF')
     
