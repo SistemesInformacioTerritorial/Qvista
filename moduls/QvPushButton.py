@@ -49,8 +49,7 @@ class QvPushButton(QPushButton):
                 colors=(QvConstants.COLORBLANCHTML,QvConstants.COLORDESTACATHTML)
             else:
                 if discret:
-                    pass
-                    colors=(QvConstants.COLORBLANCHTML,QvConstants.COLORCERCADORHTML)
+                    colors=(QvConstants.COLORBLANCHTML,QvConstants.COLORCLARHTML)
                 else:
                     colors=(QvConstants.COLORBLANCHTML,QvConstants.COLORFOSCHTML)
         else:
