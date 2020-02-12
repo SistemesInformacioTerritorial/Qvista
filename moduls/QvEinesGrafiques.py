@@ -514,7 +514,7 @@ class QvSeleccioElement(QgsMapTool):
        Si la llegenda no té un layer actiu, és treballa amb el primer visible al canvas.
     """
 
-    def __init__(self, canvas, llegenda, radi = 4):
+    def __init__(self, canvas, llegenda, radi = 10):
         """[summary]
         
         Arguments:
@@ -577,8 +577,12 @@ class QvSeleccioElement(QgsMapTool):
                 layer = self.canvas.layers()[0]
 
             # point = self.canvas.getCoordinateTransform().toMapCoordinates(x, y)
-            esquerraDalt = self.canvas.getCoordinateTransform().toMapCoordinates(x-self.radi, y-self.radi)
-            dretaBaix = self.canvas.getCoordinateTransform().toMapCoordinates(x+self.radi, y+self.radi)
+            if self.canvas.rotation()==0:
+                esquerraDalt = self.canvas.getCoordinateTransform().toMapCoordinates(x-self.radi, y-self.radi)
+                dretaBaix = self.canvas.getCoordinateTransform().toMapCoordinates(x+self.radi, y+self.radi)
+            else:
+                esquerraDalt = self.canvas.getCoordinateTransform().toMapCoordinates(x-self.radi*math.sqrt(2), y-self.radi*math.sqrt(2))
+                dretaBaix = self.canvas.getCoordinateTransform().toMapCoordinates(x+self.radi*math.sqrt(2), y-self.radi*math.sqrt(2))
 
             # marcaLloc = QgsVertexMarker(self.canvas)
             # marcaLloc.setCenter( point )
