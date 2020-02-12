@@ -98,30 +98,41 @@ with qgisapp() as app:
     bridge.setCanvasLayers()
     project.read(projecteInicial)
     llegenda = QvLlegenda(canvas)
+    llegenda.show()
 
     plantillaMapa = 'MapaEscolar.qpt'
 
     posXY = [430036,4583163]    
     
-    layer = llegenda.capaPerNom('CENTRES')
-    layerSeccions = llegenda.capaPerNom('ILLES')
+    layerCentres = llegenda.capaPerNom('CENTRES')
+    layerIlles = llegenda.capaPerNom('ILLES')
 
     # layer = LAYER DE COLEGIS
-    for feature in layer.getFeatures():
-        colegi = feature.attributes()[layer.fields().lookupField('LOCAL')]
-        cole = feature.attributes()[layer.fields().lookupField('CODI_COLE')]
-        seccions = feature.attributes()[layer.fields().lookupField('SECCIONS')]
-        meses = feature.attributes()[layer.fields().lookupField('MESES')]
-        x_min = feature.attributes()[layer.fields().lookupField('XMIN')]
-        y_min = feature.attributes()[layer.fields().lookupField('YMIN')]
-        x_max = feature.attributes()[layer.fields().lookupField('XMAX')]
-        y_max = feature.attributes()[layer.fields().lookupField('YMAX')]
+    # textFiltre = "CODI_CENTRE = '08077101'"
+    # print (textFiltre)
+    # layerIlles.setSubsetString(textFiltre)
+    # layerCentres.setSubsetString(textFiltre)
 
-
-        textFiltre = "INSTR('"+seccions+"',DISTRICTE||SEC_CENS)>0"
-        textFiltre2 = 'CODI_COLE'+"='"+cole+"'"
-        layerSeccions.setSubsetString(textFiltre) 
-        layer.setSubsetString(textFiltre2)     
-        imprimirPlanol(colegi, meses, x_min, y_min, x_max, y_max, 0, plantillaMapa , 'd:/EUREKA.pdf', 'PDF')
-    
     canvas.show()
+    for feature in layerCentres.getFeatures():
+        illa = feature.attributes()[layerCentres.fields().lookupField('ILLA')]
+        codi_centre = feature.attributes()[layerCentres.fields().lookupField('CODI_CENTRE')]
+        edifici = feature.attributes()[layerCentres.fields().lookupField('EDIFICI')]
+        titularitat = feature.attributes()[layerCentres.fields().lookupField('TITULARITAT')]
+        assignada = feature.attributes()[layerCentres.fields().lookupField('ASSIGNADA')]
+        distancia = feature.attributes()[layerCentres.fields().lookupField('DISTANCIA')]
+        adreca = feature.attributes()[layerCentres.fields().lookupField('ADRECA')]
+        nom = feature.attributes()[layerCentres.fields().lookupField('NOM')]
+        adreca = feature.attributes()[layerCentres.fields().lookupField('ADRECA')]
+        adreca = feature.attributes()[layerCentres.fields().lookupField('ADRECA')]
+        xCentre = feature.attributes()[layerCentres.fields().lookupField('XCENT')]
+        yCentre = feature.attributes()[layerCentres.fields().lookupField('YCENT')]
+        # if codi_centre == '08077101':
+        textFiltre = "CODI_CENTRE = '"+codi_centre+"'"
+        print (textFiltre)
+        layerIlles.setSubsetString(textFiltre) 
+        layerCentres.setSubsetString(textFiltre)
+        canvas.refresh()        
+        # layer.setSubsetString(textFiltre2)     
+        # imprimirPlanol(nom, codi_centre, xCentre-10000, yCentre-10000, xCentre+10000, yCentre+10000, 0, plantillaMapa , 'd:/EUREKA.pdf', 'PDF')
+    
