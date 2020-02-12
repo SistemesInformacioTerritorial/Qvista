@@ -493,8 +493,12 @@ class QvMapificacio(QObject):
                               decimal=MAP_LOCALE.decimalPoint(), dtype=dtypes)
 
             # Aplicar filtro
-            if self.filtre != '':
-                csv.query(self.filtre, inplace=True)
+            try:
+                if self.filtre != '':
+                    csv.query(self.filtre, inplace=True)
+            except Exception as err:
+                self.msgError = "Error a l'expressió de filtre"
+                return False
 
             if tipusAgregacio == "Cap":
                 agreg = pd.Series(csv[self.campAgregat].values.round(self.renderParams.numDecimals), index=csv[self.campZona])

@@ -145,7 +145,9 @@ class QvComboBoxCamps(QComboBox):
         self.oldText = ''
         self.newText = ''
 
-    def setItems(self, items):
+    def setItems(self, items, blanc=False):
+        if blanc:
+            self.addItem('')
         self.addItems(items)
         self.setCurrentIndex(-1)
         self.setCurrentText('')
@@ -378,7 +380,7 @@ class QvFormNovaMapificacio(QvFormBaseMapificacio):
         self.taulaMostra.setWindowTitle("Vista prèvia de " + self.fCSV.fZones)
 
         self.bTaula.setEnabled(True)
-        self.calcul.setItems(self.fCSV.camps)
+        self.calcul.setItems(self.fCSV.camps, blanc=True)
         self.filtre.setItems(self.fCSV.camps)
 
     @pyqtSlot(str)
