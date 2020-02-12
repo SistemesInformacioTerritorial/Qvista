@@ -2703,7 +2703,6 @@ class QVista(QMainWindow, Ui_MainWindow):
         # spacer = QSpacerItem(1000, 1000, QSizePolicy.Expanding,QSizePolicy.Maximum)
         # self.statusbar.addPermanentWidget(spacer)
         
-
         self.sbCarregantCanvas = QProgressBar()
         self.sbCarregantCanvas.setRange(0,0)
         # self.sbCarregantCanvas.hide()
