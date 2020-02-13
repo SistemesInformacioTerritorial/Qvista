@@ -1,3 +1,5 @@
+# Programa 
+
 from moduls.QvImports import *
 from moduls.QvLlegenda import QvLlegenda
 
@@ -34,7 +36,7 @@ def imprimirPlanol(colegi, codiColegi, x_min, y_min, x_max, y_max, rotacion, tem
         distX = (x_max - x_min) 
         distY = (y_max - y_min) 
 
-        relacio = 287 / 173
+        relacio = 297 / 210
         newOffsetY = 1
         newOffsetX = 1
 
@@ -70,7 +72,7 @@ def imprimirPlanol(colegi, codiColegi, x_min, y_min, x_max, y_max, rotacion, tem
             settings.dpi=300
             settings.exportMetadata=False
             
-            fitxerSortida='d:/sortida_'+timestamp+'.PDF'
+            fitxerSortida='d:/MapaEscolar_'+timestamp+'.PDF'
             result = exporter.exportToPdf(fitxerSortida, settings)
 
             print (fitxerSortida)
@@ -114,7 +116,6 @@ with qgisapp() as app:
     # layerIlles.setSubsetString(textFiltre)
     # layerCentres.setSubsetString(textFiltre)
 
-    canvas.show()
     for feature in layerCentres.getFeatures():
         illa = feature.attributes()[layerCentres.fields().lookupField('ILLA')]
         codi_centre = feature.attributes()[layerCentres.fields().lookupField('CODI_CENTRE')]
@@ -125,7 +126,6 @@ with qgisapp() as app:
         adreca = feature.attributes()[layerCentres.fields().lookupField('ADRECA')]
         nom = feature.attributes()[layerCentres.fields().lookupField('NOM')]
         adreca = feature.attributes()[layerCentres.fields().lookupField('ADRECA')]
-        adreca = feature.attributes()[layerCentres.fields().lookupField('ADRECA')]
         xMin = feature.attributes()[layerCentres.fields().lookupField('XMIN')]
         yMin = feature.attributes()[layerCentres.fields().lookupField('YMIN')]
         xMax = feature.attributes()[layerCentres.fields().lookupField('XMAX')]
@@ -135,7 +135,7 @@ with qgisapp() as app:
         print (textFiltre)
         layerIlles.setSubsetString(textFiltre) 
         layerCentres.setSubsetString(textFiltre)
-        canvas.refresh()        
+
         # layer.setSubsetString(textFiltre2)     
         imprimirPlanol(nom, codi_centre, xMin, yMin, xMax, yMax, 0, plantillaMapa , 'd:/EUREKA.pdf', 'PDF')
     

@@ -40,7 +40,7 @@
   </LayoutItem>
   <GuideCollection visible="1"/>
  </PageCollection>
- <LayoutItem mapUuid="" size="191.538,48.4928,mm" pictureWidth="48.4928" frame="false" visibility="1" anchorPoint="0" zValue="6" excludeFromExports="0" uuid="{9b8c9f58-ae1a-4601-98ca-d557833aa377}" positionLock="false" templateUuid="{9b8c9f58-ae1a-4601-98ca-d557833aa377}" pictureRotation="0" resizeMode="0" itemRotation="0" positionOnPage="5.45691,540.521,mm" id="" opacity="1" position="5.45691,540.521,mm" referencePoint="0" svgBorderColor="255,255,255,255" northMode="0" type="65640" frameJoinStyle="miter" blendMode="0" svgFillColor="0,0,0,255" file="transport/transport_bus_station.svg" northOffset="0" outlineWidthM="0.3,mm" pictureHeight="48.4928" background="false" groupUuid="" svgBorderWidth="0">
+ <LayoutItem mapUuid="" size="191.538,48.4928,mm" pictureWidth="141.378" frame="false" visibility="1" anchorPoint="0" zValue="6" excludeFromExports="0" uuid="{9b8c9f58-ae1a-4601-98ca-d557833aa377}" positionLock="false" templateUuid="{9b8c9f58-ae1a-4601-98ca-d557833aa377}" pictureRotation="0" resizeMode="0" itemRotation="0" positionOnPage="5.45691,540.521,mm" id="" opacity="1" position="5.45691,540.521,mm" referencePoint="0" svgBorderColor="255,255,255,255" northMode="0" type="65640" frameJoinStyle="miter" blendMode="0" svgFillColor="0,0,0,255" file="../qVista/Codi/Colegis Electorals/Ajuntament-Barcelona.jpg" northOffset="0" outlineWidthM="0.3,mm" pictureHeight="48.4928" background="false" groupUuid="" svgBorderWidth="0">
   <FrameColor green="0" blue="0" alpha="255" red="0"/>
   <BackgroundColor green="255" blue="255" alpha="255" red="255"/>
   <LayoutObject>
