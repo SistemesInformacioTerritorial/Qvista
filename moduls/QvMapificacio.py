@@ -63,6 +63,7 @@ class QvMapificacio(QObject):
         self.mostra = []
         self.mostraCols = ''
         self.camps = []
+        self.campsSortida = []
         self.files = 0
         self.errors = 0
         self.msgError = ''
@@ -204,15 +205,15 @@ class QvMapificacio(QObject):
     procesAcabat = pyqtSignal(int)  # Tiempo transcurrido en zonificar (segundos)
     errorAdreca = pyqtSignal(dict) # Registro que no se pudo geocodificar
 
-    def asincGeocodificacio(self, campsAdreca: List[str], zones: List[str], fZones: str = '', substituir: bool = True,
-        percentatgeProces: pyqtSignal = None, procesAcabat: pyqtSignal = None, errorAdreca: pyqtSignal = None) -> bool:
-        """ Versión asíncrona de la función geocodificacio, con los mismos parámetros
-        """
-        from multiprocessing.pool import ThreadPool
-        pool = ThreadPool(processes=1)
+    # def asincGeocodificacio(self, campsAdreca: List[str], zones: List[str], fZones: str = '', substituir: bool = True,
+    #     percentatgeProces: pyqtSignal = None, procesAcabat: pyqtSignal = None, errorAdreca: pyqtSignal = None) -> bool:
+    #     """ Versión asíncrona de la función geocodificacio, con los mismos parámetros
+    #     """
+    #     from multiprocessing.pool import ThreadPool
+    #     pool = ThreadPool(processes=1)
 
-        async_result = pool.apply_async(self.geocodificacio, (campsAdreca, zones, fZones, substituir, percentatgeProces, procesAcabat, errorAdreca))
-        return async_result.get()
+    #     async_result = pool.apply_async(self.geocodificacio, (campsAdreca, zones, fZones, substituir, percentatgeProces, procesAcabat, errorAdreca))
+    #     return async_result.get()
 
     def geocodificacio(self, campsAdreca: List[str], zones: List[str], fZones: str = '', substituir: bool = True,
         percentatgeProces: pyqtSignal = None, procesAcabat: pyqtSignal = None, errorAdreca: pyqtSignal = None) -> bool:
@@ -296,14 +297,17 @@ class QvMapificacio(QObject):
                 # Cabeceras
                 data = csv.DictReader(csvInput, delimiter=self.separador)
 
+                # Eliminar blancos de nombres de campo (para tratamiento posterior)
+                self.campsSortida = [camp.replace(" ", "_") for camp in self.camps]
+
                 for campZona in self.campsZones:
                     campZona = QvSqlite.getAlias(campZona)
                     campSortida = self.prefixe + campZona
-                    if campSortida not in self.camps:
-                        self.camps.append(campSortida)
+                    if campSortida not in self.campsSortida:
+                        self.campsSortida.append(campSortida)
                         self.mostraCols += self.separador + campSortida
-
-                writer = csv.DictWriter(csvOutput, delimiter=self.separador, fieldnames=self.camps, lineterminator='\n')
+                
+                writer = csv.DictWriter(csvOutput, delimiter=self.separador, fieldnames=self.campsSortida, lineterminator='\n')
                 writer.writeheader()
 
                 # Lectura de filas y geocodificación
@@ -742,7 +746,7 @@ if __name__ == "__main__":
         leyenda.setWindowTitle('Llegenda')
         leyenda.show()
 
-        z = QvMapificacio('U:/QUOTA/Comu_imi/Becaris/CarrecsAnsi100.csv')
+        z = QvMapificacio('C:/temp/qVista/dades/gossos.csv')
         # z = QvMapificacio('CarrecsUTF8.csv')
         if z.msgError != '':
             print('Error:', z.msgError)
@@ -758,9 +762,9 @@ if __name__ == "__main__":
         # w = QvFormMostra(z)
         # w.show()
 
-        campsAdreca = ('', 'NOM_CARRER_GPL', 'NUM_I_GPL', '', 'NUM_F_GPL')
+        campsAdreca = ('Tipus de via', 'Via', 'Número')
         zones = ('Coordenada', 'Districte', 'Barri', 'Codi postal', "Illa", "Solar", "Àrea estadística bàsica", "Secció censal")
-        ok = z.asincGeocodificacio(campsAdreca, zones,
+        ok = z.geocodificacio(campsAdreca, zones,
             percentatgeProces=lambda n: print('... Procesado', str(n), '% ...'),
             errorAdreca=lambda f: print('Fila sin geocodificar -', f),
             procesAcabat=lambda n: print('Zonas', z.zones, 'procesadas en', str(n), 'segs. en ' + z.fZones + ' -', str(z.files), 'registros,', str(z.errors), 'errores'))

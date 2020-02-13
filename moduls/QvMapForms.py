@@ -145,9 +145,13 @@ class QvComboBoxCamps(QComboBox):
         self.oldText = ''
         self.newText = ''
 
-    def setItems(self, items, blanc=False):
-        if blanc:
-            self.addItem('')
+    def setItems(self, items, primer=None, blancs=None):
+        if primer is not None:
+            # Añadir elemento inicial
+            self.addItem(primer)
+        if blancs is not None:
+            # Sustituir blancos
+            items = [item.replace(" ", blancs) for item in items]
         self.addItems(items)
         self.setCurrentIndex(-1)
         self.setCurrentText('')
@@ -179,8 +183,8 @@ class QvVeureMostra(QTableWidget):
         super().__init__(None)
         self.map = map
         self.setRowCount(self.map.numMostra)
-        self.setColumnCount(len(self.map.camps))
-        self.setHorizontalHeaderLabels(self.map.camps)
+        self.setColumnCount(len(self.map.campsSortida))
+        self.setHorizontalHeaderLabels(self.map.campsSortida)
         for fila, reg in enumerate(self.map.mostra):
             cols = reg.split(self.map.separador)
             for col, val in enumerate(cols):
@@ -361,7 +365,7 @@ class QvFormNovaMapificacio(QvFormBaseMapificacio):
         # Carga combo con zonas si el campo correspondiente está en el fichero CSV
         num = 0
         for zona, val in MAP_ZONES.items():
-            if val[1] != '' and self.fCSV.prefixe + QvSqlite.getAlias(val[0]) in self.fCSV.camps:
+            if val[1] != '' and self.fCSV.prefixe + QvSqlite.getAlias(val[0]) in self.fCSV.campsSortida:
                 self.zona.addItem(zona)
                 num = num + 1
         if num == 0:
@@ -380,8 +384,8 @@ class QvFormNovaMapificacio(QvFormBaseMapificacio):
         self.taulaMostra.setWindowTitle("Vista prèvia de " + self.fCSV.fZones)
 
         self.bTaula.setEnabled(True)
-        self.calcul.setItems(self.fCSV.camps, blanc=True)
-        self.filtre.setItems(self.fCSV.camps)
+        self.calcul.setItems(self.fCSV.campsSortida, primer='')
+        self.filtre.setItems(self.fCSV.campsSortida)
 
     @pyqtSlot(str)
     def arxiuSeleccionat(self, nom):
