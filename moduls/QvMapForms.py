@@ -183,8 +183,8 @@ class QvVeureMostra(QTableWidget):
         super().__init__(None)
         self.map = map
         self.setRowCount(self.map.numMostra)
-        self.setColumnCount(len(self.map.campsSortida))
-        self.setHorizontalHeaderLabels(self.map.campsSortida)
+        self.setColumnCount(len(self.map.camps))
+        self.setHorizontalHeaderLabels(self.map.camps)
         for fila, reg in enumerate(self.map.mostra):
             cols = reg.split(self.map.separador)
             for col, val in enumerate(cols):
@@ -365,7 +365,7 @@ class QvFormNovaMapificacio(QvFormBaseMapificacio):
         # Carga combo con zonas si el campo correspondiente está en el fichero CSV
         num = 0
         for zona, val in MAP_ZONES.items():
-            if val[1] != '' and self.fCSV.prefixe + QvSqlite.getAlias(val[0]) in self.fCSV.campsSortida:
+            if val[1] != '' and self.fCSV.prefixe + QvSqlite.getAlias(val[0]) in self.fCSV.camps:
                 self.zona.addItem(zona)
                 num = num + 1
         if num == 0:
@@ -384,8 +384,8 @@ class QvFormNovaMapificacio(QvFormBaseMapificacio):
         self.taulaMostra.setWindowTitle("Vista prèvia de " + self.fCSV.fZones)
 
         self.bTaula.setEnabled(True)
-        self.calcul.setItems(self.fCSV.campsSortida, primer='')
-        self.filtre.setItems(self.fCSV.campsSortida)
+        self.calcul.setItems(self.fCSV.camps, primer='')
+        self.filtre.setItems(self.fCSV.camps)
 
     @pyqtSlot(str)
     def arxiuSeleccionat(self, nom):

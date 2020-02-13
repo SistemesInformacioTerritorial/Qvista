@@ -63,7 +63,6 @@ class QvMapificacio(QObject):
         self.mostra = []
         self.mostraCols = ''
         self.camps = []
-        self.campsSortida = []
         self.files = 0
         self.errors = 0
         self.msgError = ''
@@ -285,6 +284,8 @@ class QvMapificacio(QObject):
         if errorAdreca is not None:
             self.errorAdreca.connect(errorAdreca)
 
+        # Para eliminar blancos y comillas de nombres de campo
+        translation = str.maketrans(" \'\"", "___")
         self.cancel = False
         ini = time.time()
 
@@ -296,25 +297,24 @@ class QvMapificacio(QObject):
 
                 # Cabeceras
                 data = csv.DictReader(csvInput, delimiter=self.separador)
-
-                # Eliminar blancos de nombres de campo (para tratamiento posterior)
-                self.campsSortida = [camp.replace(" ", "_") for camp in self.camps]
+                self.camps = [camp.translate(translation) for camp in self.camps]
 
                 for campZona in self.campsZones:
                     campZona = QvSqlite.getAlias(campZona)
                     campSortida = self.prefixe + campZona
-                    if campSortida not in self.campsSortida:
-                        self.campsSortida.append(campSortida)
+                    if campSortida not in self.camps:
+                        self.camps.append(campSortida)
                         self.mostraCols += self.separador + campSortida
                 
-                writer = csv.DictWriter(csvOutput, delimiter=self.separador, fieldnames=self.campsSortida, lineterminator='\n')
+                writer = csv.DictWriter(csvOutput, delimiter=self.separador, fieldnames=self.camps, lineterminator='\n')
                 writer.writeheader()
 
                 # Lectura de filas y geocodificación
                 tot = num = 0
                 self.mostra = []
-                for row in data:
+                for rowOrig in data:
                     tot += 1
+                    row = { k.translate(translation): v for k, v in rowOrig.items() }
 
                     val = self.db.geoCampsCarrerNum(self.campsZones,
                             self.valorCampAdreca(row, 0), self.valorCampAdreca(row, 1), self.valorCampAdreca(row, 2),
