@@ -4,9 +4,88 @@ from moduls.QvPushButton import QvPushButton
 from moduls.QvConstants import QvConstants
 import csv
 import chardet
+import time
 from typing import List, Tuple, Iterable
 from moduls.QvImports import *
+from moduls.QvFuncioFil import QvFuncioFil
 
+
+class ModelCsv(QAbstractTableModel):
+    ROW_BATCH_COUNT = 15
+    def __init__(self):
+        super().__init__()
+        self.headers = []
+        self.persons  = []
+        self.rowsLoaded = ModelCsv.ROW_BATCH_COUNT
+    def setHeaders(self,headers):
+        self.headers = headers
+    def setErrors(self,errors):
+        self.errors=errors
+    def addRow(self,row):
+        self.beginResetModel()
+        self.persons.append(row)
+        self.endResetModel()
+    def setArxiu(self,arxiu, cod, sep):
+        self.func=QvFuncioFil(lambda: self._setArxiu(arxiu, cod, sep))
+        self.func.start()
+        time.sleep(5)
+    def _setArxiu(self,arxiu, cod, sep):
+        with open(arxiu, 'r', encoding=cod) as f:
+            lector = csv.reader(f, delimiter=sep)
+            f0=next(lector)
+            self._capcalera = list(f0)
+            self.setHeaders(self._capcalera)
+            self.addRows(lector)
+    def addRows(self,rows):
+        self.persons.extend(list(rows))
+    def rowCount(self,index=QModelIndex()):
+        if not self.persons:
+            return 0
+ 
+        if len(self.persons) <= self.rowsLoaded:
+            return len(self.persons)
+        else:
+            return self.rowsLoaded
+ 
+    def canFetchMore(self,index=QModelIndex()):
+        if len(self.persons) > self.rowsLoaded:
+            return True
+        else:
+            return False
+ 
+    def fetchMore(self,index=QModelIndex()):
+        reminder = len(self.persons) - self.rowsLoaded
+        itemsToFetch = min(reminder,ModelCsv.ROW_BATCH_COUNT)
+        self.beginInsertRows(QModelIndex(),self.rowsLoaded,self.rowsLoaded+itemsToFetch-1)
+        self.rowsLoaded += itemsToFetch
+        self.endInsertRows()
+ 
+    # def addPerson(self,person):
+    #     self.beginResetModel()
+    #     self.persons.append(person)
+    #     self.endResetModel()
+    def estaCarregat(self,fila):
+        return fila<=self.rowsLoaded
+    def columnCount(self,index=QModelIndex()):
+        return len(self.headers)
+ 
+    def data(self,index,role=Qt.DisplayRole):
+        col = index.column()
+        person = self.persons[index.row()]
+        if role == Qt.DisplayRole:
+            if col<len(person):
+                return QVariant(person[col])
+            return QVariant()
+        if role == Qt.BackgroundRole:
+            return QBrush(QvConstants.COLORDESTACAT) if index.row()+1 in self.errors else QBrush(QvConstants.COLORBLANC)
+ 
+    def headerData(self,section,orientation,role=Qt.DisplayRole):
+        if role != Qt.DisplayRole:
+            return QVariant()
+ 
+        if orientation == Qt.Horizontal:
+            return QVariant(self.headers[section])
+        return QVariant(int(section + 1))
 
 class QvEditorCsv(QDialog):
     rutaCanviada = pyqtSignal(str)
@@ -20,8 +99,8 @@ class QvEditorCsv(QDialog):
         # Declaració d'atributs de l'objecte
         self._arxiu = arxiu
         self._codificacio = codificacio
-        self._MAXIMFILES = 500
-        self._errors = sorted(filter(lambda x: x<self._MAXIMFILES,errors))
+        # self._MAXIMFILES = 500
+        self._errors = sorted(errors)
         self._separador = separador
         self._i = 0
         self._teErrors = len(self._errors) != 0
@@ -46,13 +125,18 @@ class QvEditorCsv(QDialog):
             # self._layErrors.addStretch()
             self._lay.addLayout(self._layErrors)
         # Declarem la taula
-        self._lblAvisPreview = QLabel("Només es mostren els primers %i elements. Per veure l'arxiu complet premeu el botó \"obrir com a full de càlcul\""%self._MAXIMFILES)
-        self._lblAvisPreview.setWordWrap(True)
-        self._lay.addWidget(self._lblAvisPreview)
-        self._lblAvisPreview.hide()
-        self._taula = QTableWidget()
-        self._taula.currentCellChanged.connect(self._errorProper)
+        # self._lblAvisPreview = QLabel("Només es mostren els primers %i elements. Per veure l'arxiu complet premeu el botó \"obrir com a full de càlcul\""%self._MAXIMFILES)
+        # self._lblAvisPreview.setWordWrap(True)
+        # self._lay.addWidget(self._lblAvisPreview)
+        # self._lblAvisPreview.hide()
+
+        self._taula = QTableView()
+        # self._taula.currentCellChanged.connect(self._errorProper)
         self._lay.addWidget(self._taula)
+
+        # self._taula = QTableWidget()
+        # self._taula.currentCellChanged.connect(self._errorProper)
+        # self._lay.addWidget(self._taula)
         self._layBotons = QHBoxLayout()
         self._lay.addLayout(self._layBotons)
         self._defBotons()
@@ -86,34 +170,10 @@ class QvEditorCsv(QDialog):
         self.close()
     def _carregaTaula(self):
         self._taula.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
-        with open(self._arxiu, 'r', encoding=self._codificacio) as f:
-            lector = csv.reader(f, delimiter=self._separador)
-            for i, row in enumerate(lector):
-                if i == 0:
-                    self._capcalera = list(row)
-                    self._taula.setColumnCount(len(self._capcalera))
-                    self._taula.setHorizontalHeaderLabels(self._capcalera)
-                else:
-                    if i>self._MAXIMFILES: 
-                        self._lblAvisPreview.show()
-                        self._bDesar.setEnabled(False)
-                        # Mostrar avís de que és una preview
-                        break
-                    self._taula.setRowCount(i)
-                    for j, x in enumerate(row):
-                        item = QTableWidgetItem(x)
-                        # if i in self._errors:
-                        #     item.setBackground(QvConstants.COLORDESTACAT)
-                        self._taula.setItem(i-1, j, item)
-            for i in range(self._taula.rowCount()):
-                item = QTableWidgetItem(str(i+1))
-                if self._teErrors and i+1 in self._errors:
-                    item.setBackground(QBrush(QvConstants.COLORDESTACAT))
-                    # item.setForeground(QBrush(QvConstants.COLORDESTACAT))
-                    font = item.font()
-                    font.setBold(True)
-                    item.setFont(font)
-                self._taula.setVerticalHeaderItem(i, item)
+        self._model = ModelCsv()
+        self._taula.setModel(self._model)
+        self._model.setErrors(self._errors)
+        self._model.setArxiu(self._arxiu,self._codificacio,self._separador)
         self._taula.resizeColumnsToContents()
 
     def exec(self):
@@ -124,8 +184,12 @@ class QvEditorCsv(QDialog):
         if not self._teErrors:
             return  # si no hi ha errors no farem res
         if not click:
-            self._taula.scrollToItem(
-                self._taula.item(self._errors[self._i]-1, 0))
+            fila=self._errors[self._i]-1
+            while not self._model.estaCarregat(fila):
+                self._model.fetchMore()
+            index=self._model.index(fila,0)
+            self._taula.scrollTo(index)
+            self._taula.scrollTo(index) #encara que ho sembli, no, no és repetitiu. Cal fer-ho dues vegades
         self._spinErrors.setValue(self._i+1)
 
     def _setError(self, i, click=False):
@@ -169,8 +233,9 @@ class QvEditorCsv(QDialog):
                 index = sorted(distancies, key=lambda x: x[1])[0][0]
                 self._setError(index, True)
 
-    def show(self):
-        super().show()
+    def showEvent(self,e):
+        time.sleep(1)
+        super().showEvent(e)
         if self._teErrors:
             self._mostraErrorActual()
 
@@ -185,11 +250,11 @@ if __name__ == '__main__':
         from moduls.QvApp import QvApp
 
         app = QvApp()
-        arxiu = 'U:/QUOTA/Comu_imi/Becaris/CarrecsAnsi100.csv'
+        arxiu = 'U:/QUOTA/Comu_imi/Becaris/CarrecsUTF8.csv'
         with open(arxiu, 'rb') as f:
-            val = chardet.detect(f.read())
+            val = chardet.detect(b''.join(f.readlines(5000)))
         taula = QvEditorCsv(
-            arxiu, [10, 20, 30, 40, 50, 60, 70], val['encoding'], ';')
+            arxiu, [10, 20, 30, 40, 50, 60, 70, 1000, 10000, 100000, 1000000], val['encoding'], ';')
         taula.rutaCanviada.connect(print)
         # Posem el stylesheet de qVista. Així forcem a que es vegi com es veurà a qVista
         with open('style.qss') as f:

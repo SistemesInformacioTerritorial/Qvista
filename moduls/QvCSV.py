@@ -154,7 +154,8 @@ class QvCarregaCsv(QDialog):
             return CsvAdreca(self)
 
     def triaPrimeraPantalla(self):
-        self._widgetActual=self.getPrimeraPantalla()
+        # self._widgetActual=self.getPrimeraPantalla()
+        self._widgetActual=CsvTab(self)
         self._widgetActual.salta.connect(self.salta)
 
     def formata(self):
@@ -165,6 +166,10 @@ class QvCarregaCsv(QDialog):
         self._widgetActual.hide()
         self._layoutGran.replaceWidget(self._widgetActual, nouW)
         self._widgetActual = nouW
+        try:
+            self._widgetActual.salta.disconnect()
+        except:
+            pass
         self._widgetActual.salta.connect(self.salta)
 
     def setCsv(self, csv):
@@ -205,9 +210,9 @@ class CsvPagina(QWidget):
         pass
 
     def getCamps(self):
-        with open(self.parentWidget()._csv, encoding=self.parentWidget()._codificacio) as f:
+        with open(self.parentWidget().parentWidget()._csv, encoding=self.parentWidget().parentWidget()._codificacio) as f:
             reader = csv.DictReader(
-                f, delimiter=self.parentWidget()._separador)
+                f, delimiter=self.parentWidget().parentWidget()._separador)
             return reader.fieldnames
 
     def _setTitol(self, titol):
@@ -219,13 +224,39 @@ class CsvPagina(QWidget):
         fMap.exec()
         self.parentWidget().close()
 
+class CsvTab(QTabWidget):
+    salta = pyqtSignal(QWidget)
+    def __init__(self,parent=None):
+        super().__init__(parent)
+        
+        aux=QvMemoria().getCampsGeocod(self.parentWidget()._csv)
+        if aux is not None:
+            if aux['teCoords']:
+                primer=0
+                self._coords=CsvCoords(self,**aux['camps'])
+                self._adreca=CsvAdreca(self)
+            else:
+                primer=1
+                self._coords=CsvCoords(self)
+                self._adreca=CsvAdreca(self,**aux['camps'])
+        else:
+            campX, campY = campsCoords(
+                self.parentWidget()._csv, self.parentWidget()._separador, self.parentWidget()._codificacio)
+            self._coords=CsvCoords(self, campX, campY)
+            self._adreca=CsvAdreca(self)
+            primer=0 if campX is not None else 1
+
+        self.addTab(self._coords,'Coordenades')
+        self.addTab(self._adreca,'Adreces')
+        self.setCurrentIndex(primer)
 
 class CsvCoords(CsvPagina):
     def __init__(self, parent=None, campX=None, campY=None, proj=None):
         super().__init__(parent)
-        self._setTitol('Sel·leccioneu els camps de coordenades')
-        self._lay.addWidget(
-            QLabel("Depenent del sistema de referència podran ser coordenades X,Y UTM o Latitud/Longitud"))
+        self._setTitol('El CSV ja conté coordenades?')
+        lbl=QLabel("Seleccioneu quins són els camps de coordenades i el seu sistema de referència geogràfic.\n\nDepenent del sistema podran ser coordenades (X,Y) en metres o (Latitud,Longitud) en graus")
+        lbl.setWordWrap(True)
+        self._lay.addWidget(lbl)
         self._lay.addStretch()
         # Creem una groupbox per triar els paràmetres de les coordenades
         self._gbCoords = QGroupBox(self)
@@ -233,15 +264,15 @@ class CsvCoords(CsvPagina):
         self._gbCoords.setLayout(self._layCamps)
         camps = self.getCamps()
         if campX is None:
-            campX, campY = campsCoords(self.parentWidget()._csv, self.parentWidget()._separador, self.parentWidget()._codificacio)
-        self._proj = {'EPSG:25831 UTM ETRS89 31N': 25831,
+            campX, campY = campsCoords(self.parentWidget().parentWidget()._csv, self.parentWidget().parentWidget()._separador, self.parentWidget().parentWidget()._codificacio)
+        self._proj = {'EPSG:25831 UTM 31N ETRS89': 25831,
                       'EPSG:3857 Pseudo Mercator (Google)': 3857,
                       'EPSG:4326 WGS 84': 4326,
-                      'EPSG:23031 ED50 31N': 23031}
+                      'EPSG:23031 UTM 31N ED50': 23031}
         if proj is None:
             proj='EPSG:25831 UTM ETRS89 31N'
         layX = QHBoxLayout()
-        lblX = QLabel('Coordenades X:')
+        lblX = QLabel('Coordenada X:')
         lblX.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
         layX.addWidget(lblX)
         self._cbX = QComboBox()
@@ -250,13 +281,21 @@ class CsvCoords(CsvPagina):
         layX.addWidget(self._cbX)
 
         layY = QHBoxLayout()
-        lblY = QLabel('Coordenades Y:')
+        lblY = QLabel('Coordenada Y:')
         lblY.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
         layY.addWidget(lblY)
         self._cbY = QComboBox()
         self._cbY.addItems(camps)
         self._cbY.setCurrentText(campY)
         layY.addWidget(self._cbY)
+
+        def canviaLbls(x):
+            if x in (0,3):
+                lblX.setText('Coordenada X:')
+                lblY.setText('Coordenada Y:')
+            else:
+                lblX.setText('Latitud:')
+                lblY.setText('Longitud:')
 
         layProj = QHBoxLayout()
         lblProj = QLabel('Projecció:')
@@ -265,6 +304,7 @@ class CsvCoords(CsvPagina):
         self._cbProj = QComboBox()
         self._cbProj.addItems(self._proj.keys())
         self._cbProj.setCurrentText(proj)
+        self._cbProj.currentIndexChanged.connect(canviaLbls)
         layProj.addWidget(self._cbProj)
 
         self._layCamps.addLayout(layX)
@@ -273,11 +313,6 @@ class CsvCoords(CsvPagina):
         self._lay.addWidget(self._gbCoords)
 
         # Botó per anar a la pantalla de les adreces
-        self._bAdreces = QvPushButton("Hi ha camps d'adreces?",discret=True)
-        self._bAdreces.setToolTip("Si no disposeu de camps de coordenades, premeu aquí per geocodificar-les a partir d'adreces")
-        self._bAdreces.clicked.connect(
-            lambda: self.salta.emit(CsvAdreca(self.parentWidget())))
-        self._lay.addWidget(self._bAdreces)
         self._lay.addStretch()
 
         # Botons per fer coses
@@ -291,7 +326,7 @@ class CsvCoords(CsvPagina):
         self._bMapifica = QvPushButton('Mapificar')
         self._bMapifica.setToolTip('Crea una mapificació a partir de la taula per visualitzar-la sobre el mapa')
         self._bMapifica.clicked.connect(self._mapifica)
-        with open(self.parentWidget()._csv) as f:
+        with open(self.parentWidget().parentWidget()._csv) as f:
             self._bMapifica.setEnabled('QVISTA_' in f.readline())
         #TODO: comprovar si hi ha camps de zona
         self._layBotons.addWidget(self._bVeure)
@@ -301,16 +336,16 @@ class CsvCoords(CsvPagina):
         self._lay.addLayout(self._layBotons)
 
     def afegir(self):
-        QvMemoria().setCampsGeocod(self.parentWidget()._csv,{'teCoords':True,'camps':{'campX':self._cbX.currentText(),'campY':self._cbY.currentText(),'proj':self._cbProj.currentText()}})
-        self.salta.emit(CsvAfegir(self._cbX.currentText(), self._cbY.currentText(
-        ), self._proj[self._cbProj.currentText()], self.parentWidget()))
+        QvMemoria().setCampsGeocod(self.parentWidget().parentWidget().parentWidget()._csv,{'teCoords':True,'camps':{'campX':self._cbX.currentText(),'campY':self._cbY.currentText(),'proj':self._cbProj.currentText()}})
+        self.parentWidget().parentWidget().salta.emit(CsvAfegir(self._cbX.currentText(), self._cbY.currentText(
+        ), self._proj[self._cbProj.currentText()], self.parentWidget().parentWidget().parentWidget()))
 
 
 class CsvAdreca(CsvPagina):
     def __init__(self, parent=None, **campsAdreca):
         super().__init__(parent)
-        self._setTitol("Sel·leccioneu els camps d'adreça")
-        lblExpl = QLabel("Especifiqueu com a mínim el nom de la via i el número inicial. La resta de camps, si els teniu, serviran per accel·lerar i optimitzar la geocodificació.")
+        self._setTitol("El CSV conté adreces postals?")
+        lblExpl = QLabel("Seleccioneu el camp o camps que contenen l'adreça.\n\nEspecifiqueu com a mínim el nom de la via i el número inicial. La resta de camps, si els teniu, serviran per accelerar i optimitzar la geocodificació.")
         lblExpl.setWordWrap(True)
         self._lay.addWidget(lblExpl)
         self._lay.addStretch()
@@ -386,11 +421,6 @@ class CsvAdreca(CsvPagina):
         else:
             self.campsDefecte()
 
-        self._bCoords = QvPushButton('Hi ha camps de coordenades?',discret=True)
-        self._bCoords.setToolTip('Si ja es disposa de camps de coordenades, premeu aquí per carregar-les directament')
-        self._bCoords.clicked.connect(
-            lambda: self.salta.emit(CsvCoords(self.parentWidget())))
-        self._lay.addWidget(self._bCoords)
         self._lay.addStretch()
 
         self._layBotons = QHBoxLayout()
@@ -415,19 +445,21 @@ class CsvAdreca(CsvPagina):
             self._cbNumI.setCurrentIndex(i)
         pass
     def geocodifica(self):
-        geocod=QvMemoria().getGeocodificat(self.parentWidget()._csv)
+        pare=self.parentWidget().parentWidget()
+        geocod=QvMemoria().getGeocodificat(self.parentWidget().parentWidget().parentWidget()._csv)
         if geocod is not None:
             #Preguntar si volem carregar directament el geocodificat
             resposta=QMessageBox.question(self,"Aquest arxiu ja ha sigut geocodificat prèviament","Vol carregar-lo directament, sense geocodificar de nou?",QMessageBox.Yes|QMessageBox.No)
             if resposta==QMessageBox.Yes:
-                self.parentWidget().setCsv(geocod)
-                self.parentWidget()._mapificador=QvMapificacio(geocod)
-                self.salta.emit(CsvGeocodificat([], self.parentWidget()))
+                self.parentWidget().parentWidget().parentWidget().setCsv(geocod)
+                self.parentWidget().parentWidget()._mapificador=QvMapificacio(geocod)
+                pare.salta.emit(CsvGeocodificat([], self.parentWidget().parentWidget().parentWidget()))
                 return
             print(':D')
-        QvMemoria().setCampsGeocod(self.parentWidget()._csv,{'teCoords':False,'camps':{'tipusVia':self._cbTipusVia.currentText(),'via':self._cbVia.currentText(),'numI':self._cbNumI.currentText(),
+        QvMemoria().setCampsGeocod(self.parentWidget().parentWidget().parentWidget()._csv,{'teCoords':False,'camps':{'tipusVia':self._cbTipusVia.currentText(),'via':self._cbVia.currentText(),'numI':self._cbNumI.currentText(),
             'lletraI':self._cbLletraI.currentText(),'numF':self._cbNumF.currentText(),'lletraF':self._cbLletraF.currentText()}})
-        self.salta.emit(CsvGeocod([x.currentText() for x in (self._cbTipusVia, self._cbVia,
+        
+        pare.salta.emit(CsvGeocod([x.currentText() for x in (self._cbTipusVia, self._cbVia,
                                                              self._cbNumI, self._cbLletraI, self._cbNumF, self._cbLletraF)], self.parentWidget()))
 
 
