@@ -31,11 +31,13 @@ class ModelCsv(QAbstractTableModel):
         time.sleep(5)
     def _setArxiu(self,arxiu, cod, sep):
         with open(arxiu, 'r', encoding=cod) as f:
+            print('Comencem a afegir coses')
             lector = csv.reader(f, delimiter=sep)
             f0=next(lector)
             self._capcalera = list(f0)
             self.setHeaders(self._capcalera)
             self.addRows(lector)
+            print("Acabem d'afegir coses")
     def addRows(self,rows):
         self.persons.extend(list(rows))
     def rowCount(self,index=QModelIndex()):
@@ -72,12 +74,22 @@ class ModelCsv(QAbstractTableModel):
     def data(self,index,role=Qt.DisplayRole):
         col = index.column()
         person = self.persons[index.row()]
-        if role == Qt.DisplayRole:
+        if role == Qt.DisplayRole or role == Qt.EditRole:
             if col<len(person):
                 return QVariant(person[col])
             return QVariant()
         if role == Qt.BackgroundRole:
             return QBrush(QvConstants.COLORDESTACAT) if index.row()+1 in self.errors else QBrush(QvConstants.COLORBLANC)
+    def setData(self, index, value, role):
+        if index.isValid and role==Qt.EditRole:
+            self.persons[index.row()][index.column()]=value
+            self.dataChanged.emit(index,index)
+            return True
+        return False
+    def flags(self,index):
+        if not index.isValid():
+            return Qt.ItemIsEnabled
+        return super().flags(index) | Qt.ItemIsEditable
  
     def headerData(self,section,orientation,role=Qt.DisplayRole):
         if role != Qt.DisplayRole:
@@ -86,6 +98,12 @@ class ModelCsv(QAbstractTableModel):
         if orientation == Qt.Horizontal:
             return QVariant(self.headers[section])
         return QVariant(int(section + 1))
+    
+    def desar(self,arxiu):
+        with open(arxiu,'w', newline='') as f:
+            writer = csv.writer(f)
+            writer.writerow(self._capcalera)
+            writer.writerows(self.persons)
 
 class QvEditorCsv(QDialog):
     rutaCanviada = pyqtSignal(str)
@@ -171,12 +189,13 @@ class QvEditorCsv(QDialog):
     def _carregaTaula(self):
         self._taula.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
         self._model = ModelCsv()
-        self._taula.setModel(self._model)
         self._model.setErrors(self._errors)
         self._model.setArxiu(self._arxiu,self._codificacio,self._separador)
+        self._taula.setModel(self._model)
         self._taula.resizeColumnsToContents()
 
     def exec(self):
+        time.sleep(2)
         self._mostraErrorActual()
         return super().exec()
 
@@ -211,12 +230,7 @@ class QvEditorCsv(QDialog):
         nfile, _ = QFileDialog.getSaveFileName(
             None, "Desar taula", self._arxiu, "Arxius csv (*.csv)")
         if nfile != '':
-            with open(nfile, 'w', newline='') as f:
-                writer = csv.writer(f)
-                writer.writerow(self._capcalera)
-                files = ((self._taula.item(i, j).data(Qt.DisplayRole) for j in range(
-                    self._taula.columnCount())) for i in range(self._taula.rowCount()))
-                writer.writerows(files)
+            self._model.desar(nfile)
             if nfile != self._arxiu:
                 self.rutaCanviada.emit(nfile)
             # Assumim que si el desem és que s'ha modificat
@@ -234,8 +248,9 @@ class QvEditorCsv(QDialog):
                 self._setError(index, True)
 
     def showEvent(self,e):
-        time.sleep(1)
         super().showEvent(e)
+        # time.sleep(5)
+        print('Mostrem')
         if self._teErrors:
             self._mostraErrorActual()
 
@@ -250,7 +265,7 @@ if __name__ == '__main__':
         from moduls.QvApp import QvApp
 
         app = QvApp()
-        arxiu = 'U:/QUOTA/Comu_imi/Becaris/CarrecsUTF8.csv'
+        arxiu = 'C:/Users/omarti/Documents/Random/CarrecsUTF8.csv'
         with open(arxiu, 'rb') as f:
             val = chardet.detect(b''.join(f.readlines(5000)))
         taula = QvEditorCsv(
