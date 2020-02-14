@@ -203,6 +203,7 @@ class QvMapificacio(QObject):
     percentatgeProces = pyqtSignal(int)  # Porcentaje cubierto (0 - 100)
     procesAcabat = pyqtSignal(int)  # Tiempo transcurrido en zonificar (segundos)
     errorAdreca = pyqtSignal(dict) # Registro que no se pudo geocodificar
+    filesGeocodificades = pyqtSignal(int, int)
 
     # def asincGeocodificacio(self, campsAdreca: List[str], zones: List[str], fZones: str = '', substituir: bool = True,
     #     percentatgeProces: pyqtSignal = None, procesAcabat: pyqtSignal = None, errorAdreca: pyqtSignal = None) -> bool:
@@ -215,7 +216,7 @@ class QvMapificacio(QObject):
     #     return async_result.get()
 
     def geocodificacio(self, campsAdreca: List[str], zones: List[str], fZones: str = '', substituir: bool = True,
-        percentatgeProces: pyqtSignal = None, procesAcabat: pyqtSignal = None, errorAdreca: pyqtSignal = None) -> bool:
+        percentatgeProces: pyqtSignal = None, procesAcabat: pyqtSignal = None, errorAdreca: pyqtSignal = None, filesGeocodificades: pyqtSignal = None) -> bool:
         """Añade coordenadas y códigos de zona a cada uno de los registros del CSV, a partir de los campos de dirección postal
 
         Arguments:
@@ -246,6 +247,10 @@ class QvMapificacio(QObject):
             pass
         try:
             self.errorAdreca.disconnect()
+        except:
+            pass
+        try:
+            self.filesGeocodificades.disconnect()
         except:
             pass
         if self.db is None:
@@ -283,6 +288,8 @@ class QvMapificacio(QObject):
             self.procesAcabat.connect(procesAcabat)
         if errorAdreca is not None:
             self.errorAdreca.connect(errorAdreca)
+        if filesGeocodificades is not None:
+            self.filesGeocodificades.connect(filesGeocodificades)
 
         # Para eliminar blancos y comillas de nombres de campo
         translation = str.maketrans(" \'\"", "___")
@@ -351,6 +358,7 @@ class QvMapificacio(QObject):
                     # Informe de progreso cada 1% o cada fila si hay menos de 100
                     if self.files > 0 and tot % nSignal == 0:
                         self.percentatgeProces.emit(int(round(tot * 100 / self.files)))
+                    self.filesGeocodificades.emit(tot,self.files)
 
                     # Cancelación del proceso via slot
                     if self.cancel:

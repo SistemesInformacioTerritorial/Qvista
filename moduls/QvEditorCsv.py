@@ -12,112 +12,122 @@ from moduls.QvFuncioFil import QvFuncioFil
 
 class ModelCsv(QAbstractTableModel):
     ROW_BATCH_COUNT = 15
+
     def __init__(self):
         super().__init__()
         self.headers = []
-        self.persons  = []
+        self.persons = []
         self.rowsLoaded = ModelCsv.ROW_BATCH_COUNT
-    def setHeaders(self,headers):
+
+    def setHeaders(self, headers):
         self.headers = headers
-    def setErrors(self,errors):
-        self.errors=errors
-    def addRow(self,row):
+
+    def setErrors(self, errors):
+        self.errors = errors
+
+    def addRow(self, row):
         self.beginResetModel()
         self.persons.append(row)
         self.endResetModel()
-    def setArxiu(self,arxiu, cod, sep):
-        self.func=QvFuncioFil(lambda: self._setArxiu(arxiu, cod, sep))
-        self.func.start()
-        time.sleep(5)
-    def _setArxiu(self,arxiu, cod, sep):
+
+    def setArxiu(self, arxiu, cod, sep):
+        # self.func=QvFuncioFil(lambda: self._setArxiu(arxiu, cod, sep))
+        # self.func.start()
+        # time.sleep(5)
+        self._setArxiu(arxiu, cod, sep)
+
+    def _setArxiu(self, arxiu, cod, sep):
         with open(arxiu, 'r', encoding=cod) as f:
-            print('Comencem a afegir coses')
             lector = csv.reader(f, delimiter=sep)
-            f0=next(lector)
+            f0 = next(lector)
             self._capcalera = list(f0)
             self.setHeaders(self._capcalera)
             self.addRows(lector)
-            print("Acabem d'afegir coses")
-    def addRows(self,rows):
+
+    def addRows(self, rows):
         self.persons.extend(list(rows))
-    def rowCount(self,index=QModelIndex()):
+
+    def rowCount(self, index=QModelIndex()):
         if not self.persons:
             return 0
- 
+
         if len(self.persons) <= self.rowsLoaded:
             return len(self.persons)
         else:
             return self.rowsLoaded
- 
-    def canFetchMore(self,index=QModelIndex()):
+
+    def canFetchMore(self, index=QModelIndex()):
         if len(self.persons) > self.rowsLoaded:
             return True
         else:
             return False
- 
-    def fetchMore(self,index=QModelIndex()):
+
+    def fetchMore(self, index=QModelIndex()):
         reminder = len(self.persons) - self.rowsLoaded
-        itemsToFetch = min(reminder,ModelCsv.ROW_BATCH_COUNT)
-        self.beginInsertRows(QModelIndex(),self.rowsLoaded,self.rowsLoaded+itemsToFetch-1)
+        itemsToFetch = min(reminder, ModelCsv.ROW_BATCH_COUNT)
+        self.beginInsertRows(QModelIndex(), self.rowsLoaded,
+                             self.rowsLoaded+itemsToFetch-1)
         self.rowsLoaded += itemsToFetch
         self.endInsertRows()
- 
+
     # def addPerson(self,person):
     #     self.beginResetModel()
     #     self.persons.append(person)
     #     self.endResetModel()
-    def estaCarregat(self,fila):
-        return fila<=self.rowsLoaded
-    def columnCount(self,index=QModelIndex()):
+    def estaCarregat(self, fila):
+        return fila <= self.rowsLoaded
+
+    def columnCount(self, index=QModelIndex()):
         return len(self.headers)
- 
-    def data(self,index,role=Qt.DisplayRole):
+
+    def data(self, index, role=Qt.DisplayRole):
         col = index.column()
         person = self.persons[index.row()]
         if role == Qt.DisplayRole or role == Qt.EditRole:
-            if col<len(person):
+            if col < len(person):
                 return QVariant(person[col])
             return QVariant()
         if role == Qt.BackgroundRole:
             return QBrush(QvConstants.COLORDESTACAT) if index.row()+1 in self.errors else QBrush(QvConstants.COLORBLANC)
+
     def setData(self, index, value, role):
-        if index.isValid and role==Qt.EditRole:
-            self.persons[index.row()][index.column()]=value
-            self.dataChanged.emit(index,index)
+        if index.isValid and role == Qt.EditRole:
+            self.persons[index.row()][index.column()] = value
+            self.dataChanged.emit(index, index)
             return True
         return False
-    def flags(self,index):
+
+    def flags(self, index):
         if not index.isValid():
             return Qt.ItemIsEnabled
         return super().flags(index) | Qt.ItemIsEditable
- 
-    def headerData(self,section,orientation,role=Qt.DisplayRole):
+
+    def headerData(self, section, orientation, role=Qt.DisplayRole):
         if role != Qt.DisplayRole:
             return QVariant()
- 
+
         if orientation == Qt.Horizontal:
             return QVariant(self.headers[section])
         return QVariant(int(section + 1))
-    
-    def desar(self,arxiu):
-        with open(arxiu,'w', newline='') as f:
+
+    def desar(self, arxiu):
+        with open(arxiu, 'w', newline='') as f:
             writer = csv.writer(f)
             writer.writerow(self._capcalera)
             writer.writerows(self.persons)
+
 
 class QvEditorCsv(QDialog):
     rutaCanviada = pyqtSignal(str)
     modificat = pyqtSignal()
 
     def __init__(self, arxiu: str, errors: Iterable[int], codificacio: str, separador: str, parent: QWidget = None):
-        super().__init__(parent)
-        # self.setMinimumWidth(800)
-        # self.setMinimumHeight(600)
+        super().__init__(parent, Qt.WindowSystemMenuHint |
+                         Qt.WindowTitleHint | Qt.WindowCloseButtonHint)
         self.resize(800, 600)
         # Declaració d'atributs de l'objecte
         self._arxiu = arxiu
         self._codificacio = codificacio
-        # self._MAXIMFILES = 500
         self._errors = sorted(errors)
         self._separador = separador
         self._i = 0
@@ -143,18 +153,9 @@ class QvEditorCsv(QDialog):
             # self._layErrors.addStretch()
             self._lay.addLayout(self._layErrors)
         # Declarem la taula
-        # self._lblAvisPreview = QLabel("Només es mostren els primers %i elements. Per veure l'arxiu complet premeu el botó \"obrir com a full de càlcul\""%self._MAXIMFILES)
-        # self._lblAvisPreview.setWordWrap(True)
-        # self._lay.addWidget(self._lblAvisPreview)
-        # self._lblAvisPreview.hide()
-
         self._taula = QTableView()
-        # self._taula.currentCellChanged.connect(self._errorProper)
         self._lay.addWidget(self._taula)
 
-        # self._taula = QTableWidget()
-        # self._taula.currentCellChanged.connect(self._errorProper)
-        # self._lay.addWidget(self._taula)
         self._layBotons = QHBoxLayout()
         self._lay.addLayout(self._layBotons)
         self._defBotons()
@@ -183,32 +184,30 @@ class QvEditorCsv(QDialog):
         self._layBotons.addStretch()
         self._layBotons.addWidget(self._bDesar)
         self._layBotons.addWidget(self._bCancelar)
+
     def _obreFullCalcul(self):
         QDesktopServices.openUrl(QUrl(self._arxiu))
         self.close()
+
     def _carregaTaula(self):
         self._taula.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
         self._model = ModelCsv()
         self._model.setErrors(self._errors)
-        self._model.setArxiu(self._arxiu,self._codificacio,self._separador)
+        self._model.setArxiu(self._arxiu, self._codificacio, self._separador)
         self._taula.setModel(self._model)
         self._taula.resizeColumnsToContents()
-
-    def exec(self):
-        time.sleep(2)
-        self._mostraErrorActual()
-        return super().exec()
 
     def _mostraErrorActual(self, click=False):
         if not self._teErrors:
             return  # si no hi ha errors no farem res
         if not click:
-            fila=self._errors[self._i]-1
+            fila = self._errors[self._i]-1
             while not self._model.estaCarregat(fila):
                 self._model.fetchMore()
-            index=self._model.index(fila,0)
+            index = self._model.index(fila, 0)
             self._taula.scrollTo(index)
-            self._taula.scrollTo(index) #encara que ho sembli, no, no és repetitiu. Cal fer-ho dues vegades
+            # encara que ho sembli, no, no és repetitiu. Cal fer-ho dues vegades
+            self._taula.scrollTo(index)
         self._spinErrors.setValue(self._i+1)
 
     def _setError(self, i, click=False):
@@ -247,10 +246,8 @@ class QvEditorCsv(QDialog):
                 index = sorted(distancies, key=lambda x: x[1])[0][0]
                 self._setError(index, True)
 
-    def showEvent(self,e):
+    def showEvent(self, e):
         super().showEvent(e)
-        # time.sleep(5)
-        print('Mostrem')
         if self._teErrors:
             self._mostraErrorActual()
 

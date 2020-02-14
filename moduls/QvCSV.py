@@ -196,7 +196,6 @@ class CsvPagina(QWidget):
         if isinstance(errors, bool):
             errors = []
         # TODO: Invocar QvEditorCsv per mostrar la taula
-        print(self._carregador._csv)
         wid = QvEditorCsv(self._carregador._csv, errors, self._carregador._codificacio, self._carregador._separador)
         wid.setWindowTitle("Vista prèvia de l'arxiu csv")
         self._canviat = False
@@ -453,9 +452,8 @@ class CsvAdreca(CsvPagina):
             if resposta==QMessageBox.Yes:
                 self._carregador.setCsv(geocod)
                 self._carregador._mapificador=QvMapificacio(geocod)
-                self.salta.emit(CsvGeocodificat([], self._carregador))
+                self.salta.emit(CsvGeocodificat([],0, self._carregador))
                 return
-            print(':D')
         QvMemoria().setCampsGeocod(self._carregador._csv,{'teCoords':False,'camps':{'tipusVia':self._cbTipusVia.currentText(),'via':self._cbVia.currentText(),'numI':self._cbNumI.currentText(),
             'lletraI':self._cbLletraI.currentText(),'numF':self._cbNumF.currentText(),'lletraF':self._cbLletraF.currentText()}})
         
@@ -470,6 +468,8 @@ class CsvGeocod(CsvPagina):
         # self._lay.addWidget(QLabel('GEOCODIFICACIÓ'))
         self._lblNumErrors = QLabel("Número d'errors: 0")
         self._lay.addWidget(self._lblNumErrors)
+        self._lblFilesGeocod = QLabel("Files geocodificades: 0")
+        self._lay.addWidget(self._lblFilesGeocod)
         self._numErr = 0
         self._errors = []
         self._modificaLblErr()
@@ -504,7 +504,7 @@ class CsvGeocod(CsvPagina):
         # if self._cancelat:
         #     self._carregador.loadMap()
         self.fil=QvFuncioFil(lambda: self._carregador._mapificador.geocodificacio(self._camps, ('Coordenada', 'Districte', 'Barri', 'Codi postal', "Illa", "Solar", "Àrea estadística bàsica",
-                                                                      "Secció censal"), percentatgeProces=self._canviPercentatge, procesAcabat=self.acabat, errorAdreca=self._unErrorMes))
+                                                                      "Secció censal"), percentatgeProces=self._canviPercentatge, procesAcabat=self.acabat, errorAdreca=self._unErrorMes, filesGeocodificades=self._filesGeocod))
         self.fil.start()
         # self._carregador._mapificador.geocodificacio(self._camps, ('Coordenada', 'Districte', 'Barri', 'Codi postal', "Illa", "Solar", "Àrea estadística bàsica",
         #                                                               "Secció censal"), percentatgeProces=self._canviPercentatge, procesAcabat=self.acabat)
@@ -516,6 +516,9 @@ class CsvGeocod(CsvPagina):
         self._errors.append(err)
         self._numErr += 1
         self._modificaLblErr()
+    def _filesGeocod(self,f,files):
+        if f%10==0 or f==files:
+            self._lblFilesGeocod.setText("Files geocodificades: %i d'aproximadament %i"%(f,files))
 
     def _modificaLblErr(self):
         self._lblNumErrors.setText("Número d'errors: %i" % self._numErr)
@@ -529,19 +532,24 @@ class CsvGeocod(CsvPagina):
             QvMemoria().setGeocodificat(self._carregador._csv)
             self._carregador.setCsv(self._carregador._mapificador.fZones)
             # self._carregador._csv=self._carregador._mapificador.fDades
-            self.salta.emit(CsvGeocodificat(self._errors, self._carregador,self._carregador))
-            print(n)
-        pass
+            self.salta.emit(CsvGeocodificat(self._errors, n, self._carregador,self._carregador))
 
 
 class CsvGeocodificat(CsvPagina):
-    def __init__(self, errors, carregador, parent=None):
+    def __init__(self, errors, temps, carregador, parent=None):
         super().__init__(carregador, parent)
         self._setTitol('Geocodificat')
         self._errors = [x['_fila'] for x in errors]
+        if temps!=0: 
+            self._lay.addWidget(QLabel('Temps requerit per la geocodificació: %i segons'%temps))
+            self._lay.addWidget(QLabel('Geocodificat a una velocitat de %.2f files per segon'%(self._carregador._mapificador.files/temps)))
         self._textEditErrors = QTextEdit()
         self._lay.addWidget(self._textEditErrors)
-        self._definirErrors(self._errors)
+        if len(self._errors)>0:
+            self._definirErrors(self._errors)
+        else:
+            self._textEditErrors.setText('Aquest arxiu ha sigut carregat directament des de la memòria cau.\nPer tant, no hi ha errors a mostrar.')
+        # self._lay.addStretch()
         self._layBotons = QHBoxLayout()
         # Definició de la botonera
         self._bEnrere= QvPushButton('Enrere')
