@@ -109,7 +109,7 @@ class QvCarregaCsv(QDialog):
     def __init__(self, rutaCsv: str, qV=None):
         super().__init__(qV,Qt.WindowSystemMenuHint | Qt.WindowTitleHint | Qt.WindowCloseButtonHint)
         self.setWindowTitle('Carregador d\'arxius CSV')
-        self.setFixedSize(QvApp().zoomFactor()*750, QvApp().zoomFactor()*450)
+        self.setFixedSize(QvApp().zoomFactor()*750, QvApp().zoomFactor()*500)
         if qV is not None:
             self._qV = qV
         self._csv = rutaCsv
@@ -190,22 +190,28 @@ class CsvPagina(QWidget):
         self._lblTitol.setFont(QvConstants.FONTTITOLS)
         self._lay.addWidget(self._lblTitol)
 
-    def _mostraTaula(self, errors=[]):
+    def _mostraTaula(self, errors=[], modal=False):
         # La senyal clicked dels botons passa un booleà que indica si està checked o no
         # Si ens demana veure-ho des d'un botó directament, vol dir que no hi ha errors. Per tant, ignorem el booleà
         if isinstance(errors, bool):
             errors = []
         # TODO: Invocar QvEditorCsv per mostrar la taula
-        wid = QvEditorCsv(self._carregador._csv, errors, self._carregador._codificacio, self._carregador._separador)
-        wid.setWindowTitle("Vista prèvia de l'arxiu csv")
-        self._canviat = False
-        wid.rutaCanviada.connect(self._carregador.setCsv)
+        self._wid = QvEditorCsv(self._carregador._csv, errors, self._carregador._codificacio, self._carregador._separador,parent=self)
+        
+        
+        if modal:
+            self._wid.setWindowTitle("Veure i arreglar errors")
+            self._canviat = False
+            self._wid.rutaCanviada.connect(self._carregador.setCsv)
 
-        def setCanviat():  # Una lambda no pot tenir assignacions :(
-            self._canviat = True
-        wid.modificat.connect(setCanviat)
-        wid.exec()
-        return self._canviat
+            def setCanviat():  # Una lambda no pot tenir assignacions :(
+                self._canviat = True
+            self._wid.modificat.connect(setCanviat)
+            self._wid.exec()
+            return self._canviat
+        else:
+            self._wid.setWindowTitle("Vista prèvia de l'arxiu csv")
+            self._wid.show()
 
     def getCamps(self):
         with open(self._carregador._csv, encoding=self._carregador._codificacio) as f:
@@ -243,6 +249,22 @@ class CsvTab(QTabWidget):
             self._coords=CsvCoords(self.parentWidget(),self.parentWidget(), campX, campY)
             self._adreca=CsvAdreca(self.parentWidget(),self.parentWidget())
             primer=0 if campX is not None else 1
+        with open(parent._mapificador.fDades,encoding=parent._mapificador.codi) as f:
+            reader=csv.DictReader(f,delimiter=parent._mapificador.separador)
+            numFiles=3
+            self._coords._taulaPreview.setRowCount(numFiles)
+            self._coords._taulaPreview.setColumnCount(len(reader.fieldnames))
+            self._coords._taulaPreview.setHorizontalHeaderLabels(reader.fieldnames)
+            self._adreca._taulaPreview.setRowCount(numFiles)
+            self._adreca._taulaPreview.setColumnCount(len(reader.fieldnames))
+            self._adreca._taulaPreview.setHorizontalHeaderLabels(reader.fieldnames)
+            for i in range(numFiles):
+                fila=next(reader)
+                for j, x in enumerate(reader.fieldnames):
+                    self._coords._taulaPreview.setItem(i,j,QTableWidgetItem(fila[x]))
+                    self._adreca._taulaPreview.setItem(i,j,QTableWidgetItem(fila[x]))
+            #_taulaPreview
+            self._coords._taulaPreview.update()
         self._coords.salta.connect(lambda x: self.salta.emit(x))
         self._adreca.salta.connect(lambda x: self.salta.emit(x))
         self.addTab(self._coords,'Coordenades')
@@ -312,6 +334,8 @@ class CsvCoords(CsvPagina):
         self._lay.addWidget(self._gbCoords)
 
         # Botó per anar a la pantalla de les adreces
+        self._taulaPreview = QTableWidget()
+        self._lay.addWidget(self._taulaPreview)
         self._lay.addStretch()
 
         # Botons per fer coses
@@ -420,6 +444,8 @@ class CsvAdreca(CsvPagina):
         else:
             self.campsDefecte()
 
+        self._taulaPreview = QTableWidget()
+        self._lay.addWidget(self._taulaPreview)
         self._lay.addStretch()
 
         self._layBotons = QHBoxLayout()
@@ -554,7 +580,7 @@ class CsvGeocodificat(CsvPagina):
         # Definició de la botonera
         self._bEnrere= QvPushButton('Enrere')
         self._bEnrere.clicked.connect(self._enrere)
-        self._bVeure = QvPushButton("Vista prèvia de l'arxiu csv",discret=True)
+        self._bVeure = QvPushButton("Veure i arreglar errors",discret=True)
         self._bVeure.setToolTip("Premeu aquest botó per visualitzar l'arxiu csv")
         self._bVeure.clicked.connect(self._mostraTaula)
         self._bAfegir = QvPushButton('Afegir com a capa de punts')
@@ -580,11 +606,11 @@ class CsvGeocodificat(CsvPagina):
         for x in errors:
             errorsStr = errorsStr+'\nFila %i' % x
         self._textEditErrors.setText(
-            'Files amb errors (click sobre "Veure" per veure i editar la taula):%s' % errorsStr)
+            'Files amb errors (click sobre "Veure i arreglar errors" per veure i editar la taula):%s' % errorsStr)
         pass
 
     def _mostraTaula(self):
-        if super()._mostraTaula(self._errors):
+        if super()._mostraTaula(self._errors, modal=True):
             # Si retorna true vol dir que hem fet algun canvi
             self._carregador._mapificador = QvMapificacio(self._carregador._csv)
             self._carregador.setSeparador()
@@ -651,7 +677,7 @@ class CsvAfegir(CsvPagina):
         rbCreu = QRadioButton()
         rbCreu.setIcon(QIcon(imatgesDir+'crossW.png'))
         rbCreu.toggled.connect(lambda x: setForma(
-            'cross') if x else print(':D'))
+            'cross_fill') if x else print(':D'))
         layForma.addWidget(rbCreu, 1, 2)
 
         rbQuadrat = QRadioButton()

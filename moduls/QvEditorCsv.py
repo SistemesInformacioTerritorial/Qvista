@@ -140,6 +140,7 @@ class QvEditorCsv(QDialog):
         if self._teErrors:
             self._layErrors = QHBoxLayout()
             self._spinErrors = QSpinBox(self)
+            self._spinErrors.setStyleSheet('border: 1px solid #38474F')
             self._spinErrors.setPrefix('Error ')
             self._spinErrors.setSuffix(' de %i' % len(self._errors))
             self._spinErrors.setRange(1, len(self._errors))
