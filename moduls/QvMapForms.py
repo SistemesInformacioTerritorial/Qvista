@@ -209,7 +209,7 @@ class QvFormNovaMapificacio(QvFormBaseMapificacio):
         self.fCSV = mapificacio
         self.taulaMostra = None
 
-        self.setWindowTitle('Afegir capa de mapificació')
+        self.setWindowTitle('Afegir capa amb mapa de coropletes')
 
         self.layout = QVBoxLayout()
         self.layout.setSpacing(14)
@@ -292,12 +292,12 @@ class QvFormNovaMapificacio(QvFormBaseMapificacio):
         self.lDades.addRow('Filtre:', self.filtre) 
         self.lDades.addRow('Distribució:', self.distribucio)
 
-        self.gSimb = QGroupBox('Simbologia de mapificació')
+        self.gSimb = QGroupBox('Simbologia del mapa')
         self.lSimb = QFormLayout()
         self.lSimb.setSpacing(14)
         self.gSimb.setLayout(self.lSimb)
 
-        self.lSimb.addRow('Color base:', self.color)
+        self.lSimb.addRow('Gamma de color:', self.color)
         self.lSimb.addRow('Mètode de classificació:', self.metode)
         self.lSimb.addRow("Nombre d'intervals:", self.intervals)
 
@@ -448,7 +448,7 @@ class QvFormSimbMapificacio(QvFormBaseMapificacio):
         if not self.iniParams():
             return
 
-        self.setWindowTitle('Modificar mapificació')
+        self.setWindowTitle('Modificar mapa de coropletes')
 
         self.layout = QVBoxLayout()
         self.layout.setSpacing(14)
@@ -489,12 +489,12 @@ class QvFormSimbMapificacio(QvFormBaseMapificacio):
         self.buttons.rejected.connect(self.cancel)
         self.buttons.addButton(self.bInfo, QDialogButtonBox.ResetRole)
 
-        self.gSimb = QGroupBox('Simbologia de mapificació')
+        self.gSimb = QGroupBox('Simbologia del mapa')
         self.lSimb = QFormLayout()
         self.lSimb.setSpacing(14)
         self.gSimb.setLayout(self.lSimb)
 
-        self.lSimb.addRow('Color base:', self.color)
+        self.lSimb.addRow('Gamma de Color:', self.color)
         self.lSimb.addRow('Color contorn:', self.contorn)
         self.lSimb.addRow('Mètode de classificació:', self.metode)
         self.lSimb.addRow(self.nomIntervals, self.intervals)
@@ -519,7 +519,7 @@ class QvFormSimbMapificacio(QvFormBaseMapificacio):
         self.renderParams = self.llegenda.mapRenderer.paramsRender(self.capa)
         self.custom = (self.renderParams.modeCategories == 'Personalitzat')
         if self.renderParams.msgError != '':
-            self.msgInfo("No s'han pogut recuperar els paràmetres de mapificació\n" + self.renderParams.msgError)
+            self.msgInfo("No s'han pogut recuperar els paràmetres del mapa\n" + self.renderParams.msgError)
             self.renderParams.msgError = ''
         return True
 
@@ -527,7 +527,7 @@ class QvFormSimbMapificacio(QvFormBaseMapificacio):
     def veureInfo(self):
         if self.info is not None:
             box = QMessageBox(self)
-            box.setWindowTitle('Info de mapificació')
+            box.setWindowTitle('Info del mapa')
             txt = '<table width="500">'
             params = self.info.split('\n')
             for param in params:
