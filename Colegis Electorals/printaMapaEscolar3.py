@@ -2,10 +2,11 @@
 
 from moduls.QvImports import *
 from moduls.QvLlegenda import QvLlegenda
+from PyQt5 import QtGui
 
 projecteInicial = 'd:/MapaEscolar/MapaEscolar.qgs'
 
-def imprimirPlanol(colegi, codiColegi, x_min, y_min, x_max, y_max, rotacion, templateFile, fitxerSortida, tipusSortida):
+def imprimirPlanol(colegi, codiColegi, adreca, x_min, y_min, x_max, y_max, rotacion, templateFile, fitxerSortida, tipusSortida):
     tInicial=time.time()
 
     template = QFile(templateFile)
@@ -20,8 +21,12 @@ def imprimirPlanol(colegi, codiColegi, x_min, y_min, x_max, y_max, rotacion, tem
         refMap = layout.referenceMap()
         labelColegi = layout.itemById('LabelColegi')
         labelSeccions = layout.itemById('LabelSeccions')
+        labelAdreca = layout.itemById('LabelAdreca')
+        labelImatge = layout.itemById('Logo')
+        labelImatge.setPicturePath("d:/MapaEscolar/ConsorciEducacio.png")
         # labelColegi.setText(colegi)
-        labelSeccions.setText(codiColegi+': '+colegi)
+        labelSeccions.setText(codiColegi+' - '+colegi)
+        labelAdreca.setText(adreca)
         
         rect = refMap.extent()
         vector = QgsVector(x_min - rect.center().x(), y_min - rect.center().y())
@@ -36,7 +41,7 @@ def imprimirPlanol(colegi, codiColegi, x_min, y_min, x_max, y_max, rotacion, tem
         distX = (x_max - x_min) 
         distY = (y_max - y_min) 
 
-        relacio = 297 / 210
+        relacio = 297 / 190
         newOffsetY = 1
         newOffsetX = 1
 
@@ -72,7 +77,7 @@ def imprimirPlanol(colegi, codiColegi, x_min, y_min, x_max, y_max, rotacion, tem
             settings.dpi=300
             settings.exportMetadata=False
             
-            fitxerSortida='d:/MapaEscolar_'+timestamp+'.PDF'
+            fitxerSortida='d:/MapaEscolar_'+colegi+'_'+timestamp+'.PDF'
             result = exporter.exportToPdf(fitxerSortida, settings)
 
             print (fitxerSortida)
@@ -103,7 +108,7 @@ with qgisapp() as app:
     llegenda = QvLlegenda(canvas)
     llegenda.show()
 
-    plantillaMapa = 'plantillaMapaEscolarA1.qpt'
+    plantillaMapa = 'd:/MapaEscolar/plantillaMapaEscolarA1_2.qpt'
 
     posXY = [430036,4583163]    
     
@@ -116,6 +121,7 @@ with qgisapp() as app:
     # layerIlles.setSubsetString(textFiltre)
     # layerCentres.setSubsetString(textFiltre)
 
+    canvas.show()
     for feature in layerCentres.getFeatures():
         illa = feature.attributes()[layerCentres.fields().lookupField('ILLA')]
         codi_centre = feature.attributes()[layerCentres.fields().lookupField('CODI_CENTRE')]
@@ -135,7 +141,7 @@ with qgisapp() as app:
         print (textFiltre)
         layerIlles.setSubsetString(textFiltre) 
         layerCentres.setSubsetString(textFiltre)
-
+        canvas.refresh()        
         # layer.setSubsetString(textFiltre2)     
-        imprimirPlanol(nom, codi_centre, xMin, yMin, xMax, yMax, 0, plantillaMapa , 'd:/EUREKA.pdf', 'PDF')
+        imprimirPlanol(nom, codi_centre, adreca, xMin, yMin, xMax, yMax, 0, plantillaMapa , 'd:/EUREKA.pdf', 'PDF')
     
