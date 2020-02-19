@@ -16,7 +16,6 @@ class QvMenuBar(QMenuBar):
             rightBottom=x.mapToGlobal(QPoint(rect.right(),rect.bottom()))
             globalRect=QRect(leftTop.x(),leftTop.y(),rightBottom.x(),rightBottom.y())
             if globalRect.contains(pos):
-                print('A sota!')
                 return True
         return False
     def mousePressEvent(self, event):
