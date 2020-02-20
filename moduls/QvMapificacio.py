@@ -760,7 +760,8 @@ if __name__ == "__main__":
         leyenda.setWindowTitle('Llegenda')
         leyenda.show()
 
-        z = QvMapificacio('C:/temp/qVista/dades/gossos.csv')
+
+        z = QvMapificacio('U:/QUOTA/Comu_imi/Becaris/CarrecsAnsi100.csv')
         # z = QvMapificacio('CarrecsUTF8.csv')
         if z.msgError != '':
             print('Error:', z.msgError)
