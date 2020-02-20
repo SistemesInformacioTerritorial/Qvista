@@ -1,5 +1,19 @@
 # -*- coding: utf-8 -*-
 
+import importlib
+
+_np_spec = importlib.util.find_spec("numpy")
+_pd_spec = importlib.util.find_spec("pandas")
+_gpd_spec = importlib.util.find_spec("geopandas")
+
+PANDAS_ENABLED = _np_spec is not None and _pd_spec is not None and _gpd_spec is not None
+PANDAS_ERROR = "No es pot mapificar perquè no s'ha instal·lat el mòdul pandas.\n\nContacti amb el personal informàtic de suport."
+
+if PANDAS_ENABLED:
+    import numpy as np
+    import pandas as pd
+    import geopandas as gpd
+
 from qgis.core import (QgsApplication, QgsVectorLayer, QgsLayerDefinition, QgsVectorFileWriter,
                        QgsSymbol, QgsRendererCategory, QgsCategorizedSymbolRenderer,
                        QgsGraduatedSymbolRenderer, QgsRendererRange, QgsAggregateCalculator, QgsError, QgsWkbTypes,
@@ -19,10 +33,6 @@ import chardet
 import collections
 import operator
 import re
-
-import numpy as np
-import pandas as pd
-import geopandas as gpd
 
 from moduls.QvSqlite import QvSqlite
 from moduls.QvMapVars import *
@@ -609,6 +619,10 @@ class QvMapificacio(QObject):
         Returns:
             bool -- [description]
         """
+        if not PANDAS_ENABLED:
+            self.msgError = PANDAS_ERROR
+            return False
+
         from moduls.QvMapRenderer import QvMapRendererParams
 
         self.fMapa = ''
@@ -777,7 +791,8 @@ if __name__ == "__main__":
         # w = QvFormMostra(z)
         # w.show()
 
-        campsAdreca = ('Tipus de via', 'Via', 'Número')
+        # campsAdreca = ('Tipus de via', 'Via', 'Número')
+        campsAdreca = ('', 'NOM_CARRER_GPL', 'NUM_I_GPL', 'NUM_F_GPL')
         zones = ('Coordenada', 'Districte', 'Barri', 'Codi postal', "Illa", "Solar", "Àrea estadística bàsica", "Secció censal")
         ok = z.geocodificacio(campsAdreca, zones,
             percentatgeProces=lambda n: print('... Procesado', str(n), '% ...'),

@@ -310,6 +310,12 @@ class QvFormNovaMapificacio(QvFormBaseMapificacio):
 
         self.nouArxiu()
 
+    def exec(self):
+        if PANDAS_ENABLED:
+            super().exec()
+        else:
+            self.msgError(PANDAS_ERROR)
+
     @pyqtSlot()
     def veureArxiu(self):
         if self.taulaMostra is not None:
