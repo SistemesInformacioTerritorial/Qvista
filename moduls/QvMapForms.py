@@ -380,7 +380,7 @@ class QvFormNovaMapificacio(QvFormBaseMapificacio):
         else:
             self.zona.setFocus()
         # self.taulaMostra = QvFormMostra(self.fCSV, parent=self)
-        self.taulaMostra = QvEditorCsv(self.fCSV.fZones, [], self.fCSV.codi, self.fCSV.separador, self)
+        self.taulaMostra = QvEditorCsv(self.fCSV.fZones, [], 'utf-8', self.fCSV.separador, self)
         self.taulaMostra.setWindowTitle("Vista prèvia de " + self.fCSV.fZones)
 
         self.bTaula.setEnabled(True)
@@ -396,7 +396,7 @@ class QvFormNovaMapificacio(QvFormBaseMapificacio):
         self.nouArxiu()
 
     def validaSortida(self, nom):
-        fSalida = self.fCSV.nomArxiuSortida(self.fCSV.netejaString(nom))
+        fSalida = self.fCSV.nomArxiuSortida(self.fCSV.netejaString(nom, True))
         return self.msgSobreescriure(fSalida)
         
     def valida(self):

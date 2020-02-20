@@ -29,8 +29,11 @@ from moduls.QvMapVars import *
 
 from typing import List, Tuple, Iterable
 
-_TRANS = str.maketrans('ÁÉÍÓÚáéíóúÀÈÌÒÙàèìòùÂÊÎÔÛâêîôûÄËÏÖÜäëïöüºª€@$·.,;:()[]¡!¿?|@#%&ç*',
-                       'AEIOUaeiouAEIOUaeiouAEIOUaeiouAEIOUaeiouoaEaD____________________')
+_TRANS_ALL = str.maketrans("ÁÉÍÓÚáéíóúÀÈÌÒÙàèìòùÂÊÎÔÛâêîôûÄËÏÖÜäëïöüºª€$çÇñÑ ·.,;:()[]¡!¿?|%&*/\\\'\"@#",
+                           "AEIOUaeiouAEIOUaeiouAEIOUaeiouAEIOUaeiouoaEDcCnN______________________aN")
+
+_TRANS_MINI = str.maketrans(" \'\"",
+                            "___")
 
 RUTA_LOCAL = dadesdir
 RUTA_DADES = os.path.abspath('Dades').replace('\\', '/') + '/'
@@ -292,19 +295,20 @@ class QvMapificacio(QObject):
             self.filesGeocodificades.connect(filesGeocodificades)
 
         # Para eliminar blancos y comillas de nombres de campo
-        translation = str.maketrans(" \'\"", "___")
         self.cancel = False
         ini = time.time()
 
         # Fichero CSV de entrada
         with open(self.fDades, "r", encoding=self.codi) as csvInput:
 
-            # Fichero CSV de salida geocodificado
-            with open(self.fZones, "w", encoding=self.codi) as csvOutput:
+            # Fichero CSV de salida geocodificado normalizado a utf-8
+            with open(self.fZones, "w", encoding='utf-8') as csvOutput:
 
                 # Cabeceras
                 data = csv.DictReader(csvInput, delimiter=self.separador)
-                self.camps = [camp.translate(translation) for camp in self.camps]
+                
+                # Normaliza nombres de campos
+                self.camps = [self.netejaString(camp) for camp in self.camps]
 
                 for campZona in self.campsZones:
                     campZona = QvSqlite.getAlias(campZona)
@@ -321,7 +325,7 @@ class QvMapificacio(QObject):
                 self.mostra = []
                 for rowOrig in data:
                     tot += 1
-                    row = { k.translate(translation): v for k, v in rowOrig.items() }
+                    row = { self.netejaString(k): v for k, v in rowOrig.items() }
 
                     val = self.db.geoCampsCarrerNum(self.campsZones,
                             self.valorCampAdreca(row, 0), self.valorCampAdreca(row, 1), self.valorCampAdreca(row, 2),
@@ -403,11 +407,13 @@ class QvMapificacio(QObject):
                  "FROM Info" + filtre + " GROUP BY " + self.campZona + ") AS I WHERE Z.CODI = I.CODI"
         return select
 
-    def netejaString(self, txt: str) -> str:
+    def netejaString(self, txt: str, all=False) -> str:
         s = txt.strip()
-        s = s.replace(' ', '_')
-        s = s.translate(_TRANS)
-        return s
+        if all:
+            s = s.translate(_TRANS_ALL)
+        else:
+            s = s.translate(_TRANS_MINI)
+        return re.sub('_+', '_', s)
 
     def nomArxiuSortida(self, nom: str) -> str:
         return RUTA_LOCAL + nom + ".gpkg"
@@ -501,7 +507,7 @@ class QvMapificacio(QObject):
                 dtypes = {self.campZona: np.string_}
 
             # Carga de capa de datos geocodificados
-            csv = pd.read_csv(self.fZones, sep=self.separador, encoding=self.codi,
+            csv = pd.read_csv(self.fZones, sep=self.separador, encoding='utf-8',
                               decimal=MAP_LOCALE.decimalPoint(), dtype=dtypes)
 
             # Aplicar filtro
@@ -567,7 +573,7 @@ class QvMapificacio(QObject):
                             return False
 
             # Guardar como Geopackage
-            self.fSQL = self.nomArxiuSortida(self.nomCapa)
+            self.fSQL = self.nomArxiuSortida(nomCapa)
             out.to_file(self.fSQL, driver="GPKG", layer=nomCapa)
             return True
         except Exception as err:
@@ -661,12 +667,12 @@ class QvMapificacio(QObject):
         self.renderParams.numCategories = numCategories
         self.filtre = filtre
         self.renderParams.campCalculat = campCalculat
-        self.nomCapa = self.netejaString(nomCapa)
+        self.nomCapa = self.netejaString(nomCapa, True)
 
         # if not self.generaCapaQgis(nomCapa):
         #     return False
 
-        if not self.generaCapaGpd(nomCapa, tipusAgregacio, tipusDistribucio):
+        if not self.generaCapaGpd(self.nomCapa, tipusAgregacio, tipusDistribucio):
             return False
 
         # Carga capa de agregación
