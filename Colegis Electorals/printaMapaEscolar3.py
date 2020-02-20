@@ -1,4 +1,4 @@
-# Programa 
+# Programa per imprimir el mapa escolar, en funció de l'assignacio d'illes-colegisque està en taules Oracle (preparades per Francesc Orgaz)
 
 from moduls.QvImports import *
 from moduls.QvLlegenda import QvLlegenda
@@ -106,7 +106,7 @@ with qgisapp() as app:
     bridge.setCanvasLayers()
     project.read(projecteInicial)
     llegenda = QvLlegenda(canvas)
-    llegenda.show()
+    # llegenda.show()
 
     plantillaMapa = 'd:/MapaEscolar/plantillaMapaEscolarA1_2.qpt'
 
