@@ -29,8 +29,8 @@ from moduls.QvMapVars import *
 
 from typing import List, Tuple, Iterable
 
-_TRANS_ALL = str.maketrans("ÁÉÍÓÚáéíóúÀÈÌÒÙàèìòùÂÊÎÔÛâêîôûÄËÏÖÜäëïöüºª€@$#çÇñÑ·.,;:()[]¡!¿?|@#%&*/\\\'\"",
-                           "AEIOUaeiouAEIOUaeiouAEIOUaeiouAEIOUaeiouoaEaDNcCnN_______________________")
+_TRANS_ALL = str.maketrans("ÁÉÍÓÚáéíóúÀÈÌÒÙàèìòùÂÊÎÔÛâêîôûÄËÏÖÜäëïöüºª€$çÇñÑ ·.,;:()[]¡!¿?|%&*/\\\'\"@#",
+                           "AEIOUaeiouAEIOUaeiouAEIOUaeiouAEIOUaeiouoaEDcCnN______________________aN")
 
 _TRANS_MINI = str.maketrans(" \'\"",
                             "___")
@@ -413,7 +413,7 @@ class QvMapificacio(QObject):
             s = s.translate(_TRANS_ALL)
         else:
             s = s.translate(_TRANS_MINI)
-        return s
+        return re.sub('_+', '_', s)
 
     def nomArxiuSortida(self, nom: str) -> str:
         return RUTA_LOCAL + nom + ".gpkg"
@@ -573,7 +573,7 @@ class QvMapificacio(QObject):
                             return False
 
             # Guardar como Geopackage
-            self.fSQL = self.nomArxiuSortida(self.nomCapa)
+            self.fSQL = self.nomArxiuSortida(nomCapa)
             out.to_file(self.fSQL, driver="GPKG", layer=nomCapa)
             return True
         except Exception as err:
@@ -672,7 +672,7 @@ class QvMapificacio(QObject):
         # if not self.generaCapaQgis(nomCapa):
         #     return False
 
-        if not self.generaCapaGpd(nomCapa, tipusAgregacio, tipusDistribucio):
+        if not self.generaCapaGpd(self.nomCapa, tipusAgregacio, tipusDistribucio):
             return False
 
         # Carga capa de agregación
