@@ -165,7 +165,7 @@ class QvEditorCsv(QDialog):
             self._mostraErrorActual()
 
     def _defBotons(self):
-        self._bFullCalcul = QvPushButton('Obre com a full de càlcul')
+        self._bFullCalcul = QvPushButton('Obre com a full de càlcul', discret=True)
         self._bFullCalcul.clicked.connect(self._obreFullCalcul)
         self._bDesar = QvPushButton('Desar', destacat=True)
         self._bDesar.clicked.connect(self._desar)

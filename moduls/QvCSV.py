@@ -109,10 +109,10 @@ class QvCarregaCsv(QDialog):
     def __init__(self, rutaCsv: str, qV=None):
         super().__init__(qV,Qt.WindowSystemMenuHint | Qt.WindowTitleHint | Qt.WindowCloseButtonHint)
         self.setWindowTitle('Carregador d\'arxius CSV')
-        self.setFixedSize(QvApp().zoomFactor()*750, QvApp().zoomFactor()*500)
+        self.setFixedSize(QvApp().zoomFactor()*750, QvApp().zoomFactor()*550)
         if qV is not None:
             self._qV = qV
-        self._csv = rutaCsv
+        self._csv = self._primerCsv = rutaCsv
         self.loadMap()
         # self._mapificador = QvMapificacio(rutaCsv)
         self.setSeparador()
@@ -140,7 +140,7 @@ class QvCarregaCsv(QDialog):
     def setSeparador(self):
         self._separador = self._mapificador.separador
     def getPrimeraPantalla(self):
-        aux=QvMemoria().getCampsGeocod(self._csv)
+        aux=QvMemoria().getCampsGeocod(self.parentWidget()._primerCsv)
         if aux is not None:
             if aux['teCoords']:
                 return CsvCoords(self,self,**aux['camps'])
@@ -210,7 +210,7 @@ class CsvPagina(QWidget):
             self._wid.exec()
             return self._canviat
         else:
-            self._wid.setWindowTitle("Vista prèvia de l'arxiu csv")
+            self._wid.setWindowTitle("Veure taula completa")
             self._wid.show()
 
     def getCamps(self):
@@ -225,15 +225,15 @@ class CsvPagina(QWidget):
     def _mapifica(self):
         fMap = QvFormNovaMapificacio(
             self._carregador._qV.llegenda, mapificacio=self._carregador._mapificador)
-        fMap.exec()
-        self._carregador.close()
+        if fMap.exec()==QDialog.Accepted:
+            self._carregador.close()
 
 class CsvTab(QTabWidget):
     salta = pyqtSignal(QWidget)
     def __init__(self,parent=None):
         super().__init__(parent)
         
-        aux=QvMemoria().getCampsGeocod(self.parentWidget()._csv)
+        aux=QvMemoria().getCampsGeocod(self.parentWidget()._primerCsv)
         if aux is not None:
             if aux['teCoords']:
                 primer=0
@@ -251,7 +251,7 @@ class CsvTab(QTabWidget):
             primer=0 if campX is not None else 1
         with open(parent._mapificador.fDades,encoding=parent._mapificador.codi) as f:
             reader=csv.DictReader(f,delimiter=parent._mapificador.separador)
-            numFiles=3
+            numFiles=300
             self._coords._taulaPreview.setRowCount(numFiles)
             self._coords._taulaPreview.setColumnCount(len(reader.fieldnames))
             self._coords._taulaPreview.setHorizontalHeaderLabels(reader.fieldnames)
@@ -333,14 +333,15 @@ class CsvCoords(CsvPagina):
         self._layCamps.addLayout(layProj)
         self._lay.addWidget(self._gbCoords)
 
-        # Botó per anar a la pantalla de les adreces
+        
+        self._lay.addStretch()
         self._taulaPreview = QTableWidget()
         self._lay.addWidget(self._taulaPreview)
         self._lay.addStretch()
 
         # Botons per fer coses
         self._layBotons = QHBoxLayout()
-        self._bVeure = QvPushButton("Vista prèvia de l'arxiu csv",discret=True)
+        self._bVeure = QvPushButton("Veure taula completa",discret=True)
         self._bVeure.setToolTip("Premeu aquest botó per visualitzar l'arxiu csv")
         self._bVeure.clicked.connect(self._mostraTaula)
         self._bAfegir = QvPushButton('Afegir com a capa de punts')
@@ -444,12 +445,13 @@ class CsvAdreca(CsvPagina):
         else:
             self.campsDefecte()
 
+        self._lay.addStretch()
         self._taulaPreview = QTableWidget()
         self._lay.addWidget(self._taulaPreview)
         self._lay.addStretch()
 
         self._layBotons = QHBoxLayout()
-        self._bVeure = QvPushButton("Vista prèvia de l'arxiu csv",discret=True)
+        self._bVeure = QvPushButton("Veure taula completa",discret=True)
         self._bVeure.setToolTip("Premeu aquest botó per visualitzar l'arxiu csv")
         self._bVeure.clicked.connect(self._mostraTaula)
         self._bGeocod = QvPushButton('Geocodificar')
@@ -474,7 +476,8 @@ class CsvAdreca(CsvPagina):
         geocod=QvMemoria().getGeocodificat(self._carregador._csv)
         if geocod is not None:
             #Preguntar si volem carregar directament el geocodificat
-            resposta=QMessageBox.question(self,"Aquest arxiu ja ha sigut geocodificat prèviament","Vol carregar-lo directament, sense geocodificar de nou?",QMessageBox.Yes|QMessageBox.No)
+            resposta=QMessageBox.question(self,"Aquest arxiu ja ha sigut geocodificat prèviament", \
+                "Aquest arxiu ja ha sigut geocodificat prèviament. Vol carregar-lo directament, estalviant així repetir la geocodificació?",QMessageBox.Yes|QMessageBox.No)
             if resposta==QMessageBox.Yes:
                 self._carregador.setCsv(geocod)
                 self._carregador._mapificador=QvMapificacio(geocod)
@@ -728,7 +731,7 @@ class CsvAfegir(CsvPagina):
         self._bAfegir = QvPushButton('Afegir com a capa de punts', destacat=True)
         self._bAfegir.setToolTip('Afegeix al mapa com a capa de punts')
         self._bAfegir.clicked.connect(self.afegir)
-        self._bEnrere = QvPushButton('Enrere',discret=True)
+        self._bEnrere = QvPushButton('Enrere')
         self._bEnrere.setToolTip('Retrocedeix a la pantalla anterior')
         self._bEnrere.clicked.connect(self._enrere)
         self._leNomCapa.textChanged.connect(
@@ -741,7 +744,7 @@ class CsvAfegir(CsvPagina):
         self._leNomCapa.setFocus()
         self._leNomCapa.selectAll()
     def _enrere(self):
-        self.salta.emit(CsvGeocodificat([],self._carregador))
+        self.salta.emit(CsvGeocodificat([],0,self._carregador))
     def afegir(self):
         nivellCsv(self._carregador._qV, self._carregador._csv, self._carregador._separador,
                   self._campCoordX, self._campCoordY, self._projeccio, self._leNomCapa.text(), self._color, symbol=self._forma)
