@@ -12,6 +12,7 @@ from qgis.core import QgsApplication, QgsGraduatedSymbolRenderer, QgsExpressionC
 from moduls.QvMapVars import *
 from moduls.QvMapificacio import *
 from moduls.QvSqlite import QvSqlite
+from moduls.QvEditorCsv import QvEditorCsv
 
 import os
 import sqlite3
@@ -144,7 +145,13 @@ class QvComboBoxCamps(QComboBox):
         self.oldText = ''
         self.newText = ''
 
-    def setItems(self, items):
+    def setItems(self, items, primer=None, blancs=None):
+        if primer is not None:
+            # Añadir elemento inicial
+            self.addItem(primer)
+        if blancs is not None:
+            # Sustituir blancos
+            items = [item.replace(" ", blancs) for item in items]
         self.addItems(items)
         self.setCurrentIndex(-1)
         self.setCurrentText('')
@@ -202,7 +209,7 @@ class QvFormNovaMapificacio(QvFormBaseMapificacio):
         self.fCSV = mapificacio
         self.taulaMostra = None
 
-        self.setWindowTitle('Afegir capa de mapificació')
+        self.setWindowTitle('Afegir capa amb mapa de coropletes')
 
         self.layout = QVBoxLayout()
         self.layout.setSpacing(14)
@@ -285,12 +292,12 @@ class QvFormNovaMapificacio(QvFormBaseMapificacio):
         self.lDades.addRow('Filtre:', self.filtre) 
         self.lDades.addRow('Distribució:', self.distribucio)
 
-        self.gSimb = QGroupBox('Simbologia de mapificació')
+        self.gSimb = QGroupBox('Simbologia del mapa')
         self.lSimb = QFormLayout()
         self.lSimb.setSpacing(14)
         self.gSimb.setLayout(self.lSimb)
 
-        self.lSimb.addRow('Color base:', self.color)
+        self.lSimb.addRow('Gamma de color:', self.color)
         self.lSimb.addRow('Mètode de classificació:', self.metode)
         self.lSimb.addRow("Nombre d'intervals:", self.intervals)
 
@@ -372,9 +379,12 @@ class QvFormNovaMapificacio(QvFormBaseMapificacio):
             self.capa.setFocus()
         else:
             self.zona.setFocus()
-        self.taulaMostra = QvFormMostra(self.fCSV, parent=self)
+        # self.taulaMostra = QvFormMostra(self.fCSV, parent=self)
+        self.taulaMostra = QvEditorCsv(self.fCSV.fZones, [], 'utf-8', self.fCSV.separador, self)
+        self.taulaMostra.setWindowTitle("Vista prèvia de " + self.fCSV.fZones)
+
         self.bTaula.setEnabled(True)
-        self.calcul.setItems(self.fCSV.camps)
+        self.calcul.setItems(self.fCSV.camps, primer='')
         self.filtre.setItems(self.fCSV.camps)
 
     @pyqtSlot(str)
@@ -386,7 +396,7 @@ class QvFormNovaMapificacio(QvFormBaseMapificacio):
         self.nouArxiu()
 
     def validaSortida(self, nom):
-        fSalida = self.fCSV.nomArxiuSortida(self.fCSV.netejaString(nom))
+        fSalida = self.fCSV.nomArxiuSortida(self.fCSV.netejaString(nom, True))
         return self.msgSobreescriure(fSalida)
         
     def valida(self):
@@ -438,7 +448,7 @@ class QvFormSimbMapificacio(QvFormBaseMapificacio):
         if not self.iniParams():
             return
 
-        self.setWindowTitle('Modificar mapificació')
+        self.setWindowTitle('Modificar mapa de coropletes')
 
         self.layout = QVBoxLayout()
         self.layout.setSpacing(14)
@@ -479,12 +489,12 @@ class QvFormSimbMapificacio(QvFormBaseMapificacio):
         self.buttons.rejected.connect(self.cancel)
         self.buttons.addButton(self.bInfo, QDialogButtonBox.ResetRole)
 
-        self.gSimb = QGroupBox('Simbologia de mapificació')
+        self.gSimb = QGroupBox('Simbologia del mapa')
         self.lSimb = QFormLayout()
         self.lSimb.setSpacing(14)
         self.gSimb.setLayout(self.lSimb)
 
-        self.lSimb.addRow('Color base:', self.color)
+        self.lSimb.addRow('Gamma de Color:', self.color)
         self.lSimb.addRow('Color contorn:', self.contorn)
         self.lSimb.addRow('Mètode de classificació:', self.metode)
         self.lSimb.addRow(self.nomIntervals, self.intervals)
@@ -509,7 +519,7 @@ class QvFormSimbMapificacio(QvFormBaseMapificacio):
         self.renderParams = self.llegenda.mapRenderer.paramsRender(self.capa)
         self.custom = (self.renderParams.modeCategories == 'Personalitzat')
         if self.renderParams.msgError != '':
-            self.msgInfo("No s'han pogut recuperar els paràmetres de mapificació\n" + self.renderParams.msgError)
+            self.msgInfo("No s'han pogut recuperar els paràmetres del mapa\n" + self.renderParams.msgError)
             self.renderParams.msgError = ''
         return True
 
@@ -517,7 +527,7 @@ class QvFormSimbMapificacio(QvFormBaseMapificacio):
     def veureInfo(self):
         if self.info is not None:
             box = QMessageBox(self)
-            box.setWindowTitle('Info de mapificació')
+            box.setWindowTitle('Info del mapa')
             txt = '<table width="500">'
             params = self.info.split('\n')
             for param in params:

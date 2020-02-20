@@ -149,6 +149,57 @@ QTextEdit[readOnly="true"] {
     background-color: transparent;
 }
 
+QLineEdit[readOnly="true"] {
+    border: #38474F;
+    background-color: #F9F9F9
+}
+
+QSpinBox {
+    background: #F9F9F9;
+    color: #38474F;
+    /* border: 1px solid #38474F; */
+    border: 0px;
+    padding: 3px 3px;
+
+}
+
+QSpinBox::up-button, QSpinBox::down-button {
+     subcontrol-origin: border;
+     padding-left: 0px;
+     border-width: 1px;
+     border-radius: 1px;
+     background-color: transparent;
+     
+}
+
+QSpinBox::up-button {
+    subcontrol-position: top right; 
+}
+
+
+QSpinBox::up-button:hover, QSpinBox::down-button:hover {
+    background-color: #bbbbbb;
+}
+
+QSpinBox::up-arrow, QSpinBox::down-arrow {
+     width: 7px;
+     height: 7px;
+     border: none;
+}
+
+QSpinBox::up-arrow:disabled, QSpinBox::down-arrow:disabled {
+    image: none;
+}
+
+
+QSpinBox::up-arrow {
+     image: url(imatges/spinbox-up.png);
+}
+QSpinBox::down-arrow {
+     image: url(imatges/spinbox-down.png);
+}
+
+
 
 
 /* QComboBox {
@@ -183,6 +234,10 @@ QTableView::item {
 QTableView QTableCornerButton::section {
     background-color: solid white;
     border: 0px;
+}
+
+QHeaderView::section{
+    background: solid;
 }
 
 QProgressBar {

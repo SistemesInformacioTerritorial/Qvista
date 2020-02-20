@@ -176,6 +176,7 @@ class QvAtributs(QTabWidget):
         layer.subsetStringChanged.connect(self.actualitzaBoto)
         # Si no se ha encontrado la tabla, añadirla
         taula = QvTaulaAtributs(self, layer, self.canvas)
+
         # self.filtra.disconnect()
         # self.desaCsv.disconnect()
         # self.eliminaFiltre.disconnect()
@@ -312,7 +313,7 @@ class QvTaulaAtributs(QgsAttributeTableView):
     def __init__(self, parent=None, layer=None, canvas=None, numCache=10000):
         if len(QgsGui.editorWidgetRegistry().factories()) == 0:
             QgsGui.editorWidgetRegistry().initEditors()
-        super().__init__()
+        super().__init__(parent)
         self.parent = parent
         self.init(layer, canvas, numCache)
 
@@ -433,6 +434,7 @@ class QvTaulaAtributs(QgsAttributeTableView):
                 if self.feature is not None and self.feature.isValid():
                     num = self.layer.selectedFeatureCount()
                     dialog = QvFitxesAtributs(self.layer, [self.feature], num == 0)
+                    dialog.setStyleSheet('QWidget{border: 0px}')
                 #     dialog = QgsAttributeDialog(
                 #         self.layer, self.feature, False)
                 #     # dialog = QgsAttributeForm(self.layer, self.feature)
