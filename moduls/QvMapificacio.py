@@ -245,6 +245,7 @@ class QvMapificacio(QObject):
             percentatgeProces {pyqtSignal} -- Señal de progreso con el porcentaje transcurrido (default: {None})
             procesAcabat {pyqtSignal} -- Señal de finalización con tiempo transcurrido (default: {None})
             errorAdreca {pyqtSignal} -- Señal con registro erróneo (default: {None})
+            filesGeocodificades {pyqtSignal} -- Señal de progreso con número de filas procesadas sobre el total (default: {None})
 
         Returns:
             bool -- True si ha ido bien, False si hay errores o se canceló el proceso (mensaje en self.msgError)
@@ -369,10 +370,10 @@ class QvMapificacio(QObject):
                     if self.numMostra >= tot:
                         self.mostra.append(self.separador.join(row.values()))
 
-                    # Informe de progreso cada 1% o cada fila si hay menos de 100
+                    # Informe de progreso: filas y porcentaje (cada 1% o cada fila si hay menos de 100)
+                    self.filesGeocodificades.emit(tot, self.files)
                     if self.files > 0 and tot % nSignal == 0:
                         self.percentatgeProces.emit(int(round(tot * 100 / self.files)))
-                    self.filesGeocodificades.emit(tot,self.files)
 
                     # Cancelación del proceso via slot
                     if self.cancel:
@@ -386,17 +387,9 @@ class QvMapificacio(QObject):
                 self.msgError = "Procés geocodificació cancel·lat"
             else:
                 self.files = tot
+                self.filesGeocodificades.emit(tot, self.files)
                 self.percentatgeProces.emit(100)
-
-            
             self.procesAcabat.emit(fin - ini)
-            # if percentatgeProces is not None:
-            #     self.percentatgeProces.disconnect()
-            # if procesAcabat is not None:
-            #     self.procesAcabat.disconnect()
-            # if errorAdreca is not None:
-            #     self.errorAdreca.disconnect()
-
 
             return not self.cancel
 
@@ -792,7 +785,7 @@ if __name__ == "__main__":
         # w.show()
 
         # campsAdreca = ('Tipus de via', 'Via', 'Número')
-        campsAdreca = ('', 'NOM_CARRER_GPL', 'NUM_I_GPL', 'NUM_F_GPL')
+        campsAdreca = ('', 'NOM_CARRER_GPL', 'NUM_I_GPL', '', 'NUM_F_GPL')
         zones = ('Coordenada', 'Districte', 'Barri', 'Codi postal', "Illa", "Solar", "Àrea estadística bàsica", "Secció censal")
         ok = z.geocodificacio(campsAdreca, zones,
             percentatgeProces=lambda n: print('... Procesado', str(n), '% ...'),
