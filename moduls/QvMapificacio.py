@@ -1,5 +1,19 @@
 # -*- coding: utf-8 -*-
 
+import importlib
+
+_np_spec = importlib.util.find_spec("numpy")
+_pd_spec = importlib.util.find_spec("pandas")
+_gpd_spec = importlib.util.find_spec("geopandas")
+
+PANDAS_ENABLED = _np_spec is not None and _pd_spec is not None and _gpd_spec is not None
+PANDAS_ERROR = "No es pot mapificar perquè no s'ha instal·lat el mòdul pandas.\n\nContacti amb el personal informàtic de suport."
+
+if PANDAS_ENABLED:
+    import numpy as np
+    import pandas as pd
+    import geopandas as gpd
+
 from qgis.core import (QgsApplication, QgsVectorLayer, QgsLayerDefinition, QgsVectorFileWriter,
                        QgsSymbol, QgsRendererCategory, QgsCategorizedSymbolRenderer,
                        QgsGraduatedSymbolRenderer, QgsRendererRange, QgsAggregateCalculator, QgsError, QgsWkbTypes,
@@ -20,17 +34,16 @@ import collections
 import operator
 import re
 
-import numpy as np
-import pandas as pd
-import geopandas as gpd
-
 from moduls.QvSqlite import QvSqlite
 from moduls.QvMapVars import *
 
 from typing import List, Tuple, Iterable
 
-_TRANS = str.maketrans('ÁÉÍÓÚáéíóúÀÈÌÒÙàèìòùÂÊÎÔÛâêîôûÄËÏÖÜäëïöüºª€@$·.,;:()[]¡!¿?|@#%&ç*',
-                       'AEIOUaeiouAEIOUaeiouAEIOUaeiouAEIOUaeiouoaEaD____________________')
+_TRANS_ALL = str.maketrans("ÁÉÍÓÚáéíóúÀÈÌÒÙàèìòùÂÊÎÔÛâêîôûÄËÏÖÜäëïöüºª€$çÇñÑ ·.,;:()[]¡!¿?|%&*/\\\'\"@#",
+                           "AEIOUaeiouAEIOUaeiouAEIOUaeiouAEIOUaeiouoaEDcCnN______________________aN")
+
+_TRANS_MINI = str.maketrans(" \'\"",
+                            "___")
 
 RUTA_LOCAL = dadesdir
 RUTA_DADES = os.path.abspath('Dades').replace('\\', '/') + '/'
@@ -203,9 +216,20 @@ class QvMapificacio(QObject):
     percentatgeProces = pyqtSignal(int)  # Porcentaje cubierto (0 - 100)
     procesAcabat = pyqtSignal(int)  # Tiempo transcurrido en zonificar (segundos)
     errorAdreca = pyqtSignal(dict) # Registro que no se pudo geocodificar
+    filesGeocodificades = pyqtSignal(int, int)
+
+    # def asincGeocodificacio(self, campsAdreca: List[str], zones: List[str], fZones: str = '', substituir: bool = True,
+    #     percentatgeProces: pyqtSignal = None, procesAcabat: pyqtSignal = None, errorAdreca: pyqtSignal = None) -> bool:
+    #     """ Versión asíncrona de la función geocodificacio, con los mismos parámetros
+    #     """
+    #     from multiprocessing.pool import ThreadPool
+    #     pool = ThreadPool(processes=1)
+
+    #     async_result = pool.apply_async(self.geocodificacio, (campsAdreca, zones, fZones, substituir, percentatgeProces, procesAcabat, errorAdreca))
+    #     return async_result.get()
 
     def geocodificacio(self, campsAdreca: List[str], zones: List[str], fZones: str = '', substituir: bool = True,
-        percentatgeProces: pyqtSignal = None, procesAcabat: pyqtSignal = None, errorAdreca: pyqtSignal = None) -> bool:
+        percentatgeProces: pyqtSignal = None, procesAcabat: pyqtSignal = None, errorAdreca: pyqtSignal = None, filesGeocodificades: pyqtSignal = None) -> bool:
         """Añade coordenadas y códigos de zona a cada uno de los registros del CSV, a partir de los campos de dirección postal
 
         Arguments:
@@ -215,19 +239,36 @@ class QvMapificacio(QObject):
         
         Keyword Arguments:
             fZones {str} -- Nombre del fichero CSV de salida. Si no se indica, se usa el nombre del fichero
-                            de entrada añadiendo el nombre de la zona (default: {''})
+                            de entrada añadiendo el sufijo '_Geo' (default: {''})
             substituir {bool} -- En el caso de que el campo de código de zona ya exista y tenga un valor,
                                  indica si se ha de machacar o no su contenido (default: {True})
             percentatgeProces {pyqtSignal} -- Señal de progreso con el porcentaje transcurrido (default: {None})
             procesAcabat {pyqtSignal} -- Señal de finalización con tiempo transcurrido (default: {None})
-            errorAdreca {pyqtSignal} -- Señal con registro erróno (default: {None})
+            errorAdreca {pyqtSignal} -- Señal con registro erróneo (default: {None})
 
         Returns:
-            bool -- True si ha ido bien, False si hay errores (mensaje en self.msgError)
+            bool -- True si ha ido bien, False si hay errores o se canceló el proceso (mensaje en self.msgError)
 
         """
+        try:
+            self.percentatgeProces.disconnect()
+        except:
+            pass
+        try:
+            self.procesAcabat.disconnect()
+        except:
+            pass
+        try:
+            self.errorAdreca.disconnect()
+        except:
+            pass
+        try:
+            self.filesGeocodificades.disconnect()
+        except:
+            pass
         if self.db is None:
             self.db = QvSqlite()
+        self.errors = 0
         self.msgError = ''
 
         if self.verifCampsAdreca(campsAdreca):
@@ -260,18 +301,24 @@ class QvMapificacio(QObject):
             self.procesAcabat.connect(procesAcabat)
         if errorAdreca is not None:
             self.errorAdreca.connect(errorAdreca)
+        if filesGeocodificades is not None:
+            self.filesGeocodificades.connect(filesGeocodificades)
 
+        # Para eliminar blancos y comillas de nombres de campo
         self.cancel = False
         ini = time.time()
 
         # Fichero CSV de entrada
         with open(self.fDades, "r", encoding=self.codi) as csvInput:
 
-            # Fichero CSV de salida geocodificado
-            with open(self.fZones, "w", encoding=self.codi) as csvOutput:
+            # Fichero CSV de salida geocodificado normalizado a utf-8
+            with open(self.fZones, "w", encoding='utf-8') as csvOutput:
 
                 # Cabeceras
                 data = csv.DictReader(csvInput, delimiter=self.separador)
+                
+                # Normaliza nombres de campos
+                self.camps = [self.netejaString(camp) for camp in self.camps]
 
                 for campZona in self.campsZones:
                     campZona = QvSqlite.getAlias(campZona)
@@ -279,22 +326,23 @@ class QvMapificacio(QObject):
                     if campSortida not in self.camps:
                         self.camps.append(campSortida)
                         self.mostraCols += self.separador + campSortida
-
+                
                 writer = csv.DictWriter(csvOutput, delimiter=self.separador, fieldnames=self.camps, lineterminator='\n')
                 writer.writeheader()
 
                 # Lectura de filas y geocodificación
                 tot = num = 0
                 self.mostra = []
-                for row in data:
+                for rowOrig in data:
                     tot += 1
+                    row = { self.netejaString(k): v for k, v in rowOrig.items() }
 
                     val = self.db.geoCampsCarrerNum(self.campsZones,
                             self.valorCampAdreca(row, 0), self.valorCampAdreca(row, 1), self.valorCampAdreca(row, 2),
                             self.valorCampAdreca(row, 3), self.valorCampAdreca(row, 4), self.valorCampAdreca(row, 5))
                     # Error en geocodificación
                     if val is None:
-                        self.errorAdreca.emit(dict(row))
+                        self.errorAdreca.emit(dict(row, **{'_fila':tot}))
                         num += 1
                     # Escritura de fila con campos
                     else:
@@ -324,20 +372,33 @@ class QvMapificacio(QObject):
                     # Informe de progreso cada 1% o cada fila si hay menos de 100
                     if self.files > 0 and tot % nSignal == 0:
                         self.percentatgeProces.emit(int(round(tot * 100 / self.files)))
+                    self.filesGeocodificades.emit(tot,self.files)
 
-                    # Cancelación del proceso via slot -- SIN PROBAR
+                    # Cancelación del proceso via slot
                     if self.cancel:
                         break
 
             fin = time.time()
-            self.files = tot
             self.errors = num
 
             # Informe de fin de proceso y segundos transcurridos
-            if not self.cancel:
+            if self.cancel:
+                self.msgError = "Procés geocodificació cancel·lat"
+            else:
+                self.files = tot
                 self.percentatgeProces.emit(100)
+
+            
             self.procesAcabat.emit(fin - ini)
-            return True
+            # if percentatgeProces is not None:
+            #     self.percentatgeProces.disconnect()
+            # if procesAcabat is not None:
+            #     self.procesAcabat.disconnect()
+            # if errorAdreca is not None:
+            #     self.errorAdreca.disconnect()
+
+
+            return not self.cancel
 
     def calcSelect(self, camps: str = '') -> str:
         # Calculamos filtro
@@ -356,11 +417,13 @@ class QvMapificacio(QObject):
                  "FROM Info" + filtre + " GROUP BY " + self.campZona + ") AS I WHERE Z.CODI = I.CODI"
         return select
 
-    def netejaString(self, txt: str) -> str:
+    def netejaString(self, txt: str, all=False) -> str:
         s = txt.strip()
-        s = s.replace(' ', '_')
-        s = s.translate(_TRANS)
-        return s
+        if all:
+            s = s.translate(_TRANS_ALL)
+        else:
+            s = s.translate(_TRANS_MINI)
+        return re.sub('_+', '_', s)
 
     def nomArxiuSortida(self, nom: str) -> str:
         return RUTA_LOCAL + nom + ".gpkg"
@@ -447,14 +510,23 @@ class QvMapificacio(QObject):
 
     def generaCapaGpd(self, nomCapa: str, tipusAgregacio: str, tipusDistribucio: str) -> bool:
         try:
+            # El cmapo de zona se carga como string, y el de agregacion como float si hay acumulados
+            if tipusAgregacio in ("Suma", "Mitjana"):
+                dtypes = {self.campZona: np.string_, self.campAgregat: np.float_}
+            else:
+                dtypes = {self.campZona: np.string_}
+
             # Carga de capa de datos geocodificados
-            csv = pd.read_csv(self.fZones, sep=self.separador, encoding=self.codi,
-                              decimal=MAP_LOCALE.decimalPoint(),
-                              dtype={self.campZona: np.string_, self.campAgregat: np.float_})
+            csv = pd.read_csv(self.fZones, sep=self.separador, encoding='utf-8',
+                              decimal=MAP_LOCALE.decimalPoint(), dtype=dtypes)
 
             # Aplicar filtro
-            if self.filtre != '':
-                csv.query(self.filtre, inplace=True)
+            try:
+                if self.filtre != '':
+                    csv.query(self.filtre, inplace=True)
+            except Exception as err:
+                self.msgError = "Error a l'expressió de filtre"
+                return False
 
             if tipusAgregacio == "Cap":
                 agreg = pd.Series(csv[self.campAgregat].values.round(self.renderParams.numDecimals), index=csv[self.campZona])
@@ -511,11 +583,11 @@ class QvMapificacio(QObject):
                             return False
 
             # Guardar como Geopackage
-            self.fSQL = self.nomArxiuSortida(self.nomCapa)
+            self.fSQL = self.nomArxiuSortida(nomCapa)
             out.to_file(self.fSQL, driver="GPKG", layer=nomCapa)
             return True
         except Exception as err:
-            self.msgError = str(err)
+            self.msgError = "Error al calcular l'agregació de dades.\n\n" + str(err)
             return False
 
     def agregacio(self, llegenda, nomCapa: str, zona: str, tipusAgregacio: str,
@@ -547,6 +619,10 @@ class QvMapificacio(QObject):
         Returns:
             bool -- [description]
         """
+        if not PANDAS_ENABLED:
+            self.msgError = PANDAS_ERROR
+            return False
+
         from moduls.QvMapRenderer import QvMapRendererParams
 
         self.fMapa = ''
@@ -605,12 +681,12 @@ class QvMapificacio(QObject):
         self.renderParams.numCategories = numCategories
         self.filtre = filtre
         self.renderParams.campCalculat = campCalculat
-        self.nomCapa = self.netejaString(nomCapa)
+        self.nomCapa = self.netejaString(nomCapa, True)
 
         # if not self.generaCapaQgis(nomCapa):
         #     return False
 
-        if not self.generaCapaGpd(nomCapa, tipusAgregacio, tipusDistribucio):
+        if not self.generaCapaGpd(self.nomCapa, tipusAgregacio, tipusDistribucio):
             return False
 
         # Carga capa de agregación
@@ -698,7 +774,8 @@ if __name__ == "__main__":
         leyenda.setWindowTitle('Llegenda')
         leyenda.show()
 
-        z = QvMapificacio('CarrecsANSI.csv')
+
+        z = QvMapificacio('U:/QUOTA/Comu_imi/Becaris/CarrecsAnsi100.csv')
         # z = QvMapificacio('CarrecsUTF8.csv')
         if z.msgError != '':
             print('Error:', z.msgError)
@@ -714,7 +791,8 @@ if __name__ == "__main__":
         # w = QvFormMostra(z)
         # w.show()
 
-        campsAdreca = ('', 'NOM_CARRER_GPL', 'NUM_I_GPL', '', 'NUM_F_GPL')
+        # campsAdreca = ('Tipus de via', 'Via', 'Número')
+        campsAdreca = ('', 'NOM_CARRER_GPL', 'NUM_I_GPL', 'NUM_F_GPL')
         zones = ('Coordenada', 'Districte', 'Barri', 'Codi postal', "Illa", "Solar", "Àrea estadística bàsica", "Secció censal")
         ok = z.geocodificacio(campsAdreca, zones,
             percentatgeProces=lambda n: print('... Procesado', str(n), '% ...'),
@@ -728,6 +806,16 @@ if __name__ == "__main__":
             fMap = QvFormNovaMapificacio(leyenda, mapificacio=z)
             fMap.exec()
         else:
-            print('ERROR:', z.msgError)
+            print(z.msgError)
+            ok = z.geocodificacio(campsAdreca, zones,
+                percentatgeProces=lambda n: print('... Procesado', str(n), '% ...'),
+                errorAdreca=lambda f: print('Fila sin geocodificar -', f),
+                procesAcabat=lambda n: print('Zonas', z.zones, 'procesadas en', str(n), 'segs. en ' + z.fZones + ' -', str(z.files), 'registros,', str(z.errors), 'errores'))
+            if ok:
+                fMap = QvFormNovaMapificacio(leyenda, mapificacio=z)
+                fMap.exec()
+            else:
+                print(z.msgError)
+
 
 
