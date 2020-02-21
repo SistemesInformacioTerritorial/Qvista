@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+
+# Verifica si está disponible pandas, necesario para mapificar
 import importlib
 
 _np_spec = importlib.util.find_spec("numpy")
@@ -84,6 +86,11 @@ class QvMapificacio(QObject):
         self.iniDades(separador)
 
     def iniDades(self, sep: str) -> None:
+        """ Inicialización a partir del fichero CSV
+        
+        Arguments:
+            sep {str} -- Caracter separador de campos en el CSV
+        """
         try:
             if not os.path.isfile(self.fDades):
                 splitFile = os.path.split(self.fDades)
@@ -104,14 +111,14 @@ class QvMapificacio(QObject):
                 lenFile = os.path.getsize(self.fDades)
                 # Cabecera con nombres de campos
                 data = csvInput.readline()
-                data = data.rstrip(csvInput.newlines)
+                data = data.rstrip(''.join(csvInput.newlines))
                 self.mostra = []
                 self.mostraCols = data
                 # Lineas de muestra
                 lenMuestra = 0
                 for num, data in enumerate(csvInput):
                     lenMuestra += len(data)
-                    data = data.rstrip(csvInput.newlines)
+                    data = data.rstrip(''.join(csvInput.newlines))
                     self.mostra.append(data)
                     if num == self.numMostra:
                         break
@@ -165,6 +172,16 @@ class QvMapificacio(QObject):
             return ''
 
     def verifCampsAdreca(self, camps: List[str]) -> bool:
+        """ Verifica la lista de campos de dirección postal. Han de venir en este orden:
+            (Tipus_via, *Nombre_via, *Número_inicial, Letra_inicial, Número_final, Letra_final)
+            Los precedidos por * son obligatorios.
+            
+        Arguments:
+            camps {List[str]} -- Lista de campos que componen la dirección postal
+        
+        Returns:
+            bool -- True si la verificación es correcta
+        """
         try:
             if len(camps) not in list(range(3, 6+1)):
                 return False
@@ -182,6 +199,15 @@ class QvMapificacio(QObject):
             return False
 
     def valorCampAdreca(self, fila: csv.OrderedDict, num: int) -> str:
+        """ Retorna el valor de uno de los campos de la lista que componen la dirección postal.
+        
+        Arguments:
+            fila {csv.OrderedDict} -- Fila leída del CSV
+            num {int} -- Número de orden del campo de dirección postal
+        
+        Returns:
+            str -- Valor del campo o '' si no se encuentra
+        """
         try:
             camp = self.campsAdreca[num]
             if camp is None or camp == '':
@@ -192,6 +218,14 @@ class QvMapificacio(QObject):
             return ''
 
     def verifZones(self, zones: List[str]) -> bool:
+        """ Verifica la lista de zonas según el diccionario MAP_ZONES_COORD.
+        
+        Arguments:
+            zones {List[str]} -- Lista de zonas.
+        
+        Returns:
+            bool -- True si la verificación es correcta.
+        """
         self.zones = zones
         self.valZones = []
         self.campsZones = []
@@ -211,12 +245,15 @@ class QvMapificacio(QObject):
 
     @pyqtSlot()
     def cancelProces(self) -> None:
+        """ Slot para cancelar el proceso de geocodificación.
+        """
         self.cancel = True
 
+    # Señales que informan de cómo va el proceso de geocodificación
     percentatgeProces = pyqtSignal(int)  # Porcentaje cubierto (0 - 100)
     procesAcabat = pyqtSignal(int)  # Tiempo transcurrido en zonificar (segundos)
     errorAdreca = pyqtSignal(dict) # Registro que no se pudo geocodificar
-    filesGeocodificades = pyqtSignal(int, int)
+    filesGeocodificades = pyqtSignal(int, int) # Número de líneas geocodificadas y número total
 
     # def asincGeocodificacio(self, campsAdreca: List[str], zones: List[str], fZones: str = '', substituir: bool = True,
     #     percentatgeProces: pyqtSignal = None, procesAcabat: pyqtSignal = None, errorAdreca: pyqtSignal = None) -> bool:
@@ -251,6 +288,7 @@ class QvMapificacio(QObject):
             bool -- True si ha ido bien, False si hay errores o se canceló el proceso (mensaje en self.msgError)
 
         """
+        # Desconecta las señales si ya estaban conectadas
         try:
             self.percentatgeProces.disconnect()
         except:
@@ -267,6 +305,7 @@ class QvMapificacio(QObject):
             self.filesGeocodificades.disconnect()
         except:
             pass
+
         if self.db is None:
             self.db = QvSqlite()
         self.errors = 0
@@ -305,7 +344,6 @@ class QvMapificacio(QObject):
         if filesGeocodificades is not None:
             self.filesGeocodificades.connect(filesGeocodificades)
 
-        # Para eliminar blancos y comillas de nombres de campo
         self.cancel = False
         ini = time.time()
 
@@ -345,7 +383,6 @@ class QvMapificacio(QObject):
                     if val is None:
                         self.errorAdreca.emit(dict(row, **{'_fila':tot}))
                         num += 1
-                    # Escritura de fila con campos
                     else:
                         for campZona in self.campsZones:
                             campZona = QvSqlite.getAlias(campZona)
@@ -353,18 +390,7 @@ class QvMapificacio(QObject):
                             campNou = (campSortida not in row.keys())
                             if campNou or self.substituir or row[campSortida] is None or row[campSortida] == '':
                                 row.update([(campSortida, val[campZona])])
-
-                    # if campoNuevo or self.substituir or row[self.campZona] is None or row[self.campZona] == '':
-                    #     val = self.db.geoCampCarrerNum(self.valZona[0],
-                    #           self.valorCampAdreca(row, 0), self.valorCampAdreca(row, 1), self.valorCampAdreca(row, 2),
-                    #           self.valorCampAdreca(row, 3), self.valorCampAdreca(row, 4), self.valorCampAdreca(row, 5))
-                    #     # Error en geocodificación
-                    #     if val is None:
-                    #         self.errorAdreca.emit(dict(row))
-                    #         num += 1
-                    #     # Escritura de fila con campo
-                    #     row.update([(self.campZona, val)])
-                    
+                    # Escritura de fila con campos
                     writer.writerow(row)
 
                     if self.numMostra >= tot:
@@ -393,24 +419,35 @@ class QvMapificacio(QObject):
 
             return not self.cancel
 
-    def calcSelect(self, camps: str = '') -> str:
-        # Calculamos filtro
-        if self.filtre is None or self.filtre == '':
-            filtre = ''
-        else:
-            filtre = ' WHERE ' + self.filtre
-        if self.tipusDistribucio == '':
-            dist = ''
-        else:
-            dist = '/ Z.' + self.tipusDistribucio
-        # Calculamos SELECT completo de agrupación
-        select = "select round(I.AGREGAT " + dist + ", " + str(self.renderParams.numDecimals) + ") AS " + self.renderParams.campCalculat + \
-                 camps + " from Zona AS Z, " + \
-                 "(SELECT " + self.tipusAgregacio + " AS AGREGAT, " + self.campZona + " AS CODI " + \
-                 "FROM Info" + filtre + " GROUP BY " + self.campZona + ") AS I WHERE Z.CODI = I.CODI"
-        return select
+    # def calcSelect(self, camps: str = '') -> str:
+    #     # Calculamos filtro
+    #     if self.filtre is None or self.filtre == '':
+    #         filtre = ''
+    #     else:
+    #         filtre = ' WHERE ' + self.filtre
+    #     if self.tipusDistribucio == '':
+    #         dist = ''
+    #     else:
+    #         dist = '/ Z.' + self.tipusDistribucio
+    #     # Calculamos SELECT completo de agrupación
+    #     select = "select round(I.AGREGAT " + dist + ", " + str(self.renderParams.numDecimals) + ") AS " + self.renderParams.campCalculat + \
+    #              camps + " from Zona AS Z, " + \
+    #              "(SELECT " + self.tipusAgregacio + " AS AGREGAT, " + self.campZona + " AS CODI " + \
+    #              "FROM Info" + filtre + " GROUP BY " + self.campZona + ") AS I WHERE Z.CODI = I.CODI"
+    #     return select
 
-    def netejaString(self, txt: str, all=False) -> str:
+    def netejaString(self, txt: str, all: bool = False) -> str:
+        """ Sustituye ciertos caracteres (de control, con acentos, etc) en un string.
+        
+        Arguments:
+            txt {str} -- String a tratar
+        
+        Keyword Arguments:
+            all {bool} -- Si es True, sustituye segín _TRANS_ALL; si no, utiliza _TRANS_MIN (default: {False})
+        
+        Returns:
+            str -- String tratado
+        """
         s = txt.strip()
         if all:
             s = s.translate(_TRANS_ALL)
@@ -419,9 +456,25 @@ class QvMapificacio(QObject):
         return re.sub('_+', '_', s)
 
     def nomArxiuSortida(self, nom: str) -> str:
+        """ Construye nombre completo fichero Geopakage de salida.
+        
+        Arguments:
+            nom {str} -- Nombre del fichero sin path ni extensión
+        
+        Returns:
+            str -- Nombre completo de fichero
+        """
         return RUTA_LOCAL + nom + ".gpkg"
 
     def verifZona(self, zona: str) -> bool:
+        """ Verifica si la zona es correcta y está disponible en el fichero de zonas
+        
+        Arguments:
+            zona {str} -- Nombre de zona
+        
+        Returns:
+            bool -- True si la verificación es correcta
+        """
         self.zona = zona
         if self.zona is None or self.zona not in MAP_ZONES.keys():
             return False
@@ -432,62 +485,62 @@ class QvMapificacio(QObject):
             return False
         return True
 
-    def generaCapaQgis(self, nomCapa: str) -> bool:
-        # Carga de capa de datos geocodificados
-        infoLyr = QgsVectorLayer(self.fZones, 'Info', 'ogr')
-        infoLyr.setProviderEncoding(self.codi)
-        if not infoLyr.isValid():
-            self.msgError = "No s'ha pogut carregar capa de dades: " + self.fZones
-            return False
+    # def generaCapaQgis(self, nomCapa: str) -> bool:
+    #     # Carga de capa de datos geocodificados
+    #     infoLyr = QgsVectorLayer(self.fZones, 'Info', 'ogr')
+    #     infoLyr.setProviderEncoding(self.codi)
+    #     if not infoLyr.isValid():
+    #         self.msgError = "No s'ha pogut carregar capa de dades: " + self.fZones
+    #         return False
 
-        # Carga de capa base de zona
-        self.fBase = RUTA_DADES + MAP_ZONES_DB + "|layername=" + self.valZona[1]
-        zonaLyr = QgsVectorLayer(self.fBase, 'Zona', 'ogr')
-        zonaLyr.setProviderEncoding("UTF-8")
-        if not zonaLyr.isValid():
-            self.msgError = "No s'ha pogut carregar capa de zones: " + self.fBase
-            return False
+    #     # Carga de capa base de zona
+    #     self.fBase = RUTA_DADES + MAP_ZONES_DB + "|layername=" + self.valZona[1]
+    #     zonaLyr = QgsVectorLayer(self.fBase, 'Zona', 'ogr')
+    #     zonaLyr.setProviderEncoding("UTF-8")
+    #     if not zonaLyr.isValid():
+    #         self.msgError = "No s'ha pogut carregar capa de zones: " + self.fBase
+    #         return False
 
-        # Añadimos capas auxiliares a la leyenda (de forma no visible) para procesarlas
-        self.llegenda.project.addMapLayer(infoLyr, False)
-        self.llegenda.project.addMapLayer(zonaLyr, False)
+    #     # Añadimos capas auxiliares a la leyenda (de forma no visible) para procesarlas
+    #     self.llegenda.project.addMapLayer(infoLyr, False)
+    #     self.llegenda.project.addMapLayer(zonaLyr, False)
 
-        # Lista de campos de zona que se incluirán en la mapificación
-        zonaCamps = ''
-        for field in zonaLyr.fields():
-            name = field.name().upper()
-            if not name.startswith(self.prefixe) and not name.startswith('OGC_'):
-                if field.typeName() == "Real":
-                    zonaCamps += ", round(Z." + name + ", 2) as " + name
-                else:
-                    zonaCamps += ", Z." + name
-        zonaCamps += ', Z.GEOMETRY as GEOM'
+    #     # Lista de campos de zona que se incluirán en la mapificación
+    #     zonaCamps = ''
+    #     for field in zonaLyr.fields():
+    #         name = field.name().upper()
+    #         if not name.startswith(self.prefixe) and not name.startswith('OGC_'):
+    #             if field.typeName() == "Real":
+    #                 zonaCamps += ", round(Z." + name + ", 2) as " + name
+    #             else:
+    #                 zonaCamps += ", Z." + name
+    #     zonaCamps += ', Z.GEOMETRY as GEOM'
 
-        # Creación de capa virtual que construye la agregación
-        select = self.calcSelect(zonaCamps)
-        virtLyr = QgsVectorLayer("?query=" + select, nomCapa, "virtual")
-        virtLyr.setProviderEncoding("UTF-8")
+    #     # Creación de capa virtual que construye la agregación
+    #     select = self.calcSelect(zonaCamps)
+    #     virtLyr = QgsVectorLayer("?query=" + select, nomCapa, "virtual")
+    #     virtLyr.setProviderEncoding("UTF-8")
 
-        if not virtLyr.isValid():
-            self.llegenda.project.removeMapLayer(zonaLyr.id())
-            self.llegenda.project.removeMapLayer(infoLyr.id())
-            self.msgError = "No s'ha pogut generar capa de agregació"
-            return False
+    #     if not virtLyr.isValid():
+    #         self.llegenda.project.removeMapLayer(zonaLyr.id())
+    #         self.llegenda.project.removeMapLayer(infoLyr.id())
+    #         self.msgError = "No s'ha pogut generar capa de agregació"
+    #         return False
 
-        # Guarda capa de agregación en GPKG
-        self.fSQL = self.nomArxiuSortida(self.nomCapa)
-        ret, msg = QgsVectorFileWriter.writeAsVectorFormat(virtLyr, self.fSQL, "UTF-8", zonaLyr.crs(), "GPKG",
-            overrideGeometryType=QgsWkbTypes.MultiPolygon)
-        if ret != QgsVectorFileWriter.NoError:
-            self.llegenda.project.removeMapLayer(zonaLyr.id())
-            self.llegenda.project.removeMapLayer(infoLyr.id())
-            self.msgError = "No s'ha pogut desar capa de agregació: " + self.fSQL + " (Error - " + msg + ")"
-            return False
+    #     # Guarda capa de agregación en GPKG
+    #     self.fSQL = self.nomArxiuSortida(self.nomCapa)
+    #     ret, msg = QgsVectorFileWriter.writeAsVectorFormat(virtLyr, self.fSQL, "UTF-8", zonaLyr.crs(), "GPKG",
+    #         overrideGeometryType=QgsWkbTypes.MultiPolygon)
+    #     if ret != QgsVectorFileWriter.NoError:
+    #         self.llegenda.project.removeMapLayer(zonaLyr.id())
+    #         self.llegenda.project.removeMapLayer(infoLyr.id())
+    #         self.msgError = "No s'ha pogut desar capa de agregació: " + self.fSQL + " (Error - " + msg + ")"
+    #         return False
 
-        # Elimina capas de base y datos
-        self.llegenda.project.removeMapLayer(zonaLyr.id())
-        self.llegenda.project.removeMapLayer(infoLyr.id())
-        return True
+    #     # Elimina capas de base y datos
+    #     self.llegenda.project.removeMapLayer(zonaLyr.id())
+    #     self.llegenda.project.removeMapLayer(infoLyr.id())
+    #     return True
 
     # def saveGPKG(self, df, nomCapa):
     #     import fiona
@@ -502,8 +555,18 @@ class QvMapificacio(QObject):
     #             colxn.writerecords(df.iterfeatures())
 
     def generaCapaGpd(self, nomCapa: str, tipusAgregacio: str, tipusDistribucio: str) -> bool:
+        """ Calcula la agregación de datos, los cruza con el geopackage de zonas y genera la capa del mapa de coropletas.
+        
+        Arguments:
+            nomCapa {str} -- Nombre de la capa del mapa
+            tipusAgregacio {str} -- Tipo de agregación a aplicar
+            tipusDistribucio {str} -- Tipo de distribución a aplicar
+        
+        Returns:
+            bool -- True si se generó la capa con el  mapa correctamente
+        """
         try:
-            # El cmapo de zona se carga como string, y el de agregacion como float si hay acumulados
+            # El campo de zona se carga como string, y el de agregacion como float si hay acumulados
             if tipusAgregacio in ("Suma", "Mitjana"):
                 dtypes = {self.campZona: np.string_, self.campAgregat: np.float_}
             else:
@@ -521,6 +584,7 @@ class QvMapificacio(QObject):
                 self.msgError = "Error a l'expressió de filtre"
                 return False
 
+            # Cálculo de la agreagación de datos
             if tipusAgregacio == "Cap":
                 agreg = pd.Series(csv[self.campAgregat].values.round(self.renderParams.numDecimals), index=csv[self.campZona])
                 if not agreg.index.is_unique:
@@ -575,7 +639,7 @@ class QvMapificacio(QObject):
                         if not self.form.msgContinuarProces(msg):
                             return False
 
-            # Guardar como Geopackage
+            # Guardar capa de mapa como Geopackage
             self.fSQL = self.nomArxiuSortida(nomCapa)
             out.to_file(self.fSQL, driver="GPKG", layer=nomCapa)
             return True
@@ -586,32 +650,32 @@ class QvMapificacio(QObject):
     def agregacio(self, llegenda, nomCapa: str, zona: str, tipusAgregacio: str,
         campCalculat: str = 'RESULTAT', campAgregat: str = '', tipusDistribucio: str = "Total", filtre: str = '',
         numDecimals: int = -1, numCategories: int = 4, modeCategories: str = "Endreçat", colorBase: str = 'Blau',
-        format: str = '%1 - %2', veure: bool = True, form=None) -> bool:
-        """ ***********************************************************************************************************
-            EN DESARROLLO *********************************************************************************************
-            ***********************************************************************************************************
+        format: str = '%1 - %2', veure: bool = True, form = None) -> bool:
+        """ Realiza la agragación de los datos por zona, la generación del mapa de coropletas y su simbología.
         
         Arguments:
-            llegenda {[type]} -- [description]
-            nomCapa {str} -- [description]
-            zona {str} -- [description]
-            tipusAgregacio {str} -- [description]
+            llegenda {QvLlegenda} -- Leyenda
+            nomCapa {str} -- Nombre de la capa del mapa a generar
+            zona {str} -- Zona de agregación
+            tipusAgregacio {str} -- Tipo de agregación
         
         Keyword Arguments:
-            campCalculat {str} -- [description] (default: {'RESULTAT'})
-            campAgregat {str} -- [description] (default: {''})
-            tipusDistribucio {str} -- [description] (default: {"Total"})
-            filtre {str} -- [description] (default: {''})
-            numDecimals {int} -- [description] (default: {-1})
-            numCategories {int} -- [description] (default: {4})
-            modeCategories {str} -- [description] (default: {"Endreçat"})
-            colorBase {str} -- [description] (default: {'Blau'})
-            format {str} -- [description] (default: {'%1 - %2'})
-            veure {bool} -- [description] (default: {True})
+            campCalculat {str} -- Campo donde se guardará el resultado de la agregación (default: {'RESULTAT'})
+            campAgregat {str} -- Campo que se utiliza en el cálculo de la agragación (default: {''})
+            tipusDistribucio {str} -- Tipo de distribución (default: {"Total"})
+            filtre {str} -- Expresión para filtrar los datos (default: {''})
+            numDecimals {int} -- Número de decimales para el campo resultado (default: {-1})
+            numCategories {int} -- Número de categorías en el mapa de coropletas (default: {4})
+            modeCategories {str} -- Modo de generación de las categorías del mapa (default: {"Endreçat"})
+            colorBase {str} -- Gama de color para las categorías del mapa (default: {'Blau'})
+            format {str} -- Formato del texto de las categorías en la leyenda (default: {'%1 - %2'})
+            veure {bool} -- Si es True, añade la nueva capa con el mapa en la leyenda (default: {True})
+            form {QDialog} -- Formulario desde donde se invoca la función (default: {None})
         
         Returns:
-            bool -- [description]
+            bool -- False si hubo errores (mensaje de error en self.msgError)
         """
+
         if not PANDAS_ENABLED:
             self.msgError = PANDAS_ERROR
             return False
@@ -712,32 +776,6 @@ class QvMapificacio(QObject):
         if veure:
             self.llegenda.project.addMapLayer(mapLyr)
         return True
-
-        # try:
-        #     # Leer DOM, eliminar path local y guardar en fichero
-        #     domDoc = QgsLayerDefinition.exportLayerDefinitionLayers([mapLyr], QgsReadWriteContext())
-        #     txt = domDoc.toString()
-        #     txt = txt.replace(RUTA_LOCAL, './')
-        #     with open(self.fMapa, "w+", encoding="UTF-8") as qlr:
-        #         qlr.write(txt)
-        # except Exception as e:
-        #     fich = self.fMapa
-        #     self.fMapa = ''
-        #     print(e)
-        #     self.msgError = "No s'ha pogut desar capa mapificació: " + fich
-        #     return False
-
-        # # Mostar qlr de mapificación, si es el caso
-        # if veure and self.fMapa != '':
-        #     # Cargar qlr
-        #     ok, txt = QgsLayerDefinition.loadLayerDefinition(self.fMapa,
-        #         self.llegenda.project, self.llegenda.root)
-        #     if not ok:
-        #         self.msgError = "No s'ha pogut carregar capa mapificació: " + self.fMapa
-        #         return False
-        #     QgsApplication.processEvents()
-
-        # return True
 
 if __name__ == "__main__":
 
