@@ -104,14 +104,14 @@ class QvMapificacio(QObject):
                 lenFile = os.path.getsize(self.fDades)
                 # Cabecera con nombres de campos
                 data = csvInput.readline()
-                data = data.rstrip(csvInput.newlines)
+                data = data.rstrip(''.join(csvInput.newlines))
                 self.mostra = []
                 self.mostraCols = data
                 # Lineas de muestra
                 lenMuestra = 0
                 for num, data in enumerate(csvInput):
                     lenMuestra += len(data)
-                    data = data.rstrip(csvInput.newlines)
+                    data = data.rstrip(''.join(csvInput.newlines))
                     self.mostra.append(data)
                     if num == self.numMostra:
                         break

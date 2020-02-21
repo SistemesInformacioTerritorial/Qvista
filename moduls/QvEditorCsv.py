@@ -238,6 +238,7 @@ class QvEditorCsv(QDialog):
             self.close()
 
     def _errorProper(self, x, y):
+        self.setCursor(QvConstants.cursorOcupat())
         if self._teErrors:
             if x+1 in self._errors:
                 self._setError(self._errors.index(x+1), True)
@@ -246,11 +247,14 @@ class QvEditorCsv(QDialog):
                 distancies = enumerate(map(lambda xx: abs(xx-x), self._errors))
                 index = sorted(distancies, key=lambda x: x[1])[0][0]
                 self._setError(index, True)
+        self.setCursor(QvConstants.cursorFletxa())
 
     def showEvent(self, e):
+        self.setCursor(QvConstants.cursorOcupat())
         super().showEvent(e)
         if self._teErrors:
             self._mostraErrorActual()
+        self.setCursor(QvConstants.cursorFletxa())
 
 
 if __name__ == '__main__':

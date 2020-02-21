@@ -573,6 +573,8 @@ class CsvGeocodificat(CsvPagina):
             self._lay.addWidget(QLabel('Temps requerit per la geocodificació: %i segons'%temps))
             self._lay.addWidget(QLabel('Geocodificat a una velocitat de %.2f files per segon'%(self._carregador._mapificador.files/temps)))
         self._textEditErrors = QTextEdit()
+        self._textEditErrors.setReadOnly(True)
+        self._textEditErrors.setStyleSheet('background: white')
         self._lay.addWidget(self._textEditErrors)
         if len(self._errors)>0:
             self._definirErrors(self._errors)
