@@ -115,28 +115,26 @@ class QVista(QMainWindow, Ui_MainWindow):
         """
         QMainWindow.__init__(self)
         self.setupUi(self)
+
+        # Definicions globals
+
         app.setFont(QvConstants.FONTTEXT)
         # self.setWindowFlags(Qt.Window | Qt.FramelessWindowHint | Qt.CustomizeWindowHint)
         self.setWindowFlags(Qt.FramelessWindowHint)
         self.actualitzaWindowFlags()
         # self.verticalLayout.addWidget(QSizeGrip(self),0,Qt.AlignBottom | Qt.AlignRight)
 
-        #Sembla que no es torna a fer servir (???)
-        self.app=app
         #Afegim títol a la finestra
         self.setWindowTitle(titolFinestra)
-
-        
 
         # Definició dels labels de la statusBar 
         self.definirLabelsStatus()   
 
-        # Preparació deprojecte i canvas
+        # Preparació de projecte i canvas
         self.preparacioEntornGrafic()
 
         # Connectar progressBar del canvas a la statusBar
         self.connectarProgressBarCanvas()
-
 
         # Inicialitzacions
         self.printActiu = False #???
@@ -158,6 +156,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         # # Connectors i accions
         self.definicioAccions()
 
+        # Definicio de botons
         self.definicioBotons()
         
         # # Menus i preparació labels statusBar
@@ -188,30 +187,30 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.marcaLlocPosada = False
 
         # Guardem el dashboard actiu per poder activar/desactivar després els dashboards
+        # Ara no ho utilitzem, però permetria canviar la disposició dels elements de la app, i retornar-hi
         self.dashboardActiu = [self.canvas, self.frameLlegenda, self.mapeta]
 
         # Aquestes línies son necesaries per que funcionin bé els widgets de qGis, com ara la fitxa d'atributs
         if len(QgsGui.editorWidgetRegistry().factories()) == 0:
             QgsGui.editorWidgetRegistry().initEditors()
-        
-        
+                
         # Final del cronometratge d'arrancada
         endGlobal = time.time()
         self.tempsTotal = endGlobal - startGlobal
         print ('Total carrega abans projecte: ', self.tempsTotal)
 
-        
-        
-        
-        # ponemos el gpkd a readonly....
+                
+
+        # possem el projecte inicial a readonly.... ¿¿¿
         import win32con, win32api,os
-        elGpkg=projecteInicial
-        pre, ext = os.path.splitext(elGpkg) #ext ???
-        elGpkg= pre + '.gpkg'
-        win32api.SetFileAttributes(elGpkg,win32con.FILE_ATTRIBUTE_READONLY)
+        
+        try:
+            pre, ext = os.path.splitext(projecteInicial) #ext ???
+            elGpkg= pre + '.gpkg'
+            win32api.SetFileAttributes(elGpkg,win32con.FILE_ATTRIBUTE_READONLY)
+        except:
+            print ("No s'ha pogut fer el readonly del geopackage")
       
-
-
 
         # Carrega del projecte inicial
         self.obrirProjecte(projecteInicial)
