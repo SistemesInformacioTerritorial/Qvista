@@ -1,6 +1,7 @@
 from moduls.QvImports import *
 from PyQt5.QtWidgets import *
 from typing import Type
+import itertools
 from moduls.QvMapificacio import QvMapificacio
 from moduls.QvPushButton import QvPushButton
 from moduls.QvEditorCsv import QvEditorCsv
@@ -258,13 +259,16 @@ class CsvTab(QTabWidget):
             self._adreca._taulaPreview.setRowCount(numFiles)
             self._adreca._taulaPreview.setColumnCount(len(reader.fieldnames))
             self._adreca._taulaPreview.setHorizontalHeaderLabels(reader.fieldnames)
-            for i in range(numFiles):
-                fila=next(reader)
+
+            files=0
+            for i, fila in itertools.islice(enumerate(reader),numFiles):
+                files+=1
                 for j, x in enumerate(reader.fieldnames):
                     self._coords._taulaPreview.setItem(i,j,QTableWidgetItem(fila[x]))
                     self._adreca._taulaPreview.setItem(i,j,QTableWidgetItem(fila[x]))
-            #_taulaPreview
-            self._coords._taulaPreview.update()
+            #Actualitzem les files. Per les taules petites
+            self._coords._taulaPreview.setRowCount(files)
+            self._adreca._taulaPreview.setRowCount(files)
         self._coords.salta.connect(lambda x: self.salta.emit(x))
         self._adreca.salta.connect(lambda x: self.salta.emit(x))
         self.addTab(self._coords,'Coordenades')
