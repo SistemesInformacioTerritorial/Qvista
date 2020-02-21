@@ -157,6 +157,8 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         # # Connectors i accions
         self.definicioAccions()
+
+        self.definicioBotons()
         
         # # Menus i preparació labels statusBar
         self.definirMenus()
@@ -1102,7 +1104,8 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.actObrirCsv.setStatusTip("Obre fitxer CSV")
         self.actObrirCsv.triggered.connect(loadCsv)
 
-        # Obrir i Guardar un projecte QGIS (o qVista)
+        # Obrir, Guardar i Guardar com... un projecte QGIS (o qVista)
+
         self.actObrirProjecte = QAction("Obrir...", self)
         # icon=QIcon(':/Icones/Icones/ic_file_upload_black_48dp.png')
         # self.actObrirProjecte.setIcon(icon)
@@ -1121,6 +1124,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.actGuardarComAProjecte.setStatusTip("Desar una còpia del mapa actual")
         self.actGuardarComAProjecte.triggered.connect(guardarDialegProjecte)
 
+        # Nou mapa
         self.actNouMapa = QAction("Nou", self)
         self.actNouMapa.setStatusTip("Nou Mapa")
         self.actNouMapa.setShortcut('Ctrl+N')
@@ -1396,6 +1400,53 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.actTest.setStatusTip("test")
         self.actTest.triggered.connect(self.test)
 
+       
+
+
+        
+        # self.actBicing = QAction("Bicing", self)
+        # self.actBicing.setStatusTip("Bicing")
+        # self.actBicing.triggered.connect(self.bicing)
+
+        self.actWizard = QAction("Wizard", self)
+        self.actWizard.setStatusTip("transp")
+        self.actWizard.triggered.connect(self.wizard)
+    
+        self.actEntorns = QAction("Entorns", self)
+        self.actEntorns.setStatusTip("Entorns")
+        self.actEntorns.triggered.connect(self.preparacioEntorns)
+    
+        self.actDashStandard = QAction("Restaurar", self)
+        self.actDashStandard.setIcon(QIcon(imatgesDir+'auto-fix.png'))
+        self.actDashStandard.setStatusTip("Restaurar")
+        self.actDashStandard.triggered.connect(self.dashStandard)
+
+        self.actAdreces = QAction("Cercar per adreça", self)
+        self.actAdreces.setIcon(QIcon(imatgesDir+'map-search.png'))
+        self.actAdreces.setStatusTip("Adreces")
+        self.actAdreces.triggered.connect(self.adreces)
+
+        self.actTest2 = QAction("actTest2", self)
+        self.actTest2.setStatusTip("actTest2")
+        self.actTest2.triggered.connect(self.testProva)
+
+        self.actPavimentacio = QAction("Pavimentació", self)
+        self.actPavimentacio.setStatusTip("Pavimentació")
+        self.actPavimentacio.triggered.connect(self.pavimentacio)
+
+        self.actMarxesCiutat = QAction("Marxes de Ciutat", self)
+        self.actMarxesCiutat.setStatusTip("Marxes de Ciutat")
+        self.actMarxesCiutat.triggered.connect(self.marxesCiutat)
+
+        self.actPlatges = QAction("Pavimentació", self)
+        self.actPlatges.setStatusTip("Pavimentació")
+        self.actPlatges.triggered.connect(self.platges)
+
+        self.actPropietatsLayer = QAction("Propietats de la capa", self)
+        self.actPropietatsLayer.setStatusTip("Propietats de la capa")
+        self.actPropietatsLayer.triggered.connect(self.propietatsLayer)
+
+    def definicioBotons(self):
         self.frame_15.setContentsMargins(0,0,12,0)
 
         stylesheetLineEdits="""
@@ -1487,51 +1538,6 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.botoReload.setIconSize(QSize(24,24))
         self.botoReload.setCursor(QvConstants.cursorClick())
         self.botoReload.clicked.connect(self.reload)
-
-
-        
-        # self.actBicing = QAction("Bicing", self)
-        # self.actBicing.setStatusTip("Bicing")
-        # self.actBicing.triggered.connect(self.bicing)
-
-        self.actWizard = QAction("Wizard", self)
-        self.actWizard.setStatusTip("transp")
-        self.actWizard.triggered.connect(self.wizard)
-    
-        self.actEntorns = QAction("Entorns", self)
-        self.actEntorns.setStatusTip("Entorns")
-        self.actEntorns.triggered.connect(self.preparacioEntorns)
-    
-        self.actDashStandard = QAction("Restaurar", self)
-        self.actDashStandard.setIcon(QIcon(imatgesDir+'auto-fix.png'))
-        self.actDashStandard.setStatusTip("Restaurar")
-        self.actDashStandard.triggered.connect(self.dashStandard)
-
-        self.actAdreces = QAction("Cercar per adreça", self)
-        self.actAdreces.setIcon(QIcon(imatgesDir+'map-search.png'))
-        self.actAdreces.setStatusTip("Adreces")
-        self.actAdreces.triggered.connect(self.adreces)
-
-        self.actTest2 = QAction("actTest2", self)
-        self.actTest2.setStatusTip("actTest2")
-        self.actTest2.triggered.connect(self.testProva)
-
-        self.actPavimentacio = QAction("Pavimentació", self)
-        self.actPavimentacio.setStatusTip("Pavimentació")
-        self.actPavimentacio.triggered.connect(self.pavimentacio)
-
-        self.actMarxesCiutat = QAction("Marxes de Ciutat", self)
-        self.actMarxesCiutat.setStatusTip("Marxes de Ciutat")
-        self.actMarxesCiutat.triggered.connect(self.marxesCiutat)
-
-        self.actPlatges = QAction("Pavimentació", self)
-        self.actPlatges.setStatusTip("Pavimentació")
-        self.actPlatges.triggered.connect(self.platges)
-
-        self.actPropietatsLayer = QAction("Propietats de la capa", self)
-        self.actPropietatsLayer.setStatusTip("Propietats de la capa")
-        self.actPropietatsLayer.triggered.connect(self.propietatsLayer)
-
 
     def platges(self):
         self.platges = QvPlatges()
@@ -3952,8 +3958,19 @@ class QvDockWidget(QDockWidget):
         #Show tal qual. És a dir, ho mostra on estigués abans
         super().show()
 
+def qvSplashScreen(imatge):
+    splash_pix = QPixmap(imatgesDir+'SplashScreen_qVista.png')
+    splash = QSplashScreen(splash_pix, Qt.WindowStaysOnTopHint)
+    splash.setWindowFlags(Qt.WindowStaysOnTopHint | Qt.FramelessWindowHint)
+    splash.setEnabled(True)
+    splash.showMessage("""Institut Municipal d'Informàtica (IMI) Versió """+versio+'  ',Qt.AlignRight | Qt.AlignBottom, QvConstants.COLORFOSC)
+    splash.setFont(QFont(QvConstants.NOMFONT,8))
+    splash.show()
+    return splash
+
+# Cos de la funció principal  d'arranque de qVista
 def main(argv):
-    # import subprocess
+    # Definició 
     global qV
     global app
     with qgisapp(sysexit=False) as app: 
@@ -3962,39 +3979,33 @@ def main(argv):
         qVapp = QvApp()
 
         # Splash image al començar el programa. La tancarem amb splash.finish(qV)
-        # splash_pix = QPixmap(imatgesDir+'qvistaLogo2.png')
-        splash_pix = QPixmap(imatgesDir+'SplashScreen_qVista.png')
-        splash = QSplashScreen(splash_pix, Qt.WindowStaysOnTopHint)
-        splash.setWindowFlags(Qt.WindowStaysOnTopHint | Qt.FramelessWindowHint)
-        splash.setEnabled(True)
-        splash.showMessage("""Institut Municipal d'Informàtica (IMI) Versió """+versio+'  ',Qt.AlignRight | Qt.AlignBottom, QvConstants.COLORFOSC)
-        splash.setFont(QFont(QvConstants.NOMFONT,8))
-        splash.show()
+        splash = qvSplashScreen(imatgesDir+'SplashScreen_qVista.png')
+      
+        # Logo de la finestra
         app.setWindowIcon(QIcon(imatgesDir+'QVistaLogo_256.png'))
-        esborraCarpetaTemporal() #Esborrem els temporals de la sessió anterior
+        
+        #Esborrem els temporals de la sessió anterior
+        esborraCarpetaTemporal()
         app.processEvents()
+
+        # Lectura fitxer d'estil
         with open('style.qss') as st:
             app.setStyleSheet(st.read())
 
+        # Preparació log de l'aplicació
         ok = qVapp.logInici()            # Por defecto: family='QVISTA', logname='DESKTOP'
         if not ok:
             print('ERROR LOG >>', qVapp.logError())
-            # ok = qVapp.logRegistre('Capa1')
-            # ok = qVapp.logRegistre('Atributs')
-
-        
-
-        # # Idioma
+       
+        # Idioma
         qVapp.carregaIdioma(app, 'ca')
 
+        # Estil visual de l'aplicació
         app.setStyle(QStyleFactory.create('fusion'))
         
-
         # estil = EstilPropi('Fusion')   
         # app.setStyle('fusion')
         
-
-
         # Prova d'escriure sobre la imatge
         # splash.showMessage("<h1><font color='black'>Versió 0.1 - Work in progress</font></h1>", Qt.AlignTop | Qt.AlignCenter, Qt.white)
         
@@ -4002,31 +4013,36 @@ def main(argv):
         # Paso app, para que QvCanvas pueda cambiar cursores
         qV = QVista(app)
        
-
-
         # qV.showFullScreen()
         qV.showMaximized()
 
         # Tanquem la imatge splash.
         splash.finish(qV)
+
+        # Avisos de l'aplicació
         try:
             avisos=QvAvis()
         except:
             print('no es pot accedir als avisos')
+
+        # Sabies que...
         try:
             sabiesque=QvSabiesQue(qV)
             pass
         except:
             print('No hem pogut mostrar el "sabies que..."')
+        
+        # Guardem el temps d'arrancada
         qVapp.logRegistre('LOG_TEMPS', qV.lblTempsArrencada.text())
+
+        # Gestió de la sortida
         app.aboutToQuit.connect(qV.gestioSortida)
 
+
+# Arranque de l'aplicació qVista
 if __name__ == "__main__":
     try:
         main(sys.argv)
         
     except Exception as err:
         QvApp().bugException(err)
-
-    # except Exception as e:
-    #     print(str(e))
