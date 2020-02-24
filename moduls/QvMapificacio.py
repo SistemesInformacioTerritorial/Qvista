@@ -36,6 +36,7 @@ import collections
 import operator
 import re
 
+from moduls.QvApp import QvApp
 from moduls.QvSqlite import QvSqlite
 from moduls.QvMapVars import *
 
@@ -324,7 +325,8 @@ class QvMapificacio(QObject):
         if fZones is None or fZones == '':
             base = os.path.basename(self.fDades)
             splitFile = os.path.splitext(base)
-            self.fZones = RUTA_LOCAL + splitFile[0] + '_Geo' + splitFile[1]
+            filename = self.netejaString(splitFile[0] + '_Geo', True)
+            self.fZones = RUTA_LOCAL + filename + splitFile[1]
         else:
             self.fZones = fZones
 
@@ -374,14 +376,15 @@ class QvMapificacio(QObject):
                 self.mostra = []
                 for rowOrig in data:
                     tot += 1
+                    # Normaliza nombres de campos
                     row = { self.netejaString(k): v for k, v in rowOrig.items() }
 
                     val = self.db.geoCampsCarrerNum(self.campsZones,
-                            self.valorCampAdreca(row, 0), self.valorCampAdreca(row, 1), self.valorCampAdreca(row, 2),
-                            self.valorCampAdreca(row, 3), self.valorCampAdreca(row, 4), self.valorCampAdreca(row, 5))
+                            self.valorCampAdreca(rowOrig, 0), self.valorCampAdreca(rowOrig, 1), self.valorCampAdreca(rowOrig, 2),
+                            self.valorCampAdreca(rowOrig, 3), self.valorCampAdreca(rowOrig, 4), self.valorCampAdreca(rowOrig, 5))
                     # Error en geocodificación
                     if val is None:
-                        self.errorAdreca.emit(dict(row, **{'_fila':tot}))
+                        self.errorAdreca.emit(dict(rowOrig, **{'_fila':tot}))
                         num += 1
                     else:
                         for campZona in self.campsZones:
@@ -574,7 +577,7 @@ class QvMapificacio(QObject):
 
             # Carga de capa de datos geocodificados
             csv = pd.read_csv(self.fZones, sep=self.separador, encoding='utf-8',
-                              decimal=MAP_LOCALE.decimalPoint(), dtype=dtypes)
+                              decimal=QvApp().locale.decimalPoint(), dtype=dtypes)
 
             # Aplicar filtro
             try:
@@ -806,8 +809,10 @@ if __name__ == "__main__":
         leyenda.show()
 
 
-        z = QvMapificacio('U:/QUOTA/Comu_imi/Becaris/CarrecsAnsi100.csv')
+        # z = QvMapificacio('U:/QUOTA/Comu_imi/Becaris/CarrecsAnsi100.csv')
         # z = QvMapificacio('CarrecsUTF8.csv')
+        z = QvMapificacio('C:/temp/qVista/dades/Terrasses.csv')
+
         if z.msgError != '':
             print('Error:', z.msgError)
             exit(1)
@@ -823,7 +828,9 @@ if __name__ == "__main__":
         # w.show()
 
         # campsAdreca = ('Tipus de via', 'Via', 'Número')
-        campsAdreca = ('', 'NOM_CARRER_GPL', 'NUM_I_GPL', '', 'NUM_F_GPL')
+        # campsAdreca = ('', 'NOM_CARRER_GPL', 'NUM_I_GPL', '', 'NUM_F_GPL')
+        campsAdreca = ('Tipus via', 'Carrer', 'Numero')
+
         zones = ('Coordenada', 'Districte', 'Barri', 'Codi postal', "Illa", "Solar", "Àrea estadística bàsica", "Secció censal")
         ok = z.geocodificacio(campsAdreca, zones,
             percentatgeProces=lambda n: print('... Procesado', str(n), '% ...'),
