@@ -2150,6 +2150,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.bar.styleStrategy = QFont.PreferAntialias or QFont.PreferQuality #???
 
 
+
         spacer = QSpacerItem(9999, 9999, QSizePolicy.Expanding,QSizePolicy.Maximum) #???
         self.menuMapes = self.bar.addMenu ("Mapes")
         self.menuCapes = self.bar.addMenu ("Capes")
@@ -2745,7 +2746,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         # self.lXY.addWidget(self.bXY)
         self.leXY = QLineEdit()
         self.leXY.setFixedHeight(alcada)
-        self.leXY.setFixedWidth(QvApp().zoomFactor()*150)
+        self.leXY.setMinimumWidth(140)
         self.leXY.setStyleSheet(stylesheetLineEdit)
         # self.leXY.editingFinished.connect(self.returnEditarXY)
         self.leXY.returnPressed.connect(self.returnEditarXY)
