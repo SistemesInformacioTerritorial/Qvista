@@ -5,14 +5,14 @@ import hashlib
 
 from PyQt5.QtGui import QColor
 
-arxiuTmpAvis=dadesdir+'ultimAvisObert'
-arxiuTmpNews=dadesdir+'ultimaNewOberta'
-arxiuMapesRecents=dadesdir+'mapesRecents'
-arxiuDirectoriDesar=dadesdir+'directoriDesar'
-arxiuVolHints=dadesdir+'volHints'
-arxiuDadesMascara=dadesdir+'dadesMascara'
-arxiuCampsGeocod=dadesdir+'geocod.json'
-arxiuGeocodificats=dadesdir+'geocodificats.json'
+arxiuTmpAvis=configdir+'ultimAvisObert'
+arxiuTmpNews=configdir+'ultimaNewOberta'
+arxiuMapesRecents=configdir+'mapesRecents'
+arxiuDirectoriDesar=configdir+'directoriDesar'
+arxiuVolHints=configdir+'volHints'
+arxiuDadesMascara=configdir+'dadesMascara'
+arxiuCampsGeocod=configdir+'geocod.json'
+arxiuGeocodificats=configdir+'geocodificats.json'
 
 def llegirArxiu(f,encoding='utf-8'):
     with open(f,encoding=encoding) as arxiu:

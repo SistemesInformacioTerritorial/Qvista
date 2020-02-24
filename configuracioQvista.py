@@ -16,7 +16,8 @@ estatConnexio = "Xarxa municipal: Connectat"
 
 QvTempdir='C:/temp/qVista/'
 tempdir=QvTempdir+'temp/' #Seran els arxius temporals de qVista que no s'han de guardar entre execucions
-dadesdir=QvTempdir+'dades/' #Arxius temporals que volem conservar, amb configuracions i similars
+dadesdir=QvTempdir+'dades/' #Arxius temporals que volem conservar
+configdir=QvTempdir+'config/' #Configuracions i coses
 
 docdir='n:/siteb/apl/pyqgis/qvista/dades/'
 imatgesDir = os.path.abspath('Imatges/')+'/'
@@ -57,6 +58,11 @@ if not os.path.exists(dadesdir):
         os.mkdir(dadesdir)
     except:
         print('ERROR. No he pogut crear el directori temporal '+dadesdir)
+if not os.path.exists(configdir):
+    try:
+        os.mkdir(configdir)
+    except:
+        print('ERROR. No he pogut crear el directori temporal '+configdir)
 
 if not os.path.isdir(carpetaCataleg):
     carpetaCataleg = "../dades/CatalegProjectes/"

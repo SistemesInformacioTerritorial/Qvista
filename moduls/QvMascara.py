@@ -167,16 +167,6 @@ class QvMascaraEinaPlantilla(QgsMapTool):
         self.mascara = obteMascara(self.qV)
         return self.mascara
 
-    def actualitza(self):
-        try:
-            if self.emmascarar and hasattr(self, 'mascara'):
-                self.mascara = self.getCapa()
-                self.mascara.updateExtents()
-                aplicaParametresMascara(
-                    self.mascara, self.color, self.opacitat)
-            # self.canvas.refreshAllLayers()
-        except Exception as e:
-            print(e)
 
     def setColor(self, color):
         self.color = color
@@ -194,7 +184,6 @@ class QvMascaraEinaPlantilla(QgsMapTool):
         color, opacitat = QvMemoria().getParametresMascara()
         self.setColor(color)
         self.setOpacitat(opacitat/100)
-        self.actualitza()
 
     def novaRubberband(self):
         rb = QgsRubberBand(self.canvas, True)
@@ -251,7 +240,6 @@ class QvMascaraEinaClick(QvMascaraEinaPlantilla):
                 # if not pr.deleteFeatures(polysTreure):
                 #     #Ens hauríem de queixar? No? Tractar?
                 #     pass
-                self.actualitza()
             except Exception as e:
                 print(e)
                 pass
@@ -341,7 +329,6 @@ class QvMascaraEinaDibuixa(QvMascaraEinaPlantilla):
                 self.qV.calcularSeleccio()
             self.rubberband.hide()
             self.rubberband = self.novaRubberband()
-            self.actualitza()
             self.point = None
             self.points = []
         except Exception as e:
@@ -410,7 +397,6 @@ class QvMascaraEinaCercle(QvMascaraEinaPlantilla):
                     pass
             self.qV.calcularSeleccio()
         self.centre = None
-        self.actualitza()
         self.rubberbandCercle.hide()
 
     def rbcircle(self, center, edgePoint, segments=100):
