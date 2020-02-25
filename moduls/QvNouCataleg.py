@@ -723,7 +723,8 @@ class MapaCataleg(QFrame):
 
 if __name__ == "__main__":
     with qgisapp() as app:
-        app.setStyleSheet(open('style.qss').read())
+        with open('style.qss') as f:
+            app.setStyleSheet(f.read())
         cataleg = QvNouCataleg()
         cataleg.showMaximized()
         # mapa=MapaCataleg("N:/9SITEB/Publicacions/qVista/CATALEG/Mapes - en preparació per XLG/2. Ortofotos/Imatge de satel·lit 2011 de l'AMB")

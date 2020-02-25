@@ -219,8 +219,9 @@ class QvApp(Singleton):
             txt = ''
             file = Path(nomFich)
             if file.is_file():
-                file.open()
-                txt = file.read_text()
+                #file.open()
+                with file.open():
+                    txt = file.read_text()
             return txt
         except Exception:
             return ''
