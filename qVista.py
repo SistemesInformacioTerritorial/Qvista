@@ -331,6 +331,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         # self.canvisPendents = False #es el bit Dirty que ens diu si hem de guardar al tancar o no
         self.setDirtyBit(False)
         self.canvas.refresh()
+        self.showXY(self.canvas.center())
         
         if rang is not None and QgsExpressionContextUtils.projectScope(self.project).variable('qV_useProjectExtent') != 'True':
             def posaExtent():
@@ -538,7 +539,6 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.canvas.setAnnotationsVisible(True)
 
         self.canvas.xyCoordinates.connect(self.showXY)     
-        self.showXY(self.canvas.center())
         self.canvas.scaleChanged.connect(self.showScale)   
         self.canvas.mapCanvasRefreshed.connect(self.canvasRefrescat)
 
@@ -2664,7 +2664,13 @@ class QVista(QMainWindow, Ui_MainWindow):
             missatgeCaixa('Cal tenir seleccionat un nivell per poder fer una selecció.','Marqueu un nivell a la llegenda sobre el que aplicar la consulta.')
 
     def showXY(self,p):
-        self.leXY.setText( str("%.2f" % p.x()) + ", " + str("%.2f" % p.y() ))
+        text=str("%.2f" % p.x()) + ", " + str("%.2f" % p.y() )
+        self.leXY.setText(text)
+        # font=QFont('',0)
+        font=QvConstants.FONTTEXT
+        fm=QFontMetrics(font)
+        self.leXY.setFixedWidth(fm.width(text))
+
         # self.bXY.setText( str("%.2f" % p.x()) + ", " + str("%.2f" % p.y() ))
         # try:
         #     if self.qvPrint.pucMoure:
@@ -2719,7 +2725,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.leSeleccioExpressio.returnPressed.connect(seleccioExpressio)
         self.statusbar.setSizeGripEnabled( False )
         self.leSeleccioExpressio.setPlaceholderText('Introduiu un text per filtrar elements a la capa seleccionada')
-        self.leSeleccioExpressio.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Minimum)
+        self.leSeleccioExpressio.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Minimum)
         self.leSeleccioExpressio.setStyleSheet(stylesheetLineEditFiltre)
         self.leSeleccioExpressio.textChanged.connect(lambda: self.leSeleccioExpressio.style().polish(self.leSeleccioExpressio))
         self.leSeleccioExpressio.show()
@@ -2740,13 +2746,15 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.lXY.setContentsMargins(0,0,0,0)
         self.lXY.setSpacing(0)
         self.wXY.setLayout(self.lXY)
+        self.wXY.setSizePolicy(QSizePolicy.Fixed,QSizePolicy.Fixed)
         # self.bXY = QvPushButton(flat=True)
         # self.bXY.clicked.connect(self.editarXY)
         # self.bXY.setStyleSheet(stylesheetButton)
         # self.lXY.addWidget(self.bXY)
         self.leXY = QLineEdit()
         self.leXY.setFixedHeight(alcada)
-        self.leXY.setMinimumWidth(140)
+        self.leXY.setSizePolicy(QSizePolicy.Fixed,QSizePolicy.Fixed)
+        # self.leXY.setMinimumWidth(140)
         self.leXY.setStyleSheet(stylesheetLineEdit)
         # self.leXY.editingFinished.connect(self.returnEditarXY)
         self.leXY.returnPressed.connect(self.returnEditarXY)
@@ -2806,11 +2814,11 @@ class QVista(QMainWindow, Ui_MainWindow):
         #Així fer una reordenació serà més senzill
         self.statusbar.addPermanentWidget( self.lblProjecte, 0 )
         self.statusbar.addPermanentWidget(self.lblCapaSeleccionadaInf)
-        self.statusbar.addPermanentWidget(self.leSeleccioExpressio, 50)
+        self.statusbar.addPermanentWidget(self.leSeleccioExpressio, 1)
         # self.statusbar.addStretch()
         self.statusbar.addPermanentWidget( self.sbCarregantCanvas, 0 )
         self.statusbar.addPermanentWidget( self.lblConnexio, 0 )
-        self.statusbar.addPermanentWidget(self.wXY, 0 )
+        self.statusbar.addPermanentWidget(self.wXY, 1 )
         self.statusbar.addPermanentWidget( self.lblProjeccio, 0 )
         self.statusbar.addPermanentWidget( self.wScale, 0 )
         self.statusbar.addPermanentWidget( self.bOrientacio, 0 )
