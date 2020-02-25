@@ -483,7 +483,7 @@ class QvNouCataleg(QWidget):
         txt=txt.translate(trans)
         txt=txt.upper()
         txt=txt.strip(' ')
-        txt=re.sub('\s[\s]+',' ',txt)
+        txt=re.sub(r'\s[\s]+',' ',txt)
 
         return txt
 

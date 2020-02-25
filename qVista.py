@@ -3517,7 +3517,7 @@ def seleccioExpressio():
 
 def guardarProjecte():
     """ la funcio retorna si s'ha acabat guardant o no """
-    """  Protecció dels projectes read-only: tres vies:
+    r"""  Protecció dels projectes read-only: tres vies:
     -       Variable del projecte qV_readOnly=’True’
     -       Ubicació en una carpeta de només-lectura
     -       Ubicació en una de les subcarpetes de N:\SITEB\APL\PyQgis\qVista
