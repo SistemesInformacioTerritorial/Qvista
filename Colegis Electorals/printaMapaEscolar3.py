@@ -1,4 +1,6 @@
-# Programa 
+
+# Programa per imprimir el mapa escolar, en funció de l'assignacio d'illes-colegisque està en taules Oracle (preparades per Francesc Orgaz)
+
 
 from moduls.QvImports import *
 from moduls.QvLlegenda import QvLlegenda
@@ -23,7 +25,10 @@ def imprimirPlanol(colegi, codiColegi, adreca, x_min, y_min, x_max, y_max, rotac
         labelSeccions = layout.itemById('LabelSeccions')
         labelAdreca = layout.itemById('LabelAdreca')
         labelImatge = layout.itemById('Logo')
-        labelImatge.setPicturePath("d:/MapaEscolar/ConsorciEducacio.png")
+
+        labelImatge.setPicturePath("d:/MapaEscolar/CEB_logo_blau.png")
+
+
         # labelColegi.setText(colegi)
         labelSeccions.setText(codiColegi+' - '+colegi)
         labelAdreca.setText(adreca)
@@ -77,7 +82,9 @@ def imprimirPlanol(colegi, codiColegi, adreca, x_min, y_min, x_max, y_max, rotac
             settings.dpi=300
             settings.exportMetadata=False
             
-            fitxerSortida='d:/MapaEscolar_'+colegi+'_'+timestamp+'.PDF'
+
+            fitxerSortida='d:/'+codiColegi+'.PDF'
+
             result = exporter.exportToPdf(fitxerSortida, settings)
 
             print (fitxerSortida)
@@ -106,7 +113,9 @@ with qgisapp() as app:
     bridge.setCanvasLayers()
     project.read(projecteInicial)
     llegenda = QvLlegenda(canvas)
-    llegenda.show()
+
+    # llegenda.show()
+
 
     plantillaMapa = 'd:/MapaEscolar/plantillaMapaEscolarA1_2.qpt'
 
