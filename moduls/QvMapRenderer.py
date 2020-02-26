@@ -10,6 +10,7 @@ from qgis.PyQt.QtGui import QColor
 
 from moduls.QvMapVars import *
 from moduls.QvMapForms import QvFormSimbMapificacio
+from moduls.QvApp import QvApp
 
 _LABEL_FORMAT = '%1 - %2'
 
@@ -48,7 +49,7 @@ class QvMapRendererParams(QObject):
 
     def calcDecimals(self, num):
         num = num.strip()
-        pos = num.rfind(MAP_LOCALE.decimalPoint())
+        pos = num.rfind(QvApp().locale.decimalPoint())
         if pos == -1:
             return 0
         else:
@@ -63,7 +64,7 @@ class QvMapRendererParams(QObject):
         return res
 
     def numRang(self, txt):
-        num, ok = MAP_LOCALE.toFloat(txt)
+        num, ok = QvApp().locale.toFloat(txt)
         if ok:
             return num
         else:
@@ -125,7 +126,7 @@ class QvMapRenderer(QObject):
             symbol.setColor(color)
             f0 = params.numRang(r[0])
             f1 = params.numRang(r[1])
-            label = MAP_LOCALE.toString(f0, 'f', decimals) + ' - ' + MAP_LOCALE.toString(f1, 'f', decimals)
+            label = QvApp().locale.toString(f0, 'f', decimals) + ' - ' + QvApp().locale.toString(f1, 'f', decimals)
             category = QgsRendererRange(f0, f1, symbol, label)
             categories.append(category)
         renderer = QgsGraduatedSymbolRenderer(params.campCalculat, categories)
