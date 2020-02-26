@@ -305,11 +305,14 @@ class QVista(QMainWindow, Ui_MainWindow):
             Si el projecte té definida la variable qV_useProjectExtent amb valor True el projecte s'obrirà amb tota l'extensió
             Si no la té o té valor False s'obrirà mostrant l'extensió que estava mostrant actualment '''
         self.obrirProjecte(projecte, self.canvas.extent())
+
     def obrirProjecte(self, projecte, rang = None, nou=False):
         """Obre un projecte passat com a parametre, amb un possible rang predeterminat.
         
         Arguments:
             projecte {String} -- Nom (amb path) del projecte a obrir
+            rang {QRect} -- Rang del projecte quees vol mostrar al obrir
+
         
         Keyword Arguments:
             rang {Rect} -- El rang amb el que s'ha d'obrir el projecte (default: {None})
@@ -319,14 +322,17 @@ class QVista(QMainWindow, Ui_MainWindow):
         if projecte.strip()=='': return
         # Obrir el projecte i col.locarse en rang
         self.project.read(projecte)
+
         if nou:
             md=self.project.metadata()
             md.setCreationDateTime(QDateTime.currentDateTime())
             self.project.setMetadata(md)
+
         self.pathProjecteActual = projecte
         if self.project.title().strip()=='':
             # self.project.setTitle(os.path.basename(projecte))
             self.project.setTitle(Path(projecte).stem)
+
         self.lblTitolProjecte.setText(self.project.title())
         self.titolProjecte = self.project.title()
         # self.canvisPendents = False #es el bit Dirty que ens diu si hem de guardar al tancar o no
@@ -363,10 +369,18 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.actualitzaMapesRecents(self.pathProjecteActual)
 
         
-        metadades=Path(self.pathProjecteActual).with_suffix('.htm')
+
+        # Lectura de les metadades del projecte per veure si hi ha un entorn associat
+        # Caldria generalitzar-ho i treure-ho d'aquesta funció
+
         entorn = QgsExpressionContextUtils.projectScope(self.project).variable('qV_entorn')
+
         if entorn == "'MarxesExploratories'":
             self.marxesCiutat()
+
+        # Gestió de les metadades
+        metadades=Path(self.pathProjecteActual).with_suffix('.htm')
+
         if os.path.isfile(metadades):
             def obrirMetadades():
                 visor=QvVisorHTML(metadades,'Informació del mapa',logo=False,parent=self)
@@ -376,6 +390,7 @@ class QVista(QMainWindow, Ui_MainWindow):
             self.botoMetadades.clicked.connect(obrirMetadades)
         else:
             self.botoMetadades.hide()
+
         carregaMascara(self)
 
         # self.metadata = self.project.metadata()
@@ -3639,6 +3654,7 @@ def obreDocumentacio():
     doc=QvDocumentacio(qV)
     qV.stopMovie()
     doc.show()
+
 def carregarFieldsCalculadora(): #???
     # print(qV.calculadora.ui.cbLayers.currentText())
     layer = QvLlegenda.capaPerNom(qV,qV.calculadora.ui.cbLayers.currentText())
