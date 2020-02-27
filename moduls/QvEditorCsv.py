@@ -13,11 +13,14 @@ from moduls.QvFuncioFil import QvFuncioFil
 class ModelCsv(QAbstractTableModel):
     ROW_BATCH_COUNT = 15
 
-    def __init__(self):
+    def __init__(self, readonly=False):
         super().__init__()
+        self.readonly=readonly
         self.headers = []
         self.persons = []
         self.rowsLoaded = ModelCsv.ROW_BATCH_COUNT
+    def setReadOnly(self,readonly):
+        self.readonly=readonly
 
     def setHeaders(self, headers):
         self.headers = headers
@@ -91,7 +94,7 @@ class ModelCsv(QAbstractTableModel):
             return QBrush(QvConstants.COLORDESTACAT) if index.row()+1 in self.errors else QBrush(QvConstants.COLORBLANC)
 
     def setData(self, index, value, role):
-        if index.isValid and role == Qt.EditRole:
+        if index.isValid and role == Qt.EditRole and not self.readonly:
             self.persons[index.row()][index.column()] = value
             self.dataChanged.emit(index, index)
             return True
@@ -153,6 +156,7 @@ class QvEditorCsv(QDialog):
             # self._layErrors.addWidget(self._spinErrors)
             # self._layErrors.addStretch()
             self._lay.addLayout(self._layErrors)
+        self._lay.addWidget(QLabel(self._arxiu))
         # Declarem la taula
         self._taula = QTableView()
         self._lay.addWidget(self._taula)
@@ -185,7 +189,10 @@ class QvEditorCsv(QDialog):
         self._layBotons.addStretch()
         self._layBotons.addWidget(self._bDesar)
         self._layBotons.addWidget(self._bCancelar)
-
+    def setReadOnly(self,readonly):
+        self._model.setReadOnly(readonly)
+        self._bDesar.setEnabled(not readonly)
+        self._taula.setEditTriggers(QAbstractItemView.NoEditTriggers if readonly else QAbstractItemView.AllEditTriggers)
     def _obreFullCalcul(self):
         QDesktopServices.openUrl(QUrl(self._arxiu))
         self.close()

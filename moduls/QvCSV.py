@@ -23,10 +23,15 @@ def nivellCsv(qV, fitxer: str, delimitador: str, campX: str, campY: str, projecc
         projeccio, QgsCoordinateReferenceSystem.EpsgCrsId))
     if layer is not None or layer is not NoneType:
         symbol = QgsMarkerSymbol.createSimple({'name': symbol, 'color': color})
-        if layer.renderer() is not None:
-            layer.renderer().setSymbol(symbol)
-        qV.project.addMapLayer(layer)
-        # print("add layer")
+        # if layer.renderer() is not None:
+        #     layer.renderer().setSymbol(symbol)
+        pr=layer.dataProvider()
+        writer=QgsVectorFileWriter.writeAsVectorFormat(layer,fitxer[:-4],pr.encoding(),pr.crs(),symbologyExport=QgsVectorFileWriter.SymbolLayerSymbology)
+        capaGpkg=QgsVectorLayer(fitxer[:-4]+'.gpkg',nomCapa,'ogr')
+        capaGpkg.renderer().setSymbol(symbol)
+        qV.project.addMapLayer(capaGpkg)
+        qV.llegenda.saveStyleToGeoPackage(capaGpkg)
+        # qV.project.addMapLayer(layer)
         qV.setDirtyBit(True)
     else:
         print("no s'ha pogut afegir la nova layer")
@@ -212,6 +217,7 @@ class CsvPagina(QWidget):
             return self._canviat
         else:
             self._wid.setWindowTitle("Veure taula completa")
+            self._wid.setReadOnly(True)
             self._wid.show()
 
     def getCamps(self):
@@ -477,15 +483,17 @@ class CsvAdreca(CsvPagina):
         pass
     def geocodifica(self):
         pare=self._carregador
-        geocod=QvMemoria().getGeocodificat(self._carregador._csv)
+        arxiuNet=str(Path(self._carregador._csv).parent)+'\\'+self._carregador._mapificador.netejaString(Path(self._carregador._csv).stem,True)+'.csv'
+        geocod=QvMemoria().getGeocodificat(self._carregador._csv, arxiuNet)
         if geocod is not None:
             #Preguntar si volem carregar directament el geocodificat
             resposta=QMessageBox.question(self,"Aquest arxiu ja ha sigut geocodificat prèviament", \
                 "Aquest arxiu ja ha sigut geocodificat prèviament. Vol carregar-lo directament, estalviant així repetir la geocodificació?",QMessageBox.Yes|QMessageBox.No)
             if resposta==QMessageBox.Yes:
                 self._carregador.setCsv(geocod)
+                self._carregador._codificacio='utf-8'
                 self._carregador._mapificador=QvMapificacio(geocod)
-                self.salta.emit(CsvGeocodificat([],0, self._carregador))
+                self.salta.emit(CsvGeocodificat(None,0, self._carregador))
                 return
         QvMemoria().setCampsGeocod(self._carregador._csv,{'teCoords':False,'camps':{'tipusVia':self._cbTipusVia.currentText(),'via':self._cbVia.currentText(),'numI':self._cbNumI.currentText(),
             'lletraI':self._cbLletraI.currentText(),'numF':self._cbNumF.currentText(),'lletraF':self._cbLletraF.currentText()}})
@@ -562,7 +570,8 @@ class CsvGeocod(CsvPagina):
             self.salta.emit(self._carregador.getPrimeraPantalla())
         else:
             # Aquí saltar al resultat
-            QvMemoria().setGeocodificat(self._carregador._csv)
+            arxiuNet=str(Path(self._carregador._csv).parent)+'\\'+self._carregador._mapificador.netejaString(Path(self._carregador._csv).stem,True)+'.csv'
+            QvMemoria().setGeocodificat(self._carregador._csv, arxiuNet)
             self._carregador.setCsv(self._carregador._mapificador.fZones)
             # self._carregador._csv=self._carregador._mapificador.fDades
             self.salta.emit(CsvGeocodificat(self._errors, n, self._carregador,self._carregador))
@@ -572,15 +581,19 @@ class CsvGeocodificat(CsvPagina):
     def __init__(self, errors, temps, carregador, parent=None):
         super().__init__(carregador, parent)
         self._setTitol('Geocodificat')
-        self._errors = [x['_fila'] for x in errors]
         if temps!=0: 
             self._lay.addWidget(QLabel('Temps requerit per la geocodificació: %i segons'%temps))
             self._lay.addWidget(QLabel('Geocodificat a una velocitat de %.2f files per segon'%(self._carregador._mapificador.files/temps)))
         self._textEditErrors = QTextEdit()
         self._lay.addWidget(self._textEditErrors)
-        if len(self._errors)>0:
-            self._definirErrors(self._errors)
+        if errors is not None:
+            self._errors = [x['_fila'] for x in errors]
+            if len(self._errors)>0:
+                self._definirErrors(self._errors)
+            else:
+                pass
         else:
+            self._errors=[]
             self._textEditErrors.setText('Aquest arxiu ha sigut carregat directament des de la memòria cau.\nPer tant, no hi ha errors a mostrar.')
         # self._lay.addStretch()
         self._layBotons = QHBoxLayout()
