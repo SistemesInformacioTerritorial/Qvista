@@ -52,6 +52,9 @@ from moduls.QvMascara import *
 # import re
 import csv
 import os
+
+import shutil
+
 from pathlib import Path
 import functools #Eines de funcions, per exemple per avaluar-ne parcialment una
 from PyQt5.QtGui import QPainter
@@ -132,6 +135,9 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         # Preparació de projecte i canvas
         self.preparacioEntornGrafic()
+
+        # Preparació del modul de Street View
+        self.preparacioStreetView()    
 
         # Connectar progressBar del canvas a la statusBar
         self.connectarProgressBarCanvas()
@@ -413,7 +419,6 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.player.mediaPlayer.play()
         self.player.show()
         
-
     def stopMovie(self):
         self.player.hide()
         self.player.mediaPlayer.pause()
@@ -547,7 +552,6 @@ class QVista(QMainWindow, Ui_MainWindow):
         
         self.canvas = QvCanvas(llistaBotons=llistaBotons, posicioBotonera = 'SE', botoneraHoritzontal = True, pare=self)
 
-        self.preparacioStreetView()     #fa el qvSv. necessita el canvas
         #self.canvas.bstreetview.clicked.connect(self.qvSv.segueixBoto)
 
         self.canvas.setCanvasColor(QColor(253,253,255))
@@ -3318,10 +3322,6 @@ def createFolder(directory):
             os.makedirs(directory)
     except OSError:
         print ('Error: Creating directory. ' +  directory)
-        
-
-
-import shutil
 
 def disgregarDirele():
 
@@ -3729,40 +3729,8 @@ def escollirNivellCSV():
         titol = 'Còpia de Models adreces.csv'
         nivellCsv(nfile,';','XNUMPOST','YNUMPOST', projeccio, nomCapa = titol)
         
-# def escollirNivellCSV():
-#     # layer = qV.llegenda.view.currentLayer()
-#     # qV.project.removeMapLayer(layer)
-#     # qV.canvas.refresh()
-#     nfile,_ = QFileDialog.getOpenFileName(None, "Obrir fitxer CSV", ".", "CSV (*.csv)")
 
-    
-#     dCSV = DialegCSV()
-#     dCSV.finished.connect(dCSV)
-   
-#     # print(dCSV.ui.cbDelimitador.currentText())
-#     # print("D"+dCSV.ui.cbDelimitador.currentText()+"D")
-#     projeccio = 0
-#     if nfile:
-#         with open(nfile) as f:
-#             reader = csv.DictReader(f, delimiter=dCSV.ui.cbDelimitador.currentText())
-#             llistaCamps = reader.fieldnames
-#         # print (llistaCamps)
-        
-#         dCSV = DialegCSV(llistaCamps)
 
-#         if dCSV.ui.cbDelProjeccio.currentText() == 'UTM ED50':
-#             projeccio = 23031
-#         elif dCSV.ui.cbDelProjeccio.currentText() == 'UTM ETRS89':
-#             projeccio = 25831
-#         elif dCSV.ui.cbDelProjeccio.currentText() == 'Lat Long':
-#             projeccio = 4326
-#         titol = dCSV.ui.leNomCapa.text()
-#         nivellCsv(nfile,dCSV.ui.cbDelimitador.currentText(),dCSV.ui.cbDelX.currentText(),dCSV.ui.cbDelY.currentText(), projeccio, nomCapa = titol)
-#         #carregarCsvATaula(nfile,';')
-    
-
-globalLlistaCamps=None #???
-tamanyReader=0 #???
 def carregarLayerCSV(nfile):
         if nfile: 
             qV.startMovie()
