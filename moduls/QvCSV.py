@@ -491,6 +491,7 @@ class CsvAdreca(CsvPagina):
                 "Aquest arxiu ja ha sigut geocodificat prèviament. Vol carregar-lo directament, estalviant així repetir la geocodificació?",QMessageBox.Yes|QMessageBox.No)
             if resposta==QMessageBox.Yes:
                 self._carregador.setCsv(geocod)
+                self._carregador._codificacio='utf-8'
                 self._carregador._mapificador=QvMapificacio(geocod)
                 self.salta.emit(CsvGeocodificat(None,0, self._carregador))
                 return
