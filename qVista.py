@@ -51,7 +51,8 @@ from moduls.QvMemoria import QvMemoria
 from moduls.QvMascara import *
 # import re
 import csv
-import os
+import os        
+import win32con, win32api
 
 import shutil
 
@@ -96,7 +97,7 @@ class QVista(QMainWindow, Ui_MainWindow):
     
     keyPressed = pyqtSignal(int) #???
         
-    def __init__(self,app, prjInicial):
+    def __init__(self,app, prjInicial, titleFinestra):
         """  Inicialització de QVista.
         
             Aquí fem:
@@ -120,7 +121,6 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.setupUi(self)
 
         # Definicions globals
-
         app.setFont(QvConstants.FONTTEXT)
         # self.setWindowFlags(Qt.Window | Qt.FramelessWindowHint | Qt.CustomizeWindowHint)
         self.setWindowFlags(Qt.FramelessWindowHint)
@@ -128,7 +128,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         # self.verticalLayout.addWidget(QSizeGrip(self),0,Qt.AlignBottom | Qt.AlignRight)
 
         #Afegim títol a la finestra
-        self.setWindowTitle(titolFinestra)
+        self.setWindowTitle(titleFinestra)
 
         # Definició dels labels de la statusBar 
         self.definirLabelsStatus()   
@@ -142,13 +142,12 @@ class QVista(QMainWindow, Ui_MainWindow):
         # Connectar progressBar del canvas a la statusBar
         self.connectarProgressBarCanvas()
 
-        # Inicialitzacions
+        # Inicialitzacions de variables de la classe
         self.printActiu = False #???
         self.canvisPendents=False
         self.titolProjecte = ""
         self.qvPrint = 0
         self.mapesOberts = False
-        self.primerCop = True #???
         self.mapaMaxim = False
         self.layerActiu = None
         self.prepararCercador = True
@@ -208,7 +207,7 @@ class QVista(QMainWindow, Ui_MainWindow):
                 
 
         # possem el projecte inicial a readonly.... ¿¿¿
-        import win32con, win32api,os
+
         
         try:
             pre, ext = os.path.splitext(prjInicial) #ext ???
@@ -794,7 +793,6 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.ubicacions.leUbicacions.setText("->"+self.leCarrer.text()+"  "+self.cAdrec.NumeroOficial)
         self.ubicacions._novaUbicacio()
 
-
     # pillar las coordenadas y mandarlas a stretView
     def invocarStreetView(self):
         
@@ -1179,11 +1177,11 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.actImprimir.setIcon(icon)
         self.actImprimir.triggered.connect(self.imprimir)
 
-        self.actCloudUpload = QAction("Pujar al núvol", self)
-        self.actCloudUpload.setStatusTip("Pujar al núvol")
-        icon=QIcon(imatgesDir+'cloud-upload.png')
-        self.actCloudUpload.setIcon(icon)
-        self.actCloudUpload.triggered.connect(self.cloudUpload)
+        # self.actCloudUpload = QAction("Pujar al núvol", self)
+        # self.actCloudUpload.setStatusTip("Pujar al núvol")
+        # icon=QIcon(imatgesDir+'cloud-upload.png')
+        # self.actCloudUpload.setIcon(icon)
+        # self.actCloudUpload.triggered.connect(self.cloudUpload)
 
         # Creació de layers a partir de diferents formats
         self.actAfegirNivellSHP = QAction("Afegir capa SHP", self)
@@ -1456,9 +1454,9 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.actMarxesCiutat.setStatusTip("Marxes de Ciutat")
         self.actMarxesCiutat.triggered.connect(self.marxesCiutat)
 
-        self.actPlatges = QAction("Pavimentació", self)
-        self.actPlatges.setStatusTip("Pavimentació")
-        self.actPlatges.triggered.connect(self.platges)
+        # self.actPlatges = QAction("Pavimentació", self)
+        # self.actPlatges.setStatusTip("Pavimentació")
+        # self.actPlatges.triggered.connect(self.platges)
 
         self.actPropietatsLayer = QAction("Propietats de la capa", self)
         self.actPropietatsLayer.setStatusTip("Propietats de la capa")
@@ -1557,9 +1555,9 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.botoReload.setCursor(QvConstants.cursorClick())
         self.botoReload.clicked.connect(self.reload)
 
-    def platges(self):
-        self.platges = QvPlatges()
-        self.platges.show()
+    # def platges(self):
+    #     self.platges = QvPlatges()
+    #     self.platges.show()
 
     def reportarBug(self): #finalment no es fa servir (???)
         self.fitxaError = QWidget()
@@ -2027,15 +2025,10 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.project.write('c:/temp/tempQgis.qgs')
         QDesktopServices().openUrl(QUrl('c:/temp/tempQgis.qgs'))
 
-    def cloudUpload(self):
-        missatgeCaixa("Es podrà: Obtenir una adreça URL del mapa, publicat a Internet, per compartir-la", "Aquesta funció no està encara implementada.")
+    # def cloudUpload(self):
+    #     missatgeCaixa("Es podrà: Obtenir una adreça URL del mapa, publicat a Internet, per compartir-la", "Aquesta funció no està encara implementada.")
         
-    def netejaCanvas(self): #???
-        pass
-
     def tissores(self):
-        # QDesktopServices().openUrl(QUrl('c:\windows\system32\SnippingTool.exe'))
-        # subprocess.check_call([r'c:\windows\system32\SnippingTool.exe'])
         process = QProcess(self)
         pathApp = "c:\windows\system32\SnippingTool.exe"
         process.start(pathApp)
@@ -2086,13 +2079,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.lytBotonsFinestra = QHBoxLayout(self.fMaxim)
         self.fMaxim.setLayout(self.lytBotonsFinestra)
         self.lytBotonsFinestra.setContentsMargins(0,0,0,0)
-        
-        # self.botoMaxim=QvPushButton(flat=True)
-        # self.botoMaxim.clicked.connect(self.ferGran)
-        # self.botoMaxim.setIcon(QIcon(imatgesDir+'arrow-expand.png'))
-        # self.botoMaxim.setIconSize(QSize(30, 30))
-        # self.lytMaxim=QHBoxLayout(self.frame_13)
-        # self.lytMaxim.addWidget(self.botoMaxim)
+
         self.frame_13.setStyleSheet('background-color: %s'%QvConstants.COLORFOSCHTML)
 
         stylesheetBotonsFinestra='''
@@ -2119,6 +2106,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.maximitzada=True
         iconaRestaurar1=QIcon(imatgesDir+'window-restore.png')
         iconaRestaurar2=QIcon(imatgesDir+'window-maximize.png')
+
         def restaurar():
             if self.maximitzada:
                 self.setWindowFlag(Qt.FramelessWindowHint,False)
@@ -2136,6 +2124,7 @@ class QVista(QMainWindow, Ui_MainWindow):
                 self.actualitzaWindowFlags()
                 self.show()
             self.maximitzada=not self.maximitzada
+            
         self.restaurarFunc=restaurar 
         self.botoRestaurar=QvPushButton(flat=True)
         self.botoRestaurar.setIcon(iconaRestaurar1)
@@ -2244,7 +2233,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         # self.menuFuncions.addAction(self.actObrirBrowserGrafiques)
         # self.menuFuncions.addAction(self.actBicing)
         self.menuFuncions.addAction(self.actPavimentacio)
-        self.menuFuncions.addAction(self.actPlatges)
+        # self.menuFuncions.addAction(self.actPlatges)
     def actualitzaWindowFlags(self):
         self.setWindowFlag(Qt.Window)
         self.setWindowFlag(Qt.CustomizeWindowHint,True)
@@ -2260,53 +2249,53 @@ class QVista(QMainWindow, Ui_MainWindow):
     def testProva(self):
         self.canvas.setRotation(44)
 
-    def ferGrafica(self): #???
-        layerActiu = self.llegenda.currentLayer()
-        for a in self.calculadora.ui.lwFields.selectedItems():
-            campGraficable = a.text()
+    # def ferGrafica(self): #???
+    #     layerActiu = self.llegenda.currentLayer()
+    #     for a in self.calculadora.ui.lwFields.selectedItems():
+    #         campGraficable = a.text()
 
-        noms = []
-        dades = []
-        dades2 = [] #???
+    #     noms = []
+    #     dades = []
+    #     dades2 = [] #???
         
-        # self.pintaLabels(campGraficable)
+    #     # self.pintaLabels(campGraficable)
 
-        nomLayer = self.calculadora.ui.cbLayers.currentText()
-        if nomLayer == 'Districtes':
-            campNom = 'N_Distri'
-        elif nomLayer == 'Barris':
-            campNom = 'N_Barri'
-        else:
-            return
+    #     nomLayer = self.calculadora.ui.cbLayers.currentText()
+    #     if nomLayer == 'Districtes':
+    #         campNom = 'N_Distri'
+    #     elif nomLayer == 'Barris':
+    #         campNom = 'N_Barri'
+    #     else:
+    #         return
 
-        for feature in layerActiu.getFeatures():
-            noms.append(feature.attributes()[layerActiu.fields().lookupField(campNom)])
-            dades.append(feature.attributes()[layerActiu.fields().lookupField(campGraficable)])
-            # dades2.append(feature.attributes()[layerActiu.fields().lookupField('Dones')])
-            # print (barris, dades, dades2)
+    #     for feature in layerActiu.getFeatures():
+    #         noms.append(feature.attributes()[layerActiu.fields().lookupField(campNom)])
+    #         dades.append(feature.attributes()[layerActiu.fields().lookupField(campGraficable)])
+    #         # dades2.append(feature.attributes()[layerActiu.fields().lookupField('Dones')])
+    #         # print (barris, dades, dades2)
 
-        data1 = go.Bar(
-                    y=noms,
-                    x=dades,
-                    name=campGraficable,
-                    orientation='h'
-            )        
-        # data2 = go.Bar(
-        #             y=barris,
-        #             x=dades2,
-        #             name='Dones',
-        #             orientation='h'
-        #     )
+    #     data1 = go.Bar(
+    #                 y=noms,
+    #                 x=dades,
+    #                 name=campGraficable,
+    #                 orientation='h'
+    #         )        
+    #     # data2 = go.Bar(
+    #     #             y=barris,
+    #     #             x=dades2,
+    #     #             name='Dones',
+    #     #             orientation='h'
+    #     #     )
 
-        dades = [data1]
-        layout = go.Layout(barmode='group')
+    #     dades = [data1]
+    #     layout = go.Layout(barmode='group')
 
-        fig = go.Figure(data=dades, layout=layout)
+    #     fig = go.Figure(data=dades, layout=layout)
 
-        plotly.offline.plot(fig, filename='c:/temp/grouped-bar.html', auto_open=False)
+    #     plotly.offline.plot(fig, filename='c:/temp/grouped-bar.html', auto_open=False)
         
-        self.browserGrafiques.setUrl(QUrl('file:///c:/temp/grouped-bar.html'))
-        self.browserGrafiques.show()
+    #     self.browserGrafiques.setUrl(QUrl('file:///c:/temp/grouped-bar.html'))
+    #     self.browserGrafiques.show()
 
         # layer = QvLlegenda.capaPerNom(qV,qV.calculadora.ui.cbLayers.currentText())
         # # layer = qV.project.instance().mapLayersByName(qV.calculadora.ui.cbLayers.currentText())[0]
@@ -3994,7 +3983,7 @@ def main(argv):
         
         # Instanciem la classe QVista i fem qV global per poder ser utilitzada arreu
         # Paso app, para que QvCanvas pueda cambiar cursores
-        qV = QVista(app, projecteInicial)
+        qV = QVista(app, projecteInicial,titolFinestra)
        
         # qV.showFullScreen()
         qV.showMaximized()
