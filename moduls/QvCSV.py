@@ -21,7 +21,7 @@ def nivellCsv(qV, fitxer: str, delimitador: str, campX: str, campY: str, projecc
     layer.setCrs(QgsCoordinateReferenceSystem(
         projeccio, QgsCoordinateReferenceSystem.EpsgCrsId))
     if layer is not None or layer is not NoneType:
-        symbol = QgsMarkerSymbol.createSimple({'name': symbol, 'color': color, 'outline_width':'0.1'})
+        symbol = QgsMarkerSymbol.createSimple({'name': symbol, 'color': color, 'outline_width':'0.3'})
         if layer.renderer() is not None:
             layer.renderer().setSymbol(symbol)
         qV.project.addMapLayer(layer)
