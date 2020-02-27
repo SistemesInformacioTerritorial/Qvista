@@ -21,7 +21,7 @@ from qgis.core import (QgsApplication, QgsVectorLayer, QgsLayerDefinition, QgsVe
                        QgsGraduatedSymbolRenderer, QgsRendererRange, QgsAggregateCalculator, QgsError, QgsWkbTypes,
                        QgsGradientColorRamp, QgsRendererRangeLabelFormat, QgsReadWriteContext, QgsExpressionContextUtils)
 from qgis.gui import QgsFileWidget
-from qgis.PyQt.QtCore import Qt, QObject, pyqtSignal, pyqtSlot
+from qgis.PyQt.QtCore import Qt, QObject, QDate, pyqtSignal, pyqtSlot
 from qgis.PyQt.QtGui import QColor, QValidator, QIcon
 from qgis.PyQt.QtXml import QDomDocument
 from qgis.PyQt.QtWidgets import QMessageBox
@@ -557,7 +557,7 @@ class QvMapificacio(QObject):
     #         with fiona.open(self.fSQL, "w", driver="GPKG", crs=df.crs, schema=schema, layer=nomCapa, gt=65536) as colxn:
     #             colxn.writerecords(df.iterfeatures())
 
-    def generaCapaGpd(self, nomCapa: str, tipusAgregacio: str, tipusDistribucio: str) -> bool:
+    def generaCapaGpd(self, nomCapa: str, tipusAgregacio: str, tipusDistribucio: str, campSegmentacio: str = '') -> bool:
         """ Calcula la agregación de datos, los cruza con el geopackage de zonas y genera la capa del mapa de coropletas.
         
         Arguments:
@@ -569,15 +569,20 @@ class QvMapificacio(QObject):
             bool -- True si se generó la capa con el  mapa correctamente
         """
         try:
-            # El campo de zona se carga como string, y el de agregacion como float si hay acumulados
-            if tipusAgregacio in ("Suma", "Mitjana"):
-                dtypes = {self.campZona: np.string_, self.campAgregat: np.float_}
+            # Los campos de zona u segmentacion se cargan como string, y el de agregacion como float si hay acumulados
+            dtypes = {self.campZona: np.string_}
+            if campSegmentacio == '':
+                cSeg = ''
             else:
-                dtypes = {self.campZona: np.string_}
+                cSeg = CAMP_QVISTA + campSegmentacio
+                dtypes.update({cSeg: np.string_})
+            if tipusAgregacio in ("Suma", "Mitjana"):
+                dtypes.update({self.campAgregat: np.float_})
 
             # Carga de capa de datos geocodificados
             csv = pd.read_csv(self.fZones, sep=self.separador, encoding='utf-8',
                               decimal=QvApp().locale.decimalPoint(), dtype=dtypes)
+            csv = csv[csv[self.campZona].notnull()]
 
             # Aplicar filtro
             try:
@@ -617,6 +622,17 @@ class QvMapificacio(QObject):
             if "POBLACIO" in pols.columns:
                 pols["POBLACIO"] = pd.to_numeric(pols["POBLACIO"], downcast='integer', errors='coerce')
 
+            # Intentamos segmentacion cuando el campo indicado solo contiene un valor
+            try:
+                if cSeg != '':
+                    vMin = csv[cSeg].min()
+                    vMax = csv[cSeg].max()
+                    if vMin == vMax:
+                        pols = pols[pols[campSegmentacio] == vMin]
+            except Exception as err:
+                print("Segmentación fallida: " + str(err))
+                # Seguimos
+
             # Join
             join = pols.merge(res, on='CODI', how='left')
             join['RESULTAT'].fillna(0, inplace=True)
@@ -651,8 +667,8 @@ class QvMapificacio(QObject):
             return False
 
     def agregacio(self, llegenda, nomCapa: str, zona: str, tipusAgregacio: str,
-        campCalculat: str = 'RESULTAT', campAgregat: str = '', tipusDistribucio: str = "Total", filtre: str = '',
-        numDecimals: int = -1, numCategories: int = 4, modeCategories: str = "Endreçat", colorBase: str = 'Blau',
+        campCalculat: str = 'RESULTAT', campAgregat: str = '', tipusDistribucio: str = "Total", campSegmentacio: str = 'DISTRICTE', 
+        filtre: str = '', numDecimals: int = -1, numCategories: int = 4, modeCategories: str = "Endreçat", colorBase: str = 'Blau',
         format: str = '%1 - %2', veure: bool = True, form = None) -> bool:
         """ Realiza la agragación de los datos por zona, la generación del mapa de coropletas y su simbología.
         
@@ -691,6 +707,7 @@ class QvMapificacio(QObject):
         self.msgError = ''
         self.form = form
         self.descripcio = "Arxiu de dades: " + self.fZones + '\n' + \
+            "Data: " +  QDate.currentDate().toString(QvApp().locale.dateFormat(QvApp().locale.ShortFormat)) + '\n' + \
             "Zona: " + zona + '\n' + \
             "Tipus d'agregació: " + tipusAgregacio + '\n' + \
             "Camp de càlcul: " + campAgregat + '\n' + \
@@ -746,7 +763,7 @@ class QvMapificacio(QObject):
         # if not self.generaCapaQgis(nomCapa):
         #     return False
 
-        if not self.generaCapaGpd(self.nomCapa, tipusAgregacio, tipusDistribucio):
+        if not self.generaCapaGpd(self.nomCapa, tipusAgregacio, tipusDistribucio, campSegmentacio):
             return False
 
         # Carga capa de agregación
