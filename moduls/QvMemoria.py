@@ -100,13 +100,13 @@ class QvMemoria(Singleton):
         return None
     def setCampsGeocod(self,file,camps):
         self.campsGeocod[file]=camps
-    def setGeocodificat(self,path):
-        ruta=dadesdir+Path(path).stem+'_Geo.csv'
+    def setGeocodificat(self,path,pathNormalitzat):
+        ruta=dadesdir+Path(pathNormalitzat).stem+'_Geo.csv'
         if not os.path.isfile(path) or not os.path.isfile(ruta):
             return
         self.geocodificats[md5sum(path)]=md5sum(ruta)
-    def getGeocodificat(self,path):
-        ruta=dadesdir+Path(path).stem+'_Geo.csv'
+    def getGeocodificat(self,path,pathNormalitzat):
+        ruta=dadesdir+Path(pathNormalitzat).stem+'_Geo.csv'
         if os.path.isfile(ruta):
             suma_orig=md5sum(path)
             if suma_orig in self.geocodificats:

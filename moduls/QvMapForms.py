@@ -313,7 +313,7 @@ class QvFormNovaMapificacio(QvFormBaseMapificacio):
 
     def exec(self):
         if PANDAS_ENABLED:
-            super().exec()
+            return super().exec()
         else:
             self.msgError(PANDAS_ERROR)
 
