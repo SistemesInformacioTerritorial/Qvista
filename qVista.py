@@ -96,7 +96,7 @@ class QVista(QMainWindow, Ui_MainWindow):
     
     keyPressed = pyqtSignal(int) #???
         
-    def __init__(self,app):
+    def __init__(self,app, prjInicial):
         """  Inicialització de QVista.
         
             Aquí fem:
@@ -211,7 +211,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         import win32con, win32api,os
         
         try:
-            pre, ext = os.path.splitext(projecteInicial) #ext ???
+            pre, ext = os.path.splitext(prjInicial) #ext ???
             elGpkg= pre + '.gpkg'
             win32api.SetFileAttributes(elGpkg,win32con.FILE_ATTRIBUTE_READONLY)
         except:
@@ -219,7 +219,7 @@ class QVista(QMainWindow, Ui_MainWindow):
       
 
         # Carrega del projecte inicial
-        self.obrirProjecte(projecteInicial)
+        self.obrirProjecte(prjInicial)
 
         # Final del cronometratge de carrega de projecte
         endGlobal = time.time()
@@ -3994,7 +3994,7 @@ def main(argv):
         
         # Instanciem la classe QVista i fem qV global per poder ser utilitzada arreu
         # Paso app, para que QvCanvas pueda cambiar cursores
-        qV = QVista(app)
+        qV = QVista(app, projecteInicial)
        
         # qV.showFullScreen()
         qV.showMaximized()
