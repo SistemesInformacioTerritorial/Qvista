@@ -388,7 +388,7 @@ class QvFormNovaMapificacio(QvFormBaseMapificacio):
             self.zona.setFocus()
         # self.taulaMostra = QvFormMostra(self.fCSV, parent=self)
         self.taulaMostra = QvEditorCsv(self.fCSV.fZones, [], 'utf-8', self.fCSV.separador, self)
-        self.taulaMostra.setWindowTitle("Vista prèvia de " + self.fCSV.fZones)
+        self.taulaMostra.setWindowTitle("Vista prèvia d'arxiu geocodificat")
 
         self.bTaula.setEnabled(True)
         self.calcul.setItems(self.fCSV.camps, primer='')

@@ -569,14 +569,18 @@ class QvMapificacio(QObject):
             bool -- True si se generó la capa con el  mapa correctamente
         """
         try:
-            # Los campos de zona u segmentacion se cargan como string, y el de agregacion como float si hay acumulados
+            # Los campos de zona y segmentacion se cargan como string, y el de agregacion como float si hay acumulados
             dtypes = {self.campZona: np.string_}
             if campSegmentacio == '':
                 cSeg = ''
             else:
                 cSeg = CAMP_QVISTA + campSegmentacio
-                dtypes.update({cSeg: np.string_})
+                if cSeg != self.campZona:
+                    dtypes.update({cSeg: np.string_})
             if tipusAgregacio in ("Suma", "Mitjana"):
+                if self.campAgregat == self.campZona or (cSeg != '' and self.campAgregat == cSeg):
+                    self.msgError = "No és possible calcular aquesta agregació de dades.\n\nRevisi els paràmetres especificats."
+                    return False
                 dtypes.update({self.campAgregat: np.float_})
 
             # Carga de capa de datos geocodificados
@@ -628,6 +632,8 @@ class QvMapificacio(QObject):
                     vMin = csv[cSeg].min()
                     vMax = csv[cSeg].max()
                     if vMin == vMax:
+                        if campSegmentacio == QvSqlite.getAlias(self.valZona[0]):
+                            campSegmentacio = 'CODI'
                         pols = pols[pols[campSegmentacio] == vMin]
             except Exception as err:
                 print("Segmentación fallida: " + str(err))
