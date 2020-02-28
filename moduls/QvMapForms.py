@@ -312,10 +312,12 @@ class QvFormNovaMapificacio(QvFormBaseMapificacio):
         self.nouArxiu()
 
     def exec(self):
+        # La mapificación solo funciona si está instalado el módulo pandas
         if PANDAS_ENABLED:
             return super().exec()
         else:
             self.msgError(PANDAS_ERROR)
+            return QDialog.Rejected
 
     @pyqtSlot()
     def veureArxiu(self):
@@ -389,6 +391,7 @@ class QvFormNovaMapificacio(QvFormBaseMapificacio):
         # self.taulaMostra = QvFormMostra(self.fCSV, parent=self)
         self.taulaMostra = QvEditorCsv(self.fCSV.fZones, [], 'utf-8', self.fCSV.separador, self)
         self.taulaMostra.setWindowTitle("Vista prèvia d'arxiu geocodificat")
+        self.taulaMostra.setReadOnly(True)
 
         self.bTaula.setEnabled(True)
         self.calcul.setItems(self.fCSV.camps, primer='')
