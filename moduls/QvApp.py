@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from qgis.PyQt.QtSql import QSqlDatabase, QSqlQuery, QSql
-from qgis.PyQt.QtCore import QTranslator, QLibraryInfo
+from qgis.PyQt.QtCore import QTranslator, QLibraryInfo, QLocale
 from qgis.PyQt.QtNetwork import QNetworkProxy
 from qgis.core import QgsPythonRunner
 from moduls.QvSingleton import Singleton
@@ -117,6 +117,7 @@ class QvApp(Singleton):
         self.idioma = None
         self.qtTranslator = None
         self.qgisTranslator = None
+        self.locale = QLocale("ca-ES")
 
         QgsPythonRunner.setInstance(QvPythonRunner())   # Ejecuciones Python
 
@@ -213,6 +214,8 @@ class QvApp(Singleton):
         path = path.replace('/./', '/')
         self.qgisTranslator.load("qgis_" + idioma, path)
         app.installTranslator(self.qgisTranslator)
+
+        self.locale = QLocale(self.idioma + "-ES")
 
     def llegirFitxerText(self, nomFich):
         try:

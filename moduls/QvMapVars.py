@@ -2,7 +2,7 @@
 
 from qgis.PyQt.QtGui import QColor
 from qgis.core import QgsGraduatedSymbolRenderer
-from qgis.PyQt.QtCore import QLocale, Qt
+from qgis.PyQt.QtCore import Qt
 from collections import OrderedDict
 
 from configuracioQvista import *
@@ -78,8 +78,6 @@ MAP_METODES_MODIF = OrderedDict({
     **MAP_METODES,
     "Personalitzat": QgsGraduatedSymbolRenderer.Custom
 })
-
-MAP_LOCALE = QLocale(QLocale.Catalan, QLocale.Spain)
 
 if __name__ == "__main__":
 
