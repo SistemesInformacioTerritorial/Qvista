@@ -51,8 +51,11 @@ from moduls.QvMemoria import QvMemoria
 from moduls.QvMascara import *
 # import re
 import csv
-import os        
-import win32con, win32api
+import os   
+try:     
+    import win32con, win32api
+except:
+    pass
 
 import shutil
 
