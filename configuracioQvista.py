@@ -20,7 +20,7 @@ if hasattr(QtCore.Qt, 'AA_EnableHighDpiScaling'):
 #     QApplication.setAttribute(QtCore.Qt.AA_UseHighDpiPixmaps, True)
 
 #Parametres configuració inicial
-versio="0.7"
+versio="0.8"
 titolFinestra = "qVista %s  Sistema d'Informació Territorial de Barcelona"%versio
 
 carpetaCataleg = "N:/9SITEB/Publicacions/qVista/Cataleg/Capes/"
