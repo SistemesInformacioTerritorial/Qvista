@@ -564,6 +564,9 @@ class QvMapificacio(QObject):
             nomCapa {str} -- Nombre de la capa del mapa
             tipusAgregacio {str} -- Tipo de agregación a aplicar
             tipusDistribucio {str} -- Tipo de distribución a aplicar
+
+        Keyword Arguments:
+            campSegmentacio {str} -- Nombre del campo para comprobar si solo hay un valor (default: {''})
         
         Returns:
             bool -- True si se generó la capa con el  mapa correctamente
@@ -641,7 +644,8 @@ class QvMapificacio(QObject):
 
             # Join
             join = pols.merge(res, on='CODI', how='left')
-            join['RESULTAT'].fillna(0, inplace=True)
+            # join['RESULTAT'].fillna(0, inplace=True)
+            join = join[join['RESULTAT'].notnull()]
 
             # Aplicar distribución
             if self.tipusDistribucio == '':
@@ -673,7 +677,7 @@ class QvMapificacio(QObject):
             return False
 
     def agregacio(self, llegenda, nomCapa: str, zona: str, tipusAgregacio: str,
-        campCalculat: str = 'RESULTAT', campAgregat: str = '', tipusDistribucio: str = "Total", campSegmentacio: str = 'DISTRICTE', 
+        campCalculat: str = 'RESULTAT', campAgregat: str = '', tipusDistribucio: str = "Total", campSegmentacio: str = '', 
         filtre: str = '', numDecimals: int = -1, numCategories: int = 4, modeCategories: str = "Endreçat", colorBase: str = 'Blau',
         format: str = '%1 - %2', veure: bool = True, form = None) -> bool:
         """ Realiza la agragación de los datos por zona, la generación del mapa de coropletas y su simbología.
@@ -688,6 +692,7 @@ class QvMapificacio(QObject):
             campCalculat {str} -- Campo donde se guardará el resultado de la agregación (default: {'RESULTAT'})
             campAgregat {str} -- Campo que se utiliza en el cálculo de la agragación (default: {''})
             tipusDistribucio {str} -- Tipo de distribución (default: {"Total"})
+            campSegmentacio {str} -- Nombre del campo para comprobar si solo hay un valor (default: {''})
             filtre {str} -- Expresión para filtrar los datos (default: {''})
             numDecimals {int} -- Número de decimales para el campo resultado (default: {-1})
             numCategories {int} -- Número de categorías en el mapa de coropletas (default: {4})

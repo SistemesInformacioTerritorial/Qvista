@@ -476,13 +476,16 @@ class QvFormSimbMapificacio(QvFormBaseMapificacio):
 
         self.metode = QComboBox(self)
         self.metode.setEditable(False)
-        self.metode.addItems(MAP_METODES_MODIF.keys())
+        if self.renderParams.numCategories > 1:
+            self.metode.addItems(MAP_METODES_MODIF.keys())
+        else:
+            self.metode.addItems(MAP_METODES.keys())   
         self.metode.setCurrentIndex(-1)
         self.metode.currentIndexChanged.connect(self.canviaMetode)
 
         self.nomIntervals = QLabel("Nombre d'intervals:", self)
         self.intervals = QSpinBox(self)
-        self.intervals.setMinimum(2)
+        self.intervals.setMinimum(min(2, self.renderParams.numCategories))
         self.intervals.setMaximum(max(MAP_MAX_CATEGORIES, self.renderParams.numCategories))
         self.intervals.setSingleStep(1)
         self.intervals.setValue(4)
@@ -727,7 +730,7 @@ class QvFormSimbMapificacio(QvFormBaseMapificacio):
     def validaInterval(self, wLineEdit1, wLineEdit2):
         num1, _ = QvApp().locale.toFloat(wLineEdit1.text())
         num2, _ = QvApp().locale.toFloat(wLineEdit2.text())
-        if num2 > num1:
+        if num2 >= num1:
             return True
         else:
             self.msgInfo("El segon nombre de l'interval ha de ser major que el primer")
