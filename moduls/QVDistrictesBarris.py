@@ -16,7 +16,7 @@ import sys, csv
 
 class QVDistrictesBarris(QObject):
 
-    __distBarrisCSV = 'Dades\DIST_BARRIS.csv'
+    __distBarrisCSV = r'Dades\DIST_BARRIS.csv'
 
     def __init__(self):
         super().__init__()

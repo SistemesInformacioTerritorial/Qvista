@@ -39,11 +39,13 @@ class QvMemoria(Singleton):
             self.directoriDesar=llegirArxiu(arxiuDirectoriDesar,encoding='utf-8')
         self.volHints=not os.path.isfile(arxiuVolHints) or llegirArxiu(arxiuVolHints)!='False'
         if os.path.isfile(arxiuCampsGeocod):
-            self.campsGeocod=json.loads(open(arxiuCampsGeocod).read())
+            with open(arxiuCampsGeocod) as f:
+                self.campsGeocod=json.loads(f.read())
         else:
             self.campsGeocod={}
         if os.path.isfile(arxiuGeocodificats):
-            self.geocodificats=json.loads(open(arxiuGeocodificats).read())
+            with open(arxiuGeocodificats) as f:
+                self.geocodificats=json.loads(f.read())
         else:
             self.geocodificats={}
     def getUltimaNew(self):

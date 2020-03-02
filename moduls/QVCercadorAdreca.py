@@ -94,7 +94,7 @@ class CompleterAdreces(QCompleter):
 
     def obteRangCodis(self):
         # Fem servir una expressió regular per buscar el rang dels codis. Creem un generador que conté el resultat
-        return (re.search("\([0-9]*\)", x).span() for x in self.elements)
+        return (re.search(r"\([0-9]*\)", x).span() for x in self.elements)
 
     def seleccioCanviada(self, nova, antiga):
         text = self.popup().currentIndex().data()
@@ -169,7 +169,7 @@ class QCercadorAdreca(QObject):
 
     # __carrersCSV = 'dades\Carrers.csv'
 
-    __CarrersNum_sqlite = 'Dades\CarrersNums.db'  # ???
+    __CarrersNum_sqlite = r'Dades\CarrersNums.db'  # ???
 
     sHanTrobatCoordenades = pyqtSignal(int, 'QString')  # atencion
 
