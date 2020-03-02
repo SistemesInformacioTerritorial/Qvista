@@ -343,6 +343,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         # self.canvisPendents = False #es el bit Dirty que ens diu si hem de guardar al tancar o no
         self.setDirtyBit(False)
         self.canvas.refresh()
+        self.showXY(self.canvas.center())
         
         if rang is not None and QgsExpressionContextUtils.projectScope(self.project).variable('qV_useProjectExtent') != 'True':
             def posaExtent():
@@ -557,7 +558,6 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.canvas.setAnnotationsVisible(True)
 
         self.canvas.xyCoordinates.connect(self.showXY)     
-        self.showXY(self.canvas.center())
         self.canvas.scaleChanged.connect(self.showScale)   
         self.canvas.mapCanvasRefreshed.connect(self.canvasRefrescat)
 
@@ -2030,7 +2030,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         
     def tissores(self):
         process = QProcess(self)
-        pathApp = "c:\windows\system32\SnippingTool.exe"
+        pathApp = r"c:\windows\system32\SnippingTool.exe"
         process.start(pathApp)
         app.processEvents()
 
@@ -2161,6 +2161,7 @@ class QVista(QMainWindow, Ui_MainWindow):
 
 
         self.bar.styleStrategy = QFont.PreferAntialias or QFont.PreferQuality #???
+
 
 
         spacer = QSpacerItem(9999, 9999, QSizePolicy.Expanding,QSizePolicy.Maximum) #???
@@ -2676,7 +2677,13 @@ class QVista(QMainWindow, Ui_MainWindow):
             missatgeCaixa('Cal tenir seleccionat un nivell per poder fer una selecció.','Marqueu un nivell a la llegenda sobre el que aplicar la consulta.')
 
     def showXY(self,p):
-        self.leXY.setText( str("%.2f" % p.x()) + ", " + str("%.2f" % p.y() ))
+        text=str("%.2f" % p.x()) + ", " + str("%.2f" % p.y() )
+        self.leXY.setText(text)
+        # font=QFont('',0)
+        font=QvConstants.FONTTEXT
+        fm=QFontMetrics(font)
+        self.leXY.setFixedWidth(fm.width(text))
+
         # self.bXY.setText( str("%.2f" % p.x()) + ", " + str("%.2f" % p.y() ))
         # try:
         #     if self.qvPrint.pucMoure:
@@ -2690,29 +2697,36 @@ class QVista(QMainWindow, Ui_MainWindow):
         #Per tant, deixem d'editar-la
         if self.editantEscala:  
             self.editantEscala=False
-            self.leScale.setParent(None)
+            # self.leScale.setParent(None)
+            self.leScale.hide()
 
     def definirLabelsStatus(self):    
         styleheetLabel='''
             QLabel {
-                background-color: #F9F9F9;
-                color: #38474F;
+                background-color: %s;
+                color: %s;
                 border: 0px;
                 margin: 0px;
                 padding: 4px;
-            }'''
+            }'''%(QvConstants.COLORBLANCHTML,QvConstants.COLORFOSCHTML)
         stylesheetButton='''
             QvPushButton {
-                background-color: #F9F9F9;
-                color: #38474F;
+                background-color: %s;
+                color: %s;
                 margin: 0px;
                 border: 0px;
                 padding: 4px;
-            }'''
+            }'''%(QvConstants.COLORBLANCHTML,QvConstants.COLORFOSCHTML)
         stylesheetLineEdit='''
-            margin: 0px; border: 0px; padding: 0px;
+            QLineEdit {
+                margin: 0px; border: 0px; padding: 0px;
+            }
             '''
-        
+        stylesheetLineEditFiltre=stylesheetLineEdit+'''
+            QLineEdit[text=""] {
+                color: %s;
+            }'''%QvConstants.COLORTEXTHINTHTML
+        alcada=24
         self.lblCapaSeleccionadaInf=QLabel('No hi capa seleccionada.')
         self.lblCapaSeleccionadaInf.setStyleSheet(styleheetLabel)
         self.lblCapaSeleccionadaInf.setFrameStyle(QFrame.StyledPanel )
@@ -2723,8 +2737,10 @@ class QVista(QMainWindow, Ui_MainWindow):
         # self.leSeleccioExpressio.setGraphicsEffect(self._menuBarShadow)
         self.leSeleccioExpressio.returnPressed.connect(seleccioExpressio)
         self.statusbar.setSizeGripEnabled( False )
-        self.leSeleccioExpressio.setPlaceholderText('Introduiu un text per filtrar elements a la capa seleccionada')
-        self.leSeleccioExpressio.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Minimum)
+        self.leSeleccioExpressio.setPlaceholderText('Introduïu un text per filtrar elements a la capa seleccionada')
+        self.leSeleccioExpressio.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Minimum)
+        self.leSeleccioExpressio.setStyleSheet(stylesheetLineEditFiltre)
+        self.leSeleccioExpressio.textChanged.connect(lambda: self.leSeleccioExpressio.style().polish(self.leSeleccioExpressio))
         self.leSeleccioExpressio.show()
         # spacer = QSpacerItem(1000, 1000, QSizePolicy.Expanding,QSizePolicy.Maximum)
         # self.statusbar.addPermanentWidget(spacer)
@@ -2743,13 +2759,15 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.lXY.setContentsMargins(0,0,0,0)
         self.lXY.setSpacing(0)
         self.wXY.setLayout(self.lXY)
+        self.wXY.setSizePolicy(QSizePolicy.Fixed,QSizePolicy.Fixed)
         # self.bXY = QvPushButton(flat=True)
         # self.bXY.clicked.connect(self.editarXY)
         # self.bXY.setStyleSheet(stylesheetButton)
         # self.lXY.addWidget(self.bXY)
         self.leXY = QLineEdit()
-        self.leXY.setFixedHeight(24)
-        self.leXY.setFixedWidth(QvApp().zoomFactor()*142)
+        self.leXY.setFixedHeight(alcada)
+        self.leXY.setSizePolicy(QSizePolicy.Fixed,QSizePolicy.Fixed)
+        # self.leXY.setMinimumWidth(140)
         self.leXY.setStyleSheet(stylesheetLineEdit)
         # self.leXY.editingFinished.connect(self.returnEditarXY)
         self.leXY.returnPressed.connect(self.returnEditarXY)
@@ -2759,6 +2777,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.lblProjeccio = QLabel()
         self.lblProjeccio.setStyleSheet(styleheetLabel)
         self.lblProjeccio.setFrameStyle(QFrame.StyledPanel )
+        self.lblProjeccio.setFixedHeight(alcada)
         # self.lblProjeccio.setMinimumWidth( 140 )
 
 
@@ -2770,31 +2789,49 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.wScale.setLayout(self.lScale)
         self.bScale = QvPushButton(flat=True)
         self.bScale.setStyleSheet(stylesheetButton)
+        self.bScale.setFixedHeight(alcada)
         self.lScale.addWidget(self.bScale)
         # self.bScale.setFrameStyle(QFrame.StyledPanel )
         # self.bScale.setMinimumWidth( 140 )
         self.bScale.clicked.connect(self.editarEscala)
         self.editantEscala = False
+        
+        self.leScale = QLineEdit()
+        self.leScale.setCursor(QvConstants.cursorDit())
+        self.leScale.setStyleSheet('QLineEdit{margin: 0px; border: 0px; padding: 0px;}')
+        self.lScale.addWidget(self.leScale)
+        # self.leScale.setGeometry(48,0,100,20)
+        self.leScale.setMinimumWidth(10)
+        self.leScale.setMaximumWidth(70)
+        self.leScale.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Minimum)
+        self.leScale.returnPressed.connect(self.escalaEditada)
+        self.leScale.textChanged.connect(self.mostraCompleterEscala)
+        self.leScale.setFocus()
+        self.onlyInt = QIntValidator()
+        self.leScale.setValidator(self.onlyInt)
+        self.leScale.hide()
 
         self.bOrientacio = QvPushButton(flat=True)
         self.bOrientacio.setStyleSheet(stylesheetButton)
+        self.bOrientacio.setFixedHeight(alcada)
         # self.bScale.setFrameStyle(QFrame.StyledPanel )
         # self.bOrientacio.setMinimumWidth( 140 )
 
         self.lblProjecte = QLabel()
         self.lblProjecte.setStyleSheet(styleheetLabel)
         self.lblProjecte.setFrameStyle(QFrame.StyledPanel )
+        self.lblProjecte.setFixedHeight(alcada)
         # self.lblProjecte.setMinimumWidth( 140 )
 
         #Afegim tots els widgets de cop
         #Així fer una reordenació serà més senzill
         self.statusbar.addPermanentWidget( self.lblProjecte, 0 )
         self.statusbar.addPermanentWidget(self.lblCapaSeleccionadaInf)
-        self.statusbar.addPermanentWidget(self.leSeleccioExpressio, 50)
+        self.statusbar.addPermanentWidget(self.leSeleccioExpressio, 1)
         # self.statusbar.addStretch()
         self.statusbar.addPermanentWidget( self.sbCarregantCanvas, 0 )
         self.statusbar.addPermanentWidget( self.lblConnexio, 0 )
-        self.statusbar.addPermanentWidget(self.wXY, 0 )
+        self.statusbar.addPermanentWidget(self.wXY, 1 )
         self.statusbar.addPermanentWidget( self.lblProjeccio, 0 )
         self.statusbar.addPermanentWidget( self.wScale, 0 )
         self.statusbar.addPermanentWidget( self.bOrientacio, 0 )
@@ -2860,20 +2897,8 @@ class QVista(QMainWindow, Ui_MainWindow):
         if not self.editantEscala:
             self.editantEscala = True
             self.bScale.setText(' Escala 1: ')
-            self.leScale = QLineEdit()
-            self.leScale.setCursor(QvConstants.cursorDit())
-            self.leScale.setStyleSheet('QLineEdit{margin: 0px; border: 0px; padding: 0px;}')
-            self.lScale.addWidget(self.leScale)
-            # self.leScale.setGeometry(48,0,100,20)
-            self.leScale.setMinimumWidth(10)
-            self.leScale.setMaximumWidth(70)
-            self.leScale.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Minimum)
-            self.leScale.returnPressed.connect(self.escalaEditada)
-            self.leScale.textChanged.connect(self.mostraCompleterEscala)
             self.leScale.show()
-            self.leScale.setFocus()
-            self.onlyInt = QIntValidator()
-            self.leScale.setValidator(self.onlyInt)
+            
             #Estem recalculant cada vegada. Podríem fer-ho només quan canviem de projecte, però no va lent
             if QgsExpressionContextUtils.projectScope(self.project).variable('qV_escales'):
                 escalesPossibles=valors = QgsExpressionContextUtils.projectScope(self.project).variable('qV_escales').split(' ')
@@ -2883,7 +2908,6 @@ class QVista(QMainWindow, Ui_MainWindow):
             self.completerEscales.activated.connect(self.escalaEditada)
             popup=self.completerEscales.popup()
             popup.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-            print(self.completerEscales.popup().sizePolicy().verticalPolicy())
             popup.setMinimumHeight(popup.sizeHintForRow(0)*len(escalesPossibles)+4)
             popup.verticalScrollBar().setEnabled(False)
             self.leScale.setCompleter(self.completerEscales)
@@ -2897,8 +2921,9 @@ class QVista(QMainWindow, Ui_MainWindow):
 
     def escalaEditada(self):
         escala = self.leScale.text()
-        self.leScale.setParent(None)
-        self.lScale.removeWidget(self.leScale)
+        # self.leScale.setParent(None)
+        self.leScale.hide()
+        # self.lScale.removeWidget(self.leScale)
         self.canvas.zoomScale(int(escala))
         self.editantEscala = False
         # self.comboEscales.hide()
@@ -3501,7 +3526,7 @@ def seleccioExpressio():
 
 def guardarProjecte():
     """ la funcio retorna si s'ha acabat guardant o no """
-    """  Protecció dels projectes read-only: tres vies:
+    r"""  Protecció dels projectes read-only: tres vies:
     -       Variable del projecte qV_readOnly=’True’
     -       Ubicació en una carpeta de només-lectura
     -       Ubicació en una de les subcarpetes de N:\SITEB\APL\PyQgis\qVista
@@ -3532,7 +3557,7 @@ def guardarProjecte():
 def guardarDialegProjecte():
     #variable definida al configuracioQvista
     pathDesarPerDefecte=QvMemoria().getDirectoriDesar()
-    trans=str.maketrans('<>:"/\|?*','---------')
+    trans=str.maketrans(r'<>:"/\|?*',r'---------')
 
     pathOnDesem=pathDesarPerDefecte+'/'+qV.titolProjecte.translate(trans).replace('-','')
     pathOnDesem=pathOnDesem.replace('.','') #Fora punts, per si de cas, ja que Windows li dóna massa importància
@@ -3705,7 +3730,7 @@ def escollirNivellCSV():
     # layer = qV.llegenda.view.currentLayer()
     # qV.project.removeMapLayer(layer)
     # qV.canvas.refresh()
-    nfile,_ = QFileDialog.getOpenFileName(None, "Obrir fitxer CSV", "U:\QUOTA\Comu_imi\Becaris", "CSV (*.csv)")
+    nfile,_ = QFileDialog.getOpenFileName(None, "Obrir fitxer CSV", r"U:\QUOTA\Comu_imi\Becaris", "CSV (*.csv)")
    
     # print(dCSV.ui.cbDelimitador.currentText())
     # print("D"+dCSV.ui.cbDelimitador.currentText()+"D")

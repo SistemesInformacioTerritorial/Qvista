@@ -22,7 +22,7 @@ def nivellCsv(qV, fitxer: str, delimitador: str, campX: str, campY: str, projecc
     layer.setCrs(QgsCoordinateReferenceSystem(
         projeccio, QgsCoordinateReferenceSystem.EpsgCrsId))
     if layer is not None or layer is not NoneType:
-        symbol = QgsMarkerSymbol.createSimple({'name': symbol, 'color': color})
+        symbol = QgsMarkerSymbol.createSimple({'name': symbol, 'color': color, 'outline_width':'0.3'})
         # if layer.renderer() is not None:
         #     layer.renderer().setSymbol(symbol)
         pr=layer.dataProvider()
@@ -115,7 +115,8 @@ class QvCarregaCsv(QDialog):
     def __init__(self, rutaCsv: str, qV=None):
         super().__init__(qV,Qt.WindowSystemMenuHint | Qt.WindowTitleHint | Qt.WindowCloseButtonHint)
         self.setWindowTitle('Carregador d\'arxius CSV')
-        self.setFixedSize(QvApp().zoomFactor()*750, QvApp().zoomFactor()*550)
+        # self.setFixedSize(QvApp().zoomFactor()*750, QvApp().zoomFactor()*550)
+        self.setMinimumWidth(750)
         if qV is not None:
             self._qV = qV
         self._csv = self._primerCsv = rutaCsv
@@ -585,6 +586,8 @@ class CsvGeocodificat(CsvPagina):
             self._lay.addWidget(QLabel('Temps requerit per la geocodificació: %i segons'%temps))
             self._lay.addWidget(QLabel('Geocodificat a una velocitat de %.2f files per segon'%(self._carregador._mapificador.files/temps)))
         self._textEditErrors = QTextEdit()
+        self._textEditErrors.setReadOnly(True)
+        self._textEditErrors.setStyleSheet('background: white')
         self._lay.addWidget(self._textEditErrors)
         if errors is not None:
             self._errors = [x['_fila'] for x in errors]

@@ -208,7 +208,7 @@ class MarxesCiutat(QDockWidget):
 
     def mostrarMapaXarxa(self):
         # QDesktopServices().openUrl(QUrl('N:\9SITEB\Publicacions\qVista\CATALEG\MAPES PRIVATS\Marxes de ciutat\PdfFitxes\190228_Marxes_exploratories_A4.pdf'))
-        PDF = 'file:///' + 'N:\9SITEB\Publicacions\qVista\CATALEG\MAPES PRIVATS\Marxes de ciutat\PdfFitxes\Marxes_xarxa_quotidiana_A4.pdf'
+        PDF = 'file:///' + r'N:\9SITEB\Publicacions\qVista\CATALEG\MAPES PRIVATS\Marxes de ciutat\PdfFitxes\Marxes_xarxa_quotidiana_A4.pdf'
         QDesktopServices().openUrl(QUrl(PDF))
         # self.w = QvPDF(PDF)
         # self.w.setGeometry(50, 50, 1200, 800)
@@ -267,7 +267,7 @@ class MarxesCiutat(QDockWidget):
         QDesktopServices().openUrl(QUrl(PDF))
  
     def mostrarVallcarca(self):
-        PDF = 'file:///' + 'L:\DADES\SIT\qVista\CATALEG\MAPES PRIVATS\Marxes de ciutat/PdfFitxes/06_Vallcarca.pdf'
+        PDF = 'file:///' + r'L:\DADES\SIT\qVista\CATALEG\MAPES PRIVATS\Marxes de ciutat/PdfFitxes/06_Vallcarca.pdf'
         QDesktopServices().openUrl(QUrl(PDF))
     def mostrarMarina(self):
         PDF = 'file:///L:/DADES/SIT/qVista/CATALEG/MAPES PRIVATS/Marxes de ciutat/PdfFitxes/11_La_Marina.pdf'

@@ -222,8 +222,9 @@ class QvApp(Singleton):
             txt = ''
             file = Path(nomFich)
             if file.is_file():
-                file.open()
-                txt = file.read_text()
+                #file.open()
+                with file.open():
+                    txt = file.read_text()
             return txt
         except Exception:
             return ''
@@ -245,8 +246,9 @@ class QvApp(Singleton):
     def zoomFactor(self):
         #Windows per defecte utilitza un dpi de 96. Si hem aplicat un factor de zoom, serà més
         #Per tant, dividint entre 96 tindrem l'escalat en tant per 1
-        zoomFactor=QApplication.desktop().screen().logicalDpiX()/96
-        return zoomFactor
+        return 1
+        # zoomFactor=QApplication.desktop().screen().logicalDpiX()/96
+        # return zoomFactor
     def nomUsuari(self):
         try:
             #Copia-pega de https://sjohannes.wordpress.com/2010/06/19/win32-python-getting-users-display-name-using-ctypes/
