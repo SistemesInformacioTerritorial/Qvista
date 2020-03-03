@@ -557,7 +557,7 @@ class QvMapificacio(QObject):
     #         with fiona.open(self.fSQL, "w", driver="GPKG", crs=df.crs, schema=schema, layer=nomCapa, gt=65536) as colxn:
     #             colxn.writerecords(df.iterfeatures())
 
-    def generaCapaGpd(self, nomCapa: str, tipusAgregacio: str, tipusDistribucio: str, campSegmentacio: str = '') -> bool:
+    def generaCapaGpd(self, nomCapa: str, tipusAgregacio: str, tipusDistribucio: str, campExtensio: str = '') -> bool:
         """ Calcula la agregación de datos, los cruza con el geopackage de zonas y genera la capa del mapa de coropletas.
         
         Arguments:
@@ -566,22 +566,23 @@ class QvMapificacio(QObject):
             tipusDistribucio {str} -- Tipo de distribución a aplicar
 
         Keyword Arguments:
-            campSegmentacio {str} -- Nombre del campo para comprobar si solo hay un valor (default: {''})
+            campExtensio {str} -- Nombre del campo que indica la extensión del mapa (default: {''})
         
         Returns:
             bool -- True si se generó la capa con el  mapa correctamente
         """
         try:
-            # Los campos de zona y segmentacion se cargan como string, y el de agregacion como float si hay acumulados
+            # Los campos de zona y extensión se cargan como string, y el de agregacion como float si hay acumulados
             dtypes = {self.campZona: np.string_}
-            if campSegmentacio == '':
-                cSeg = ''
+            if campExtensio == '' or (campExtensio[0] == '<'):
+                campExt = ''
+                valExtensio = campExtensio
             else:
-                cSeg = CAMP_QVISTA + campSegmentacio
-                if cSeg != self.campZona:
-                    dtypes.update({cSeg: np.string_})
+                campExt = CAMP_QVISTA + campExtensio
+                if campExt != self.campZona:
+                    dtypes.update({campExt: np.string_})
             if tipusAgregacio in ("Suma", "Mitjana"):
-                if self.campAgregat == self.campZona or (cSeg != '' and self.campAgregat == cSeg):
+                if self.campAgregat == self.campZona or (campExt != '' and self.campAgregat == campExt):
                     self.msgError = "No és possible calcular aquesta agregació de dades.\n\nRevisi els paràmetres especificats."
                     return False
                 dtypes.update({self.campAgregat: np.float_})
@@ -629,23 +630,31 @@ class QvMapificacio(QObject):
             if "POBLACIO" in pols.columns:
                 pols["POBLACIO"] = pd.to_numeric(pols["POBLACIO"], downcast='integer', errors='coerce')
 
-            # Intentamos segmentacion cuando el campo indicado solo contiene un valor
-            try:
-                if cSeg != '':
-                    vMin = csv[cSeg].min()
-                    vMax = csv[cSeg].max()
-                    if vMin == vMax:
-                        if campSegmentacio == QvSqlite.getAlias(self.valZona[0]):
-                            campSegmentacio = 'CODI'
-                        pols = pols[pols[campSegmentacio] == vMin]
-            except Exception as err:
-                print("Segmentación fallida: " + str(err))
-                # Seguimos
+            # Aplicamos la extensión cuando el campo indicado contiene un valor predominante
+            if campExt != '':
+                cnt = csv[campExt].value_counts(normalize=True)
+                if cnt.iloc[0] >= MAP_FEQ_EXTENSIO:
+                    if campExtensio == QvSqlite.getAlias(self.valZona[0]):
+                        campExtensio = 'CODI'
+                    valExtensio = cnt.index[0]
+                    listExtensions = cnt.index.tolist()
+                    pols = pols[pols[campExtensio].isin(listExtensions)]
 
             # Join
             join = pols.merge(res, on='CODI', how='left')
-            # join['RESULTAT'].fillna(0, inplace=True)
-            join = join[join['RESULTAT'].notnull()]
+            if valExtensio == '' or valExtensio == '<ALL>':
+                # Extension ciudad: ponemos a 0 todos los polígonos sin datos
+                join['RESULTAT'].fillna(0, inplace=True)
+            elif valExtensio == '<DATA>':
+                # Extensión datos: solo poligonos con datos
+                join = join[join['RESULTAT'].notnull()]
+            else:
+                # Extensión limitada: ponemos a 0 solo los polígonos de la zona predominante
+                ext = join[join[campExtensio] == valExtensio]
+                ext['RESULTAT'].fillna(0, inplace=True)
+                resto = join[join[campExtensio] != valExtensio]
+                resto = resto[resto['RESULTAT'].notnull()]
+                join = pd.concat([ext, resto])
 
             # Aplicar distribución
             if self.tipusDistribucio == '':
@@ -677,7 +686,7 @@ class QvMapificacio(QObject):
             return False
 
     def agregacio(self, llegenda, nomCapa: str, zona: str, tipusAgregacio: str,
-        campCalculat: str = 'RESULTAT', campAgregat: str = '', tipusDistribucio: str = "Total", campSegmentacio: str = '', 
+        campCalculat: str = 'RESULTAT', campAgregat: str = '', tipusDistribucio: str = "Total", campExtensio: str = MAP_EXTENSIO, 
         filtre: str = '', numDecimals: int = -1, numCategories: int = 4, modeCategories: str = "Endreçat", colorBase: str = 'Blau',
         format: str = '%1 - %2', veure: bool = True, form = None) -> bool:
         """ Realiza la agragación de los datos por zona, la generación del mapa de coropletas y su simbología.
@@ -692,7 +701,7 @@ class QvMapificacio(QObject):
             campCalculat {str} -- Campo donde se guardará el resultado de la agregación (default: {'RESULTAT'})
             campAgregat {str} -- Campo que se utiliza en el cálculo de la agragación (default: {''})
             tipusDistribucio {str} -- Tipo de distribución (default: {"Total"})
-            campSegmentacio {str} -- Nombre del campo para comprobar si solo hay un valor (default: {''})
+            campExtensio {str} -- Nombre del campo que indica la extensión del mapa (default: {''})
             filtre {str} -- Expresión para filtrar los datos (default: {''})
             numDecimals {int} -- Número de decimales para el campo resultado (default: {-1})
             numCategories {int} -- Número de categorías en el mapa de coropletas (default: {4})
@@ -774,7 +783,7 @@ class QvMapificacio(QObject):
         # if not self.generaCapaQgis(nomCapa):
         #     return False
 
-        if not self.generaCapaGpd(self.nomCapa, tipusAgregacio, tipusDistribucio, campSegmentacio):
+        if not self.generaCapaGpd(self.nomCapa, tipusAgregacio, tipusDistribucio, campExtensio):
             return False
 
         # Carga capa de agregación

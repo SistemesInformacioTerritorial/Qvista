@@ -12,6 +12,8 @@ MAP_MAX_CATEGORIES = 10
 MAP_ALPHA_INI = 18
 MAP_ALPHA_FIN = 18
 MAP_ZONES_DB = "Zones.gpkg"
+MAP_EXTENSIO = "DISTRICTE"
+MAP_FEQ_EXTENSIO = 0.75
 
 # TODO
 # Si se recalcula la capa y está en la leyenda, quitarla
