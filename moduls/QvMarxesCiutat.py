@@ -100,28 +100,35 @@ class MarxesCiutat(QDockWidget):
         bMarxes11 = QvPushButton('   la Verneda i la Pau', flat=True)
         bMarxes11.setStyleSheet("Text-align: left")
 
-        bMarxes1_2 = QvPushButton('Districte de Gràcia (totes les marxes)', flat=True)
+        bMarxes1_1 = QvPushButton('Districte de Gràcia (totes les marxes)', flat=True)
+        bMarxes1_1.setStyleSheet("Text-align: left")
+
+        bMarxes1_2 = QvPushButton('la Trinitat Nova', flat=True)
         bMarxes1_2.setStyleSheet("Text-align: left")
        
-        bMarxes3_2 = QvPushButton('el Besós i el Maresme', flat=True)
-        bMarxes3_2.setStyleSheet("Text-align: left")
-        bMarxes4_2 = QvPushButton('el Bon pastor', flat=True)
-        bMarxes4_2.setStyleSheet("Text-align: left")
-        bMarxes5_2 = QvPushButton('la Trinitat Nova', flat=True)
-        bMarxes5_2.setStyleSheet("Text-align: left")
-        bMarxes6_2 = QvPushButton('la Trinitat Vella', flat=True)
-        bMarxes6_2.setStyleSheet("Text-align: left")
-        
-        bMarxes9_2 = QvPushButton('la Marina del Prat vermell', flat=True)
-        bMarxes9_2.setStyleSheet("Text-align: left")
-        bMarxes11_2 = QvPushButton('la Verneda i la Pau', flat=True)
-        bMarxes11_2.setStyleSheet("Text-align: left")
-
         bMarxes1_3 = QvPushButton('la Trinitat Vella', flat=True)
         bMarxes1_3.setStyleSheet("Text-align: left")
        
-        bMarxes2_3 = QvPushButton('el Bon Pastor', flat=True)
-        bMarxes2_3.setStyleSheet("Text-align: left")
+        bMarxes1_4 = QvPushButton('el Bon Pastor', flat=True)
+        bMarxes1_4.setStyleSheet("Text-align: left")
+
+        bMarxes1_5 = QvPushButton('la Verneda i la Pau', flat=True)
+        bMarxes1_5.setStyleSheet("Text-align: left")
+
+        bMarxes1_6 = QvPushButton('el Besós i el Maresme', flat=True)
+        bMarxes1_6.setStyleSheet("Text-align: left")
+      
+        bMarxes1_7 = QvPushButton('la Marina del Prat vermell', flat=True)
+        bMarxes1_7.setStyleSheet("Text-align: left")
+        
+        # Retorns
+        bMarxes2_1 = QvPushButton('la Trinittat Vella', flat=True)
+        bMarxes2_1.setStyleSheet("Text-align: left")
+      
+        bMarxes2_2 = QvPushButton('el Bon Pastor', flat=True)
+        bMarxes2_2.setStyleSheet("Text-align: left")
+
+
 
         lytMarxes.addWidget(lBarris2)
         lytMarxes.addWidget(bMarxes1)
@@ -139,18 +146,18 @@ class MarxesCiutat(QDockWidget):
         lytMarxes.addItem(spacer)
         lytMarxes.addWidget(lBarris3) 
         
+        lytMarxes.addWidget(bMarxes1_1)
         lytMarxes.addWidget(bMarxes1_2)
-        lytMarxes.addWidget(bMarxes5_2)
-        lytMarxes.addWidget(bMarxes6_2)
-        lytMarxes.addWidget(bMarxes4_2)
-        lytMarxes.addWidget(bMarxes11_2)
-        lytMarxes.addWidget(bMarxes3_2)
-        lytMarxes.addWidget(bMarxes9_2)
+        lytMarxes.addWidget(bMarxes1_3)
+        lytMarxes.addWidget(bMarxes1_4)
+        lytMarxes.addWidget(bMarxes1_5)
+        lytMarxes.addWidget(bMarxes1_6)
+        lytMarxes.addWidget(bMarxes1_7)
 
         lytMarxes.addItem(spacer)
         lytMarxes.addWidget(lBarris4) 
-        lytMarxes.addWidget(bMarxes1_3)
-        lytMarxes.addWidget(bMarxes2_3)
+        lytMarxes.addWidget(bMarxes2_1)
+        lytMarxes.addWidget(bMarxes2_2)
 
 
         bGuia.clicked.connect(self.mostrarGuia)
@@ -158,6 +165,7 @@ class MarxesCiutat(QDockWidget):
         bMapa.clicked.connect(self.mostrarMapa)
         bDocGen.clicked.connect(self.mostrarDocGen)
         bMapaXarxa.clicked.connect(self.mostrarMapaXarxa)
+
         bMarxes1.clicked.connect(self.mostrarColl)
         bMarxes2.clicked.connect(self.mostrarSalut)
         bMarxes3.clicked.connect(self.mostrarBesos)
@@ -169,6 +177,19 @@ class MarxesCiutat(QDockWidget):
         bMarxes9.clicked.connect(self.mostrarMarina)
         bMarxes10.clicked.connect(self.mostrarGrassot)
         bMarxes11.clicked.connect(self.mostrarVerneda)
+
+        
+        bMarxes1_1.clicked.connect(self.mostrarInformeG)
+        bMarxes1_2.clicked.connect(self.mostrarInformeTN)
+        bMarxes1_3.clicked.connect(self.mostrarInformeTV)
+        bMarxes1_4.clicked.connect(self.mostrarInformeBP)
+        bMarxes1_5.clicked.connect(self.mostrarInformeVP)
+        bMarxes1_6.clicked.connect(self.mostrarInformeBM)
+        bMarxes1_7.clicked.connect(self.mostrarInformeMPV)
+
+        bMarxes2_1.clicked.connect(self.mostrarRetornTrinitatVella)
+        bMarxes2_2.clicked.connect(self.mostrarRetornBonPastor)
+
 
         # self.browserMarxes = QWebView()
         # self.browserMarxes.settings().setAttribute(QWebSettings.PluginsEnabled, True)
@@ -278,3 +299,39 @@ class MarxesCiutat(QDockWidget):
 
         QDesktopServices().openUrl(QUrl(PDF))
 
+    def mostrarRetornTrinitatVella(self):
+        PDF = 'file:///L:/DADES/SIT/qVista/CATALEG/MAPES PRIVATS/Marxes de ciutat/PdfFitxes/2.3-Retorn 180710-G-Marxa Trinitat Vella-23-07-2018.pdf'
+        QDesktopServices().openUrl(QUrl(PDF))    
+
+    def mostrarRetornBonPastor(self):
+        PDF = 'file:///L:/DADES/SIT/qVista/CATALEG/MAPES PRIVATS/Marxes de ciutat/PdfFitxes/2.3-Retorn-180717-H-Marxa Bon Pastor.pdf'
+        QDesktopServices().openUrl(QUrl(PDF))
+
+    # Informes
+    def mostrarInformeG(self):
+        PDF = 'file:///L:/DADES/SIT/qVista/CATALEG/MAPES PRIVATS/2.2-GRACIA-Informe resultats-Passejades_FINAL_5Barris.pdf'
+        QDesktopServices().openUrl(QUrl(PDF))    
+
+    def mostrarInformeTN(self):
+        PDF = 'file:///L:/DADES/SIT/qVista/CATALEG/MAPES PRIVATS/Marxes de ciutat/PdfFitxes/2.2-F_TRINITAT NOVA_Informe Marxa Explora.pdf'
+        QDesktopServices().openUrl(QUrl(PDF))    
+
+    def mostrarInformeTV(self):
+        PDF = 'file:///L:/DADES/SIT/qVista/CATALEG/MAPES PRIVATS/Marxes de ciutat/PdfFitxes/2.2-G_TRINITAT VELLA_Informe Marxa Explora.pdf'
+        QDesktopServices().openUrl(QUrl(PDF))    
+
+    def mostrarInformeBP(self):
+        PDF = 'file:///L:/DADES/SIT/qVista/CATALEG/MAPES PRIVATS/Marxes de ciutat/PdfFitxes/2.2-H_BON PASTOR_Informe Marxa Explora.pdf'
+        QDesktopServices().openUrl(QUrl(PDF))    
+
+    def mostrarInformeVP(self):
+        PDF = 'file:///L:/DADES/SIT/qVista/CATALEG/MAPES PRIVATS/Marxes de ciutat/PdfFitxes/2.2-J_LA VERNEDA I LA PAU_Informe Marxa Explora.pdf'
+        QDesktopServices().openUrl(QUrl(PDF))    
+
+    def mostrarInformeBM(self):
+        PDF = 'file:///L:/DADES/SIT/qVista/CATALEG/MAPES PRIVATS/Marxes de ciutat/PdfFitxes/2.2-I_BESOS MARESME_Informe Marxa Explora.pdf'
+        QDesktopServices().openUrl(QUrl(PDF))    
+
+    def mostrarInformeMPV(self):
+        PDF = 'file:///L:/DADES/SIT/qVista/CATALEG/MAPES PRIVATS/Marxes de ciutat/PdfFitxes/2.2-I_BESOS MARESME_Informe Marxa Explora.pdf'
+        QDesktopServices().openUrl(QUrl(PDF))
