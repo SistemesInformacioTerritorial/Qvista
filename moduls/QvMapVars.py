@@ -5,7 +5,6 @@ from qgis.core import QgsGraduatedSymbolRenderer
 from qgis.PyQt.QtCore import Qt
 from collections import OrderedDict
 
-from configuracioQvista import *
 
 MAP_ID = "qV_mapificacio"
 MAP_MAX_CATEGORIES = 10

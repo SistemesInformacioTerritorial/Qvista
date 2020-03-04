@@ -2,12 +2,9 @@
 
 from moduls.QvImports import *
 
-from qgis.PyQt.QtGui import QStandardItemModel, QStandardItem
 from qgis.PyQt.QtCore import pyqtSignal
-from qgis.core import QgsRectangle
 
 from PyQt5.QtWebKitWidgets import QWebView , QWebPage #QWebPage (???)
-from PyQt5.QtWebKit import QWebSettings
 from moduls.QvPushButton import QvPushButton
 
 class BotoQvBrowser(QvPushButton):

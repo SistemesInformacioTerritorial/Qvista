@@ -1,13 +1,11 @@
 from moduls.QvImports import *
 from PyQt5.QtWidgets import *
-from typing import Type
 import itertools
 from moduls.QvMapificacio import QvMapificacio
 from moduls.QvPushButton import QvPushButton
 from moduls.QvEditorCsv import QvEditorCsv
 from moduls.QvMapForms import QvFormNovaMapificacio
 from moduls.QvConstants import QvConstants
-from moduls.QvApp import QvApp
 from moduls.QvFuncioFil import QvFuncioFil
 from moduls.QvMemoria import QvMemoria
 
@@ -167,7 +165,6 @@ class QvCarregaCsv(QDialog):
 
     def formata(self):
         self._layoutGran.addWidget(self._widgetActual)
-        pass
 
     def salta(self, nouW):
         self._widgetActual.hide()
@@ -452,7 +449,6 @@ class CsvAdreca(CsvPagina):
             self._cbNumF.setCurrentText(campsAdreca['numF'])
             self._cbLletraI.setCurrentText(campsAdreca['lletraI'])
             self._cbLletraF.setCurrentText(campsAdreca['lletraF'])
-            pass
         else:
             self.campsDefecte()
 
@@ -481,7 +477,6 @@ class CsvAdreca(CsvPagina):
         if c is not None:
             i=self._cbNumI.findText(c)
             self._cbNumI.setCurrentIndex(i)
-        pass
     def geocodifica(self):
         pare=self._carregador
         arxiuNet=str(Path(self._carregador._csv).parent)+'\\'+self._carregador._mapificador.netejaString(Path(self._carregador._csv).stem,True)+'.csv'
@@ -630,7 +625,6 @@ class CsvGeocodificat(CsvPagina):
             errorsStr = errorsStr+'\nFila %i' % x
         self._textEditErrors.setText(
             'Files amb errors (click sobre "Veure i arreglar errors" per veure i editar la taula):%s' % errorsStr)
-        pass
 
     def _mostraTaula(self):
         if super()._mostraTaula(self._errors, modal=True):
@@ -778,7 +772,7 @@ if __name__ == '__main__':
 
     with qgisapp(guienabled=gui) as app:
 
-        from moduls.QvApp import QvApp
+        pass
 
         # qApp = QvApp()
         arxiu = 'C:/Users/omarti/Documents/Random/gossos.csv'

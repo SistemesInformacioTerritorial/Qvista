@@ -1,7 +1,6 @@
 from moduls.QvImports  import *
 from qgis.core import QgsRectangle
 from moduls.QvConstants import QvConstants
-from moduls.QvPushButton import QvPushButton
 from configuracioQvista import *
 
 

@@ -1,13 +1,11 @@
-from PyQt5.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QTableWidget, QTableWidgetItem
+from PyQt5.QtWidgets import QHBoxLayout, QVBoxLayout, QWidget
 from PyQt5.QtGui import QDesktopServices
 from moduls.QvPushButton import QvPushButton
 from moduls.QvConstants import QvConstants
 import csv
 import chardet
-import time
-from typing import List, Tuple, Iterable
+from typing import Iterable
 from moduls.QvImports import *
-from moduls.QvFuncioFil import QvFuncioFil
 
 
 class ModelCsv(QAbstractTableModel):

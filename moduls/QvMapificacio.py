@@ -20,27 +20,20 @@ from qgis.core import (QgsApplication, QgsVectorLayer, QgsLayerDefinition, QgsVe
                        QgsSymbol, QgsRendererCategory, QgsCategorizedSymbolRenderer,
                        QgsGraduatedSymbolRenderer, QgsRendererRange, QgsAggregateCalculator, QgsError, QgsWkbTypes,
                        QgsGradientColorRamp, QgsRendererRangeLabelFormat, QgsReadWriteContext, QgsExpressionContextUtils)
-from qgis.gui import QgsFileWidget
-from qgis.PyQt.QtCore import Qt, QObject, QDate, pyqtSignal, pyqtSlot
-from qgis.PyQt.QtGui import QColor, QValidator, QIcon
-from qgis.PyQt.QtXml import QDomDocument
-from qgis.PyQt.QtWidgets import QMessageBox
+from qgis.PyQt.QtCore import QDate, QObject, pyqtSignal, pyqtSlot
 
 import os
-import sys
 import csv
 import time
-import unicodedata
 import chardet
 import collections
-import operator
 import re
 
 from moduls.QvApp import QvApp
 from moduls.QvSqlite import QvSqlite
 from moduls.QvMapVars import *
 
-from typing import List, Tuple, Iterable
+from typing import List
 
 _TRANS_ALL = str.maketrans("ÁÉÍÓÚáéíóúÀÈÌÒÙàèìòùÂÊÎÔÛâêîôûÄËÏÖÜäëïöüºª€$çÇñÑ ·.,;:()[]¡!¿?|%&*/\\\'\"@#",
                            "AEIOUaeiouAEIOUaeiouAEIOUaeiouAEIOUaeiouoaEDcCnN______________________aN")
@@ -817,7 +810,6 @@ if __name__ == "__main__":
     with qgisapp(guienabled=gui) as app:
 
         from moduls.QvApp import QvApp
-        from moduls.QvMapForms import QvFormMostra
         from qgis.gui import QgsMapCanvas
         from moduls.QvLlegenda import QvLlegenda
         from moduls.QvAtributs import QvAtributs

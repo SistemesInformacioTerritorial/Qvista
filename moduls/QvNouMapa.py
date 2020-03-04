@@ -1,12 +1,5 @@
 #!/usr/bin/env python
 from moduls.QvImports import * 
-from PyQt5 import QtCore
-from PyQt5 import QtGui
-from PyQt5.QtCore import pyqtProperty
-from PyQt5 import QtCore, QtWidgets
-from PyQt5.QtGui import QColor
-import os
-import tempfile
 from moduls.QvConstants import QvConstants
 from moduls.QvPushButton import QvPushButton
 from moduls.QvToolButton import QvToolButton

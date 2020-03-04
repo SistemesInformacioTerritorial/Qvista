@@ -1,18 +1,15 @@
 from moduls.QvImports import *
 from qgis.core import QgsPointXY
 from qgis.PyQt import QtCore
-from qgis.PyQt.QtCore import QObject, pyqtSignal, QSortFilterProxyModel
+from qgis.PyQt.QtCore import QObject, pyqtSignal
 from qgis.PyQt.QtGui import QValidator
 from qgis.PyQt.QtWidgets import QCompleter
 import sys
-import csv
 import collections
 import unicodedata
 import re
-import csv
 from PyQt5.QtSql import *
 from moduls.QvApp import QvApp
-from moduls.QvBafarada import QvBafarada
 
 
 def encaixa(sub, string):

@@ -8,7 +8,6 @@ from moduls.QvSingleton import Singleton
 from moduls.QvPythonRunner import QvPythonRunner
 from moduls.QvGithub import QvGithub
 from moduls.QvSqlite import QvSqlite
-from PyQt5.QtWidgets import QApplication
 from pathlib import Path
 import sys
 import getpass

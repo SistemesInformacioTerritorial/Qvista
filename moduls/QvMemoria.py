@@ -71,7 +71,6 @@ class QvMemoria(Singleton):
             return self.mapesRecents
         except:
             return []
-        pass
     def setMapesRecents(self,recents):
         self.mapesRecents=recents
     def getDirectoriDesar(self):
@@ -115,7 +114,6 @@ class QvMemoria(Singleton):
                 if md5sum(ruta)==self.geocodificats[suma_orig]:
                     return ruta
         return None
-        pass
     def pafuera(self):
         if hasattr(self,'mapesRecents'):
             with open(arxiuMapesRecents,'w',encoding='utf-8') as f:

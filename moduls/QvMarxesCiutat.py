@@ -1,5 +1,4 @@
 from moduls.QvImports import *
-from moduls.QvPDF import QvPDF
 from moduls.QvPushButton import QvPushButton
 from PyQt5.QtGui import QFont, QDesktopServices
 

@@ -5,8 +5,7 @@ from moduls.QvEinesGrafiques import QvSeleccioElement
 from qgis.PyQt.QtCore import Qt, QSize
 from qgis.gui import QgsMapCanvas, QgsMapToolZoom, QgsMapToolPan
 from qgis.PyQt.QtWidgets import QFrame, QVBoxLayout, QHBoxLayout, QPushButton, QSpacerItem, QSizePolicy
-from qgis.PyQt.QtGui import QIcon, QPainter, QCursor,QPixmap, QKeyEvent
-from moduls.QvApp import QvApp
+from qgis.PyQt.QtGui import QIcon, QPainter
 from moduls.QvImports  import *
 from qgis.core.contextmanagers import qgisapp
 from moduls.QvConstants import QvConstants

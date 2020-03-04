@@ -14,7 +14,7 @@ iniciTempsModuls = time.time()
 from moduls.QvUbicacions import QvUbicacions
 from moduls.QvPrint import QvPrint
 from moduls.QvCanvas import QvCanvas
-from moduls.QvEinesGrafiques import QvSeleccioElement, QvSeleccioPerPoligon, QvMesuraMultiLinia, QvSeleccioCercle, QvSeleccioPunt
+from moduls.QvEinesGrafiques import QvMesuraMultiLinia
 from moduls.QvStreetView import QvStreetView
 from moduls.QvLlegenda import QvLlegenda
 from moduls.QvAtributs import QvAtributs
@@ -44,7 +44,6 @@ from moduls.QvNouMapa import QvNouMapa
 from moduls.QvVisorHTML import QvVisorHTML
 from moduls.QvDocumentacio import QvDocumentacio
 from moduls.QvNouCataleg import QvNouCataleg
-from moduls.QvFavorits import QvFavorits
 from moduls.QvCatalegCapes import QvCatalegCapes
 from moduls.QvSabiesQue import QvSabiesQue
 from moduls.QvMemoria import QvMemoria
@@ -61,7 +60,6 @@ import functools #Eines de funcions, per exemple per avaluar-ne parcialment una
 from PyQt5.QtGui import QPainter
 
 from PyQt5.QtGui import QDesktopServices  #aixo ha d'anar al qvimports
-from qgis.PyQt.QtSql import QSqlDatabase, QSqlQuery, QSql
 # from qgis.core import QgsDataSourceUri
 
 # Impressió del temps de carrega dels moduls Qv
@@ -1957,7 +1955,6 @@ class QVista(QMainWindow, Ui_MainWindow):
                 return
         if hasattr(self,'mapaCataleg'):
             self.obrirProjecteCataleg(self.pathProjecteActual,self.favorit,self.widgetAssociat)
-            pass
         else:
             self.obrirProjecteAmbRang(self.pathProjecteActual)
     def switchFavorit(self):
@@ -1966,17 +1963,14 @@ class QVista(QMainWindow, Ui_MainWindow):
         if self.favorit:
             # QvFavorits().eliminaFavorit(nom)
             self.botoFavorits.setIcon(self.iconaFavDesmarcat)
-            pass
         else:
             # QvFavorits().afegeixFavorit(nom)
             self.botoFavorits.setIcon(self.iconaFavMarcat)
-            pass
         self.favorit=not self.favorit
         self.widgetAssociat.setFavorit(self.favorit)
 
     def helpQVista(self): #Ara no es fa servir, però en el futur es pot utilitzar per saber què és un element
         QWhatsThis.enterWhatsThisMode()
-        pass
     
     def infoQVistaPDF(self):
         ''' Obre un pdf amb informació de qVista, utilitzant l'aplicació per defecte del sistema '''
@@ -2632,7 +2626,6 @@ class QVista(QMainWindow, Ui_MainWindow):
                 qV.canvas.refresh()
             except Exception as e:
                 print(e)
-                pass
     def foraEines(self):
         self.canvas.panCanvas()
 
@@ -3068,7 +3061,6 @@ class QVista(QMainWindow, Ui_MainWindow):
             renderer=layer.renderer()
             self.project.addMapLayer(layer)
             self.setDirtyBit()
-        pass
     def obrirDialegNovaCapaCSV(self):
         dialegObertura=QFileDialog()
         dialegObertura.setDirectoryUrl(QUrl('../Dades/Capes/'))
@@ -3386,7 +3378,6 @@ def disgregarDirele():
 
 
 
-    pass
 
 def nivellCsv(fitxer: str,delimitador: str,campX: str,campY: str, projeccio: int = 23031, nomCapa: str = 'Capa sense nom', color = 'red', symbol = 'circle'):
     uri = "file:///"+fitxer+"?type=csv&delimiter=%s&xField=%s&yField=%s" % (delimitador,campX,campY)
@@ -4025,7 +4016,6 @@ def main(argv):
         # Sabies que...
         try:
             sabiesque=QvSabiesQue(qV)
-            pass
         except:
             print('No hem pogut mostrar el "sabies que..."')
         

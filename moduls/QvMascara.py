@@ -204,7 +204,6 @@ class QvMascaraEinaPlantilla(QgsMapTool):
         return rb
     def eliminaRubberbands(self):
         for x in self.rubberbands: x.hide()
-        pass
 
 
 # Copiat del QvSeleccioPunt de QvEinesGrafiques.py i adaptat a les nostres necessitats
@@ -254,7 +253,6 @@ class QvMascaraEinaClick(QvMascaraEinaPlantilla):
                 self.actualitza()
             except Exception as e:
                 print(e)
-                pass
         else:
             self.missatgeCaixa('Cal tenir seleccionat un nivell per poder fer una selecció.',
                                'Marqueu un nivell a la llegenda sobre el que aplicar la consulta.')
@@ -333,11 +331,9 @@ class QvMascaraEinaDibuixa(QvMascaraEinaPlantilla):
                     if self.overlap:
                         if featPnt.geometry().intersects(geom):
                             layer.select(featPnt.id())
-                        pass
                     else:
                         if featPnt.geometry().within(geom):
                             layer.select(featPnt.id())
-                        pass
                 self.qV.calcularSeleccio()
             self.rubberband.hide()
             self.rubberband = self.novaRubberband()
@@ -383,7 +379,6 @@ class QvMascaraEinaCercle(QvMascaraEinaPlantilla):
     def canvasMoveEvent(self, event):
         if self.centre is not None:
             self.rbcircle(self.centre, self.toMapCoordinates(event.pos()))
-            pass
 
     def canvasReleaseEvent(self, event):
         mascara = self.getCapa()
@@ -403,11 +398,9 @@ class QvMascaraEinaCercle(QvMascaraEinaPlantilla):
                 if self.overlap:
                     if featPnt.geometry().intersects(poligon):
                         layer.select(featPnt.id())
-                    pass
                 else:
                     if featPnt.geometry().within(poligon):
                         layer.select(featPnt.id())
-                    pass
             self.qV.calcularSeleccio()
         self.centre = None
         self.actualitza()

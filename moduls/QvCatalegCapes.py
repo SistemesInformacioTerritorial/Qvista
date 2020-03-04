@@ -1,9 +1,5 @@
 from moduls.QvImports import * 
-from PyQt5 import QtGui
-from PyQt5.QtCore import pyqtProperty
-from PyQt5 import QtCore, QtWidgets
 from moduls.QvConstants import QvConstants
-from moduls.QvPushButton import QvPushButton
 from moduls.QvVisorHTML import QvVisorHTML
 import re
 
@@ -20,7 +16,6 @@ class ProveidorIcones(QFileIconProvider):
             return QIcon(imatgesDir+'cc_folder.png')
         elif fileInfo.completeSuffix()=='qlr':
             return QIcon(imatgesDir+'cc_layer.png')
-            pass
         return super().icon(fileInfo)
 
 

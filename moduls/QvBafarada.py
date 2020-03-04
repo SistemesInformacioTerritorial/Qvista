@@ -1,5 +1,5 @@
 from PyQt5.QtWidgets import QLabel
-from PyQt5.QtCore import Qt, QTimer
+from PyQt5.QtCore import QTimer
 
 class QvBafarada(QLabel):
     def __init__(self,text,parent=None):

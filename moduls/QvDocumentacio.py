@@ -1,6 +1,4 @@
 from moduls.QvImports import *
-from PyQt5 import QtCore
-from PyQt5 import QtGui
 from PyQt5 import QtWidgets
 from PyQt5.QtWidgets import QVBoxLayout, QHBoxLayout, QFileSystemModel, QTreeView, QWidget
 from moduls.QvConstants import QvConstants
@@ -100,7 +98,6 @@ class QvDocumentacio(QDialog):
             nomCarpeta=Path(path).name
             nfile = str(QFileDialog.getExistingDirectory(self, "Select Directory"))
             if nfile!='': shutil.copytree(path,nfile+'/'+nomCarpeta)
-            pass
 
     def mousePressEvent(self, event):
         self.oldPos = event.globalPos()

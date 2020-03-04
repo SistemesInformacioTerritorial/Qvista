@@ -1,6 +1,5 @@
 from moduls.QvImports import *
 from PyQt5.QtWidgets import *
-from PyQt5 import QtWidgets
 from typing import Callable
 from moduls.QvConstants import QvConstants
 from moduls.QvPushButton import QvPushButton
@@ -11,7 +10,6 @@ import csv
 import io
 import chardet
 import tempfile
-from pathlib import Path
 
 finestres = IntEnum('finestres', 'Precalculat TriaSep TriaGeom CampsXY Adreca GeneraCoords Personalitza')
 
@@ -216,7 +214,6 @@ class CsvPagina(QWidget):
         return self.parentWidget().csvOrig()
     def calTaula(self):
         return True
-    pass
 
 class CsvPrefab(CsvPagina):
     def __init__(self,parent):
@@ -366,7 +363,6 @@ class CsvXY(CsvPagina):
         return True
     def anterior(self):
         return finestres.TriaGeom
-    pass
 
 class CsvAdreca(CsvPagina):
     def __init__(self,parent):
@@ -554,7 +550,6 @@ class CsvGeneraCoords(CsvPagina):
             self.parentWidget().actualitzaBotons()
     def calTaula(self):
         return False
-    pass
 
 class CsvPersonalitza(CsvPagina):
     def __init__(self,parent):
@@ -596,7 +591,6 @@ class CsvPersonalitza(CsvPagina):
         self.parentWidget().setAspecte(self.leNom.text(),self.color,'circle')
     def calTaula(self):
         return True
-    pass
 
 class QvtLectorCsv(QvLectorCsv):
     def __init__(self, csvName: str, csv: io.TextIOBase=None, separador: str=';', completa: bool=False, guardar: bool=False, parent: QWidget=None):

@@ -3,8 +3,7 @@
 Módulo de drop de ficheros sobre un widget
 """
 
-from qgis.PyQt.QtGui import QDropEvent, QDragEnterEvent, QDragMoveEvent, QDragLeaveEvent
-from qgis.PyQt.QtCore import QObject, pyqtSignal, QUrl
+from qgis.PyQt.QtCore import QObject, pyqtSignal
 
 import os
 

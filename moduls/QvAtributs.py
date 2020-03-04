@@ -4,7 +4,7 @@ from qgis.core import QgsMapLayer, QgsVectorLayerCache
 from qgis.PyQt import QtWidgets  # , uic
 from qgis.PyQt.QtCore import Qt, pyqtSignal, QSize
 from qgis.PyQt.QtGui import QCursor, QIcon
-from qgis.PyQt.QtWidgets import QTabWidget, QVBoxLayout, QAction, QMenuBar, QWidget, QHBoxLayout, QLabel
+from qgis.PyQt.QtWidgets import QAction, QHBoxLayout, QMenuBar, QTabWidget, QWidget
 from qgis.gui import (QgsGui,
                       QgsAttributeTableModel,
                       QgsAttributeTableView,

@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 
 from qgis.gui import QgsFileWidget
-from qgis.PyQt.QtCore import Qt, QObject, pyqtSignal, pyqtSlot, QSize
-from qgis.PyQt.QtGui import QColor, QValidator, QIcon, QDoubleValidator, QPixmap
+from qgis.PyQt.QtCore import Qt, pyqtSlot
+from qgis.PyQt.QtGui import QIcon, QPixmap, QValidator
 from qgis.PyQt.QtWidgets import (QFileDialog, QWidget, QPushButton, QFormLayout, QVBoxLayout, QHBoxLayout, QSplitter,
                                  QComboBox, QLabel, QLineEdit, QSpinBox, QGroupBox, QFrame, QGridLayout, QDialog, QSizePolicy,
                                  QTableWidget, QTableWidgetItem, QMessageBox, QDialogButtonBox, QApplication)
 
-from qgis.core import QgsApplication, QgsGraduatedSymbolRenderer, QgsExpressionContextUtils
+from qgis.core import QgsExpressionContextUtils
 
 from moduls.QvMapVars import *
 from moduls.QvMapificacio import *

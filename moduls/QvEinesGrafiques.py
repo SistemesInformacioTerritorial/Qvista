@@ -1,9 +1,6 @@
 from moduls.QvImports import *
 from moduls.QvAtributs import QvFitxesAtributs
-from moduls.QvConstants import QvConstants
 import math
-from PyQt5 import QtGui
-from qgis.utils import iface
 
 # from qgis.core import QgsFeatureRequest, QgsPointXY, QgsGeometry, QgsRectangle
 # from qgis.gui import QgsMapTool, QgsMapToolEmitPoint, QgsMapToolZoom, QgsMapToolPan, QgsRubberBand, QgsAttributeDialog
