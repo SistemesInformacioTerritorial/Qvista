@@ -12,7 +12,9 @@ from moduls.QvFavorits import QvFavorits
 
 
 class QvNouCataleg(QWidget):
-    
+    # Senyal per obrir un projecte. Passa un string (ruta de l'arxiu), un booleà (si aquell era favorit o no) i un widget (el botó al qual s'ha fet click). 
+    # El segon i el tercer només calen si volem poder gestionar els favorits des de fora del catàleg
+    obrirProjecte = pyqtSignal(str, bool, QWidget)
     def __init__(self,parent: QtWidgets.QWidget=None):
         '''Construeix el catàleg
         El codi és més o menys el mateix que s'utilitza per construir moltes altres finestres frameless. 
@@ -328,13 +330,13 @@ class QvNouCataleg(QWidget):
                 # x.setParent(None)
                 x.hide()
         return
-    def obrirProjecte(self, dir: str, favorit: bool, widgetAssociat):
+    def obreProjecte(self, dir: str, favorit: bool, widgetAssociat):
         '''Obre el projecte amb qVista. Li indica a qVista si és favorit o no, perquè pugui posar el botó com toca'''
         try:
-            self.parent.obrirProjecteCataleg(dir, favorit, widgetAssociat)
-            self.parent.show()
-            # self.parent.activateWindow()
-            # self.hide()
+            # self.parent.obrirProjecteCataleg(dir, favorit, widgetAssociat)
+            self.obrirProjecte.emit(dir,favorit,widgetAssociat)
+            if self.parent is not None:
+                self.parent.show()
         except:
             QMessageBox.warning(self,"No s'ha pogut obrir el mapa","El mapa no ha pogut ser obert. Si el problema persisteix, contacteu amb el gestor del catàleg")
     def obrirEnQGis(self,dir: str):
@@ -631,7 +633,7 @@ class MapaCataleg(QFrame):
         self.botoObre.setIcon(QIcon(imatgesDir+'cm_play.png'))
         self.botoObre.move(280,100)
         self.botoObre.setToolTip("Obrir el mapa en qVista")
-        self.obreQVista=lambda: cataleg.obrirProjecte(dir+'.qgs',self.favorit, self)
+        self.obreQVista=lambda: cataleg.obreProjecte(dir+'.qgs',self.favorit, self)
         self.botoObre.clicked.connect(self.obreQVista)
         self.botoObre.setIconSize(QSize(24,24))
         self.botoObre.setFixedSize(24,24)

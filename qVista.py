@@ -152,6 +152,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.ubicacions= None
         self.cAdrec= None
         self.catalegMapes = QvNouCataleg(self)
+        self.catalegMapes.obrirProjecte.connect(self.obrirProjecteCataleg)
 
         #Preparem el mapeta abans de les accions, ja que el necessitarem allà
         self.preparacioMapeta()
