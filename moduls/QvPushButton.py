@@ -103,7 +103,7 @@ class QvPushButton(QPushButton):
         drag.setMimeData(mimeData)
         drag.setPixmap(self.icona.pixmap(self.size())) #Posem a l'arrossegament la mateixa icona del botó
         drag.setHotSpot(e.pos() - self.rect().topLeft())
-        dropAction = drag.exec_(Qt.MoveAction)
+        drag.exec_(Qt.MoveAction)
         self.setIcon(self.icona) #Restablim la icona
 
 

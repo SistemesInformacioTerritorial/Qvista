@@ -142,7 +142,6 @@ class QvMascaraEinaPlantilla(QgsMapTool):
         x = event.pos().x()
         y = event.pos().y()
 
-        point = self.canvas.getCoordinateTransform().toMapCoordinates(x, y)
 
     def qpointsDistance(self, p, q):
         dx = p.x() - q.x()
@@ -154,7 +153,7 @@ class QvMascaraEinaPlantilla(QgsMapTool):
         msgBox = QMessageBox()
         msgBox.setText(textTitol)
         msgBox.setInformativeText(textInformacio)
-        ret = msgBox.exec()
+        msgBox.exec()
 
     def getCapa(self):
         if not self.emmascarar:
@@ -238,7 +237,6 @@ class QvMascaraEinaClick(QvMascaraEinaPlantilla):
             try:
                 if self.emmascarar:
                     mascara = self.getCapa()
-                    pr = mascara.dataProvider()
                     geoms = (x.geometry() for x in items)
 
                     aplicaMascara(self.qV, geoms, self.getCapa())
@@ -314,7 +312,6 @@ class QvMascaraEinaDibuixa(QvMascaraEinaPlantilla):
 
             list_polygon = []
             mascara = self.getCapa()
-            pr = mascara.dataProvider()
             self.points = self.points[:-1]
             for x in self.points:
                 list_polygon.append(QgsPointXY(x))
@@ -346,7 +343,6 @@ class QvMascaraEinaDibuixa(QvMascaraEinaPlantilla):
     def selectPoly(self, e):
         try:
 
-            firstMarker = False
             poligono = QgsGeometry.fromPolylineXY(self.points)
             self.rubberband.setToGeometry(
                 poligono, self.getCapa())  # falta establir la layer
@@ -382,7 +378,6 @@ class QvMascaraEinaCercle(QvMascaraEinaPlantilla):
 
     def canvasReleaseEvent(self, event):
         mascara = self.getCapa()
-        pr = mascara.dataProvider()
         poligon, _ = self.getPoligon(
             self.centre, self.toMapCoordinates(event.pos()), 100)
         if self.emmascarar:

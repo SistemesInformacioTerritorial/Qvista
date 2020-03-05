@@ -478,7 +478,6 @@ class CsvAdreca(CsvPagina):
             i=self._cbNumI.findText(c)
             self._cbNumI.setCurrentIndex(i)
     def geocodifica(self):
-        pare=self._carregador
         arxiuNet=str(Path(self._carregador._csv).parent)+'\\'+self._carregador._mapificador.netejaString(Path(self._carregador._csv).stem,True)+'.csv'
         geocod=QvMemoria().getGeocodificat(self._carregador._csv, arxiuNet)
         if geocod is not None:

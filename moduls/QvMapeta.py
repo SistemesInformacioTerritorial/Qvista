@@ -174,7 +174,6 @@ class QvMapeta(QFrame):
             self.petit = False
             # icon = QIcon(imatgesDir+'arrow-collapse.png')
 
-            icon = QIcon(imatgesDir+'mapeta-collapse.png')
             # self.botoFerPetit.setIcon(icon)
         else:
             # self.setGeometry(0,0,25,25)
@@ -413,7 +412,7 @@ class QvMapeta(QFrame):
         
         self.canvas.setExtent(rang)
         self.canvas.refresh()
-        rect = self.canvas.extent()
+        self.canvas.extent()
 
 
 

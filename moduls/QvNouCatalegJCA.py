@@ -163,7 +163,6 @@ class QvColumnaCataleg(QWidget):
             self.tcanvas = QgsMapCanvas()
             self.tproject = QgsProject.instance()
             self.troot = QgsProject.instance().layerTreeRoot()
-            bridge = QgsLayerTreeMapCanvasBridge(self.troot, self.tcanvas)
             self.tcanvas.show()
             self.tproject.read(prj)
 
@@ -210,7 +209,6 @@ class QvCataleg(QWidget):
         lytCapcalera.addWidget(titol)
         lytCapcalera.addWidget(self.liniaCerca)
 
-        scrollFull = QScrollArea()
         frame = QFrame()
         # scrollFull.setWidget(frame)
         self.layoutFrame = QHBoxLayout(frame)
@@ -223,7 +221,6 @@ class QvCataleg(QWidget):
 
         # frame.show()
         self.temesCataleg = []
-        temes = []
         self.dictProjectes = {}
         contingutCarpetes = os.walk(carpetaCataleg)
         for carpeta in contingutCarpetes:

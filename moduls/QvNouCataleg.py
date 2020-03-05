@@ -588,7 +588,6 @@ class MapaCataleg(QFrame):
         self.lblImatge.setFixedSize(300,180) #La mida que volem, restant-li el que ocuparà el border
         self.lblImatge.setScaledContents(True)
         self.lblImatge.setToolTip("Obrir mapa en qVista")
-        midaLblImatge=self.lblImatge.sizeHint()
         self.layout.addWidget(self.lblImatge)
         try:
             with open(dir+'.txt') as text:

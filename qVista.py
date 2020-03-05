@@ -1886,7 +1886,6 @@ class QVista(QMainWindow, Ui_MainWindow):
             total=0
             item = QTableWidgetItem(a.text())
             taula.setItem(fila+1,0,item)
-            field=layer.fields().lookupField(a.text())
             # print (field)
             nombreElements=0
             for feature in layer.selectedFeatures():
@@ -1959,7 +1958,6 @@ class QVista(QMainWindow, Ui_MainWindow):
             self.obrirProjecteAmbRang(self.pathProjecteActual)
     def switchFavorit(self):
         # nom=os.path.basename(self.pathProjecteActual)
-        nom=Path(self.pathProjecteActual).stem
         if self.favorit:
             # QvFavorits().eliminaFavorit(nom)
             self.botoFavorits.setIcon(self.iconaFavDesmarcat)
@@ -2536,12 +2534,12 @@ class QVista(QMainWindow, Ui_MainWindow):
                     textCercat = textCercat + " " + fiel.name()
             # print (textCercat)
 
-    def nomCapa(self):
+    def nomCapa(self): #???
         capa = self.llegenda.view.currentLayer()
         # print('MENU NOM CAPA')
         # print('Nom: ', capa.name())
 
-    def extCapa(self):
+    def extCapa(self): # ???
         capa = self.llegenda.view.currentLayer()
         # print('MENU EXTENSIÓ CAPA')
         # print('Extent: ', capa.extent().toString())
@@ -2852,7 +2850,6 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.canvas.refresh()
 
     def editarXY(self): #TODO: això ja no hauria de caldre
-        size=self.bXY.size()
         self.bXY.hide()
         self.leXY.show()
         self.leXY.setText(self.bXY.text())
@@ -3006,7 +3003,6 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         dialegObertura=QFileDialog()
         dialegObertura.setDirectoryUrl(QUrl('../dades/projectes/'))
-        rect = self.canvas.extent()
         nfile,_ = dialegObertura.getOpenFileName(None,"Obrir mapa Qgis", "../dades/projectes/", "Tots els mapes acceptats (*.qgs *.qgz);; Mapes Qgis (*.qgs);;Mapes Qgis comprimits (*.qgz)")
 
         if nfile is not None:
@@ -3028,7 +3024,6 @@ class QVista(QMainWindow, Ui_MainWindow):
                 layer = QgsVectorLayer(nfile, os.path.basename(nfile), "ogr")
                 if not layer.isValid():
                     return
-                renderer=layer.renderer()
                 self.project.addMapLayer(layer)
                 self.setDirtyBit()
             else:
@@ -3058,7 +3053,6 @@ class QVista(QMainWindow, Ui_MainWindow):
             layer = QgsVectorLayer(nfile, os.path.basename(nfile), "ogr")
             if not layer.isValid():
                 return
-            renderer=layer.renderer()
             self.project.addMapLayer(layer)
             self.setDirtyBit()
     def obrirDialegNovaCapaCSV(self):
@@ -3285,7 +3279,6 @@ def mesuraDistancies():
     # taulaAtributs('Seleccionats', layer)
 
 def seleccioLliure():
-    layer=qV.llegenda.currentLayer()
     qV.markers.hide()
     try:
         #Això no hauria de funcionar
@@ -3407,8 +3400,7 @@ def nivellCsv(fitxer: str,delimitador: str,campX: str,campY: str, projeccio: int
 #         print("add layer")
 
 def seleccioCercle():
-    seleccioClick()
-    layer=qV.llegenda.currentLayer()  
+    seleccioClick() 
     try:
         qV.canvas.scene().removeItem(qV.toolSelect.rubberband)
     except:
@@ -3424,7 +3416,6 @@ def seleccioCercle():
 
 def seleccioClicks():
     seleccioClick()
-    layer=qV.llegenda.currentLayer()  
     try:
         qV.canvas.scene().removeItem(qV.toolSelect.rubberband)
     except:
@@ -3461,7 +3452,7 @@ def seleccioExpressio():
         # msg.setInformativeText("OK para salir del programa \nCANCEL para seguir en el programa")
         msg.setWindowTitle("qVista version")
         msg.setStandardButtons(QMessageBox.Close)
-        retval = msg.exec_()
+        msg.exec_()
         return     
     if command == 'qvdebug' :
         qV.modeDebug()
@@ -3665,7 +3656,6 @@ def carregarFieldsCalculadora(): #???
     layer = QvLlegenda.capaPerNom(qV,qV.calculadora.ui.cbLayers.currentText())
     # layer = qV.project.instance().mapLayersByName(qV.calculadora.ui.cbLayers.currentText())[0]
     taula=qV.calculadora.ui.twCalculadora
-    numeroFields=0
     fila=0
     columna=0 #???
     taula.setColumnCount(2)
@@ -3679,7 +3669,6 @@ def carregarFieldsCalculadora(): #???
         item = QTableWidgetItem(a.text())
         taula.setItem(fila+1,0,item)
         nombreElements=0
-        field=layer.fields().lookupField(a.text())
         # print (field)
         for feature in layer.selectedFeatures():
             calcul=feature.attributes()[layer.fields().lookupField(a.text())]
@@ -3709,7 +3698,6 @@ def escollirNivellGPX():
     layer = QgsVectorLayer(nfile, os.path.basename(nfile), "ogr")
     if not layer.isValid():
         return
-    renderer=layer.renderer()
     # print(renderer.type())
     
     qV.project.addMapLayer(layer)
@@ -3728,8 +3716,6 @@ def escollirNivellCSV():
     if nfile:
         with open(nfile) as f:
             reader = csv.DictReader(f, delimiter=';')
-            llistaCamps = reader.fieldnames
-        #print (llistaCamps)
         projeccio = 25831
         titol = 'Còpia de Models adreces.csv'
         nivellCsv(nfile,';','XNUMPOST','YNUMPOST', projeccio, nomCapa = titol)
@@ -3819,7 +3805,6 @@ def afegirNivellSHP():
     layer = QgsVectorLayer(nfile, os.path.basename(nfile), "ogr")
     if not layer.isValid():
         return
-    renderer=layer.renderer()
     # print(renderer.type())
     
     qV.project.addMapLayer(layer)
@@ -3874,7 +3859,7 @@ def missatgeCaixa(textTitol,textInformacio):
     msgBox=QMessageBox()
     msgBox.setText(textTitol)
     msgBox.setInformativeText(textInformacio)
-    ret = msgBox.exec()
+    msgBox.exec()
 
 
 
@@ -4009,13 +3994,13 @@ def main(argv):
 
         # Avisos de l'aplicació
         try:
-            avisos=QvAvis()
+            QvAvis()
         except:
             print('no es pot accedir als avisos')
 
         # Sabies que...
         try:
-            sabiesque=QvSabiesQue(qV)
+            QvSabiesQue(qV)
         except:
             print('No hem pogut mostrar el "sabies que..."')
         

@@ -59,7 +59,6 @@ def comenca(sub, string):
 
 def variant(sub, string, variants):
     # TODO: Fer test de velocitat. Si va massa lent, busquem simplement que sub estigui dins d'una variant
-    subs = sub.split(' ')
     for x in variants.split(','):
         # esVariant = True
         # for y in subs:

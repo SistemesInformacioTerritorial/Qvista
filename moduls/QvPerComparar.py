@@ -742,7 +742,6 @@ class QvCarregaCsvGeneraCoords(QvCarregaCsvPage):
                 reader = self.parent.readerTmp
 
             for row in reader:
-                error = False
                 i += 1
 
                 if i == 0:
@@ -800,20 +799,20 @@ class QvCarregaCsvGeneraCoords(QvCarregaCsvPage):
                     try:
                         tipusVia, nomVia, numI = splitCarrer(row[self.parent.dadesAdreca[1]])
                     except:
-                        error=True
+                        pass
 
 
                 elif self.parent.dadesAdreca[0] == "" and self.parent.dadesAdreca[2] != "":
                     try:
                         tipusVia, nomVia, _ = splitCarrer(row[self.parent.dadesAdreca[1]]) 
                     except:
-                        error=True
+                        pass
 
                 elif self.parent.dadesAdreca[0] != "" and self.parent.dadesAdreca[2] == "":
                     try:
                         _, nomVia, numI = splitCarrer(row[self.parent.dadesAdreca[1]])
                     except:
-                        error=True
+                        pass
 
                 if nomVia == "":
                     nomVia = row[self.parent.dadesAdreca[1]]  

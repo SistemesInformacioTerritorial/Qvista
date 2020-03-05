@@ -1185,7 +1185,6 @@ if __name__ == "__main__":
 
             ruta = 'D:/qVista/'
             fich = 'CarrecsANSI'
-            code = 'ANSI'
             camp = 'BARRI'
             showErrors = False
 

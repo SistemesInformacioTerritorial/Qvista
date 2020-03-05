@@ -231,7 +231,6 @@ class QvPrint(QWidget):
 
     def pintarRectangle(self,poligon):
         points=[QgsPointXY(0,0),QgsPointXY(0,10),QgsPointXY(10,10),QgsPointXY(0,10),QgsPointXY(0,0)]
-        listaPoligonos=[points]
         poligono=QgsGeometry.fromRect(self.poligon)
         self.rubberband.setToGeometry(poligono,self.layer)
         

@@ -32,6 +32,7 @@ import re
 from moduls.QvApp import QvApp
 from moduls.QvSqlite import QvSqlite
 from moduls.QvMapVars import *
+from configuracioQvista import *
 
 from typing import List
 

@@ -20,7 +20,6 @@ class QvSeleccioPunt(QgsMapTool):
         x = event.pos().x()
         y = event.pos().y()
 
-        point = self.canvas.getCoordinateTransform().toMapCoordinates(x, y)
 
     def canvasReleaseEvent(self, event):
         #Get the click
@@ -67,7 +66,7 @@ class QvSeleccioPunt(QgsMapTool):
         msgBox=QMessageBox()
         msgBox.setText(textTitol)
         msgBox.setInformativeText(textInformacio)
-        ret = msgBox.exec()
+        msgBox.exec()
 
 class QvSeleccioCercle(QgsMapTool):
     """ Dibuixa un cercle i selecciona els elements."""
@@ -100,7 +99,6 @@ class QvSeleccioCercle(QgsMapTool):
                 return
         cp = self.toMapCoordinates(e.pos())
         self.rbcircle(self.rubberband, self.centre, cp, self.numeroSegmentsCercle)
-        r = math.sqrt(self.centre.sqrDist(cp))
 
         self.rubberband.show()
   
@@ -154,7 +152,7 @@ class QvSeleccioCercle(QgsMapTool):
         msgBox=QMessageBox()
         msgBox.setText(textTitol)
         msgBox.setInformativeText(textInformacio)
-        ret = msgBox.exec()
+        msgBox.exec()
 
 
 
@@ -368,7 +366,6 @@ class QvMesuraMultiLinia(QgsMapTool):
     def tancarPoligon(self):
         try:
             
-            point = QPointF()
             # create  float polygon --> construcet out of 'point'
             list_polygon = QPolygonF()
 
@@ -551,7 +548,7 @@ class QvSeleccioElement(QgsMapTool):
         msgBox=QMessageBox()
         msgBox.setText(textTitol)
         msgBox.setInformativeText(textInformacio)
-        ret = msgBox.exec()
+        msgBox.exec()
 
     def heCerradoFicha(self): #???
         bb= self.parent()
