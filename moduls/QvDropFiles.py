@@ -157,24 +157,21 @@ class QvDropFiles(QObject):
 if __name__ == "__main__":
 
     from qgis.core.contextmanagers import qgisapp
-    # from qgis.gui import QgsMapCanvas
-    from moduls.QvCanvas import QvCanvas
+    from qgis.gui import QgsMapCanvas
+    # from moduls.QvCanvas import QvCanvas
     from moduls.QvLlegenda import QvLlegenda
     from moduls.QvApp import QvApp
 
-    with qgisapp(sysexit=False) as app:
+    gui = True
+    with qgisapp(guienabled=gui) as app:
+
+    # with qgisapp(sysexit=False) as app:
 
         qApp = QvApp()
         qApp.carregaIdioma(app, 'ca')
 
-        pp = []
-        if pp:
-            print('Lleno')
-        else:
-            print('Lleno')
-
         # 1.- Crear widget donde aplicar el drag & drop de ficheros
-        canvas = QvCanvas()
+        canvas = QgsMapCanvas()
         # 2.- Crear el objeto QvDropFiles pasándole el widget
         drop = QvDropFiles(canvas)
         # 3.- Definir dos listas de extensiones: fichero único (proyecto) o varios ficheros (capas)
@@ -185,7 +182,7 @@ if __name__ == "__main__":
 
         llegenda = QvLlegenda(canvas)
 
-        llegenda.project.read('../Dades/Projectes/BCN11.qgs')
+        ok = llegenda.project.read('mapesOffline/qVista default map.qgs')
 
         llegenda.setWindowTitle('Llegenda')
         llegenda.setGeometry(50, 50, 300, 400)
