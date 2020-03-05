@@ -29,6 +29,7 @@ class QvDropFiles(QObject):
         """
         QObject.__init__(self)
         self.widget = widget
+        self.widget.setAcceptDrops(True)
         self.widgetDragEnterEvent = self.widget.dragEnterEvent
         self.widgetDragMoveEvent = self.widget.dragMoveEvent
         self.widgetDragLeaveEvent = self.widget.dragLeaveEvent
