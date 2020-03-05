@@ -288,9 +288,12 @@ class QvAtributs(QTabWidget):
         try:
             
             taula=self.currentWidget()
-            self.filtra.disconnect()
-            self.desaCsv.disconnect()
-            self.eliminaFiltre.disconnect()
+            try:
+                self.filtra.disconnect()
+                self.desaCsv.disconnect()
+                self.eliminaFiltre.disconnect()
+            except:
+                pass
             self.filtra.clicked.connect(taula.filterElements)
             self.desaCsv.clicked.connect(taula.saveToCSV)
             self.eliminaFiltre.clicked.connect(taula.removeFilter)
