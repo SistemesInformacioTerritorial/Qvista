@@ -80,7 +80,8 @@ class ModelArxius(QFileSystemModel):
         return super().data(index,role)
 
 class QvCatalegCapes(QWidget):
-    def __init__(self,qV,parent=None):
+    afegirCapa = pyqtSignal(str)
+    def __init__(self,parent=None):
         '''Construeix el catàleg de capes
         Li passem qVista com a paràmetre, per poder carregar les capes des d'aquí
         '''
@@ -91,7 +92,6 @@ class QvCatalegCapes(QWidget):
         self.layout=QVBoxLayout()
         self.setFont(QvConstants.FONTTEXT)
         self.setStyleSheet('color: %s; background: %s; border: none'%(QvConstants.COLORFOSCHTML,QvConstants.COLORBLANCHTML))
-        self.qV=qV
         self.setLayout(self.layout)
 
         #Afegir el cercador
@@ -163,28 +163,10 @@ class QvCatalegCapes(QWidget):
         '''Si és una capa, l'afegeix a qVista
         He copiat el codi del mòdul qVista.py perquè la funció estava fora de la classe qVista i no podia cridar-la
         '''
-        dir=os.getcwd()
         index = self.treeCataleg.currentIndex()
         if self.model.isDir(index): return
         path=self.model.fileInfo(index).absoluteFilePath()
-        # self.qV.afegirQlr(path)
-
-        #Copio el codi de la funció afegirQlr de l'arxiu qVista.py, ja que no se m'acudeix cap manera de cridar-la des d'aquí que no sigui barroera
-        # layers = QgsLayerDefinition.loadLayerDefinitionLayers(path)
-        # self.qV.project.addMapLayers(layers, True)
-
-        ok, txt = QgsLayerDefinition().loadLayerDefinition(path, self.qV.project, self.qV.llegenda.root)
-        if ok:
-            self.qV.canvisPendents=True
-            self.qV.botoDesarProjecte.setIcon(self.qV.iconaAmbCanvisPendents)
-        else:
-            print('No se pudo importar capas', txt)
-
-
-        # self.qV.canvisPendents=True
-        # self.qV.botoDesarProjecte.setIcon(self.qV.iconaAmbCanvisPendents)
-        os.chdir(dir)
-        # print(dir)
+        self.afegirCapa.emit(path)
 
     def actualitzaMetadades(self):
         '''Pinta la preview de la capa

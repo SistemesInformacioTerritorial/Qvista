@@ -683,7 +683,8 @@ class QVista(QMainWindow, Ui_MainWindow):
         # self.wCataleg.setWindowTitle("Cataleg d'Informació Territorial")
         # self.wCataleg.show()
 
-        self.wCataleg=QvCatalegCapes(self,self)
+        self.wCataleg=QvCatalegCapes(self)
+        self.wCataleg.afegirCapa.connect(afegirQlr)
 
         self.dwCataleg = QvDockWidget( "Catàleg de capes", self )
         self.dwCataleg.setContextMenuPolicy(Qt.PreventContextMenu)
