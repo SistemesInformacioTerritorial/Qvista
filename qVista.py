@@ -2203,7 +2203,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.menuUtilitats.addAction(self.actplanolBCN)
         self.menuUtilitats.addSeparator()
         self.menuUtilitats.addAction(self.actpiuPortal)
-        self.menuUtilitats.addAction(self.actDocumentacio)
+        # self.menuUtilitats.addAction(self.actDocumentacio)
 
 
         self.menuFuncions.setFont(QvConstants.FONTSUBTITOLS)
