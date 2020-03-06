@@ -208,14 +208,14 @@ class QvMascaraEinaPlantilla(QgsMapTool):
 # Copiat del QvSeleccioPunt de QvEinesGrafiques.py i adaptat a les nostres necessitats
 class QvMascaraEinaClick(QvMascaraEinaPlantilla):
 
-    def __init__(self, qV, canvas, **kwargs):
+    def __init__(self, *args, **kwargs):
         layer = qV.llegenda.currentLayer()
         if layer is None or layer.type() != QgsMapLayer.VectorLayer:
             self.missatgeCaixa('Cal tenir seleccionat un nivell per poder fer una selecció.',
                                'Marqueu un nivell a la llegenda sobre el que aplicar la consulta.')
             # TODO: Crear una altra excepció més específica
             raise Exception("No hi havia nivell seleccionat")
-        super().__init__(qV, canvas, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def canvasReleaseEvent(self, event):
         # Get the click
