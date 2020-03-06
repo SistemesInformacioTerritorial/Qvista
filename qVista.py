@@ -2203,7 +2203,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.menuUtilitats.addAction(self.actplanolBCN)
         self.menuUtilitats.addSeparator()
         self.menuUtilitats.addAction(self.actpiuPortal)
-        # self.menuUtilitats.addAction(self.actDocumentacio)
+        self.menuUtilitats.addAction(self.actDocumentacio)
 
 
         self.menuFuncions.setFont(QvConstants.FONTSUBTITOLS)
@@ -3650,6 +3650,8 @@ def obreURL(urlstr=''):
 def obreDocumentacio():
     qV.startMovie()
     doc=QvDocumentacio(qV)
+    doc.comencaCarrega.connect(qV.startMovie)
+    doc.acabaCarrega.connect(qV.stopMovie)
     qV.stopMovie()
     doc.show()
 

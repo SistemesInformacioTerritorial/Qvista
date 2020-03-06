@@ -7,6 +7,8 @@ from pathlib import Path
 import shutil
 
 class QvDocumentacio(QDialog):
+    comencaCarrega = pyqtSignal()
+    acabaCarrega = pyqtSignal()
     '''Diàleg que mostra la documentació de la carpeta de documentació definida a configuracioQvista
     Mostra una TreeView amb els documents, i delega en el sistema la tasca d'obrir-los'''
     def __init__(self,parent: QWidget=None):
@@ -79,10 +81,10 @@ class QvDocumentacio(QDialog):
     def obrir(self):
         path=self.qModel.fileInfo(self.index).absoluteFilePath()
         if os.path.isfile(path):
-            self.parentWidget().startMovie()
+            self.comencaCarrega.emit()
             os.startfile(path)
             time.sleep(1)
-            self.parentWidget().stopMovie()
+            self.acabaCarrega.emit()
         else:
             pass
         #Ara la fem
