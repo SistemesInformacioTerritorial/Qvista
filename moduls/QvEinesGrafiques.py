@@ -160,7 +160,7 @@ def seleccioLliure(wSeleccioGrafica):
     # qV.markers.hide()
     try:
         #Això no hauria de funcionar
-        qV.esborrarSeleccio()
+        wSeleccioGrafica.esborrarSeleccio()
     except:
         pass
 
@@ -476,10 +476,11 @@ class QvMascaraEinaCercle(QvMascaraEinaPlantilla):
 
 
 class QvMesuraMultiLinia(QgsMapTool):
-    def __init__(self, qV, canvas, layer):
+    def __init__(self, canvas, layer,parent):
+        self.parent=parent
         self.canvas = canvas
         self.layer = layer
-        self.qV = qV
+        # self.qV = qV
         #dock = QgsAdvancedDigitizingDockWidget(self.canvas)
         #QgsMapToolAdvancedDigitizing.__init__(self, self.canvas, dock)
         QgsMapTool.__init__(self, self.canvas)
@@ -503,11 +504,10 @@ class QvMesuraMultiLinia(QgsMapTool):
         self.lastLine = None
         self.hoverSartMarker = None
 
-        self.qV.wMesuraGrafica.clear()
+        self.parent.clear()
 
-        self.qV.wMesuraGrafica.colorCanviat.connect(self.canviColor)
+        self.parent.colorCanviat.connect(self.canviColor)
 
-        # self.qV.lwMesuresHist.clear()
     def canviColor(self,color):
         #De moment conservem el color del que ja teníem dibuixat
         #Si més endavant es vol modificar només cal descomentar les línies inferiors
@@ -566,12 +566,11 @@ class QvMesuraMultiLinia(QgsMapTool):
         self.rubberband2.hide()
         self.rubberbandCercle.hide()
 
-        self.qV.wMesuraGrafica.setDistanciaTotal(distancia)
-        self.qV.wMesuraGrafica.actualitzaHistorial()
-        self.qV.wMesuraGrafica.setDistanciaTempsReal(0)
-        self.qV.wMesuraGrafica.setDistanciaTotal(0)
-        self.qV.wMesuraGrafica.setArea(0)
-        # self.qV.lblDistanciaTempsReal.setText('Distáncia últim tram: 0 m')       
+        self.parent.setDistanciaTotal(distancia)
+        self.parent.actualitzaHistorial()
+        self.parent.setDistanciaTempsReal(0)
+        self.parent.setDistanciaTotal(0)
+        self.parent.setArea(0)   
         return True
     def novaRubberband(self):
         self.rubberbands.append(self.rubberband)
@@ -579,7 +578,7 @@ class QvMesuraMultiLinia(QgsMapTool):
         self.rubberband=self.creaRubberband()
     def creaRubberband(self,cercle=False): 
         rubberband=QgsRubberBand(self.canvas)
-        rubberband.setColor(self.qV.wMesuraGrafica.color)
+        rubberband.setColor(self.parent.color)
         if cercle:
             rubberband.setWidth(0.25)
             rubberband.setLineStyle(Qt.DashLine)
@@ -590,7 +589,7 @@ class QvMesuraMultiLinia(QgsMapTool):
     def rbcircle(self, center,edgePoint,desar=False,segments=100):
         r = math.sqrt(center.sqrDist(edgePoint))
         self.rubberbandCercle.reset( True )
-        if not self.qV.wMesuraGrafica.cbCercles.isChecked():
+        if not self.parent.cbCercles.isChecked():
             return
         pi =3.1416
         llistaPunts=[]
@@ -608,9 +607,7 @@ class QvMesuraMultiLinia(QgsMapTool):
         
         if e.button() == Qt.RightButton:
             if not self.treuUltimtram():
-                # self.qV.wMesuraGrafica.tancar()
-                self.qV.dwMesuraGrafica.hide()
-                # self.canvas.unsetMapTool()
+                self.parent.hide()
             
         else:
             if self.hoverSartMarker:
@@ -626,7 +623,7 @@ class QvMesuraMultiLinia(QgsMapTool):
                 self.points.append(QgsPointXY(self.point))
                 
                 self.selectPoly(e)
-                self.qV.wMesuraGrafica.setArea(None)
+                self.parent.setArea(None)
                 
 
 
@@ -650,19 +647,15 @@ class QvMesuraMultiLinia(QgsMapTool):
             distancia = geomP.length()
             area = geomP.area()
 
-            self.qV.wMesuraGrafica.setDistanciaTotal(distancia)
-            self.qV.wMesuraGrafica.setArea(area)
-
-            # self.qV.lwMesuresHist.addItem(str(round(self.lastLine.length(),2)))
-            # self.qV.lblDistanciaTotal.setText('Distància total: ' + str(round(distancia,2)) + ' m')
-            # self.qV.lblMesuraArea.setText('Àrea: ' + str(round(area,2)) + ' m²')
+            self.parent.setDistanciaTotal(distancia)
+            self.parent.setArea(area)
 
             self.point = None
             self.points = []
             self.hoverSartMarker = False
             
             self.rubberband2.hide()
-            self.qV.wMesuraGrafica.actualitzaHistorial()
+            self.parent.actualitzaHistorial()
             # self.treuUltimtram()
 
         except Exception as e:
@@ -681,30 +674,18 @@ class QvMesuraMultiLinia(QgsMapTool):
             distancia = poligono.length()
             if distancia <= 0:
                 distancia = 0
-                self.qV.wMesuraGrafica.clear()
-                #
-
-                # self.qV.lwMesuresHist.clear()
-                # self.qV.lblMesuraArea.setText('Àrea: ')
+                self.parent.clear()
                 firstMarker = True
 
                 for ver in self.markers:
                     self.canvas.scene().removeItem(ver)
 
                 self.markers = []
-            self.qV.wMesuraGrafica.setDistanciaTotal(distancia)
-            # self.qV.lblDistanciaTotal.setText('Distància total: ' + str(round(distancia,2)) + ' m')
+            self.parent.setDistanciaTotal(distancia)
             
             if distancia > 0 and (self.lastLine is not None and round(self.lastLine.length(),2) > 0):
-                """
-                rowPosition = self.qV.twResultatsMesura.rowCount()
-                self.qV.twResultatsMesura.insertRow(rowPosition)
-                self.qV.twResultatsMesura.setItem(rowPosition , 0, QTableWidgetItem(str(round(distancia,2))))
-                """
-                self.qV.wMesuraGrafica.setDistanciaTempsReal(0)
-                self.qV.wMesuraGrafica.setDistanciaTotal(distancia)
-                # self.qV.lwMesuresHist.addItem(str(round(self.lastLine.length(),2)))
-                # self.qV.lblDistanciaTempsReal.setText('Distáncia últim tram: 0 m')
+                self.parent.setDistanciaTempsReal(0)
+                self.parent.setDistanciaTotal(distancia)
 
                 self.lastLine = QgsGeometry.fromPolylineXY([self.lastPoint, self.lastPoint])
 
@@ -750,9 +731,8 @@ class QvMesuraMultiLinia(QgsMapTool):
             distTotal=poligono.length()
         else:
             distTotal=0
-        self.qV.wMesuraGrafica.setDistanciaTempsReal(distancia)
-        self.qV.wMesuraGrafica.setDistanciaTotal(distTotal+distancia)
-        # self.qV.lblDistanciaTempsReal.setText('Distáncia últim tram: ' + str(round(distancia,2)) + ' m')
+        self.parent.setDistanciaTempsReal(distancia)
+        self.parent.setDistanciaTotal(distTotal+distancia)
         
 class QvMarcador (QgsVertexMarker):
     def __init__(self, canvas):
@@ -1100,7 +1080,8 @@ class QvSeleccioGrafica(QWidget):
     def setVisible(self,visible):
         super().setVisible(visible)
         if not visible:
-            qV.foraEinaSeleccio()
+            pass
+            # qV.foraEinaSeleccio()
     def setInfoLbl(self,txtSelec):
         self.lblCapaSeleccionada.setText(txtSelec)
     def calcularSeleccio(self):
@@ -1149,6 +1130,156 @@ class QvSeleccioGrafica(QWidget):
             if (field.typeName()=='Real' or field.typeName()=='Integer64'):
                 self.lwFieldsSelect.addItem(field.name())
 
+class QvMesuraGrafica(QWidget):
+    colorCanviat=pyqtSignal(QColor)
+    acabatMesurar=pyqtSignal()
+    def __init__(self, canvas, llegenda):
+        QWidget.__init__(self)
+        self.canvas=canvas
+        self.llegenda=llegenda
+        self.setWhatsThis(QvApp().carregaAjuda(self))
+        self.lytMesuraGrafica = QVBoxLayout()
+        self.lytMesuraGrafica.setAlignment(Qt.AlignTop)
+        self.setLayout(self.lytMesuraGrafica)
+        self.lytBotonsMesura = QHBoxLayout()
+
+        self.lytMesuraGrafica.addLayout(self.lytBotonsMesura)
+
+        self.lytDistanciesArees=QVBoxLayout()
+        self.lytBotonsMesura.addLayout(self.lytDistanciesArees)
+        self.lytBotonsMesura.addStretch()
+
+
+        self.color=QvConstants.COLORDESTACAT
+        self.bmSeleccioColor=QvPushButton(flat=True)
+        self.bmSeleccioColor.setIcon(QIcon('Imatges/da_color.png'))
+        self.bmSeleccioColor.setStyleSheet('background: solid %s; border: none'%self.color.name())
+        self.bmSeleccioColor.setIconSize(QSize(25,25))
+        QvConstants.afegeixOmbraWidget(self.bmSeleccioColor)
+        def canviColor(color):
+            self.color=color
+            self.bmSeleccioColor.setStyleSheet('background: solid %s; border: none'%color.name())
+            self.colorCanviat.emit(color)
+        def openColorDialog():
+            canviColor(QColorDialog().getColor())
+        self.bm4 = QvPushButton(destacat=False)
+        self.bm4.setText('Netejar')
+
+        self.lblDistanciaTotal = QLabel()
+        self.setDistanciaTotal(0)
+        self.lblMesuraArea = QLabel('')
+        self.cbCercles=QCheckBox('Mostrar cercles auxiliars')
+
+        
+        self.lwMesuresHist = QListWidget()
+        self.lwMesuresHist.setSelectionMode(QAbstractItemView.ExtendedSelection)
+        self.lwMesuresHist.setMinimumHeight(50)
+
+        self.twResultatsMesura = QTableWidget()
+
+        self.bmSeleccioColor.clicked.connect(openColorDialog)
+        #Si eventualment ho movem a un altre arxiu això no funcionarà
+        #Fer el doble connect sembla cutre (i ho és)
+        #Però com que esborrarMesures deixava de mesurar, i volem seguir mesurant, doncs ho fem a mà i ja
+        #Caldria refactoritzar en algun moment
+        self.bm4.clicked.connect(lambda: self.esborrarMesures(True))
+        self.bm4.clicked.connect(self.mesuraDistancies)
+
+        self.lytBotonsMesura.addWidget(self.bmSeleccioColor)
+        self.lytBotonsMesura.addWidget(self.bm4)
+        self.lytDistanciesArees.addWidget(self.lblDistanciaTotal)
+        self.lytDistanciesArees.addWidget(self.lblMesuraArea)
+        self.lytDistanciesArees.addWidget(self.cbCercles)
+        
+        self.lytMesuraGrafica.addWidget(self.lwMesuresHist)
+        self.setMinimumWidth(350)
+        self.setMinimumHeight(100)
+        self.setSizePolicy(QSizePolicy.Minimum,QSizePolicy.Minimum)
+        self.resize(350,100)
+
+        self.markers = QgsVertexMarker(self.canvas)
+    
+    def hide(self):
+        super().hide()
+        self.acabatMesurar.emit()
+    
+    def clear(self):
+        return
+        self.lwMesuresHist.clear()
+    def setDistanciaTotal(self,dist):
+        self.dist=max(round(dist,2),0)
+        self.lblDistanciaTotal.setText('Distància total: ' + str(self.dist) + ' m')
+    def setDistanciaTempsReal(self,dist):
+        return
+    def setArea(self,area):
+        if area is None:
+            self.lblMesuraArea.setText("Tanqueu un polígon per calcular l'àrea")
+            self.area=None
+        else:
+            self.area=round(area,2)
+            self.lblMesuraArea.setText('Àrea: ' + str(self.area) + ' m²')
+    def actualitzaHistorial(self):
+        if self.dist==0: return
+        if self.area is not None:
+            self.lwMesuresHist.insertItem(0,'Distància: %.2f m --- Àrea: %.2f m²'%(self.dist,self.area))
+        else:
+            self.lwMesuresHist.insertItem(0,'Distància: %.2f m'%self.dist)
+    def obrir(self):
+        #Redundant, perquè se suposa que quan comencem a mesurar s'esborra tot, però no anava :(
+        self.show()
+        self.bm4.animateClick()
+        # pos=qV.bMesuraGrafica.mapToGlobal(qV.bMesuraGrafica.pos())
+        zoomFactor=QvApp().zoomFactor()
+        # self.parentWidget().move(pos.x()-425*zoomFactor,pos.y()-200)
+    def tancar(self):
+        self.esborrarMesures(True)
+        self.canvas.unsetMapTool(self.toolMesura)
+    def canviaVisibilitatDw(self,visibilitat):
+        if visibilitat:
+            self.obrir()
+        else:
+            self.tancar()
+    def mesuraDistancies(self):
+        layer=self.llegenda.currentLayer()
+        self.markers.hide()
+        try:
+            # qV.esborrarSeleccio()
+            self.esborrarMesures()
+        except:
+            pass
+
+        self.actionMapMesura = QAction('Mesura dibuixant', self)
+        self.toolMesura = QvMesuraMultiLinia(self.canvas, layer, self)
+
+        self.toolMesura.setAction(self.actionMapMesura)
+        self.canvas.setMapTool(self.toolMesura)
+    def esborrarMesures(self, tambePanCanvas = True):
+
+        if tambePanCanvas:
+            self.canvas.panCanvas()
+
+        try:
+            self.canvas.scene().removeItem(self.toolMesura.rubberband)
+            self.canvas.scene().removeItem(self.toolMesura.rubberband2)
+            for x in self.toolMesura.rubberbands:
+                self.canvas.scene().removeItem(x)
+            for x in self.toolMesura.cercles:
+                self.canvas.scene().removeItem(x)
+            self.clear()
+            # self.lwMesuresHist.clear()
+
+            for ver in self.toolMesura.markers:
+                #if ver in  qV.canvas.scene().items():
+                self.canvas.scene().removeItem(ver)
+            # taulaAtributs('Total',layer)
+            self.setDistanciaTotal(0)
+            self.setArea(0)
+            self.setDistanciaTempsReal(0)
+            # qV.lblDistanciaTotal.setText('Distància total: ')
+            # qV.lblMesuraArea.setText('Àrea: ')
+            # qV.lblDistanciaTempsReal.setText('Distáncia últim tram: ')
+        except:
+            pass
 
 if __name__ == "__main__":    
     from qgis.gui import  QgsLayerTreeMapCanvasBridge
