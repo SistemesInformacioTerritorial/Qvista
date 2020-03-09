@@ -38,7 +38,6 @@ def aplicaMascara(projecte, canvas, geoms, mascara=None):
 
 
 def obteMascara(projecte, canvas):
-    # MascaraAux.qV = qV
     MascaraAux.projecte = projecte
     mascares = projecte.mapLayersByName('Màscara')
     if len(mascares) == 0:
@@ -79,9 +78,6 @@ def creaMascara(projecte, canvas):
             'MultiPolygon?crs=%s' % epsg, 'Màscara auxiliar', 'memory')
         rect = canvas.fullExtent()
         geom = QgsGeometry().fromRect(rect)
-        # punts=[(0.,0.),(0.,10000000.),(10000000.,10000000.),(10000000.,0.)]
-        # punts=[QgsPointXY(*x) for x in punts]
-        # geom=QgsGeometry.fromPolygonXY([punts])
         feat = QgsFeature()
         feat.setGeometry(geom)
 
@@ -138,11 +134,9 @@ def seleccioCercle(wSeleccioGrafica):
         wSeleccioGrafica.canvas.scene().removeItem(wSeleccioGrafica.toolSelect.rubberband)
     except:
         pass
-    # qV.toolSelect = QvSeleccioCercle(qV, 10, 10, 30)
     try:
         wSeleccioGrafica.toolSelect = QvMascaraEinaCercle(wSeleccioGrafica, wSeleccioGrafica.projecte, wSeleccioGrafica.canvas, wSeleccioGrafica.llegenda, **wSeleccioGrafica.getParametres())
         wSeleccioGrafica.setTool(wSeleccioGrafica.toolSelect)
-        # qV.toolSelect.setOverlap(qV.checkOverlap.checkState())
         wSeleccioGrafica.canvas.setMapTool(wSeleccioGrafica.toolSelect)
     except Exception as e:
         print(e)
@@ -310,9 +304,6 @@ class QvMascaraEinaClick(QvMascaraEinaPlantilla):
                     layer.selectByIds(seleccionats+ids)
                     self.wSeleccioGrafica.calcularSeleccio()
                 # La part d'eliminar funciona màgicament. No existeix cap raó lògica que ens digui que s'eliminarà, però ho fa
-                # if not pr.deleteFeatures(polysTreure):
-                #     #Ens hauríem de queixar? No? Tractar?
-                #     pass
                 self.actualitza()
             except Exception as e:
                 print(e)
@@ -383,7 +374,6 @@ class QvMascaraEinaDibuixa(QvMascaraEinaPlantilla):
             geom = QgsGeometry.fromPolygonXY([list_polygon])
             if self.emmascarar:
                 aplicaMascara(self.projecte, self.canvas, [geom], self.getCapa())
-                # pr.addFeatures([poly])
             layer = self.llegenda.currentLayer()
             if self.seleccionar and layer is not None:
                 # Seleccionem coses
@@ -447,7 +437,6 @@ class QvMascaraEinaCercle(QvMascaraEinaPlantilla):
             self.centre, self.toMapCoordinates(event.pos()), 100)
         if self.emmascarar:
             aplicaMascara(self.projecte, self.canvas, [poligon], self.getCapa())
-            # pr.addFeatures([poly])
 
         layer = self.llegenda.currentLayer()
         if self.seleccionar and layer is not None:
@@ -1029,8 +1018,68 @@ class QvSeleccioGrafica(QWidget):
         self.lytSeleccioGrafica.addWidget(self.twResultats)
         
         self.distBarrisSelMasc = QVDistrictesBarris()
-        # self.distBarrisSelMasc.view.clicked.connect(self.clickArbreSelMasc)
+        self.distBarrisSelMasc.view.clicked.connect(self.clickArbreSelMasc)
         self.lytSeleccioGrafica.addWidget(self.distBarrisSelMasc.view)
+    def clickArbreSelMasc(self):
+        rang = self.distBarrisSelMasc.llegirRang()
+        # self.canvas.zoomToFeatureExtent(rang)
+
+        ID=self.distBarrisSelMasc.llegirID()
+        if self.distBarrisSelMasc.esDistricte():
+            vLayer = QgsVectorLayer('Dades/Districtes.sqlite', 'Districtes_aux', 'ogr')
+        else:
+            vLayer = QgsVectorLayer('Dades/Barris.sqlite', 'Barris_aux', 'ogr')
+        vLayer.setProviderEncoding("UTF-8")
+        if not vLayer.isValid():
+            return
+        vLayer.setSubsetString('CODI="%s"'%ID)
+        feats=vLayer.getFeatures()
+
+        if self.checkSeleccio.isChecked():
+            #Selecció gràfica
+            layer = self.llegenda.currentLayer()
+            if layer is None:
+                return
+            feat=next(feats)
+            featsPnt = layer.getFeatures(QgsFeatureRequest().setFilterRect(rang))
+            for f in featsPnt:
+                if self.checkOverlap:
+                    if f.geometry().intersects(feat.geometry()): #Within? Intersects?
+                        layer.select(f.id())
+                else:
+                    if f.geometry().within(feat.geometry()): #Within? Intersects?
+                        layer.select(f.id())
+            self.calcularSeleccio()
+            
+        else:
+            eliminaMascara(self.projecte)
+            # mascara=obteMascara(self)
+            aplicaMascara(self.projecte, self.canvas, [x.geometry() for x in feats])
+    def esborrarSeleccio(self, tambePanCanvas = True, mascara=False):
+        'Esborra les seleccions (no els elements) de qualsevol layer del canvas.'
+        layers = self.canvas.layers() 
+        for layer in layers:
+            if layer.type() == QgsMapLayer.VectorLayer:
+                layer.removeSelection()
+        # self.lblNombreElementsSeleccionats.setText('No hi ha elements seleccionats.')
+        # self.idsElementsSeleccionats = []
+        #Movem el self.canvas.panCanvas a una funció que es diu foraEines per poder treure les eines del mapa sense treure les seleccions, màscares...
+        if tambePanCanvas:
+            self.foraEines()
+
+        try:
+            self.canvas.scene().removeItem(self.toolSelect.rubberband)
+        except:
+            pass
+        if mascara:
+            try:
+                # qV.project.removeMapLayer(qV.project.mapLayersByName('Màscara')[0])
+                eliminaMascara(self.projecte)
+                self.canvas.refresh()
+            except Exception as e:
+                print(e)
+    def foraEines(self):
+        self.canvas.panCanvas()
     def getParametres(self):
         #Falta incloure color i opacitat
         return {'overlap': self.checkOverlap.isChecked(),

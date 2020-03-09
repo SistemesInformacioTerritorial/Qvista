@@ -2239,41 +2239,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         rang = self.distBarris.llegirRang()
         self.canvas.zoomToFeatureExtent(rang)
 
-    def clickArbreSelMasc(self):
-        rang = self.distBarrisSelMasc.llegirRang()
-        # self.canvas.zoomToFeatureExtent(rang)
-
-        ID=self.distBarrisSelMasc.llegirID()
-        if self.distBarrisSelMasc.esDistricte():
-            vLayer = QgsVectorLayer('Dades/Districtes.sqlite', 'Districtes_aux', 'ogr')
-        else:
-            vLayer = QgsVectorLayer('Dades/Barris.sqlite', 'Barris_aux', 'ogr')
-        vLayer.setProviderEncoding("UTF-8")
-        if not vLayer.isValid():
-            return
-        vLayer.setSubsetString('CODI="%s"'%ID)
-        feats=vLayer.getFeatures()
-
-        if self.checkSeleccio.isChecked():
-            #Selecció gràfica
-            layer = self.llegenda.currentLayer()
-            if layer is None:
-                return
-            feat=next(feats)
-            featsPnt = layer.getFeatures(QgsFeatureRequest().setFilterRect(rang))
-            for f in featsPnt:
-                if self.checkOverlap:
-                    if f.geometry().intersects(feat.geometry()): #Within? Intersects?
-                        layer.select(f.id())
-                else:
-                    if f.geometry().within(feat.geometry()): #Within? Intersects?
-                        layer.select(f.id())
-            self.calcularSeleccio()
-            
-        else:
-            eliminaMascara(self)
-            # mascara=obteMascara(self)
-            aplicaMascara(self,[x.geometry() for x in feats])
+    
             
 
     def cataleg(self):
