@@ -181,11 +181,6 @@ class PointTool(QgsMapTool):
             print(palabras['words'])
         except:
             print('No va 3 words')
-        try:
-            self.parent.parent.dwSV.show()
-        
-        except:
-            pass
         # self.parent.boto.move(40, 5) 
         # self.m.setCenter(QgsPointXY(event.x()-30,event.y()-30))
         self.canvas.scene().removeItem(self.parent.m)

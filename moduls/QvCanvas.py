@@ -21,6 +21,7 @@ from moduls.QvEinesGrafiques import QvMesuraMultiLinia
 class QvCanvas(QgsMapCanvas):
     canviMaximitza=pyqtSignal()
     desMaximitza=pyqtSignal()
+    mostraStreetView=pyqtSignal()
     def __init__(self, pare = None, llistaBotons= None, botoneraHoritzontal = False, posicioBotonera = 'NO', mapesBase = False, llegenda = None): #mapesBase (???)
         QgsMapCanvas.__init__(self)
         self.botoneraHoritzontal = botoneraHoritzontal
@@ -38,7 +39,7 @@ class QvCanvas(QgsMapCanvas):
         if self.llistaBotons is not None:
             self.panCanvas()
             self.panCanvas()
-            
+        self.preparacioStreetView()
 
     def keyPressEvent(self, event):
         """ Defineix les actuacions del QvMapeta en funció de la tecla apretada.
@@ -143,9 +144,12 @@ class QvCanvas(QgsMapCanvas):
 
     def setLlegenda(self, llegenda):
         self.llegenda = llegenda
-    def setStreetView(self,streetView):
-        self.qvSv=streetView
-        #self.bstreetview.clicked.connect(self.qvSv.segueixBoto)
+    def preparacioStreetView(self):
+        self.qvSv = QvStreetView(self, self)
+        self.setMapTool(self.qvSv.rp)
+        self.qvSv.hide()
+    def getStreetView(self):
+        return self.qvSv
     def _botoMapa(self,imatge = None):
         boto = QvPushButton(flat=True)
         boto.setStyleSheet('background: rgba(255,255,255,168); padding: 1px;')
@@ -350,6 +354,7 @@ class QvCanvas(QgsMapCanvas):
 
         position = e.pos()
         self.qvSv.rp.llevameP(position)
+        self.mostraStreetView.emit()
         # self.button.move(position)
 
         e.setDropAction(Qt.MoveAction)

@@ -71,9 +71,8 @@ if not os.path.exists(dadesdir):
         print('ERROR. No he pogut crear el directori temporal '+dadesdir)
 
 if not os.path.isdir(carpetaCataleg):
-    carpetaCataleg = "../dades/CatalegCapes/"
-    carpetaCatalegProjectesLlista = ["../dades/CatalegProjectes/"]
-    projecteInicial = 'mapesOffline/qVista default map.qgs'
+    carpetaCataleg = os.path.abspath("../dades/CatalegCapes/")
+    carpetaCatalegProjectesLlista = [os.path.abspath(x) for x in ("../dades/CatalegProjectes/")]
     estatConnexio = "Xarxa municipal: Desconnectat"
 
     

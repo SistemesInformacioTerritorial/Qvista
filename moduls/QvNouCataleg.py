@@ -724,7 +724,7 @@ if __name__ == "__main__":
     with qgisapp() as app:
         with open('style.qss') as f:
             app.setStyleSheet(f.read())
-        canvas = QvCanvas(llistaBotons=["panning","zoomIn","zoomOut"])
+        canvas = QvCanvas(llistaBotons=["panning","zoomIn","zoomOut","streetview"])
         canvas.show()
         atributs = QvAtributs(canvas)
         projecte = QgsProject.instance()

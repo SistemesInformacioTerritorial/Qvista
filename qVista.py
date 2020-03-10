@@ -525,12 +525,13 @@ class QVista(QMainWindow, Ui_MainWindow):
         """Preparació de Street View a través de QvStreetView, i el dockwidget associat.
         """
 
-        self.qvSv = QvStreetView(self.canvas, self)
-        self.canvas.setStreetView(self.qvSv)
-        self.canvas.setMapTool(self.qvSv.rp)
-        # qvSv.setContentsMargins(0,0,0,0)
-        self.qvSv.hide()
-        # self.qvSv.qbrowser.show()
+        # self.qvSv = QvStreetView(self.canvas, self)
+        # self.canvas.setStreetView(self.qvSv)
+        # self.canvas.setMapTool(self.qvSv.rp)
+        # self.qvSv.hide()
+
+        self.qvSv = self.canvas.getStreetView()
+        self.canvas.mostraStreetView.connect(lambda: self.dwSV.show())
         self.dwSV = QvDockWidget( "Street View", self )
         self.dwSV.setContextMenuPolicy(Qt.PreventContextMenu)
         self.dwSV.setAllowedAreas( Qt.RightDockWidgetArea | Qt.LeftDockWidgetArea )
