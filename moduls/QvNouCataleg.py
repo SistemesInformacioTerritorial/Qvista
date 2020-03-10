@@ -717,10 +717,24 @@ class MapaCataleg(QFrame):
 
 
 if __name__ == "__main__":
+    from configuracioQvista import *
+    from moduls.QvCanvas import QvCanvas
+    from moduls.QvAtributs import QvAtributs
+    from moduls.QvLlegenda import QvLlegenda
     with qgisapp() as app:
         with open('style.qss') as f:
             app.setStyleSheet(f.read())
+        canvas = QvCanvas(llistaBotons=["panning","zoomIn","zoomOut"])
+        canvas.show()
+        atributs = QvAtributs(canvas)
+        projecte = QgsProject.instance()
+        root = projecte.layerTreeRoot()
+        bridge = QgsLayerTreeMapCanvasBridge(root,canvas)
+        projecte.read(projecteInicial)
+        llegenda = QvLlegenda(canvas, atributs)
+        llegenda.show()
         cataleg = QvNouCataleg()
         cataleg.showMaximized()
+        cataleg.obrirProjecte.connect(lambda x: projecte.read(x))
         # mapa=MapaCataleg("N:/9SITEB/Publicacions/qVista/CATALEG/Mapes - en preparació per XLG/2. Ortofotos/Imatge de satel·lit 2011 de l'AMB")
         # mapa.show()

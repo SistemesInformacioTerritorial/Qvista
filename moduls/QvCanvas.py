@@ -19,6 +19,8 @@ from moduls.QvEinesGrafiques import QvMesuraMultiLinia
 
 
 class QvCanvas(QgsMapCanvas):
+    canviMaximitza=pyqtSignal()
+    desMaximitza=pyqtSignal()
     def __init__(self, pare = None, llistaBotons= None, botoneraHoritzontal = False, posicioBotonera = 'NO', mapesBase = False, llegenda = None): #mapesBase (???)
         QgsMapCanvas.__init__(self)
         self.botoneraHoritzontal = botoneraHoritzontal
@@ -32,18 +34,18 @@ class QvCanvas(QgsMapCanvas):
         # self.setWhatsThis(QvApp().carregaAjuda(self))
 
         self._preparacioBotonsCanvas()
+        self.eines=[]
         if self.llistaBotons is not None:
             self.panCanvas()
-        self.eines=[]
+            self.panCanvas()
             
 
     def keyPressEvent(self, event):
         """ Defineix les actuacions del QvMapeta en funció de la tecla apretada.
         """
         if event.key() == Qt.Key_Escape:
+            self.desMaximitza.emit()
             if self.pare is not None:
-                if not self.pare.mapaMaxim:
-                    self.pare.ferGran()
                 try:
                     self.pare.esborrarSeleccio(tambePanCanvas = False)
                     self.pare.esborrarMesures(tambePanCanvas = False)
@@ -51,8 +53,7 @@ class QvCanvas(QgsMapCanvas):
                 except:
                     pass
         if event.key()==Qt.Key_F11:
-            if self.pare is not None:
-                self.pare.ferGran()
+            self.canviMaximitza.emit()
 
     def panCanvas(self):        # MANO
         # bucle para quitar todos los cursores guardados. quiero que use el que ofrece MapTool
@@ -61,10 +62,10 @@ class QvCanvas(QgsMapCanvas):
 
 
         if self.bPanning.isChecked():
-            self.bApuntar.setChecked(False)
-            self.bZoomIn.setChecked(False)
-            self.bZoomOut.setChecked(False)
-            self.bCentrar.setChecked(False)
+            if hasattr(self,'bApuntar'): self.bApuntar.setChecked(False)
+            if hasattr(self,'bZoomIn'): self.bZoomIn.setChecked(False)
+            if hasattr(self,'bZoomOut'): self.bZoomOut.setChecked(False)
+            if hasattr(self,'bCentrar'): self.bCentrar.setChecked(False)
            
             self.tool_pan = QgsMapToolPan(self)
             self.setMapTool(self.tool_pan)
@@ -85,10 +86,10 @@ class QvCanvas(QgsMapCanvas):
 
     def zoomIn(self):
         if self.bZoomIn.isChecked():
-            self.bApuntar.setChecked(False)
-            self.bZoomOut.setChecked(False)
-            self.bPanning.setChecked(False)
-            self.bCentrar.setChecked(False)
+            if hasattr(self,'bApuntar'): self.bApuntar.setChecked(False)
+            if hasattr(self,'bZoomOut'): self.bZoomOut.setChecked(False)
+            if hasattr(self,'bPanning'): self.bPanning.setChecked(False)
+            if hasattr(self,'bCentrar'): self.bCentrar.setChecked(False)
            
             self.tool_zoomin = QgsMapToolZoom(self, False)
             self.setMapTool(self.tool_zoomin)
@@ -98,10 +99,10 @@ class QvCanvas(QgsMapCanvas):
 
     def zoomOut(self):
         if self.bZoomOut.isChecked():
-            self.bApuntar.setChecked(False)
-            self.bZoomIn.setChecked(False)
-            self.bPanning.setChecked(False)
-            self.bCentrar.setChecked(False)
+            if hasattr(self,'bApuntar'): self.bApuntar.setChecked(False)
+            if hasattr(self,'bZoomIn'): self.bZoomIn.setChecked(False)
+            if hasattr(self,'bPanning'): self.bPanning.setChecked(False)
+            if hasattr(self,'bCentrar'): self.bCentrar.setChecked(False)
            
             self.tool_zoomout = QgsMapToolZoom(self, True)
             self.setMapTool(self.tool_zoomout)
@@ -113,10 +114,10 @@ class QvCanvas(QgsMapCanvas):
     def seleccioClick(self):
         if  self.bApuntar.isChecked():
 
-            self.bZoomIn.setChecked(False)
-            self.bZoomOut.setChecked(False)
-            self.bPanning.setChecked(False)
-            self.bCentrar.setChecked(False)
+            if hasattr(self,'bZoomIn'): self.bZoomIn.setChecked(False)
+            if hasattr(self,'bZoomOut'): self.bZoomOut.setChecked(False)
+            if hasattr(self,'bPanning'): self.bPanning.setChecked(False)
+            if hasattr(self,'bCentrar'): self.bCentrar.setChecked(False)
 
             try:
                 self.pare.esborrarSeleccio(tambePanCanvas = False)
@@ -301,7 +302,7 @@ class QvCanvas(QgsMapCanvas):
                 self.bMaximitza.setToolTip('Pantalla completa (F11)')
                 self.layoutBotoneraMapa.addWidget(self.bMaximitza)   
                 self.bMaximitza.setCursor(QvConstants.cursorFletxa()) 
-                self.bMaximitza.clicked.connect(self.pare.ferGran)  
+                self.bMaximitza.clicked.connect(self.canviMaximitza.emit)  
                 self.bMaximitza.setCheckable(False)
 
         # spacer = QSpacerItem(0, 50, QSizePolicy.Expanding, QSizePolicy.Maximum)

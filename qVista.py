@@ -549,6 +549,8 @@ class QVista(QMainWindow, Ui_MainWindow):
         llistaBotons = ['streetview','apuntar', 'zoomIn', 'zoomOut', 'panning', 'centrar', 'enrere', 'endavant', 'maximitza']
         
         self.canvas = QvCanvas(llistaBotons=llistaBotons, posicioBotonera = 'SE', botoneraHoritzontal = True, pare=self)
+        self.canvas.canviMaximitza.connect(self.ferGran)
+        self.canvas.desMaximitza.connect(self.desmaximitza)
 
         #self.canvas.bstreetview.clicked.connect(self.qvSv.segueixBoto)
 
@@ -2093,27 +2095,7 @@ class QVista(QMainWindow, Ui_MainWindow):
 
     def ferGran(self):
         if not self.mapaMaxim:
-            self.hideLblFlotant()
-            self.showMaximized()
-            if hasattr(self.canvas,'bMaximitza'):
-                self.canvas.bMaximitza.setIcon(self.canvas.iconaMaximitza)
-            self.frame_3.show()
-            self.frame_19.show()
-            self.frame_2.show()
-            if hasattr(self,'dockWidgetsVisibles'):
-                for x in self.dockWidgetsVisibles: x.showtq()
-            else:
-                self.dwLlegenda.setFloating(False)
-            self.bar.show()
-            self.statusbar.show()
-            # self.botoMaxim.setIcon(QIcon(imatgesDir+'arrow-expand.png'))
-
-            # Descomentar para eliminar barra de titulo
-            # if self.lastMaximized:
-            #     qV.showMaximized()
-            # else:
-            #     qV.showNormal()
-
+            self.desmaximitza()
         else:
             self.showLblFlotant('Prem F-11, Esc o el botó de maximitzar per sortir de la pantalla completa')
             if hasattr(self.canvas,'bMaximitza'):
@@ -2135,7 +2117,20 @@ class QVista(QMainWindow, Ui_MainWindow):
             # Descomentar para eliminar barra de titulo
             # self.lastMaximized = qV.isMaximized()
             # qV.showFullScreen()
-
+    def desmaximitza(self):
+        self.hideLblFlotant()
+        self.showMaximized()
+        if hasattr(self.canvas,'bMaximitza'):
+            self.canvas.bMaximitza.setIcon(self.canvas.iconaMaximitza)
+        self.frame_3.show()
+        self.frame_19.show()
+        self.frame_2.show()
+        if hasattr(self,'dockWidgetsVisibles'):
+            for x in self.dockWidgetsVisibles: x.showtq()
+        else:
+            self.dwLlegenda.setFloating(False)
+        self.bar.show()
+        self.statusbar.show()
     def clickArbre(self):
         rang = self.distBarris.llegirRang()
         self.canvas.zoomToFeatureExtent(rang)
