@@ -12,8 +12,7 @@ from moduls.QvConstants import QvConstants
 from moduls.QvPushButton import QvPushButton
 from moduls.QvConstants import QvConstants
 from moduls.QvStreetView import *
-from moduls.QvMascara import QvMascaraEinaPlantilla
-from moduls.QvEinesGrafiques import QvMesuraMultiLinia
+from moduls.QvEinesGrafiques import QvMesuraMultiLinia, QvMascaraEinaPlantilla
 #from qVista import QVista
 
 
@@ -146,7 +145,7 @@ class QvCanvas(QgsMapCanvas):
         self.llegenda = llegenda
     def preparacioStreetView(self):
         self.qvSv = QvStreetView(self, self)
-        self.setMapTool(self.qvSv.rp)
+        # self.setMapTool(self.qvSv.rp)
         self.qvSv.hide()
     def getStreetView(self):
         return self.qvSv

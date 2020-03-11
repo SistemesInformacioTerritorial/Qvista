@@ -179,9 +179,6 @@ class QvNouMapa(QDialog):
             self.botoAcceptar.setEnabled(False)
     def carrega(self):
         self.funcCarregar(self.adreca,self.titol)
-        # self.parentWidget().obrirProjecte(self.adreca, nou=True)
-        # self.parentWidget().lblTitolProjecte.setText(self.titol)
-        # self.parentWidget().titolProjecte=self.titol
         self.close()
     
     def mousePressEvent(self, event):
