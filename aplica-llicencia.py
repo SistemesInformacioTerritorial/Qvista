@@ -1,9 +1,9 @@
 import os
 
 
-llicencia='''# Copyright (C) 2020  Jordi Cebrián, Aleix Dalmau, Xavier Llinares, Oriol Martí, Javier Nieva, Carlos Pretel
-# Sistemes d'Informació Territorial, Institut Municipal d'Informàtica, Ajuntament de Barcelona
-# Nexus Geographics
+llicencia='''
+# Copyright (C) 2020 by SIT-IMI (Ajuntament de Barcelona) and Nexus Geographics
+# Jordi Cebrián, Aleix Dalmau, Xavier Llinares, Oriol Martí, Javier Nieva, Carlos Pretel
 # 
 # This file is part of qVista.
 # qVista is free software: you can redistribute it and/or modify
