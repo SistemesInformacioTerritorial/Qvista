@@ -297,8 +297,9 @@ class QvMesuraGrafica(QWidget):
     colorCanviat = pyqtSignal(QColor)
     acabatMesurar = pyqtSignal()
 
-    def __init__(self, canvas, llegenda):
+    def __init__(self, canvas, llegenda, parent=None):
         QWidget.__init__(self)
+        self.parent=parent
         self.canvas = canvas
         self.llegenda = llegenda
         self.setWhatsThis(QvApp().carregaAjuda(self))
@@ -365,6 +366,7 @@ class QvMesuraGrafica(QWidget):
         self.resize(350, 100)
 
         self.markers = QgsVertexMarker(self.canvas)
+        self.resize(400,150)
 
     def hide(self):
         super().hide()
@@ -399,24 +401,30 @@ class QvMesuraGrafica(QWidget):
                 0, 'Distància: %.2f m --- Àrea: %.2f m²' % (self.dist, self.area))
         else:
             self.lwMesuresHist.insertItem(0, 'Distància: %.2f m' % self.dist)
+    def showEvent(self,e):
+        super().showEvent(e)
+        self.bm4.animateClick()
+        if self.parent is not None:
+            print(self.parent.pos())
+            self.move(self.parent.mapToGlobal(self.parent.pos()))
 
     def obrir(self):
-        # Redundant, perquè se suposa que quan comencem a mesurar s'esborra tot, però no anava :(
         self.show()
-        self.bm4.animateClick()
-        # pos=qV.bMesuraGrafica.mapToGlobal(qV.bMesuraGrafica.pos())
-        zoomFactor = QvApp().zoomFactor()
-        # self.parentWidget().move(pos.x()-425*zoomFactor,pos.y()-200)
 
     def tancar(self):
         self.esborrarMesures(True)
         self.canvas.unsetMapTool(self.toolMesura)
-
+    def hideEvent(self,e):
+        super().hideEvent(e)
+        self.tancar()
+    def close(self):
+        super().close()
+        self.tancar()
     def canviaVisibilitatDw(self, visibilitat):
         if visibilitat:
             self.obrir()
         else:
-            self.tancar()
+            self.hide()
 
     def mesuraDistancies(self):
         layer = self.llegenda.currentLayer()
@@ -1372,7 +1380,7 @@ if __name__ == "__main__":
         llegenda.show()
         canvas.show()
         wSeleccio = QvSeleccioGrafica(canvas,project,llegenda)
-        wMesures = QvMesuraGrafica(canvas,llegenda)
+        wMesures = QvMesuraGrafica(canvas,llegenda,bSeleccio)
 
         lay = QHBoxLayout()
         layV = QVBoxLayout()

@@ -1601,7 +1601,7 @@ class QVista(QMainWindow, Ui_MainWindow):
     #Eina de mesura sobre el mapa -nexus-foraEinaSeleccio
     def preparacioMesura(self):
 
-        self.wMesuraGrafica = QvMesuraGrafica(self.canvas, self.llegenda)
+        self.wMesuraGrafica = QvMesuraGrafica(self.canvas, self.llegenda, self.bMesuraGrafica)
         
         
         
@@ -1613,8 +1613,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.addDockWidget( Qt.RightDockWidgetArea, self.dwMesuraGrafica )
         self.dwMesuraGrafica.setFloating(True)
         self.wMesuraGrafica.acabatMesurar.connect(self.dwMesuraGrafica.hide)
-        zoomFactor = QvApp().zoomFactor()
-        self.dwMesuraGrafica.resize(zoomFactor*400,zoomFactor*150)
+        self.dwMesuraGrafica.resize(400,150)
         #self.dwMesuraGrafica.setStyleSheet('QDockWidget {color: #465A63; background-color: #909090;}')
         
         self.dwMesuraGrafica.hide()
@@ -1658,6 +1657,8 @@ class QVista(QMainWindow, Ui_MainWindow):
 
     def mesuraGrafica(self):
         self.dwMesuraGrafica.show()
+        pos=self.bMesuraGrafica.mapToGlobal(self.bMesuraGrafica.pos())
+        self.dwMesuraGrafica.move(pos.x()-400,pos.y())
         self.canviLayer()
     
     def reload(self):
