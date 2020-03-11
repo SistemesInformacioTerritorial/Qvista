@@ -12,7 +12,7 @@ from moduls.QvMemoria import QvMemoria
 # Còpia de la funció definida dins de qVista.py. Millor aquí???
 
 
-def nivellCsv(qV, fitxer: str, delimitador: str, campX: str, campY: str, projeccio: int = 25831, nomCapa: str = 'Capa sense nom', color='red', symbol='circle'):
+def nivellCsv(projecte, llegenda, fitxer: str, delimitador: str, campX: str, campY: str, projeccio: int = 25831, nomCapa: str = 'Capa sense nom', color='red', symbol='circle'):
     uri = "file:///"+fitxer + \
         "?type=csv&delimiter=%s&xField=%s&yField=%s" % (
             delimitador, campX, campY)
@@ -27,10 +27,10 @@ def nivellCsv(qV, fitxer: str, delimitador: str, campX: str, campY: str, projecc
         writer=QgsVectorFileWriter.writeAsVectorFormat(layer,fitxer[:-4],pr.encoding(),pr.crs(),symbologyExport=QgsVectorFileWriter.SymbolLayerSymbology)
         capaGpkg=QgsVectorLayer(fitxer[:-4]+'.gpkg',nomCapa,'ogr')
         capaGpkg.renderer().setSymbol(symbol)
-        qV.project.addMapLayer(capaGpkg)
-        qV.llegenda.saveStyleToGeoPackage(capaGpkg)
+        projecte.addMapLayer(capaGpkg)
+        llegenda.saveStyleToGeoPackage(capaGpkg)
         # qV.project.addMapLayer(layer)
-        qV.setDirtyBit(True)
+        # qV.setDirtyBit(True)
     else:
         print("no s'ha pogut afegir la nova layer")
 
@@ -110,13 +110,13 @@ def campsNum(csvPath,sep,cod):
     return campsPref(csvPath,sep,cod,nomCamps)
 
 class QvCarregaCsv(QDialog):
-    def __init__(self, rutaCsv: str, qV=None):
-        super().__init__(qV,Qt.WindowSystemMenuHint | Qt.WindowTitleHint | Qt.WindowCloseButtonHint)
+    def __init__(self, rutaCsv: str, projecte, llegenda, parent=None):
+        super().__init__(parent,Qt.WindowSystemMenuHint | Qt.WindowTitleHint | Qt.WindowCloseButtonHint)
         self.setWindowTitle('Carregador d\'arxius CSV')
         # self.setFixedSize(QvApp().zoomFactor()*750, QvApp().zoomFactor()*550)
         self.setMinimumWidth(750)
-        if qV is not None:
-            self._qV = qV
+        self._llegenda=llegenda
+        self._projecte=projecte
         self._csv = self._primerCsv = rutaCsv
         self.loadMap()
         # self._mapificador = QvMapificacio(rutaCsv)
@@ -229,7 +229,7 @@ class CsvPagina(QWidget):
 
     def _mapifica(self):
         fMap = QvFormNovaMapificacio(
-            self._carregador._qV.llegenda, mapificacio=self._carregador._mapificador)
+            self._carregador._llegenda, mapificacio=self._carregador._mapificador)
         if fMap.exec()==QDialog.Accepted:
             self._carregador.close()
 
@@ -759,24 +759,37 @@ class CsvAfegir(CsvPagina):
     def _enrere(self):
         self.salta.emit(CsvGeocodificat([],0,self._carregador))
     def afegir(self):
-        nivellCsv(self._carregador._qV, self._carregador._csv, self._carregador._separador,
+        nivellCsv(self._carregador._projecte, self._carregador._llegenda, self._carregador._csv, self._carregador._separador,
                   self._campCoordX, self._campCoordY, self._projeccio, self._leNomCapa.text(), self._color, symbol=self._forma)
         self._carregador.close()
 
 
 if __name__ == '__main__':
     from qgis.core.contextmanagers import qgisapp
+    from moduls.QvCanvas import QvCanvas
+    from moduls.QvLlegenda import QvLlegenda
+    from moduls.QvDropFiles import QvDropFiles
 
     gui = True
 
     with qgisapp(guienabled=gui) as app:
-
-        pass
-
-        # qApp = QvApp()
-        arxiu = 'C:/Users/omarti/Documents/Random/gossos.csv'
-        wiz = QvCarregaCsv(arxiu)
         with open('style.qss') as f:
             app.setStyleSheet(f.read())
-            # wiz.setStyleSheet(f.read())
-        wiz.show()
+        canvas = QvCanvas(llistaBotons=["panning","zoomIn","zoomOut"])
+        project = QgsProject.instance()
+        projecteInicial = './mapesOffline/qVista default map.qgs'
+        project.read(projecteInicial)
+        root = project.layerTreeRoot()
+        bridge = QgsLayerTreeMapCanvasBridge(root, canvas)
+
+        llegenda = QvLlegenda()
+        llegenda.show()
+        canvas.show()
+
+        def obreGeocod(files):
+            for x in files:
+                if not x.lower().endswith('.csv'): continue #Si no és un csv ens el saltem
+                carregador=QvCarregaCsv(x,project,llegenda)
+                carregador.show()
+        dropCanvas = QvDropFiles(canvas,['.csv'])
+        dropCanvas.arxiusPerProcessar.connect(obreGeocod)

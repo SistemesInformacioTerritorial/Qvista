@@ -3336,7 +3336,7 @@ def carregarLayerCSV(nfile):
             qV.startMovie()
             qApp.setOverrideCursor(Qt.WaitCursor)
             # assistent=QvCarregaCsv(nfile,nivellCsv,qV)
-            assistent=QvCarregaCsv(nfile,qV)
+            assistent=QvCarregaCsv(nfile,qV.project, qV.llegenda)
             qApp.restoreOverrideCursor()
             #assistent.setModal(True)
             #assistent.setGraphicsEffect(QvConstants.ombra(assistent,radius=30,color=QvConstants.COLORCLAR))
