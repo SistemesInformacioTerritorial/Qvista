@@ -7,11 +7,14 @@ from moduls.QvApp import QvApp
 
 class QvNouMapa(QDialog):
     '''Diàleg de creació del mapa. Mostra uns mapes base i una line edit perquè l'usuari triï base i títol del projecte, i els carrega en el qVista quan sortim del diàleg'''
-    def __init__(self, parent):
+    def __init__(self, funcCarregar, parent=None):
         '''Construeix un QvNouMapa. Rep obligatòriament el widget pare, que ha de ser el qVista
         Arguments:
-            parent{QVista} -- Instància de qVista que estem executant'''
+            funcCarregar{Callable[str,str],None}
+        Keyword Arguments:
+            parent{QWidget} -- El parent'''
         super().__init__(parent)
+        self.funcCarregar=funcCarregar
         self.setWindowFlags(Qt.Window | Qt.FramelessWindowHint)
         self.layout=QVBoxLayout(self)
         self.layout.setSpacing(0)
@@ -175,10 +178,10 @@ class QvNouMapa(QDialog):
         else:
             self.botoAcceptar.setEnabled(False)
     def carrega(self):
-        
-        self.parentWidget().obrirProjecte(self.adreca, nou=True)
-        self.parentWidget().lblTitolProjecte.setText(self.titol)
-        self.parentWidget().titolProjecte=self.titol
+        self.funcCarregar(self.adreca,self.titol)
+        # self.parentWidget().obrirProjecte(self.adreca, nou=True)
+        # self.parentWidget().lblTitolProjecte.setText(self.titol)
+        # self.parentWidget().titolProjecte=self.titol
         self.close()
     
     def mousePressEvent(self, event):

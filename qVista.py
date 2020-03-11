@@ -3209,7 +3209,11 @@ def nouMapa():
             pass
         elif ret == QMessageBox.DestructiveRole:
             return
-    dialegNouMapa = QvNouMapa(qV)
+    def carregarMapa(ruta, titol):
+        qV.obrirProjecte(ruta,nou=True)
+        qV.lblTitolProjecte.setText(titol)
+        qV.titolProjecte=titol
+    dialegNouMapa = QvNouMapa(carregarMapa,qV)
     dialegNouMapa.exec()
     # qV.obrirProjecte("./__newProjectTemplate.qgs")
 
