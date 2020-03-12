@@ -11,13 +11,13 @@ if sys.platform=='win32':
     try:
         #Solució només per Windows. La meva ànima linuxera plora
         from ctypes import windll
-        windll.shcore.SetProcessDpiAwareness(1) 
+        windll.shcore.SetProcessDpiAwareness(2) 
     except Exception as e:
         print(e)
-if hasattr(QtCore.Qt, 'AA_EnableHighDpiScaling'):
-    QApplication.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling,  True)
-# if hasattr(QtCore.Qt, 'AA_UseHighDpiPixmaps'):
-#     QApplication.setAttribute(QtCore.Qt.AA_UseHighDpiPixmaps, True)
+# if hasattr(QtCore.Qt, 'AA_EnableHighDpiScaling'):
+#     QApplication.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling,  True)
+if hasattr(QtCore.Qt, 'AA_UseHighDpiPixmaps'):
+    QApplication.setAttribute(QtCore.Qt.AA_UseHighDpiPixmaps, True)
 
 #Parametres configuració inicial
 versio="0.8"
