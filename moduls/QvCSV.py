@@ -1,5 +1,5 @@
 from moduls.QvImports import *
-from PyQt5.QtWidgets import *
+from qgis.PyQt.QtWidgets import *
 import itertools
 from moduls.QvMapificacio import QvMapificacio
 from moduls.QvPushButton import QvPushButton

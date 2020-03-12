@@ -4,7 +4,7 @@ from moduls.QvImports import *
 
 from qgis.PyQt.QtCore import pyqtSignal
 
-from PyQt5.QtWebKitWidgets import QWebView , QWebPage #QWebPage (???)
+from qgis.PyQt.QtWebKitWidgets import QWebView , QWebPage #QWebPage (???)
 from moduls.QvPushButton import QvPushButton
 
 class BotoQvBrowser(QvPushButton):

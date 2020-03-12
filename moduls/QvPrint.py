@@ -7,7 +7,7 @@ from qgis.PyQt.QtCore import QFile, QUrl
 from qgis.PyQt.QtXml import QDomDocument
 from qgis.PyQt.QtWidgets import QComboBox, QHBoxLayout, QLineEdit, QVBoxLayout, QWidget
 from qgis.PyQt.QtGui import QColor, QDesktopServices
-from PyQt5.QtWebKitWidgets import QWebView , QWebPage #???
+from qgis.PyQt.QtWebKitWidgets import QWebView , QWebPage #???
 
 from moduls.QvImports import *
 from moduls.QvApp import QvApp

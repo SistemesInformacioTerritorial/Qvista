@@ -4,15 +4,15 @@ from QtGui import *
 
 # from qgis.PyQt.QtGui import QStandardItemModel, QStandardItem
 from qgis.core import QgsRectangle
-from PyQt5 import QtGui, QtCore, QtWidgets
-from PyQt5.QtCore import QAbstractItemModel, QFile, QIODevice, QModelIndex, Qt #QAbstractItemModel, QIODevice (???)
+from qgis.PyQt import QtGui, QtCore, QtWidgets
+from qgis.PyQt.QtCore import QAbstractItemModel, QFile, QIODevice, QModelIndex, Qt #QAbstractItemModel, QIODevice (???)
 
 import pickle
 from collections import deque
 import os.path
 
 
-from PyQt5 import QtCore, QtWidgets, QtGui, QStandardItem, QAbstractItemModel, QApplication, QTreeView #QAbstractItemModel (???)
+from qgis.PyQt import QtCore, QtWidgets, QtGui, QStandardItem, QAbstractItemModel, QApplication, QTreeView #QAbstractItemModel (???)
 
 projecteInicial='../dades/projectes/BCN11.qgs'
 fic_guardar_arbre='C:/Temp/QvUbicacions.p'  #Fichero para la lectura/escritura de ubicaciones (serializadas)

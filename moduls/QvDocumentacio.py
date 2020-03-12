@@ -1,6 +1,6 @@
 from moduls.QvImports import *
-from PyQt5 import QtWidgets
-from PyQt5.QtWidgets import QVBoxLayout, QHBoxLayout, QFileSystemModel, QTreeView, QWidget
+from qgis.PyQt import QtWidgets
+from qgis.PyQt.QtWidgets import QVBoxLayout, QHBoxLayout, QFileSystemModel, QTreeView, QWidget
 from moduls.QvConstants import QvConstants
 from moduls.QvPushButton import QvPushButton
 from pathlib import Path

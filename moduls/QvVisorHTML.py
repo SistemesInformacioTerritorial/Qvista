@@ -1,7 +1,7 @@
 from moduls.QvImports import *
-from PyQt5.QtCore import pyqtProperty #???
-from PyQt5 import QtWidgets
-from PyQt5.QtGui import QKeySequence
+from qgis.PyQt.QtCore import pyqtProperty #???
+from qgis.PyQt import QtWidgets
+from qgis.PyQt.QtGui import QKeySequence
 from moduls.QvConstants import QvConstants
 from moduls.QvPushButton import QvPushButton
 from moduls.QvApp import QvApp

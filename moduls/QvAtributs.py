@@ -19,7 +19,7 @@ from moduls.QvPushButton import QvPushButton
 # import recursos
 import csv
 # import xlwt - .xls
-from PyQt5.QtWidgets import QDialog
+from qgis.PyQt.QtWidgets import QDialog
 
 from moduls.Ui_AtributsForm import Ui_AtributsForm
 from configuracioQvista import *

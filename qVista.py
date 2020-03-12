@@ -56,9 +56,9 @@ import shutil
 
 from pathlib import Path
 import functools #Eines de funcions, per exemple per avaluar-ne parcialment una
-from PyQt5.QtGui import QPainter
+from qgis.PyQt.QtGui import QPainter
 
-from PyQt5.QtGui import QDesktopServices  #aixo ha d'anar al qvimports
+from qgis.PyQt.QtGui import QDesktopServices  #aixo ha d'anar al qvimports
 # from qgis.core import QgsDataSourceUri
 
 # Impressió del temps de carrega dels moduls Qv

@@ -3,7 +3,7 @@ from moduls.QvSingleton import Singleton
 import json
 import hashlib
 
-from PyQt5.QtGui import QColor
+from qgis.PyQt.QtGui import QColor
 
 arxiuTmpAvis=dadesdir+'ultimAvisObert'
 arxiuTmpNews=dadesdir+'ultimaNewOberta'

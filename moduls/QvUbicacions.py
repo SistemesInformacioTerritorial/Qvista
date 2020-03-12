@@ -3,16 +3,16 @@ from qgis.PyQt.QtGui import QStandardItemModel, QStandardItem, QIcon, QPixmap
 
 from qgis.core import QgsPointXY, QgsProject, QgsRectangle
 from qgis.gui import QgsMapCanvas,QgsLayerTreeMapCanvasBridge,  QgsVertexMarker
-# from PyQt5 import QtGui, QtCore, QtWidgets
-from PyQt5.QtCore import QModelIndex, Qt
-from PyQt5.QtWidgets import QAbstractItemView, QAction, QDockWidget, QHBoxLayout, QLabel, QLineEdit, QMainWindow, QMessageBox, QTreeView, QVBoxLayout, QWidget
+# from qgis.PyQt import QtGui, QtCore, QtWidgets
+from qgis.PyQt.QtCore import QModelIndex, Qt
+from qgis.PyQt.QtWidgets import QAbstractItemView, QAction, QDockWidget, QHBoxLayout, QLabel, QLineEdit, QMainWindow, QMessageBox, QTreeView, QVBoxLayout, QWidget
 
 import pickle
 from collections import deque
 import os.path
 from qgis.core.contextmanagers import qgisapp
 
-from PyQt5.QtGui import QColor
+from qgis.PyQt.QtGui import QColor
 
 
 

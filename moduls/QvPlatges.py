@@ -1,8 +1,8 @@
 
-from PyQt5.QtWidgets import QWidget
-from PyQt5.QtGui import QPixmap
+from qgis.PyQt.QtWidgets import QWidget
+from qgis.PyQt.QtGui import QPixmap
 from qgis.core.contextmanagers import qgisapp
-from PyQt5.QtWebKitWidgets import QWebView , QWebPage #???
+from qgis.PyQt.QtWebKitWidgets import QWebView , QWebPage #???
 from platges import Ui_Form
 import urllib.request
 

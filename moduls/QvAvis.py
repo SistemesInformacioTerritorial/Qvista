@@ -1,5 +1,5 @@
 from moduls.QvVisorHTML import QvVisorHTML
-from PyQt5 import QtWidgets
+from qgis.PyQt import QtWidgets
 import os
 from configuracioQvista import *
 from moduls.QvMemoria import QvMemoria

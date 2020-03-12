@@ -1,7 +1,7 @@
 from moduls.QvImports import * 
 from moduls.QvConstants import QvConstants
-from PyQt5.QtCore import Qt, QMimeData
-from PyQt5.QtGui import QDrag
+from qgis.PyQt.QtCore import Qt, QMimeData
+from qgis.PyQt.QtGui import QDrag
 
 
 

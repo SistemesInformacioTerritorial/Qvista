@@ -1,6 +1,6 @@
 from moduls.QvImports import *
 from moduls.QvPushButton import QvPushButton
-from PyQt5.QtGui import QFont, QDesktopServices
+from qgis.PyQt.QtGui import QFont, QDesktopServices
 
 class MarxesCiutat(QDockWidget):
     def __init__(self, parent):

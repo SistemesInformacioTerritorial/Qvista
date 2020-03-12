@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 from moduls.QvImports import * 
-from PyQt5 import QtWidgets
+from qgis.PyQt import QtWidgets
 import os
 from moduls.QvConstants import QvConstants
 from moduls.QvPushButton import QvPushButton

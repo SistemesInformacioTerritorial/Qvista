@@ -8,7 +8,7 @@ import sys
 import collections
 import unicodedata
 import re
-from PyQt5.QtSql import *
+from qgis.PyQt.QtSql import *
 from moduls.QvApp import QvApp
 
 

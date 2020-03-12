@@ -2,7 +2,7 @@ from moduls.QvSingleton import Singleton
 from qgis.PyQt.QtSql import QSqlDatabase, QSqlQuery
 import getpass
 from moduls.QvApp import _DB_QVISTA, QvApp
-from PyQt5.QtWidgets import QMessageBox
+from qgis.PyQt.QtWidgets import QMessageBox
 
 
 

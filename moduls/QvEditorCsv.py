@@ -1,5 +1,5 @@
-from PyQt5.QtWidgets import QHBoxLayout, QVBoxLayout, QWidget
-from PyQt5.QtGui import QDesktopServices
+from qgis.PyQt.QtWidgets import QHBoxLayout, QVBoxLayout, QWidget
+from qgis.PyQt.QtGui import QDesktopServices
 from moduls.QvPushButton import QvPushButton
 from moduls.QvConstants import QvConstants
 import csv
