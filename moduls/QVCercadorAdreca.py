@@ -631,26 +631,56 @@ class QCercadorAdreca(QObject):
 
 
 if __name__ == "__main__":
-    projecteInicial = 'projectes/BCN11_nord.qgs'
+    projecteInicial = 'mapesOffline/qVista default map.qgs'
+    from moduls.QvCanvas import QvCanvas
 
     with qgisapp() as app:
         app.setStyle(QStyleFactory.create('fusion'))
 
-        canvas = QgsMapCanvas()
+        # canvas = QgsMapCanvas()
+        canvas = QvCanvas(llistaBotons=['panning','zoomIn','zoomOut'])
         canvas.setGeometry(10, 10, 1000, 1000)
         canvas.setCanvasColor(QColor(10, 10, 10))
         le1 = QLineEdit()
+        le1.setPlaceholderText('Carrer')
         le2 = QLineEdit()
-        le1.setWindowTitle("Calle")
-        le1.show()
-        le2.setWindowTitle("Numero")
-        le2.show()
+        le2.setPlaceholderText('Número')
 
-        QCercadorAdreca(le1, le2)
+        layCerc=QHBoxLayout()
+        layCerc.addWidget(le1)
+        layCerc.addWidget(le2)
+        lay=QVBoxLayout()
+        lay.setContentsMargins(0,0,0,0)
+        lay.addLayout(layCerc)
+        lay.addWidget(canvas)
+        wid=QWidget()
+        wid.setLayout(lay)
+
+        marcaLloc=None
+        def trobat(codi,info):
+            if codi!=0:
+                print(info)
+                return
+            if marcaLloc is not None:
+                marcaLloc.hide()
+            marcaLloc=QgsVertexMarker(canvas)
+            marcaLloc.setCenter( cercador.coordAdreca )
+            marcaLloc.setColor(QColor(255, 0, 0))
+            marcaLloc.setIconSize(15)
+            marcaLloc.setIconType(QgsVertexMarker.ICON_BOX)
+            marcaLloc.setPenWidth(3)
+            marcaLloc.show()
+        # Instanciar el cercador requereix de dos QLineEdit (camp d'adreces i camp de números)
+        # El cercador té una senyal que es llença quan troba una adreça. Aquesta senyal passa dos paràmetres.
+        #  - Un enter, amb un codi d'error. Si és 0, tot ha anat bé. La resta, es poden veure al codi
+        #  - Un text, amb la informació de l'error
+        # Per accedir a les coordenades es pot fer mitjançant l'atribut coordAdreca del cercador, que s'haurà actualitzat quan les hagi trobat
+        cercador=QCercadorAdreca(le1, le2)
+        cercador.sHanTrobatCoordenades.connect(trobat)
         project = QgsProject().instance()
         root = project.layerTreeRoot()
         bridge = QgsLayerTreeMapCanvasBridge(root, canvas)
 
         project.read(projecteInicial)
 
-        canvas.show()
+        wid.show()
