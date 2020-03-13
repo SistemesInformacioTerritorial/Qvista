@@ -1774,6 +1774,15 @@ class QVista(QMainWindow, Ui_MainWindow):
         menubar=QvMenuBar(self)
         self.setMenuBar(menubar)
         self.bar = self.menuBar()
+        def desplaca(x,y):
+            if self.maximitzada:
+                self.restaurarFunc()
+            self.move(self.x()+x-self.oldPos.x(),self.y()+y-self.oldPos.y())
+        def posCanviada(p):
+            self.oldPos=p
+        self.bar.desplaca.connect(desplaca)
+        self.bar.posCanviada.connect(posCanviada)
+        self.bar.restaura.connect(self.restaurarFunc)
         self.bar.setFont(QvConstants.FONTTITOLS)
         self.bar.setCornerWidget(lblLogoQVista,Qt.TopLeftCorner)
 
@@ -1816,31 +1825,15 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.lytBotonsFinestra.addWidget(self.botoMinimitzar)
 
         self.maximitzada=True
-        iconaRestaurar1=QIcon(imatgesDir+'window-restore.png')
-        iconaRestaurar2=QIcon(imatgesDir+'window-maximize.png')
+        self.iconaRestaurar1=QIcon(imatgesDir+'window-restore.png')
+        self.iconaRestaurar2=QIcon(imatgesDir+'window-maximize.png')
 
-        def restaurar():
-            if self.maximitzada:
-                self.setWindowFlag(Qt.FramelessWindowHint,False)
-                self.setWindowState(Qt.WindowActive)
-                self.actualitzaWindowFlags()
-                amplada=self.width()
-                alcada=self.height()
-                self.resize(0.8*amplada,0.8*alcada)
-                self.show()
-                self.botoRestaurar.setIcon(iconaRestaurar2)
-            else:
-                self.setWindowState(Qt.WindowActive | Qt.WindowMaximized)
-                self.botoRestaurar.setIcon(iconaRestaurar1)
-                self.setWindowFlag(Qt.FramelessWindowHint)
-                self.actualitzaWindowFlags()
-                self.show()
-            self.maximitzada=not self.maximitzada
+        
             
-        self.restaurarFunc=restaurar 
+        # self.restaurarFunc=restaurar 
         self.botoRestaurar=QvPushButton(flat=True)
-        self.botoRestaurar.setIcon(iconaRestaurar1)
-        self.botoRestaurar.clicked.connect(restaurar)
+        self.botoRestaurar.setIcon(self.iconaRestaurar1)
+        self.botoRestaurar.clicked.connect(self.restaurarFunc)
         self.botoRestaurar.setFixedSize(40,40)
         self.botoRestaurar.setStyleSheet(stylesheetBotonsFinestra)
         self.lytBotonsFinestra.addWidget(self.botoRestaurar)
@@ -1947,6 +1940,23 @@ class QVista(QMainWindow, Ui_MainWindow):
         # self.menuFuncions.addAction(self.actBicing)
         self.menuFuncions.addAction(self.actPavimentacio)
         # self.menuFuncions.addAction(self.actPlatges)
+    def restaurarFunc(self):
+        if self.maximitzada:
+            self.setWindowFlag(Qt.FramelessWindowHint,False)
+            self.setWindowState(Qt.WindowActive)
+            self.actualitzaWindowFlags()
+            amplada=self.width()
+            alcada=self.height()
+            self.resize(0.8*amplada,0.8*alcada)
+            self.show()
+            self.botoRestaurar.setIcon(self.iconaRestaurar2)
+        else:
+            self.setWindowState(Qt.WindowActive | Qt.WindowMaximized)
+            self.botoRestaurar.setIcon(self.iconaRestaurar1)
+            self.setWindowFlag(Qt.FramelessWindowHint)
+            self.actualitzaWindowFlags()
+            self.show()
+        self.maximitzada=not self.maximitzada
     def actualitzaWindowFlags(self):
         self.setWindowFlag(Qt.Window)
         self.setWindowFlag(Qt.CustomizeWindowHint,True)
