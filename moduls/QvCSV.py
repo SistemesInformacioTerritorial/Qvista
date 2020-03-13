@@ -113,7 +113,6 @@ class QvCarregaCsv(QDialog):
     def __init__(self, rutaCsv: str, projecte, llegenda, parent=None):
         super().__init__(parent,Qt.WindowSystemMenuHint | Qt.WindowTitleHint | Qt.WindowCloseButtonHint)
         self.setWindowTitle('Carregador d\'arxius CSV')
-        # self.setFixedSize(QvApp().zoomFactor()*750, QvApp().zoomFactor()*550)
         self.setMinimumWidth(750)
         self._llegenda=llegenda
         self._projecte=projecte

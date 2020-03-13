@@ -2362,7 +2362,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         # font=QFont('',0)
         font=QvConstants.FONTTEXT
         fm=QFontMetrics(font)
-        self.leXY.setFixedWidth(fm.width(text))
+        self.leXY.setFixedWidth(fm.width(text)*QvApp().zoomFactor())
 
         # self.bXY.setText( str("%.2f" % p.x()) + ", " + str("%.2f" % p.y() ))
         # try:

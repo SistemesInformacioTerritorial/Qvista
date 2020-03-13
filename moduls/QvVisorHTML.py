@@ -94,7 +94,6 @@ class QvVisorHTML(QDialog):
         # self.ombraHeader.setEnabled(True)
 
         self.setWindowTitle("qVista - Noticies")
-        self.caixaText.setZoomFactor(QvApp().zoomFactor())
         self.resize(640, 480)
         self.oldPos = self.pos()
         # QvConstants.afegeixOmbraWidget(self)
