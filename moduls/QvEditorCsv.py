@@ -46,7 +46,7 @@ class ModelCsv(QAbstractTableModel):
             self.addRows(lector)
 
     def addRows(self, rows):
-        self.persons.extend(list(rows))
+        self.persons.extend(rows)
 
     def rowCount(self, index=QModelIndex()):
         if not self.persons:
