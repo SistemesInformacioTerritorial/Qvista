@@ -47,6 +47,7 @@ from moduls.QvNouCataleg import QvNouCataleg
 from moduls.QvCatalegCapes import QvCatalegCapes
 from moduls.QvSabiesQue import QvSabiesQue
 from moduls.QvMemoria import QvMemoria
+from moduls.QvBafarada import QvBafarada
 # import re
 import csv
 import os        
@@ -2083,24 +2084,8 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.dashboardActiu = [dashboard]
         self.layout.addWidget(dashboard)
     def showLblFlotant(self,txt):
-        self.lblFlotant=QLabel(txt)
-        self.lblFlotant.setFont(QvConstants.FONTTEXT)
-        self.lblFlotant.setWordWrap(True)
-        self.lblFlotant.setStyleSheet('''
-            background: %s;
-            color: %s;
-            padding: 2px;
-            border: 2px solid %s;
-            border-radius: 10px;
-            margin: 0px;
-        '''%(QvConstants.COLORBLANCHTML,QvConstants.COLORFOSCHTML, QvConstants.COLORDESTACATHTML))
-        self.lblFlotant.setWindowFlags(Qt.WindowStaysOnTopHint | Qt.FramelessWindowHint)
-        self.timerLblFlotant=QTimer(self)
-        self.timerLblFlotant.setSingleShot(True)
-        self.timerLblFlotant.timeout.connect(lambda: self.lblFlotant.hide())
-        self.timerLblFlotant.start(5000)
+        self.lblFlotant=QvBafarada(txt,self)
         self.lblFlotant.show()
-        self.lblFlotant.move(self.width()-500,self.height()-50)
     def hideLblFlotant(self):
         if hasattr(self,'lblFlotant'):
             self.lblFlotant.hide()
