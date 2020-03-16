@@ -1635,7 +1635,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         # self.bs4.setIcon(QIcon(imatgesDir+'trash-can-outline.png'))
 
         # self.lblNombreElementsSeleccionats = QLabel('No hi ha elements seleccionats.')
-        self.lblCapaSeleccionada = QLabel('No hi capa seleccionada.')
+        self.lblCapaSeleccionada = QLabel('No hi ha capa seleccionada.')
         
         self.lwFieldsSelect = QListWidget()
         self.lwFieldsSelect.setSelectionMode(QAbstractItemView.ExtendedSelection)
@@ -2727,7 +2727,7 @@ class QVista(QMainWindow, Ui_MainWindow):
                 color: %s;
             }'''%QvConstants.COLORTEXTHINTHTML
         alcada=24
-        self.lblCapaSeleccionadaInf=QLabel('No hi capa seleccionada.')
+        self.lblCapaSeleccionadaInf=QLabel('No hi ha capa seleccionada.')
         self.lblCapaSeleccionadaInf.setStyleSheet(styleheetLabel)
         self.lblCapaSeleccionadaInf.setFrameStyle(QFrame.StyledPanel )
 
