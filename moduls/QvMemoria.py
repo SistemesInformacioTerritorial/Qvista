@@ -13,6 +13,7 @@ arxiuVolHints=dadesdir+'volHints'
 arxiuDadesMascara=dadesdir+'dadesMascara'
 arxiuCampsGeocod=dadesdir+'geocod.json'
 arxiuGeocodificats=dadesdir+'geocodificats.json'
+arxiuCatalegsLocals=dadesdir+'catalegsLocals'
 
 def llegirArxiu(f,encoding='utf-8'):
     with open(f,encoding=encoding) as arxiu:
@@ -114,6 +115,20 @@ class QvMemoria(Singleton):
                 if md5sum(ruta)==self.geocodificats[suma_orig]:
                     return ruta
         return None
+    def getCatalegsLocals(self):
+        if not os.path.isfile(arxiuCatalegsLocals):
+            return []
+        with open(arxiuCatalegsLocals) as f:
+            return f.readlines()
+    def setCatalegLocal(self,path,posal=True):
+        cont=self.getCatalegsLocals(self)
+        path=os.path.abspath(path)
+        if posal:
+            cont=list(set(cont+[path]))
+        else:
+            cont=cont.remove(path)
+        with open(arxiuCatalegsLocals,'w') as f:
+            f.writelines(cont)
     def pafuera(self):
         if hasattr(self,'mapesRecents'):
             with open(arxiuMapesRecents,'w',encoding='utf-8') as f:

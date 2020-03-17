@@ -1581,9 +1581,6 @@ class QVista(QMainWindow, Ui_MainWindow):
 
     def preparacioSeleccio(self):
 
-        # Disseny del interface
-        
-
         self.wSeleccioGrafica = QvSeleccioGrafica(self.canvas, self.project, self.llegenda)
         
         self.dwSeleccioGrafica = QvDockWidget("Selecció gràfica", self)
@@ -2392,7 +2389,7 @@ class QVista(QMainWindow, Ui_MainWindow):
                 color: %s;
             }'''%QvConstants.COLORTEXTHINTHTML
         alcada=24
-        self.lblCapaSeleccionadaInf=QLabel('No hi capa seleccionada.')
+        self.lblCapaSeleccionadaInf=QLabel('No hi ha capa seleccionada.')
         self.lblCapaSeleccionadaInf.setStyleSheet(styleheetLabel)
         self.lblCapaSeleccionadaInf.setFrameStyle(QFrame.StyledPanel )
 
