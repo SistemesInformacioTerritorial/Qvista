@@ -718,7 +718,33 @@ class MapaCataleg(QFrame):
         self.setFavorit(not self.favorit)
     def getNomMapa(self):
         return self.nomMapa
-            
+
+class QvCreadorCataleg(QWidget):
+    def __init__(self, canvas):
+        super().__init__(self)
+        self._canvas=canvas
+        self._lay=QVBoxLayout()
+        self.setLayout(self._lay)
+        lblCapcalera=QLabel('Afegir mapa al catàleg')
+        self._lay.addWidget(lblCapcalera)
+        
+        layTitol=QHBoxLayout()
+        layTitol.addWidget(QLabel('Títol: ',self))
+        self._leTitol=QLineEdit(self)
+        layTitol.addWidget(self._leTitol)
+        self._lay.addLayout(layTitol)
+
+        lblText=QLabel('Text:')
+        self._lay.addWidget(lblText)
+        self._teText=QTextEdit(self)
+        self._lay.addWIdget(self._teText)
+
+        layBotons=QHBoxLayout()
+        bGenerarImatge=QvPushButton('Generar imatge')
+        self._bDesar=QvPushButton('Desar',destacat=True)
+        layBotons.addWidget(bGenerarImatge)
+        layBotons.addWidget(self._bDesar)
+        self._lay.addLayout(layBotons)
 
 
 if __name__ == "__main__":
@@ -727,5 +753,3 @@ if __name__ == "__main__":
             app.setStyleSheet(f.read())
         cataleg = QvNouCataleg()
         cataleg.showMaximized()
-        # mapa=MapaCataleg("N:/9SITEB/Publicacions/qVista/CATALEG/Mapes - en preparació per XLG/2. Ortofotos/Imatge de satel·lit 2011 de l'AMB")
-        # mapa.show()
