@@ -1,16 +1,10 @@
 #!/usr/bin/env python
 from moduls.QvImports import * 
-from PyQt5 import QtCore
-from PyQt5 import QtGui
-from PyQt5.QtCore import pyqtProperty
-from PyQt5 import QtCore, QtWidgets
-from PyQt5.QtGui import QColor
+from qgis.PyQt import QtWidgets
 import os
-import tempfile
 from moduls.QvConstants import QvConstants
 from moduls.QvPushButton import QvPushButton
 from moduls.QvRedimLayout import QvRedimLayout
-from typing import Callable 
 import shutil
 from moduls.QvVisorHTML import QvVisorHTML
 import re
@@ -18,7 +12,9 @@ from moduls.QvFavorits import QvFavorits
 
 
 class QvNouCataleg(QWidget):
-    
+    # Senyal per obrir un projecte. Passa un string (ruta de l'arxiu), un booleà (si aquell era favorit o no) i un widget (el botó al qual s'ha fet click). 
+    # El segon i el tercer només calen si volem poder gestionar els favorits des de fora del catàleg
+    obrirProjecte = pyqtSignal(str, bool, QWidget)
     def __init__(self,parent: QtWidgets.QWidget=None):
         '''Construeix el catàleg
         El codi és més o menys el mateix que s'utilitza per construir moltes altres finestres frameless. 
@@ -334,13 +330,13 @@ class QvNouCataleg(QWidget):
                 # x.setParent(None)
                 x.hide()
         return
-    def obrirProjecte(self, dir: str, favorit: bool, widgetAssociat):
+    def obreProjecte(self, dir: str, favorit: bool, widgetAssociat):
         '''Obre el projecte amb qVista. Li indica a qVista si és favorit o no, perquè pugui posar el botó com toca'''
         try:
-            self.parent.obrirProjecteCataleg(dir, favorit, widgetAssociat)
-            self.parent.show()
-            # self.parent.activateWindow()
-            # self.hide()
+            # self.parent.obrirProjecteCataleg(dir, favorit, widgetAssociat)
+            self.obrirProjecte.emit(dir,favorit,widgetAssociat)
+            if self.parent is not None:
+                self.parent.show()
         except:
             QMessageBox.warning(self,"No s'ha pogut obrir el mapa","El mapa no ha pogut ser obert. Si el problema persisteix, contacteu amb el gestor del catàleg")
     def obrirEnQGis(self,dir: str):
@@ -594,7 +590,6 @@ class MapaCataleg(QFrame):
         self.lblImatge.setFixedSize(300,180) #La mida que volem, restant-li el que ocuparà el border
         self.lblImatge.setScaledContents(True)
         self.lblImatge.setToolTip("Obrir mapa en qVista")
-        midaLblImatge=self.lblImatge.sizeHint()
         self.layout.addWidget(self.lblImatge)
         try:
             with open(dir+'.txt') as text:
@@ -638,7 +633,7 @@ class MapaCataleg(QFrame):
         self.botoObre.setIcon(QIcon(imatgesDir+'cm_play.png'))
         self.botoObre.move(280,100)
         self.botoObre.setToolTip("Obrir el mapa en qVista")
-        self.obreQVista=lambda: cataleg.obrirProjecte(dir+'.qgs',self.favorit, self)
+        self.obreQVista=lambda: cataleg.obreProjecte(dir+'.qgs',self.favorit, self)
         self.botoObre.clicked.connect(self.obreQVista)
         self.botoObre.setIconSize(QSize(24,24))
         self.botoObre.setFixedSize(24,24)
@@ -748,8 +743,24 @@ class QvCreadorCataleg(QWidget):
 
 
 if __name__ == "__main__":
+    from configuracioQvista import *
+    from moduls.QvCanvas import QvCanvas
+    from moduls.QvAtributs import QvAtributs
+    from moduls.QvLlegenda import QvLlegenda
     with qgisapp() as app:
         with open('style.qss') as f:
             app.setStyleSheet(f.read())
+        canvas = QvCanvas(llistaBotons=["panning","zoomIn","zoomOut","streetview"])
+        canvas.show()
+        atributs = QvAtributs(canvas)
+        projecte = QgsProject.instance()
+        root = projecte.layerTreeRoot()
+        bridge = QgsLayerTreeMapCanvasBridge(root,canvas)
+        projecte.read(projecteInicial)
+        llegenda = QvLlegenda(canvas, atributs)
+        llegenda.show()
         cataleg = QvNouCataleg()
         cataleg.showMaximized()
+        cataleg.obrirProjecte.connect(lambda x: projecte.read(x))
+        # mapa=MapaCataleg("N:/9SITEB/Publicacions/qVista/CATALEG/Mapes - en preparació per XLG/2. Ortofotos/Imatge de satel·lit 2011 de l'AMB")
+        # mapa.show()

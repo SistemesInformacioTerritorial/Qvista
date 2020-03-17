@@ -2,13 +2,13 @@
 
 from qgis.PyQt.QtSql import QSqlDatabase, QSqlQuery, QSql
 from qgis.PyQt.QtCore import QTranslator, QLibraryInfo, QLocale
+from qgis.PyQt.QtWidgets import QApplication
 from qgis.PyQt.QtNetwork import QNetworkProxy
 from qgis.core import QgsPythonRunner
 from moduls.QvSingleton import Singleton
 from moduls.QvPythonRunner import QvPythonRunner
 from moduls.QvGithub import QvGithub
 from moduls.QvSqlite import QvSqlite
-from PyQt5.QtWidgets import QApplication
 from pathlib import Path
 import sys
 import getpass
@@ -246,9 +246,9 @@ class QvApp(Singleton):
     def zoomFactor(self):
         #Windows per defecte utilitza un dpi de 96. Si hem aplicat un factor de zoom, serà més
         #Per tant, dividint entre 96 tindrem l'escalat en tant per 1
-        return 1
-        # zoomFactor=QApplication.desktop().screen().logicalDpiX()/96
-        # return zoomFactor
+        # return 1
+        zoomFactor=QApplication.desktop().screen().logicalDpiX()/96
+        return zoomFactor
     def nomUsuari(self):
         try:
             #Copia-pega de https://sjohannes.wordpress.com/2010/06/19/win32-python-getting-users-display-name-using-ctypes/

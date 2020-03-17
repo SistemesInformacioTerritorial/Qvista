@@ -1,7 +1,6 @@
 # "Constants" útils
-from PyQt5.QtGui import QFont, QColor
-from PyQt5.QtWidgets import QGraphicsDropShadowEffect, QWidget
-import tempfile
+from qgis.PyQt.QtGui import QFont, QColor
+from qgis.PyQt.QtWidgets import QGraphicsDropShadowEffect, QWidget
 from moduls.QvImports import * 
 # Per poder indicar a una funció que rep una seqüència (tupla, llista)
 from typing import Sequence

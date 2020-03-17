@@ -1,19 +1,18 @@
 # from moduls.QvImports import *
 from qgis.PyQt.QtGui import QStandardItemModel, QStandardItem, QIcon, QPixmap
 
-from qgis.core import QgsRectangle,   QgsProject, QgsVectorLayer, QgsLayoutExporter, QgsPointXY, QgsGeometry, QgsVector, QgsLayout, QgsReadWriteContext
+from qgis.core import QgsPointXY, QgsProject, QgsRectangle
 from qgis.gui import QgsMapCanvas,QgsLayerTreeMapCanvasBridge,  QgsVertexMarker
-import sys
-# from PyQt5 import QtGui, QtCore, QtWidgets
-from PyQt5.QtCore import QAbstractItemModel, QFile, QIODevice, QModelIndex, Qt, QSize
-from PyQt5.QtWidgets import QApplication, QMessageBox, QMainWindow, QDockWidget, QTreeView, QAction, QVBoxLayout, QHBoxLayout ,QAbstractItemView, QLabel, QWidget, QLineEdit, QPushButton
+# from qgis.PyQt import QtGui, QtCore, QtWidgets
+from qgis.PyQt.QtCore import QModelIndex, Qt
+from qgis.PyQt.QtWidgets import QAbstractItemView, QAction, QDockWidget, QHBoxLayout, QLabel, QLineEdit, QMainWindow, QMessageBox, QTreeView, QVBoxLayout, QWidget
 
 import pickle
 from collections import deque
 import os.path
 from qgis.core.contextmanagers import qgisapp
 
-from PyQt5.QtGui import QPainter, QColor, QPen
+from qgis.PyQt.QtGui import QColor
 
 
 
@@ -304,7 +303,6 @@ class QvUbicacions(QWidget):
         """ Eliminar rama del arbol
         """
         self.model.removeRow(self.arbre.currentIndex().row(), self.arbre.currentIndex().parent())
-        pass
 
 
     def expand_all(self):
@@ -314,7 +312,6 @@ class QvUbicacions(QWidget):
             self.arbre.collapseAll()
         else:
             self.arbre.expandAll()
-        pass
 
 
     def clear_all(self):
@@ -482,7 +479,6 @@ if __name__ == "__main__":
         windowTest.show()
 
 
-        pass  
 
 
 
