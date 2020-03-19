@@ -117,7 +117,7 @@ class QvMemoria(Singleton):
         return None
     def getCatalegsLocals(self):
         if not os.path.isfile(arxiuCatalegsLocals):
-            return []
+            return [os.path.abspath('../dades/CatalegProjectes')]
         with open(arxiuCatalegsLocals) as f:
             return f.readlines()
     def setCatalegLocal(self,path,posal=True):

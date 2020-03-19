@@ -9,6 +9,7 @@ import shutil
 from moduls.QvVisorHTML import QvVisorHTML
 import re
 from moduls.QvFavorits import QvFavorits
+from moduls.QvMemoria import QvMemoria
 
 
 class QvNouCataleg(QWidget):
@@ -714,33 +715,158 @@ class MapaCataleg(QFrame):
     def getNomMapa(self):
         return self.nomMapa
 
+class PointTool(QgsMapTool):
+    click=pyqtSignal(QgsPointXY)
+    def __init__(self, parent, canvas):
+        QgsMapTool.__init__(self, canvas)
+        self.parent = parent
+
+    
+    # def canvasMoveEvent(self, event):
+    #     self.parent.dockX = event.pos().x()
+    #     self.parent.dockY = event.pos().y()
+
+    def canvasReleaseEvent(self, event):
+        point = self.toMapCoordinates(event.pos())
+        self.click.emit(point)
+
 class QvCreadorCataleg(QWidget):
-    def __init__(self, canvas):
-        super().__init__(self)
+    def __init__(self, canvas, project):
+        super().__init__()
+        self._project=project
         self._canvas=canvas
+        self._canvas.xyCoordinates.connect(self._mouMouse)
+        self._tool=PointTool(self,self._canvas)
+        self._tool.click.connect(self.puntClick)
+        self._toolSet=False
+        # self._canvas.setMapTool(self._tool)
+        self.incX=300
+        self.incY=180
+        self._layer = QgsVectorLayer('Point?crs=epsg:25831', "Capa temporal d'impressió","memory")
+        project.addMapLayer(self._layer, False)
+
+
+        # self._pucMoure=False
         self._lay=QVBoxLayout()
         self.setLayout(self._lay)
         lblCapcalera=QLabel('Afegir mapa al catàleg')
+        lblCapcalera.setFont(QvConstants.FONTTITOLS)
         self._lay.addWidget(lblCapcalera)
         
         layTitol=QHBoxLayout()
         layTitol.addWidget(QLabel('Títol: ',self))
         self._leTitol=QLineEdit(self)
+        self._leTitol.textChanged.connect(self.actualitzaEstatBDesar)
         layTitol.addWidget(self._leTitol)
         self._lay.addLayout(layTitol)
 
-        lblText=QLabel('Text:')
+        lblText=QLabel('Descripció:')
         self._lay.addWidget(lblText)
         self._teText=QTextEdit(self)
-        self._lay.addWIdget(self._teText)
+        self._teText.textChanged.connect(self.actualitzaEstatBDesar)
+        self._lay.addWidget(self._teText)
 
         layBotons=QHBoxLayout()
-        bGenerarImatge=QvPushButton('Generar imatge')
+        self._bGenerarImatge=QvPushButton('Capturar imatge')
+        self._bGenerarImatge.clicked.connect(self._swapCapturar)
+
+        self._imatge=QWidget()
+        self._imatge.setFixedSize(self.incX,self.incY)
+        self._lay.addWidget(self._imatge)
+
         self._bDesar=QvPushButton('Desar',destacat=True)
-        layBotons.addWidget(bGenerarImatge)
+        self._bDesar.clicked.connect(self._desar)
+        layBotons.addWidget(self._bGenerarImatge)
         layBotons.addWidget(self._bDesar)
         self._lay.addLayout(layBotons)
 
+        self._rubberband = QgsRubberBand(self._canvas)
+        self._rubberband.setColor(QColor(0,0,0,50))
+        self._rubberband.setWidth(4)
+        self.pintarRectangle(self._canvas.extent())
+        # self._rubberband.hide()
+    def _desar(self):
+        catalegsLocals=QvMemoria().getCatalegsLocals()
+        ret=QFileDialog.getExistingDirectory(self,'Trieu la carpeta del catàleg',catalegsLocals[0])
+        if ret=='':
+            return
+        if ret not in catalegsLocals:
+            #Aquí preguntar si vol desar-ho com a catàleg local
+            print(':D')
+        nom=self._leTitol.text().replace(' ','_')
+        fRes=os.path.join(ret,nom)
+        os.mkdir(fRes)
+        fRes=os.path.join(fRes,nom)
+        #desar mapa
+        with open(fRes+'.txt','w') as f:
+            f.write(self._leTitol.text()+'\n')
+            f.write(self._teText.toPlainText())
+        self._project.write(fRes+'.qgs')
+        self._pixmap.save(fRes+'.png')
+        
+    def _swapCapturar(self):
+        if self._toolSet:
+            self._bGenerarImatge.setText('Capturar imatge')
+            self._canvas.unsetMapTool(self._tool)
+            pass
+        else:
+            self._bGenerarImatge.setText('Desplaçar mapa')
+            self._canvas.setMapTool(self._tool)
+            pass
+        self._toolSet=not self._toolSet
+    def actualitzaEstatBDesar(self):
+        self._bDesar.setEnabled(isinstance(self._imatge,QLabel) and self._leTitol.text()!='' and self._teText.toPlainText()!='')
+    def puntClick(self,p):
+        self._p=p
+        self.imprimirPlanol(p.x(),p.y(),self._canvas.scale(),self._canvas.rotation())
+        
+    def _mouMouse(self,p):
+        if not self.isVisible() or not self._toolSet:
+            self._rubberband.hide()
+        else:
+            # p=self._canvas.mapToGlobal(p)
+            p=self._canvas.mapFromGlobal(QCursor.pos())
+            points=[QgsPoint(self._canvas.getCoordinateTransform().toMapCoordinates(*x)) for x in ((p.x()+self.incX,p.y()+self.incY), (p.x()+self.incX,p.y()), (p.x(),p.y()), (p.x(),p.y()+self.incY), (p.x()+self.incX,p.y()+self.incY))]
+            self._requadre=QgsGeometry.fromPolyline(points)
+            self._rubberband.setToGeometry(self._requadre,self._layer)
+            self._rubberband.show()
+
+    def pintarRectangle(self,poligon):
+        points=[QgsPointXY(0,0),QgsPointXY(0,10),QgsPointXY(10,10),QgsPointXY(0,10),QgsPointXY(0,0)]
+        poligono=QgsGeometry.fromRect(poligon)
+        self._rubberband.setToGeometry(poligono,self._layer)
+    def imprimirPlanol(self,x, y, escala, rotacion):
+        #Preguntar on desem
+        #Crear document de text
+        #Crear metadades
+
+        image_location = os.path.join(tempdir, "render.png")
+
+        options = QgsMapSettings()
+        options.setLayers(self._canvas.layers())
+        options.setBackgroundColor(QColor(255, 255, 255))
+        options.setOutputSize(QSize(300, 180))
+        options.setExtent(self._rubberband.asGeometry().boundingBox())
+
+        render = QgsMapRendererParallelJob(options)
+
+        def finished():
+            img = render.renderedImage()
+            # save the image; e.g. img.save("/Users/myuser/render.png","png")
+            img.save(image_location, "png")
+            print("saved")
+            self._pixmap=QPixmap(image_location)
+            lblImatge=QLabel()
+            lblImatge.setPixmap(self._pixmap)
+            self._lay.replaceWidget(self._imatge,lblImatge)
+            self._imatge=lblImatge
+            self.actualitzaEstatBDesar()
+
+        render.finished.connect(finished)
+
+        render.start()
+
+        
 
 if __name__ == "__main__":
     from configuracioQvista import *
@@ -762,5 +888,7 @@ if __name__ == "__main__":
         cataleg = QvNouCataleg()
         cataleg.showMaximized()
         cataleg.obrirProjecte.connect(lambda x: projecte.read(x))
+        creador=QvCreadorCataleg(canvas, projecte)
+        creador.show()
         # mapa=MapaCataleg("N:/9SITEB/Publicacions/qVista/CATALEG/Mapes - en preparació per XLG/2. Ortofotos/Imatge de satel·lit 2011 de l'AMB")
         # mapa.show()

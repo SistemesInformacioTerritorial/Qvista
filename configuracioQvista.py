@@ -72,7 +72,7 @@ if not os.path.exists(dadesdir):
 
 if not os.path.isdir(carpetaCataleg):
     carpetaCataleg = os.path.abspath("../dades/CatalegCapes/")
-    carpetaCatalegProjectesLlista = [os.path.abspath(x) for x in ("../dades/CatalegProjectes/")]
+    carpetaCatalegProjectesLlista = [os.path.abspath(x)+'/' for x in ["../dades/CatalegProjectes/"]]
     estatConnexio = "Xarxa municipal: Desconnectat"
 
     
