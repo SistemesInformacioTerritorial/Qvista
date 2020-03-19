@@ -739,6 +739,151 @@ class PointTool(QgsMapTool):
         point = self.toMapCoordinates(event.pos())
         self.click.emit(point)
 
+plantillaMetadades='''<html>
+<head>
+<meta http-equiv=Content-Type content="text/html; charset=windows-1252">
+<meta name=Generator content="Microsoft Word 14 (filtered)">
+<style>
+<!--
+ /* Font Definitions */
+ @font-face
+	{font-family:Calibri;
+	panose-1:2 15 5 2 2 2 4 3 2 4;}
+ /* Style Definitions */
+ p.MsoNormal, li.MsoNormal, div.MsoNormal
+	{margin-top:0cm;
+	margin-right:0cm;
+	margin-bottom:10.0pt;
+	margin-left:0cm;
+	line-height:115%%;
+	font-size:11.0pt;
+	font-family:"Calibri","sans-serif";}
+a:link, span.MsoHyperlink
+	{font-family:"Times New Roman","serif";
+	color:blue;
+	text-decoration:underline;}
+a:visited, span.MsoHyperlinkFollowed
+	{color:purple;
+	text-decoration:underline;}
+p.MsoListParagraph, li.MsoListParagraph, div.MsoListParagraph
+	{margin-top:0cm;
+	margin-right:0cm;
+	margin-bottom:10.0pt;
+	margin-left:36.0pt;
+	line-height:115%%;
+	font-size:11.0pt;
+	font-family:"Calibri","sans-serif";}
+p.msolistparagraphcxspfirst, li.msolistparagraphcxspfirst, div.msolistparagraphcxspfirst
+	{mso-style-name:msolistparagraphcxspfirst;
+	margin-top:0cm;
+	margin-right:0cm;
+	margin-bottom:0cm;
+	margin-left:36.0pt;
+	margin-bottom:.0001pt;
+	line-height:115%%;
+	font-size:11.0pt;
+	font-family:"Calibri","sans-serif";}
+p.msolistparagraphcxspmiddle, li.msolistparagraphcxspmiddle, div.msolistparagraphcxspmiddle
+	{mso-style-name:msolistparagraphcxspmiddle;
+	margin-top:0cm;
+	margin-right:0cm;
+	margin-bottom:0cm;
+	margin-left:36.0pt;
+	margin-bottom:.0001pt;
+	line-height:115%%;
+	font-size:11.0pt;
+	font-family:"Calibri","sans-serif";}
+p.msolistparagraphcxsplast, li.msolistparagraphcxsplast, div.msolistparagraphcxsplast
+	{mso-style-name:msolistparagraphcxsplast;
+	margin-top:0cm;
+	margin-right:0cm;
+	margin-bottom:10.0pt;
+	margin-left:36.0pt;
+	line-height:115%%;
+	font-size:11.0pt;
+	font-family:"Calibri","sans-serif";}
+p.msochpdefault, li.msochpdefault, div.msochpdefault
+	{mso-style-name:msochpdefault;
+	margin-right:0cm;
+	margin-left:0cm;
+	font-size:12.0pt;
+	font-family:"Calibri","sans-serif";}
+p.msopapdefault, li.msopapdefault, div.msopapdefault
+	{mso-style-name:msopapdefault;
+	margin-right:0cm;
+	margin-bottom:10.0pt;
+	margin-left:0cm;
+	line-height:115%%;
+	font-size:12.0pt;
+	font-family:"Times New Roman","serif";}
+.MsoChpDefault
+	{font-size:10.0pt;
+	font-family:"Calibri","sans-serif";}
+.MsoPapDefault
+	{margin-bottom:10.0pt;
+	line-height:115%%;}
+@page WordSection1
+	{size:595.3pt 841.9pt;
+	margin:70.85pt 3.0cm 70.85pt 3.0cm;}
+div.WordSection1
+	{page:WordSection1;}
+-->
+</style>
+
+</head>
+
+<body lang=CA link=blue vlink=purple>
+
+<div class=WordSection1>
+
+<p class=MsoNormal><b><span style='font-family:"Arial","sans-serif";color:#595959'>%s</span></b></p>
+
+<p class=MsoNormal style='margin-bottom:0cm;margin-bottom:.0001pt'><b><span
+style='font-size:9.0pt;line-height:115%%;font-family:"Arial","sans-serif";
+color:#595959'>Contingut</span></b></p>
+
+<p class=MsoNormal style='margin-bottom:0cm;margin-bottom:.0001pt'><span
+style='font-size:9.0pt;line-height:115%%;font-family:"Arial","sans-serif";
+color:#595959'>%s</span></p>
+
+<p class=MsoNormal style='margin-bottom:0cm;margin-bottom:.0001pt'><b><span
+style='font-size:9.0pt;line-height:115%%;font-family:"Arial","sans-serif";
+color:#595959'>&nbsp;</span></b></p>
+
+<p class=MsoNormal style='margin-bottom:0cm;margin-bottom:.0001pt'><b><span
+style='font-size:9.0pt;line-height:115%%;font-family:"Arial","sans-serif";
+color:#595959'>Propietari</span></b></p>
+
+<p class=MsoNormal style='margin-bottom:0cm;margin-bottom:.0001pt'><span
+style='font-size:9.0pt;line-height:115%%;font-family:"Arial","sans-serif";
+color:#595959'>%s</span></p>
+
+<p class=MsoNormal style='margin-bottom:0cm;margin-bottom:.0001pt'><span
+style='font-size:9.0pt;line-height:115%%;font-family:"Arial","sans-serif";
+color:#595959'>&nbsp;</span></p>
+
+<p class=MsoNormal style='margin-bottom:0cm;margin-bottom:.0001pt'><b><span
+style='font-size:9.0pt;line-height:115%%;font-family:"Arial","sans-serif";
+color:#595959'>Font de les dades</span></b></p>
+
+<p class=MsoNormal style='margin-bottom:0cm;margin-bottom:.0001pt'><span
+style='font-size:9.0pt;line-height:115%%;font-family:"Arial","sans-serif";
+color:#595959'>%s </span></p>
+
+<p class=MsoNormal style='margin-bottom:0cm;margin-bottom:.0001pt'><span
+style='font-size:9.0pt;line-height:115%%;font-family:"Arial","sans-serif";
+color:#595959'>&nbsp;</span></p>
+
+<p class=MsoNormal style='margin-bottom:0cm;margin-bottom:.0001pt'><span
+style='font-size:9.0pt;line-height:115%%;font-family:"Arial","sans-serif";
+color:#595959'>&nbsp;</span></p>
+
+</div>
+
+</body>
+
+</html>'''
+
 class QvCreadorCataleg(QWidget):
     def __init__(self, canvas, project):
         super().__init__()
@@ -873,6 +1018,33 @@ class QvCreadorCataleg(QWidget):
             f.write(self._teText.toPlainText())
         self._project.write(fRes+'.qgs')
         self._pixmap.save(fRes+'.png')
+
+        wid=QDialog()
+        lay=QVBoxLayout()
+        wid.setLayout(lay)
+        lay.addWidget(QLabel('Introduïu les metadades associades al projecte'))
+        lay.addWidget(QLabel('Contingut:'))
+        teContingut=QTextEdit()
+        lay.addWidget(teContingut)
+        lay.addWidget(QLabel('Propietari:'))
+        tePropietari=QTextEdit()
+        lay.addWidget(tePropietari)
+        lay.addWidget(QLabel('Font de les dades:'))
+        teFont=QTextEdit()
+        lay.addWidget(teFont)
+        bDesar=QvPushButton('Desar',destacat=True)
+        lay.addWidget(bDesar)
+        def desarMetadades():
+            with open(fRes+'.htm','w') as f:
+                cont=teContingut.toPlainText().replace('\n','<br>')
+                prop=tePropietari.toPlainText().replace('\n','<br>')
+                font=teFont.toPlainText().replace('\n','<br>')
+                f.write(plantillaMetadades%(self._leTitol.text(),cont,prop,font))
+
+            wid.close()
+        bDesar.clicked.connect(desarMetadades)
+        wid.exec()
+        self.close()
         
     def _swapCapturar(self):
         if self._toolSet:
