@@ -119,15 +119,15 @@ class QvMemoria(Singleton):
         if not os.path.isfile(arxiuCatalegsLocals):
             return [os.path.abspath('../dades/CatalegProjectes')]
         with open(arxiuCatalegsLocals) as f:
-            return f.readlines()
+            return list(f.readlines())
     def setCatalegLocal(self,path,posal=True):
-        cont=self.getCatalegsLocals(self)
+        cont=self.getCatalegsLocals()
         path=os.path.abspath(path)
         if posal:
             cont=list(set(cont+[path]))
         else:
             cont=cont.remove(path)
-        with open(arxiuCatalegsLocals,'w') as f:
+        with open(arxiuCatalegsLocals,'w',newline='\n') as f:
             f.writelines(cont)
     def pafuera(self):
         if hasattr(self,'mapesRecents'):

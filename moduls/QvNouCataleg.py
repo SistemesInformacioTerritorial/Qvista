@@ -209,7 +209,7 @@ class QvNouCataleg(QWidget):
         
         self.catalegs={} #Serà un dict on la clau serà el nom del directori, i el valor una llista de botons
         self.botonsLaterals=[]
-        for y in carpetaCatalegProjectesLlista:
+        for y in carpetaCatalegProjectesLlista+QvMemoria().getCatalegsLocals():
             try:
                 #os.walk(dir) ens dóna un generador que es va recorrent tots els nivells d'un directori
                 #Per cada nivell ens dóna tres llistes, que són l'arrel, els directoris i els arxius
@@ -223,7 +223,8 @@ class QvNouCataleg(QWidget):
             for x in dirs:
                 self.catalegs[x]=self.carregaBotons(x) 
                 privat = y in carpetaCatalegProjectesPrivats
-                boto=BotoLateral(x,self,privat)
+                local = y in QvMemoria().getCatalegsLocals()
+                boto=BotoLateral(x,self,privat,local)
                 boto.setCheckable(True)
                 if privat:
                     boto.setIcon(QIcon(imatgesDir+'lock-clar.png'))
@@ -275,11 +276,11 @@ class QvNouCataleg(QWidget):
 
     def carregaBotons(self,dir: str):
         f=[]
-        for y in carpetaCatalegProjectesLlista:
+        for y in carpetaCatalegProjectesLlista+QvMemoria().getCatalegsLocals():
             try:
                 _,_,files=next(os.walk(y+'/'+dir))
                 files=(x[:-4] for x in files if x.endswith('.qgs'))
-                files=(y+dir+'/'+x for x in files)
+                files=(os.path.join(y,dir,x) for x in files)
                 f+=files
             except:
                 continue
@@ -500,7 +501,7 @@ class QvNouCataleg(QWidget):
 
 
 class BotoLateral(QPushButton):
-    def __init__(self,text,cataleg,privat=False,parent=None):
+    def __init__(self,text,cataleg,privat=False, local=False,parent=None):
         super().__init__(text,parent)
         self.setCursor(QvConstants.cursorClick())
         self.cataleg=cataleg
@@ -523,6 +524,7 @@ class BotoLateral(QPushButton):
         self.setStyleSheet(stylesheet)
         self.setFont(QFont('Arial',12))
         self.privat=privat
+        self.local=local
     def mousePressEvent(self,event):
         if self==self.cataleg.tots:
             super().mousePressEvent(event)
@@ -556,8 +558,15 @@ class BotoLateral(QPushButton):
                 self.setIcon(QIcon(imatgesDir+'lock-clar.png'))
             else:
                 self.setIcon(QIcon(imatgesDir+'lock-fosc.png'))
+        elif self.esLocal():
+            if checked:
+                self.setIcon(QIcon(imatgesDir+'harddisk-clar.png'))
+            else:
+                self.setIcon(QIcon(imatgesDir+'harddisk-fosc.png'))
     def esPrivat(self):
         return self.privat
+    def esLocal(self):
+        return self.local
 
 class MapaCataleg(QFrame):
     '''Widget que representa la preview del mapa
@@ -774,6 +783,25 @@ class QvCreadorCataleg(QWidget):
         self._imatge.setFixedSize(self.incX,self.incY)
         self._lay.addWidget(self._imatge)
 
+        lblCatalegs=QLabel('Tria del catàleg on desarem el resultat')
+        self._cbCatalegs=QComboBox()
+        self._cbCatalegs.addItems(QvMemoria().getCatalegsLocals())
+        self._cbCatalegs.addItem('Un altre catàleg')
+        self._cbCatalegs.activated.connect(self._cbCatalegsCanviat)
+        self._lay.addWidget(lblCatalegs)
+        self._lay.addWidget(self._cbCatalegs)
+
+        lblSubcarpeta=QLabel('Trieu la subcarpeta on desarem el resultat')
+        self._cbSubcarpetes=QComboBox()
+        self._cbSubcarpetes.currentIndexChanged.connect(self._cbSubCarpetesCanviat)
+        self._leNovaCat=QLineEdit()
+        self._populaSubCarpetes()
+        self._leNovaCat.setPlaceholderText('Nom de la nova categoria')
+        self._lay.addWidget(lblSubcarpeta)
+        self._lay.addWidget(self._cbSubcarpetes)
+        self._lay.addWidget(self._leNovaCat)
+        self._cbSubCarpetesCanviat(0)
+
         self._bDesar=QvPushButton('Desar',destacat=True)
         self._bDesar.clicked.connect(self._desar)
         layBotons.addWidget(self._bGenerarImatge)
@@ -785,18 +813,60 @@ class QvCreadorCataleg(QWidget):
         self._rubberband.setWidth(4)
         self.pintarRectangle(self._canvas.extent())
         # self._rubberband.hide()
-    def _desar(self):
+
+        self.actualitzaEstatBDesar()
+    def _cbCatalegsCanviat(self,i):
         catalegsLocals=QvMemoria().getCatalegsLocals()
-        ret=QFileDialog.getExistingDirectory(self,'Trieu la carpeta del catàleg',catalegsLocals[0])
-        if ret=='':
-            return
-        if ret not in catalegsLocals:
-            #Aquí preguntar si vol desar-ho com a catàleg local
-            print(':D')
+        if not os.path.exists(self._cbCatalegs.currentText()):
+            ret=QFileDialog.getExistingDirectory(self,'Trieu la carpeta del catàleg',QvMemoria().getDirectoriDesar())
+            if ret=='':
+                self._cbCatalegs.setCurrentIndex(0)
+            elif ret in carpetaCatalegProjectesLlista:
+                #avisar de que el directori és un directori de catàlegs compartit
+                pass
+            elif ret not in catalegsLocals:
+                #Aquí preguntar si vol desar-ho com a catàleg local
+                resp=QMessageBox.question(self,'Afegir el catàleg','Voleu convertir aquesta carpeta en un catàleg de mapes local?', QMessageBox.Yes, QMessageBox.No)
+                if resp==QMessageBox.Yes:
+                    QvMemoria().setCatalegLocal(ret)
+                self._cbCatalegs.insertItem(i,ret)
+                self._cbCatalegs.setCurrentIndex(i)
+                self._populaSubCarpetes()
+    def _cbSubCarpetesCanviat(self,i):
+        print(i)
+        print(self._cbSubcarpetes.count()-1)
+        if i==self._cbSubcarpetes.count()-1:
+            self._leNovaCat.show()
+        else:
+            self._leNovaCat.hide()
+    def _populaSubCarpetes(self):
+        root, dirs, _ = next(os.walk(self._cbCatalegs.currentText()))
+        if len(dirs)==0:
+            # Avisar de que hauran de crear algun directori
+            pass
+        self._cbSubcarpetes.clear()
+        self._cbSubcarpetes.addItems(dirs)
+        self._cbSubcarpetes.addItem('Una nova categoria')
+        pass
+        # self._cbSubcarpetes
+    def _desar(self):
+        # catalegsLocals=QvMemoria().getCatalegsLocals()
+        # ret=QFileDialog.getExistingDirectory(self,'Trieu la carpeta del catàleg',catalegsLocals[0])
+        # if ret=='':
+        #     return
+        # if ret not in catalegsLocals:
+        #     #Aquí preguntar si vol desar-ho com a catàleg local
+        #     print(':D')
+        if self._leNovaCat.isVisible():
+            cat=self._leNovaCat.text()
+            ret=os.path.join(self._cbCatalegs.currentText(),cat)
+            os.mkdir(ret)
+        else:
+            ret=os.path.join(self._cbCatalegs.currentText(),self._cbSubcarpetes.currentText())
         nom=self._leTitol.text().replace(' ','_')
         fRes=os.path.join(ret,nom)
-        os.mkdir(fRes)
-        fRes=os.path.join(fRes,nom)
+        # os.mkdir(fRes)
+        # fRes=os.path.join(fRes,nom)
         #desar mapa
         with open(fRes+'.txt','w') as f:
             f.write(self._leTitol.text()+'\n')
@@ -815,7 +885,15 @@ class QvCreadorCataleg(QWidget):
             pass
         self._toolSet=not self._toolSet
     def actualitzaEstatBDesar(self):
-        self._bDesar.setEnabled(isinstance(self._imatge,QLabel) and self._leTitol.text()!='' and self._teText.toPlainText()!='')
+        b=isinstance(self._imatge,QLabel) and self._leTitol.text()!='' and self._teText.toPlainText()!=''
+        if not b:
+            self._bDesar.setEnabled(False)
+            return
+
+        if self._cbSubcarpetes.currentIndex()<self._cbSubcarpetes.count()-1:
+            self._bDesar.setEnabled(True)
+        else:
+            self._bDesar.setEnabled(self._leNovaCat.text()!='')
     def puntClick(self,p):
         self._p=p
         self.imprimirPlanol(p.x(),p.y(),self._canvas.scale(),self._canvas.rotation())

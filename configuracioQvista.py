@@ -71,8 +71,8 @@ if not os.path.exists(dadesdir):
         print('ERROR. No he pogut crear el directori temporal '+dadesdir)
 
 if not os.path.isdir(carpetaCataleg):
-    carpetaCataleg = os.path.abspath("../dades/CatalegCapes/")
-    carpetaCatalegProjectesLlista = [os.path.abspath(x)+'/' for x in ["../dades/CatalegProjectes/"]]
+    # carpetaCataleg = os.path.abspath("../dades/CatalegCapes/")
+    # carpetaCatalegProjectesLlista = [os.path.abspath(x)+'/' for x in ["../dades/CatalegProjectes/"]]
     estatConnexio = "Xarxa municipal: Desconnectat"
 
     
