@@ -6,6 +6,7 @@ from PyQt5 import QtCore, QtWidgets
 from PyQt5.QtGui import QColor, QKeySequence
 from moduls.QvConstants import QvConstants
 from moduls.QvPushButton import QvPushButton
+from moduls.QvApp import QvApp
 
 class QvVisorHTML(QDialog):
     '''Diàleg per visualitzar les notícies (que, per extensió, podem usar sempre que vulguem per visualitzar arxius HTML)'''
@@ -31,7 +32,7 @@ class QvVisorHTML(QDialog):
         self.lblLogo = QLabel()
         if logo:
             self.lblLogo.setPixmap(
-                QPixmap('imatges/QVistaLogo_40_32.png'))
+                QPixmap(imatgesDir+'QVistaLogo_40_32.png'))
             self.layoutCapcalera.addWidget(self.lblLogo)
         self.layoutCapcalera.addWidget(self.lblCapcalera)
 
@@ -95,6 +96,7 @@ class QvVisorHTML(QDialog):
         # self.ombraHeader.setEnabled(True)
 
         self.setWindowTitle("qVista - Noticies")
+        self.caixaText.setZoomFactor(QvApp().zoomFactor())
         self.resize(640, 480)
         self.oldPos = self.pos()
         # QvConstants.afegeixOmbraWidget(self)
@@ -112,7 +114,7 @@ class QvVisorHTML(QDialog):
         if event.key() == Qt.Key_Escape or event.key() == Qt.Key_Return:
             self.close()
     def easterEgg(self):
-        self.carrega(os.getcwd()+'/easterEgg.htm')
+        self.carrega(os.getcwd()+'/easterEgg.html')
         #Delay
         self.timer=QTimer()
         self.timer.timeout.connect(self.easterEggExit)
@@ -123,7 +125,8 @@ class QvVisorHTML(QDialog):
     def carrega(self,file=None):
         if file is None:
             file=self.file
-            self.caixaText.setText("No s'ha pogut trobar l'arxiu")
+            self.caixaText.load(QUrl('file:///%s'%self.file))
+            # self.caixaText.setText("No s'ha pogut trobar l'arxiu")
         else:
             self.caixaText.load(QUrl("file:///%s"%file))
         print(file)

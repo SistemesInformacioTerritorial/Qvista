@@ -17,9 +17,9 @@ class ProveidorIcones(QFileIconProvider):
         '''Retorna la icona de la carpeta si és un directori.
         Retorna la icona de la capa si és una capa'''
         if fileInfo.isDir():
-            return QIcon('Imatges/cc_folder.png')
+            return QIcon(imatgesDir+'cc_folder.png')
         elif fileInfo.completeSuffix()=='qlr':
-            return QIcon('Imatges/cc_layer.png')
+            return QIcon(imatgesDir+'cc_layer.png')
             pass
         return super().icon(fileInfo)
 
@@ -104,7 +104,7 @@ class QvCatalegCapes(QWidget):
         self.leCercador.setStyleSheet('background: white')
         self.leCercador.setPlaceholderText('Cercar...')
         self.leCercador.textChanged.connect(self.canviaFiltre)
-        self.accioEsborra=self.leCercador.addAction(QIcon('Imatges/cc_buidar_cercar.png'),QLineEdit.TrailingPosition)
+        self.accioEsborra=self.leCercador.addAction(QIcon(imatgesDir+'cc_buidar_cercar.png'),QLineEdit.TrailingPosition)
         self.accioEsborra.triggered.connect(lambda: self.leCercador.setText(''))
         self.accioEsborra.setVisible(False)
 
@@ -120,6 +120,8 @@ class QvCatalegCapes(QWidget):
         self.treeCataleg.setWindowTitle("Catàleg d'Informació Territorial")
         self.treeCataleg.adjustSize()
         self.treeCataleg.setHeaderHidden(True)
+        self.treeCataleg.setStyleSheet('background: transparent')
+        # self.treeCataleg.setAutoFillBackground(False)
 
         self.model=ModelArxius()
         self.model.setIconProvider(ProveidorIcones())
@@ -148,7 +150,7 @@ class QvCatalegCapes(QWidget):
         txt=txt.translate(trans)
         # txt=txt.upper()
         txt=txt.strip(' ')
-        txt=re.sub('\s[\s]+',' ',txt)
+        txt=re.sub(r'\s[\s]+',' ',txt)
         return txt
 
     def canviaFiltre(self):
@@ -166,16 +168,29 @@ class QvCatalegCapes(QWidget):
         '''Si és una capa, l'afegeix a qVista
         He copiat el codi del mòdul qVista.py perquè la funció estava fora de la classe qVista i no podia cridar-la
         '''
+        dir=os.getcwd()
         index = self.treeCataleg.currentIndex()
         if self.model.isDir(index): return
         path=self.model.fileInfo(index).absoluteFilePath()
         # self.qV.afegirQlr(path)
 
         #Copio el codi de la funció afegirQlr de l'arxiu qVista.py, ja que no se m'acudeix cap manera de cridar-la des d'aquí que no sigui barroera
-        layers = QgsLayerDefinition.loadLayerDefinitionLayers(path)
-        self.qV.project.addMapLayers(layers, True)
-        self.qV.canvisPendents=True
-        self.qV.botoDesarProjecte.setIcon(self.qV.iconaAmbCanvisPendents)
+        # layers = QgsLayerDefinition.loadLayerDefinitionLayers(path)
+        # self.qV.project.addMapLayers(layers, True)
+
+        ok, txt = QgsLayerDefinition().loadLayerDefinition(path, self.qV.project, self.qV.llegenda.root)
+        if ok:
+            self.qV.canvisPendents=True
+            self.qV.botoDesarProjecte.setIcon(self.qV.iconaAmbCanvisPendents)
+        else:
+            print('No se pudo importar capas', txt)
+
+
+        # self.qV.canvisPendents=True
+        # self.qV.botoDesarProjecte.setIcon(self.qV.iconaAmbCanvisPendents)
+        os.chdir(dir)
+        # print(dir)
+
     def actualitzaMetadades(self):
         '''Pinta la preview de la capa
         '''
@@ -232,6 +247,29 @@ class PreviewCapa(QWidget):
         self.lblImatge=QLabel()
         self.lblImatge.setPixmap(self.imatge)
         self.layout.addWidget(self.lblImatge)
+
+        stylesheet='''
+            QPushButton{
+                background: rgba(255,255,255,0.66); 
+                margin: 0px; 
+                padding: 0px;
+                border: 0px;
+            }
+        '''
+        self.bAfegir=QPushButton(parent=self.lblImatge)
+        self.bAfegir.setIcon(QIcon(imatgesDir+'cc_afegir.png'))
+        self.bAfegir.setFixedSize(24,24)
+        self.bAfegir.setIconSize(QSize(24,24))
+        self.bAfegir.move(270,120)
+        self.bAfegir.clicked.connect(self.obrir)
+        self.bAfegir.setStyleSheet(stylesheet)
+        self.bInfo=QPushButton(parent=self.lblImatge)
+        self.bInfo.setIcon(QIcon(imatgesDir+'cm_info.png'))
+        self.bInfo.setFixedSize(24,24)
+        self.bInfo.setIconSize(QSize(24,24))
+        self.bInfo.move(270,150)
+        self.bInfo.clicked.connect(self.obrirInfo)
+        self.bInfo.setStyleSheet(stylesheet)
         try:
             with open(self.nomBase+'.txt') as arxiu:
                 self.titol=arxiu.readline()
@@ -241,4 +279,18 @@ class PreviewCapa(QWidget):
             self.text="Text no disponible"
         self.lblText=QLabel('<p><strong><span style="color: #38474f; font-family: arial, helvetica, sans-serif; font-size: 10pt;">%s<br /></span></strong><span style="color: #38474f; font-family: arial, helvetica, sans-serif; font-size: 8pt;">%s</span></p>'%(self.titol,self.text))
         self.lblText.setWordWrap(True)
+        self.lblText.setStyleSheet('background: transparent')
         self.layout.addWidget(self.lblText)
+    def mouseDoubleClickEvent(self,event):
+        super().mouseDoubleClickEvent(event)
+        self.obrir()
+    def obrir(self):
+        self.parentWidget().parentWidget().afegirQlr()
+        self.bInfo.setIcon(QIcon(imatgesDir+'cm_info.png'))
+    def obrirInfo(self):
+        visor=QvVisorHTML(self.nomBase+'.htm','Metadades capa',True,self)
+        visor.show()
+    def showEvent(self,event):
+        super().showEvent(event)
+        self.bAfegir.show()
+        self.bInfo.show()

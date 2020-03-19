@@ -198,6 +198,12 @@ text-align: left;</string>
               </widget>
              </item>
              <item>
+              <widget class="QLineEdit" name="leCercaPerAdreca"/>
+             </item>
+             <item>
+              <widget class="QLineEdit" name="leNumCerca"/>
+             </item>
+             <item>
               <widget class="QPushButton" name="bCercaPerAdreca">
                <property name="text">
                 <string/>
@@ -207,12 +213,6 @@ text-align: left;</string>
                  <normaloff>Imatges/cm_cercar2.png</normaloff>Imatges/cm_cercar2.png</iconset>
                </property>
               </widget>
-             </item>
-             <item>
-              <widget class="QLineEdit" name="leCercaPerAdreca"/>
-             </item>
-             <item>
-              <widget class="QLineEdit" name="leNumCerca"/>
              </item>
              <item>
               <widget class="QLabel" name="lSpacer">
@@ -237,7 +237,7 @@ text-align: left;</string>
                 </size>
                </property>
                <property name="toolTip">
-                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Veure i ocultar llegenda&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Mostrar/ocultar llegenda&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                </property>
                <property name="styleSheet">
                 <string notr="true"/>
@@ -250,7 +250,7 @@ text-align: left;</string>
              <item>
               <widget class="QPushButton" name="botoMapeta">
                <property name="toolTip">
-                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Mostrar i ocultar mapeta&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Mostrar/ocultar mapa de situació&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                </property>
                <property name="text">
                 <string/>
@@ -266,7 +266,7 @@ text-align: left;</string>
                 </size>
                </property>
                <property name="toolTip">
-                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Obrir projecte en QGis&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Obrir projecte en QGIS&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                </property>
                <property name="styleSheet">
                 <string notr="true"/>

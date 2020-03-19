@@ -6,21 +6,33 @@ class QvMenuBar(QMenuBar):
     def __init__(self,parent: QWidget=None):
         super().__init__(parent)
         self.setContextMenuPolicy(Qt.PreventContextMenu)
-
+        self.menus=[]
+        self.podemMoure=False
+    def underMouse(self):
+        pos=QCursor.pos()
+        for x in self.menus:
+            rect=x.rect()
+            leftTop=x.mapToGlobal(QPoint(rect.left(),rect.top()))
+            rightBottom=x.mapToGlobal(QPoint(rect.right(),rect.bottom()))
+            globalRect=QRect(leftTop.x(),leftTop.y(),rightBottom.x(),rightBottom.y())
+            if globalRect.contains(pos):
+                return True
+        return False
     def mousePressEvent(self, event):
         super().mousePressEvent(event)
         if event.button()==Qt.LeftButton:
             self.parentWidget().oldPos = event.globalPos()
+            self.podemMoure=not self.underMouse()
 
     def mouseMoveEvent(self, event):
         super().mouseMoveEvent(event)
         if event.buttons() & Qt.LeftButton:
             delta = QPoint(event.globalPos() - self.parentWidget().oldPos)
-            if abs(delta.y())<15: return
+            if not self.podemMoure: return
+            # if abs(delta.y())<15: return
             if self.parentWidget().maximitzada:
                 self.parentWidget().restaurarFunc()
                 #Desmaximitzar
-            # print(delta)
             self.parentWidget().move(self.parentWidget().x() + delta.x(), self.parentWidget().y() + delta.y())
             self.parentWidget().oldPos = event.globalPos()
             
@@ -34,3 +46,6 @@ class QvMenuBar(QMenuBar):
     def leaveEvent(self,event):
         super().leaveEvent(event)
         self.setCursor(QvConstants.cursorFletxa())
+    def addMenu(self,*args):
+        self.menus.append(super().addMenu(*args))
+        return self.menus[-1]

@@ -16,7 +16,7 @@ import sys, csv
 
 class QVDistrictesBarris(QObject):
 
-    __distBarrisCSV = 'Dades\DIST_BARRIS.csv'
+    __distBarrisCSV = r'Dades\DIST_BARRIS.csv'
 
     def __init__(self):
         super().__init__()
@@ -101,8 +101,12 @@ class QVDistrictesBarris(QObject):
     
     def llegirRegistre(self):
         try:
-            self.registre = {}
             click = self.view.currentIndex()
+            #Controlarem si s'ha canviat d'índex o no
+            if hasattr(self,'ultimIndex') and self.ultimIndex==click:
+                return self.registre
+            self.ultimIndex=click
+            self.registre = {}
             for i in range(self.model.columnCount()):
                 index = click.sibling(click.row(), i)
                 item = self.model.itemFromIndex(index)
@@ -118,6 +122,17 @@ class QVDistrictesBarris(QObject):
 
     def llegirRang(self):
         return self.llegirRegistre()['RANG']
+    
+    def esDistricte(self):
+        return self.llegirRegistre()['BARRI']==''
+    
+    def esBarri(self):
+        return not self.esDistricte()
+    
+    def llegirID(self):
+        if self.esDistricte():
+            return self.llegirRegistre()['DISTRICTE']
+        return self.llegirRegistre()['BARRI']
 
         
 

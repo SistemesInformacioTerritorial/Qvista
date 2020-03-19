@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'CuBista3.ui'
+# Form implementation generated from reading ui file 'Cubista3.ui'
 #
 # Created by: PyQt5 UI code generator 5.11.3
 #
@@ -85,6 +85,12 @@ class Ui_MainWindow(object):
 "text-align: left;")
         self.lblTitolProjecte.setObjectName("lblTitolProjecte")
         self.horizontalLayout_4.addWidget(self.lblTitolProjecte)
+        self.leCercaPerAdreca = QtWidgets.QLineEdit(self.frame_15)
+        self.leCercaPerAdreca.setObjectName("leCercaPerAdreca")
+        self.horizontalLayout_4.addWidget(self.leCercaPerAdreca)
+        self.leNumCerca = QtWidgets.QLineEdit(self.frame_15)
+        self.leNumCerca.setObjectName("leNumCerca")
+        self.horizontalLayout_4.addWidget(self.leNumCerca)
         self.bCercaPerAdreca = QtWidgets.QPushButton(self.frame_15)
         self.bCercaPerAdreca.setText("")
         icon = QtGui.QIcon()
@@ -92,12 +98,6 @@ class Ui_MainWindow(object):
         self.bCercaPerAdreca.setIcon(icon)
         self.bCercaPerAdreca.setObjectName("bCercaPerAdreca")
         self.horizontalLayout_4.addWidget(self.bCercaPerAdreca)
-        self.leCercaPerAdreca = QtWidgets.QLineEdit(self.frame_15)
-        self.leCercaPerAdreca.setObjectName("leCercaPerAdreca")
-        self.horizontalLayout_4.addWidget(self.leCercaPerAdreca)
-        self.leNumCerca = QtWidgets.QLineEdit(self.frame_15)
-        self.leNumCerca.setObjectName("leNumCerca")
-        self.horizontalLayout_4.addWidget(self.leNumCerca)
         self.lSpacer = QtWidgets.QLabel(self.frame_15)
         self.lSpacer.setObjectName("lSpacer")
         self.horizontalLayout_4.addWidget(self.lSpacer)
@@ -383,9 +383,9 @@ class Ui_MainWindow(object):
         self.lblTitolProjecte.setToolTip(_translate("MainWindow", "<html><head/><body><p><span style=\" font-size:10pt; color:#38474f;\">Feu clic per canviar el títol del projecte</span></p></body></html>"))
         self.lblTitolProjecte.setText(_translate("MainWindow", "Qualificacions urbanístiques i suspensions"))
         self.lSpacer.setText(_translate("MainWindow", "TextLabel"))
-        self.botoVeureLlegenda.setToolTip(_translate("MainWindow", "<html><head/><body><p>Veure i ocultar llegenda</p></body></html>"))
-        self.botoMapeta.setToolTip(_translate("MainWindow", "<html><head/><body><p>Mostrar i ocultar mapeta</p></body></html>"))
-        self.botoObrirQGis.setToolTip(_translate("MainWindow", "<html><head/><body><p>Obrir projecte en QGis</p></body></html>"))
+        self.botoVeureLlegenda.setToolTip(_translate("MainWindow", "<html><head/><body><p>Mostrar/ocultar llegenda</p></body></html>"))
+        self.botoMapeta.setToolTip(_translate("MainWindow", "<html><head/><body><p>Mostrar/ocultar mapa de situació</p></body></html>"))
+        self.botoObrirQGis.setToolTip(_translate("MainWindow", "<html><head/><body><p>Obrir projecte en QGIS</p></body></html>"))
         self.botoReload.setToolTip(_translate("MainWindow", "<html><head/><body><p>Recarregar projecte</p></body></html>"))
         self.botoDesarProjecte.setToolTip(_translate("MainWindow", "<html><head/><body><p>Desar projecte</p></body></html>"))
 

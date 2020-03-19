@@ -2,9 +2,9 @@
 
 from qgis.core import QgsMapLayer, QgsVectorLayerCache
 from qgis.PyQt import QtWidgets  # , uic
-from qgis.PyQt.QtCore import Qt, pyqtSignal
-from qgis.PyQt.QtGui import QCursor
-from qgis.PyQt.QtWidgets import QTabWidget, QVBoxLayout, QAction, QMenuBar
+from qgis.PyQt.QtCore import Qt, pyqtSignal, QSize
+from qgis.PyQt.QtGui import QCursor, QIcon
+from qgis.PyQt.QtWidgets import QTabWidget, QVBoxLayout, QAction, QMenuBar, QWidget, QHBoxLayout, QLabel
 from qgis.gui import (QgsGui,
                       QgsAttributeTableModel,
                       QgsAttributeTableView,
@@ -14,6 +14,7 @@ from qgis.gui import (QgsGui,
                       QgsActionMenu)
 from moduls.QvAccions import QvAccions
 from moduls.QvApp import QvApp
+from moduls.QvPushButton import QvPushButton
 # import images_rc  # NOQA
 # import recursos
 import csv
@@ -21,6 +22,7 @@ import csv
 from PyQt5.QtWidgets import QDialog
 
 from moduls.Ui_AtributsForm import Ui_AtributsForm
+from configuracioQvista import *
 
 
 class QvFitxesAtributs(QDialog):
@@ -97,7 +99,7 @@ class QvAtributs(QTabWidget):
     def __init__(self, canvas):
         super().__init__()
         self.canvas = canvas
-        self.layout = QVBoxLayout(self)
+        # self.layout = QVBoxLayout(self)
         self.setMovable(True)
         self.setUsesScrollButtons(True)
         self.setTabsClosable(True)
@@ -109,6 +111,30 @@ class QvAtributs(QTabWidget):
         self.accions = QvAccions()
         # Lista de acciones en el menú de contexto
         self.menuAccions = []
+        self.cwidget=QWidget(self) #Corner Widget
+        clayout=QHBoxLayout()
+        clayout.setContentsMargins(10,0,0,0)
+        self.cwidget.setLayout(clayout)
+        self.setCornerWidget(self.cwidget,Qt.TopLeftCorner)
+        self.desaCsv=QvPushButton(flat=True,parent=self)
+        self.desaCsv.setIcon(QIcon(imatgesDir+'file-delimited.png'))
+        self.desaCsv.setIconSize(QSize(24,24))
+        self.desaCsv.setToolTip('Desar taula com a csv')
+        self.filtra=QvPushButton(flat=True,parent=self)
+        self.filtra.setIcon(QIcon(imatgesDir+'filter.png'))
+        self.filtra.setIconSize(QSize(24,24))
+        self.filtra.setToolTip('Filtrar/modificar filtre')
+        self.eliminaFiltre=QvPushButton(flat=True,parent=self)
+        self.eliminaFiltre.setIcon(QIcon(imatgesDir+'filter-remove.png'))
+        self.eliminaFiltre.setIconSize(QSize(24,24))
+        self.eliminaFiltre.setToolTip('Eliminar filtre')
+        self.eliminaFiltre.hide()
+        clayout.addWidget(self.desaCsv,Qt.AlignCenter)
+        clayout.addWidget(self.filtra,Qt.AlignCenter)
+        clayout.addWidget(self.eliminaFiltre,Qt.AlignCenter)
+        self.currentChanged.connect(self.setCurrentIndex)
+        # self.filtra.clicked.connect(self.filterElements)
+
 
     def setMenuAccions(self, layer):
         self.menuAccions = ['showFeature', 'selectElement', 'selectAll']
@@ -134,7 +160,7 @@ class QvAtributs(QTabWidget):
             if taula.layer.id() == layer.id():
                 txt = taula.layerNom()
                 self.setTabText(i, txt)
-                print('tabTaula:', txt)
+                # print('tabTaula:', txt)
                 if current:
                     self.setCurrentIndex(i)
                 return True
@@ -147,11 +173,23 @@ class QvAtributs(QTabWidget):
         # Si la tabla está abierta, mostrarla y actualizar nomnbre
         if self.tabTaula(layer, True):
             return
+        layer.subsetStringChanged.connect(self.actualitzaBoto)
         # Si no se ha encontrado la tabla, añadirla
         taula = QvTaulaAtributs(self, layer, self.canvas)
+
+        # self.filtra.disconnect()
+        # self.desaCsv.disconnect()
+        # self.eliminaFiltre.disconnect()
+        # self.filtra.clicked.connect(taula.filterElements)
+        # self.desaCsv.clicked.connect(taula.saveToCSV)
+        # self.eliminaFiltre.clicked.connect(taula.removeFilter)
         i = self.addTab(taula, taula.layerNom())
         taula.canviNomTaula.connect(self.setTabText)
         self.setCurrentIndex(i)
+        self.setTabText(i,self.tabText(i))
+    def setTabText(self,i,text):
+        l=len(self.widget(i))
+        super().setTabText(i,text+(' (%i)'%l if l!=0 else ''))
 
     def tancarTab(self, i):
         # Cerrar tabla por número de tab
@@ -208,9 +246,15 @@ class QvAtributs(QTabWidget):
                 ok = dlgFiltre.exec_()
                 if ok != 1:
                     return
-                nuevoFiltro = dlgFiltre.searchString()                   
+                nuevoFiltro = dlgFiltre.searchString()     
             else:
                 nuevoFiltro = ''
+            
+            #Podria semblar que podem aprofitar l'if-else anterior. Però si ho féssim no estaríem tenint en compte el cas d'aplicar un filtre buit
+            if nuevoFiltro=='':
+                self.eliminaFiltre.hide()
+            else:              
+                self.eliminaFiltre.show()
 
             if nuevoFiltro != filtro:
                 layer.setSubsetString(nuevoFiltro)
@@ -239,6 +283,27 @@ class QvAtributs(QTabWidget):
         except Exception as e:
             print(str(e))
             return None
+    def setCurrentIndex(self,i):
+        super().setCurrentIndex(i)
+        try:
+            
+            taula=self.currentWidget()
+            self.filtra.disconnect()
+            self.desaCsv.disconnect()
+            self.eliminaFiltre.disconnect()
+            self.filtra.clicked.connect(taula.filterElements)
+            self.desaCsv.clicked.connect(taula.saveToCSV)
+            self.eliminaFiltre.clicked.connect(taula.removeFilter)
+        except:
+            pass
+        #Mirar si està filtrat
+    def actualitzaBoto(self):
+        taula=self.currentWidget()
+        filtre=taula.layer.subsetString()
+        if filtre=='':
+            self.eliminaFiltre.hide()
+        else:
+            self.eliminaFiltre.show()
 
 
 class QvTaulaAtributs(QgsAttributeTableView):
@@ -248,7 +313,7 @@ class QvTaulaAtributs(QgsAttributeTableView):
     def __init__(self, parent=None, layer=None, canvas=None, numCache=10000):
         if len(QgsGui.editorWidgetRegistry().factories()) == 0:
             QgsGui.editorWidgetRegistry().initEditors()
-        super().__init__()
+        super().__init__(parent)
         self.parent = parent
         self.init(layer, canvas, numCache)
 
@@ -369,6 +434,7 @@ class QvTaulaAtributs(QgsAttributeTableView):
                 if self.feature is not None and self.feature.isValid():
                     num = self.layer.selectedFeatureCount()
                     dialog = QvFitxesAtributs(self.layer, [self.feature], num == 0)
+                    dialog.setStyleSheet('QWidget{border: 0px}')
                 #     dialog = QgsAttributeDialog(
                 #         self.layer, self.feature, False)
                 #     # dialog = QgsAttributeForm(self.layer, self.feature)
@@ -488,6 +554,8 @@ class QvTaulaAtributs(QgsAttributeTableView):
             self.layer,
             self.filter.filterMode() ==
             QgsAttributeTableFilterModel.ShowSelected)
+    def __len__(self):
+        return max(0,self.layer.featureCount())
 
 
 if __name__ == "__main__":
@@ -517,7 +585,7 @@ if __name__ == "__main__":
         llegenda = QvLlegenda(canvas, atributs)
 
         # llegenda.project.read('projectes/Illes.qgs')
-        llegenda.project.read('../Dades/Projectes/BCN11.qgs')
+        llegenda.project.read("D:/qVista/Codi/mapesOffline/qVista default map.qgs")
 
         llegenda.setWindowTitle('Llegenda')
         llegenda.setGeometry(50, 50, 300, 400)

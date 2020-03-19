@@ -7,12 +7,20 @@ import os
 
 class QvSqlite(Singleton):
 
+    @staticmethod
+    def getAlias(camp):
+        txt = camp.upper().split(" AS ")
+        if len(txt) > 1:
+            return txt[1].strip()
+        else:
+            return camp
+
     def __init__(self):
         if hasattr(self, 'db'):  # Se inicializa una vez
             return
         self.db = None
         self.query = None
-        self.dbFile = r'Dades\Geocod.db'
+        self.dbFile = 'Dades/Geocod.db'
         self.trans = str.maketrans('ÁÉÍÓÚáéíóúÀÈÌÒÙàèìòùÂÊÎÔÛâêîôûÄËÏÖÜäëïöü·ºª.',
                                    'AEIOUAEIOUAEIOUAEIOUAEIOUAEIOUAEIOUAEIOU.   ')
 
@@ -187,6 +195,58 @@ class QvSqlite(Singleton):
                 print(err)
             return None, None
 
+    def campCarrerNum(self, camp, codiCarrer, num):
+        if (self.db is None or codiCarrer is None or codiCarrer == '' or
+           num is None or num == '' or num == '0' or camp == '' or camp is None):
+            return None
+        try:
+            select = "SELECT {} FROM Numeros WHERE \
+                CODI = '{}' AND NUM_LLETRA_POST = '{}'"
+            select = select.format(camp, codiCarrer.strip(), num.strip())
+            if self.query.exec_(select) and self.query.next():
+                val = self.query.value(0)
+                self.query.finish()
+                return val
+            else:
+                err = self.query.lastError().databaseText()
+                self.query.finish()
+                if err is not None and err != '':
+                    print(err)
+                return None
+        except Exception:
+            err = self.query.lastError().databaseText()
+            if err is not None and err != '':
+                print(err)
+            return None
+
+    def campsCarrerNum(self, camps, codiCarrer, num):
+        if (self.db is None or codiCarrer is None or codiCarrer == '' or
+           num is None or num == '' or num == '0' or camps is None):
+            return None
+        try:
+            select = "SELECT {} FROM Numeros WHERE \
+                CODI = '{}' AND NUM_LLETRA_POST = '{}'"
+            llistaCamps = ','.join(camps)
+            select = select.format(llistaCamps, codiCarrer.strip(), num.strip())
+            if self.query.exec_(select) and self.query.next():
+                result = {}
+                for i, camp in enumerate(camps):
+                    camp = QvSqlite.getAlias(camp)
+                    result[camp] = self.query.value(i)
+                self.query.finish()
+                return result
+            else:
+                err = self.query.lastError().databaseText()
+                self.query.finish()
+                if err is not None and err != '':
+                    print(err)
+                return None
+        except Exception:
+            err = self.query.lastError().databaseText()
+            if err is not None and err != '':
+                print(err)
+            return None
+
     def coordsAdreca(self, tipusVia, variant, num=''):
         if variant == '' or variant is None:
             return None, None
@@ -211,13 +271,70 @@ class QvSqlite(Singleton):
         except Exception:
             return None, None
 
-    def geoCoordsCarrerNum(self, tipusVia, variant, numIni, lletraIni='', numFi='', lletraFi=''):
+    def campAdreca(self, camp, tipusVia, variant, num=''):
+        if variant == '' or variant is None or camp == '' or camp is None:
+            return None
+        try:
+            codi = self.codiCarrerVariant(tipusVia, variant)
+            if codi == '':
+                return None
+            nums = num.split('-')
+            nNums = len(nums)
+            if nNums == 0:
+                num = '0'
+            else:
+                num = self.formatNum(nums[0])
+            val = self.campCarrerNum(camp, codi, num)
+            if val is not None:
+                return val
+            if nNums > 1:
+                num = self.formatNum(nums[1])
+                return self.campCarrerNum(camp, codi, num)
+            else:
+                return None
+        except Exception:
+            return None
+
+    def campsAdreca(self, camps, tipusVia, variant, num=''):
+        if variant == '' or variant is None or camps is None:
+            return None
+        try:
+            codi = self.codiCarrerVariant(tipusVia, variant)
+            if codi == '':
+                return None
+            nums = num.split('-')
+            nNums = len(nums)
+            if nNums == 0:
+                num = '0'
+            else:
+                num = self.formatNum(nums[0])
+            val = self.campsCarrerNum(camps, codi, num)
+            if val is not None:
+                return val
+            if nNums > 1:
+                num = self.formatNum(nums[1])
+                return self.campsCarrerNum(camp, codi, num)
+            else:
+                return None
+        except Exception:
+            return None
+
+    def numPostal(self, numIni, lletraIni, numFi, lletraFi):
         # Verificamos si hay número final / letra final para añadirlos
         if numFi == '' and lletraFi == '':
             num2 = ''
         else:
             num2 = '-' + numFi + lletraFi
-        return self.coordsAdreca(tipusVia, variant, numIni + lletraIni + num2)
+        return numIni + lletraIni + num2
+
+    def geoCampCarrerNum(self, camp, tipusVia, variant, numIni, lletraIni='', numFi='', lletraFi=''):
+        return self.campAdreca(camp, tipusVia, variant, self.numPostal(numIni, lletraIni, numFi, lletraFi))
+
+    def geoCampsCarrerNum(self, camps, tipusVia, variant, numIni, lletraIni='', numFi='', lletraFi=''):
+        return self.campsAdreca(camps, tipusVia, variant, self.numPostal(numIni, lletraIni, numFi, lletraFi))
+
+    def geoCoordsCarrerNum(self, tipusVia, variant, numIni, lletraIni='', numFi='', lletraFi=''):
+        return self.coordsAdreca(tipusVia, variant, self.numPostal(numIni, lletraIni, numFi, lletraFi))
 
     def geoCoordsCodiNum(self, codiCarrer, numIni, lletraIni='', numFi='', lletraFi=''):
         # Buscamos número / letra inicial en Ge<ocod de SQLite
@@ -245,6 +362,15 @@ if __name__ == "__main__":
         sqlite = QvSqlite()
 
         sqlite.dbGeoConnexio()
+
+        val = sqlite.campAdreca('DISTRICTE', 'Av', 'VALLCARCA', '159')
+        val = sqlite.campAdreca('DIST_POST', '', 'C BAC DE RODA', '21')
+        val = sqlite.campAdreca('ILLA', '', 'Pg DEL TAULAT', '216')
+        val = sqlite.campAdreca('SOLAR', '', 'Pg DE GARCIA FARIA', '77')
+        val = sqlite.campAdreca('BARRI', '', 'Pg DEL TAULAT', '238')
+        val = sqlite.campAdreca('AEB', 'C', 'RIBAS', '19')
+        val = sqlite.campAdreca('SECC_CENS', 'Av', 'VALLCARCA', '159')
+        val = sqlite.campAdreca('SPO', 'Camí', 'CAL NOTARI', '7')
 
         x, y = sqlite.coordsAdreca('Av', 'VALLCARCA', '159')
         x, y = sqlite.coordsAdreca('Camí', 'CAL NOTARI', '7')

@@ -25,7 +25,7 @@ class PointTool(QgsMapTool):
         self.pOriginal = event.pos()
         self.xInici = self.pOriginal.x()
         self.yInici = self.pOriginal.y()
-        print (self.xInici, self.yInici)
+        # print (self.xInici, self.yInici)
                     
         self.a = QgsTextAnnotation()
         self.c = QTextDocument()
@@ -43,7 +43,7 @@ class PointTool(QgsMapTool):
         self.a.setMapPositionCrs(QgsCoordinateReferenceSystem(25831))
        
         self.i = QgsMapCanvasAnnotationItem(self.a, self.canvas) #???
-        print ('press')
+        # print ('press')
 
     def canvasMoveEvent(self, event):
         self.puntFinal = event.pos()

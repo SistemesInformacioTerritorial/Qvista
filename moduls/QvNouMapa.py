@@ -10,6 +10,7 @@ import tempfile
 from moduls.QvConstants import QvConstants
 from moduls.QvPushButton import QvPushButton
 from moduls.QvToolButton import QvToolButton
+from moduls.QvApp import QvApp
 
 class QvNouMapa(QDialog):
     '''Diàleg de creació del mapa. Mostra uns mapes base i una line edit perquè l'usuari triï base i títol del projecte, i els carrega en el qVista quan sortim del diàleg'''
@@ -28,7 +29,7 @@ class QvNouMapa(QDialog):
         self.widgetSup.setLayout(self.layoutCapcalera)
         self.lblLogo = QLabel()
         self.lblLogo.setPixmap(
-            QPixmap('imatges/QVistaLogo_40_32.png'))
+            QPixmap(imatgesDir+'QVistaLogo_40_32.png'))
         self.lblLogo.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Minimum)
         self.lblCapcalera = QLabel(objectName='Fosca')
         self.lblCapcalera.setText('  Crear un nou mapa')
@@ -72,21 +73,21 @@ class QvNouMapa(QDialog):
         self.mapaBuit=QvToolButton(self)
         self.mapaBuit.setToolButtonStyle(Qt.ToolButtonTextUnderIcon)
         self.mapaBuit.setText('Parcel·lari')
-        self.mapaBuit.setIcon(QIcon('./Imatges/nou_parcel·lari.png'))
+        self.mapaBuit.setIcon(QIcon(imatgesDir+'nou_parcel·lari.png'))
         self.mapaBuit.setIconSize(QSize(wImage, hImage))
         self.mapaBuit.clicked.connect(lambda: self.botoClick(self.mapaBuit))
 
         self.mapa1=QvToolButton(self)
         self.mapa1.setToolButtonStyle(Qt.ToolButtonTextUnderIcon)
         self.mapa1.setText('Topogràfic')
-        self.mapa1.setIcon(QIcon('./Imatges/nou_topogràfic.png'))
+        self.mapa1.setIcon(QIcon(imatgesDir+'nou_topogràfic.png'))
         self.mapa1.setIconSize(QSize(wImage, hImage))
         self.mapa1.clicked.connect(lambda: self.botoClick(self.mapa1))
 
         self.mapa2=QvToolButton(self)
         self.mapa2.setToolButtonStyle(Qt.ToolButtonTextUnderIcon)
         self.mapa2.setText('Plànol guia')
-        self.mapa2.setIcon(QIcon('./Imatges/nou_guia.png'))
+        self.mapa2.setIcon(QIcon(imatgesDir+'nou_guia.png'))
         self.mapa2.setIconSize(QSize(wImage, hImage))
         self.mapa2.clicked.connect(lambda: self.botoClick(self.mapa2))
         
@@ -95,21 +96,21 @@ class QvNouMapa(QDialog):
         self.mapa3=QvToolButton(self)
         self.mapa3.setToolButtonStyle(Qt.ToolButtonTextUnderIcon)
         self.mapa3.setText('Ortofotos 1:1000')
-        self.mapa3.setIcon(QIcon('./Imatges/nou_ortofoto.png'))
+        self.mapa3.setIcon(QIcon(imatgesDir+'nou_ortofoto.png'))
         self.mapa3.setIconSize(QSize(wImage, hImage))
         self.mapa3.clicked.connect(lambda: self.botoClick(self.mapa3))
 
         self.mapa4=QvToolButton(self)
         self.mapa4.setToolButtonStyle(Qt.ToolButtonTextUnderIcon)
         self.mapa4.setText('Unitats administratives')
-        self.mapa4.setIcon(QIcon('./Imatges/nou_divisions_administratives.png'))
+        self.mapa4.setIcon(QIcon(imatgesDir+'nou_divisions_administratives.png'))
         self.mapa4.setIconSize(QSize(wImage, hImage))
         self.mapa4.clicked.connect(lambda: self.botoClick(self.mapa4))
 
         self.mapa5=QvToolButton(self)
         self.mapa5.setToolButtonStyle(Qt.ToolButtonTextUnderIcon)
         self.mapa5.setText('Mapa buit')
-        self.mapa5.setIcon(QIcon('./Imatges/nou_buit.png'))
+        self.mapa5.setIcon(QIcon(imatgesDir+'nou_buit.png'))
         self.mapa5.setIconSize(QSize(wImage, hImage))
         self.mapa5.clicked.connect(lambda: self.botoClick(self.mapa5))
 
@@ -182,8 +183,9 @@ class QvNouMapa(QDialog):
             self.botoAcceptar.setEnabled(False)
     def carrega(self):
         
-        self.parentWidget().obrirProjecte(self.adreca)
+        self.parentWidget().obrirProjecte(self.adreca, nou=True)
         self.parentWidget().lblTitolProjecte.setText(self.titol)
+        self.parentWidget().titolProjecte=self.titol
         self.close()
     
     def mousePressEvent(self, event):
@@ -191,7 +193,6 @@ class QvNouMapa(QDialog):
 
     def mouseMoveEvent(self, event):
         delta = QPoint(event.globalPos() - self.oldPos)
-        # print(delta)
         self.move(self.x() + delta.x(), self.y() + delta.y())
         self.oldPos = event.globalPos()
 
@@ -201,3 +202,9 @@ class QvNouMapa(QDialog):
         if event.key() == Qt.Key_Return:
             if self.botoAcceptar.isEnabled(): #Si el botó d'acceptar està enabled, podem acceptar
                 self.carrega()
+    
+    def exec(self):
+        if QvApp().intranet:
+            super().exec()
+        else:
+            QMessageBox.warning(self,'No teniu accés a la xarxa','No esteu connectat a la xarxa. La creació d\'un mapa requereix de connexió')

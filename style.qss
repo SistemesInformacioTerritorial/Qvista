@@ -16,8 +16,10 @@
 } */
 
 
+
+
 QWidget::window, QDialog {
-    background-color: #F4F4F4;
+    background-color: solid #F4F4F4;
     margin: 2px #38474F;
 } 
 
@@ -43,6 +45,11 @@ QDockWidget{
     margin: 0px;
     titlebar-close-icon: url("Imatges/window_close.png");
     titlebar-normal-icon: url("Imatges/window-restore.png");
+}
+
+QListWidget{
+    color: #38474f;
+    
 }
 
 QDockWidget::title {
@@ -142,6 +149,57 @@ QTextEdit[readOnly="true"] {
     background-color: transparent;
 }
 
+QLineEdit[readOnly="true"] {
+    border: #38474F;
+    background-color: #F9F9F9
+}
+
+QSpinBox {
+    background: #F9F9F9;
+    color: #38474F;
+    /* border: 1px solid #38474F; */
+    border: 0px;
+    padding: 3px 3px;
+
+}
+
+QSpinBox::up-button, QSpinBox::down-button {
+     subcontrol-origin: border;
+     padding-left: 0px;
+     border-width: 1px;
+     border-radius: 1px;
+     background-color: transparent;
+     
+}
+
+QSpinBox::up-button {
+    subcontrol-position: top right; 
+}
+
+
+QSpinBox::up-button:hover, QSpinBox::down-button:hover {
+    background-color: #bbbbbb;
+}
+
+QSpinBox::up-arrow, QSpinBox::down-arrow {
+     width: 7px;
+     height: 7px;
+     border: none;
+}
+
+QSpinBox::up-arrow:disabled, QSpinBox::down-arrow:disabled {
+    image: none;
+}
+
+
+QSpinBox::up-arrow {
+     image: url(imatges/spinbox-up.png);
+}
+QSpinBox::down-arrow {
+     image: url(imatges/spinbox-down.png);
+}
+
+
 
 
 /* QComboBox {
@@ -158,6 +216,10 @@ QComboBox QAbstractItemView {
     border: 1px solid #38474F;
 } */
 
+QAbstractItemView {
+    color: #38474F;
+}
+
 QTableView {
     background-color: solid white;
     selection-background-color: #FF6215;
@@ -172,6 +234,10 @@ QTableView::item {
 QTableView QTableCornerButton::section {
     background-color: solid white;
     border: 0px;
+}
+
+QHeaderView::section{
+    background: solid;
 }
 
 QProgressBar {
@@ -264,4 +330,8 @@ QStatusBar{
 /* QTreeView{
     margin: 20px 2px 0px 20px;
     border: none;
+} */
+/* QvCarregaCsv, CsvPagina{
+    background: solid white;
+    border: 1px solid black;
 } */

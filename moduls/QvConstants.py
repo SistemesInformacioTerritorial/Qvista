@@ -34,6 +34,7 @@ class QvConstants:
     # COLOROMBRAHTML = '#666666DD'
     COLOROMBRAHTML = '#66000000'
     COLORCERCADORHTML='#B6C2C9'
+    COLORTEXTHINTHTML='#A0A0A0'
     # Colors del qVista, utilitzant QColor
     COLORFOSC = QColor(COLORFOSCHTML)
     COLORMIG = QColor(COLORMIGHTML)
@@ -45,6 +46,7 @@ class QvConstants:
     COLORDESTACAT = QColor(COLORDESTACATHTML)
     COLOROMBRA = QColor(COLOROMBRAHTML)
     COLORCERCADOR=QColor(COLORCERCADORHTML)
+    COLORTEXTHINT=QColor(COLORTEXTHINTHTML)
 
     #No podem crear una QPixMap sense 
     CURSORFLETXA=Qt.ArrowCursor
@@ -118,17 +120,17 @@ class QvConstants:
     @staticmethod
     def cursorZoomIn():
         if QvConstants.CURSORZOOMIN is None:
-            QvConstants.CURSORZOOMIN=QCursor(QPixmap('imatges/zoom_in.cur'))
+            QvConstants.CURSORZOOMIN=QCursor(QPixmap(imatgesDir+'zoom_in.cur'))
         return QvConstants.CURSORZOOMIN
     @staticmethod
     def cursorZoomOut():
         if QvConstants.CURSORZOOMOUT is None:
-            QvConstants.CURSORZOOMOUT=QCursor(QPixmap('imatges/zoom_out.cur'))
+            QvConstants.CURSORZOOMOUT=QCursor(QPixmap(imatgesDir+'zoom_out.cur'))
         return QvConstants.CURSORZOOMOUT
     @staticmethod
     def cursorDit():
         if QvConstants.CURSORDIT is None:
-            QvConstants.CURSORDIT=QCursor(QPixmap('imatges/dedo.cur'))
+            QvConstants.CURSORDIT=QCursor(QPixmap(imatgesDir+'dedo.cur'))
         return QvConstants.CURSORDIT
     @staticmethod
     def cursorFletxa():

@@ -23,7 +23,7 @@ class QvSuggeriments(QDialog):
         self.widgetSup.setLayout(self.layoutCapcalera)
         self.layout.addWidget(self.widgetSup)
         self.lblLogo=QLabel()
-        self.lblLogo.setPixmap(QPixmap('imatges/bug_cap_sugg.png'))
+        self.lblLogo.setPixmap(QPixmap(imatgesDir+'bug_cap_sugg.png'))
         self.lblCapcalera=QLabel(objectName='fosca')
         self.lblCapcalera.setText(' Problemes? Suggeriments?')
         self.lblCapcalera.setStyleSheet('background-color: %s' %QvConstants.COLORFOSCHTML)
@@ -61,7 +61,7 @@ class QvSuggeriments(QDialog):
         #Botons
         self.layoutBoto=QHBoxLayout()
         self.hSpacerL = QSpacerItem(80, 5, QSizePolicy.Minimum, QSizePolicy.Expanding)
-        self.acceptButton=QvPushButton('Acceptar',destacat=True)
+        self.acceptButton=QvPushButton('Enviar',destacat=True)
         self.acceptAction=acceptAction
         self.acceptButton.clicked.connect(self.acceptar)
         self.leTitle.textChanged.connect(lambda: self.acceptButton.setEnabled(self.leTitle.toPlainText()!=''))
@@ -88,7 +88,6 @@ class QvSuggeriments(QDialog):
 
     def acceptar(self):
         res=self.acceptAction(self.leTitle.toPlainText(),self.caixaText.toPlainText())
-        print(res)
         self.close()
 
     #determina el format dels diferents components de la window

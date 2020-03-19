@@ -40,14 +40,14 @@ class QvNouCataleg(QWidget):
         self.widgetSup.setLayout(self.layoutCapcalera)
         self.layout.addWidget(self.widgetSup)
         self.lblLogo=QLabel()
-        self.lblLogo.setPixmap(QPixmap('imatges/qVistaLogo_text_40_old.png'))
+        self.lblLogo.setPixmap(QPixmap(imatgesDir+'qVistaLogo_text_40_old.png'))
         self.lblCapcalera=QLabel(objectName='fosca')
         self.lblCapcalera.setText('Catàleg de mapes')
         self.lblCapcalera.setStyleSheet('background-color: %s;' %QvConstants.COLORFOSCHTML)
         self.lblCapcalera.setFont(QvConstants.FONTTITOLS)
         self.lblCapcalera.setSizePolicy(QSizePolicy.Expanding,QSizePolicy.Maximum)
         self.bCerca=QPushButton()
-        self.bCerca.setIcon(QIcon('imatges/cerca.png'))
+        self.bCerca.setIcon(QIcon(imatgesDir+'cerca.png'))
         self.bCerca.setIconSize(QSize(24, 24))
         self.bCerca.setFixedWidth(40)
         self.bCerca.setFixedHeight(40)
@@ -67,7 +67,7 @@ class QvNouCataleg(QWidget):
         self.leCerca.setFont(QvConstants.FONTTEXT)
         self.leCerca.setPlaceholderText('Cercar...')
         self.leCerca.textChanged.connect(self.filtra)
-        self.accioEsborra=self.leCerca.addAction(QIcon('Imatges/cm_buidar_cercar.png'),QLineEdit.TrailingPosition)
+        self.accioEsborra=self.leCerca.addAction(QIcon(imatgesDir+'cm_buidar_cercar.png'),QLineEdit.TrailingPosition)
         self.accioEsborra.triggered.connect(lambda: self.leCerca.setText(''))
         self.accioEsborra.setVisible(False)
         self.lblSpacer = QLabel()
@@ -106,15 +106,15 @@ class QvNouCataleg(QWidget):
         '''%(QvConstants.COLORFOSCHTML,QvConstants.COLORDESTACATHTML,QvConstants.COLORDESTACATHTML)
 
         self.botoMinimitzar=QvPushButton(flat=True)
-        self.botoMinimitzar.setIcon(QIcon('imatges/window-minimize.png'))
+        self.botoMinimitzar.setIcon(QIcon(imatgesDir+'window-minimize.png'))
         self.botoMinimitzar.setFixedSize(40,40)
         self.botoMinimitzar.clicked.connect(self.showMinimized)
         self.botoMinimitzar.setStyleSheet(stylesheetBotonsFinestra)
         self.layoutCapcalera.addWidget(self.botoMinimitzar)
 
         self.maximitzada=True
-        iconaRestaurar1=QIcon('imatges/window-restore.png')
-        iconaRestaurar2=QIcon('imatges/window-maximize.png')
+        iconaRestaurar1=QIcon(imatgesDir+'window-restore.png')
+        iconaRestaurar2=QIcon(imatgesDir+'window-maximize.png')
         def restaurar():
             if self.maximitzada:
                 self.setWindowFlag(Qt.FramelessWindowHint,False)
@@ -142,7 +142,7 @@ class QvNouCataleg(QWidget):
         self.layoutCapcalera.addWidget(self.botoRestaurar)
 
         self.botoSortir=QvPushButton(flat=True)
-        self.botoSortir.setIcon(QIcon('imatges/window_close.png'))
+        self.botoSortir.setIcon(QIcon(imatgesDir+'window_close.png'))
         self.botoSortir.setFixedSize(40,40)
         self.botoSortir.clicked.connect(self.close)
         self.botoSortir.setStyleSheet(stylesheetBotonsFinestra)
@@ -199,16 +199,17 @@ class QvNouCataleg(QWidget):
         self.lBanda.setSpacing(0)
         self.wBanda.setLayout(self.lBanda)
 
+        self.tots=BotoLateral('Tots',self)
+        self.tots.setIcon(QIcon(imatgesDir+'cm_check_all.png'))
+        self.tots.setCheckable(True)
+        self.lBanda.addWidget(self.tots)
+
         self.fav=BotoLateral('Favorits',self)
+        self.fav.setIcon(QIcon(imatgesDir+'star.png'))
         self.fav.setCheckable(True)
         self.lBanda.addWidget(self.fav)
         
         
-        self.tots=BotoLateral('Tots',self)
-        self.tots.setIcon(QIcon('Imatges/cm_check_all.png'))
-        self.tots.setCheckable(True)
-        self.lBanda.addWidget(self.tots)
-
         self.catalegs={} #Serà un dict on la clau serà el nom del directori, i el valor una llista de botons
         self.botonsLaterals=[]
         for y in carpetaCatalegProjectesLlista:
@@ -224,8 +225,11 @@ class QvNouCataleg(QWidget):
             dirs=sorted(dirs)
             for x in dirs:
                 self.catalegs[x]=self.carregaBotons(x) 
-                boto=BotoLateral(x,self)
+                privat = y in carpetaCatalegProjectesPrivats
+                boto=BotoLateral(x,self,privat)
                 boto.setCheckable(True)
+                if privat:
+                    boto.setIcon(QIcon(imatgesDir+'lock-clar.png'))
                 self.botonsLaterals.append(boto)
                 self.lBanda.addWidget(boto)
         
@@ -233,11 +237,14 @@ class QvNouCataleg(QWidget):
         self.tots.clicked.connect(self.clickTots)
         self.fav.clicked.connect(self.clickFavorits)
         self.lBanda.addStretch()
+
     def clickTots(self):
         for x in self.botonsLaterals:
             x.setChecked(True)
+        self.fav.setChecked(False)
         # self.tots.setChecked(False)
         self.mostraMapes()
+        
     def clickFavorits(self):
         '''Copiem el contingut de mostraMapes, adaptant-lo perquè només mostri els favorits'''
         self.clearContingut()
@@ -268,6 +275,7 @@ class QvNouCataleg(QWidget):
                 self.nlayouts.append(nlayout)
         self.indexLayoutSeleccionat=-1
         self.fav.setChecked(True)
+
     def carregaBotons(self,dir: str):
         f=[]
         for y in carpetaCatalegProjectesLlista:
@@ -283,6 +291,7 @@ class QvNouCataleg(QWidget):
             if x.getNomMapa() in self.favorits:
                 x.setFavorit(True,actualitza=False) #No actualitzem la base de dades perquè no estem modificant-la
         return botons
+
     def mostraMapes(self):
         '''Es recorre els botons laterals i, per cada un d'ells, mostra els mapes associats
         '''
@@ -334,7 +343,6 @@ class QvNouCataleg(QWidget):
             # self.hide()
         except:
             QMessageBox.warning(self,"No s'ha pogut obrir el mapa","El mapa no ha pogut ser obert. Si el problema persisteix, contacteu amb el gestor del catàleg")
-            print('Hauríem obert el projecte '+dir+', però ha fallat quelcom')
     def obrirEnQGis(self,dir: str):
         '''Obre el projecte amb QGis. El copia al directori temporal, per si l'usuari modifica alguna cosa'''
         #Copiem el projecte al directori temporal, per si l'usuari modifica alguna cosa
@@ -389,13 +397,13 @@ class QvNouCataleg(QWidget):
         elif event.key()==Qt.Key_Return or event.key()==Qt.Key_Enter:
             if hasattr(self,'widgetSeleccionat'):
                 self.widgetSeleccionat.obreQVista()
-    def seleccionaElement(self,widget):
+    def seleccionaElement(self,widget, teclat=False):
         if widget is None: return
         for x, y in self.catalegs.items():
             for z in y:
                 z.setChecked(False)
         widget.setChecked(True)
-        self.scroll.ensureWidgetVisible(widget)
+        if teclat: self.scroll.ensureWidgetVisible(widget)
         self.widgetSeleccionat=widget
         for x in range(0,len(self.nlayouts)):
             if self.nlayouts[x].indexOf(widget)!=-1:
@@ -428,7 +436,7 @@ class QvNouCataleg(QWidget):
                         j=nlayout.x(i)-1
                     #Agafem el layout anterior
 
-            self.seleccionaElement(nlayout.widgetAt(i,j))
+            self.seleccionaElement(nlayout.widgetAt(i,j), True)
     def mouVertical(self,despl: int):
         if self.indexLayoutSeleccionat!=-1:
             nlayout=self.nlayouts[self.indexLayoutSeleccionat]
@@ -447,7 +455,7 @@ class QvNouCataleg(QWidget):
                 else:
                     j=nlayout.x(i)-1
             wid=nlayout.widgetAt(i,j)
-            self.seleccionaElement(wid)
+            self.seleccionaElement(wid, True)
     def mouEsquerra(self):
         self.mouHoritzontal(-1)  
     def mouDreta(self):
@@ -475,9 +483,10 @@ class QvNouCataleg(QWidget):
         txt=txt.translate(trans)
         txt=txt.upper()
         txt=txt.strip(' ')
-        txt=re.sub('\s[\s]+',' ',txt)
+        txt=re.sub(r'\s[\s]+',' ',txt)
 
         return txt
+
     def filtra(self):
         txt=self.arregla(self.leCerca.text())
         if txt!='':
@@ -486,6 +495,7 @@ class QvNouCataleg(QWidget):
         else:
             self.accioEsborra.setVisible(False)
         self.mostraMapes()
+
     def esMostra(self,widget):
         txt=self.arregla(self.leCerca.text())
 
@@ -493,7 +503,7 @@ class QvNouCataleg(QWidget):
 
 
 class BotoLateral(QPushButton):
-    def __init__(self,text,cataleg,parent=None):
+    def __init__(self,text,cataleg,privat=False,parent=None):
         super().__init__(text,parent)
         self.setCursor(QvConstants.cursorClick())
         self.cataleg=cataleg
@@ -515,12 +525,14 @@ class BotoLateral(QPushButton):
         '''%(QvConstants.COLORFOSCHTML,QvConstants.COLORMIGHTML)
         self.setStyleSheet(stylesheet)
         self.setFont(QFont('Arial',12))
+        self.privat=privat
     def mousePressEvent(self,event):
         if self==self.cataleg.tots:
             super().mousePressEvent(event)
             self.setChecked(False)
         elif self==self.cataleg.fav:
             super().mousePressEvent(event)
+            self.setIcon(QIcon(imatgesDir+'star-blanc.png'))
             # self.setChecked(True)
         if event.modifiers()==Qt.ShiftModifier:
             #Multiselecció
@@ -538,6 +550,17 @@ class BotoLateral(QPushButton):
             self.setChecked(True)
         self.cataleg.leCerca.setText('')
         self.cataleg.mostraMapes()
+        if self!=self.cataleg.fav:
+            self.cataleg.fav.setIcon(QIcon(imatgesDir+'star.png'))
+    def setChecked(self,checked=True):
+        super().setChecked(checked)
+        if self.esPrivat():
+            if checked:
+                self.setIcon(QIcon(imatgesDir+'lock-clar.png'))
+            else:
+                self.setIcon(QIcon(imatgesDir+'lock-fosc.png'))
+    def esPrivat(self):
+        return self.privat
 
 class MapaCataleg(QFrame):
     '''Widget que representa la preview del mapa
@@ -602,8 +625,8 @@ class MapaCataleg(QFrame):
             }
         '''
         self.favorit=False
-        self.iconaFavDesmarcat=QIcon('Imatges/cm_bookmark_off.png')
-        self.iconaFavMarcat=QIcon('Imatges/cm_bookmark_on.png')
+        self.iconaFavDesmarcat=QIcon(imatgesDir+'cm_bookmark_off.png')
+        self.iconaFavMarcat=QIcon(imatgesDir+'cm_bookmark_on.png')
         self.botoFav=QPushButton(parent=self)
         self.botoFav.setIcon(self.iconaFavDesmarcat)
         self.botoFav.move(280,16)
@@ -612,7 +635,7 @@ class MapaCataleg(QFrame):
         self.botoFav.setToolTip("Marcar/Desmarcar Favorit")
         self.botoFav.clicked.connect(self.switchFavorit)
         self.botoObre=QPushButton(parent=self)
-        self.botoObre.setIcon(QIcon('Imatges/cm_play.png'))
+        self.botoObre.setIcon(QIcon(imatgesDir+'cm_play.png'))
         self.botoObre.move(280,100)
         self.botoObre.setToolTip("Obrir el mapa en qVista")
         self.obreQVista=lambda: cataleg.obrirProjecte(dir+'.qgs',self.favorit, self)
@@ -620,14 +643,14 @@ class MapaCataleg(QFrame):
         self.botoObre.setIconSize(QSize(24,24))
         self.botoObre.setFixedSize(24,24)
         self.botoQGis=QPushButton(parent=self)
-        self.botoQGis.setIcon(QIcon('Imatges/cm_qgis.png'))
+        self.botoQGis.setIcon(QIcon(imatgesDir+'cm_qgis.png'))
         self.botoQGis.move(280,160)
         self.botoQGis.setIconSize(QSize(24,24))
         self.botoQGis.clicked.connect(lambda: cataleg.obrirEnQGis(dir+'.qgs'))
         self.botoQGis.setFixedSize(24,24)
         self.botoQGis.setToolTip("Obrir el mapa en QGis")
         self.botoInfo=QPushButton(parent=self)
-        self.botoInfo.setIcon(QIcon('Imatges/cm_info.png'))
+        self.botoInfo.setIcon(QIcon(imatgesDir+'cm_info.png'))
         self.botoInfo.move(280,130)
         self.botoInfo.setIconSize(QSize(24,24))
         self.botoInfo.clicked.connect(lambda: cataleg.obrirInfo(dir+'.htm'))
@@ -700,7 +723,8 @@ class MapaCataleg(QFrame):
 
 if __name__ == "__main__":
     with qgisapp() as app:
-        app.setStyleSheet(open('style.qss').read())
+        with open('style.qss') as f:
+            app.setStyleSheet(f.read())
         cataleg = QvNouCataleg()
         cataleg.showMaximized()
         # mapa=MapaCataleg("N:/9SITEB/Publicacions/qVista/CATALEG/Mapes - en preparació per XLG/2. Ortofotos/Imatge de satel·lit 2011 de l'AMB")
