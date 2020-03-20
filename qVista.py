@@ -901,7 +901,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.layoutFrameLlegenda.setContentsMargins ( 5, 13, 5, 0 )
         self.llegenda.setStyleSheet("QvLlegenda {color: #38474f; background-color: #F9F9F9; border: 0px solid red;}")
         self.layoutFrameLlegenda.addWidget(self.llegenda)
-        self.llegenda.accions.afegirAccio('Propietats de capa', self.actPropietatsLayer)
+        self.llegenda.accions.afegirAccio("Opcions de visualització", self.actPropietatsLayer)
 
         self.llegenda.accions.afegirAccio('actTot', self.actFerGran)
         self.llegenda.clicatMenuContexte.connect(self.menuLlegenda)
@@ -1063,7 +1063,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         #   (Tipos: none, group, layer, symb)
         if tipus == 'layer':
             self.llegenda.menuAccions.append('separator')
-            self.llegenda.menuAccions.append('Propietats de capa')
+            self.llegenda.menuAccions.append("Opcions de visualització")
      
     def mapesTema(self):
         if self.mapesOberts:
@@ -1458,8 +1458,8 @@ class QVista(QMainWindow, Ui_MainWindow):
         # self.actPlatges.setStatusTip("Pavimentació")
         # self.actPlatges.triggered.connect(self.platges)
 
-        self.actPropietatsLayer = QAction("Propietats de la capa", self)
-        self.actPropietatsLayer.setStatusTip("Propietats de la capa")
+        self.actPropietatsLayer = QAction("Opcions de visualització", self)
+        self.actPropietatsLayer.setStatusTip("Opcions de visualització")
         self.actPropietatsLayer.triggered.connect(self.propietatsLayer)
 
     def definicioBotons(self):
@@ -2607,6 +2607,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         layer=self.llegenda.currentLayer()
         self.dlgProperties = None
         self.dlgProperties = LayerProperties( self, layer)
+        # Haurà de ser QvVisualitzacioCapa
         self.dlgProperties.show()
 
     def esborrarSeleccio(self, tambePanCanvas = True, mascara=False):
