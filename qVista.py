@@ -43,7 +43,7 @@ from moduls.QvVideo import QvVideo
 from moduls.QvNouMapa import QvNouMapa
 from moduls.QvVisorHTML import QvVisorHTML
 from moduls.QvDocumentacio import QvDocumentacio
-from moduls.QvNouCataleg import QvNouCataleg
+from moduls.QvNouCataleg import QvNouCataleg, QvCreadorCataleg
 from moduls.QvCatalegCapes import QvCatalegCapes
 from moduls.QvSabiesQue import QvSabiesQue
 from moduls.QvMemoria import QvMemoria
@@ -1411,6 +1411,13 @@ class QVista(QMainWindow, Ui_MainWindow):
             self.catalegMapes.activateWindow()
         self.actCataleg.triggered.connect(activaCataleg)
 
+        self.actAfegirCataleg = QAction('Afegir al catàleg',self)
+        self.actAfegirCataleg.setStatusTip('Afegir el mapa actual al catàleg')
+        def afegirCataleg():
+            wid=QvCreadorCataleg(self.canvas, self.project, self)
+            wid.show()
+        self.actAfegirCataleg.triggered.connect(afegirCataleg)
+
         self.actTemes = QAction("Temes", self)
         self.actTemes.setStatusTip("Temes")
         self.actTemes.triggered.connect(self.mapesTema)
@@ -1876,6 +1883,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.menuMapes.setFont(QvConstants.FONTSUBTITOLS)
         self.menuMapes.styleStrategy = QFont.PreferAntialias or QFont.PreferQuality #???
         self.menuMapes.addAction(self.actCataleg)
+        self.menuMapes.addAction(self.actAfegirCataleg)
         self.menuMapes.addSeparator()
         self.menuMapes.addAction(self.actNouMapa)
         self.menuMapes.addAction(self.actObrirProjecte)

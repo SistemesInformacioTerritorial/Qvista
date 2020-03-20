@@ -884,9 +884,10 @@ color:#595959'>&nbsp;</span></p>
 
 </html>'''
 
-class QvCreadorCataleg(QWidget):
-    def __init__(self, canvas, project):
-        super().__init__()
+class QvCreadorCataleg(QDialog):
+    def __init__(self, canvas, project, parent=None):
+        super().__init__(parent)
+        self.setWindowTitle('Afegir mapa al catàleg')
         self._project=project
         self._canvas=canvas
         self._canvas.xyCoordinates.connect(self._mouMouse)
@@ -907,46 +908,64 @@ class QvCreadorCataleg(QWidget):
         lblCapcalera.setFont(QvConstants.FONTTITOLS)
         self._lay.addWidget(lblCapcalera)
         
+        
+
+        layTitCat=QVBoxLayout()
+        frameTitCat=self.getFrame(layTitCat)
+        self._lay.addWidget(frameTitCat)
+
         layTitol=QHBoxLayout()
+        layTitCat.addLayout(layTitol)
         layTitol.addWidget(QLabel('Títol: ',self))
         self._leTitol=QLineEdit(self)
         self._leTitol.textChanged.connect(self.actualitzaEstatBDesar)
+        self._leTitol.setPlaceholderText('Títol que es visualitzarà al catàleg')
         layTitol.addWidget(self._leTitol)
-        self._lay.addLayout(layTitol)
+        # self._lay.addLayout(layTitol)
 
         lblText=QLabel('Descripció:')
-        self._lay.addWidget(lblText)
+        layTitCat.addWidget(lblText)
         self._teText=QTextEdit(self)
+        self._teText.setPlaceholderText('Descripció del projecte que es visualitzarà al catàleg.\nIntenteu no sobrepassar els 150 caràcters, ja que el text es podria veure tallat')
         self._teText.textChanged.connect(self.actualitzaEstatBDesar)
-        self._lay.addWidget(self._teText)
+        layTitCat.addWidget(self._teText)
+        # self._lay.addWidget(frameDescripcio)
 
-        layBotons=QHBoxLayout()
-        self._bGenerarImatge=QvPushButton('Capturar imatge')
-        self._bGenerarImatge.clicked.connect(self._swapCapturar)
-
+        
+        self._layImatge=QVBoxLayout()
+        frameImatge=self.getFrame(self._layImatge)
+        self._layImatge.addWidget(QLabel('Vista prèvia escollida:'))
         self._imatge=QWidget()
         self._imatge.setFixedSize(self.incX,self.incY)
-        self._lay.addWidget(self._imatge)
+        self._layImatge.addWidget(self._imatge)
+        self._lay.addWidget(frameImatge)
 
-        lblCatalegs=QLabel('Tria del catàleg on desarem el resultat')
+        layCat=QVBoxLayout()
+        frameCat=self.getFrame(layCat)
+        self._lay.addWidget(frameCat)
+        lblCatalegs=QLabel('Trieu el catàleg on desarem el resultat')
         self._cbCatalegs=QComboBox()
         self._cbCatalegs.addItems(QvMemoria().getCatalegsLocals())
         self._cbCatalegs.addItem('Un altre catàleg')
         self._cbCatalegs.activated.connect(self._cbCatalegsCanviat)
-        self._lay.addWidget(lblCatalegs)
-        self._lay.addWidget(self._cbCatalegs)
+        layCat.addWidget(lblCatalegs)
+        layCat.addWidget(self._cbCatalegs)
 
-        lblSubcarpeta=QLabel('Trieu la subcarpeta on desarem el resultat')
+        lblSubcarpeta=QLabel('Trieu la categoria on desarem el resultat')
         self._cbSubcarpetes=QComboBox()
         self._cbSubcarpetes.currentIndexChanged.connect(self._cbSubCarpetesCanviat)
         self._leNovaCat=QLineEdit()
         self._populaSubCarpetes()
         self._leNovaCat.setPlaceholderText('Nom de la nova categoria')
-        self._lay.addWidget(lblSubcarpeta)
-        self._lay.addWidget(self._cbSubcarpetes)
-        self._lay.addWidget(self._leNovaCat)
+        layCat.addWidget(lblSubcarpeta)
+        layCat.addWidget(self._cbSubcarpetes)
+        layCat.addWidget(self._leNovaCat)
         self._cbSubCarpetesCanviat(0)
 
+
+        layBotons=QHBoxLayout()
+        self._bGenerarImatge=QvPushButton('Capturar vista prèvia')
+        self._bGenerarImatge.clicked.connect(self._swapCapturar)
         self._bDesar=QvPushButton('Desar',destacat=True)
         self._bDesar.clicked.connect(self._desar)
         layBotons.addWidget(self._bGenerarImatge)
@@ -954,21 +973,29 @@ class QvCreadorCataleg(QWidget):
         self._lay.addLayout(layBotons)
 
         self._rubberband = QgsRubberBand(self._canvas)
-        self._rubberband.setColor(QColor(0,0,0,50))
-        self._rubberband.setWidth(4)
+        self._rubberband.setColor(QvConstants.COLORDESTACAT)
+        self._rubberband.setWidth(2)
         self.pintarRectangle(self._canvas.extent())
-        # self._rubberband.hide()
+        self._rubberband.hide()
 
         self.actualitzaEstatBDesar()
+    def getFrame(self,l):
+        f=QFrame(self)
+        f.setLayout(l)
+        f.setFrameStyle(QFrame.Box)
+        return f
     def _cbCatalegsCanviat(self,i):
         catalegsLocals=QvMemoria().getCatalegsLocals()
         if not os.path.exists(self._cbCatalegs.currentText()):
             ret=QFileDialog.getExistingDirectory(self,'Trieu la carpeta del catàleg',QvMemoria().getDirectoriDesar())
             if ret=='':
                 self._cbCatalegs.setCurrentIndex(0)
-            elif ret in carpetaCatalegProjectesLlista:
-                #avisar de que el directori és un directori de catàlegs compartit
-                pass
+                return
+            if ret in carpetaCatalegProjectesLlista:
+                r=QMessageBox.question(self,'Heu triat un catàleg compartit','La carpeta que heu triat és un catàleg compartit. Esteu segur que voleu i podeu modificar-lo?', QMessageBox.Yes, QMessageBox.No)
+                if r==QMessageBox.No:
+                    self._cbCatalegs.setCurrentIndex(0)
+                    return
             elif ret not in catalegsLocals:
                 #Aquí preguntar si vol desar-ho com a catàleg local
                 resp=QMessageBox.question(self,'Afegir el catàleg','Voleu convertir aquesta carpeta en un catàleg de mapes local?', QMessageBox.Yes, QMessageBox.No)
@@ -1008,11 +1035,14 @@ class QvCreadorCataleg(QWidget):
             os.mkdir(ret)
         else:
             ret=os.path.join(self._cbCatalegs.currentText(),self._cbSubcarpetes.currentText())
-        nom=self._leTitol.text().replace(' ','_')
+        nom=self._project.baseName()
         fRes=os.path.join(ret,nom)
         # os.mkdir(fRes)
         # fRes=os.path.join(fRes,nom)
         #desar mapa
+        if os.path.isfile(fRes+'.txt'):
+            r=QMessageBox.question(self,'Aquest projecte ja existeix','Aquest projecte ja existeix. Voleu substituir-lo?',QMessageBox.Yes,QMessageBox.No)
+            if r==QMessageBox.No: return
         with open(fRes+'.txt','w') as f:
             f.write(self._leTitol.text()+'\n')
             f.write(self._teText.toPlainText())
@@ -1022,18 +1052,33 @@ class QvCreadorCataleg(QWidget):
         wid=QDialog()
         lay=QVBoxLayout()
         wid.setLayout(lay)
-        lay.addWidget(QLabel('Introduïu les metadades associades al projecte'))
-        lay.addWidget(QLabel('Contingut:'))
+        titol=QLabel('Introduïu les metadades associades al projecte')
+        titol.setFont(QvConstants.FONTTITOLS)
+        lay.addWidget(titol)
+
+        layCont=QVBoxLayout()
+        frameCont=self.getFrame(layCont)
+        layCont.addWidget(QLabel('Contingut:'))
         teContingut=QTextEdit()
-        lay.addWidget(teContingut)
-        lay.addWidget(QLabel('Propietari:'))
+        layCont.addWidget(teContingut)
+        lay.addWidget(frameCont)
+
+        layProp=QVBoxLayout()
+        frameProp=self.getFrame(layProp)
+        layProp.addWidget(QLabel('Propietari:'))
         tePropietari=QTextEdit()
-        lay.addWidget(tePropietari)
-        lay.addWidget(QLabel('Font de les dades:'))
+        layProp.addWidget(tePropietari)
+        lay.addWidget(frameProp)
+
+        layFont=QVBoxLayout()
+        frameFont=self.getFrame(layFont)
+        layFont.addWidget(QLabel('Font de les dades:'))
         teFont=QTextEdit()
-        lay.addWidget(teFont)
+        layFont.addWidget(teFont)
+        lay.addWidget(frameFont)
+
         bDesar=QvPushButton('Desar',destacat=True)
-        lay.addWidget(bDesar)
+        lay.addWidget(bDesar,alignment=QtCore.Qt.AlignRight)
         def desarMetadades():
             with open(fRes+'.htm','w') as f:
                 cont=teContingut.toPlainText().replace('\n','<br>')
@@ -1101,6 +1146,14 @@ class QvCreadorCataleg(QWidget):
         render = QgsMapRendererParallelJob(options)
 
         def finished():
+            # global render
+            try:
+                render
+            except Exception as e:
+                print(e)
+                import time
+                time.sleep(0.5)
+                finished()
             img = render.renderedImage()
             # save the image; e.g. img.save("/Users/myuser/render.png","png")
             img.save(image_location, "png")
@@ -1108,14 +1161,17 @@ class QvCreadorCataleg(QWidget):
             self._pixmap=QPixmap(image_location)
             lblImatge=QLabel()
             lblImatge.setPixmap(self._pixmap)
-            self._lay.replaceWidget(self._imatge,lblImatge)
+            self._layImatge.replaceWidget(self._imatge,lblImatge)
             self._imatge=lblImatge
             self.actualitzaEstatBDesar()
 
         render.finished.connect(finished)
 
         render.start()
-
+    def hideEvent(self,e):
+        super().hideEvent(e)
+        if self._toolSet:
+            self._canvas.unsetMapTool(self._tool)
         
 
 if __name__ == "__main__":

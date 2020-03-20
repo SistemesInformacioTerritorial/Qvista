@@ -363,7 +363,7 @@ class QvCanvas(QgsMapCanvas):
         if not ultima:
             #Eliminar l'aparició de més al final d'aquesta eina
             indexes = [i for i,x in enumerate(self.eines) if x == eina]
-            del(self.eines[indexes[-1]])
+            if len(indexes)!=0: del(self.eines[indexes[-1]])
 
         if len(self.eines)>0:
             if self.eines[-1] is None or self.eines[-1]==eina:
