@@ -42,6 +42,7 @@ class LayerProperties( QtWidgets.QDialog, Ui_LayerProperties ):
         self.chkScale.stateChanged.connect(self.chkScaleChanged)
         self.accepted.connect(self.apply )
         self.rejected.connect(self.close )
+        self.sliderTransparencia.setValue(100-self.layer.opacity()*100)
         self.sliderTransparencia.valueChanged.connect(self.transparencia)
 
     def transparencia(self):
@@ -66,12 +67,12 @@ class LayerProperties( QtWidgets.QDialog, Ui_LayerProperties ):
                 self.cboDisplayFieldName.addItem( field.name() )
                 self.cbTipField.addItem( field.name() )
 
-            self.fields = self.layer.fields()
-            self.cboDisplayFieldName.addItem("Sense etiquetes")
-            for field in self.fields:
-                #if not field.type() == QVariant.Double:
-                    # self.displayName = self.vectorLayer.attributeDisplayName( key )
-                self.cboDisplayFieldName.addItem( field.name() )
+            # self.fields = self.layer.fields()
+            # self.cboDisplayFieldName.addItem("Sense etiquetes")
+            # for field in self.fields:
+            #     #if not field.type() == QVariant.Double:
+            #         # self.displayName = self.vectorLayer.attributeDisplayName( key )
+            #     self.cboDisplayFieldName.addItem( field.name() )
             idx = self.cboDisplayFieldName.findText( self.layer.displayField() )
             self.cboDisplayFieldName.setCurrentIndex( idx )
         else:

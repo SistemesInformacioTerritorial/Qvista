@@ -2634,6 +2634,7 @@ class QVista(QMainWindow, Ui_MainWindow):
             except Exception as e:
                 print(e)
                 pass
+            
     def foraEines(self):
         self.canvas.panCanvas()
 
