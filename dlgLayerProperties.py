@@ -46,7 +46,6 @@ class LayerProperties( QtWidgets.QDialog, Ui_LayerProperties ):
         self.sliderTransparencia.valueChanged.connect(self.transparencia)
 
     def transparencia(self):
-        
         self.layer.setOpacity((100-self.sliderTransparencia.value())/100)
         self.layer.triggerRepaint()
 
@@ -59,6 +58,7 @@ class LayerProperties( QtWidgets.QDialog, Ui_LayerProperties ):
             self.cboDisplayFieldName.setEnabled( True )
 
             self.fields = self.layer.fields()
+
             self.cboDisplayFieldName.addItem("Sense etiquetes")
             self.cbTipField.addItem("Sense etiquetes")
             for field in self.fields:
@@ -73,6 +73,7 @@ class LayerProperties( QtWidgets.QDialog, Ui_LayerProperties ):
             #     #if not field.type() == QVariant.Double:
             #         # self.displayName = self.vectorLayer.attributeDisplayName( key )
             #     self.cboDisplayFieldName.addItem( field.name() )
+            print(self.layer.displayField())
             idx = self.cboDisplayFieldName.findText( self.layer.displayField() )
             self.cboDisplayFieldName.setCurrentIndex( idx )
         else:
@@ -106,11 +107,9 @@ class LayerProperties( QtWidgets.QDialog, Ui_LayerProperties ):
             else:
                 # Desactivar tooltips
                 pass
+
     def fieldCanviat(self):
-        if self.cboDisplayFieldName.currentText() == 'Sense etiqueta':
-            print ('sense etiqueta')
-            pass
-        else:
+        if self.cboDisplayFieldName.currentText() != 'Sense etiqueta':
             self.parent.pintaLabels(self.cboDisplayFieldName.currentText())
 
     def chkScaleChanged( self, state ):
@@ -135,7 +134,6 @@ class LayerProperties( QtWidgets.QDialog, Ui_LayerProperties ):
                 self.emit( SIGNAL( "layerNameChanged(PyQt_PyObject)" ), self.layer )
 
         # if self.cboDisplayFieldName.isEnabled():
-        print ('SI')
         # self.layer.setDisplayField( self.cboDisplayFieldName.currentText() )
 
         if self.chkScale.checkState() == QtCore.Qt.Checked:
