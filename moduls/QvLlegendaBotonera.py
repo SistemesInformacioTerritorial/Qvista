@@ -1,4 +1,6 @@
-""" Modulo QvLlegendaUtils
+# -*- coding: utf-8 -*-
+
+""" Módulo QvLlegendaUtils
 
 Contiene clases que complementan QvLlegenda
 
@@ -7,7 +9,7 @@ from qgis.PyQt.QtWidgets import QWidget, QPushButton, QVBoxLayout, QHBoxLayout, 
 from qgis.PyQt.QtCore import Qt, pyqtSignal
 from moduls.QvLlegenda import QvLlegenda
 
-class QvBotoneraLlegenda(QWidget):
+class QvLlegendaBotonera(QWidget):
 
     clicatBoto = pyqtSignal(int)
 
@@ -90,7 +92,39 @@ if __name__ == "__main__":
         leyenda.project.read(projecteInicial)
 
         canvas.setWindowTitle('Mapa')
-        canvas.show()
         leyenda.setWindowTitle('Llegenda')
-        leyenda.show()
         atribs.setWindowTitle('Taules')
+
+        canvas.show()
+        leyenda.show()
+
+        # Generación de botoneras de leyenda
+        botonera = None
+        rangos = None
+
+        def filtroBotonera(item):
+            return item.tipus in ('layer', 'group')
+
+        def filtroRangos(item):
+            return item.tipus == 'symb'
+
+        def modifBoton(boton):
+            boton.setFlat(True)
+
+        def botonCapa(i):
+            global rangos
+            capa = 'Noms de carrers'
+            id = leyenda.capaPerNom(capa)
+            if id is not None and leyenda.capaVisible(id):
+                rangos = QvLlegendaBotonera(leyenda, capa)
+                rangos.afegirBotonera(filtroRangos, modifBoton)
+                rangos.show()
+            else:
+                if rangos is not None:
+                    rangos.close()
+                rangos = None
+
+        botonera = QvLlegendaBotonera(leyenda, 'Botonera')
+        botonera.afegirBotonera(filtroBotonera, modifBoton)
+        botonera.clicatBoto.connect(botonCapa)
+        botonera.show()
