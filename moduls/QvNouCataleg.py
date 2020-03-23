@@ -957,6 +957,7 @@ class QvCreadorCataleg(QDialog):
         self._leNovaCat=QLineEdit()
         self._populaSubCarpetes()
         self._leNovaCat.setPlaceholderText('Nom de la nova categoria')
+        self._leNovaCat.textChanged.connect(self.actualitzaEstatBDesar)
         layCat.addWidget(lblSubcarpeta)
         layCat.addWidget(self._cbSubcarpetes)
         layCat.addWidget(self._leNovaCat)
