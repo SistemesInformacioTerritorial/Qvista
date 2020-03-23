@@ -151,8 +151,8 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.prepararCercador = True
         self.ubicacions= None
         self.cAdrec= None
-        self.catalegMapes = QvNouCataleg(self)
-        self.catalegMapes.obrirProjecte.connect(self.obrirProjecteCataleg)
+        # self.catalegMapes = QvNouCataleg(self)
+        # self.catalegMapes.obrirProjecte.connect(self.obrirProjecteCataleg)
 
         #Preparem el mapeta abans de les accions, ja que el necessitarem allà
         self.preparacioMapeta()
@@ -1406,6 +1406,11 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.actCataleg = QAction("Catàleg", self)
         self.actCataleg.setStatusTip("Catàleg")
         def activaCataleg():
+            if not hasattr(self,'catalegMapes'):
+                self.startMovie()
+                self.catalegMapes = QvNouCataleg(self)
+                self.catalegMapes.obrirProjecte.connect(self.obrirProjecteCataleg)
+                self.stopMovie()
             if not self.catalegMapes.isVisible():
                 self.catalegMapes.showMaximized()
             self.catalegMapes.activateWindow()
