@@ -84,7 +84,6 @@ class LayerProperties( QtWidgets.QDialog, Ui_LayerProperties ):
         self.cboDisplayFieldName.currentTextChanged.connect(self.fieldCanviat)
         self.cbTipField.currentTextChanged.connect(self.tipFieldCanviat)
             
-
         if self.layer.hasScaleBasedVisibility():
             self.chkScale.setCheckState(QtCore.Qt.Checked )
             self.chkScaleChanged( 1 ) 
