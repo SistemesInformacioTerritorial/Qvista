@@ -1,11 +1,5 @@
 # -*- coding: utf-8 -*-
 
-import sys
-import os
-_cwd = os.getcwd()
-if _cwd not in sys.path:
-    sys.path.insert(0, _cwd)
-
 from qgis.core import (QgsProject, QgsLegendModel,QgsMapLayer, QgsAbstractGeometry,
                        QgsExpressionContextUtils)
 from qgis.gui import QgsLayerTreeView, QgsLayerTreeMapCanvasBridge, QgsLayerTreeViewIndicator
