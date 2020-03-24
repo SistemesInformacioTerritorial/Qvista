@@ -13,8 +13,8 @@ from qgis.PyQt import QtSql
 from qgis.PyQt.QtXml import QDomDocument, QDomElement, QDomAttr, QDomText    
 from qgis.PyQt.QtCore import pyqtSignal, QPoint
 
-from PyQt5.QtWebKitWidgets import QWebView , QWebPage
-from PyQt5.QtWebKit import QWebSettings
+from qgis.PyQt.QtWebKitWidgets import QWebView , QWebPage
+from qgis.PyQt.QtWebKit import QWebSettings
 
 
 import csv, codecs

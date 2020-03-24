@@ -4,7 +4,7 @@ from qgis.core import QgsMapLayer, QgsVectorLayerCache
 from qgis.PyQt import QtWidgets  # , uic
 from qgis.PyQt.QtCore import Qt, pyqtSignal, QSize
 from qgis.PyQt.QtGui import QCursor, QIcon
-from qgis.PyQt.QtWidgets import QTabWidget, QVBoxLayout, QAction, QMenuBar, QWidget, QHBoxLayout, QLabel
+from qgis.PyQt.QtWidgets import QAction, QHBoxLayout, QMenuBar, QTabWidget, QWidget
 from qgis.gui import (QgsGui,
                       QgsAttributeTableModel,
                       QgsAttributeTableView,
@@ -19,7 +19,7 @@ from moduls.QvPushButton import QvPushButton
 # import recursos
 import csv
 # import xlwt - .xls
-from PyQt5.QtWidgets import QDialog
+from qgis.PyQt.QtWidgets import QDialog
 
 from moduls.Ui_AtributsForm import Ui_AtributsForm
 from configuracioQvista import *
@@ -288,9 +288,12 @@ class QvAtributs(QTabWidget):
         try:
             
             taula=self.currentWidget()
-            self.filtra.disconnect()
-            self.desaCsv.disconnect()
-            self.eliminaFiltre.disconnect()
+            try:
+                self.filtra.disconnect()
+                self.desaCsv.disconnect()
+                self.eliminaFiltre.disconnect()
+            except:
+                pass
             self.filtra.clicked.connect(taula.filterElements)
             self.desaCsv.clicked.connect(taula.saveToCSV)
             self.eliminaFiltre.clicked.connect(taula.removeFilter)

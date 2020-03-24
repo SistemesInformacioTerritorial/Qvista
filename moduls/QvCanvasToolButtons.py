@@ -3,15 +3,8 @@
 from importaciones import *
 # import recursos
 from configuracioQvista import *
-from plantillaQvista_3 import Ui_MainWindow
-from QvUbicacions import QvUbicacions
-from QvPrint import QvPrint
-from QvAnotacions import QvAnotacions
-from QvEinesGrafiques import QvSeleccioElement, QvSeleccioPerPoligon
+from QvEinesGrafiques import QvSeleccioElement
 
-from QvStreetView import QvStreetView
-from moduls.QvLlegenda import QvLlegenda
-from moduls.QvAtributs import QvAtributs
 
 
 class QvCanvas(QgsMapCanvas):

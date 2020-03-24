@@ -5,7 +5,7 @@ from qgis.core import (QgsApplication, QgsVectorLayer, QgsLayerDefinition,
                        QgsGraduatedSymbolRenderer, QgsRendererRange,
                        QgsGradientColorRamp, QgsRendererRangeLabelFormat, QgsUnitTypes)
 
-from qgis.PyQt.QtCore import Qt, QObject, pyqtSignal, pyqtSlot, QLocale
+from qgis.PyQt.QtCore import QObject
 from qgis.PyQt.QtGui import QColor
 
 from moduls.QvMapVars import *

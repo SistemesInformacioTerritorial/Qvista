@@ -3,7 +3,7 @@ from moduls.QvSingleton import Singleton
 import json
 import hashlib
 
-from PyQt5.QtGui import QColor
+from qgis.PyQt.QtGui import QColor
 
 arxiuTmpAvis=dadesdir+'ultimAvisObert'
 arxiuTmpNews=dadesdir+'ultimaNewOberta'
@@ -13,6 +13,7 @@ arxiuVolHints=dadesdir+'volHints'
 arxiuDadesMascara=dadesdir+'dadesMascara'
 arxiuCampsGeocod=dadesdir+'geocod.json'
 arxiuGeocodificats=dadesdir+'geocodificats.json'
+arxiuCatalegsLocals=dadesdir+'catalegsLocals'
 
 def llegirArxiu(f,encoding='utf-8'):
     with open(f,encoding=encoding) as arxiu:
@@ -71,7 +72,6 @@ class QvMemoria(Singleton):
             return self.mapesRecents
         except:
             return []
-        pass
     def setMapesRecents(self,recents):
         self.mapesRecents=recents
     def getDirectoriDesar(self):
@@ -115,7 +115,20 @@ class QvMemoria(Singleton):
                 if md5sum(ruta)==self.geocodificats[suma_orig]:
                     return ruta
         return None
-        pass
+    def getCatalegsLocals(self):
+        if not os.path.isfile(arxiuCatalegsLocals):
+            return [os.path.abspath('../dades/CatalegProjectes')]
+        with open(arxiuCatalegsLocals) as f:
+            return list(f.readlines())
+    def setCatalegLocal(self,path,posal=True):
+        cont=self.getCatalegsLocals()
+        path=os.path.abspath(path)
+        if posal:
+            cont=list(set(cont+[path]))
+        else:
+            cont=cont.remove(path)
+        with open(arxiuCatalegsLocals,'w',newline='\n') as f:
+            f.writelines(cont)
     def pafuera(self):
         if hasattr(self,'mapesRecents'):
             with open(arxiuMapesRecents,'w',encoding='utf-8') as f:

@@ -40,8 +40,8 @@
 
 #Codi copiat de https://github.com/baoboa/pyqt5/blob/master/examples/layouts/flowlayout.py
 
-from PyQt5.QtCore import QPoint, QRect, QSize, Qt
-from PyQt5.QtWidgets import (QApplication, QLayout, QPushButton, QSizePolicy,
+from qgis.PyQt.QtCore import QPoint, QRect, QSize, Qt
+from qgis.PyQt.QtWidgets import (QApplication, QLayout, QPushButton, QSizePolicy,
         QWidget)
 
 

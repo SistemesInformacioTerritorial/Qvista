@@ -1,12 +1,10 @@
 # -*- coding: utf-8 -*-
 
-from PyQt5 import QtCore
-from PyQt5.QtCore import QDir, Qt, QUrl
-from PyQt5.QtGui import QPalette
+from qgis.PyQt.QtCore import QDir, Qt, QUrl
+from qgis.PyQt.QtGui import QPalette
 from PyQt5.QtMultimedia import QMediaContent, QMediaPlayer
 from PyQt5.QtMultimediaWidgets import QVideoWidget
-from moduls.QvConstants import QvConstants
-from PyQt5.QtWidgets import (QApplication, QFileDialog, QHBoxLayout, QLabel,
+from qgis.PyQt.QtWidgets import (QApplication, QFileDialog, QHBoxLayout, QLabel,
         QPushButton, QSizePolicy, QSlider, QStyle, QVBoxLayout, QWidget,QDialog)
 
 class QvVideo(QDialog):

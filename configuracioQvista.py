@@ -11,13 +11,13 @@ if sys.platform=='win32':
     try:
         #Solució només per Windows. La meva ànima linuxera plora
         from ctypes import windll
-        windll.shcore.SetProcessDpiAwareness(1) 
+        windll.shcore.SetProcessDpiAwareness(2) 
     except Exception as e:
         print(e)
-if hasattr(QtCore.Qt, 'AA_EnableHighDpiScaling'):
-    QApplication.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling,  True)
-# if hasattr(QtCore.Qt, 'AA_UseHighDpiPixmaps'):
-#     QApplication.setAttribute(QtCore.Qt.AA_UseHighDpiPixmaps, True)
+# if hasattr(QtCore.Qt, 'AA_EnableHighDpiScaling'):
+#     QApplication.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling,  True)
+if hasattr(QtCore.Qt, 'AA_UseHighDpiPixmaps'):
+    QApplication.setAttribute(QtCore.Qt.AA_UseHighDpiPixmaps, True)
 
 #Parametres configuració inicial
 versio="0.8"
@@ -71,9 +71,8 @@ if not os.path.exists(dadesdir):
         print('ERROR. No he pogut crear el directori temporal '+dadesdir)
 
 if not os.path.isdir(carpetaCataleg):
-    carpetaCataleg = "../dades/CatalegProjectes/"
-    carpetaCatalegProjectesLlista = ["../dades/CatalegProjectes/"]
-    projecteInicial = 'mapesOffline/qVista default map.qgs'
+    # carpetaCataleg = os.path.abspath("../dades/CatalegCapes/")
+    # carpetaCatalegProjectesLlista = [os.path.abspath(x)+'/' for x in ["../dades/CatalegProjectes/"]]
     estatConnexio = "Xarxa municipal: Desconnectat"
 
     

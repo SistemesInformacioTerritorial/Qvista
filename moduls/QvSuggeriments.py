@@ -1,12 +1,6 @@
 #!/usr/bin/env python
 from moduls.QvImports import * 
-from PyQt5 import QtCore
-from PyQt5 import QtGui
-from PyQt5.QtCore import pyqtProperty
-from PyQt5 import QtCore, QtWidgets
-from PyQt5.QtGui import QColor
-import os
-import tempfile
+from qgis.PyQt import QtWidgets
 from moduls.QvConstants import QvConstants
 from moduls.QvPushButton import QvPushButton
 from typing import Callable
@@ -87,7 +81,7 @@ class QvSuggeriments(QDialog):
         self.formata()
 
     def acceptar(self):
-        res=self.acceptAction(self.leTitle.toPlainText(),self.caixaText.toPlainText())
+        self.acceptAction(self.leTitle.toPlainText(),self.caixaText.toPlainText())
         self.close()
 
     #determina el format dels diferents components de la window

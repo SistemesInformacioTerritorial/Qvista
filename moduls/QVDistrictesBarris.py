@@ -57,7 +57,6 @@ class QVDistrictesBarris(QObject):
             self.view.collapseAll()
         else:
             self.view.expandAll()
-        pass        
 
     def iniView(self):
         self.view.setHeaderHidden(True)
