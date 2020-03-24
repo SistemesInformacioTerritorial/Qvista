@@ -155,6 +155,19 @@ class QvNouCataleg(QWidget):
         self.layoutContingut = QHBoxLayout()  # El contingut del catàleg
         self.layoutContingut.setAlignment(Qt.AlignLeft | Qt.AlignTop)
         self.layout.addLayout(self.layoutContingut)
+
+        #Widget del costat (necessari per la funció carregaBandaEsquerra)
+        self.wBanda = QWidget()
+        self.wBanda.setStyleSheet('background: %s;' %
+                                  QvConstants.COLORGRISCLARHTML)
+        self.wBanda.setFixedWidth(256)
+        self.layoutContingut.addWidget(self.wBanda)
+        self.lBanda = QVBoxLayout()
+        self.lBanda.setContentsMargins(0, 0, 0, 0)
+        self.lBanda.setSpacing(0)
+        self.wBanda.setLayout(self.lBanda)
+
+        
         self.carregaBandaEsquerra()
         self.wCataleg = QWidget()
         self.layoutCataleg = QVBoxLayout()
@@ -174,6 +187,12 @@ class QvNouCataleg(QWidget):
         self.esPotMoure = False
         self.clickTots()
 
+    def recarrega(self):
+        self.setCursor(QvConstants.cursorOcupat())
+        self.carregaBandaEsquerra()
+        self.clickTots()
+        self.setCursor(QvConstants.cursorFletxa())
+
     def actualitzaWindowFlags(self):
         self.setWindowFlag(Qt.Window)
         self.setWindowFlag(Qt.CustomizeWindowHint, True)
@@ -187,16 +206,15 @@ class QvNouCataleg(QWidget):
     def carregaBandaEsquerra(self):
         '''Carrega els botons de la banda esquerra i, per cada directori, tots els seus mapes
         '''
+        x=self.lBanda.takeAt(0)
+        while x is not None:
+            wid=x.widget()
+            if wid is not None:
+                wid.deleteLater()
+            del x
+            x=self.lBanda.takeAt(0)
+        
         self.favorits = QvFavorits().getFavorits()
-        self.wBanda = QWidget()
-        self.wBanda.setStyleSheet('background: %s;' %
-                                  QvConstants.COLORGRISCLARHTML)
-        self.wBanda.setFixedWidth(256)
-        self.layoutContingut.addWidget(self.wBanda)
-        self.lBanda = QVBoxLayout()
-        self.lBanda.setContentsMargins(0, 0, 0, 0)
-        self.lBanda.setSpacing(0)
-        self.wBanda.setLayout(self.lBanda)
 
         self.tots = BotoLateral('Tots', self)
         self.tots.setIcon(QIcon(imatgesDir+'cm_check_all.png'))
@@ -401,6 +419,8 @@ class QvNouCataleg(QWidget):
         elif event.key() == Qt.Key_Return or event.key() == Qt.Key_Enter:
             if hasattr(self, 'widgetSeleccionat'):
                 self.widgetSeleccionat.obreQVista()
+        elif event.key() == Qt.Key_F5:
+            self.recarrega()
 
     def seleccionaElement(self, widget, teclat=False):
         if widget is None:
@@ -909,9 +929,10 @@ color:#595959'>&nbsp;</span></p>
 
 
 class QvCreadorCataleg(QDialog):
-    def __init__(self, canvas, project, parent=None):
+    def __init__(self, canvas, project, cataleg=None, parent=None):
         super().__init__(parent)
         self.setWindowTitle('Afegir mapa al catàleg')
+        self._cataleg=cataleg
         self._project = project
         self._canvas = canvas
         self._canvas.xyCoordinates.connect(self._mouMouse)
@@ -1122,6 +1143,8 @@ class QvCreadorCataleg(QDialog):
             wid.close()
         bDesar.clicked.connect(desarMetadades)
         wid.exec()
+        if self._cataleg is not None:
+            self._cataleg.recarrega()
         self.close()
 
     def _swapCapturar(self):
@@ -1230,5 +1253,5 @@ if __name__ == "__main__":
         cataleg = QvNouCataleg()
         cataleg.showMaximized()
         cataleg.obrirProjecte.connect(lambda x: projecte.read(x))
-        creador = QvCreadorCataleg(canvas, projecte)
+        creador = QvCreadorCataleg(canvas, projecte, cataleg)
         creador.show()

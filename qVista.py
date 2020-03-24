@@ -151,6 +151,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.prepararCercador = True
         self.ubicacions= None
         self.cAdrec= None
+        self.catalegMapes = None
         # self.catalegMapes = QvNouCataleg(self)
         # self.catalegMapes.obrirProjecte.connect(self.obrirProjecteCataleg)
 
@@ -1406,7 +1407,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.actCataleg = QAction("Catàleg", self)
         self.actCataleg.setStatusTip("Catàleg")
         def activaCataleg():
-            if not hasattr(self,'catalegMapes'):
+            if self.catalegMapes is None:
                 self.startMovie()
                 self.catalegMapes = QvNouCataleg(self)
                 self.catalegMapes.obrirProjecte.connect(self.obrirProjecteCataleg)
@@ -1419,7 +1420,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.actAfegirCataleg = QAction('Afegir al catàleg',self)
         self.actAfegirCataleg.setStatusTip('Afegir el mapa actual al catàleg')
         def afegirCataleg():
-            wid=QvCreadorCataleg(self.canvas, self.project, self)
+            wid=QvCreadorCataleg(self.canvas, self.project, self.catalegMapes, self)
             wid.show()
         self.actAfegirCataleg.triggered.connect(afegirCataleg)
 
