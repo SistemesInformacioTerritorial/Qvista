@@ -1,17 +1,12 @@
 # -*- coding: utf-8 -*-
 
-""" Módulo QvLlegendaUtils
+import qgis.PyQt.QtWidgets as qgWdg
+import qgis.PyQt.QtCore as qgCor
 
-Contiene clases que complementan QvLlegenda
 
-"""
-from qgis.PyQt.QtWidgets import QWidget, QPushButton, QVBoxLayout, QHBoxLayout, QGridLayout
-from qgis.PyQt.QtCore import Qt, pyqtSignal
-from moduls.QvLlegenda import QvLlegenda
+class QvLlegendaBotonera(qgWdg.QWidget):
 
-class QvLlegendaBotonera(QWidget):
-
-    clicatBoto = pyqtSignal(int)
+    clicatBoto = qgCor.pyqtSignal(int)
 
     def __init__(self, llegenda, nom='Llegenda', vertical=True):
         super().__init__()
@@ -20,16 +15,16 @@ class QvLlegendaBotonera(QWidget):
         self.botons = dict()
         self.setWindowTitle(nom)
         if vertical:
-            self.setLayout(QVBoxLayout())
+            self.setLayout(qgWdg.QVBoxLayout())
         else:
-            self.setLayout(QHBoxLayout())
+            self.setLayout(qgWdg.QHBoxLayout())
         self.funcioFiltre = None
         self.funcioBoto = None
 
     def afegirBoto(self, item):
         if self.llegenda.editable:
             self.llegenda.editarLlegenda(False)
-        boto = QPushButton(item.nom())
+        boto = qgWdg.QPushButton(item.nom())
         boto.setCheckable(True)
         boto.setChecked(item.esVisible())
         self.layout().addWidget(boto)
@@ -73,10 +68,12 @@ class QvLlegendaBotonera(QWidget):
         self.actBotons()
         self.clicatBoto.emit(i)
 
+
 if __name__ == "__main__":
 
     from qgis.core.contextmanagers import qgisapp
 
+    from moduls.QvLlegenda import QvLlegenda
     from moduls.QvCanvas import QvCanvas
     from moduls.QvAtributs import QvAtributs
     from moduls.QvApp import QvApp

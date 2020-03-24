@@ -1,41 +1,41 @@
 # -*- coding: utf-8 -*-
 
-from qgis.core import (QgsProject, QgsLegendModel,QgsMapLayer, QgsAbstractGeometry,
-                       QgsExpressionContextUtils)
-from qgis.gui import QgsLayerTreeView, QgsLayerTreeMapCanvasBridge, QgsLayerTreeViewIndicator
-from qgis.PyQt.QtWidgets import QAction, QFileDialog
-from qgis.PyQt.QtGui import QIcon, QColor
-from qgis.PyQt.QtCore import pyqtSignal
+import qgis.core as qgCor
+import qgis.gui as qgGui
+import qgis.PyQt.QtWidgets as qtWdg
+import qgis.PyQt.QtGui as qtGui
+import qgis.PyQt.QtCore as qtCor
+
 from moduls.QvAccions import QvAccions
 from moduls.QvAtributs import QvAtributs
 from moduls.QvVideo import QvVideo
 from moduls.QvEscala import QvEscala
 from moduls.QvMapRenderer import QvMapRenderer
-from moduls.QvMapVars import *
-from moduls.QvLlegendaAux import *
+from moduls.QvMapVars import MAP_ID
+from moduls.QvLlegendaAux import QvModelLlegenda, QvItemLlegenda, QvMenuLlegenda
 from moduls.QvLlegendaMascara import QvLlegendaMascara
 from configuracioQvista import imatgesDir
 
 import os
 import win32file
 
-
 # Resultado de compilacion de recursos del fuente de qgis (directorio images)
 # pyrcc5 images.qrc >images_rc.py
 import images_rc  # NOQA
 
-class QvLlegenda(QgsLayerTreeView):
 
-    obertaTaulaAtributs = pyqtSignal()
-    clicatMenuContexte = pyqtSignal(str)
-    carregantProjecte = pyqtSignal()
-    projecteCarregat = pyqtSignal(str)
-    projecteModificat = pyqtSignal(str)
+class QvLlegenda(qgGui.QgsLayerTreeView):
+
+    obertaTaulaAtributs = qtCor.pyqtSignal()
+    clicatMenuContexte = qtCor.pyqtSignal(str)
+    carregantProjecte = qtCor.pyqtSignal()
+    projecteCarregat = qtCor.pyqtSignal(str)
+    projecteModificat = qtCor.pyqtSignal(str)
 
     def __init__(self, canvas=None, atributs=None, canviCapaActiva=None):
-        QgsLayerTreeView.__init__(self)
+        qgGui.QgsLayerTreeView.__init__(self)
 
-        self.project = QgsProject.instance()
+        self.project = qgCor.QgsProject.instance()
         self.root = self.project.layerTreeRoot()
         self.canvas = None
         self.bridge = None
@@ -67,8 +67,8 @@ class QvLlegenda(QgsLayerTreeView):
 
         # Model
         self.model = QvModelLlegenda(self.root)
-        self.model.setFlag(QgsLegendModel.ShowLegend, True)
-        self.model.setFlag(QgsLegendModel.ShowLegendAsTree, True)
+        self.model.setFlag(qgCor.QgsLegendModel.ShowLegend, True)
+        self.model.setFlag(qgCor.QgsLegendModel.ShowLegendAsTree, True)
         self.editarLlegenda(True)
 
         self.setModel(self.model)
@@ -82,13 +82,13 @@ class QvLlegenda(QgsLayerTreeView):
         self.menuAccions = []
         self.setMenuProvider(QvMenuLlegenda(self))
 
-        self.iconaFiltre = QgsLayerTreeViewIndicator()
-        self.iconaFiltre.setIcon(QIcon(imatgesDir+'filter.png'))
+        self.iconaFiltre = qgGui.QgsLayerTreeViewIndicator()
+        self.iconaFiltre.setIcon(qtGui.QIcon(imatgesDir+'filter.png'))
         self.iconaFiltre.setToolTip('Filtre actiu')
         self.iconaFiltre.clicked.connect(self.filterElements)
 
-        self.iconaMap = QgsLayerTreeViewIndicator()
-        self.iconaMap.setIcon(QIcon(imatgesDir+'categories2.png'))
+        self.iconaMap = qgGui.QgsLayerTreeViewIndicator()
+        self.iconaMap.setIcon(qtGui.QIcon(imatgesDir+'categories2.png'))
         self.iconaMap.setToolTip('Categories de mapificació')
         self.iconaMap.clicked.connect(self.mapRenderer.modifyRenderer)
 
@@ -169,11 +169,11 @@ class QvLlegenda(QgsLayerTreeView):
 
     def editarLlegenda(self, on=True):
         self.editable = on
-        self.model.setFlag(QgsLegendModel.AllowNodeReorder, on)
-        self.model.setFlag(QgsLegendModel.AllowNodeRename, on)
-        self.model.setFlag(QgsLegendModel.AllowLegendChangeState, on)
-        self.model.setFlag(QgsLegendModel.AllowNodeChangeVisibility, on)
-        self.model.setFlag(QgsLegendModel.DeferredLegendInvalidation, on)
+        self.model.setFlag(qgCor.QgsLegendModel.AllowNodeReorder, on)
+        self.model.setFlag(qgCor.QgsLegendModel.AllowNodeRename, on)
+        self.model.setFlag(qgCor.QgsLegendModel.AllowLegendChangeState, on)
+        self.model.setFlag(qgCor.QgsLegendModel.AllowNodeChangeVisibility, on)
+        self.model.setFlag(qgCor.QgsLegendModel.DeferredLegendInvalidation, on)
         # self.setAcceptDrops(on)
         # # self.setDropIndicatorShown(on)
         # print('acceptDrops', self.acceptDrops())
@@ -190,14 +190,14 @@ class QvLlegenda(QgsLayerTreeView):
             uri = capa.dataProvider().dataSourceUri()
             drive = uri.split(':')[0]
             return win32file.GetDriveType(drive + ':') == win32file.DRIVE_FIXED
-        except:
+        except Exception:
             return False
 
     def actIcones(self):
         if not self.editable:
             return
         for capa in self.capes():
-            if capa.type() == QgsMapLayer.VectorLayer:
+            if capa.type() == qgCor.QgsMapLayer.VectorLayer:
                 node = self.root.findLayer(capa.id())
                 if node is not None:
                     # Filtro
@@ -206,7 +206,7 @@ class QvLlegenda(QgsLayerTreeView):
                     else:
                         self.removeIndicator(node, self.iconaFiltre)
                     # Mapificacón
-                    var = QgsExpressionContextUtils.layerScope(capa).variable(MAP_ID)
+                    var = qgCor.QgsExpressionContextUtils.layerScope(capa).variable(MAP_ID)
                     if var is not None and self.capaLocal(capa):
                         self.addIndicator(node, self.iconaMap)
                     else:
@@ -216,7 +216,7 @@ class QvLlegenda(QgsLayerTreeView):
     def actIconaFiltre(self, capa):
         if not self.editable:
             return
-        if capa is None or capa.type() != QgsMapLayer.VectorLayer:
+        if capa is None or capa.type() != qgCor.QgsMapLayer.VectorLayer:
             return
         node = self.root.findLayer(capa.id())
         if node is not None:
@@ -235,9 +235,9 @@ class QvLlegenda(QgsLayerTreeView):
         self.escales.nouProjecte(self.project)
 
         for layer in self.capes():
-            if layer.type() == QgsMapLayer.VectorLayer:
+            if layer.type() == qgCor.QgsMapLayer.VectorLayer:
                 self.actIconaFiltre(layer)
-            if layer.type() == QgsMapLayer.RasterLayer and self.capaMarcada(layer):
+            if layer.type() == qgCor.QgsMapLayer.RasterLayer and self.capaMarcada(layer):
                 node = self.root.findLayer(layer.id())
                 # self.restoreExtent = 2
                 # print('restoreExtent', self.restoreExtent)
@@ -262,7 +262,7 @@ class QvLlegenda(QgsLayerTreeView):
         """
         if canvas is None:
             return
-        bridge = QgsLayerTreeMapCanvasBridge(self.root, canvas)
+        bridge = qgGui.QgsLayerTreeMapCanvasBridge(self.root, canvas)
         if self.canvas is None:  # Canvas principal
             self.canvasSettings(canvas)
             self.canvas = canvas
@@ -289,7 +289,7 @@ class QvLlegenda(QgsLayerTreeView):
         canvas.setParallelRenderingEnabled(True)
         canvas.setMapUpdateInterval(250)
         canvas.setSegmentationTolerance(0.01745)
-        canvas.setSegmentationToleranceType(QgsAbstractGeometry.MaximumAngle)
+        canvas.setSegmentationToleranceType(qgCor.QgsAbstractGeometry.MaximumAngle)
 
     def temes(self):
         return self.project.mapThemeCollection().mapThemes()
@@ -358,25 +358,25 @@ class QvLlegenda(QgsLayerTreeView):
         return False
 
     def setAccions(self):
-        act = QAction()
+        act = qtWdg.QAction()
         act.setText("Defineix grup")
         # act.setIcon(QIcon(':/Icones/ic_file_upload_black_48dp.png'))
         act.triggered.connect(self.defaultActions().addGroup)
         self.accions.afegirAccio('addGroup', act)
 
-        act = QAction()
+        act = qtWdg.QAction()
         act.setText("Afegeix capes Qgis")
         # act.setIcon(QIcon(':/Icones/ic_file_upload_black_48dp.png'))ic_beach_access_black_48dp
         act.triggered.connect(self.addLayersFromFile)
         self.accions.afegirAccio('addLayersFromFile', act)
 
-        act = QAction()
+        act = qtWdg.QAction()
         act.setText("Desa capes Qgis")
         # act.setIcon(QIcon(':/Icones/ic_file_upload_black_48dp.png'))ic_beach_access_black_48dp
         act.triggered.connect(self.saveLayersToFile)
         self.accions.afegirAccio('saveLayersToFile', act)
 
-        act = QAction()
+        act = qtWdg.QAction()
         act.setText("Canvia nom")
         # act.setIcon(QIcon(':/Icones/ic_file_upload_black_48dp.png'))
         act.triggered.connect(self.renameGroupOrLayer)  # , type = Qt.DirectConnection)
@@ -390,23 +390,23 @@ class QvLlegenda(QgsLayerTreeView):
         # if self.atributs is not None:
         #   act.triggered.connect(lambda: self.atributs.tabTaula(self.currentLayer()))
 
-        act = QAction()
+        act = qtWdg.QAction()
         act.setText("Esborra capa o grup")
         # act.setIcon(QIcon(':/Icones/ic_file_upload_black_48dp.png'))
         if self.atributs is not None:
             act.triggered.connect(lambda: self.atributs.tancarTaules(
-                QgsLayerTreeUtils.collectMapLayersRecursive([self.currentNode()])))
+                qgCor.QgsLayerTreeUtils.collectMapLayersRecursive([self.currentNode()])))
         act.triggered.connect(self.removeGroupOrLayer)
         # No se usa defaultActions() porque elimina todos los seleccionados
         self.accions.afegirAccio('removeGroupOrLayer', act)
 
-        act = QAction()
+        act = qtWdg.QAction()
         act.setText("Enquadra capa")
         # act.setIcon(QIcon(':/Icones/ic_file_upload_black_48dp.png'))
         act.triggered.connect(self.showLayerMap)
         self.accions.afegirAccio('showLayerMap', act)
 
-        act = QAction()
+        act = qtWdg.QAction()
         act.setText("Mostra contador elements")
         # act.setIcon(QIcon(':/Icones/ic_file_upload_black_48dp.png'))
         act.triggered.connect(self.defaultActions().showFeatureCount)
@@ -414,19 +414,19 @@ class QvLlegenda(QgsLayerTreeView):
         # act.setChecked(False)
         self.accions.afegirAccio('showFeatureCount', act)
 
-        act = QAction()
+        act = qtWdg.QAction()
         act.setText("Mostra taula dades")
         # act.setIcon(QIcon(':/Icones/ic_file_upload_black_48dp.png'))
         act.triggered.connect(self.showFeatureTable)
         self.accions.afegirAccio('showFeatureTable', act)
 
-        act = QAction()
+        act = qtWdg.QAction()
         act.setText("Filtra elements")
         # act.setIcon(QIcon(':/Icones/ic_file_upload_black_48dp.png'))
         act.triggered.connect(self.filterElements)
         self.accions.afegirAccio('filterElements', act)
 
-        act = QAction()
+        act = qtWdg.QAction()
         act.setText("Esborra filtre")
         # act.setIcon(QIcon(':/Icones/ic_file_upload_black_48dp.png'))
         act.triggered.connect(self.removeFilter)
@@ -442,9 +442,9 @@ class QvLlegenda(QgsLayerTreeView):
                 tipo = 'symb'
             else:
                 tipoNodo = node.nodeType()
-                if tipoNodo == QgsLayerTreeNode.NodeGroup:
+                if tipoNodo == qgCor.QgsLayerTreeNode.NodeGroup:
                     tipo = 'group'
-                elif tipoNodo == QgsLayerTreeNode.NodeLayer:
+                elif tipoNodo == qgCor.QgsLayerTreeNode.NodeLayer:
                     tipo = 'layer'
         return tipo
 
@@ -454,7 +454,7 @@ class QvLlegenda(QgsLayerTreeView):
         tipo = self.calcTipusMenu()
         if tipo == 'layer':
             capa = self.currentLayer()
-            if capa is not None and capa.type() == QgsMapLayer.VectorLayer:
+            if capa is not None and capa.type() == qgCor.QgsMapLayer.VectorLayer:
                 if self.atributs is not None:
                     self.menuAccions += ['showFeatureTable', 'filterElements']
                 self.menuAccions += ['showFeatureCount']
@@ -492,31 +492,31 @@ class QvLlegenda(QgsLayerTreeView):
             node.parent().removeChildNode(node)
 
     def addLayersFromFile(self):
-        dlgLayers = QFileDialog()
+        dlgLayers = qtWdg.QFileDialog()
         nfile, ok = dlgLayers.getOpenFileName(None, "Afegir Capes Qgis",
                                               self.directory, "Capes Qgis (*.qlr)")
         if ok and nfile != '':
             self.directory = os.path.dirname(nfile)
-            ok, txt = QgsLayerDefinition.loadLayerDefinition(nfile, self.project, self.root)
+            ok, txt = qgCor.QgsLayerDefinition.loadLayerDefinition(nfile, self.project, self.root)
             if not ok:
                 print('No se pudo importar capas', txt)
 
     def saveStyleToGeoPackage(self, capa, nom="", desc="", default=True):
-        s = QgsSettings()
+        s = qgCor.QgsSettings()
         s.setValue("qgis/overwriteStyle", True)
         return capa.saveStyleToDatabase(nom, desc, default, "")
 
     def saveLayersToFile(self):
         nodes = self.selectedNodes()
         if len(nodes) > 0:
-            dlgLayers = QFileDialog()
+            dlgLayers = qtWdg.QFileDialog()
             if self.directory is not None:
                 dlgLayers.setDirectory(self.directory)
             nfile, ok = dlgLayers.getSaveFileName(None, "Desar Capes Qgis",
                                                   self.directory, "Capes Qgis (*.qlr)")
             if ok and nfile != '':
                 self.directory = os.path.dirname(nfile)
-                ok, txt = QgsLayerDefinition.exportLayerDefinition(nfile, nodes)
+                ok, txt = qgCor.QgsLayerDefinition.exportLayerDefinition(nfile, nodes)
                 if not ok:
                     print('No se pudo exportar capas', txt)
 
@@ -532,7 +532,7 @@ class QvLlegenda(QgsLayerTreeView):
     def showFeatureTable(self):
         if self.atributs is not None:
             layer = self.currentLayer()
-            if layer is not None and layer.type() == QgsMapLayer.VectorLayer:
+            if layer is not None and layer.type() == qgCor.QgsMapLayer.VectorLayer:
                 self.atributs.obrirTaula(layer)
                 self.atributs.show()
                 self.obertaTaulaAtributs.emit()
@@ -574,9 +574,9 @@ class QvLlegenda(QgsLayerTreeView):
 
     def nodePerNom(self, nom, filtre='none'):
         if filtre == 'group':
-            tipus = QgsLayerTreeNode.NodeGroup
+            tipus = qgCor.QgsLayerTreeNode.NodeGroup
         elif filtre == 'layer':
-            tipus = QgsLayerTreeNode.NodeLayer
+            tipus = qgCor.QgsLayerTreeNode.NodeLayer
         else:
             tipus = None
         for node in self.nodes():
@@ -587,9 +587,9 @@ class QvLlegenda(QgsLayerTreeView):
     def items(self):
         def recurse(item, level):
             yield QvItemLlegenda(item, level)
-            if QgsLayerTree.isLayer(item):
+            if qgCor.QgsLayerTree.isLayer(item):
                 for cat in self.model.layerOriginalLegendNodes(item):
-                    if cat.data(Qt.CheckStateRole) is not None:
+                    if cat.data(qtCor.Qt.CheckStateRole) is not None:
                         yield QvItemLlegenda(cat, level + 1)
             for child in item.children():
                 yield from recurse(child, level + 1)
@@ -599,11 +599,10 @@ class QvLlegenda(QgsLayerTreeView):
             item = self.model.index2node(index)
             yield from recurse(item, 0)
 
+
 if __name__ == "__main__":
 
     from qgis.core.contextmanagers import qgisapp
-    from qgis.gui import QgsMapCanvas
-    from qgis.PyQt.QtWidgets import QMessageBox
     from moduls.QvApp import QvApp
 
     with qgisapp(sysexit=False) as app:
@@ -625,7 +624,7 @@ if __name__ == "__main__":
             else:
                 print('Capa activa: None')
 
-        canv = QgsMapCanvas()
+        canv = qgGui.QgsMapCanvas()
 
         atrib = QvAtributs(canv)
 
@@ -633,11 +632,11 @@ if __name__ == "__main__":
 
         leyenda.project.read('D:/qVista/EjemploMapSin.qgs')
 
-    # Al cargar un proyecto o capa:
-    # - Ver si tiene filtro de datos para actualizar el icono del embudo
-    # - Para las capas raster, ver si funciona el chech/uncheck de la capa para la visualización
-    # - Ver si se produce un cambio de escala y restaurarlo
-    # Evento: QgsProject -> legendLayersAdded(lista de capas)
+# Al cargar un proyecto o capa:
+# - Ver si tiene filtro de datos para actualizar el icono del embudo
+# - Para las capas raster, ver si funciona el chech/uncheck de la capa para la visualización
+# - Ver si se produce un cambio de escala y restaurarlo
+# Evento: QgsProject -> legendLayersAdded(lista de capas)
 
         canv.setWindowTitle('Canvas')
         canv.show()
@@ -645,19 +644,19 @@ if __name__ == "__main__":
         leyenda.setWindowTitle('Llegenda')
         leyenda.show()
 
-    # Acciones personalizadas para menú contextual de la leyenda:
-    #
-    # - Definición de la acción y del metodo asociado
-    # - Se añade la acción a la lista de acciones disponibles (llegenda.accions)
-    # - Se redefine la lista de acciones que apareceran en el menú (llegenda.menuAccions)
-    #   mediante la señal clicatMenuContexte según el tipo de nodo clicado
-    #   (Tipos: none, group, layer, symb)
+# Acciones personalizadas para menú contextual de la leyenda:
+#
+# - Definición de la acción y del metodo asociado
+# - Se añade la acción a la lista de acciones disponibles (llegenda.accions)
+# - Se redefine la lista de acciones que apareceran en el menú (llegenda.menuAccions)
+#   mediante la señal clicatMenuContexte según el tipo de nodo clicado
+#   (Tipos: none, group, layer, symb)
 
         # Acciones de usuario
 
         def openProject():
-            dialegObertura = QFileDialog()
-            dialegObertura.setDirectoryUrl(QUrl('../dades/projectes/'))
+            dialegObertura = qtWdg.QFileDialog()
+            dialegObertura.setDirectoryUrl(qtCor.QUrl('../dades/projectes/'))
             mapes = "Tots els mapes acceptats (*.qgs *.qgz);; " \
                     "Mapes Qgis (*.qgs);;Mapes Qgis comprimits (*.qgz)"
             nfile, _ = dialegObertura.getOpenFileName(None, "Obrir mapa Qgis",
@@ -693,7 +692,7 @@ if __name__ == "__main__":
                       'Marcado:', item.esMarcat())
 
         def salutacions():
-            QMessageBox().information(None, 'qVista', 'Salutacions ' + QvApp().usuari)
+            qtWdg.QMessageBox().information(None, 'qVista', 'Salutacions ' + QvApp().usuari)
 
         def editable():
             leyenda.editarLlegenda(not leyenda.editable)
@@ -704,7 +703,7 @@ if __name__ == "__main__":
         def testLabels():
             print("Test Labels")
             capa = leyenda.currentLayer()
-            if capa is None or capa.type() != QgsMapLayer.VectorLayer:
+            if capa is None or capa.type() != qgCor.QgsMapLayer.VectorLayer:
                 return
             print("Capa: {}".format(capa.name()))
             if not capa.labelsEnabled():
@@ -732,37 +731,37 @@ if __name__ == "__main__":
             leyenda.mask.maskOff()
 
         # Acciones de usuario para el menú
-        act = QAction()
+        act = qtWdg.QAction()
         act.setText("Editable")
         act.triggered.connect(editable)
         leyenda.accions.afegirAccio('editable', act)
 
-        act = QAction()
+        act = qtWdg.QAction()
         act.setText("Test")
         act.triggered.connect(test)
         leyenda.accions.afegirAccio('test', act)
 
-        act = QAction()
+        act = qtWdg.QAction()
         act.setText("Test Labels")
         act.triggered.connect(testLabels)
         leyenda.accions.afegirAccio('testLabels', act)
 
-        act = QAction()
+        act = qtWdg.QAction()
         act.setText("Mask Labels")
         act.triggered.connect(maskLabels)
         leyenda.accions.afegirAccio('maskLabels', act)
 
-        act = QAction()
+        act = qtWdg.QAction()
         act.setText("Mask Labels On")
         act.triggered.connect(maskOn)
         leyenda.accions.afegirAccio('maskOn', act)
 
-        act = QAction()
+        act = qtWdg.QAction()
         act.setText("Mask Labels Off")
         act.triggered.connect(maskOff)
         leyenda.accions.afegirAccio('maskOff', act)
 
-        act = QAction()
+        act = qtWdg.QAction()
         act.setText("Abrir proyecto")
         act.triggered.connect(openProject)
         leyenda.accions.afegirAccio('openProject', act)

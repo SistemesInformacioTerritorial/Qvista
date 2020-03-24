@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 
-from qgis.PyQt.QtCore import Qt
-from qgis.PyQt.QtGui import QColor
-from qgis.core import QgsLegendModel, QgsLayerTreeNode
-from qgis.gui import QgsLayerTreeViewMenuProvider
+import qgis.PyQt.QtCore as qtCor
+import qgis.PyQt.QtGui as qtGui
+import qgis.core as qgCor
+import qgis.gui as qgGui
 
-class QvItemLlegenda(object):
+
+class QvItemLlegenda:
 
     def __init__(self, item, nivell):
-        super().__init__()
         self.item = item
         self.nivell = nivell
         self.tipus = self.calcTipus()
@@ -38,7 +38,7 @@ class QvItemLlegenda(object):
         if self.tipus in ('layer', 'group'):
             return self.item.name()
         elif self.tipus == 'symb':
-            return self.item.data(Qt.DisplayRole)
+            return self.item.data(qtCor.Qt.DisplayRole)
         else:
             return None
 
@@ -46,7 +46,7 @@ class QvItemLlegenda(object):
         if self.tipus in ('layer', 'group'):
             return self.item.itemVisibilityChecked()
         elif self.tipus == 'symb':
-            return self.item.data(Qt.CheckStateRole) != 0
+            return self.item.data(qtCor.Qt.CheckStateRole) != 0
         else:
             return None
 
@@ -55,9 +55,9 @@ class QvItemLlegenda(object):
             self.item.setItemVisibilityChecked(switch)
         elif self.tipus == 'symb':
             if switch:
-                self.item.setData(Qt.Checked, Qt.CheckStateRole)
+                self.item.setData(qtCor.Qt.Checked, qtCor.Qt.CheckStateRole)
             else:
-                self.item.setData(Qt.Unchecked, Qt.CheckStateRole)
+                self.item.setData(qtCor.Qt.Unchecked, qtCor.Qt.CheckStateRole)
 
     def esVisible(self):
         if self.tipus in ('layer', 'group'):
@@ -82,7 +82,8 @@ class QvItemLlegenda(object):
                 if children:
                     self.item.layerNode().setItemVisibilityCheckedRecursive(True)
 
-class QvModelLlegenda(QgsLegendModel):
+
+class QvModelLlegenda(qgCor.QgsLegendModel):
     def __init__(self, root):
         super().__init__(root)
         self.setScale(1.0)
@@ -91,22 +92,23 @@ class QvModelLlegenda(QgsLegendModel):
         self.scale = scale
 
     def data(self, index, role):
-        if index.isValid() and role == Qt.ForegroundRole:
+        if index.isValid() and role == qtCor.Qt.ForegroundRole:
             node = self.index2node(index)
-            if node is not None and node.nodeType() == QgsLayerTreeNode.NodeLayer:
+            if node is not None and node.nodeType() == qgCor.QgsLayerTreeNode.NodeLayer:
                 layer = node.layer()
                 if layer is not None and layer.hasScaleBasedVisibility():
                     if layer.isInScaleRange(self.scale):
-                        color = QColor('#000000')
+                        color = qtGui.QColor('#000000')
                     else:
-                        color = QColor('#c0c0c0')
+                        color = qtGui.QColor('#c0c0c0')
                     return color
         return super().data(index, role)
 
-class QvMenuLlegenda(QgsLayerTreeViewMenuProvider):
+
+class QvMenuLlegenda(qgGui.QgsLayerTreeViewMenuProvider):
 
     def __init__(self, llegenda):
-        QgsLayerTreeViewMenuProvider.__init__(self)
+        qgGui.QgsLayerTreeViewMenuProvider.__init__(self)
         self.llegenda = llegenda
 
     def createContextMenu(self):

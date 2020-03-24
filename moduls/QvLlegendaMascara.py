@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
-from qgis.core import QgsMapLayer, QgsPalLayerSettings, QgsPropertyCollection, QgsProperty
+import qgis.core as qgCor
+
 
 class QvLlegendaMascara:
 
@@ -10,7 +11,7 @@ class QvLlegendaMascara:
         self.layerId = self.layer.id()
         self.polygonId = polygonId
         self.template = "within(centroid($geometry), geometry(get_feature_by_id('{}', {})))"
-        self.key = QgsPalLayerSettings.Show
+        self.key = qgCor.QgsPalLayerSettings.Show
         self.active = False
         self.labels = None
         self.sets = None
@@ -22,17 +23,17 @@ class QvLlegendaMascara:
 
     # Funciones de 1 capa
     def labelsEnabled(self, layer):
-        if layer is None or layer.type() != QgsMapLayer.VectorLayer:
+        if layer is None or layer.type() != qgCor.QgsMapLayer.VectorLayer:
             return False
         return layer.labelsEnabled()
 
     def getLabelsProps(self, layer):
         if self.labelsEnabled(layer):
-            self.labels = layer.labeling() # QgsVectorLayerSimpleLabeling
-            self.sets = self.labels.settings() # QgsPalLayerSettings
-            self.props = self.sets.dataDefinedProperties() # QgsPropertyCollection
+            self.labels = layer.labeling()  # QgsVectorLayerSimpleLabeling
+            self.sets = self.labels.settings()  # QgsPalLayerSettings
+            self.props = self.sets.dataDefinedProperties()  # QgsPropertyCollection
             if self.props is None:
-                self.props = QgsPropertyCollection()
+                self.props = qgCor.QgsPropertyCollection()
             return True
         else:
             return False
@@ -43,8 +44,9 @@ class QvLlegendaMascara:
 
         if self.props.hasProperty(self.key):
             prop = self.props.property(self.key)
-            if prop.isActive() and prop.propertyType() == QgsProperty.ExpressionBasedProperty and \
-               prop.expressionString() == self.calcExpression():
+            if (prop.isActive() and
+               prop.propertyType() == qgCor.QgsProperty.ExpressionBasedProperty and
+               prop.expressionString() == self.calcExpression()):
                 return True
         return False
 
@@ -53,7 +55,7 @@ class QvLlegendaMascara:
             return
 
         if active:
-            prop = QgsProperty()
+            prop = qgCor.QgsProperty()
             prop.setExpressionString(self.calcExpression())
             self.props.setProperty(self.key, prop)
         else:
