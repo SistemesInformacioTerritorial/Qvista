@@ -2608,7 +2608,6 @@ class QVista(QMainWindow, Ui_MainWindow):
         layer=self.llegenda.currentLayer()
         self.dlgProperties = None
         self.dlgProperties = QvVisualitzacioCapa( self, layer)
-        # Haurà de ser QvVisualitzacioCapa
         self.dlgProperties.show()
 
     def esborrarSeleccio(self, tambePanCanvas = True, mascara=False):
