@@ -2526,10 +2526,11 @@ class QVista(QMainWindow, Ui_MainWindow):
         layer_settings.placement = 0
 
         layer_settings.enabled = True
+        print ("layer settings:"+layer_settings.fieldName)
+        labeling  = QgsVectorLayerSimpleLabeling(layer_settings)
 
-        layer_settings = QgsVectorLayerSimpleLabeling(layer_settings)
         layer.setLabelsEnabled(True)
-        layer.setLabeling(layer_settings)
+        layer.setLabeling(labeling)
         layer.triggerRepaint()
 
     def cercaText(self): #???

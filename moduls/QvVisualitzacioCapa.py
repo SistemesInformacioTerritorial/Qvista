@@ -27,9 +27,6 @@ class QvVisualitzacioCapa( QtWidgets.QDialog, Ui_LayerProperties ):
         self.txtLayerName.setText( self.layer.name() )
 
         if self.layer.type() == 0: # Vector Layer
-            self.lblDisplayField.setVisible( True )
-            self.cboDisplayFieldName.setVisible( True )
-            self.cboDisplayFieldName.setEnabled( True )
 
             self.fields = self.layer.fields()
 
@@ -47,9 +44,16 @@ class QvVisualitzacioCapa( QtWidgets.QDialog, Ui_LayerProperties ):
             #     #if not field.type() == QVariant.Double:
             #         # self.displayName = self.vectorLayer.attributeDisplayName( key )
             #     self.cboDisplayFieldName.addItem( field.name() )
-            print(self.layer.displayField())
+            labeling = self.layer.labeling()
+            print('Labeling'+labeling)
+
             idx = self.cboDisplayFieldName.findText( self.layer.displayField() )
             self.cboDisplayFieldName.setCurrentIndex( idx )
+
+            
+            self.lblDisplayField.setVisible( True )
+            self.cboDisplayFieldName.setVisible( True )
+            self.cboDisplayFieldName.setEnabled( True )
         else:
             self.lblDisplayField.setVisible( False )
             self.cboDisplayFieldName.setVisible( False )
@@ -67,7 +71,7 @@ class QvVisualitzacioCapa( QtWidgets.QDialog, Ui_LayerProperties ):
             self.chkScaleChanged( 0 ) 
             self.initialScaleDependency = False
 
-        self.initialMaxScale = self.layer.minimumScale() # To know if refresh the canvas
+        self.initialMaxScale = self.layer.minimumScale() 
         self.initialMinScale = self.layer.maximumScale()
         self.maxScaleSpinBox.setValue( self.layer.minimumScale() )
         self.minScaleSpinBox.setValue( self.layer.maximumScale() )
@@ -99,7 +103,6 @@ class QvVisualitzacioCapa( QtWidgets.QDialog, Ui_LayerProperties ):
             self.minScaleSpinBox.setEnabled( False )            
 
     def apply( self ):            
-        """ Apply the new symbology to the vector layer """
         newLayerName = self.txtLayerName.text()
         if newLayerName:
             if not newLayerName == self.layer.name():
@@ -124,6 +127,5 @@ class QvVisualitzacioCapa( QtWidgets.QDialog, Ui_LayerProperties ):
             self.parent.canvas.refresh() # Scale dependency changed, so refresh
 
     def mostrar( self ):
-        """ Show the modal dialog """
         self.exec_()
 
