@@ -2606,7 +2606,7 @@ class QVista(QMainWindow, Ui_MainWindow):
     def propietatsLayer(self):
         layer=self.llegenda.currentLayer()
         self.dlgProperties = None
-        self.dlgProperties = LayerProperties( self, layer)
+        self.dlgProperties = QvVisualitzacioCapa( self, layer)
         # Haurà de ser QvVisualitzacioCapa
         self.dlgProperties.show()
 
