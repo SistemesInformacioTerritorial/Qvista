@@ -133,7 +133,7 @@ class Ui_QvVisualitzacioCapa(object):
 
     def retranslateUi(self, QvVisualitzacioCapa):
         _translate = QtCore.QCoreApplication.translate
-        QvVisualitzacioCapa.setWindowTitle(_translate("QvVisualitzacioCapa", "Layer properties"))
+        QvVisualitzacioCapa.setWindowTitle(_translate("QvVisualitzacioCapa", "Opcions de visualització de capa"))
         self.label.setText(_translate("QvVisualitzacioCapa", "Nom del nivell"))
         self.chkScale.setText(_translate("QvVisualitzacioCapa", "Visible segons escala:"))
         self.lblMaxScale.setText(_translate("QvVisualitzacioCapa", "Escala màxima"))

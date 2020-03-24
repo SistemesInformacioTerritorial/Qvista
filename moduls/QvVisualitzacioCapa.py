@@ -1,8 +1,11 @@
 # -*- coding:utf-8 -*-
 
 from PyQt5 import QtCore, QtGui,QtWidgets
+from qgis.core import QgsPalLayerSettings, QgsTextFormat, QgsTextBufferSettings, QgsVectorLayerSimpleLabeling
+from PyQt5.QtGui import QFont, QColor
 
 from QvVisualitzacioCapa_ui import Ui_QvVisualitzacioCapa
+from moduls.QvConstants import QvConstants
 
 class QvVisualitzacioCapa( QtWidgets.QDialog, Ui_QvVisualitzacioCapa ):
     """ Open a dialog to manage the layer properties """
@@ -44,8 +47,6 @@ class QvVisualitzacioCapa( QtWidgets.QDialog, Ui_QvVisualitzacioCapa ):
             #     #if not field.type() == QVariant.Double:
             #         # self.displayName = self.vectorLayer.attributeDisplayName( key )
             #     self.cboDisplayFieldName.addItem( field.name() )
-            labeling = self.layer.labeling()
-            print('Labeling'+labeling)
 
             idx = self.cboDisplayFieldName.findText( self.layer.displayField() )
             self.cboDisplayFieldName.setCurrentIndex( idx )
@@ -87,7 +88,7 @@ class QvVisualitzacioCapa( QtWidgets.QDialog, Ui_QvVisualitzacioCapa ):
 
     def fieldCanviat(self):
         if self.cboDisplayFieldName.currentText() != 'Sense etiqueta':
-            self.parent.pintaLabels(self.cboDisplayFieldName.currentText())
+            self.pintaLabels(self.cboDisplayFieldName.currentText())
 
     def chkScaleChanged( self, state ):
         """ Slot. """
@@ -125,6 +126,40 @@ class QvVisualitzacioCapa( QtWidgets.QDialog, Ui_QvVisualitzacioCapa ):
            ( finalScaleDependency and ( ( not self.initialMaxScale == self.maxScaleSpinBox.value() ) or \
             ( not self.initialMinScale == self.minScaleSpinBox.value() ) ) ):
             self.parent.canvas.refresh() # Scale dependency changed, so refresh
+
+    def pintaLabels(self, campEtiqueta):
+        """Pinta sobre el canvas les etiquetas de la capa activa, segons campEtiqueta.
+        
+        Arguments:
+        campEtiqueta {[String]} -- És el nom del camp del que volem pintar etiquetes.
+        """
+
+        # layer=self.llegenda.currentLayer()
+
+        layer_settings  = QgsPalLayerSettings()
+        text_format = QgsTextFormat()
+
+        text_format.setFont(QvConstants.FONTTEXT)
+        text_format.setSize(12)
+
+        buffer_settings = QgsTextBufferSettings()
+        buffer_settings.setEnabled(True)
+        buffer_settings.setSize(1)
+        buffer_settings.setColor(QColor("white"))
+
+        text_format.setBuffer(buffer_settings)
+        layer_settings.setFormat(text_format)
+
+        layer_settings.fieldName = campEtiqueta
+        layer_settings.placement = 0
+
+        layer_settings.enabled = True
+        print ("layer settings:"+layer_settings.fieldName)
+        labeling  = QgsVectorLayerSimpleLabeling(layer_settings)
+
+        self.layer.setLabelsEnabled(True)
+        self.layer.setLabeling(labeling)
+        self.layer.triggerRepaint()
 
     def mostrar( self ):
         self.exec_()
