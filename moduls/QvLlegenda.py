@@ -608,7 +608,7 @@ if __name__ == "__main__":
     with qgisapp(sysexit=False) as app:
 
         QvApp().carregaIdioma(app, 'ca')
-        # QvApp().logInici()
+        QvApp().logInici()
 
         def printCapaActiva():
             cLayer = leyenda.currentLayer()
@@ -632,25 +632,19 @@ if __name__ == "__main__":
 
         leyenda.project.read('D:/qVista/EjemploMapSin.qgs')
 
-# Al cargar un proyecto o capa:
-# - Ver si tiene filtro de datos para actualizar el icono del embudo
-# - Para las capas raster, ver si funciona el chech/uncheck de la capa para la visualización
-# - Ver si se produce un cambio de escala y restaurarlo
-# Evento: QgsProject -> legendLayersAdded(lista de capas)
-
         canv.setWindowTitle('Canvas')
         canv.show()
 
         leyenda.setWindowTitle('Llegenda')
         leyenda.show()
 
-# Acciones personalizadas para menú contextual de la leyenda:
-#
-# - Definición de la acción y del metodo asociado
-# - Se añade la acción a la lista de acciones disponibles (llegenda.accions)
-# - Se redefine la lista de acciones que apareceran en el menú (llegenda.menuAccions)
-#   mediante la señal clicatMenuContexte según el tipo de nodo clicado
-#   (Tipos: none, group, layer, symb)
+        # Acciones personalizadas para menú contextual de la leyenda:
+        #
+        # - Definición de la acción y del metodo asociado
+        # - Se añade la acción a la lista de acciones disponibles (llegenda.accions)
+        # - Se redefine la lista de acciones que apareceran en el menú (llegenda.menuAccions)
+        #   mediante la señal clicatMenuContexte según el tipo de nodo clicado
+        #   (Tipos: none, group, layer, symb)
 
         # Acciones de usuario
 
@@ -697,40 +691,48 @@ if __name__ == "__main__":
         def editable():
             leyenda.editarLlegenda(not leyenda.editable)
 
-        # leyenda.mask = QvMaskLabels(leyenda.capaPerNom("Zones districtes"), 3)
-        # leyenda.mask = QvLlegendaMascara(leyenda, leyenda.capaPerNom("Màscara"), 1)
+        # Acciones de prueba de máscara para etiquetas
+
+        leyenda.mask = QvLlegendaMascara(leyenda.capaPerNom("Zones districtes"), 3)
 
         def testLabels():
             print("Test Labels")
-            capa = leyenda.currentLayer()
-            if capa is None or capa.type() != qgCor.QgsMapLayer.VectorLayer:
+            if leyenda.mask is None:
+                print("- Sin máscara")
                 return
+            capa = leyenda.currentLayer()
             print("Capa: {}".format(capa.name()))
-            if not capa.labelsEnabled():
+            if not leyenda.mask.labelsEnabled(capa):
                 print("- Sin etiquetas")
                 return
-
-            on = leyenda.mask.isEnabled(capa)
+            on = leyenda.mask.isActive(capa)
             if on:
                 print("- Activada")
             else:
                 print("- No activada")
 
         def maskLabels():
+            print("Mask Labels")
+            if leyenda.mask is None:
+                print("- Sin máscara")
+                return
             capa = leyenda.currentLayer()
-            on = leyenda.mask.isEnabled(capa)
+            on = leyenda.mask.isActive(capa)
             leyenda.mask.switch(capa, not on)
             if leyenda.capaVisible(capa):
                 canv.clearCache()
                 canv.refresh()
 
         def maskOn():
-            leyenda.mask.maskOn()
+            if leyenda.mask is not None:
+                leyenda.mask.maskOn()
 
         def maskOff():
-            leyenda.mask.maskOff()
+            if leyenda.mask is not None:
+                leyenda.mask.maskOff()
 
         # Acciones de usuario para el menú
+
         act = qtWdg.QAction()
         act.setText("Editable")
         act.triggered.connect(editable)
@@ -767,6 +769,7 @@ if __name__ == "__main__":
         leyenda.accions.afegirAccio('openProject', act)
 
         # Adaptación del menú
+
         def menuContexte(tipo):
             if tipo == 'layer':
                 leyenda.menuAccions.append('testLabels')
