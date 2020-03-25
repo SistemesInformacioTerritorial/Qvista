@@ -8,7 +8,7 @@ from qgis.core import (QgsProject, QgsSettings, QgsLegendModel, QgsLayerDefiniti
                        QgsVectorLayerSimpleLabeling, QgsPalLayerSettings, QgsPropertyCollection, QgsProperty, QgsAbstractGeometry)
 from qgis.gui import (QgsLayerTreeView, QgsLayerTreeViewMenuProvider, QgsLayerTreeMapCanvasBridge,
                       QgsLayerTreeViewIndicator, QgsLayerTreeViewDefaultActions, QgsGradientColorRampDialog)
-from qgis.PyQt.QtWidgets import QAction, QFileDialog, QWidget, QPushButton, QVBoxLayout, QHBoxLayout, QGridLayout
+from qgis.PyQt.QtWidgets import QAction, QFileDialog, QHBoxLayout, QPushButton, QVBoxLayout, QWidget
 from qgis.PyQt.QtGui import QIcon, QColor
 from qgis.PyQt.QtCore import Qt, pyqtSignal, QUrl
 from moduls.QvAccions import QvAccions
@@ -1129,7 +1129,7 @@ if __name__ == "__main__":
             leyenda.maskOff()
 
         def testMapificacio():
-            from moduls.QvMapForms import QvFormNovaMapificacio, QvFormSimbMapificacio
+            from moduls.QvMapForms import QvFormNovaMapificacio
 
             fMap = QvFormNovaMapificacio(leyenda)
             fMap.exec()
@@ -1181,14 +1181,10 @@ if __name__ == "__main__":
 
         def testJoin():
 
-            import sys
-            import csv
-            import time
-            from moduls.QvSqlite import QvSqlite
+            pass
 
             ruta = 'D:/qVista/'
             fich = 'CarrecsANSI'
-            code = 'ANSI'
             camp = 'BARRI'
             showErrors = False
 

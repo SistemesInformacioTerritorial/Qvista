@@ -1,7 +1,7 @@
 from moduls.QvVisorHTML import QvVisorHTML
 from moduls.QvPushButton import QvPushButton
 from moduls.QvMemoria import QvMemoria
-from PyQt5.QtWidgets import QCheckBox
+from qgis.PyQt.QtWidgets import QCheckBox
 import os
 import random
 

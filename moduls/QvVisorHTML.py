@@ -1,9 +1,7 @@
 from moduls.QvImports import *
-from PyQt5 import QtCore
-from PyQt5 import QtGui
-from PyQt5.QtCore import pyqtProperty #???
-from PyQt5 import QtCore, QtWidgets
-from PyQt5.QtGui import QColor, QKeySequence
+from qgis.PyQt.QtCore import pyqtProperty #???
+from qgis.PyQt import QtWidgets
+from qgis.PyQt.QtGui import QKeySequence
 from moduls.QvConstants import QvConstants
 from moduls.QvPushButton import QvPushButton
 from moduls.QvApp import QvApp
@@ -37,20 +35,13 @@ class QvVisorHTML(QDialog):
         self.layoutCapcalera.addWidget(self.lblCapcalera)
 
         # Text de la notícia
-        # self.caixaText = QtWidgets.QTextEdit()
-        # self.caixaText.setHtml(open(file).read())
-        # self.layout.addWidget(self.caixaText)
         self.file=file
         self.caixaText=QWebView()
-        # caixaText.onLoadingChanged: {
-        #     if (loadRequest.status == WebView.LoadFailedStatus) 
-        #     console.log("Load failed! Error code: " + loadRequest.errorCode)
-        # }
+        self.caixaText.setZoomFactor(QvApp().zoomFactor())
         self.caixaText.load(QUrl("file:///%s"%file))
         self.layoutCaixaText=QVBoxLayout()
         self.layoutCaixaText.addWidget(self.caixaText)
         self.layout.addLayout(self.layoutCaixaText)
-        # self.layout.addWidget(self.caixaText)
 
         # Botó de sortida
         self.layoutBoto = QHBoxLayout()
@@ -71,14 +62,10 @@ class QvVisorHTML(QDialog):
         pal.setBrush(QPalette.Base,Qt.transparent)
         self.caixaText.page().setPalette(pal)
         self.caixaText.setAttribute(Qt.WA_OpaquePaintEvent,False)
-        # self.caixaText.setFrameStyle(QFrame.NoFrame)
         self.caixaText.page().currentFrame().setScrollBarPolicy(Qt.Vertical,Qt.ScrollBarAlwaysOn)
-        # self.caixaText.setViewportMargins(20, 20, 20, 0)
-        # self.caixaText.setStyleSheet('''margin: 0px 0px 0px 10px''')
         self.caixaText.settings().setUserStyleSheetUrl(QUrl('file:///style.qss'))
         
         self.setWindowFlags(Qt.Window | Qt.FramelessWindowHint)
-        # self.lblLogo.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         self.lblLogo.setFixedSize(40,40)
         self.lblCapcalera.setStyleSheet('background-color: %s; color: %s; border: 0px' % (
             QvConstants.COLORFOSCHTML, QvConstants.COLORBLANCHTML))
@@ -92,14 +79,10 @@ class QvVisorHTML(QDialog):
         self.layoutBoto.setSpacing(10)
         self.layoutCaixaText.setContentsMargins(10,10,2,10)
         self.widgetSup.setGraphicsEffect(QvConstants.ombraHeader(self.widgetSup))
-        # self.ombraHeader=QvConstants.afegeixOmbraHeader(self.widgetSup)
-        # self.ombraHeader.setEnabled(True)
 
         self.setWindowTitle("qVista - Noticies")
-        self.caixaText.setZoomFactor(QvApp().zoomFactor())
         self.resize(640, 480)
         self.oldPos = self.pos()
-        # QvConstants.afegeixOmbraWidget(self)
 
     def mousePressEvent(self, event):
         self.oldPos = event.globalPos()
@@ -126,7 +109,6 @@ class QvVisorHTML(QDialog):
         if file is None:
             file=self.file
             self.caixaText.load(QUrl('file:///%s'%self.file))
-            # self.caixaText.setText("No s'ha pogut trobar l'arxiu")
         else:
             self.caixaText.load(QUrl("file:///%s"%file))
         print(file)

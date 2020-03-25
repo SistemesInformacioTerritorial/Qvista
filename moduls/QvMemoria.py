@@ -3,7 +3,7 @@ from moduls.QvSingleton import Singleton
 import json
 import hashlib
 
-from PyQt5.QtGui import QColor
+from qgis.PyQt.QtGui import QColor
 
 arxiuTmpAvis=os.path.join(configdir,'ultimAvisObert')
 arxiuTmpNews=os.path.join(configdir,'ultimaNewOberta')
@@ -13,6 +13,7 @@ arxiuVolHints=os.path.join(configdir,'volHints')
 arxiuDadesMascara=os.path.join(configdir,'dadesMascara')
 arxiuCampsGeocod=os.path.join(configdir,'geocod.json')
 arxiuGeocodificats=os.path.join(configdir,'geocodificats.json')
+arxiuCatalegsLocals=os.path.join(configdir+'catalegsLocals')
 
 def llegirArxiu(f,encoding='utf-8'):
     with open(f,encoding=encoding) as arxiu:
@@ -39,11 +40,13 @@ class QvMemoria(Singleton):
             self.directoriDesar=llegirArxiu(arxiuDirectoriDesar,encoding='utf-8')
         self.volHints=not os.path.isfile(arxiuVolHints) or llegirArxiu(arxiuVolHints)!='False'
         if os.path.isfile(arxiuCampsGeocod):
-            self.campsGeocod=json.loads(open(arxiuCampsGeocod).read())
+            with open(arxiuCampsGeocod) as f:
+                self.campsGeocod=json.loads(f.read())
         else:
             self.campsGeocod={}
         if os.path.isfile(arxiuGeocodificats):
-            self.geocodificats=json.loads(open(arxiuGeocodificats).read())
+            with open(arxiuGeocodificats) as f:
+                self.geocodificats=json.loads(f.read())
         else:
             self.geocodificats={}
     def getUltimaNew(self):
@@ -69,7 +72,6 @@ class QvMemoria(Singleton):
             return self.mapesRecents
         except:
             return []
-        pass
     def setMapesRecents(self,recents):
         self.mapesRecents=recents
     def getDirectoriDesar(self):
@@ -113,7 +115,20 @@ class QvMemoria(Singleton):
                 if md5sum(ruta)==self.geocodificats[suma_orig]:
                     return ruta
         return None
-        pass
+    def getCatalegsLocals(self):
+        if not os.path.isfile(arxiuCatalegsLocals):
+            return [os.path.abspath('../dades/CatalegProjectes')]
+        with open(arxiuCatalegsLocals) as f:
+            return list(f.readlines())
+    def setCatalegLocal(self,path,posal=True):
+        cont=self.getCatalegsLocals()
+        path=os.path.abspath(path)
+        if posal:
+            cont=list(set(cont+[path]))
+        else:
+            cont=cont.remove(path)
+        with open(arxiuCatalegsLocals,'w',newline='\n') as f:
+            f.writelines(cont)
     def pafuera(self):
         if hasattr(self,'mapesRecents'):
             with open(arxiuMapesRecents,'w',encoding='utf-8') as f:

@@ -1,23 +1,24 @@
-from PyQt5.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QTableWidget, QTableWidgetItem
-from PyQt5.QtGui import QDesktopServices
+from qgis.PyQt.QtWidgets import QHBoxLayout, QVBoxLayout, QWidget
+from qgis.PyQt.QtGui import QDesktopServices
 from moduls.QvPushButton import QvPushButton
 from moduls.QvConstants import QvConstants
 import csv
 import chardet
-import time
-from typing import List, Tuple, Iterable
+from typing import Iterable
 from moduls.QvImports import *
-from moduls.QvFuncioFil import QvFuncioFil
 
 
 class ModelCsv(QAbstractTableModel):
     ROW_BATCH_COUNT = 15
 
-    def __init__(self):
+    def __init__(self, readonly=False):
         super().__init__()
+        self.readonly=readonly
         self.headers = []
         self.persons = []
         self.rowsLoaded = ModelCsv.ROW_BATCH_COUNT
+    def setReadOnly(self,readonly):
+        self.readonly=readonly
 
     def setHeaders(self, headers):
         self.headers = headers
@@ -45,7 +46,7 @@ class ModelCsv(QAbstractTableModel):
             self.addRows(lector)
 
     def addRows(self, rows):
-        self.persons.extend(list(rows))
+        self.persons.extend(rows)
 
     def rowCount(self, index=QModelIndex()):
         if not self.persons:
@@ -91,7 +92,7 @@ class ModelCsv(QAbstractTableModel):
             return QBrush(QvConstants.COLORDESTACAT) if index.row()+1 in self.errors else QBrush(QvConstants.COLORBLANC)
 
     def setData(self, index, value, role):
-        if index.isValid and role == Qt.EditRole:
+        if index.isValid and role == Qt.EditRole and not self.readonly:
             self.persons[index.row()][index.column()] = value
             self.dataChanged.emit(index, index)
             return True
@@ -153,6 +154,7 @@ class QvEditorCsv(QDialog):
             # self._layErrors.addWidget(self._spinErrors)
             # self._layErrors.addStretch()
             self._lay.addLayout(self._layErrors)
+        self._lay.addWidget(QLabel(self._arxiu))
         # Declarem la taula
         self._taula = QTableView()
         self._lay.addWidget(self._taula)
@@ -185,7 +187,10 @@ class QvEditorCsv(QDialog):
         self._layBotons.addStretch()
         self._layBotons.addWidget(self._bDesar)
         self._layBotons.addWidget(self._bCancelar)
-
+    def setReadOnly(self,readonly):
+        self._model.setReadOnly(readonly)
+        self._bDesar.setEnabled(not readonly)
+        self._taula.setEditTriggers(QAbstractItemView.NoEditTriggers if readonly else QAbstractItemView.AllEditTriggers)
     def _obreFullCalcul(self):
         QDesktopServices.openUrl(QUrl(self._arxiu))
         self.close()
@@ -238,6 +243,7 @@ class QvEditorCsv(QDialog):
             self.close()
 
     def _errorProper(self, x, y):
+        self.setCursor(QvConstants.cursorOcupat())
         if self._teErrors:
             if x+1 in self._errors:
                 self._setError(self._errors.index(x+1), True)
@@ -246,11 +252,14 @@ class QvEditorCsv(QDialog):
                 distancies = enumerate(map(lambda xx: abs(xx-x), self._errors))
                 index = sorted(distancies, key=lambda x: x[1])[0][0]
                 self._setError(index, True)
+        self.setCursor(QvConstants.cursorFletxa())
 
     def showEvent(self, e):
+        self.setCursor(QvConstants.cursorOcupat())
         super().showEvent(e)
         if self._teErrors:
             self._mostraErrorActual()
+        self.setCursor(QvConstants.cursorFletxa())
 
 
 if __name__ == '__main__':

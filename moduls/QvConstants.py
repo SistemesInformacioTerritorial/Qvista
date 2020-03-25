@@ -1,7 +1,6 @@
 # "Constants" útils
-from PyQt5.QtGui import QFont, QColor
-from PyQt5.QtWidgets import QGraphicsDropShadowEffect, QWidget
-import tempfile
+from qgis.PyQt.QtGui import QFont, QColor
+from qgis.PyQt.QtWidgets import QGraphicsDropShadowEffect, QWidget
 from moduls.QvImports import * 
 # Per poder indicar a una funció que rep una seqüència (tupla, llista)
 from typing import Sequence
@@ -34,6 +33,7 @@ class QvConstants:
     # COLOROMBRAHTML = '#666666DD'
     COLOROMBRAHTML = '#66000000'
     COLORCERCADORHTML='#B6C2C9'
+    COLORTEXTHINTHTML='#A0A0A0'
     # Colors del qVista, utilitzant QColor
     COLORFOSC = QColor(COLORFOSCHTML)
     COLORMIG = QColor(COLORMIGHTML)
@@ -45,6 +45,7 @@ class QvConstants:
     COLORDESTACAT = QColor(COLORDESTACATHTML)
     COLOROMBRA = QColor(COLOROMBRAHTML)
     COLORCERCADOR=QColor(COLORCERCADORHTML)
+    COLORTEXTHINT=QColor(COLORTEXTHINTHTML)
 
     #No podem crear una QPixMap sense 
     CURSORFLETXA=Qt.ArrowCursor

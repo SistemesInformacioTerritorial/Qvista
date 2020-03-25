@@ -1,20 +1,18 @@
 from moduls.QvImports import *
-from PyQt5.QtWidgets import *
-from typing import Type
+from qgis.PyQt.QtWidgets import *
 import itertools
 from moduls.QvMapificacio import QvMapificacio
 from moduls.QvPushButton import QvPushButton
 from moduls.QvEditorCsv import QvEditorCsv
 from moduls.QvMapForms import QvFormNovaMapificacio
 from moduls.QvConstants import QvConstants
-from moduls.QvApp import QvApp
 from moduls.QvFuncioFil import QvFuncioFil
 from moduls.QvMemoria import QvMemoria
 
 # Còpia de la funció definida dins de qVista.py. Millor aquí???
 
 
-def nivellCsv(qV, fitxer: str, delimitador: str, campX: str, campY: str, projeccio: int = 25831, nomCapa: str = 'Capa sense nom', color='red', symbol='circle'):
+def nivellCsv(projecte, llegenda, fitxer: str, delimitador: str, campX: str, campY: str, projeccio: int = 25831, nomCapa: str = 'Capa sense nom', color='red', symbol='circle'):
     uri = "file:///"+fitxer + \
         "?type=csv&delimiter=%s&xField=%s&yField=%s" % (
             delimitador, campX, campY)
@@ -22,12 +20,17 @@ def nivellCsv(qV, fitxer: str, delimitador: str, campX: str, campY: str, projecc
     layer.setCrs(QgsCoordinateReferenceSystem(
         projeccio, QgsCoordinateReferenceSystem.EpsgCrsId))
     if layer is not None or layer is not NoneType:
-        symbol = QgsMarkerSymbol.createSimple({'name': symbol, 'color': color})
-        if layer.renderer() is not None:
-            layer.renderer().setSymbol(symbol)
-        qV.project.addMapLayer(layer)
-        # print("add layer")
-        qV.setDirtyBit(True)
+        symbol = QgsMarkerSymbol.createSimple({'name': symbol, 'color': color, 'outline_width':'0.3'})
+        # if layer.renderer() is not None:
+        #     layer.renderer().setSymbol(symbol)
+        pr=layer.dataProvider()
+        writer=QgsVectorFileWriter.writeAsVectorFormat(layer,fitxer[:-4],pr.encoding(),pr.crs(),symbologyExport=QgsVectorFileWriter.SymbolLayerSymbology)
+        capaGpkg=QgsVectorLayer(fitxer[:-4]+'.gpkg',nomCapa,'ogr')
+        capaGpkg.renderer().setSymbol(symbol)
+        projecte.addMapLayer(capaGpkg)
+        llegenda.saveStyleToGeoPackage(capaGpkg)
+        # qV.project.addMapLayer(layer)
+        # qV.setDirtyBit(True)
     else:
         print("no s'ha pogut afegir la nova layer")
 
@@ -107,12 +110,12 @@ def campsNum(csvPath,sep,cod):
     return campsPref(csvPath,sep,cod,nomCamps)
 
 class QvCarregaCsv(QDialog):
-    def __init__(self, rutaCsv: str, qV=None):
-        super().__init__(qV,Qt.WindowSystemMenuHint | Qt.WindowTitleHint | Qt.WindowCloseButtonHint)
+    def __init__(self, rutaCsv: str, projecte, llegenda, parent=None):
+        super().__init__(parent,Qt.WindowSystemMenuHint | Qt.WindowTitleHint | Qt.WindowCloseButtonHint)
         self.setWindowTitle('Carregador d\'arxius CSV')
-        self.setFixedSize(QvApp().zoomFactor()*750, QvApp().zoomFactor()*550)
-        if qV is not None:
-            self._qV = qV
+        self.setMinimumWidth(750)
+        self._llegenda=llegenda
+        self._projecte=projecte
         self._csv = self._primerCsv = rutaCsv
         self.loadMap()
         # self._mapificador = QvMapificacio(rutaCsv)
@@ -161,7 +164,6 @@ class QvCarregaCsv(QDialog):
 
     def formata(self):
         self._layoutGran.addWidget(self._widgetActual)
-        pass
 
     def salta(self, nouW):
         self._widgetActual.hide()
@@ -212,6 +214,7 @@ class CsvPagina(QWidget):
             return self._canviat
         else:
             self._wid.setWindowTitle("Veure taula completa")
+            self._wid.setReadOnly(True)
             self._wid.show()
 
     def getCamps(self):
@@ -225,7 +228,7 @@ class CsvPagina(QWidget):
 
     def _mapifica(self):
         fMap = QvFormNovaMapificacio(
-            self._carregador._qV.llegenda, mapificacio=self._carregador._mapificador)
+            self._carregador._llegenda, mapificacio=self._carregador._mapificador)
         if fMap.exec()==QDialog.Accepted:
             self._carregador.close()
 
@@ -445,7 +448,6 @@ class CsvAdreca(CsvPagina):
             self._cbNumF.setCurrentText(campsAdreca['numF'])
             self._cbLletraI.setCurrentText(campsAdreca['lletraI'])
             self._cbLletraF.setCurrentText(campsAdreca['lletraF'])
-            pass
         else:
             self.campsDefecte()
 
@@ -474,18 +476,18 @@ class CsvAdreca(CsvPagina):
         if c is not None:
             i=self._cbNumI.findText(c)
             self._cbNumI.setCurrentIndex(i)
-        pass
     def geocodifica(self):
-        pare=self._carregador
-        geocod=QvMemoria().getGeocodificat(self._carregador._csv)
+        arxiuNet=str(Path(self._carregador._csv).parent)+'\\'+self._carregador._mapificador.netejaString(Path(self._carregador._csv).stem,True)+'.csv'
+        geocod=QvMemoria().getGeocodificat(self._carregador._csv, arxiuNet)
         if geocod is not None:
             #Preguntar si volem carregar directament el geocodificat
             resposta=QMessageBox.question(self,"Aquest arxiu ja ha sigut geocodificat prèviament", \
                 "Aquest arxiu ja ha sigut geocodificat prèviament. Vol carregar-lo directament, estalviant així repetir la geocodificació?",QMessageBox.Yes|QMessageBox.No)
             if resposta==QMessageBox.Yes:
                 self._carregador.setCsv(geocod)
+                self._carregador._codificacio='utf-8'
                 self._carregador._mapificador=QvMapificacio(geocod)
-                self.salta.emit(CsvGeocodificat([],0, self._carregador))
+                self.salta.emit(CsvGeocodificat(None,0, self._carregador))
                 return
         QvMemoria().setCampsGeocod(self._carregador._csv,{'teCoords':False,'camps':{'tipusVia':self._cbTipusVia.currentText(),'via':self._cbVia.currentText(),'numI':self._cbNumI.currentText(),
             'lletraI':self._cbLletraI.currentText(),'numF':self._cbNumF.currentText(),'lletraF':self._cbLletraF.currentText()}})
@@ -562,7 +564,8 @@ class CsvGeocod(CsvPagina):
             self.salta.emit(self._carregador.getPrimeraPantalla())
         else:
             # Aquí saltar al resultat
-            QvMemoria().setGeocodificat(self._carregador._csv)
+            arxiuNet=str(Path(self._carregador._csv).parent)+'\\'+self._carregador._mapificador.netejaString(Path(self._carregador._csv).stem,True)+'.csv'
+            QvMemoria().setGeocodificat(self._carregador._csv, arxiuNet)
             self._carregador.setCsv(self._carregador._mapificador.fZones)
             # self._carregador._csv=self._carregador._mapificador.fDades
             self.salta.emit(CsvGeocodificat(self._errors, n, self._carregador,self._carregador))
@@ -572,15 +575,21 @@ class CsvGeocodificat(CsvPagina):
     def __init__(self, errors, temps, carregador, parent=None):
         super().__init__(carregador, parent)
         self._setTitol('Geocodificat')
-        self._errors = [x['_fila'] for x in errors]
         if temps!=0: 
             self._lay.addWidget(QLabel('Temps requerit per la geocodificació: %i segons'%temps))
             self._lay.addWidget(QLabel('Geocodificat a una velocitat de %.2f files per segon'%(self._carregador._mapificador.files/temps)))
         self._textEditErrors = QTextEdit()
+        self._textEditErrors.setReadOnly(True)
+        self._textEditErrors.setStyleSheet('background: white')
         self._lay.addWidget(self._textEditErrors)
-        if len(self._errors)>0:
-            self._definirErrors(self._errors)
+        if errors is not None:
+            self._errors = [x['_fila'] for x in errors]
+            if len(self._errors)>0:
+                self._definirErrors(self._errors)
+            else:
+                pass
         else:
+            self._errors=[]
             self._textEditErrors.setText('Aquest arxiu ha sigut carregat directament des de la memòria cau.\nPer tant, no hi ha errors a mostrar.')
         # self._lay.addStretch()
         self._layBotons = QHBoxLayout()
@@ -614,7 +623,6 @@ class CsvGeocodificat(CsvPagina):
             errorsStr = errorsStr+'\nFila %i' % x
         self._textEditErrors.setText(
             'Files amb errors (click sobre "Veure i arreglar errors" per veure i editar la taula):%s' % errorsStr)
-        pass
 
     def _mostraTaula(self):
         if super()._mostraTaula(self._errors, modal=True):
@@ -750,24 +758,37 @@ class CsvAfegir(CsvPagina):
     def _enrere(self):
         self.salta.emit(CsvGeocodificat([],0,self._carregador))
     def afegir(self):
-        nivellCsv(self._carregador._qV, self._carregador._csv, self._carregador._separador,
+        nivellCsv(self._carregador._projecte, self._carregador._llegenda, self._carregador._csv, self._carregador._separador,
                   self._campCoordX, self._campCoordY, self._projeccio, self._leNomCapa.text(), self._color, symbol=self._forma)
         self._carregador.close()
 
 
 if __name__ == '__main__':
     from qgis.core.contextmanagers import qgisapp
+    from moduls.QvCanvas import QvCanvas
+    from moduls.QvLlegenda import QvLlegenda
+    from moduls.QvDropFiles import QvDropFiles
 
     gui = True
 
     with qgisapp(guienabled=gui) as app:
-
-        from moduls.QvApp import QvApp
-
-        # qApp = QvApp()
-        arxiu = 'C:/Users/omarti/Documents/Random/gossos.csv'
-        wiz = QvCarregaCsv(arxiu)
         with open('style.qss') as f:
             app.setStyleSheet(f.read())
-            # wiz.setStyleSheet(f.read())
-        wiz.show()
+        canvas = QvCanvas(llistaBotons=["panning","zoomIn","zoomOut"])
+        project = QgsProject.instance()
+        projecteInicial = './mapesOffline/qVista default map.qgs'
+        project.read(projecteInicial)
+        root = project.layerTreeRoot()
+        bridge = QgsLayerTreeMapCanvasBridge(root, canvas)
+
+        llegenda = QvLlegenda()
+        llegenda.show()
+        canvas.show()
+
+        def obreGeocod(files):
+            for x in files:
+                if not x.lower().endswith('.csv'): continue #Si no és un csv ens el saltem
+                carregador=QvCarregaCsv(x,project,llegenda)
+                carregador.show()
+        dropCanvas = QvDropFiles(canvas,['.csv'])
+        dropCanvas.arxiusPerProcessar.connect(obreGeocod)

@@ -1,6 +1,5 @@
 from moduls.QvImports import *
-import  qgis.PyQt.QtSql
-from qgis.PyQt.QtSql import QSqlDatabase, QSqlQuery
+from qgis.PyQt.QtSql import QSqlDatabase
 
 projecteInicial='../dades/projectes/BCN11_nord.qgs'
 

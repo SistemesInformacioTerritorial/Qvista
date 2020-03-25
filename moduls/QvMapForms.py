@@ -1,18 +1,19 @@
 # -*- coding: utf-8 -*-
 
 from qgis.gui import QgsFileWidget
-from qgis.PyQt.QtCore import Qt, QObject, pyqtSignal, pyqtSlot, QSize
-from qgis.PyQt.QtGui import QColor, QValidator, QIcon, QDoubleValidator, QPixmap
+from qgis.PyQt.QtCore import Qt, pyqtSlot
+from qgis.PyQt.QtGui import QIcon, QPixmap, QValidator
 from qgis.PyQt.QtWidgets import (QFileDialog, QWidget, QPushButton, QFormLayout, QVBoxLayout, QHBoxLayout, QSplitter,
                                  QComboBox, QLabel, QLineEdit, QSpinBox, QGroupBox, QFrame, QGridLayout, QDialog, QSizePolicy,
                                  QTableWidget, QTableWidgetItem, QMessageBox, QDialogButtonBox, QApplication)
 
-from qgis.core import QgsApplication, QgsGraduatedSymbolRenderer, QgsExpressionContextUtils
+from qgis.core import QgsExpressionContextUtils
 
 from moduls.QvMapVars import *
 from moduls.QvMapificacio import *
 from moduls.QvSqlite import QvSqlite
 from moduls.QvEditorCsv import QvEditorCsv
+from moduls.QvApp import QvApp
 
 import os
 import sqlite3
@@ -114,7 +115,7 @@ class QvVerifNumero(QValidator):
 
     def validate(self, string, index):
         txt = string.strip()
-        num, ok = MAP_LOCALE.toFloat(txt)
+        num, ok = QvApp().locale.toFloat(txt)
         if ok:
             state = QValidator.Acceptable
         elif self.verifCharsNumero(txt):
@@ -311,10 +312,12 @@ class QvFormNovaMapificacio(QvFormBaseMapificacio):
         self.nouArxiu()
 
     def exec(self):
+        # La mapificación solo funciona si está instalado el módulo pandas
         if PANDAS_ENABLED:
-            super().exec()
+            return super().exec()
         else:
             self.msgError(PANDAS_ERROR)
+            return QDialog.Rejected
 
     @pyqtSlot()
     def veureArxiu(self):
@@ -387,7 +390,8 @@ class QvFormNovaMapificacio(QvFormBaseMapificacio):
             self.zona.setFocus()
         # self.taulaMostra = QvFormMostra(self.fCSV, parent=self)
         self.taulaMostra = QvEditorCsv(self.fCSV.fZones, [], 'utf-8', self.fCSV.separador, self)
-        self.taulaMostra.setWindowTitle("Vista prèvia de " + self.fCSV.fZones)
+        self.taulaMostra.setWindowTitle("Vista prèvia d'arxiu geocodificat")
+        self.taulaMostra.setReadOnly(True)
 
         self.bTaula.setEnabled(True)
         self.calcul.setItems(self.fCSV.camps, primer='')
@@ -472,13 +476,16 @@ class QvFormSimbMapificacio(QvFormBaseMapificacio):
 
         self.metode = QComboBox(self)
         self.metode.setEditable(False)
-        self.metode.addItems(MAP_METODES_MODIF.keys())
+        if self.renderParams.numCategories > 1:
+            self.metode.addItems(MAP_METODES_MODIF.keys())
+        else:
+            self.metode.addItems(MAP_METODES.keys())   
         self.metode.setCurrentIndex(-1)
         self.metode.currentIndexChanged.connect(self.canviaMetode)
 
         self.nomIntervals = QLabel("Nombre d'intervals:", self)
         self.intervals = QSpinBox(self)
-        self.intervals.setMinimum(2)
+        self.intervals.setMinimum(min(2, self.renderParams.numCategories))
         self.intervals.setMaximum(max(MAP_MAX_CATEGORIES, self.renderParams.numCategories))
         self.intervals.setSingleStep(1)
         self.intervals.setValue(4)
@@ -570,12 +577,12 @@ class QvFormSimbMapificacio(QvFormBaseMapificacio):
     def txtRang(self, num):
         if type(num) == str:
             return num
-        return MAP_LOCALE.toString(num, 'f', self.renderParams.numDecimals)
+        return QvApp().locale.toString(num, 'f', self.renderParams.numDecimals)
 
     def iniFilaInterval(self, iniValor, finValor):
         maxSizeB = 27
         # validator = QDoubleValidator(self)
-        # validator.setLocale(MAP_LOCALE)
+        # validator.setLocale(QvApp().locale)
         # validator.setNotation(QDoubleValidator.StandardNotation)
         # validator.setDecimals(5)
         validator = QvVerifNumero(self)
@@ -721,9 +728,9 @@ class QvFormSimbMapificacio(QvFormBaseMapificacio):
             return False
 
     def validaInterval(self, wLineEdit1, wLineEdit2):
-        num1, _ = MAP_LOCALE.toFloat(wLineEdit1.text())
-        num2, _ = MAP_LOCALE.toFloat(wLineEdit2.text())
-        if num2 > num1:
+        num1, _ = QvApp().locale.toFloat(wLineEdit1.text())
+        num2, _ = QvApp().locale.toFloat(wLineEdit2.text())
+        if num2 >= num1:
             return True
         else:
             self.msgInfo("El segon nombre de l'interval ha de ser major que el primer")

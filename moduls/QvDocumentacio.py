@@ -1,14 +1,14 @@
 from moduls.QvImports import *
-from PyQt5 import QtCore
-from PyQt5 import QtGui
-from PyQt5 import QtWidgets
-from PyQt5.QtWidgets import QVBoxLayout, QHBoxLayout, QFileSystemModel, QTreeView, QWidget
+from qgis.PyQt import QtWidgets
+from qgis.PyQt.QtWidgets import QVBoxLayout, QHBoxLayout, QFileSystemModel, QTreeView, QWidget
 from moduls.QvConstants import QvConstants
 from moduls.QvPushButton import QvPushButton
 from pathlib import Path
 import shutil
 
 class QvDocumentacio(QDialog):
+    comencaCarrega = pyqtSignal()
+    acabaCarrega = pyqtSignal()
     '''Diàleg que mostra la documentació de la carpeta de documentació definida a configuracioQvista
     Mostra una TreeView amb els documents, i delega en el sistema la tasca d'obrir-los'''
     def __init__(self,parent: QWidget=None):
@@ -81,10 +81,10 @@ class QvDocumentacio(QDialog):
     def obrir(self):
         path=self.qModel.fileInfo(self.index).absoluteFilePath()
         if os.path.isfile(path):
-            self.parentWidget().startMovie()
+            self.comencaCarrega.emit()
             os.startfile(path)
             time.sleep(1)
-            self.parentWidget().stopMovie()
+            self.acabaCarrega.emit()
         else:
             pass
         #Ara la fem
@@ -100,7 +100,6 @@ class QvDocumentacio(QDialog):
             nomCarpeta=Path(path).name
             nfile = str(QFileDialog.getExistingDirectory(self, "Select Directory"))
             if nfile!='': shutil.copytree(path,nfile+'/'+nomCarpeta)
-            pass
 
     def mousePressEvent(self, event):
         self.oldPos = event.globalPos()

@@ -3,8 +3,6 @@
 from moduls.QvImports import *
 from moduls.QvPushButton import QvPushButton
 
-from qgis.PyQt.QtGui import QStandardItemModel, QStandardItem
-from qgis.core import QgsRectangle
 
 projecteInicial='../dades/projectes/BCN11_nord.qgs'
 

@@ -20,26 +20,21 @@ from qgis.core import (QgsApplication, QgsVectorLayer, QgsLayerDefinition, QgsVe
                        QgsSymbol, QgsRendererCategory, QgsCategorizedSymbolRenderer,
                        QgsGraduatedSymbolRenderer, QgsRendererRange, QgsAggregateCalculator, QgsError, QgsWkbTypes,
                        QgsGradientColorRamp, QgsRendererRangeLabelFormat, QgsReadWriteContext, QgsExpressionContextUtils)
-from qgis.gui import QgsFileWidget
-from qgis.PyQt.QtCore import Qt, QObject, pyqtSignal, pyqtSlot
-from qgis.PyQt.QtGui import QColor, QValidator, QIcon
-from qgis.PyQt.QtXml import QDomDocument
-from qgis.PyQt.QtWidgets import QMessageBox
+from qgis.PyQt.QtCore import QDate, QObject, pyqtSignal, pyqtSlot
 
 import os
-import sys
 import csv
 import time
-import unicodedata
 import chardet
 import collections
-import operator
 import re
 
+from moduls.QvApp import QvApp
 from moduls.QvSqlite import QvSqlite
 from moduls.QvMapVars import *
+from configuracioQvista import *
 
-from typing import List, Tuple, Iterable
+from typing import List
 
 _TRANS_ALL = str.maketrans("ÁÉÍÓÚáéíóúÀÈÌÒÙàèìòùÂÊÎÔÛâêîôûÄËÏÖÜäëïöüºª€$çÇñÑ ·.,;:()[]¡!¿?|%&*/\\\'\"@#",
                            "AEIOUaeiouAEIOUaeiouAEIOUaeiouAEIOUaeiouoaEDcCnN______________________aN")
@@ -324,7 +319,8 @@ class QvMapificacio(QObject):
         if fZones is None or fZones == '':
             base = os.path.basename(self.fDades)
             splitFile = os.path.splitext(base)
-            self.fZones = RUTA_LOCAL + splitFile[0] + '_Geo' + splitFile[1]
+            filename = self.netejaString(splitFile[0] + '_Geo', True)
+            self.fZones = RUTA_LOCAL + filename + splitFile[1]
         else:
             self.fZones = fZones
 
@@ -374,14 +370,15 @@ class QvMapificacio(QObject):
                 self.mostra = []
                 for rowOrig in data:
                     tot += 1
+                    # Normaliza nombres de campos
                     row = { self.netejaString(k): v for k, v in rowOrig.items() }
 
                     val = self.db.geoCampsCarrerNum(self.campsZones,
-                            self.valorCampAdreca(row, 0), self.valorCampAdreca(row, 1), self.valorCampAdreca(row, 2),
-                            self.valorCampAdreca(row, 3), self.valorCampAdreca(row, 4), self.valorCampAdreca(row, 5))
+                            self.valorCampAdreca(rowOrig, 0), self.valorCampAdreca(rowOrig, 1), self.valorCampAdreca(rowOrig, 2),
+                            self.valorCampAdreca(rowOrig, 3), self.valorCampAdreca(rowOrig, 4), self.valorCampAdreca(rowOrig, 5))
                     # Error en geocodificación
                     if val is None:
-                        self.errorAdreca.emit(dict(row, **{'_fila':tot}))
+                        self.errorAdreca.emit(dict(rowOrig, **{'_fila':tot}))
                         num += 1
                     else:
                         for campZona in self.campsZones:
@@ -554,27 +551,40 @@ class QvMapificacio(QObject):
     #         with fiona.open(self.fSQL, "w", driver="GPKG", crs=df.crs, schema=schema, layer=nomCapa, gt=65536) as colxn:
     #             colxn.writerecords(df.iterfeatures())
 
-    def generaCapaGpd(self, nomCapa: str, tipusAgregacio: str, tipusDistribucio: str) -> bool:
+    def generaCapaGpd(self, nomCapa: str, tipusAgregacio: str, tipusDistribucio: str, campExtensio: str = '') -> bool:
         """ Calcula la agregación de datos, los cruza con el geopackage de zonas y genera la capa del mapa de coropletas.
         
         Arguments:
             nomCapa {str} -- Nombre de la capa del mapa
             tipusAgregacio {str} -- Tipo de agregación a aplicar
             tipusDistribucio {str} -- Tipo de distribución a aplicar
+
+        Keyword Arguments:
+            campExtensio {str} -- Nombre del campo que indica la extensión del mapa (default: {''})
         
         Returns:
             bool -- True si se generó la capa con el  mapa correctamente
         """
         try:
-            # El campo de zona se carga como string, y el de agregacion como float si hay acumulados
-            if tipusAgregacio in ("Suma", "Mitjana"):
-                dtypes = {self.campZona: np.string_, self.campAgregat: np.float_}
+            # Los campos de zona y extensión se cargan como string, y el de agregacion como float si hay acumulados
+            dtypes = {self.campZona: np.string_}
+            if campExtensio == '' or (campExtensio[0] == '<'):
+                campExt = ''
+                valExtensio = campExtensio
             else:
-                dtypes = {self.campZona: np.string_}
+                campExt = CAMP_QVISTA + campExtensio
+                if campExt != self.campZona:
+                    dtypes.update({campExt: np.string_})
+            if tipusAgregacio in ("Suma", "Mitjana"):
+                if self.campAgregat == self.campZona or (campExt != '' and self.campAgregat == campExt):
+                    self.msgError = "No és possible calcular aquesta agregació de dades.\n\nRevisi els paràmetres especificats."
+                    return False
+                dtypes.update({self.campAgregat: np.float_})
 
             # Carga de capa de datos geocodificados
             csv = pd.read_csv(self.fZones, sep=self.separador, encoding='utf-8',
-                              decimal=MAP_LOCALE.decimalPoint(), dtype=dtypes)
+                              decimal=QvApp().locale.decimalPoint(), dtype=dtypes)
+            csv = csv[csv[self.campZona].notnull()]
 
             # Aplicar filtro
             try:
@@ -614,9 +624,31 @@ class QvMapificacio(QObject):
             if "POBLACIO" in pols.columns:
                 pols["POBLACIO"] = pd.to_numeric(pols["POBLACIO"], downcast='integer', errors='coerce')
 
+            # Aplicamos la extensión cuando el campo indicado contiene un valor predominante
+            if campExt != '':
+                cnt = csv[campExt].value_counts(normalize=True)
+                if cnt.iloc[0] >= MAP_FEQ_EXTENSIO:
+                    if campExtensio == QvSqlite.getAlias(self.valZona[0]):
+                        campExtensio = 'CODI'
+                    valExtensio = cnt.index[0]
+                    listExtensions = cnt.index.tolist()
+                    pols = pols[pols[campExtensio].isin(listExtensions)]
+
             # Join
             join = pols.merge(res, on='CODI', how='left')
-            join['RESULTAT'].fillna(0, inplace=True)
+            if valExtensio == '' or valExtensio == '<ALL>':
+                # Extension ciudad: ponemos a 0 todos los polígonos sin datos
+                join['RESULTAT'].fillna(0, inplace=True)
+            elif valExtensio == '<DATA>':
+                # Extensión datos: solo poligonos con datos
+                join = join[join['RESULTAT'].notnull()]
+            else:
+                # Extensión limitada: ponemos a 0 solo los polígonos de la zona predominante
+                ext = join[join[campExtensio] == valExtensio]
+                ext['RESULTAT'].fillna(0, inplace=True)
+                resto = join[join[campExtensio] != valExtensio]
+                resto = resto[resto['RESULTAT'].notnull()]
+                join = pd.concat([ext, resto])
 
             # Aplicar distribución
             if self.tipusDistribucio == '':
@@ -648,8 +680,8 @@ class QvMapificacio(QObject):
             return False
 
     def agregacio(self, llegenda, nomCapa: str, zona: str, tipusAgregacio: str,
-        campCalculat: str = 'RESULTAT', campAgregat: str = '', tipusDistribucio: str = "Total", filtre: str = '',
-        numDecimals: int = -1, numCategories: int = 4, modeCategories: str = "Endreçat", colorBase: str = 'Blau',
+        campCalculat: str = 'RESULTAT', campAgregat: str = '', tipusDistribucio: str = "Total", campExtensio: str = MAP_EXTENSIO, 
+        filtre: str = '', numDecimals: int = -1, numCategories: int = 4, modeCategories: str = "Endreçat", colorBase: str = 'Blau',
         format: str = '%1 - %2', veure: bool = True, form = None) -> bool:
         """ Realiza la agragación de los datos por zona, la generación del mapa de coropletas y su simbología.
         
@@ -663,6 +695,7 @@ class QvMapificacio(QObject):
             campCalculat {str} -- Campo donde se guardará el resultado de la agregación (default: {'RESULTAT'})
             campAgregat {str} -- Campo que se utiliza en el cálculo de la agragación (default: {''})
             tipusDistribucio {str} -- Tipo de distribución (default: {"Total"})
+            campExtensio {str} -- Nombre del campo que indica la extensión del mapa (default: {''})
             filtre {str} -- Expresión para filtrar los datos (default: {''})
             numDecimals {int} -- Número de decimales para el campo resultado (default: {-1})
             numCategories {int} -- Número de categorías en el mapa de coropletas (default: {4})
@@ -688,6 +721,7 @@ class QvMapificacio(QObject):
         self.msgError = ''
         self.form = form
         self.descripcio = "Arxiu de dades: " + self.fZones + '\n' + \
+            "Data: " +  QDate.currentDate().toString(QvApp().locale.dateFormat(QvApp().locale.ShortFormat)) + '\n' + \
             "Zona: " + zona + '\n' + \
             "Tipus d'agregació: " + tipusAgregacio + '\n' + \
             "Camp de càlcul: " + campAgregat + '\n' + \
@@ -743,7 +777,7 @@ class QvMapificacio(QObject):
         # if not self.generaCapaQgis(nomCapa):
         #     return False
 
-        if not self.generaCapaGpd(self.nomCapa, tipusAgregacio, tipusDistribucio):
+        if not self.generaCapaGpd(self.nomCapa, tipusAgregacio, tipusDistribucio, campExtensio):
             return False
 
         # Carga capa de agregación
@@ -786,7 +820,6 @@ if __name__ == "__main__":
     with qgisapp(guienabled=gui) as app:
 
         from moduls.QvApp import QvApp
-        from moduls.QvMapForms import QvFormMostra
         from qgis.gui import QgsMapCanvas
         from moduls.QvLlegenda import QvLlegenda
         from moduls.QvAtributs import QvAtributs
@@ -806,8 +839,10 @@ if __name__ == "__main__":
         leyenda.show()
 
 
-        z = QvMapificacio('U:/QUOTA/Comu_imi/Becaris/CarrecsAnsi100.csv')
+        # z = QvMapificacio('U:/QUOTA/Comu_imi/Becaris/CarrecsAnsi100.csv')
         # z = QvMapificacio('CarrecsUTF8.csv')
+        z = QvMapificacio('C:/temp/qVista/dades/Terrasses.csv')
+
         if z.msgError != '':
             print('Error:', z.msgError)
             exit(1)
@@ -823,7 +858,9 @@ if __name__ == "__main__":
         # w.show()
 
         # campsAdreca = ('Tipus de via', 'Via', 'Número')
-        campsAdreca = ('', 'NOM_CARRER_GPL', 'NUM_I_GPL', '', 'NUM_F_GPL')
+        # campsAdreca = ('', 'NOM_CARRER_GPL', 'NUM_I_GPL', '', 'NUM_F_GPL')
+        campsAdreca = ('Tipus via', 'Carrer', 'Numero')
+
         zones = ('Coordenada', 'Districte', 'Barri', 'Codi postal', "Illa", "Solar", "Àrea estadística bàsica", "Secció censal")
         ok = z.geocodificacio(campsAdreca, zones,
             percentatgeProces=lambda n: print('... Procesado', str(n), '% ...'),

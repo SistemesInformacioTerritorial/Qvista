@@ -2,7 +2,7 @@
 
 from qgis.PyQt.QtGui import QColor
 from qgis.core import QgsGraduatedSymbolRenderer
-from qgis.PyQt.QtCore import QLocale, Qt
+from qgis.PyQt.QtCore import Qt
 from collections import OrderedDict
 
 from configuracioQvista import *
@@ -12,6 +12,8 @@ MAP_MAX_CATEGORIES = 10
 MAP_ALPHA_INI = 18
 MAP_ALPHA_FIN = 18
 MAP_ZONES_DB = "Zones.gpkg"
+MAP_EXTENSIO = "DISTRICTE"
+MAP_FEQ_EXTENSIO = 0.75
 
 # TODO
 # Si se recalcula la capa y está en la leyenda, quitarla
@@ -70,16 +72,14 @@ MAP_METODES = OrderedDict({
     "Endreçat": QgsGraduatedSymbolRenderer.Pretty,
     "Intervals equivalents": QgsGraduatedSymbolRenderer.EqualInterval,
     "Quantils": QgsGraduatedSymbolRenderer.Quantile,
-    "Divisions naturals (Jenks)": QgsGraduatedSymbolRenderer.Jenks
-    # "Desviació estàndard": QgsGraduatedSymbolRenderer.StdDev
+    "Divisions naturals (Jenks)": QgsGraduatedSymbolRenderer.Jenks,
+    "Desviació estàndard": QgsGraduatedSymbolRenderer.StdDev
 })
 
 MAP_METODES_MODIF = OrderedDict({
     **MAP_METODES,
     "Personalitzat": QgsGraduatedSymbolRenderer.Custom
 })
-
-MAP_LOCALE = QLocale(QLocale.Catalan, QLocale.Spain)
 
 if __name__ == "__main__":
 
