@@ -3952,6 +3952,12 @@ class QvDockWidget(QDockWidget):
         #Show tal qual. És a dir, ho mostra on estigués abans
         super().show()
 
+def migraConfigs():
+    arxius=('ultimAvisObert','ultimaNewOberta','mapesRecents','directoriDesar','volHints','dadesMascara','geocod.json','geocodificats.json','catalegsLocals')
+    for x in arxius:
+        aMoure=os.path.join(dadesdir,x)
+        if os.path.isfile(aMoure):
+            os.replace(aMoure,os.path.join(configdir,x))
 def main(argv):
     # import subprocess
     global qV
@@ -3972,6 +3978,7 @@ def main(argv):
         splash.show()
         app.setWindowIcon(QIcon(os.path.join(imatgesDir,'QVistaLogo_256.png')))
         esborraCarpetaTemporal() #Esborrem els temporals de la sessió anterior
+        migraConfigs()
         app.processEvents()
         with open('style.qss') as st:
             app.setStyleSheet(st.read())
