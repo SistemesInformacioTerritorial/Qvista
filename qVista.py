@@ -371,7 +371,7 @@ class QVista(QMainWindow, Ui_MainWindow):
 
 
         if self.llegenda.player is None:
-            self.llegenda.setPlayer(imatgesDir+'Spinner_2.gif', 150, 150)
+            self.llegenda.setPlayer(os.path.join(imatgesDir,'Spinner_2.gif'), 150, 150)
         self.actualitzaMapesRecents(self.pathProjecteActual)
 
         
@@ -412,7 +412,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         #     self.lblTirotattolProjecte.setText(titolEntorn)
     
     def startMovie(self):
-        self.player = QvVideo(imatgesDir+"Spinner_2.gif", 160, 160)
+        self.player = QvVideo(os.path.join(imatgesDir,"Spinner_2.gif"), 160, 160)
         QvConstants.afegeixOmbraWidget(self.player)
         self.player.setModal(True)
         self.player.activateWindow()
@@ -497,7 +497,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         #self.bObrirEnQgis = self.botoLateral(tamany = 25, accio=self.actObrirEnQgis)
         menuFoto=QMenu()
         accioCopia=QAction('Copiar al portaretalls',self)
-        accioCopia.setIcon(QIcon(imatgesDir+'content-copy.png'))
+        accioCopia.setIcon(QIcon(os.path.join(imatgesDir,'content-copy.png')))
         accioCopia.triggered.connect(self.canvas.copyToClipboard)
         menuFoto.addAction(self.actCanvasImg)
         menuFoto.addAction(accioCopia)
@@ -734,7 +734,7 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         self.boton_bajar= QvPushButton(flat=True)
         self.boton_bajar.clicked.connect(self.CopiarA_Ubicacions)
-        self.boton_bajar.setIcon(QIcon(imatgesDir+'down3-512.png'))
+        self.boton_bajar.setIcon(QIcon(os.path.join(imatgesDir,'down3-512.png')))
         self.boton_bajar.setMinimumHeight(25)
         self.boton_bajar.setMaximumHeight(25)
         self.boton_bajar.setMinimumWidth(25)
@@ -744,7 +744,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         #boton invoc_streer
         self.boton_invocarStreetView= QvPushButton(flat=True)
         self.boton_invocarStreetView.clicked.connect(self.invocarStreetView)
-        self.boton_invocarStreetView.setIcon(QIcon(imatgesDir+'littleMan.png'))
+        self.boton_invocarStreetView.setIcon(QIcon(os.path.join(imatgesDir,'littleMan.png')))
         self.boton_invocarStreetView.setMinimumHeight(25)
         self.boton_invocarStreetView.setMaximumHeight(25)
         self.boton_invocarStreetView.setMinimumWidth(25)
@@ -1151,7 +1151,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.actNouMapa.triggered.connect(nouMapa)
 
         self.actcartoBCN = QAction("CartoBCN", self)
-        #iconaChrome=QIcon(imatgesDir+'calc.png') #es poden posar icones
+        #iconaChrome=QIcon(os.path.join(imatgesDir,'calc.png')) #es poden posar icones
         #self.actcartoBCN.setIcon(iconaChrome)
         self.actcartoBCN.triggered.connect(cartoBCN)
 
@@ -1171,13 +1171,13 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.actpiuPortal.triggered.connect(piuPortal)
         
         self.actDocumentacio=QAction('Documentació',self)
-        self.actDocumentacio.setIcon(QIcon(imatgesDir+'file-document.png'))
+        self.actDocumentacio.setIcon(QIcon(os.path.join(imatgesDir,'file-document.png')))
         self.actDocumentacio.triggered.connect(obreDocumentacio)
 
         
         self.actImprimir = QAction("Imprimir", self)
         self.actImprimir.setStatusTip("Imprimir a PDF")
-        icon=QIcon(imatgesDir+'printer.png')
+        icon=QIcon(os.path.join(imatgesDir,'printer.png'))
         self.actImprimir.setIcon(icon)
         self.actImprimir.triggered.connect(self.imprimir)
 
@@ -1227,7 +1227,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.actObrirBotonera.triggered.connect(self.obrirBotonera)
 
         self.actObrirUbicacions= QAction("Les meves ubicacions", self)
-        icon=QIcon(imatgesDir+'map-marker.png')
+        icon=QIcon(os.path.join(imatgesDir,'map-marker.png'))
         self.actObrirUbicacions.setIcon(icon)
         self.actObrirUbicacions.setStatusTip("Obrir eina ubicacions")
         self.actObrirUbicacions.triggered.connect(self.obrirUbicacions)
@@ -1271,26 +1271,26 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         self.actTissores = QAction("Eina per retallar pantalla", self)
         self.actTissores.setStatusTip("Eina per retallar pantalla")
-        icon=QIcon(imatgesDir+'tissores.png')
+        icon=QIcon(os.path.join(imatgesDir,'tissores.png'))
         self.actTissores.setIcon(icon)
         self.actTissores.triggered.connect(self.tissores)
 
         self.actSeleccioGrafica = QAction("Seleccionar/emmascarar", self)
         self.actSeleccioGrafica.setStatusTip("Seleccionar/emmascarar")
-        icon=QIcon(imatgesDir+'select.png')
+        icon=QIcon(os.path.join(imatgesDir,'select.png'))
         self.actSeleccioGrafica.setIcon(icon)
         self.actSeleccioGrafica.triggered.connect(self.seleccioGrafica)
 
         #Eina de mesura -nexus-
         self.actMesuraGrafica = QAction("Mesurar", self)
         self.actMesuraGrafica.setStatusTip("Mesurar")
-        icon=QIcon(imatgesDir+'regle.png')
+        icon=QIcon(os.path.join(imatgesDir,'regle.png'))
         self.actMesuraGrafica.setIcon(icon)
         self.actMesuraGrafica.triggered.connect(self.mesuraGrafica)
         
         self.actReload = QAction('Recàrrega del mapa',self)
         self.actReload.setStatusTip('Recàrrega del mapa')
-        self.actReload.setIcon(QIcon(imatgesDir+'reload.png'))
+        self.actReload.setIcon(QIcon(os.path.join(imatgesDir,'reload.png')))
         self.actReload.setShortcut('F5')
         self.actReload.triggered.connect(self.reload)
 
@@ -1336,26 +1336,26 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.actSeleccioLliure.triggered.connect(seleccioLliure)
 
         self.actInfo = QAction("Informació ", self)
-        icon=QIcon(imatgesDir+'information.png')
+        icon=QIcon(os.path.join(imatgesDir,'information.png'))
         self.actInfo.setIcon(icon)
         self.actInfo.triggered.connect(self.infoQVista)
 
         self.actHelp = QAction("Ajuda ", self)
-        icon=QIcon(imatgesDir+'help-circle.png')
+        icon=QIcon(os.path.join(imatgesDir,'help-circle.png'))
         self.actHelp.setIcon(icon)
         # self.actHelp.triggered.connect(self.helpQVista)
         self.actHelp.triggered.connect(self.infoQVistaPDF)
         self.actHelp.setShortcut('Ctrl+H')
                 
         # self.actBug = QAction("Ajuda ", self)
-        # icon=QIcon(imatgesDir+'bug.png')
+        # icon=QIcon(os.path.join(imatgesDir,'bug.png'))
         # self.actBug.setIcon(icon)
         # self.actBug.triggered.connect(self.reportarBug)
 
         #bEnviar.clicked.connect(lambda: reportarProblema(leTitol.text(), leDescripcio.text()))
         self.suggeriments=QvSuggeriments(reportarProblema,self)
         self.actBug = QAction("Problemes i suggeriments ", self)
-        icon=QIcon(imatgesDir+'bug.png')
+        icon=QIcon(os.path.join(imatgesDir,'bug.png'))
         self.actBug.setIcon(icon)
         self.actBug.triggered.connect(self.suggeriments.show)
                 
@@ -1365,7 +1365,7 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         self.actObrirCataleg = QAction("Catàleg", self)
         self.actObrirCataleg.setStatusTip("Catàleg d'Informació Territorial")
-        #self.actObrirCataleg.setIcon(QIcon(imatgesDir+'layers_2.png'))
+        #self.actObrirCataleg.setIcon(QIcon(os.path.join(imatgesDir,'layers_2.png')))
         self.actObrirCataleg.triggered.connect(self.obrirCataleg)
 
         self.actObrirMapeta = QAction("Mapeta", self)
@@ -1377,29 +1377,29 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.actMapTip.triggered.connect(self.preparacioMapTips)
         
         self.actFerGran = QAction("Ampliar àrea de treball", self)
-        self.actFerGran.setIcon(QIcon(imatgesDir+'arrow-expand.png'))
+        self.actFerGran.setIcon(QIcon(os.path.join(imatgesDir,'arrow-expand.png')))
         self.actFerGran.setStatusTip("Ampliar àrea de treball")
         self.actFerGran.triggered.connect(self.ferGran)
 
         self.actObrirEnQgis = QAction("Obrir en Qgis", self)
-        self.actObrirEnQgis.setIcon(QIcon(imatgesDir+'qgis3.png'))
+        self.actObrirEnQgis.setIcon(QIcon(os.path.join(imatgesDir,'qgis3.png')))
         self.actObrirEnQgis.setStatusTip("Obrir en Qgis")
         self.actObrirEnQgis.triggered.connect(self.obrirEnQgis)
 
         self.actGrafiques = QAction("Gràfiques", self)
-        self.actGrafiques.setIcon(QIcon(imatgesDir+'chart-bar.png'))
+        self.actGrafiques.setIcon(QIcon(os.path.join(imatgesDir,'chart-bar.png')))
         self.actGrafiques.setStatusTip("Gràfiques")
         self.actGrafiques.triggered.connect(self.obrirBrowserGrafiques)
 
         self.actCanvasImg = QAction("Desar com a PNG", self)
-        self.actCanvasImg.setIcon(QIcon(imatgesDir+'camera.png'))
+        self.actCanvasImg.setIcon(QIcon(os.path.join(imatgesDir,'camera.png')))
         self.actCanvasImg.setStatusTip("Imatge del canvas")
         self.actCanvasImg.triggered.connect(self.canvasImg)
         #Definim que el botó de fer foto tingui també un menú amb l'opció de copiar al portarretalls
         
 
         self.actFavorit = QAction("Favorit", self)
-        self.actFavorit.setIcon(QIcon(imatgesDir+'star.png'))
+        self.actFavorit.setIcon(QIcon(os.path.join(imatgesDir,'star.png')))
         self.actFavorit.setStatusTip("Favorit")
         self.actFavorit.triggered.connect(self.favorit)
 
@@ -1502,7 +1502,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.bCercaPerAdreca.clicked.connect(lambda: self.leCercaPerAdreca.setText(''))
         self.bCercaPerAdreca.clicked.connect(self.leCercaPerAdreca.setFocus)
         self.bCercaPerAdreca.setCursor(QvConstants.cursorClick())
-        self.leCercaPerAdreca.textChanged.connect(lambda x: self.bCercaPerAdreca.setIcon(QIcon(imatgesDir+('magnify.png' if x=='' else 'cp_elimina.png'))))
+        self.leCercaPerAdreca.textChanged.connect(lambda x: self.bCercaPerAdreca.setIcon(QIcon(os.path.join(imatgesDir,('magnify.png' if x=='' else 'cp_elimina.png')))))
         self.cAdrecSup.sHanTrobatCoordenades.connect(self.trobatNumero_oNoSup)
 
         self.lSpacer.setText("")
@@ -1521,43 +1521,43 @@ class QVista(QMainWindow, Ui_MainWindow):
                 background-color: #F0F0F0;
             }
         '''
-        self.botoVeureLlegenda.setIcon(QIcon(imatgesDir+'map-legend.png'))
+        self.botoVeureLlegenda.setIcon(QIcon(os.path.join(imatgesDir,'map-legend.png')))
         self.botoVeureLlegenda.setStyleSheet(stylesheetBotons)
         self.botoVeureLlegenda.setIconSize(QSize(24, 24))
         self.botoVeureLlegenda.clicked.connect(self.obrirLlegenda)
         self.botoVeureLlegenda.setCursor(QvConstants.cursorClick())
 
-        self.iconaSenseCanvisPendents = QIcon(imatgesDir+'content-save.png')
-        self.iconaAmbCanvisPendents = QIcon(imatgesDir+'content-save_orange.png')
+        self.iconaSenseCanvisPendents = QIcon(os.path.join(imatgesDir,'content-save.png'))
+        self.iconaAmbCanvisPendents = QIcon(os.path.join(imatgesDir,'content-save_orange.png'))
         self.botoDesarProjecte.setIcon(self.iconaSenseCanvisPendents)
         self.botoDesarProjecte.setStyleSheet(stylesheetBotons)
         self.botoDesarProjecte.setIconSize(QSize(24, 24))
         self.botoDesarProjecte.clicked.connect(guardarProjecte) 
         self.botoDesarProjecte.setCursor(QvConstants.cursorClick())
 
-        self.botoObrirQGis.setIcon(QIcon(imatgesDir+'qgis-3.png'))
+        self.botoObrirQGis.setIcon(QIcon(os.path.join(imatgesDir,'qgis-3.png')))
         self.botoObrirQGis.setStyleSheet(stylesheetBotons)
         self.botoObrirQGis.setIconSize(QSize(24, 24))
         self.botoObrirQGis.clicked.connect(self.obrirEnQgis)
         self.botoObrirQGis.setCursor(QvConstants.cursorClick())
 
-        self.botoMapeta.setIcon(QIcon(imatgesDir+'Mapeta.png'))
+        self.botoMapeta.setIcon(QIcon(os.path.join(imatgesDir,'Mapeta.png')))
         self.botoMapeta.setStyleSheet(stylesheetBotons)
         self.botoMapeta.setIconSize(QSize(24,24))
         self.botoMapeta.clicked.connect(self.mapeta.ferPetit)
         self.botoMapeta.setCursor(QvConstants.cursorClick())
 
-        self.botoMetadades.setIcon(QIcon(imatgesDir+'information-variant.png'))
+        self.botoMetadades.setIcon(QIcon(os.path.join(imatgesDir,'information-variant.png')))
         self.botoMetadades.setStyleSheet(stylesheetBotons)
         self.botoMetadades.setIconSize(QSize(24,24))
         self.botoMetadades.setCursor(QvConstants.cursorClick())
 
-        self.bCercaPerAdreca.setIcon(QIcon(imatgesDir+'magnify.png'))
+        self.bCercaPerAdreca.setIcon(QIcon(os.path.join(imatgesDir,'magnify.png')))
         self.bCercaPerAdreca.setIconSize(QSize(24, 24))
         self.bCercaPerAdreca.setStyleSheet("background-color:%s; border: 0px; margin: 0px; padding: 0px;" %QvConstants.COLORCLARHTML)
 
-        self.iconaFavDesmarcat=QIcon(imatgesDir+'qv_bookmark_off.png')
-        self.iconaFavMarcat=QIcon(imatgesDir+'qv_bookmark_on.png')
+        self.iconaFavDesmarcat=QIcon(os.path.join(imatgesDir,'qv_bookmark_off.png'))
+        self.iconaFavMarcat=QIcon(os.path.join(imatgesDir,'qv_bookmark_on.png'))
         self.botoFavorits.setIcon(self.iconaFavDesmarcat)
         self.botoFavorits.setStyleSheet(stylesheetBotons)
         self.botoFavorits.setIconSize(QSize(24,24))
@@ -1565,7 +1565,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.botoFavorits.clicked.connect(self.switchFavorit)
         #Fer que quan es fa click es marqui o desmarqui com a favorit
 
-        self.botoReload.setIcon(QIcon(imatgesDir+'reload.png'))
+        self.botoReload.setIcon(QIcon(os.path.join(imatgesDir,'reload.png')))
         self.botoReload.setStyleSheet(stylesheetBotons)
         self.botoReload.setIconSize(QSize(24,24))
         self.botoReload.setCursor(QvConstants.cursorClick())
@@ -1593,8 +1593,8 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.fitxaError.show()
 
     def preparacioSeleccio(self):
-
         self.wSeleccioGrafica = QvSeleccioGrafica(self.canvas, self.project, self.llegenda)
+
         
         self.dwSeleccioGrafica = QvDockWidget("Selecció gràfica", self)
         self.dwSeleccioGrafica.setContextMenuPolicy(Qt.PreventContextMenu)
@@ -1768,7 +1768,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         lblLogoQVista.setMaximumWidth(sizeWidget)
         lblLogoQVista.setMinimumWidth(sizeWidget)
         
-        imatge = QPixmap(imatgesDir+'qVistaLogo_text_40.png')
+        imatge = QPixmap(os.path.join(imatgesDir,'qVistaLogo_text_40.png'))
         p = QPainter(imatge) 
         p.setPen(QPen(Qt.white))
         p.setFont(QFont("Arial", 12, QFont.Medium))
@@ -1811,7 +1811,13 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.lytBotonsFinestra = QHBoxLayout(self.fMaxim)
         self.fMaxim.setLayout(self.lytBotonsFinestra)
         self.lytBotonsFinestra.setContentsMargins(0,0,0,0)
-
+        
+        # self.botoMaxim=QvPushButton(flat=True)
+        # self.botoMaxim.clicked.connect(self.ferGran)
+        # self.botoMaxim.setIcon(QIcon(os.path.join(imatgesDir,'arrow-expand.png')))
+        # self.botoMaxim.setIconSize(QSize(30, 30))
+        # self.lytMaxim=QHBoxLayout(self.frame_13)
+        # self.lytMaxim.addWidget(self.botoMaxim)
         self.frame_13.setStyleSheet('background-color: %s'%QvConstants.COLORFOSCHTML)
 
         stylesheetBotonsFinestra='''
@@ -1829,7 +1835,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         '''%(QvConstants.COLORDESTACATHTML,QvConstants.COLORDESTACATHTML)
 
         self.botoMinimitzar=QvPushButton(flat=True)
-        self.botoMinimitzar.setIcon(QIcon(imatgesDir+'window-minimize.png'))
+        self.botoMinimitzar.setIcon(QIcon(os.path.join(imatgesDir,'window-minimize.png')))
         self.botoMinimitzar.setFixedSize(40,40)
         self.botoMinimitzar.clicked.connect(self.showMinimized)
         self.botoMinimitzar.setStyleSheet(stylesheetBotonsFinestra)
@@ -1839,9 +1845,6 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.iconaRestaurar1=QIcon(imatgesDir+'window-restore.png')
         self.iconaRestaurar2=QIcon(imatgesDir+'window-maximize.png')
 
-        
-            
-        # self.restaurarFunc=restaurar 
         self.botoRestaurar=QvPushButton(flat=True)
         self.botoRestaurar.setIcon(self.iconaRestaurar1)
         self.botoRestaurar.clicked.connect(self.restaurarFunc)
@@ -1850,7 +1853,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.lytBotonsFinestra.addWidget(self.botoRestaurar)
 
         self.botoSortir=QvPushButton(flat=True)
-        self.botoSortir.setIcon(QIcon(imatgesDir+'window_close.png'))
+        self.botoSortir.setIcon(QIcon(os.path.join(imatgesDir,'window_close.png')))
         self.botoSortir.setFixedSize(40,40)
         self.botoSortir.clicked.connect(self.provaDeTancar)
         self.botoSortir.setStyleSheet(stylesheetBotonsFinestra)
@@ -3546,6 +3549,12 @@ class QvDockWidget(QDockWidget):
         #Show tal qual. És a dir, ho mostra on estigués abans
         super().show()
 
+def migraConfigs():
+    arxius=('ultimAvisObert','ultimaNewOberta','mapesRecents','directoriDesar','volHints','dadesMascara','geocod.json','geocodificats.json','catalegsLocals')
+    for x in arxius:
+        aMoure=os.path.join(dadesdir,x)
+        if os.path.isfile(aMoure):
+            os.replace(aMoure,os.path.join(configdir,x))
 def qvSplashScreen(imatge):
     splash_pix = QPixmap(imatgesDir+'SplashScreen_qVista.png')
     splash = QSplashScreen(splash_pix, Qt.WindowStaysOnTopHint)
@@ -3574,6 +3583,7 @@ def main(argv):
         
         #Esborrem els temporals de la sessió anterior
         esborraCarpetaTemporal()
+        migraConfigs()
         app.processEvents()
 
         # Lectura fitxer d'estil

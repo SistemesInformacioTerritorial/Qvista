@@ -92,7 +92,7 @@ class QvMapeta(QFrame):
 
         # BOTON QUE INVOCA EL CAMBIO DE ROTACION MEDIANTE LA FUNCION self.cambiarRotacion
         # self.botocambiarRotacion = QPushButton(self)
-        # icon = QIcon(imatgesDir+'giro_0_44.png')
+        # icon = QIcon(os.path.join(imatgesDir,'giro_0_44.png'))
         # self.botocambiarRotacion.setIcon(icon)
         # self.botocambiarRotacion.setGeometry(0,0,25,25)
         # self.botocambiarRotacion.move(20,0)
@@ -172,7 +172,7 @@ class QvMapeta(QFrame):
             # self.move(20,20)
             self.show()
             self.petit = False
-            # icon = QIcon(imatgesDir+'arrow-collapse.png')
+            # icon = QIcon(os.path.join(imatgesDir,'arrow-collapse.png'))
 
             # self.botoFerPetit.setIcon(icon)
         else:
@@ -180,7 +180,7 @@ class QvMapeta(QFrame):
             # self.move(20,20)
             self.hide()
             self.petit = True
-            # icon = QIcon(imatgesDir+'mapetaPetit.jpg')
+            # icon = QIcon(os.path.join(imatgesDir,'mapetaPetit.jpg'))
         #     self.botoFerPetit.setIcon(icon)
         # self.botoFerPetit.setChecked(False)
 
@@ -321,8 +321,8 @@ class QvMapeta(QFrame):
 
     def mouseMoveEvent(self, event):
         # self.pare.app.restoreOverrideCursor()
-        # self.pare.app.setOverrideCursor(QCursor(QPixmap(imatgesDir+'cruz.cur'))) 
-        # self.setCursor(QCursor(QPixmap(imatgesDir+'cruz.cur')))
+        # self.pare.app.setOverrideCursor(QCursor(QPixmap(os.path.join(imatgesDir,'cruz.cur'))))
+        # self.setCursor(QCursor(QPixmap(os.path.join(imatgesDir,'cruz.cur'))))
         if self.MousePressFlag== True:        
             self.end = event.pos()
             self.MouseMoveFlag= True
@@ -340,8 +340,8 @@ class QvMapeta(QFrame):
         pass
 
     def enterEvent(self, event):
-        # self.pare.app.setOverrideCursor(QCursor(QPixmap(imatgesDir+'cruz.cur')))  
-        self.setCursor(QCursor(QPixmap(imatgesDir+'cruz.cur')))     
+        # self.pare.app.setOverrideCursor(QCursor(QPixmap(os.path.join(imatgesDir,'cruz.cur'))))
+        self.setCursor(QCursor(QPixmap(os.path.join(imatgesDir,'cruz.cur'))))
 
     def mouseReleaseEvent(self, event):
         Paux1=QPoint() #  Pto arriba izquierda
