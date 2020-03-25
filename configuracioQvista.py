@@ -15,18 +15,18 @@ projecteInicial = os.path.abspath('mapesOffline/qVista default map.qgs')
 estatConnexio = "Xarxa municipal: Connectat"
 
 QvTempdir='C:/temp/qVista/'
-tempdir=QvTempdir+'temp/' #Seran els arxius temporals de qVista que no s'han de guardar entre execucions
-dadesdir=QvTempdir+'dades/' #Arxius temporals que volem conservar
-configdir=QvTempdir+'config/' #Configuracions i coses
+tempdir=os.path.join(QvTempdir,'temp/')+'/' #Seran els arxius temporals de qVista que no s'han de guardar entre execucions
+dadesdir=os.path.join(QvTempdir,'dades/')+'/' #Arxius temporals que volem conservar
+configdir=os.path.join(QvTempdir+'config/')+'/' #Configuracions i coses
 
 docdir='n:/siteb/apl/pyqgis/qvista/dades/'
 imatgesDir = os.path.abspath('Imatges/')+'/'
-docdirPlantilles=docdir+'plantilles/'
+docdirPlantilles=os.path.join(docdir,'plantilles/')
 
-arxiuAvis=docdir+'Avisos.htm'
-arxiuNews=docdir+'Noticies.htm'
-carpetaDocuments=docdir+'Documentacio/'
-arxiuInfoQVista=docdir+'InfoQVista.pdf'
+arxiuAvis=os.path.join(docdir,'Avisos.htm')
+arxiuNews=os.path.join(docdir,'Noticies.htm')
+carpetaDocuments=os.path.join(docdir,'Documentacio/')
+arxiuInfoQVista=os.path.join(docdir,'InfoQVista.pdf')
 
 
 
@@ -67,7 +67,6 @@ if not os.path.exists(configdir):
 if not os.path.isdir(carpetaCataleg):
     carpetaCataleg = "../dades/CatalegProjectes/"
     carpetaCatalegProjectesLlista = ["../dades/CatalegProjectes/"]
-    projecteInicial = 'mapesOffline/qVista default map.qgs'
     estatConnexio = "Xarxa municipal: Desconnectat"
 
     

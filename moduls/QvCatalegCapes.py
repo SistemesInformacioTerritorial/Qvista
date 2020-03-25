@@ -17,9 +17,9 @@ class ProveidorIcones(QFileIconProvider):
         '''Retorna la icona de la carpeta si és un directori.
         Retorna la icona de la capa si és una capa'''
         if fileInfo.isDir():
-            return QIcon(imatgesDir+'cc_folder.png')
+            return QIcon(os.path.join(imatgesDir,'cc_folder.png'))
         elif fileInfo.completeSuffix()=='qlr':
-            return QIcon(imatgesDir+'cc_layer.png')
+            return QIcon(os.path.join(imatgesDir,'cc_layer.png'))
             pass
         return super().icon(fileInfo)
 
@@ -104,7 +104,7 @@ class QvCatalegCapes(QWidget):
         self.leCercador.setStyleSheet('background: white')
         self.leCercador.setPlaceholderText('Cercar...')
         self.leCercador.textChanged.connect(self.canviaFiltre)
-        self.accioEsborra=self.leCercador.addAction(QIcon(imatgesDir+'cc_buidar_cercar.png'),QLineEdit.TrailingPosition)
+        self.accioEsborra=self.leCercador.addAction(QIcon(os.path.join(imatgesDir,'cc_buidar_cercar.png')),QLineEdit.TrailingPosition)
         self.accioEsborra.triggered.connect(lambda: self.leCercador.setText(''))
         self.accioEsborra.setVisible(False)
 
@@ -257,14 +257,14 @@ class PreviewCapa(QWidget):
             }
         '''
         self.bAfegir=QPushButton(parent=self.lblImatge)
-        self.bAfegir.setIcon(QIcon(imatgesDir+'cc_afegir.png'))
+        self.bAfegir.setIcon(QIcon(os.path.join(imatgesDir,'cc_afegir.png')))
         self.bAfegir.setFixedSize(24,24)
         self.bAfegir.setIconSize(QSize(24,24))
         self.bAfegir.move(270,120)
         self.bAfegir.clicked.connect(self.obrir)
         self.bAfegir.setStyleSheet(stylesheet)
         self.bInfo=QPushButton(parent=self.lblImatge)
-        self.bInfo.setIcon(QIcon(imatgesDir+'cm_info.png'))
+        self.bInfo.setIcon(QIcon(os.path.join(imatgesDir,'cm_info.png')))
         self.bInfo.setFixedSize(24,24)
         self.bInfo.setIconSize(QSize(24,24))
         self.bInfo.move(270,150)
@@ -286,7 +286,7 @@ class PreviewCapa(QWidget):
         self.obrir()
     def obrir(self):
         self.parentWidget().parentWidget().afegirQlr()
-        self.bInfo.setIcon(QIcon(imatgesDir+'cm_info.png'))
+        self.bInfo.setIcon(QIcon(os.path.join(imatgesDir,'cm_info.png')))
     def obrirInfo(self):
         visor=QvVisorHTML(self.nomBase+'.htm','Metadades capa',True,self)
         visor.show()

@@ -137,7 +137,7 @@ class QvCanvas(QgsMapCanvas):
         self.setCursor(QvConstants.cursorDit())
     def copyToClipboard(self):
         '''Potser no és la millor manera, però el que fa és desar la imatge temporalment i copiar-la d'allà'''
-        nom=tempdir+str(time.time())+'.png'
+        nom=os.path.join(tempdir,str(time.time())+'.png')
         self.saveAsImage(nom)
         qApp.clipboard().setImage(QImage(nom))
 
@@ -243,51 +243,51 @@ class QvCanvas(QgsMapCanvas):
 
         if self.llistaBotons is not None:
             if "apuntar" in self.llistaBotons:
-                self.bApuntar = self._botoMapa(imatgesDir+'apuntar.png')
+                self.bApuntar = self._botoMapa(os.path.join(imatgesDir,'apuntar.png'))
                 self.bApuntar.setToolTip("Veure informació d'un objecte")
                 self.layoutBotoneraMapa.addWidget(self.bApuntar)  
                 self.bApuntar.setCursor(QvConstants.cursorFletxa())       
                 self.bApuntar.clicked.connect(self.seleccioClick)
             if "panning" in self.llistaBotons:
-                self.bPanning = self._botoMapa(imatgesDir+'pan_tool_black_24x24.png')
+                self.bPanning = self._botoMapa(os.path.join(imatgesDir,'pan_tool_black_24x24.png'))
                 self.bPanning.setToolTip('Desplaçar el mapa')
                 self.layoutBotoneraMapa.addWidget(self.bPanning)   
                 self.bPanning.setCursor(QvConstants.cursorFletxa())   
                 self.bPanning.clicked.connect(self.panCanvas)
             if "centrar" in self.llistaBotons:
-                self.bCentrar = self._botoMapa(imatgesDir+'fit.png')
+                self.bCentrar = self._botoMapa(os.path.join(imatgesDir,'fit.png'))
                 self.bCentrar.setToolTip('Enquadrar el mapa complet a la pantalla')
                 self.layoutBotoneraMapa.addWidget(self.bCentrar) 
                 self.bCentrar.setCursor(QvConstants.cursorFletxa())     
                 self.bCentrar.clicked.connect(self.centrarMapa)
             if "zoomIn" in self.llistaBotons:
-                self.bZoomIn = self._botoMapa(imatgesDir+'zoom_in.png')
+                self.bZoomIn = self._botoMapa(os.path.join(imatgesDir,'zoom_in.png'))
                 self.bZoomIn.setToolTip('Zoom per apropar-se')
                 self.layoutBotoneraMapa.addWidget(self.bZoomIn)  
                 self.bZoomIn.setCursor(QvConstants.cursorFletxa())
                 self.bZoomIn.clicked.connect(self.zoomIn)
             if "zoomOut" in self.llistaBotons:
-                self.bZoomOut = self._botoMapa(imatgesDir+'zoom_out.png')
+                self.bZoomOut = self._botoMapa(os.path.join(imatgesDir,'zoom_out.png'))
                 self.bZoomOut.setToolTip('Zoom per allunyar-se')
                 self.layoutBotoneraMapa.addWidget(self.bZoomOut) 
                 self.bZoomOut.setCursor(QvConstants.cursorFletxa())  
                 self.bZoomOut.clicked.connect(self.zoomOut)
             if 'enrere' in self.llistaBotons:
-                self.bEnrere=self._botoMapa(imatgesDir+'qv_vista_anterior.png')
+                self.bEnrere=self._botoMapa(os.path.join(imatgesDir,'qv_vista_anterior.png'))
                 self.bEnrere.setToolTip('Retrocedir al zoom anterior')
                 self.layoutBotoneraMapa.addWidget(self.bEnrere)
                 self.bEnrere.setCursor(QvConstants.cursorFletxa())
                 self.bEnrere.clicked.connect(self.zoomToPreviousExtent)
                 self.bEnrere.setCheckable(False)
             if 'endavant' in self.llistaBotons:
-                self.bEndavant=self._botoMapa(imatgesDir+'qv_vista_seguent.png')
+                self.bEndavant=self._botoMapa(os.path.join(imatgesDir,'qv_vista_seguent.png'))
                 self.bEndavant.setToolTip('Avançar al zoom següent')
                 self.layoutBotoneraMapa.addWidget(self.bEndavant)
                 self.bEndavant.setCursor(QvConstants.cursorFletxa())
                 self.bEndavant.clicked.connect(self.zoomToNextExtent)
                 self.bEndavant.setCheckable(False)
             if "streetview" in self.llistaBotons:
-                self.bstreetview = self._botoMapa(imatgesDir+'littleMan.png') 
+                self.bstreetview = self._botoMapa(os.path.join(imatgesDir,'littleMan.png'))
                 self.bstreetview.setDragable(True)
                 self.bstreetview.setCheckable(False)
                 self.bstreetview.setToolTip('Google Street view')
@@ -296,9 +296,9 @@ class QvCanvas(QgsMapCanvas):
                 # self.bstreetview.clicked.connect(self.amagaStreetView)  
                 #self.bstreetview.clicked.connect(QvStreetView.segueixBoto)
             if 'maximitza' in self.llistaBotons:
-                self.iconaMaximitza=QIcon(imatgesDir+'fullscreen.png')
-                self.iconaMinimitza=QIcon(imatgesDir+'fullscreen-exit.png')
-                self.bMaximitza = self._botoMapa(imatgesDir+'fullscreen.png') 
+                self.iconaMaximitza=QIcon(os.path.join(imatgesDir,'fullscreen.png'))
+                self.iconaMinimitza=QIcon(os.path.join(imatgesDir,'fullscreen-exit.png'))
+                self.bMaximitza = self._botoMapa(os.path.join(imatgesDir,'fullscreen.png'))
                 self.bMaximitza.setToolTip('Pantalla completa (F11)')
                 self.layoutBotoneraMapa.addWidget(self.bMaximitza)   
                 self.bMaximitza.setCursor(QvConstants.cursorFletxa()) 
@@ -314,7 +314,7 @@ class QvCanvas(QgsMapCanvas):
         self.butoMostra.setMaximumWidth(80)
         self.butoMostra.setMinimumWidth(80)
 
-        icon=QIcon(imatgesDir+'mapeta1.png')
+        icon=QIcon(os.path.join(imatgesDir,'mapeta1.png'))
         self.butoMostra.setIconSize(QSize(80,80))
         self.butoMostra.setIcon(icon)
 
@@ -323,7 +323,7 @@ class QvCanvas(QgsMapCanvas):
         self.butoMostra2.setMinimumHeight(80)
         self.butoMostra2.setMaximumWidth(80)
         self.butoMostra2.setMinimumWidth(80)
-        icon=QIcon(imatgesDir+'mapeta2.png')
+        icon=QIcon(os.path.join(imatgesDir,'mapeta2.png'))
         self.butoMostra2.setIconSize(QSize(80,80))
         self.butoMostra2.setIcon(icon)
         self.botoneraMostres = QFrame()

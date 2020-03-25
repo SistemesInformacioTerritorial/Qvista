@@ -32,7 +32,7 @@ class QvVisorHTML(QDialog):
         self.lblLogo = QLabel()
         if logo:
             self.lblLogo.setPixmap(
-                QPixmap(imatgesDir+'QVistaLogo_40_32.png'))
+                QPixmap(os.path.join(imatgesDir,'QVistaLogo_40_32.png')))
             self.layoutCapcalera.addWidget(self.lblLogo)
         self.layoutCapcalera.addWidget(self.lblCapcalera)
 

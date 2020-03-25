@@ -5,14 +5,14 @@ import hashlib
 
 from PyQt5.QtGui import QColor
 
-arxiuTmpAvis=configdir+'ultimAvisObert'
-arxiuTmpNews=configdir+'ultimaNewOberta'
-arxiuMapesRecents=configdir+'mapesRecents'
-arxiuDirectoriDesar=configdir+'directoriDesar'
-arxiuVolHints=configdir+'volHints'
-arxiuDadesMascara=configdir+'dadesMascara'
-arxiuCampsGeocod=configdir+'geocod.json'
-arxiuGeocodificats=configdir+'geocodificats.json'
+arxiuTmpAvis=os.path.join(configdir,'ultimAvisObert')
+arxiuTmpNews=os.path.join(configdir,'ultimaNewOberta')
+arxiuMapesRecents=os.path.join(configdir,'mapesRecents')
+arxiuDirectoriDesar=os.path.join(configdir,'directoriDesar')
+arxiuVolHints=os.path.join(configdir,'volHints')
+arxiuDadesMascara=os.path.join(configdir,'dadesMascara')
+arxiuCampsGeocod=os.path.join(configdir,'geocod.json')
+arxiuGeocodificats=os.path.join(configdir,'geocodificats.json')
 
 def llegirArxiu(f,encoding='utf-8'):
     with open(f,encoding=encoding) as arxiu:
@@ -101,12 +101,12 @@ class QvMemoria(Singleton):
     def setCampsGeocod(self,file,camps):
         self.campsGeocod[file]=camps
     def setGeocodificat(self,path):
-        ruta=dadesdir+Path(path).stem+'_Geo.csv'
+        ruta=os.path.join(dadesdir,Path(path).stem+'_Geo.csv')
         if not os.path.isfile(path) or not os.path.isfile(ruta):
             return
         self.geocodificats[md5sum(path)]=md5sum(ruta)
     def getGeocodificat(self,path):
-        ruta=dadesdir+Path(path).stem+'_Geo.csv'
+        ruta=os.path.join(dadesdir,Path(path).stem+'_Geo.csv')
         if os.path.isfile(ruta):
             suma_orig=md5sum(path)
             if suma_orig in self.geocodificats:

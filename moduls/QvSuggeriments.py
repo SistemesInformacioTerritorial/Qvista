@@ -23,7 +23,7 @@ class QvSuggeriments(QDialog):
         self.widgetSup.setLayout(self.layoutCapcalera)
         self.layout.addWidget(self.widgetSup)
         self.lblLogo=QLabel()
-        self.lblLogo.setPixmap(QPixmap(imatgesDir+'bug_cap_sugg.png'))
+        self.lblLogo.setPixmap(QPixmap(os.path.join(imatgesDir,'bug_cap_sugg.png')))
         self.lblCapcalera=QLabel(objectName='fosca')
         self.lblCapcalera.setText(' Problemes? Suggeriments?')
         self.lblCapcalera.setStyleSheet('background-color: %s' %QvConstants.COLORFOSCHTML)

@@ -682,50 +682,50 @@ class CsvAfegir(CsvPagina):
         layForma = QGridLayout()
         gbForma.setLayout(layForma)
         rbCreu = QRadioButton()
-        rbCreu.setIcon(QIcon(imatgesDir+'crossW.png'))
+        rbCreu.setIcon(QIcon(os.path.join(imatgesDir,'crossW.png')))
         rbCreu.toggled.connect(lambda x: setForma(
             'cross_fill') if x else print(':D'))
         layForma.addWidget(rbCreu, 1, 2)
 
         rbQuadrat = QRadioButton()
-        rbQuadrat.setIcon(QIcon(imatgesDir+'squareW.png'))
+        rbQuadrat.setIcon(QIcon(os.path.join(imatgesDir,'squareW.png')))
         rbQuadrat.toggled.connect(lambda x: setForma(
             'square') if x else print(':D'))
         layForma.addWidget(rbQuadrat, 0, 1)
 
         rbRombe = QRadioButton()
-        rbRombe.setIcon(QIcon(imatgesDir+'rhombusW.png'))
+        rbRombe.setIcon(QIcon(os.path.join(imatgesDir,'rhombusW.png')))
         rbRombe.toggled.connect(lambda x: setForma(
             'diamond') if x else print(':D'))
         layForma.addWidget(rbRombe, 0, 2)
 
         rbPentagon = QRadioButton()
-        rbPentagon.setIcon(QIcon(imatgesDir+'pentagonW.png'))
+        rbPentagon.setIcon(QIcon(os.path.join(imatgesDir,'pentagonW.png')))
         rbPentagon.toggled.connect(lambda x: setForma(
             'pentagon') if x else print(':D'))
         layForma.addWidget(rbPentagon, 0, 3)
 
         rbEstrella = QRadioButton()
-        rbEstrella.setIcon(QIcon(imatgesDir+'starW.png'))
+        rbEstrella.setIcon(QIcon(os.path.join(imatgesDir,'starW.png')))
         rbEstrella.toggled.connect(lambda x: setForma(
             'star') if x else print(':D'))
         layForma.addWidget(rbEstrella, 1, 0)
 
         rbTriangle = QRadioButton()
-        rbTriangle.setIcon(QIcon(imatgesDir+'triangleW.png'))
+        rbTriangle.setIcon(QIcon(os.path.join(imatgesDir,'triangleW.png')))
         rbTriangle.toggled.connect(lambda x: setForma(
             'triangle') if x else print(':D'))
         layForma.addWidget(rbTriangle, 1, 1)
 
         rbCercle = QRadioButton()
-        rbCercle.setIcon(QIcon(imatgesDir+'circleW.png'))
+        rbCercle.setIcon(QIcon(os.path.join(imatgesDir,'circleW.png')))
         rbCercle.toggled.connect(lambda x: setForma(
             'circle') if x else print(':D'))
         rbCercle.click()
         layForma.addWidget(rbCercle, 0, 0)
 
         rbHexagon = QRadioButton()
-        rbHexagon.setIcon(QIcon(imatgesDir+'hexagonW.png'))
+        rbHexagon.setIcon(QIcon(os.path.join(imatgesDir,'hexagonW.png')))
         rbHexagon.toggled.connect(lambda x: setForma(
             'hexagon') if x else print(':D'))
         layForma.addWidget(rbHexagon, 1, 3)
