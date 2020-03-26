@@ -52,11 +52,15 @@ class QvVisualitzacioCapa( QtWidgets.QDialog, Ui_QvVisualitzacioCapa ):
             except:
                 campUtilitzat = ''
             idx = self.cboDisplayFieldName.findText( campUtilitzat )
+            idx2 = self.cbTipField.findText(self.layer.displayExpression())
             try:
                 self.cboDisplayFieldName.setCurrentIndex( idx )
             except:
                 self.cboDisplayFieldName.setCurrentIndex( 0 )
-
+            try:
+                self.cbTipField.setCurrentIndex( idx2 )
+            except:
+                self.cbTipField.setCurrentIndex( 0 )
             self.lblDisplayField.setVisible( True )
             self.cboDisplayFieldName.setVisible( True )
             self.cboDisplayFieldName.setEnabled( True )
