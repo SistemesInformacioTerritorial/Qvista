@@ -36,6 +36,7 @@ class QvNouCataleg(QWidget):
         self.layoutCapcalera = QHBoxLayout()
         self.widgetSup = QWidget(objectName='layoutFosc')
         self.widgetSup.setLayout(self.layoutCapcalera)
+        self.widgetSup.setStyleSheet('background-color: %s;' % QvConstants.COLORFOSCHTML)
         self.layout.addWidget(self.widgetSup)
         self.lblLogo=QLabel()
         self.lblLogo.setPixmap(QPixmap(os.path.join(imatgesDir,'qVistaLogo_text_40_old.png')))
@@ -44,7 +45,7 @@ class QvNouCataleg(QWidget):
         self.lblCapcalera.setStyleSheet(
             'background-color: %s;' % QvConstants.COLORFOSCHTML)
         self.lblCapcalera.setFont(QvConstants.FONTTITOLS)
-        self.lblCapcalera.setSizePolicy(QSizePolicy.Expanding,QSizePolicy.Maximum)
+        # self.lblCapcalera.setSizePolicy(QSizePolicy.Expanding,QSizePolicy.Maximum)
         self.bCerca=QPushButton()
         self.bCerca.setIcon(QIcon(os.path.join(imatgesDir,'cerca.png')))
         self.bCerca.setIconSize(QSize(24, 24))
@@ -52,6 +53,19 @@ class QvNouCataleg(QWidget):
         self.bCerca.setFixedHeight(40)
         self.bCerca.setStyleSheet(
             "background-color:%s; border: 0px; margin: 0px; padding: 0px;" % QvConstants.COLORFOSCHTML)
+        self.bReload=QvPushButton()
+        self.bReload.setIcon(QIcon(os.path.join(imatgesDir,'reload-blanc.png')))
+        self.bReload.setIconSize(QSize(24, 24))
+        self.bReload.setFixedWidth(40)
+        self.bReload.setFixedHeight(40)
+        self.bReload.setStyleSheet(
+            "background-color:%s; border: 0px; margin: 0px; padding: 0px;" % QvConstants.COLORFOSCHTML)
+        self.bReload.clicked.connect(self.recarrega)
+        lblEspai=QLabel(' ')
+        lblEspai.setMinimumHeight(40)
+        lblEspai.setSizePolicy(QSizePolicy.Expanding,QSizePolicy.Maximum)
+        lblEspai.setStyleSheet(
+            'background-color: %s;' % QvConstants.COLORFOSCHTML)
         self.leCerca = QLineEdit()
         self.leCerca.setFixedHeight(40)
         self.leCerca.setFixedWidth(320)
@@ -75,6 +89,8 @@ class QvNouCataleg(QWidget):
 
         self.layoutCapcalera.addWidget(self.lblLogo)
         self.layoutCapcalera.addWidget(self.lblCapcalera)
+        self.layoutCapcalera.addWidget(self.bReload)
+        self.layoutCapcalera.addWidget(lblEspai)
         self.layoutCapcalera.addWidget(self.bCerca)
         self.layoutCapcalera.addWidget(self.leCerca)
         self.layoutCapcalera.addWidget(self.lblSpacer)
