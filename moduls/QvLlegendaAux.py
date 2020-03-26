@@ -19,7 +19,7 @@ class QvItemLlegenda:
             return 'layer'
         elif clase == 'QgsLayerTreeGroup':
             return 'group'
-        elif clase == 'QgsLayerTreeModelLegendNode':
+        elif clase in ('QgsSymbolLegendNode', 'QgsLayerTreeModelLegendNode'):
             return 'symb'
         else:
             return 'none'

@@ -68,8 +68,9 @@ class QvLlegendaMascara:
     # Funciones generales
 
     def maskInit(self):
-        node = self.legend.root.findLayer(self.layerId)
-        active = node is not None and node.isVisible()
+        # node = self.legend.root.findLayer(self.layerId)
+        # active = node is not None and node.isVisible()
+        active = self.legend.capaVisible(self.layer)
         self.maskSwitch(active)
 
     def maskSwitch(self, active=None):

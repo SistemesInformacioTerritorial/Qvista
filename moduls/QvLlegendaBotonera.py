@@ -72,9 +72,9 @@ class QvLlegendaBotonera(qgWdg.QWidget):
 if __name__ == "__main__":
 
     from qgis.core.contextmanagers import qgisapp
+    import qgis.gui as qgGui
 
     from moduls.QvLlegenda import QvLlegenda
-    from moduls.QvCanvas import QvCanvas
     from moduls.QvAtributs import QvAtributs
     from moduls.QvApp import QvApp
     from configuracioQvista import projecteInicial
@@ -83,7 +83,7 @@ if __name__ == "__main__":
 
         QvApp().carregaIdioma(app, 'ca')
 
-        canvas = QvCanvas()
+        canvas = qgGui.QgsMapCanvas()
         atribs = QvAtributs(canvas)
         leyenda = QvLlegenda(canvas, atribs)
         leyenda.project.read(projecteInicial)
@@ -108,20 +108,12 @@ if __name__ == "__main__":
         def modifBoton(boton):
             boton.setFlat(True)
 
-        def botonCapa(i):
-            global rangos
-            capa = 'Noms de carrers'
-            id = leyenda.capaPerNom(capa)
-            if id is not None and leyenda.capaVisible(id):
-                rangos = QvLlegendaBotonera(leyenda, capa)
-                rangos.afegirBotonera(filtroRangos, modifBoton)
-                rangos.show()
-            else:
-                if rangos is not None:
-                    rangos.close()
-                rangos = None
-
         botonera = QvLlegendaBotonera(leyenda, 'Botonera')
         botonera.afegirBotonera(filtroBotonera, modifBoton)
-        botonera.clicatBoto.connect(botonCapa)
         botonera.show()
+
+        # Falta comprobar checks
+        botoneraRangos = QvLlegendaBotonera(leyenda, 'Rangos', False)
+        botoneraRangos.afegirBotonera(filtroRangos, modifBoton)
+        botoneraRangos.show()
+
