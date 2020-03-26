@@ -388,6 +388,7 @@ class QvNouCataleg(QWidget):
         '''Mostra l'arxiu HTML que conté la informació associada al mapa'''
         if os.path.exists(dir):
             visor = QvVisorHTML(dir, 'Informació mapa', parent=self)
+            visor.setMinimumHeight(600)
             visor.exec()
         else:
             QMessageBox.warning(self, "No s'ha trobat la informació",
@@ -914,6 +915,8 @@ div.WordSection1
 
 <div class=WordSection1>
 
+<img src="%sGran.png" width="300" height="180">
+
 <p class=MsoNormal><b><span style='font-family:"Arial","sans-serif";color:#595959'>%s</span></b></p>
 
 <p class=MsoNormal style='margin-bottom:0cm;margin-bottom:.0001pt'><b><span
@@ -1135,6 +1138,8 @@ class QvCreadorCataleg(QDialog):
         # Desem la imatge
         self._pixmap.save(fRes+'.png')
 
+        self._imatgeAux.save(fRes+'Gran'+".png")
+
         # A partir d'aquí, creem un diàleg per obtenir les metadades i generar un HTML a partir d'elles
         wid = QDialog()
         lay = QVBoxLayout()
@@ -1173,7 +1178,7 @@ class QvCreadorCataleg(QDialog):
                 prop = tePropietari.toPlainText().replace('\n', '<br>')
                 font = teFont.toPlainText().replace('\n', '<br>')
                 f.write(plantillaMetadades %
-                        (self._leTitol.text(), cont, prop, font))
+                        ('file:///'+fRes, self._leTitol.text(), cont, prop, font))
 
             wid.close()
         bDesar.clicked.connect(desarMetadades)
@@ -1192,8 +1197,7 @@ class QvCreadorCataleg(QDialog):
         self._toolSet = not self._toolSet
 
     def actualitzaEstatBDesar(self):
-        b = isinstance(self._imatge, QLabel) and self._leTitol.text(
-        ) != '' and self._teText.toPlainText() != ''
+        b = isinstance(self._imatge, QLabel) and hasattr(self,'_imatgeAux') and self._leTitol.text() != '' and self._teText.toPlainText() != ''
         if not b:
             self._bDesar.setEnabled(False)
             return
@@ -1230,36 +1234,48 @@ class QvCreadorCataleg(QDialog):
         # Crear document de text
         # Crear metadades
 
+        def imprimir_imatge(loc,mida):
+            options = QgsMapSettings()
+            options.setLayers(self._canvas.layers())
+            options.setBackgroundColor(QColor(255, 255, 255))
+            options.setOutputSize(mida)
+            options.setExtent(self._rubberband.asGeometry().boundingBox())
+
+            render = QgsMapRendererParallelJob(options)
+
+            def finished():
+                try:
+                    render
+                except Exception as e:
+                    print(e)
+                    import time
+                    time.sleep(0.5)
+                    finished()
+                img = render.renderedImage()
+                img.save(image_location, "png")
+                if 'render.png' in loc:
+                    self._pixmap = QPixmap(image_location)
+                    lblImatge = QLabel()
+                    lblImatge.setPixmap(self._pixmap)
+                    self._layImatge.replaceWidget(self._imatge, lblImatge)
+                    self._imatge = lblImatge
+                    self.actualitzaEstatBDesar()
+                else:
+                    self._imatgeAux=img
+                    self.actualitzaEstatBDesar()
+
+            render.finished.connect(finished)
+
+            render.start()
         image_location = os.path.join(tempdir, "render.png")
+        imprimir_imatge(image_location,QSize(300,180))
 
-        options = QgsMapSettings()
-        options.setLayers(self._canvas.layers())
-        options.setBackgroundColor(QColor(255, 255, 255))
-        options.setOutputSize(QSize(300, 180))
-        options.setExtent(self._rubberband.asGeometry().boundingBox())
+        image_location = os.path.join(tempdir, "render_aux.png")
+        imprimir_imatge(image_location,QSize(1920,1920*180/300))
 
-        render = QgsMapRendererParallelJob(options)
+        
 
-        def finished():
-            try:
-                render
-            except Exception as e:
-                print(e)
-                import time
-                time.sleep(0.5)
-                finished()
-            img = render.renderedImage()
-            img.save(image_location, "png")
-            self._pixmap = QPixmap(image_location)
-            lblImatge = QLabel()
-            lblImatge.setPixmap(self._pixmap)
-            self._layImatge.replaceWidget(self._imatge, lblImatge)
-            self._imatge = lblImatge
-            self.actualitzaEstatBDesar()
-
-        render.finished.connect(finished)
-
-        render.start()
+        
 
     def hideEvent(self, e):
         super().hideEvent(e)
