@@ -917,8 +917,6 @@ div.WordSection1
 
 <div class=WordSection1>
 
-<img src="%sGran.png" width="300" height="180">
-
 <p class=MsoNormal><b><span style='font-family:"Arial","sans-serif";color:#595959'>%s</span></b></p>
 
 <p class=MsoNormal style='margin-bottom:0cm;margin-bottom:.0001pt'><b><span
@@ -1140,7 +1138,7 @@ class QvCreadorCataleg(QDialog):
         # Desem la imatge
         self._pixmap.save(fRes+'.png')
 
-        self._imatgeAux.save(fRes+'Gran'+".png")
+        self._imatgeAux.save(fRes+'_Gran'+".png")
 
         # A partir d'aquí, creem un diàleg per obtenir les metadades i generar un HTML a partir d'elles
         wid = QDialog()
