@@ -742,11 +742,13 @@ class MapaCataleg(QFrame):
         self.setChecked(False)
     
     def esborrar(self):
+        self.setCursor(QvConstants.cursorOcupat())
         exts=('.qgs','.htm','.png','.txt')
         for x in exts:
             if os.path.isfile(self.dir+x):
                 os.remove(self.dir+x)
-        pass
+        self.cataleg.recarrega()
+        self.setCursor(QvConstants.cursorFletxa())
 
     def mousePressEvent(self, event):
         if event.buttons() & Qt.LeftButton:
