@@ -47,11 +47,16 @@ class QvVisualitzacioCapa( QtWidgets.QDialog, Ui_QvVisualitzacioCapa ):
             #     #if not field.type() == QVariant.Double:
             #         # self.displayName = self.vectorLayer.attributeDisplayName( key )
             #     self.cboDisplayFieldName.addItem( field.name() )
+            try:
+                campUtilitzat = self.layer.labeling().settings().fieldName
+            except:
+                campUtilitzat = ''
+            idx = self.cboDisplayFieldName.findText( campUtilitzat )
+            try:
+                self.cboDisplayFieldName.setCurrentIndex( idx )
+            except:
+                self.cboDisplayFieldName.setCurrentIndex( 0 )
 
-            idx = self.cboDisplayFieldName.findText( self.layer.displayField() )
-            self.cboDisplayFieldName.setCurrentIndex( idx )
-
-            
             self.lblDisplayField.setVisible( True )
             self.cboDisplayFieldName.setVisible( True )
             self.cboDisplayFieldName.setEnabled( True )
