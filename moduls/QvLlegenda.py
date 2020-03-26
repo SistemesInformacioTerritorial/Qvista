@@ -35,6 +35,7 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
     def __init__(self, canvas=None, atributs=None, canviCapaActiva=None):
         qgGui.QgsLayerTreeView.__init__(self)
 
+        self.setWindowTitle('Llegenda')
         self.project = qgCor.QgsProject.instance()
         self.root = self.project.layerTreeRoot()
         self.canvas = None
@@ -147,6 +148,11 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
             self.player = QvVideo(fich, ancho, alto, self.canvas)
         else:
             self.player = None
+
+    def refreshCanvas(self):
+        if self.canvas is not None:
+            self.canvas.clearCache()
+            self.canvas.refresh()
 
     def deleteCanvasPosition(self):
         self.lastExtent = None
