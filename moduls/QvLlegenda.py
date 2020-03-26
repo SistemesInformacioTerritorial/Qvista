@@ -697,46 +697,6 @@ if __name__ == "__main__":
         def editable():
             leyenda.editarLlegenda(not leyenda.editable)
 
-        # Acciones de prueba de máscara para etiquetas
-
-        leyenda.mask = QvLlegendaMascara(leyenda.capaPerNom("Zones districtes"), 3)
-
-        def testLabels():
-            print("Test Labels")
-            if leyenda.mask is None:
-                print("- Sin máscara")
-                return
-            capa = leyenda.currentLayer()
-            print("Capa: {}".format(capa.name()))
-            if not leyenda.mask.labelsEnabled(capa):
-                print("- Sin etiquetas")
-                return
-            on = leyenda.mask.isActive(capa)
-            if on:
-                print("- Activada")
-            else:
-                print("- No activada")
-
-        def maskLabels():
-            print("Mask Labels")
-            if leyenda.mask is None:
-                print("- Sin máscara")
-                return
-            capa = leyenda.currentLayer()
-            on = leyenda.mask.isActive(capa)
-            leyenda.mask.switch(capa, not on)
-            if leyenda.capaVisible(capa):
-                canv.clearCache()
-                canv.refresh()
-
-        def maskOn():
-            if leyenda.mask is not None:
-                leyenda.mask.maskOn()
-
-        def maskOff():
-            if leyenda.mask is not None:
-                leyenda.mask.maskOff()
-
         # Acciones de usuario para el menú
 
         act = qtWdg.QAction()
@@ -750,26 +710,6 @@ if __name__ == "__main__":
         leyenda.accions.afegirAccio('test', act)
 
         act = qtWdg.QAction()
-        act.setText("Test Labels")
-        act.triggered.connect(testLabels)
-        leyenda.accions.afegirAccio('testLabels', act)
-
-        act = qtWdg.QAction()
-        act.setText("Mask Labels")
-        act.triggered.connect(maskLabels)
-        leyenda.accions.afegirAccio('maskLabels', act)
-
-        act = qtWdg.QAction()
-        act.setText("Mask Labels On")
-        act.triggered.connect(maskOn)
-        leyenda.accions.afegirAccio('maskOn', act)
-
-        act = qtWdg.QAction()
-        act.setText("Mask Labels Off")
-        act.triggered.connect(maskOff)
-        leyenda.accions.afegirAccio('maskOff', act)
-
-        act = qtWdg.QAction()
         act.setText("Abrir proyecto")
         act.triggered.connect(openProject)
         leyenda.accions.afegirAccio('openProject', act)
@@ -777,16 +717,11 @@ if __name__ == "__main__":
         # Adaptación del menú
 
         def menuContexte(tipo):
-            if tipo == 'layer':
-                leyenda.menuAccions.append('testLabels')
-                leyenda.menuAccions.append('maskLabels')
             if tipo == 'none':
                 leyenda.menuAccions.append('addLayersFromFile')
                 leyenda.menuAccions.append('separator')
                 leyenda.menuAccions.append('test')
                 leyenda.menuAccions.append('testCapas')
-                leyenda.menuAccions.append('maskOn')
-                leyenda.menuAccions.append('maskOff')
                 leyenda.menuAccions.append('editable')
                 leyenda.menuAccions.append('openProject')
 
