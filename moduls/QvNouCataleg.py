@@ -311,7 +311,7 @@ class QvNouCataleg(QWidget):
         f = []
         for y in carpetaCatalegProjectesLlista+QvMemoria().getCatalegsLocals():
             try:
-                _, _, files = next(os.walk(y+'/'+dir))
+                _, _, files = next(os.walk(os.path.join(y,dir)))
                 files = (x[:-4] for x in files if x.endswith('.qgs'))
                 files = (os.path.join(y, dir, x) for x in files)
                 f += files
@@ -641,6 +641,10 @@ class MapaCataleg(QFrame):
         self.setCursor(QvConstants.cursorClick())
         self.checked = False
         self.cataleg = cataleg
+        direc=os.path.dirname(os.path.dirname(dir))
+        local=QvMemoria().getCatalegsLocals()
+        self.local = direc in local
+        self.dir = dir
         # Per tenir el nom per les bases de dades
         self.nomMapa = os.path.basename(dir)
         midaWidget = QSize(320, 274)
@@ -719,6 +723,15 @@ class MapaCataleg(QFrame):
         self.botoInfo.clicked.connect(lambda: cataleg.obrirInfo(dir+'.htm'))
         self.botoInfo.setFixedSize(24, 24)
         self.botoInfo.setToolTip("Informació sobre el mapa")
+        if self.local:
+            self.botoEsborrar=QPushButton(parent=self)
+            self.botoEsborrar.setIcon(QIcon(os.path.join(imatgesDir,'cm_paperera.png')))
+            self.botoEsborrar.move(280,70)
+            self.botoEsborrar.setIconSize(QSize(24,24))
+            self.botoEsborrar.clicked.connect(self.esborrar)
+            self.botoEsborrar.setFixedSize(24, 24)
+            self.botoEsborrar.setToolTip("Esborrar el mapa")
+            self.botoEsborrar.setStyleSheet(stylesheet)
 
         self.botoFav.setStyleSheet(stylesheet)
         self.botoObre.setStyleSheet(stylesheet)
@@ -726,6 +739,13 @@ class MapaCataleg(QFrame):
         self.botoInfo.setStyleSheet(stylesheet)
 
         self.setChecked(False)
+    
+    def esborrar(self):
+        exts=('.qgs','.htm','.png','.txt')
+        for x in exts:
+            if os.path.isfile(self.dir+x):
+                os.remove(self.dir+x)
+        pass
 
     def mousePressEvent(self, event):
         if event.buttons() & Qt.LeftButton:
@@ -747,6 +767,7 @@ class MapaCataleg(QFrame):
             self.botoObre.show()
             self.botoInfo.show()
             self.botoQGis.show()
+            if hasattr(self,'botoEsborrar'): self.botoEsborrar.show()
 
         else:
             self.setStyleSheet('MapaCataleg{border: 4px solid white;}')
@@ -754,6 +775,7 @@ class MapaCataleg(QFrame):
             self.botoObre.hide()
             self.botoQGis.hide()
             self.botoInfo.hide()
+            if hasattr(self,'botoEsborrar'): self.botoEsborrar.hide()
         self.update()
 
     def setFavorit(self, fav: bool, actualitza: bool = True):
