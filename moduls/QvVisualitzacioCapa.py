@@ -101,6 +101,7 @@ class QvVisualitzacioCapa( QtWidgets.QDialog, Ui_QvVisualitzacioCapa ):
 
     def chkScaleChanged( self, state ):
         """ Slot. """
+        self.parent.canvas.refresh()
         if state:
             self.lblMaxScale.setEnabled( True )
             self.lblMinScale.setEnabled( True )
@@ -110,7 +111,18 @@ class QvVisualitzacioCapa( QtWidgets.QDialog, Ui_QvVisualitzacioCapa ):
             self.lblMaxScale.setEnabled( False )
             self.lblMinScale.setEnabled( False )
             self.maxScaleSpinBox.setEnabled( False )
-            self.minScaleSpinBox.setEnabled( False )            
+            self.minScaleSpinBox.setEnabled( False )     
+
+        if self.chkScale.checkState() == QtCore.Qt.Checked:
+            self.layer.setScaleBasedVisibility( True )
+            self.layer.setMaximumScale( self.minScaleSpinBox.value() )
+            self.layer.setMinimumScale( self.maxScaleSpinBox.value() )
+            finalScaleDependency = True
+        else:
+            self.layer.setScaleBasedVisibility( False )
+            finalScaleDependency = False
+
+        self.parent.canvas.refresh() # Scale dependency changed, so refresh
 
     def apply( self ):            
         newLayerName = self.txtLayerName.text()
