@@ -614,7 +614,7 @@ if __name__ == "__main__":
     with qgisapp(sysexit=False) as app:
 
         QvApp().carregaIdioma(app, 'ca')
-        QvApp().logInici()
+        # QvApp().logInici()
 
         def printCapaActiva():
             cLayer = leyenda.currentLayer()
@@ -674,7 +674,7 @@ if __name__ == "__main__":
                     print(leyenda.project.error().summary())
 
         def test():
-            QvApp().logRegistre('Menú Test')
+            # QvApp().logRegistre('Menú Test')
 
             print('Items Llegenda:')
             for item in leyenda.items():
@@ -730,4 +730,4 @@ if __name__ == "__main__":
 
         leyenda.projecteModificat.connect(print)
 
-        app.aboutToQuit.connect(QvApp().logFi)
+        # app.aboutToQuit.connect(QvApp().logFi)
