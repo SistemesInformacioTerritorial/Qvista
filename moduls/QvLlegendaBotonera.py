@@ -116,4 +116,3 @@ if __name__ == "__main__":
         botoneraRangos = QvLlegendaBotonera(leyenda, 'Rangos', False)
         botoneraRangos.afegirBotonera(filtroRangos, modifBoton)
         botoneraRangos.show()
-

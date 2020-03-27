@@ -100,31 +100,38 @@ if __name__ == "__main__":
         canvas = qgGui.QgsMapCanvas()
         atribs = QvAtributs(canvas)
         leyenda = QvLlegenda(canvas, atribs)
+
         leyenda.project.read('D:/qVista/EjemploMapTestMask.qgs')
-        canvas.show()
+        leyenda.mask = QvLlegendaMascara(leyenda, leyenda.capaPerNom("Màscara"), 1)
+        leyenda.move(0, 0)
         leyenda.show()
+
+        canvas.setWindowTitle('Test Mask Labels')
+        canvas.move(leyenda.width(), 0)
+        canvas.show()
 
         # Acciones de prueba de máscara para etiquetas
 
         def testLayerLabels():
-            print("Test Layer Labels")
+            msg = "Test Layer Labels"
             if leyenda.mask is None:
-                print("- Sin máscara")
-                return
-            capa = leyenda.currentLayer()
-            print("Capa: {}".format(capa.name()))
-            if not leyenda.mask.labelsEnabled(capa):
-                print("- Sin etiquetas")
-                return
-            on = leyenda.mask.isActive(capa)
-            if on:
-                print("- Activada")
+                msg += '\n' + "- Sin máscara"
             else:
-                print("- No activada")
+                capa = leyenda.currentLayer()
+                msg += '\n' + "Capa: {}".format(capa.name())
+                if leyenda.mask.labelsEnabled(capa):
+                    on = leyenda.mask.isActive(capa)
+                    if on:
+                        msg += '\n' + "- Activada"
+                    else:
+                        msg += '\n' + "- No activada"
+                else:
+                    msg += '\n' + "- Sin etiquetas"
+            qtWdg.QMessageBox().information(None, "Test", msg)
 
         def switchLayerMaskLabels():
             if leyenda.mask is None:
-                print("- Sin máscara")
+                qtWdg.QMessageBox().information(None, "Test", "Sin máscara")
                 return
             capa = leyenda.currentLayer()
             leyenda.mask.switch(capa)
@@ -133,9 +140,16 @@ if __name__ == "__main__":
 
         def switchAllMaskLabels():
             if leyenda.mask is None:
-                leyenda.mask = QvLlegendaMascara(leyenda, leyenda.capaPerNom("Màscara"), 1)
+                qtWdg.QMessageBox().information(None, "Test", "Sin máscara")
+                return
+            leyenda.mask.maskSwitch()
+
+        def switchRotation():
+            if canvas.rotation() == 0.0:
+                canvas.setRotation(45.0)
             else:
-                leyenda.mask.maskSwitch()
+                canvas.setRotation(0.0)
+            leyenda.refreshCanvas()
 
         # Acciones de usuario para el menú
 
@@ -154,6 +168,11 @@ if __name__ == "__main__":
         act.triggered.connect(switchAllMaskLabels)
         leyenda.accions.afegirAccio('maskSwitch', act)
 
+        act = qtWdg.QAction()
+        act.setText("Switch Rotation")
+        act.triggered.connect(switchRotation)
+        leyenda.accions.afegirAccio('rotationSwitch', act)
+
         # Adaptación del menú
 
         def menuContexte(tipo):
@@ -164,6 +183,7 @@ if __name__ == "__main__":
             if tipo == 'none':
                 leyenda.menuAccions.append('separator')
                 leyenda.menuAccions.append('maskSwitch')
+                leyenda.menuAccions.append('rotationSwitch')
 
         # Conexión de la señal con la función menuContexte para personalizar el menú
 
