@@ -2421,7 +2421,6 @@ class QVista(QMainWindow, Ui_MainWindow):
             self.showFullScreen()
         self.mapaMaxim=not self.mapaMaxim
 
-            
 
 
             # Descomentar para eliminar barra de titulo
