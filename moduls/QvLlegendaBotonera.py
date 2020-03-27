@@ -77,42 +77,53 @@ if __name__ == "__main__":
     from moduls.QvLlegenda import QvLlegenda
     from moduls.QvAtributs import QvAtributs
     from moduls.QvApp import QvApp
-    from configuracioQvista import projecteInicial
+    # from configuracioQvista import projecteInicial
 
     with qgisapp(sysexit=False) as app:
 
         QvApp().carregaIdioma(app, 'ca')
 
         canvas = qgGui.QgsMapCanvas()
-        atribs = QvAtributs(canvas)
-        leyenda = QvLlegenda(canvas, atribs)
-        leyenda.project.read(projecteInicial)
-
         canvas.setWindowTitle('Mapa')
-        leyenda.setWindowTitle('Llegenda')
+
+        atribs = QvAtributs(canvas)
         atribs.setWindowTitle('Taules')
 
-        canvas.show()
+        leyenda = QvLlegenda(canvas, atribs)
+        leyenda.project.read('D:/qVista/EjemploMapTestMask.qgs')
+        leyenda.setWindowTitle('Llegenda')
+        leyenda.move(0, 0)
         leyenda.show()
+
+        canvas.move(leyenda.width(), 0)
+        canvas.show()
 
         # Generación de botoneras de leyenda
         botonera = None
-        rangos = None
+        clases = None
 
-        def filtroBotonera(item):
-            return item.tipus in ('layer', 'group')
+        def filtroBotonera(element):
+            if element.tipus == 'layer':
+                return element.item.layer().name() != "Màscara"
+            elif element.tipus == 'group':
+                return True
+            else:
+                return False
 
-        def filtroRangos(item):
-            return item.tipus == 'symb'
+        def filtroRangos(element):
+            return element.tipus == 'symb'
 
         def modifBoton(boton):
             boton.setFlat(True)
 
         botonera = QvLlegendaBotonera(leyenda, 'Botonera')
         botonera.afegirBotonera(filtroBotonera, modifBoton)
+        botonera.setMinimumSize(200, 100)
+        botonera.move(0, canvas.height() + 20)
         botonera.show()
 
         # Falta comprobar checks
-        botoneraRangos = QvLlegendaBotonera(leyenda, 'Rangos', False)
-        botoneraRangos.afegirBotonera(filtroRangos, modifBoton)
-        botoneraRangos.show()
+        botoneraClases = QvLlegendaBotonera(leyenda, 'Clases', False)
+        botoneraClases.afegirBotonera(filtroRangos, modifBoton)
+        botoneraClases.move(botonera.width(), canvas.height() + 20)
+        botoneraClases.show()
