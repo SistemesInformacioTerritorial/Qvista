@@ -22,8 +22,6 @@ class QvLlegendaBotonera(qgWdg.QWidget):
         self.funcioBoto = None
 
     def afegirBoto(self, item):
-        if self.llegenda.editable:
-            self.llegenda.editarLlegenda(False)
         boto = qgWdg.QPushButton(item.nom())
         boto.setCheckable(True)
         boto.setChecked(item.esVisible())
@@ -89,7 +87,7 @@ if __name__ == "__main__":
         atribs = QvAtributs(canvas)
         atribs.setWindowTitle('Taules')
 
-        leyenda = QvLlegenda(canvas, atribs)
+        leyenda = QvLlegenda(canvas, atribs, editable=False)
         leyenda.project.read('D:/qVista/EjemploMapTestMask.qgs')
         leyenda.setWindowTitle('Llegenda')
         leyenda.move(0, 0)
@@ -105,16 +103,16 @@ if __name__ == "__main__":
         def modifBoton(boton):
             boton.setFlat(True)
 
-        def filtroBotonera(element):
-            if element.tipus == 'layer':
-                return element.item.layer().name() != "Màscara"
-            elif element.tipus == 'group':
+        def filtroBotonera(item):
+            if item.tipus == 'layer':
+                return item.nom() != "Màscara"
+            elif item.tipus == 'group':
                 return True
             else:
                 return False
 
-        def filtroClases(element):
-            return element.tipus == 'symb'
+        def filtroClases(item):
+            return item.tipus == 'symb'
 
         def verClases(i):
             boto = botonera.botons[i]

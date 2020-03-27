@@ -32,7 +32,7 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
     projecteCarregat = qtCor.pyqtSignal(str)
     projecteModificat = qtCor.pyqtSignal(str)
 
-    def __init__(self, canvas=None, atributs=None, canviCapaActiva=None):
+    def __init__(self, canvas=None, atributs=None, canviCapaActiva=None, editable=True):
         qgGui.QgsLayerTreeView.__init__(self)
 
         self.setWindowTitle('Llegenda')
@@ -70,7 +70,7 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
         self.model = QvModelLlegenda(self.root)
         self.model.setFlag(qgCor.QgsLegendModel.ShowLegend, True)
         self.model.setFlag(qgCor.QgsLegendModel.ShowLegendAsTree, True)
-        self.editarLlegenda(True)
+        self.editarLlegenda(editable)
 
         self.setModel(self.model)
         if self.canvas is not None:
@@ -200,8 +200,8 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
             return False
 
     def actIcones(self):
-        if not self.editable:
-            return
+        # if not self.editable:
+        #     return
         for capa in self.capes():
             if capa.type() == qgCor.QgsMapLayer.VectorLayer:
                 node = self.root.findLayer(capa.id())
@@ -213,15 +213,15 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
                         self.removeIndicator(node, self.iconaFiltre)
                     # Mapificacón
                     var = qgCor.QgsExpressionContextUtils.layerScope(capa).variable(MAP_ID)
-                    if var is not None and self.capaLocal(capa):
+                    if var is not None and self.capaLocal(capa) and self.editable:
                         self.addIndicator(node, self.iconaMap)
                     else:
                         self.removeIndicator(node, self.iconaMap)
                     capa.nameChanged.emit()
 
     def actIconaFiltre(self, capa):
-        if not self.editable:
-            return
+        # if not self.editable:
+        #     return
         if capa is None or capa.type() != qgCor.QgsMapLayer.VectorLayer:
             return
         node = self.root.findLayer(capa.id())
