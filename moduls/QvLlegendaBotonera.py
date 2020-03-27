@@ -102,6 +102,9 @@ if __name__ == "__main__":
         botonera = None
         clases = None
 
+        def modifBoton(boton):
+            boton.setFlat(True)
+
         def filtroBotonera(element):
             if element.tipus == 'layer':
                 return element.item.layer().name() != "Màscara"
@@ -110,20 +113,22 @@ if __name__ == "__main__":
             else:
                 return False
 
-        def filtroRangos(element):
+        def filtroClases(element):
             return element.tipus == 'symb'
 
-        def modifBoton(boton):
-            boton.setFlat(True)
+        def verClases(i):
+            boto = botonera.botons[i]
+            if boto.text() == "Cadires Terrasses":
+                botoneraClases.setVisible(boto.isChecked())
 
         botonera = QvLlegendaBotonera(leyenda, 'Botonera')
         botonera.afegirBotonera(filtroBotonera, modifBoton)
+        botonera.clicatBoto.connect(verClases)
         botonera.setMinimumSize(200, 100)
         botonera.move(0, canvas.height() + 20)
         botonera.show()
 
-        # Falta comprobar checks
         botoneraClases = QvLlegendaBotonera(leyenda, 'Clases', False)
-        botoneraClases.afegirBotonera(filtroRangos, modifBoton)
+        botoneraClases.afegirBotonera(filtroClases, modifBoton)
         botoneraClases.move(botonera.width(), canvas.height() + 20)
         botoneraClases.show()
