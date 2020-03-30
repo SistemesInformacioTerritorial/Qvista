@@ -1,19 +1,17 @@
 
 # from moduls.QvImports import * 
 
-from qgis.core import QgsRectangle, QgsProject
+from qgis.core import QgsProject
 from qgis.gui import QgsMapCanvas
-from qgis.PyQt.QtWidgets import QWidget, QPushButton, QGridLayout,QVBoxLayout, QVBoxLayout, QHBoxLayout, QFrame, QLabel, QLineEdit, QScrollArea
+from qgis.PyQt.QtWidgets import QFrame, QGridLayout, QHBoxLayout, QLabel, QLineEdit, QScrollArea, QVBoxLayout, QVBoxLayout, QWidget
 from qgis.PyQt.QtGui import QFont, QPixmap
 from qgis.PyQt.QtCore import Qt
 from botoInfoMapaPetit import Ui_BotoInfoMapa
 
-from multiprocessing import Process,Queue,Pipe
+from multiprocessing import Pipe, Process
 
 from qgis.core.contextmanagers import qgisapp
 
-import threading
-import pickle
 import os
 
 
@@ -165,7 +163,6 @@ class QvColumnaCataleg(QWidget):
             self.tcanvas = QgsMapCanvas()
             self.tproject = QgsProject.instance()
             self.troot = QgsProject.instance().layerTreeRoot()
-            bridge = QgsLayerTreeMapCanvasBridge(self.troot, self.tcanvas)
             self.tcanvas.show()
             self.tproject.read(prj)
 
@@ -212,7 +209,6 @@ class QvCataleg(QWidget):
         lytCapcalera.addWidget(titol)
         lytCapcalera.addWidget(self.liniaCerca)
 
-        scrollFull = QScrollArea()
         frame = QFrame()
         # scrollFull.setWidget(frame)
         self.layoutFrame = QHBoxLayout(frame)
@@ -225,7 +221,6 @@ class QvCataleg(QWidget):
 
         # frame.show()
         self.temesCataleg = []
-        temes = []
         self.dictProjectes = {}
         contingutCarpetes = os.walk(carpetaCataleg)
         for carpeta in contingutCarpetes:

@@ -1,10 +1,10 @@
 
-from PyQt5.QtWidgets import QWidget, QFrame,QApplication, QLabel
-from PyQt5.QtGui import QPixmap
+from qgis.PyQt.QtWidgets import QWidget, QFrame,QApplication, QLabel
+from qgis.PyQt.QtGui import QPixmap
 from qgis.core.contextmanagers import qgisapp
-from PyQt5.QtWebKitWidgets import QWebView , QWebPage
-from PyQt5.QtWebKit import QWebSettings
-from PyQt5.QtCore import QUrl
+from qgis.PyQt.QtWebKitWidgets import QWebView , QWebPage
+from qgis.PyQt.QtWebKit import QWebSettings
+from qgis.PyQt.QtCore import QUrl
 from platges import Ui_Form
 import urllib.request
 class QvPlatges(QFrame):

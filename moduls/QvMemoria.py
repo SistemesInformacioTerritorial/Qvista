@@ -3,16 +3,17 @@ from moduls.QvSingleton import Singleton
 import json
 import hashlib
 
-from PyQt5.QtGui import QColor
+from qgis.PyQt.QtGui import QColor
 
-arxiuTmpAvis=dadesdir+'ultimAvisObert'
-arxiuTmpNews=dadesdir+'ultimaNewOberta'
-arxiuMapesRecents=dadesdir+'mapesRecents'
-arxiuDirectoriDesar=dadesdir+'directoriDesar'
-arxiuVolHints=dadesdir+'volHints'
-arxiuDadesMascara=dadesdir+'dadesMascara'
-arxiuCampsGeocod=dadesdir+'geocod.json'
-arxiuGeocodificats=dadesdir+'geocodificats.json'
+arxiuTmpAvis=os.path.join(configdir,'ultimAvisObert')
+arxiuTmpNews=os.path.join(configdir,'ultimaNewOberta')
+arxiuMapesRecents=os.path.join(configdir,'mapesRecents')
+arxiuDirectoriDesar=os.path.join(configdir,'directoriDesar')
+arxiuVolHints=os.path.join(configdir,'volHints')
+arxiuDadesMascara=os.path.join(configdir,'dadesMascara')
+arxiuCampsGeocod=os.path.join(configdir,'geocod.json')
+arxiuGeocodificats=os.path.join(configdir,'geocodificats.json')
+arxiuCatalegsLocals=os.path.join(configdir+'catalegsLocals')
 
 def llegirArxiu(f,encoding='utf-8'):
     with open(f,encoding=encoding) as arxiu:
@@ -71,7 +72,6 @@ class QvMemoria(Singleton):
             return self.mapesRecents
         except:
             return []
-        pass
     def setMapesRecents(self,recents):
         self.mapesRecents=recents
     def getDirectoriDesar(self):
@@ -102,20 +102,33 @@ class QvMemoria(Singleton):
         return None
     def setCampsGeocod(self,file,camps):
         self.campsGeocod[file]=camps
-    def setGeocodificat(self,path,pathNormalitzat):
-        ruta=dadesdir+Path(pathNormalitzat).stem+'_Geo.csv'
+    def setGeocodificat(self,path):
+        ruta=os.path.join(dadesdir,Path(path).stem+'_Geo.csv')
         if not os.path.isfile(path) or not os.path.isfile(ruta):
             return
         self.geocodificats[md5sum(path)]=md5sum(ruta)
-    def getGeocodificat(self,path,pathNormalitzat):
-        ruta=dadesdir+Path(pathNormalitzat).stem+'_Geo.csv'
+    def getGeocodificat(self,path):
+        ruta=os.path.join(dadesdir,Path(path).stem+'_Geo.csv')
         if os.path.isfile(ruta):
             suma_orig=md5sum(path)
             if suma_orig in self.geocodificats:
                 if md5sum(ruta)==self.geocodificats[suma_orig]:
                     return ruta
         return None
-        pass
+    def getCatalegsLocals(self):
+        if not os.path.isfile(arxiuCatalegsLocals):
+            return [os.path.abspath('../dades/CatalegProjectes')]
+        with open(arxiuCatalegsLocals) as f:
+            return list(f.readlines())
+    def setCatalegLocal(self,path,posal=True):
+        cont=self.getCatalegsLocals()
+        path=os.path.abspath(path)
+        if posal:
+            cont=list(set(cont+[path]))
+        else:
+            cont=cont.remove(path)
+        with open(arxiuCatalegsLocals,'w',newline='\n') as f:
+            f.writelines(cont)
     def pafuera(self):
         if hasattr(self,'mapesRecents'):
             with open(arxiuMapesRecents,'w',encoding='utf-8') as f:

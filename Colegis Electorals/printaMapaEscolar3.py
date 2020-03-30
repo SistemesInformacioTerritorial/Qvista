@@ -4,7 +4,7 @@
 
 from moduls.QvImports import *
 from moduls.QvLlegenda import QvLlegenda
-from PyQt5 import QtGui
+from qgis.PyQt import QtGui
 
 projecteInicial = 'd:/MapaEscolar/MapaEscolar.qgs'
 

@@ -1,9 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from moduls.QvApp import QvApp
-from moduls.QvSingleton import Singleton
-from qgis.PyQt.QtSql import QSqlDatabase, QSqlQuery
-import os
+from qgis.PyQt.QtSql import QSqlDatabase
 
 _DB_NOVAGEO = dict()
 

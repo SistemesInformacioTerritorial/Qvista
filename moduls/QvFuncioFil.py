@@ -1,4 +1,4 @@
-from PyQt5.QtCore import QThread
+from qgis.PyQt.QtCore import QThread
 
 class QvFuncioFil(QThread):
     '''Classe per executar una funció (sense paràmetres) en un fil. Si volem passar-hi paràmetres, haurem de fer una nova funció sense paràmetres que ho gestioni

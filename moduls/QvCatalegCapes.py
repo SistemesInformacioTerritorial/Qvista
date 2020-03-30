@@ -1,9 +1,5 @@
 from moduls.QvImports import * 
-from PyQt5 import QtGui
-from PyQt5.QtCore import pyqtProperty
-from PyQt5 import QtCore, QtWidgets
 from moduls.QvConstants import QvConstants
-from moduls.QvPushButton import QvPushButton
 from moduls.QvVisorHTML import QvVisorHTML
 import re
 
@@ -17,10 +13,9 @@ class ProveidorIcones(QFileIconProvider):
         '''Retorna la icona de la carpeta si és un directori.
         Retorna la icona de la capa si és una capa'''
         if fileInfo.isDir():
-            return QIcon(imatgesDir+'cc_folder.png')
+            return QIcon(os.path.join(imatgesDir,'cc_folder.png'))
         elif fileInfo.completeSuffix()=='qlr':
-            return QIcon(imatgesDir+'cc_layer.png')
-            pass
+            return QIcon(os.path.join(imatgesDir,'cc_layer.png'))
         return super().icon(fileInfo)
 
 
@@ -85,7 +80,8 @@ class ModelArxius(QFileSystemModel):
         return super().data(index,role)
 
 class QvCatalegCapes(QWidget):
-    def __init__(self,qV,parent=None):
+    afegirCapa = pyqtSignal(str)
+    def __init__(self,parent=None):
         '''Construeix el catàleg de capes
         Li passem qVista com a paràmetre, per poder carregar les capes des d'aquí
         '''
@@ -96,7 +92,6 @@ class QvCatalegCapes(QWidget):
         self.layout=QVBoxLayout()
         self.setFont(QvConstants.FONTTEXT)
         self.setStyleSheet('color: %s; background: %s; border: none'%(QvConstants.COLORFOSCHTML,QvConstants.COLORBLANCHTML))
-        self.qV=qV
         self.setLayout(self.layout)
 
         #Afegir el cercador
@@ -104,7 +99,7 @@ class QvCatalegCapes(QWidget):
         self.leCercador.setStyleSheet('background: white')
         self.leCercador.setPlaceholderText('Cercar...')
         self.leCercador.textChanged.connect(self.canviaFiltre)
-        self.accioEsborra=self.leCercador.addAction(QIcon(imatgesDir+'cc_buidar_cercar.png'),QLineEdit.TrailingPosition)
+        self.accioEsborra=self.leCercador.addAction(QIcon(os.path.join(imatgesDir,'cc_buidar_cercar.png')),QLineEdit.TrailingPosition)
         self.accioEsborra.triggered.connect(lambda: self.leCercador.setText(''))
         self.accioEsborra.setVisible(False)
 
@@ -168,28 +163,10 @@ class QvCatalegCapes(QWidget):
         '''Si és una capa, l'afegeix a qVista
         He copiat el codi del mòdul qVista.py perquè la funció estava fora de la classe qVista i no podia cridar-la
         '''
-        dir=os.getcwd()
         index = self.treeCataleg.currentIndex()
         if self.model.isDir(index): return
         path=self.model.fileInfo(index).absoluteFilePath()
-        # self.qV.afegirQlr(path)
-
-        #Copio el codi de la funció afegirQlr de l'arxiu qVista.py, ja que no se m'acudeix cap manera de cridar-la des d'aquí que no sigui barroera
-        # layers = QgsLayerDefinition.loadLayerDefinitionLayers(path)
-        # self.qV.project.addMapLayers(layers, True)
-
-        ok, txt = QgsLayerDefinition().loadLayerDefinition(path, self.qV.project, self.qV.llegenda.root)
-        if ok:
-            self.qV.canvisPendents=True
-            self.qV.botoDesarProjecte.setIcon(self.qV.iconaAmbCanvisPendents)
-        else:
-            print('No se pudo importar capas', txt)
-
-
-        # self.qV.canvisPendents=True
-        # self.qV.botoDesarProjecte.setIcon(self.qV.iconaAmbCanvisPendents)
-        os.chdir(dir)
-        # print(dir)
+        self.afegirCapa.emit(path)
 
     def actualitzaMetadades(self):
         '''Pinta la preview de la capa
@@ -257,14 +234,14 @@ class PreviewCapa(QWidget):
             }
         '''
         self.bAfegir=QPushButton(parent=self.lblImatge)
-        self.bAfegir.setIcon(QIcon(imatgesDir+'cc_afegir.png'))
+        self.bAfegir.setIcon(QIcon(os.path.join(imatgesDir,'cc_afegir.png')))
         self.bAfegir.setFixedSize(24,24)
         self.bAfegir.setIconSize(QSize(24,24))
         self.bAfegir.move(270,120)
         self.bAfegir.clicked.connect(self.obrir)
         self.bAfegir.setStyleSheet(stylesheet)
         self.bInfo=QPushButton(parent=self.lblImatge)
-        self.bInfo.setIcon(QIcon(imatgesDir+'cm_info.png'))
+        self.bInfo.setIcon(QIcon(os.path.join(imatgesDir,'cm_info.png')))
         self.bInfo.setFixedSize(24,24)
         self.bInfo.setIconSize(QSize(24,24))
         self.bInfo.move(270,150)
@@ -286,7 +263,7 @@ class PreviewCapa(QWidget):
         self.obrir()
     def obrir(self):
         self.parentWidget().parentWidget().afegirQlr()
-        self.bInfo.setIcon(QIcon(imatgesDir+'cm_info.png'))
+        self.bInfo.setIcon(QIcon(os.path.join(imatgesDir,'cm_info.png')))
     def obrirInfo(self):
         visor=QvVisorHTML(self.nomBase+'.htm','Metadades capa',True,self)
         visor.show()
