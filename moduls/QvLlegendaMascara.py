@@ -2,21 +2,29 @@
 
 import qgis.core as qgCor
 
+_TEMPLATES = dict = {
+    "within": "within(centroid($geometry), geometry(get_feature_by_id('{}', {})))",
+    "intersects": "intersects($geometry, geometry(get_feature_by_id('{}', {})))"
+}
+
 
 class QvLlegendaMascara:
 
-    def __init__(self, legend, layer, polygonId):
+    def __init__(self, legend, layer, polygonId, template='within'):
         self.legend = legend
         self.layer = layer
         self.layerId = self.layer.id()
         self.polygonId = polygonId
-        self.template = "within(centroid($geometry), geometry(get_feature_by_id('{}', {})))"
+        self.template = self.setTemplate(template)
         self.key = qgCor.QgsPalLayerSettings.Show
         self.active = False
         self.labels = None
         self.sets = None
         self.props = None
         self.maskInit()
+
+    def setTemplate(self, template):
+        return _TEMPLATES.get(template, 'within')
 
     def calcExpression(self):
         return self.template.format(self.layerId, self.polygonId)
@@ -80,7 +88,7 @@ class QvLlegendaMascara:
             self.active = active
             for layer in self.legend.project.mapLayers():
                 self.switch(self.legend.project.mapLayer(layer), active)
-            self.legend.refreshCanvas()
+            self.legend.canvas.redrawAllLayers()
 
 
 if __name__ == "__main__":
@@ -136,7 +144,7 @@ if __name__ == "__main__":
             capa = leyenda.currentLayer()
             leyenda.mask.switch(capa)
             if leyenda.capaVisible(capa):
-                leyenda.refreshCanvas()
+                leyenda.canvas.redrawAllLayers()
 
         def switchAllMaskLabels():
             if leyenda.mask is None:
@@ -145,13 +153,12 @@ if __name__ == "__main__":
             leyenda.mask.maskSwitch()
 
         def switchRotation():
+            canvas.clearCache()
             if canvas.rotation() == 0.0:
                 canvas.setRotation(45.0)
             else:
                 canvas.setRotation(0.0)
-            leyenda.refreshCanvas()
-
-        # Acciones de usuario para el menú
+            canvas.refresh()
 
         act = qtWdg.QAction()
         act.setText("Test Layer Mask Labels")

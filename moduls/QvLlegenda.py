@@ -149,11 +149,6 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
         else:
             self.player = None
 
-    def refreshCanvas(self):
-        if self.canvas is not None:
-            self.canvas.clearCache()
-            self.canvas.refresh()
-
     def deleteCanvasPosition(self):
         self.lastExtent = None
 
@@ -462,7 +457,9 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
             capa = self.currentLayer()
             if capa is not None and capa.type() == qgCor.QgsMapLayer.VectorLayer:
                 if self.atributs is not None:
-                    self.menuAccions += ['showFeatureTable', 'filterElements']
+                    self.menuAccions += ['showFeatureTable']
+                    if self.editable:
+                        self.menuAccions += ['filterElements']
                 self.menuAccions += ['showFeatureCount']
             if capa is not None and self.canvas is not None:
                 self.menuAccions += ['showLayerMap']
