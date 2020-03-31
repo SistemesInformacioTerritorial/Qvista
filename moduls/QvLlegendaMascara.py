@@ -3,14 +3,16 @@
 import qgis.core as qgCor
 
 _TEMPLATES = dict = {
-    "within": "within(centroid($geometry), geometry(get_feature_by_id('{}', {})))",
+    "centroid": "within(centroid($geometry), geometry(get_feature_by_id('{}', {})))",
     "intersects": "intersects($geometry, geometry(get_feature_by_id('{}', {})))"
 }
+
+_DEF_TEMPLATE = "centroid"
 
 
 class QvLlegendaMascara:
 
-    def __init__(self, legend, layer, polygonId, template='within'):
+    def __init__(self, legend, layer, polygonId, template=_DEF_TEMPLATE):
         self.legend = legend
         self.layer = layer
         self.layerId = self.layer.id()
@@ -24,7 +26,7 @@ class QvLlegendaMascara:
         self.maskInit()
 
     def setTemplate(self, template):
-        return _TEMPLATES.get(template, 'within')
+        return _TEMPLATES.get(template, _DEF_TEMPLATE)
 
     def calcExpression(self):
         return self.template.format(self.layerId, self.polygonId)
@@ -111,11 +113,13 @@ if __name__ == "__main__":
 
         leyenda.project.read('D:/qVista/EjemploMapTestMask.qgs')
         leyenda.mask = QvLlegendaMascara(leyenda, leyenda.capaPerNom("Màscara"), 1)
+        leyenda.setMinimumSize(400, 500)
         leyenda.move(0, 0)
         leyenda.show()
 
         canvas.setWindowTitle('Test Mask Labels')
-        canvas.move(leyenda.width(), 0)
+        canvas.setMinimumSize(1300, 900)
+        canvas.move(leyenda.width() + 10, 0)
         canvas.show()
 
         # Acciones de prueba de máscara para etiquetas
@@ -178,7 +182,7 @@ if __name__ == "__main__":
         act = qtWdg.QAction()
         act.setText("Switch Rotation")
         act.triggered.connect(switchRotation)
-        leyenda.accions.afegirAccio('rotationSwitch', act)
+        leyenda.accions.afegirAccio('switchRotation', act)
 
         # Adaptación del menú
 
@@ -190,7 +194,7 @@ if __name__ == "__main__":
             if tipo == 'none':
                 leyenda.menuAccions.append('separator')
                 leyenda.menuAccions.append('maskSwitch')
-                leyenda.menuAccions.append('rotationSwitch')
+                leyenda.menuAccions.append('switchRotation')
 
         # Conexión de la señal con la función menuContexte para personalizar el menú
 
