@@ -3193,17 +3193,17 @@ def desaElProjecte(proj):
     qV.project.setMetadata(md)
     if proj!=qV.pathProjecteActual:
         qV.pathProjecteActual=proj
-        qV.lblProjecte.setText(qV.project.baseName())
+        qV.lblProjecte.setText(qV.project.baseName())        
     #Desem la màscara
-    mascara=obteMascara(qV)
-    if mascara is not None:
-        pr=mascara.dataProvider()
-        writer=QgsVectorFileWriter.writeAsVectorFormat(mascara,proj[:-4]+'mascara',pr.encoding(),pr.crs(),symbologyExport=QgsVectorFileWriter.SymbolLayerSymbology)
-        # writer=QgsVectorFileWriter(qV.project.baseName(),pr.encoding(),pr.fields(),QGis.WKBPolygon, pr.crs())
-        # qV.project.removeMapLayer(qV.project.mapLayersByName('Màscara')[0])
-        eliminaMascara(qV)
+    # mascara=obteMascara(qV)
+    # if mascara is not None:
+    #     pr=mascara.dataProvider()
+    #     writer=QgsVectorFileWriter.writeAsVectorFormat(mascara,proj[:-4]+'mascara',pr.encoding(),pr.crs(),symbologyExport=QgsVectorFileWriter.SymbolLayerSymbology)
+    #     # writer=QgsVectorFileWriter(qV.project.baseName(),pr.encoding(),pr.fields(),QGis.WKBPolygon, pr.crs())
+    #     # qV.project.removeMapLayer(qV.project.mapLayersByName('Màscara')[0])
+    #     eliminaMascara(qV)
     qV.project.write(proj)
-    carregaMascara(qV)
+    # carregaMascara(qV)
     qV.stopMovie()
     qApp.restoreOverrideCursor()
     app.processEvents()
