@@ -568,6 +568,7 @@ class QvMapificacio(QObject):
         try:
             # Los campos de zona y extensión se cargan como string, y el de agregacion como float si hay acumulados
             dtypes = {self.campZona: np.string_}
+            valExtensio = ''
             if campExtensio == '' or (campExtensio[0] == '<'):
                 campExt = ''
                 valExtensio = campExtensio
