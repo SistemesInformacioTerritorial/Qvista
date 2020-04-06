@@ -697,7 +697,7 @@ class QvMapificacio(QObject):
 
             # Guardar capa de mapa como Geopackage
             self.fSQL = self.nomArxiuSortida(nomCapa)
-            out.to_file(self.fSQL, driver="GPKG", layer=nomCapa)
+            out.to_file(self.fSQL, driver="GPKG", layer=nomCapa, overwrite=True)
             return True
         except Exception as err:
             self.msgError = "Error al calcular l'agregació de dades.\n\n" + str(err)
