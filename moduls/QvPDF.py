@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import sys
-from qgis.PyQt import QtCore, QtWidgets, QtWebKitWidgets
+from qgis.PyQt import QtCore, QtWebKitWidgets
 from moduls.QvApp import QvApp
 
 

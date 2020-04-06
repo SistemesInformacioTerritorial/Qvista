@@ -3,15 +3,8 @@
 from importaciones import *
 # import recursos
 from configuracioQvista import *
-from plantillaQvista_3 import Ui_MainWindow
-from QvUbicacions import QvUbicacions
-from QvPrint import QvPrint
-from QvAnotacions import QvAnotacions
-from QvEinesGrafiques import QvSeleccioElement, QvSeleccioPerPoligon
+from QvEinesGrafiques import QvSeleccioElement
 
-from QvStreetView import QvStreetView
-from moduls.QvLlegenda import QvLlegenda
-from moduls.QvAtributs import QvAtributs
 
 
 class QvCanvas(QgsMapCanvas):
@@ -134,20 +127,20 @@ class QvCanvas(QgsMapCanvas):
             self.layoutBotoneraMapa.addWidget(self.bApuntar)        
             self.bApuntar.clicked.connect(self.seleccioClick)
         if "centrar" in self.llistaBotons:
-            self.bCentrar = self._botoMapa(imatgesDir+'ic_zoom_out_map_black_48dp.png')
+            self.bCentrar = self._botoMapa(os.path.join(imatgesDir,'ic_zoom_out_map_black_48dp.png'))
             self.layoutBotoneraMapa.addWidget(self.bCentrar)     
             self.bCentrar.clicked.connect(self.centrarMapa)
         if "zoomIn" in self.llistaBotons:
-            self.bZoomIn = self._botoMapa(imatgesDir+'zoom_in.png')
+            self.bZoomIn = self._botoMapa(os.path.join(imatgesDir,'zoom_in.png'))
             self.bZoomIn.setCheckable(True)
             self.layoutBotoneraMapa.addWidget(self.bZoomIn)     
             self.bZoomIn.clicked.connect(self.zoomIn)
         if "zoomOut" in self.llistaBotons:
-            self.bZoomOut = self._botoMapa(imatgesDir+'zoom_out.png')
+            self.bZoomOut = self._botoMapa(os.path.join(imatgesDir,'zoom_out.png'))
             self.layoutBotoneraMapa.addWidget(self.bZoomOut)     
             self.bZoomOut.clicked.connect(self.zoomOut)
         if "panning" in self.llistaBotons:
-            self.bPanning = self._botoMapa(imatgesDir+'pan_tool_black_24x24.png')
+            self.bPanning = self._botoMapa(os.path.join(imatgesDir,'pan_tool_black_24x24.png'))
             self.layoutBotoneraMapa.addWidget(self.bPanning)     
             self.bPanning.clicked.connect(self.panCanvas)
 

@@ -6,12 +6,10 @@ import tempfile
 from moduls.QvGeocod import QvGeocod
 from moduls.QvConstants import QvConstants
 from moduls.QvPushButton import QvPushButton
-from moduls.QvApp import QvApp
 import re
 from csv import DictReader
 import io
 import chardet
-from PyQt5 import QtWidgets
 import time
 from pathlib import Path
 from typing import Callable
@@ -368,7 +366,6 @@ class QvCarregaCsvTriaSepDec(QvCarregaCsvPage):
         self.layoutCheckButton.addStretch(1)
         self.mostraTaula()
 
-    pass
 
 # La classe per triar si definim la geometria amb coordenades X Y, o bé amb una adreça
 
@@ -745,7 +742,6 @@ class QvCarregaCsvGeneraCoords(QvCarregaCsvPage):
                 reader = self.parent.readerTmp
 
             for row in reader:
-                error = False
                 i += 1
 
                 if i == 0:
@@ -803,20 +799,20 @@ class QvCarregaCsvGeneraCoords(QvCarregaCsvPage):
                     try:
                         tipusVia, nomVia, numI = splitCarrer(row[self.parent.dadesAdreca[1]])
                     except:
-                        error=True
+                        pass
 
 
                 elif self.parent.dadesAdreca[0] == "" and self.parent.dadesAdreca[2] != "":
                     try:
                         tipusVia, nomVia, _ = splitCarrer(row[self.parent.dadesAdreca[1]]) 
                     except:
-                        error=True
+                        pass
 
                 elif self.parent.dadesAdreca[0] != "" and self.parent.dadesAdreca[2] == "":
                     try:
                         _, nomVia, numI = splitCarrer(row[self.parent.dadesAdreca[1]])
                     except:
-                        error=True
+                        pass
 
                 if nomVia == "":
                     nomVia = row[self.parent.dadesAdreca[1]]  

@@ -1,20 +1,18 @@
 from moduls.QvImports import *
-from PyQt5.QtWidgets import *
-from typing import Type
+from qgis.PyQt.QtWidgets import *
 import itertools
 from moduls.QvMapificacio import QvMapificacio
 from moduls.QvPushButton import QvPushButton
 from moduls.QvEditorCsv import QvEditorCsv
 from moduls.QvMapForms import QvFormNovaMapificacio
 from moduls.QvConstants import QvConstants
-from moduls.QvApp import QvApp
 from moduls.QvFuncioFil import QvFuncioFil
 from moduls.QvMemoria import QvMemoria
 
 # Còpia de la funció definida dins de qVista.py. Millor aquí???
 
 
-def nivellCsv(qV, fitxer: str, delimitador: str, campX: str, campY: str, projeccio: int = 25831, nomCapa: str = 'Capa sense nom', color='red', symbol='circle'):
+def nivellCsv(projecte, llegenda, fitxer: str, delimitador: str, campX: str, campY: str, projeccio: int = 25831, nomCapa: str = 'Capa sense nom', color='red', symbol='circle'):
     uri = "file:///"+fitxer + \
         "?type=csv&delimiter=%s&xField=%s&yField=%s" % (
             delimitador, campX, campY)
@@ -29,10 +27,10 @@ def nivellCsv(qV, fitxer: str, delimitador: str, campX: str, campY: str, projecc
         writer=QgsVectorFileWriter.writeAsVectorFormat(layer,fitxer[:-4],pr.encoding(),pr.crs(),symbologyExport=QgsVectorFileWriter.SymbolLayerSymbology)
         capaGpkg=QgsVectorLayer(fitxer[:-4]+'.gpkg',nomCapa,'ogr')
         capaGpkg.renderer().setSymbol(symbol)
-        qV.project.addMapLayer(capaGpkg)
-        qV.llegenda.saveStyleToGeoPackage(capaGpkg)
+        projecte.addMapLayer(capaGpkg)
+        llegenda.saveStyleToGeoPackage(capaGpkg)
         # qV.project.addMapLayer(layer)
-        qV.setDirtyBit(True)
+        # qV.setDirtyBit(True)
     else:
         print("no s'ha pogut afegir la nova layer")
 
@@ -112,13 +110,12 @@ def campsNum(csvPath,sep,cod):
     return campsPref(csvPath,sep,cod,nomCamps)
 
 class QvCarregaCsv(QDialog):
-    def __init__(self, rutaCsv: str, qV=None):
-        super().__init__(qV,Qt.WindowSystemMenuHint | Qt.WindowTitleHint | Qt.WindowCloseButtonHint)
+    def __init__(self, rutaCsv: str, projecte, llegenda, parent=None):
+        super().__init__(parent,Qt.WindowSystemMenuHint | Qt.WindowTitleHint | Qt.WindowCloseButtonHint)
         self.setWindowTitle('Carregador d\'arxius CSV')
-        # self.setFixedSize(QvApp().zoomFactor()*750, QvApp().zoomFactor()*550)
         self.setMinimumWidth(750)
-        if qV is not None:
-            self._qV = qV
+        self._llegenda=llegenda
+        self._projecte=projecte
         self._csv = self._primerCsv = rutaCsv
         self.loadMap()
         # self._mapificador = QvMapificacio(rutaCsv)
@@ -167,7 +164,6 @@ class QvCarregaCsv(QDialog):
 
     def formata(self):
         self._layoutGran.addWidget(self._widgetActual)
-        pass
 
     def salta(self, nouW):
         self._widgetActual.hide()
@@ -232,7 +228,7 @@ class CsvPagina(QWidget):
 
     def _mapifica(self):
         fMap = QvFormNovaMapificacio(
-            self._carregador._qV.llegenda, mapificacio=self._carregador._mapificador)
+            self._carregador._llegenda, mapificacio=self._carregador._mapificador)
         if fMap.exec()==QDialog.Accepted:
             self._carregador.close()
 
@@ -452,7 +448,6 @@ class CsvAdreca(CsvPagina):
             self._cbNumF.setCurrentText(campsAdreca['numF'])
             self._cbLletraI.setCurrentText(campsAdreca['lletraI'])
             self._cbLletraF.setCurrentText(campsAdreca['lletraF'])
-            pass
         else:
             self.campsDefecte()
 
@@ -481,9 +476,7 @@ class CsvAdreca(CsvPagina):
         if c is not None:
             i=self._cbNumI.findText(c)
             self._cbNumI.setCurrentIndex(i)
-        pass
     def geocodifica(self):
-        pare=self._carregador
         arxiuNet=str(Path(self._carregador._csv).parent)+'\\'+self._carregador._mapificador.netejaString(Path(self._carregador._csv).stem,True)+'.csv'
         geocod=QvMemoria().getGeocodificat(self._carregador._csv, arxiuNet)
         if geocod is not None:
@@ -630,7 +623,6 @@ class CsvGeocodificat(CsvPagina):
             errorsStr = errorsStr+'\nFila %i' % x
         self._textEditErrors.setText(
             'Files amb errors (click sobre "Veure i arreglar errors" per veure i editar la taula):%s' % errorsStr)
-        pass
 
     def _mostraTaula(self):
         if super()._mostraTaula(self._errors, modal=True):
@@ -698,50 +690,50 @@ class CsvAfegir(CsvPagina):
         layForma = QGridLayout()
         gbForma.setLayout(layForma)
         rbCreu = QRadioButton()
-        rbCreu.setIcon(QIcon(imatgesDir+'crossW.png'))
+        rbCreu.setIcon(QIcon(os.path.join(imatgesDir,'crossW.png')))
         rbCreu.toggled.connect(lambda x: setForma(
             'cross_fill') if x else print(':D'))
         layForma.addWidget(rbCreu, 1, 2)
 
         rbQuadrat = QRadioButton()
-        rbQuadrat.setIcon(QIcon(imatgesDir+'squareW.png'))
+        rbQuadrat.setIcon(QIcon(os.path.join(imatgesDir,'squareW.png')))
         rbQuadrat.toggled.connect(lambda x: setForma(
             'square') if x else print(':D'))
         layForma.addWidget(rbQuadrat, 0, 1)
 
         rbRombe = QRadioButton()
-        rbRombe.setIcon(QIcon(imatgesDir+'rhombusW.png'))
+        rbRombe.setIcon(QIcon(os.path.join(imatgesDir,'rhombusW.png')))
         rbRombe.toggled.connect(lambda x: setForma(
             'diamond') if x else print(':D'))
         layForma.addWidget(rbRombe, 0, 2)
 
         rbPentagon = QRadioButton()
-        rbPentagon.setIcon(QIcon(imatgesDir+'pentagonW.png'))
+        rbPentagon.setIcon(QIcon(os.path.join(imatgesDir,'pentagonW.png')))
         rbPentagon.toggled.connect(lambda x: setForma(
             'pentagon') if x else print(':D'))
         layForma.addWidget(rbPentagon, 0, 3)
 
         rbEstrella = QRadioButton()
-        rbEstrella.setIcon(QIcon(imatgesDir+'starW.png'))
+        rbEstrella.setIcon(QIcon(os.path.join(imatgesDir,'starW.png')))
         rbEstrella.toggled.connect(lambda x: setForma(
             'star') if x else print(':D'))
         layForma.addWidget(rbEstrella, 1, 0)
 
         rbTriangle = QRadioButton()
-        rbTriangle.setIcon(QIcon(imatgesDir+'triangleW.png'))
+        rbTriangle.setIcon(QIcon(os.path.join(imatgesDir,'triangleW.png')))
         rbTriangle.toggled.connect(lambda x: setForma(
             'triangle') if x else print(':D'))
         layForma.addWidget(rbTriangle, 1, 1)
 
         rbCercle = QRadioButton()
-        rbCercle.setIcon(QIcon(imatgesDir+'circleW.png'))
+        rbCercle.setIcon(QIcon(os.path.join(imatgesDir,'circleW.png')))
         rbCercle.toggled.connect(lambda x: setForma(
             'circle') if x else print(':D'))
         rbCercle.click()
         layForma.addWidget(rbCercle, 0, 0)
 
         rbHexagon = QRadioButton()
-        rbHexagon.setIcon(QIcon(imatgesDir+'hexagonW.png'))
+        rbHexagon.setIcon(QIcon(os.path.join(imatgesDir,'hexagonW.png')))
         rbHexagon.toggled.connect(lambda x: setForma(
             'hexagon') if x else print(':D'))
         layForma.addWidget(rbHexagon, 1, 3)
@@ -766,24 +758,37 @@ class CsvAfegir(CsvPagina):
     def _enrere(self):
         self.salta.emit(CsvGeocodificat([],0,self._carregador))
     def afegir(self):
-        nivellCsv(self._carregador._qV, self._carregador._csv, self._carregador._separador,
+        nivellCsv(self._carregador._projecte, self._carregador._llegenda, self._carregador._csv, self._carregador._separador,
                   self._campCoordX, self._campCoordY, self._projeccio, self._leNomCapa.text(), self._color, symbol=self._forma)
         self._carregador.close()
 
 
 if __name__ == '__main__':
     from qgis.core.contextmanagers import qgisapp
+    from moduls.QvCanvas import QvCanvas
+    from moduls.QvLlegenda import QvLlegenda
+    from moduls.QvDropFiles import QvDropFiles
 
     gui = True
 
     with qgisapp(guienabled=gui) as app:
-
-        from moduls.QvApp import QvApp
-
-        # qApp = QvApp()
-        arxiu = 'C:/Users/omarti/Documents/Random/gossos.csv'
-        wiz = QvCarregaCsv(arxiu)
         with open('style.qss') as f:
             app.setStyleSheet(f.read())
-            # wiz.setStyleSheet(f.read())
-        wiz.show()
+        canvas = QvCanvas(llistaBotons=["panning","zoomIn","zoomOut"])
+        project = QgsProject.instance()
+        projecteInicial = './mapesOffline/qVista default map.qgs'
+        project.read(projecteInicial)
+        root = project.layerTreeRoot()
+        bridge = QgsLayerTreeMapCanvasBridge(root, canvas)
+
+        llegenda = QvLlegenda()
+        llegenda.show()
+        canvas.show()
+
+        def obreGeocod(files):
+            for x in files:
+                if not x.lower().endswith('.csv'): continue #Si no és un csv ens el saltem
+                carregador=QvCarregaCsv(x,project,llegenda)
+                carregador.show()
+        dropCanvas = QvDropFiles(canvas,['.csv'])
+        dropCanvas.arxiusPerProcessar.connect(obreGeocod)
