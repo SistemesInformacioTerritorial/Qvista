@@ -154,6 +154,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.ubicacions= None
         self.cAdrec= None
         self.catalegMapes = QvNouCataleg(self)
+        self.actualitzantCanvas = False
 
         #Preparem el mapeta abans de les accions, ja que el necessitarem allà
         self.preparacioMapeta()
@@ -316,7 +317,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         
         Arguments:
             projecte {String} -- Nom (amb path) del projecte a obrir
-            rang {QRect} -- Rang del projecte quees vol mostrar al obrir
+            rang {QRect} -- Rang del projecte que es vol mostrar al obrir
 
         
         Keyword Arguments:
@@ -540,19 +541,17 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.dwSV.setContentsMargins ( 0, 0, 0, 0 )
         self.dwSV.hide()
         self.dwSV.visibilityChanged.connect(self.streetViewTancat)
-        self.addDockWidget( Qt.RightDockWidgetArea, self.dwSV)
+        self.addDockWidget(Qt.RightDockWidgetArea, self.dwSV)
         self.dwSV.setFloating(True)
         self.dwSV.setDockatInici(False)
         self.dwSV.move(575,175)
 
     def preparacioEntornGrafic(self):
-        # Canvas
-        #llistaBotons = ['apuntar', 'zoomIn', 'zoomOut', 'panning', 'centrar']
+        """Preparacio entorn grafic del canvas"""
+
         llistaBotons = ['streetview','apuntar', 'zoomIn', 'zoomOut', 'panning', 'centrar', 'enrere', 'endavant', 'maximitza']
         
         self.canvas = QvCanvas(llistaBotons=llistaBotons, posicioBotonera = 'SE', botoneraHoritzontal = True, pare=self)
-
-        #self.canvas.bstreetview.clicked.connect(self.qvSv.segueixBoto)
 
         self.canvas.setCanvasColor(QColor(253,253,255))
         self.canvas.setAnnotationsVisible(True)
@@ -561,19 +560,13 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.canvas.scaleChanged.connect(self.showScale)   
         self.canvas.mapCanvasRefreshed.connect(self.canvasRefrescat)
 
-       
-
         self.layout = QVBoxLayout(self.frameCentral)
         
-
         self.layout.setContentsMargins(0,0,0,0)
-        # self.layout.addWidget(self.botonera1)
 
         self.layout.addWidget(self.canvas)
         self.layoutDelsCanvasExtra = QHBoxLayout()
         self.layout.addLayout(self.layoutDelsCanvasExtra)
-
-
         
         # Definició de rubberbands i markers
         self.rubberband = QgsRubberBand(self.canvas)
@@ -584,8 +577,6 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.root = QgsProject.instance().layerTreeRoot()
 
         self.bridge = QgsLayerTreeMapCanvasBridge(self.root, self.canvas)
-        # self.bridge.setCanvasLayers()
-        # self.leTitolProjecte=QLineEdit(self.frame_12)
         self.leTitolProjecte.hide() #El lineEdit estarà visible només quan anem a editar
         self.lblTitolProjecte.clicked.connect(self.editarTitol)
         self.leTitolProjecte.editingFinished.connect(self.titolEditat)
@@ -596,6 +587,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.leTitolProjecte.setText(self.lblTitolProjecte.text())
         self.leTitolProjecte.setFocus(True)
         self.titolAnterior=self.lblTitolProjecte.text()
+
     def titolEditat(self):
         self.lblTitolProjecte.show()
         self.leTitolProjecte.hide()
@@ -605,13 +597,17 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.titolProjecte=self.leTitolProjecte.text()
         if self.titolAnterior!=self.leTitolProjecte.text(): 
             self.setDirtyBit()
+
     def setDirtyBit(self,bit=True):
+        #TRUE: Hi ha canvis pendents
+        #FALSE: No hi ha canvis pendents
         if bit:
             self.canvisPendents=True
             self.botoDesarProjecte.setIcon(self.iconaAmbCanvisPendents)
         else:
             self.canvisPendents=False
             self.botoDesarProjecte.setIcon(self.iconaSenseCanvisPendents)
+
     def canvasRefrescat(self):
         if self.marcaLlocPosada:
             self.marcaLlocPosada = False
@@ -620,15 +616,6 @@ class QVista(QMainWindow, Ui_MainWindow):
                 self.canvas.scene().removeItem(self.marcaLloc)
             except Exception as e:
                 print(e)
-            
-    # def preparacioCalculadora(self):
-    #     self.calculadora = QWidget()
-
-    #     self.calculadora.ui = Ui_Calculadora()
-    #     self.calculadora.ui.setupUi(self.calculadora)
-    #     self.calculadora.show()
-    #     self.calculadora.ui.bLayersFields.clicked.connect(recorrerLayersFields)
-    #     self.calculadora.ui.bFieldsCalculadora.clicked.connect(carregarFieldsCalculadora)
 
     def preparacioUbicacions(self):
         """
@@ -1575,9 +1562,8 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.lytFitxaError.addWidget(bEnviar)
         self.lytFitxaError.addWidget(self.lblResultat)
         self.fitxaError.show()
-
+        
     def preparacioSeleccio(self):
-
         # Disseny del interface
         class QvSeleccioGrafica(QWidget):
             def __init__(self):
@@ -1945,21 +1931,34 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.canviLayer()
     
     def reload(self):
-        #comprovar si hi ha canvis
-        if self.teCanvisPendents(): #Posar la comprovació del dirty bit
-            ret = self.missatgeDesar(titol='Recàrrega del mapa',txtCancelar='Cancel·lar')
-            if ret == QMessageBox.AcceptRole:
-                b = guardarProjecte()
-                if not b: return
-            elif ret ==  QMessageBox.RejectRole: #Aquest i el seguent estàn invertits en teoria, però així funciona bé
-                pass
-            elif ret == QMessageBox.DestructiveRole:
-                return
-        if hasattr(self,'mapaCataleg'):
-            self.obrirProjecteCataleg(self.pathProjecteActual,self.favorit,self.widgetAssociat)
+        if self.actualitzantCanvas:
             pass
+            print(self.teCanvisPendents())
         else:
-            self.obrirProjecteAmbRang(self.pathProjecteActual)
+            senseCanvis = False
+            if self.teCanvisPendents(): #Posar la comprovació del dirty bit
+                ret = self.missatgeDesar(titol='Recàrrega del mapa',txtCancelar='Cancel·lar')
+                if ret == QMessageBox.AcceptRole:
+                    b = guardarProjecte()
+                    if b:
+                        self.obrirProjecte(pathProjecteActual) 
+                    else:
+                        return
+                elif ret ==  QMessageBox.RejectRole: #Aquest i el seguent estàn invertits en teoria, però així funciona bé
+                    pass
+                elif ret == QMessageBox.DestructiveRole:
+                    return
+            else:
+                senseCanvis = True
+            if hasattr(self,'mapaCataleg'):
+                self.obrirProjecteCataleg(self.pathProjecteActual,self.favorit,self.widgetAssociat)
+                pass
+            else:
+                self.obrirProjecteAmbRang(self.pathProjecteActual)
+            if senseCanvis:
+                self.setDirtyBit(False)
+
+
     def switchFavorit(self):
         # nom=os.path.basename(self.pathProjecteActual)
         nom=Path(self.pathProjecteActual).stem
@@ -2726,6 +2725,7 @@ class QVista(QMainWindow, Ui_MainWindow):
             QLineEdit[text=""] {
                 color: %s;
             }'''%QvConstants.COLORTEXTHINTHTML
+
         alcada=24
         self.lblCapaSeleccionadaInf=QLabel('No hi ha capa seleccionada.')
         self.lblCapaSeleccionadaInf.setStyleSheet(styleheetLabel)
@@ -2742,12 +2742,9 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.leSeleccioExpressio.setStyleSheet(stylesheetLineEditFiltre)
         self.leSeleccioExpressio.textChanged.connect(lambda: self.leSeleccioExpressio.style().polish(self.leSeleccioExpressio))
         self.leSeleccioExpressio.show()
-        # spacer = QSpacerItem(1000, 1000, QSizePolicy.Expanding,QSizePolicy.Maximum)
-        # self.statusbar.addPermanentWidget(spacer)
         
         self.sbCarregantCanvas = QProgressBar()
         self.sbCarregantCanvas.setRange(0,0)
-        # self.sbCarregantCanvas.hide()
 
         self.lblConnexio = QLabel()
         self.lblConnexio.setStyleSheet(styleheetLabel)
@@ -2760,26 +2757,17 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.lXY.setSpacing(0)
         self.wXY.setLayout(self.lXY)
         self.wXY.setSizePolicy(QSizePolicy.Fixed,QSizePolicy.Fixed)
-        # self.bXY = QvPushButton(flat=True)
-        # self.bXY.clicked.connect(self.editarXY)
-        # self.bXY.setStyleSheet(stylesheetButton)
-        # self.lXY.addWidget(self.bXY)
         self.leXY = QLineEdit()
         self.leXY.setFixedHeight(alcada)
         self.leXY.setSizePolicy(QSizePolicy.Fixed,QSizePolicy.Fixed)
-        # self.leXY.setMinimumWidth(140)
         self.leXY.setStyleSheet(stylesheetLineEdit)
-        # self.leXY.editingFinished.connect(self.returnEditarXY)
         self.leXY.returnPressed.connect(self.returnEditarXY)
         self.lXY.addWidget(self.leXY)
-        # self.leXY.hide()
 
         self.lblProjeccio = QLabel()
         self.lblProjeccio.setStyleSheet(styleheetLabel)
         self.lblProjeccio.setFrameStyle(QFrame.StyledPanel )
         self.lblProjeccio.setFixedHeight(alcada)
-        # self.lblProjeccio.setMinimumWidth( 140 )
-
 
         #Per no haver de posar un Line Edit a sobre del botó, fem un widget que contingui un layout. Aquest layout contindrà el botó, i a vegades el Line Edit
         self.wScale=QWidget()
@@ -2791,8 +2779,6 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.bScale.setStyleSheet(stylesheetButton)
         self.bScale.setFixedHeight(alcada)
         self.lScale.addWidget(self.bScale)
-        # self.bScale.setFrameStyle(QFrame.StyledPanel )
-        # self.bScale.setMinimumWidth( 140 )
         self.bScale.clicked.connect(self.editarEscala)
         self.editantEscala = False
         
@@ -2800,7 +2786,6 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.leScale.setCursor(QvConstants.cursorDit())
         self.leScale.setStyleSheet('QLineEdit{margin: 0px; border: 0px; padding: 0px;}')
         self.lScale.addWidget(self.leScale)
-        # self.leScale.setGeometry(48,0,100,20)
         self.leScale.setMinimumWidth(10)
         self.leScale.setMaximumWidth(70)
         self.leScale.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Minimum)
@@ -2814,14 +2799,11 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.bOrientacio = QvPushButton(flat=True)
         self.bOrientacio.setStyleSheet(stylesheetButton)
         self.bOrientacio.setFixedHeight(alcada)
-        # self.bScale.setFrameStyle(QFrame.StyledPanel )
-        # self.bOrientacio.setMinimumWidth( 140 )
 
         self.lblProjecte = QLabel()
         self.lblProjecte.setStyleSheet(styleheetLabel)
         self.lblProjecte.setFrameStyle(QFrame.StyledPanel )
         self.lblProjecte.setFixedHeight(alcada)
-        # self.lblProjecte.setMinimumWidth( 140 )
 
         #Afegim tots els widgets de cop
         #Així fer una reordenació serà més senzill
@@ -2842,9 +2824,11 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.canvas.renderComplete.connect(self.hideSB)
 
     def showSB(self):
+        self.actualitzantCanvas = True
         self.sbCarregantCanvas.show()
 
     def hideSB(self):
+        self.actualitzantCanvas = False
         self.sbCarregantCanvas.hide()
 
     def editarOrientacio(self):
@@ -2867,6 +2851,7 @@ class QVista(QMainWindow, Ui_MainWindow):
        
         
     def returnEditarXY(self):
+        """Refrescar el canvas centrant-lo a les coordenades que ha pescrit l'usuari"""
         try:
             x,y = self.leXY.text().split(',')
             x = x.strip()
@@ -2879,21 +2864,8 @@ class QVista(QMainWindow, Ui_MainWindow):
                     self.canvas.refresh()
         except:
             print("ERROR >> Coordenades mal escrites")
-        # self.bXY.show()
-        # self.leXY.hide()
-        # self.leXY.setText("")
 
     def editarEscala(self):
-        # if QgsExpressionContextUtils.projectScope(self.project).variable('qV_escales'):
-            # if self.comboEscales.count() == 0:
-            #     valors = QgsExpressionContextUtils.projectScope(self.project).variable('qV_escales').split(' ')
-            #     self.comboEscales.addItems(valors)
-            # self.comboEscales.show()
-            # def comboClickat():
-            #     self.leScale.setText(self.comboEscales.currentText())
-            #     self.escalaEditada()
-            # self.comboEscales.activated.connect(comboClickat)
-
         if not self.editantEscala:
             self.editantEscala = True
             self.bScale.setText(' Escala 1: ')
@@ -2909,9 +2881,10 @@ class QVista(QMainWindow, Ui_MainWindow):
             popup=self.completerEscales.popup()
             popup.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
             popup.setMinimumHeight(popup.sizeHintForRow(0)*len(escalesPossibles)+4)
-            popup.verticalScrollBar().setEnabled(False)
+            popup.verticalScrollBar().setEnabled(False) 
             self.leScale.setCompleter(self.completerEscales)
             self.completerEscales.complete()
+
     #això de sota no va, però hauria de forçar que es vegi el completer sempre
     def mostraCompleterEscala(self, txt):
         if not hasattr(self,'completerEscales'): return
@@ -2921,12 +2894,9 @@ class QVista(QMainWindow, Ui_MainWindow):
 
     def escalaEditada(self):
         escala = self.leScale.text()
-        # self.leScale.setParent(None)
         self.leScale.hide()
-        # self.lScale.removeWidget(self.leScale)
         self.canvas.zoomScale(int(escala))
         self.editantEscala = False
-        # self.comboEscales.hide()
 
     def centrarMapa(self):
         qV.canvas.zoomToFullExtent()
@@ -2996,7 +2966,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.dwCataleg.show()
 
     def obrirQgis(self):
-        # TODO: Pensar i generalitzar la obertura de QGis segon directori paquetitzat
+        # TODO: Pensar i generalitzar la obertura de QGis segons directori paquetitzat
         self.project.write('c:/temp/projTemp.qgs')
         QProcess.startDetached(r'D:\OSGeo4W64\bin\qgis-bin-g7.4.1.exe c:/temp/projTemp.qgs')
 
@@ -3005,7 +2975,10 @@ class QVista(QMainWindow, Ui_MainWindow):
             ret = self.missatgeDesar(titol='Crear un nou mapa',txtCancelar='Cancel·lar')
             if ret == QMessageBox.AcceptRole:
                 b = guardarProjecte()
-                if not b: return
+                if b:
+                    self.obrirProjecte(pathProjecteActual)
+                else:
+                    return
             elif ret ==  QMessageBox.RejectRole: #Aquest i el seguent estàn invertits en teoria, però així funciona bé
                 pass
             elif ret == QMessageBox.DestructiveRole:
@@ -3045,6 +3018,7 @@ class QVista(QMainWindow, Ui_MainWindow):
                 # QgsLayerDefinition().loadLayerDefinition(nfile, self.project, self.root)
                 elif extensio.lower() == '.csv':
                     carregarLayerCSV(nfile)
+
     def obrirDialegNovaCapaQLR(self):
         dialegObertura=QFileDialog()
         dialegObertura.setDirectoryUrl(QUrl('../Dades/Capes/'))
@@ -3054,6 +3028,7 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         if nfile is not None:
             afegirQlr(nfile)
+
     def obrirDialegNovaCapaGIS(self):
         dialegObertura=QFileDialog()
         dialegObertura.setDirectoryUrl(QUrl('../Dades/Capes/'))
@@ -3069,6 +3044,7 @@ class QVista(QMainWindow, Ui_MainWindow):
             self.project.addMapLayer(layer)
             self.setDirtyBit()
         pass
+
     def obrirDialegNovaCapaCSV(self):
         dialegObertura=QFileDialog()
         dialegObertura.setDirectoryUrl(QUrl('../Dades/Capes/'))
@@ -3134,6 +3110,7 @@ class QVista(QMainWindow, Ui_MainWindow):
 
     def teCanvisPendents(self):
         return self.canvisPendents
+
     def missatgeDesar(self, titol="Sortir de qVista", txtDesar='Desar-los', txtDescartar='Descartar-los',txtCancelar='Romandre a qVista'):
         msgBox = QMessageBox()
         msgBox.setWindowTitle(titol)
@@ -3144,6 +3121,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         msgBox.addButton(QvPushButton(txtDescartar),QMessageBox.DestructiveRole)
         msgBox.addButton(QvPushButton(txtCancelar),QMessageBox.RejectRole)
         return msgBox.exec()
+
     def provaDeTancar(self):
         QvMemoria().pafuera()
         if self.teCanvisPendents():
@@ -3162,8 +3140,10 @@ class QVista(QMainWindow, Ui_MainWindow):
                 
         else:
             self.gestioSortida()
+
     def closeEvent(self,event):
         self.provaDeTancar()
+
     def actualitzaMapesRecents(self,ultim=None):
         self.mapesRecents=QvMemoria().getMapesRecents()
         #Desem els mapes recents, eliminant repeticions i salts de línia que poden portar problemes
@@ -3526,24 +3506,23 @@ def seleccioExpressio():
 
 def guardarProjecte():
     """ la funcio retorna si s'ha acabat guardant o no """
-    r"""  Protecció dels projectes read-only: tres vies:
+    """  Protecció dels projectes read-only: tres vies:
     -       Variable del projecte qV_readOnly=’True’
     -       Ubicació en una carpeta de només-lectura
     -       Ubicació en una de les subcarpetes de N:\SITEB\APL\PyQgis\qVista
     -       Ubicació en una de les subcarpetes de N:\9SITEB\Publicacions\qVista
     """
-    #Pensar què fer quan es dona al botó de gurdar i no hi ha canvis per guardar
 
     if QgsExpressionContextUtils.projectScope(qV.project).variable('qV_readOnly') == 'True':
-        return guardarDialegProjecte()
+        b = guardarDialegProjecte()
     elif qV.pathProjecteActual == 'mapesOffline/qVista default map.qgs':
-        return guardarDialegProjecte()
+        b = guardarDialegProjecte()
     elif qV.pathProjecteActual.startswith( 'n:/siteb/apl/pyqgis/qvista' ):
-        return guardarDialegProjecte()
+        b = guardarDialegProjecte()
     elif qV.pathProjecteActual.startswith( 'n:/9siteb/publicacions/qvista' ):
-        return guardarDialegProjecte()
+        b = guardarDialegProjecte()
     elif hasattr(qV,'mapaCataleg'):
-        return guardarDialegProjecte()
+        b = guardarDialegProjecte()
     else:
         # md=qV.project.metadata()
         # md.setAuthor(QvApp().nomUsuari())
@@ -3551,7 +3530,10 @@ def guardarProjecte():
         # qV.project.write(qV.pathProjecteActual)
         # qV.setDirtyBit(False)
         desaElProjecte(qV.pathProjecteActual)
-        return True
+        b = True
+    if b:
+        qV.obrirProjecte(qV.pathProjecteActual)
+    return b
         
 #Anomena i desa (AKA Guardar como)
 def guardarDialegProjecte():
@@ -3620,7 +3602,10 @@ def nouMapa():
         ret = qV.missatgeDesar(titol='Crear un nou mapa',txtCancelar='Cancel·lar')
         if ret == QMessageBox.AcceptRole:
             b = guardarProjecte()
-            if not b: return
+            if b:
+                self.obrirProjecte(pathProjecteActual)
+            else: 
+                return
         elif ret ==  QMessageBox.RejectRole: #Aquest i el seguent estàn invertits en teoria, però així funciona bé
             pass
         elif ret == QMessageBox.DestructiveRole:
@@ -3743,8 +3728,6 @@ def escollirNivellCSV():
         titol = 'Còpia de Models adreces.csv'
         nivellCsv(nfile,';','XNUMPOST','YNUMPOST', projeccio, nomCapa = titol)
         
-
-
 def carregarLayerCSV(nfile):
         if nfile: 
             qV.startMovie()
@@ -3762,7 +3745,6 @@ def carregarLayerCSV(nfile):
             #assistent.raise_()
             #qV.setFocus()
             
-
 def carregarNivellQlr():
     index = qV.wCataleg.ui.treeCataleg.currentIndex()
     mpath=qV.qModel.fileInfo(index).absoluteFilePath()
@@ -3877,15 +3859,11 @@ def loadCsv():
                     qV.tableView.resizeColumnsToContents()
     qV.dwTaula.show()
 
-
-
 def missatgeCaixa(textTitol,textInformacio):
     msgBox=QMessageBox()
     msgBox.setText(textTitol)
     msgBox.setInformativeText(textInformacio)
     ret = msgBox.exec()
-
-
 
 def sortir(): #???
     sys.exit()
