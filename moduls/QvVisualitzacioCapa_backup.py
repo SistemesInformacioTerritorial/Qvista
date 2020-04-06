@@ -2,9 +2,9 @@
 
 from PyQt5 import QtCore, QtGui,QtWidgets
 
-from dlgLayerProperties_ui import Ui_LayerProperties
+from QvVisualitzacioCapa_ui import Ui_QvVisualitzacioCapa
 
-class QvVisualitzacioCapa( QtWidgets.QDialog, Ui_LayerProperties ):
+class QvVisualitzacioCapa( QtWidgets.QDialog, Ui_QvVisualitzacioCapa ):
     """ Open a dialog to manage the layer properties """
     def __init__( self, parent, layer ):
         self.parent = parent
@@ -27,9 +27,6 @@ class QvVisualitzacioCapa( QtWidgets.QDialog, Ui_LayerProperties ):
         self.txtLayerName.setText( self.layer.name() )
 
         if self.layer.type() == 0: # Vector Layer
-            self.lblDisplayField.setVisible( True )
-            self.cboDisplayFieldName.setVisible( True )
-            self.cboDisplayFieldName.setEnabled( True )
 
             self.fields = self.layer.fields()
 
@@ -47,9 +44,16 @@ class QvVisualitzacioCapa( QtWidgets.QDialog, Ui_LayerProperties ):
             #     #if not field.type() == QVariant.Double:
             #         # self.displayName = self.vectorLayer.attributeDisplayName( key )
             #     self.cboDisplayFieldName.addItem( field.name() )
-            print(self.layer.displayField())
+            labeling = self.layer.labeling()
+            print('Labeling'+labeling)
+
             idx = self.cboDisplayFieldName.findText( self.layer.displayField() )
             self.cboDisplayFieldName.setCurrentIndex( idx )
+
+            
+            self.lblDisplayField.setVisible( True )
+            self.cboDisplayFieldName.setVisible( True )
+            self.cboDisplayFieldName.setEnabled( True )
         else:
             self.lblDisplayField.setVisible( False )
             self.cboDisplayFieldName.setVisible( False )
@@ -67,7 +71,7 @@ class QvVisualitzacioCapa( QtWidgets.QDialog, Ui_LayerProperties ):
             self.chkScaleChanged( 0 ) 
             self.initialScaleDependency = False
 
-        self.initialMaxScale = self.layer.minimumScale() # To know if refresh the canvas
+        self.initialMaxScale = self.layer.minimumScale() 
         self.initialMinScale = self.layer.maximumScale()
         self.maxScaleSpinBox.setValue( self.layer.minimumScale() )
         self.minScaleSpinBox.setValue( self.layer.maximumScale() )
@@ -99,7 +103,6 @@ class QvVisualitzacioCapa( QtWidgets.QDialog, Ui_LayerProperties ):
             self.minScaleSpinBox.setEnabled( False )            
 
     def apply( self ):            
-        """ Apply the new symbology to the vector layer """
         newLayerName = self.txtLayerName.text()
         if newLayerName:
             if not newLayerName == self.layer.name():
@@ -124,6 +127,47 @@ class QvVisualitzacioCapa( QtWidgets.QDialog, Ui_LayerProperties ):
             self.parent.canvas.refresh() # Scale dependency changed, so refresh
 
     def mostrar( self ):
-        """ Show the modal dialog """
         self.exec_()
 
+
+
+if __name__ == "__main__":
+    from QvImports import *
+    from moduls.QvLlegenda import QvLlegenda
+    projecteInicial = 'mapesOffline/qVista default map.qgs'
+
+
+
+    def menuLlegenda():                                 
+
+        llegenda.menuAccions.append('separator')
+        llegenda.menuAccions.append("Opcions de visualització")
+        llegenda.accions.afegirAccio("Opcions de visualització", actPropietatsLayer)
+
+    def propietatsLayer():
+        layer=llegenda.currentLayer()
+        opcionsVisuals = QvVisualitzacioCapa(layer)
+        opcionsVisuals.show()
+
+    actPropietatsLayer = QAction("Opcions de visualització")
+    actPropietatsLayer.setStatusTip("Opcions de visualització")
+    actPropietatsLayer.triggered.connect(propietatsLayer)
+
+    with qgisapp() as app:
+
+        canvas=QgsMapCanvas()
+        project=QgsProject().instance()
+        root=project.layerTreeRoot()
+        bridge=QgsLayerTreeMapCanvasBridge(root,canvas)
+
+        llegenda= QvLlegenda(canvas)
+        llegenda.clicatMenuContexte.connect(menuLlegenda)
+        llegenda.show()
+
+
+        # llegim un projecte de demo
+        project.read(projecteInicial)
+         
+        #layer = project.instance().mapLayersByName('BCN_Districte_ETRS89_SHP')[0]
+
+        canvas.show()
