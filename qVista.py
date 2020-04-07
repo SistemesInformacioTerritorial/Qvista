@@ -905,7 +905,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.layoutFrameLlegenda.setContentsMargins ( 5, 13, 5, 0 )
         self.llegenda.setStyleSheet("QvLlegenda {color: #38474f; background-color: #F9F9F9; border: 0px solid red;}")
         self.layoutFrameLlegenda.addWidget(self.llegenda)
-        self.llegenda.accions.afegirAccio('Propietats de capa', self.actPropietatsLayer)
+        self.llegenda.accions.afegirAccio("Opcions de visualització", self.actPropietatsLayer)
 
         self.llegenda.accions.afegirAccio('actTot', self.actFerGran)
         self.llegenda.clicatMenuContexte.connect(self.menuLlegenda)
@@ -1067,7 +1067,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         #   (Tipos: none, group, layer, symb)
         if tipus == 'layer':
             self.llegenda.menuAccions.append('separator')
-            self.llegenda.menuAccions.append('Propietats de capa')
+            self.llegenda.menuAccions.append("Opcions de visualització")
      
     def mapesTema(self):
         if self.mapesOberts:
@@ -1474,8 +1474,8 @@ class QVista(QMainWindow, Ui_MainWindow):
         # self.actPlatges.setStatusTip("Pavimentació")
         # self.actPlatges.triggered.connect(self.platges)
 
-        self.actPropietatsLayer = QAction("Propietats de la capa", self)
-        self.actPropietatsLayer.setStatusTip("Propietats de la capa")
+        self.actPropietatsLayer = QAction("Opcions de visualització", self)
+        self.actPropietatsLayer.setStatusTip("Opcions de visualització")
         self.actPropietatsLayer.triggered.connect(self.propietatsLayer)
 
     def definicioBotons(self):
@@ -2122,7 +2122,6 @@ class QVista(QMainWindow, Ui_MainWindow):
             self.showFullScreen()
         self.mapaMaxim=not self.mapaMaxim
 
-            
 
 
             # Descomentar para eliminar barra de titulo
@@ -2206,10 +2205,11 @@ class QVista(QMainWindow, Ui_MainWindow):
         layer_settings.placement = 0
 
         layer_settings.enabled = True
+        print ("layer settings:"+layer_settings.fieldName)
+        labeling  = QgsVectorLayerSimpleLabeling(layer_settings)
 
-        layer_settings = QgsVectorLayerSimpleLabeling(layer_settings)
         layer.setLabelsEnabled(True)
-        layer.setLabeling(layer_settings)
+        layer.setLabeling(labeling)
         layer.triggerRepaint()
 
     def cercaText(self): #???
@@ -2286,7 +2286,7 @@ class QVista(QMainWindow, Ui_MainWindow):
     def propietatsLayer(self):
         layer=self.llegenda.currentLayer()
         self.dlgProperties = None
-        self.dlgProperties = LayerProperties( self, layer)
+        self.dlgProperties = QvVisualitzacioCapa( self, layer)
         self.dlgProperties.show()
 
     def esborrarSeleccio(self, tambePanCanvas = True, mascara=False):
@@ -2312,6 +2312,7 @@ class QVista(QMainWindow, Ui_MainWindow):
                 qV.canvas.refresh()
             except Exception as e:
                 print(e)
+
     def foraEines(self):
         self.canvas.panCanvas()
 
