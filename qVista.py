@@ -21,7 +21,6 @@ from moduls.QvAtributs import QvAtributs
 from moduls.QvMapeta import QvMapeta
 from moduls.QVCercadorAdreca import QCercadorAdreca
 from moduls.QVDistrictesBarris import QVDistrictesBarris
-# from moduls.QvCatalegPetit import QvCataleg
 from moduls.QvApp import QvApp
 from moduls.QvLectorCsv import QvLectorCsv
 from moduls.QvPavimentacio import DockPavim
@@ -30,10 +29,7 @@ from moduls.QvToolTip import QvToolTip
 from moduls.QvDropFiles import QvDropFiles
 from moduls.QvNews import QvNews
 from moduls.QvPushButton import QvPushButton
-# from moduls.QvGeocod import QvGeocod
 from moduls.QvSuggeriments import QvSuggeriments
-#from moduls.QvCarregaCsv import QvCarregaCsv
-# from moduls.QvCarregadorCsv import QvCarregaCsv
 from moduls.QvCSV import QvCarregaCsv
 from moduls.QvConstants import QvConstants
 from moduls.QvAvis import QvAvis
@@ -49,7 +45,6 @@ from moduls.QvCatalegCapes import QvCatalegCapes
 from moduls.QvSabiesQue import QvSabiesQue
 from moduls.QvMemoria import QvMemoria
 from moduls.QvMascara import *
-# import re
 import csv
 import os        
 import win32con, win32api
@@ -94,7 +89,6 @@ class QVista(QMainWindow, Ui_MainWindow):
     Des de programa definirem la status bar, sobre la que indicarem escala, projecte i coordenades, 
             així com un tip de les accions que s'executen.
     """
-    
     keyPressed = pyqtSignal(int) #???
         
     def __init__(self,app, prjInicial, titleFinestra):
@@ -122,10 +116,8 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         # Definicions globals
         app.setFont(QvConstants.FONTTEXT)
-        # self.setWindowFlags(Qt.Window | Qt.FramelessWindowHint | Qt.CustomizeWindowHint)
         self.setWindowFlags(Qt.FramelessWindowHint)
         self.actualitzaWindowFlags()
-        # self.verticalLayout.addWidget(QSizeGrip(self),0,Qt.AlignBottom | Qt.AlignRight)
 
         #Afegim títol a la finestra
         self.setWindowTitle(titleFinestra)
@@ -143,7 +135,6 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.connectarProgressBarCanvas()
 
         # Inicialitzacions de variables de la classe
-        self.printActiu = False #???
         self.canvisPendents=False
         self.titolProjecte = ""
         self.qvPrint = 0
@@ -167,7 +158,6 @@ class QVista(QMainWindow, Ui_MainWindow):
         
         # # Menus i preparació labels statusBar
         self.definirMenus()
-
         # self.keyPressed.connect(self.fesMapaMaxim)
 
         # Preparació botonera, mapeta, llegenda, taula d'atributs, etc.
@@ -184,7 +174,6 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.preparacioSeleccio()
         # self.preparacioEntorns()
         
-
         # Eina inicial del mapa = Panning
         self.canvas.panCanvas()
 
@@ -205,18 +194,12 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.tempsTotal = endGlobal - startGlobal
         print ('Total carrega abans projecte: ', self.tempsTotal)
 
-                
-
-        # possem el projecte inicial a readonly.... ¿¿¿
-
-        
         try:
             pre, ext = os.path.splitext(prjInicial) #ext ???
             elGpkg= pre + '.gpkg'
             win32api.SetFileAttributes(elGpkg,win32con.FILE_ATTRIBUTE_READONLY)
         except:
             print ("No s'ha pogut fer el readonly del geopackage")
-      
 
         # Carrega del projecte inicial
         self.obrirProjecte(prjInicial)
@@ -232,7 +215,6 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.lblTempsArrencada.setMinimumWidth( 170 )
         self.lblTempsArrencada.setAlignment( Qt.AlignCenter )
         self.statusbar.setSizeGripEnabled( True )
-        # self.statusbar.addPermanentWidget( self.lblTempsArrencada, 0 )
         self.lblTempsArrencada.setText ("Segons per arrencar: "+str('%.1f'%self.tempsTotal))
 
         # Drop d'arxius -> Canvas i Llegenda
@@ -241,9 +223,6 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.dropLlegenda.arxiusPerProcessar.connect(self.obrirArxiu)
         self.dropCanvas = QvDropFiles(self.canvas, ['.qgs', '.qgz'], ['.qlr', '.shp', '.csv', '.gpkg'])
         self.dropCanvas.arxiusPerProcessar.connect(self.obrirArxiu)
-
-        # self.setMouseTracking(False) 
-
 
         #Això abans ho feia al ferGran. Però allà no està bé fer-ho. Ho deixo aquí i ja ho mourem
         self.frameLlegenda.hide()
@@ -260,9 +239,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.dwLlegenda.setWindowFlag(Qt.Window)
         self.dwLlegenda.show()
         self.dwLlegenda.setFloating(True)
-        self.ferGran()#self.dwLlegenda.setFloating(False)
-
-    
+        self.ferGran()
 
     # Fins aquí teniem la inicialització de la classe. Ara venen les funcions, o métodes, de la classe. 
 
@@ -277,7 +254,6 @@ class QVista(QMainWindow, Ui_MainWindow):
             fext = fext.lower()
             if fext in ('.qgs', '.qgz'):
                 self.obrirProjecteAmbRang(nfile)
-                # self.obrirProjecte(nfile)
             elif fext == '.qlr':
                 afegirQlr(nfile)
             elif fext in ('.shp', '.gpkg'):
@@ -336,12 +312,10 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         self.pathProjecteActual = projecte
         if self.project.title().strip()=='':
-            # self.project.setTitle(os.path.basename(projecte))
             self.project.setTitle(Path(projecte).stem)
 
         self.lblTitolProjecte.setText(self.project.title())
         self.titolProjecte = self.project.title()
-        # self.canvisPendents = False #es el bit Dirty que ens diu si hem de guardar al tancar o no
         self.setDirtyBit(False)
         self.canvas.refresh()
         self.showXY(self.canvas.center())
@@ -364,18 +338,10 @@ class QVista(QMainWindow, Ui_MainWindow):
             self.bOrientacio.setText(' Orientació: Nord')
         else:
             self.bOrientacio.setText(' Orientació: Eixample')
-            
-
-        # Titol del projecte 
-        # self.lblTitolProjecte.setFont(QvConstants.FONTTITOLS)
-        # self.lblTitolProjecte.setText(self.project.title())
-
 
         if self.llegenda.player is None:
             self.llegenda.setPlayer(imatgesDir+'Spinner_2.gif', 150, 150)
         self.actualitzaMapesRecents(self.pathProjecteActual)
-
-        
 
         # Lectura de les metadades del projecte per veure si hi ha un entorn associat
         # Caldria generalitzar-ho i treure-ho d'aquesta funció
@@ -399,18 +365,6 @@ class QVista(QMainWindow, Ui_MainWindow):
             self.botoMetadades.hide()
 
         carregaMascara(self)
-
-        # self.metadata = self.project.metadata()
-        # print ('Author: '+self.metadata.author())
-
-        # dashboard = QgsExpressionContextUtils.projectScope(self.project).variable('qV_dashboard')
-        # titolEntorn = QgsExpressionContextUtils.projectScope(self.project).variable('qV_titolEntorn')
-
-        # if dashboard is not None:
-        #     exec("self.act{}.trigger()".format(dashboard))
-
-        # if titolEntorn is not None:
-        #     self.lblTirotattolProjecte.setText(titolEntorn)
     
     def startMovie(self):
         self.player = QvVideo(imatgesDir+"Spinner_2.gif", 160, 160)
@@ -427,7 +381,6 @@ class QVista(QMainWindow, Ui_MainWindow):
     def keyPressEvent(self, event):
         """ Defineix les actuacions del qVista en funció de la tecla apretada.
         """
-        # print (event.key())
         if event.key() == Qt.Key_F1:
             print ('Help')
         if event.key() == Qt.Key_F3:
@@ -440,100 +393,66 @@ class QVista(QMainWindow, Ui_MainWindow):
 
     def botoLateral(self, text = None, tamany = 40, imatge = None, accio=None, menu=None):
         """Crea un boto per a la botonera lateral.
-       
         Keyword Arguments:
             text {[str]} -- [El text del botó, si en té] (default: {None})
             tamany {int} -- [tamany del botó (és quadrat)] (default: {40})
             imatge {[QImage]} -- [La imatge, si en té. Ara estem fent servir la imatge associada a l'acció, no aquesta] (default: {None})
             accio {[QAction]} -- [Una QAction associada al botó] (default: {None})
-        
         """
-        #Passem de QToolButton a QvPushButton pla
-        #El codi queda una mica més guarro, però funciona bé
         boto = QvToolButton()
-        # boto = QvPushButton(flat=True)
         boto.setMinimumHeight(tamany)
         boto.setMaximumHeight(tamany)
         boto.setMinimumWidth(tamany)
         boto.setMinimumWidth(tamany)
         boto.setDefaultAction(accio)
         boto.setIconSize(QSize(tamany, tamany))
-        # if accio is not None: boto.setToolTip(accio.toolTip())
-        #Si ens especifica una icona concreta, la posem. Si no, posem la icona de l'acció (si en té)
         if imatge is not None:
             icon = QIcon(imatge)
             boto.setIcon(icon)
         if menu is not None:
-            boto.setPopupMode(QToolButton.InstantPopup) 
-            # boto.setArrowType(Qt.DownArrow)
-            # boto.setStyleSheet('background: transparent')
-            
+            boto.setPopupMode(QToolButton.InstantPopup)    
             boto.setMenu(menu)
-        # elif accio is not None:
-        #     boto.setIcon(accio.icon())
-        # boto.clicked.connect(accio)
         self.lytBotoneraLateral.addWidget(boto)
         return boto
 
     def botoneraLateral(self):
         """Aquesta funció construeix la botonera lateral. 
-
         A dins de la funció hi ha la creació de dades per cada botó.
-
         TODO: Extreure les dades de construcció de la botonera fora. No crític.
         """
-
         self.lytBotoneraLateral.setAlignment(Qt.AlignTop)
         self.lytBotoneraLateral.setContentsMargins(6,4,4,4)
-
-        # Botons i espaiadors.
-        # self.bFerGran = self.botoLateral(tamany = 25, accio=self.actFerGran)
-
-        # spacer = QSpacerItem(50, 50, QSizePolicy.Expanding,QSizePolicy.Maximum)
-        # self.lytBotoneraLateral.addItem(spacer)
-
         self.bUbicacions = self.botoLateral(tamany = 25, accio=self.actAdreces)
-        #self.bCataleg = self.botoLateral(tamany = 25, accio=self.actObrirCataleg)
-        #self.bCatalegProjectesLlista = self.botoLateral(tamany = 25, accio=self.actObrirCatalegProjectesLlista)
-        #self.bObrirEnQgis = self.botoLateral(tamany = 25, accio=self.actObrirEnQgis)
+
         menuFoto=QMenu()
         accioCopia=QAction('Copiar al portaretalls',self)
         accioCopia.setIcon(QIcon(imatgesDir+'content-copy.png'))
         accioCopia.triggered.connect(self.canvas.copyToClipboard)
         menuFoto.addAction(self.actCanvasImg)
         menuFoto.addAction(accioCopia)
+
         self.bFoto =  self.botoLateral(tamany = 25, accio=self.actCanvasImg, menu=menuFoto)
         self.bFoto.setToolTip('Capturar imatge del mapa')
         #TODO: Moure d'aquí
-        
-
         self.bImprimir =  self.botoLateral(tamany = 25, accio=self.actImprimir)
         self.bTissores = self.botoLateral(tamany = 25, accio=self.actTissores)
         self.bSeleccioGrafica = self.botoLateral(tamany = 25, accio=self.actSeleccioGrafica)
         self.bMesuraGrafica = self.botoLateral(tamany = 25, accio=self.actMesuraGrafica)
-        #self.bReload = self.botoLateral(tamany=25, accio=self.actReload)
-
         spacer2 = QSpacerItem(1000, 1000, QSizePolicy.Expanding,QSizePolicy.Maximum)
         self.lytBotoneraLateral.addItem(spacer2)
-        
         self.qvNews = QvNews()
         self.bInfo = self.botoLateral(tamany = 25, accio=self.qvNews)
-        # self.bInfo = self.botoLateral(tamany = 25, accio=self.actInfo)
         self.bHelp = self.botoLateral(tamany = 25, accio=self.actHelp)
         self.bBug = self.botoLateral(tamany = 25, accio=self.actBug)
-        # self.bDashStandard = self.botoLateral(tamany = 25, accio=self.actDashStandard)
     
     # Funcions de preparació d'entorns 
     def preparacioStreetView(self):
         """Preparació de Street View a través de QvStreetView, i el dockwidget associat.
         """
-
         self.qvSv = QvStreetView(self.canvas, self)
         self.canvas.setStreetView(self.qvSv)
         self.canvas.setMapTool(self.qvSv.rp)
-        # qvSv.setContentsMargins(0,0,0,0)
         self.qvSv.hide()
-        # self.qvSv.qbrowser.show()
         self.dwSV = QvDockWidget( "Street View", self )
         self.dwSV.setContextMenuPolicy(Qt.PreventContextMenu)
         self.dwSV.setAllowedAreas( Qt.RightDockWidgetArea | Qt.LeftDockWidgetArea )
@@ -548,22 +467,15 @@ class QVista(QMainWindow, Ui_MainWindow):
 
     def preparacioEntornGrafic(self):
         """Preparacio entorn grafic del canvas"""
-
-        llistaBotons = ['streetview','apuntar', 'zoomIn', 'zoomOut', 'panning', 'centrar', 'enrere', 'endavant', 'maximitza']
-        
+        llistaBotons = ['streetview','apuntar', 'zoomIn', 'zoomOut', 'panning', 'centrar', 'enrere', 'endavant', 'maximitza'
         self.canvas = QvCanvas(llistaBotons=llistaBotons, posicioBotonera = 'SE', botoneraHoritzontal = True, pare=self)
-
         self.canvas.setCanvasColor(QColor(253,253,255))
         self.canvas.setAnnotationsVisible(True)
-
         self.canvas.xyCoordinates.connect(self.showXY)     
         self.canvas.scaleChanged.connect(self.showScale)   
         self.canvas.mapCanvasRefreshed.connect(self.canvasRefrescat)
-
         self.layout = QVBoxLayout(self.frameCentral)
-        
         self.layout.setContentsMargins(0,0,0,0)
-
         self.layout.addWidget(self.canvas)
         self.layoutDelsCanvasExtra = QHBoxLayout()
         self.layout.addLayout(self.layoutDelsCanvasExtra)
@@ -575,7 +487,6 @@ class QVista(QMainWindow, Ui_MainWindow):
         # Instancia del projecte i associació canvas-projecte
         self.project = QgsProject.instance()
         self.root = QgsProject.instance().layerTreeRoot()
-
         self.bridge = QgsLayerTreeMapCanvasBridge(self.root, self.canvas)
         self.leTitolProjecte.hide() #El lineEdit estarà visible només quan anem a editar
         self.lblTitolProjecte.clicked.connect(self.editarTitol)
@@ -621,7 +532,6 @@ class QVista(QMainWindow, Ui_MainWindow):
         """
         Prepara el widget d'ubicacions, i el coloca en un dock widget, que s'inicialitza en modus hide.
         """
-
         self.wUbicacions = QvUbicacions(self.canvas)
         # self.wUbicacions.hide()
         self.dwUbicacions = QvDockWidget( "Ubicacions", self )
@@ -642,16 +552,8 @@ class QVista(QMainWindow, Ui_MainWindow):
         Ho fem instanciant la classe QVDistrictesBarris. 
         També connectem un click al arbre amb la funció clickArbre.
         """
-
         self.distBarris = QVDistrictesBarris()
         self.distBarris.view.clicked.connect(self.clickArbre)
-        
-        # self.dwArbreDistrictes = QvDockWidget("Districtes - Barris", self)
-        # self.dwArbreDistrictes.hide()
-        # self.dwArbreDistrictes.setAllowedAreas( Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea )
-        # self.dwArbreDistrictes.setWidget( self.distBarris.view )
-        # self.dwArbreDistrictes.setContentsMargins ( 2, 2, 2, 2 )
-        # self.addDockWidget( Qt.RightDockWidgetArea, self.dwArbreDistrictes )
 
     def preparacioCataleg(self):
         """ 
@@ -665,12 +567,6 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         - Omplim el widget de les dades llegides a carpetaCataleg
         """
-        # self.wCataleg = QWidget()
-        # self.wCataleg.ui = Ui_Cataleg()
-        # self.wCataleg.ui.setupUi(self.wCataleg)
-        # self.wCataleg.setWindowTitle("Cataleg d'Informació Territorial")
-        # self.wCataleg.show()
-
         self.wCataleg=QvCatalegCapes(self,self)
 
         self.dwCataleg = QvDockWidget( "Catàleg de capes", self )
@@ -681,7 +577,6 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.dwCataleg.setContentsMargins ( 0,0,0,0 )
         self.dwCataleg.hide()
         self.addDockWidget( Qt.LeftDockWidgetArea, self.dwCataleg)
-        # self.cataleg()
 
     def preparacioCercadorPostal(self):
     
@@ -690,30 +585,24 @@ class QVista(QMainWindow, Ui_MainWindow):
         Després instanciem el cercador d'adreces. 
         Connectem la senyal sHanTrobatCoordenades a trobatNumero_oNo.
         """
-
         # instanciamos clases necesarias    
         self.fCercador=QFrame()
         self.bottomWidget = QWidget()
         self.ubicacions = QvUbicacions(self.canvas, pare=self)
-        self.splitter = QSplitter(Qt.Vertical)             #para separar ubicacion de distBarris
-        self.layoutAdreca = QHBoxLayout()                  #Creamos layout, caja de diseño Horizontal
-        self.layoutCercador = QVBoxLayout(self.fCercador)  #Creamos layout, caja de diseño Vertical
-        self.layoutbottom = QVBoxLayout()                  #Creamos layout, caja de diseño 8Vertical
-
+        self.splitter = QSplitter(Qt.Vertical)             
+        self.layoutAdreca = QHBoxLayout()                  
+        self.layoutCercador = QVBoxLayout(self.fCercador)  
+        self.layoutbottom = QVBoxLayout()                  
         #Elementos para layout H, del cercador
-
-        self.lblCercadorCarrer = QLabel('    Carrer:')    #etiqueta Carrer
-        self.lblCercadorNum = QLabel('Num:')              #etiqueta Num        
-        self.leCarrer=QLineEdit()                           #Edit calle
+        self.lblCercadorCarrer = QLabel('    Carrer:')    
+        self.lblCercadorNum = QLabel('Num:')                      
+        self.leCarrer=QLineEdit()                           
         self.leCarrer.setToolTip('Introdueix adreça i selecciona de la llista')
         self.leCarrer.setMinimumWidth(200) 
-        self.leNumero=QLineEdit()                           #Edit numero
+        self.leNumero=QLineEdit()                           
         self.leNumero.setToolTip('Introdueix número, selecciona de la llista i prem RETURN')
-        self.leNumero.setMaximumWidth(50)                   #Tamaño numero
+        self.leNumero.setMaximumWidth(50)                   
         self.leNumero.setMinimumWidth(50)
-        # self.leNumero.setDisabled(True)
-
-
 
         self.boton_bajar= QvPushButton(flat=True)
         self.boton_bajar.clicked.connect(self.CopiarA_Ubicacions)
@@ -746,7 +635,6 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.layoutAdreca.addWidget(self.boton_bajar)
         self.layoutAdreca.addWidget(self.boton_invocarStreetView)
 
-
         # llenamos splitter        
         self.splitter.addWidget(self.ubicacions)
         self.splitter.addWidget(self.bottomWidget)
@@ -773,21 +661,16 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.addDockWidget( Qt.RightDockWidgetArea, self.dwCercador)
 
     def CopiarA_Ubicacions(self):       
-         # self.ubicacions.leUbicacions.setText("->"+self.leCarrer.text()+"  "+self.leNumero.text())
         if self.cAdrec.NumeroOficial=='0':
             self.cAdrec.NumeroOficial=''
 
         self.ubicacions.leUbicacions.setText("->"+self.leCarrer.text()+"  "+self.cAdrec.NumeroOficial)
         self.ubicacions._novaUbicacio()
 
-    # pillar las coordenadas y mandarlas a stretView
     def invocarStreetView(self):
         
         xx=self.cAdrec.coordAdreca[0]
         yy=self.cAdrec.coordAdreca[1]
-
-        # xx=430537.623
-        # yy=4583274.049
         
         if self.qvSv.qbrowser.isHidden():
             self.qvSv.qbrowser.show()
@@ -795,9 +678,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         if self.dwSV.isHidden():
             self.dwSV.show()
         self.qvSv.rp.llevame(xx,yy)
-
         self.canvas.scene().removeItem(self.marcaLloc)
-
         self.marcaLloc = QgsVertexMarker(self.canvas)
         self.marcaLloc.setCenter( self.cAdrec.coordAdreca )
         self.marcaLloc.setColor(QColor(255, 0, 0))
@@ -811,16 +692,15 @@ class QVista(QMainWindow, Ui_MainWindow):
 
             geocoder = what3words.Geocoder("HTD7LNB9")
             palabras = geocoder.convert_to_3wa(what3words.Coordinates(self.puntTransformat.y(), self.puntTransformat.y()), language='es')
-            # coordenadas = geocoder.convert_to_coordinates('agudo.lista.caja')
             print(palabras[words])
         except:
             print('No va 3 words')
+
     def preparacioTaulaAtributs(self):
         """ 
         Es prepara la taula d'Atributs sobre un dockWidget.
         """
         self.taulesAtributs = QvAtributs(self.canvas)
-        # self.twAtributs=QTableWidget()
         self.dwTaulaAtributs = QvDockWidget( "Taula de dades", self )
         self.dwTaulaAtributs.setContextMenuPolicy(Qt.PreventContextMenu)
         self.dwTaulaAtributs.hide()
@@ -837,7 +717,6 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.botonera = QFrame()
         self.ui = Ui_Frame()
         self.ui.setupUi(self.botonera)
-        # self.botonera.show()
         self.dwBotonera = QvDockWidget( "Botonera", self )
         self.dwBotonera.setContextMenuPolicy(Qt.PreventContextMenu)
         self.dwBotonera.hide()
@@ -851,26 +730,12 @@ class QVista(QMainWindow, Ui_MainWindow):
         return
 
     def preparacioMapeta(self):
-        # self.wMapeta = QtWidgets.QWidget()
-        # self.wMapeta.setGeometry(0,0,267,284)
-        # self.wMapeta.show()
         self.mapeta = QvMapeta(self.canvas, tamanyPetit=True, pare=self)
         self.mapeta.setGraphicsEffect(QvConstants.ombra(self,radius=30,color=QvConstants.COLOROMBRA))
         self.bOrientacio.clicked.connect(self.editarOrientacio)
         self.mapeta.setParent(self.canvas)
         self.mapeta.move(20,20)
         self.mapeta.show()
-        # self.dwMapeta = QvDockWidget("4situació", self)
-        # self.dwMapeta.setMinimumWidth(180)
-        # self.dwMapeta.setMaximumWidth(180)
-        # self.dwMapeta.setMaximumHeight(200)
-        # self.dwMapeta.setMinimumHeight(200)
-        # self.dwMapeta.setAllowedAreas( Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea )
-        # self.dwMapeta.setWidget(self.mapeta)
-        # self.dwMapeta.setContentsMargins ( 0, 0, 0, 0 )
-        # self.addDockWidget( Qt.LeftDockWidgetArea, self.dwMapeta )
-        # # self.lblMapeta.show()
-        # self.dwMapeta.show()
    
     def preparacioLlegenda(self):
         """Es genera un dockWidget a la dreta, amb la llegenda del projecte.
@@ -892,79 +757,9 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         self.llegenda.accions.afegirAccio('actTot', self.actFerGran)
         self.llegenda.clicatMenuContexte.connect(self.menuLlegenda)
-        # self.llegenda.projecteCarregat.connect(self.paraMovie)
-        # self.llegenda.carregantProjecte.connect(self.startMovie)
-
-        # self.vistaMapa1 = QvVistaMapa(self.llegenda)
-        # self.vistaMapa2 = QvVistaMapa(self.llegenda)
-        # self.vistaMapa3 = QvVistaMapa(self.llegenda)
-
-        # self.frameTemes = QFrame()
-        # self.layoutFrameTemes = QHBoxLayout(self.frameTemes)
-        # self.frameTemes.setLayout(self.layoutFrameTemes)
-
-        # self.layoutFrameTemes.addWidget(self.vistaMapa1)
-        # self.layoutFrameTemes.addWidget(self.vistaMapa2)
-        # self.layoutFrameTemes.addWidget(self.vistaMapa3)
-        # self.layoutDelsCanvasExtra.addWidget(self.frameTemes)
-        # self.frameTemes.hide()
-
-        # print(self.llegenda.temes())
-        
         self.llegenda.obertaTaulaAtributs.connect(self.dwTaulaAtributs.show)
-
-        # self.dwLlegenda = QvDockWidget( "Llegenda", self )
-        # self.dwLlegenda.show()
-        # self.dwLlegenda.setObjectName( "layers" )
-        # self.dwLlegenda.setAllowedAreas( Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea )
-        # self.dwLlegenda.setWidget(self.llegenda)
-        # self.dwLlegenda.setContentsMargins ( 2, 2, 2, 2 )
-        # self.addDockWidget( Qt.LeftDockWidgetArea, self.dwLlegenda )
-
-    # def preparacioGrafiques(self):
-    #     try:
-    #         self.fGrafiques = QFrame()
-    #         self.lyGrafiques = QVBoxLayout(self.fGrafiques)
-    #         self.fGrafiques.setLayout(self.lyGrafiques)setMouseTracking
-
-    #         self.calculadora = QWidget()
-    #         self.calculadora.ui = Ui_Calculadora()
-    #         self.calculadora.ui.setupUi(self.calculadora)
-    #         # self.calculadora.ui.bLayersFields.clicked.connect(self.recorrerLayersFields)
-    #         # self.calculadora.ui.bFieldsCalculadora.clicked.connect(carregarFieldsCalculadora)
-    #         self.calculadora.ui.bFieldsCalculadora.clicked.connect(self.ferGrafica)
-    #         self.calculadora.ui.cbLayers.currentIndexChanged.connect(self.recorrerFields)
-            
-    #         self.calculadora.ui.lwFields.setSelectionMode(QAbstractItemView.ExtendedSelection)
-
-    #         self.browserGrafiques = QWebView()
-
-    #         self.dwBrowserGrafiques = QvDockWidget( "Gràfiques", self )
-    #         self.dwBrowserGrafiques.hide()
-
-    #         self.dwBrowserGrafiques.setObjectName( "Gràfiques" )
-    #         self.dwBrowserGrafiques.setAllowedAreas( Qt.TopDockWidgetArea |Qt.RightDockWidgetArea| Qt.BottomDockWidgetArea )
-    #         self.dwBrowserGrafiques.setWidget( self.fGrafiques)
-    #         self.dwBrowserGrafiques.setContentsMargins ( 0,0,0,0 )
-
-    #         self.lyGrafiques.addWidget(self.calculadora)
-    #         self.lyGrafiques.addWidget(self.browserGrafiques)
-    #         self.addDockWidget( Qt.RightDockWidgetArea, self.dwBrowserGrafiques)
-            
-    #         self.recorrerLayersFields()
-    #     except:
-    #         msg = QMessageBox()
-    #         msg.setIcon(QMessageBox.Warning)
-            
-    #         msg.setText(str(sys.exc_info()[1]))
-    #         # msg.setInformativeText("OK para salir del programa \nCANCEL para seguir en el programa")
-    #         msg.setWindowTitle("ERROR: qVista> preparacioGrafiques")
-    #         msg.setStandardButtons(QMessageBox.Close)
-    #         retval = msg.exec_()
         
-    def preparacioEntorns(self):
-        #self.menuEntorns = self.bar.addMenu('Entorns')
-                              
+    def preparacioEntorns(self):             
         self.menuEntorns.setFont(QvConstants.FONTSUBTITOLS)
         self.menuEntorns.styleStrategy = QFont.PreferAntialias or QFont.PreferQuality #???
         for entorn in os.listdir(os.path.dirname('entorns/')):          
@@ -972,7 +767,6 @@ class QVista(QMainWindow, Ui_MainWindow):
                 pass
             else:
                 # TODO: canviar el nom pel titol de la clase com a descripcio de l'acció
-                tmpClass = None #???
                 nom = entorn[:-3]
                 exec('from entorns.{} import {}'.format(nom,nom))
                 exec('self.act{} = QAction("{}", self)'.format(nom, nom))
@@ -985,8 +779,6 @@ class QVista(QMainWindow, Ui_MainWindow):
     
     def streetViewTancat(self):
         if self.dwSV.isHidden():
-            # tool = QvSeleccioElement(qV.canvas, qV.llegenda)
-            # self.canvas.setMapTool(tool)
             self.canvas.panCanvas()
             self.canvas.scene().removeItem(self.qvSv.m)
         else:
@@ -996,7 +788,6 @@ class QVista(QMainWindow, Ui_MainWindow):
         if rsc==0:
             self.canvas.setCenter(cercador.coordAdreca)
             self.canvas.zoomScale(1000)
-            # colocación de marca (cuadradito) en lugar de ubicacion
             self.canvas.scene().removeItem(self.marcaLloc)
 
             self.marcaLloc = QgsVertexMarker(self.canvas)
@@ -1025,7 +816,6 @@ class QVista(QMainWindow, Ui_MainWindow):
             }
             
             msg.setText(missatges[rsc])
-            # msg.setInformativeText("OK para salir del programa \nCANCEL para seguir en el programa")
             msg.setWindowTitle("ERROR: qVista")
             msg.setDetailedText(info_rsc)
             msg.setStandardButtons(QMessageBox.Close)
@@ -1036,11 +826,6 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.trobatNumero_oNo(rsc,info_rsc,self.cAdrecSup)
 
     def adreces(self):
-        # self.dwCercador = QvDockWidget( "Cercador", self )              #
-        # self.dwCercador.setAllowedAreas(Qt.RightDockWidgetArea)         # Quan el widget estigui a punt, això s'ha de treure
-        # self.addDockWidget( Qt.RightDockWidgetArea, self.dwCercador)    # El que hi ha comentat abaix és el que genera el widget antic
-        # textInfo = QLabel("Aquest widget encara no està disponible")    #
-        # self.dwCercador.setWidget(textInfo)
         if self.prepararCercador:
             self.preparacioCercadorPostal()
             self.prepararCercador = True
@@ -1064,13 +849,11 @@ class QVista(QMainWindow, Ui_MainWindow):
             self.mapesOberts = True
 
     def preparacioMapTips(self):
-        
         layer = self.llegenda.currentLayer()
         self.my_tool_tip = QvToolTip(self.canvas,layer)
         self.my_tool_tip.createMapTips()
 
     def preparacioImpressio(self):  
-        
         estatDirtybit = self.canvisPendents
         self.dwPrint = QvDockWidget( "Imprimir a PDF", self )
         self.dwPrint.setContextMenuPolicy(Qt.PreventContextMenu)
@@ -1087,13 +870,14 @@ class QVista(QMainWindow, Ui_MainWindow):
         # No és tant fàcil fer que només es creï un cop aquest objecte (i que funcioni bé després)
         self.qvPrint = QvPrint(self.project, self.canvas, self.canvas.extent(), parent = self)
         self.dwPrint.setWidget(self.qvPrint)
-
         self.qvPrint.leTitol.setText(self.titolProjecte) #el titol pot haver canviat (o el projecte)
         self.dwPrint.show()
         self.qvPrint.pucMoure = True #Mala idea modificar atributs des d'aquí
+
         def destruirQvPrint(x):
             if x: return
             self.qvPrint.oculta()
+
         self.dwPrint.visibilityChanged.connect(destruirQvPrint)
         self.setDirtyBit(estatDirtybit)
 
@@ -1103,22 +887,15 @@ class QVista(QMainWindow, Ui_MainWindow):
         # Obre un fitxer de tipus CSV, per veure les seves dades a una taula. 
         # Atenció, no carrega un layer, només llegeix dades del fitxer.
         self.actObrirCsv = QAction("Obrir CSV", self)
-        # self.actObrirCsv.setShortcut("Ctrl+C")
         self.actObrirCsv.setStatusTip("Obre fitxer CSV")
         self.actObrirCsv.triggered.connect(loadCsv)
 
-        # Obrir, Guardar i Guardar com... un projecte QGIS (o qVista)
-
         self.actObrirProjecte = QAction("Obrir...", self)
-        # icon=QIcon(':/Icones/Icones/ic_file_upload_black_48dp.png')
-        # self.actObrirProjecte.setIcon(icon)
         self.actObrirProjecte.setShortcut("Ctrl+O")
         self.actObrirProjecte.setStatusTip("Obrir mapa QGis")
         self.actObrirProjecte.triggered.connect(lambda: self.obrirDialegProjecte())
         
         self.actGuardarProjecte = QAction("Desar", self)
-        # icon=QIcon(':/Icones/Icones/ic_file_download_black_48dp.png')
-        # self.actGuardarProjecte.setIcon(icon)
         self.actGuardarProjecte.setShortcut("Ctrl+S")
         self.actGuardarProjecte.setStatusTip("Guardar Mapa")
         self.actGuardarProjecte.triggered.connect(guardarProjecte)
@@ -1127,15 +904,12 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.actGuardarComAProjecte.setStatusTip("Desar una còpia del mapa actual")
         self.actGuardarComAProjecte.triggered.connect(guardarDialegProjecte)
 
-        # Nou mapa
         self.actNouMapa = QAction("Nou", self)
         self.actNouMapa.setStatusTip("Nou Mapa")
         self.actNouMapa.setShortcut('Ctrl+N')
         self.actNouMapa.triggered.connect(nouMapa)
 
         self.actcartoBCN = QAction("CartoBCN", self)
-        #iconaChrome=QIcon(imatgesDir+'calc.png') #es poden posar icones
-        #self.actcartoBCN.setIcon(iconaChrome)
         self.actcartoBCN.triggered.connect(cartoBCN)
 
         self.actgeoportalBCN = QAction("Geoportal BCN", self)
@@ -1156,7 +930,6 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.actDocumentacio=QAction('Documentació',self)
         self.actDocumentacio.setIcon(QIcon(imatgesDir+'file-document.png'))
         self.actDocumentacio.triggered.connect(obreDocumentacio)
-
         
         self.actImprimir = QAction("Imprimir", self)
         self.actImprimir.setStatusTip("Imprimir a PDF")
@@ -1164,13 +937,6 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.actImprimir.setIcon(icon)
         self.actImprimir.triggered.connect(self.imprimir)
 
-        # self.actCloudUpload = QAction("Pujar al núvol", self)
-        # self.actCloudUpload.setStatusTip("Pujar al núvol")
-        # icon=QIcon(imatgesDir+'cloud-upload.png')
-        # self.actCloudUpload.setIcon(icon)
-        # self.actCloudUpload.triggered.connect(self.cloudUpload)
-
-        # Creació de layers a partir de diferents formats
         self.actAfegirNivellSHP = QAction("Afegir capa SHP", self)
         self.actAfegirNivellSHP.setStatusTip("Afegir capa SHP")
         self.actAfegirNivellSHP.triggered.connect(afegirNivellSHP)
@@ -1194,12 +960,10 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.actCrearCapa1 = QAction("Crear capa des d'arxiu GIS", self)
         self.actCrearCapa1.setStatusTip("Crea una capa des d'un geopackage o un shapefile")
         self.actCrearCapa1.triggered.connect(self.obrirDialegNovaCapaGIS)
-        #El triggered
 
         self.actCrearCapa2 = QAction("Crear capa des d'arxiu CSV", self)
         self.actCrearCapa2.setStatusTip("Crea una capa des d'un arxiu csv amb adreces o coordenades")
         self.actCrearCapa2.triggered.connect(self.obrirDialegNovaCapaCSV)
-        #El triggered
 
         self.actSeleccioExpressio= QAction("Selecció per expressió", self)
         self.actSeleccioExpressio.setStatusTip("Selecció per expressió")
@@ -1221,26 +985,13 @@ class QVista(QMainWindow, Ui_MainWindow):
         
         self.actObrirTaulaAtributs= QAction("Obrir taula d'atributs", self)
         self.actObrirTaulaAtributs.setStatusTip("Obrir taula d'atributs'")
-        # icon=QIcon(':/Icones/Icones/baseline_format_align_justify_black_36dp.png')
-        # self.actObrirTaulaAtributs.setIcon(icon)
         self.actObrirTaulaAtributs.triggered.connect(self.obrirTaulaAtributs)
-        # self.actObrirTaulaAtributs.triggered.connect(self.obrirDualWidget)
     
         self.actObrirDistrictes= QAction("Obrir arbre de districtes", self)
         self.actObrirDistrictes.setStatusTip("Obrir arbre de districtes")
-        # icon=QIcon(':/Icones/Icones/if_Map_-_Location_Solid_Style_03_2216364.png')
-        # self.actObrirDistrictes.setIcon(icon)
         self.actObrirDistrictes.triggered.connect(self.obrirDistrictes)
-    
-        # self.actObrirCalculadora= QAction("Obrir calculadora", self)
-        # # icon=QIcon(':/Icones/Icones/icons8-calculator-50.png')
-        # # self.actObrirCalculadora.setIcon(icon)
-        # self.actObrirCalculadora.setStatusTip("Obrir calculadora")
-        # self.actObrirCalculadora.triggered.connect(self.obrirCalculadora)
 
         self.actObrirLlegenda= QAction("Obrir llegenda", self)
-        # icon=QIcon(':/Icones/Icones/ic_format_list_bulleted_black_48dp.png')
-        # self.actObrirLlegenda.setIcon(icon)
         self.actObrirLlegenda.setStatusTip("Obrir llegenda")
         self.actObrirLlegenda.triggered.connect(self.obrirLlegenda)
 
@@ -1276,7 +1027,6 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.actReload.setIcon(QIcon(imatgesDir+'reload.png'))
         self.actReload.setShortcut('F5')
         self.actReload.triggered.connect(self.reload)
-
         
         self.actPanSelected = QAction("Pan selected", self)
         self.actPanSelected.setStatusTip("Pan selected")
@@ -1291,14 +1041,10 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.actFiltreCanvas.triggered.connect(self.filtreCanvas)
 
         self.actSeleccioClick = QAction("Selecció per click", self)
-        # icon=QIcon(':/Icones/Icones/if_Map_-_Location_Solid_Style_07_2216351.png')
-        # self.actSeleccioClick.setIcon(icon)
         self.actSeleccioClick.setStatusTip("Selecció per click")
         self.actSeleccioClick.triggered.connect(seleccioClick)
 
         self.actDisgregarDirele = QAction("Disgregar Fichero Direcciones", self)
-        # icon=QIcon(':/Icones/Icones/if_Map_-_Location_Solid_Style_07_2216351.png')
-        # self.actSeleccioClick.setIcon(icon)
         self.actDisgregarDirele.setStatusTip("Disgregar Fichero Direcciones")
         self.actDisgregarDirele.triggered.connect(disgregarDirele)
 
@@ -1308,13 +1054,9 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         self.actCentrar = QAction(self)
         self.actCentrar.setStatusTip("Centrar mapa")
-        # icon=QIcon(':/Icones/Icones/ic_zoom_out_map_black_48dp.png')
-        # self.actCentrar.setIcon(icon)
         self.actCentrar.triggered.connect(self.centrarMapa)
         
         self.actSeleccioLliure = QAction("Seleccio lliure", self)
-        # icon=QIcon(':/Icones/Icones/ic_format_shapes_black_48dp.png')
-        # self.actSeleccioLliure.setIcon(icon)
         self.actSeleccioLliure.setStatusTip("Seleccio lliure")
         self.actSeleccioLliure.triggered.connect(seleccioLliure)
 
@@ -1326,16 +1068,9 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.actHelp = QAction("Ajuda ", self)
         icon=QIcon(imatgesDir+'help-circle.png')
         self.actHelp.setIcon(icon)
-        # self.actHelp.triggered.connect(self.helpQVista)
         self.actHelp.triggered.connect(self.infoQVistaPDF)
         self.actHelp.setShortcut('Ctrl+H')
                 
-        # self.actBug = QAction("Ajuda ", self)
-        # icon=QIcon(imatgesDir+'bug.png')
-        # self.actBug.setIcon(icon)
-        # self.actBug.triggered.connect(self.reportarBug)
-
-        #bEnviar.clicked.connect(lambda: reportarProblema(leTitol.text(), leDescripcio.text()))
         self.suggeriments=QvSuggeriments(reportarProblema,self)
         self.actBug = QAction("Problemes i suggeriments ", self)
         icon=QIcon(imatgesDir+'bug.png')
@@ -1348,7 +1083,6 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         self.actObrirCataleg = QAction("Catàleg", self)
         self.actObrirCataleg.setStatusTip("Catàleg d'Informació Territorial")
-        #self.actObrirCataleg.setIcon(QIcon(imatgesDir+'layers_2.png'))
         self.actObrirCataleg.triggered.connect(self.obrirCataleg)
 
         self.actObrirMapeta = QAction("Mapeta", self)
@@ -1377,22 +1111,21 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.actCanvasImg = QAction("Desar com a PNG", self)
         self.actCanvasImg.setIcon(QIcon(imatgesDir+'camera.png'))
         self.actCanvasImg.setStatusTip("Imatge del canvas")
-        self.actCanvasImg.triggered.connect(self.canvasImg)
-        #Definim que el botó de fer foto tingui també un menú amb l'opció de copiar al portarretalls
-        
+        self.actCanvasImg.triggered.connect(self.canvasImg)  
 
         self.actFavorit = QAction("Favorit", self)
         self.actFavorit.setIcon(QIcon(imatgesDir+'star.png'))
         self.actFavorit.setStatusTip("Favorit")
         self.actFavorit.triggered.connect(self.favorit)
 
-        #self.actCataleg = QAction(3*' '+"Catàleg"+3*' ', self)
         self.actCataleg = QAction("Catàleg", self)
         self.actCataleg.setStatusTip("Catàleg")
+
         def activaCataleg():
             if not self.catalegMapes.isVisible():
                 self.catalegMapes.showMaximized()
             self.catalegMapes.activateWindow()
+
         self.actCataleg.triggered.connect(activaCataleg)
 
         self.actTemes = QAction("Temes", self)
@@ -1402,14 +1135,6 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.actTest = QAction("test", self)
         self.actTest.setStatusTip("test")
         self.actTest.triggered.connect(self.test)
-
-       
-
-
-        
-        # self.actBicing = QAction("Bicing", self)
-        # self.actBicing.setStatusTip("Bicing")
-        # self.actBicing.triggered.connect(self.bicing)
 
         self.actWizard = QAction("Wizard", self)
         self.actWizard.setStatusTip("transp")
@@ -1441,17 +1166,12 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.actMarxesCiutat.setStatusTip("Marxes de Ciutat")
         self.actMarxesCiutat.triggered.connect(self.marxesCiutat)
 
-        # self.actPlatges = QAction("Pavimentació", self)
-        # self.actPlatges.setStatusTip("Pavimentació")
-        # self.actPlatges.triggered.connect(self.platges)
-
         self.actPropietatsLayer = QAction("Propietats de la capa", self)
         self.actPropietatsLayer.setStatusTip("Propietats de la capa")
         self.actPropietatsLayer.triggered.connect(self.propietatsLayer)
 
     def definicioBotons(self):
         self.frame_15.setContentsMargins(0,0,12,0)
-
         stylesheetLineEdits="""
             background-color:%s;
             color: %s;
@@ -1534,7 +1254,6 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.botoFavorits.setIconSize(QSize(24,24))
         self.botoFavorits.setCursor(QvConstants.cursorClick())
         self.botoFavorits.clicked.connect(self.switchFavorit)
-        #Fer que quan es fa click es marqui o desmarqui com a favorit
 
         self.botoReload.setIcon(QIcon(imatgesDir+'reload.png'))
         self.botoReload.setStyleSheet(stylesheetBotons)
@@ -1542,9 +1261,6 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.botoReload.setCursor(QvConstants.cursorClick())
         self.botoReload.clicked.connect(self.reload)
 
-    # def platges(self):
-    #     self.platges = QvPlatges()
-    #     self.platges.show()
 
     def reportarBug(self): #finalment no es fa servir (???)
         self.fitxaError = QWidget()
@@ -1566,9 +1282,11 @@ class QVista(QMainWindow, Ui_MainWindow):
     def preparacioSeleccio(self):
         # Disseny del interface
         class QvSeleccioGrafica(QWidget):
+
             def __init__(self):
                 QWidget.__init__(self)
                 self.color=QColor('white')
+
             def getParametres(self):
                 #Falta incloure color i opacitat
                 return {'overlap': qV.checkOverlap.isChecked(),
@@ -1577,8 +1295,10 @@ class QVista(QMainWindow, Ui_MainWindow):
                         # 'opacitat':qV.sliderOpacitat.value(),
                         'emmascarar': qV.checkMascara.isChecked()
                         }
+
             def setTool(self,tool):
                 self.tool=tool
+
             def actualitzaTool(self):
                 QvMemoria().setParametresMascara(self.color,qV.sliderOpacitat.value())
                 qV.gbOverlap.setVisible(qV.checkSeleccio.isChecked())
@@ -1586,13 +1306,13 @@ class QVista(QMainWindow, Ui_MainWindow):
                 masc=obteMascara(qV)
                 pars=QvMemoria().getParametresMascara()
                 aplicaParametresMascara(masc,*pars)
+
             def setVisible(self,visible):
                 super().setVisible(visible)
                 if not visible:
                     qV.foraEinaSeleccio()
 
         self.wSeleccioGrafica = QvSeleccioGrafica()
-        
         self.wSeleccioGrafica.setWhatsThis(QvApp().carregaAjuda(self))
         self.lytSeleccioGrafica = QVBoxLayout()
         self.lytSeleccioGrafica.setAlignment(Qt.AlignTop)
@@ -1603,24 +1323,16 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.leSel2.editingFinished.connect(seleccioExpressio)
         self.lytSeleccioGrafica.addLayout(self.lytBotonsSeleccio)
 
-
         self.bs1 = QvPushButton(flat=True)
-        # self.bs1.setCheckable(True)
         self.bs1.setIcon(QIcon(imatgesDir+'apuntar.png'))
         self.bs1.setToolTip('Seleccionar elements de la capa activa')
         self.bs2 = QvPushButton(flat=True)
-        # self.bs2.setCheckable(True)
         self.bs2.setIcon(QIcon(imatgesDir+'shape-polygon-plus.png'))
         self.bs2.setToolTip('Dibuixar un polígon')
         self.bs3 = QvPushButton(flat=True)
-        # self.bs3.setCheckable(True)
         self.bs3.setIcon(QIcon(imatgesDir+'vector-circle-variant.png'))
         self.bs3.setToolTip('Dibuixar un cercle')
         self.bs4 = QvPushButton('Netejar')
-        # self.bs4.setCheckable(True)
-        # self.bs4.setIcon(QIcon(imatgesDir+'trash-can-outline.png'))
-
-        # self.lblNombreElementsSeleccionats = QLabel('No hi ha elements seleccionats.')
         self.lblCapaSeleccionada = QLabel('No hi ha capa seleccionada.')
         
         self.lwFieldsSelect = QListWidget()
@@ -1650,12 +1362,15 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.sliderOpacitat.setSingleStep(1)
         self.sliderOpacitat.valueChanged.connect(lambda x: self.lblOpacitat.setText(str(x)+' %'))
         self.sliderOpacitat.setValue(opacitat)
+
         def canviColor(color):
             self.wSeleccioGrafica.color=color
             self.bsSeleccioColor.setStyleSheet('background: solid %s; border: none'%color.name())
             self.wSeleccioGrafica.actualitzaTool()
+
         def openColorDialog():
             canviColor(QColorDialog().getColor())
+
         self.bsSeleccioColor=QvPushButton(flat=True)
         self.bsSeleccioColor.setIcon(QIcon('Imatges/da_color.png'))
         self.bsSeleccioColor.setStyleSheet('background: solid %s; border: none'%color.name())
@@ -1704,22 +1419,17 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.lytSeleccioGrafica.addWidget(gbSelMasc)
         self.lytSeleccioGrafica.addWidget(self.gbOverlap)
         self.lytSeleccioGrafica.addWidget(self.frameColorOpacitat)
-        # self.lytSeleccioGrafica.addWidget(self.lblNombreElementsSeleccionats)
         self.lytSeleccioGrafica.addWidget(self.lblCapaSeleccionada)
         self.lytSeleccioGrafica.addWidget(self.lwFieldsSelect)
-        # self.lytSeleccioGrafica.addWidget(self.bs5)
         self.lytSeleccioGrafica.addWidget(self.bs6)
         self.lytSeleccioGrafica.addWidget(self.twResultats)
         
         self.distBarrisSelMasc = QVDistrictesBarris()
         self.distBarrisSelMasc.view.clicked.connect(self.clickArbreSelMasc)
         self.lytSeleccioGrafica.addWidget(self.distBarrisSelMasc.view)
-
-
-        
+  
         self.dwSeleccioGrafica = QvDockWidget("Selecció gràfica", self)
         self.dwSeleccioGrafica.setContextMenuPolicy(Qt.PreventContextMenu)
-        # self.dwSeleccioGrafica.setContextMenuPolicy(Qt.PreventContextMenu)
         self.dwSeleccioGrafica.hide()
         self.dwSeleccioGrafica.setAllowedAreas( Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea )
         self.dwSeleccioGrafica.setWidget( self.wSeleccioGrafica)
@@ -1728,14 +1438,13 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.dwSeleccioGrafica.hide()
         self.dwSeleccioGrafica.visibilityChanged.connect(self.foraEines)
 
-        # self.idsElementsSeleccionats = []
-
     #Eina de mesura sobre el mapa -nexus-
     def preparacioMesura(self):
 
         # Disseny del interface
         class QvMesuraGrafica(QWidget):
             colorCanviat=pyqtSignal(QColor)
+
             def __init__(self):
                 QWidget.__init__(self)
                 self.setWhatsThis(QvApp().carregaAjuda(self))
@@ -1750,17 +1459,18 @@ class QVista(QMainWindow, Ui_MainWindow):
                 self.lytBotonsMesura.addLayout(self.lytDistanciesArees)
                 self.lytBotonsMesura.addStretch()
 
-
                 self.color=QvConstants.COLORDESTACAT
                 self.bmSeleccioColor=QvPushButton(flat=True)
                 self.bmSeleccioColor.setIcon(QIcon('Imatges/da_color.png'))
                 self.bmSeleccioColor.setStyleSheet('background: solid %s; border: none'%self.color.name())
                 self.bmSeleccioColor.setIconSize(QSize(25,25))
                 QvConstants.afegeixOmbraWidget(self.bmSeleccioColor)
+
                 def canviColor(color):
                     self.color=color
                     self.bmSeleccioColor.setStyleSheet('background: solid %s; border: none'%color.name())
                     self.colorCanviat.emit(color)
+
                 def openColorDialog():
                     canviColor(QColorDialog().getColor())
                 self.bm4 = QvPushButton(destacat=False)
@@ -1771,11 +1481,9 @@ class QVista(QMainWindow, Ui_MainWindow):
                 self.lblMesuraArea = QLabel('')
                 self.cbCercles=QCheckBox('Mostrar cercles auxiliars')
 
-                
                 self.lwMesuresHist = QListWidget()
                 self.lwMesuresHist.setSelectionMode(QAbstractItemView.ExtendedSelection)
                 self.lwMesuresHist.setMinimumHeight(50)
-
                 self.twResultatsMesura = QTableWidget()
 
                 self.bmSeleccioColor.clicked.connect(openColorDialog)
@@ -1797,14 +1505,18 @@ class QVista(QMainWindow, Ui_MainWindow):
                 self.setMinimumHeight(100)
                 self.setSizePolicy(QSizePolicy.Minimum,QSizePolicy.Minimum)
                 self.resize(350,100)
+
             def clear(self):
                 return
                 self.lwMesuresHist.clear()
+
             def setDistanciaTotal(self,dist):
                 self.dist=max(round(dist,2),0)
                 self.lblDistanciaTotal.setText('Distància total: ' + str(self.dist) + ' m')
+
             def setDistanciaTempsReal(self,dist):
                 return
+
             def setArea(self,area):
                 if area is None:
                     self.lblMesuraArea.setText("Tanqueu un polígon per calcular l'àrea")
@@ -1812,14 +1524,16 @@ class QVista(QMainWindow, Ui_MainWindow):
                 else:
                     self.area=round(area,2)
                     self.lblMesuraArea.setText('Àrea: ' + str(self.area) + ' m²')
+
             def actualitzaHistorial(self):
                 if self.dist==0: return
                 if self.area is not None:
                     self.lwMesuresHist.insertItem(0,'Distància: %.2f m --- Àrea: %.2f m²'%(self.dist,self.area))
                 else:
                     self.lwMesuresHist.insertItem(0,'Distància: %.2f m'%self.dist)
+
             def obrir(self):
-                #Redundant, perquè se suposa que quan comencem a mesurar s'esborra tot, però no anava :(
+                #Redundant, perquè se suposa que quan comencem a mesurar s'esborra tot
                 self.bm4.animateClick()
                 pos=qV.bMesuraGrafica.mapToGlobal(qV.bMesuraGrafica.pos())
                 zoomFactor=QvApp().zoomFactor()
@@ -1835,8 +1549,6 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         self.wMesuraGrafica = QvMesuraGrafica()
         
-        
-        
         self.dwMesuraGrafica = QDockWidget("Medició de distàncies i àrees", self)
         self.dwMesuraGrafica.hide()
         self.dwMesuraGrafica.setAllowedAreas( Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea )
@@ -1846,7 +1558,6 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.dwMesuraGrafica.setFloating(True)
         zoomFactor = QvApp().zoomFactor()
         self.dwMesuraGrafica.resize(zoomFactor*400,zoomFactor*150)
-        #self.dwMesuraGrafica.setStyleSheet('QDockWidget {color: #465A63; background-color: #909090;}')
         
         self.dwMesuraGrafica.hide()
         self.dwMesuraGrafica.visibilityChanged.connect(self.wMesuraGrafica.canviaVisibilitatDw)
@@ -1860,9 +1571,7 @@ class QVista(QMainWindow, Ui_MainWindow):
     def calcularSeleccio(self):
         layer = self.llegenda.currentLayer()
         taula=self.twResultats
-        numeroFields=0 #???
         fila=0
-        columna=0 #???
         nombreElements = 0
         taula.setColumnCount(3)
         taula.setHorizontalHeaderLabels(['','Total', 'Mitjana'])
@@ -1875,7 +1584,6 @@ class QVista(QMainWindow, Ui_MainWindow):
             item = QTableWidgetItem(a.text())
             taula.setItem(fila+1,0,item)
             field=layer.fields().lookupField(a.text())
-            # print (field)
             nombreElements=0
             for feature in layer.selectedFeatures():
                 calcul=feature.attributes()[layer.fields().lookupField(a.text())]
@@ -1889,7 +1597,6 @@ class QVista(QMainWindow, Ui_MainWindow):
             taula.setItem(fila+1,1,item)
             item = QTableWidgetItem(str('% 12.2f' % mitjana))
             taula.setItem(fila+1,2,item)
-            # print('Total: '+a.text()+": ",total)
             fila=fila+1
         item = QTableWidgetItem("Seleccionats:")
         taula.setItem(0,0,item)
@@ -1907,12 +1614,9 @@ class QVista(QMainWindow, Ui_MainWindow):
         if self.layerActiu is not None:
             self.lblCapaSeleccionada.setText("Capa activa: "+ self.layerActiu.name())
             self.lblCapaSeleccionadaInf.setText("Capa activa: "+ self.layerActiu.name())
-            #self.lbl
             if self.layerActiu.type() == QgsMapLayer.VectorLayer:
                 fields = self.layerActiu.fields()
                 for field in fields:
-                    # print(field.typeName())
-                    # if (field.typeName()!='String' and field.typeName()!='Date' and field.typeName()!='Date'):
                     if (field.typeName()=='Real' or field.typeName()=='Integer64'):
                         self.lwFieldsSelect.addItem(field.name())
             else:
@@ -1960,14 +1664,11 @@ class QVista(QMainWindow, Ui_MainWindow):
 
 
     def switchFavorit(self):
-        # nom=os.path.basename(self.pathProjecteActual)
         nom=Path(self.pathProjecteActual).stem
         if self.favorit:
-            # QvFavorits().eliminaFavorit(nom)
             self.botoFavorits.setIcon(self.iconaFavDesmarcat)
             pass
         else:
-            # QvFavorits().afegeixFavorit(nom)
             self.botoFavorits.setIcon(self.iconaFavMarcat)
             pass
         self.favorit=not self.favorit
@@ -2023,10 +1724,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         # TODO: Generalitzar opertura qGis
         self.project.write('c:/temp/tempQgis.qgs')
         QDesktopServices().openUrl(QUrl('c:/temp/tempQgis.qgs'))
-
-    # def cloudUpload(self):
-    #     missatgeCaixa("Es podrà: Obtenir una adreça URL del mapa, publicat a Internet, per compartir-la", "Aquesta funció no està encara implementada.")
-        
+     
     def tissores(self):
         process = QProcess(self)
         pathApp = r"c:\windows\system32\SnippingTool.exe"
@@ -2054,21 +1752,11 @@ class QVista(QMainWindow, Ui_MainWindow):
         lblLogoQVista.setPixmap(imatge)
         lblLogoQVista.setScaledContents(False)
 
-        # self.lblVersio = QLabel()
-        # self.lblVersio.setText(versio)
-        # self.lblVersio.setGeometry(100,100,100,100)
-
         menubar=QvMenuBar(self)
         self.setMenuBar(menubar)
         self.bar = self.menuBar()
         self.bar.setFont(QvConstants.FONTTITOLS)
         self.bar.setCornerWidget(lblLogoQVista,Qt.TopLeftCorner)
-
-        # self._menuBarShadow = QGraphicsDropShadowEffect()
-        # self._menuBarShadow.setXOffset(0)
-        # self._menuBarShadow.setColor(QColor(55,57,63))
-        # self._menuBarShadow.setBlurRadius(20)
-        # self.bar.setGraphicsEffect(self._menuBarShadow)
         
         QvConstants.afegeixOmbraHeader(self.bar)
 
@@ -2155,13 +1843,8 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         self.shortcutNoEsPotSortir=QShortcut(QKeySequence('Ctrl+Shift+Alt+Ç'),self)
         self.shortcutNoEsPotSortir.activated.connect(ocultaBotons)
-
         self.bar.setCornerWidget(self.fMaxim, Qt.TopRightCorner)
-
-
         self.bar.styleStrategy = QFont.PreferAntialias or QFont.PreferQuality #???
-
-
 
         spacer = QSpacerItem(9999, 9999, QSizePolicy.Expanding,QSizePolicy.Maximum) #???
         self.menuMapes = self.bar.addMenu ("Mapes")
@@ -2210,14 +1893,11 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.menuUtilitats.addAction(self.actpiuPortal)
         # self.menuUtilitats.addAction(self.actDocumentacio)
 
-
         self.menuFuncions.setFont(QvConstants.FONTSUBTITOLS)
         self.menuFuncions.addAction(self.actEsborrarSeleccio)
         self.menuFuncions.addAction(self.actSeleccioLliure)
         self.menuFuncions.addAction(self.actSeleccioClick)
-        self.menuFuncions.addAction(self.actDisgregarDirele)
-        
-
+        self.menuFuncions.addAction(self.actDisgregarDirele)        
         # self.menuFuncions.addAction(self.actFerGran)
         self.menuFuncions.addAction(self.actMapTip)
         self.menuFuncions.addAction(self.actTemes)
@@ -2234,6 +1914,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         # self.menuFuncions.addAction(self.actBicing)
         self.menuFuncions.addAction(self.actPavimentacio)
         # self.menuFuncions.addAction(self.actPlatges)
+
     def actualitzaWindowFlags(self):
         self.setWindowFlag(Qt.Window)
         self.setWindowFlag(Qt.CustomizeWindowHint,True)
@@ -2243,92 +1924,12 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.setWindowFlag(Qt.WindowMaximizeButtonHint,False)
         self.setWindowFlag(Qt.WindowMinMaxButtonsHint,False)
         self.setWindowFlag(Qt.WindowCloseButtonHint,False)
+
     def test(self):
         self.canvas.rotate(0)
         
     def testProva(self):
         self.canvas.setRotation(44)
-
-    # def ferGrafica(self): #???
-    #     layerActiu = self.llegenda.currentLayer()
-    #     for a in self.calculadora.ui.lwFields.selectedItems():
-    #         campGraficable = a.text()
-
-    #     noms = []
-    #     dades = []
-    #     dades2 = [] #???
-        
-    #     # self.pintaLabels(campGraficable)
-
-    #     nomLayer = self.calculadora.ui.cbLayers.currentText()
-    #     if nomLayer == 'Districtes':
-    #         campNom = 'N_Distri'
-    #     elif nomLayer == 'Barris':
-    #         campNom = 'N_Barri'
-    #     else:
-    #         return
-
-    #     for feature in layerActiu.getFeatures():
-    #         noms.append(feature.attributes()[layerActiu.fields().lookupField(campNom)])
-    #         dades.append(feature.attributes()[layerActiu.fields().lookupField(campGraficable)])
-    #         # dades2.append(feature.attributes()[layerActiu.fields().lookupField('Dones')])
-    #         # print (barris, dades, dades2)
-
-    #     data1 = go.Bar(
-    #                 y=noms,
-    #                 x=dades,
-    #                 name=campGraficable,
-    #                 orientation='h'
-    #         )        
-    #     # data2 = go.Bar(
-    #     #             y=barris,
-    #     #             x=dades2,
-    #     #             name='Dones',
-    #     #             orientation='h'
-    #     #     )
-
-    #     dades = [data1]
-    #     layout = go.Layout(barmode='group')
-
-    #     fig = go.Figure(data=dades, layout=layout)
-
-    #     plotly.offline.plot(fig, filename='c:/temp/grouped-bar.html', auto_open=False)
-        
-    #     self.browserGrafiques.setUrl(QUrl('file:///c:/temp/grouped-bar.html'))
-    #     self.browserGrafiques.show()
-
-        # layer = QvLlegenda.capaPerNom(qV,qV.calculadora.ui.cbLayers.currentText())
-        # # layer = qV.project.instance().mapLayersByName(qV.calculadora.ui.cbLayers.currentText())[0]
-        # taula=qV.calculadora.ui.twCalculadora
-        # numeroFields=0
-        # fila=0
-        # columna=0
-        # taula.setColumnCount(2)
-        # taula.setHorizontalHeaderLabels(['','Total'])
-        # nombreFieldsSeleccionats=0
-        # for a in qV.calculadora.ui.lwFields.selectedItems():
-        #     nombreFieldsSeleccionats=nombreFieldsSeleccionats+1
-        # taula.setRowCount(nombreFieldsSeleccionats+1)
-        # for a in qV.calculadora.ui.lwFields.selectedItems():
-        #     total=0
-        #     item = QTableWidgetItem(a.text())
-        #     taula.setItem(fila+1,0,item)
-        #     nombreElements=0
-        #     field=layer.fields().lookupField(a.text())
-        #     # print (field)
-        #     for feature in layer.selectedFeatures():
-        #         calcul=feature.attributes()[layer.fields().lookupField(a.text())]
-        #         total=total+calcul
-        #         nombreElements=nombreElements+1
-        #     item = QTableWidgetItem(str(total))
-        #     taula.setItem(fila+1,1,item)
-        #     # print('Total: '+a.text()+": ",total)
-        #     fila=fila+1
-        # item = QTableWidgetItem('Nombre elements')
-        # taula.setItem(0,0,item)
-        # item = QTableWidgetItem(str(nombreElements))
-        # taula.setItem(0,1,item)
-        # taula.resizeColumnsToContents()
     
     def prepararDash(self, nom):
         def obertura():
@@ -2354,11 +1955,10 @@ class QVista(QMainWindow, Ui_MainWindow):
     def dashX(self, Dashboard ): #???   
         for objecte in self.dashboardActiu:
             objecte.hide() 
-
         dashboard = Dashboard(self)
-
         self.dashboardActiu = [dashboard]
         self.layout.addWidget(dashboard)
+
     def showLblFlotant(self,txt):
         self.lblFlotant=QLabel(txt)
         self.lblFlotant.setFont(QvConstants.FONTTEXT)
@@ -2371,6 +1971,7 @@ class QVista(QMainWindow, Ui_MainWindow):
             border-radius: 10px;
             margin: 0px;
         '''%(QvConstants.COLORBLANCHTML,QvConstants.COLORFOSCHTML, QvConstants.COLORDESTACATHTML))
+
         self.lblFlotant.setWindowFlags(Qt.WindowStaysOnTopHint | Qt.FramelessWindowHint)
         self.timerLblFlotant=QTimer(self)
         self.timerLblFlotant.setSingleShot(True)
@@ -2378,6 +1979,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.timerLblFlotant.start(5000)
         self.lblFlotant.show()
         self.lblFlotant.move(self.width()-500,self.height()-50)
+
     def hideLblFlotant(self):
         if hasattr(self,'lblFlotant'):
             self.lblFlotant.hide()
@@ -2397,20 +1999,12 @@ class QVista(QMainWindow, Ui_MainWindow):
                 self.dwLlegenda.setFloating(False)
             self.bar.show()
             self.statusbar.show()
-            # self.botoMaxim.setIcon(QIcon(imatgesDir+'arrow-expand.png'))
-
-            # Descomentar para eliminar barra de titulo
-            # if self.lastMaximized:
-            #     qV.showMaximized()
-            # else:
-            #     qV.showNormal()
 
         else:
             self.showLblFlotant('Prem F-11, Esc o el botó de maximitzar per sortir de la pantalla completa')
             if hasattr(self.canvas,'bMaximitza'):
                 self.canvas.bMaximitza.setIcon(self.canvas.iconaMinimitza)
             self.dockWidgetsVisibles=[x for x in self.findChildren(QvDockWidget) if x.isVisible()]
-            # for x in self.dockWidgetsVisibles: x.hide()
             self.frame_3.hide()
             self.frame_19.hide()
             self.frame_2.hide()
@@ -2419,13 +2013,7 @@ class QVista(QMainWindow, Ui_MainWindow):
             self.statusbar.hide()
             self.showFullScreen()
         self.mapaMaxim=not self.mapaMaxim
-
-            
-
-
             # Descomentar para eliminar barra de titulo
-            # self.lastMaximized = qV.isMaximized()
-            # qV.showFullScreen()
 
     def clickArbre(self):
         rang = self.distBarris.llegirRang()
@@ -2433,7 +2021,6 @@ class QVista(QMainWindow, Ui_MainWindow):
 
     def clickArbreSelMasc(self):
         rang = self.distBarrisSelMasc.llegirRang()
-        # self.canvas.zoomToFeatureExtent(rang)
 
         ID=self.distBarrisSelMasc.llegirID()
         if self.distBarrisSelMasc.esDistricte():
@@ -2464,7 +2051,6 @@ class QVista(QMainWindow, Ui_MainWindow):
             
         else:
             eliminaMascara(self)
-            # mascara=obteMascara(self)
             aplicaMascara(self,[x.geometry() for x in feats])
             
 
@@ -2489,8 +2075,6 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.wCataleg.ui.treeCataleg.resize(640, 480)
         self.wCataleg.ui.treeCataleg.adjustSize()
         self.wCataleg.ui.treeCataleg.setHeaderHidden(True)
-
-    
 
     def infoQVista(self):
         self.informacio = QDialog()
@@ -2539,21 +2123,15 @@ class QVista(QMainWindow, Ui_MainWindow):
             for field in layer.fields():
                 if field.typeName()=='String':
                     textCercat = textCercat + " " + fiel.name()
-            # print (textCercat)
 
     def nomCapa(self):
         capa = self.llegenda.view.currentLayer()
-        # print('MENU NOM CAPA')
-        # print('Nom: ', capa.name())
 
     def extCapa(self):
         capa = self.llegenda.view.currentLayer()
-        # print('MENU EXTENSIÓ CAPA')
-        # print('Extent: ', capa.extent().toString())
 
     def esborrarCapa(self):
         capa = self.llegenda.view.currentLayer()
-        # print('MENU ESBORRAR CAPA')
         self.project.removeMapLayer(capa.id())
         self.canvas.refresh()
 
@@ -2585,7 +2163,6 @@ class QVista(QMainWindow, Ui_MainWindow):
         Un dialeg demana on guardar-la.
        """    
         dialegFitxer=QFileDialog()
-        # dialegFitxer.setDirectoryUrl(QUrl('c:/Temp/'))
 
         titol=self.lblTitolProjecte.text()
         nfile,_ = dialegFitxer.getSaveFileName(None,"Guardar imatge", QvMemoria().getDirectoriDesar()+'/'+titol, "(*.png)")
@@ -2614,8 +2191,6 @@ class QVista(QMainWindow, Ui_MainWindow):
         for layer in layers:
             if layer.type() == QgsMapLayer.VectorLayer:
                 layer.removeSelection()
-        # self.lblNombreElementsSeleccionats.setText('No hi ha elements seleccionats.')
-        # self.idsElementsSeleccionats = []
         #Movem el self.canvas.panCanvas a una funció que es diu foraEines per poder treure les eines del mapa sense treure les seleccions, màscares...
         if tambePanCanvas:
             self.foraEines()
@@ -2626,7 +2201,6 @@ class QVista(QMainWindow, Ui_MainWindow):
             pass
         if mascara:
             try:
-                # qV.project.removeMapLayer(qV.project.mapLayersByName('Màscara')[0])
                 eliminaMascara(qV)
                 qV.canvas.refresh()
             except Exception as e:
@@ -2634,7 +2208,6 @@ class QVista(QMainWindow, Ui_MainWindow):
                 pass
     def foraEines(self):
         self.canvas.panCanvas()
-
 
     def esborrarMesures(self, tambePanCanvas = True):
 
@@ -2649,18 +2222,12 @@ class QVista(QMainWindow, Ui_MainWindow):
             for x in qV.toolMesura.cercles:
                 qV.canvas.scene().removeItem(x)
             qV.wMesuraGrafica.clear()
-            # qV.lwMesuresHist.clear()
 
             for ver in qV.toolMesura.markers:
-                #if ver in  qV.canvas.scene().items():
                 qV.canvas.scene().removeItem(ver)
-            # taulaAtributs('Total',layer)
             qV.wMesuraGrafica.setDistanciaTotal(0)
             qV.wMesuraGrafica.setArea(0)
             qv.wMesuraGrafica.setDistanciaTempsReal(0)
-            # qV.lblDistanciaTotal.setText('Distància total: ')
-            # qV.lblMesuraArea.setText('Àrea: ')
-            # qV.lblDistanciaTempsReal.setText('Distáncia últim tram: ')
         except:
             pass
 
@@ -2671,24 +2238,15 @@ class QVista(QMainWindow, Ui_MainWindow):
             it = layer.getFeatures(QgsFeatureRequest().setFilterRect(areaDInteres))
             ids = [i.id() for i in it]
             layer.selectByIds(ids)
-            # taulaAtributs('Seleccionats',layer)
         else:
             missatgeCaixa('Cal tenir seleccionat un nivell per poder fer una selecció.','Marqueu un nivell a la llegenda sobre el que aplicar la consulta.')
 
     def showXY(self,p):
         text=str("%.2f" % p.x()) + ", " + str("%.2f" % p.y() )
         self.leXY.setText(text)
-        # font=QFont('',0)
         font=QvConstants.FONTTEXT
         fm=QFontMetrics(font)
         self.leXY.setFixedWidth(fm.width(text))
-
-        # self.bXY.setText( str("%.2f" % p.x()) + ", " + str("%.2f" % p.y() ))
-        # try:
-        #     if self.qvPrint.pucMoure:
-        #         self.dwPrint.move(self.qvPrint.dockX-100, self.qvPrint.dockY-120)
-        # except:
-        #     return
 
     def showScale(self,scale ):
         self.bScale.setText( " Escala 1:" + str(int(round(scale)))) 
@@ -2696,7 +2254,6 @@ class QVista(QMainWindow, Ui_MainWindow):
         #Per tant, deixem d'editar-la
         if self.editantEscala:  
             self.editantEscala=False
-            # self.leScale.setParent(None)
             self.leScale.hide()
 
     def definirLabelsStatus(self):    
@@ -2838,8 +2395,6 @@ class QVista(QMainWindow, Ui_MainWindow):
             self.bOrientacio.setText(' Orientació: Nord')
         else:
             self.bOrientacio.setText(' Orientació: Eixample')
-
- 
         self.canvas.refresh()
 
     def editarXY(self): #TODO: això ja no hauria de caldre
@@ -2847,8 +2402,6 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.bXY.hide()
         self.leXY.show()
         self.leXY.setText(self.bXY.text())
-        # self.leXY.setFixedSize(size)
-       
         
     def returnEditarXY(self):
         """Refrescar el canvas centrant-lo a les coordenades que ha pescrit l'usuari"""
@@ -2870,7 +2423,6 @@ class QVista(QMainWindow, Ui_MainWindow):
             self.editantEscala = True
             self.bScale.setText(' Escala 1: ')
             self.leScale.show()
-            
             #Estem recalculant cada vegada. Podríem fer-ho només quan canviem de projecte, però no va lent
             if QgsExpressionContextUtils.projectScope(self.project).variable('qV_escales'):
                 escalesPossibles=valors = QgsExpressionContextUtils.projectScope(self.project).variable('qV_escales').split(' ')
@@ -2919,8 +2471,6 @@ class QVista(QMainWindow, Ui_MainWindow):
             self.dwBrowserGrafiques.show()
         else:
             self.dwBrowserGrafiques.hide()
-
-        # recorrerUbicacions()
       
     def obrirBotonera(self):
         if self.botoneraVisible:
@@ -3001,8 +2551,6 @@ class QVista(QMainWindow, Ui_MainWindow):
         nfile,_ = dialegObertura.getOpenFileName(None,"Nova capa", '../Dades/Capes/', "Totes les capes acceptats (*.csv *.shp *.gpkg *.qlr );; CSV (*.csv);; Shapes (*.shp);; Geopackage (*.gpkg);;  Layers Qgis(*.qlr)")
 
         if nfile is not None:
-            # extensio = nfile[-3:]
-            # print (extensio)
             _, extensio = os.path.splitext(nfile)
             if extensio.lower() == '.shp' or extensio.lower() =='.gpkg':
                 layer = QgsVectorLayer(nfile, os.path.basename(nfile), "ogr")
@@ -3013,9 +2561,7 @@ class QVista(QMainWindow, Ui_MainWindow):
                 self.setDirtyBit()
             else:
                 if extensio.lower() == '.qlr':
-                    # print(nfile)
                     afegirQlr(nfile)
-                # QgsLayerDefinition().loadLayerDefinition(nfile, self.project, self.root)
                 elif extensio.lower() == '.csv':
                     carregarLayerCSV(nfile)
 
@@ -3057,17 +2603,13 @@ class QVista(QMainWindow, Ui_MainWindow):
 
     def recorrerFields(self):
         if self.potsRecorrer:
-            # print (self.calculadora.ui.cbLayers.currentText())
             layer = self.project.instance().mapLayersByName(self.calculadora.ui.cbLayers.currentText())[0]
             
             self.calculadora.ui.lwFields.clear()
             fields = layer.fields()
             for field in fields:
                 if (field.typeName()!='String' and field.typeName()!='Date' and field.typeName()!='Date'):
-                    # print (field.typeName())
                     self.calculadora.ui.lwFields.addItem(field.name())
-                    # fieldNames = [field.name() for field in fields]
-                    # self.lwFields.addItems(fieldNames)
                 else:
                     pass
     
@@ -3089,15 +2631,6 @@ class QVista(QMainWindow, Ui_MainWindow):
             self.recorrerFields()
         except:
             pass
-            # msg = QMessageBox()
-            # msg.setIcon(QMessageBox.Warning)
-            
-            # msg.setText(str(sys.exc_info()[1]))
-            # # msg.setInformativeText("OK para salir del programa \nCANCEL para seguir en el programa")
-            # msg.setWindowTitle("ERROR: qVista >> recorrerLayersFields")
-            # msg.setStandardButtons(QMessageBox.Close)
-            # retval = msg.exec_()
-
 
     def modeDebug(self):
         self.menuFuncions.show()
@@ -3125,8 +2658,6 @@ class QVista(QMainWindow, Ui_MainWindow):
     def provaDeTancar(self):
         QvMemoria().pafuera()
         if self.teCanvisPendents():
-            # msgBox.setStandardButtons(QMessageBox.Save | QMessageBox.Discard | QMessageBox.Cancel)
-            # msgBox.setDefaultButton(QMessageBox.Save)
             ret = self.missatgeDesar()
             if ret == QMessageBox.AcceptRole:
                 b = guardarProjecte()
@@ -3147,12 +2678,10 @@ class QVista(QMainWindow, Ui_MainWindow):
     def actualitzaMapesRecents(self,ultim=None):
         self.mapesRecents=QvMemoria().getMapesRecents()
         #Desem els mapes recents, eliminant repeticions i salts de línia que poden portar problemes
-        
         self.mapesRecents=[x.replace('\n','') for x in self.mapesRecents]
         self.mapesRecents=sorted(set(self.mapesRecents),key=lambda x: self.mapesRecents.index(x))[:9]
         QvMemoria().setMapesRecents(self.mapesRecents)
         #Finalment creem les accions
-        # self.menuRecents=QMenu('Mapes recents',self.menuMapes)
         self.menuRecents.clear()
         self.accionsMapesRecentsDict={QAction(x):x.replace('\n','') for x in self.mapesRecents} #Fem un diccionari on la clau és l'acció i el valor és la ruta del mapa que ha d'obrir l'acció
         for x, y in self.accionsMapesRecentsDict.items():
@@ -3179,8 +2708,8 @@ class QVista(QMainWindow, Ui_MainWindow):
         except Exception as ee:
             print(str(ee))
         try:
-            QvApp().logFi() #fa aixo pero no arriba a tancar la app
-            QCoreApplication.exit(0) #preguntar al Jordi que li sembla
+            QvApp().logFi() 
+            QCoreApplication.exit(0) 
         except Exception as ee:
             msg = QMessageBox()
             msg.setIcon(QMessageBox.Warning)
@@ -3207,8 +2736,6 @@ class QVista(QMainWindow, Ui_MainWindow):
 
     def pavimentacio(self): 
         self.project.read('d:/qVista/Dades/CatalegProjectes/Vialitat/PavimentacioDemo.qgs')       
-        # self.lblTitolProjecte.setFont(QvConstants.FONTTITOLS)
-        # self.lblTitolProjecte.setText(self.project.title())
         self.dwPavim = DockPavim(self)
         self.addDockWidget( Qt.RightDockWidgetArea, self.dwPavim)
         self.dwPavim.show()    
@@ -3217,45 +2744,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.dwMarxes = MarxesCiutat(self)
         self.addDockWidget( Qt.RightDockWidgetArea, self.dwMarxes)
         self.dwMarxes.show()    
-    # def mousePressEvent(self, event):
-    #     super().mouseMoveEvent(event)
-    #     if event.button()==Qt.LeftButton:
-    #         self.oldPos = event.globalPos()
-
-    # def mouseMoveEvent(self, event):
-    #     super().mouseMoveEvent(event)
-    #     if event.buttons() & Qt.LeftButton:
-    #         if self.maximitzada:
-    #             self.restaurarFunc()
-    #             #Desmaximitzar
-    #         delta = QPoint(event.globalPos() - self.oldPos)
-    #         # print(delta)
-    #         self.move(self.x() + delta.x(), self.y() + delta.y())
-    #         self.oldPos = event.globalPos()
-    # def mouseDoubleClickEvent(self,event):
-    #     super().mouseDoubleClickEvent(event)
-    #     if event.button()==Qt.LeftButton:
-    #         self.restaurarFunc()
-    # def enterEvent(self,event):
-    #     super().enterEvent(event)
-    #     qApp.setCursor(QCursor(Qt.ArrowCursor))
         
-# def bicing(self):
-#         self.bicing=Bicis(self)
-#         self.bicing.show()
-
-# Altres clases -------------------------------------------------------------------
-
-
-# class EstilPropi(QProxyStyle):
-#     def pixelMetric(self, QStyle_PixelMetric, option=None, widget=None):
-
-#         if QStyle_PixelMetric == QStyle.PM_SmallIconSize:
-#             return 120
-#         else:
-#             return QProxyStyle.pixelMetric(self, QStyle_PixelMetric, option, widget)
-
-# funcions globals QVista --------------------------------------------------------
 def mesuraDistancies():
     layer=qV.llegenda.currentLayer()
     qV.markers.hide()
@@ -3324,15 +2813,11 @@ def disgregarDirele():
     """
 
     """
-
-
     if os.path.isdir(__path_disgregados):
         shutil.rmtree(__path_disgregados)
         # os.rmdir(__path_disgregados)
     
     createFolder(__path_disgregados)
-
-
 
     if __numerosCSV:
         f_read = open(__numerosCSV, 'r')
@@ -3362,10 +2847,6 @@ def disgregarDirele():
                     codi_carrer_old= codi_carrer
                 count += 1
             f_write.close()
-
-
-
-
     pass
 
 def nivellCsv(fitxer: str,delimitador: str,campX: str,campY: str, projeccio: int = 23031, nomCapa: str = 'Capa sense nom', color = 'red', symbol = 'circle'):
@@ -3381,20 +2862,6 @@ def nivellCsv(fitxer: str,delimitador: str,campX: str,campY: str, projeccio: int
         qV.setDirtyBit(True)
     else: print ("no s'ha pogut afegir la nova layer")
 
-    #symbol = QgsMarkerSymbol.createSimple({'name': 'square', 'color': 'red'})
-    #layer.renderer().setSymbol(symbol)
-    #https://docs.qgis.org/testing/en/docs/pyqgis_developer_cookbook/vector.html#modify-features
-
-# def carregaCSVWizard(fitxer: str,delimitador: str,campX: str,campY: str, projeccio: int = 23031, nomCapa: str = 'Capa sense nom', color, symbol):
-#     uri = "file:///"+fitxer+"?type=csv&delimiter=%s&xField=%s&yField=%s" % (delimitador,campX,campY)
-#     layer = QgsVectorLayer(uri, nomCapa, 'delimitedtext')
-#     layer.setCrs(QgsCoordinateReferenceSystem(projeccio, QgsCoordinateReferenceSystem.EpsgCrsId))
-#     if layer is not None:
-#         symbol = QgsMarkerSymbol.createSimple({'name': symbol, 'color': color})
-#         layer.renderer().setSymbol(symbol)
-#         qV.project.addMapLayer(layer)
-#         print("add layer")
-
 def seleccioCercle():
     seleccioClick()
     layer=qV.llegenda.currentLayer()  
@@ -3402,11 +2869,9 @@ def seleccioCercle():
         qV.canvas.scene().removeItem(qV.toolSelect.rubberband)
     except:
         pass
-    # qV.toolSelect = QvSeleccioCercle(qV, 10, 10, 30)
     try:
         qV.toolSelect = QvMascaraEinaCercle(qV, qV.canvas, **qV.wSeleccioGrafica.getParametres())
         qV.wSeleccioGrafica.setTool(qV.toolSelect)
-        # qV.toolSelect.setOverlap(qV.checkOverlap.checkState())
         qV.canvas.setMapTool(qV.toolSelect)
     except:
         pass
@@ -3425,12 +2890,6 @@ def seleccioClicks():
         qV.canvas.setMapTool(tool)
     except:
         pass
-    # taulaAtributsSeleccionats()
-
-# def plotMapa():
-#     mapRenderer = qV.canvas.mapRenderer()
-#     c = QgsComposition(mapRenderer)
-#     c.setPlotStyle(QgsComposition.print())
 
 def seleccioExpressio():
     command=qV.leSeleccioExpressio.text().lower()
@@ -3447,7 +2906,6 @@ def seleccioExpressio():
         msg.setIcon(QMessageBox.Warning)
         
         msg.setText('20190621 12:12  con gpkd-shm y gpkg-wal')
-        # msg.setInformativeText("OK para salir del programa \nCANCEL para seguir en el programa")
         msg.setWindowTitle("qVista version")
         msg.setStandardButtons(QMessageBox.Close)
         retval = msg.exec_()
@@ -3535,7 +2993,7 @@ def guardarProjecte():
         qV.obrirProjecte(qV.pathProjecteActual)
     return b
         
-#Anomena i desa (AKA Guardar como)
+#Anomena i desa (Guardar como)
 def guardarDialegProjecte():
     #variable definida al configuracioQvista
     pathDesarPerDefecte=QvMemoria().getDirectoriDesar()
