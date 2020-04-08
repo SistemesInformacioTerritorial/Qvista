@@ -229,7 +229,7 @@ class CsvPagina(QWidget):
     def _mapifica(self):
         fMap = QvFormNovaMapificacio(
             self._carregador._llegenda, mapificacio=self._carregador._mapificador)
-        if fMap.exec()==QDialog.Accepted:
+        if fMap.exec()==QDialog.Accepted and fMap.msg=='':
             self._carregador.close()
 
 class CsvTab(QTabWidget):

@@ -38,7 +38,7 @@ dadesdir=os.path.join(QvTempdir,'dades/')+'/' #Arxius temporals que volem conser
 configdir=os.path.join(QvTempdir+'config/')+'/' #Configuracions i coses
 
 docdir='n:/siteb/apl/pyqgis/qvista/dades/'
-imatgesDir = os.path.abspath('Imatges/')+'/'
+imatgesDir = os.path.abspath('Imatges/')
 docdirPlantilles=os.path.join(docdir,'plantilles/')
 
 arxiuAvis=os.path.join(docdir,'Avisos.htm')

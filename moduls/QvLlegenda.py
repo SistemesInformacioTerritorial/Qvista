@@ -85,12 +85,12 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
         self.setMenuProvider(QvMenuLlegenda(self))
 
         self.iconaFiltre = qgGui.QgsLayerTreeViewIndicator()
-        self.iconaFiltre.setIcon(qtGui.QIcon(imatgesDir+'filter.png'))
+        self.iconaFiltre.setIcon(qtGui.QIcon(os.path.join(imatgesDir,'filter.png')))
         self.iconaFiltre.setToolTip('Filtre actiu')
         self.iconaFiltre.clicked.connect(self.filterElements)
 
         self.iconaMap = qgGui.QgsLayerTreeViewIndicator()
-        self.iconaMap.setIcon(qtGui.QIcon(imatgesDir+'categories2.png'))
+        self.iconaMap.setIcon(qtGui.QIcon(os.path.join(imatgesDir,'categories2.png')))
         self.iconaMap.setToolTip('Categories de mapificació')
         self.iconaMap.clicked.connect(self.mapRenderer.modifyRenderer)
 

@@ -35,6 +35,7 @@ class QvCanvas(QgsMapCanvas):
 
         self._preparacioBotonsCanvas()
         self.eines=[]
+        self.einesBotons={}
         if self.llistaBotons is not None:
             self.panCanvas()
             self.panCanvas()
@@ -56,7 +57,8 @@ class QvCanvas(QgsMapCanvas):
             self.canviMaximitza.emit()
     def uncheckBotons(self,aExcepcio):
         for x in self._botons:
-            if x is not aExcepcio: x.setChecked(False)
+            if x is not aExcepcio: 
+                x.setChecked(False)
     def panCanvas(self):        # MANO
         # bucle para quitar todos los cursores guardados. quiero que use el que ofrece MapTool
         # while self.pare.app.overrideCursor() != None:
@@ -68,6 +70,7 @@ class QvCanvas(QgsMapCanvas):
            
             self.tool_pan = QgsMapToolPan(self)
             self.setMapTool(self.tool_pan)
+            self.einesBotons[self.tool_pan]=self.bPanning
 
 
         else: 
@@ -88,7 +91,9 @@ class QvCanvas(QgsMapCanvas):
             self.uncheckBotons(self.bZoomIn)
            
             self.tool_zoomin = QgsMapToolZoom(self, False)
+            self.tool_zoomin.setCursor(QvConstants.cursorZoomIn())
             self.setMapTool(self.tool_zoomin)
+            self.einesBotons[self.tool_zoomin]=self.bZoomIn
         else: 
             self.bZoomIn.setChecked(True)
         self.setCursor(QvConstants.cursorZoomIn())
@@ -98,7 +103,9 @@ class QvCanvas(QgsMapCanvas):
             self.uncheckBotons(self.bZoomOut)
            
             self.tool_zoomout = QgsMapToolZoom(self, True)
+            self.tool_zoomout.setCursor(QvConstants.cursorZoomOut())
             self.setMapTool(self.tool_zoomout)
+            self.einesBotons[self.tool_zoomout]=self.bZoomOut
         else: 
             self.bZoomOut.setChecked(True)
 
@@ -117,7 +124,9 @@ class QvCanvas(QgsMapCanvas):
 
             try:
                 self.tool = QvSeleccioElement(self, llegenda = self.llegenda)
+                self.tool.setCursor(QvConstants.cursorDit())
                 self.setMapTool(self.tool)
+                self.einesBotons[self.tool]=self.bApuntar
             except:
                 pass
         else:
@@ -356,6 +365,11 @@ class QvCanvas(QgsMapCanvas):
         super().setMapTool(tool)
         if len(self.eines)>0 and self.eines[-1]==tool: return
         self.eines.append(tool)
+        if tool in self.einesBotons:
+            self.einesBotons[tool].setChecked(True)
+            self.uncheckBotons(self.einesBotons[tool])
+        else:
+            self.uncheckBotons(None)
     def unsetMapTool(self,eina, ultima=False):
         super().unsetMapTool(eina)
         if isinstance(eina,QvMascaraEinaPlantilla):
@@ -369,10 +383,15 @@ class QvCanvas(QgsMapCanvas):
             if self.eines[-1] is None or self.eines[-1]==eina:
                 self.unsetLastMapTool()
                 return
+            # self.uncheckBotons(None)
+            if self.eines[-1] in self.einesBotons:
+                self.uncheckBotons(self.einesBotons[self.eines[-1]])
+                self.einesBotons[self.eines[-1]].setChecked(True)
             super().setMapTool(self.eines[-1])
     def unsetLastMapTool(self):
-        eina=self.eines.pop()
-        self.unsetMapTool(eina,True)
+        if len(self.eines)>1:
+            eina=self.eines.pop()
+            self.unsetMapTool(eina,True)
 
     def mousePressEvent(self,event):
         super().mousePressEvent(event)

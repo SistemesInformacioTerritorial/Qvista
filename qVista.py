@@ -1449,12 +1449,12 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.actEntorns.triggered.connect(self.preparacioEntorns)
     
         self.actDashStandard = QAction("Restaurar", self)
-        self.actDashStandard.setIcon(QIcon(imatgesDir+'auto-fix.png'))
+        self.actDashStandard.setIcon(QIcon(os.path.join(imatgesDir,'auto-fix.png')))
         self.actDashStandard.setStatusTip("Restaurar")
         self.actDashStandard.triggered.connect(self.dashStandard)
 
         self.actAdreces = QAction("Cercar per adreça", self)
-        self.actAdreces.setIcon(QIcon(imatgesDir+'map-search.png'))
+        self.actAdreces.setIcon(QIcon(os.path.join(imatgesDir,'map-search.png')))
         self.actAdreces.setStatusTip("Adreces")
         self.actAdreces.triggered.connect(self.adreces)
 
@@ -1842,8 +1842,8 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.lytBotonsFinestra.addWidget(self.botoMinimitzar)
 
         self.maximitzada=True
-        self.iconaRestaurar1=QIcon(imatgesDir+'window-restore.png')
-        self.iconaRestaurar2=QIcon(imatgesDir+'window-maximize.png')
+        self.iconaRestaurar1=QIcon(os.path.join(imatgesDir,'window-restore.png'))
+        self.iconaRestaurar2=QIcon(os.path.join(imatgesDir,'window-maximize.png'))
 
         self.botoRestaurar=QvPushButton(flat=True)
         self.botoRestaurar.setIcon(self.iconaRestaurar1)
@@ -3557,7 +3557,7 @@ def migraConfigs():
         if os.path.isfile(aMoure):
             os.replace(aMoure,os.path.join(configdir,x))
 def qvSplashScreen(imatge):
-    splash_pix = QPixmap(imatgesDir+'SplashScreen_qVista.png')
+    splash_pix = QPixmap(os.path.join(imatgesDir,'SplashScreen_qVista.png'))
     splash = QSplashScreen(splash_pix, Qt.WindowStaysOnTopHint)
     splash.setWindowFlags(Qt.WindowStaysOnTopHint | Qt.FramelessWindowHint)
     splash.setEnabled(True)
@@ -3577,10 +3577,10 @@ def main(argv):
         qVapp = QvApp()
 
         # Splash image al començar el programa. La tancarem amb splash.finish(qV)
-        splash = qvSplashScreen(imatgesDir+'SplashScreen_qVista.png')
+        splash = qvSplashScreen(os.path.join(imatgesDir,'SplashScreen_qVista.png'))
       
         # Logo de la finestra
-        app.setWindowIcon(QIcon(imatgesDir+'QVistaLogo_256.png'))
+        app.setWindowIcon(QIcon(os.path.join(imatgesDir,'QVistaLogo_256.png')))
         
         #Esborrem els temporals de la sessió anterior
         esborraCarpetaTemporal()
