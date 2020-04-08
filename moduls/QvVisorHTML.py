@@ -37,7 +37,7 @@ class QvVisorHTML(QDialog):
         # Text de la notícia
         self.file=file
         self.caixaText=QWebView()
-        self.caixaText.setZoomFactor(QvApp().zoomFactor())
+        self.setZoomFactor(QvApp().zoomFactor())
         self.caixaText.load(QUrl("file:///%s"%file))
         self.layoutCaixaText=QVBoxLayout()
         self.layoutCaixaText.addWidget(self.caixaText)
@@ -54,9 +54,9 @@ class QvVisorHTML(QDialog):
 
         self.shortcutEasterEgg=QtWidgets.QShortcut(QKeySequence('Ctrl+E'),self)
         self.shortcutEasterEgg.activated.connect(self.easterEgg)
-        self.formata()
+        self.formata(titol)
 
-    def formata(self):
+    def formata(self, titol):
         '''Dóna format al diàleg de notícies'''
         pal=self.caixaText.palette()
         pal.setBrush(QPalette.Base,Qt.transparent)
@@ -80,9 +80,12 @@ class QvVisorHTML(QDialog):
         self.layoutCaixaText.setContentsMargins(10,10,2,10)
         self.widgetSup.setGraphicsEffect(QvConstants.ombraHeader(self.widgetSup))
 
-        self.setWindowTitle("qVista - Noticies")
+        self.setWindowTitle("titol")
         self.resize(640, 480)
         self.oldPos = self.pos()
+
+    def setZoomFactor(self,factor):
+        self.caixaText.setZoomFactor(factor)
 
     def mousePressEvent(self, event):
         self.oldPos = event.globalPos()

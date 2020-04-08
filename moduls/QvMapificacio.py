@@ -35,6 +35,7 @@ from moduls.QvMapVars import *
 from configuracioQvista import *
 
 from typing import List
+from moduls.QvPlotly import QvPlot
 
 _TRANS_ALL = str.maketrans("ÁÉÍÓÚáéíóúÀÈÌÒÙàèìòùÂÊÎÔÛâêîôûÄËÏÖÜäëïöüºª€$çÇñÑ ·.,;:()[]¡!¿?|%&*/\\\'\"@#",
                            "AEIOUaeiouAEIOUaeiouAEIOUaeiouAEIOUaeiouoaEDcCnN______________________aN")
@@ -45,6 +46,11 @@ _TRANS_MINI = str.maketrans(" \'\"",
 RUTA_LOCAL = dadesdir
 RUTA_DADES = os.path.abspath('Dades').replace('\\', '/') + '/'
 CAMP_QVISTA = 'QVISTA_'
+
+def creaPlot(out, fRes):
+    pl = QvPlot.barres(out['RESULTAT'],out['DESCRIPCIO'],arxiu=fRes,horitzontal=True)
+    pl.write()
+    
 
 class QvMapificacio(QObject):
     """Clase que, a partir de un CSV con campos de dirección postal es capaz de:
@@ -670,10 +676,15 @@ class QvMapificacio(QObject):
                     else:
                         if not self.form.msgContinuarProces(msg):
                             return False
+            
 
             # Guardar capa de mapa como Geopackage
             self.fSQL = self.nomArxiuSortida(nomCapa)
             out.to_file(self.fSQL, driver="GPKG", layer=nomCapa)
+            # gràfic
+            # Aquí caldria comprovar si la regió utilitzada és un districte o un barri
+            if 'DESCRIPCIO' in out:
+                creaPlot(out,self.fSQL)
             return True
         except Exception as err:
             self.msgError = "Error al calcular l'agregació de dades.\n\n" + str(err)
