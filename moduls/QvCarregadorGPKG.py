@@ -1,4 +1,4 @@
-from qgis.PyQt.QtWidgets import QDialog, QWidget, QVBoxLayout, QHBoxLayout, QCheckBox, QPushButton, QLabel
+from qgis.PyQt.QtWidgets import QDialog, QWidget, QVBoxLayout, QHBoxLayout, QCheckBox, QPushButton, QLabel, QFrame
 from qgis.PyQt.QtCore import Qt
 from qgis.core import QgsVectorLayer
 
@@ -13,7 +13,7 @@ class QvCarregadorGPKG(QDialog):
         fr=QFrame()
         self._layout = QVBoxLayout()
         fr.setLayout(self._layout)
-        self._layoutGran.addLayout(fr)
+        self._layoutGran.addWidget(fr)
         bAcceptar = QPushButton('Acceptar')
         bAcceptar.clicked.connect(self.accept)
         bCancelar = QPushButton('Cancelar')
