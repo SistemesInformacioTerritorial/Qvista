@@ -48,6 +48,7 @@ from moduls.QvCatalegCapes import QvCatalegCapes
 from moduls.QvSabiesQue import QvSabiesQue
 from moduls.QvMemoria import QvMemoria
 from moduls.QvBafarada import QvBafarada
+from moduls.QvCarregadorGPKG import QvCarregadorGPKG
 # import re
 import csv
 import os        
@@ -279,11 +280,31 @@ class QVista(QMainWindow, Ui_MainWindow):
                 # self.obrirProjecte(nfile)
             elif fext == '.qlr':
                 afegirQlr(nfile)
-            elif fext in ('.shp', '.gpkg'):
+            elif fext == '.shp':
                 layer = QgsVectorLayer(nfile, os.path.basename(nfile), "ogr")
                 if layer.isValid():
                     self.project.addMapLayer(layer)
                     self.setDirtyBit()
+            elif fext == '.gpkg':
+                capes = QvCarregadorGPKG.triaCapes(nfile, self)
+                for nom in capes:
+                    uri = "%s|layername=%s" % (nfile, nom,)
+                    # Create layer
+                    sub_vlayer = QgsVectorLayer(uri, nom, 'ogr')
+                    # Add layer to map
+                    self.project.addMapLayer(sub_vlayer)
+                    self.setDirtyBit()
+
+                # layer = QgsVectorLayer(nfile, os.path.basename(nfile), "ogr")
+                # subLayers = layer.dataProvider().subLayers()
+                # for subLayer in subLayers:
+                #     name = subLayer.split('!!::!!')[1]
+                #     uri = "%s|layername=%s" % (nfile, name,)
+                #     # Create layer
+                #     sub_vlayer = QgsVectorLayer(uri, name, 'ogr')
+                #     # Add layer to map
+                #     self.project.addMapLayer(sub_vlayer)
+                # self.setDirtyBit()
             elif fext == '.csv':
                 carregarLayerCSV(nfile)
 
