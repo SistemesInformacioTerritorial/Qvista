@@ -1,4 +1,4 @@
-from qgis.PyQt.QtWidgets import QDialog, QWidget, QVBoxLayout, QHBoxLayout, QCheckBox, QPushButton, QLabel, QFrame
+from qgis.PyQt.QtWidgets import QDialog, QWidget, QVBoxLayout, QHBoxLayout, QCheckBox, QPushButton, QLabel, QFrame, QScrollArea
 from qgis.PyQt.QtCore import Qt
 from qgis.core import QgsVectorLayer
 
@@ -10,7 +10,8 @@ class QvCarregadorGPKG(QDialog):
         self._layoutGran = QVBoxLayout()
         lblExplicacio=QLabel('Trieu quines capes voleu carregar sobre el mapa')
         self._layoutGran.addWidget(lblExplicacio)
-        fr=QFrame()
+        fr=QScrollArea()
+        # fr.setFrameShape(QFrame.Box)
         self._layout = QVBoxLayout()
         fr.setLayout(self._layout)
         self._layoutGran.addWidget(fr)
@@ -19,6 +20,7 @@ class QvCarregadorGPKG(QDialog):
         bCancelar = QPushButton('Cancelar')
         bCancelar.clicked.connect(self.reject)
         layBotons = QHBoxLayout()
+        layBotons.addStretch()
         layBotons.addWidget(bAcceptar)
         layBotons.addWidget(bCancelar)
         self._layoutGran.addLayout(layBotons)
