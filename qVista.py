@@ -48,6 +48,7 @@ from moduls.QvCatalegCapes import QvCatalegCapes
 from moduls.QvSabiesQue import QvSabiesQue
 from moduls.QvMemoria import QvMemoria
 from moduls.QvBafarada import QvBafarada
+from moduls.QvVisualitzacioCapa import QvVisualitzacioCapa
 # import re
 import csv
 import os        

@@ -40,7 +40,7 @@ from cubista3 import Ui_MainWindow
 
 
 # Widget de propietats del layer. Designer.
-from moduls.QvVisualitzacioCapa import QvVisualitzacioCapa
+# from moduls.QvVisualitzacioCapa import QvVisualitzacioCapa
 
 # from calculadora import Ui_Calculadora
 
