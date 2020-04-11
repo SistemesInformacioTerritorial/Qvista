@@ -444,6 +444,6 @@ if __name__ == "__main__":
 
         qvMapeta = QvMapeta(canvas, tamanyPetit = False, pare=canvas)
         qvMapeta.move(0,0)
-        qvMapeta.setBotoMinimitzar(True)
+        # qvMapeta.setBotoMinimitzar(True)
         qvMapeta.show()
         print ('resto: ',time.time()-start1)
