@@ -18,7 +18,8 @@ from moduls.QvEinesGrafiques import QvMesuraMultiLinia, QvSeleccioGrafica, carre
 from moduls.QvStreetView import QvStreetView
 from moduls.QvLlegenda import QvLlegenda
 from moduls.QvAtributs import QvAtributs
-from moduls.QvMapeta import QvMapeta
+# from moduls.QvMapeta import QvMapeta
+from moduls.QvMapetaBrujulado import QvMapetaBrujulado
 from moduls.QVCercadorAdreca import QCercadorAdreca
 from moduls.QVDistrictesBarris import QVDistrictesBarris
 # from moduls.QvCatalegPetit import QvCataleg
@@ -872,7 +873,8 @@ class QVista(QMainWindow, Ui_MainWindow):
         # self.wMapeta = QtWidgets.QWidget()
         # self.wMapeta.setGeometry(0,0,267,284)
         # self.wMapeta.show()
-        self.mapeta = QvMapeta(self.canvas, tamanyPetit=True, pare=self)
+        # self.mapeta = QvMapeta(self.canvas, tamanyPetit=True, pare=self)
+        self.mapeta  = QvMapetaBrujulado("mapesOffline/default.png", self.canvas,  pare=self.canvas)
         self.mapeta.setGraphicsEffect(QvConstants.ombra(self,radius=30,color=QvConstants.COLOROMBRA))
         self.bOrientacio.clicked.connect(self.editarOrientacio)
         self.mapeta.setParent(self.canvas)
@@ -1545,7 +1547,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.botoMapeta.setIcon(QIcon(os.path.join(imatgesDir,'Mapeta.png')))
         self.botoMapeta.setStyleSheet(stylesheetBotons)
         self.botoMapeta.setIconSize(QSize(24,24))
-        self.botoMapeta.clicked.connect(self.mapeta.ferPetit)
+        # self.botoMapeta.clicked.connect(self.mapeta.ferPetit)
         self.botoMapeta.setCursor(QvConstants.cursorClick())
 
         self.botoMetadades.setIcon(QIcon(os.path.join(imatgesDir,'information-variant.png')))
