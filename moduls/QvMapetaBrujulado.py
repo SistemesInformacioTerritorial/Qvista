@@ -48,18 +48,9 @@ class QvMapetaBrujulado(QFrame):
         self.setWindowTitle('MapetaBrujulado')
         
 
-        # dimensionar compass a ancho+margen
-        # self.qvCompass = Compass(self.qvMapeta) 
-        # self.qvCompass = QvCompass(self.canvas,  pare=self.qvMapeta)
         self.qvCompass = QvCompass(self.canvas,self)
         self.qvCompass.setGeometry(0, 0, ancho_mapetaBrujulado, ancho_mapetaBrujulado)
         self.qvCompass.show()
-
-
-        # dimensionar mapeta a ancho
-        # self.qvMapeta = Mapeta(self)   
-        # self.qvMapeta.setGeometry(0, 0, ancho_mapeta, ancho_mapeta)
-        # self.qvMapeta.show()
 
         self.qvMapeta = QvMapeta(self.canvas, ficheroMapeta, pare=self.qvCompass)
         self.qvMapeta.show()           
@@ -86,6 +77,10 @@ class QvMapetaBrujulado(QFrame):
         # if the signal has the data as argument:
         # self.qvMapeta.dadoPNT.connect(self.qvCompass.gestionoPnt)
     
+            
+
+
+
     def PngPgwDroped_MB(self,ficheroMapeta):
         '''
         Recibe un fichero soltado y lo manda a funcion para calcular el
@@ -189,6 +184,22 @@ class QvMapetaBrujulado(QFrame):
             self.qvCompass.gestionoPnt(self.qvMapeta.the_data)
         except :
             pass
+
+    def contextMenuEvent(self, event):
+        contextMenu = QMenu(self)
+        norteAct = contextMenu.addAction("Orientació Nort (0º)")
+        martoAct = contextMenu.addAction("Orientació 'Martorell' (44.5º)")
+        
+
+        action = contextMenu.exec_(self.mapToGlobal(event.pos()))
+        if action == martoAct:
+            self.canvas.setRotation(44.5)
+            self.canvas.refresh()
+        elif action == norteAct:
+            self.canvas.setRotation(0)
+            self.canvas.refresh()
+
+
         
 
 

@@ -354,7 +354,9 @@ class QvCrearMapetaConBotones(QWidget):
     
     
     def showDialogColor(self):
-        col = QColorDialog.getColor()
+        d_color= QColorDialog()
+        
+        col = d_color.getColor()
         if col.isValid():
             self.color=col
     def Salvar(self):

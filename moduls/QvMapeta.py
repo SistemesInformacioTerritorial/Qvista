@@ -1059,6 +1059,9 @@ class QvMapeta(QFrame):
         Presion de un boton del raton cuando el cursor está sobre el mapeta\n
         Guarda coordenadas de punto del mapeta
         """
+        if event.button()==Qt.RightButton:
+            return
+
         self.begin = event.pos()
         self.the_data =event.pos()
         radio= self.width()/2;    centroMapeta= QPoint(radio,radio)
@@ -1105,7 +1108,8 @@ class QvMapeta(QFrame):
         este mapeta con el mapeta no girado.\n 
         Para ello habra que girarlas 44.5 grados y restarles el desplazamiento
         """
-
+        if event.button()==Qt.RightButton:
+            return
         if self.controlaCompass == True:
             self.controlaCompass = False
             return
