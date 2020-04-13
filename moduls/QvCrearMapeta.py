@@ -22,111 +22,6 @@ projecteInicial=r'mapesOffline/corbera.qgs'
 projecteInicial='mapesOffline/qVista default map.qgs'
 
 
-    # def clickable(widget):
-    #     '''
-    #     Gestiona 
-    #     '''
-    #     class Filter(QObject):
-    #         """ Clase para filtrar
-    #         Recibe un QObject """
-        
-    #         clicked = pyqtSignal()
-    #         # def __init__(self,app):
-    #         #     super().__init__()
-
-    #         def eventFilter(self, obj, event):
-    #             if obj == widget:
-    #                 evento= event.type()
-    #                 if "Busco a apartir del eventon su constante":
-    #                     if evento== 2:
-    #                         print(evento,"QEvent.MouseButtonPress")
-    #                     elif evento==3:
-    #                         print(evento,"QEvent.MouseButtonRelease")
-    #                     elif evento==5:
-    #                         # print(evento,"QEvent.MouseMove") 
-    #                         pass    
-    #                     elif evento==6:
-    #                         print(evento,"QEvent.KeyPress")   
-    #                     elif evento==8:
-    #                         print(evento,"QEvent.FocusIn")                        
-    #                     elif evento==9:
-    #                         print(evento,"QEvent.FocusOut")                        
-    #                     elif evento==10:
-    #                         # print(evento,"QEvent.Enter" ) 
-    #                         pass     
-    #                     elif evento==11:
-    #                         # print(evento,"QEvent.Leave")
-    #                         pass
-    #                     elif evento==12:
-    #                         pass
-    #                         # print(evento,"QEvent.Paint")
-    #                     elif evento==13:
-    #                         print(evento,"QEvent.Move")
-    #                     elif evento==14:
-    #                         print(evento,"QEvent.Resize")
-    #                     elif evento==17:
-    #                         print(evento,"QEvent.Show")
-    #                     elif evento==18:
-    #                         print(evento,"QEvent.Hide")
-    #                     elif evento==21:
-    #                         print(evento,"QEvent.ParentChange")
-    #                     elif evento==23:
-    #                         print(evento,"QEvent.FocusAboutToChange")                        
-    #                     elif evento==24:
-    #                         # print(evento,"QEvent.WindowActivate")
-    #                         pass
-    #                     elif evento==25:
-    #                         # print(evento,"QEvent.WindowDeactivate")
-    #                         pass
-    #                     elif evento==26:
-    #                         print(evento,"QEvent.ShowToParent")
-    #                     elif evento==43:
-    #                         print(evento,"QEvent.MetaCall")
-    #                     elif evento==51:
-    #                         print(evento,"QEvent.ShortcutOverride")
-    #                     elif evento==68:
-    #                         print(evento,"QEvent.ChildAdded")
-    #                     elif evento==71:
-    #                         print(evento,"QEvent.ChildRemoved")
-    #                     elif evento==74:
-    #                         print(evento,"QEvent.PolishRequest")
-    #                     elif evento==75:
-    #                         print(evento,"QEvent.Polish")
-    #                     elif evento==78:
-    #                         print(evento,"QEvent.UpdateLater")
-    #                     elif evento==110:
-    #                         # print(evento,"QEvent.ToolTip")
-    #                         pass
-    #                     elif evento==183:
-    #                         print(evento,"QEvent.CursorChange")
-    #                     elif evento==207:
-    #                         print(evento,"QEvent.InputMethodQuery")
-    #                     #     print(evento,"QEvent.DynamicPropertiChange")                        
-    #                     else:
-    #                         print(evento,"???????")
-    
-    #                 """Eventos propios del mouse """
-    #                 # if event.type() == QEvent.Move:
-    #                 if event.type() == QEvent.MouseButtonPress:
-    #                 # if event.type() == QEvent.MouseButtonDblClick:
-    #                 # if event.type() == QEvent.MouseButtonRelease:
-                        
-    #                     if obj.rect().contains(event.pos()):   # si las coordenadas del mouse estan dentro del objeto
-    #                         self.clicked.emit()
-    #                         # The developer can opt for .emit(obj) to get the object within the slot.
-    #                         return True
-
-    #             return False   # Tanto si no es obj como si no esta dentro...
-
-    #     # Creamos un filtro pasandole el objeto
-    #     filter = Filter(widget)
-
-    #     # Al objeto le instalamos el filtro
-    #     widget.installEventFilter(filter)
-    #     return filter.clicked
-
-
-
 class QvColocacionCirculo(QgsMapTool):
     """ Dibuixa un cercle i selecciona els elements."""
     def __init__(self, canvas,   numeroSegmentsCercle, parent,lado):
@@ -137,7 +32,7 @@ class QvColocacionCirculo(QgsMapTool):
         self.lado= lado
         
         QgsMapTool.__init__(self, self.canvas)
-        self.clickable(self.canvas).connect(self.showText1)
+
         # clickable(self).connect(self.showText1)
         self.status = 0
         self.numeroSegmentsCercle = numeroSegmentsCercle
@@ -148,113 +43,6 @@ class QvColocacionCirculo(QgsMapTool):
         self.rubberband.setIconSize(10)
         # self.overlap = False
         # self.radio  =0
-
-    def clickable(self,widget):
-        '''
-        Gestiona 
-        '''
-        class Filter(QObject):
-            """ Clase para filtrar
-            Recibe un QObject """
-        
-            clicked = pyqtSignal()
-            # def __init__(self,app):
-            #     super().__init__()
-
-            def eventFilter(self, obj, event):
-                if obj == widget:
-                    evento= event.type()
-                    if "Busco a apartir del eventon su constante":
-                        if evento== 2:
-                            print(evento,"QEvent.MouseButtonPress")
-                        elif evento==3:
-                            print(evento,"QEvent.MouseButtonRelease")
-                        elif evento==5:
-                            # print(evento,"QEvent.MouseMove") 
-                            pass    
-                        elif evento==6:
-                            print(evento,"QEvent.KeyPress")   
-                        elif evento==8:
-                            print(evento,"QEvent.FocusIn")                        
-                        elif evento==9:
-                            print(evento,"QEvent.FocusOut")  
-                            # self.parent().saveAsImage("mapesOffline/temporal9.png")                      
-                        elif evento==10:
-                            # print(evento,"QEvent.Enter" ) 
-                            pass     
-                        elif evento==11:
-                            # print(evento,"QEvent.Leave")
-                            pass
-                        elif evento==12:
-                            pass
-                            # print(evento,"QEvent.Paint")
-                        elif evento==13:
-                            print(evento,"QEvent.Move")
-                        elif evento==14:
-                            print(evento,"QEvent.Resize")
-                        elif evento==17:
-                            print(evento,"QEvent.Show")
-                        elif evento==18:
-                            print(evento,"QEvent.Hide")
-                        elif evento==21:
-                            print(evento,"QEvent.ParentChange")
-                        elif evento==23:
-                            print(evento,"QEvent.FocusAboutToChange")   
-                            self.parent().saveAsImage("mapesOffline/temporal23.png")                     
-                        elif evento==24:
-                            # print(evento,"QEvent.WindowActivate")
-                            pass
-                        elif evento==25:
-                            # print(evento,"QEvent.WindowDeactivate")
-                            pass
-                        elif evento==26:
-                            print(evento,"QEvent.ShowToParent")
-                        elif evento==43:
-                            print(evento,"QEvent.MetaCall")
-                        elif evento==51:
-                            print(evento,"QEvent.ShortcutOverride")
-                        elif evento==68:
-                            print(evento,"QEvent.ChildAdded")
-                        elif evento==71:
-                            print(evento,"QEvent.ChildRemoved")
-                        elif evento==74:
-                            print(evento,"QEvent.PolishRequest")
-                        elif evento==75:
-                            print(evento,"QEvent.Polish")
-                        elif evento==78:
-                            print(evento,"QEvent.UpdateLater")
-                        elif evento==110:
-                            # print(evento,"QEvent.ToolTip")
-                            pass
-                        elif evento==183:
-                            print(evento,"QEvent.CursorChange")
-                        elif evento==207:
-                            print(evento,"QEvent.InputMethodQuery")
-                        #     print(evento,"QEvent.DynamicPropertiChange")                        
-                        else:
-                            print(evento,"???????")
-    
-                    """Eventos propios del mouse """
-                    # if event.type() == QEvent.Move:
-                    if event.type() == QEvent.MouseButtonPress:
-                    # if event.type() == QEvent.MouseButtonDblClick:
-                    # if event.type() == QEvent.MouseButtonRelease:
-                        
-                        if obj.rect().contains(event.pos()):   # si las coordenadas del mouse estan dentro del objeto
-                            self.clicked.emit()
-                            # The developer can opt for .emit(obj) to get the object within the slot.
-                            return True
-
-                return False   # Tanto si no es obj como si no esta dentro...
-
-        # Creamos un filtro pasandole el objeto
-        filter = Filter(widget)
-
-        # Al objeto le instalamos el filtro
-        widget.installEventFilter(filter)
-        return filter.clicked
-
-
 
     def canvasPressEvent(self,e):
         '''
@@ -324,48 +112,23 @@ class QvColocacionCirculo(QgsMapTool):
 
         # Se lo paso al canvas para hacer zoom a esa zona
         self.rang = QgsRectangle(xmin, ymin, xmax, ymax)
-        # self.canvas.setExtent(rang)
-        print("extent")
         self.canvas.setExtent(self.rang)
-        print("fin_extent")
 
-        # def posaExtent():
-        #     self.canvas.setExtent(rang)
-        #     try:
-        #         self.canvas.mapCanvasRefreshed.disconnect(posaExtent)
-        #         print("si desconecto")
-        #     except:
-        #         print("no desconecto")
-        
 
-        # posaExtent()
-        # self.canvas.mapCanvasRefreshed.connect(posaExtent)
+
         self.canvas.refresh()
-        QTimer.singleShot(0, self.saveCanvas)
+        self.saveCanvas()
         pass
         
 
         
-        # comprobacion
-        # rect= self.canvas.extent()
-        # self.canvas.setExtent(rect)
-        # self.canvas.refresh()
 
-
-
-        # El canvas a un pixmap....
-        # He modificado la extension del canvas, pero guarda el canvas con la anterior extension!!!
-        # No tengo el beneficio de aproximarme 
     def saveCanvas(self):
-        print("saveAs")
         self.canvas.saveAsImage("mapesOffline/temporal.png") 
-        print("finsaveAs")
         # self.pixmap=self.canvas.grab(QRect(QPoint(0,0),QSize(-1,-1)))
         self.hacer3()
     def saveCanvas1(self):
-        print("saveAs")
         self.canvas.saveAsImage("mapesOffline/temporal.png") 
-        print("finsaveAs")
         # self.pixmap=self.canvas.grab(QRect(QPoint(0,0),QSize(-1,-1)))
         self.hacer4()
     def hacer4(self):      
@@ -423,9 +186,7 @@ class QvColocacionCirculo(QgsMapTool):
 
         # muestro ese pixmap en label...
         self.parent.label.setPixmap(self.scaled_pixmap)
-        # self.parent.label1.setPixmap(cropped_pixmap)
-        # self.parent.label2.setPixmap(self.pixmap)
-        # self.parent.label3.setPixmap(self.scaled_pixmap)        
+    
 
         #  muestro datos de georeferenciacion
         literal= "xmin,ymin=" + str(round(self.Pmin.x(),3)) +"  "+ str(round(self.Pmin.y(),3))
@@ -486,16 +247,11 @@ class QvColocacionCirculo(QgsMapTool):
         # de out_img a pixmap
         self.scaled_pixmap = QPixmap.fromImage(out_img)
 
-        # muestro ese pixmap en label...
-        # self.parent.label.setPixmap(self.scaled_pixmap)
-       
-
         #  muestro datos de georeferenciacion
         literal= "xmin,ymin=" + str(round(self.Pmin.x(),3)) +"  "+ str(round(self.Pmin.y(),3))
         self.parent.xmin_ymin.setText(literal)
         literal= "xmax,ymax=" + str(round(self.Pmax.x(),3)) +"  "+ str(round(self.Pmax.y(),3))
         self.parent.xmax_ymax.setText(literal)
-
  
         try:
             self.reset()
@@ -518,9 +274,7 @@ class QvColocacionCirculo(QgsMapTool):
         '''
         pass
         # self.emit(SIGNAL("deactivated()"))
-    def showText1(self):
-        print ("Canvas clicked")
-        # print ("Label 1 clicked")
+
 
 
 
@@ -547,9 +301,7 @@ class QvCrearMapetaConBotones(QWidget):
         self.botoSalvar =  QvPushButton('Salvar')  
         self.botoSalvar.clicked.connect(self.Salvar)
         self.label = QLabel(self)
-        self.label1 = QLabel(self)
-        self.label2 = QLabel(self)
-        self.label3 = QLabel(self)
+       
 
         self.xmax_ymax = QLabel(" ",self)
         self.xmin_ymin = QLabel(" ",self)
@@ -571,9 +323,7 @@ class QvCrearMapetaConBotones(QWidget):
         self.layGcrearMapeta.addWidget(self.xmin_ymin,3,0,Qt.AlignTop)
         self.layGcrearMapeta.addWidget(self.spinBox,4,0,Qt.AlignTop)
         self.layGcrearMapeta.addWidget(self.label,5,0,Qt.AlignBottom)
-        self.layGcrearMapeta.addWidget(self.label1,6,0,Qt.AlignBottom)
-        self.layGcrearMapeta.addWidget(self.label2,7,0,Qt.AlignBottom)
-        self.layGcrearMapeta.addWidget(self.label3,8,0,Qt.AlignBottom)
+   
     def tamanyoLadoCirculo(self):
         '''
         lado me gusta mas que spinB...value
