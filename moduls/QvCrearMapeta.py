@@ -8,12 +8,13 @@ from qgis.PyQt.QtCore import QUrl
 from qgis.gui import QgsMapCanvas, QgsLayerTreeMapCanvasBridge
 from qgis.gui import QgsMapTool, QgsRubberBand
 from qgis.core.contextmanagers import qgisapp
-from PyQt5.QtCore import QModelIndex, Qt, QRect, QPoint, QTimer, QSize, QObject, pyqtSignal, QEvent
+from PyQt5.QtCore import QModelIndex, Qt, QRect, QPoint, QTimer, QSize, QObject,\
+     pyqtSignal, QEvent, pyqtSlot
 
 from PyQt5.QtWidgets import QApplication, QMessageBox, QMainWindow, QDockWidget, QTreeView,\
     QAction, QVBoxLayout, QGridLayout, QSplitter
 from PyQt5.QtWidgets import  QHBoxLayout ,QAbstractItemView, QLabel, QWidget, QLineEdit,\
-     QPushButton, QSpinBox, QFileDialog, QSpacerItem,QSizePolicy
+     QPushButton, QSpinBox, QFileDialog, QSpacerItem,QSizePolicy, QColorDialog
 from PyQt5.QtGui import QPainter, QColor, QPen, QImage, QBrush
 from moduls.QvPushButton import QvPushButton
 
@@ -175,7 +176,8 @@ class QvColocacionCirculo(QgsMapTool):
         painter = QPainter(out_img)  # Paint the output image
         painter.setBrush(brush)      # Use the image texture brush
         # painter.setPen(Qt.NoPen)     # Don't draw an outline
-        pen= QPen(QColor(121,144,155),  1, Qt.SolidLine)    #qVista claro         
+        # pen= QPen(QColor(121,144,155),  1, Qt.SolidLine)    #qVista claro         
+        pen= QPen(self.parent.color,  1, Qt.SolidLine)    #qVista claro         
         painter.setPen(pen)
         painter.setRenderHint(QPainter.Antialiasing, True)  # Use AA
         painter.drawEllipse(0, 0, image.width(), image.width())  # Actually draw the circle
@@ -291,7 +293,7 @@ class QvCrearMapetaConBotones(QWidget):
         QWidget.__init__(self)
         self.existeCirculo=False        
         #defino botones y las funciones de su click
-        self.botoponerCirculo = QvPushButton("Poner circulo")
+        self.botoponerCirculo = QvPushButton("Posar circle")
         self.botoponerCirculo.clicked.connect(self.ponerCirculo)
         self.botoConfirmar = QvPushButton("Confirmar")
         self.botoConfirmar.clicked.connect(self.confirmar)
@@ -301,8 +303,14 @@ class QvCrearMapetaConBotones(QWidget):
         self.botoSalvar =  QvPushButton('Salvar')  
         self.botoSalvar.clicked.connect(self.Salvar)
         self.label = QLabel(self)
-       
 
+
+        self.botoColor = QvPushButton('Sel·leccionar color')
+        self.botoColor.setToolTip('Color perimetre')
+        self.botoColor.clicked.connect(self.showDialogColor)
+
+       
+        self.color= QColor(121,144,155)
         self.xmax_ymax = QLabel(" ",self)
         self.xmin_ymin = QLabel(" ",self)
 
@@ -322,6 +330,7 @@ class QvCrearMapetaConBotones(QWidget):
         self.layGcrearMapeta.addWidget(self.xmax_ymax,2,0,Qt.AlignTop)
         self.layGcrearMapeta.addWidget(self.xmin_ymin,3,0,Qt.AlignTop)
         self.layGcrearMapeta.addWidget(self.spinBox,4,0,Qt.AlignTop)
+        self.layGcrearMapeta.addWidget(self.botoColor,4,1,Qt.AlignTop)
         self.layGcrearMapeta.addWidget(self.label,5,0,Qt.AlignBottom)
    
     def tamanyoLadoCirculo(self):
@@ -342,6 +351,12 @@ class QvCrearMapetaConBotones(QWidget):
             self.colocoCirculo= QvColocacionCirculo(self.canvas,  numeroSegmentsCercle,self,lado)
             self.existeCirculo=True
             self.canvas.setMapTool(self.colocoCirculo)
+    
+    
+    def showDialogColor(self):
+        col = QColorDialog.getColor()
+        if col.isValid():
+            self.color=col
     def Salvar(self):
         '''
         Escribo PNG y PGW
