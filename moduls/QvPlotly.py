@@ -183,9 +183,9 @@ if __name__ == '__main__':
     from configuracioQvista import *
     from qgis.core.contextmanagers import qgisapp
     pl = QvPlot.pastis([1, 2, 3], [1, 2, 3], titol='Hola')
-    # with qgisapp() as app:
-    #     #opció 1: mostrar dins d'un visor html
-    #     visor = QvChart.visorGrafic(pl)
-    #     visor.show()
+    with qgisapp() as app:
+        #opció 1: mostrar dins d'un visor html
+        visor = QvChart.visorGrafic(pl)
+        visor.show()
     # opció 2: mostrar dins del navegador
-    pl.show()
+    # pl.show()
