@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import plotly.graph_objs as go
+import plotly as py
 
 from pathlib import Path
 import os
@@ -8,7 +9,6 @@ import time
 
 from moduls.QvConstants import QvConstants
 from moduls.QvVisorHTML import QvVisorHTML
-
 
 class QvPlot:
     '''Classe per crear un gràfic de manera senzilla, fent d'embolcall dels
@@ -84,14 +84,14 @@ Aquest mètode permet crear l'arxiu html en una part del codi, i mostrar-lo
         if not hasattr(self, '_fig'):
             # llençar excepció
             pass
-        with open(self.arxiu, 'w') as f:
-            f.write(self._fig.to_html())
+        py.offline.plot(self._fig, filename=str(self.arxiu), auto_open=False)
 
     def show(self):
         if not hasattr(self, '_fig'):
             # llençar excepció
             pass
-        self._fig.show()
+        py.offline.plot(self._fig, filename=str(self.arxiu))
+        # self._fig.show()
 
     @staticmethod
     def getFileName(nom):
@@ -120,7 +120,7 @@ Aquest mètode permet crear l'arxiu html en una part del codi, i mostrar-lo
         )
 
     def _getFiguraAux(self, fig, **kw):
-        return go.Figure(data=fig(**kw), layout=self._lay)
+        return go.Figure(data=(fig(**kw),), layout=self._lay)
 
     def _getFiguraXY(self, fig):
         kw = {'x': self._eixX, 'y': self._eixY}
@@ -182,7 +182,10 @@ Cas 2:
 if __name__ == '__main__':
     from configuracioQvista import *
     from qgis.core.contextmanagers import qgisapp
-    pl = QvPlot.barres([1, 2, 3], [1, 2, 3], titol='Hola')
-    with qgisapp() as app:
-        visor = QvChart.visorGrafic(pl)
-        visor.show()
+    pl = QvPlot.pastis([1, 2, 3], [1, 2, 3], titol='Hola')
+    # with qgisapp() as app:
+    #     #opció 1: mostrar dins d'un visor html
+    #     visor = QvChart.visorGrafic(pl)
+    #     visor.show()
+    # opció 2: mostrar dins del navegador
+    pl.show()
