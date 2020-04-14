@@ -1,8 +1,6 @@
 from moduls.QvVisorHTML import QvVisorHTML
-from PyQt5 import QtCore, QtWidgets
-import tempfile
+from qgis.PyQt import QtWidgets
 import os
-from moduls.QvConstants import QvConstants
 from configuracioQvista import *
 from moduls.QvMemoria import QvMemoria
 

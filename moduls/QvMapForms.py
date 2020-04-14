@@ -1,22 +1,24 @@
 # -*- coding: utf-8 -*-
 
 from qgis.gui import QgsFileWidget
-from qgis.PyQt.QtCore import Qt, QObject, pyqtSignal, pyqtSlot, QSize
-from qgis.PyQt.QtGui import QColor, QValidator, QIcon, QDoubleValidator, QPixmap
-from qgis.PyQt.QtWidgets import (QFileDialog, QWidget, QPushButton, QFormLayout, QVBoxLayout, QHBoxLayout, QSplitter,
-                                 QComboBox, QLabel, QLineEdit, QSpinBox, QGroupBox, QFrame, QGridLayout, QDialog, QSizePolicy,
-                                 QTableWidget, QTableWidgetItem, QMessageBox, QDialogButtonBox, QApplication)
+from qgis.PyQt.QtCore import Qt, pyqtSlot
+from qgis.PyQt.QtGui import QIcon, QPixmap, QValidator
+from qgis.PyQt.QtWidgets import (QApplication, QPushButton, QFormLayout, QVBoxLayout, QGridLayout,
+                                 QComboBox, QLabel, QLineEdit, QSpinBox, QGroupBox, QDialog,
+                                 QTableWidget, QTableWidgetItem, QMessageBox, QDialogButtonBox)
 
-from qgis.core import QgsApplication, QgsGraduatedSymbolRenderer, QgsExpressionContextUtils
+from qgis.core import QgsExpressionContextUtils
 
-from moduls.QvMapVars import *
-from moduls.QvMapificacio import *
+import moduls.QvMapVars as mv
+from moduls.QvMapificacio import QvMapificacio, PANDAS_ENABLED, PANDAS_ERROR, RUTA_LOCAL, RUTA_DADES
+
 from moduls.QvSqlite import QvSqlite
 from moduls.QvEditorCsv import QvEditorCsv
 from moduls.QvApp import QvApp
 
 import os
 import sqlite3
+
 
 class QvFormBaseMapificacio(QDialog):
     def __init__(self, llegenda, amplada=None, parent=None, modal=True):
@@ -49,7 +51,8 @@ class QvFormBaseMapificacio(QDialog):
 
     def msgSobreescriure(self, arxiu):
         if os.path.isfile(arxiu):
-            res = QMessageBox.question(self, 'Atenció',
+            res = QMessageBox.question(
+                self, 'Atenció',
                 arxiu + " ja existeix.\nVol sobreescriure aquest arxiu?")
             return res == QMessageBox.Yes
         else:
@@ -63,7 +66,7 @@ class QvFormBaseMapificacio(QDialog):
         self.setDisabled(False)
         QApplication.instance().restoreOverrideCursor()
 
-    def comboColors(self, combo, llista=MAP_COLORS, colorBase=None, mantenirIndex=False):
+    def comboColors(self, combo, llista=mv.MAP_COLORS, colorBase=None, mantenirIndex=False):
         idx = -1
         if mantenirIndex:
             idx = combo.currentIndex()
@@ -71,7 +74,7 @@ class QvFormBaseMapificacio(QDialog):
         for nom, col in llista.items():
             if col is None:
                 if colorBase is None:
-                    col = MAP_COLORS[self.renderParams.colorBase]
+                    col = mv.MAP_COLORS[self.renderParams.colorBase]
                 else:
                     col = colorBase
             pixmap = QPixmap(80, 45)
@@ -103,6 +106,7 @@ class QvFormBaseMapificacio(QDialog):
     def cancel(self):
         self.close()
 
+
 class QvVerifNumero(QValidator):
 
     def verifCharsNumero(self, string):
@@ -123,6 +127,7 @@ class QvVerifNumero(QValidator):
         else:
             state = QValidator.Invalid
         return (state, string, index)
+
 
 class QvComboBoxCamps(QComboBox):
     def __init__(self, parent, multiple=False):
@@ -179,6 +184,7 @@ class QvComboBoxCamps(QComboBox):
         self.setCurrentText(txt)
         self.lineEdit().setSelection(len(txt) - lenItem, lenItem)
 
+
 class QvVeureMostra(QTableWidget):
     def __init__(self, map):
         super().__init__(None)
@@ -193,6 +199,7 @@ class QvVeureMostra(QTableWidget):
                 self.setItem(fila, col, item)
         self.resizeColumnsToContents()
 
+
 class QvFormMostra(QDialog):
     def __init__(self, map, amplada=800, alcada=500, parent=None, modal=False):
         super().__init__(parent, modal=modal)
@@ -202,6 +209,7 @@ class QvFormMostra(QDialog):
         self.layout = QVBoxLayout()
         self.setLayout(self.layout)
         self.layout.addWidget(self.taula)
+
 
 class QvFormNovaMapificacio(QvFormBaseMapificacio):
     def __init__(self, llegenda, amplada=500, mapificacio=None):
@@ -237,11 +245,11 @@ class QvFormNovaMapificacio(QvFormBaseMapificacio):
         self.tipus = QComboBox(self)
         self.tipus.setEditable(False)
         self.tipus.addItem('Selecciona tipus…')
-        self.tipus.addItems(MAP_AGREGACIO.keys())
+        self.tipus.addItems(mv.MAP_AGREGACIO.keys())
 
         self.distribucio = QComboBox(self)
         self.distribucio.setEditable(False)
-        self.distribucio.addItem(next(iter(MAP_DISTRIBUCIO.keys())))
+        self.distribucio.addItem(next(iter(mv.MAP_DISTRIBUCIO.keys())))
 
         self.calcul = QvComboBoxCamps(self)
         self.filtre = QvComboBoxCamps(self, multiple=True)
@@ -252,11 +260,11 @@ class QvFormNovaMapificacio(QvFormBaseMapificacio):
 
         self.metode = QComboBox(self)
         self.metode.setEditable(False)
-        self.metode.addItems(MAP_METODES.keys())
+        self.metode.addItems(mv.MAP_METODES.keys())
 
         self.intervals = QSpinBox(self)
         self.intervals.setMinimum(2)
-        self.intervals.setMaximum(MAP_MAX_CATEGORIES)
+        self.intervals.setMaximum(mv.MAP_MAX_CATEGORIES)
         self.intervals.setSingleStep(1)
         self.intervals.setValue(4)
         self.intervals.setSuffix("  (depèn del mètode)")
@@ -290,7 +298,7 @@ class QvFormNovaMapificacio(QvFormBaseMapificacio):
 
         self.lDades.addRow("Tipus d'agregació:", self.tipus)
         self.lDades.addRow('Camp de càlcul:', self.calcul)
-        self.lDades.addRow('Filtre:', self.filtre) 
+        self.lDades.addRow('Filtre:', self.filtre)
         self.lDades.addRow('Distribució:', self.distribucio)
 
         self.gSimb = QGroupBox('Simbologia del mapa')
@@ -328,7 +336,7 @@ class QvFormNovaMapificacio(QvFormBaseMapificacio):
     def campsDB(self, nom):
         res = []
         if nom != '':
-            fich = RUTA_DADES + MAP_ZONES_DB
+            fich = RUTA_DADES + mv.MAP_ZONES_DB
             if os.path.isfile(fich):
                 conn = sqlite3.connect('file:' + fich + '?mode=ro', uri=True)
                 conn.row_factory = sqlite3.Row
@@ -352,9 +360,9 @@ class QvFormNovaMapificacio(QvFormBaseMapificacio):
         self.soloPrimerItem(self.distribucio)
         if self.zona.currentIndex() > 0:
             z = self.zona.currentText()
-            campsZona = self.campsDB(MAP_ZONES[z][1])
+            campsZona = self.campsDB(mv.MAP_ZONES[z][1])
             # Carga combo con distribuciones si el campo correspondiente está en la BBDD
-            for dist, campo in MAP_DISTRIBUCIO.items():
+            for dist, campo in mv.MAP_DISTRIBUCIO.items():
                 if campo != '' and campo in campsZona:
                     self.distribucio.addItem(dist)
 
@@ -373,7 +381,7 @@ class QvFormNovaMapificacio(QvFormBaseMapificacio):
             return
         # Carga combo con zonas si el campo correspondiente está en el fichero CSV
         num = 0
-        for zona, val in MAP_ZONES.items():
+        for zona, val in mv.MAP_ZONES.items():
             if val[1] != '' and self.fCSV.prefixe + QvSqlite.getAlias(val[0]) in self.fCSV.camps:
                 self.zona.addItem(zona)
                 num = num + 1
@@ -408,7 +416,7 @@ class QvFormNovaMapificacio(QvFormBaseMapificacio):
     def validaSortida(self, nom):
         fSalida = self.fCSV.nomArxiuSortida(self.fCSV.netejaString(nom, True))
         return self.msgSobreescriure(fSalida)
-        
+
     def valida(self):
         ok = False
         if hasattr(self, 'arxiu') and self.arxiu.filePath() == '':
@@ -437,7 +445,8 @@ class QvFormNovaMapificacio(QvFormBaseMapificacio):
     def procesa(self):
         if self.taulaMostra is not None:
             self.taulaMostra.hide()
-        ok = self.fCSV.agregacio(self.llegenda, self.capa.text().strip(), self.zona.currentText(), self.tipus.currentText(),
+        ok = self.fCSV.agregacio(self.llegenda, self.capa.text().strip(),
+                                 self.zona.currentText(), self.tipus.currentText(),
                                  campAgregat=self.calcul.currentText().strip(),
                                  filtre=self.filtre.currentText().strip(),
                                  tipusDistribucio=self.distribucio.currentText(),
@@ -447,8 +456,9 @@ class QvFormNovaMapificacio(QvFormBaseMapificacio):
                                  form=self)
         if ok:
             return ''
-        else: 
+        else:
             return self.fCSV.msgError
+
 
 class QvFormSimbMapificacio(QvFormBaseMapificacio):
     def __init__(self, llegenda, capa, amplada=500):
@@ -470,23 +480,23 @@ class QvFormSimbMapificacio(QvFormBaseMapificacio):
 
         self.contorn = QComboBox(self)
         self.contorn.setEditable(False)
-        self.comboColors(self.contorn, MAP_CONTORNS)
+        self.comboColors(self.contorn, mv.MAP_CONTORNS)
 
         self.color.currentIndexChanged.connect(self.canviaContorns)
 
         self.metode = QComboBox(self)
         self.metode.setEditable(False)
         if self.renderParams.numCategories > 1:
-            self.metode.addItems(MAP_METODES_MODIF.keys())
+            self.metode.addItems(mv.MAP_METODES_MODIF.keys())
         else:
-            self.metode.addItems(MAP_METODES.keys())   
+            self.metode.addItems(mv.MAP_METODES.keys())
         self.metode.setCurrentIndex(-1)
         self.metode.currentIndexChanged.connect(self.canviaMetode)
 
         self.nomIntervals = QLabel("Nombre d'intervals:", self)
         self.intervals = QSpinBox(self)
         self.intervals.setMinimum(min(2, self.renderParams.numCategories))
-        self.intervals.setMaximum(max(MAP_MAX_CATEGORIES, self.renderParams.numCategories))
+        self.intervals.setMaximum(max(mv.MAP_MAX_CATEGORIES, self.renderParams.numCategories))
         self.intervals.setSingleStep(1)
         self.intervals.setValue(4)
         self.intervals.setSuffix("  (depèn del mètode)")
@@ -524,15 +534,14 @@ class QvFormSimbMapificacio(QvFormBaseMapificacio):
         self.valorsInicials()
 
     def iniParams(self):
-        self.info = QgsExpressionContextUtils.layerScope(self.capa).variable(MAP_ID)
+        self.info = QgsExpressionContextUtils.layerScope(self.capa).variable(mv.MAP_ID)
         if self.info is None:
             return False
-        # ok, (self.campCalculat, self.numDecimals, self.colorBase, self.iniColorContorn, self.numCategories, self.modeCategories,
-        #     self.rangsCategories, self.sourceSymbol) = self.llegenda.mapRenderer.paramsRender(self.capa)
         self.renderParams = self.llegenda.mapRenderer.paramsRender(self.capa)
         self.custom = (self.renderParams.modeCategories == 'Personalitzat')
         if self.renderParams.msgError != '':
-            self.msgInfo("No s'han pogut recuperar els paràmetres del mapa\n" + self.renderParams.msgError)
+            self.msgInfo("No s'han pogut recuperar els paràmetres del mapa\n" +
+                         self.renderParams.msgError)
             self.renderParams.msgError = ''
         return True
 
@@ -557,7 +566,7 @@ class QvFormSimbMapificacio(QvFormBaseMapificacio):
             box.setDefaultButton(QMessageBox.Ok)
             box.exec()
 
-    def valorsInicials(self):        
+    def valorsInicials(self):
         self.color.setCurrentIndex(self.color.findText(self.renderParams.colorBase))
         self.contorn.setCurrentIndex(self.contorn.findText(self.renderParams.colorContorn))
         self.intervals.setValue(self.renderParams.numCategories)
@@ -659,7 +668,7 @@ class QvFormSimbMapificacio(QvFormBaseMapificacio):
 
     @pyqtSlot()
     def afegirFila(self):
-        masFilas = (len(self.wInterval) < MAP_MAX_CATEGORIES)
+        masFilas = (len(self.wInterval) < mv.MAP_MAX_CATEGORIES)
         if masFilas:
             f = self.sender().property('Fila') + 1
             ini = self.wInterval[f][0]
@@ -704,8 +713,9 @@ class QvFormSimbMapificacio(QvFormBaseMapificacio):
         # print('FORM -> Ancho:', self.size().width(), '- Alto:', self.size().height())
 
     @pyqtSlot()
-    def canviaContorns(self):        
-        self.comboColors(self.contorn, MAP_CONTORNS, MAP_COLORS[self.color.currentText()], True)
+    def canviaContorns(self):
+        self.comboColors(self.contorn, mv.MAP_CONTORNS,
+                         mv.MAP_COLORS[self.color.currentText()], True)
 
     def leSelectFocus(self, wLineEdit):
         lon = len(wLineEdit.text())
@@ -722,8 +732,8 @@ class QvFormSimbMapificacio(QvFormBaseMapificacio):
             return True
         else:
             self.msgInfo("Cal introduir un nombre enter o amb decimals.\n"
-                "Es farà servir la coma (,) per separar els decimals.\n"
-                "I pels milers, opcionalment, el punt (.)")
+                         "Es farà servir la coma (,) per separar els decimals.\n"
+                         "I pels milers, opcionalment, el punt (.)")
             self.leSelectFocus(wLineEdit)
             return False
 
@@ -759,21 +769,21 @@ class QvFormSimbMapificacio(QvFormBaseMapificacio):
         self.valorsFinals()
         try:
             if self.custom:
-                self.renderParams.colorBase = MAP_COLORS[self.renderParams.colorBase]
-                self.renderParams.colorContorn = MAP_CONTORNS[self.renderParams.colorContorn]
+                self.renderParams.colorBase = mv.MAP_COLORS[self.renderParams.colorBase]
+                self.renderParams.colorContorn = mv.MAP_CONTORNS[self.renderParams.colorContorn]
                 self.renderer = self.llegenda.mapRenderer.customRender(self.capa, self.renderParams)
             else:
-                self.renderParams.colorBase = MAP_COLORS[self.renderParams.colorBase]
-                self.renderParams.colorContorn = MAP_CONTORNS[self.renderParams.colorContorn]
-                self.renderParams.modeCategories = MAP_METODES_MODIF[self.renderParams.modeCategories]
+                self.renderParams.colorBase = mv.MAP_COLORS[self.renderParams.colorBase]
+                self.renderParams.colorContorn = mv.MAP_CONTORNS[self.renderParams.colorContorn]
+                self.renderParams.modeCategories = \
+                    mv.MAP_METODES_MODIF[self.renderParams.modeCategories]
                 self.renderer = self.llegenda.mapRenderer.calcRender(self.capa, self.renderParams)
             if self.renderer is None:
                 return "No s'ha pogut elaborar el mapa"
-            err = self.llegenda.saveStyleToGeoPackage(self.capa, MAP_ID)
+            err = self.llegenda.saveStyleToGeoPackage(self.capa, mv.MAP_ID)
             if err != '':
                 return "Hi ha hagut problemes al desar la simbologia\n({})".format(err)
             # self.llegenda.modificacioProjecte('mapModified')
             return ''
         except Exception as e:
             return "No s'ha pogut modificar el mapa\n({})".format(str(e))
-

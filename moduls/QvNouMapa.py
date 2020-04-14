@@ -1,12 +1,5 @@
 #!/usr/bin/env python
 from moduls.QvImports import * 
-from PyQt5 import QtCore
-from PyQt5 import QtGui
-from PyQt5.QtCore import pyqtProperty
-from PyQt5 import QtCore, QtWidgets
-from PyQt5.QtGui import QColor
-import os
-import tempfile
 from moduls.QvConstants import QvConstants
 from moduls.QvPushButton import QvPushButton
 from moduls.QvToolButton import QvToolButton
@@ -14,11 +7,14 @@ from moduls.QvApp import QvApp
 
 class QvNouMapa(QDialog):
     '''Diàleg de creació del mapa. Mostra uns mapes base i una line edit perquè l'usuari triï base i títol del projecte, i els carrega en el qVista quan sortim del diàleg'''
-    def __init__(self, parent):
+    def __init__(self, funcCarregar, parent=None):
         '''Construeix un QvNouMapa. Rep obligatòriament el widget pare, que ha de ser el qVista
         Arguments:
-            parent{QVista} -- Instància de qVista que estem executant'''
+            funcCarregar{Callable[str,str],None}
+        Keyword Arguments:
+            parent{QWidget} -- El parent'''
         super().__init__(parent)
+        self.funcCarregar=funcCarregar
         self.setWindowFlags(Qt.Window | Qt.FramelessWindowHint)
         self.layout=QVBoxLayout(self)
         self.layout.setSpacing(0)
@@ -29,7 +25,7 @@ class QvNouMapa(QDialog):
         self.widgetSup.setLayout(self.layoutCapcalera)
         self.lblLogo = QLabel()
         self.lblLogo.setPixmap(
-            QPixmap(imatgesDir+'QVistaLogo_40_32.png'))
+            QPixmap(os.path.join(imatgesDir,'QVistaLogo_40_32.png')))
         self.lblLogo.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Minimum)
         self.lblCapcalera = QLabel(objectName='Fosca')
         self.lblCapcalera.setText('  Crear un nou mapa')
@@ -73,21 +69,21 @@ class QvNouMapa(QDialog):
         self.mapaBuit=QvToolButton(self)
         self.mapaBuit.setToolButtonStyle(Qt.ToolButtonTextUnderIcon)
         self.mapaBuit.setText('Parcel·lari')
-        self.mapaBuit.setIcon(QIcon(imatgesDir+'nou_parcel·lari.png'))
+        self.mapaBuit.setIcon(QIcon(os.path.join(imatgesDir,'nou_parcel·lari.png')))
         self.mapaBuit.setIconSize(QSize(wImage, hImage))
         self.mapaBuit.clicked.connect(lambda: self.botoClick(self.mapaBuit))
 
         self.mapa1=QvToolButton(self)
         self.mapa1.setToolButtonStyle(Qt.ToolButtonTextUnderIcon)
         self.mapa1.setText('Topogràfic')
-        self.mapa1.setIcon(QIcon(imatgesDir+'nou_topogràfic.png'))
+        self.mapa1.setIcon(QIcon(os.path.join(imatgesDir,'nou_topogràfic.png')))
         self.mapa1.setIconSize(QSize(wImage, hImage))
         self.mapa1.clicked.connect(lambda: self.botoClick(self.mapa1))
 
         self.mapa2=QvToolButton(self)
         self.mapa2.setToolButtonStyle(Qt.ToolButtonTextUnderIcon)
         self.mapa2.setText('Plànol guia')
-        self.mapa2.setIcon(QIcon(imatgesDir+'nou_guia.png'))
+        self.mapa2.setIcon(QIcon(os.path.join(imatgesDir,'nou_guia.png')))
         self.mapa2.setIconSize(QSize(wImage, hImage))
         self.mapa2.clicked.connect(lambda: self.botoClick(self.mapa2))
         
@@ -96,21 +92,21 @@ class QvNouMapa(QDialog):
         self.mapa3=QvToolButton(self)
         self.mapa3.setToolButtonStyle(Qt.ToolButtonTextUnderIcon)
         self.mapa3.setText('Ortofotos 1:1000')
-        self.mapa3.setIcon(QIcon(imatgesDir+'nou_ortofoto.png'))
+        self.mapa3.setIcon(QIcon(os.path.join(imatgesDir,'nou_ortofoto.png')))
         self.mapa3.setIconSize(QSize(wImage, hImage))
         self.mapa3.clicked.connect(lambda: self.botoClick(self.mapa3))
 
         self.mapa4=QvToolButton(self)
         self.mapa4.setToolButtonStyle(Qt.ToolButtonTextUnderIcon)
         self.mapa4.setText('Unitats administratives')
-        self.mapa4.setIcon(QIcon(imatgesDir+'nou_divisions_administratives.png'))
+        self.mapa4.setIcon(QIcon(os.path.join(imatgesDir,'nou_divisions_administratives.png')))
         self.mapa4.setIconSize(QSize(wImage, hImage))
         self.mapa4.clicked.connect(lambda: self.botoClick(self.mapa4))
 
         self.mapa5=QvToolButton(self)
         self.mapa5.setToolButtonStyle(Qt.ToolButtonTextUnderIcon)
         self.mapa5.setText('Mapa buit')
-        self.mapa5.setIcon(QIcon(imatgesDir+'nou_buit.png'))
+        self.mapa5.setIcon(QIcon(os.path.join(imatgesDir,'nou_buit.png')))
         self.mapa5.setIconSize(QSize(wImage, hImage))
         self.mapa5.clicked.connect(lambda: self.botoClick(self.mapa5))
 
@@ -150,17 +146,17 @@ class QvNouMapa(QDialog):
         botons.remove(boto)
         for x in botons: x.setMarcat(False)
         if boto is self.mapaBuit:
-            self.setAdreca(docdirPlantilles+'parcelari.qgs')
+            self.setAdreca(os.path.join(docdirPlantilles,'parcelari.qgs'))
         elif boto is self.mapa1:
-            self.setAdreca(docdirPlantilles+'Topografic.qgs')
+            self.setAdreca(os.path.join(docdirPlantilles,'Topografic.qgs'))
         elif boto is self.mapa2:
-            self.setAdreca(docdirPlantilles+'PlanolGuia.qgs')
+            self.setAdreca(os.path.join(docdirPlantilles,'PlanolGuia.qgs'))
         elif boto is self.mapa3:
-            self.setAdreca(docdirPlantilles+'Ortofotos1000.qgs')
+            self.setAdreca(os.path.join(docdirPlantilles,'Ortofotos1000.qgs'))
         elif boto is self.mapa4:
-            self.setAdreca(docdirPlantilles+'UnitatsAdministratives.qgs')
+            self.setAdreca(os.path.join(docdirPlantilles,'UnitatsAdministratives.qgs'))
         elif boto is self.mapa5:
-            self.setAdreca(docdirPlantilles+'MapaEnBlanc.qgs')
+            self.setAdreca(os.path.join(docdirPlantilles,'MapaEnBlanc.qgs'))
 
     def setAdreca(self,adreca):
         '''Selecciona l'adreça del mapa que volem posar
@@ -182,10 +178,7 @@ class QvNouMapa(QDialog):
         else:
             self.botoAcceptar.setEnabled(False)
     def carrega(self):
-        
-        self.parentWidget().obrirProjecte(self.adreca, nou=True)
-        self.parentWidget().lblTitolProjecte.setText(self.titol)
-        self.parentWidget().titolProjecte=self.titol
+        self.funcCarregar(self.adreca,self.titol)
         self.close()
     
     def mousePressEvent(self, event):

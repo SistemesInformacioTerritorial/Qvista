@@ -2,9 +2,9 @@
 
 from qgis.core import QgsMapLayer, QgsVectorLayerCache
 from qgis.PyQt import QtWidgets  # , uic
-from qgis.PyQt.QtCore import Qt, pyqtSignal, QSize
+from qgis.PyQt.QtCore import Qt, pyqtSignal, QSize, pyqtSlot
 from qgis.PyQt.QtGui import QCursor, QIcon
-from qgis.PyQt.QtWidgets import QTabWidget, QVBoxLayout, QAction, QMenuBar, QWidget, QHBoxLayout, QLabel
+from qgis.PyQt.QtWidgets import QAction, QHBoxLayout, QMenuBar, QTabWidget, QWidget
 from qgis.gui import (QgsGui,
                       QgsAttributeTableModel,
                       QgsAttributeTableView,
@@ -19,7 +19,7 @@ from moduls.QvPushButton import QvPushButton
 # import recursos
 import csv
 # import xlwt - .xls
-from PyQt5.QtWidgets import QDialog
+from qgis.PyQt.QtWidgets import QDialog
 
 from moduls.Ui_AtributsForm import Ui_AtributsForm
 from configuracioQvista import *
@@ -117,15 +117,15 @@ class QvAtributs(QTabWidget):
         self.cwidget.setLayout(clayout)
         self.setCornerWidget(self.cwidget,Qt.TopLeftCorner)
         self.desaCsv=QvPushButton(flat=True,parent=self)
-        self.desaCsv.setIcon(QIcon(imatgesDir+'file-delimited.png'))
+        self.desaCsv.setIcon(QIcon(os.path.join(imatgesDir,'file-delimited.png')))
         self.desaCsv.setIconSize(QSize(24,24))
         self.desaCsv.setToolTip('Desar taula com a csv')
         self.filtra=QvPushButton(flat=True,parent=self)
-        self.filtra.setIcon(QIcon(imatgesDir+'filter.png'))
+        self.filtra.setIcon(QIcon(os.path.join(imatgesDir,'filter.png')))
         self.filtra.setIconSize(QSize(24,24))
         self.filtra.setToolTip('Filtrar/modificar filtre')
         self.eliminaFiltre=QvPushButton(flat=True,parent=self)
-        self.eliminaFiltre.setIcon(QIcon(imatgesDir+'filter-remove.png'))
+        self.eliminaFiltre.setIcon(QIcon(os.path.join(imatgesDir,'filter-remove.png')))
         self.eliminaFiltre.setIconSize(QSize(24,24))
         self.eliminaFiltre.setToolTip('Eliminar filtre')
         self.eliminaFiltre.hide()
@@ -211,7 +211,8 @@ class QvAtributs(QTabWidget):
                 taula.deleteLater()
                 self.removeTab(i)
                 return
-
+    
+    @pyqtSlot('PyQt_PyObject')
     def tancarTaules(self, layers):
         # Cerrar tablas de un conjunto de layers
         if layers is None:
@@ -288,9 +289,12 @@ class QvAtributs(QTabWidget):
         try:
             
             taula=self.currentWidget()
-            self.filtra.disconnect()
-            self.desaCsv.disconnect()
-            self.eliminaFiltre.disconnect()
+            try:
+                self.filtra.disconnect()
+                self.desaCsv.disconnect()
+                self.eliminaFiltre.disconnect()
+            except:
+                pass
             self.filtra.clicked.connect(taula.filterElements)
             self.desaCsv.clicked.connect(taula.saveToCSV)
             self.eliminaFiltre.clicked.connect(taula.removeFilter)

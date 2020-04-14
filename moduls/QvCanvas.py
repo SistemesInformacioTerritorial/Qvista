@@ -5,21 +5,22 @@ from moduls.QvEinesGrafiques import QvSeleccioElement
 from qgis.PyQt.QtCore import Qt, QSize
 from qgis.gui import QgsMapCanvas, QgsMapToolZoom, QgsMapToolPan
 from qgis.PyQt.QtWidgets import QFrame, QVBoxLayout, QHBoxLayout, QPushButton, QSpacerItem, QSizePolicy
-from qgis.PyQt.QtGui import QIcon, QPainter, QCursor,QPixmap, QKeyEvent
-from moduls.QvApp import QvApp
+from qgis.PyQt.QtGui import QIcon, QPainter
 from moduls.QvImports  import *
 from qgis.core.contextmanagers import qgisapp
 from moduls.QvConstants import QvConstants
 from moduls.QvPushButton import QvPushButton
 from moduls.QvConstants import QvConstants
 from moduls.QvStreetView import *
-from moduls.QvMascara import QvMascaraEinaPlantilla
-from moduls.QvEinesGrafiques import QvMesuraMultiLinia
+from moduls.QvEinesGrafiques import QvMesuraMultiLinia, QvMascaraEinaPlantilla
 #from qVista import QVista
 
 
 
 class QvCanvas(QgsMapCanvas):
+    canviMaximitza=pyqtSignal()
+    desMaximitza=pyqtSignal()
+    mostraStreetView=pyqtSignal()
     def __init__(self, pare = None, llistaBotons= None, botoneraHoritzontal = False, posicioBotonera = 'NO', mapesBase = False, llegenda = None): #mapesBase (???)
         QgsMapCanvas.__init__(self)
         self.botoneraHoritzontal = botoneraHoritzontal
@@ -33,18 +34,19 @@ class QvCanvas(QgsMapCanvas):
         # self.setWhatsThis(QvApp().carregaAjuda(self))
 
         self._preparacioBotonsCanvas()
+        self.eines=[]
+        self.einesBotons={}
         if self.llistaBotons is not None:
             self.panCanvas()
-        self.eines=[]
-            
+            self.panCanvas()
+        self.preparacioStreetView()
 
     def keyPressEvent(self, event):
         """ Defineix les actuacions del QvMapeta en funció de la tecla apretada.
         """
         if event.key() == Qt.Key_Escape:
+            self.desMaximitza.emit()
             if self.pare is not None:
-                if not self.pare.mapaMaxim:
-                    self.pare.ferGran()
                 try:
                     self.pare.esborrarSeleccio(tambePanCanvas = False)
                     self.pare.esborrarMesures(tambePanCanvas = False)
@@ -52,9 +54,11 @@ class QvCanvas(QgsMapCanvas):
                 except:
                     pass
         if event.key()==Qt.Key_F11:
-            if self.pare is not None:
-                self.pare.ferGran()
-
+            self.canviMaximitza.emit()
+    def uncheckBotons(self,aExcepcio):
+        for x in self._botons:
+            if x is not aExcepcio: 
+                x.setChecked(False)
     def panCanvas(self):        # MANO
         # bucle para quitar todos los cursores guardados. quiero que use el que ofrece MapTool
         # while self.pare.app.overrideCursor() != None:
@@ -62,13 +66,11 @@ class QvCanvas(QgsMapCanvas):
 
 
         if self.bPanning.isChecked():
-            self.bApuntar.setChecked(False)
-            self.bZoomIn.setChecked(False)
-            self.bZoomOut.setChecked(False)
-            self.bCentrar.setChecked(False)
+            self.uncheckBotons(self.bPanning)
            
             self.tool_pan = QgsMapToolPan(self)
             self.setMapTool(self.tool_pan)
+            self.einesBotons[self.tool_pan]=self.bPanning
 
 
         else: 
@@ -86,26 +88,24 @@ class QvCanvas(QgsMapCanvas):
 
     def zoomIn(self):
         if self.bZoomIn.isChecked():
-            self.bApuntar.setChecked(False)
-            self.bZoomOut.setChecked(False)
-            self.bPanning.setChecked(False)
-            self.bCentrar.setChecked(False)
+            self.uncheckBotons(self.bZoomIn)
            
             self.tool_zoomin = QgsMapToolZoom(self, False)
+            self.tool_zoomin.setCursor(QvConstants.cursorZoomIn())
             self.setMapTool(self.tool_zoomin)
+            self.einesBotons[self.tool_zoomin]=self.bZoomIn
         else: 
             self.bZoomIn.setChecked(True)
         self.setCursor(QvConstants.cursorZoomIn())
 
     def zoomOut(self):
         if self.bZoomOut.isChecked():
-            self.bApuntar.setChecked(False)
-            self.bZoomIn.setChecked(False)
-            self.bPanning.setChecked(False)
-            self.bCentrar.setChecked(False)
+            self.uncheckBotons(self.bZoomOut)
            
             self.tool_zoomout = QgsMapToolZoom(self, True)
+            self.tool_zoomout.setCursor(QvConstants.cursorZoomOut())
             self.setMapTool(self.tool_zoomout)
+            self.einesBotons[self.tool_zoomout]=self.bZoomOut
         else: 
             self.bZoomOut.setChecked(True)
 
@@ -113,11 +113,7 @@ class QvCanvas(QgsMapCanvas):
 
     def seleccioClick(self):
         if  self.bApuntar.isChecked():
-
-            self.bZoomIn.setChecked(False)
-            self.bZoomOut.setChecked(False)
-            self.bPanning.setChecked(False)
-            self.bCentrar.setChecked(False)
+            self.uncheckBotons(self.bApuntar)
 
             try:
                 self.pare.esborrarSeleccio(tambePanCanvas = False)
@@ -128,7 +124,9 @@ class QvCanvas(QgsMapCanvas):
 
             try:
                 self.tool = QvSeleccioElement(self, llegenda = self.llegenda)
+                self.tool.setCursor(QvConstants.cursorDit())
                 self.setMapTool(self.tool)
+                self.einesBotons[self.tool]=self.bApuntar
             except:
                 pass
         else:
@@ -137,15 +135,18 @@ class QvCanvas(QgsMapCanvas):
         self.setCursor(QvConstants.cursorDit())
     def copyToClipboard(self):
         '''Potser no és la millor manera, però el que fa és desar la imatge temporalment i copiar-la d'allà'''
-        nom=tempdir+str(time.time())+'.png'
+        nom=os.path.join(tempdir,str(time.time())+'.png')
         self.saveAsImage(nom)
         qApp.clipboard().setImage(QImage(nom))
 
     def setLlegenda(self, llegenda):
         self.llegenda = llegenda
-    def setStreetView(self,streetView):
-        self.qvSv=streetView
-        #self.bstreetview.clicked.connect(self.qvSv.segueixBoto)
+    def preparacioStreetView(self):
+        self.qvSv = QvStreetView(self, self)
+        # self.setMapTool(self.qvSv.rp)
+        self.qvSv.hide()
+    def getStreetView(self):
+        return self.qvSv
     def _botoMapa(self,imatge = None):
         boto = QvPushButton(flat=True)
         boto.setStyleSheet('background: rgba(255,255,255,168); padding: 1px;')
@@ -156,6 +157,7 @@ class QvCanvas(QgsMapCanvas):
         boto.setWindowOpacity(0.5)
         boto.setIconSize(QSize(24,24))
         boto.setGeometry(0,0,24,24)
+        self._botons.append(boto)
         return boto
 
     def _preparacioBotonsCanvas(self):
@@ -242,52 +244,53 @@ class QvCanvas(QgsMapCanvas):
 
 
         if self.llistaBotons is not None:
+            self._botons=[]
             if "apuntar" in self.llistaBotons:
-                self.bApuntar = self._botoMapa(imatgesDir+'apuntar.png')
+                self.bApuntar = self._botoMapa(os.path.join(imatgesDir,'apuntar.png'))
                 self.bApuntar.setToolTip("Veure informació d'un objecte")
                 self.layoutBotoneraMapa.addWidget(self.bApuntar)  
                 self.bApuntar.setCursor(QvConstants.cursorFletxa())       
                 self.bApuntar.clicked.connect(self.seleccioClick)
             if "panning" in self.llistaBotons:
-                self.bPanning = self._botoMapa(imatgesDir+'pan_tool_black_24x24.png')
+                self.bPanning = self._botoMapa(os.path.join(imatgesDir,'pan_tool_black_24x24.png'))
                 self.bPanning.setToolTip('Desplaçar el mapa')
                 self.layoutBotoneraMapa.addWidget(self.bPanning)   
                 self.bPanning.setCursor(QvConstants.cursorFletxa())   
                 self.bPanning.clicked.connect(self.panCanvas)
             if "centrar" in self.llistaBotons:
-                self.bCentrar = self._botoMapa(imatgesDir+'fit.png')
+                self.bCentrar = self._botoMapa(os.path.join(imatgesDir,'fit.png'))
                 self.bCentrar.setToolTip('Enquadrar el mapa complet a la pantalla')
                 self.layoutBotoneraMapa.addWidget(self.bCentrar) 
                 self.bCentrar.setCursor(QvConstants.cursorFletxa())     
                 self.bCentrar.clicked.connect(self.centrarMapa)
             if "zoomIn" in self.llistaBotons:
-                self.bZoomIn = self._botoMapa(imatgesDir+'zoom_in.png')
+                self.bZoomIn = self._botoMapa(os.path.join(imatgesDir,'zoom_in.png'))
                 self.bZoomIn.setToolTip('Zoom per apropar-se')
                 self.layoutBotoneraMapa.addWidget(self.bZoomIn)  
                 self.bZoomIn.setCursor(QvConstants.cursorFletxa())
                 self.bZoomIn.clicked.connect(self.zoomIn)
             if "zoomOut" in self.llistaBotons:
-                self.bZoomOut = self._botoMapa(imatgesDir+'zoom_out.png')
+                self.bZoomOut = self._botoMapa(os.path.join(imatgesDir,'zoom_out.png'))
                 self.bZoomOut.setToolTip('Zoom per allunyar-se')
                 self.layoutBotoneraMapa.addWidget(self.bZoomOut) 
                 self.bZoomOut.setCursor(QvConstants.cursorFletxa())  
                 self.bZoomOut.clicked.connect(self.zoomOut)
             if 'enrere' in self.llistaBotons:
-                self.bEnrere=self._botoMapa(imatgesDir+'qv_vista_anterior.png')
+                self.bEnrere=self._botoMapa(os.path.join(imatgesDir,'qv_vista_anterior.png'))
                 self.bEnrere.setToolTip('Retrocedir al zoom anterior')
                 self.layoutBotoneraMapa.addWidget(self.bEnrere)
                 self.bEnrere.setCursor(QvConstants.cursorFletxa())
                 self.bEnrere.clicked.connect(self.zoomToPreviousExtent)
                 self.bEnrere.setCheckable(False)
             if 'endavant' in self.llistaBotons:
-                self.bEndavant=self._botoMapa(imatgesDir+'qv_vista_seguent.png')
+                self.bEndavant=self._botoMapa(os.path.join(imatgesDir,'qv_vista_seguent.png'))
                 self.bEndavant.setToolTip('Avançar al zoom següent')
                 self.layoutBotoneraMapa.addWidget(self.bEndavant)
                 self.bEndavant.setCursor(QvConstants.cursorFletxa())
                 self.bEndavant.clicked.connect(self.zoomToNextExtent)
                 self.bEndavant.setCheckable(False)
             if "streetview" in self.llistaBotons:
-                self.bstreetview = self._botoMapa(imatgesDir+'littleMan.png') 
+                self.bstreetview = self._botoMapa(os.path.join(imatgesDir,'littleMan.png'))
                 self.bstreetview.setDragable(True)
                 self.bstreetview.setCheckable(False)
                 self.bstreetview.setToolTip('Google Street view')
@@ -296,13 +299,13 @@ class QvCanvas(QgsMapCanvas):
                 # self.bstreetview.clicked.connect(self.amagaStreetView)  
                 #self.bstreetview.clicked.connect(QvStreetView.segueixBoto)
             if 'maximitza' in self.llistaBotons:
-                self.iconaMaximitza=QIcon(imatgesDir+'fullscreen.png')
-                self.iconaMinimitza=QIcon(imatgesDir+'fullscreen-exit.png')
-                self.bMaximitza = self._botoMapa(imatgesDir+'fullscreen.png') 
+                self.iconaMaximitza=QIcon(os.path.join(imatgesDir,'fullscreen.png'))
+                self.iconaMinimitza=QIcon(os.path.join(imatgesDir,'fullscreen-exit.png'))
+                self.bMaximitza = self._botoMapa(os.path.join(imatgesDir,'fullscreen.png'))
                 self.bMaximitza.setToolTip('Pantalla completa (F11)')
                 self.layoutBotoneraMapa.addWidget(self.bMaximitza)   
                 self.bMaximitza.setCursor(QvConstants.cursorFletxa()) 
-                self.bMaximitza.clicked.connect(self.pare.ferGran)  
+                self.bMaximitza.clicked.connect(self.canviMaximitza.emit)  
                 self.bMaximitza.setCheckable(False)
 
         # spacer = QSpacerItem(0, 50, QSizePolicy.Expanding, QSizePolicy.Maximum)
@@ -314,7 +317,7 @@ class QvCanvas(QgsMapCanvas):
         self.butoMostra.setMaximumWidth(80)
         self.butoMostra.setMinimumWidth(80)
 
-        icon=QIcon(imatgesDir+'mapeta1.png')
+        icon=QIcon(os.path.join(imatgesDir,'mapeta1.png'))
         self.butoMostra.setIconSize(QSize(80,80))
         self.butoMostra.setIcon(icon)
 
@@ -323,7 +326,7 @@ class QvCanvas(QgsMapCanvas):
         self.butoMostra2.setMinimumHeight(80)
         self.butoMostra2.setMaximumWidth(80)
         self.butoMostra2.setMinimumWidth(80)
-        icon=QIcon(imatgesDir+'mapeta2.png')
+        icon=QIcon(os.path.join(imatgesDir,'mapeta2.png'))
         self.butoMostra2.setIconSize(QSize(80,80))
         self.butoMostra2.setIcon(icon)
         self.botoneraMostres = QFrame()
@@ -350,6 +353,7 @@ class QvCanvas(QgsMapCanvas):
 
         position = e.pos()
         self.qvSv.rp.llevameP(position)
+        self.mostraStreetView.emit()
         # self.button.move(position)
 
         e.setDropAction(Qt.MoveAction)
@@ -361,6 +365,11 @@ class QvCanvas(QgsMapCanvas):
         super().setMapTool(tool)
         if len(self.eines)>0 and self.eines[-1]==tool: return
         self.eines.append(tool)
+        if tool in self.einesBotons:
+            self.einesBotons[tool].setChecked(True)
+            self.uncheckBotons(self.einesBotons[tool])
+        else:
+            self.uncheckBotons(None)
     def unsetMapTool(self,eina, ultima=False):
         super().unsetMapTool(eina)
         if isinstance(eina,QvMascaraEinaPlantilla):
@@ -368,16 +377,21 @@ class QvCanvas(QgsMapCanvas):
         if not ultima:
             #Eliminar l'aparició de més al final d'aquesta eina
             indexes = [i for i,x in enumerate(self.eines) if x == eina]
-            del(self.eines[indexes[-1]])
+            if len(indexes)!=0: del(self.eines[indexes[-1]])
 
         if len(self.eines)>0:
             if self.eines[-1] is None or self.eines[-1]==eina:
                 self.unsetLastMapTool()
                 return
+            # self.uncheckBotons(None)
+            if self.eines[-1] in self.einesBotons:
+                self.uncheckBotons(self.einesBotons[self.eines[-1]])
+                self.einesBotons[self.eines[-1]].setChecked(True)
             super().setMapTool(self.eines[-1])
     def unsetLastMapTool(self):
-        eina=self.eines.pop()
-        self.unsetMapTool(eina,True)
+        if len(self.eines)>1:
+            eina=self.eines.pop()
+            self.unsetMapTool(eina,True)
 
     def mousePressEvent(self,event):
         super().mousePressEvent(event)

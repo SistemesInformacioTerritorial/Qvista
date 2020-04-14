@@ -1,13 +1,11 @@
-from PyQt5.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QTableWidget, QTableWidgetItem
-from PyQt5.QtGui import QDesktopServices
+from qgis.PyQt.QtWidgets import QHBoxLayout, QVBoxLayout, QWidget
+from qgis.PyQt.QtGui import QDesktopServices
 from moduls.QvPushButton import QvPushButton
 from moduls.QvConstants import QvConstants
 import csv
 import chardet
-import time
-from typing import List, Tuple, Iterable
+from typing import Iterable
 from moduls.QvImports import *
-from moduls.QvFuncioFil import QvFuncioFil
 
 
 class ModelCsv(QAbstractTableModel):
@@ -48,7 +46,7 @@ class ModelCsv(QAbstractTableModel):
             self.addRows(lector)
 
     def addRows(self, rows):
-        self.persons.extend(list(rows))
+        self.persons.extend(rows)
 
     def rowCount(self, index=QModelIndex()):
         if not self.persons:

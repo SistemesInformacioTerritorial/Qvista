@@ -1,18 +1,17 @@
 # -*- coding: utf-8 -*-
 
-from qgis.core import (QgsApplication, QgsVectorLayer, QgsLayerDefinition,
-                       QgsSymbol, QgsRendererCategory, QgsCategorizedSymbolRenderer,
-                       QgsGraduatedSymbolRenderer, QgsRendererRange,
+from qgis.core import (QgsSymbol, QgsGraduatedSymbolRenderer, QgsRendererRange,
                        QgsGradientColorRamp, QgsRendererRangeLabelFormat, QgsUnitTypes)
 
-from qgis.PyQt.QtCore import Qt, QObject, pyqtSignal, pyqtSlot, QLocale
+from qgis.PyQt.QtCore import QObject
 from qgis.PyQt.QtGui import QColor
 
-from moduls.QvMapVars import *
+import moduls.QvMapVars as mv
 from moduls.QvMapForms import QvFormSimbMapificacio
 from moduls.QvApp import QvApp
 
 _LABEL_FORMAT = '%1 - %2'
+
 
 class QvMapRendererParams(QObject):
     def __init__(self):
@@ -79,9 +78,9 @@ class QvMapRenderer(QObject):
 
     def calcColorsGradient(self, colorBase):
         colorIni = QColor(colorBase)
-        colorIni.setAlpha(MAP_ALPHA_INI)
+        colorIni.setAlpha(mv.MAP_ALPHA_INI)
         colorFi = QColor(colorBase)
-        colorFi.setAlpha(255 - MAP_ALPHA_FIN)
+        colorFi.setAlpha(255 - mv.MAP_ALPHA_FIN)
         return colorIni, colorFi
 
     def setStrokeSymbology(self, sourceSymbol, color, width=1):
@@ -99,7 +98,8 @@ class QvMapRenderer(QObject):
         if params.simbol is None:
             params.simbol = QgsSymbol.defaultSymbol(capa.geometryType())
         self.setStrokeSymbology(params.simbol, params.colorContorn)
-        renderer = QgsGraduatedSymbolRenderer.createRenderer(capa, params.campCalculat,
+        renderer = QgsGraduatedSymbolRenderer.createRenderer(
+            capa, params.campCalculat,
             params.numCategories, params.modeCategories, params.simbol, colorRamp, labelFormat)
         capa.setRenderer(renderer)
         capa.triggerRepaint()
@@ -109,8 +109,8 @@ class QvMapRenderer(QObject):
         if params.colorContorn is None:
             params.colorContorn = params.colorBase
         total = params.numCategories
-        alpha = MAP_ALPHA_INI
-        maxAlpha = (255 - MAP_ALPHA_FIN)
+        alpha = mv.MAP_ALPHA_INI
+        maxAlpha = (255 - mv.MAP_ALPHA_FIN)
         step = round((maxAlpha - alpha) / (total - 1))
         color = QColor(params.colorBase)
         decimals = params.maxDecimals(params.rangsCategories)
@@ -126,7 +126,8 @@ class QvMapRenderer(QObject):
             symbol.setColor(color)
             f0 = params.numRang(r[0])
             f1 = params.numRang(r[1])
-            label = QvApp().locale.toString(f0, 'f', decimals) + ' - ' + QvApp().locale.toString(f1, 'f', decimals)
+            label = QvApp().locale.toString(f0, 'f', decimals) + ' - ' + \
+                QvApp().locale.toString(f1, 'f', decimals)
             category = QgsRendererRange(f0, f1, symbol, label)
             categories.append(category)
         renderer = QgsGraduatedSymbolRenderer(params.campCalculat, categories)
@@ -143,7 +144,7 @@ class QvMapRenderer(QObject):
             parms.campCalculat = renderer.classAttribute()
             parms.rangsCategories = renderer.ranges()
             parms.numCategories = len(parms.rangsCategories)
-            parms.modeCategories = parms.nomParam(renderer.mode(), MAP_METODES_MODIF)
+            parms.modeCategories = parms.nomParam(renderer.mode(), mv.MAP_METODES_MODIF)
             if parms.modeCategories == 'Personalitzat':
                 cat = parms.rangsCategories[0]
                 parms.numDecimals = parms.calcDecimals(cat.label())
@@ -153,8 +154,9 @@ class QvMapRenderer(QObject):
                 parms.numDecimals = renderer.labelFormat().precision()
                 parms.simbol = renderer.sourceSymbol()
                 color = renderer.sourceColorRamp().color1()
-            parms.colorBase = parms.nomColor(color, MAP_COLORS)
-            parms.colorContorn = parms.nomColor(parms.simbol.symbolLayer(0).strokeColor(), MAP_CONTORNS)
+            parms.colorBase = parms.nomColor(color, mv.MAP_COLORS)
+            parms.colorContorn = parms.nomColor(parms.simbol.symbolLayer(0).strokeColor(),
+                                                mv.MAP_CONTORNS)
         except Exception as e:
             parms.msgError = str(e)
         return parms
@@ -162,4 +164,3 @@ class QvMapRenderer(QObject):
     def modifyRenderer(self):
         fMap = QvFormSimbMapificacio(self.llegenda, self.llegenda.currentLayer())
         fMap.exec()
-
