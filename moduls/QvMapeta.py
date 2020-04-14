@@ -60,7 +60,7 @@ class QvMapeta(QFrame):
         self.pintoCentro = False   # auxiliar...
         self.controlaCompass = False
         self.sw_l = False   # para crear .bas
-
+        self.colorMarcasMapeta= QColor(255,98,1)
         self.Cuadrante = 0
         self.centro_v= QPoint()
         
@@ -955,7 +955,8 @@ class QvMapeta(QFrame):
         qp.setBrush(br)  
 
         # pen= QPen(QvConstants.COLORFOSC,  1, Qt.SolidLine)
-        pen= QPen(QColor(255,98,1),  1, Qt.SolidLine)
+        
+        pen= QPen(self.colorMarcasMapeta,  1, Qt.SolidLine)
         qp.setPen(pen)
         # pen=QPen(QvConstants.COLORFOSC)
         #endregion QPainter... Como dibujaremos...

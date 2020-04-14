@@ -43,6 +43,7 @@ class QvCompass(QFrame):
         self.canvas=canvas
         self.setParent(pare)
         self.pare= pare
+        self.colorMarcasCompass= QColor(243,90,14)
 
  
         # Dimensions i fons del mapeta segosn si és gran o petit
@@ -91,9 +92,8 @@ class QvCompass(QFrame):
         font.setPixelSize(5)
         metrics = QFontMetricsF(font)
         painter.setFont(font)
-        # painter.setPen(self.palette().color(QPalette.Shadow))
-        # painter.setPen(QColor(255,98,1))
-        painter.setPen(QColor(243,90,14))
+
+        painter.setPen(self.colorMarcasCompass)
         i = 0
         while i < 360:
             if i % 45 == 0:
@@ -129,7 +129,7 @@ class QvCompass(QFrame):
         
 
         # painter.setBrush(self.palette().brush(QPalette.Highlight))
-        painter.setBrush(QColor(255,98,1))
+        painter.setBrush(self.colorMarcasCompass)
         painter.drawPolygon(
             # QPolygon([QPoint(-5, -25), QPoint(0, -45), QPoint(5, -25),
             #             QPoint(0, -30), QPoint(-5, -25)])

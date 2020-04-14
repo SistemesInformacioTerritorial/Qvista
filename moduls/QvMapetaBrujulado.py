@@ -1,6 +1,6 @@
 from qgis.core import QgsRectangle
 from PyQt5.QtCore import Qt, QSize, QPoint, QRect
-from PyQt5.QtWidgets import QFrame, QSpinBox, QLineEdit, QApplication, QHBoxLayout
+from PyQt5.QtWidgets import QFrame, QSpinBox, QLineEdit, QApplication, QHBoxLayout,QColorDialog
 from PyQt5.QtGui import QPainter, QBrush, QPen, QPolygon
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtCore import pyqtSignal, QSize
@@ -25,6 +25,8 @@ class QvMapetaBrujulado(QFrame):
         self.canvas=canvas
         self.setParent(pare)
         self.pare= pare
+        # self.colorMarca= QColor(121,144,155)
+        self.colorMarcas= QColor(255,90,14)
 
         
         self.setDropable()
@@ -50,9 +52,11 @@ class QvMapetaBrujulado(QFrame):
 
         self.qvCompass = QvCompass(self.canvas,self)
         self.qvCompass.setGeometry(0, 0, ancho_mapetaBrujulado, ancho_mapetaBrujulado)
+        self.qvCompass.colorMarcasCompass=self.colorMarcas
         self.qvCompass.show()
 
         self.qvMapeta = QvMapeta(self.canvas, ficheroMapeta, pare=self.qvCompass)
+        self.qvMapeta.colorMarcasMapeta=self.colorMarcas
         self.qvMapeta.show()           
 
         # relaciono mapeta y compas. Mapeta dentro de compass
@@ -76,9 +80,6 @@ class QvMapetaBrujulado(QFrame):
         self.qvMapeta.dadoPNT.connect(self.EnviarPNTCompass)
         # if the signal has the data as argument:
         # self.qvMapeta.dadoPNT.connect(self.qvCompass.gestionoPnt)
-    
-            
-
 
 
     def PngPgwDroped_MB(self,ficheroMapeta):
@@ -185,10 +186,18 @@ class QvMapetaBrujulado(QFrame):
         except :
             pass
 
+    def showDialogColor(self):
+        d_color= QColorDialog()
+        
+        col = d_color.getColor()
+        if col.isValid():
+            self.colorMarcas=col
+
     def contextMenuEvent(self, event):
         contextMenu = QMenu(self)
         norteAct = contextMenu.addAction("Orientació Nort (0º)")
         martoAct = contextMenu.addAction("Orientació 'Martorell' (44.5º)")
+        chColors= contextMenu.addAction("Cambiar colores")
         
 
         action = contextMenu.exec_(self.mapToGlobal(event.pos()))
@@ -198,6 +207,11 @@ class QvMapetaBrujulado(QFrame):
         elif action == norteAct:
             self.canvas.setRotation(0)
             self.canvas.refresh()
+        elif action == chColors: 
+            self.showDialogColor()
+            self.qvCompass.colorMarcasCompass=self.colorMarcas
+            self.qvMapeta.colorMarcasMapeta=self.colorMarcas            
+
 
 
         
