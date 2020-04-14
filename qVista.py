@@ -462,7 +462,6 @@ class QVista(QMainWindow, Ui_MainWindow):
     
     # Funcions de preparació d'entorns 
     def preparacioStreetView(self):
-        """
         # self.qvSv = QvStreetView(self.canvas, self)
         # self.canvas.setStreetView(self.qvSv)
         # self.canvas.setMapTool(self.qvSv.rp)
@@ -1012,7 +1011,7 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         self.actTisores = QAction("Eina per retallar pantalla", self)
         self.actTisores.setStatusTip("Eina per retallar pantalla")
-        icon=QIcon(imatgesDir+'tisores.png')
+        icon=QIcon(os.path.join(imatgesDir,'tisores.png'))
         self.actTisores.setIcon(icon)
         self.actTisores.triggered.connect(self.tissores)
 
