@@ -286,11 +286,16 @@ class QvCrearMapetaConBotones(QWidget):
       Poner un circulo con ruberband\n
       Guardar la ruberband
     '''
-    def __init__(self, canvas):
+    def __init__(self, canvas,pare=None):
         '''
         '''
         self.canvas=canvas
+
         QWidget.__init__(self)
+
+
+        self.setParent(pare)
+        self.pare = pare
         self.existeCirculo=False        
         #defino botones y las funciones de su click
         self.botoponerCirculo = QvPushButton("Posar circle")

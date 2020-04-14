@@ -13,6 +13,7 @@ from moduls.QvConstants import QvConstants
 from moduls.QvPushButton import QvPushButton
 from moduls.QvCompass_2 import QvCompass
 from moduls.QvMapeta import QvMapeta
+from moduls.QvCrearMapeta import QvCrearMapetaConBotones
 from configuracioQvista import *
 from PyQt5.QtWidgets import QFrame, QSpinBox, QLineEdit
 from PyQt5.QtGui import QPainter, QBrush, QPen, QPolygon
@@ -20,6 +21,7 @@ import numpy as np
 
 
 class QvMapetaBrujulado(QFrame):
+    angleChanged = pyqtSignal(float)
     def __init__(self,ficheroMapeta,  canvas,  pare = None):
         QFrame.__init__(self)
         self.canvas=canvas
@@ -195,26 +197,86 @@ class QvMapetaBrujulado(QFrame):
 
     def contextMenuEvent(self, event):
         contextMenu = QMenu(self)
-        norteAct = contextMenu.addAction("Orientació Nort (0º)")
+        norteAct = contextMenu.addAction("Orientació Nord (0º)")
         martoAct = contextMenu.addAction("Orientació 'Martorell' (44.5º)")
-        chColors= contextMenu.addAction("Cambiar colores")
+        chColors= contextMenu.addAction("Cambiar colors")
+        # crearMapetas= contextMenu.addAction("Crear mapeta")
         
 
         action = contextMenu.exec_(self.mapToGlobal(event.pos()))
         if action == martoAct:
             self.canvas.setRotation(44.5)
+            self.qvCompass.setAngle(self.canvas.rotation())
             self.canvas.refresh()
         elif action == norteAct:
             self.canvas.setRotation(0)
+            
+            self.qvCompass.setAngle(self.canvas.rotation())
             self.canvas.refresh()
         elif action == chColors: 
             self.showDialogColor()
             self.qvCompass.colorMarcasCompass=self.colorMarcas
-            self.qvMapeta.colorMarcasMapeta=self.colorMarcas            
+            self.qvMapeta.colorMarcasMapeta=self.colorMarcas  
+        # elif action == crearMapetas:
+        #     windowTest = MyWindow()
+
+        #     # Posem el canvas com a element central
+        #     windowTest.setCentralWidget(self.canvas)
+
+        #     # Instanciamos la classe QvcrearMapetaConBotones
+        #     self.crearMapetaConBotones = QvCrearMapetaConBotones(self.canvas,pare=self)
+            
+        #     self.crearMapetaConBotones.show()
+
+        #     """
+        #     Amb aquesta linia:
+        #     crearMapeta.show()
+        #     es veuria el widget suelto, separat del canvas.
+        #     Les següents línies mostren com integrar el widget 'crearMapeta' com a dockWidget.
+        #     """
+        #     # Creem un dockWdget i definim les característiques
+        #     dwcrearMapeta = QDockWidget( "CrearMapeta", windowTest )
+        #     dwcrearMapeta.setContextMenuPolicy(Qt.PreventContextMenu)
+        #     dwcrearMapeta.setAllowedAreas( Qt.RightDockWidgetArea | Qt.LeftDockWidgetArea )
+        #     dwcrearMapeta.setContentsMargins ( 1, 1, 1, 1 )
+            
+        #     # # # AÑADIMOS  nuestra instancia al dockwidget
+        #     dwcrearMapeta.setWidget(self.crearMapetaConBotones)
+
+        #     # # Coloquem el dockWidget al costat esquerra de la finestra
+        #     windowTest.addDockWidget( Qt.LeftDockWidgetArea, dwcrearMapeta)
+
+        #     # # Fem visible el dockWidget
+        #     dwcrearMapeta.show()  #atencion
+
+        #     # Fem visible la finestra principal
+
+        #     windowTest.show()
+
+class MyWindow(QMainWindow):
+    def __init__(self):
+        QMainWindow.__init__(self)
+
+
+    def closeEvent(self,event):
+        # Borrar "mapesOffline/temporal.png"
+        if os.path.exists("mapesOffline/temporal.png"):
+            os.remove("mapesOffline/temporal.png")
+        else:
+            print("The file does not exist")
+            
+        if os.path.exists("mapesOffline/temporal.pgw"):
+            os.remove("mapesOffline/temporal.pgw")
+        else:
+            print("The file does not exist")            
 
 
 
-        
+
+
+   
+
+
 
 
 
