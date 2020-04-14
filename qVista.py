@@ -448,7 +448,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.bFoto.setToolTip('Capturar imatge del mapa')
 
         self.bImprimir =  self.botoLateral(tamany = 25, accio=self.actImprimir)
-        self.bTissores = self.botoLateral(tamany = 25, accio=self.actTisores)
+        self.bTisores = self.botoLateral(tamany = 25, accio=self.actTisores)
         self.bSeleccioGrafica = self.botoLateral(tamany = 25, accio=self.actSeleccioGrafica)
         self.bMesuraGrafica = self.botoLateral(tamany = 25, accio=self.actMesuraGrafica)
 
@@ -462,7 +462,6 @@ class QVista(QMainWindow, Ui_MainWindow):
     
     # Funcions de preparació d'entorns 
     def preparacioStreetView(self):
-        """
         # self.qvSv = QvStreetView(self.canvas, self)
         # self.canvas.setStreetView(self.qvSv)
         # self.canvas.setMapTool(self.qvSv.rp)
@@ -1012,9 +1011,9 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         self.actTisores = QAction("Eina per retallar pantalla", self)
         self.actTisores.setStatusTip("Eina per retallar pantalla")
-        icon=QIcon(imatgesDir+'tisores.png')
+        icon=QIcon(os.path.join(imatgesDir,'tisores.png'))
         self.actTisores.setIcon(icon)
-        self.actTisores.triggered.connect(self.tissores)
+        self.actTisores.triggered.connect(self.tisores)
 
         self.actSeleccioGrafica = QAction("Seleccionar/emmascarar", self)
         self.actSeleccioGrafica.setStatusTip("Seleccionar/emmascarar")
@@ -1433,7 +1432,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.project.write(QvTempdir+'tempQgis.qgs')
         QDesktopServices().openUrl(QUrl(QvTempdir+'/tempQgis.qgs'))
      
-    def tissores(self):
+    def tisores(self):
         process = QProcess(self)
         pathApp = r"c:\windows\system32\SnippingTool.exe"
         process.start(pathApp)
