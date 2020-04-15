@@ -286,28 +286,14 @@ class QVista(QMainWindow, Ui_MainWindow):
                     self.project.addMapLayer(layer)
                     self.setDirtyBit()
             elif fext == '.gpkg':
-                capes = QvCarregadorGPKG.triaCapes(nfile, self)
-                for nom in capes:
-                    uri = "%s|layername=%s" % (nfile, nom,)
-                    # Create layer
-                    sub_vlayer = QgsVectorLayer(uri, nom, 'ogr')
-                    if sub_vlayer.crs().authid()!=self.project.crs().authid():
-                        crsSub, crsProj = sub_vlayer.crs().authid(), self.project.crs().authid()
-                        QMessageBox.warning(self,'Sistema de referència diferent',f'El sistema de referència de la capa {nom} és {crsSub}. Aquest és diferent al del mapa ({crsProj}).\nPer a obtenir resultats òptims, carregueu arxius que tinguin el mateix sistema de referència')
-                    # Add layer to map
-                    self.project.addMapLayer(sub_vlayer)
-                    self.setDirtyBit()
+                lay = QgsVectorLayer(nfile,'hola','ogr')
 
-                # layer = QgsVectorLayer(nfile, os.path.basename(nfile), "ogr")
-                # subLayers = layer.dataProvider().subLayers()
-                # for subLayer in subLayers:
-                #     name = subLayer.split('!!::!!')[1]
-                #     uri = "%s|layername=%s" % (nfile, name,)
-                #     # Create layer
-                #     sub_vlayer = QgsVectorLayer(uri, name, 'ogr')
-                #     # Add layer to map
-                #     self.project.addMapLayer(sub_vlayer)
-                # self.setDirtyBit()
+                uris = map(lambda x: f'{nfile}|layername={x}', nomsCapes)
+                aux = zip(nomsCapes, uris)
+                capes = [QgsVectorLayer(y,x,'ogr') for (x,y) in aux]
+
+                self.project.addMapLayers(capes)
+                self.setDirtyBit()
             elif fext == '.csv':
                 carregarLayerCSV(nfile)
 

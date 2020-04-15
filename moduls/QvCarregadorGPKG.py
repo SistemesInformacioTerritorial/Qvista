@@ -30,8 +30,14 @@ class QvCarregadorGPKG(QDialog):
         self._layoutGran.addLayout(layBotons)
         self.setLayout(self._layoutGran)
         self.setWindowTitle('Tria de les subcapes a carregar')
+    def seleccionaTots(self,check):
+        for x in self._combos:
+            x.setChecked(check)
     def setCapes(self,capes):
         self._combos=[QCheckBox(x) for x in capes]
+        cbTots = QCheckBox('Seleccionar tots')
+        cbTots.toggled.connect(self.seleccionaTots)
+        self._layout.addWidget(cbTots)
         for x in self._combos:
             self._layout.addWidget(x)
     def exec_(self):
