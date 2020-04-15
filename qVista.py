@@ -291,6 +291,9 @@ class QVista(QMainWindow, Ui_MainWindow):
                     uri = "%s|layername=%s" % (nfile, nom,)
                     # Create layer
                     sub_vlayer = QgsVectorLayer(uri, nom, 'ogr')
+                    if sub_vlayer.crs().authid()!=self.project.crs().authid():
+                        crsSub, crsProj = sub_vlayer.crs().authid(), self.project.crs().authid()
+                        QMessageBox.warning(self,'Sistema de referència diferent',f'El sistema de referència de la capa {nom} és {crsSub}. Aquest és diferent al del mapa ({crsProj}).\nPer a obtenir resultats òptims, carregueu arxius que tinguin el mateix sistema de referència')
                     # Add layer to map
                     self.project.addMapLayer(sub_vlayer)
                     self.setDirtyBit()
