@@ -367,11 +367,11 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.lblProjeccio.setText(self.project.crs().description())
         self.lblProjecte.setText('QGS: '+self.project.baseName())
         self.lblProjecte.setToolTip(self.project.fileName())
-        if self.canvas.rotation() == 0:
-            self.bOrientacio.setText(' Orientació: Nord')
-        else:
-            self.bOrientacio.setText(' Orientació: Eixample')
-            
+        # if self.canvas.rotation() == 0:
+        #     self.bOrientacio.setText(' Orientació: Nord')
+        # else:
+        #     self.bOrientacio.setText(' Orientació: Eixample')
+        self.bOrientacio.setText('Crear Mapeta')
 
         # Titol del projecte 
         # self.lblTitolProjecte.setFont(QvConstants.FONTTITOLS)
