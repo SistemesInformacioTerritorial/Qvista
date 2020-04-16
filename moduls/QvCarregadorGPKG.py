@@ -35,7 +35,7 @@ class QvCarregadorGPKG(QDialog):
             x.setChecked(check)
     def setCapes(self,capes):
         self._combos=[QCheckBox(x) for x in capes]
-        cbTots = QCheckBox('Seleccionar tots')
+        cbTots = QCheckBox('Seleccionar totes les capes')
         cbTots.toggled.connect(self.seleccionaTots)
         self._layout.addWidget(cbTots)
         for x in self._combos:
