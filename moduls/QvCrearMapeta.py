@@ -14,7 +14,7 @@ from PyQt5.QtCore import QModelIndex, Qt, QRect, QPoint, QTimer, QSize, QObject,
 from PyQt5.QtWidgets import QApplication, QMessageBox, QMainWindow, QDockWidget, QTreeView,\
     QAction, QVBoxLayout, QGridLayout, QSplitter
 from PyQt5.QtWidgets import  QHBoxLayout ,QAbstractItemView, QLabel, QWidget, QLineEdit,\
-     QPushButton, QSpinBox, QFileDialog, QSpacerItem,QSizePolicy, QColorDialog
+     QPushButton, QSpinBox, QFileDialog, QSpacerItem, QSizePolicy, QColorDialog
 from PyQt5.QtGui import QPainter, QColor, QPen, QImage, QBrush
 from moduls.QvPushButton import QvPushButton
 
@@ -120,10 +120,6 @@ class QvColocacionCirculo(QgsMapTool):
         self.canvas.refresh()
         self.saveCanvas()
         pass
-        
-
-        
-
     def saveCanvas(self):
         self.canvas.saveAsImage("mapesOffline/temporal.png") 
         # self.pixmap=self.canvas.grab(QRect(QPoint(0,0),QSize(-1,-1)))
@@ -293,50 +289,90 @@ class QvCrearMapetaConBotones(QWidget):
 
         QWidget.__init__(self)
 
-
         self.setParent(pare)
         self.pare = pare
-        self.existeCirculo=False        
+        self.existeCirculo=False  
+
         #defino botones y las funciones de su click
-        self.botoponerCirculo = QvPushButton("Posar circle")
+        self.botoponerCirculo = QPushButton("Posar circle")
         self.botoponerCirculo.clicked.connect(self.ponerCirculo)
-        self.botoConfirmar = QvPushButton("Confirmar")
+        self.botoConfirmar = QPushButton("Confirmar")
         self.botoConfirmar.clicked.connect(self.confirmar)
 
-
-
-        self.botoSalvar =  QvPushButton('Salvar')  
+        self.botoSalvar =  QPushButton('Salvar')  
         self.botoSalvar.clicked.connect(self.Salvar)
         self.label = QLabel(self)
 
-
-        self.botoColor = QvPushButton('Sel·leccionar color')
+        self.botoColor = QPushButton('Sel·leccionar color')
         self.botoColor.setToolTip('Color perimetre')
         self.botoColor.clicked.connect(self.showDialogColor)
-
        
         self.color= QColor(121,144,155)
         self.xmax_ymax = QLabel(" ",self)
         self.xmin_ymin = QLabel(" ",self)
 
         self.spinBox = QSpinBox(self)
+        self.spinBox.setFixedWidth(60)
         self.spinBox.setRange(50, 600)
         self.spinBox.setSingleStep(20)
         self.spinBox.setValue(200)
         self.lado=self.spinBox.value()
         self.spinBox.valueChanged.connect(self.tamanyoLadoCirculo)
 
-        self.layGcrearMapeta = QGridLayout(self)
-        self.layGcrearMapeta.setSpacing(1)
-        self.layGcrearMapeta.setVerticalSpacing(1)
-        self.layGcrearMapeta.addWidget(self.botoponerCirculo,0,0,Qt.AlignTop)
-        self.layGcrearMapeta.addWidget(self.botoConfirmar,0,1,Qt.AlignTop)
-        self.layGcrearMapeta.addWidget(self.botoSalvar,1,0,Qt.AlignTop)
-        self.layGcrearMapeta.addWidget(self.xmax_ymax,2,0,Qt.AlignTop)
-        self.layGcrearMapeta.addWidget(self.xmin_ymin,3,0,Qt.AlignTop)
-        self.layGcrearMapeta.addWidget(self.spinBox,4,0,Qt.AlignTop)
-        self.layGcrearMapeta.addWidget(self.botoColor,4,1,Qt.AlignTop)
-        self.layGcrearMapeta.addWidget(self.label,5,0,Qt.AlignBottom)
+        spacerItem = QSpacerItem(0, 0, QSizePolicy.Expanding, QSizePolicy.Minimum)
+        self.layH1=QHBoxLayout()
+        self.layH1.addWidget(self.botoponerCirculo)
+        self.layH1.addWidget(self.botoConfirmar)
+        self.layH1.addItem(spacerItem)
+
+        self.layH2=QHBoxLayout()
+        self.layH2.addWidget(self.botoSalvar)
+        self.layH2.addWidget(self.botoColor) 
+        self.layH2.addItem(spacerItem)  
+
+        self.layH3=QHBoxLayout()
+        self.layH3.addWidget(self.xmax_ymax)
+        self.layH3.addItem(spacerItem) 
+
+        self.layH4=QHBoxLayout()
+        self.layH4.addWidget(self.xmin_ymin)
+        self.layH4.addItem(spacerItem)      
+
+
+        self.layH5=QHBoxLayout()
+        self.layH5.addWidget(self.spinBox)
+        self.layH5.addItem(spacerItem) 
+
+        self.layH6=QHBoxLayout()
+        self.layH6.addWidget(self.label)
+        self.layH6.addItem(spacerItem)      
+
+        spacerItem2 = QSpacerItem(0,2000, QSizePolicy.Ignored, QSizePolicy.Expanding)
+        self.layV1=QVBoxLayout()
+        self.layV1.addLayout(self.layH1) 
+        self.layV1.addLayout(self.layH2) 
+        self.layV1.addLayout(self.layH3) 
+        self.layV1.addLayout(self.layH4) 
+        self.layV1.addLayout(self.layH5) 
+        self.layV1.addItem(spacerItem2)
+        self.layV1.addLayout(self.layH6) 
+
+        
+        
+
+        self.setLayout(self.layV1)
+  
+        # self.layGcrearMapeta = QGridLayout(self)
+        # self.layGcrearMapeta.setSpacing(1)
+        # self.layGcrearMapeta.setVerticalSpacing(1)
+        # self.layGcrearMapeta.addWidget(self.botoponerCirculo,0,0,Qt.AlignTop)
+        # self.layGcrearMapeta.addWidget(self.botoConfirmar,0,1,Qt.AlignTop)
+        # self.layGcrearMapeta.addWidget(self.botoSalvar,1,0,Qt.AlignTop)
+        # self.layGcrearMapeta.addWidget(self.xmax_ymax,2,0,Qt.AlignTop)
+        # self.layGcrearMapeta.addWidget(self.xmin_ymin,3,0,Qt.AlignTop)
+        # self.layGcrearMapeta.addWidget(self.spinBox,4,0,Qt.AlignTop)
+        # self.layGcrearMapeta.addWidget(self.botoColor,4,1,Qt.AlignTop)
+        # self.layGcrearMapeta.addWidget(self.label,5,0,Qt.AlignBottom)
    
     def tamanyoLadoCirculo(self):
         '''
@@ -352,11 +388,20 @@ class QvCrearMapetaConBotones(QWidget):
         self.label.setPixmap(QPixmap())
         numeroSegmentsCercle=360
         lado=self.lado
-        if not self.existeCirculo:
-            self.colocoCirculo= QvColocacionCirculo(self.canvas,  numeroSegmentsCercle,self,lado)
-            self.existeCirculo=True
-            self.canvas.setMapTool(self.colocoCirculo)
-    
+        # if not self.existeCirculo:
+        #     self.colocoCirculo= QvColocacionCirculo(self.canvas,  numeroSegmentsCercle,self,lado)
+        #     self.existeCirculo=True
+        #     self.canvas.setMapTool(self.colocoCirculo)
+
+        # reseterar circulo
+        try:
+            self.colocoCirculo.rubberband.reset(True)
+        except :
+            pass
+
+        self.colocoCirculo= QvColocacionCirculo(self.canvas,  numeroSegmentsCercle,self,lado)
+        self.existeCirculo=True
+        self.canvas.setMapTool(self.colocoCirculo)
     
     def showDialogColor(self):
         d_color= QColorDialog()

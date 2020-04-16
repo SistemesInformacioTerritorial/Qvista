@@ -20,6 +20,7 @@ from moduls.QvLlegenda import QvLlegenda
 from moduls.QvAtributs import QvAtributs
 # from moduls.QvMapeta import QvMapeta
 from moduls.QvMapetaBrujulado import QvMapetaBrujulado
+from moduls.QvCrearMapeta import QvCrearMapetaConBotones
 from moduls.QVCercadorAdreca import QCercadorAdreca
 from moduls.QVDistrictesBarris import QVDistrictesBarris
 # from moduls.QvCatalegPetit import QvCataleg
@@ -130,6 +131,8 @@ class QVista(QMainWindow, Ui_MainWindow):
         #Afegim títol a la finestra
         self.setWindowTitle(titleFinestra)
 
+        self.crearMapetaConBotones=None
+
         # Definició dels labels de la statusBar 
         self.definirLabelsStatus()   
 
@@ -160,6 +163,8 @@ class QVista(QMainWindow, Ui_MainWindow):
         #Preparem el mapeta abans de les accions, ja que el necessitarem allà
         self.preparacioMapeta()
 
+        
+
         # # Connectors i accions
         self.definicioAccions()
 
@@ -184,6 +189,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         # self.preparacioGrafiques()
         self.preparacioSeleccio()
         # self.preparacioEntorns()
+        self.preparacioCrearMapeta()
         
 
         # Eina inicial del mapa = Panning
@@ -710,7 +716,9 @@ class QVista(QMainWindow, Ui_MainWindow):
         Connectem la senyal sHanTrobatCoordenades a trobatNumero_oNo.
         """
 
-        # instanciamos clases necesarias    
+        # instanciamos clases necesarias  
+        '''
+        '''  
         self.fCercador=QFrame()
         self.bottomWidget = QWidget()
         self.ubicacions = QvUbicacions(self.canvas, pare=self)
@@ -783,12 +791,14 @@ class QVista(QMainWindow, Ui_MainWindow):
           
         self.cAdrec.sHanTrobatCoordenades.connect(self.trobatNumero_oNoLat) 
 
+        # creamos DockWidget
         self.dwCercador = QvDockWidget( "Cercador", self )
         self.dwCercador.setContextMenuPolicy(Qt.PreventContextMenu)
         self.dwCercador.hide()
         self.dwCercador.setAllowedAreas( Qt.RightDockWidgetArea | Qt.LeftDockWidgetArea )
         self.dwCercador.setWidget( self.fCercador)
         self.dwCercador.setContentsMargins ( 2, 2, 2, 2 )
+        # a qVista se le añade un DockWidget
         self.addDockWidget( Qt.RightDockWidgetArea, self.dwCercador)
 
     def CopiarA_Ubicacions(self):       
@@ -892,6 +902,41 @@ class QVista(QMainWindow, Ui_MainWindow):
         # # self.lblMapeta.show()
         # self.dwMapeta.show()
    
+    def preparacioCrearMapeta(self):
+
+        self.crearMapetaConBotones = QvCrearMapetaConBotones(self.canvas)
+        self.crearMapetaConBotones.setGraphicsEffect(QvConstants.ombra(self,radius=30,color=QvConstants.COLOROMBRA))
+        # self.bOrientacio.clicked.connect(self.editarOrientacio)
+        self.crearMapetaConBotones.setParent(self.canvas)  #vaya sitio!!!
+        # self.crearMapetaConBotones.move(50,50)
+        # self.crearMapetaConBotones.show()
+
+        """
+        Amb aquesta linia:
+        crearMapeta.show()
+        es veuria el widget suelto, separat del canvas.
+        Les següents línies mostren com integrar el widget 'crearMapeta' com a dockWidget.
+        """
+        # Creem un dockWdget i definim les característiques
+        self.dwcrearMapeta = QDockWidget( "CrearMapeta", self )
+        self.dwcrearMapeta.setContextMenuPolicy(Qt.PreventContextMenu)
+        self.dwcrearMapeta.setAllowedAreas( Qt.RightDockWidgetArea | Qt.LeftDockWidgetArea )
+        self.dwcrearMapeta.setContentsMargins ( 1, 1, 1, 1 )
+        
+        # AÑADIMOS  nuestra instancia al dockwidget
+        self.dwcrearMapeta.setWidget(self.crearMapetaConBotones)
+
+        # Coloquem el dockWidget al costat esquerra de la finestra
+        self.addDockWidget( Qt.LeftDockWidgetArea, self.dwcrearMapeta)
+
+        # Fem visible el dockWidget
+        self.dwcrearMapeta.hide()  #atencion
+
+
+
+
+
+
     def preparacioLlegenda(self):
         """Es genera un dockWidget a la dreta, amb la llegenda del projecte.
  
@@ -2530,13 +2575,26 @@ class QVista(QMainWindow, Ui_MainWindow):
     def hideSB(self):
         self.sbCarregantCanvas.hide()
 
+
+ 
+
     def editarOrientacio(self):
-        self.mapeta.cambiarRotacion()
-              
-        if self.canvas.rotation()==0:
-            self.bOrientacio.setText(' Orientació: Nord')
+        
+        # puenteo funcion para probar crear mapeta
+        if self.dwcrearMapeta.isHidden():
+            self.dwcrearMapeta.show()
         else:
-            self.bOrientacio.setText(' Orientació: Eixample')
+            self.dwcrearMapeta.hide()
+            
+
+
+    
+        # self.mapeta.cambiarRotacion()
+              
+        # if self.canvas.rotation()==0:
+        #     self.bOrientacio.setText(' Orientació: Nord')
+        # else:
+        #     self.bOrientacio.setText(' Orientació: Eixample')
 
  
         self.canvas.refresh()
