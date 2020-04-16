@@ -47,6 +47,7 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
         self.escales = None
         self.directory = '.'
         self.mask = None
+        self.removing = False
         # self.restoreExtent = 0
         # print('restoreExtent', self.restoreExtent)
 
@@ -84,12 +85,12 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
         self.setMenuProvider(QvMenuLlegenda(self))
 
         self.iconaFiltre = qgGui.QgsLayerTreeViewIndicator()
-        self.iconaFiltre.setIcon(qtGui.QIcon(imatgesDir+'filter.png'))
+        self.iconaFiltre.setIcon(qtGui.QIcon(os.path.join(imatgesDir,'filter.png')))
         self.iconaFiltre.setToolTip('Filtre actiu')
         self.iconaFiltre.clicked.connect(self.filterElements)
 
         self.iconaMap = qgGui.QgsLayerTreeViewIndicator()
-        self.iconaMap.setIcon(qtGui.QIcon(imatgesDir+'categories2.png'))
+        self.iconaMap.setIcon(qtGui.QIcon(os.path.join(imatgesDir,'categories2.png')))
         self.iconaMap.setToolTip('Categories de mapificació')
         self.iconaMap.clicked.connect(self.mapRenderer.modifyRenderer)
 
@@ -195,8 +196,8 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
             return False
 
     def actIcones(self):
-        # if not self.editable:
-        #     return
+        if self.removing:
+            return
         for capa in self.capes():
             if capa.type() == qgCor.QgsMapLayer.VectorLayer:
                 node = self.root.findLayer(capa.id())
@@ -249,7 +250,7 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
                 node.setItemVisibilityChecked(True)
 
     def connectaCanviCapaActiva(self, canviCapaActiva):
-        if canviCapaActiva:
+        if canviCapaActiva is not None:
             self.currentLayerChanged.connect(canviCapaActiva)
 
     def mapBridge(self, canvas):
@@ -490,9 +491,11 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
         self.defaultActions().renameGroupOrLayer()
 
     def removeGroupOrLayer(self):
+        self.removing = True
         node = self.currentNode()
         if node is not None:
             node.parent().removeChildNode(node)
+        self.removing = False
 
     def addLayersFromFile(self):
         dlgLayers = qtWdg.QFileDialog()
@@ -612,6 +615,21 @@ if __name__ == "__main__":
 
         QvApp().carregaIdioma(app, 'ca')
         # QvApp().logInici()
+
+        # canv = qgGui.QgsMapCanvas()
+
+        # atrib = QvAtributs(canv)
+
+        # leyenda = QvLlegenda(canv, atrib)
+
+        # leyenda.project.read('D:/qVista/EjemploMapSin.qgs')
+
+        # canv.setWindowTitle('Canvas')
+        # canv.show()
+
+        # leyenda.setWindowTitle('Llegenda')
+        # leyenda.show()
+
 
         def printCapaActiva():
             cLayer = leyenda.currentLayer()

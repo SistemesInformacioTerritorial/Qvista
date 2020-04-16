@@ -5,8 +5,6 @@ from qgis.core import QgsGraduatedSymbolRenderer
 from qgis.PyQt.QtCore import Qt
 from collections import OrderedDict
 
-from configuracioQvista import *
-
 MAP_ID = "qV_mapificacio"
 MAP_MAX_CATEGORIES = 10
 MAP_ALPHA_INI = 18
@@ -53,11 +51,11 @@ MAP_DISTRIBUCIO = OrderedDict({
 MAP_COLORS = OrderedDict({
     "Blau": QColor(0, 128, 255),
     "Gris": QColor(128, 128, 128),
-    "Groc" : QColor(255, 192, 0),
-    "Porpra" : QColor(156, 41, 161),
+    "Groc": QColor(255, 192, 0),
+    "Porpra": QColor(156, 41, 161),
     "Taronja": QColor(255, 128, 0),
-    "Verd" : QColor(32, 160, 32),
-    "Vermell" : QColor(255, 32, 32)
+    "Verd": QColor(32, 160, 32),
+    "Vermell": QColor(255, 32, 32)
 })
 
 MAP_CONTORNS = OrderedDict({
@@ -65,7 +63,7 @@ MAP_CONTORNS = OrderedDict({
     "Negre": Qt.black,
     "Gris": Qt.gray,
     "Blanc": Qt.white,
-    "Cap" : Qt.transparent
+    "Cap": Qt.transparent
 })
 
 MAP_METODES = OrderedDict({

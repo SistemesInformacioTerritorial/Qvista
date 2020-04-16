@@ -20,7 +20,7 @@ if hasattr(QtCore.Qt, 'AA_UseHighDpiPixmaps'):
     QApplication.setAttribute(QtCore.Qt.AA_UseHighDpiPixmaps, True)
 
 #Parametres configuració inicial
-versio="0.8"
+versio="0.9"
 titolFinestra = "qVista %s  Sistema d'Informació Territorial de Barcelona"%versio
 
 carpetaCataleg = "N:/9SITEB/Publicacions/qVista/Cataleg/Capes/"
@@ -38,7 +38,7 @@ dadesdir=os.path.join(QvTempdir,'dades/')+'/' #Arxius temporals que volem conser
 configdir=os.path.join(QvTempdir+'config/')+'/' #Configuracions i coses
 
 docdir='n:/siteb/apl/pyqgis/qvista/dades/'
-imatgesDir = os.path.abspath('Imatges/')+'/'
+imatgesDir = os.path.abspath('Imatges/')
 docdirPlantilles=os.path.join(docdir,'plantilles/')
 
 arxiuAvis=os.path.join(docdir,'Avisos.htm')
