@@ -50,7 +50,7 @@ class QvColocacionCirculo(QgsMapTool):
         Data en canvas. Segun boton iz o derecho se que es modo win o no....
         Guardo el centro
         '''
-
+        self.canvas.setRotation(0)
         self.parent.label.setPixmap(QPixmap())
         try:
             self.rubberband.reset(True)
@@ -286,6 +286,7 @@ class QvCrearMapetaConBotones(QWidget):
         '''
         '''
         self.canvas=canvas
+        self.canvas.setRotation(0)
 
         QWidget.__init__(self)
 
@@ -347,7 +348,7 @@ class QvCrearMapetaConBotones(QWidget):
         self.layH6.addWidget(self.label)
         self.layH6.addItem(spacerItem)      
 
-        spacerItem2 = QSpacerItem(0,2000, QSizePolicy.Ignored, QSizePolicy.Expanding)
+        spacerItem2 = QSpacerItem(0,0, QSizePolicy.Ignored, QSizePolicy.Expanding)
         self.layV1=QVBoxLayout()
         self.layV1.addLayout(self.layH1) 
         self.layV1.addLayout(self.layH2) 
@@ -385,6 +386,9 @@ class QvCrearMapetaConBotones(QWidget):
         '''
         Dibujo circulo, dinamicamente
         '''
+
+        self.canvas.setRotation(0)
+
         self.label.setPixmap(QPixmap())
         numeroSegmentsCercle=360
         lado=self.lado
