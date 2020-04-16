@@ -44,6 +44,7 @@ from moduls.QvCatalegCapes import QvCatalegCapes
 from moduls.QvSabiesQue import QvSabiesQue
 from moduls.QvMemoria import QvMemoria
 from moduls.QvBafarada import QvBafarada
+from moduls.QvCarregadorGPKG import QvCarregadorGPKG
 from moduls.QvVisualitzacioCapa import QvVisualitzacioCapa
 # import re
 import csv
@@ -261,11 +262,19 @@ class QVista(QMainWindow, Ui_MainWindow):
                 # self.obrirProjecte(nfile)
             elif fext == '.qlr':
                 afegirQlr(nfile)
-            elif fext in ('.shp', '.gpkg'):
+            elif fext == '.shp':
                 layer = QgsVectorLayer(nfile, os.path.basename(nfile), "ogr")
                 if layer.isValid():
                     self.project.addMapLayer(layer)
                     self.setDirtyBit()
+            elif fext == '.gpkg':
+                nomsCapes = QvCarregadorGPKG.triaCapes(nfile,self)
+                uris = map(lambda x: f'{nfile}|layername={x}', nomsCapes)
+                aux = zip(nomsCapes, uris)
+                capes = [QgsVectorLayer(y,x,'ogr') for (x,y) in aux]
+
+                self.project.addMapLayers(capes)
+                self.setDirtyBit()
             elif fext == '.csv':
                 carregarLayerCSV(nfile)
 
