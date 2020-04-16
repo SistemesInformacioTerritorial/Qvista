@@ -286,8 +286,7 @@ class QVista(QMainWindow, Ui_MainWindow):
                     self.project.addMapLayer(layer)
                     self.setDirtyBit()
             elif fext == '.gpkg':
-                lay = QgsVectorLayer(nfile,'hola','ogr')
-
+                nomsCapes = QvCarregadorGPKG.triaCapes(nfile,self)
                 uris = map(lambda x: f'{nfile}|layername={x}', nomsCapes)
                 aux = zip(nomsCapes, uris)
                 capes = [QgsVectorLayer(y,x,'ogr') for (x,y) in aux]
