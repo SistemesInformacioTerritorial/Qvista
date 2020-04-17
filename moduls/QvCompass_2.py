@@ -236,7 +236,7 @@ class QvCompass(QFrame):
         Cursor entra en area mapeta\n
         Pongo cursor cruz
         """
-        self.setCursor(QCursor(QPixmap(imatgesDir+'cruz.cur')))     
+        self.setCursor(QCursor(QPixmap(imatgesDir+'/cruz.cur')))     
 
     def leaveEvent(self, event):
         # print("leaveEvent")

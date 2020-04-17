@@ -1086,7 +1086,7 @@ class QvMapeta(QFrame):
         self.MousePressFlag=True
         rect = self.canvas.extent()
     def enterEvent(self, event):
-        self.setCursor(QCursor(QPixmap(imatgesDir+'cruz.cur')))    
+        self.setCursor(QCursor(QPixmap(imatgesDir+'/cruz.cur')))    
     def mouseMoveEvent(self, event):
         """
         Presion de un boton del raton mantenida y movimiento sobre el mapeta
