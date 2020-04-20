@@ -60,10 +60,10 @@ MAP_COLORS = OrderedDict({
 
 MAP_CONTORNS = OrderedDict({
     "Base": None,
-    "Negre": Qt.black,
-    "Gris": Qt.gray,
-    "Blanc": Qt.white,
-    "Cap": Qt.transparent
+    "Negre": QColor(Qt.black),
+    "Gris": QColor(Qt.gray),
+    "Blanc": QColor(Qt.white),
+    "Cap": QColor(Qt.transparent)
 })
 
 MAP_METODES = OrderedDict({

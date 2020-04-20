@@ -15,12 +15,15 @@ from moduls.QvMapificacio import QvMapificacio, PANDAS_ENABLED, PANDAS_ERROR, RU
 from moduls.QvSqlite import QvSqlite
 from moduls.QvEditorCsv import QvEditorCsv
 from moduls.QvApp import QvApp
+from moduls.QvMapRenderer import QvMapRendererParams
 
 import os
 import sqlite3
 
 
 class QvFormBaseMapificacio(QDialog):
+
+
     def __init__(self, llegenda, amplada=None, parent=None, modal=True):
         super().__init__(parent, modal=modal)
         self.llegenda = llegenda
@@ -28,6 +31,7 @@ class QvFormBaseMapificacio(QDialog):
             self.setMinimumWidth(amplada)
             self.setMaximumWidth(amplada)
         self.setWindowFlags(Qt.MSWindowsFixedSizeDialogHint)
+        self.renderParams = None
 
     def msgInfo(self, txt):
         QMessageBox.information(self, 'Informació', txt)
@@ -218,7 +222,7 @@ class QvFormNovaMapificacio(QvFormBaseMapificacio):
         self.fCSV = mapificacio
         self.taulaMostra = None
 
-        self.setWindowTitle('Afegir capa amb mapa de coropletes')
+        self.setWindowTitle('Afegir capa amb mapa')
 
         self.layout = QVBoxLayout()
         self.layout.setSpacing(14)
@@ -306,8 +310,8 @@ class QvFormNovaMapificacio(QvFormBaseMapificacio):
         self.lSimb.setSpacing(14)
         self.gSimb.setLayout(self.lSimb)
 
-        self.lSimb.addRow('Gamma de color:', self.color)
-        self.lSimb.addRow('Mètode de classificació:', self.metode)
+        self.lSimb.addRow('Color base:', self.color)
+        self.lSimb.addRow('Mètode classificació:', self.metode)
         self.lSimb.addRow("Nombre d'intervals:", self.intervals)
 
         self.layout.addWidget(self.gZona)
@@ -442,17 +446,30 @@ class QvFormNovaMapificacio(QvFormBaseMapificacio):
             ok = True
         return ok
 
+    def setRenderParams(self):
+        self.renderParams = QvMapRendererParams()
+        self.renderParams.modeCategories = mv.MAP_METODES[self.metode.currentText()]
+        self.renderParams.colorBase = mv.MAP_COLORS[self.color.currentText()]
+        if self.renderParams.colorContorn is None:
+            self.renderParams.colorContorn = self.renderParams.colorBase
+        else:
+            self.renderParams.colorContorn = mv.MAP_CONTORNS[self.renderParams.colorContorn]
+        if self.tipus.currentText().startswith('COUNT') and self.distribucio.currentText() == "":
+            self.renderParams.numDecimals = 0
+        else:
+            self.renderParams.numDecimals = 2
+        self.renderParams.numCategories = self.intervals.value()
+
     def procesa(self):
         if self.taulaMostra is not None:
             self.taulaMostra.hide()
+        self.setRenderParams()
         ok = self.fCSV.agregacio(self.llegenda, self.capa.text().strip(),
                                  self.zona.currentText(), self.tipus.currentText(),
+                                 self.renderParams,
                                  campAgregat=self.calcul.currentText().strip(),
                                  filtre=self.filtre.currentText().strip(),
                                  tipusDistribucio=self.distribucio.currentText(),
-                                 modeCategories=self.metode.currentText(),
-                                 numCategories=self.intervals.value(),
-                                 colorBase=self.color.currentText(),
                                  form=self)
         if ok:
             return ''
@@ -468,7 +485,7 @@ class QvFormSimbMapificacio(QvFormBaseMapificacio):
         if not self.iniParams():
             return
 
-        self.setWindowTitle('Modificar mapa de coropletes')
+        self.setWindowTitle('Modificar mapa')
 
         self.layout = QVBoxLayout()
         self.layout.setSpacing(14)
@@ -517,9 +534,9 @@ class QvFormSimbMapificacio(QvFormBaseMapificacio):
         self.lSimb.setSpacing(14)
         self.gSimb.setLayout(self.lSimb)
 
-        self.lSimb.addRow('Gamma de Color:', self.color)
+        self.lSimb.addRow('Color base:', self.color)
         self.lSimb.addRow('Color contorn:', self.contorn)
-        self.lSimb.addRow('Mètode de classificació:', self.metode)
+        self.lSimb.addRow('Mètode classificació:', self.metode)
         self.lSimb.addRow(self.nomIntervals, self.intervals)
 
         self.wInterval = []
@@ -774,7 +791,10 @@ class QvFormSimbMapificacio(QvFormBaseMapificacio):
                 self.renderer = self.llegenda.mapRenderer.customRender(self.capa, self.renderParams)
             else:
                 self.renderParams.colorBase = mv.MAP_COLORS[self.renderParams.colorBase]
-                self.renderParams.colorContorn = mv.MAP_CONTORNS[self.renderParams.colorContorn]
+                if self.renderParams.colorContorn == 'Base':
+                    self.renderParams.colorContorn = self.renderParams.colorBase
+                else:
+                    self.renderParams.colorContorn = mv.MAP_CONTORNS[self.renderParams.colorContorn]
                 self.renderParams.modeCategories = \
                     mv.MAP_METODES_MODIF[self.renderParams.modeCategories]
                 self.renderer = self.llegenda.mapRenderer.calcRender(self.capa, self.renderParams)
