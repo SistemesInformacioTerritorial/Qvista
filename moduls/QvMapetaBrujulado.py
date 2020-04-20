@@ -179,12 +179,13 @@ class QvMapetaBrujulado(QFrame):
         except:
             print("problemas PGW")   
 
-    def EnviarPNTCompass(self):
+
+    def EnviarPNTCompass(self,punto):
         # fuerzo funcion de una clase compass con parametro de clase mapeta
         try:
-            self.qvCompass.gestionoPnt(self.qvMapeta.the_data)
+            self.qvCompass.gestionoPnt(punto)
         except :
-            pass
+            pass        
 
     def showDialogColor(self):
         d_color= QColorDialog()
