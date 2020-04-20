@@ -371,7 +371,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         #     self.bOrientacio.setText(' Orientació: Nord')
         # else:
         #     self.bOrientacio.setText(' Orientació: Eixample')
-        self.bOrientacio.setText('Crear Mapeta')
+        self.bOrientacio.setText('Disponible')
 
         # Titol del projecte 
         # self.lblTitolProjecte.setFont(QvConstants.FONTTITOLS)
@@ -879,37 +879,30 @@ class QVista(QMainWindow, Ui_MainWindow):
     def preparacioNoticies(self): #???
         return
 
+    def enviarMapetaTemporal(self,fichero):
+        
+        self.mapeta.PngPgwDroped_MB([fichero])
+
+
     def preparacioMapeta(self):
-        # self.wMapeta = QtWidgets.QWidget()
-        # self.wMapeta.setGeometry(0,0,267,284)
-        # self.wMapeta.show()
-        # self.mapeta = QvMapeta(self.canvas, tamanyPetit=True, pare=self)
-        self.mapeta  = QvMapetaBrujulado("mapesOffline/default.png", self.canvas,  pare=self.canvas)
+        self.mapetaDefaultPng= "mapesOffline/default.png"
+        self.mapeta  = QvMapetaBrujulado(self.mapetaDefaultPng, self.canvas,  pare=self.canvas, mapeta_default="mapesOffline/default.png")
         self.mapeta.setGraphicsEffect(QvConstants.ombra(self,radius=30,color=QvConstants.COLOROMBRA))
-        self.bOrientacio.clicked.connect(self.editarOrientacio)
+        # self.bOrientacio.clicked.connect(self.editarOrientacio)
+        self.mapeta.Sig_MuestraMapeta.connect(self.editarOrientacio)
+
+
         self.mapeta.setParent(self.canvas)
         self.mapeta.move(20,20)
         self.mapeta.show()
-        # self.dwMapeta = QvDockWidget("4situació", self)
-        # self.dwMapeta.setMinimumWidth(180)
-        # self.dwMapeta.setMaximumWidth(180)
-        # self.dwMapeta.setMaximumHeight(200)
-        # self.dwMapeta.setMinimumHeight(200)
-        # self.dwMapeta.setAllowedAreas( Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea )
-        # self.dwMapeta.setWidget(self.mapeta)
-        # self.dwMapeta.setContentsMargins ( 0, 0, 0, 0 )
-        # self.addDockWidget( Qt.LeftDockWidgetArea, self.dwMapeta )
-        # # self.lblMapeta.show()
-        # self.dwMapeta.show()
+     
    
     def preparacioCrearMapeta(self):
-
         self.crearMapetaConBotones = QvCrearMapetaConBotones(self.canvas)
         self.crearMapetaConBotones.setGraphicsEffect(QvConstants.ombra(self,radius=30,color=QvConstants.COLOROMBRA))
-        # self.bOrientacio.clicked.connect(self.editarOrientacio)
         self.crearMapetaConBotones.setParent(self.canvas)  #vaya sitio!!!
-        # self.crearMapetaConBotones.move(50,50)
-        # self.crearMapetaConBotones.show()
+
+        self.crearMapetaConBotones.Sig_MapetaTemporal.connect(self.enviarMapetaTemporal)
 
         """
         Amb aquesta linia:
@@ -1592,7 +1585,6 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.botoMapeta.setIcon(QIcon(os.path.join(imatgesDir,'Mapeta.png')))
         self.botoMapeta.setStyleSheet(stylesheetBotons)
         self.botoMapeta.setIconSize(QSize(24,24))
-        # self.botoMapeta.clicked.connect(self.mapeta.ferPetit)
         self.botoMapeta.setCursor(QvConstants.cursorClick())
 
         self.botoMetadades.setIcon(QIcon(os.path.join(imatgesDir,'information-variant.png')))

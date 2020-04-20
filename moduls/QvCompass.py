@@ -13,7 +13,7 @@ import numpy as np
 
 class QvCompass(QFrame):
     
-    angleChanged = pyqtSignal(float)
+    # angleChanged = pyqtSignal(float)
     """La classe que defineix "el Compass"  que controla un canvas."""
     def __init__(self, canvas,  pare = None):
         """Inicialització del Compass.
@@ -28,53 +28,30 @@ class QvCompass(QFrame):
         """
 
         QFrame.__init__(self)
-
-        # Assigno el mapeta al parent  JNB
         self.setParent(pare)
         self.pare = pare
-
         self._angle = 0.0
         self.position_old = QPoint(0,0)
-
         self._margins = 10
         self._pointText = {0: "N", 45: "NE", 90: "E", 135: "SE", 180: "S",
                            225: "SO", 270: "O", 315: "NO"}
-
         self.canvas=canvas
         self.setParent(pare)
         self.pare= pare
         self.colorMarcasCompass= QColor(243,90,14)
-
- 
-        # Dimensions i fons del mapeta segosn si és gran o petit
-        # atencion
-        # self.xTamany = 150
-        # self.yTamany = 150     
-
         self.xTamany = 500
         self.yTamany = 500   
-        # Definim la geometria del frame del mapeta
-        # self.setGeometry(20,20,self.xTamany,self.yTamany)
         self.setGeometry(0,0,self.xTamany,self.yTamany)
-        # self.setStyleSheet('''border-image: url("imagen.jpg")'''
-        # atencion
-        # self.setStyleSheet('QFrame {opacity: 0; background-image: url("D:/qVista/mio/tra/base_redonda.png");}')
-
         self.begin = QPoint()
         self.end = QPoint()
         self.setToolTip('Doble click per angle 0')
-
-       
         self.spinBox = QDoubleSpinBox(self)
         self.spinBox.setGeometry(100,133,50,17)
         self.spinBox.setRange(0, 359.999)
         self.spinBox.setSingleStep(0.5)
-        
         self.spinBox.valueChanged.connect(self.setAngle)
         self.spinBox.setDecimals(1)
-        # self.spinBox.show()
         self.spinBox.hide()
-    
     def drawMarkings(self, painter):
         """
         Las referencias
@@ -107,7 +84,6 @@ class QvCompass(QFrame):
             painter.rotate(15)
             i += 15       
         painter.restore()
-
     def drawNeedle(self, painter):
         """
         Aguja, (fondo y punta)
@@ -136,11 +112,7 @@ class QvCompass(QFrame):
             QPolygon([QPoint(-10, 0), QPoint(0, -45), QPoint(10, 0),
                         QPoint(-10,0)])            
             )
-        
         painter.restore()
-
-
-
     def paintEvent(self, event):
         # print("paintEvent")
         painter = QPainter()
@@ -149,27 +121,19 @@ class QvCompass(QFrame):
         # painter.fillRect(event.rect(), self.palette().brush(QPalette.Window))
         self.drawMarkings(painter) # resto
         self.drawNeedle(painter)   # aguja
-        
         painter.end()        
-
     def dobleClick(self):
         angulo=0
         self.setAngle(angulo)
         self.spinBox.setValue(angulo)
         self.position_old =QPoint(0,0)
-
-
     def gestionoPnt(self, data):
-        # print("Compass >> gestionoPnt>>",data)   
-
         self.position = data
-
         lin=QLine(self.position, self.position_old)
         if abs(lin.dx())<=1 and abs(lin.dy())<=1:
             self.dobleClick()
         else:
             xcent= self.width()/2;  ycent= self.height()/2
-            # p0 = [xcent, ycent-150]
             p0 = [xcent, 0]
             p1 = [xcent, ycent]
             p2 = [self.position.x(), self.position.y()]
@@ -183,24 +147,17 @@ class QvCompass(QFrame):
             angulo= np.degrees(np.math.atan2(np.linalg.det([v0,v1]),np.dot(v0,v1)))
             if angulo < 0:
                 angulo= 360+angulo
-
             self.setAngle(angulo)
             self.spinBox.setValue(angulo)
-
         self.position_old = self.position
-
-
-
     def mousePressEvent(self, event):
        if event.buttons() & Qt.LeftButton:
             self.position = QPoint( event.pos().x(),  event.pos().y())
-
             lin=QLine(self.position, self.position_old)
             if abs(lin.dx())<=1 and abs(lin.dy())<=1:
                 self.dobleClick()
             else:
                 xcent= self.width()/2;  ycent= self.height()/2
-                # p0 = [xcent, ycent-150]
                 p0 = [xcent, 0]
                 p1 = [xcent, ycent]
                 p2 = [self.position.x(), self.position.y()]
@@ -214,63 +171,31 @@ class QvCompass(QFrame):
                 angulo= np.degrees(np.math.atan2(np.linalg.det([v0,v1]),np.dot(v0,v1)))
                 if angulo < 0:
                     angulo= 360+angulo
-
                 self.setAngle(angulo)
                 self.spinBox.setValue(angulo)
-
             self.position_old = self.position
-            # self.lineEdit.setText(angulo)
-
-
-
-    
-    # def reciboPnt(self,pnt):
-    #     print("en compass, recibo pnt")
-
-    def mouseMoveEvent(self, event):
-        # print("mouseMoveEvent")
-        pass
-
     def enterEvent(self, event):
-        """
-        Cursor entra en area mapeta\n
-        Pongo cursor cruz
-        """
+        '''
+        poner cursor
+        '''
         self.setCursor(QCursor(QPixmap(imatgesDir+'/cruz.cur')))     
-
-    def leaveEvent(self, event):
-        # print("leaveEvent")
-        pass
-
-
-    def mouseReleaseEvent(self, event):
-        # print("mouseReleaseEvent")
-        pass
     def sizeHint(self):
         return QSize(150, 150)
-    
     def angle(self):
         return self._angle
-
-    # def kk(self):
-    #     print("kk")
-    
     @pyqtSlot(float)
     def setAngle(self, angle):
         if angle != self._angle:
             self._angleOld= self._angle
             self._angle = angle
-            self.angleChanged.emit(angle)
+            # self.angleChanged.emit(angle)
             self.update()
             self.canvas.setRotation(self._angle)
             self.canvas.refresh()
-    
-    angle = pyqtProperty(float, angle, setAngle)
-
+    # angle = pyqtProperty(float, angle, setAngle)
         
 
 import math
-
 if __name__ == "__main__":
 
     with qgisapp() as app:
@@ -294,7 +219,6 @@ if __name__ == "__main__":
             bridge = QgsLayerTreeMapCanvasBridge(root, canvas)
             qvCompass = QvCompass(canvas,  pare=canvas)
             qvCompass.show()
-
 
         else:
             print("error en carga del proyecto qgis")

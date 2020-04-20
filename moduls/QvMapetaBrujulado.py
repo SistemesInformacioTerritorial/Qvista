@@ -3,7 +3,7 @@ from PyQt5.QtCore import Qt, QSize, QPoint, QRect
 from PyQt5.QtWidgets import QFrame, QSpinBox, QLineEdit, QApplication, QHBoxLayout,QColorDialog
 from PyQt5.QtGui import QPainter, QBrush, QPen, QPolygon
 from PyQt5.QtGui import QPixmap
-from PyQt5.QtCore import pyqtSignal, QSize
+from PyQt5.QtCore import pyqtSignal, QSize, QTimer
 
 import sys
 import os
@@ -11,7 +11,7 @@ from moduls.QvImports  import *
 from moduls.QvDropFiles import QvDropFiles
 from moduls.QvConstants import QvConstants
 from moduls.QvPushButton import QvPushButton
-from moduls.QvCompass_2 import QvCompass
+from moduls.QvCompass import QvCompass
 from moduls.QvMapeta import QvMapeta
 from moduls.QvCrearMapeta import QvCrearMapetaConBotones
 from configuracioQvista import *
@@ -21,14 +21,16 @@ import numpy as np
 
 
 class QvMapetaBrujulado(QFrame):
-    angleChanged = pyqtSignal(float)
-    def __init__(self,ficheroMapeta,  canvas,  pare = None):
+    Sig_MuestraMapeta = pyqtSignal()
+    
+    def __init__(self,ficheroMapeta,  canvas,  pare = None, mapeta_default = None):
         QFrame.__init__(self)
         self.canvas=canvas
         self.setParent(pare)
         self.pare= pare
         # self.colorMarca= QColor(121,144,155)
         self.colorMarcas= QColor(255,90,14)
+        self.mapeta_default = mapeta_default
 
         
         self.setDropable()
@@ -79,11 +81,7 @@ class QvMapetaBrujulado(QFrame):
         self.setLayout(self.lcontenidoMapetaBrujulado)
 
         # Desde clase contenedora hago que 
-        self.qvMapeta.dadoPNT.connect(self.EnviarPNTCompass)
-        # if the signal has the data as argument:
-        # self.qvMapeta.dadoPNT.connect(self.qvCompass.gestionoPnt)
-
-
+        self.qvMapeta.Sig_dadoPNT.connect(self.EnviarPNTCompass)
     def PngPgwDroped_MB(self,ficheroMapeta):
         '''
         Recibe un fichero soltado y lo manda a funcion para calcular el
@@ -199,8 +197,10 @@ class QvMapetaBrujulado(QFrame):
         contextMenu = QMenu(self)
         norteAct = contextMenu.addAction("Orientació Nord (0º)")
         martoAct = contextMenu.addAction("Orientació 'Martorell' (44.5º)")
+        contextMenu.addSeparator()
         chColors= contextMenu.addAction("Cambiar colors")
-        # crearMapetas= contextMenu.addAction("Crear mapeta")
+        mapetaDefault= contextMenu.addAction("Mapeta default")
+        crearMapetas= contextMenu.addAction("Crear mapeta")
         
 
         action = contextMenu.exec_(self.mapToGlobal(event.pos()))
@@ -216,42 +216,25 @@ class QvMapetaBrujulado(QFrame):
         elif action == chColors: 
             self.showDialogColor()
             self.qvCompass.colorMarcasCompass=self.colorMarcas
-            self.qvMapeta.colorMarcasMapeta=self.colorMarcas  
-        # elif action == crearMapetas:
-        #     windowTest = MyWindow()
+            self.qvMapeta.colorMarcasMapeta=self.colorMarcas 
+        elif action == mapetaDefault:
+            # cargar mapeta default
+            ficheroMapeta= self.mapeta_default
+            self.PngPgwDroped_MB([ficheroMapeta])
+            QTimer.singleShot(1000, self.continuar)
+            pass
+        elif action == crearMapetas:
+            print("en construccion")
+            self.Sig_MuestraMapeta.emit()
+            # QTimer.singleShot(0, self.continuar)
+            # if self.parent.dwcrearMapeta.isHidden():
+            #     self.parent.dwcrearMapeta.show()
+            # else:
+            #     self.parent.dwcrearMapeta.hide()
+        #    
 
-        #     # Posem el canvas com a element central
-        #     windowTest.setCentralWidget(self.canvas)
-
-        #     # Instanciamos la classe QvcrearMapetaConBotones
-        #     self.crearMapetaConBotones = QvCrearMapetaConBotones(self.canvas,pare=self)
-            
-        #     self.crearMapetaConBotones.show()
-
-        #     """
-        #     Amb aquesta linia:
-        #     crearMapeta.show()
-        #     es veuria el widget suelto, separat del canvas.
-        #     Les següents línies mostren com integrar el widget 'crearMapeta' com a dockWidget.
-        #     """
-        #     # Creem un dockWdget i definim les característiques
-        #     dwcrearMapeta = QDockWidget( "CrearMapeta", windowTest )
-        #     dwcrearMapeta.setContextMenuPolicy(Qt.PreventContextMenu)
-        #     dwcrearMapeta.setAllowedAreas( Qt.RightDockWidgetArea | Qt.LeftDockWidgetArea )
-        #     dwcrearMapeta.setContentsMargins ( 1, 1, 1, 1 )
-            
-        #     # # # AÑADIMOS  nuestra instancia al dockwidget
-        #     dwcrearMapeta.setWidget(self.crearMapetaConBotones)
-
-        #     # # Coloquem el dockWidget al costat esquerra de la finestra
-        #     windowTest.addDockWidget( Qt.LeftDockWidgetArea, dwcrearMapeta)
-
-        #     # # Fem visible el dockWidget
-        #     dwcrearMapeta.show()  #atencion
-
-        #     # Fem visible la finestra principal
-
-        #     windowTest.show()
+    def continuar(self):
+        print("continuar")
 
 class MyWindow(QMainWindow):
     def __init__(self):
@@ -306,7 +289,7 @@ if __name__ == "__main__":
             root = project.layerTreeRoot()
             bridge = QgsLayerTreeMapCanvasBridge(root, canvas)
 
-            qvMapetaBrujado = QvMapetaBrujulado("mapesOffline/default.png", canvas,  pare=canvas)
+            qvMapetaBrujado = QvMapetaBrujulado("mapesOffline/default.png", canvas,  pare=canvas,mapeta_default="mapesOffline/default.png")
             qvMapetaBrujado.show()            
 
             print ('resto: ',time.time()-start1)
