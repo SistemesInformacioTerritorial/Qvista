@@ -18,6 +18,7 @@ import os.path
 import math
 import os
 from datetime import datetime
+import configuracioQvista
 
 # import time
 
@@ -346,9 +347,21 @@ class QvMapeta(QFrame):
         cropped_pixmap = rot_pixmap.copy(rect) 
 
         # paso FEO (salvar a disco) para recargar la imagen. 
-        cropped_pixmap.save("mapesOffline/trash.png","PNG",100) 
 
-        self.setStyleSheet('QFrame {opacity: 50; background-image: url(mapesOffline/trash.png);}')
+        self.tempdir=configuracioQvista.tempdir
+        fic_tmp=os.path.join(self.tempdir,"trash.png")
+        cropped_pixmap.save(fic_tmp,"PNG",100) 
+        # cropped_pixmap.save("mapesOffline/trash.png","PNG",100) 
+        # self.setStyleSheet('QFrame {opacity: 50; background-image: url(mapesOffline/trash.png);}')
+
+        parametro = "{opacity: 50; background-image: url("+fic_tmp+");} "
+        parametro =parametro.replace('\\','/')
+        self.setStyleSheet('QFrame' + parametro)
+
+
+
+
+
     def distancia(self,p1,p2):
         '''
         Dados 2 puntos reotrna su distancia

@@ -1,7 +1,7 @@
 # https://doc.qt.io/qt-5/qwidget.html#grab
 # https://steakrecords.com/es/672213-drag-and-drop-qlabels-with-pyqt5-python-python-3x-drag-and-drop-pyqt-pyqt5.html
 
-
+import configuracioQvista
 import math
 import os.path
 from qgis.PyQt.QtGui import QPixmap
@@ -20,8 +20,7 @@ from PyQt5.QtWidgets import  QHBoxLayout ,QAbstractItemView, QLabel, QWidget, QL
 from PyQt5.QtGui import QPainter, QColor, QPen, QImage, QBrush
 from moduls.QvPushButton import QvPushButton
 
-projecteInicial=r'D:\tmp\alella.qgs'
-projecteInicial=r'mapesOffline/corbera.qgs'
+
 projecteInicial='mapesOffline/qVista default map.qgs'
 
 
@@ -33,6 +32,7 @@ class QvColocacionCirculo(QgsMapTool):
         self.canvas = canvas
         self.parent= parent
         self.lado= lado
+        self.tempdir=configuracioQvista.tempdir
        
         
         QgsMapTool.__init__(self, self.canvas)
@@ -104,19 +104,18 @@ class QvColocacionCirculo(QgsMapTool):
         self.canvas.mapCanvasRefreshed.disconnect(self.pre_saveCanvas)
         QTimer.singleShot(0, self.saveCanvas)
     def saveCanvas(self):
-
-        self.canvas.saveAsImage("mapesOffline/temporal.png") 
-        # self.pixmap=self.canvas.grab(QRect(QPoint(0,0),QSize(-1,-1)))
+        fic_tmp=os.path.join(self.tempdir,"temporal.png")
+        self.canvas.saveAsImage(fic_tmp) 
         self.hacer4()
     def saveCanvas1(self):
-        self.canvas.saveAsImage("mapesOffline/temporal.png") 
-        # self.pixmap=self.canvas.grab(QRect(QPoint(0,0),QSize(-1,-1)))
+        fic_tmp=os.path.join(self.tempdir,"temporal.png")
+        self.canvas.saveAsImage(fic_tmp) 
         self.hacer4()
-    def hacer4(self):      
-        self.pixmap = QPixmap("mapesOffline/temporal.png")  
+    def hacer4(self):  
 
+        fic_tmp=os.path.join(self.tempdir,"temporal.png")    
+        self.pixmap = QPixmap(fic_tmp)  
         # self.pixmap=self.canvas.grab() # no acaba de ir bien, me carga en pixmap tambien el circulo pintado
-
         # tamaño del pixmap
         hp= self.pixmap.height()                                         # alto imagen 
         wp= self.pixmap.width()                                          # ancho imagen salvada
@@ -170,7 +169,9 @@ class QvColocacionCirculo(QgsMapTool):
         self.parent.label.setPixmap(self.scaled_pixmap)
 
         # y lo salvo como temporal2
-        self.fileName= "mapesOffline/temporal2.png"
+        fic_tmp=os.path.join(self.tempdir,"temporal2.png")  
+        self.fileName= fic_tmp 
+
         if self.fileName:
             # Guardo el pixmap como png
             self.scaled_pixmap.save(self.fileName)
@@ -214,64 +215,7 @@ class QvColocacionCirculo(QgsMapTool):
             self.reset()
         except:
             pass       
-    # def hacer3(self):      
-    #     self.pixmap = QPixmap("mapesOffline/temporal.png")  
-   
-
-
-    #     # self.pixmap=self.canvas.grab() # no acaba de ir bien, me carga en pixmap tambien el circulo pintado
-
-    #     # tamaño del pixmap
-    #     hp= self.pixmap.height()                                         # alto imagen 
-    #     wp= self.pixmap.width()                                          # ancho imagen salvada
-        
-    #     self.rP = math.sqrt(math.pow((self.xcP-self.xrP), 2) + math.pow((self.ycP-self.yrP), 2))  # radio pantalla
-    #     pcX= self.xcP - self.rP ; pcY= self.ycP - self.rP                                    # punto inicio crop
-    #     self.an= 2* self.rP;      self.al= self.an                            # an, ancho para crop   al, alto para crop
-    #     escala= self.rP /self.rM                                                   # escala, como relacion de radiopantalla a radiomundo
-    #     pmin= QPoint();   pmin.setX(pcX); pmin.setY(pcY+self.al);       self.Pmin = self.toMapCoordinates(pmin)
-    #     pmax= QPoint();   pmax.setX(pcX+self.an); pmax.setY(pcY);       self.Pmax = self.toMapCoordinates(pmax)        
-
-    #     # calculo area de recorte para hacer el crop 
-    #     rect= QRect(pcX, pcY, self.an, self.al)
-    #     # hago crop
-    #     cropped_pixmap = self.pixmap.copy(rect) 
-        
-    #     # escalo el pixmap al tamaño que quiero
-    #     self.scaled_pixmap = cropped_pixmap.scaled(self.parent.lado, self.parent.lado, Qt.KeepAspectRatioByExpanding, Qt.SmoothTransformation)
-    #     # de pixmap a image
-    #     image=QImage(self.scaled_pixmap.toImage())
-    #     image = image.convertToFormat(QImage.Format_ARGB32)
-
-    #     # preparo imagen de salida transparente y del tamaño del de entrada....
-    #     out_img = QImage(image.width(), image.width(), QImage.Format_ARGB32)
-    #     out_img.fill(Qt.transparent)
-
-    #     # Create a texture brush and paint a circle with the original image onto
-    #     # the output image: Chapeau!!
-    #     brush = QBrush(image)        # Create texture brush
-    #     painter = QPainter(out_img)  # Paint the output image
-    #     painter.setBrush(brush)      # Use the image texture brush
-    #     # painter.setPen(Qt.NoPen)     # Don't draw an outline
-    #     pen= QPen(QColor(121,144,155),  1, Qt.SolidLine)    #qVista claro         
-    #     painter.setPen(pen)
-    #     painter.setRenderHint(QPainter.Antialiasing, True)  # Use AA
-    #     painter.drawEllipse(0, 0, image.width(), image.width())  # Actually draw the circle
-    #     painter.end()                # We are done (segfault if you forget this)
-
-    #     # de out_img a pixmap
-    #     self.scaled_pixmap = QPixmap.fromImage(out_img)
-    #     self.parent.label.setPixmap(self.scaled_pixmap)
-    #     #  muestro datos de georeferenciacion
-    #     literal= "xmin,ymin=" + str(round(self.Pmin.x(),3)) +"  "+ str(round(self.Pmin.y(),3))
-    #     self.parent.xmin_ymin.setText(literal)
-    #     literal= "xmax,ymax=" + str(round(self.Pmax.x(),3)) +"  "+ str(round(self.Pmax.y(),3))
-    #     self.parent.xmax_ymax.setText(literal)
- 
-    #     try:
-    #         self.reset()
-    #     except:
-    #         pass       
+     
     
     
     def canvasReleaseEvent(self,e):
@@ -405,7 +349,6 @@ class QvCrearMapetaConBotones(QWidget):
 
     def EnvMap(self):
         pass
-        # self.fileName= "mapesOffline/temporal2.png"
         self.Sig_MapetaTemporal.emit(self.colocoCirculo.fileName)
         
 
@@ -522,17 +465,23 @@ class MyWindow(QMainWindow):
 
 
     def closeEvent(self,event):
-        # Borrar "mapesOffline/temporal.png"
-        if os.path.exists("mapesOffline/temporal.png"):
-            os.remove("mapesOffline/temporal.png")
+        fic_tmp=os.path.join(fic_tmp,"temporal.png")    
+        if os.path.exists(fic_tmp):
+            os.remove(fic_tmp)
         else:
-            print("The file does not exist")
-            
-        if os.path.exists("mapesOffline/temporal.pgw"):
-            os.remove("mapesOffline/temporal.pgw")
-        else:
-            print("The file does not exist")            
+            print("The file does not exist")               
 
+        fic_tmp=os.path.join(fic_tmp,"temporal2.png")    
+        if os.path.exists(fic_tmp):
+            os.remove(fic_tmp)
+        else:
+            print("The file does not exist")   
+
+        fic_tmp=os.path.join(fic_tmp,"temporal.pgw")    
+        if os.path.exists(fic_tmp):
+            os.remove(fic_tmp)
+        else:
+            print("The file does not exist")   
 
 
 
