@@ -269,9 +269,7 @@ class QVista(QMainWindow, Ui_MainWindow):
                     self.setDirtyBit()
             elif fext == '.gpkg':
                 nomsCapes = QvCarregadorGPKG.triaCapes(nfile,self)
-                uris = map(lambda x: f'{nfile}|layername={x}', nomsCapes)
-                aux = zip(nomsCapes, uris)
-                capes = [QgsVectorLayer(y,x,'ogr') for (x,y) in aux]
+                capes = (QgsVectorLayer(f'{nfile}|layername={x}',x,'ogr') for x in nomsCapes)
 
                 self.project.addMapLayers(capes)
                 self.setDirtyBit()
@@ -2542,6 +2540,9 @@ def seleccioExpressio():
         return
     if command=='filtramascara':
         filtraMascara(qV)
+        return
+    if command in ('versio', 'versió'):
+        QMessageBox.information(qV,'Versió de QGIS',f'La versió de QGIS actual és la {QvApp().versioQgis()}')
         return
 
 
