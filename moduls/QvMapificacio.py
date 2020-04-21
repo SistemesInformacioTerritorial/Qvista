@@ -719,8 +719,8 @@ class QvMapificacio(QObject):
             return False
 
     def agregacio(self, llegenda, nomCapa: str, zona: str, tipusAgregacio: str,
-                  renderParams: QvMapRendererParams,
-                  campAgregat: str = '', tipusDistribucio: str = "Total",
+                  renderParams: QvMapRendererParams, campAgregat: str = '', 
+                  simple=True, tipusDistribucio: str = "Total",
                   campExtensio: str = mv.MAP_EXTENSIO, filtre: str = '',
                   veure: bool = True, form: QDialog = None) -> bool:
         """ Realiza la agragación de los datos por zona, la generación del mapa y su simbología.
@@ -757,9 +757,11 @@ class QvMapificacio(QObject):
             "Data: " +  QDate.currentDate().toString(QvApp().locale.dateFormat(QvApp().locale.ShortFormat)) + '\n' + \
             "Zona: " + zona + '\n' + \
             "Tipus d'agregació: " + tipusAgregacio + '\n' + \
-            "Camp de càlcul: " + campAgregat + '\n' + \
-            "Filtre: " + filtre + '\n' + \
-            "Distribució: " + tipusDistribucio
+            "Camp de càlcul: " + campAgregat
+        if not simple:
+            self.descripcio += '\n' + \
+                "Filtre: " + filtre + '\n' + \
+                "Distribució: " + tipusDistribucio
 
         if not self.verifZona(zona):
             self.msgError = "Error en zona"
@@ -801,7 +803,8 @@ class QvMapificacio(QObject):
             return False
 
         # Renderer para mapificar
-        self.renderer = self.llegenda.mapRenderer.calcRender(mapLyr, renderParams)
+        mapRenderer = renderParams.mapRenderer(self.llegenda)
+        self.renderer = mapRenderer.calcRender(mapLyr)
         if self.renderer is None:
             self.msgError = "No s'ha pogut elaborar el mapa"
             return False

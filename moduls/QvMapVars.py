@@ -70,8 +70,8 @@ MAP_METODES = OrderedDict({
     "Endreçat": QgsGraduatedSymbolRenderer.Pretty,
     "Intervals equivalents": QgsGraduatedSymbolRenderer.EqualInterval,
     "Quantils": QgsGraduatedSymbolRenderer.Quantile,
-    "Divisions naturals (Jenks)": QgsGraduatedSymbolRenderer.Jenks,
-    "Desviació estàndard": QgsGraduatedSymbolRenderer.StdDev
+    "Divisions naturals (Jenks)": QgsGraduatedSymbolRenderer.Jenks
+    # "Desviació estàndard": QgsGraduatedSymbolRenderer.StdDev
 })
 
 MAP_METODES_MODIF = OrderedDict({

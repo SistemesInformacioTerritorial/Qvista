@@ -14,26 +14,85 @@ from moduls.QvApp import QvApp
 import inspect
 
 
+def modifyRenderer(llegenda):
+    from moduls.QvMapForms import QvFormSimbMapificacio
+
+    fMap = QvFormSimbMapificacio(llegenda, llegenda.currentLayer())
+    fMap.exec()
+
+
 class QvMapRendererParams(QObject):
-    def __init__(self):
+    def __init__(self, tipus='Àrees'):
         super().__init__()
+        self.tipusMapa = tipus
+        self.iniParams()
+
+    @classmethod
+    def fromLayer(cls, capa):
+        renderer = capa.renderer()
+        if isinstance(renderer, QgsGraduatedSymbolRenderer):
+            obj = cls('Àrees')
+            obj.mapParamsRender(renderer)
+            return obj
+        elif isinstance(renderer, QgsSingleSymbolRenderer):
+            obj = cls('Punts')
+            obj.symParamsRender(renderer)
+            return obj
+        else:
+            obj = cls()
+            obj.msgError = "Simbologia de mapa desconeguda"
+            return obj
+
+    def iniParams(self):
         self.campCalculat = 'RESULTAT'
         self.campNom = 'DESCRIPCIO'
-        self.numDecimals = 0
-        self.colorBase = 'Blau'
-        self.colorContorn = 'Blanc'
-        self.numCategories = 4
         self.modeCategories = 'Endreçat'
-        self.labelFormat = '%1 - %2'
         self.rangsCategories = []
+        self.numDecimals = 0
         self.simbol = None
         self.msgError = ''
+        if self.tipusMapa == 'Àrees':
+            self.colorBase = 'Blau'
+            self.colorContorn = 'Base'
+            self.numCategories = 4
+            self.labelFormat = '%1 - %2'
+            self.increase = 0
+            self.opacity = 1
+        else:  # 'Punts'
+            self.colorBase = 'Porpra'
+            self.colorContorn = 'Blanc'
+            self.numCategories = 10
+            self.labelFormat = ''
+            self.increase = 5
+            self.opacity = 0.55
+
+    def mapRenderer(self, llegenda):
+        if self.tipusMapa == 'Àrees':
+            return QvMapRenderer(llegenda, self)
+        elif self.tipusMapa == 'Punts':
+            return QvSymRenderer(llegenda, self)
+        else:
+            raise ValueError("Tipus de mapa erroni: " + self.tipusMapa)
 
     def nomParam(self, param, llista):
         for nom, valor in llista.items():
             if param == valor:
                 return nom
         return list(llista.keys())[0]
+
+    def calcTip(self):
+        # <div style="font-size: 18px; white-space: nowrap;">
+        # [% CASE WHEN attribute('DESCRIPCIO') IS NULL THEN NULL
+        # ELSE concat(attribute('DESCRIPCIO'), ':', '<br/>')
+        # END %]
+        # [% format_number("RESULTAT", 0) %]</div>
+        expr = f'''<div style="font-size: 18px; white-space: nowrap;">
+            [% CASE WHEN attribute('{self.campNom}') IS NULL THEN NULL
+            ELSE concat(attribute('{self.campNom}'), ':', '<br/>')
+            END %]
+            [% format_number("{self.campCalculat}", {self.numDecimals}) %]
+            </div>'''
+        return inspect.cleandoc(expr)
 
     def nomColor(self, param, llista):
         for nom, valor in llista.items():
@@ -72,12 +131,43 @@ class QvMapRendererParams(QObject):
         else:
             raise ValueError("Valor d'intenval erroni: " + txt)
 
+    def mapParamsRender(self, renderer):
+        try:
+            self.campCalculat = renderer.classAttribute()
+            self.rangsCategories = renderer.ranges()
+            self.numCategories = len(self.rangsCategories)
+            self.modeCategories = self.nomParam(renderer.mode(), mv.MAP_METODES_MODIF)
+            if self.modeCategories == 'Personalitzat':
+                cat = self.rangsCategories[0]
+                self.numDecimals = self.calcDecimals(cat.label())
+                self.simbol = cat.symbol().clone()
+                color = cat.symbol().color()
+            else:
+                self.numDecimals = renderer.labelFormat().precision()
+                self.simbol = renderer.sourceSymbol()
+                color = renderer.sourceColorRamp().color1()
+            self.colorBase = self.nomColor(color, mv.MAP_COLORS)
+            self.colorContorn = self.nomColor(self.simbol.symbolLayer(0).strokeColor(),
+                                              mv.MAP_CONTORNS)
+        except Exception as e:
+            self.msgError = str(e)
+
+    def symParamsRender(self, renderer):
+        try:
+            symbology = renderer.symbol().symbolLayer(0)
+            symbolLayer = symbology.subSymbol().symbolLayer(0)
+            self.colorBase = self.nomColor(symbolLayer.fillColor(), mv.MAP_COLORS)
+            self.colorContorn = self.nomColor(symbolLayer.strokeColor(), mv.MAP_CONTORNS)
+        except Exception as e:
+            self.msgError = str(e)
+
 
 class QvMapRenderer(QObject):
 
-    def __init__(self, llegenda):
+    def __init__(self, llegenda, params):
         super().__init__()
         self.llegenda = llegenda
+        self.params = params
 
     def calcColorsGradient(self, colorBase):
         colorIni = QColor(colorBase)
@@ -92,125 +182,85 @@ class QvMapRenderer(QObject):
         symbolLayer.setStrokeWidthUnit(QgsUnitTypes.RenderPixels)
         symbolLayer.setStrokeWidth(width)
 
-    def calcRender(self, capa, params):
-        if params.colorContorn is None:
-            params.colorContorn = params.colorBase
-        colorIni, colorFi = self.calcColorsGradient(params.colorBase)
+    def calcRender(self, capa):
+        if self.params.colorContorn is None:
+            self.params.colorContorn = self.params.colorBase
+        colorIni, colorFi = self.calcColorsGradient(self.params.colorBase)
         colorRamp = QgsGradientColorRamp(colorIni, colorFi)
-        labelFormat = QgsRendererRangeLabelFormat(params.labelFormat, params.numDecimals)
-        if params.simbol is None:
-            params.simbol = QgsSymbol.defaultSymbol(capa.geometryType())
-        self.setStrokeSymbology(params.simbol, params.colorContorn)
+        labelFormat = QgsRendererRangeLabelFormat(self.params.labelFormat, self.params.numDecimals)
+        if self.params.simbol is None:
+            self.params.simbol = QgsSymbol.defaultSymbol(capa.geometryType())
+        self.setStrokeSymbology(self.params.simbol, self.params.colorContorn)
         renderer = QgsGraduatedSymbolRenderer.createRenderer(
-            capa, params.campCalculat,
-            params.numCategories, params.modeCategories, params.simbol, colorRamp, labelFormat)
+            capa, self.params.campCalculat,
+            self.params.numCategories, self.params.modeCategories,
+            self.params.simbol, colorRamp, labelFormat)
         capa.setRenderer(renderer)
+        capa.setMapTipTemplate(self.params.calcTip())
         capa.triggerRepaint()
         return renderer
 
-    def customRender(self, capa, params):
-        if params.colorContorn is None:
-            params.colorContorn = params.colorBase
-        total = params.numCategories
+    def customRender(self, capa):
+        if self.params.colorContorn is None:
+            self.params.colorContorn = self.params.colorBase
+        total = self.params.numCategories
         alpha = mv.MAP_ALPHA_INI
         maxAlpha = (255 - mv.MAP_ALPHA_FIN)
         step = round((maxAlpha - alpha) / (total - 1))
-        color = QColor(params.colorBase)
-        decimals = params.maxDecimals(params.rangsCategories)
+        color = QColor(self.params.colorBase)
+        decimals = self.params.maxDecimals(self.params.rangsCategories)
         categories = []
-        for i, r in enumerate(params.rangsCategories):
+        for i, r in enumerate(self.params.rangsCategories):
             color.setAlpha(alpha)
             alpha = min(alpha + step, maxAlpha)
-            if params.simbol is None:
+            if self.params.simbol is None:
                 symbol = QgsSymbol.defaultSymbol(capa.geometryType())
             else:
-                symbol = params.simbol.clone()
-            self.setStrokeSymbology(symbol, params.colorContorn)
+                symbol = self.params.simbol.clone()
+            self.setStrokeSymbology(symbol, self.params.colorContorn)
             symbol.setColor(color)
-            f0 = params.numRang(r[0])
-            f1 = params.numRang(r[1])
+            f0 = self.params.numRang(r[0])
+            f1 = self.params.numRang(r[1])
             label = QvApp().locale.toString(f0, 'f', decimals) + ' - ' + \
                 QvApp().locale.toString(f1, 'f', decimals)
             category = QgsRendererRange(f0, f1, symbol, label)
             categories.append(category)
-        renderer = QgsGraduatedSymbolRenderer(params.campCalculat, categories)
+        renderer = QgsGraduatedSymbolRenderer(self.params.campCalculat, categories)
         renderer.setMode(QgsGraduatedSymbolRenderer.Custom)
         # renderer.setClassAttribute(str(decimals))
         capa.setRenderer(renderer)
+        capa.setMapTipTemplate(self.params.calcTip())
         capa.triggerRepaint()
         return renderer
-
-    def paramsRender(self, capa):
-        parms = QvMapRendererParams()
-        try:
-            renderer = capa.renderer()
-            parms.campCalculat = renderer.classAttribute()
-            parms.rangsCategories = renderer.ranges()
-            parms.numCategories = len(parms.rangsCategories)
-            parms.modeCategories = parms.nomParam(renderer.mode(), mv.MAP_METODES_MODIF)
-            if parms.modeCategories == 'Personalitzat':
-                cat = parms.rangsCategories[0]
-                parms.numDecimals = parms.calcDecimals(cat.label())
-                parms.simbol = cat.symbol().clone()
-                color = cat.symbol().color()
-            else:
-                parms.numDecimals = renderer.labelFormat().precision()
-                parms.simbol = renderer.sourceSymbol()
-                color = renderer.sourceColorRamp().color1()
-            parms.colorBase = parms.nomColor(color, mv.MAP_COLORS)
-            parms.colorContorn = parms.nomColor(parms.simbol.symbolLayer(0).strokeColor(),
-                                                mv.MAP_CONTORNS)
-        except Exception as e:
-            parms.msgError = str(e)
-        return parms
-
-    def modifyRenderer(self):
-        from moduls.QvMapForms import QvFormSimbMapificacio
-
-        fMap = QvFormSimbMapificacio(self.llegenda, self.llegenda.currentLayer())
-        fMap.exec()
 
 
 class QvSymRenderer(QObject):
 
-    def __init__(self, llegenda):
+    def __init__(self, llegenda, params):
         super().__init__()
         self.llegenda = llegenda
+        self.params = params
 
-        def calcExpr(self, field, inc=0):
-            expr = f'''coalesce(scale_exp("{field}", minimum("{field}"), maximum("{field}"),
-                1 + {inc}, 10 + {inc}, 0.57), 0)'''
-            return inspect.cleandoc(expr)
+    def calcExpr(self):
+        expr = f'''coalesce(scale_exp("{self.params.campCalculat}",
+            minimum("{self.params.campCalculat}"),
+            maximum("{self.params.campCalculat}"),
+            1 + {self.params.increase},
+            {self.params.numCategories} + {self.params.increase}, 0.57), 0)'''
+        return inspect.cleandoc(expr)
 
-        def calcTip(self, field, name, decs=0):
-            # <div style="font-size: 18px; white-space: nowrap;">
-            # [% CASE WHEN attribute('DESCRIPCIO') IS NULL THEN NULL
-            # ELSE concat(attribute('DESCRIPCIO'), ':', '<br/>')
-            # END %]
-            # [% format_number("RESULTAT", 0) %]</div>
-            expr = f'''<div style="font-size: 18px; white-space: nowrap;">
-                [% CASE WHEN attribute('{name}') IS NULL THEN NULL
-                ELSE concat(attribute('{name}'), ':', '<br/>')
-                END %]
-                [% format_number("{field}", {decs}) %]
-                </div>'''
-            return inspect.cleandoc(expr)
-
-    def setStrokeSymbology(self, sourceSymbol, params, inc=0):
+    def setStrokeSymbology(self, sourceSymbol):
         symbolLayer = sourceSymbol.symbolLayer(0)
-        symbolLayer.setFillColor(params.colorBase)
-        symbolLayer.setStrokeColor(params.colorContorn)
+        symbolLayer.setFillColor(self.params.colorBase)
+        symbolLayer.setStrokeColor(self.params.colorContorn)
         symbolLayer.setStrokeStyle(Qt.SolidLine)
         symbolLayer.setStrokeWidth(1)
         symbolLayer.setStrokeWidthUnit(QgsUnitTypes.RenderPixels)
-        expr = self.calcExpr(self.campCalculat, inc)
+        expr = self.calcExpr()
         prop = QgsProperty.fromExpression(expr)
         symbolLayer.setDataDefinedProperty(QgsSymbolLayer.PropertySize, prop)
 
-    def calcRender(self, capa, params):
-
-        inc = 0
-        opacity = 0.55
+    def calcRender(self, capa):
 
         renderer = None
         geom = capa.geometryType()
@@ -223,56 +273,26 @@ class QvSymRenderer(QObject):
             symbology.setPointOnSurface(False)
 
             # Ajustamos valores del símbolo proporcional
-            self.setStrokeSymbology(symbology.subSymbol(), params, inc)
+            self.setStrokeSymbology(symbology.subSymbol())
 
             # Crear símbolo y asignarle la simbología
             sym = QgsFillSymbol.createSimple({
-                'color': '{}'.format(params.colorBase.name()),
-                'outline_color': '{}'.format(params.colorContorn.name())
+                'color': '{}'.format(self.params.colorBase.name()),
+                'outline_color': '{}'.format(self.params.colorContorn.name())
             })
             sym.changeSymbolLayer(0, symbology)
 
             # Crear renderer y asignar a la capa
             renderer = QgsSingleSymbolRenderer(sym)
             capa.setRenderer(renderer)
-            capa.setOpacity(opacity)
-
-            expr = calcTip(self.campCalculat, self.campNom, self.numDecimals)
-            capa.setMapTipTemplate(expr)
+            capa.setOpacity(self.params.opacity)
+            capa.setMapTipTemplate(self.params.calcTip())
             capa.triggerRepaint()
 
         return renderer
 
-    def customRender(self, capa, params):
+    def customRender(self, capa):
         return None
-
-    def paramsRender(self, capa):
-        parms = QvMapRendererParams()
-        try:
-            renderer = capa.renderer()
-            parms.campCalculat = renderer.classAttribute()
-            parms.rangsCategories = renderer.ranges()
-            parms.numCategories = len(parms.rangsCategories)
-            parms.modeCategories = parms.nomParam(renderer.mode(), mv.MAP_METODES_MODIF)
-            if parms.modeCategories == 'Personalitzat':
-                cat = parms.rangsCategories[0]
-                parms.numDecimals = parms.calcDecimals(cat.label())
-                parms.simbol = cat.symbol().clone()
-                color = cat.symbol().color()
-            else:
-                parms.numDecimals = renderer.labelFormat().precision()
-                parms.simbol = renderer.sourceSymbol()
-                color = renderer.sourceColorRamp().color1()
-            parms.colorBase = parms.nomColor(color, mv.MAP_COLORS)
-            parms.colorContorn = parms.nomColor(parms.simbol.symbolLayer(0).strokeColor(),
-                                                mv.MAP_CONTORNS)
-        except Exception as e:
-            parms.msgError = str(e)
-        return parms
-
-    def modifyRenderer(self):
-        fMap = QvFormSimbMapificacio(self.llegenda, self.llegenda.currentLayer())
-        fMap.exec()
 
 
 if __name__ == "__main__":
