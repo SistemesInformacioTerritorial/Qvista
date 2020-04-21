@@ -18,7 +18,9 @@ from moduls.QvEinesGrafiques import QvMesuraMultiLinia, QvSeleccioGrafica, carre
 from moduls.QvStreetView import QvStreetView
 from moduls.QvLlegenda import QvLlegenda
 from moduls.QvAtributs import QvAtributs
-from moduls.QvMapeta import QvMapeta
+# from moduls.QvMapeta import QvMapeta
+from moduls.QvMapetaBrujulado import QvMapetaBrujulado
+from moduls.QvCrearMapeta import QvCrearMapetaConBotones
 from moduls.QVCercadorAdreca import QCercadorAdreca
 from moduls.QVDistrictesBarris import QVDistrictesBarris
 from moduls.QvApp import QvApp
@@ -124,6 +126,8 @@ class QVista(QMainWindow, Ui_MainWindow):
         #Afegim títol a la finestra
         self.setWindowTitle(titleFinestra)
 
+        self.crearMapetaConBotones=None
+
         # Definició dels labels de la statusBar 
         self.definirLabelsStatus()   
 
@@ -154,6 +158,8 @@ class QVista(QMainWindow, Ui_MainWindow):
         #Preparem el mapeta abans de les accions, ja que el necessitarem allà
         self.preparacioMapeta()
 
+        
+
         # # Connectors i accions
         self.definicioAccions()
 
@@ -175,7 +181,9 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.preparacioMesura()
         # self.preparacioGrafiques() ???
         self.preparacioSeleccio()
-        # self.preparacioEntorns() ???
+        # self.preparacioEntorns()
+        self.preparacioCrearMapeta()
+
         
         # Eina inicial del mapa = Panning
         self.canvas.panCanvas()
@@ -348,10 +356,17 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.lblProjeccio.setText(self.project.crs().description())
         self.lblProjecte.setText('QGS: '+self.project.baseName())
         self.lblProjecte.setToolTip(self.project.fileName())
-        if self.canvas.rotation() == 0:
-            self.bOrientacio.setText(' Orientació: Nord')
-        else:
-            self.bOrientacio.setText(' Orientació: Eixample')
+
+        # if self.canvas.rotation() == 0:
+        #     self.bOrientacio.setText(' Orientació: Nord')
+        # else:
+        #     self.bOrientacio.setText(' Orientació: Eixample')
+        self.bOrientacio.setText('Disponible')
+
+        # Titol del projecte 
+        # self.lblTitolProjecte.setFont(QvConstants.FONTTITOLS)
+        # self.lblTitolProjecte.setText(self.project.title())
+
 
         if self.llegenda.player is None:
             self.llegenda.setPlayer(os.path.join(imatgesDir,'Spinner_2.gif'), 150, 150)
@@ -616,7 +631,9 @@ class QVista(QMainWindow, Ui_MainWindow):
         Després instanciem el cercador d'adreces. 
         Connectem la senyal sHanTrobatCoordenades a trobatNumero_oNo.
         """
+
         # instanciamos clases necesarias    
+
         self.fCercador=QFrame()
         self.bottomWidget = QWidget()
         self.ubicacions = QvUbicacions(self.canvas, pare=self)
@@ -683,12 +700,14 @@ class QVista(QMainWindow, Ui_MainWindow):
           
         self.cAdrec.sHanTrobatCoordenades.connect(self.trobatNumero_oNoLat) 
 
+        # creamos DockWidget
         self.dwCercador = QvDockWidget( "Cercador", self )
         self.dwCercador.setContextMenuPolicy(Qt.PreventContextMenu)
         self.dwCercador.hide()
         self.dwCercador.setAllowedAreas( Qt.RightDockWidgetArea | Qt.LeftDockWidgetArea )
         self.dwCercador.setWidget( self.fCercador)
         self.dwCercador.setContentsMargins ( 2, 2, 2, 2 )
+        # a qVista se le añade un DockWidget
         self.addDockWidget( Qt.RightDockWidgetArea, self.dwCercador)
 
     def CopiarA_Ubicacions(self):       
@@ -740,14 +759,79 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.dwTaulaAtributs.setContentsMargins ( 2, 2, 2, 2 )
         self.addDockWidget( Qt.BottomDockWidgetArea, self.dwTaulaAtributs)
 
+
+    def preparacioBotonera(self): #???
+        """ 
+        Es prepara la botonera lateral sobre un dockWidget.
+        """
+        self.botonera = QFrame()
+        self.ui = Ui_Frame()
+        self.ui.setupUi(self.botonera)
+        # self.botonera.show()
+        self.dwBotonera = QvDockWidget( "Botonera", self )
+        self.dwBotonera.setContextMenuPolicy(Qt.PreventContextMenu)
+        self.dwBotonera.hide()
+        self.dwBotonera.setObjectName( "Botonera" )
+        self.dwBotonera.setAllowedAreas( Qt.RightDockWidgetArea | Qt.LeftDockWidgetArea )
+        self.dwBotonera.setWidget(self.botonera)
+        self.dwBotonera.setContentsMargins ( 2, 2, 2, 2 )
+        self.addDockWidget(Qt.LeftDockWidgetArea, self.dwBotonera)
+
+    def preparacioNoticies(self): #???
+        return
+
+    def enviarMapetaTemporal(self,fichero):
+        
+        self.mapeta.PngPgwDroped_MB([fichero])
+
+
     def preparacioMapeta(self):
-        self.mapeta = QvMapeta(self.canvas, tamanyPetit=True, pare=self)
+        self.mapetaDefaultPng= "mapesOffline/default.png"
+        self.mapeta  = QvMapetaBrujulado(self.mapetaDefaultPng, self.canvas,  pare=self.canvas, mapeta_default="mapesOffline/default.png")
+
         self.mapeta.setGraphicsEffect(QvConstants.ombra(self,radius=30,color=QvConstants.COLOROMBRA))
-        self.bOrientacio.clicked.connect(self.editarOrientacio)
+        # self.bOrientacio.clicked.connect(self.editarOrientacio)
+        self.mapeta.Sig_MuestraMapeta.connect(self.editarOrientacio)
+
+
         self.mapeta.setParent(self.canvas)
         self.mapeta.move(20,20)
         self.mapeta.show()
+
    
+    def preparacioCrearMapeta(self):
+        self.crearMapetaConBotones = QvCrearMapetaConBotones(self.canvas)
+        self.crearMapetaConBotones.setGraphicsEffect(QvConstants.ombra(self,radius=30,color=QvConstants.COLOROMBRA))
+        self.crearMapetaConBotones.setParent(self.canvas)  #vaya sitio!!!
+
+        self.crearMapetaConBotones.Sig_MapetaTemporal.connect(self.enviarMapetaTemporal)
+
+        """
+        Amb aquesta linia:
+        crearMapeta.show()
+        es veuria el widget suelto, separat del canvas.
+        Les següents línies mostren com integrar el widget 'crearMapeta' com a dockWidget.
+        """
+        # Creem un dockWdget i definim les característiques
+        self.dwcrearMapeta = QDockWidget( "CrearMapeta", self )
+        self.dwcrearMapeta.setContextMenuPolicy(Qt.PreventContextMenu)
+        self.dwcrearMapeta.setAllowedAreas( Qt.RightDockWidgetArea | Qt.LeftDockWidgetArea )
+        self.dwcrearMapeta.setContentsMargins ( 1, 1, 1, 1 )
+        
+        # AÑADIMOS  nuestra instancia al dockwidget
+        self.dwcrearMapeta.setWidget(self.crearMapetaConBotones)
+
+        # Coloquem el dockWidget al costat esquerra de la finestra
+        self.addDockWidget( Qt.LeftDockWidgetArea, self.dwcrearMapeta)
+
+        # Fem visible el dockWidget
+        self.dwcrearMapeta.hide()  #atencion
+
+
+
+
+
+
     def preparacioLlegenda(self):
         """Es genera un dockWidget a la dreta, amb la llegenda del projecte.
  
@@ -1261,7 +1345,6 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.botoMapeta.setIcon(QIcon(os.path.join(imatgesDir,'Mapeta.png')))
         self.botoMapeta.setStyleSheet(stylesheetBotons)
         self.botoMapeta.setIconSize(QSize(24,24))
-        self.botoMapeta.clicked.connect(self.mapeta.ferPetit)
         self.botoMapeta.setCursor(QvConstants.cursorClick())
 
         self.botoMetadades.setIcon(QIcon(os.path.join(imatgesDir,'information-variant.png')))
@@ -2035,13 +2118,30 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.actualitzantCanvas = False
         self.sbCarregantCanvas.hide()
 
+
+ 
+
     def editarOrientacio(self):
-        self.mapeta.cambiarRotacion()
-              
-        if self.canvas.rotation()==0:
-            self.bOrientacio.setText(' Orientació: Nord')
+        
+        # puenteo funcion para probar crear mapeta
+        if self.dwcrearMapeta.isHidden():
+            self.dwcrearMapeta.show()
         else:
-            self.bOrientacio.setText(' Orientació: Eixample')
+
+            self.dwcrearMapeta.hide()
+            
+
+
+    
+        # self.mapeta.cambiarRotacion()
+              
+        # if self.canvas.rotation()==0:
+        #     self.bOrientacio.setText(' Orientació: Nord')
+        # else:
+        #     self.bOrientacio.setText(' Orientació: Eixample')
+
+ 
+
         self.canvas.refresh()
 
         
