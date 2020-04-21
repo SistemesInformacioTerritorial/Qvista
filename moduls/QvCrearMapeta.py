@@ -33,6 +33,7 @@ class QvColocacionCirculo(QgsMapTool):
         self.canvas = canvas
         self.parent= parent
         self.lado= lado
+       
         
         QgsMapTool.__init__(self, self.canvas)
 
@@ -403,8 +404,10 @@ class QvCrearMapetaConBotones(QWidget):
         self.setLayout(self.layV1)
 
     def EnvMap(self):
-        self.fileName= "mapesOffline/temporal2.png"
-        self.Sig_MapetaTemporal.emit(self.fileName)
+        pass
+        # self.fileName= "mapesOffline/temporal2.png"
+        self.Sig_MapetaTemporal.emit(self.colocoCirculo.fileName)
+        
 
 
 

@@ -100,6 +100,17 @@ class QvMapetaBrujulado(QFrame):
         ancho_mapeta = datos_mapeta[5]    
         self.yTamany = datos_mapeta[6]   
 
+
+
+        linea= "FicMB: "+ str(datos_mapeta[0]) +'\n'
+        linea= linea + 'xmin:  '+ str(round(datos_mapeta[1],2)) +'\n'
+        linea= linea + 'ymin:  '+ str(round(datos_mapeta[2],2)) +'\n'
+        linea= linea + 'xmax:  '+ str(round(datos_mapeta[3],2)) +'\n'
+        linea= linea + 'ymax:  '+ str(round(datos_mapeta[4],2)) +'\n'
+        linea= linea + 'W:  '+ str(datos_mapeta[5]) +'\n'
+        linea= linea + 'H:  '+ str(datos_mapeta[6])
+        self.setToolTip(linea)        
+
         # print("ancho_mapeta", ancho_mapeta)
 
         # calcular el margen
