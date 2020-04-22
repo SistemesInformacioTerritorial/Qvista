@@ -283,9 +283,14 @@ class QvCrearMapetaConBotones(QWidget):
         self.botoConfirmar.clicked.connect(self.confirmar)
 
         self.botoSalvar =  QPushButton('Salvar')  
-        self.botoSalvar.clicked.connect(self.Salvar)
+        self.botoSalvar.clicked.connect(self.Salvar)        
+        self.botoCargar =  QPushButton('Cargar')  
+        self.botoCargar.clicked.connect(self.Cargar)
         self.label = QLabel(self)
         # self.label.setDragEnabled(True)      no va!!!
+        
+
+        
 
         self.botoColor = QPushButton('Sel·leccionar color')
         self.botoColor.setToolTip('Color perimetre')
@@ -316,6 +321,7 @@ class QvCrearMapetaConBotones(QWidget):
         self.layH2=QHBoxLayout()
         self.layH2.addWidget(self.botoSalvar)
         self.layH2.addWidget(self.botoColor) 
+        self.layH2.addWidget(self.botoSalvar) 
         self.layH2.addItem(spacerItem)  
 
         self.layH3=QHBoxLayout()
@@ -394,6 +400,15 @@ class QvCrearMapetaConBotones(QWidget):
         col = d_color.getColor()
         if col.isValid():
             self.color=col
+
+
+
+    def Cargar(self):
+        '''
+        Escribo PNG y PGW
+        '''        
+        pass
+    
     def Salvar(self):
         '''
         Escribo PNG y PGW
