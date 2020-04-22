@@ -256,7 +256,7 @@ class QvNouCataleg(QWidget):
 
             dirs = sorted(dirs)
             for x in dirs:
-                self.catalegs[x] = self.carregaBotons(x)
+                self.catalegs[x] = self.carregaBotons(os.path.join(y,x))
                 privat = y in carpetaCatalegProjectesPrivats
                 local = y in QvMemoria().getCatalegsLocals()
                 boto = BotoLateral(x, self, privat, local)
@@ -308,16 +308,15 @@ class QvNouCataleg(QWidget):
         self.fav.setChecked(True)
 
     def carregaBotons(self, dir: str):
-        f = []
-        for y in carpetaCatalegProjectesLlista+QvMemoria().getCatalegsLocals():
-            try:
-                _, _, files = next(os.walk(y+'/'+dir))
-                files = (x[:-4] for x in files if x.endswith('.qgs'))
-                files = (os.path.join(y, dir, x) for x in files)
-                f += files
-            except:
-                continue
-        botons = [MapaCataleg(x, self) for x in f]
+        
+        # files passa a contenir tots els arxius que pengen del directori dir
+        _, _, files = next(os.walk(dir))
+        # mapes passa a contenir tots els noms d'arxiu amb extensió .qgs, però sense extensió
+        mapes = (os.path.join(dir,x[:-4]) for x in files if x.endswith('.qgs'))
+        # botons passa a ser una llista de les entrades del catàleg
+        botons = [MapaCataleg(x, self) for x in mapes]
+
+        # Iterem sobre les entrades del catàleg per marcar com a favorits els que ho fossin
         for x in botons:
             if x.getNomMapa() in self.favorits:
                 # No actualitzem la base de dades perquè no estem modificant-la
