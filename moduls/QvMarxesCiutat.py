@@ -1,7 +1,6 @@
 from moduls.QvImports import *
-from moduls.QvPDF import QvPDF
 from moduls.QvPushButton import QvPushButton
-from PyQt5.QtGui import QFont, QDesktopServices
+from qgis.PyQt.QtGui import QFont, QDesktopServices
 
 class MarxesCiutat(QDockWidget):
     def __init__(self, parent):
@@ -118,7 +117,9 @@ class MarxesCiutat(QDockWidget):
         bMarxes1_6 = QvPushButton('el Besós i el Maresme', flat=True)
         bMarxes1_6.setStyleSheet("Text-align: left")
       
+
         bMarxes1_7 = QvPushButton('la Marina del Prat Vermell', flat=True)
+
         bMarxes1_7.setStyleSheet("Text-align: left")
         
         # Retorns

@@ -16,7 +16,7 @@ import sys, csv
 
 class QVDistrictesBarris(QObject):
 
-    __distBarrisCSV = 'Dades\DIST_BARRIS.csv'
+    __distBarrisCSV = r'Dades\DIST_BARRIS.csv'
 
     def __init__(self):
         super().__init__()
@@ -57,7 +57,6 @@ class QVDistrictesBarris(QObject):
             self.view.collapseAll()
         else:
             self.view.expandAll()
-        pass        
 
     def iniView(self):
         self.view.setHeaderHidden(True)

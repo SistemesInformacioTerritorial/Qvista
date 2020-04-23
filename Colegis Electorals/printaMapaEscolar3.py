@@ -1,9 +1,14 @@
+
+# Programa per imprimir el mapa escolar, en funció de l'assignacio d'illes-colegisque està en taules Oracle (preparades per Francesc Orgaz)
+
+
 from moduls.QvImports import *
 from moduls.QvLlegenda import QvLlegenda
+from qgis.PyQt import QtGui
 
 projecteInicial = 'd:/MapaEscolar/MapaEscolar.qgs'
 
-def imprimirPlanol(colegi, meses, x_min, y_min, x_max, y_max, rotacion, templateFile, fitxerSortida, tipusSortida):
+def imprimirPlanol(colegi, codiColegi, adreca, x_min, y_min, x_max, y_max, rotacion, templateFile, fitxerSortida, tipusSortida):
     tInicial=time.time()
 
     template = QFile(templateFile)
@@ -18,15 +23,22 @@ def imprimirPlanol(colegi, meses, x_min, y_min, x_max, y_max, rotacion, template
         refMap = layout.referenceMap()
         labelColegi = layout.itemById('LabelColegi')
         labelSeccions = layout.itemById('LabelSeccions')
-        labelColegi.setText('Col·legi Electoral: ' + colegi)
-        labelSeccions.setText('Meses: ' + meses)
+        labelAdreca = layout.itemById('LabelAdreca')
+        labelImatge = layout.itemById('Logo')
+
+        labelImatge.setPicturePath("d:/MapaEscolar/CEB_logo_blau.png")
+
+
+        # labelColegi.setText(colegi)
+        labelSeccions.setText(codiColegi+' - '+colegi)
+        labelAdreca.setText(adreca)
         
         rect = refMap.extent()
         vector = QgsVector(x_min - rect.center().x(), y_min - rect.center().y())
         rect += vector
 
-        offsetX = (x_max - x_min) / 6
-        offsetY = (y_max - y_min) / 6
+        offsetX = (x_max - x_min) / 12
+        offsetY = (y_max - y_min) / 12
         x_min = x_min - offsetX
         y_min = y_min - offsetY
         x_max = x_max + offsetX
@@ -34,7 +46,7 @@ def imprimirPlanol(colegi, meses, x_min, y_min, x_max, y_max, rotacion, template
         distX = (x_max - x_min) 
         distY = (y_max - y_min) 
 
-        relacio = 287 / 173
+        relacio = 297 / 190
         newOffsetY = 1
         newOffsetX = 1
 
@@ -47,8 +59,8 @@ def imprimirPlanol(colegi, meses, x_min, y_min, x_max, y_max, rotacion, template
         newOffsetY = newOffsetY / 2
         newOffsetX = newOffsetX / 2
 
-        # rectangle = QgsRectangle(x_min - newOffsetX, y_min - newOffsetY, x_max + newOffsetX, y_max + newOffsetY)
-        rectangle = QgsRectangle(421961, 4574139, 437207, 4591839)
+        rectangle = QgsRectangle(x_min - newOffsetX, y_min - newOffsetY, x_max + newOffsetX, y_max + newOffsetY)
+        # rectangle = QgsRectangle(x_min, y_min, x_max, y_max)
 
         refMap.setExtent(rectangle)
         refMap.setMapRotation(rotacion)
@@ -70,7 +82,9 @@ def imprimirPlanol(colegi, meses, x_min, y_min, x_max, y_max, rotacion, template
             settings.dpi=300
             settings.exportMetadata=False
             
-            fitxerSortida='d:/sortida_'+timestamp+'.PDF'
+
+            fitxerSortida='d:/'+codiColegi+'.PDF'
+
             result = exporter.exportToPdf(fitxerSortida, settings)
 
             print (fitxerSortida)
@@ -99,9 +113,11 @@ with qgisapp() as app:
     bridge.setCanvasLayers()
     project.read(projecteInicial)
     llegenda = QvLlegenda(canvas)
-    llegenda.show()
 
-    plantillaMapa = 'plantillaColegisA3.qpt'
+    # llegenda.show()
+
+
+    plantillaMapa = 'd:/MapaEscolar/plantillaMapaEscolarA1_2.qpt'
 
     posXY = [430036,4583163]    
     
@@ -125,15 +141,16 @@ with qgisapp() as app:
         adreca = feature.attributes()[layerCentres.fields().lookupField('ADRECA')]
         nom = feature.attributes()[layerCentres.fields().lookupField('NOM')]
         adreca = feature.attributes()[layerCentres.fields().lookupField('ADRECA')]
-        adreca = feature.attributes()[layerCentres.fields().lookupField('ADRECA')]
-        xCentre = feature.attributes()[layerCentres.fields().lookupField('XCENT')]
-        yCentre = feature.attributes()[layerCentres.fields().lookupField('YCENT')]
+        xMin = feature.attributes()[layerCentres.fields().lookupField('XMIN')]
+        yMin = feature.attributes()[layerCentres.fields().lookupField('YMIN')]
+        xMax = feature.attributes()[layerCentres.fields().lookupField('XMAX')]
+        yMax = feature.attributes()[layerCentres.fields().lookupField('YMAX')]
         # if codi_centre == '08077101':
         textFiltre = "CODI_CENTRE = '"+codi_centre+"'"
-        print (textFiltre, xCentre, yCentre)
+        print (textFiltre)
         layerIlles.setSubsetString(textFiltre) 
         layerCentres.setSubsetString(textFiltre)
         canvas.refresh()        
         # layer.setSubsetString(textFiltre2)     
-        imprimirPlanol(nom, codi_centre, xCentre-1000000, yCentre-1000000, xCentre+1000000, yCentre+1000000, 0, plantillaMapa , 'd:/EUREKA.pdf', 'PDF')
+        imprimirPlanol(nom, codi_centre, adreca, xMin, yMin, xMax, yMax, 0, plantillaMapa , 'd:/EUREKA.pdf', 'PDF')
     

@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 
 from qgis.PyQt.QtSql import QSqlDatabase, QSqlQuery, QSql
-from qgis.PyQt.QtCore import QTranslator, QLibraryInfo
+from qgis.PyQt.QtCore import QTranslator, QLibraryInfo, QLocale
+from qgis.PyQt.QtWidgets import QApplication
 from qgis.PyQt.QtNetwork import QNetworkProxy
-from qgis.core import QgsPythonRunner
+from qgis.core import QgsPythonRunner, Qgis
 from moduls.QvSingleton import Singleton
 from moduls.QvPythonRunner import QvPythonRunner
 from moduls.QvGithub import QvGithub
 from moduls.QvSqlite import QvSqlite
-from PyQt5.QtWidgets import QApplication
 from pathlib import Path
 import sys
 import getpass
@@ -117,6 +117,7 @@ class QvApp(Singleton):
         self.idioma = None
         self.qtTranslator = None
         self.qgisTranslator = None
+        self.locale = QLocale("ca-ES")
 
         QgsPythonRunner.setInstance(QvPythonRunner())   # Ejecuciones Python
 
@@ -214,13 +215,16 @@ class QvApp(Singleton):
         self.qgisTranslator.load("qgis_" + idioma, path)
         app.installTranslator(self.qgisTranslator)
 
+        self.locale = QLocale(self.idioma + "-ES")
+
     def llegirFitxerText(self, nomFich):
         try:
             txt = ''
             file = Path(nomFich)
             if file.is_file():
-                file.open()
-                txt = file.read_text()
+                #file.open()
+                with file.open():
+                    txt = file.read_text()
             return txt
         except Exception:
             return ''
@@ -242,6 +246,7 @@ class QvApp(Singleton):
     def zoomFactor(self):
         #Windows per defecte utilitza un dpi de 96. Si hem aplicat un factor de zoom, serà més
         #Per tant, dividint entre 96 tindrem l'escalat en tant per 1
+        # return 1
         zoomFactor=QApplication.desktop().screen().logicalDpiX()/96
         return zoomFactor
     def nomUsuari(self):
@@ -262,6 +267,9 @@ class QvApp(Singleton):
             print('Sembla que no estàs a Windows :D')
             #Si no funciona l'anterior, posem l'usuari del login
             return self.usuari
+    def versioQgis(self):
+        return Qgis.QGIS_VERSION
+    
     # Metodos db QVISTA
 
     def dbLogConnexio(self):

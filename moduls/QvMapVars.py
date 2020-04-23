@@ -2,16 +2,16 @@
 
 from qgis.PyQt.QtGui import QColor
 from qgis.core import QgsGraduatedSymbolRenderer
-from qgis.PyQt.QtCore import QLocale, Qt
+from qgis.PyQt.QtCore import Qt
 from collections import OrderedDict
-
-from configuracioQvista import *
 
 MAP_ID = "qV_mapificacio"
 MAP_MAX_CATEGORIES = 10
 MAP_ALPHA_INI = 18
 MAP_ALPHA_FIN = 18
 MAP_ZONES_DB = "Zones.gpkg"
+MAP_EXTENSIO = "DISTRICTE"
+MAP_FEQ_EXTENSIO = 0.75
 
 # TODO
 # Si se recalcula la capa y está en la leyenda, quitarla
@@ -51,19 +51,19 @@ MAP_DISTRIBUCIO = OrderedDict({
 MAP_COLORS = OrderedDict({
     "Blau": QColor(0, 128, 255),
     "Gris": QColor(128, 128, 128),
-    "Groc" : QColor(255, 192, 0),
-    "Porpra" : QColor(156, 41, 161),
+    "Groc": QColor(255, 192, 0),
+    "Porpra": QColor(156, 41, 161),
     "Taronja": QColor(255, 128, 0),
-    "Verd" : QColor(32, 160, 32),
-    "Vermell" : QColor(255, 32, 32)
+    "Verd": QColor(32, 160, 32),
+    "Vermell": QColor(255, 32, 32)
 })
 
 MAP_CONTORNS = OrderedDict({
     "Base": None,
-    "Negre": Qt.black,
-    "Gris": Qt.gray,
-    "Blanc": Qt.white,
-    "Cap" : Qt.transparent
+    "Negre": QColor(Qt.black),
+    "Gris": QColor(Qt.gray),
+    "Blanc": QColor(Qt.white),
+    "Cap": QColor(Qt.transparent)
 })
 
 MAP_METODES = OrderedDict({
@@ -78,8 +78,6 @@ MAP_METODES_MODIF = OrderedDict({
     **MAP_METODES,
     "Personalitzat": QgsGraduatedSymbolRenderer.Custom
 })
-
-MAP_LOCALE = QLocale(QLocale.Catalan, QLocale.Spain)
 
 if __name__ == "__main__":
 

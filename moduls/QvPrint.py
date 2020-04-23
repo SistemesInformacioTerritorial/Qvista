@@ -1,21 +1,20 @@
 # from moduls.QvImports import *
 
-from qgis.core import QgsRectangle, QgsVectorLayer, QgsLayoutExporter, QgsPointXY, QgsGeometry, QgsVector, QgsLayout, QgsReadWriteContext
+from qgis.core import QgsGeometry, QgsLayout, QgsLayoutExporter, QgsPointXY, QgsReadWriteContext, QgsVector, QgsVectorLayer
 from qgis.gui import QgsMapTool, QgsRubberBand
 
-from qgis.PyQt.QtCore import Qt, QFile, QUrl
+from qgis.PyQt.QtCore import QFile, QUrl
 from qgis.PyQt.QtXml import QDomDocument
-from qgis.PyQt.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QComboBox, QPushButton, QCheckBox, QLineEdit, QRadioButton
-from qgis.PyQt.QtGui import QFont, QColor,QStandardItemModel, QStandardItem, QDesktopServices
-from PyQt5.QtWebKitWidgets import QWebView , QWebPage #???
-from PyQt5.QtWebKit import QWebSettings
+from qgis.PyQt.QtWidgets import QComboBox, QHBoxLayout, QLineEdit, QVBoxLayout, QWidget
+from qgis.PyQt.QtGui import QColor, QDesktopServices
+from qgis.PyQt.QtWebKitWidgets import QWebView , QWebPage #???
 
 from moduls.QvImports import *
 from moduls.QvApp import QvApp
 from moduls.QvPushButton import QvPushButton
 
 import time
-from time import gmtime, strftime
+from time import strftime
 import math
 projecteInicial='../dades/projectes/BCN11_nord.qgs'
 
@@ -232,7 +231,6 @@ class QvPrint(QWidget):
 
     def pintarRectangle(self,poligon):
         points=[QgsPointXY(0,0),QgsPointXY(0,10),QgsPointXY(10,10),QgsPointXY(0,10),QgsPointXY(0,0)]
-        listaPoligonos=[points]
         poligono=QgsGeometry.fromRect(self.poligon)
         self.rubberband.setToGeometry(poligono,self.layer)
         

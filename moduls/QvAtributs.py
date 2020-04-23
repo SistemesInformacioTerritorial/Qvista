@@ -2,9 +2,9 @@
 
 from qgis.core import QgsMapLayer, QgsVectorLayerCache
 from qgis.PyQt import QtWidgets  # , uic
-from qgis.PyQt.QtCore import Qt, pyqtSignal, QSize
+from qgis.PyQt.QtCore import Qt, pyqtSignal, QSize, pyqtSlot
 from qgis.PyQt.QtGui import QCursor, QIcon
-from qgis.PyQt.QtWidgets import QTabWidget, QVBoxLayout, QAction, QMenuBar, QWidget, QHBoxLayout, QLabel
+from qgis.PyQt.QtWidgets import QAction, QHBoxLayout, QMenuBar, QTabWidget, QWidget
 from qgis.gui import (QgsGui,
                       QgsAttributeTableModel,
                       QgsAttributeTableView,
@@ -19,7 +19,7 @@ from moduls.QvPushButton import QvPushButton
 # import recursos
 import csv
 # import xlwt - .xls
-from PyQt5.QtWidgets import QDialog
+from qgis.PyQt.QtWidgets import QDialog
 
 from moduls.Ui_AtributsForm import Ui_AtributsForm
 from configuracioQvista import *
@@ -117,15 +117,15 @@ class QvAtributs(QTabWidget):
         self.cwidget.setLayout(clayout)
         self.setCornerWidget(self.cwidget,Qt.TopLeftCorner)
         self.desaCsv=QvPushButton(flat=True,parent=self)
-        self.desaCsv.setIcon(QIcon(imatgesDir+'file-delimited.png'))
+        self.desaCsv.setIcon(QIcon(os.path.join(imatgesDir,'file-delimited.png')))
         self.desaCsv.setIconSize(QSize(24,24))
         self.desaCsv.setToolTip('Desar taula com a csv')
         self.filtra=QvPushButton(flat=True,parent=self)
-        self.filtra.setIcon(QIcon(imatgesDir+'filter.png'))
+        self.filtra.setIcon(QIcon(os.path.join(imatgesDir,'filter.png')))
         self.filtra.setIconSize(QSize(24,24))
         self.filtra.setToolTip('Filtrar/modificar filtre')
         self.eliminaFiltre=QvPushButton(flat=True,parent=self)
-        self.eliminaFiltre.setIcon(QIcon(imatgesDir+'filter-remove.png'))
+        self.eliminaFiltre.setIcon(QIcon(os.path.join(imatgesDir,'filter-remove.png')))
         self.eliminaFiltre.setIconSize(QSize(24,24))
         self.eliminaFiltre.setToolTip('Eliminar filtre')
         self.eliminaFiltre.hide()
@@ -176,6 +176,7 @@ class QvAtributs(QTabWidget):
         layer.subsetStringChanged.connect(self.actualitzaBoto)
         # Si no se ha encontrado la tabla, añadirla
         taula = QvTaulaAtributs(self, layer, self.canvas)
+
         # self.filtra.disconnect()
         # self.desaCsv.disconnect()
         # self.eliminaFiltre.disconnect()
@@ -210,7 +211,8 @@ class QvAtributs(QTabWidget):
                 taula.deleteLater()
                 self.removeTab(i)
                 return
-
+    
+    @pyqtSlot('PyQt_PyObject')
     def tancarTaules(self, layers):
         # Cerrar tablas de un conjunto de layers
         if layers is None:
@@ -287,9 +289,12 @@ class QvAtributs(QTabWidget):
         try:
             
             taula=self.currentWidget()
-            self.filtra.disconnect()
-            self.desaCsv.disconnect()
-            self.eliminaFiltre.disconnect()
+            try:
+                self.filtra.disconnect()
+                self.desaCsv.disconnect()
+                self.eliminaFiltre.disconnect()
+            except:
+                pass
             self.filtra.clicked.connect(taula.filterElements)
             self.desaCsv.clicked.connect(taula.saveToCSV)
             self.eliminaFiltre.clicked.connect(taula.removeFilter)
@@ -312,7 +317,7 @@ class QvTaulaAtributs(QgsAttributeTableView):
     def __init__(self, parent=None, layer=None, canvas=None, numCache=10000):
         if len(QgsGui.editorWidgetRegistry().factories()) == 0:
             QgsGui.editorWidgetRegistry().initEditors()
-        super().__init__()
+        super().__init__(parent)
         self.parent = parent
         self.init(layer, canvas, numCache)
 
@@ -433,6 +438,7 @@ class QvTaulaAtributs(QgsAttributeTableView):
                 if self.feature is not None and self.feature.isValid():
                     num = self.layer.selectedFeatureCount()
                     dialog = QvFitxesAtributs(self.layer, [self.feature], num == 0)
+                    dialog.setStyleSheet('QWidget{border: 0px}')
                 #     dialog = QgsAttributeDialog(
                 #         self.layer, self.feature, False)
                 #     # dialog = QgsAttributeForm(self.layer, self.feature)
@@ -583,7 +589,7 @@ if __name__ == "__main__":
         llegenda = QvLlegenda(canvas, atributs)
 
         # llegenda.project.read('projectes/Illes.qgs')
-        llegenda.project.read('../Dades/Projectes/BCN11.qgs')
+        llegenda.project.read("D:/qVista/Codi/mapesOffline/qVista default map.qgs")
 
         llegenda.setWindowTitle('Llegenda')
         llegenda.setGeometry(50, 50, 300, 400)

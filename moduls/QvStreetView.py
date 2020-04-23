@@ -2,12 +2,9 @@
 
 from moduls.QvImports import *
 
-from qgis.PyQt.QtGui import QStandardItemModel, QStandardItem
 from qgis.PyQt.QtCore import pyqtSignal
-from qgis.core import QgsRectangle
 
-from PyQt5.QtWebKitWidgets import QWebView , QWebPage #QWebPage (???)
-from PyQt5.QtWebKit import QWebSettings
+from qgis.PyQt.QtWebKitWidgets import QWebView , QWebPage #QWebPage (???)
 from moduls.QvPushButton import QvPushButton
 
 class BotoQvBrowser(QvPushButton):
@@ -184,11 +181,6 @@ class PointTool(QgsMapTool):
             print(palabras['words'])
         except:
             print('No va 3 words')
-        try:
-            self.parent.parent.dwSV.show()
-        
-        except:
-            pass
         # self.parent.boto.move(40, 5) 
         # self.m.setCenter(QgsPointXY(event.x()-30,event.y()-30))
         self.canvas.scene().removeItem(self.parent.m)
@@ -218,9 +210,9 @@ class QvStreetView(QWidget):
         self.canvas = canvas
         self.parent = parent
         self.rp = PointTool(self, self.canvas)
-        self.canvas.setMapTool(self.rp)
+        # self.canvas.setMapTool(self.rp)
         # self.boto = QvPushButton(parent = self.canvas, flat = True)
-        # self.icon=QIcon(imatgesDir+'littleMan.png')
+        # self.icon=QIcon(os.path.join(imatgesDir,'littleMan.png'))
         # self.boto.setIcon(self.icon)
         # # self.boto.clicked.connect(self.segueixBoto)
         # self.boto.setGeometry(8,713,25,25)

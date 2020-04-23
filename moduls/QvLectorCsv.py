@@ -3,11 +3,9 @@
 import csv
 import codecs #???
 import os
-import sys
 
-from PyQt5 import QtCore, QtGui, QtWidgets, QtPrintSupport
-from PyQt5.QtGui import QImage, QPainter #QImage (???)
-from PyQt5.QtCore import QFile
+from qgis.PyQt import QtCore, QtGui, QtWidgets, QtPrintSupport
+from qgis.PyQt.QtGui import QImage, QPainter #QImage (???)
 from moduls.QvPushButton import QvPushButton
 import io
 
@@ -84,7 +82,6 @@ class QvLectorCsv(QtWidgets.QWidget):
         elif isinstance(file,io.TextIOBase): #És l'arxiu
             self.carregaCsvFile(file, filename, self.separador,completa)
     def carregaCsvNom(self, fileName, separador=None, completa=False):
-        from PyQt5 import QtGui
         if separador is None:
             super().carregaCsv(fileName)
             return
@@ -93,7 +90,7 @@ class QvLectorCsv(QtWidgets.QWidget):
             with f:
                 self.carregaCsvFile(f,fileName,separador,completa)
     def carregaCsvFile(self,f, fname, separador,completa=False):
-        from PyQt5 import QtGui
+        from qgis.PyQt import QtGui
         self.setWindowTitle(self.fname)
         if not isinstance(separador, str):
             separador = ';'
