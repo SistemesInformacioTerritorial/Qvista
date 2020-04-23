@@ -222,7 +222,7 @@ class QvFormNovaMapificacio(QvFormBaseMapificacio):
         self.simple = simple
         self.taulaMostra = None
 
-        self.setWindowTitle('Afegir capa amb mapa')
+        self.setWindowTitle('Afegir capa amb mapa simbòlic')
 
         self.layout = QVBoxLayout()
         self.layout.setSpacing(14)
@@ -246,7 +246,7 @@ class QvFormNovaMapificacio(QvFormBaseMapificacio):
         self.mapa = QComboBox(self)
         self.mapa.setEditable(False)
         self.mapa.addItem('Àrees')
-        self.mapa.addItem('Punts')
+        self.mapa.addItem('Cercles')
 
         self.capa = QLineEdit(self)
         self.capa.setMaxLength(40)
@@ -307,7 +307,7 @@ class QvFormNovaMapificacio(QvFormBaseMapificacio):
             self.lDades.addRow('Filtre:', self.filtre)
             self.lDades.addRow('Distribució:', self.distribucio)
 
-        self.gMapa = QGroupBox('Definició de mapa')
+        self.gMapa = QGroupBox('Definició del mapa simbòlic')
         self.lMapa = QFormLayout()
         self.lMapa.setSpacing(14)
         self.gMapa.setLayout(self.lMapa)
@@ -461,17 +461,34 @@ class QvFormNovaMapificacio(QvFormBaseMapificacio):
 
     def setRenderParams(self):
         self.renderParams = QvMapRendererParams(self.mapa.currentText())
-        self.renderParams.modeCategories = mv.MAP_METODES[self.metode.currentText()]
-        self.renderParams.colorBase = mv.MAP_COLORS[self.color.currentText()]
-        if self.renderParams.colorContorn is None:
+        if self.simple:
+            self.renderParams.colorBase = mv.MAP_COLORS[self.renderParams.colorBase]
+        else:
+            self.renderParams.colorBase = mv.MAP_COLORS[self.color.currentText()]
+        if self.renderParams.colorContorn is None or self.renderParams.colorContorn == 'Base':
             self.renderParams.colorContorn = self.renderParams.colorBase
         else:
             self.renderParams.colorContorn = mv.MAP_CONTORNS[self.renderParams.colorContorn]
-        if self.tipus.currentText().startswith('COUNT') and self.distribucio.currentText() == "":
+        if self.tipus.currentText().startswith('Recompte') and \
+           self.distribucio.currentText() == "Total":
             self.renderParams.numDecimals = 0
         else:
             self.renderParams.numDecimals = 2
-        self.renderParams.numCategories = self.intervals.value()
+        if self.renderParams.tipusMapa == 'Àrees':
+            self.renderParams.modeCategories = mv.MAP_METODES[self.metode.currentText()]
+            self.renderParams.numCategories = self.intervals.value()
+        if self.renderParams.tipusMapa == 'Cercles':
+            zona = self.zona.currentText()
+            if zona == 'Districte':
+                self.renderParams.increase = 8
+            elif zona == 'Barri':
+                self.renderParams.increase = 4
+            elif zona == 'Àrea estadística bàsica':
+                self.renderParams.increase = 3
+            elif zona == 'Secció censal':
+                self.renderParams.increase = 2
+            else:
+                self.renderParams.increase = 1
 
     def procesa(self):
         if self.taulaMostra is not None:
@@ -761,7 +778,7 @@ class QvFormSimbMapificacio(QvFormBaseMapificacio):
         if not self.iniParams():
             return
 
-        self.setWindowTitle('Modificar mapa')
+        self.setWindowTitle('Modificar mapa simbòlic ' + self.renderParams.tipusMapa.lower())
 
         self.layout = QVBoxLayout()
         self.layout.setSpacing(14)
@@ -792,8 +809,16 @@ class QvFormSimbMapificacio(QvFormBaseMapificacio):
         self.intervals.setMaximum(max(mv.MAP_MAX_CATEGORIES, self.renderParams.numCategories))
         self.intervals.setSingleStep(1)
         self.intervals.setValue(4)
-        self.intervals.setSuffix("  (depèn del mètode)")
+        if self.renderParams.tipusMapa == 'Àrees':
+            self.intervals.setSuffix("  (depèn del mètode)")
         # self.intervals.valueChanged.connect(self.deselectValue)
+
+        self.nomTamany = QLabel("Tamany:", self)
+        self.tamany = QSpinBox(self)
+        self.tamany.setMinimum(1)
+        self.tamany.setMaximum(12)
+        self.tamany.setSingleStep(1)
+        self.tamany.setValue(4)
 
         self.bInfo = QPushButton('Info')
         self.bInfo.clicked.connect(self.veureInfo)
@@ -812,8 +837,16 @@ class QvFormSimbMapificacio(QvFormBaseMapificacio):
 
         self.lSimb.addRow('Color base:', self.color)
         self.lSimb.addRow('Color contorn:', self.contorn)
-        self.lSimb.addRow('Mètode classificació:', self.metode)
-        self.lSimb.addRow(self.nomIntervals, self.intervals)
+        if self.renderParams.tipusMapa == 'Àrees':
+            self.lSimb.addRow('Mètode classificació:', self.metode)
+            self.lSimb.addRow(self.nomIntervals, self.intervals)
+            self.nomTamany.setVisible(False)
+            self.tamany.setVisible(False)
+        else:
+            self.metode.setVisible(False)
+            self.nomIntervals.setVisible(False)
+            self.intervals.setVisible(False)
+            self.lSimb.addRow(self.nomTamany, self.tamany)
 
         self.wInterval = []
         for w in self.iniIntervals():
@@ -821,10 +854,16 @@ class QvFormSimbMapificacio(QvFormBaseMapificacio):
         self.gInter = self.grupIntervals()
 
         self.layout.addWidget(self.gSimb)
-        self.layout.addWidget(self.gInter)
+        if self.renderParams.tipusMapa == 'Àrees':
+            self.layout.addWidget(self.gInter)
         self.layout.addWidget(self.buttons)
 
         self.valorsInicials()
+
+    @staticmethod
+    def executa(llegenda):
+        fMap = QvFormSimbMapificacio(llegenda, llegenda.currentLayer())
+        fMap.exec()
 
     def iniParams(self):
         self.info = QgsExpressionContextUtils.layerScope(self.capa).variable(mv.MAP_ID)
@@ -835,7 +874,7 @@ class QvFormSimbMapificacio(QvFormBaseMapificacio):
             self.custom = (self.renderParams.modeCategories == 'Personalitzat')
             return True
         else:
-            self.msgInfo("No s'han pogut recuperar els paràmetres del mapa\n" +
+            self.msgInfo("No s'han pogut recuperar els paràmetres del mapa simbòlic\n" +
                          self.renderParams.msgError)
             return False
 
@@ -843,7 +882,7 @@ class QvFormSimbMapificacio(QvFormBaseMapificacio):
     def veureInfo(self):
         if self.info is not None:
             box = QMessageBox(self)
-            box.setWindowTitle('Info del mapa')
+            box.setWindowTitle('Info del mapa simbòlic')
             txt = '<table width="600">'
             params = self.info.split('\n')
             for param in params:
@@ -864,6 +903,7 @@ class QvFormSimbMapificacio(QvFormBaseMapificacio):
         self.color.setCurrentIndex(self.color.findText(self.renderParams.colorBase))
         self.contorn.setCurrentIndex(self.contorn.findText(self.renderParams.colorContorn))
         self.intervals.setValue(self.renderParams.numCategories)
+        self.tamany.setValue(self.renderParams.increase)
         self.metode.setCurrentIndex(self.metode.findText(self.renderParams.modeCategories))
 
     def valorsFinals(self):
@@ -871,6 +911,7 @@ class QvFormSimbMapificacio(QvFormBaseMapificacio):
         self.renderParams.colorContorn = self.contorn.currentText()
         self.renderParams.modeCategories = self.metode.currentText()
         self.renderParams.numCategories = self.intervals.value()
+        self.renderParams.increase = self.tamany.value()
         if self.custom:
             self.renderParams.rangsCategories = []
             for fila in self.wInterval:
@@ -1077,11 +1118,11 @@ class QvFormSimbMapificacio(QvFormBaseMapificacio):
                     mv.MAP_METODES_MODIF[self.renderParams.modeCategories]
                 self.renderer = mapRenderer.calcRender(self.capa)
             if self.renderer is None:
-                return "No s'ha pogut elaborar el mapa"
+                return "No s'ha pogut elaborar el mapa simbòlic"
             err = self.llegenda.saveStyleToGeoPackage(self.capa, mv.MAP_ID)
             if err != '':
                 return "Hi ha hagut problemes al desar la simbologia\n({})".format(err)
             # self.llegenda.modificacioProjecte('mapModified')
             return ''
         except Exception as e:
-            return "No s'ha pogut modificar el mapa\n({})".format(str(e))
+            return "No s'ha pogut modificar el mapa simbòlic\n({})".format(str(e))

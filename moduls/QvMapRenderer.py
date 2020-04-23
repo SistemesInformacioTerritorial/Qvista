@@ -13,18 +13,22 @@ from moduls.QvApp import QvApp
 
 import inspect
 
+_EXPR_TIP = inspect.cleandoc('''<div style="font-size: 18px; white-space: nowrap;">
+            [% CASE WHEN attribute('{}') IS NULL THEN NULL
+            ELSE concat(attribute('{}'), ':', '<br/>')
+            END %]
+            [% format_number("{}", {}) %]
+            </div>''')
 
-def modifyRenderer(llegenda):
-    from moduls.QvMapForms import QvFormSimbMapificacio
-
-    fMap = QvFormSimbMapificacio(llegenda, llegenda.currentLayer())
-    fMap.exec()
+_EXPR_SYM = inspect.cleandoc('''coalesce(scale_exp("{}", minimum("{}"), maximum("{}"),
+            1 + {}, {} + {}, 0.57), 0)''')
 
 
 class QvMapRendererParams(QObject):
     def __init__(self, tipus='Àrees'):
         super().__init__()
         self.tipusMapa = tipus
+        self.capa = None
         self.iniParams()
 
     @classmethod
@@ -32,10 +36,12 @@ class QvMapRendererParams(QObject):
         renderer = capa.renderer()
         if isinstance(renderer, QgsGraduatedSymbolRenderer):
             obj = cls('Àrees')
+            obj.capa = capa
             obj.mapParamsRender(renderer)
             return obj
         elif isinstance(renderer, QgsSingleSymbolRenderer):
-            obj = cls('Punts')
+            obj = cls('Cercles')
+            obj.capa = capa
             obj.symParamsRender(renderer)
             return obj
         else:
@@ -58,9 +64,10 @@ class QvMapRendererParams(QObject):
             self.labelFormat = '%1 - %2'
             self.increase = 0
             self.opacity = 1
-        else:  # 'Punts'
+        else:  # 'Cercles'
             self.colorBase = 'Porpra'
             self.colorContorn = 'Blanc'
+            # self.modeCategories = 'Flannery'
             self.numCategories = 10
             self.labelFormat = ''
             self.increase = 5
@@ -69,10 +76,10 @@ class QvMapRendererParams(QObject):
     def mapRenderer(self, llegenda):
         if self.tipusMapa == 'Àrees':
             return QvMapRenderer(llegenda, self)
-        elif self.tipusMapa == 'Punts':
+        elif self.tipusMapa == 'Cercles':
             return QvSymRenderer(llegenda, self)
         else:
-            raise ValueError("Tipus de mapa erroni: " + self.tipusMapa)
+            raise ValueError("Tipus de mapa simbòlic erroni: " + self.tipusMapa)
 
     def nomParam(self, param, llista):
         for nom, valor in llista.items():
@@ -81,17 +88,7 @@ class QvMapRendererParams(QObject):
         return list(llista.keys())[0]
 
     def calcTip(self):
-        # <div style="font-size: 18px; white-space: nowrap;">
-        # [% CASE WHEN attribute('DESCRIPCIO') IS NULL THEN NULL
-        # ELSE concat(attribute('DESCRIPCIO'), ':', '<br/>')
-        # END %]
-        # [% format_number("RESULTAT", 0) %]</div>
-        expr = f'''<div style="font-size: 18px; white-space: nowrap;">
-            [% CASE WHEN attribute('{self.campNom}') IS NULL THEN NULL
-            ELSE concat(attribute('{self.campNom}'), ':', '<br/>')
-            END %]
-            [% format_number("{self.campCalculat}", {self.numDecimals}) %]
-            </div>'''
+        expr = _EXPR_TIP.format(self.campNom, self.campNom, self.campCalculat, self.numDecimals)
         return inspect.cleandoc(expr)
 
     def nomColor(self, param, llista):
@@ -152,12 +149,39 @@ class QvMapRendererParams(QObject):
         except Exception as e:
             self.msgError = str(e)
 
+    def scanParams(self, template, expr, sep='{}'):
+        try:
+            salida = []
+            texto = expr
+            segmentos = template.split(sep)
+            for segmento in segmentos:
+                ini = texto.find(segmento)
+                if ini > 0:
+                    salida.append(texto[:ini])
+                texto = texto[ini+len(segmento):]
+            return salida
+        except Exception as e:
+            self.msgError = str(e)
+            return None
+
     def symParamsRender(self, renderer):
         try:
             symbology = renderer.symbol().symbolLayer(0)
             symbolLayer = symbology.subSymbol().symbolLayer(0)
             self.colorBase = self.nomColor(symbolLayer.fillColor(), mv.MAP_COLORS)
             self.colorContorn = self.nomColor(symbolLayer.strokeColor(), mv.MAP_CONTORNS)
+
+            props = symbolLayer.dataDefinedProperties()
+            prop = props.property(QgsSymbolLayer.PropertySize)
+            params = self.scanParams(_EXPR_SYM, prop.expressionString())
+            self.campCalculat = params[0]
+            self.increase = int(params[3])
+            self.numCategories = int(params[4])
+
+            params = self.scanParams(_EXPR_TIP, self.capa.mapTipTemplate())
+            self.campNom = params[0]
+            self.numDecimals = int(params[3])
+
         except Exception as e:
             self.msgError = str(e)
 
@@ -242,11 +266,9 @@ class QvSymRenderer(QObject):
         self.params = params
 
     def calcExpr(self):
-        expr = f'''coalesce(scale_exp("{self.params.campCalculat}",
-            minimum("{self.params.campCalculat}"),
-            maximum("{self.params.campCalculat}"),
-            1 + {self.params.increase},
-            {self.params.numCategories} + {self.params.increase}, 0.57), 0)'''
+        expr = _EXPR_SYM.format(self.params.campCalculat, self.params.campCalculat,
+                                self.params.campCalculat, self.params.increase,
+                                self.params.numCategories, self.params.increase)
         return inspect.cleandoc(expr)
 
     def setStrokeSymbology(self, sourceSymbol):

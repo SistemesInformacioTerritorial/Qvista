@@ -10,7 +10,7 @@ from moduls.QvAccions import QvAccions
 from moduls.QvAtributs import QvAtributs
 from moduls.QvVideo import QvVideo
 from moduls.QvEscala import QvEscala
-from moduls.QvMapRenderer import modifyRenderer
+from moduls.QvMapForms import QvFormSimbMapificacio
 from moduls.QvMapVars import MAP_ID
 from moduls.QvLlegendaAux import QvModelLlegenda, QvItemLlegenda, QvMenuLlegenda
 from moduls.QvLlegendaMascara import QvLlegendaMascara
@@ -89,7 +89,7 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
         self.iconaMap = qgGui.QgsLayerTreeViewIndicator()
         self.iconaMap.setIcon(qtGui.QIcon(os.path.join(imatgesDir, 'categories2.png')))
         self.iconaMap.setToolTip('Categories de mapificació')
-        self.iconaMap.clicked.connect(lambda: modifyRenderer(self))
+        self.iconaMap.clicked.connect(lambda: QvFormSimbMapificacio.executa(self))
 
         if self.atributs is not None:
             self.atributs.modificatFiltreCapa.connect(self.actIconaFiltre)
