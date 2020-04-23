@@ -4,7 +4,7 @@ from qgis.PyQt.QtSql import QSqlDatabase, QSqlQuery, QSql
 from qgis.PyQt.QtCore import QTranslator, QLibraryInfo, QLocale
 from qgis.PyQt.QtWidgets import QApplication
 from qgis.PyQt.QtNetwork import QNetworkProxy
-from qgis.core import QgsPythonRunner
+from qgis.core import QgsPythonRunner, Qgis
 from moduls.QvSingleton import Singleton
 from moduls.QvPythonRunner import QvPythonRunner
 from moduls.QvGithub import QvGithub
@@ -267,6 +267,9 @@ class QvApp(Singleton):
             print('Sembla que no estàs a Windows :D')
             #Si no funciona l'anterior, posem l'usuari del login
             return self.usuari
+    def versioQgis(self):
+        return Qgis.QGIS_VERSION
+    
     # Metodos db QVISTA
 
     def dbLogConnexio(self):

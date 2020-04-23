@@ -658,6 +658,7 @@ if __name__ == "__main__":
 
         marcaLloc=None
         def trobat(codi,info):
+            global marcaLloc
             if codi!=0:
                 print(info)
                 return

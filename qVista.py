@@ -18,7 +18,9 @@ from moduls.QvEinesGrafiques import QvMesuraMultiLinia, QvSeleccioGrafica, carre
 from moduls.QvStreetView import QvStreetView
 from moduls.QvLlegenda import QvLlegenda
 from moduls.QvAtributs import QvAtributs
-from moduls.QvMapeta import QvMapeta
+# from moduls.QvMapeta import QvMapeta
+from moduls.QvMapetaBrujulado import QvMapetaBrujulado
+from moduls.QvCrearMapeta import QvCrearMapetaConBotones
 from moduls.QVCercadorAdreca import QCercadorAdreca
 from moduls.QVDistrictesBarris import QVDistrictesBarris
 from moduls.QvApp import QvApp
@@ -44,7 +46,9 @@ from moduls.QvCatalegCapes import QvCatalegCapes
 from moduls.QvSabiesQue import QvSabiesQue
 from moduls.QvMemoria import QvMemoria
 from moduls.QvBafarada import QvBafarada
+from moduls.QvCarregadorGPKG import QvCarregadorGPKG
 from moduls.QvVisualitzacioCapa import QvVisualitzacioCapa
+from moduls.QvSobre import QvSobre
 # import re
 import csv
 import os        
@@ -123,6 +127,8 @@ class QVista(QMainWindow, Ui_MainWindow):
         #Afegim títol a la finestra
         self.setWindowTitle(titleFinestra)
 
+        self.crearMapetaConBotones=None
+
         # Definició dels labels de la statusBar 
         self.definirLabelsStatus()   
 
@@ -153,6 +159,8 @@ class QVista(QMainWindow, Ui_MainWindow):
         #Preparem el mapeta abans de les accions, ja que el necessitarem allà
         self.preparacioMapeta()
 
+        
+
         # # Connectors i accions
         self.definicioAccions()
 
@@ -174,7 +182,9 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.preparacioMesura()
         # self.preparacioGrafiques() ???
         self.preparacioSeleccio()
-        # self.preparacioEntorns() ???
+        # self.preparacioEntorns()
+        self.preparacioCrearMapeta()
+
         
         # Eina inicial del mapa = Panning
         self.canvas.panCanvas()
@@ -261,11 +271,17 @@ class QVista(QMainWindow, Ui_MainWindow):
                 # self.obrirProjecte(nfile)
             elif fext == '.qlr':
                 afegirQlr(nfile)
-            elif fext in ('.shp', '.gpkg'):
+            elif fext == '.shp':
                 layer = QgsVectorLayer(nfile, os.path.basename(nfile), "ogr")
                 if layer.isValid():
                     self.project.addMapLayer(layer)
                     self.setDirtyBit()
+            elif fext == '.gpkg':
+                nomsCapes = QvCarregadorGPKG.triaCapes(nfile,self)
+                capes = (QgsVectorLayer(f'{nfile}|layername={x}',x,'ogr') for x in nomsCapes)
+
+                self.project.addMapLayers(capes)
+                self.setDirtyBit()
             elif fext == '.csv':
                 carregarLayerCSV(nfile)
 
@@ -339,10 +355,17 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.lblProjeccio.setText(self.project.crs().description())
         self.lblProjecte.setText('QGS: '+self.project.baseName())
         self.lblProjecte.setToolTip(self.project.fileName())
-        if self.canvas.rotation() == 0:
-            self.bOrientacio.setText(' Orientació: Nord')
-        else:
-            self.bOrientacio.setText(' Orientació: Eixample')
+
+        # if self.canvas.rotation() == 0:
+        #     self.bOrientacio.setText(' Orientació: Nord')
+        # else:
+        #     self.bOrientacio.setText(' Orientació: Eixample')
+        self.bOrientacio.setText('Disponible')
+
+        # Titol del projecte 
+        # self.lblTitolProjecte.setFont(QvConstants.FONTTITOLS)
+        # self.lblTitolProjecte.setText(self.project.title())
+
 
         if self.llegenda.player is None:
             self.llegenda.setPlayer(os.path.join(imatgesDir,'Spinner_2.gif'), 150, 150)
@@ -448,7 +471,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.bFoto.setToolTip('Capturar imatge del mapa')
 
         self.bImprimir =  self.botoLateral(tamany = 25, accio=self.actImprimir)
-        self.bTissores = self.botoLateral(tamany = 25, accio=self.actTisores)
+        self.bTisores = self.botoLateral(tamany = 25, accio=self.actTisores)
         self.bSeleccioGrafica = self.botoLateral(tamany = 25, accio=self.actSeleccioGrafica)
         self.bMesuraGrafica = self.botoLateral(tamany = 25, accio=self.actMesuraGrafica)
 
@@ -607,7 +630,9 @@ class QVista(QMainWindow, Ui_MainWindow):
         Després instanciem el cercador d'adreces. 
         Connectem la senyal sHanTrobatCoordenades a trobatNumero_oNo.
         """
+
         # instanciamos clases necesarias    
+
         self.fCercador=QFrame()
         self.bottomWidget = QWidget()
         self.ubicacions = QvUbicacions(self.canvas, pare=self)
@@ -674,12 +699,14 @@ class QVista(QMainWindow, Ui_MainWindow):
           
         self.cAdrec.sHanTrobatCoordenades.connect(self.trobatNumero_oNoLat) 
 
+        # creamos DockWidget
         self.dwCercador = QvDockWidget( "Cercador", self )
         self.dwCercador.setContextMenuPolicy(Qt.PreventContextMenu)
         self.dwCercador.hide()
         self.dwCercador.setAllowedAreas( Qt.RightDockWidgetArea | Qt.LeftDockWidgetArea )
         self.dwCercador.setWidget( self.fCercador)
         self.dwCercador.setContentsMargins ( 2, 2, 2, 2 )
+        # a qVista se le añade un DockWidget
         self.addDockWidget( Qt.RightDockWidgetArea, self.dwCercador)
 
     def CopiarA_Ubicacions(self):       
@@ -731,14 +758,79 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.dwTaulaAtributs.setContentsMargins ( 2, 2, 2, 2 )
         self.addDockWidget( Qt.BottomDockWidgetArea, self.dwTaulaAtributs)
 
+
+    def preparacioBotonera(self): #???
+        """ 
+        Es prepara la botonera lateral sobre un dockWidget.
+        """
+        self.botonera = QFrame()
+        self.ui = Ui_Frame()
+        self.ui.setupUi(self.botonera)
+        # self.botonera.show()
+        self.dwBotonera = QvDockWidget( "Botonera", self )
+        self.dwBotonera.setContextMenuPolicy(Qt.PreventContextMenu)
+        self.dwBotonera.hide()
+        self.dwBotonera.setObjectName( "Botonera" )
+        self.dwBotonera.setAllowedAreas( Qt.RightDockWidgetArea | Qt.LeftDockWidgetArea )
+        self.dwBotonera.setWidget(self.botonera)
+        self.dwBotonera.setContentsMargins ( 2, 2, 2, 2 )
+        self.addDockWidget(Qt.LeftDockWidgetArea, self.dwBotonera)
+
+    def preparacioNoticies(self): #???
+        return
+
+    def enviarMapetaTemporal(self,fichero):
+        
+        self.mapeta.PngPgwDroped_MB([fichero])
+
+
     def preparacioMapeta(self):
-        self.mapeta = QvMapeta(self.canvas, tamanyPetit=True, pare=self)
+        self.mapetaDefaultPng= "mapesOffline/default.png"
+        self.mapeta  = QvMapetaBrujulado(self.mapetaDefaultPng, self.canvas,  pare=self.canvas, mapeta_default="mapesOffline/default.png")
+
         self.mapeta.setGraphicsEffect(QvConstants.ombra(self,radius=30,color=QvConstants.COLOROMBRA))
-        self.bOrientacio.clicked.connect(self.editarOrientacio)
+        # self.bOrientacio.clicked.connect(self.editarOrientacio)
+        self.mapeta.Sig_MuestraMapeta.connect(self.editarOrientacio)
+
+
         self.mapeta.setParent(self.canvas)
         self.mapeta.move(20,20)
         self.mapeta.show()
+
    
+    def preparacioCrearMapeta(self):
+        self.crearMapetaConBotones = QvCrearMapetaConBotones(self.canvas)
+        self.crearMapetaConBotones.setGraphicsEffect(QvConstants.ombra(self,radius=30,color=QvConstants.COLOROMBRA))
+        self.crearMapetaConBotones.setParent(self.canvas)  #vaya sitio!!!
+
+        self.crearMapetaConBotones.Sig_MapetaTemporal.connect(self.enviarMapetaTemporal)
+
+        """
+        Amb aquesta linia:
+        crearMapeta.show()
+        es veuria el widget suelto, separat del canvas.
+        Les següents línies mostren com integrar el widget 'crearMapeta' com a dockWidget.
+        """
+        # Creem un dockWdget i definim les característiques
+        self.dwcrearMapeta = QDockWidget( "CrearMapeta", self )
+        self.dwcrearMapeta.setContextMenuPolicy(Qt.PreventContextMenu)
+        self.dwcrearMapeta.setAllowedAreas( Qt.RightDockWidgetArea | Qt.LeftDockWidgetArea )
+        self.dwcrearMapeta.setContentsMargins ( 1, 1, 1, 1 )
+        
+        # AÑADIMOS  nuestra instancia al dockwidget
+        self.dwcrearMapeta.setWidget(self.crearMapetaConBotones)
+
+        # Coloquem el dockWidget al costat esquerra de la finestra
+        self.addDockWidget( Qt.LeftDockWidgetArea, self.dwcrearMapeta)
+
+        # Fem visible el dockWidget
+        self.dwcrearMapeta.hide()  #atencion
+
+
+
+
+
+
     def preparacioLlegenda(self):
         """Es genera un dockWidget a la dreta, amb la llegenda del projecte.
  
@@ -884,6 +976,9 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         self.dwPrint.visibilityChanged.connect(destruirQvPrint)
         self.setDirtyBit(estatDirtybit)
+    def sobre(self):
+        about = QvSobre(self)
+        about.exec()
 
     def definicioAccions(self):
         """ Definició de les accions que després seran assignades a menús o botons. """
@@ -932,6 +1027,9 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         self.actpiuPortal = QAction("Portal PIU info. urb.", self)
         self.actpiuPortal.triggered.connect(piuPortal)
+
+        self.actSobre = QAction('Quant a...', self)
+        self.actSobre.triggered.connect(self.sobre)
         
         self.actDocumentacio=QAction('Documentació',self)
         self.actDocumentacio.setIcon(QIcon(os.path.join(imatgesDir,'file-document.png')))
@@ -1013,7 +1111,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.actTisores.setStatusTip("Eina per retallar pantalla")
         icon=QIcon(os.path.join(imatgesDir,'tisores.png'))
         self.actTisores.setIcon(icon)
-        self.actTisores.triggered.connect(self.tissores)
+        self.actTisores.triggered.connect(self.tisores)
 
         self.actSeleccioGrafica = QAction("Seleccionar/emmascarar", self)
         self.actSeleccioGrafica.setStatusTip("Seleccionar/emmascarar")
@@ -1071,7 +1169,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.actInfo.setIcon(icon)
         self.actInfo.triggered.connect(self.infoQVista)
 
-        self.actHelp = QAction("Ajuda ", self)
+        self.actHelp = QAction("Contingut de l'ajuda", self)
         icon=QIcon(os.path.join(imatgesDir,'help-circle.png'))
         self.actHelp.setIcon(icon)
         self.actHelp.triggered.connect(self.infoQVistaPDF)
@@ -1252,7 +1350,6 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.botoMapeta.setIcon(QIcon(os.path.join(imatgesDir,'Mapeta.png')))
         self.botoMapeta.setStyleSheet(stylesheetBotons)
         self.botoMapeta.setIconSize(QSize(24,24))
-        self.botoMapeta.clicked.connect(self.mapeta.ferPetit)
         self.botoMapeta.setCursor(QvConstants.cursorClick())
 
         self.botoMetadades.setIcon(QIcon(os.path.join(imatgesDir,'information-variant.png')))
@@ -1432,7 +1529,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.project.write(QvTempdir+'tempQgis.qgs')
         QDesktopServices().openUrl(QUrl(QvTempdir+'/tempQgis.qgs'))
      
-    def tissores(self):
+    def tisores(self):
         process = QProcess(self)
         pathApp = r"c:\windows\system32\SnippingTool.exe"
         process.start(pathApp)
@@ -1552,6 +1649,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.menuMapes = self.bar.addMenu ("Mapes")
         self.menuCapes = self.bar.addMenu ("Capes")
         self.menuUtilitats = self.bar.addMenu("Utilitats")
+        self.menuAjuda = self.bar.addMenu('Ajuda')
         self.menuFuncions = QMenu()
 
         self.menuMapes.setFont(QvConstants.FONTSUBTITOLS)
@@ -1595,6 +1693,12 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.menuUtilitats.addSeparator()
         self.menuUtilitats.addAction(self.actpiuPortal)
         # self.menuUtilitats.addAction(self.actDocumentacio)
+
+        self.menuAjuda.setFont(QvConstants.FONTSUBTITOLS)
+        self.menuAjuda.addAction(self.actHelp)
+        self.menuAjuda.addAction(self.actBug)
+        self.menuAjuda.addSeparator()
+        self.menuAjuda.addAction(self.actSobre)
 
         self.menuFuncions.setFont(QvConstants.FONTSUBTITOLS)
         self.menuFuncions.addAction(self.actEsborrarSeleccio)
@@ -2029,13 +2133,30 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.actualitzantCanvas = False
         self.sbCarregantCanvas.hide()
 
+
+ 
+
     def editarOrientacio(self):
-        self.mapeta.cambiarRotacion()
-              
-        if self.canvas.rotation()==0:
-            self.bOrientacio.setText(' Orientació: Nord')
+        
+        # puenteo funcion para probar crear mapeta
+        if self.dwcrearMapeta.isHidden():
+            self.dwcrearMapeta.show()
         else:
-            self.bOrientacio.setText(' Orientació: Eixample')
+
+            self.dwcrearMapeta.hide()
+            
+
+
+    
+        # self.mapeta.cambiarRotacion()
+              
+        # if self.canvas.rotation()==0:
+        #     self.bOrientacio.setText(' Orientació: Nord')
+        # else:
+        #     self.bOrientacio.setText(' Orientació: Eixample')
+
+ 
+
         self.canvas.refresh()
 
         
@@ -2536,6 +2657,9 @@ def seleccioExpressio():
         return
     if command=='filtramascara':
         filtraMascara(qV)
+        return
+    if command in ('versio', 'versió'):
+        QMessageBox.information(qV,'Versió de QGIS',f'La versió de QGIS actual és la {QvApp().versioQgis()}')
         return
 
 
