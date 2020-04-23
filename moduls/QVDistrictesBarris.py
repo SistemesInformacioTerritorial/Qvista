@@ -11,12 +11,15 @@
 from qgis.core import QgsRectangle
 from qgis.PyQt.QtCore import QObject, QModelIndex, Qt
 from qgis.PyQt.QtGui import QStandardItemModel, QStandardItem
-from qgis.PyQt.QtWidgets import QTreeView, QAction
+from qgis.PyQt.QtWidgets import QTreeView, QAction, QApplication
 import sys, csv
+
+from moduls.QvImports  import *
 
 class QVDistrictesBarris(QObject):
 
     __distBarrisCSV = r'Dades\DIST_BARRIS.csv'
+    __zones = r'Dades\Zones.gpkg'
 
     def __init__(self):
         super().__init__()
@@ -25,13 +28,11 @@ class QVDistrictesBarris(QObject):
 
         # Model
         self.model = QStandardItemModel()
-        self.llegirDistrictesBarrisCSV()
+        self.llegirZonesGPKG()
+        #self.llegirDistrictesBarrisCSV()
 
         # View
         self.view = QTreeView()
-
-
-
 
         self.view.setContextMenuPolicy(Qt.ActionsContextMenu)
 
@@ -40,14 +41,8 @@ class QVDistrictesBarris(QObject):
         self.actExpand.triggered.connect(self.expand_all)
         self.view.addAction(self.actExpand)
 
-
-
-
-
-
         self.view.setModel(self.model)
         self.iniView()
-
 
 
     def expand_all(self):
@@ -68,6 +63,80 @@ class QVDistrictesBarris(QObject):
             else:
                 self.view.setColumnHidden(i, True)
         self.view.setEditTriggers(QTreeView.NoEditTriggers)
+
+    def llegirZonesGPKG(self):
+        try:
+            pathDistrictes = self.__zones + '|layername=districtes'
+            layerDistrictes = QgsVectorLayer(pathDistrictes, 'ogr')
+            pathBarris = self.__zones + '|layername=barris'
+            layerBarris = QgsVectorLayer(pathBarris, 'ogr')
+            
+            rowsDistrictes = layerDistrictes.getFeatures()
+            llistaDistrictes = []
+            for rowD in rowsDistrictes: 
+                #print(rowD.attributes())
+                #zona = ""
+                num_districte = rowD.attributes()[1]
+                nom_districte = rowD.attributes()[2]
+                num_barri = ""
+                nom_barri = ""
+                geometria = rowD.geometry().boundingBox()
+                x_min = str(geometria.xMinimum())
+                y_min = str(geometria.yMinimum())
+                x_max = str(geometria.xMaximum())
+                y_max = str(geometria.yMaximum())
+                item = [num_districte,nom_districte,num_barri,nom_barri,x_min,y_min,x_max,y_max]
+                llistaDistrictes.append(item)
+
+            def ordenaPerNumD(elem):
+                return elem[1]
+            llistaDistrictes.sort(key=ordenaPerNumD)
+            #print(llistaDistrictes)
+
+            rowsBarris = layerBarris.getFeatures()
+            llistaBarris = []
+            for rowB in rowsBarris:
+                #print(rowB.attributes())
+                #zona = ""
+                num_districte = rowB.attributes()[3]
+                nom_districte = llistaDistrictes[int(num_districte)-1][1]
+                num_barri = rowB.attributes()[1]
+                nom_barri = rowB.attributes()[2]
+                geometria = rowB.geometry().boundingBox()
+                x_min = str(geometria.xMinimum())
+                y_min = str(geometria.yMinimum())
+                x_max = str(geometria.xMaximum())
+                y_max = str(geometria.yMaximum())
+                item = [num_districte,nom_districte,num_barri,nom_barri,x_min,y_min,x_max,y_max]
+                llistaBarris.append(item)
+
+            llistaBarris.sort(key=ordenaPerNumD)
+            #print(llistaBarris)
+
+            self.labels = ["ZONA", "DISTRICTE", "NOM_DISTRICTE", "BARRI", "NOM_BARRI", "X_MIN", "Y_MIN", "X_MAX", "Y_MAX"]
+            root = self.model.invisibleRootItem()
+            self.model.setColumnCount(len(self.labels))
+            self.model.setHorizontalHeaderLabels(self.labels)
+
+            ultimaDistr = -1
+            itDist = 0
+            for b in llistaBarris:
+                if ultimaDistr != int(b[0]):  #Afegir següent districte 
+                    dist = [QStandardItem(llistaDistrictes[itDist][1])]
+                    for i in range (0, len(llistaDistrictes[itDist])):
+                        dist.append(QStandardItem(llistaDistrictes[itDist][i]))  
+                    root.appendRow(dist)
+                    itDist = itDist + 1
+                else:                   #Afegir següent Barri
+                    barri = [QStandardItem(b[3])]
+                    for item in b:
+                        barri.append(QStandardItem(item))
+                    dist[0].appendRow(barri)
+                ultimaDistr = int(b[0])
+            return True     
+        except:
+            print("Error en construcció de l'arbre de zones")
+            return False
 
     def llegirDistrictesBarrisCSV(self):
         try:
@@ -128,6 +197,11 @@ class QVDistrictesBarris(QObject):
     def esBarri(self):
         return not self.esDistricte()
     
+    def llegirNom(self):
+        if self.esDistricte():
+            return self.llegirRegistre()["NOM_DISTRICTE"]
+        return self.llegirRegistre()["NOM_BARRI"]
+
     def llegirID(self):
         if self.esDistricte():
             return self.llegirRegistre()['DISTRICTE']
@@ -135,5 +209,8 @@ class QVDistrictesBarris(QObject):
 
         
 
+if __name__ == "__main__":
+    with qgisapp() as app:
 
+        distBarris = QVDistrictesBarris()
 

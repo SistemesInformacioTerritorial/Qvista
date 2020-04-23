@@ -55,7 +55,7 @@ if __name__ == "__main__":
             features = layerBoxes.getFeatures()   
             for feature in features:
                 geometria = feature.geometry().boundingBox()
-                #print(feature.attributes())
+                print(feature.attributes())
                 nom = feature[2]
                 settings.setExtent(geometria)
                 render = QgsMapRendererSequentialJob(settings)

@@ -1710,7 +1710,10 @@ class QVista(QMainWindow, Ui_MainWindow):
 
     def clickArbre(self):
         rang = self.distBarris.llegirRang()
+        zona = self.distBarris.llegirNom()
+        print(zona)
         self.canvas.zoomToFeatureExtent(rang)
+
             
 
     def cataleg(self):
