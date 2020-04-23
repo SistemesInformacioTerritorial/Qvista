@@ -88,9 +88,9 @@ class QVDistrictesBarris(QObject):
                 item = [num_districte,nom_districte,num_barri,nom_barri,x_min,y_min,x_max,y_max]
                 llistaDistrictes.append(item)
 
-            def ordenaPerNumD(elem):
-                return elem[1]
-            llistaDistrictes.sort(key=ordenaPerNumD)
+            def ordenaPerNumDistricte(elem):
+                return elem[0]
+            llistaDistrictes.sort(key=ordenaPerNumDistricte)
             #print(llistaDistrictes)
 
             rowsBarris = layerBarris.getFeatures()
@@ -110,7 +110,9 @@ class QVDistrictesBarris(QObject):
                 item = [num_districte,nom_districte,num_barri,nom_barri,x_min,y_min,x_max,y_max]
                 llistaBarris.append(item)
 
-            llistaBarris.sort(key=ordenaPerNumD)
+            def ordenaPerNumBarri(elem):
+                return elem[2]
+            llistaBarris.sort(key=ordenaPerNumBarri)
             #print(llistaBarris)
 
             self.labels = ["ZONA", "DISTRICTE", "NOM_DISTRICTE", "BARRI", "NOM_BARRI", "X_MIN", "Y_MIN", "X_MAX", "Y_MAX"]
@@ -180,9 +182,9 @@ class QVDistrictesBarris(QObject):
                 item = self.model.itemFromIndex(index)
                 self.registre[self.labels[i]] = item.text()
             self.registre['RANG'] = QgsRectangle(float(self.registre['X_MIN']), \
-                                                 float(self.registre['Y_MIN']), \
-                                                 float(self.registre['X_MAX']), \
-                                                 float(self.registre['Y_MAX']))
+                                                float(self.registre['Y_MIN']), \
+                                                float(self.registre['X_MAX']), \
+                                                float(self.registre['Y_MAX']))
         except:
             print('QDistrictesBarris.llegirRegistre(): ', sys.exc_info()[0], sys.exc_info()[1])
         finally:

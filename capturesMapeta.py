@@ -30,7 +30,7 @@ if __name__ == "__main__":
         canvas.show()
         canvas.setRotation(0)
         project = QgsProject.instance()
-        projecteInicial='C:/qVista/Qvista/mapesOffline/qVista default map.qgs'
+        projecteInicial='D:/qVista/Qvista/mapesOffline/qVista default map.qgs'
 
         if project.read(projecteInicial):
             root = project.layerTreeRoot()
@@ -41,7 +41,7 @@ if __name__ == "__main__":
      
         zones = ["districtes", "barris"]
         for zona in zones:
-            pathBoxes = "C:\\qVista\\Qvista\\Dades\\Zones.gpkg|layername=" + zona
+            pathBoxes = "D:\\qVista\\Qvista\\Dades\\Zones.gpkg|layername=" + zona
             layerBoxes = QgsVectorLayer(pathBoxes, 'ogr')
             
             vlayer = QgsProject.instance().mapLayers().values()
@@ -59,12 +59,36 @@ if __name__ == "__main__":
                 nom = feature[2]
                 settings.setExtent(geometria)
                 render = QgsMapRendererSequentialJob(settings)
-                image_location = os.path.join("C:\\qVista\\Qvista\\Imatges\\capturesMapeta\\", nom +".png")
+                image_location = os.path.join("D:\\qVista\\Qvista\\Imatges\\capturesMapeta\\", nom +".png")
                 
+                #renderitzar imatge PNG
                 render.start()
                 render.waitForFinished()
                 img = render.renderedImage()
                 img.save(image_location, "png")
+
+                #nom fitzer PGW
+                split_nombre=os.path.splitext(image_location)
+                filenamePgw = split_nombre[0] + ".pgw"
+                wld =open(filenamePgw, "w")   
+
+                # rango mapeta x e y
+                xdist = geometria.xMaximum()- geometria.xMinimum()   
+                ydist = geometria.yMaximum()- geometria.yMinimum() 
+
+                # ancho y alto de la imagen
+                iheight = 250 
+                iwidth =  250
+
+                #escriure PGW
+                wld.writelines("%s\n" % (xdist/iwidth))
+                wld.writelines("0.0\n")
+                wld.writelines("0.0\n")
+                wld.writelines("%s\n" % (ydist/iheight))
+                wld.writelines("%s\n" % geometria.xMinimum())
+                wld.writelines("%s\n" % geometria.yMinimum())
+                wld.close
+
                 i = i + 1
             
         

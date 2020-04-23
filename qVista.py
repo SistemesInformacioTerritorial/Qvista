@@ -1814,12 +1814,16 @@ class QVista(QMainWindow, Ui_MainWindow):
 
     def clickArbre(self):
         rang = self.distBarris.llegirRang()
-        zona = self.distBarris.llegirNom()
-        print(zona)
         self.canvas.zoomToFeatureExtent(rang)
 
-            
+        zona = self.distBarris.llegirNom()
+        print(zona)
+        png_location = os.path.join("D:\\qVista\\Qvista\\Imatges\\capturesMapeta\\", zona +".png")
+        #pgw_location = os.path.join("D:\\qVista\\Qvista\\Imatges\\capturesMapeta\\", zona +".pgw ")
+        self.enviarMapetaTemporal(png_location)
+        
 
+        
     def cataleg(self):
         """catàleg de capes"""
 
