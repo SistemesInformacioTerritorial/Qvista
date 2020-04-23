@@ -10,7 +10,7 @@ from moduls.QvAccions import QvAccions
 from moduls.QvAtributs import QvAtributs
 from moduls.QvVideo import QvVideo
 from moduls.QvEscala import QvEscala
-from moduls.QvMapRenderer import QvMapRenderer
+from moduls.QvMapForms import QvFormSimbMapificacio
 from moduls.QvMapVars import MAP_ID
 from moduls.QvLlegendaAux import QvModelLlegenda, QvItemLlegenda, QvMenuLlegenda
 from moduls.QvLlegendaMascara import QvLlegendaMascara
@@ -64,9 +64,6 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
         # Evento de nueva capa seleccionada
         self.connectaCanviCapaActiva(canviCapaActiva)
 
-        # Mapificaciones
-        self.mapRenderer = QvMapRenderer(self)
-
         # Model
         self.model = QvModelLlegenda(self.root)
         self.model.setFlag(qgCor.QgsLegendModel.ShowLegend, True)
@@ -85,14 +82,14 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
         self.setMenuProvider(QvMenuLlegenda(self))
 
         self.iconaFiltre = qgGui.QgsLayerTreeViewIndicator()
-        self.iconaFiltre.setIcon(qtGui.QIcon(os.path.join(imatgesDir,'filter.png')))
+        self.iconaFiltre.setIcon(qtGui.QIcon(os.path.join(imatgesDir, 'filter.png')))
         self.iconaFiltre.setToolTip('Filtre actiu')
         self.iconaFiltre.clicked.connect(self.filterElements)
 
         self.iconaMap = qgGui.QgsLayerTreeViewIndicator()
-        self.iconaMap.setIcon(qtGui.QIcon(os.path.join(imatgesDir,'categories2.png')))
+        self.iconaMap.setIcon(qtGui.QIcon(os.path.join(imatgesDir, 'categories2.png')))
         self.iconaMap.setToolTip('Categories de mapificació')
-        self.iconaMap.clicked.connect(self.mapRenderer.modifyRenderer)
+        self.iconaMap.clicked.connect(lambda: QvFormSimbMapificacio.executa(self))
 
         if self.atributs is not None:
             self.atributs.modificatFiltreCapa.connect(self.actIconaFiltre)
@@ -629,7 +626,6 @@ if __name__ == "__main__":
 
         # leyenda.setWindowTitle('Llegenda')
         # leyenda.show()
-
 
         def printCapaActiva():
             cLayer = leyenda.currentLayer()
