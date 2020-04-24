@@ -63,6 +63,7 @@ class QVDistrictesBarris(QObject):
             else:
                 self.view.setColumnHidden(i, True)
         self.view.setEditTriggers(QTreeView.NoEditTriggers)
+        self.expand_all()
 
     def llegirZonesGPKG(self):
         try:
@@ -120,6 +121,13 @@ class QVDistrictesBarris(QObject):
             self.model.setColumnCount(len(self.labels))
             self.model.setHorizontalHeaderLabels(self.labels)
 
+            #Afegir Barcelona com a arrel de l'arbre
+            bcn_dades = ["00","Barcelona", "00", "Barcelona", "419710.0553820258", "4573818.80776309", "436533.35", "4591775.02"]
+            bcn = [QStandardItem("Barcelona")]
+            for item in bcn_dades:
+                bcn.append(QStandardItem(item))
+            root.appendRow(bcn)
+
             ultimaDistr = -1
             itDist = 0
             for b in llistaBarris:
@@ -127,9 +135,9 @@ class QVDistrictesBarris(QObject):
                     dist = [QStandardItem(llistaDistrictes[itDist][1])]
                     for i in range (0, len(llistaDistrictes[itDist])):
                         dist.append(QStandardItem(llistaDistrictes[itDist][i]))  
-                    root.appendRow(dist)
+                    bcn[0].appendRow(dist)
                     itDist = itDist + 1
-                else:                   #Afegir següent Barri
+                else:                         #Afegir següent Barri
                     barri = [QStandardItem(b[3])]
                     for item in b:
                         barri.append(QStandardItem(item))
@@ -140,34 +148,34 @@ class QVDistrictesBarris(QObject):
             print("Error en construcció de l'arbre de zones")
             return False
 
-    def llegirDistrictesBarrisCSV(self):
-        try:
-            first = True
-            with open(self.__distBarrisCSV, newline='') as csvFile:
-                reader = csv.DictReader(csvFile, delimiter=';')
-                root = self.model.invisibleRootItem()
-                for row in reader:
-                    if first: # Primer registro
-                        self.labels = ['ZONA']
-                        for item in row:
-                            self.labels.append(item)
-                        self.model.setColumnCount(len(self.labels))
-                        self.model.setHorizontalHeaderLabels(self.labels)
-                        first = False
-                    if row['BARRI'] == '': # Registro de distrito
-                        dist = [QStandardItem(row['NOM_DISTRICTE'])]
-                        for item in row.values():
-                            dist.append(QStandardItem(item))  
-                        root.appendRow(dist)
-                    else: # Registro de barrio
-                        barri = [QStandardItem(row['NOM_BARRI'])]
-                        for item in row.values():
-                            barri.append(QStandardItem(item))
-                        dist[0].appendRow(barri)
-            return True
-        except:
-            print('QDistrictesBarris.llegirDistrictesBarrisCSV(): ', sys.exc_info()[0], sys.exc_info()[1])
-            return False
+    # def llegirDistrictesBarrisCSV(self):
+    #     try:
+    #         first = True
+    #         with open(self.__distBarrisCSV, newline='') as csvFile:
+    #             reader = csv.DictReader(csvFile, delimiter=';')
+    #             root = self.model.invisibleRootItem()
+    #             for row in reader:
+    #                 if first: # Primer registro
+    #                     self.labels = ['ZONA']
+    #                     for item in row:
+    #                         self.labels.append(item)
+    #                     self.model.setColumnCount(len(self.labels))
+    #                     self.model.setHorizontalHeaderLabels(self.labels)
+    #                     first = False
+    #                 if row['BARRI'] == '': # Registro de distrito
+    #                     dist = [QStandardItem(row['NOM_DISTRICTE'])]
+    #                     for item in row.values():
+    #                         dist.append(QStandardItem(item))  
+    #                     root.appendRow(dist)
+    #                 else: # Registro de barrio
+    #                     barri = [QStandardItem(row['NOM_BARRI'])]
+    #                     for item in row.values():
+    #                         barri.append(QStandardItem(item))
+    #                     dist[0].appendRow(barri)
+    #         return True
+    #     except:
+    #         print('QDistrictesBarris.llegirDistrictesBarrisCSV(): ', sys.exc_info()[0], sys.exc_info()[1])
+    #         return False
     
     def llegirRegistre(self):
         try:

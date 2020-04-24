@@ -38,7 +38,8 @@ if __name__ == "__main__":
 
         else:
             print("error en carga del proyecto qgis")
-     
+
+        #Carregar layers de districtes i barris
         zones = ["districtes", "barris"]
         for zona in zones:
             pathBoxes = "D:\\qVista\\Qvista\\Dades\\Zones.gpkg|layername=" + zona
@@ -46,41 +47,60 @@ if __name__ == "__main__":
             
             vlayer = QgsProject.instance().mapLayers().values()
 
+            #Propietats imatge del mapeta
             settings = QgsMapSettings()
             settings.setLayers(vlayer)
             settings.setBackgroundColor(QColor(255, 255, 255))
-            settings.setOutputSize(QSize(250, 250))
+            settings.setOutputSize(QSize(200, 200))
             
-            i = 0 
             features = layerBoxes.getFeatures()   
             for feature in features:
                 geometria = feature.geometry().boundingBox()
-                print(feature.attributes())
+                #print(feature.attributes())
                 nom = feature[2]
                 settings.setExtent(geometria)
                 render = QgsMapRendererSequentialJob(settings)
-                image_location = os.path.join("D:\\qVista\\Qvista\\Imatges\\capturesMapeta\\", nom +".png")
                 
-                #renderitzar imatge PNG
+                
+                #Renderitzar imatge PNG
                 render.start()
                 render.waitForFinished()
                 img = render.renderedImage()
-                img.save(image_location, "png")
+                img = img.convertToFormat(QImage.Format_ARGB32)
 
-                #nom fitzer PGW
+                #Preparació per convertir img quadrada a out_img circular
+                out_img = QImage(img.width(), img.width(), QImage.Format_ARGB32)
+                out_img.fill(Qt.transparent)
+
+                #Pinzell i pintar imatge
+                brush = QBrush(img)       
+                painter = QPainter(out_img) 
+                painter.setBrush(brush)      
+                pen= QPen(QColor(121,144,155),  1, Qt.SolidLine)    #qVista claro         
+                # pen= QPen(self.parent.color,  1, Qt.SolidLine)    #qVista claro         
+                painter.setPen(pen)
+                painter.setRenderHint(QPainter.Antialiasing, True)  
+                painter.drawEllipse(0, 0, img.width(), img.width())  
+                painter.end()                
+
+                #Guardar imatge
+                scaled_pixmap = QPixmap.fromImage(out_img)
+                image_location = os.path.join("D:\\qVista\\Qvista\\Imatges\\capturesMapeta\\", nom +".png")
+                scaled_pixmap.save(image_location, "png")
+
+                ##Crear arxiu de metadades PGW
+                #Nom fitzer PGW
                 split_nombre=os.path.splitext(image_location)
                 filenamePgw = split_nombre[0] + ".pgw"
-                wld =open(filenamePgw, "w")   
+                wld = open(filenamePgw, "w")   
 
-                # rango mapeta x e y
+                #Rang mapeta
                 xdist = geometria.xMaximum()- geometria.xMinimum()   
                 ydist = geometria.yMaximum()- geometria.yMinimum() 
-
-                # ancho y alto de la imagen
                 iheight = 250 
                 iwidth =  250
 
-                #escriure PGW
+                #Escriure PGW
                 wld.writelines("%s\n" % (xdist/iwidth))
                 wld.writelines("0.0\n")
                 wld.writelines("0.0\n")
@@ -89,7 +109,6 @@ if __name__ == "__main__":
                 wld.writelines("%s\n" % geometria.yMinimum())
                 wld.close
 
-                i = i + 1
             
         
 # https://gis.stackexchange.com/questions/138266/getting-a-layer-that-is-not-active-with-pyqgis
