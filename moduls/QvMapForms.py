@@ -34,6 +34,11 @@ class QvFormBaseMapificacio(QDialog):
         self.setWindowFlags(Qt.MSWindowsFixedSizeDialogHint)
         self.renderParams = None
 
+    @classmethod
+    def executa(cls, llegenda, **kwargs):
+        fMap = cls(llegenda, **kwargs)
+        return fMap.exec()
+
     def msgInfo(self, txt):
         QMessageBox.information(self, 'Informació', txt)
 
@@ -349,11 +354,6 @@ class QvFormNovaMapificacio(QvFormBaseMapificacio):
             self.msgError(PANDAS_ERROR)
             return QDialog.Rejected
 
-    @staticmethod
-    def executa(llegenda):
-        fMap = QvFormNovaMapificacio(llegenda, llegenda.currentLayer())
-        return fMap.exec()
-
     @pyqtSlot()
     def veureArxiu(self):
         if self.taulaMostra is not None:
@@ -519,9 +519,12 @@ class QvFormNovaMapificacio(QvFormBaseMapificacio):
 
 
 class QvFormSimbMapificacio(QvFormBaseMapificacio):
-    def __init__(self, llegenda, capa, amplada=550):
+    def __init__(self, llegenda, capa=None, amplada=550):
         super().__init__(llegenda, amplada)
-        self.capa = capa
+        if capa is None:
+            self.capa = llegenda.currentLayer()
+        else:
+            self.capa = capa
         self.info = None
         if not self.iniParams():
             return
@@ -607,11 +610,6 @@ class QvFormSimbMapificacio(QvFormBaseMapificacio):
         self.layout.addWidget(self.buttons)
 
         self.valorsInicials()
-
-    @staticmethod
-    def executa(llegenda):
-        fMap = QvFormSimbMapificacio(llegenda, llegenda.currentLayer())
-        return fMap.exec()
 
     def iniParams(self):
         self.info = QgsExpressionContextUtils.layerScope(self.capa).variable(mv.MAP_ID)

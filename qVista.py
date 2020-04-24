@@ -2638,8 +2638,7 @@ def seleccioExpressio():
     if command == 'mapificacio':
         from moduls.QvMapForms import QvFormNovaMapificacio
 
-        fMap = QvFormNovaMapificacio(qV.llegenda)
-        fMap.exec()
+        QvFormNovaMapificacio.executa(qV.llegenda)
         return
 
     if command == 'masklabels':
