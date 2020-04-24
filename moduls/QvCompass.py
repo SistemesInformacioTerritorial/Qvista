@@ -5,7 +5,7 @@ from moduls.QvPushButton import QvPushButton
 from configuracioQvista import *
 from PyQt5.QtWidgets import QFrame, QSpinBox, QLineEdit
 from PyQt5.QtGui import QPainter, QBrush, QPen, QPolygon
-import numpy as np
+
 
 
 # https://wiki.python.org/moin/PyQt/Compass%20widget
@@ -26,7 +26,7 @@ class QvCompass(QFrame):
            
             pare {[QWidget]} -- [El widget sobre el que es pintarà el mapeta. No és obligatori.] (default: {None})
         """
-
+        import numpy as np
         QFrame.__init__(self)
         self.setParent(pare)
         self.pare = pare

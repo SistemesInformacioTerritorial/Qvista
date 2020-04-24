@@ -1,3 +1,4 @@
+from moduls.QvImports  import *
 from qgis.core import QgsRectangle
 from PyQt5.QtCore import Qt, QSize, QPoint, QRect
 from PyQt5.QtWidgets import QFrame, QSpinBox, QLineEdit, QApplication, QHBoxLayout,QColorDialog
@@ -7,7 +8,7 @@ from PyQt5.QtCore import pyqtSignal, QSize, QTimer
 
 import sys
 import os
-from moduls.QvImports  import *
+
 from moduls.QvDropFiles import QvDropFiles
 from moduls.QvConstants import QvConstants
 from moduls.QvPushButton import QvPushButton
@@ -17,7 +18,7 @@ from moduls.QvCrearMapeta import QvCrearMapetaConBotones
 from configuracioQvista import *
 from PyQt5.QtWidgets import QFrame, QSpinBox, QLineEdit
 from PyQt5.QtGui import QPainter, QBrush, QPen, QPolygon
-import numpy as np
+# import numpy as np
 
 
 class QvMapetaBrujulado(QFrame):
