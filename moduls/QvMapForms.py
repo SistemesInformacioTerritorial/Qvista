@@ -36,8 +36,16 @@ class QvFormBaseMapificacio(QDialog):
 
     @classmethod
     def executa(cls, llegenda, **kwargs):
-        fMap = cls(llegenda, **kwargs)
-        return fMap.exec()
+        try:
+            fMap = cls(llegenda, **kwargs)
+            if fMap.renderParams is not None and \
+               fMap.renderParams.msgError != '':
+                return QDialog.Rejected
+            else:
+                return fMap.exec()
+        except Exception as e:
+            print('Error QvFormBaseMapificacio.executa: ' + str(e))
+            return QDialog.Rejected
 
     def msgInfo(self, txt):
         QMessageBox.information(self, 'Informació', txt)
@@ -620,8 +628,8 @@ class QvFormSimbMapificacio(QvFormBaseMapificacio):
             self.custom = (self.renderParams.modeCategories == 'Personalitzat')
             return True
         else:
-            self.msgInfo("No s'han pogut recuperar els paràmetres del mapa simbòlic\n" +
-                         self.renderParams.msgError)
+            self.msgInfo("No s'han pogut recuperar els paràmetres del mapa simbòlic\n\n" +
+                         "Error: " + self.renderParams.msgError)
             return False
 
     @pyqtSlot()
