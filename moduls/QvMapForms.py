@@ -222,7 +222,7 @@ class QvFormMostra(QDialog):
 
 
 class QvFormNovaMapificacio(QvFormBaseMapificacio):
-    def __init__(self, llegenda, amplada=550, mapificacio=None, simple=True):
+    def __init__(self, llegenda, amplada=500, mapificacio=None, simple=True):
         super().__init__(llegenda, amplada)
 
         self.fCSV = mapificacio
@@ -519,7 +519,7 @@ class QvFormNovaMapificacio(QvFormBaseMapificacio):
 
 
 class QvFormSimbMapificacio(QvFormBaseMapificacio):
-    def __init__(self, llegenda, capa=None, amplada=550):
+    def __init__(self, llegenda, capa=None, amplada=500):
         super().__init__(llegenda, amplada)
         if capa is None:
             self.capa = llegenda.currentLayer()
@@ -564,7 +564,7 @@ class QvFormSimbMapificacio(QvFormBaseMapificacio):
             self.intervals.setSuffix("  (depèn del mètode)")
         # self.intervals.valueChanged.connect(self.deselectValue)
 
-        self.nomTamany = QLabel("Tamany:", self)
+        self.nomTamany = QLabel("Tamany cercle:", self)
         self.tamany = QSpinBox(self)
         self.tamany.setMinimum(1)
         self.tamany.setMaximum(12)

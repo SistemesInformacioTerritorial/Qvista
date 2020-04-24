@@ -146,6 +146,9 @@ class QvMapRendererParams(QObject):
             self.colorBase = self.nomColor(color, mv.MAP_COLORS)
             self.colorContorn = self.nomColor(self.simbol.symbolLayer(0).strokeColor(),
                                               mv.MAP_CONTORNS)
+            params = self.scanParams(_EXPR_TIP, self.capa.mapTipTemplate())
+            self.campNom = params[0]
+
         except Exception as e:
             self.msgError = str(e)
 
