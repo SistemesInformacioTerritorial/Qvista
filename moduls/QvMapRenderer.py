@@ -7,7 +7,7 @@ from qgis.PyQt.QtCore import QObject
 from qgis.PyQt.QtGui import QColor
 
 import moduls.QvMapVars as mv
-from moduls.QvMapForms import QvFormSimbMapificacio
+# from moduls.QvMapForms import QvFormSimbMapificacio
 from moduls.QvApp import QvApp
 
 _LABEL_FORMAT = '%1 - %2'
@@ -162,5 +162,6 @@ class QvMapRenderer(QObject):
         return parms
 
     def modifyRenderer(self):
+        from moduls.QvMapForms import QvFormSimbMapificacio
         fMap = QvFormSimbMapificacio(self.llegenda, self.llegenda.currentLayer())
         fMap.exec()

@@ -8,6 +8,9 @@ startGlobal = time.time()
 # Fitxer principal de importació de llibreries
 from moduls.QvImports import *
 
+# Comentar la línia abans de passar a prePro. Aquesta línia fa que es calculi el temps que s'ha trigat en fer un import
+import moduls.QvMesuraImports
+
 # Carrega de moduls Qv
 iniciTempsModuls = time.time()
 
@@ -32,7 +35,7 @@ from moduls.QvDropFiles import QvDropFiles
 from moduls.QvNews import QvNews
 from moduls.QvPushButton import QvPushButton
 from moduls.QvSuggeriments import QvSuggeriments
-from moduls.QvCSV import QvCarregaCsv
+# from moduls.QvCSV import QvCarregaCsv
 from moduls.QvConstants import QvConstants
 from moduls.QvAvis import QvAvis
 from moduls.QvToolButton import QvToolButton
@@ -65,6 +68,13 @@ from qgis.PyQt.QtGui import QDesktopServices  #aixo ha d'anar al qvimports
 
 # Impressió del temps de carrega dels moduls Qv
 print ('Temps de carrega dels moduls Qv:', time.time()-iniciTempsModuls)
+try:
+    moduls.QvMesuraImports
+    print('\n\n')
+    for x,y in moduls.QvMesuraImports.QvMesuraImports().getTemps():
+        print(f'Temps de càrrega del mòdul {x}: {y}')
+except Exception as e:
+    ...
 
 # Variable global sobre la que instanciarem la classe qVista
 global qV
@@ -2881,16 +2891,17 @@ def escollirNivellCSV():
         nivellCsv(nfile,';','XNUMPOST','YNUMPOST', projeccio, nomCapa = titol)
         
 def carregarLayerCSV(nfile):
-        if nfile: 
-            qV.startMovie()
-            qApp.setOverrideCursor(Qt.WaitCursor)
+    from moduls.QvCSV import QvCarregaCsv
+    if nfile: 
+        qV.startMovie()
+        qApp.setOverrideCursor(Qt.WaitCursor)
 
-            # assistent=QvCarregaCsv(nfile,nivellCsv,qV)
-            assistent=QvCarregaCsv(nfile,qV.project, qV.llegenda)
+        # assistent=QvCarregaCsv(nfile,nivellCsv,qV)
+        assistent=QvCarregaCsv(nfile,qV.project, qV.llegenda)
 
-            qApp.restoreOverrideCursor()
-            qV.stopMovie()
-            assistent.show()
+        qApp.restoreOverrideCursor()
+        qV.stopMovie()
+        assistent.show()
             
 def carregarNivellQlr():
     index = qV.wCataleg.ui.treeCataleg.currentIndex()
