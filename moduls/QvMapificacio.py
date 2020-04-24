@@ -3,6 +3,7 @@
 
 from qgis.core import QgsVectorLayer, QgsExpressionContextUtils
 from qgis.PyQt.QtCore import QDate, QObject, pyqtSignal, pyqtSlot
+from qgis.PyQt.QtWidgets import QDialog
 
 import os
 import csv
@@ -15,6 +16,8 @@ from typing import List
 from moduls.QvApp import QvApp
 from moduls.QvSqlite import QvSqlite
 import moduls.QvMapVars as mv
+from moduls.QvMapRenderer import QvMapRendererParams
+
 from configuracioQvista import dadesdir
 
 # Verifica si está disponible pandas, necesario para mapificar
@@ -579,13 +582,15 @@ class QvMapificacio(QObject):
     #         with fiona.open(self.fSQL, "w", driver="GPKG", crs=df.crs, schema=schema, layer=nomCapa, gt=65536) as colxn:
     #             colxn.writerecords(df.iterfeatures())
 
-    def generaCapaGpd(self, nomCapa: str, tipusAgregacio: str, tipusDistribucio: str, campExtensio: str = '') -> bool:
+    def generaCapaGpd(self, nomCapa: str, tipusAgregacio: str, tipusDistribucio: str,
+                      renderParams: QvMapRendererParams, campExtensio: str = '') -> bool:
         """ Calcula la agregación de datos, los cruza con el geopackage de zonas y genera la capa del mapa de coropletas.
         
         Arguments:
             nomCapa {str} -- Nombre de la capa del mapa
             tipusAgregacio {str} -- Tipo de agregación a aplicar
             tipusDistribucio {str} -- Tipo de distribución a aplicar
+            renderParams {QvMapRendererParams} -- Parámetros de simbología
 
         Keyword Arguments:
             campExtensio {str} -- Nombre del campo que indica la extensión del mapa (default: {''})
@@ -625,7 +630,7 @@ class QvMapificacio(QObject):
 
             # Cálculo de la agreagación de datos
             if tipusAgregacio == "Cap":
-                agreg = pd.Series(csv[self.campAgregat].values.round(self.renderParams.numDecimals), index=csv[self.campZona])
+                agreg = pd.Series(csv[self.campAgregat].values.round(renderParams.numDecimals), index=csv[self.campZona])
                 if not agreg.index.is_unique:
                     msg = "El camp {} conté valors duplicats.\n" \
                           "Per poder mapificar, s'haurà de fer algun tipus d'agregació.".format(self.campZona)
@@ -636,9 +641,9 @@ class QvMapificacio(QObject):
             elif tipusAgregacio == "Recompte diferents":
                 agreg = csv.groupby(self.campZona)[self.campAgregat].nunique()
             elif tipusAgregacio == "Suma":
-                agreg = csv.groupby(self.campZona)[self.campAgregat].sum().round(self.renderParams.numDecimals)
+                agreg = csv.groupby(self.campZona)[self.campAgregat].sum().round(renderParams.numDecimals)
             elif tipusAgregacio == "Mitjana":
-                agreg = csv.groupby(self.campZona)[self.campAgregat].mean().round(self.renderParams.numDecimals)
+                agreg = csv.groupby(self.campZona)[self.campAgregat].mean().round(renderParams.numDecimals)
             else:
                 self.msgError = "Tipus de agregació '{}' incorrecte.".format(tipusAgregacio)
                 return False
@@ -685,7 +690,7 @@ class QvMapificacio(QObject):
             else:
                 # Filtrar elementos para evitar division por 0
                 out = join[join[self.tipusDistribucio].notnull() & (join[self.tipusDistribucio] > 0)]
-                out["RESULTAT"] = (out["RESULTAT"] / out[self.tipusDistribucio]).round(self.renderParams.numDecimals)
+                out["RESULTAT"] = (out["RESULTAT"] / out[self.tipusDistribucio]).round(renderParams.numDecimals)
                 filtrats = len(join) - len(out)
                 if filtrats > 0:
                     msg = "Hi ha {} elements de la zona {} que \n" \
@@ -714,28 +719,24 @@ class QvMapificacio(QObject):
             return False
 
     def agregacio(self, llegenda, nomCapa: str, zona: str, tipusAgregacio: str,
-        campCalculat: str = 'RESULTAT', campAgregat: str = '', tipusDistribucio: str = "Total", campExtensio: str = mv.MAP_EXTENSIO, 
-        filtre: str = '', numDecimals: int = -1, numCategories: int = 4, modeCategories: str = "Endreçat", colorBase: str = 'Blau',
-        format: str = '%1 - %2', veure: bool = True, form = None) -> bool:
-        """ Realiza la agragación de los datos por zona, la generación del mapa de coropletas y su simbología.
+                  renderParams: QvMapRendererParams, campAgregat: str = '', 
+                  simple=True, tipusDistribucio: str = "Total",
+                  campExtensio: str = mv.MAP_EXTENSIO, filtre: str = '',
+                  veure: bool = True, form: QDialog = None) -> bool:
+        """ Realiza la agragación de los datos por zona, la generación del mapa y su simbología.
         
         Arguments:
             llegenda {QvLlegenda} -- Leyenda
             nomCapa {str} -- Nombre de la capa del mapa a generar
             zona {str} -- Zona de agregación
             tipusAgregacio {str} -- Tipo de agregación
+            renderParams {QvMapRendererParams} -- Parámetros de simbología
         
         Keyword Arguments:
-            campCalculat {str} -- Campo donde se guardará el resultado de la agregación (default: {'RESULTAT'})
             campAgregat {str} -- Campo que se utiliza en el cálculo de la agragación (default: {''})
             tipusDistribucio {str} -- Tipo de distribución (default: {"Total"})
             campExtensio {str} -- Nombre del campo que indica la extensión del mapa (default: {''})
             filtre {str} -- Expresión para filtrar los datos (default: {''})
-            numDecimals {int} -- Número de decimales para el campo resultado (default: {-1})
-            numCategories {int} -- Número de categorías en el mapa de coropletas (default: {4})
-            modeCategories {str} -- Modo de generación de las categorías del mapa (default: {"Endreçat"})
-            colorBase {str} -- Gama de color para las categorías del mapa (default: {'Blau'})
-            format {str} -- Formato del texto de las categorías en la leyenda (default: {'%1 - %2'})
             veure {bool} -- Si es True, añade la nueva capa con el mapa en la leyenda (default: {True})
             form {QDialog} -- Formulario desde donde se invoca la función (default: {None})
         
@@ -747,8 +748,6 @@ class QvMapificacio(QObject):
             self.msgError = PANDAS_ERROR
             return False
 
-        from moduls.QvMapRenderer import QvMapRendererParams
-
         self.fMapa = ''
         self.fSQL = ''
         self.llegenda = llegenda
@@ -758,11 +757,11 @@ class QvMapificacio(QObject):
             "Data: " +  QDate.currentDate().toString(QvApp().locale.dateFormat(QvApp().locale.ShortFormat)) + '\n' + \
             "Zona: " + zona + '\n' + \
             "Tipus d'agregació: " + tipusAgregacio + '\n' + \
-            "Camp de càlcul: " + campAgregat + '\n' + \
-            "Filtre: " + filtre + '\n' + \
-            "Distribució: " + tipusDistribucio
-
-        self.renderParams = QvMapRendererParams()
+            "Camp de càlcul: " + campAgregat
+        if not simple:
+            self.descripcio += '\n' + \
+                "Filtre: " + filtre + '\n' + \
+                "Distribució: " + tipusDistribucio
 
         if not self.verifZona(zona):
             self.msgError = "Error en zona"
@@ -786,32 +785,14 @@ class QvMapificacio(QObject):
             return False
         self.tipusDistribucio = mv.MAP_DISTRIBUCIO[tipusDistribucio]
 
-        if modeCategories is None or modeCategories not in mv.MAP_METODES.keys():
-            self.msgError = "Error en modeCategories"
-            return False
-        self.renderParams.modeCategories = mv.MAP_METODES[modeCategories]
-
-        if colorBase is None or colorBase not in mv.MAP_COLORS.keys():
-            self.msgError = "Error en colorBase"
-            return False
-        self.renderParams.colorBase = mv.MAP_COLORS[colorBase]
-
-        if numDecimals >= 0:
-            self.renderParams.numDecimals = numDecimals
-        elif self.tipusAgregacio.startswith('COUNT') and self.tipusDistribucio == "":
-            self.renderParams.numDecimals = 0
-        else:
-            self.renderParams.numDecimals = 2
-
-        self.renderParams.numCategories = numCategories
         self.filtre = filtre
-        self.renderParams.campCalculat = campCalculat
         self.nomCapa = self.netejaString(nomCapa, True)
 
         # if not self.generaCapaQgis(nomCapa):
         #     return False
 
-        if not self.generaCapaGpd(self.nomCapa, tipusAgregacio, tipusDistribucio, campExtensio):
+        if not self.generaCapaGpd(self.nomCapa, tipusAgregacio, tipusDistribucio,
+                                  renderParams, campExtensio):
             return False
 
         # Carga capa de agregación
@@ -822,7 +803,8 @@ class QvMapificacio(QObject):
             return False
 
         # Renderer para mapificar
-        self.renderer = self.llegenda.mapRenderer.calcRender(mapLyr, self.renderParams)
+        mapRenderer = renderParams.mapRenderer(self.llegenda)
+        self.renderer = mapRenderer.calcRender(mapLyr)
         if self.renderer is None:
             self.msgError = "No s'ha pogut elaborar el mapa"
             return False
@@ -831,7 +813,7 @@ class QvMapificacio(QObject):
 
         # Identificador de mapificación para qVista
         QgsExpressionContextUtils.setLayerVariable(mapLyr, mv.MAP_ID, self.descripcio)
-        mapLyr.setDisplayExpression(self.renderParams.campCalculat)
+        mapLyr.setDisplayExpression(renderParams.campCalculat)
 
         # Guarda simbología en GPKG
         err = self.llegenda.saveStyleToGeoPackage(mapLyr, mv.MAP_ID)
