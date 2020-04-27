@@ -97,16 +97,27 @@ if __name__ == "__main__":
                 #Rang mapeta
                 xdist = geometria.xMaximum()- geometria.xMinimum()   
                 ydist = geometria.yMaximum()- geometria.yMinimum() 
-                iheight = 250 
-                iwidth =  250
+                iheight = 200 
+                iwidth =  200
+
+                if ydist > xdist:
+                    dist = ydist
+                    offset = (ydist - xdist) / 2
+                    xmin = geometria.xMinimum() - offset
+                    ymin = geometria.yMinimum()
+                else:
+                    dist = xdist
+                    offset = (xdist - ydist) / 2
+                    xmin = geometria.xMinimum() 
+                    ymin = geometria.yMinimum() - offset
 
                 #Escriure PGW
-                wld.writelines("%s\n" % (xdist/iwidth))
+                wld.writelines("%s\n" % (dist/iwidth))
                 wld.writelines("0.0\n")
                 wld.writelines("0.0\n")
-                wld.writelines("%s\n" % (ydist/iheight))
-                wld.writelines("%s\n" % geometria.xMinimum())
-                wld.writelines("%s\n" % geometria.yMinimum())
+                wld.writelines("%s\n" % (dist/iheight))
+                wld.writelines("%s\n" % xmin)
+                wld.writelines("%s\n" % ymin)
                 wld.close
 
             
