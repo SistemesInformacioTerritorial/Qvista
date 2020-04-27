@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 
 from qgis.gui import QgsFileWidget
-from qgis.PyQt.QtCore import Qt, pyqtSlot
+from qgis.PyQt.QtCore import Qt, QSize, pyqtSlot
 from qgis.PyQt.QtGui import QIcon, QPixmap, QValidator
 from qgis.PyQt.QtWidgets import (QApplication, QPushButton, QFormLayout, QVBoxLayout, QGridLayout,
                                  QComboBox, QLabel, QLineEdit, QSpinBox, QGroupBox, QDialog,
-                                 QTableWidget, QTableWidgetItem, QMessageBox, QDialogButtonBox)
+                                 QTableWidget, QTableWidgetItem, QMessageBox, QDialogButtonBox,
+                                 QSizePolicy)
 
 from qgis.core import QgsExpressionContextUtils
 
@@ -15,12 +16,15 @@ from moduls.QvMapificacio import QvMapificacio, PANDAS_ENABLED, PANDAS_ERROR, RU
 from moduls.QvSqlite import QvSqlite
 from moduls.QvEditorCsv import QvEditorCsv
 from moduls.QvApp import QvApp
+from moduls.QvMapRenderer import QvMapRendererParams
 
+from configuracioQvista import imatgesDir
 import os
 import sqlite3
 
 
 class QvFormBaseMapificacio(QDialog):
+
     def __init__(self, llegenda, amplada=None, parent=None, modal=True):
         super().__init__(parent, modal=modal)
         self.llegenda = llegenda
@@ -28,6 +32,20 @@ class QvFormBaseMapificacio(QDialog):
             self.setMinimumWidth(amplada)
             self.setMaximumWidth(amplada)
         self.setWindowFlags(Qt.MSWindowsFixedSizeDialogHint)
+        self.renderParams = None
+
+    @classmethod
+    def executa(cls, llegenda, **kwargs):
+        try:
+            fMap = cls(llegenda, **kwargs)
+            if fMap.renderParams is not None and \
+               fMap.renderParams.msgError != '':
+                return QDialog.Rejected
+            else:
+                return fMap.exec()
+        except Exception as e:
+            print('Error QvFormBaseMapificacio.executa: ' + str(e))
+            return QDialog.Rejected
 
     def msgInfo(self, txt):
         QMessageBox.information(self, 'Informació', txt)
@@ -212,13 +230,14 @@ class QvFormMostra(QDialog):
 
 
 class QvFormNovaMapificacio(QvFormBaseMapificacio):
-    def __init__(self, llegenda, amplada=500, mapificacio=None):
+    def __init__(self, llegenda, amplada=500, mapificacio=None, simple=True):
         super().__init__(llegenda, amplada)
 
         self.fCSV = mapificacio
+        self.simple = simple
         self.taulaMostra = None
 
-        self.setWindowTitle('Afegir capa amb mapa de coropletes')
+        self.setWindowTitle('Afegir capa amb mapa simbòlic')
 
         self.layout = QVBoxLayout()
         self.layout.setSpacing(14)
@@ -238,6 +257,14 @@ class QvFormNovaMapificacio(QvFormBaseMapificacio):
         self.zona.setEditable(False)
         self.zona.addItem('Selecciona zona…')
         self.zona.currentIndexChanged.connect(self.canviaZona)
+
+        self.mapa = QComboBox(self)
+        self.mapa.setEditable(False)
+        self.mapa.setIconSize(QSize(126, 126))
+        self.mapa.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Expanding)
+        self.mapa.setSizeAdjustPolicy(QComboBox.AdjustToContents)
+        self.mapa.addItem(QIcon(os.path.join(imatgesDir, 'Àrees.PNG')), 'Àrees')
+        self.mapa.addItem(QIcon(os.path.join(imatgesDir, 'Cercles.PNG')), 'Cercles')
 
         self.capa = QLineEdit(self)
         self.capa.setMaxLength(40)
@@ -281,38 +308,46 @@ class QvFormNovaMapificacio(QvFormBaseMapificacio):
         self.buttons.rejected.connect(self.cancel)
         self.buttons.addButton(self.bTaula, QDialogButtonBox.ResetRole)
 
-        self.gZona = QGroupBox('Definició de zona')
-        self.lZona = QFormLayout()
-        self.lZona.setSpacing(14)
-        self.gZona.setLayout(self.lZona)
-
-        if self.fCSV is None:
-            self.lZona.addRow('Arxiu de dades:', self.arxiu)
-        self.lZona.addRow('Zona:', self.zona)
-        self.lZona.addRow('Nom de capa:', self.capa)
-
         self.gDades = QGroupBox('Agregació de dades')
         self.lDades = QFormLayout()
         self.lDades.setSpacing(14)
         self.gDades.setLayout(self.lDades)
 
+        if self.fCSV is None:
+            self.lDades.addRow('Arxiu de dades:', self.arxiu)
+        self.lDades.addRow('Zona:', self.zona)
         self.lDades.addRow("Tipus d'agregació:", self.tipus)
         self.lDades.addRow('Camp de càlcul:', self.calcul)
-        self.lDades.addRow('Filtre:', self.filtre)
-        self.lDades.addRow('Distribució:', self.distribucio)
+        if self.simple:
+            self.filtre.setVisible(False)
+            self.distribucio.setVisible(False)
+        else:
+            self.lDades.addRow('Filtre:', self.filtre)
+            self.lDades.addRow('Distribució:', self.distribucio)
+
+        self.gMapa = QGroupBox('Definició del mapa simbòlic')
+        self.lMapa = QFormLayout()
+        self.lMapa.setSpacing(14)
+        self.gMapa.setLayout(self.lMapa)
+
+        self.lMapa.addRow('Nom de capa:', self.capa)
+        self.lMapa.addRow('Tipus de mapa:', self.mapa)
 
         self.gSimb = QGroupBox('Simbologia del mapa')
         self.lSimb = QFormLayout()
         self.lSimb.setSpacing(14)
         self.gSimb.setLayout(self.lSimb)
 
-        self.lSimb.addRow('Gamma de color:', self.color)
-        self.lSimb.addRow('Mètode de classificació:', self.metode)
+        self.lSimb.addRow('Color base:', self.color)
+        self.lSimb.addRow('Mètode classificació:', self.metode)
         self.lSimb.addRow("Nombre d'intervals:", self.intervals)
 
-        self.layout.addWidget(self.gZona)
         self.layout.addWidget(self.gDades)
-        self.layout.addWidget(self.gSimb)
+        self.layout.addWidget(self.gMapa)
+        if self.simple:
+            self.gSimb.setVisible(False)
+        else:
+            self.layout.addWidget(self.gSimb)
         self.layout.addWidget(self.buttons)
 
         self.adjustSize()
@@ -442,17 +477,48 @@ class QvFormNovaMapificacio(QvFormBaseMapificacio):
             ok = True
         return ok
 
+    def setRenderParams(self):
+        self.renderParams = QvMapRendererParams(self.mapa.currentText())
+        if self.simple:
+            self.renderParams.colorBase = mv.MAP_COLORS[self.renderParams.colorBase]
+        else:
+            self.renderParams.colorBase = mv.MAP_COLORS[self.color.currentText()]
+        if self.renderParams.colorContorn is None or self.renderParams.colorContorn == 'Base':
+            self.renderParams.colorContorn = self.renderParams.colorBase
+        else:
+            self.renderParams.colorContorn = mv.MAP_CONTORNS[self.renderParams.colorContorn]
+        if self.tipus.currentText().startswith('Recompte') and \
+           self.distribucio.currentText() == "Total":
+            self.renderParams.numDecimals = 0
+        else:
+            self.renderParams.numDecimals = 2
+        if self.renderParams.tipusMapa == 'Àrees':
+            self.renderParams.modeCategories = mv.MAP_METODES[self.metode.currentText()]
+            self.renderParams.numCategories = self.intervals.value()
+        if self.renderParams.tipusMapa == 'Cercles':
+            zona = self.zona.currentText()
+            if zona == 'Districte':
+                self.renderParams.increase = 8
+            elif zona == 'Barri':
+                self.renderParams.increase = 4
+            elif zona == 'Àrea estadística bàsica':
+                self.renderParams.increase = 3
+            elif zona == 'Secció censal':
+                self.renderParams.increase = 2
+            else:
+                self.renderParams.increase = 1
+
     def procesa(self):
         if self.taulaMostra is not None:
             self.taulaMostra.hide()
+        self.setRenderParams()
         ok = self.fCSV.agregacio(self.llegenda, self.capa.text().strip(),
                                  self.zona.currentText(), self.tipus.currentText(),
+                                 self.renderParams,
                                  campAgregat=self.calcul.currentText().strip(),
+                                 simple=self.simple,
                                  filtre=self.filtre.currentText().strip(),
                                  tipusDistribucio=self.distribucio.currentText(),
-                                 modeCategories=self.metode.currentText(),
-                                 numCategories=self.intervals.value(),
-                                 colorBase=self.color.currentText(),
                                  form=self)
         if ok:
             return ''
@@ -461,14 +527,17 @@ class QvFormNovaMapificacio(QvFormBaseMapificacio):
 
 
 class QvFormSimbMapificacio(QvFormBaseMapificacio):
-    def __init__(self, llegenda, capa, amplada=500):
+    def __init__(self, llegenda, capa=None, amplada=500):
         super().__init__(llegenda, amplada)
-        self.capa = capa
+        if capa is None:
+            self.capa = llegenda.currentLayer()
+        else:
+            self.capa = capa
         self.info = None
         if not self.iniParams():
             return
 
-        self.setWindowTitle('Modificar mapa de coropletes')
+        self.setWindowTitle('Modificar mapa simbòlic ' + self.renderParams.tipusMapa.lower())
 
         self.layout = QVBoxLayout()
         self.layout.setSpacing(14)
@@ -499,8 +568,16 @@ class QvFormSimbMapificacio(QvFormBaseMapificacio):
         self.intervals.setMaximum(max(mv.MAP_MAX_CATEGORIES, self.renderParams.numCategories))
         self.intervals.setSingleStep(1)
         self.intervals.setValue(4)
-        self.intervals.setSuffix("  (depèn del mètode)")
+        if self.renderParams.tipusMapa == 'Àrees':
+            self.intervals.setSuffix("  (depèn del mètode)")
         # self.intervals.valueChanged.connect(self.deselectValue)
+
+        self.nomTamany = QLabel("Tamany cercle:", self)
+        self.tamany = QSpinBox(self)
+        self.tamany.setMinimum(1)
+        self.tamany.setMaximum(12)
+        self.tamany.setSingleStep(1)
+        self.tamany.setValue(4)
 
         self.bInfo = QPushButton('Info')
         self.bInfo.clicked.connect(self.veureInfo)
@@ -517,10 +594,18 @@ class QvFormSimbMapificacio(QvFormBaseMapificacio):
         self.lSimb.setSpacing(14)
         self.gSimb.setLayout(self.lSimb)
 
-        self.lSimb.addRow('Gamma de Color:', self.color)
+        self.lSimb.addRow('Color base:', self.color)
         self.lSimb.addRow('Color contorn:', self.contorn)
-        self.lSimb.addRow('Mètode de classificació:', self.metode)
-        self.lSimb.addRow(self.nomIntervals, self.intervals)
+        if self.renderParams.tipusMapa == 'Àrees':
+            self.lSimb.addRow('Mètode classificació:', self.metode)
+            self.lSimb.addRow(self.nomIntervals, self.intervals)
+            self.nomTamany.setVisible(False)
+            self.tamany.setVisible(False)
+        else:
+            self.metode.setVisible(False)
+            self.nomIntervals.setVisible(False)
+            self.intervals.setVisible(False)
+            self.lSimb.addRow(self.nomTamany, self.tamany)
 
         self.wInterval = []
         for w in self.iniIntervals():
@@ -528,7 +613,8 @@ class QvFormSimbMapificacio(QvFormBaseMapificacio):
         self.gInter = self.grupIntervals()
 
         self.layout.addWidget(self.gSimb)
-        self.layout.addWidget(self.gInter)
+        if self.renderParams.tipusMapa == 'Àrees':
+            self.layout.addWidget(self.gInter)
         self.layout.addWidget(self.buttons)
 
         self.valorsInicials()
@@ -537,20 +623,21 @@ class QvFormSimbMapificacio(QvFormBaseMapificacio):
         self.info = QgsExpressionContextUtils.layerScope(self.capa).variable(mv.MAP_ID)
         if self.info is None:
             return False
-        self.renderParams = self.llegenda.mapRenderer.paramsRender(self.capa)
-        self.custom = (self.renderParams.modeCategories == 'Personalitzat')
-        if self.renderParams.msgError != '':
-            self.msgInfo("No s'han pogut recuperar els paràmetres del mapa\n" +
-                         self.renderParams.msgError)
-            self.renderParams.msgError = ''
-        return True
+        self.renderParams = QvMapRendererParams.fromLayer(self.capa)
+        if self.renderParams.msgError == '':
+            self.custom = (self.renderParams.modeCategories == 'Personalitzat')
+            return True
+        else:
+            self.msgInfo("No s'han pogut recuperar els paràmetres del mapa simbòlic\n\n" +
+                         "Error: " + self.renderParams.msgError)
+            return False
 
     @pyqtSlot()
     def veureInfo(self):
         if self.info is not None:
             box = QMessageBox(self)
-            box.setWindowTitle('Info del mapa')
-            txt = '<table width="500">'
+            box.setWindowTitle('Info del mapa simbòlic')
+            txt = '<table width="600">'
             params = self.info.split('\n')
             for param in params:
                 linea = param.strip()
@@ -570,6 +657,7 @@ class QvFormSimbMapificacio(QvFormBaseMapificacio):
         self.color.setCurrentIndex(self.color.findText(self.renderParams.colorBase))
         self.contorn.setCurrentIndex(self.contorn.findText(self.renderParams.colorContorn))
         self.intervals.setValue(self.renderParams.numCategories)
+        self.tamany.setValue(self.renderParams.increase)
         self.metode.setCurrentIndex(self.metode.findText(self.renderParams.modeCategories))
 
     def valorsFinals(self):
@@ -577,6 +665,7 @@ class QvFormSimbMapificacio(QvFormBaseMapificacio):
         self.renderParams.colorContorn = self.contorn.currentText()
         self.renderParams.modeCategories = self.metode.currentText()
         self.renderParams.numCategories = self.intervals.value()
+        self.renderParams.increase = self.tamany.value()
         if self.custom:
             self.renderParams.rangsCategories = []
             for fila in self.wInterval:
@@ -768,22 +857,26 @@ class QvFormSimbMapificacio(QvFormBaseMapificacio):
     def procesa(self):
         self.valorsFinals()
         try:
+            mapRenderer = self.renderParams.mapRenderer(self.llegenda)
             if self.custom:
                 self.renderParams.colorBase = mv.MAP_COLORS[self.renderParams.colorBase]
                 self.renderParams.colorContorn = mv.MAP_CONTORNS[self.renderParams.colorContorn]
-                self.renderer = self.llegenda.mapRenderer.customRender(self.capa, self.renderParams)
+                self.renderer = mapRenderer.customRender(self.capa)
             else:
                 self.renderParams.colorBase = mv.MAP_COLORS[self.renderParams.colorBase]
-                self.renderParams.colorContorn = mv.MAP_CONTORNS[self.renderParams.colorContorn]
+                if self.renderParams.colorContorn == 'Base':
+                    self.renderParams.colorContorn = self.renderParams.colorBase
+                else:
+                    self.renderParams.colorContorn = mv.MAP_CONTORNS[self.renderParams.colorContorn]
                 self.renderParams.modeCategories = \
                     mv.MAP_METODES_MODIF[self.renderParams.modeCategories]
-                self.renderer = self.llegenda.mapRenderer.calcRender(self.capa, self.renderParams)
+                self.renderer = mapRenderer.calcRender(self.capa)
             if self.renderer is None:
-                return "No s'ha pogut elaborar el mapa"
+                return "No s'ha pogut elaborar el mapa simbòlic"
             err = self.llegenda.saveStyleToGeoPackage(self.capa, mv.MAP_ID)
             if err != '':
                 return "Hi ha hagut problemes al desar la simbologia\n({})".format(err)
             # self.llegenda.modificacioProjecte('mapModified')
             return ''
         except Exception as e:
-            return "No s'ha pogut modificar el mapa\n({})".format(str(e))
+            return "No s'ha pogut modificar el mapa simbòlic\n({})".format(str(e))

@@ -210,8 +210,8 @@ class QvMapetaBrujulado(QFrame):
         norteAct = contextMenu.addAction("Orientació Nord (0º)")
         martoAct = contextMenu.addAction("Orientació 'Martorell' (44.5º)")
         contextMenu.addSeparator()
-        chColors= contextMenu.addAction("Cambiar colors")
-        mapetaDefault= contextMenu.addAction("Mapeta default")
+        chColors= contextMenu.addAction("Canviar colors")
+        mapetaDefault= contextMenu.addAction("Mapeta inicial")
         crearMapetas= contextMenu.addAction("Crear mapeta")
         
 

@@ -117,7 +117,9 @@ class MarxesCiutat(QDockWidget):
         bMarxes1_6 = QvPushButton('el Besós i el Maresme', flat=True)
         bMarxes1_6.setStyleSheet("Text-align: left")
       
-        bMarxes1_7 = QvPushButton('la Marina del Prat vermell', flat=True)
+
+        bMarxes1_7 = QvPushButton('la Marina del Prat Vermell', flat=True)
+
         bMarxes1_7.setStyleSheet("Text-align: left")
         
         # Retorns
