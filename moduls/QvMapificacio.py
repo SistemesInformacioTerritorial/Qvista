@@ -31,11 +31,6 @@ PANDAS_ENABLED = _np_spec is not None and _pd_spec is not None and _gpd_spec is 
 PANDAS_ERROR = "No es pot mapificar perquè no s'ha instal·lat el mòdul pandas." + \
                "\n\nContacti amb el personal informàtic de suport."
 
-if PANDAS_ENABLED:
-    import numpy as np
-    import pandas as pd
-    import geopandas as gpd
-
 # from typing import List
 # from moduls.QvPlotly import QvPlot
 
@@ -445,23 +440,23 @@ class QvMapificacio(QObject):
 
             return not self.cancel
 
-# def calcSelect(self, camps: str = '') -> str:
-#     # Calculamos filtro
-#     if self.filtre is None or self.filtre == '':
-#         filtre = ''
-#     else:
-#         filtre = ' WHERE ' + self.filtre
-#     if self.tipusDistribucio == '':
-#         dist = ''
-#     else:
-#         dist = '/ Z.' + self.tipusDistribucio
-#     # Calculamos SELECT completo de agrupación
-#     select = "select round(I.AGREGAT " + dist + ", " + str(self.renderParams.numDecimals) + ")
-#        AS " + self.renderParams.campCalculat + \
-#        camps + " from Zona AS Z, " + \
-#       "(SELECT " + self.tipusAgregacio + " AS AGREGAT, " + self.campZona + " AS CODI " + \
-#       "FROM Info" + filtre + " GROUP BY " + self.campZona + ") AS I WHERE Z.CODI = I.CODI"
-#     return select
+    # def calcSelect(self, camps: str = '') -> str:
+    #     # Calculamos filtro
+    #     if self.filtre is None or self.filtre == '':
+    #         filtre = ''
+    #     else:
+    #         filtre = ' WHERE ' + self.filtre
+    #     if self.tipusDistribucio == '':
+    #         dist = ''
+    #     else:
+    #         dist = '/ Z.' + self.tipusDistribucio
+    #     # Calculamos SELECT completo de agrupación
+    #     select = "select round(I.AGREGAT " + dist + ", " + str(self.renderParams.numDecimals) + ")
+    #        AS " + self.renderParams.campCalculat + \
+    #        camps + " from Zona AS Z, " + \
+    #       "(SELECT " + self.tipusAgregacio + " AS AGREGAT, " + self.campZona + " AS CODI " + \
+    #       "FROM Info" + filtre + " GROUP BY " + self.campZona + ") AS I WHERE Z.CODI = I.CODI"
+    #     return select
 
     def netejaString(self, txt: str, all: bool = False) -> str:
         """ Sustituye ciertos caracteres (de control, con acentos, etc) en un string.
@@ -598,6 +593,14 @@ class QvMapificacio(QObject):
         Returns:
             bool -- True si se generó la capa con el  mapa correctamente
         """
+        if PANDAS_ENABLED:
+            import numpy as np
+            import pandas as pd
+            import geopandas as gpd
+        else:
+            self.msgError = PANDAS_ERROR
+            return False
+            
         try:
             # Los campos de zona y extensión se cargan como string, y el de agregacion como float si hay acumulados
             dtypes = {self.campZona: np.string_}
