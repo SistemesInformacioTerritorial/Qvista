@@ -577,6 +577,34 @@ class QvMapificacio(QObject):
     #         with fiona.open(self.fSQL, "w", driver="GPKG", crs=df.crs, schema=schema, layer=nomCapa, gt=65536) as colxn:
     #             colxn.writerecords(df.iterfeatures())
 
+    def testExtensioArxiu(self, campExtensio):
+        if PANDAS_ENABLED:
+            import numpy as np
+            import pandas as pd
+        else:
+            self.msgError = PANDAS_ERROR
+            return False
+
+        if campExtensio == '' or (campExtensio[0] == '<'):
+            return False
+
+        try:
+            # El campo de extensión se carga como string
+            campExt = CAMP_QVISTA + campExtensio
+            dtypes = {campExt: np.string_}
+
+            # Carga de capa de datos geocodificados
+            csv = pd.read_csv(self.fZones, sep=self.separador, encoding='utf-8',
+                              decimal=QvApp().locale.decimalPoint(), dtype=dtypes)
+            cnt = csv[campExt].value_counts(normalize=True)
+            if cnt.iloc[0] >= mv.MAP_FEQ_EXTENSIO:
+                return True
+            else:
+                return False
+        except Exception as e:
+            print(str(e))
+            return False
+
     def generaCapaGpd(self, nomCapa: str, tipusAgregacio: str, tipusDistribucio: str,
                       renderParams: QvMapRendererParams, campExtensio: str = '') -> bool:
         """ Calcula la agregación de datos, los cruza con el geopackage de zonas y genera la capa del mapa de coropletas.
@@ -600,8 +628,29 @@ class QvMapificacio(QObject):
         else:
             self.msgError = PANDAS_ERROR
             return False
-            
+
         try:
+            # Los campos de zona y extensión se cargan como string, y el de agregacion como float si hay acumulados
+            dtypes = {self.campZona: np.string_}
+            valExtensio = ''
+            if campExtensio == '' or (campExtensio[0] == '<'):
+                campExt = ''
+                valExtensio = campExtensio
+            else:
+                campExt = CAMP_QVISTA + campExtensio
+                if campExt != self.campZona:
+                    dtypes.update({campExt: np.string_})
+            if tipusAgregacio in ("Suma", "Mitjana"):
+                if self.campAgregat == self.campZona or (campExt != '' and self.campAgregat == campExt):
+                    self.msgError = "No és possible calcular aquesta agregació de dades.\n\nRevisi els paràmetres especificats."
+                    return False
+                dtypes.update({self.campAgregat: np.float_})
+
+            # Carga de capa de datos geocodificados
+            csv = pd.read_csv(self.fZones, sep=self.separador, encoding='utf-8',
+                              decimal=QvApp().locale.decimalPoint(), dtype=dtypes)
+            csv = csv[csv[self.campZona].notnull()]
+
             # Los campos de zona y extensión se cargan como string, y el de agregacion como float si hay acumulados
             dtypes = {self.campZona: np.string_}
             valExtensio = ''
@@ -626,9 +675,9 @@ class QvMapificacio(QObject):
             # Aplicar filtro
             try:
                 if self.filtre != '':
-                    csv.query(self.filtre, inplace=True)
+                    csv.query(self.f iltre, inplace=True)
             except Exception as err:
-                self.msgError = "Error a l'expressió de filtre"
+                self.msgError = "Error a l'expressió de filtre\n\n" + str(err)
                 return False
 
             # Cálculo de la agreagación de datos

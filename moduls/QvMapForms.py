@@ -102,6 +102,11 @@ class QvFormBaseMapificacio(QDialog):
         if mantenirIndex:
             combo.setCurrentIndex(idx)
 
+    def comboDelete(self, combo, text):
+        n = combo.findText(text)
+        if n > -1:
+            combo.removeItem(n)
+
     def valida(self):
         return True
 
@@ -273,6 +278,7 @@ class QvFormNovaMapificacio(QvFormBaseMapificacio):
         self.tipus.setEditable(False)
         self.tipus.addItem('Selecciona tipus…')
         self.tipus.addItems(mv.MAP_AGREGACIO.keys())
+        self.tipus.currentIndexChanged.connect(self.canviaTipus)
 
         self.distribucio = QComboBox(self)
         self.distribucio.setEditable(False)
@@ -401,6 +407,14 @@ class QvFormNovaMapificacio(QvFormBaseMapificacio):
                 if campo != '' and campo in campsZona:
                     self.distribucio.addItem(dist)
 
+    @pyqtSlot()
+    def canviaTipus(self):
+        if self.tipus.currentText() == 'Recompte':
+            self.calcul.setCurrentIndex(-1)
+            self.calcul.setEnabled(False)
+        else:
+            self.calcul.setEnabled(True)
+
     def borrarArxiu(self):
         if self.taulaMostra is not None:
             self.taulaMostra.hide()
@@ -414,12 +428,23 @@ class QvFormNovaMapificacio(QvFormBaseMapificacio):
     def nouArxiu(self):
         if self.fCSV is None:
             return
+
         # Carga combo con zonas si el campo correspondiente está en el fichero CSV
         num = 0
         for zona, val in mv.MAP_ZONES.items():
             if val[1] != '' and self.fCSV.prefixe + QvSqlite.getAlias(val[0]) in self.fCSV.camps:
                 self.zona.addItem(zona)
                 num = num + 1
+
+        # Comprobar si la extensión del mapa está limitada
+        if num > 0:
+            extensio = self.fCSV.testExtensioArxiu(mv.MAP_EXTENSIO)
+            if extensio:  # Mapa limitado
+                self.comboDelete(self.zona, mv.MAP_TRUE_EXTENSIO)
+            else:  # Mapa completo
+                self.comboDelete(self.zona, mv.MAP_FALSE_EXTENSIO)
+    
+        # Ajustar combo de zonas
         if num == 0:
             self.msgInfo("El fitxer " + self.fCSV.fZones + " no té cap camp de zona")
             if hasattr(self, 'arxiu'):
@@ -431,7 +456,7 @@ class QvFormNovaMapificacio(QvFormBaseMapificacio):
             self.capa.setFocus()
         else:
             self.zona.setFocus()
-        # self.taulaMostra = QvFormMostra(self.fCSV, parent=self)
+
         self.taulaMostra = QvEditorCsv(self.fCSV.fZones, [], 'utf-8', self.fCSV.separador, self)
         self.taulaMostra.setWindowTitle("Vista prèvia d'arxiu geocodificat")
         self.taulaMostra.setReadOnly(True)

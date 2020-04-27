@@ -717,8 +717,13 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.ubicacions._novaUbicacio()
 
     def invocarStreetView(self):
-        xx=self.cAdrec.coordAdreca[0]
-        yy=self.cAdrec.coordAdreca[1]
+        try:
+            xx=self.cAdrec.coordAdreca[0]
+            yy=self.cAdrec.coordAdreca[1]
+        except Exception as ee:
+            print(str(ee))
+            return
+       
         
         if self.qvSv.qbrowser.isHidden():
             self.qvSv.qbrowser.show()
