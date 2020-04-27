@@ -54,7 +54,7 @@ class QvMapetaBrujulado(QFrame):
         self.setWindowTitle('MapetaBrujulado')
         
 
-        self.qvCompass = QvCompass(self.canvas,self)
+        self.qvCompass = QvCompass(self.canvas,pare=self)
         self.qvCompass.setGeometry(0, 0, ancho_mapetaBrujulado, ancho_mapetaBrujulado)
         self.qvCompass.colorMarcasCompass=self.colorMarcas
         self.qvCompass.show()
@@ -204,7 +204,6 @@ class QvMapetaBrujulado(QFrame):
         col = d_color.getColor()
         if col.isValid():
             self.colorMarcas=col
-
     def contextMenuEvent(self, event):
         contextMenu = QMenu(self)
         norteAct = contextMenu.addAction("Orientació Nord (0º)")
@@ -212,7 +211,7 @@ class QvMapetaBrujulado(QFrame):
         contextMenu.addSeparator()
         chColors= contextMenu.addAction("Cambiar colors")
         mapetaDefault= contextMenu.addAction("Mapeta default")
-        crearMapetas= contextMenu.addAction("Crear mapeta")
+        crearMapetas= contextMenu.addAction("Crear/cargar /salvar/ mapeta")
         
 
         action = contextMenu.exec_(self.mapToGlobal(event.pos()))
@@ -264,12 +263,6 @@ class MyWindow(QMainWindow):
             os.remove("mapesOffline/temporal.pgw")
         else:
             print("The file does not exist")            
-
-
-
-
-
-   
 
 
 

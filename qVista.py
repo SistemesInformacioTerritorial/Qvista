@@ -351,6 +351,7 @@ class QVista(QMainWindow, Ui_MainWindow):
                     pass
             posaExtent()
             self.canvas.mapCanvasRefreshed.connect(posaExtent)
+            # TODO: Comprobar si funciona. setExtent lanza mapCanvasRefreshed? o es mapCanvasRefreshed 
 
         # Labels de la statusbar (Projecció i nom del projecte)
         self.lblProjeccio.setText(self.project.crs().description())

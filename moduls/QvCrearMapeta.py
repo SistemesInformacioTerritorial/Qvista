@@ -151,16 +151,22 @@ class QvColocacionCirculo(QgsMapTool):
 
         # Create a texture brush and paint a circle with the original image onto
         # the output image: Chapeau!!
-        brush = QBrush(image)        # Create texture brush
+
+        # pintamos circulo relleno de imagen
         painter = QPainter(out_img)  # Paint the output image
-        painter.setBrush(brush)      # Use the image texture brush
-        # painter.setPen(Qt.NoPen)     # Don't draw an outline
-        # pen= QPen(QColor(121,144,155),  1, Qt.SolidLine)    #qVista claro         
+        brush = QBrush(image)        # Create texture brush
+        painter.setBrush(brush)      # Use the image texture brush  (como se pintara el relleno)
         pen= QPen(self.parent.color,  1, Qt.SolidLine)    #qVista claro         
         painter.setPen(pen)
         painter.setRenderHint(QPainter.Antialiasing, True)  # Use AA
         painter.drawEllipse(0, 0, image.width(), image.width())  # Actually draw the circle
         painter.end()                # We are done (segfault if you forget this)
+
+
+
+
+
+
 
         # de out_img a pixmap
         self.scaled_pixmap = QPixmap.fromImage(out_img)
@@ -198,11 +204,6 @@ class QvColocacionCirculo(QgsMapTool):
             wld.writelines("%s\n" % self.Pmin.y())
             wld.close
 
-
-
-
-
-    
 
         #  muestro datos de georeferenciacion
         literal= "xmin,ymin=" + str(round(self.Pmin.x(),3)) +"  "+ str(round(self.Pmin.y(),3))
@@ -271,38 +272,53 @@ class QvCrearMapetaConBotones(QWidget):
             self.canvas.setRotation(0)
 
         QWidget.__init__(self)
-
+        self.dadesdir=configuracioQvista.dadesdir
         self.setParent(pare)
         self.pare = pare
         self.existeCirculo=False  
 
         #defino botones y las funciones de su click
         self.botoponerCirculo = QPushButton("Posar circle")
+        self.botoponerCirculo.setToolTip('Color perimetre')
         self.botoponerCirculo.clicked.connect(self.ponerCirculo)
-        self.botoConfirmar = QPushButton("Actualizar")
-        self.botoConfirmar.clicked.connect(self.confirmar)
+        self.botoponerCirculo.setFixedWidth(120) 
+
+        self.botoEnvMap = QPushButton('Enviar a mapeta')
+        self.botoEnvMap.setToolTip('Color perimetre')
+        self.botoEnvMap.clicked.connect(self.EnvMap)   
+        self.botoEnvMap.setFixedWidth(120)      
+
+        self.botoActualizar = QPushButton("Actualizar")
+        self.botoEnvMap.setToolTip('Color perimetre')
+        self.botoActualizar.clicked.connect(self.actualizar)
+        self.botoActualizar.setFixedWidth(120) 
+
+        self.botoColor = QPushButton('Sel·lecc. color')
+        self.botoColor.setToolTip('Color perimetre')
+        self.botoColor.clicked.connect(self.showDialogColor)
+        self.botoColor.setFixedWidth(120) 
+
+        self.botoCargar =  QPushButton('Cargar')  
+        self.botoCargar.setToolTip('Color perimetre')
+        self.botoCargar.clicked.connect(self.Cargar)
+        self.botoCargar.setFixedWidth(120) 
 
         self.botoSalvar =  QPushButton('Salvar')  
-        self.botoSalvar.clicked.connect(self.Salvar)        
-        self.botoCargar =  QPushButton('Cargar')  
-        self.botoCargar.clicked.connect(self.Cargar)
-        self.label = QLabel(self)
+        self.botoSalvar.setToolTip('Color perimetre')
+        self.botoSalvar.clicked.connect(self.Salvar)   
+        self.botoSalvar.setFixedWidth(120)    
+
+
+        self.label = QLabel(self)  #para el pixmap
+        
         # self.label.setDragEnabled(True)      no va!!!
         
 
-        
-
-        self.botoColor = QPushButton('Sel·leccionar color')
-        self.botoColor.setToolTip('Color perimetre')
-        self.botoColor.clicked.connect(self.showDialogColor)
-       
         self.color= QColor(121,144,155)
         self.xmax_ymax = QLabel(" ",self)
         self.xmin_ymin = QLabel(" ",self)
 
-        self.botoEnvMap = QPushButton('Enviar a mapeta')
-        self.botoEnvMap.setToolTip('Color perimetre')
-        self.botoEnvMap.clicked.connect(self.EnvMap)
+
 
         self.spinBox = QSpinBox(self)
         self.spinBox.setFixedWidth(60)
@@ -315,32 +331,38 @@ class QvCrearMapetaConBotones(QWidget):
         spacerItem = QSpacerItem(0, 0, QSizePolicy.Expanding, QSizePolicy.Minimum)
         self.layH1=QHBoxLayout()
         self.layH1.addWidget(self.botoponerCirculo)
-        self.layH1.addWidget(self.botoConfirmar)
+        
+        self.layH1.addWidget(self.botoEnvMap)
+
         self.layH1.addItem(spacerItem)
 
         self.layH2=QHBoxLayout()
-        self.layH2.addWidget(self.botoSalvar)
+        self.layH2.addWidget(self.botoActualizar)
         self.layH2.addWidget(self.botoColor) 
-        self.layH2.addWidget(self.botoSalvar) 
         self.layH2.addItem(spacerItem)  
 
         self.layH3=QHBoxLayout()
-        self.layH3.addWidget(self.xmax_ymax)
-        self.layH3.addItem(spacerItem) 
+        self.layH3.addWidget(self.botoCargar)
+        self.layH3.addWidget(self.botoSalvar) 
+        self.layH3.addItem(spacerItem)  
 
+        
         self.layH4=QHBoxLayout()
-        self.layH4.addWidget(self.xmin_ymin)
-        self.layH4.addItem(spacerItem)      
-
+        self.layH4.addWidget(self.xmax_ymax)
+        self.layH4.addItem(spacerItem) 
 
         self.layH5=QHBoxLayout()
-        self.layH5.addWidget(self.spinBox)
-        self.layH5.addWidget(self.botoEnvMap)
-        self.layH5.addItem(spacerItem) 
+        self.layH5.addWidget(self.xmin_ymin)
+        self.layH5.addItem(spacerItem)      
+
 
         self.layH6=QHBoxLayout()
-        self.layH6.addWidget(self.label)
-        self.layH6.addItem(spacerItem)      
+        self.layH6.addWidget(self.spinBox)
+        self.layH6.addItem(spacerItem) 
+
+        self.layH7=QHBoxLayout()
+        self.layH7.addWidget(self.label)
+        self.layH7.addItem(spacerItem)      
 
         spacerItem2 = QSpacerItem(0,0, QSizePolicy.Ignored, QSizePolicy.Expanding)
         self.layV1=QVBoxLayout()
@@ -349,13 +371,22 @@ class QvCrearMapetaConBotones(QWidget):
         self.layV1.addLayout(self.layH3) 
         self.layV1.addLayout(self.layH4) 
         self.layV1.addLayout(self.layH5) 
-        self.layV1.addItem(spacerItem2)
         self.layV1.addLayout(self.layH6) 
+        self.layV1.addItem(spacerItem2)
+        self.layV1.addLayout(self.layH7) 
         self.setLayout(self.layV1)
 
+
+
     def EnvMap(self):
-        pass
-        self.Sig_MapetaTemporal.emit(self.colocoCirculo.fileName)
+
+        try:
+            self.Sig_MapetaTemporal.emit(self.colocoCirculo.fileName)
+        except Exception as ee:
+            self.actualizar()
+            fic_tmp=os.path.join(self.tempdir,"temporal2.png")  
+            self.Sig_MapetaTemporal.emit(fic_tmp)
+        
         
 
 
@@ -366,8 +397,126 @@ class QvCrearMapetaConBotones(QWidget):
         '''
         self.lado= self.spinBox.value() 
 
-    def confirmar(self):
-        self.colocoCirculo.saveCanvas1()
+    def hacer5(self):  
+        self.tempdir=configuracioQvista.tempdir
+        fic_tmp=os.path.join(self.tempdir,"temporal.png")    
+        self.pixmap = QPixmap(fic_tmp)  
+        # self.pixmap=self.canvas.grab() # no acaba de ir bien, me carga en pixmap tambien el circulo pintado
+        # tamaño del pixmap
+        hp= self.pixmap.height()                                         # alto imagen 
+        wp= self.pixmap.width()                                          # ancho imagen salvada
+        # radio. 
+        if hp < wp:
+            self.rP= hp/2
+        else:
+            self.rP= wp/2
+
+        self.xcP = wp/2
+        self.ycP = hp/2
+        # self.rP = math.sqrt(math.pow((self.xcP-self.xrP), 2) + math.pow((self.ycP-self.yrP), 2))  # radio pantalla
+        pcX= self.xcP - self.rP ; pcY= self.ycP - self.rP                                    # punto inicio crop
+        self.an= 2* self.rP;      self.al= self.an                            # an, ancho para crop   al, alto para crop
+        # escala= self.rP /self.rM                                                   # escala, como relacion de radiopantalla a radiomundo
+        # pmin= QPoint();   
+        # pmin.setX(pcX); 
+        # pmin.setY(pcY+self.al); 
+        # self.Pmin = self.toMapCoordinates(pmin)
+        # pmax= QPoint();   
+        # pmax.setX(pcX+self.an); 
+        # pmax.setY(pcY); 
+        # self.Pmax = self.toMapCoordinates(pmax)        
+
+        # calculo area de recorte para hacer el crop 
+        rect= QRect(pcX, pcY, self.an, self.al)
+        # hago crop
+        cropped_pixmap = self.pixmap.copy(rect) 
+        
+        # escalo el pixmap al tamaño que quiero
+        self.scaled_pixmap = cropped_pixmap.scaled(self.lado, self.lado, Qt.KeepAspectRatioByExpanding, Qt.SmoothTransformation)
+        # de pixmap a image
+        image=QImage(self.scaled_pixmap.toImage())
+        image = image.convertToFormat(QImage.Format_ARGB32)
+
+        # preparo imagen de salida transparente y del tamaño del de entrada....
+        out_img = QImage(image.width(), image.width(), QImage.Format_ARGB32)
+        out_img.fill(Qt.transparent)
+
+        # Create a texture brush and paint a circle with the original image onto
+        # the output image: Chapeau!!
+        brush = QBrush(image)        # Create texture brush
+        painter = QPainter(out_img)  # Paint the output image
+        painter.setBrush(brush)      # Use the image texture brush
+        # painter.setPen(Qt.NoPen)     # Don't draw an outline
+        # pen= QPen(QColor(121,144,155),  1, Qt.SolidLine)    #qVista claro         
+        pen= QPen(self.color,  1, Qt.SolidLine)    #qVista claro         
+        painter.setPen(pen)
+        painter.setRenderHint(QPainter.Antialiasing, True)  # Use AA
+        painter.drawEllipse(0, 0, image.width(), image.width())  # Actually draw the circle
+        painter.end()                # We are done (segfault if you forget this)
+
+        # de out_img a pixmap
+        self.scaled_pixmap = QPixmap.fromImage(out_img)
+
+        # muestro ese pixmap en label...
+        self.label.setPixmap(self.scaled_pixmap)
+
+        # y lo salvo como temporal2
+        fic_tmp=os.path.join(self.tempdir,"temporal2.png")  
+        self.fileName= fic_tmp 
+
+        if self.fileName:
+            # Guardo el pixmap como png
+            self.scaled_pixmap.save(self.fileName)
+            # Calculo info para el PQW
+            # rango mundo x e y
+
+
+
+            xdist = self.xmax- self.xmin   
+            ydist = self.ymax- self.ymin
+            # ancho y alto de la imagen
+            iheight = self.scaled_pixmap.height() 
+            iwidth =  self.scaled_pixmap.width()  
+
+            # Preparo nombre del PGW
+            split_nombre=os.path.splitext(self.fileName)
+            filenamePgw=split_nombre[0]+".pgw"
+
+            # Escribo PGW
+            wld =open(filenamePgw, "w")   
+            wld.writelines("%s\n" % (xdist/iwidth))
+            wld.writelines("0.0\n")
+            wld.writelines("0.0\n")
+            wld.writelines("%s\n" % (ydist/iheight))
+            wld.writelines("%s\n" % self.xmin)
+            wld.writelines("%s\n" % self.ymin)
+            wld.close
+
+
+        # #  muestro datos de georeferenciacion
+        # literal= "xmin,ymin=" + str(round(self.Pmin.x(),3)) +"  "+ str(round(self.Pmin.y(),3))
+        # self.parent.xmin_ymin.setText(literal)
+        # literal= "xmax,ymax=" + str(round(self.Pmax.x(),3)) +"  "+ str(round(self.Pmax.y(),3))
+        # self.parent.xmax_ymax.setText(literal)
+
+ 
+        try:
+            self.reset()
+        except:
+            pass       
+     
+
+
+    def actualizar(self):
+        try:
+            self.colocoCirculo.saveCanvas1()
+        except Exception  as ee:
+            print("Desde carga Aun no implementado")
+            self.hacer5()
+       
+
+            pass
+        
     def ponerCirculo(self):
         '''
         Dibujo circulo, dinamicamente
@@ -405,16 +554,88 @@ class QvCrearMapetaConBotones(QWidget):
 
     def Cargar(self):
         '''
-        Escribo PNG y PGW
-        '''        
-        pass
-    
+        Leo PNG y PGW
+        ''' 
+        dialegObertura=QFileDialog()
+        dialegObertura.setDirectoryUrl(QUrl(self.dadesdir))
+
+        # Images (*.png );;World files (*.pgw)
+        self.fileName,_ = dialegObertura.getOpenFileName(parent=self,\
+                                                        caption= 'Cargar mapeta',\
+                                                        directory='', 
+                                                        filter="World files(*.pgw);;Images(*.png);;Tot(*.*)")
+        if self.fileName:   
+            split_nombre=os.path.splitext(self.fileName)
+            filenamePGW=split_nombre[0]+".pgw"
+            filenamePNG=split_nombre[0]+".png"
+            datos_mapeta = self.CalcularPNGyRangoMapeta(filenamePNG)
+
+            pixmap = QPixmap(filenamePNG) 
+            self.label.setPixmap(pixmap) 
+
+            literal= "xmin,ymin=" + str(round(datos_mapeta[1],3)) +"  "+ str(round(datos_mapeta[2],3))
+            self.xmin_ymin.setText(literal)
+            literal= "xmax,ymax=" + str(round(datos_mapeta[3],3)) +"  "+ str(round(datos_mapeta[4],3))
+            self.xmax_ymax.setText(literal)
+            self.spinBox.setValue(datos_mapeta[5])
+
+            self.xmin= datos_mapeta[1]
+            self.ymin= datos_mapeta[2]
+            self.xmax= datos_mapeta[3]
+            self.ymax= datos_mapeta[4]
+            pass
+            #  TODO: Actualizar variables necesarias para poder hacer recalculos
+            self.rang = QgsRectangle(self.xmin,self.ymin,self.xmax,self.ymax)
+            self.canvas.setExtent(self.rang)
+
+
+    def CalcularPNGyRangoMapeta(self,ficheroEnviado):
+        '''
+        Hay 2 ficheros complementarios: PNG y PGW. (PNG la imagen, 
+        PGW su georeferenciacio,  en esta versión referida a un mapeta sin 
+        rotación). La funcion recibe un fichero (cualquiera de los dos) y 
+        busca su complementario. 
+        Con ambos calcula y la anchura y altura del PNG, y su rango.
+        '''
+        split_nombre=os.path.splitext(ficheroEnviado)
+        ficheroPNG=  split_nombre[0]+".png"
+        ficheroPGW=  split_nombre[0]+".pgw"
+
+        pixmap = QPixmap(ficheroPNG)                     
+        heigthPNG= pixmap.height()                       
+        widthPNG= pixmap.width()    
+        
+        try:
+            if not os.path.exists(ficheroPGW):
+                print("PNG sin PGW")
+                return
+
+            wld =open(ficheroPGW, "r")   
+            A=float(wld.readlines(1)[0])
+            D=float(wld.readlines(2)[0])
+            B=float(wld.readlines(3)[0])
+            E=float(wld.readlines(4)[0])
+            C=float(wld.readlines(5)[0])
+            F=float(wld.readlines(6)[0])
+            wld.close
+            x=heigthPNG;             y=widthPNG
+            x1= A*x + B*y + C;       y1 =D*x + E*y + F
+            xmin= C;            ymin= F
+            xmax= x1;           ymax= y1
+            return ficheroPNG,xmin,ymin,xmax,ymax,  widthPNG , heigthPNG        
+
+        except:
+            print("problemas PGW")    
+
+
+
+
     def Salvar(self):
         '''
         Escribo PNG y PGW
         '''        
         dialegObertura=QFileDialog()
-        dialegObertura.setDirectoryUrl(QUrl("mapesOffline/"))
+        dialegObertura.setDirectoryUrl(QUrl(self.dadesdir))
         self.fileName,_ = dialegObertura.getSaveFileName(self, 'Guardar mapeta', '', 'PNG(*.png)')
         if self.fileName:
             # Guardo el pixmap como png
@@ -442,27 +663,6 @@ class QvCrearMapetaConBotones(QWidget):
             wld.writelines("%s\n" % self.colocoCirculo.Pmin.y())
             wld.close
 
-            # region ejemplo de lectura de un PGW
-            # wld =open(filenamePgw, "r")   
-            # A=float(wld.readlines(1)[0])
-            # D=float(wld.readlines(2)[0])
-            # B=float(wld.readlines(3)[0])
-            # E=float(wld.readlines(4)[0])
-            # C=float(wld.readlines(5)[0])
-            # F=float(wld.readlines(6)[0])
-            # wld.close
-            # x=iwidth
-            # y=iheight
-
-
-            # x1= A*x + B*y + C
-            # y1 =D*x + E*y + F
-            # print("xy=",C,",",F)
-            # print("xy=",x1,",",y1)
-            # pass
-            # endregion     
-            # 
-            #        
     def closeEvent(self, event):
         close = QMessageBox()
         close.setText("You sure?")
@@ -480,23 +680,24 @@ class MyWindow(QMainWindow):
 
 
     def closeEvent(self,event):
-        fic_tmp=os.path.join(fic_tmp,"temporal.png")    
-        if os.path.exists(fic_tmp):
-            os.remove(fic_tmp)
-        else:
-            print("The file does not exist")               
+        pass
+        # fic_tmp=os.path.join(fic_tmp,"temporal.png")    
+        # if os.path.exists(fic_tmp):
+        #     os.remove(fic_tmp)
+        # else:
+        #     print("The file does not exist")               
 
-        fic_tmp=os.path.join(fic_tmp,"temporal2.png")    
-        if os.path.exists(fic_tmp):
-            os.remove(fic_tmp)
-        else:
-            print("The file does not exist")   
+        # fic_tmp=os.path.join(fic_tmp,"temporal2.png")    
+        # if os.path.exists(fic_tmp):
+        #     os.remove(fic_tmp)
+        # else:
+        #     print("The file does not exist")   
 
-        fic_tmp=os.path.join(fic_tmp,"temporal.pgw")    
-        if os.path.exists(fic_tmp):
-            os.remove(fic_tmp)
-        else:
-            print("The file does not exist")   
+        # fic_tmp=os.path.join(fic_tmp,"temporal.pgw")    
+        # if os.path.exists(fic_tmp):
+        #     os.remove(fic_tmp)
+        # else:
+        #     print("The file does not exist")   
 
 
 
