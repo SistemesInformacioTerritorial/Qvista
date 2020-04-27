@@ -675,7 +675,7 @@ class QvMapificacio(QObject):
             # Aplicar filtro
             try:
                 if self.filtre != '':
-                    csv.query(self.f iltre, inplace=True)
+                    csv.query(self.filtre, inplace=True)
             except Exception as err:
                 self.msgError = "Error a l'expressió de filtre\n\n" + str(err)
                 return False
