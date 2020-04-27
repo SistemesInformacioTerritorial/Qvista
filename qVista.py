@@ -1816,7 +1816,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         rang = self.distBarris.llegirRang() 
         self.canvas.zoomToFeatureExtent(rang) 
         zona = self.distBarris.llegirNom() 
-        location = os.path.join("D:\\qVista\\Qvista\\Imatges\\capturesMapeta\\", zona +".png") 
+        location = os.path.join("Imatges\\capturesMapeta\\", zona +".png") 
         self.enviarMapetaTemporal(location) 
         
     def cataleg(self):
