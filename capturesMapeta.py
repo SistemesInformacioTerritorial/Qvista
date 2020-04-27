@@ -97,8 +97,8 @@ if __name__ == "__main__":
                 #Rang mapeta
                 xdist = geometria.xMaximum()- geometria.xMinimum()   
                 ydist = geometria.yMaximum()- geometria.yMinimum() 
-                iheight = 250 
-                iwidth =  250
+                iheight = 200 
+                iwidth =  200
 
                 #Escriure PGW
                 wld.writelines("%s\n" % (xdist/iwidth))
