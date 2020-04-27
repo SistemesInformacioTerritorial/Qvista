@@ -1,9 +1,21 @@
 import sys
 import pydoc
 import importlib
+import inspect
 
-my_module = importlib.import_module('QvMapeta')
-request=my_module.QvMapeta
+my_module = importlib.import_module('QvPlotly')
+# request=my_module.QvMapeta
+
+request=getattr(my_module, 'QvPlot')
+
+
+
+# for name, obj in inspect.getmembers(sys.modules[__name__]):
+#     if inspect.isclass(obj):
+#         print("obj=",obj)
+#         request=obj
+
+
 # moduleName = ['QvMapeta'] 
 # modul = map(__import__, moduleName)
 
@@ -26,7 +38,7 @@ def output_help_to_file(filepath, request):
 
 
 # output_help_to_file(r'QvMapeta.txt',QvMapeta.QvMapeta)
-output_help_to_file(r'QvMapeta.txt',request)
+# output_help_to_file(r'QvMapeta.txt',request)
 
 
 
