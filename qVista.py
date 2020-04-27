@@ -717,8 +717,13 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.ubicacions._novaUbicacio()
 
     def invocarStreetView(self):
-        xx=self.cAdrec.coordAdreca[0]
-        yy=self.cAdrec.coordAdreca[1]
+        try:
+            xx=self.cAdrec.coordAdreca[0]
+            yy=self.cAdrec.coordAdreca[1]
+        except Exception as ee:
+            print(str(ee))
+            return
+       
         
         if self.qvSv.qbrowser.isHidden():
             self.qvSv.qbrowser.show()
@@ -1813,10 +1818,12 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.statusbar.show()
 
     def clickArbre(self):
-        rang = self.distBarris.llegirRang()
-        self.canvas.zoomToFeatureExtent(rang)
-            
-
+        rang = self.distBarris.llegirRang() 
+        self.canvas.zoomToFeatureExtent(rang) 
+        zona = self.distBarris.llegirNom() 
+        location = os.path.join("Imatges\\capturesMapeta\\", zona +".png") 
+        self.enviarMapetaTemporal(location) 
+        
     def cataleg(self):
         """catàleg de capes"""
 
