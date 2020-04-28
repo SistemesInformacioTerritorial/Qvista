@@ -350,6 +350,7 @@ class QVista(QMainWindow, Ui_MainWindow):
                     pass
             posaExtent()
             self.canvas.mapCanvasRefreshed.connect(posaExtent)
+            # TODO: Comprobar si funciona. setExtent lanza mapCanvasRefreshed? o es mapCanvasRefreshed 
 
         # Labels de la statusbar (Projecció i nom del projecte)
         self.lblProjeccio.setText(self.project.crs().description())
@@ -720,10 +721,11 @@ class QVista(QMainWindow, Ui_MainWindow):
         try:
             xx=self.cAdrec.coordAdreca[0]
             yy=self.cAdrec.coordAdreca[1]
+
         except Exception as ee:
             print(str(ee))
             return
-       
+
         
         if self.qvSv.qbrowser.isHidden():
             self.qvSv.qbrowser.show()
