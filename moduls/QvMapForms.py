@@ -443,7 +443,7 @@ class QvFormNovaMapificacio(QvFormBaseMapificacio):
                 self.comboDelete(self.zona, mv.MAP_TRUE_EXTENSIO)
             else:  # Mapa completo
                 self.comboDelete(self.zona, mv.MAP_FALSE_EXTENSIO)
-    
+
         # Ajustar combo de zonas
         if num == 0:
             self.msgInfo("El fitxer " + self.fCSV.fZones + " no té cap camp de zona")

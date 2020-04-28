@@ -18,6 +18,7 @@ from configuracioQvista import imatgesDir
 
 import os
 import win32file
+from collections import OrderedDict
 
 # Resultado de compilacion de recursos del fuente de qgis (directorio images)
 # pyrcc5 images.qrc >images_rc.py
@@ -414,6 +415,11 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
         self.accions.afegirAccio('showFeatureCount', act)
 
         act = qtWdg.QAction()
+        act.setText("Mostra histograma")
+        act.triggered.connect(self.showHistogram)
+        self.accions.afegirAccio('showHistogram', act)
+
+        act = qtWdg.QAction()
         act.setText("Mostra taula dades")
         # act.setIcon(QIcon(':/Icones/ic_file_upload_black_48dp.png'))
         act.triggered.connect(self.showFeatureTable)
@@ -447,6 +453,15 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
                     tipo = 'layer'
         return tipo
 
+    def zonaHistograma(self, capa, zones=('Districte', 'Barri')):
+        var = qgCor.QgsExpressionContextUtils.layerScope(capa).variable(MAP_ID)
+        if var is None:
+            return ''
+        for zona in zones:
+            if f'Zona: {zona}\n' in var:
+                return zona
+        return ''
+
     def setMenuAccions(self):
         # Menú dinámico según tipo de elemento sobre el que se clicó
         self.menuAccions = []
@@ -454,6 +469,8 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
         if tipo == 'layer':
             capa = self.currentLayer()
             if capa is not None and capa.type() == qgCor.QgsMapLayer.VectorLayer:
+                if self.zonaHistograma(capa) != '':
+                    self.menuAccions += ['showHistogram']
                 if self.atributs is not None:
                     self.menuAccions += ['showFeatureTable']
                     if self.editable:
@@ -531,6 +548,24 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
                 extent = layer.extent()
                 self.canvas.setExtent(extent)
                 self.canvas.refresh()
+
+    def showHistogram(self):
+        try:
+            layer = self.currentLayer()
+            if layer is not None:
+                from moduls.QvPlotly import QvPlot, QvChart
+                regs = dict()
+                for f in layer.getFeatures():
+                    regs[f['CODI'] + '-' + f['DESCRIPCIO']] = f['RESULTAT']
+                lista = OrderedDict(sorted(regs.items()))
+                pl = QvPlot.barres(
+                        list(lista.keys()), list(lista.values()),
+                        titol='Capa ' + layer.name() + ' - Histograma per ' +
+                              self.zonaHistograma(layer).lower())
+                self.histograma = QvChart.visorGrafic(pl)
+                self.histograma.show()
+        except Exception as e:
+            print(str(e))
 
     def showFeatureTable(self):
         if self.atributs is not None:

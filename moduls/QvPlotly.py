@@ -9,6 +9,8 @@ import time
 
 from moduls.QvConstants import QvConstants
 from moduls.QvVisorHTML import QvVisorHTML
+from configuracioQvista import tempdir
+
 
 class QvPlot:
     '''Classe per crear un gràfic de manera senzilla, fent d'embolcall dels
@@ -34,7 +36,7 @@ La llista de paràmetres permesos es pot veure a la funció __init__. No obstant
 
 Sobre una instància de la classe es poden fer principalment dues coses: mostrar i escriure:
 
- - show(): mostra el gràfic en el navegador del sistema. 
+ - show(): mostra el gràfic en el navegador del sistema.
  - write(): escriu el gràfic a l'arxiu html associat (mètode preferit, ja que
              permet obrir-lo en un navegador intern dins del propi programa)
 
@@ -46,7 +48,7 @@ rutaHtml = QvPlot.getFileName('C:/temp/qVista/dades/capaExemple.gpkg')
 
 Aquest mètode permet crear l'arxiu html en una part del codi, i mostrar-lo
  en una altra. Només cal crear la instància i fer el write en una part i,
- sense necessitat de desar el nom en cap variable, en una altra part del 
+ sense necessitat de desar el nom en cap variable, en una altra part del
  codi consultar-lo i fer el que es vulgui
     '''
     # classmethod és una funció decoradora que serveix per crear mètodes de classe
@@ -109,7 +111,7 @@ Aquest mètode permet crear l'arxiu html en una part del codi, i mostrar-lo
         self._color = color
 
         self.titol = titol
-        self._lay = layout = go.Layout(
+        self._lay = go.Layout(
             title=titol,
             titlefont=dict(
                 color=QvConstants.COLORDESTACATHTML
@@ -127,7 +129,7 @@ Aquest mètode permet crear l'arxiu html en una part del codi, i mostrar-lo
         if self._horitzontal is not None:
             kw['orientation'] = 'h' if self._horitzontal else 'v'
         figura = self._getFiguraAux(fig, **kw)
-        figura.update_traces(marker_color=self._color)
+        # figura.update_traces(marker_color=self._color)
         return figura
 
     def _getFiguraLbl(self, fig):
@@ -155,7 +157,8 @@ Aquest mètode permet crear l'arxiu html en una part del codi, i mostrar-lo
 
 class QvChart(QvVisorHTML):
     '''Un QvVisorHTML canviant alguna propietat per adaptar-lo al plotly
-Es pot construir com qualsevol QvVisorHTML donant-li la ruta de l'arxiu a mostrar i el seu títol, o passant-li un QvPlot com a paràmetre.
+Es pot construir com qualsevol QvVisorHTML donant-li la ruta de l'arxiu a mostrar i el seu títol,
+o passant-li un QvPlot com a paràmetre.
 Cas 1:
     visor = QvChart('C:/temp/qVista/dades/prova.html','Gràfic de prova generat anteriorment')
     visor.show()
@@ -180,11 +183,10 @@ Cas 2:
 
 
 if __name__ == '__main__':
-    from configuracioQvista import *
     from qgis.core.contextmanagers import qgisapp
-    pl = QvPlot.pastis([1, 2, 3], [1, 2, 3], titol='Hola')
+    pl = QvPlot.barres([1, 2, 3], [1, 2, 3], titol='Hola')
     with qgisapp() as app:
-        #opció 1: mostrar dins d'un visor html
+        # opció 1: mostrar dins d'un visor html
         visor = QvChart.visorGrafic(pl)
         visor.show()
     # opció 2: mostrar dins del navegador
