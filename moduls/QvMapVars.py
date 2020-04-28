@@ -10,8 +10,10 @@ MAP_MAX_CATEGORIES = 10
 MAP_ALPHA_INI = 18
 MAP_ALPHA_FIN = 18
 MAP_ZONES_DB = "Zones.gpkg"
-MAP_EXTENSIO = "DISTRICTE"
 MAP_FEQ_EXTENSIO = 0.75
+MAP_EXTENSIO = "DISTRICTE"
+MAP_TRUE_EXTENSIO = "Districte"
+MAP_FALSE_EXTENSIO = "Solar"
 
 # TODO
 # Si se recalcula la capa y está en la leyenda, quitarla
@@ -25,8 +27,8 @@ MAP_ZONES = OrderedDict({
     "Secció censal": ("DISTRICTE || SECCIO_CENSAL AS SECCIO_CENSAL", "seccions_censals"),
     "Codi postal": ("CODI_POSTAL", ""),
     "Illa": ("ILLA", "illes"),
-    "Solar": ("SOLAR", "solars"),
-    "Sector policial operatiu": ("SPO", "")
+    "Solar": ("SOLAR", "solars")
+    # "Sector policial operatiu": ("SPO", "")
 })
 
 MAP_ZONES_COORD = OrderedDict({
@@ -60,18 +62,18 @@ MAP_COLORS = OrderedDict({
 
 MAP_CONTORNS = OrderedDict({
     "Base": None,
-    "Negre": Qt.black,
-    "Gris": Qt.gray,
-    "Blanc": Qt.white,
-    "Cap": Qt.transparent
+    "Negre": QColor(Qt.black),
+    "Gris": QColor(Qt.gray),
+    "Blanc": QColor(Qt.white),
+    "Cap": QColor(Qt.transparent)
 })
 
 MAP_METODES = OrderedDict({
     "Endreçat": QgsGraduatedSymbolRenderer.Pretty,
     "Intervals equivalents": QgsGraduatedSymbolRenderer.EqualInterval,
     "Quantils": QgsGraduatedSymbolRenderer.Quantile,
-    "Divisions naturals (Jenks)": QgsGraduatedSymbolRenderer.Jenks,
-    "Desviació estàndard": QgsGraduatedSymbolRenderer.StdDev
+    "Divisions naturals (Jenks)": QgsGraduatedSymbolRenderer.Jenks
+    # "Desviació estàndard": QgsGraduatedSymbolRenderer.StdDev
 })
 
 MAP_METODES_MODIF = OrderedDict({

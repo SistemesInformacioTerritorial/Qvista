@@ -33,9 +33,9 @@ projecteInicial = os.path.abspath('mapesOffline/qVista default map.qgs')
 estatConnexio = "Xarxa municipal: Connectat"
 
 QvTempdir='C:/temp/qVista/'
-tempdir=os.path.join(QvTempdir,'temp/')+'/' #Seran els arxius temporals de qVista que no s'han de guardar entre execucions
-dadesdir=os.path.join(QvTempdir,'dades/')+'/' #Arxius temporals que volem conservar
-configdir=os.path.join(QvTempdir+'config/')+'/' #Configuracions i coses
+tempdir=os.path.join(QvTempdir,'temp/') #Seran els arxius temporals de qVista que no s'han de guardar entre execucions
+dadesdir=os.path.join(QvTempdir,'dades/') #Arxius temporals que volem conservar
+configdir=os.path.join(QvTempdir+'config/') #Configuracions i coses
 
 docdir='n:/siteb/apl/pyqgis/qvista/dades/'
 imatgesDir = os.path.abspath('Imatges/')

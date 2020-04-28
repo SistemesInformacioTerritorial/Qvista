@@ -227,9 +227,12 @@ class CsvPagina(QWidget):
         self._lblTitol.setText(titol)
 
     def _mapifica(self):
-        fMap = QvFormNovaMapificacio(
-            self._carregador._llegenda, mapificacio=self._carregador._mapificador)
-        if fMap.exec()==QDialog.Accepted:
+        # fMap = QvFormNovaMapificacio(
+        #     self._carregador._llegenda, mapificacio=self._carregador._mapificador)
+        # if fMap.exec()==QDialog.Accepted:
+        #     self._carregador.close()
+        if QvFormNovaMapificacio.executa(self._carregador._llegenda,
+            mapificacio=self._carregador._mapificador) == QDialog.Accepted:
             self._carregador.close()
 
 class CsvTab(QTabWidget):
