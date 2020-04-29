@@ -52,6 +52,8 @@ class QvCompass(QFrame):
         self.spinBox.valueChanged.connect(self.setAngle)
         self.spinBox.setDecimals(1)
         self.spinBox.hide()
+
+
     def drawMarkings(self, painter):
         """
         Las referencias
@@ -115,12 +117,12 @@ class QvCompass(QFrame):
         painter.restore()
     def paintEvent(self, event):
         # print("paintEvent")
-        painter = QPainter()
-        painter.begin(self)
+        painter = QPainter(self)
+        # painter.begin(self)
         painter.setRenderHint(QPainter.Antialiasing)
         # painter.fillRect(event.rect(), self.palette().brush(QPalette.Window))
         self.drawMarkings(painter) # resto
-        self.drawNeedle(painter)   # aguja
+        # self.drawNeedle(painter)   # aguja
         painter.end()        
     def dobleClick(self):
         angulo=0
