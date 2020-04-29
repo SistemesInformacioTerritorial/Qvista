@@ -80,6 +80,7 @@ class QVDistrictesBarris(QObject):
                 num_districte = rowD.attributes()[1]
                 nom_districte = rowD.attributes()[2]
                 num_barri = ""
+                
                 nom_barri = ""
                 geometria = rowD.geometry().boundingBox()
                 x_min = str(geometria.xMinimum())
@@ -136,12 +137,13 @@ class QVDistrictesBarris(QObject):
                     for i in range (0, len(llistaDistrictes[itDist])):
                         dist.append(QStandardItem(llistaDistrictes[itDist][i]))  
                     bcn[0].appendRow(dist)
+                    
                     itDist = itDist + 1
-                else:                         #Afegir següent Barri
-                    barri = [QStandardItem(b[3])]
-                    for item in b:
-                        barri.append(QStandardItem(item))
-                    dist[0].appendRow(barri)
+                                        #Afegir següent Barri
+                barri = [QStandardItem(b[3])]
+                for item in b:
+                    barri.append(QStandardItem(item))
+                dist[0].appendRow(barri)
                 ultimaDistr = int(b[0])
             return True     
         except:
@@ -209,8 +211,14 @@ class QVDistrictesBarris(QObject):
     
     def llegirNom(self):
         if self.esDistricte():
-            return self.llegirRegistre()["NOM_DISTRICTE"]
-        return self.llegirRegistre()["NOM_BARRI"]
+            distr = self.llegirRegistre()["NOM_DISTRICTE"]
+            distr_d = distr + "_d"
+            return distr_d
+        else:
+            barri = self.llegirRegistre()["NOM_BARRI"]
+            barri_b = barri + "_b"
+            return barri_b
+        
 
     def llegirID(self):
         if self.esDistricte():

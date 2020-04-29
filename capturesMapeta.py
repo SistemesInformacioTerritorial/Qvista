@@ -8,6 +8,7 @@ from PyQt5.QtGui import QPixmap
 from PyQt5.QtCore import pyqtSignal, QSize
 from time import sleep
 
+import win32api
 import sys
 import os
 from moduls.QvImports  import *
@@ -30,7 +31,7 @@ if __name__ == "__main__":
         canvas.show()
         canvas.setRotation(0)
         project = QgsProject.instance()
-        projecteInicial='D:/qVista/Qvista/mapesOffline/qVista default map.qgs'
+        projecteInicial='./mapesOffline/qVista default map.qgs'
 
         if project.read(projecteInicial):
             root = project.layerTreeRoot()
@@ -39,10 +40,12 @@ if __name__ == "__main__":
         else:
             print("error en carga del proyecto qgis")
 
+        #win32api.SetFileAttributes(".\\Dades\\Zones.gpkg",win32con.FILE_ATTRIBUTE_READONLY)
+
         #Carregar layers de districtes i barris
         zones = ["districtes", "barris"]
         for zona in zones:
-            pathBoxes = "D:\\qVista\\Qvista\\Dades\\Zones.gpkg|layername=" + zona
+            pathBoxes = "Dades\\Zones.gpkg|layername=" + zona
             layerBoxes = QgsVectorLayer(pathBoxes, 'ogr')
             
             vlayer = QgsProject.instance().mapLayers().values()
@@ -55,12 +58,32 @@ if __name__ == "__main__":
             
             features = layerBoxes.getFeatures()   
             for feature in features:
-                geometria = feature.geometry().boundingBox()
-                #print(feature.attributes())
+                #Nom zona
                 nom = feature[2]
-                settings.setExtent(geometria)
+                if nom == "Les Corts" or nom == "les Corts":
+                    a = "a"
+                #Rectangle zona
+                marge = 0.41
+                offset_marge = marge/2 
+                geometria = feature.geometry().boundingBox()
+                xdist = geometria.xMaximum()- geometria.xMinimum()   
+                ydist = geometria.yMaximum()- geometria.yMinimum() 
+                x1 = geometria.xMaximum() + xdist * offset_marge
+                x2 = geometria.xMinimum() - xdist * offset_marge
+                y1 = geometria.yMaximum() + ydist * offset_marge
+                y2 = geometria.yMinimum() - ydist * offset_marge
+
+                if y1 - y2 > x1 - x2:
+                    offset = ((y1 - y2) - (x1 - x2)) / 2
+                    x1 = x1 + offset
+                    x2 = x2 - offset
+                else:
+                    offset = ((x1 - x2) - (y1 - y2)) / 2
+                    y1 = y1 + offset
+                    y2 = y2 - offset
+
+                settings.setExtent(QgsRectangle(x2,y2,x1,y1))
                 render = QgsMapRendererSequentialJob(settings)
-                
                 
                 #Renderitzar imatge PNG
                 render.start()
@@ -85,7 +108,7 @@ if __name__ == "__main__":
 
                 #Guardar imatge
                 scaled_pixmap = QPixmap.fromImage(out_img)
-                image_location = os.path.join("D:\\qVista\\Qvista\\Imatges\\capturesMapeta\\", nom +".png")
+                image_location = os.path.join("Imatges\\capturesMapeta\\", nom + "_" + zona[0] + ".png")
                 scaled_pixmap.save(image_location, "png")
 
                 ##Crear arxiu de metadades PGW
@@ -95,21 +118,21 @@ if __name__ == "__main__":
                 wld = open(filenamePgw, "w")   
 
                 #Rang mapeta
-                xdist = geometria.xMaximum()- geometria.xMinimum()   
-                ydist = geometria.yMaximum()- geometria.yMinimum() 
-                iheight = 200 
+                xdist = x1 - x2 
+                ydist = y1 - y2
+                iheight = 200   #tamany imatge
                 iwidth =  200
 
                 if ydist > xdist:
                     dist = ydist
                     offset = (ydist - xdist) / 2
-                    xmin = geometria.xMinimum() - offset
-                    ymin = geometria.yMinimum()
+                    xmin = x2 - offset
+                    ymin = y2
                 else:
                     dist = xdist
                     offset = (xdist - ydist) / 2
-                    xmin = geometria.xMinimum() 
-                    ymin = geometria.yMinimum() - offset
+                    xmin = x2
+                    ymin = y2 - offset
 
                 #Escriure PGW
                 wld.writelines("%s\n" % (dist/iwidth))
