@@ -33,11 +33,12 @@ class QvDiagrama:
             from moduls.QvPlotly import QvPlot, QvChart
             regs = dict()
             for f in capa.getFeatures():
-                regs[f['CODI'] + '-' + f['DESCRIPCIO']] = f['RESULTAT']
+                regs[f['CODI']] = (f['DESCRIPCIO'], f['RESULTAT'])
             lista = OrderedDict(sorted(regs.items()))
             pl = QvPlot.barres(
-                    list(lista.keys()), list(lista.values()),
-                    titol='Capa ' + capa.name() + ' - Diagrama de barres per ' +
+                    [elem[0] for elem in lista.values()],
+                    [elem[1] for elem in lista.values()],
+                    titol='Capa ' + capa.name() + ' - Diagrama per ' +
                           QvDiagrama.capaAmbDiagrama(capa).lower())
             return QvChart.visorGrafic(pl)
         except Exception as e:
