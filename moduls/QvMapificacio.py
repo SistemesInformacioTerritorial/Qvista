@@ -15,8 +15,8 @@ from typing import List
 
 from moduls.QvApp import QvApp
 from moduls.QvSqlite import QvSqlite
-import moduls.QvMapVars as mv
 from moduls.QvMapRenderer import QvMapRendererParams
+import moduls.QvMapVars as mv
 
 from configuracioQvista import dadesdir
 
