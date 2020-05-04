@@ -23,6 +23,7 @@ class QvVisorHTML(QDialog):
         # FILA SUPERIOR
         self.layoutCapcalera = QHBoxLayout()
         self.widgetSup = QWidget(objectName='layout')
+        self.widgetSup.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Maximum)
         self.widgetSup.setLayout(self.layoutCapcalera)
         self.layout.addWidget(self.widgetSup)
         self.lblCapcalera = QLabel(objectName='Fosca')
