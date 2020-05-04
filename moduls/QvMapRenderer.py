@@ -309,6 +309,18 @@ class QvSymRenderer(QObject):
 
             # Crear renderer y asignar a la capa
             renderer = QgsSingleSymbolRenderer(sym)
+
+            # from qgis.core import QgsDataDefinedSizeLegend
+            # lgd = QgsDataDefinedSizeLegend()
+            # lgd.setTitle('Titulo')
+            # lgd.setClasses([
+            #     QgsDataDefinedSizeLegend.SizeClass(1000, '1.000'),
+            #     QgsDataDefinedSizeLegend.SizeClass(3000, '3.000'),
+            #     QgsDataDefinedSizeLegend.SizeClass(6000, '6.000')])
+            # lgd.setLegendType(QgsDataDefinedSizeLegend.LegendCollapsed)
+            # lgd.setVerticalAlignment(QgsDataDefinedSizeLegend.AlignBottom)
+            # renderer.setDataDefinedSizeLegend(lgd)
+
             capa.setRenderer(renderer)
             capa.setOpacity(self.params.opacity)
             capa.setMapTipTemplate(self.params.calcTip())
