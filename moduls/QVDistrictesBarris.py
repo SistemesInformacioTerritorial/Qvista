@@ -216,9 +216,12 @@ class QVDistrictesBarris(QObject):
             return distr_d
         else:
             barri = self.llegirRegistre()["NOM_BARRI"]
-            barri_b = barri + "_b"
-            return barri_b
-        
+            if barri == "Barcelona":
+                return barri
+            else:
+                barri_b = barri + "_b"
+                return barri_b
+
 
     def llegirID(self):
         if self.esDistricte():
