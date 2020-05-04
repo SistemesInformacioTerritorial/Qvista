@@ -398,7 +398,7 @@ class QvCrearMapetaConBotones(QWidget):
         self.lado= self.spinBox.value() 
 
     def hacer5(self):  
-        self.tempdir=configuracioQvista.tempdir
+        self.tempdir=tempdir
         fic_tmp=os.path.join(self.tempdir,"temporal.png")    
         self.pixmap = QPixmap(fic_tmp)  
         # self.pixmap=self.canvas.grab() # no acaba de ir bien, me carga en pixmap tambien el circulo pintado

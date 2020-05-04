@@ -21,6 +21,15 @@ import numpy as np
 
 
 class QvMapetaBrujulado(QFrame):
+    """[summary]
+
+    Arguments:
+        QFrame {[type]} -- [description]
+
+    Returns:
+        [type] -- [description]
+    """    
+    
     Sig_MuestraMapeta = pyqtSignal()
     
     def __init__(self,ficheroMapeta,  canvas,  pare = None, mapeta_default = None):

@@ -1835,6 +1835,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.wCataleg.ui.treeCataleg.setHeaderHidden(True)
 
     def infoQVista(self):
+        
         self.informacio = QDialog()
         self.informacio.setWindowOpacity(0.8)
         self.ui = Ui_Informacio()

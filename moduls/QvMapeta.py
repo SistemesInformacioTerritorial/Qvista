@@ -7,31 +7,27 @@ from moduls.QvConstants import QvConstants
 from moduls.QvPushButton import QvPushButton
 from configuracioQvista import *
 
-from PyQt5.QtWidgets import QWidget, QLabel, QVBoxLayout 
+# from PyQt5.QtWidgets import QWidget, QLabel, QVBoxLayout 
 from PyQt5.QtWidgets import QHBoxLayout, QFrame
 from PyQt5.QtGui import QPixmap, QImage, QPainter, QTransform, QColor, QPen
-from PyQt5.QtGui import  QBrush, QPolygon, QPalette
+# from PyQt5.QtGui import  QBrush, QPolygon, QPalette
 from moduls.QvDropFiles import QvDropFiles
-from PyQt5.QtCore import QRect, Qt,  QPoint, QPointF,pyqtSignal,  QTime
+# from PyQt5.QtCore import QRect, Qt,  QPoint, QPointF,pyqtSignal,  QTime
 
 import os.path
 import math
 import os
 from datetime import datetime
-import configuracioQvista
-
-
+# import configuracioQvista
 # import time
-
 
 class QvMapeta(QFrame):
     """La classe que defineix el mapeta de posicionament i que controla un 
-    canvas."""
-    """
-    CONVENIO DE SISTEMAS DE COORDENADAS Y ANGULOS:
-    El mapeta tiene su origen en la esquina superior izquierda.
-    Las X crecen hacia el Este
-    Las Y crecen hacia el sur
+    canvas.
+     CONVENIO DE SISTEMAS DE COORDENADAS Y ANGULOS:
+    El mapeta tiene su origen en la esquina superior izquierda.\n
+    Las X crecen hacia el Este\n
+    Las Y crecen hacia el sur\n
     Las rotaciones se hacen desde su centro, con origen en en el eje de las Y.
     Los angulos son en el sentido de las agujas del reloj
     Las coordenadas X del Mundo, crecen en sentido Este. Las Y en sentido Norte
@@ -41,17 +37,16 @@ class QvMapeta(QFrame):
     Sig_dadoPNT= pyqtSignal('QPoint')
     
     def __init__(self, canvas, ficheroMapeta, pare = None):
-        """Inicialització del mapeta.
-        
+        """Inicialització del mapeta
+
         Arguments:
-            QFrame {[self]} -- [QvMapeta]
-            canvas {[QgsMapCanvas]} -- [El canvas que gesrtionarà el mapeta.]
-        
+            canvas [QgsMapCanvas]  -- El canvas que gesrtionará el mapeta
+            ficheroMapeta [string] -- El png que se mostrará como mapeta
+
         Keyword Arguments:
-            tamanyPetit {bool} -- [True pel Mapeta petit, False pel Mapeta
-             gran] (default: {False})
             pare {[QWidget]} -- [El widget sobre el que es pintarà el mapeta.
-             és obligatori.] (default: {None})
+            és obligatori.] (default: {None})
+
         """
         QFrame.__init__(self)
 
@@ -95,7 +90,6 @@ class QvMapeta(QFrame):
         # Preparem el canvas per capturar quan es modifica, i poder repintar
         #  el mapeta.
 
-        # self.
         self.canvas.extentsChanged.connect(self.pintarMapeta)
         # Cuando el canvas cambie su rotacion, cambiará la imagen del mapeta
         self.canvas.rotationChanged.connect(self.cambiarMapeta)
@@ -351,8 +345,11 @@ class QvMapeta(QFrame):
 
         #TODO:paso FEO (salvar a disco) para recargar la imagen. Seguramente causa retardos
 
-        self.tempdir=configuracioQvista.tempdir
-        fic_tmp=os.path.join(self.tempdir,"trash.png")
+        # self.tempdir=configuracioQvista.tempdir
+        # fic_tmp=os.path.join(self.tempdir,"trash.png")
+
+
+        fic_tmp=os.path.join(tempdir,"trash.png")        
         self.cropped_pixmap.save(fic_tmp,"PNG",100) 
 
         parametro = "{opacity: 50; background-image: url("+fic_tmp+");} "

@@ -3,17 +3,22 @@ import pydoc
 import importlib
 import inspect
 
-my_module = importlib.import_module('QvPlotly')
+modulo_a_tratar='QvMapetaBrujulado'
+my_module = importlib.import_module(modulo_a_tratar)
 # request=my_module.QvMapeta
+aa=dir(my_module)
+# buscar en lista aa los que contienen Qv
+# mi_clase=aa[3]
 
-request=getattr(my_module, 'QvPlot')
+# request=getattr(my_module, mi_clase)
+# request=getattr(my_module, 'QvPlot')
 
 
 
-# for name, obj in inspect.getmembers(sys.modules[__name__]):
-#     if inspect.isclass(obj):
-#         print("obj=",obj)
-#         request=obj
+for name, obj in inspect.getmembers(my_module):
+    if inspect.isclass(obj):
+        print("obj=",obj)
+        # request=obj
 
 
 # moduleName = ['QvMapeta'] 
