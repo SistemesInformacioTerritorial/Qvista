@@ -50,9 +50,6 @@ import win32con, win32api
 
 from pathlib import Path
 import functools #Eines de funcions, per exemple per avaluar-ne parcialment una
-from qgis.PyQt.QtGui import QPainter
-
-from qgis.PyQt.QtGui import QDesktopServices  #aixo ha d'anar al qvimports
 
 # Impressió del temps de carrega dels moduls Qv
 print ('Temps de carrega dels moduls Qv:', time.time()-iniciTempsModuls)
@@ -1939,7 +1936,7 @@ class QVista(QMainWindow, Ui_MainWindow):
             
             msg.setText(strin(ee))
             msg.setStandardButtons(QMessageBox.Close)
-            retval = msg.exec_() #No fem res amb el valor de retorn (???)
+            msg.exec_()
 
     def pavimentacio(self): 
         self.project.read('d:/qVista/Dades/CatalegProjectes/Vialitat/PavimentacioDemo.qgs')       
@@ -1956,16 +1953,6 @@ class QVista(QMainWindow, Ui_MainWindow):
         command=self.leSeleccioExpressio.text().lower()
         if command == 'help':
             self.infoQVista()
-        elif command == 'direle':
-            disgregarDirele()
-        elif command == 'version':
-            msg = QMessageBox()
-            msg.setIcon(QMessageBox.Warning)
-            
-            msg.setText('20190621 12:12  con gpkd-shm y gpkg-wal')
-            msg.setWindowTitle("qVista version")
-            msg.setStandardButtons(QMessageBox.Close)
-            msg.exec_()
         elif command == 'mapificacio':
             from moduls.QvMapForms import QvFormNovaMapificacio
 
