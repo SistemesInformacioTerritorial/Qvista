@@ -69,3 +69,12 @@ def esborraCarpetaTemporal():
             os.unlink(file.path)
         except:
             pass
+
+# Funcio per carregar problemes a GITHUB
+def reportarProblema(titol: str, descripcio: str=None):
+    if QvApp().bugUser(titol, descripcio):
+        print ('Creat el problema {0:s}'.format(titol))
+        return True
+    else:
+        print ('Error al crear el problema {0:s}'.format(titol))
+        return False
