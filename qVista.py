@@ -931,7 +931,7 @@ class QVista(QMainWindow, Ui_MainWindow):
     def adreces(self):
         if self.prepararCercador:
             self.preparacioCercadorPostal()
-            self.prepararCercador = True
+            self.prepararCercador = False
         self.dwCercador.show()
 
     def menuLlegenda(self, tipus):                                 
