@@ -184,10 +184,11 @@ Cas 2:
 
 if __name__ == '__main__':
     from qgis.core.contextmanagers import qgisapp
-    pl = QvPlot.barres([1, 2, 3], [1, 2, 3], titol='Hola')
+    pl = QvPlot.barres([1, 2, 3], ['A', 'B', 'C'], titol='Hola', horitzontal=True)
     with qgisapp() as app:
         # opció 1: mostrar dins d'un visor html
         visor = QvChart.visorGrafic(pl)
+        visor.resize(720, 960)
         visor.show()
     # opció 2: mostrar dins del navegador
     # pl.show()
