@@ -396,7 +396,7 @@ class QvMapeta(QFrame):
         Esta funcion calcula unas coordenadas para que trabaje el 
         paintEvent (que es quien pinta la caja y la cruz...) 
         """
-        print("pintarMapeta",QTime.currentTime().toString(Qt.DefaultLocaleLongDate))
+        # print("pintarMapeta",QTime.currentTime().toString(Qt.DefaultLocaleLongDate))
         # detecto cuadrante, habra que hacer calculos en funcion de el....
         self.Cuadrante = self.DetectoCuadrante()
 
@@ -524,7 +524,7 @@ class QvMapeta(QFrame):
         En esta version, con el mapeta circular, solo se dibuja los trozos de rectangulo y cruz 
         interiores al circulo
         """
-        print("          paintEvent",QTime.currentTime().toString(Qt.DefaultLocaleLongDate))
+        # print("          paintEvent",QTime.currentTime().toString(Qt.DefaultLocaleLongDate))
         # try:
         #     qp = QPainter(self)
         #     ancho= self.cropped_pixmap.width() 
