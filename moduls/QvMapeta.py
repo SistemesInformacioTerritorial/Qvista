@@ -337,7 +337,7 @@ class QvMapeta(QFrame):
           La imagen sin giro se gira lo que manda la rotación del canvas y se recarga en el mapeta
           Se invoca en la carga y cuando se detecta una rotacion
         """
-        print("cambiarMapeta",QTime.currentTime().toString(Qt.DefaultLocaleLongDate))
+        #print("cambiarMapeta",QTime.currentTime().toString(Qt.DefaultLocaleLongDate))
         angulo_rotacion=self.canvas.rotation()
         # Roto la imagen
         pixmap=QPixmap(self.PngMapeta)
