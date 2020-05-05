@@ -117,8 +117,13 @@ Aquest mètode permet crear l'arxiu html en una part del codi, i mostrar-lo
                 color=QvConstants.COLORDESTACATHTML
             ),
             barmode='stack',
-            separators=',.'
-
+            separators=',.',
+            xaxis=dict(
+                automargin=True
+            ),
+            yaxis=dict(
+                automargin=True
+            )
         )
 
     def _getFiguraAux(self, fig, **kw):
@@ -169,6 +174,7 @@ Cas 2:
 '''
     midaX = 960
     midaY = 720
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # El factor de zoom serà 1, ja que amb més factor es veu malament
