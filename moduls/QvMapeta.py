@@ -666,7 +666,7 @@ class QvMapeta(QFrame):
         Presion de un boton del raton cuando el cursor está sobre el mapeta\n
         Guarda coordenadas de punto del mapeta
         """
-        print("mousePressEvent",QTime.currentTime().toString(Qt.DefaultLocaleLongDate))
+        #print("mousePressEvent",QTime.currentTime().toString(Qt.DefaultLocaleLongDate))
         if event.button()==Qt.RightButton:
             return
         
@@ -702,7 +702,7 @@ class QvMapeta(QFrame):
         este mapeta con el mapeta no girado.\n 
         Para ello habra que girarlas 44.5 grados y restarles el desplazamiento
         """
-        print("mouseReleaseEvent",QTime.currentTime().toString(Qt.DefaultLocaleLongDate))
+        #print("mouseReleaseEvent",QTime.currentTime().toString(Qt.DefaultLocaleLongDate))
         if event.button()==Qt.RightButton:
             return
 
