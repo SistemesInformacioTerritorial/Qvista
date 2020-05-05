@@ -71,7 +71,7 @@ if __name__ == "__main__":
                     img = render.renderedImage()
                     img.save(image_location, "png")
                     i = i + 1
-            except ee as Exception:
+            except Exception as ee:
                 print(str(ee))
        
             

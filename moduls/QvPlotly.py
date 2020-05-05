@@ -99,7 +99,7 @@ Aquest mètode permet crear l'arxiu html en una part del codi, i mostrar-lo
     def getFileName(nom):
         return Path(nom).with_suffix('.html')
 
-    def __init__(self, eixX, eixY, arxiu=None, horitzontal=None, color=None, titol=''):
+    def __init__(self, eixX, eixY, arxiu=None, horitzontal=False, color=None, titol=''):
         self._eixX = eixX
         self._eixY = eixY
         if arxiu is None:
@@ -167,7 +167,8 @@ Cas 2:
     visor = QvChart.visorGrafic(plot)
     visor.show()
 '''
-
+    midaX = 960
+    midaY = 720
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # El factor de zoom serà 1, ja que amb més factor es veu malament
@@ -179,7 +180,12 @@ Cas 2:
     def visorGrafic(cls, grafic: QvPlot):
         if not os.path.isfile(grafic.arxiu):
             grafic.write()
-        return cls(grafic.arxiu, grafic.titol, logo=True)
+        vis = cls(grafic.arxiu, grafic.titol, logo=True)
+        if grafic._horitzontal:
+            vis.resize(cls.midaY, cls.midaX)
+        else:
+            vis.resize(cls.midaX, cls.midaY)
+        return vis
 
 
 if __name__ == '__main__':
@@ -188,7 +194,6 @@ if __name__ == '__main__':
     with qgisapp() as app:
         # opció 1: mostrar dins d'un visor html
         visor = QvChart.visorGrafic(pl)
-        visor.resize(720, 960)
         visor.show()
     # opció 2: mostrar dins del navegador
     # pl.show()
