@@ -55,6 +55,7 @@ class QvCanvas(QgsMapCanvas):
                     pass
         if event.key()==Qt.Key_F11:
             self.canviMaximitza.emit()
+            
     def uncheckBotons(self,aExcepcio):
         for x in self._botons:
             if x is not aExcepcio: 
@@ -444,7 +445,7 @@ if __name__ == "__main__":
    
 
     
-    projecteInicial='D:/qVista/Dades/Projectes/BCN11_nord.qgs'
+    projecteInicial=os.path.abspath('mapesOffline/qVista default map.qgs')
 
     with qgisapp() as app:
         # app.setStyle(QStyleFactory.create('fusion'))
