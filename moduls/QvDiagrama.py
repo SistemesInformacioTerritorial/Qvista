@@ -13,8 +13,7 @@ class QvDiagrama:
 
     @staticmethod
     def capaAmbMapificacio(capa):
-        var = QgsExpressionContextUtils.layerScope(capa).variable(mv.MAP_ID)
-        return var
+        return QgsExpressionContextUtils.layerScope(capa).variable(mv.MAP_ID)
 
     @staticmethod
     def capaAmbDiagrama(capa, zones=('Districte', 'Barri')):
@@ -35,12 +34,17 @@ class QvDiagrama:
             for f in capa.getFeatures():
                 regs[f['CODI']] = (f['DESCRIPCIO'], f['RESULTAT'])
             lista = OrderedDict(sorted(regs.items()))
+            zona = QvDiagrama.capaAmbDiagrama(capa).lower()
             pl = QvPlot.barres(
-                    [elem[0] for elem in lista.values()],
                     [elem[1] for elem in lista.values()],
-                    titol='Capa ' + capa.name() + ' - Diagrama per ' +
-                          QvDiagrama.capaAmbDiagrama(capa).lower())
-            return QvChart.visorGrafic(pl)
+                    [elem[0] for elem in lista.values()],
+                    titol='Capa ' + capa.name() + ' - Diagrama per ' + zona,
+                    horitzontal=True)
+            vis = QvChart.visorGrafic(pl)
+            if zona == 'barri':
+                len = max(vis.midaX, vis.midaY)
+                vis.resize(len, len)
+            return vis
         except Exception as e:
             print(str(e))
             return None

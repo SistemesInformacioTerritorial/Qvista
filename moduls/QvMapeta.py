@@ -337,7 +337,7 @@ class QvMapeta(QFrame):
           La imagen sin giro se gira lo que manda la rotación del canvas y se recarga en el mapeta
           Se invoca en la carga y cuando se detecta una rotacion
         """
-        print("cambiarMapeta",QTime.currentTime().toString(Qt.DefaultLocaleLongDate))
+        #print("cambiarMapeta",QTime.currentTime().toString(Qt.DefaultLocaleLongDate))
         angulo_rotacion=self.canvas.rotation()
         # Roto la imagen
         pixmap=QPixmap(self.PngMapeta)
@@ -396,7 +396,7 @@ class QvMapeta(QFrame):
         Esta funcion calcula unas coordenadas para que trabaje el 
         paintEvent (que es quien pinta la caja y la cruz...) 
         """
-        print("pintarMapeta",QTime.currentTime().toString(Qt.DefaultLocaleLongDate))
+        # print("pintarMapeta",QTime.currentTime().toString(Qt.DefaultLocaleLongDate))
         # detecto cuadrante, habra que hacer calculos en funcion de el....
         self.Cuadrante = self.DetectoCuadrante()
 
@@ -524,7 +524,7 @@ class QvMapeta(QFrame):
         En esta version, con el mapeta circular, solo se dibuja los trozos de rectangulo y cruz 
         interiores al circulo
         """
-        print("          paintEvent",QTime.currentTime().toString(Qt.DefaultLocaleLongDate))
+        # print("          paintEvent",QTime.currentTime().toString(Qt.DefaultLocaleLongDate))
         # try:
         #     qp = QPainter(self)
         #     ancho= self.cropped_pixmap.width() 
@@ -666,7 +666,7 @@ class QvMapeta(QFrame):
         Presion de un boton del raton cuando el cursor está sobre el mapeta\n
         Guarda coordenadas de punto del mapeta
         """
-        print("mousePressEvent",QTime.currentTime().toString(Qt.DefaultLocaleLongDate))
+        #print("mousePressEvent",QTime.currentTime().toString(Qt.DefaultLocaleLongDate))
         if event.button()==Qt.RightButton:
             return
         
@@ -702,7 +702,7 @@ class QvMapeta(QFrame):
         este mapeta con el mapeta no girado.\n 
         Para ello habra que girarlas 44.5 grados y restarles el desplazamiento
         """
-        print("mouseReleaseEvent",QTime.currentTime().toString(Qt.DefaultLocaleLongDate))
+        #print("mouseReleaseEvent",QTime.currentTime().toString(Qt.DefaultLocaleLongDate))
         if event.button()==Qt.RightButton:
             return
 
