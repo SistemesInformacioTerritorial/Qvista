@@ -242,30 +242,32 @@ class QvPrint(QWidget):
         #     rotacio=44.75
         # else:
         #     rotacio=0
+        
+
         rotacio=self.canvas.rotation()
         if self.cbOrientacio.currentText() == "Vertical":
             if self.cbMida.currentText() == "A4":
-                self.plantillaMapa = 'plantillaMapa.qpt'
+                self.plantillaMapa = pathPlantilles+'plantillaMapa.qpt'
             elif self.cbMida.currentText() == "A3":
-                self.plantillaMapa = 'plantillaMapaA3.qpt'
+                self.plantillaMapa = pathPlantilles+'plantillaMapaA3.qpt'
             elif self.cbMida.currentText() == "A2":
-                self.plantillaMapa = 'plantillaMapaA2.qpt'
+                self.plantillaMapa = pathPlantilles+'plantillaMapaA2.qpt'
             elif self.cbMida.currentText() == "A1":
-                self.plantillaMapa = 'plantillaMapaA1.qpt'
+                self.plantillaMapa = pathPlantilles+'plantillaMapaA1.qpt'
             elif self.cbMida.currentText() == "A0":
-                self.plantillaMapa = 'plantillaMapaA0.qpt'
+                self.plantillaMapa = pathPlantilles+'plantillaMapaA0.qpt'
             
         else:
             if self.cbMida.currentText() == "A4":
-                self.plantillaMapa = 'plantillaMapaH.qpt'
+                self.plantillaMapa = pathPlantilles+'plantillaMapaH.qpt'
             elif self.cbMida.currentText() == "A3":
-                self.plantillaMapa = 'plantillaMapaA3H.qpt'
+                self.plantillaMapa = pathPlantilles+'plantillaMapaA3H.qpt'
             elif self.cbMida.currentText() == "A2":
-                self.plantillaMapa = 'plantillaMapaA2H.qpt'
+                self.plantillaMapa = pathPlantilles+'plantillaMapaA2H.qpt'
             elif self.cbMida.currentText() == "A1":
-                self.plantillaMapa = 'plantillaMapaA1H.qpt'
+                self.plantillaMapa = pathPlantilles+'plantillaMapaA1H.qpt'
             elif self.cbMida.currentText() == "A0":
-                self.plantillaMapa = 'plantillaMapaA0H.qpt'  
+                self.plantillaMapa = pathPlantilles+'plantillaMapaA0H.qpt'  
 
         t = time.localtime()
         timestamp = time.strftime('%d-%b-%Y_%H%M%S', t)

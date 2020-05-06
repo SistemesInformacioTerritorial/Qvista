@@ -32,7 +32,7 @@ class QvGenerarThumbnails():
         # Dades inicials
         tipusSortida='PNG'
         gir=0
-        plantillaPlanol = 'plantillaThumbnail.qpt'
+        plantillaPlanol = 'plantillesMapes/plantillaThumbnail.qpt'
 
         # Omplim la llista de projectes a partir del dialeg.
         projectes = self.obrirDialegProjecte()

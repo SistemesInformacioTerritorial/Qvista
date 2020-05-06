@@ -30,6 +30,8 @@ carpetaCatalegProjectesPrivats=['L:/DADES/SIT/qVista/CATALEG/MAPES PRIVATS/']
 carpetaCatalegProjectesLlista = [*carpetaCatalegProjectesPublics,*carpetaCatalegProjectesPrivats]
 projecteInicial = os.path.abspath('mapesOffline/qVista default map.qgs')
 
+pathPlantilles = "plantillesMapes/"
+
 estatConnexio = "Xarxa municipal: Connectat"
 
 QvTempdir='C:/temp/qVista/'
