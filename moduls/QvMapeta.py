@@ -554,7 +554,7 @@ class QvMapeta(QFrame):
         # pen= QPen(QvConstants.COLORFOSC,  1, Qt.SolidLine)
         
         # SolidLine DashLine  DotLine DashDotLine DashDotDotLine CustomDashLine
-        pen= QPen(self.colorMarcasMapeta,  1, Qt.DashDotLine)  
+        pen= QPen(self.colorMarcasMapeta,  1, Qt.SolidLine)  
         qp.setPen(pen)
         # pen=QPen(QvConstants.COLORFOSC)
         #endregion QPainter... Como dibujaremos...
@@ -619,7 +619,7 @@ class QvMapeta(QFrame):
         except :
             pass
 
-        pen= QPen(self.colorMarcasMapeta,  1, Qt.SolidLine)
+        pen= QPen(self.colorMarcasMapeta,  1, Qt.DashDotLine)
         qp.setPen(pen)
         #region Pinto CRUZ RECORTADA por el circulo NUEVO --> ok')
         try:

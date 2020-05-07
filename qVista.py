@@ -48,6 +48,7 @@ from moduls.QvMemoria import QvMemoria
 from moduls.QvBafarada import QvBafarada
 from moduls.QvCarregadorGPKG import QvCarregadorGPKG
 from moduls.QvVisualitzacioCapa import QvVisualitzacioCapa
+from moduls.QvSobre import QvSobre
 # import re
 import csv
 import os        
@@ -277,9 +278,7 @@ class QVista(QMainWindow, Ui_MainWindow):
                     self.setDirtyBit()
             elif fext == '.gpkg':
                 nomsCapes = QvCarregadorGPKG.triaCapes(nfile,self)
-                uris = map(lambda x: f'{nfile}|layername={x}', nomsCapes)
-                aux = zip(nomsCapes, uris)
-                capes = [QgsVectorLayer(y,x,'ogr') for (x,y) in aux]
+                capes = (QgsVectorLayer(f'{nfile}|layername={x}',x,'ogr') for x in nomsCapes)
 
                 self.project.addMapLayers(capes)
                 self.setDirtyBit()
@@ -722,10 +721,10 @@ class QVista(QMainWindow, Ui_MainWindow):
         try:
             xx=self.cAdrec.coordAdreca[0]
             yy=self.cAdrec.coordAdreca[1]
-        except Exception  as ee:
+
+        except Exception as ee:
             print(str(ee))
             return
-
 
         
         if self.qvSv.qbrowser.isHidden():
@@ -984,6 +983,9 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         self.dwPrint.visibilityChanged.connect(destruirQvPrint)
         self.setDirtyBit(estatDirtybit)
+    def sobre(self):
+        about = QvSobre(self)
+        about.exec()
 
     def definicioAccions(self):
         """ Definició de les accions que després seran assignades a menús o botons. """
@@ -1032,6 +1034,9 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         self.actpiuPortal = QAction("Portal PIU info. urb.", self)
         self.actpiuPortal.triggered.connect(piuPortal)
+
+        self.actSobre = QAction('Quant a...', self)
+        self.actSobre.triggered.connect(self.sobre)
         
         self.actDocumentacio=QAction('Documentació',self)
         self.actDocumentacio.setIcon(QIcon(os.path.join(imatgesDir,'file-document.png')))
@@ -1171,7 +1176,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.actInfo.setIcon(icon)
         self.actInfo.triggered.connect(self.infoQVista)
 
-        self.actHelp = QAction("Ajuda ", self)
+        self.actHelp = QAction("Contingut de l'ajuda", self)
         icon=QIcon(os.path.join(imatgesDir,'help-circle.png'))
         self.actHelp.setIcon(icon)
         self.actHelp.triggered.connect(self.infoQVistaPDF)
@@ -1651,6 +1656,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.menuMapes = self.bar.addMenu ("Mapes")
         self.menuCapes = self.bar.addMenu ("Capes")
         self.menuUtilitats = self.bar.addMenu("Utilitats")
+        self.menuAjuda = self.bar.addMenu('Ajuda')
         self.menuFuncions = QMenu()
 
         self.menuMapes.setFont(QvConstants.FONTSUBTITOLS)
@@ -1694,6 +1700,12 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.menuUtilitats.addSeparator()
         self.menuUtilitats.addAction(self.actpiuPortal)
         # self.menuUtilitats.addAction(self.actDocumentacio)
+
+        self.menuAjuda.setFont(QvConstants.FONTSUBTITOLS)
+        self.menuAjuda.addAction(self.actHelp)
+        self.menuAjuda.addAction(self.actBug)
+        self.menuAjuda.addSeparator()
+        self.menuAjuda.addAction(self.actSobre)
 
         self.menuFuncions.setFont(QvConstants.FONTSUBTITOLS)
         self.menuFuncions.addAction(self.actEsborrarSeleccio)
@@ -1808,10 +1820,12 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.statusbar.show()
 
     def clickArbre(self):
-        rang = self.distBarris.llegirRang()
-        self.canvas.zoomToFeatureExtent(rang)
-            
-
+        rang = self.distBarris.llegirRang() 
+        self.canvas.zoomToFeatureExtent(rang) 
+        zona = self.distBarris.llegirNom() 
+        location = os.path.join("Imatges\\capturesMapeta\\", zona +".png") 
+        self.enviarMapetaTemporal(location) 
+        
     def cataleg(self):
         """catàleg de capes"""
 
@@ -2634,8 +2648,7 @@ def seleccioExpressio():
     if command == 'mapificacio':
         from moduls.QvMapForms import QvFormNovaMapificacio
 
-        fMap = QvFormNovaMapificacio(qV.llegenda)
-        fMap.exec()
+        QvFormNovaMapificacio.executa(qV.llegenda)
         return
 
     if command == 'masklabels':
@@ -2650,6 +2663,9 @@ def seleccioExpressio():
         return
     if command=='filtramascara':
         filtraMascara(qV)
+        return
+    if command in ('versio', 'versió'):
+        QMessageBox.information(qV,'Versió de QGIS',f'La versió de QGIS actual és la {QvApp().versioQgis()}')
         return
 
 
