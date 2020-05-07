@@ -3889,7 +3889,7 @@ class QVista(PyQt5.QtWidgets.QMainWindow, cubista3.Ui_MainWindow)
 Help on class QvDockWidget in module qVista:
 
 class QvDockWidget(PyQt5.QtWidgets.QDockWidget)
- |  QvDockWidget(titol, parent=None, flags=<PyQt5.QtCore.Qt.WindowFlags object at 0x000002303FEAE2E8>)
+ |  QvDockWidget(titol, parent=None, flags=<PyQt5.QtCore.Qt.WindowFlags object at 0x0000020FC0CF80B8>)
  |  
  |  QDockWidget(str, parent: QWidget = None, flags: Union[Qt.WindowFlags, Qt.WindowType] = Qt.WindowFlags())
  |  QDockWidget(parent: QWidget = None, flags: Union[Qt.WindowFlags, Qt.WindowType] = Qt.WindowFlags())
@@ -3906,7 +3906,7 @@ class QvDockWidget(PyQt5.QtWidgets.QDockWidget)
  |  
  |  Methods defined here:
  |  
- |  __init__(self, titol, parent=None, flags=<PyQt5.QtCore.Qt.WindowFlags object at 0x000002303FEAE2E8>)
+ |  __init__(self, titol, parent=None, flags=<PyQt5.QtCore.Qt.WindowFlags object at 0x0000020FC0CF80B8>)
  |      Initialize self.  See help(type(self)) for accurate signature.
  |  
  |  setDockatInici(self, dockat=True)

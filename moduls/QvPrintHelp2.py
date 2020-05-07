@@ -9,12 +9,17 @@ import configuracioQvista
 
 tempdir=configuracioQvista.tempdir
 fic_error=os.path.join(tempdir,"ERR_help.txt")
-f_err = open(fic_error, 'w'); f_err.close()
-
-
+f_hlp_txt = open(fic_error, 'w'); f_hlp_txt.close()
 
 
 def ejecuta1(modulo_a_tratar):
+    """Chapuza para tratar QvEinesGrafiques
+    En vez de buscar las clases las pongo a mano (me daba problemas)
+    Si cambian las clases debera cambiarse esta funcion (o ver porque falla cuando se hace desde ejecuta)
+
+    Arguments:
+      modulo_a_tratar string -- nombre del modulo
+    """
 
     my_module = importlib.import_module(modulo_a_tratar)
     fichero=my_module.__file__
@@ -44,17 +49,20 @@ def ejecuta1(modulo_a_tratar):
         request='QvEinesGrafiques.QvSeleccioElement'
         output_help_to_file(fic_salida,request)
 
-
-
-
     except Exception as ee:
         print(str(ee))
                          
-  
-    
                   
 def ejecuta(modulo_a_tratar):
+    """Recibe un modulo.\n
+    Construye nombre de fichero de salida, como nombre del modulo pero con 
+    extension .txt que estara en directorio temporal.\n
+    Abre el modulo y busca las clases "class"\n
+    Ejecuta help de cada clase y lo escribe en el fichero .txt\n
 
+    Arguments:
+        modulo_a_tratar string -- nombre del modulo
+    """
     my_module = importlib.import_module(modulo_a_tratar)
     fichero=my_module.__file__
 
@@ -78,17 +86,15 @@ def ejecuta(modulo_a_tratar):
                         print(str(ee))
                          
     except Exception as ee:
-        with open(fic_error,"a+") as f_err:
-            f_err.writelines("error lectura: ",modulo_a_tratar,str(ee)+'\n')
+        with open(fic_error,"a+") as f_hlp_txt:
+            f_hlp_txt.writelines("error lectura: ",modulo_a_tratar,str(ee)+'\n')
         print("error lectura:",modulo_a_tratar,str(ee))
-
-
 def output_help_to_file(filepath, request):
     """ Escribe en fichero el resultado de help(request)
 
     Arguments:
-        filepath {[type]} -- Path del fichero de salida
-        request {[object]} -- modulo, clase.... 
+        filepath string    -- Path del fichero de salida
+        request {[object]} -- modulo, clase.... que es parametro del help
     """
 
     f = open(filepath, 'a+')
@@ -106,13 +112,20 @@ def output_help_to_file(filepath, request):
     f.close()
     sys.stdout = sys.__stdout__
     return
-
-
-# QvEinesGrafiques.QvMesuraMultiLinia
-
 def splitfilename(filename):
-    sname=""
-    sext=""
+    """
+    extrae del path del fichero su nombre y su extension
+
+    Arguments:
+        filename string -- path del fichero a truncar
+
+    Returns:
+        sname  string -- nombre
+        sext   string -- extension
+    """
+    
+    sname=''
+    sext=''
     i=filename.rfind(".")
     if(i!=0):
         n=len(filename)
@@ -120,6 +133,15 @@ def splitfilename(filename):
         sname=filename[0:i]
         sext=filename[-j:]    
     return sname, sext
+
+
+"""
+Obtengo lista con modulos
+Trataré los que comienzan con Qv excluyendo QvPrintHelp2
+
+
+
+"""
 
 # Lista de ficheros py de la carpeta moduls
 mylist = [f for f in glob.glob("moduls/*.py")]
@@ -132,41 +154,35 @@ for modulo in mylist:
         nn= sext.find('Qv') 
         if nn==0 and sext != "QvPrintHelp2":
             print("voy a tratar",sext)
-            # with open(fic_error,"a+") as f_err:
-            #     f_err.writelines("voy a tratar: "+ sext +'\n')
+            # with open(fic_error,"a+") as f_hlp_txt:
+            #     f_hlp_txt.writelines("voy a tratar: "+ sext +'\n')
             try:
                 ejecuta(sext)
             except Exception as ee:
-                with open(fic_error,"a+") as f_err:
-                    f_err.writelines("error en ejecuta: "+sext+"  "+str(ee)+ '\n' )
+                with open(fic_error,"a+") as f_hlp_txt:
+                    f_hlp_txt.writelines("error en ejecuta: "+sext+"  "+str(ee)+ '\n' )
 
                 print("error en ejecuta: ",sext,str(ee))
             
 
-
 try:
     soloUno= 'qVista'
-    # with open(fic_error,"a+") as f_err:
-    #     f_err.writelines("voy a tratar" +soloUno +'\n')
+    with open(fic_error,"a+") as f_hlp_txt:
+        f_hlp_txt.writelines("voy a tratar" +soloUno +'\n')
     ejecuta(soloUno)
 except Exception as ee:
-    with open(fic_error,"a+") as f_err:
-        f_err.writelines("error en ejecuta: "+soloUno+str(ee)+ '\n' )    
+    with open(fic_error,"a+") as f_hlp_txt:
+        f_hlp_txt.writelines("error en ejecuta: "+soloUno+str(ee)+ '\n' )    
     print("error: "+soloUno)
-
-
-
-
 
 # parche porque me peta esta clase
 try:
-    soloUno= 'QvEinesGrafiques'
-    with open(fic_error,"a+") as f_err:
-        f_err.writelines("voy a tratar" +soloUno +'\n')
-    ejecuta1(soloUno)
+    with open(fic_error,"a+") as f_hlp_txt:
+        f_hlp_txt.writelines("voy a tratar" +'QvEinesGrafiques' +'\n')
+    ejecuta1('QvEinesGrafiques')
 except Exception as ee:
-    with open(fic_error,"a+") as f_err:
-        f_err.writelines("error en ejecuta: "+soloUno+str(ee)+ '\n' )    
+    with open(fic_error,"a+") as f_hlp_txt:
+        f_hlp_txt.writelines("error en ejecuta: "+soloUno+str(ee)+ '\n' )    
     print("error: "+soloUno)
 
     
