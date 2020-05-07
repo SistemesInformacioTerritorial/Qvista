@@ -625,6 +625,12 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.boton_invocarStreetView.setToolTip("Mostrar aquest carrer i aquest número en StreetView")
 
         self.layoutbottom.addWidget(QHLine())
+
+        self.canviarMapeta = QCheckBox("Canviar mapeta")
+        self.canviarMapeta.stateChanged.connect(lambda: self.handleCM())
+        self.layoutbottom.addWidget(self.canviarMapeta)
+        #self.canviarMapeta.setChecked()
+
         self.layoutbottom.addWidget(self.distBarris.view)
         self.bottomWidget.setLayout(self.layoutbottom)
 
@@ -662,6 +668,10 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.dwCercador.setContentsMargins ( 2, 2, 2, 2 )
         # a qVista se le añade un DockWidget
         self.addDockWidget( Qt.RightDockWidgetArea, self.dwCercador)
+
+    def handleCM(self):
+        if not self.canviarMapeta.isChecked():
+            self.enviarMapetaTemporal("Imatges\\capturesMapeta\\Barcelona.png") 
 
     def CopiarA_Ubicacions(self):       
         if self.cAdrec.NumeroOficial=='0':
@@ -1504,9 +1514,11 @@ class QVista(QMainWindow, Ui_MainWindow):
     def clickArbre(self):
         rang = self.distBarris.llegirRang() 
         self.canvas.zoomToFeatureExtent(rang) 
-        zona = self.distBarris.llegirNom() 
-        location = os.path.join("Imatges\\capturesMapeta\\", zona +".png") 
-        self.enviarMapetaTemporal(location) 
+
+        if self.canviarMapeta.isChecked():
+            zona = self.distBarris.llegirNom() 
+            location = os.path.join("Imatges\\capturesMapeta\\", zona +".png") 
+            self.enviarMapetaTemporal(location) 
 
     def infoQVista(self):
         self.informacio = QDialog()
