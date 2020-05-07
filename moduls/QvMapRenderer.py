@@ -146,6 +146,9 @@ class QvMapRendererParams(QObject):
             self.colorBase = self.nomColor(color, mv.MAP_COLORS)
             self.colorContorn = self.nomColor(self.simbol.symbolLayer(0).strokeColor(),
                                               mv.MAP_CONTORNS)
+            params = self.scanParams(_EXPR_TIP, self.capa.mapTipTemplate())
+            self.campNom = params[0]
+
         except Exception as e:
             self.msgError = str(e)
 
@@ -306,6 +309,18 @@ class QvSymRenderer(QObject):
 
             # Crear renderer y asignar a la capa
             renderer = QgsSingleSymbolRenderer(sym)
+
+            # from qgis.core import QgsDataDefinedSizeLegend
+            # lgd = QgsDataDefinedSizeLegend()
+            # lgd.setTitle('Titulo')
+            # lgd.setClasses([
+            #     QgsDataDefinedSizeLegend.SizeClass(1000, '1.000'),
+            #     QgsDataDefinedSizeLegend.SizeClass(3000, '3.000'),
+            #     QgsDataDefinedSizeLegend.SizeClass(6000, '6.000')])
+            # lgd.setLegendType(QgsDataDefinedSizeLegend.LegendCollapsed)
+            # lgd.setVerticalAlignment(QgsDataDefinedSizeLegend.AlignBottom)
+            # renderer.setDataDefinedSizeLegend(lgd)
+
             capa.setRenderer(renderer)
             capa.setOpacity(self.params.opacity)
             capa.setMapTipTemplate(self.params.calcTip())

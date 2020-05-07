@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 
 from qgis.gui import QgsFileWidget
-from qgis.PyQt.QtCore import Qt, pyqtSlot
+from qgis.PyQt.QtCore import Qt, QSize, pyqtSlot
 from qgis.PyQt.QtGui import QIcon, QPixmap, QValidator
 from qgis.PyQt.QtWidgets import (QApplication, QPushButton, QFormLayout, QVBoxLayout, QGridLayout,
                                  QComboBox, QLabel, QLineEdit, QSpinBox, QGroupBox, QDialog,
-                                 QTableWidget, QTableWidgetItem, QMessageBox, QDialogButtonBox)
+                                 QTableWidget, QTableWidgetItem, QMessageBox, QDialogButtonBox,
+                                 QSizePolicy)
 
 from qgis.core import QgsExpressionContextUtils
 
@@ -17,6 +18,7 @@ from moduls.QvEditorCsv import QvEditorCsv
 from moduls.QvApp import QvApp
 from moduls.QvMapRenderer import QvMapRendererParams
 
+from configuracioQvista import imatgesDir
 import os
 import sqlite3
 
@@ -31,6 +33,19 @@ class QvFormBaseMapificacio(QDialog):
             self.setMaximumWidth(amplada)
         self.setWindowFlags(Qt.MSWindowsFixedSizeDialogHint)
         self.renderParams = None
+
+    @classmethod
+    def executa(cls, llegenda, **kwargs):
+        try:
+            fMap = cls(llegenda, **kwargs)
+            if fMap.renderParams is not None and \
+               fMap.renderParams.msgError != '':
+                return QDialog.Rejected
+            else:
+                return fMap.exec()
+        except Exception as e:
+            print('Error QvFormBaseMapificacio.executa: ' + str(e))
+            return QDialog.Rejected
 
     def msgInfo(self, txt):
         QMessageBox.information(self, 'Informació', txt)
@@ -86,6 +101,11 @@ class QvFormBaseMapificacio(QDialog):
             combo.addItem(icon, nom)
         if mantenirIndex:
             combo.setCurrentIndex(idx)
+
+    def comboDelete(self, combo, text):
+        n = combo.findText(text)
+        if n > -1:
+            combo.removeItem(n)
 
     def valida(self):
         return True
@@ -215,7 +235,7 @@ class QvFormMostra(QDialog):
 
 
 class QvFormNovaMapificacio(QvFormBaseMapificacio):
-    def __init__(self, llegenda, amplada=550, mapificacio=None, simple=True):
+    def __init__(self, llegenda, amplada=500, mapificacio=None, simple=True):
         super().__init__(llegenda, amplada)
 
         self.fCSV = mapificacio
@@ -245,8 +265,11 @@ class QvFormNovaMapificacio(QvFormBaseMapificacio):
 
         self.mapa = QComboBox(self)
         self.mapa.setEditable(False)
-        self.mapa.addItem('Àrees')
-        self.mapa.addItem('Cercles')
+        self.mapa.setIconSize(QSize(126, 126))
+        self.mapa.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Expanding)
+        self.mapa.setSizeAdjustPolicy(QComboBox.AdjustToContents)
+        self.mapa.addItem(QIcon(os.path.join(imatgesDir, 'Àrees.PNG')), 'Àrees')
+        self.mapa.addItem(QIcon(os.path.join(imatgesDir, 'Cercles.PNG')), 'Cercles')
 
         self.capa = QLineEdit(self)
         self.capa.setMaxLength(40)
@@ -255,6 +278,7 @@ class QvFormNovaMapificacio(QvFormBaseMapificacio):
         self.tipus.setEditable(False)
         self.tipus.addItem('Selecciona tipus…')
         self.tipus.addItems(mv.MAP_AGREGACIO.keys())
+        self.tipus.currentIndexChanged.connect(self.canviaTipus)
 
         self.distribucio = QComboBox(self)
         self.distribucio.setEditable(False)
@@ -383,6 +407,14 @@ class QvFormNovaMapificacio(QvFormBaseMapificacio):
                 if campo != '' and campo in campsZona:
                     self.distribucio.addItem(dist)
 
+    @pyqtSlot()
+    def canviaTipus(self):
+        if self.tipus.currentText() == 'Recompte':
+            self.calcul.setCurrentIndex(-1)
+            self.calcul.setEnabled(False)
+        else:
+            self.calcul.setEnabled(True)
+
     def borrarArxiu(self):
         if self.taulaMostra is not None:
             self.taulaMostra.hide()
@@ -396,12 +428,23 @@ class QvFormNovaMapificacio(QvFormBaseMapificacio):
     def nouArxiu(self):
         if self.fCSV is None:
             return
+
         # Carga combo con zonas si el campo correspondiente está en el fichero CSV
         num = 0
         for zona, val in mv.MAP_ZONES.items():
             if val[1] != '' and self.fCSV.prefixe + QvSqlite.getAlias(val[0]) in self.fCSV.camps:
                 self.zona.addItem(zona)
                 num = num + 1
+
+        # Comprobar si la extensión del mapa está limitada
+        if num > 0:
+            extensio = self.fCSV.testExtensioArxiu(mv.MAP_EXTENSIO)
+            if extensio:  # Mapa limitado
+                self.comboDelete(self.zona, mv.MAP_TRUE_EXTENSIO)
+            else:  # Mapa completo
+                self.comboDelete(self.zona, mv.MAP_FALSE_EXTENSIO)
+
+        # Ajustar combo de zonas
         if num == 0:
             self.msgInfo("El fitxer " + self.fCSV.fZones + " no té cap camp de zona")
             if hasattr(self, 'arxiu'):
@@ -413,7 +456,7 @@ class QvFormNovaMapificacio(QvFormBaseMapificacio):
             self.capa.setFocus()
         else:
             self.zona.setFocus()
-        # self.taulaMostra = QvFormMostra(self.fCSV, parent=self)
+
         self.taulaMostra = QvEditorCsv(self.fCSV.fZones, [], 'utf-8', self.fCSV.separador, self)
         self.taulaMostra.setWindowTitle("Vista prèvia d'arxiu geocodificat")
         self.taulaMostra.setReadOnly(True)
@@ -508,272 +551,13 @@ class QvFormNovaMapificacio(QvFormBaseMapificacio):
             return self.fCSV.msgError
 
 
-# class QvFormNovaMapificacio(QvFormBaseMapificacio):
-#     def __init__(self, llegenda, amplada=500, mapificacio=None):
-#         super().__init__(llegenda, amplada)
-
-#         self.fCSV = mapificacio
-#         self.taulaMostra = None
-
-#         self.setWindowTitle('Afegir capa amb mapa')
-
-#         self.layout = QVBoxLayout()
-#         self.layout.setSpacing(14)
-#         self.setLayout(self.layout)
-
-#         if self.fCSV is None:
-#             self.arxiu = QgsFileWidget()
-#             self.arxiu.setStorageMode(QgsFileWidget.GetFile)
-#             self.arxiu.setDialogTitle('Selecciona fitxer de dades…')
-#             self.arxiu.setDefaultRoot(RUTA_LOCAL)
-#             self.arxiu.setFilter('Arxius CSV (*.csv)')
-#             self.arxiu.setSelectedFilter('Arxius CSV (*.csv)')
-#             self.arxiu.lineEdit().setReadOnly(True)
-#             self.arxiu.fileChanged.connect(self.arxiuSeleccionat)
-
-#         self.zona = QComboBox(self)
-#         self.zona.setEditable(False)
-#         self.zona.addItem('Selecciona zona…')
-#         self.zona.currentIndexChanged.connect(self.canviaZona)
-
-#         self.capa = QLineEdit(self)
-#         self.capa.setMaxLength(40)
-
-#         self.tipus = QComboBox(self)
-#         self.tipus.setEditable(False)
-#         self.tipus.addItem('Selecciona tipus…')
-#         self.tipus.addItems(mv.MAP_AGREGACIO.keys())
-
-#         self.distribucio = QComboBox(self)
-#         self.distribucio.setEditable(False)
-#         self.distribucio.addItem(next(iter(mv.MAP_DISTRIBUCIO.keys())))
-
-#         self.calcul = QvComboBoxCamps(self)
-#         self.filtre = QvComboBoxCamps(self, multiple=True)
-
-#         self.color = QComboBox(self)
-#         self.color.setEditable(False)
-#         self.comboColors(self.color)
-
-#         self.metode = QComboBox(self)
-#         self.metode.setEditable(False)
-#         self.metode.addItems(mv.MAP_METODES.keys())
-
-#         self.intervals = QSpinBox(self)
-#         self.intervals.setMinimum(2)
-#         self.intervals.setMaximum(mv.MAP_MAX_CATEGORIES)
-#         self.intervals.setSingleStep(1)
-#         self.intervals.setValue(4)
-#         self.intervals.setSuffix("  (depèn del mètode)")
-#         # self.intervals.valueChanged.connect(self.deselectValue)
-
-#         self.bTaula = QPushButton('Veure arxiu')
-#         self.bTaula.setEnabled(False)
-#         self.bTaula.clicked.connect(self.veureArxiu)
-
-#         self.buttons = QDialogButtonBox()
-#         self.buttons.addButton(QDialogButtonBox.Ok)
-#         self.buttons.accepted.connect(self.accept)
-#         self.buttons.addButton(QDialogButtonBox.Cancel)
-#         self.buttons.rejected.connect(self.cancel)
-#         self.buttons.addButton(self.bTaula, QDialogButtonBox.ResetRole)
-
-#         self.gZona = QGroupBox('Definició de zona')
-#         self.lZona = QFormLayout()
-#         self.lZona.setSpacing(14)
-#         self.gZona.setLayout(self.lZona)
-
-#         if self.fCSV is None:
-#             self.lZona.addRow('Arxiu de dades:', self.arxiu)
-#         self.lZona.addRow('Zona:', self.zona)
-#         self.lZona.addRow('Nom de capa:', self.capa)
-
-#         self.gDades = QGroupBox('Agregació de dades')
-#         self.lDades = QFormLayout()
-#         self.lDades.setSpacing(14)
-#         self.gDades.setLayout(self.lDades)
-
-#         self.lDades.addRow("Tipus d'agregació:", self.tipus)
-#         self.lDades.addRow('Camp de càlcul:', self.calcul)
-#         self.lDades.addRow('Filtre:', self.filtre)
-#         self.lDades.addRow('Distribució:', self.distribucio)
-
-#         self.gSimb = QGroupBox('Simbologia del mapa')
-#         self.lSimb = QFormLayout()
-#         self.lSimb.setSpacing(14)
-#         self.gSimb.setLayout(self.lSimb)
-
-#         self.lSimb.addRow('Color base:', self.color)
-#         self.lSimb.addRow('Mètode classificació:', self.metode)
-#         self.lSimb.addRow("Nombre d'intervals:", self.intervals)
-
-#         self.layout.addWidget(self.gZona)
-#         self.layout.addWidget(self.gDades)
-#         self.layout.addWidget(self.gSimb)
-#         self.layout.addWidget(self.buttons)
-
-#         self.adjustSize()
-
-#         self.nouArxiu()
-
-#     def exec(self):
-#         # La mapificación solo funciona si está instalado el módulo pandas
-#         if PANDAS_ENABLED:
-#             return super().exec()
-#         else:
-#             self.msgError(PANDAS_ERROR)
-#             return QDialog.Rejected
-
-#     @pyqtSlot()
-#     def veureArxiu(self):
-#         if self.taulaMostra is not None:
-#             self.taulaMostra.show()
-#             self.taulaMostra.activateWindow()
-
-#     def campsDB(self, nom):
-#         res = []
-#         if nom != '':
-#             fich = RUTA_DADES + mv.MAP_ZONES_DB
-#             if os.path.isfile(fich):
-#                 conn = sqlite3.connect('file:' + fich + '?mode=ro', uri=True)
-#                 conn.row_factory = sqlite3.Row
-#                 c = conn.cursor()
-#                 c.execute('select * from ' + nom)   # nom.split('.')[0])
-#                 row = c.fetchone()
-#                 # res = [i[0].upper() for i in c.description]
-#                 res = [i.upper() for i in row.keys()]
-#                 conn.close()
-#         return res
-
-#     def soloPrimerItem(self, combo):
-#         combo.setCurrentIndex(0)
-#         ultimo = combo.count() - 1
-#         for n in range(ultimo, 0, -1):
-#             combo.removeItem(n)
-
-#     @pyqtSlot()
-#     def canviaZona(self):
-#         self.distribucio.setCurrentIndex(0)
-#         self.soloPrimerItem(self.distribucio)
-#         if self.zona.currentIndex() > 0:
-#             z = self.zona.currentText()
-#             campsZona = self.campsDB(mv.MAP_ZONES[z][1])
-#             # Carga combo con distribuciones si el campo correspondiente está en la BBDD
-#             for dist, campo in mv.MAP_DISTRIBUCIO.items():
-#                 if campo != '' and campo in campsZona:
-#                     self.distribucio.addItem(dist)
-
-#     def borrarArxiu(self):
-#         if self.taulaMostra is not None:
-#             self.taulaMostra.hide()
-#             self.taulaMostra = None
-#         self.bTaula.setEnabled(False)
-#         self.tipus.setCurrentIndex(0)
-#         self.soloPrimerItem(self.zona)
-#         self.calcul.clear()
-#         self.filtre.clear()
-
-#     def nouArxiu(self):
-#         if self.fCSV is None:
-#             return
-#         # Carga combo con zonas si el campo correspondiente está en el fichero CSV
-#         num = 0
-#         for zona, val in mv.MAP_ZONES.items():
-#             if val[1] != '' and self.fCSV.prefixe + QvSqlite.getAlias(val[0]) in self.fCSV.camps:
-#                 self.zona.addItem(zona)
-#                 num = num + 1
-#         if num == 0:
-#             self.msgInfo("El fitxer " + self.fCSV.fZones + " no té cap camp de zona")
-#             if hasattr(self, 'arxiu'):
-#                 self.arxiu.lineEdit().clear()
-#                 self.arxiu.setFocus()
-#             return
-#         if num == 1:
-#             self.zona.setCurrentIndex(1)
-#             self.capa.setFocus()
-#         else:
-#             self.zona.setFocus()
-#         # self.taulaMostra = QvFormMostra(self.fCSV, parent=self)
-#         self.taulaMostra = QvEditorCsv(self.fCSV.fZones, [], 'utf-8', self.fCSV.separador, self)
-#         self.taulaMostra.setWindowTitle("Vista prèvia d'arxiu geocodificat")
-#         self.taulaMostra.setReadOnly(True)
-
-#         self.bTaula.setEnabled(True)
-#         self.calcul.setItems(self.fCSV.camps, primer='')
-#         self.filtre.setItems(self.fCSV.camps)
-
-#     @pyqtSlot(str)
-#     def arxiuSeleccionat(self, nom):
-#         if nom == '':
-#             return
-#         self.borrarArxiu()
-#         self.fCSV = QvMapificacio(nom)
-#         self.nouArxiu()
-
-#     def validaSortida(self, nom):
-#         fSalida = self.fCSV.nomArxiuSortida(self.fCSV.netejaString(nom, True))
-#         return self.msgSobreescriure(fSalida)
-
-#     def valida(self):
-#         ok = False
-#         if hasattr(self, 'arxiu') and self.arxiu.filePath() == '':
-#             self.msgInfo("S'ha de seleccionar un arxiu de dades")
-#             self.arxiu.setFocus()
-#         elif self.zona.currentIndex() <= 0:
-#             self.msgInfo("S'ha de seleccionar una zona")
-#             self.zona.setFocus()
-#         elif self.capa.text().strip() == '':
-#             self.msgInfo("S'ha de introduir un nom de capa")
-#             self.capa.setFocus()
-#         elif self.tipus.currentIndex() <= 0:
-#             self.msgInfo("S'ha de seleccionar un tipus d'agregació")
-#             self.tipus.setFocus()
-#         elif self.calcul.currentText().strip() == '' and self.tipus.currentText() != 'Recompte':
-#             self.msgInfo("S'ha de introduir un cálcul per fer l'agregació")
-#             self.calcul.setFocus()
-#         elif self.fCSV is None:
-#             return self.msgInfo("No hi ha cap fitxer seleccionat")
-#         elif not self.validaSortida(self.capa.text().strip()):
-#             self.capa.setFocus()
-#         else:
-#             ok = True
-#         return ok
-
-#     def setRenderParams(self):
-#         self.renderParams = QvMapRendererParams()
-#         self.renderParams.modeCategories = mv.MAP_METODES[self.metode.currentText()]
-#         self.renderParams.colorBase = mv.MAP_COLORS[self.color.currentText()]
-#         if self.renderParams.colorContorn is None:
-#             self.renderParams.colorContorn = self.renderParams.colorBase
-#         else:
-#             self.renderParams.colorContorn = mv.MAP_CONTORNS[self.renderParams.colorContorn]
-#         if self.tipus.currentText().startswith('COUNT') and self.distribucio.currentText() == "":
-#             self.renderParams.numDecimals = 0
-#         else:
-#             self.renderParams.numDecimals = 2
-#         self.renderParams.numCategories = self.intervals.value()
-
-#     def procesa(self):
-#         if self.taulaMostra is not None:
-#             self.taulaMostra.hide()
-#         self.setRenderParams()
-#         ok = self.fCSV.agregacio(self.llegenda, self.capa.text().strip(),
-#                                  self.zona.currentText(), self.tipus.currentText(),
-#                                  self.renderParams,
-#                                  campAgregat=self.calcul.currentText().strip(),
-#                                  filtre=self.filtre.currentText().strip(),
-#                                  tipusDistribucio=self.distribucio.currentText(),
-#                                  form=self)
-#         if ok:
-#             return ''
-#         else:
-#             return self.fCSV.msgError
-
-
 class QvFormSimbMapificacio(QvFormBaseMapificacio):
-    def __init__(self, llegenda, capa, amplada=550):
+    def __init__(self, llegenda, capa=None, amplada=500):
         super().__init__(llegenda, amplada)
-        self.capa = capa
+        if capa is None:
+            self.capa = llegenda.currentLayer()
+        else:
+            self.capa = capa
         self.info = None
         if not self.iniParams():
             return
@@ -813,7 +597,7 @@ class QvFormSimbMapificacio(QvFormBaseMapificacio):
             self.intervals.setSuffix("  (depèn del mètode)")
         # self.intervals.valueChanged.connect(self.deselectValue)
 
-        self.nomTamany = QLabel("Tamany:", self)
+        self.nomTamany = QLabel("Tamany cercle:", self)
         self.tamany = QSpinBox(self)
         self.tamany.setMinimum(1)
         self.tamany.setMaximum(12)
@@ -860,11 +644,6 @@ class QvFormSimbMapificacio(QvFormBaseMapificacio):
 
         self.valorsInicials()
 
-    @staticmethod
-    def executa(llegenda):
-        fMap = QvFormSimbMapificacio(llegenda, llegenda.currentLayer())
-        fMap.exec()
-
     def iniParams(self):
         self.info = QgsExpressionContextUtils.layerScope(self.capa).variable(mv.MAP_ID)
         if self.info is None:
@@ -874,8 +653,8 @@ class QvFormSimbMapificacio(QvFormBaseMapificacio):
             self.custom = (self.renderParams.modeCategories == 'Personalitzat')
             return True
         else:
-            self.msgInfo("No s'han pogut recuperar els paràmetres del mapa simbòlic\n" +
-                         self.renderParams.msgError)
+            self.msgInfo("No s'han pogut recuperar els paràmetres del mapa simbòlic\n\n" +
+                         "Error: " + self.renderParams.msgError)
             return False
 
     @pyqtSlot()

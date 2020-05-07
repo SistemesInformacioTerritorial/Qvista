@@ -49,6 +49,8 @@ class QvCarregadorGPKG(QDialog):
     def triaCapes(cls,nfile, parent=None):
         layer = QgsVectorLayer(nfile, os.path.basename(nfile), "ogr")
         subLayers = [x.split('!!::!!')[1] for x in layer.dataProvider().subLayers()]
+        if len(subLayers)==1:
+            return subLayers
         dial=cls(parent)
         dial.setCapes(subLayers)
         return dial.exec_()

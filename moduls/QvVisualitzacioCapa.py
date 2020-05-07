@@ -21,6 +21,12 @@ class QvVisualitzacioCapa( QtWidgets.QDialog, Ui_QvVisualitzacioCapa ):
         self.rejected.connect(self.close )
         self.sliderTransparencia.setValue(100-self.layer.opacity()*100)
         self.sliderTransparencia.valueChanged.connect(self.transparencia)
+        tipTemplateHTML = layer.mapTipTemplate()
+        print ("Template: "+layer.mapTipTemplate())
+        if tipTemplateHTML == "" or tipTemplateHTML is None:
+            self.cbTipField.setVisible(True)
+        else:
+            self.cbTipField.setVisible(False)
 
     def transparencia(self):
         self.layer.setOpacity((100-self.sliderTransparencia.value())/100)

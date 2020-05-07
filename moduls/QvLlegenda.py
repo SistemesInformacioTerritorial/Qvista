@@ -11,9 +11,10 @@ from moduls.QvAtributs import QvAtributs
 from moduls.QvVideo import QvVideo
 from moduls.QvEscala import QvEscala
 from moduls.QvMapForms import QvFormSimbMapificacio
-from moduls.QvMapVars import MAP_ID
 from moduls.QvLlegendaAux import QvModelLlegenda, QvItemLlegenda, QvMenuLlegenda
 from moduls.QvLlegendaMascara import QvLlegendaMascara
+from moduls.QvDiagrama import QvDiagrama
+
 from configuracioQvista import imatgesDir
 
 import os
@@ -205,7 +206,7 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
                     else:
                         self.removeIndicator(node, self.iconaFiltre)
                     # Mapificacón
-                    var = qgCor.QgsExpressionContextUtils.layerScope(capa).variable(MAP_ID)
+                    var = QvDiagrama.capaAmbMapificacio(capa)
                     if var is not None and self.capaLocal(capa) and self.editable:
                         self.addIndicator(node, self.iconaMap)
                     else:
@@ -414,6 +415,11 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
         self.accions.afegirAccio('showFeatureCount', act)
 
         act = qtWdg.QAction()
+        act.setText("Mostra diagrama barres")
+        act.triggered.connect(self.showBarChart)
+        self.accions.afegirAccio('showBarChart', act)
+
+        act = qtWdg.QAction()
         act.setText("Mostra taula dades")
         # act.setIcon(QIcon(':/Icones/ic_file_upload_black_48dp.png'))
         act.triggered.connect(self.showFeatureTable)
@@ -454,6 +460,8 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
         if tipo == 'layer':
             capa = self.currentLayer()
             if capa is not None and capa.type() == qgCor.QgsMapLayer.VectorLayer:
+                if QvDiagrama.capaAmbDiagrama(capa) != '':
+                    self.menuAccions += ['showBarChart']
                 if self.atributs is not None:
                     self.menuAccions += ['showFeatureTable']
                     if self.editable:
@@ -531,6 +539,11 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
                 extent = layer.extent()
                 self.canvas.setExtent(extent)
                 self.canvas.refresh()
+
+    def showBarChart(self):
+        self.diagrama = QvDiagrama.barres(self.currentLayer())
+        if self.diagrama is not None:
+            self.diagrama.show()
 
     def showFeatureTable(self):
         if self.atributs is not None:

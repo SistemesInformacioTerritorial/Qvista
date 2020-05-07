@@ -15,6 +15,8 @@ from qgis.gui import (QgsGui,
 from moduls.QvAccions import QvAccions
 from moduls.QvApp import QvApp
 from moduls.QvPushButton import QvPushButton
+from moduls.QvDiagrama import QvDiagrama
+
 # import images_rc  # NOQA
 # import recursos
 import csv
@@ -135,7 +137,6 @@ class QvAtributs(QTabWidget):
         self.currentChanged.connect(self.setCurrentIndex)
         # self.filtra.clicked.connect(self.filterElements)
 
-
     def setMenuAccions(self, layer):
         self.menuAccions = ['showFeature', 'selectElement', 'selectAll']
         if layer.selectedFeatureCount() > 0:
@@ -143,9 +144,10 @@ class QvAtributs(QTabWidget):
                 'separator',
                 'flashSelection', 'zoomToSelection', 'showSelection',
                 'invertSelection', 'removeSelection']
-        self.menuAccions += [
-            'separator',
-            'filterElements']
+        self.menuAccions += ['separator']
+        if QvDiagrama.capaAmbDiagrama(layer) != '':
+            self.menuAccions += ['showBarChart']
+        self.menuAccions += ['filterElements']
         if layer.subsetString() != '':
             self.menuAccions += ['removeFilter']
         self.menuAccions += ['saveToCSV']
@@ -284,6 +286,7 @@ class QvAtributs(QTabWidget):
         except Exception as e:
             print(str(e))
             return None
+
     def setCurrentIndex(self,i):
         super().setCurrentIndex(i)
         try:
@@ -388,6 +391,11 @@ class QvTaulaAtributs(QgsAttributeTableView):
         self.accions.afegirAccio('flashSelection', act)
 
         act = QAction()
+        act.setText("Mostra diagrama barres")
+        act.triggered.connect(self.showBarChart)
+        self.accions.afegirAccio('showBarChart', act)
+
+        act = QAction()
         act.setText("Mostra fitxa")
         # act.setIcon(QIcon(':/Icones/ic_file_upload_black_48dp.png'))
         act.triggered.connect(self.showFeature)
@@ -467,6 +475,11 @@ class QvTaulaAtributs(QgsAttributeTableView):
             return None
         except Exception:
             return None
+
+    def showBarChart(self):
+        self.diagrama = QvDiagrama.barres(self.layer)
+        if self.diagrama is not None:
+            self.diagrama.show()
 
     def showFeature(self):
         dlgFitxa = self.crearDialog()
