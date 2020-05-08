@@ -1777,7 +1777,7 @@ class QVista(QMainWindow, Ui_MainWindow):
             else:
                 escalesPossibles=['100','200','250','500','1000','2000','2500','5000','10000','25000','50000','100000','250000']
             self.completerEscales=QCompleter(escalesPossibles,self.leScale)
-            self.completerEscales.activated.connect(self.escalaEditada)
+            self.completerEscales.activated.connect(self.completerEscalesTriat)
             popup=self.completerEscales.popup()
             popup.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
             popup.setMinimumHeight(popup.sizeHintForRow(0)*len(escalesPossibles)+4)
@@ -1791,6 +1791,11 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.completerEscales.complete()
         if txt=='' and self.leScale.isVisible():
             print('Completat')
+    
+    def completerEscalesTriat(self, txt):
+        self.leScale.setText(txt)
+        self.escalaEditada()
+        self.completerEscales.popup().hide()
 
     def escalaEditada(self):
         escala = self.leScale.text()
