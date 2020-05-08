@@ -24,6 +24,7 @@ from moduls.QvPushButton import QvPushButton
 projecteInicial='mapesOffline/qVista default map.qgs'
 
 
+
 class QvColocacionCirculo(QgsMapTool):
     """ Dibuixa un cercle i selecciona els elements."""
     def __init__(self, canvas,   numeroSegmentsCercle, parent,lado):

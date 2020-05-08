@@ -104,6 +104,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         """
         QMainWindow.__init__(self)
         self.setupUi(self)
+        self.tempState = self.saveState()
 
         # Definicions globals
         app.setFont(QvConstants.FONTTEXT)
@@ -2209,6 +2210,8 @@ def main(argv):
         # Paso app, para que QvCanvas pueda cambiar cursores
         qV = QVista(app, projecteInicial,titolFinestra)
        
+        # Restauració del est
+        qV.restoreState(qV.tempState) 
         qV.showMaximized()
 
         # Tanquem la imatge splash.
