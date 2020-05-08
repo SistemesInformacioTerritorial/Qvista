@@ -97,7 +97,7 @@ with qgisapp() as app:
     project.read(projecteInicial)
     llegenda = QvLlegenda(canvas)
 
-    plantillaMapa = 'plantillaColegisA3.qpt'
+    plantillaMapa = pathPlantilles+'plantillaColegisA3.qpt'
 
     posXY = [430036,4583163]    
     

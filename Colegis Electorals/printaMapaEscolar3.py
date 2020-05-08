@@ -116,8 +116,7 @@ with qgisapp() as app:
 
     # llegenda.show()
 
-
-    plantillaMapa = 'd:/MapaEscolar/plantillaMapaEscolarA1_2.qpt'
+    plantillaMapa = pathPlantilles+'plantillaMapaEscolarA1_2.qpt'
 
     posXY = [430036,4583163]    
     
