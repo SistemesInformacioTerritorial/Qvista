@@ -9,6 +9,7 @@ import time
 
 from moduls.QvConstants import QvConstants
 from moduls.QvVisorHTML import QvVisorHTML
+from moduls import QvFuncions
 from configuracioQvista import tempdir
 
 
@@ -99,7 +100,7 @@ Aquest mètode permet crear l'arxiu html en una part del codi, i mostrar-lo
     def getFileName(nom):
         return Path(nom).with_suffix('.html')
 
-    def __init__(self, eixX, eixY, arxiu=None, horitzontal=False, color=None, titol=''):
+    def __init__(self, eixX, eixY, arxiu=None, horitzontal=False, color=None, titol='', ordenat=False, invertit=False):
         self._eixX = eixX
         self._eixY = eixY
         if arxiu is None:
@@ -111,6 +112,15 @@ Aquest mètode permet crear l'arxiu html en una part del codi, i mostrar-lo
         self._color = color
 
         self.titol = titol
+
+        self.ordenat = ordenat
+
+        self.invertit = invertit
+        
+        if self._horitzontal:
+            alcada=max(42*len(self._eixY), QvChart.midaX-200)
+        else:
+            alcada=42*max(self._eixY)-200
         self._lay = go.Layout(
             title=titol,
             titlefont=dict(
@@ -123,13 +133,22 @@ Aquest mètode permet crear l'arxiu html en una part del codi, i mostrar-lo
             ),
             yaxis=dict(
                 automargin=True
-            )
+            ),
+            # bargap=0.7,
+            height=max(42*len(self._eixY), QvChart.midaX-200) if self._horitzontal else None
         )
 
     def _getFiguraAux(self, fig, **kw):
+        if self.ordenat:
+            if self._horitzontal:
+                kw['x'], kw['y'] = zip(*sorted(zip(kw['x'],kw['y']), reverse=self.invertit))
+            else:
+                kw['y'], kw['x'] = zip(*sorted(zip(kw['y'],kw['x']), reverse=self.invertit))
         return go.Figure(data=(fig(**kw),), layout=self._lay)
 
     def _getFiguraXY(self, fig):
+        self.figuraPl=fig
+        self.xy=True
         kw = {'x': self._eixX, 'y': self._eixY}
         if self._horitzontal is not None:
             kw['orientation'] = 'h' if self._horitzontal else 'v'
@@ -138,26 +157,43 @@ Aquest mètode permet crear l'arxiu html en una part del codi, i mostrar-lo
         return figura
 
     def _getFiguraLbl(self, fig):
+        self.figuraPl=fig
+        self.xy=False
         kw = {'labels': self._eixX, 'values': self._eixY}
         return self._getFiguraAux(fig, **kw)
 
     # converteix el plot en un gràfic de barres
     def setBarres(self):
         self._fig = self._getFiguraXY(go.Bar)
-    # Converteix el plot en un gràfic de línies
 
+
+    # Converteix el plot en un gràfic de línies
     def setLinia(self):
         self._fig = self._getFiguraXY(go.Scatter)
-    # Ídem però amb punts (com una línia però només amb els punts)
 
+
+    # Ídem però amb punts (com una línia però només amb els punts)
     def setPunts(self):
         def aux(*args, **kwargs):
             return go.Scatter(*args, mode='markers', **kwargs)
         self._fig = self._getFiguraXY(aux)
-    # Ídem però amb un pastís (el típic formatget)
 
+
+    # Ídem però amb un pastís (el típic formatget)
     def setPastis(self):
         self._fig = self._getFiguraLbl(go.Pie)
+    
+
+    def setOrdenat(self,ordenat):
+        self.ordenat=ordenat
+        if self.xy:
+            self._fig=self._getFiguraXY(self.figuraPl)
+        else:
+            self._fig=self._getFiguraLbl(self.figuraPl)
+    
+    def setInvertit(self,invertit):
+        self.invertit=invertit
+        self.setOrdenat(self.ordenat)
 
 
 class QvChart(QvVisorHTML):
@@ -176,17 +212,53 @@ Cas 2:
     midaY = 720
 
     def __init__(self, *args, **kwargs):
+        if len(args)==1:
+            self.grafic=args[0]
+            args=[self.grafic.arxiu, self.grafic.titol]
         super().__init__(*args, **kwargs)
         # El factor de zoom serà 1, ja que amb més factor es veu malament
         # La mida per defecte serà 960x720, una mica més gran, perquè es vegi bé
         self.setZoomFactor(1)
         self.resize(960, 720)
+        if hasattr(self,'grafic'):
+            from moduls.QvPushButton import QvPushButton
+            self.ordenat=self.grafic.ordenat
+            self.invertit=self.grafic.invertit
+            # Afegir els botons
+            self.bOrdenar=QvPushButton('Original' if self.ordenat else 'Ordenar')
+            self.bOrdenar.clicked.connect(self.swapOrdenar)
+            self.layoutBoto.insertWidget(0,self.bOrdenar)
+            
+            self.bInvertir=QvPushButton('Invertit: %s' %('Cert' if self.invertit else 'Fals'))
+            self.bInvertir.clicked.connect(self.swapInvertir)
+            self.layoutBoto.insertWidget(1,self.bInvertir)
+            self.bInvertir.setVisible(self.ordenat)
+    
+    def swapInvertir(self):
+        self.invertit = not self.invertit
+        self.grafic.setInvertit(self.invertit)
+        self.bInvertir.setText('Invertit: %s' %('Cert' if self.invertit else 'Fals'))
+        self.ordenar()
+    
+    def swapOrdenar(self):
+        self.ordenat = not self.ordenat
+        self.grafic.setOrdenat(self.ordenat)
+        self.bOrdenar.setText('Original' if self.ordenat else 'Ordenar')
+        self.bInvertir.setVisible(self.ordenat)
+        self.ordenar()
+    
+    def ordenar(self):
+        QvFuncions.startMovie()
+        self.grafic.write()
+        self.caixaText.reload()
+        QvFuncions.stopMovie()
 
     @classmethod
     def visorGrafic(cls, grafic: QvPlot):
         if not os.path.isfile(grafic.arxiu):
             grafic.write()
-        vis = cls(grafic.arxiu, grafic.titol, logo=True)
+        # vis = cls(grafic.arxiu, grafic.titol, logo=True)
+        vis = cls(grafic, logo=True)
         if grafic._horitzontal:
             vis.resize(cls.midaY, cls.midaX)
         else:
@@ -196,7 +268,7 @@ Cas 2:
 
 if __name__ == '__main__':
     from qgis.core.contextmanagers import qgisapp
-    pl = QvPlot.barres([1, 2, 3], ['A', 'B', 'C'], titol='Hola', horitzontal=True)
+    pl = QvPlot.barres(['D', 'B', 'C'], [5, 2, 3], titol='Hola')
     with qgisapp() as app:
         # opció 1: mostrar dins d'un visor html
         visor = QvChart.visorGrafic(pl)
