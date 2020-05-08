@@ -63,7 +63,7 @@ def ejecuta(modulo_a_tratar):
     Arguments:
         modulo_a_tratar string -- nombre del modulo
     """
-    queModulo= 'moduls/'+modulo_a_tratar
+    queModulo= modulo_a_tratar
     my_module = importlib.import_module(queModulo)
     fichero=my_module.__file__
 
@@ -145,7 +145,7 @@ Trataré los que comienzan con Qv excluyendo QvPrintHelp2
 """
 
 # Lista de ficheros py de la carpeta moduls
-mylist = [f for f in glob.glob("d:\\qVista\\codi\\moduls\\*.py")]
+mylist = [f for f in glob.glob(r"d:\\qVista\\codi\\moduls\\*.py")]
 
 # recorrido de lista, seleccionando los que empiezan por Qv 
 # y no son este programa
@@ -154,9 +154,12 @@ for modulo in mylist:
         sfilename, sext = splitfilename(os.path.split(f)[-1])
         nn= sfilename.find('Qv') 
 
+        if nn!=0:
+            continue
+
         print("voy a tratar",sfilename)
         try:
-            ejecuta(sfilename)
+            ejecuta('moduls.'+sfilename)
         except Exception as ee:
             with open(fic_error,"a+") as f_hlp_txt:
                 f_hlp_txt.writelines("error en ejecuta: "+sfilename+"  "+str(ee)+ '\n' )
@@ -178,7 +181,7 @@ except Exception as ee:
 try:
     with open(fic_error,"a+") as f_hlp_txt:
         f_hlp_txt.writelines("voy a tratar" +'QvEinesGrafiques' +'\n')
-    ejecuta1('QvEinesGrafiques')
+    ejecuta1('moduls.'+'QvEinesGrafiques')
 except Exception as ee:
     with open(fic_error,"a+") as f_hlp_txt:
         f_hlp_txt.writelines("error en ejecuta: "+soloUno+str(ee)+ '\n' )    
