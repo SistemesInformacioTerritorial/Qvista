@@ -5,21 +5,21 @@ from moduls.QvConstants import QvConstants
 from moduls.QvImports import *
 from moduls.QvCSV import QvCarregaCsv
 
-player=None # l'agafem com a global
+player = None  # l'agafem com a global
 
 def createFolder(directory):
     try:
         if not os.path.exists(directory):
             os.makedirs(directory)
     except OSError:
-        print ('Error: Creating directory. ' +  directory)
+        print('Error: Creating directory. ' + directory)
 
 def carregarLayerCSV(nfile, project, llegenda):
     if nfile: 
         startMovie()
         qApp.setOverrideCursor(Qt.WaitCursor)
 
-        assistent=QvCarregaCsv(nfile,project, llegenda)
+        assistent=QvCarregaCsv(nfile, project, llegenda)
 
         qApp.restoreOverrideCursor()
         stopMovie()
@@ -78,3 +78,16 @@ def reportarProblema(titol: str, descripcio: str=None):
     else:
         print ('Error al crear el problema {0:s}'.format(titol))
         return False
+
+# Función que activa el atributo de read-only de un fichero, si no lo está ya
+def setReadOnlyFile(path: str):
+    import win32con
+    import win32api
+    try:
+        attr = win32api.GetFileAttributes(path)
+        if attr & win32con.FILE_ATTRIBUTE_READONLY:
+            return
+        else:
+            win32api.SetFileAttributes(path, win32con.FILE_ATTRIBUTE_READONLY)            
+    except:
+        return

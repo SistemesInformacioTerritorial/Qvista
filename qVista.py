@@ -46,7 +46,6 @@ from moduls.QvVisualitzacioCapa import QvVisualitzacioCapa
 from moduls.QvSobre import QvSobre
 from moduls import QvFuncions
 import os        
-import win32con, win32api
 
 from pathlib import Path
 import functools #Eines de funcions, per exemple per avaluar-ne parcialment una
@@ -192,7 +191,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         try:
             pre, _ = os.path.splitext(prjInicial)
             elGpkg= pre + '.gpkg'
-            win32api.SetFileAttributes(elGpkg,win32con.FILE_ATTRIBUTE_READONLY)
+            QvFuncions.setReadOnlyFile(elGpkg)
         except:
             print ("No s'ha pogut fer el readonly del geopackage")      
 

@@ -15,6 +15,7 @@ from qgis.PyQt.QtWidgets import QTreeView, QAction, QApplication
 import sys, csv
 
 from moduls.QvImports  import *
+from moduls import QvFuncions
 
 class QVDistrictesBarris(QObject):
 
@@ -67,6 +68,7 @@ class QVDistrictesBarris(QObject):
 
     def llegirZonesGPKG(self):
         try:
+            QvFuncions.setReadOnlyFile(self.__zones)
             pathDistrictes = self.__zones + '|layername=districtes'
             layerDistrictes = QgsVectorLayer(pathDistrictes, 'ogr')
             pathBarris = self.__zones + '|layername=barris'
