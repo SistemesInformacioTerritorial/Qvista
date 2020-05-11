@@ -159,7 +159,17 @@ for modulo in mylist:
 
         print("voy a tratar",sfilename)
         try:
+            nom_fic= r'C:\temp\qVista\temp\moduls.'+sfilename +".txt"
+            nom_fic2= r'C:\temp\qVista\temp\moduls.'+sfilename +"_rec.txt"
             ejecuta('moduls.'+sfilename)
+
+            # with open( nom_fic2,"w",encoding="utf8") as f2:
+            #     with open(nom_fic,"r",encoding="utf8") as f1:
+            #         for l in f1:
+            #             if l.find("Methods inherited from" ) != -1:
+            #                 break
+            #             else:
+            #                 f2.writelines("%s" % l)
         except Exception as ee:
             with open(fic_error,"a+") as f_hlp_txt:
                 f_hlp_txt.writelines("error en ejecuta: "+sfilename+"  "+str(ee)+ '\n' )
