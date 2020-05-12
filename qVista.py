@@ -46,7 +46,6 @@ from moduls.QvVisualitzacioCapa import QvVisualitzacioCapa
 from moduls.QvSobre import QvSobre
 from moduls import QvFuncions
 import os        
-import win32con, win32api
 
 from pathlib import Path
 import functools #Eines de funcions, per exemple per avaluar-ne parcialment una
@@ -192,7 +191,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         try:
             pre, _ = os.path.splitext(prjInicial)
             elGpkg= pre + '.gpkg'
-            win32api.SetFileAttributes(elGpkg,win32con.FILE_ATTRIBUTE_READONLY)
+            QvFuncions.setReadOnlyFile(elGpkg)
         except:
             print ("No s'ha pogut fer el readonly del geopackage")      
 
@@ -627,6 +626,12 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.boton_invocarStreetView.setToolTip("Mostrar aquest carrer i aquest número en StreetView")
 
         self.layoutbottom.addWidget(QHLine())
+
+        self.canviarMapeta = QCheckBox("Canviar mapeta")
+        self.canviarMapeta.stateChanged.connect(lambda: self.handleCM())
+        self.layoutbottom.addWidget(self.canviarMapeta)
+        #self.canviarMapeta.setChecked()
+
         self.layoutbottom.addWidget(self.distBarris.view)
         self.bottomWidget.setLayout(self.layoutbottom)
 
@@ -664,6 +669,10 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.dwCercador.setContentsMargins ( 2, 2, 2, 2 )
         # a qVista se le añade un DockWidget
         self.addDockWidget( Qt.RightDockWidgetArea, self.dwCercador)
+
+    def handleCM(self):
+        if not self.canviarMapeta.isChecked():
+            self.enviarMapetaTemporal("Imatges\\capturesMapeta\\Barcelona.png") 
 
     def CopiarA_Ubicacions(self):       
         if self.cAdrec.NumeroOficial=='0':
@@ -1506,9 +1515,11 @@ class QVista(QMainWindow, Ui_MainWindow):
     def clickArbre(self):
         rang = self.distBarris.llegirRang() 
         self.canvas.zoomToFeatureExtent(rang) 
-        zona = self.distBarris.llegirNom() 
-        location = os.path.join("Imatges\\capturesMapeta\\", zona +".png") 
-        self.enviarMapetaTemporal(location) 
+
+        if self.canviarMapeta.isChecked():
+            zona = self.distBarris.llegirNom() 
+            location = os.path.join("Imatges\\capturesMapeta\\", zona +".png") 
+            self.enviarMapetaTemporal(location) 
 
     def infoQVista(self):
         self.informacio = QDialog()
@@ -1778,7 +1789,7 @@ class QVista(QMainWindow, Ui_MainWindow):
             else:
                 escalesPossibles=['100','200','250','500','1000','2000','2500','5000','10000','25000','50000','100000','250000']
             self.completerEscales=QCompleter(escalesPossibles,self.leScale)
-            self.completerEscales.activated.connect(self.escalaEditada)
+            self.completerEscales.activated.connect(self.completerEscalesTriat)
             popup=self.completerEscales.popup()
             popup.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
             popup.setMinimumHeight(popup.sizeHintForRow(0)*len(escalesPossibles)+4)
@@ -1792,6 +1803,11 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.completerEscales.complete()
         if txt=='' and self.leScale.isVisible():
             print('Completat')
+    
+    def completerEscalesTriat(self, txt):
+        self.leScale.setText(txt)
+        self.escalaEditada()
+        self.completerEscales.popup().hide()
 
     def escalaEditada(self):
         escala = self.leScale.text()
