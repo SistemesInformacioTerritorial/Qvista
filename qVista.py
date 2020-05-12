@@ -198,6 +198,7 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         # Carrega del projecte inicial
         self.obrirProjecte(prjInicial)
+        self.canvas.refresh()
 
         # Final del cronometratge de carrega de projecte
         endGlobal = time.time()

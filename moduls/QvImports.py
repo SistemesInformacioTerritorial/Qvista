@@ -44,8 +44,7 @@ from cubista3 import Ui_MainWindow
 
 # from calculadora import Ui_Calculadora
 
-# Dialeg per definir delimitadors en el CSV. Designer.
-from finestraDelimitadors import Ui_Dialog
+
 
 # Botonera lateral
 # from Botonera_ui import Ui_Frame
@@ -53,8 +52,7 @@ from finestraDelimitadors import Ui_Dialog
 # Panell d'informació
 from info_ui import Ui_Informacio
 
-# Cataleg de layers
-from cataleg_ui import Ui_Cataleg
+
 print ('QvImports: ',time.time()-start)
 # Eines de dibuix
 # Icones SVG
