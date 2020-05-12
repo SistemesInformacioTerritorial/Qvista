@@ -29,8 +29,8 @@ carpetaCatalegProjectesPublics=["N:/9SITEB/Publicacions/qVista/Cataleg/Mapes pub
 carpetaCatalegProjectesPrivats=['L:/DADES/SIT/qVista/CATALEG/MAPES PRIVATS/']
 carpetaCatalegProjectesLlista = [*carpetaCatalegProjectesPublics,*carpetaCatalegProjectesPrivats]
 
-projecteInicial = os.path.abspath('mapesOffline/qVista default map.qgs')
-# projecteInicial = os.path.abspath('mapesOffline/00 Mapa TM - Situació rr QPKG.qgs')
+#projecteInicial = os.path.abspath('mapesOffline/qVista default map.qgs')
+projecteInicial = os.path.abspath('mapesOffline/00 Mapa TM - Situació rr QPKG.qgs')
 
 pathPlantilles = "plantillesMapes/"
 
