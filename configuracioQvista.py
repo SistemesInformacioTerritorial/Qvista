@@ -1,23 +1,4 @@
 import os
-import sys
-from pathlib import Path
-from qgis.PyQt import QtCore
-from qgis.PyQt.QtWidgets import QApplication
-
-
-# Així forcem que es pugui escalar segons el DPI https://stackoverflow.com/questions/43904594/pyqt-adjusting-for-different-screen-resolution
-
-if sys.platform=='win32':
-    try:
-        #Solució només per Windows. La meva ànima linuxera plora
-        from ctypes import windll
-        windll.shcore.SetProcessDpiAwareness(2) 
-    except Exception as e:
-        print(e)
-# if hasattr(QtCore.Qt, 'AA_EnableHighDpiScaling'):
-#     QApplication.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling,  True)
-if hasattr(QtCore.Qt, 'AA_UseHighDpiPixmaps'):
-    QApplication.setAttribute(QtCore.Qt.AA_UseHighDpiPixmaps, True)
 
 #Parametres configuració inicial
 versio="0.9"
@@ -28,7 +9,11 @@ carpetaCataleg = "N:/9SITEB/Publicacions/qVista/Cataleg/Capes/"
 carpetaCatalegProjectesPublics=["N:/9SITEB/Publicacions/qVista/Cataleg/Mapes publics/"]
 carpetaCatalegProjectesPrivats=['L:/DADES/SIT/qVista/CATALEG/MAPES PRIVATS/']
 carpetaCatalegProjectesLlista = [*carpetaCatalegProjectesPublics,*carpetaCatalegProjectesPrivats]
+
 projecteInicial = os.path.abspath('mapesOffline/qVista default map.qgs')
+# projecteInicial = os.path.abspath('mapesOffline/00 Mapa TM - Situació rr QPKG.qgs')
+
+pathPlantilles = "plantillesMapes/"
 
 estatConnexio = "Xarxa municipal: Connectat"
 

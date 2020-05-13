@@ -13,11 +13,18 @@ import os.path
 from qgis.core.contextmanagers import qgisapp
 
 from qgis.PyQt.QtGui import QColor
+import configuracioQvista
+
+tempdir=configuracioQvista.configdir
+
+
+#Fichero para la lectura/escritura de ubicaciones (serializadas)
+fic_guardar_arbre=os.path.join(tempdir,"QvUbicacions.p")
 
 
 
 projecteInicial='mapesOffline/qVista default map.qgs'
-fic_guardar_arbre='C:/Temp/QvUbicacions.p'  #Fichero para la lectura/escritura de ubicaciones (serializadas)
+
 
 class StandardItemModel_mio(QStandardItemModel):
     """ Subclase de QStandardItemModel en el que implemento metodos de importacion de datos y de 

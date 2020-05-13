@@ -1,25 +1,39 @@
 import os
-from configuracioQvista import *
+import sys
 from moduls.QvVideo import QvVideo
-from moduls.QvConstants import QvConstants
 from moduls.QvImports import *
-from moduls.QvCSV import QvCarregaCsv
+from moduls.QvConstants import QvConstants
 
-player=None # l'agafem com a global
+if sys.platform == 'win32':
+    from moduls.QvFuncionsWin32 import *
+
+
+player = None  # l'agafem com a global
+
+
+def setDPI():
+    from qgis.PyQt import QtCore
+    from qgis.PyQt.QtWidgets import QApplication
+    
+    setDPIScaling()
+    if hasattr(QtCore.Qt, 'AA_UseHighDpiPixmaps'):
+        QApplication.setAttribute(QtCore.Qt.AA_UseHighDpiPixmaps, True)
+
 
 def createFolder(directory):
     try:
         if not os.path.exists(directory):
             os.makedirs(directory)
     except OSError:
-        print ('Error: Creating directory. ' +  directory)
+        print('Error: Creating directory. ' + directory)
 
 def carregarLayerCSV(nfile, project, llegenda):
+    from moduls.QvCSV import QvCarregaCsv
     if nfile: 
         startMovie()
         qApp.setOverrideCursor(Qt.WaitCursor)
 
-        assistent=QvCarregaCsv(nfile,project, llegenda)
+        assistent=QvCarregaCsv(nfile, project, llegenda)
 
         qApp.restoreOverrideCursor()
         stopMovie()

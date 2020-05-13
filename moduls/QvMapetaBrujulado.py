@@ -31,8 +31,6 @@ class QvMapetaBrujulado(QFrame):
         # self.colorMarca= QColor(121,144,155)
         self.colorMarcas= QColor(255,90,14)
         self.mapeta_default = mapeta_default
-
-        
         self.setDropable()
         self.ficheroMapeta = ficheroMapeta
         # leer info del mapeta
@@ -52,7 +50,6 @@ class QvMapetaBrujulado(QFrame):
         self.setMaximumSize(QSize(ancho_mapetaBrujulado, ancho_mapetaBrujulado))
 
         self.setWindowTitle('MapetaBrujulado')
-        
 
         self.qvCompass = QvCompass(self.canvas,pare=self)
         self.qvCompass.setGeometry(0, 0, ancho_mapetaBrujulado, ancho_mapetaBrujulado)
@@ -62,7 +59,6 @@ class QvMapetaBrujulado(QFrame):
         self.qvMapeta = QvMapeta(self.canvas, ficheroMapeta, pare=self.qvCompass)
         self.qvMapeta.colorMarcasMapeta=self.colorMarcas
         self.qvMapeta.show()           
-
         # relaciono mapeta y compas. Mapeta dentro de compass
         self.lContenidoCompass = QHBoxLayout ()
         self.lContenidoCompass.setContentsMargins(self.margen, self.margen, self.margen, self.margen)
@@ -73,7 +69,6 @@ class QvMapetaBrujulado(QFrame):
             pass
             # print(str(ee))
         
-
         #relaciono compass mapeta brujulado. Compass dentro mapetaBrujulado
         self.lcontenidoMapetaBrujulado = QHBoxLayout ()
         self.lcontenidoMapetaBrujulado.setContentsMargins( 0, 0, 0,0)
@@ -137,8 +132,6 @@ class QvMapetaBrujulado(QFrame):
         linea= linea + 'W:  '+ str(datos_mapeta[5]) +'\n'
         linea= linea + 'H:  '+ str(datos_mapeta[6])
         self.setToolTip(linea)
-
-   
     def setDropable(self):
         '''
          Implementacion Drop ficheros png y pgw sobre el mapeta. 
@@ -148,10 +141,6 @@ class QvMapetaBrujulado(QFrame):
         drop = QvDropFiles(self)
         drop.llistesExts(['.png', '.pgw'])
         drop.arxiusPerProcessar.connect(self.PngPgwDroped_MB)
-    #endregion
-        
-    #region Funciones relacionadas con el dibujo de la cruz y ventanaMapeta
-  
     def CalcularPNGyRangoMapeta(self,ficheroEnviado):
         '''
         Hay 2 ficheros complementarios: PNG y PGW. (PNG la imagen, 
