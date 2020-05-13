@@ -14,11 +14,11 @@ from moduls.QvMapForms import QvFormSimbMapificacio
 from moduls.QvLlegendaAux import QvModelLlegenda, QvItemLlegenda, QvMenuLlegenda
 from moduls.QvLlegendaMascara import QvLlegendaMascara
 from moduls.QvDiagrama import QvDiagrama
+from moduls import QvFuncions
 
 from configuracioQvista import imatgesDir
 
 import os
-import win32file
 
 # Resultado de compilacion de recursos del fuente de qgis (directorio images)
 # pyrcc5 images.qrc >images_rc.py
@@ -189,7 +189,7 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
         try:
             uri = capa.dataProvider().dataSourceUri()
             drive = uri.split(':')[0]
-            return win32file.GetDriveType(drive + ':') == win32file.DRIVE_FIXED
+            return QvFuncions.isDriveFixed(drive)
         except Exception:
             return False
 
@@ -648,7 +648,7 @@ if __name__ == "__main__":
                 drive = uri.split(':')[0]
                 print('URI:', uri)
                 txt = ''
-                if win32file.GetDriveType(drive + ':') == win32file.DRIVE_FIXED:
+                if QvFuncions.isDriveFixed(drive):
                     txt = '(Disco fijo)'
                 print('Disco:', drive, txt)
             else:

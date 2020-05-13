@@ -2180,6 +2180,10 @@ def main(argv):
     # Definició 
     global qV
     global app
+
+    # Ajustes de pantalla ANTES de crear la aplicación
+    QvFuncions.setDPI()
+
     with qgisapp(sysexit=False) as app: 
         
         # Se instancia QvApp al principio para el control de errores

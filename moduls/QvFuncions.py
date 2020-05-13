@@ -1,11 +1,24 @@
 import os
-from configuracioQvista import *
+import sys
 from moduls.QvVideo import QvVideo
-from moduls.QvConstants import QvConstants
 from moduls.QvImports import *
-from moduls.QvCSV import QvCarregaCsv
+from moduls.QvConstants import QvConstants
+
+if sys.platform == 'win32':
+    from moduls.QvFuncionsWin32 import *
+
 
 player = None  # l'agafem com a global
+
+
+def setDPI():
+    from qgis.PyQt import QtCore
+    from qgis.PyQt.QtWidgets import QApplication
+    
+    setDPIScaling()
+    if hasattr(QtCore.Qt, 'AA_UseHighDpiPixmaps'):
+        QApplication.setAttribute(QtCore.Qt.AA_UseHighDpiPixmaps, True)
+
 
 def createFolder(directory):
     try:
@@ -15,6 +28,7 @@ def createFolder(directory):
         print('Error: Creating directory. ' + directory)
 
 def carregarLayerCSV(nfile, project, llegenda):
+    from moduls.QvCSV import QvCarregaCsv
     if nfile: 
         startMovie()
         qApp.setOverrideCursor(Qt.WaitCursor)
@@ -78,16 +92,3 @@ def reportarProblema(titol: str, descripcio: str=None):
     else:
         print ('Error al crear el problema {0:s}'.format(titol))
         return False
-
-# Función que activa el atributo de read-only de un fichero, si no lo está ya
-def setReadOnlyFile(path: str):
-    import win32con
-    import win32api
-    try:
-        attr = win32api.GetFileAttributes(path)
-        if attr & win32con.FILE_ATTRIBUTE_READONLY:
-            return
-        else:
-            win32api.SetFileAttributes(path, win32con.FILE_ATTRIBUTE_READONLY)            
-    except:
-        return
