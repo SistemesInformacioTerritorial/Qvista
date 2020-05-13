@@ -21,12 +21,27 @@ class QvcapturesMapeta(QWidget):
     '''
     
     '''
+    def showDialogColor(self):
+        d_color= QColorDialog()
+        
+        col = d_color.getColor()
+        if col.isValid():
+            self.color=col
+
+    def tamanyoLadoCirculo(self):
+        '''
+        lado me gusta mas que spinB...value
+        '''
+        self.lado= self.spinBox.value()             
+
     def __init__(self, canvas,pare=None):
         '''
         '''
         self.canvas=canvas
         if self.canvas.rotation() != 0:
             self.canvas.setRotation(0)
+
+        self.color= QColor(121,144,155)
 
         self.tempdir=configuracioQvista.tempdir 
         QWidget.__init__(self)
@@ -40,12 +55,27 @@ class QvcapturesMapeta(QWidget):
         self.botonEjecutar.clicked.connect(self.ejecutar)
         self.botonEjecutar.setFixedWidth(120) 
 
+        self.botoColor = QPushButton('Sel·lecc. color')
+        self.botoColor.setToolTip('Color perimetre')
+        self.botoColor.clicked.connect(self.showDialogColor)
+        self.botoColor.setFixedWidth(120) 
+
+
         self.layH1=QHBoxLayout()
         self.layH1.addWidget(self.botonEjecutar)
+        self.layH1.addWidget(self.botoColor)
+        self.spinBox = QSpinBox(self)
+        self.spinBox.setFixedWidth(60)
+        self.spinBox.setRange(50, 600)
+        self.spinBox.setSingleStep(20)
+        self.spinBox.setValue(200)
+        self.lado=self.spinBox.value()
+        self.spinBox.valueChanged.connect(self.tamanyoLadoCirculo)
         
 
         self.layV1=QVBoxLayout()
         self.layV1.addLayout(self.layH1) 
+        self.layV1.addWidget(self.spinBox) 
         self.setLayout(self.layV1)
     def ejecutar(self):
         """accion correspondiente a la pulsacion del boton
@@ -65,17 +95,18 @@ class QvcapturesMapeta(QWidget):
 
             #Propietats imatge del mapeta
             settings = QgsMapSettings()
-            settings.setLayers(vlayer)
+            # settings.setLayers(vlayer)
+            settings.setLayers(self.canvas.layers())
             settings.setBackgroundColor(QColor(255, 255, 255))
-            settings.setOutputSize(QSize(200, 200))
+            settings.setOutputSize(QSize(self.lado, self.lado))
             
             features = layerBoxes.getFeatures()  
             nn=0 
             for feature in features:
-                if zona=='districtes' and feature[1] != '10':
-                    continue
-                if zona=='barris' and ( feature[3] != '10' ):
-                    continue
+                # if zona=='districtes' and feature[1] != '10':
+                #     continue
+                # if zona=='barris' and ( feature[3] != '10' ):
+                #     continue
 
                 # pretendo: toda la geometria a una convex hull
                 geoHull= feature.geometry().convexHull()
@@ -121,7 +152,7 @@ class QvcapturesMapeta(QWidget):
                 brush = QBrush(img)       
                 painter = QPainter(out_img) 
                 painter.setBrush(brush)      
-                pen= QPen(QColor(121,144,155),  1, Qt.SolidLine)    #qVista claro         
+                pen= QPen(self.color,  1, Qt.SolidLine)    #qVista claro         
                 # pen= QPen(self.parent.color,  1, Qt.SolidLine)    #qVista claro         
                 painter.setPen(pen)
                 painter.setRenderHint(QPainter.Antialiasing, True)  
@@ -142,8 +173,8 @@ class QvcapturesMapeta(QWidget):
                 # #Rang mapeta
                 xdist = x1 - x2 
                 ydist = y1 - y2
-                iheight = 200   #tamany imatge
-                iwidth =  200
+                iheight = self.lado   #tamany imatge
+                iwidth =  self.lado
                 xmin = x2
                 ymin = y2
 
@@ -420,9 +451,10 @@ if __name__ == "__main__":
 
             bool = True # or False
             # root = QgsProject.instance().layerTreeRoot()
-            # allLayers = root.layerOrder()
-            # for layer in allLayers:
-            #     root.findLayer(layer.id()).setItemVisibilityChecked(True)                        
+            allLayers = root.layerOrder()
+
+            for layer in allLayers:
+                root.findLayer(layer.id()).setItemVisibilityChecked(True)                        
 
 
             bridge = QgsLayerTreeMapCanvasBridge(root, canvas)   
