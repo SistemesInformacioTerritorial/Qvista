@@ -162,11 +162,6 @@ class ValidadorNums(QValidator):
 
 
 class QCercadorAdreca(QObject):
-
-    # __carrersCSV = 'dades\Carrers.csv'
-
-    __CarrersNum_sqlite = r'Dades\CarrersNums.db'  # ???
-
     sHanTrobatCoordenades = pyqtSignal(int, 'QString')  # atencion
 
     def __init__(self, lineEditCarrer, lineEditNumero, origen='SQLITE'):
@@ -182,9 +177,6 @@ class QCercadorAdreca(QObject):
 
         self.dictCarrers = {}
         self.dictNumeros = collections.defaultdict(dict)
-
-        # self.db = QSqlDatabase.addDatabase('QSQLITE', 'CyN') # Creamos la base de datos
-        # self.db.setDatabaseName(self.__CarrersNum_sqlite) # Le asignamos un nombre
 
         # self.db.setConnectOptions("QSQLITE_OPEN_READONLY")
         self.numClick=0
