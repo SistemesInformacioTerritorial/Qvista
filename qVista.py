@@ -330,7 +330,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.lblProjecte.setText('QGS: '+self.project.baseName())
         self.lblProjecte.setToolTip(self.project.fileName())
 
-        self.bOrientacio.setText('Disponible')
+        # self.bOrientacio.setText('Disponible')
 
         if self.llegenda.player is None:
             self.llegenda.setPlayer(os.path.join(imatgesDir,'Spinner_2.gif'), 150, 150)
@@ -1721,9 +1721,9 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.leScale.setValidator(self.onlyInt)
         self.leScale.hide()
 
-        self.bOrientacio = QvPushButton(flat=True)
-        self.bOrientacio.setStyleSheet(stylesheetButton)
-        self.bOrientacio.setFixedHeight(alcada)
+        # self.bOrientacio = QvPushButton(flat=True)
+        # self.bOrientacio.setStyleSheet(stylesheetButton)
+        # self.bOrientacio.setFixedHeight(alcada)
 
         self.lblProjecte = QLabel()
         self.lblProjecte.setStyleSheet(styleheetLabel)
@@ -1740,7 +1740,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.statusbar.addPermanentWidget(self.wXY, 1 )
         self.statusbar.addPermanentWidget( self.lblProjeccio, 0 )
         self.statusbar.addPermanentWidget( self.wScale, 0 )
-        self.statusbar.addPermanentWidget( self.bOrientacio, 0 )
+        # self.statusbar.addPermanentWidget( self.bOrientacio, 0 )
     
     def connectarProgressBarCanvas(self):
         self.canvas.mapCanvasRefreshed.connect(self.hideSB)
