@@ -1783,11 +1783,7 @@ class QVista(QMainWindow, Ui_MainWindow):
             self.editantEscala = True
             self.bScale.setText(' Escala 1: ')
             self.leScale.show()
-            #Estem recalculant cada vegada. Podríem fer-ho només quan canviem de projecte, però no va lent
-            if QgsExpressionContextUtils.projectScope(self.project).variable('qV_escales'):
-                escalesPossibles = QgsExpressionContextUtils.projectScope(self.project).variable('qV_escales').split(' ')
-            else:
-                escalesPossibles=['100','200','250','500','1000','2000','2500','5000','10000','25000','50000','100000','250000']
+            escalesPossibles = list(map(str,self.llegenda.escales.llista))
             self.completerEscales=QCompleter(escalesPossibles,self.leScale)
             self.completerEscales.activated.connect(self.completerEscalesTriat)
             popup=self.completerEscales.popup()
