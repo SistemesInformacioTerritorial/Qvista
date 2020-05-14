@@ -43,7 +43,7 @@ for x in (QvTempdir, tempdir, dadesdir, configdir):
         try:
             os.mkdir(x)
         except:
-        print('ERROR. No he pogut crear el directori temporal ',x)
+            print('ERROR. No he pogut crear el directori temporal ',x)
 
 if not os.path.isdir(carpetaCataleg):
     estatConnexio = "Xarxa municipal: Desconnectat"
