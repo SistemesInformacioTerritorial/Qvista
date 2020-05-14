@@ -38,28 +38,12 @@ arxiuInfoQVista=os.path.join(docdir,'InfoQVista.pdf')
 # except:
 #     pathDesarPerDefecte='.'
 
-if not os.path.exists(QvTempdir):
-    try:
-        os.mkdir(QvTempdir)
-    except:
-        print('ERROR. No he pogut crear el directori temporal '+QvTempdir)
-
-if not os.path.exists(tempdir):
-    try:
-        os.mkdir(tempdir)
-    except:
-        print('ERROR. No he pogut crear el directori temporal '+tempdir)
-
-if not os.path.exists(dadesdir):
-    try:
-        os.mkdir(dadesdir)
-    except:
-        print('ERROR. No he pogut crear el directori temporal '+dadesdir)
-if not os.path.exists(configdir):
-    try:
-        os.mkdir(configdir)
-    except:
-        print('ERROR. No he pogut crear el directori temporal '+configdir)
+for x in (QvTempdir, tempdir, dadesdir, configdir):
+    if not os.path.exists(x):
+        try:
+            os.mkdir(x)
+        except:
+        print('ERROR. No he pogut crear el directori temporal ',x)
 
 if not os.path.isdir(carpetaCataleg):
     estatConnexio = "Xarxa municipal: Desconnectat"
