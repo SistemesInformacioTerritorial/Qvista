@@ -330,7 +330,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.lblProjecte.setText('QGS: '+self.project.baseName())
         self.lblProjecte.setToolTip(self.project.fileName())
 
-        self.bOrientacio.setText('Disponible')
+        # self.bOrientacio.setText('Disponible')
 
         if self.llegenda.player is None:
             self.llegenda.setPlayer(os.path.join(imatgesDir,'Spinner_2.gif'), 150, 150)
@@ -1721,9 +1721,9 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.leScale.setValidator(self.onlyInt)
         self.leScale.hide()
 
-        self.bOrientacio = QvPushButton(flat=True)
-        self.bOrientacio.setStyleSheet(stylesheetButton)
-        self.bOrientacio.setFixedHeight(alcada)
+        # self.bOrientacio = QvPushButton(flat=True)
+        # self.bOrientacio.setStyleSheet(stylesheetButton)
+        # self.bOrientacio.setFixedHeight(alcada)
 
         self.lblProjecte = QLabel()
         self.lblProjecte.setStyleSheet(styleheetLabel)
@@ -1740,7 +1740,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.statusbar.addPermanentWidget(self.wXY, 1 )
         self.statusbar.addPermanentWidget( self.lblProjeccio, 0 )
         self.statusbar.addPermanentWidget( self.wScale, 0 )
-        self.statusbar.addPermanentWidget( self.bOrientacio, 0 )
+        # self.statusbar.addPermanentWidget( self.bOrientacio, 0 )
     
     def connectarProgressBarCanvas(self):
         self.canvas.mapCanvasRefreshed.connect(self.hideSB)
@@ -1783,11 +1783,7 @@ class QVista(QMainWindow, Ui_MainWindow):
             self.editantEscala = True
             self.bScale.setText(' Escala 1: ')
             self.leScale.show()
-            #Estem recalculant cada vegada. Podríem fer-ho només quan canviem de projecte, però no va lent
-            if QgsExpressionContextUtils.projectScope(self.project).variable('qV_escales'):
-                escalesPossibles = QgsExpressionContextUtils.projectScope(self.project).variable('qV_escales').split(' ')
-            else:
-                escalesPossibles=['100','200','250','500','1000','2000','2500','5000','10000','25000','50000','100000','250000']
+            escalesPossibles = list(map(str,self.llegenda.escales.llista))
             self.completerEscales=QCompleter(escalesPossibles,self.leScale)
             self.completerEscales.activated.connect(self.completerEscalesTriat)
             popup=self.completerEscales.popup()
