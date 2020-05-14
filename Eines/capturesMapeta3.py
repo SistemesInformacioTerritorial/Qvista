@@ -66,7 +66,7 @@ class QvcapturesMapeta(QWidget):
         self.layH1.addWidget(self.botoColor)
         self.spinBox = QSpinBox(self)
         self.spinBox.setFixedWidth(60)
-        self.spinBox.setRange(50, 600)
+        self.spinBox.setRange(50, 4000)  #600
         self.spinBox.setSingleStep(20)
         self.spinBox.setValue(200)
         self.lado=self.spinBox.value()
@@ -101,12 +101,13 @@ class QvcapturesMapeta(QWidget):
             settings.setOutputSize(QSize(self.lado, self.lado))
             
             features = layerBoxes.getFeatures()  
+            kk = layerBoxes.featureCount()
             nn=0 
             for feature in features:
-                # if zona=='districtes' and feature[1] != '10':
-                #     continue
-                # if zona=='barris' and ( feature[3] != '10' ):
-                #     continue
+                if zona=='districtes' and feature[1] != '10':
+                    continue
+                if zona=='barris' and ( feature[3] != '10' ):
+                    continue
 
                 # pretendo: toda la geometria a una convex hull
                 geoHull= feature.geometry().convexHull()
@@ -136,6 +137,9 @@ class QvcapturesMapeta(QWidget):
                 y2 = centro.y() - radio #xmin
 
                 settings.setExtent(QgsRectangle(x2,y2,x1,y1))
+                ira= settings.hasValidSettings()
+                if ira==False:
+                    print("mal")
                 render = QgsMapRendererSequentialJob(settings)
                 
                 # #Renderitzar imatge PNG
@@ -443,8 +447,8 @@ if __name__ == "__main__":
 
         atributos = QvAtributs(canvas)
         project = QgsProject.instance()
-        projecteInicial='./mapesOffline/qVista default map.qgs'
-        # projecteInicial = os.path.abspath('mapesOffline/00 Mapa TM - Situació rr QPKG.qgs')
+        # projecteInicial='./mapesOffline/qVista default map.qgs'
+        projecteInicial = os.path.abspath('mapesOffline/00 Mapa TM - Situació rr QPKG.qgs')
 
         if project.read(projecteInicial):
             root = project.layerTreeRoot()
