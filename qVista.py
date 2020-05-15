@@ -1006,12 +1006,14 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.actCataleg = QAction("Catàleg", self)
         self.actCataleg.setStatusTip("Catàleg")
 
+        @QvFuncions.mostraSpinner
+        @QvFuncions.cronometraDebug
         def activaCataleg():
             if self.catalegMapes is None:
-                self.startMovie()
+                # self.startMovie()
                 self.catalegMapes = QvNouCataleg(self)
                 self.catalegMapes.obrirProjecte.connect(self.obrirProjecteCataleg)
-                self.stopMovie()
+                # self.stopMovie()
             if not self.catalegMapes.isVisible():
                 self.catalegMapes.showMaximized()
             self.catalegMapes.activateWindow()
@@ -1846,7 +1848,7 @@ class QVista(QMainWindow, Ui_MainWindow):
     def carregarCapa(self,nfile):
         ext = Path(nfile).suffix.lower()
         if ext=='.qlr':
-            afegirQlr(nfile)
+            QvFuncions.afegirQlr(nfile, self.project, self.llegenda)
         elif ext=='.shp':
             layer = QgsVectorLayer(nfile, os.path.basename(nfile), "ogr")
             if not layer.isValid():
@@ -2056,11 +2058,11 @@ class QVista(QMainWindow, Ui_MainWindow):
         QvMemoria().setDirectoriDesar(str(Path(nfile).parent))
         return True
 
+    @QvFuncions.mostraSpinner
     def desaElProjecte(self,proj):
         '''La funció que desa el projecte com a tal'''
         #TODO: desactivar readonly
         qApp.setOverrideCursor(QvConstants.cursorOcupat())
-        self.startMovie()
         QgsExpressionContextUtils.setProjectVariable(self.project,'qV_readOnly','False')
         md=self.project.metadata()
         md.setAuthor(QvApp().nomUsuari())
@@ -2070,8 +2072,6 @@ class QVista(QMainWindow, Ui_MainWindow):
             self.lblProjecte.setText(self.project.baseName())
 
         self.project.write(proj)
-        # carregaMascara(qV)
-        self.stopMovie()
         qApp.restoreOverrideCursor()
         app.processEvents()
         self.setDirtyBit(False)

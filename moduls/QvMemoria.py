@@ -2,6 +2,7 @@ from configuracioQvista import *
 from moduls.QvSingleton import Singleton
 import json
 import hashlib
+from pathlib import Path
 
 from qgis.PyQt.QtGui import QColor
 
