@@ -1006,7 +1006,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.actCataleg = QAction("Catàleg", self)
         self.actCataleg.setStatusTip("Catàleg")
 
-        @QvFuncions.ignoraArgs
+        #@QvFuncions.ignoraArgs
         @QvFuncions.mostraSpinner
         @QvFuncions.cronometraDebug
         def activaCataleg():
@@ -1019,7 +1019,7 @@ class QVista(QMainWindow, Ui_MainWindow):
                 self.catalegMapes.showMaximized()
             self.catalegMapes.activateWindow()
 
-        self.actCataleg.triggered.connect(activaCataleg)
+        self.actCataleg.triggered.connect(lambda _: activaCataleg())
 
         self.actAfegirCataleg = QAction('Afegir al catàleg',self)
         self.actAfegirCataleg.setStatusTip('Afegir el mapa actual al catàleg')
