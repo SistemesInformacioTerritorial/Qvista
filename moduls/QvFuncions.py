@@ -72,6 +72,18 @@ def mostraSpinner(func):
         return res
     return embolcall
 
+def ignoraArgs(func):
+    """Funció decoradora per ignorar els arguments que se li passen a una altra funció.
+    És útil per quan per culpa dels decoradors se li passen paràmetres a una funció que no n'hauria de rebre
+    És una "chapuza", però d'alguna manera s'havia de fer
+
+    Arguments:
+        func {Callable} -- Funció que no rep cap argument i volem que ignori els arguments
+    """
+    def embolcall(*args, **kwargs):
+        func()
+    return embolcall
+
 def createFolder(directory):
     """Crea la carpeta al directori indicat
 

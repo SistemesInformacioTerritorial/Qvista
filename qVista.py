@@ -1006,6 +1006,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.actCataleg = QAction("Catàleg", self)
         self.actCataleg.setStatusTip("Catàleg")
 
+        @QvFuncions.ignoraArgs
         @QvFuncions.mostraSpinner
         @QvFuncions.cronometraDebug
         def activaCataleg():
