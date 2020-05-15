@@ -266,9 +266,26 @@ if __name__ == "__main__":
         canvas.setRotation(0)
         project = QgsProject.instance()
         projecteInicial='./mapesOffline/qVista default map.qgs'
+        # projecteInicial = os.path.abspath('mapesOffline/00 Mapa TM - Situació rr QPKG.qgs')
 
         if project.read(projecteInicial):
             root = project.layerTreeRoot()
+            
+            bool = True # or False
+            # root = QgsProject.instance().layerTreeRoot()
+            allLayers = root.layerOrder()
+            for layer in allLayers:
+                root.findLayer(layer.id()).setItemVisibilityChecked(True)
+
+            for layer in allLayers:
+                root.findLayer(layer.id()).setItemVisibilityChecked(False)        
+
+            for layer in allLayers:
+                root.findLayer(layer.id()).setItemVisibilityChecked(True)                        
+
+
+
+
             bridge = QgsLayerTreeMapCanvasBridge(root, canvas)      
         else:
             print("error en carga del proyecto qgis")

@@ -92,6 +92,11 @@ if __name__ == "__main__":
         path = "D:/qVista/Mapas/Publicacions/Mapa Topogràfic Municipal/Qgs/"
         llegenda.project.read(path + '00 Mapa TM - Situació rr QPKG.qgs')
 
+        print("Lista de Capas:")
+        for capa in llegenda.capes():
+            # print(capa.error().summary())
+            print(f"- Nombre: {capa.name()}, Provider: {capa.providerType()}, OK: {capa.isValid()}")
+
         llegenda.setWindowTitle('Llegenda')
         llegenda.setGeometry(50, 50, 300, 400)
         llegenda.show()

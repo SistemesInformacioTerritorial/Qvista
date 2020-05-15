@@ -66,7 +66,7 @@ class QvcapturesMapeta(QWidget):
         self.layH1.addWidget(self.botoColor)
         self.spinBox = QSpinBox(self)
         self.spinBox.setFixedWidth(60)
-        self.spinBox.setRange(50, 600)
+        self.spinBox.setRange(50, 4000)  #600
         self.spinBox.setSingleStep(20)
         self.spinBox.setValue(200)
         self.lado=self.spinBox.value()
@@ -101,24 +101,33 @@ class QvcapturesMapeta(QWidget):
             settings.setOutputSize(QSize(self.lado, self.lado))
             
             features = layerBoxes.getFeatures()  
+            kk = layerBoxes.featureCount()
             nn=0 
             for feature in features:
-                # if zona=='districtes' and feature[1] != '10':
-                #     continue
-                # if zona=='barris' and ( feature[3] != '10' ):
-                #     continue
+                if zona=='districtes' and feature[1] != '10':
+                    continue
+                if zona=='barris' and ( feature[3] != '10' ):
+                    continue
+
+                if zona=='barris' :
+                    continue
+
 
                 # pretendo: toda la geometria a una convex hull
                 geoHull= feature.geometry().convexHull()
                 polHull= geoHull.asPolygon()
 
-                for ring in polHull:
-                    convexHull=[]
-                    for v in ring:
-                        xx=(v.x()); yy=(v.y())
+                try:
+                    for ring in polHull:
+                        convexHull=[]
+                        for v in ring:
+                            xx=(v.x()); yy=(v.y())
 
-                        pnt=QPointF(xx,yy)  
-                        convexHull.append(pnt)
+                            pnt=QPointF(xx,yy)  
+                            convexHull.append(pnt)
+                except Exception as ee:
+                    print(str(ee))
+
 
                 centro,radio= FindMinimalBoundingCircle(convexHull)
                 nn+=1
@@ -128,7 +137,7 @@ class QvcapturesMapeta(QWidget):
 
                 nom = feature[2]
                 if nom == "Les Corts" or nom == "les Corts":
-                     a = "a"
+                    a = "a"
 
                 x1 = centro.x() + radio #xmax
                 x2 = centro.x() - radio #xmin
@@ -136,15 +145,21 @@ class QvcapturesMapeta(QWidget):
                 y2 = centro.y() - radio #xmin
 
                 settings.setExtent(QgsRectangle(x2,y2,x1,y1))
+                ira= settings.hasValidSettings()
+                if ira==False:
+                    print("mal")
                 render = QgsMapRendererSequentialJob(settings)
+                
                 
                 # #Renderitzar imatge PNG
                 render.start()
                 render.waitForFinished()
+                errors= render.errors() 
                 img = render.renderedImage()
+                
                 img = img.convertToFormat(QImage.Format_ARGB32)
 
-                # #Preparació per convertir img quadrada a out_img circular
+                # Preparació per convertir img quadrada a out_img circular
                 out_img = QImage(img.width(), img.width(), QImage.Format_ARGB32)
                 out_img.fill(Qt.transparent)
 
@@ -161,6 +176,7 @@ class QvcapturesMapeta(QWidget):
 
                 # #Guardar imatge
                 scaled_pixmap = QPixmap.fromImage(out_img)
+                # scaled_pixmap = QPixmap.fromImage(img)
                 image_location = os.path.join("Imatges\\capturesMapeta\\", nom + "_" + zona[0] + ".png")
                 scaled_pixmap.save(image_location, "png")
 
@@ -443,8 +459,8 @@ if __name__ == "__main__":
 
         atributos = QvAtributs(canvas)
         project = QgsProject.instance()
-        projecteInicial='./mapesOffline/qVista default map.qgs'
-        # projecteInicial = os.path.abspath('mapesOffline/00 Mapa TM - Situació rr QPKG.qgs')
+        # projecteInicial='./mapesOffline/qVista default map.qgs'
+        projecteInicial = os.path.abspath('mapesOffline/00 Mapa TM - Situació rr QPKG.qgs')
 
         if project.read(projecteInicial):
             root = project.layerTreeRoot()
@@ -453,8 +469,8 @@ if __name__ == "__main__":
             # root = QgsProject.instance().layerTreeRoot()
             allLayers = root.layerOrder()
 
-            for layer in allLayers:
-                root.findLayer(layer.id()).setItemVisibilityChecked(True)                        
+            # for layer in allLayers:
+            #     root.findLayer(layer.id()).setItemVisibilityChecked(True)                        
 
 
             bridge = QgsLayerTreeMapCanvasBridge(root, canvas)   
@@ -469,16 +485,13 @@ if __name__ == "__main__":
             dwleyenda.setAllowedAreas( Qt.RightDockWidgetArea | Qt.LeftDockWidgetArea )
             dwleyenda.setContentsMargins ( 1, 1, 1, 1 )
             
-            # # # AÑADIMOS  nuestra instancia al dockwidget
+            # AÑADIMOS  nuestra instancia al dockwidget
             dwleyenda.setWidget(leyenda)
-
-            # # Coloquem el dockWidget al costat esquerra de la finestra
-            windowTest.addDockWidget( Qt.LeftDockWidgetArea, dwleyenda)
-
-            # # Fem visible el dockWidget
+            # Coloquem el dockWidget al costat esquerra de la finestra
+            # windowTest.addDockWidget( Qt.LeftDockWidgetArea, dwleyenda)
+            windowTest.addDockWidget( Qt.RightDockWidgetArea, dwleyenda)
+            # Fem visible el dockWidget
             dwleyenda.show()  #atencion
-
-
 
             # Instanciamos la classe QvcrearMapetaConBotones
             capturesMapeta = QvcapturesMapeta(canvas)
@@ -496,13 +509,13 @@ if __name__ == "__main__":
             dwcapturesMapeta.setAllowedAreas( Qt.RightDockWidgetArea | Qt.LeftDockWidgetArea )
             dwcapturesMapeta.setContentsMargins ( 1, 1, 1, 1 )
             
-            # # # AÑADIMOS  nuestra instancia al dockwidget
+            # AÑADIMOS  nuestra instancia al dockwidget
             dwcapturesMapeta.setWidget(capturesMapeta)
 
-            # # Coloquem el dockWidget al costat esquerra de la finestra
+            # Coloquem el dockWidget al costat esquerra de la finestra
             windowTest.addDockWidget( Qt.LeftDockWidgetArea, dwcapturesMapeta)
 
-            # # Fem visible el dockWidget
+            # Fem visible el dockWidget
             dwcapturesMapeta.show()  #atencion
 
             # Fem visible la finestra principal
