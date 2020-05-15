@@ -109,17 +109,25 @@ class QvcapturesMapeta(QWidget):
                 if zona=='barris' and ( feature[3] != '10' ):
                     continue
 
+                if zona=='barris' :
+                    continue
+
+
                 # pretendo: toda la geometria a una convex hull
                 geoHull= feature.geometry().convexHull()
                 polHull= geoHull.asPolygon()
 
-                for ring in polHull:
-                    convexHull=[]
-                    for v in ring:
-                        xx=(v.x()); yy=(v.y())
+                try:
+                    for ring in polHull:
+                        convexHull=[]
+                        for v in ring:
+                            xx=(v.x()); yy=(v.y())
 
-                        pnt=QPointF(xx,yy)  
-                        convexHull.append(pnt)
+                            pnt=QPointF(xx,yy)  
+                            convexHull.append(pnt)
+                except Exception as ee:
+                    print(str(ee))
+
 
                 centro,radio= FindMinimalBoundingCircle(convexHull)
                 nn+=1
@@ -129,7 +137,7 @@ class QvcapturesMapeta(QWidget):
 
                 nom = feature[2]
                 if nom == "Les Corts" or nom == "les Corts":
-                     a = "a"
+                    a = "a"
 
                 x1 = centro.x() + radio #xmax
                 x2 = centro.x() - radio #xmin
@@ -142,13 +150,16 @@ class QvcapturesMapeta(QWidget):
                     print("mal")
                 render = QgsMapRendererSequentialJob(settings)
                 
+                
                 # #Renderitzar imatge PNG
                 render.start()
                 render.waitForFinished()
+                errors= render.errors() 
                 img = render.renderedImage()
+                
                 img = img.convertToFormat(QImage.Format_ARGB32)
 
-                # #Preparació per convertir img quadrada a out_img circular
+                # Preparació per convertir img quadrada a out_img circular
                 out_img = QImage(img.width(), img.width(), QImage.Format_ARGB32)
                 out_img.fill(Qt.transparent)
 
@@ -165,6 +176,7 @@ class QvcapturesMapeta(QWidget):
 
                 # #Guardar imatge
                 scaled_pixmap = QPixmap.fromImage(out_img)
+                # scaled_pixmap = QPixmap.fromImage(img)
                 image_location = os.path.join("Imatges\\capturesMapeta\\", nom + "_" + zona[0] + ".png")
                 scaled_pixmap.save(image_location, "png")
 
@@ -457,8 +469,8 @@ if __name__ == "__main__":
             # root = QgsProject.instance().layerTreeRoot()
             allLayers = root.layerOrder()
 
-            for layer in allLayers:
-                root.findLayer(layer.id()).setItemVisibilityChecked(True)                        
+            # for layer in allLayers:
+            #     root.findLayer(layer.id()).setItemVisibilityChecked(True)                        
 
 
             bridge = QgsLayerTreeMapCanvasBridge(root, canvas)   
@@ -473,16 +485,13 @@ if __name__ == "__main__":
             dwleyenda.setAllowedAreas( Qt.RightDockWidgetArea | Qt.LeftDockWidgetArea )
             dwleyenda.setContentsMargins ( 1, 1, 1, 1 )
             
-            # # # AÑADIMOS  nuestra instancia al dockwidget
+            # AÑADIMOS  nuestra instancia al dockwidget
             dwleyenda.setWidget(leyenda)
-
-            # # Coloquem el dockWidget al costat esquerra de la finestra
-            windowTest.addDockWidget( Qt.LeftDockWidgetArea, dwleyenda)
-
-            # # Fem visible el dockWidget
+            # Coloquem el dockWidget al costat esquerra de la finestra
+            # windowTest.addDockWidget( Qt.LeftDockWidgetArea, dwleyenda)
+            windowTest.addDockWidget( Qt.RightDockWidgetArea, dwleyenda)
+            # Fem visible el dockWidget
             dwleyenda.show()  #atencion
-
-
 
             # Instanciamos la classe QvcrearMapetaConBotones
             capturesMapeta = QvcapturesMapeta(canvas)
@@ -500,13 +509,13 @@ if __name__ == "__main__":
             dwcapturesMapeta.setAllowedAreas( Qt.RightDockWidgetArea | Qt.LeftDockWidgetArea )
             dwcapturesMapeta.setContentsMargins ( 1, 1, 1, 1 )
             
-            # # # AÑADIMOS  nuestra instancia al dockwidget
+            # AÑADIMOS  nuestra instancia al dockwidget
             dwcapturesMapeta.setWidget(capturesMapeta)
 
-            # # Coloquem el dockWidget al costat esquerra de la finestra
+            # Coloquem el dockWidget al costat esquerra de la finestra
             windowTest.addDockWidget( Qt.LeftDockWidgetArea, dwcapturesMapeta)
 
-            # # Fem visible el dockWidget
+            # Fem visible el dockWidget
             dwcapturesMapeta.show()  #atencion
 
             # Fem visible la finestra principal
