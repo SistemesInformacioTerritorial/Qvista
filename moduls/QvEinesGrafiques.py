@@ -453,6 +453,9 @@ class QvMesuraGrafica(QWidget):
                 self.canvas.scene().removeItem(x)
             for x in self.toolMesura.cercles:
                 self.canvas.scene().removeItem(x)
+            self.canvas.scene().removeItem(self.toolMesura.rubberband)
+            self.canvas.scene().removeItem(self.toolMesura.rubberband2)
+            self.canvas.scene().removeItem(self.toolMesura.rubberbandCercle)
             self.clear()
             # self.lwMesuresHist.clear()
 

@@ -247,11 +247,10 @@ Cas 2:
         self.bInvertir.setVisible(self.ordenat)
         self.ordenar()
     
+    @QvFuncions.mostraSpinner
     def ordenar(self):
-        QvFuncions.startMovie()
         self.grafic.write()
         self.caixaText.reload()
-        QvFuncions.stopMovie()
 
     @classmethod
     def visorGrafic(cls, grafic: QvPlot):

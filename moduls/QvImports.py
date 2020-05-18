@@ -27,6 +27,7 @@ from threading import Thread
 import urllib.request, json 
 import subprocess
 from time import sleep
+from pathlib import Path
 
 #Fitxer de configuració de variables d'inici.
 from configuracioQvista import *
