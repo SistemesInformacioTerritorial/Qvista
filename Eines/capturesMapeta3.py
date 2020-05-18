@@ -104,13 +104,13 @@ class QvcapturesMapeta(QWidget):
             kk = layerBoxes.featureCount()
             nn=0 
             for feature in features:
-                if zona=='districtes' and feature[1] != '10':
-                    continue
-                if zona=='barris' and ( feature[3] != '10' ):
-                    continue
+            #     if zona=='districtes' and feature[1] != '10':
+            #         continue
+            #     if zona=='barris' and ( feature[3] != '10' ):
+            #         continue
 
-                if zona=='barris' :
-                    continue
+            #     if zona=='barris' :
+            #         continue
 
 
                 # pretendo: toda la geometria a una convex hull
@@ -450,25 +450,26 @@ if __name__ == "__main__":
         from qgis.core.contextmanagers import qgisapp
         from qgis.utils import iface
         from moduls.QvAtributs import QvAtributs
+        from moduls.QvCanvas import QvCanvas
      
         # Canvas, projecte i bridge
-        canvas=QgsMapCanvas()
+        # canvas=QgsMapCanvas()
+        canvas=QvCanvas()
         
         canvas.show()
         canvas.setRotation(0)
 
         atributos = QvAtributs(canvas)
         project = QgsProject.instance()
-        # projecteInicial='./mapesOffline/qVista default map.qgs'
-        projecteInicial = os.path.abspath('mapesOffline/00 Mapa TM - Situació rr QPKG.qgs')
+        projecteInicial='./mapesOffline/qVista default map.qgs'
+        # projecteInicial = os.path.abspath('mapesOffline/00 Mapa TM - Situació rr QPKG.qgs')
 
         if project.read(projecteInicial):
             root = project.layerTreeRoot()
 
             bool = True # or False
             # root = QgsProject.instance().layerTreeRoot()
-            allLayers = root.layerOrder()
-
+            # allLayers = root.layerOrder()
             # for layer in allLayers:
             #     root.findLayer(layer.id()).setItemVisibilityChecked(True)                        
 
