@@ -1246,7 +1246,7 @@ class QvCreadorCataleg(QDialog):
 
 
 if __name__ == "__main__":
-    from configuracioQvista import *
+    import configuracioQvista
     from moduls.QvCanvas import QvCanvas
     from moduls.QvAtributs import QvAtributs
     from moduls.QvLlegenda import QvLlegenda
@@ -1260,7 +1260,7 @@ if __name__ == "__main__":
         projecte = QgsProject.instance()
         root = projecte.layerTreeRoot()
         bridge = QgsLayerTreeMapCanvasBridge(root, canvas)
-        projecte.read(projecteInicial)
+        projecte.read(configuracioQvista.projecteInicial)
         llegenda = QvLlegenda(canvas, atributs)
         llegenda.show()
         cataleg = QvNouCataleg()

@@ -1,20 +1,21 @@
-from configuracioQvista import *
+import configuracioQvista
 from moduls.QvSingleton import Singleton
 import json
 import hashlib
 from pathlib import Path
 
 from qgis.PyQt.QtGui import QColor
+import os
 
-arxiuTmpAvis=os.path.join(configdir,'ultimAvisObert')
-arxiuTmpNews=os.path.join(configdir,'ultimaNewOberta')
-arxiuMapesRecents=os.path.join(configdir,'mapesRecents')
-arxiuDirectoriDesar=os.path.join(configdir,'directoriDesar')
-arxiuVolHints=os.path.join(configdir,'volHints')
-arxiuDadesMascara=os.path.join(configdir,'dadesMascara')
-arxiuCampsGeocod=os.path.join(configdir,'geocod.json')
-arxiuGeocodificats=os.path.join(configdir,'geocodificats.json')
-arxiuCatalegsLocals=os.path.join(configdir+'catalegsLocals')
+arxiuTmpAvis=os.path.join(configuracioQvista.configdir,'ultimAvisObert')
+arxiuTmpNews=os.path.join(configuracioQvista.configdir,'ultimaNewOberta')
+arxiuMapesRecents=os.path.join(configuracioQvista.configdir,'mapesRecents')
+arxiuDirectoriDesar=os.path.join(configuracioQvista.configdir,'directoriDesar')
+arxiuVolHints=os.path.join(configuracioQvista.configdir,'volHints')
+arxiuDadesMascara=os.path.join(configuracioQvista.configdir,'dadesMascara')
+arxiuCampsGeocod=os.path.join(configuracioQvista.configdir,'geocod.json')
+arxiuGeocodificats=os.path.join(configuracioQvista.configdir,'geocodificats.json')
+arxiuCatalegsLocals=os.path.join(configuracioQvista.configdir+'catalegsLocals')
 
 def llegirArxiu(f,encoding='utf-8'):
     with open(f,encoding=encoding) as arxiu:
