@@ -44,7 +44,7 @@ class QvCompass(QFrame):
         self.setGeometry(0,0,self.xTamany,self.yTamany)
         self.begin = QPoint()
         self.end = QPoint()
-        self.setToolTip('Doble click per angle 0')
+        # self.setToolTip('Doble click per angle 0')
         self.spinBox = QDoubleSpinBox(self)
         self.spinBox.setGeometry(100,133,50,17)
         self.spinBox.setRange(0, 359.999)
