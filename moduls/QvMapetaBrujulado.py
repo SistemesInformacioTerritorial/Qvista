@@ -226,15 +226,7 @@ class QvMapetaBrujulado(QFrame):
             QTimer.singleShot(1000, self.continuar)
             pass
         elif action == crearMapetas:
-            print("en construccion")
             self.Sig_MuestraMapeta.emit()
-            # QTimer.singleShot(0, self.continuar)
-            # if self.parent.dwcrearMapeta.isHidden():
-            #     self.parent.dwcrearMapeta.show()
-            # else:
-            #     self.parent.dwcrearMapeta.hide()
-        #    
-
     def continuar(self):
         print("continuar")
 

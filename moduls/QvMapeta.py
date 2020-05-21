@@ -60,7 +60,7 @@ class QvMapeta(QFrame):
         self.pare = pare
         self.setDropable()
         self.pintoCentro = False   # auxiliar...
-        self.puntoParaCompass=False
+        self.pPM=True
 
         self.colorMarcasMapeta= QColor(255,98,1)
         self.Cuadrante = 0
@@ -90,6 +90,16 @@ class QvMapeta(QFrame):
         self.seno_giro = 0;                self.coseno_giro = 1
         # Convertim paràmetres en variables de classe
         self.canvas = canvas
+        # rect= self.canvas.extent()
+        # self.canvas.zoomWithCenter(self.xmax_0,self.ymax_0,False)
+        # rect1= self.canvas.extent()
+        # self.canvas.zoomWithCenter(self.xmax_0,self.ymax_0,True)
+        # rect2= self.canvas.extent()
+
+        rang = QgsRectangle(self.xmin_0, self.ymin_0, self.xmax_0, self.ymax_0)
+        self.canvas.setExtent(rang)
+
+
         self.MouseMoveFlag = False
         self.MousePressFlag = False
         # Preparem el canvas per capturar quan es modifica, i poder repintar
@@ -110,7 +120,6 @@ class QvMapeta(QFrame):
         # puntos que definen la ventana sobre el Mapeta que muestra el area de 
         # cartografia visible
         self.begin = QPoint();     self.end = QPoint()
-
     def conversioPantallaMapa(self,punt):
         """
         Entran: coordenadas del mapeta
@@ -182,8 +191,6 @@ class QvMapeta(QFrame):
         ficheroEnviado= ficheroMapeta[0]
         datos_mapeta= self.CalcularPNGyRangoMapeta(ficheroEnviado)
 
-
-
         self.PngMapeta= datos_mapeta[0]
         self.xmin_0=    datos_mapeta[1]
         self.ymin_0=    datos_mapeta[2]
@@ -200,13 +207,13 @@ class QvMapeta(QFrame):
         linea= linea + 'H:  '+ str(datos_mapeta[6])
         self.setToolTip(linea)
 
-
-
-
         self.radio= self.xTamany/2
         self.centroMapeta=QPoint(self.radio,self.radio)
         self.setGeometry(0, 0, self.xTamany, self.yTamany)   # Actualizo tamaño mapeta (aqui??)  
         # self.move(20,20) 
+
+        # rang = QgsRectangle(self.xmin_0, self.ymin_0, self.xmax_0, self.ymax_0)
+        # self.canvas.setExtent(rang)
 
         self.Escala = (self.xmax_0 - self.xmin_0) / self.xTamany 
         self.cambiarMapeta()   
@@ -328,16 +335,13 @@ class QvMapeta(QFrame):
                 elif caso2== "casoE":    return None,None,"H9" , False    # no posible por ordenacion de datos entrada
 
             return None,None,None,False
-    
-
-
     def cambiarMapeta(self):
         """
           El canvas ha girado. Hay que recargar la imagen del mapeta apropiada.\n
           La imagen sin giro se gira lo que manda la rotación del canvas y se recarga en el mapeta
           Se invoca en la carga y cuando se detecta una rotacion
         """
-        #print("cambiarMapeta",QTime.currentTime().toString(Qt.DefaultLocaleLongDate))
+        print("cambiarMapeta",self.pPM,QTime.currentTime().toString(Qt.DefaultLocaleLongDate))
         angulo_rotacion=self.canvas.rotation()
         # Roto la imagen
         pixmap=QPixmap(self.PngMapeta)
@@ -358,10 +362,6 @@ class QvMapeta(QFrame):
         parametro = "{opacity: 50; background-image: url("+fic_tmp+");} "
         parametro =parametro.replace('\\','/')
         self.setStyleSheet('QFrame' + parametro)
-
-
-
-
     def distancia(self,p1,p2):
         '''
         Dados 2 puntos reotrna su distancia
@@ -389,17 +389,20 @@ class QvMapeta(QFrame):
         la cartografia correspondiente  en el canvas, y se adapta a
         las proporciones del canvas (estado inicial y 
         redimensionamientos).\n
-        Estás proporciones serán diferentes a las de la ventana ventana 
+        Estás proporciones serán diferentes a las de la ventana  
         del mapeta (nuestra seleccion) y por lo tanto debemos recalcular 
         la ventana del mapeta representando sobre éste el area de 
         cartografia visible y una cruz que indica el centro\n
         Esta funcion calcula unas coordenadas para que trabaje el 
         paintEvent (que es quien pinta la caja y la cruz...) 
         """
-        # print("pintarMapeta",QTime.currentTime().toString(Qt.DefaultLocaleLongDate))
+        print("pintarMapeta",self.pPM,QTime.currentTime().toString(Qt.DefaultLocaleLongDate))
         # detecto cuadrante, habra que hacer calculos en funcion de el....
-        self.Cuadrante = self.DetectoCuadrante()
+        
+        if self.pPM == False:
+            return
 
+        self.Cuadrante = self.DetectoCuadrante()
         #region: Declaración variables que usare
         PPa1=QPoint(); PPa2=QPoint(); PPa3=QPoint(); PPa4=QPoint()  # mundo 
         Par1=QPoint(); Par2=QPoint(); Par3=QPoint(); Par4=QPoint()  # mapeta
@@ -418,15 +421,16 @@ class QvMapeta(QFrame):
         PPa2.x=  PPa3.x;            PPa2.y=  PPa1.y           # abajo derecha
         PPa4.x=  PPa1.x;            PPa4.y=  PPa3.y           # arriba izquierda
 
-        # Hay que ajustar la ventana girada al canvas
+        # Cuando el canvas tiene rotacion, las coordenadas que nos da extent son las del 
+        # rango de la cartografia que vemos ¡pero girada!
+        # ...hay que ajustar la ventana girada al canvas....
         
-        # anchura y altura de la cartografia del canvas en coord mundo
+        # anchura y altura de la cartografia del canvas en coord mundo.
         anchoMundoAzul= (PPa3.x - PPa1.x);    altoMundoAzul=  (PPa3.y - PPa1.y)
 
-        # Proporciones canvas
+        # Proporciones canvas "visible"
         w= self.canvas.widthMM();              h= self.canvas.heightMM()
-        # ww= self.canvas.width();               hh= self.canvas.height()   # ???
-
+        
         # Calculo de Escalax (Escalay innecesario porque el mapeta es cuadrado)
         # h --> altura del canvas en mm
         # w --> anchura del canvas en mm
@@ -497,24 +501,18 @@ class QvMapeta(QFrame):
         self.centro_v.setX(Par1.x)
         self.centro_v.setY(Par1.y)
 
-
-
         # La caja roja la construyo basandome en el centro de la ventana
         Par1.x= self.centro_v.x() - self.ancho/2;      Par1.y= self.centro_v.y() + self.alto/2
         Par2.x= self.centro_v.x() + self.ancho/2;      Par2.y= self.centro_v.y() + self.alto/2
         Par3.x= self.centro_v.x() + self.ancho/2;      Par3.y= self.centro_v.y() - self.alto/2
         Par4.x= self.centro_v.x() - self.ancho/2;      Par4.y= self.centro_v.y() - self.alto/2
-
   
         # xmin, ymin, xmax, ymax para que las vea el paintEvent
         xMin = min(Par1.x,Par2.x,Par3.x,Par4.x);   yMin = min(Par1.y,Par2.y,Par3.y,Par4.y)
         xMax = max(Par1.x,Par2.x,Par3.x,Par4.x);   yMax = max(Par1.y,Par2.y,Par3.y,Par4.y)   
         self.begin = QPoint(xMin,yMin);            self.end = QPoint(xMax,yMax) 
-        
 
         self.repaint()   # Fuerzo el paintEvent   
-
-
 
         # ShowSecondsInSystemClock
         # https://www.softzone.es/2017/03/19/como-mostrar-los-segundos-en-el-reloj-de-windows-10/
@@ -524,18 +522,8 @@ class QvMapeta(QFrame):
         En esta version, con el mapeta circular, solo se dibuja los trozos de rectangulo y cruz 
         interiores al circulo
         """
-        # print("          paintEvent",QTime.currentTime().toString(Qt.DefaultLocaleLongDate))
-        # try:
-        #     qp = QPainter(self)
-        #     ancho= self.cropped_pixmap.width() 
-        #     qp.drawPixmap(0,0,ancho,ancho,self.cropped_pixmap)
-        #     qp.end()
-        #     # self.repaint()
-        # except Exception as ee:
-        #     pass
-
-
-        rect=self.canvas.extent()
+        print("----------paintEvent",self.pPM,QTime.currentTime().toString(Qt.DefaultLocaleLongDate))
+        # rect=self.canvas.extent()
         
         # Auxiliar: Pinta cruz en centro de canvas para facilitar comprobaciones y el texto "centro"
         if self.pintoCentro:
@@ -555,7 +543,6 @@ class QvMapeta(QFrame):
         qp.setBrush(br)  
 
         # pen= QPen(QvConstants.COLORFOSC,  1, Qt.SolidLine)
-        
         # SolidLine DashLine  DotLine DashDotLine DashDotDotLine CustomDashLine
         pen= QPen(self.colorMarcasMapeta,  1, Qt.SolidLine)  
         qp.setPen(pen)
@@ -569,9 +556,8 @@ class QvMapeta(QFrame):
         begin_ = QPoint();           end_ =  QPoint()
         begin_.x= self.begin.x();    end_.x= self.end.x()
 
-
         # Si se llega aqui despues de hacer una ventana sobre el mapeta
-        #    se pone el origen de coordenadas en la esquina inferior izquierda del mapeta
+        #  se pone el origen de coordenadas en la esquina inferior izquierda del mapeta
         # Caso contrario no se hace
         if self.MouseMoveFlag== False:
             begin_.y= self.yTamany-self.begin.y()
@@ -579,28 +565,20 @@ class QvMapeta(QFrame):
         else:
             begin_.y= self.begin.y()
             end_.y= self.end.y()
-        
 
-
-        # print("-----------",QTime.currentTime().toString(Qt.DefaultLocaleLongDate))
-
+        # print("-----------",self.pPM,QTime.currentTime().toString(Qt.DefaultLocaleLongDate))
         # print(begin_.x); print(begin_.y);
         # print(end_.x); print(end_.y)
-
         self.MouseMoveFlag= False
 
-        # Pinto el rectangulo como 4 segmentos recortados si es necesario NUEVO
         radio= self.xTamany/2
         centro=QPoint(self.xTamany/2,self.yTamany/2)  
-
-        # 
         P_xmin_ymin=  QPoint(begin_.x, end_.y)
         P_xmax_ymin=  QPoint(end_.x,   end_.y)
         P_xmax_ymax=  QPoint(end_.x,   begin_.y)
         P_xmin_ymax=  QPoint(begin_.x, begin_.y)  
 
-
-        # Pinto ventana cartografia con 4 lineas
+        #region Pinto ventana cartografia con 4 lineas
         try:   # lado HORIZONTAL ARRIBA NUEVO --> ok
             PR_xmin_ymin,PR_xmax_ymin,caso,pintar = self.SegmentoDeRangoEnCirculo(P_xmin_ymin,P_xmax_ymin,centro,radio)
             if pintar:  qp.drawLine(QLineF( PR_xmin_ymin,PR_xmax_ymin ))
@@ -621,10 +599,10 @@ class QvMapeta(QFrame):
             if pintar:  qp.drawLine(QLineF( PR_xmax_ymin,PR_xmax_ymax ))
         except :
             pass
-
+        #endregion Pinto ventana cartografia con 4 lineas
+        #region Pinto CRUZ RECORTADA por el circulo NUEVO --> ok')
         pen= QPen(self.colorMarcasMapeta,  1, Qt.DashDotLine)
         qp.setPen(pen)
-        #region Pinto CRUZ RECORTADA por el circulo NUEVO --> ok')
         try:
             P1=  QPoint(begin_.x +(end_.x-begin_.x)/2, 0)
             P2=  QPoint(begin_.x +(end_.x-begin_.x)/2,self.yTamany)
@@ -643,8 +621,6 @@ class QvMapeta(QFrame):
         #endregion Pinto CRUZ RECORTADA por el circulo NUEVO --> ok')
 
         qp.end()
-
-
     def enterEvent(self, event):
         self.setCursor(QCursor(QPixmap(imatgesDir+'/cruz.cur')))    
     def mouseMoveEvent(self, event):
@@ -654,19 +630,16 @@ class QvMapeta(QFrame):
         if self.MousePressFlag== True:        
             self.end = event.pos()
             self.MouseMoveFlag= True
-            self.canvas.update()
+            self.repaint()      #para forzar paintevent del mapeta que pintará rectangulo y creuz
         else:
-            pass
-            # print("He pasado por aqui_01")
-
-
-
+            # pass
+            print("He pasado por aqui_01")
     def mousePressEvent(self, event):
         """
         Presion de un boton del raton cuando el cursor está sobre el mapeta\n
         Guarda coordenadas de punto del mapeta
         """
-        #print("mousePressEvent",QTime.currentTime().toString(Qt.DefaultLocaleLongDate))
+        print("mousePressEvent",self.pPM,QTime.currentTime().toString(Qt.DefaultLocaleLongDate))
         if event.button()==Qt.RightButton:
             return
         
@@ -677,7 +650,7 @@ class QvMapeta(QFrame):
         # averiguo si el punto ha de enviarse a compass
         radio= self.width()/2;    centroMapeta= QPoint(radio,radio)
         if self.enCirculo(self.the_data,radio,centroMapeta)==False:   # fuera
-            self.puntoParaCompass = True
+            self.pPM = False
             # print("Mapeta >> mousePressEvent emito event",event.pos())  
             margen= self.parent().parent().margen
             self.the_data.setX(event.pos().x()+margen)
@@ -686,27 +659,24 @@ class QvMapeta(QFrame):
             self.Sig_dadoPNT.emit(self.the_data)
             return
         else:   
-            self.puntoParaCompass=False   
+            self.pPM=True   
 
 
         self.end = event.pos()
        
         # rect = self.canvas.extent()
- 
     def mouseReleaseEvent(self, event):
         """
-        Dejamos de hacer presion sobre un boton del raton mientras está sobre mapeta\n
+        Dejamos de hacer presion sobre un boton del raton mientras--está sobre mapeta\n
         Si es sobre el mapeta 0, las coordenadas se pueden buscar la correspondencia de esas coordenadas 
         con el mundo.\n
         Si el mapeta esta girado, lo que hare sera buscar la correspondencia de las coordenadas de 
         este mapeta con el mapeta no girado.\n 
         Para ello habra que girarlas 44.5 grados y restarles el desplazamiento
         """
-        #print("mouseReleaseEvent",QTime.currentTime().toString(Qt.DefaultLocaleLongDate))
+        print("mouseReleaseEvent",self.pPM,QTime.currentTime().toString(Qt.DefaultLocaleLongDate))
         if event.button()==Qt.RightButton:
             return
-
-
 
         #region declaracion variables
         Paux1=QPoint() #  Pto arriba izquierda
@@ -715,20 +685,22 @@ class QvMapeta(QFrame):
         Paux4=QPoint() #  Pto abajo izquierda
         #endregion
         
+        # guardo las coordenadas del boton soltado
         self.end = event.pos()
         # si el punto estra en el circulo, es del mapeta. Si es exterior, es para compass
-      
-        # if self.puntoParaCompass == True:
+     
+        # if self.pPM == False:
         #     self.end = self.begin
 
         self.MousePressFlag=False
 
-        ## Cambio origen de coordenadas "Y" poniendolo abajo-izquierda. Acorde con sistema del Mapa')
+        # Cambio origen de coordenadas "Y" poniendolo abajo-izquierda. Acorde con sistema del Mapa')
         self.xIn = self.begin.x();      self.yIn = self.yTamany - self.begin.y()   
         self.xFi = self.end.x();        self.yFi = self.yTamany - self.end.y()
+        # calculo centro de area definida en mapeta
         self.centro_v.setX((self.xFi-self.xIn)/2 + self.xIn)
         self.centro_v.setY((self.yFi-self.yIn)/2 + self.yIn)
-       # Convierto las coordenadas del mapeta girado 44 a coordenadas de mapeta no girado para buscar la utm')
+       # Convierto las coordenadas del mapeta girado a coordenadas de mapeta no girado para buscar la utm')
  
         #  En el mapeta (girado o no) he señalado una ventana. Calculo su tamaño
         # Calculo la la ventana mundo "girado" correspondiente a los puntos del mapeta
@@ -779,8 +751,9 @@ class QvMapeta(QFrame):
 
         self.canvas.setExtent(rang)
         self.canvas.refresh()
+        # self.canvas.update()   no va
         
-        rect = self.canvas.extent()
+        # rect = self.canvas.extent()
 
 
 import math
