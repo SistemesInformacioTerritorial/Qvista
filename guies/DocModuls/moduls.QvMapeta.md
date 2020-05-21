@@ -1,5 +1,5 @@
 *Documentación complementaria y verbosa de algunas funciones de la clase QvMapeta 
-(como escusa para aprender Markdown)*
+(como excusa para aprender Markdown)*
 
 # QvMapeta in module moduls.QvMapeta:
 QvMapeta define un pequeño mapa de posicionamiento que controla un 
@@ -12,7 +12,7 @@ canvas.
      Mapeta.repaint => paintEvent
      
      
-mouse en Mapeta, dentro/fuera del circulo q   
+mouse en Mapeta, dentro/fuera del círculo  
 Casos|mousePress  |mouseMove  |mouseRelease  |Comportamiento
 --|--|--|--| --
 |1| dentro |dentro  |dentro  |window area
