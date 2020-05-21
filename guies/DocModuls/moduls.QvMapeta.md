@@ -12,16 +12,16 @@ canvas.
      Mapeta.repaint => paintEvent
      
      
-mouse en Mapeta, dentro/fuera del circulo   
+mouse en Mapeta, dentro/fuera del circulo q   
 Casos|mousePress  |mouseMove  |mouseRelease  |Comportamiento
---|--|--|--|--|--|--|
-|window area| dentro |dentro  |dentro  |hacer
-|window center| dentro |-|dentro  |hacer
-|| dentro |dentro/fuera  |fuera|
-|Giro mapeta| fuera|fuera/dentro  |dentro  | para compass el Press
-|Giro mapeta| fuera|fuera|fuera|para compass el Press
-|Giro mapeta| fuera|-|fuera|para compass el Press
-![enter image description here](tablaEventsMouse.jpg)
+--|--|--|--| --
+|1| dentro |dentro  |dentro  |window area
+|2| dentro |-|dentro  |window center el Press
+|3| dentro |dentro/fuera  |fuera| window center el Press
+|4| fuera|fuera/dentro  |dentro  | para compass el Press
+|5| fuera|fuera|fuera|para compass el Press
+|6| fuera|-|fuera|para compass el Press
+
  
 ## cambiarMapeta(self)
 
