@@ -23,7 +23,7 @@ Retorno el cuadrante en que está el angulo de rotacion
     
 ## SegmentoDeRangoEnCirculo(self, P1, P2, centro, radio)
   Retorna l trozo d segmento incluido n un circulo y l caso pra control
-![enter image description here](mapeta_p1_p2.jpg)
+![enter image description here](https://github.com/SistemesInformacioTerritorial/Qvista/blob/prePro/guies/DocModuls/mapeta_p1_p2.jpg)
 
     
 ##  SegmentoEnCirculo(self, P1, P2, centro, radio)
