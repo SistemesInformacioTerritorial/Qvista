@@ -8,8 +8,11 @@ canvas.
 
 > **triggers** 
 > ChgRotation  => CambiarMapeta
+
 > ChgExtent      => pintarMapeta
+
 > RefreshCanvas => paintEvent
+
 > Mapeta.repaint =>paintevent
 
 
