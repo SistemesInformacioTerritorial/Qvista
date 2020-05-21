@@ -1,72 +1,23 @@
-# Help on class QvMapeta in module moduls.QvMapeta:
+*Documentacion complementaria y verbosa de algunas funciones de la clase QvMapeta 
+(como escusa para aprender Markdown)*
 
-class QvMapeta(PyQt5.QtWidgets.QFrame)
-QvMapeta(canvas, ficheroMapeta, pare=None)
+# QvMapeta in module moduls.QvMapeta:
 La classe que defineix el mapeta de posicionament i que controla un 
 canvas.
 
-## CalcularPNGyRangoMapeta(self, ficheroEnviado)
-Hay 2 ficheros complementarios: PNG y PGW. (PNG la imagen, 
-PGW su georeferenciacio,  en esta versión referida a un mapeta sin b
-rotación). La funcion recibe un fichero (cualquiera de los dos) y 
-busca su complementario. 
-Con ambos calcula y la anchura y altura del PNG, y su rango.
-    
- ## DetectoCuadrante(self)
-Retorno el cuadrante en que está el angulo de rotacion
-  4     1
-  3     2
-    
-## PngPgwDroped(self, ficheroMapeta)
-  Recibe un fichero soltado y lo manda a funcion para calcular el
-  nombre del mapeta y su rango
-    
-## SegmentoDeRangoEnCirculo(self, P1, P2, centro, radio)
-  Retorna l trozo d segmento incluido n un circulo y l caso pra control
-![enter image description here](https://github.com/SistemesInformacioTerritorial/Qvista/blob/prePro/guies/DocModuls/mapeta_p1_p2.jpg)
 
-    
-##  SegmentoEnCirculo(self, P1, P2, centro, radio)
-    Sig_dadoPNT = <unbound PYQT_SIGNAL Sig_dadoPNT(QPoint)>
-    __init__(self, canvas, ficheroMapeta, pare=None)
-  Inicialització del mapeta.
-  
-  Arguments:
-      QFrame {[self]} -- [QvMapeta]
-      canvas {[QgsMapCanvas]} -- [El canvas que gesrtionarà el mapeta.]
-  
-  Keyword Arguments:
-      tamanyPetit {bool} -- [True pel Mapeta petit, False pel Mapeta
-       gran] (default: {False})
-      pare {[QWidget]} -- [El widget sobre el que es pintarà el mapeta.
-       és obligatori.] (default: {None})
+> **triggers** 
+> ChgRotation  => CambiarMapeta
+> ChgExtent      => pintarMapeta
+> RefreshCanvas => paintEvent
+> Mapeta.repaint =>paintevent
+
+
     
 ## cambiarMapeta(self)
 - La imagen del mapeta 0º se gira lo que manda la rotación del canvas y se recarga en el mapeta
 - Se invoca en la carga y cuando se detecta una rotacion
-- ![imagenes](https://github.com/SistemesInformacioTerritorial/Qvista/blob/prePro/Imatges/Mapeta.png)
-    
-## conversioPantallaMapa(self, punt)
-Entran: coordenadas del mapeta
-Salen: coordenadas mundo
-    
-## discrimimar_caso_H(self, P1, PW, PE)
-Saber si P1 esta en zona West/Centro/ Est delimitadas por PW y PE
-    
-## discrimimar_caso_V(self, P1, PN, PS)
-Saber si P1 esta en zona Norte/Centro/ Sur delimitadas por PN y PS
-    
-## distancia(self, p1, p2)
-Dados 2 puntos reotrna su distancia
-    
-## distancia_(self, p1, p2)
-Dados 2 puntos retorna su distancia
-    
-## enCirculo(self, pnt, radio, centroMapeta)
-Detecta si un punto esta en el circulo inscrito en el mapeta
-    
-## enterEvent(self, event)
-  enterEvent(self, QEvent)
+
     
 ## mouseMoveEvent(self, event)
 - Presion de un boton del raton mantenia y movimiento sobre el mapeta
@@ -99,8 +50,4 @@ Esta funcion calcula unas coordenadas para que trabaje el
 paintEvent (que es quien pinta la caja y la cruz...)
 - **repaint de mapeta para forzar paintEvent** (pintar rectangulo y cruz)
     
-    
-## setDropable(self)
- Implementacion Drop ficheros png y pgw sobre el mapeta. 
- Mapeta será capaz de recibir PNG o PGW para recargar su imagen
-   
+ 
