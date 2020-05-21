@@ -25,13 +25,6 @@ Retorno el cuadrante en que está el angulo de rotacion
   Retorna l trozo d segmento incluido n un circulo y l caso pra control
 ![enter image description here](mapeta_p1_p2.jpg)
 
-
-
-       P2
-          (W) (C) (E) 
-  P1  (W) 1   2   3
-      (C) 4   5   6
-      (E) 7   8   9
     
 ##  SegmentoEnCirculo(self, P1, P2, centro, radio)
     Sig_dadoPNT = <unbound PYQT_SIGNAL Sig_dadoPNT(QPoint)>
