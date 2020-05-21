@@ -11,7 +11,18 @@ canvas.
      Canvas.refresh => paintEvent
      Mapeta.repaint => paintEvent
      
-    
+     
+mouse en Mapeta, dentro/fuera del circulo   
+Casos|mousePress  |mouseMove  |mouseRelease  |Comportamiento
+--|--|--|--|--|--|--|
+|window area| dentro |dentro  |dentro  |hacer
+|window center| dentro |-|dentro  |hacer
+|| dentro |dentro/fuera  |fuera|
+|Giro mapeta| fuera|fuera/dentro  |dentro  | para compass el Press
+|Giro mapeta| fuera|fuera|fuera|para compass el Press
+|Giro mapeta| fuera|-|fuera|para compass el Press
+![enter image description here](tablaEventsMouse.jpg)
+ 
 ## cambiarMapeta(self)
 
 > Actualiza imagen del mapeta conforme a la rotación del canvas
