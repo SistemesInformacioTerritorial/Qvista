@@ -42,7 +42,7 @@ Casos|mousePress  |mouseMove  |mouseRelease  |Comportamiento | Destinatario fina
 ## mouseReleaseEvent(self, event)
  - Dejamos de hacer presión sobre un botón del ratón mientras está sobre mapeta
 	- Dentro del circulo inscrito: 
-		- Se puede esta dando punto final de windowArea  -->  caso 1
+		- Se puede esta dando punto final de windowArea  -->  casos 1, 3
 		- Se está dando punto final de windowCenter --> caso 2
 		- Puede ser que sea el punto final de un windowArea con pnt inicial fuera  --> caso4 
 	- Fuera del circulo inscrito:
