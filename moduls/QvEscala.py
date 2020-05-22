@@ -12,8 +12,9 @@ class QvEscala():
     def nouProjecte(self, projecte):
         self.lliure()
         llista = self.varEscales(projecte)
-        if llista is not None:
-            self.fixe(llista)
+        # if llista is not None:
+        #     self.fixe(llista)
+        self.fixe(llista)
 
     def netejaEscales(self, var):
         if var is not None:
@@ -39,13 +40,16 @@ class QvEscala():
 
     def fixe(self, llista=None):
         if llista is None:
-            self.llista = [500, 1000, 2500,
-                           5000, 10000, 25000,
-                           50000, 100000, 250000]
+            self.llistaCb = [500, 1000, 2500,
+                             5000, 10000, 25000,
+                             50000, 100000, 250000]
         else:
             self.llista = llista
-        self.selec = False
-        self.canvas.scaleChanged.connect(self.selecEscala)
+            self.llistaCb = llista
+            self.selec = False
+            self.canvas.scaleChanged.connect(self.selecEscala)
+        # self.selec = False
+        # self.canvas.scaleChanged.connect(self.selecEscala)
 
     def lliure(self):
         if self.llista is not None:

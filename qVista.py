@@ -1786,7 +1786,7 @@ class QVista(QMainWindow, Ui_MainWindow):
             self.editantEscala = True
             self.bScale.setText(' Escala 1: ')
             self.leScale.show()
-            escalesPossibles = list(map(str,self.llegenda.escales.llista))
+            escalesPossibles = list(map(str,self.llegenda.escales.llistaCb))
             self.completerEscales=QCompleter(escalesPossibles,self.leScale)
             self.completerEscales.activated.connect(self.completerEscalesTriat)
             popup=self.completerEscales.popup()
