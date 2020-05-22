@@ -110,7 +110,7 @@ class QvMemoria(Singleton):
             return
         self.geocodificats[md5sum(path)]=md5sum(ruta)
     def getGeocodificat(self,path, net):
-        ruta=os.path.join(dadesdir,Path(net).stem+'_Geo.csv')
+        ruta=os.path.join(configuracioQvista.dadesdir,Path(net).stem+'_Geo.csv')
         if os.path.isfile(ruta):
             suma_orig=md5sum(path)
             if suma_orig in self.geocodificats:
