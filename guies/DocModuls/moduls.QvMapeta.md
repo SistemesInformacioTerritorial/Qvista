@@ -51,8 +51,14 @@ Casos|mousePress  |mouseMove  |mouseRelease  |Comportamiento
     
 ## paintEvent(self, event)
 - Pinta en mapeta rectangulo y cruz.
- - [] TODO: Explicar como actúa cuando se ejecuta desde mapeta, y como cuando es
-       el canvas quien lo gestiona
+- Se basa en las coordenadas self.begin y self.end. 
+ - Puede ser invocado por:
+	 - Una modificacion del canvas
+	      -  ChgExtent => pintarMapeta: *self.begin self.end* 
+	 - Una acción sobre el mapeta:
+	     -  En mousePressEvent *self.begin*
+	     - En mouseMove= *self.end*
+	     - En mouseRelease: *self.end*
 - Con el mapeta circular, solo se dibujan los trozos de rectángulo y cruz interiores al circulo
 
 ## pintarMapeta(self)
@@ -69,3 +75,4 @@ paintEvent (que es quien pinta la caja y la cruz...)
 
 
 > Written with [StackEdit](https://stackedit.io/).
+
