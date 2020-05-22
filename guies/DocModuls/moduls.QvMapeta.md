@@ -17,7 +17,7 @@ Casos|mousePress  |mouseMove  |mouseRelease  |Comportamiento
 --|--|--|--| --
 |1| dentro |dentro  |dentro  |window area
 |2| dentro | -|dentro  |window center el Press
-|3| dentro |dentro/fuera  |fuera| window center el Press
+|3| dentro |dentro/fuera  |fuera| window area
 |4| fuera|fuera/dentro  |dentro  | para compass el Press
 |5| fuera|fuera|fuera|para compass el Press
 |6| fuera|-|fuera|para compass el Press
