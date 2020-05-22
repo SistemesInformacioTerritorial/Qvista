@@ -1,4 +1,4 @@
-*Documentación complementaria y verbosa de algunas funciones de la clase QvMapeta 
+﻿*Documentación complementaria y verbosa de algunas funciones de la clase QvMapeta 
 (como excusa para aprender Markdown)*
 
 # QvMapeta in module moduls.QvMapeta:
@@ -16,7 +16,7 @@ mouse en Mapeta, dentro/fuera del círculo
 Casos|mousePress  |mouseMove  |mouseRelease  |Comportamiento
 --|--|--|--| --
 |1| dentro |dentro  |dentro  |window area
-|2| dentro |-|dentro  |window center el Press
+|2| dentro | -|dentro  |window center el Press
 |3| dentro |dentro/fuera  |fuera| window center el Press
 |4| fuera|fuera/dentro  |dentro  | para compass el Press
 |5| fuera|fuera|fuera|para compass el Press
@@ -66,3 +66,6 @@ paintEvent (que es quien pinta la caja y la cruz...)
 - **repaint de mapeta para forzar paintEvent** (pintar rectangulo y cruz)
     
  
+
+
+> Written with [StackEdit](https://stackedit.io/).
