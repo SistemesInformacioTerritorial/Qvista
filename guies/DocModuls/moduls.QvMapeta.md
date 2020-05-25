@@ -6,7 +6,7 @@ QvMapeta define un pequeño mapa de posicionamiento que controla un
 canvas.
 
 ### Triggers:
-| Event | Ejecuta
+| Event| Ejecuta
 -- | -- 
 ChgRotation    | cambiarMapeta 
 ChgExtent     | pintarMapeta
@@ -36,16 +36,16 @@ Casos|mousePress  |mouseMove  |mouseRelease  |Comportamiento | Destinatario fina
 
 ## mousePressEvent(self, event)
 - Presión de un botón del ratón cuando el cursor está sobre el mapeta. **El Press determina si el punto está destinado al mapeta o al compass**
-	- Dentro del circulo inscrito: 
-	  - Se puede estar haciendo un window center -->  caso 2
-	  - Se está iniciando un window area  --> casos 1,3
-	- Fuera del circulo inscrito:
-		-  Se está dando un punto para Compass y se gire el mapeta --> casos  4,5,6
+- Comprueba si el punto estra dentro del círculo inscrito:
+	- Si **dentro** del circulo (casos 1,2,3): 
+	    - Funcionamiento mapeta standart
+	    - self.pPM = True
+	- Si **fuera** del circulo (casos 4,5,6):
+	  - emite las coordenadas (que recibirá MapetaBrujulado y se las enviará a Compass) 
+	  - self.pPM= False
+		
 - Guarda coordenadas de punto del mapeta en *self.begin y self.end*
-- Comprueba si el punto dado está en el circulo inscrito del mapeta, y si no lo está, emite las coordenadas (que recibirá MapetaBrujulado y se las enviará a Compass) 
-- Mantiene flag self.pPM (punto para mapeta):
-  - True si lo ha de gestionar mapeta  
-  - False si ha de utilizarlo Compass
+
   
 ## mouseMoveEvent(self, event)
 - Presión de un botón del ratón mantenida y movimiento sobre el mapeta. Seguramente el usuario está haciendo un window area
