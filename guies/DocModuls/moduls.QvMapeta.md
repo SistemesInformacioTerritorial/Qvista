@@ -1,7 +1,7 @@
 *Documentación complementaria y verbosa de algunas funciones de la clase QvMapeta 
 (como excusa para aprender Markdown)*
 
- [PintarMapeta](#pintarMapeta(self))
+ [PintarMapeta](#pintarMapeta)
 
 
 
@@ -79,8 +79,8 @@ Casos|mousePress  |mouseMove  |mouseRelease  |Comportamiento | Destinatario fina
 	     - En mouseMove= *self.end*
 	     - En mouseRelease: *self.end*
 - Con el mapeta circular, solo se dibujan los trozos de rectángulo y cruz interiores al circulo
-# pintarMapeta
-## pintarMapeta(self)
+
+## pintarMapeta
 - Se invoca cuando cambian el tamaño del canvas y cuando hay una   rotacion del canvas
   -  Despues de seleccionar una ventana en el mapeta, se actualiza   la cartografia correspondiente  en el canvas, y se adapta alas proporciones del canvas (estado inicial y  redimensionamientos).
        
@@ -90,7 +90,7 @@ Esta funcion calcula unas coordenadas para que trabaje el
 paintEvent (que es quien pinta la caja y la cruz...)
 - **repaint de mapeta para forzar paintEvent** (pintar rectangulo y cruz)
     
-## cambiarMapeta(self)
+## cambiarMapeta
 > Actualiza imagen del mapeta conforme a la rotación del canvas
 - Se invoca en la carga y cuando se detecta una rotación
 - La imagen del mapeta 0º se gira lo que manda la rotación del canvas y se recarga en el mapeta
