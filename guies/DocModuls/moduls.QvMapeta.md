@@ -6,7 +6,7 @@ QvMapeta define un pequeño mapa de posicionamiento que controla un
 canvas.
 
 ### Triggers:
-| Acción | Ejecuta
+| Event | Ejecuta
 -- | -- 
 ChgRotation    | cambiarMapeta 
 ChgExtent     | pintarMapeta
