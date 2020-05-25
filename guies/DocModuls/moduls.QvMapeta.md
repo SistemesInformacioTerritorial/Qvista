@@ -1,10 +1,6 @@
 *Documentación complementaria y verbosa de algunas funciones de la clase QvMapeta 
 (como excusa para aprender Markdown)*
 
- [PintarMapeta](#pintarMapeta)
-
-
-
 # QvMapeta in module moduls.QvMapeta:
 QvMapeta define un pequeño mapa de posicionamiento que controla un 
 canvas.
@@ -38,7 +34,7 @@ Casos|mousePress  |mouseMove  |mouseRelease  |Comportamiento | Destinatario fina
 |5| fuera|fuera|fuera|para compass el Press | compass
 |6| fuera|-|fuera|para compass el Press | compass
 
-## mousePressEvent(self, event)
+## mousePressEvent
 - Presión de un botón del ratón cuando el cursor está sobre el mapeta. **El Press determina si el punto está destinado al mapeta o al compass**
 - Comprueba si el punto estra dentro del círculo inscrito:
 	- Si **dentro** del circulo (casos 1,2,3): 
@@ -51,11 +47,11 @@ Casos|mousePress  |mouseMove  |mouseRelease  |Comportamiento | Destinatario fina
 - Guarda coordenadas de punto del mapeta en *self.begin y self.end*
 
   
-## mouseMoveEvent(self, event)
+## mouseMoveEvent
 - Presión de un botón del ratón mantenida y movimiento sobre el mapeta. Seguramente el usuario está haciendo un window area
-- **ejecuta repaint de mapeta para forzar paintEvent**  (que pintará rectángulo y cruz)
+- **ejecuta repaint de mapeta para forzar [paintEvent](#paintEvent)**  (que pintará rectángulo y cruz)
 
-## mouseReleaseEvent(self, event)
+## mouseReleaseEvent
  - Dejamos de hacer presión sobre un botón del ratón mientras está sobre mapeta
 	- Dentro del circulo inscrito: 
 		- Se puede esta dando punto final de windowArea  -->  casos 1, 3
@@ -65,10 +61,10 @@ Casos|mousePress  |mouseMove  |mouseRelease  |Comportamiento | Destinatario fina
 		-  Son finalización de puntos para compass --> casos  5,6
  - Calculo las coordenadas pantalla del centro del rectángulo de selección, o lo que es lo mismo del punto que señala la cruz y las transformo a coordenadas mundo.
  - Si el mapeta esta girado, hay que rotar esas coordenadas (en función de la rotación) para tenerlas en "mapeta 0º" y a partir de ahí buscar su correspondientes coordenadas mundo.
- - **canvas.setExtent() forzará pintarMapeta** 
- - **repaint de mapeta para forzar paintEvent** (pintar rectangulo y cruz)
+ - **canvas.setExtent() forzará  [pintarMapeta](#pintarMapeta)** 
+ - **repaint de mapeta para forzar  [paintEvent](#paintEvent)** (pintar rectangulo y cruz)
     
-## paintEvent(self, event)
+## paintEvent
 - Pinta en mapeta rectangulo y cruz.
 - Se basa en las coordenadas self.begin y self.end. 
  - Puede ser invocado por:
