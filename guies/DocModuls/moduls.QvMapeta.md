@@ -79,7 +79,7 @@ Casos|mousePress  |mouseMove  |mouseRelease  |Comportamiento | Destinatario fina
 	     - En mouseMove= *self.end*
 	     - En mouseRelease: *self.end*
 - Con el mapeta circular, solo se dibujan los trozos de rectángulo y cruz interiores al circulo
-
+# pintarMapeta
 ## pintarMapeta(self)
 - Se invoca cuando cambian el tamaño del canvas y cuando hay una   rotacion del canvas
   -  Despues de seleccionar una ventana en el mapeta, se actualiza   la cartografia correspondiente  en el canvas, y se adapta alas proporciones del canvas (estado inicial y  redimensionamientos).
