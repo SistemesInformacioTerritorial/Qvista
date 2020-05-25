@@ -5,14 +5,26 @@
 QvMapeta define un pequeño mapa de posicionamiento que controla un 
 canvas.
 
-     #triggers 
-     ChgRotation    => cambiarMapeta
-     ChgExtent      => pintarMapeta
-     Canvas.refresh => paintEvent
-     Mapeta.repaint => paintEvent
+### Triggers:
+| Acción | Ejecuta
+-- | -- 
+ChgRotation    | cambiarMapeta 
+ChgExtent     | pintarMapeta
+Canvas.refresh | paintEvent
+Mapeta.repaint | paintEvent
+
+### Flags:
+ Flag|True|False|Obser.| 
+--|--|--|--
+self.pPM |init|mousePressEvent|punto sobre mapeta
+self.MousePressFlag| mousePressEvent|init <br> mousePressEvent<br>  mouseReleaseEvent | mouse apretado
+self.MouseMoveFlag| mouseMove |init<br>paintEvent  | mouse movido
+
+
+
+
      
-     
-mouse en Mapeta, dentro/fuera del círculo  
+### mouse en Mapeta, dentro/fuera del círculo  
 Casos|mousePress  |mouseMove  |mouseRelease  |Comportamiento | Destinatario final
 --|--|--|--| -- | --
 |1| dentro |dentro  |dentro  |window area | mapeta
