@@ -1,6 +1,10 @@
 *Documentación complementaria y verbosa de algunas funciones de la clase QvMapeta 
 (como excusa para aprender Markdown)*
 
+ [PintarMapeta](#pintarMapeta)
+
+
+
 # QvMapeta in module moduls.QvMapeta:
 QvMapeta define un pequeño mapa de posicionamiento que controla un 
 canvas.
