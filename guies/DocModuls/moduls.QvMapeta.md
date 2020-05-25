@@ -1,7 +1,7 @@
 *Documentación complementaria y verbosa de algunas funciones de la clase QvMapeta 
 (como excusa para aprender Markdown)*
 
- [PintarMapeta](#pintarMapeta)
+ [PintarMapeta](#pintarMapeta(self))
 
 
 
