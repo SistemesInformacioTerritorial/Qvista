@@ -141,20 +141,20 @@ class QvMapeta(QFrame):
         # region BOTONES AUXILIARES para hacer comprobaciones
 
         # BOTON AUXILIAR PARA COMPROBACIONES, INVOCA EL CAMBIO DE ROTACION 
-        # self.botocambiarRotacion = QPushButton("Rot +", self)
-        # self.botocambiarRotacion.setGeometry(0, 0, 50, 25)
-        # self.botocambiarRotacion.move(20,0)
-        # self.botocambiarRotacion.show()  
-        # self.botocambiarRotacion.clicked.connect(self.cambiarRotacion_mas)
+        self.botocambiarRotacion = QPushButton("Rot +", self)
+        self.botocambiarRotacion.setGeometry(0, 0, 50, 25)
+        self.botocambiarRotacion.move(20,0)
+        self.botocambiarRotacion.show()  
+        self.botocambiarRotacion.clicked.connect(self.cambiarRotacion_mas)
 
 
 
         # # BOTON AUXILIAR PARA COMPROBACIONES, 
-        # self.botomuestro = QPushButton("Rot -", self)
-        # self.botomuestro.setGeometry(0, 0, 50, 25)
-        # self.botomuestro.move(20, 30)
-        # self.botomuestro.show()
-        # self.botomuestro.clicked.connect(self.cambiarRotacion_menos)        
+        self.botomuestro = QPushButton("Rot -", self)
+        self.botomuestro.setGeometry(0, 0, 50, 25)
+        self.botomuestro.move(20, 30)
+        self.botomuestro.show()
+        self.botomuestro.clicked.connect(self.cambiarRotacion_menos)        
        
         # # BOTON AUXILIAR PARA COMPROBACIONES, QUE SEÑALA EL CENTRO DEL CANVAS 
         # self.botocentroCanvas = QPushButton("Centro", self)
@@ -165,10 +165,10 @@ class QvMapeta(QFrame):
 
 
         # # BOTON AUXILIAR PARA COMPROBACIONES, QUE activa coordenadas mouse
-        # self.botologMSt = QPushButton("logMSt",self)
-        # self.botologMSt.setGeometry(0, 0, 50, 25); self.botologMSt.move(20, 90)
-        # self.botologMSt.show()
-        # self.botologMSt.clicked.connect(self.logMSt)   
+        self.botologMSt = QPushButton("logMSt",self)
+        self.botologMSt.setGeometry(0, 0, 50, 25); self.botologMSt.move(20, 90)
+        self.botologMSt.show()
+        self.botologMSt.clicked.connect(self.logMSt)   
         # endregion
      
         # region  cuarentena
@@ -196,7 +196,7 @@ class QvMapeta(QFrame):
         if self.sw_l is True:
             self.botologMSt.setText("NO logMSt")
             self.sw_l=False
-            with open('d:/siteb/microstation/Macros/pru1.bas', 'a') as fbas:  #block
+            with open('D:/qVista/Codi/guies/DocModuls/QvMapeta/cm.bas', 'a') as fbas:  #block
                 linea= '    MbeSendKeyin "null"\n';  fbas.write( linea)  
                 linea= 'End Sub\n';  fbas.write( linea) 
 
@@ -224,11 +224,11 @@ class QvMapeta(QFrame):
             self.botologMSt.setText("SI logMSt")
             self.sw_l=True 
             try:
-                os.remove('d:/siteb/microstation/Macros/pru1.bas')
+                os.remove('D:/qVista/Codi/guies/DocModuls/QvMapeta/cm.bas')
             except :
                 pass
             
-            with open('d:/siteb/microstation/Macros/pru1.bas', 'w') as fbas:
+            with open('D:/qVista/Codi/guies/DocModuls/QvMapeta/cm.bas', 'w') as fbas:
                 linea= "    'ANGULO: "+ str(self.canvas.rotation()) +"\n"; fbas.write( linea)
                 fbas.write("Sub main\n") 
                 fbas.write("    Dim pt As Mbepoint\n")  
@@ -311,7 +311,7 @@ class QvMapeta(QFrame):
         self.canvas.setRotation(self.canvas.rotation()+20)
         rect_d = self.canvas.extent()  
         if self.sw_l:  #escribir  caja xIn,yIn a xFi,yFi
-            with open('d:/siteb/microstation/Macros/pru1.bas', 'a') as fbas:
+            with open('D:/qVista/Codi/guies/DocModuls/QvMapeta/cm.bas', 'a') as fbas:
                 linea= '    MbeSendKeyin "pla block":    MbeSendKeyin "co=Yellow":    MbeSendKeyin "lc=2":    MbeSendKeyin "wt=2"\n';  fbas.write( linea) 
                 linea= "    pt.x =  {} :pt.y =  {} :  MbeSendDatapoint pt\n".format(round(rect_a.xMinimum(),2), round(rect_a.yMinimum(),2)); fbas.write( linea)
                 linea= "    pt.x =  {} :pt.y =  {} :  MbeSendDatapoint pt\n".format(round(rect_a.xMaximum(),2), round(rect_a.yMaximum(),2)); fbas.write( linea)
@@ -330,7 +330,7 @@ class QvMapeta(QFrame):
         #     self.canvas.setRotation(0)
         # rect_d = self.canvas.extent()  
         # if self.sw_l:  #escribir  caja xIn,yIn a xFi,yFi
-        #     with open('d:/siteb/microstation/Macros/pru1.bas', 'a') as fbas:
+        #     with open('D:/qVista/Codi/guies/DocModuls/QvMapeta/cm.bas', 'a') as fbas:
         #         linea= '    MbeSendKeyin "pla block":    MbeSendKeyin "co=Yellow":    MbeSendKeyin "lc=2":    MbeSendKeyin "wt=2"\n';  fbas.write( linea) 
         #         linea= "    pt.x =  {} :pt.y =  {} :  MbeSendDatapoint pt\n".format(round(rect_a.xMinimum(),2), round(rect_a.yMinimum(),2)); fbas.write( linea)
         #         linea= "    pt.x =  {} :pt.y =  {} :  MbeSendDatapoint pt\n".format(round(rect_a.xMaximum(),2), round(rect_a.yMaximum(),2)); fbas.write( linea)
@@ -477,7 +477,7 @@ class QvMapeta(QFrame):
         datos_mapeta= self.CalcularPNGyRangoMapeta(ficheroEnviado)
 
         # if self.sw_l:  #escribir datos_mapeta
-        #     with open('d:/siteb/microstation/Macros/pru1.bas', 'a') as fbas:
+        #     with open('D:/qVista/Codi/guies/DocModuls/QvMapeta/cm.bas', 'a') as fbas:
         #         linea= "    'datos mapeta: "+  datos_mapeta
         #         linea=linea+"\n"
         #         fbas.write( linea) 
@@ -634,7 +634,7 @@ class QvMapeta(QFrame):
           Se invoca en la carga y cuando se detecta una rotacion
         """
         if self.sw_l:  #escribir rotacion
-            with open('d:/siteb/microstation/Macros/pru1.bas', 'a') as fbas:
+            with open('D:/qVista/Codi/guies/DocModuls/QvMapeta/cm.bas', 'a') as fbas:
                 linea= "    'detecto giro: "+ str(self.canvas.rotation())
                 linea=linea+"\n"
                 fbas.write( linea) 
@@ -677,7 +677,7 @@ class QvMapeta(QFrame):
         # detecto cuadrante, habra que hacer calculos en funcion de el....
         self.Cuadrante = self.DetectoCuadrante()
         if self.sw_l:  #escribir cuadrante y rotacion
-            with open('d:/siteb/microstation/Macros/pru1.bas', 'a') as fbas:
+            with open('D:/qVista/Codi/guies/DocModuls/QvMapeta/cm.bas', 'a') as fbas:
                 linea= "    'Cuadrante: "+ str(self.Cuadrante) +"\n"; fbas.write( linea) 
                 linea= "    'rotation: "+ str(self.canvas.rotation()) +"\n"; fbas.write( linea)
 
@@ -701,7 +701,7 @@ class QvMapeta(QFrame):
         PPa2.x=  PPa3.x;            PPa2.y=  PPa1.y           # abajo derecha
         PPa4.x=  PPa1.x;            PPa4.y=  PPa3.y           # arriba izquierda
         if self.sw_l:  # escribir Blue la extension del canvas
-            with open('d:/siteb/microstation/Macros/pru1.bas', 'a') as fbas:  #line_string
+            with open('D:/qVista/Codi/guies/DocModuls/QvMapeta/cm.bas', 'a') as fbas:  #line_string
                 linea= '    MbeSendKeyin "pla ls":    MbeSendKeyin "co=Blue":    MbeSendKeyin "lc=0":    MbeSendKeyin "wt=2"\n';  fbas.write( linea) 
                 linea= "    pt.x =  {} :pt.y =  {} :  MbeSendDatapoint pt\n".format(round(PPa1.x,2), round(PPa1.y,2)); fbas.write( linea)
                 linea= "    pt.x =  {} :pt.y =  {} :  MbeSendDatapoint pt\n".format(round(PPa2.x,2), round(PPa2.y,2)); fbas.write( linea)
@@ -765,7 +765,7 @@ class QvMapeta(QFrame):
         W = w1 + w2 ;                  H = h1 + h2   
         Escalax= anchoMundoAzul / W;   Escalay= altoMundoAzul /  H 
         if self.sw_l:  #escribir w, h, W, H, Escalax, Escalay, Cuadrante
-            with open('d:/siteb/microstation/Macros/pru1.bas', 'a') as fbas:
+            with open('D:/qVista/Codi/guies/DocModuls/QvMapeta/cm.bas', 'a') as fbas:
                 linea= "    'anchoMundoAzul: "+ str(anchoMundoAzul) +"\n";  fbas.write( linea) 
                 linea= "    'altoMundoAzul: "+ str(altoMundoAzul) +"\n";  fbas.write( linea) 
                 linea= "    'w: "+ str(w) +"\n";  fbas.write( linea) 
@@ -793,7 +793,7 @@ class QvMapeta(QFrame):
             Pa4.x = PPa4.x + Escalax * w2;     Pa4.y = PPa4.y    
      
         if self.sw_l:  #escribir Pa
-            with open('d:/siteb/microstation/Macros/pru1.bas', 'a') as fbas:
+            with open('D:/qVista/Codi/guies/DocModuls/QvMapeta/cm.bas', 'a') as fbas:
                 linea= '    MbeSendKeyin "pla ls":    MbeSendKeyin "co=green":    MbeSendKeyin "lc=0":    MbeSendKeyin "wt=2"\n';  fbas.write( linea) 
                 linea= "    pt.x =  {} :pt.y =  {} :  MbeSendDatapoint pt\n".format(round(Pa1.x,2), round(Pa1.y,2)); fbas.write( linea)
                 linea= "    pt.x =  {} :pt.y =  {} :  MbeSendDatapoint pt\n".format(round(Pa2.x,2), round(Pa2.y,2)); fbas.write( linea)
@@ -810,7 +810,7 @@ class QvMapeta(QFrame):
     
 
         if self.sw_l:  #escribir ancho alto ancho_mun alto_mun
-            with open('d:/siteb/microstation/Macros/pru1.bas', 'a') as fbas:
+            with open('D:/qVista/Codi/guies/DocModuls/QvMapeta/cm.bas', 'a') as fbas:
                 linea= "    'ancho_mun: "+ str(ancho_mun) +"\n"; fbas.write( linea) 
                 linea= "    'alto_mun: "+ str(alto_mun) +"\n"; fbas.write( linea) 
                 linea= "    'ancho: "+ str(self.ancho) +"\n"; fbas.write( linea) 
@@ -839,7 +839,7 @@ class QvMapeta(QFrame):
         Par4.x= self.centro_v.x() - self.ancho/2;      Par4.y= self.centro_v.y() - self.alto/2
 
         if self.sw_l:  #escribir Par
-            with open('d:/siteb/microstation/Macros/pru1.bas', 'a') as fbas:
+            with open('D:/qVista/Codi/guies/DocModuls/QvMapeta/cm.bas', 'a') as fbas:
                 linea= '    MbeSendKeyin "pla ls":    MbeSendKeyin "co=Red":    MbeSendKeyin "lc=0":    MbeSendKeyin "wt=2"\n';  fbas.write( linea) 
                 linea= "    pt.x =  {} :pt.y =  {} :  MbeSendDatapoint pt\n".format(round(Par1.x,2), round(Par1.y,2)); fbas.write( linea)
                 linea= "    pt.x =  {} :pt.y =  {} :  MbeSendDatapoint pt\n".format(round(Par2.x,2), round(Par2.y,2)); fbas.write( linea)
@@ -855,7 +855,7 @@ class QvMapeta(QFrame):
         if self.sw_l:
             now = datetime.now() # current date and time
             date_time = now.strftime("%m/%d/%Y, %H:%M:%S")
-            with open('d:/siteb/microstation/Macros/pru1.bas', 'a') as fbas:
+            with open('D:/qVista/Codi/guies/DocModuls/QvMapeta/cm.bas', 'a') as fbas:
                 linea= "    'NOW: "+ str(date_time) +"\n"; fbas.write( linea)  
             
         self.repaint()   # Fuerzo el paintEvent   
@@ -1035,7 +1035,7 @@ class QvMapeta(QFrame):
         self.centro_v.setX((self.xFi-self.xIn)/2 + self.xIn)
         self.centro_v.setY((self.yFi-self.yIn)/2 + self.yIn)
         if self.sw_l:  #escribir  caja xIn,yIn a xFi,yFi
-            with open('d:/siteb/microstation/Macros/pru1.bas', 'a') as fbas:
+            with open('D:/qVista/Codi/guies/DocModuls/QvMapeta/cm.bas', 'a') as fbas:
                 linea= '    MbeSendKeyin "pla block":    MbeSendKeyin "co=Red":    MbeSendKeyin "lc=2":    MbeSendKeyin "wt=2"\n';  fbas.write( linea) 
                 linea= "    pt.x =  {} :pt.y =  {} :  MbeSendDatapoint pt\n".format(round(self.xIn,2), round(self.yIn,2)); fbas.write( linea)
                 linea= "    pt.x =  {} :pt.y =  {} :  MbeSendDatapoint pt\n".format(round(self.xFi,2), round(self.yFi,2)); fbas.write( linea)
@@ -1053,7 +1053,7 @@ class QvMapeta(QFrame):
         self.xIn_=  ((self.xIn -(self.xTamany/2)) * self.coseno_giro     - (self.yIn -(self.xTamany/2) ) * self.seno_giro )   + (self.xTamany/2) 
         self.yIn_=  ((self.xIn -(self.xTamany/2)) * self.seno_giro       + (self.yIn -(self.xTamany/2) ) * self.coseno_giro )  + (self.xTamany/2) 
         if self.sw_l:  #escribir xIn,yIn, xIn_,yIn y linea que los une
-            with open('d:/siteb/microstation/Macros/pru1.bas', 'a') as fbas:  #point
+            with open('D:/qVista/Codi/guies/DocModuls/QvMapeta/cm.bas', 'a') as fbas:  #point
                 linea= '    MbeSendKeyin "pla point":    MbeSendKeyin "co=210":    MbeSendKeyin "lc=0":    MbeSendKeyin "wt=20"\n';  fbas.write( linea) 
                 linea= "    pt.x =  {} :pt.y =  {} :  MbeSendDatapoint pt\n".format(round(self.xIn,2), round(self.yIn,2)); fbas.write( linea)
                 linea= '    MbeSendKeyin "pla point":    MbeSendKeyin "co=Green":    MbeSendKeyin "lc=0":    MbeSendKeyin "wt=16"\n';  fbas.write( linea) 
@@ -1073,7 +1073,7 @@ class QvMapeta(QFrame):
         # se lo sumaremos a la coordenada del origen...'''
         punt1 = self.conversioPantallaMapa([self.xIn, self.yIn])
         if self.sw_l:  #escribir linea xInYin  punt1 y punt1
-            with open('d:/siteb/microstation/Macros/pru1.bas', 'a') as fbas:  #point
+            with open('D:/qVista/Codi/guies/DocModuls/QvMapeta/cm.bas', 'a') as fbas:  #point
                 linea= '    MbeSendKeyin "pla ls":    MbeSendKeyin "co=1":    MbeSendKeyin "lc=3":    MbeSendKeyin "wt=1"\n';  fbas.write( linea) 
                 linea= "    pt.x =  {} :pt.y =  {} :  MbeSendDatapoint pt\n".format(round(self.xIn,2), round(self.yIn,2)); fbas.write( linea)
                 linea= "    pt.x =  {} :pt.y =  {} :  MbeSendDatapoint pt\n".format(round(punt1[0],2), round(punt1[1],2)); fbas.write( linea)
@@ -1088,7 +1088,7 @@ class QvMapeta(QFrame):
         Paux3.x= Paux2.x - (distY * self.seno_giro);    Paux3.y= Paux2.y + (distY * self.coseno_giro)
         Paux4.x= Paux1.x - (distY * self.seno_giro);    Paux4.y= Paux1.y + (distY * self.coseno_giro)
         if self.sw_l:  #escribir Paux
-            with open('d:/siteb/microstation/Macros/pru1.bas', 'a') as fbas:  #line_string
+            with open('D:/qVista/Codi/guies/DocModuls/QvMapeta/cm.bas', 'a') as fbas:  #line_string
                 linea= '    MbeSendKeyin "pla ls":    MbeSendKeyin "co=Violet":    MbeSendKeyin "lc=0":    MbeSendKeyin "wt=2"\n';  fbas.write( linea) 
                 linea= "    pt.x =  {} :pt.y =  {} :  MbeSendDatapoint pt\n".format(round(Paux1.x,2), round(Paux1.y,2)); fbas.write( linea)
                 linea= "    pt.x =  {} :pt.y =  {} :  MbeSendDatapoint pt\n".format(round(Paux2.x,2), round(Paux2.y,2)); fbas.write( linea)
@@ -1103,7 +1103,7 @@ class QvMapeta(QFrame):
         punt1[0]= min(Paux1.x, Paux2.x, Paux3.x,Paux4.x)    #xmin
         punt1[1]= min(Paux1.y, Paux2.y, Paux3.y,Paux4.y)    #ymin
         if self.sw_l:  #escribir punt1
-            with open('d:/siteb/microstation/Macros/pru1.bas', 'a') as fbas:  #point
+            with open('D:/qVista/Codi/guies/DocModuls/QvMapeta/cm.bas', 'a') as fbas:  #point
                 linea= '    MbeSendKeyin "pla point":    MbeSendKeyin "co=Yellow":    MbeSendKeyin "lc=0":    MbeSendKeyin "wt=20"\n';  fbas.write( linea) 
                 linea= "    pt.x =  {} :pt.y =  {} :  MbeSendDatapoint pt\n".format(round(punt1[0],2), round(punt1[1],2)); fbas.write( linea)
                 linea= '    MbeSendReset\n';  fbas.write( linea)          
@@ -1114,7 +1114,7 @@ class QvMapeta(QFrame):
         self.l1= punt2[0]-punt1[0]
         self.l2= punt2[1]-punt1[1]
         if self.sw_l:  #escribir punt2
-            with open('d:/siteb/microstation/Macros/pru1.bas', 'a') as fbas:  #point
+            with open('D:/qVista/Codi/guies/DocModuls/QvMapeta/cm.bas', 'a') as fbas:  #point
                 linea= '    MbeSendKeyin "pla point":    MbeSendKeyin "co=30":    MbeSendKeyin "lc=0":    MbeSendKeyin "wt=20"\n';  fbas.write( linea) 
                 linea= "    pt.x =  {} :pt.y =  {} :  MbeSendDatapoint pt\n".format(round(punt2[0],2), round(punt2[1],2)); fbas.write( linea)
                 linea= '    MbeSendReset\n';  fbas.write( linea)           
@@ -1123,7 +1123,7 @@ class QvMapeta(QFrame):
         # Necesitare tener estas coordenadas como QgsRectangle...
         rang = QgsRectangle(punt1[0], punt1[1], punt2[0], punt2[1])
         # if self.sw_l:
-        #     with open('d:/siteb/microstation/Macros/pru1.bas', 'a') as fbas:
+        #     with open('D:/qVista/Codi/guies/DocModuls/QvMapeta/cm.bas', 'a') as fbas:
         #         linea= '    MbeSendKeyin "pla block":    MbeSendKeyin "co=Red":    MbeSendKeyin "lc=2":    MbeSendKeyin "wt=2"\n';  fbas.write( linea) 
         #         linea= "    pt.x =  {} :pt.y =  {} :  MbeSendDatapoint pt\n".format(round(rang.xMinimum(),2), round(rang.yMinimum(),2)); fbas.write( linea)
         #         linea= "    pt.x =  {} :pt.y =  {} :  MbeSendDatapoint pt\n".format(round(rang.xMaximum(),2), round(rang.yMaximum(),2)); fbas.write( linea)
@@ -1133,7 +1133,7 @@ class QvMapeta(QFrame):
         
         rect = self.canvas.extent()
         # if self.sw_l:
-        #     with open('d:/siteb/microstation/Macros/pru1.bas', 'a') as fbas:  #block
+        #     with open('D:/qVista/Codi/guies/DocModuls/QvMapeta/cm.bas', 'a') as fbas:  #block
         #         # linea= '    MbeSendKeyin "pla block":    MbeSendKeyin "co=Red":    MbeSendKeyin "lc=2":    MbeSendKeyin "wt=2"\n';  fbas.write( linea) 
         #         # linea= "    pt.x =  {} :pt.y =  {} :  MbeSendDatapoint pt\n".format(round(rect.xMinimum(),2), round(rect.yMinimum(),2)); fbas.write( linea)
         #         # linea= "    pt.x =  {} :pt.y =  {} :  MbeSendDatapoint pt\n".format(round(rect.xMaximum(),2), round(rect.yMaximum(),2)); fbas.write( linea)
