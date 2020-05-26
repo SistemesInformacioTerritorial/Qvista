@@ -102,6 +102,7 @@ class QvMapeta(QFrame):
 
         self.MouseMoveFlag = False
         self.MousePressFlag = False
+        self.pPM = True
         # Preparem el canvas per capturar quan es modifica, i poder repintar
         #  el mapeta.
 
@@ -552,14 +553,14 @@ class QvMapeta(QFrame):
         # capturo coordenadas:
         # vamos a manejar begin_ y end_
         # Se cargan en base a self.begin y self.end que se cargan en:
-        # mousePressEvent y se modifican en....Aqui 
+        # mousePressEvent y se modifican en pintarMapeta 
         begin_ = QPoint();           end_ =  QPoint()
         begin_.x= self.begin.x();    end_.x= self.end.x()
 
         # Si se llega aqui despues de hacer una ventana sobre el mapeta
         #  se pone el origen de coordenadas en la esquina inferior izquierda del mapeta
         # Caso contrario no se hace
-        if self.MouseMoveFlag== False:
+        if self.MouseMoveFlag == False:
             begin_.y= self.yTamany-self.begin.y()
             end_.y=   self.yTamany- self.end.y()
         else:
@@ -569,7 +570,7 @@ class QvMapeta(QFrame):
         # print("-----------",self.pPM,QTime.currentTime().toString(Qt.DefaultLocaleLongDate))
         # print(begin_.x); print(begin_.y);
         # print(end_.x); print(end_.y)
-        self.MouseMoveFlag= False
+        self.MouseMoveFlag = False
 
         radio= self.xTamany/2
         centro=QPoint(self.xTamany/2,self.yTamany/2)  
@@ -627,12 +628,11 @@ class QvMapeta(QFrame):
         """
         Presion de un boton del raton mantenida y movimiento sobre el mapeta
         """
-        if self.MousePressFlag== True:        
+        if self.MousePressFlag == True:        
             self.end = event.pos()
-            self.MouseMoveFlag= True
+            self.MouseMoveFlag = True
             self.repaint()      #para forzar paintevent del mapeta que pintará rectangulo y creuz
         else:
-            # pass
             print("He pasado por aqui_01")
     def mousePressEvent(self, event):
         """
@@ -642,29 +642,29 @@ class QvMapeta(QFrame):
         print("mousePressEvent",self.pPM,QTime.currentTime().toString(Qt.DefaultLocaleLongDate))
         if event.button()==Qt.RightButton:
             return
-        
-        self.MousePressFlag=True
 
         self.begin = event.pos()
         self.the_data =event.pos()
+        self.end = event.pos()
+
         # averiguo si el punto ha de enviarse a compass
         radio= self.width()/2;    centroMapeta= QPoint(radio,radio)
         if self.enCirculo(self.the_data,radio,centroMapeta)==False:   # fuera
             self.pPM = False
             # print("Mapeta >> mousePressEvent emito event",event.pos())  
-            margen= self.parent().parent().margen
+            margen= self.parent().parent().margen     # Feo, feo eso de buscar el margen de esta manera
             self.the_data.setX(event.pos().x()+margen)
             self.the_data.setY(event.pos().y()+margen)
             # print("Mapeta >> mousePressEvent emito the_data",self.the_data)  
             self.Sig_dadoPNT.emit(self.the_data)
+            self.MousePressFlag = False
             return
         else:   
             self.pPM=True   
+            self.MousePressFlag = True
 
-
-        self.end = event.pos()
        
-        # rect = self.canvas.extent()
+
     def mouseReleaseEvent(self, event):
         """
         Dejamos de hacer presion sobre un boton del raton mientras--está sobre mapeta\n
@@ -691,16 +691,16 @@ class QvMapeta(QFrame):
      
         # if self.pPM == False:
         #     self.end = self.begin
+        
+        self.MousePressFlag = False # Evidente: cuando soltamos no apretamos :D
 
-        self.MousePressFlag=False
-
-        # Cambio origen de coordenadas "Y" poniendolo abajo-izquierda. Acorde con sistema del Mapa')
+        # calculo centro de ventana dibujada en mapeta
+        #     Cambio origen de coordenadas "Y" poniendolo abajo-izquierda. Acorde con sistema del Mapa')
         self.xIn = self.begin.x();      self.yIn = self.yTamany - self.begin.y()   
         self.xFi = self.end.x();        self.yFi = self.yTamany - self.end.y()
-        # calculo centro de area definida en mapeta
         self.centro_v.setX((self.xFi-self.xIn)/2 + self.xIn)
         self.centro_v.setY((self.yFi-self.yIn)/2 + self.yIn)
-       # Convierto las coordenadas del mapeta girado a coordenadas de mapeta no girado para buscar la utm')
+        # Convierto las coordenadas del mapeta girado a coordenadas de mapeta no girado para buscar la utm')
  
         #  En el mapeta (girado o no) he señalado una ventana. Calculo su tamaño
         # Calculo la la ventana mundo "girado" correspondiente a los puntos del mapeta
@@ -709,13 +709,13 @@ class QvMapeta(QFrame):
         distYma=  (self.yFi - self.yIn)   # alto mapeta
         distY= distYma * self.Escala      # alto mundo 
 
-        # giro 44.5 (contra reloj)
-        # ...Giro el punto inicial
-        self.xIn_=  ((self.xIn -(self.xTamany/2)) * self.coseno_giro     - (self.yIn -(self.xTamany/2) ) * self.seno_giro )   + (self.xTamany/2) 
-        self.yIn_=  ((self.xIn -(self.xTamany/2)) * self.seno_giro       + (self.yIn -(self.xTamany/2) ) * self.coseno_giro )  + (self.xTamany/2) 
+        # giro (contra reloj) la rotacion
+        # ...Giro el punto inicial respecto al centro del mapeta
+        self.xIn=  ((self.xIn -(self.xTamany/2)) * self.coseno_giro     - (self.yIn -(self.xTamany/2) ) * self.seno_giro )   + (self.xTamany/2) 
+        self.yIn=  ((self.xIn -(self.xTamany/2)) * self.seno_giro       + (self.yIn -(self.xTamany/2) ) * self.coseno_giro )  + (self.xTamany/2) 
   
         # añado el desplazamiento
-        self.xIn= self.xIn_;       self.yIn= self.yIn_ 
+        # self.xIn= self.xIn_;       self.yIn= self.yIn_ 
 
         ## en este punto las coordenadas mapeta que manejo estan referidas al mapeta 0')
         ## Convertimos las coordenadas del punto inicial del mapeta_ang=0 a coordenadas Mundo')
@@ -751,9 +751,6 @@ class QvMapeta(QFrame):
 
         self.canvas.setExtent(rang)
         self.canvas.refresh()
-        # self.canvas.update()   no va
-        
-        # rect = self.canvas.extent()
 
 
 import math

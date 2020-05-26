@@ -9,7 +9,7 @@ import numpy as np
 
 
 # https://wiki.python.org/moin/PyQt/Compass%20widget
-
+#  Documentación extra: guies/DocModuls/moduls.QvMapeta.md
 
 class QvCompass(QFrame):
     
@@ -31,7 +31,6 @@ class QvCompass(QFrame):
         self.setParent(pare)
         self.pare = pare
         self._angle = 0.0
-        self.position_old = QPoint(0,0)
         self._margins = 10
         self._pointText = {0: "N", 45: "NE", 90: "E", 135: "SE", 180: "S",
                            225: "SO", 270: "O", 315: "NO"}
@@ -56,7 +55,7 @@ class QvCompass(QFrame):
 
     def drawMarkings(self, painter):
         """
-        Las referencias
+        Las referencias N, S, E, W.....
         """
         painter.save()
         painter.translate(self.width()/2, self.height()/2)
@@ -122,19 +121,33 @@ class QvCompass(QFrame):
         painter.setRenderHint(QPainter.Antialiasing)
         # painter.fillRect(event.rect(), self.palette().brush(QPalette.Window))
         self.drawMarkings(painter) # resto
+        # Para el uso con el mapetaBrujulado, no interesa pintar la aguja
         # self.drawNeedle(painter)   # aguja
         painter.end()        
-    def dobleClick(self):
-        angulo=0
-        self.setAngle(angulo)
-        self.spinBox.setValue(angulo)
-        self.position_old =QPoint(0,0)
+
     def gestionoPnt(self, data):
         self.position = data
-        lin=QLine(self.position, self.position_old)
-        if abs(lin.dx())<=1 and abs(lin.dy())<=1:
-            self.dobleClick()
-        else:
+
+        xcent= self.width()/2;  ycent= self.height()/2
+        p0 = [xcent, 0]
+        p1 = [xcent, ycent]
+        p2 = [self.position.x(), self.position.y()]
+
+        ''' 
+        compute angle (in degrees) for p0p1p2 corner
+        Inputs:
+            p0,p1,p2 - points in the form of [x,y]
+        '''
+        v0 = np.array(p0) - np.array(p1);   v1 = np.array(p2) - np.array(p1)
+        angulo= np.degrees(np.math.atan2(np.linalg.det([v0,v1]),np.dot(v0,v1)))
+        if angulo < 0:
+            angulo= 360+angulo
+        self.setAngle(angulo)
+        self.spinBox.setValue(angulo)
+    def mousePressEvent(self, event):
+       if event.buttons() & Qt.LeftButton:
+            self.position = QPoint( event.pos().x(),  event.pos().y())
+
             xcent= self.width()/2;  ycent= self.height()/2
             p0 = [xcent, 0]
             p1 = [xcent, ycent]
@@ -151,31 +164,6 @@ class QvCompass(QFrame):
                 angulo= 360+angulo
             self.setAngle(angulo)
             self.spinBox.setValue(angulo)
-        self.position_old = self.position
-    def mousePressEvent(self, event):
-       if event.buttons() & Qt.LeftButton:
-            self.position = QPoint( event.pos().x(),  event.pos().y())
-            lin=QLine(self.position, self.position_old)
-            if abs(lin.dx())<=1 and abs(lin.dy())<=1:
-                self.dobleClick()
-            else:
-                xcent= self.width()/2;  ycent= self.height()/2
-                p0 = [xcent, 0]
-                p1 = [xcent, ycent]
-                p2 = [self.position.x(), self.position.y()]
-
-                ''' 
-                compute angle (in degrees) for p0p1p2 corner
-                Inputs:
-                    p0,p1,p2 - points in the form of [x,y]
-                '''
-                v0 = np.array(p0) - np.array(p1);   v1 = np.array(p2) - np.array(p1)
-                angulo= np.degrees(np.math.atan2(np.linalg.det([v0,v1]),np.dot(v0,v1)))
-                if angulo < 0:
-                    angulo= 360+angulo
-                self.setAngle(angulo)
-                self.spinBox.setValue(angulo)
-            self.position_old = self.position
     def enterEvent(self, event):
         '''
         poner cursor
@@ -188,7 +176,6 @@ class QvCompass(QFrame):
     @pyqtSlot(float)
     def setAngle(self, angle):
         if angle != self._angle:
-            self._angleOld= self._angle
             self._angle = angle
             # self.angleChanged.emit(angle)
             self.update()
