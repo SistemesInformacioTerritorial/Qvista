@@ -1,7 +1,7 @@
 ﻿# comprobacion de calculos en QvMapeta
 
 ## Idea general
-La clase QvMapeta realiza calculos geometricos dificiles de seguir sin una representación grafica. La versión de desarrollo QvMapeta_vba.py va escribiendo los resultados de los aclculos en el fichero CM.bas que microstation es capaz de ejecutar.
+La clase QvMapeta realiza calculos geometricos dificiles de seguir sin una representación grafica. La versión de desarrollo QvMapeta_vba.py va escribiendo los resultados de los cálculos en el fichero CM.bas que microstation es capaz de ejecutar.
 
 
 ## Ubicación de ficheros
