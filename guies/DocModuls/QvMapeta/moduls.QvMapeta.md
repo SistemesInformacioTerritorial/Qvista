@@ -92,9 +92,9 @@ paintEvent (que es quien pinta la caja y la cruz...)
 - La imagen del mapeta 0º se gira lo que manda la rotación del canvas y se recarga en el mapeta
 
 
-   guies/DocModuls/QvMapeta/comprobacionesQvMapeta.md
+   
    
   
-   Read more [mas2] (./comprobacionesQvMapeta.md)
+   Read more [mas2] (guies/DocModuls/QvMapeta/comprobacionesQvMapeta.md)
    
 > Written with [StackEdit](https://stackedit.io/).
