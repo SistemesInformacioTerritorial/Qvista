@@ -1,4 +1,5 @@
-dv. 29/05/2020  8:38:43,32 
+dv. 29/05/2020 10:47:19,35 
+
 
 *Documentación complementaria y verbosa de algunas funciones de la clase QvMapeta 
 (como excusa para aprender Markdown)*
