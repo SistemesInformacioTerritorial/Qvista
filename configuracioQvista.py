@@ -29,6 +29,7 @@ docdirPlantilles=os.path.join(docdir,'plantilles/')
 arxiuAvis=os.path.join(docdir,'Avisos.htm')
 arxiuNews=os.path.join(docdir,'Noticies.htm')
 carpetaDocuments=os.path.join(docdir,'Documentacio/')
+carpetaDocumentsLocal=os.path.abspath('documentacio/')
 arxiuInfoQVista=os.path.join(docdir,'InfoQVista.pdf')
 
 #Per defecte desarem els arxius al directori home de l'usuari, si no ens indica una altra cosa
@@ -47,5 +48,3 @@ for x in (QvTempdir, tempdir, dadesdir, configdir):
 
 if not os.path.isdir(carpetaCataleg):
     estatConnexio = "Xarxa municipal: Desconnectat"
-
-    

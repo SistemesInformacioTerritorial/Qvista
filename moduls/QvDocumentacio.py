@@ -3,8 +3,34 @@ from qgis.PyQt import QtWidgets
 from qgis.PyQt.QtWidgets import QVBoxLayout, QHBoxLayout, QFileSystemModel, QTreeView, QWidget
 from moduls.QvConstants import QvConstants
 from moduls.QvPushButton import QvPushButton
+from moduls.QvVisorHTML import QvVisorHTML
+from moduls.QvMemoria import QvMemoria
 from pathlib import Path
 import shutil
+
+class ElMeuModel(QFileSystemModel):
+    def data(self,index,role):
+        """Funció sobrecarregada per poder tunejar algun aspecte del tree view
+
+        Arguments:
+            index {QModelIndex} -- Índex que apunta a l'element del qual volem obtenir la informació
+            role {int} -- Rol que fem servir (Qt.DecorationRole, Qt.DisplayRole...)
+
+        Returns:
+            QVariant -- Informació associada a l'índex utilitzant el rol indicat
+        """
+
+        # Si el rol és de decoració, podem tunejar algunes icones
+        if role==Qt.DecorationRole:
+            nom=index.data()
+            if Path(nom).suffix == '.url':
+                return QIcon(os.path.join(imatgesDir,'doc-web.png'))
+        # Si el rol és de mostrar, podem tunejar el nom
+        # Problema: si eliminem l'extensió, com distingim el tipus de l'arxiu???
+        # elif role==Qt.DisplayRole:
+        #     res=super().data(index,role)
+        #     return Path(res).stem
+        return super().data(index,role)
 
 class QvDocumentacio(QDialog):
     comencaCarrega = pyqtSignal()
@@ -21,16 +47,19 @@ class QvDocumentacio(QDialog):
         self.lblTitol=QLabel('  Documentació')
         self.layoutCapcalera.addWidget(self.lblTitol)
 
-        
-        self.qModel=QFileSystemModel(self)
-        rootPath=self.qModel.setRootPath(carpetaDocuments)
+        self.qModel=ElMeuModel(self)
+        self.lblExplicacio=QLabel()
+        if os.path.isdir(carpetaDocuments):
+            self.lblExplicacio.setText('Esteu visualitzant la documentació corporativa completa')
+            rootPath=self.qModel.setRootPath(carpetaDocuments)
+        else:
+            self.lblExplicacio.setText('No teniu accés a la documentació corporativa. Esteu visualitzant una còpia local que pot no estar actualitzada.')
+            rootPath=self.qModel.setRootPath(carpetaDocumentsLocal)
         self.treeView=QTreeView(self)
         self.treeView.setModel(self.qModel)
         self.treeView.setRootIndex(rootPath)
         self.treeView.clicked.connect(self.clicat)
         self.treeView.doubleClicked.connect(self.obrir)
-        # self.treeView.introPressed.connect(self.obrir)
-
 
         self.layoutBotonera=QHBoxLayout()
         self.layoutBotonera.addStretch()
@@ -47,28 +76,35 @@ class QvDocumentacio(QDialog):
         self.layoutBotonera.addWidget(self.botoSortir)
 
         self.layout.addLayout(self.layoutCapcalera)
+        self.layout.addWidget(self.lblExplicacio)
         self.layout.addWidget(self.treeView)
         self.layout.addLayout(self.layoutBotonera)
         self.formata()
+
     def formata(self):
         self.setWindowFlags(Qt.Window | Qt.FramelessWindowHint)
+
+        self.layout.setAlignment(Qt.AlignCenter)
+
         self.lblTitol.setStyleSheet('background-color: %s; color: %s; border: 0px' % (
             QvConstants.COLORFOSCHTML, QvConstants.COLORBLANCHTML))
         self.lblTitol.setFont(QvConstants.FONTCAPCALERES)
         self.lblTitol.setFixedHeight(40)
+
+        self.lblExplicacio.setWordWrap(True)
+        self.lblExplicacio.setStyleSheet(f'color: {QvConstants.COLORFOSCHTML}; margin: 20px 20px 0px 20px')
 
         for i in range(1,4):
             self.treeView.header().hideSection(i)
         self.treeView.setHeaderHidden(True)
         self.treeView.adjustSize()
         self.treeView.setAnimated(True)
-        # self.treeView.setStyleSheet('QTreeView{background: transparent; border: 1px solid #38474F;}')
         self.treeView.setStyleSheet('QTreeView{margin: 20px 2px 0px 20px; border: none;}')
 
         self.layout.setContentsMargins(0,0,0,0)
         self.layout.setSpacing(0)
         self.layoutBotonera.setContentsMargins(10,10,10,10)
-        # self.treeView.setStyleSheet('padding: 5px; background: white')
+
     def clicat(self,index: int):
         path=self.qModel.fileInfo(index).absoluteFilePath()
         self.index=index
@@ -78,31 +114,33 @@ class QvDocumentacio(QDialog):
         else:
             self.botoObrir.setEnabled(False)
             self.botoDescarregar.setEnabled(True)
+
     def obrir(self):
         path=self.qModel.fileInfo(self.index).absoluteFilePath()
         if os.path.isfile(path):
             self.comencaCarrega.emit()
-            os.startfile(path)
+            if '.html' in path:
+                self.visor = QvVisorHTML(path,'Vídeo de documentació')
+                self.visor.setZoomFactor(1)
+                self.visor.show()
+            else:
+                os.startfile(path)
             time.sleep(1)
             self.acabaCarrega.emit()
-        else:
-            pass
-        #Ara la fem
+
     def desar(self):
         path=self.qModel.fileInfo(self.index).absoluteFilePath()
         if os.path.isfile(path):
-            # nouPath=str(Path.home())+'/'+Path(path).name
-            # print(nouPath)
-            # nfile, _=QFileDialog.getSaveFileName(None,"Desar arxiu", nouPath)
-            nfile,_=QFileDialog.getSaveFileName(None,'Desar arxiu',Path(path).name)
+            nfile,_=QFileDialog.getSaveFileName(None,'Desar arxiu',os.path.join(QvMemoria().getDirectoriDesar(),Path(path).name))
             if nfile!='': shutil.copy(path,nfile)
         else:
             nomCarpeta=Path(path).name
             nfile = str(QFileDialog.getExistingDirectory(self, "Select Directory"))
-            if nfile!='': shutil.copytree(path,nfile+'/'+nomCarpeta)
+            if nfile!='': shutil.copytree(path,os.path.join(nfile,nomCarpeta))
 
     def mousePressEvent(self, event):
         self.oldPos = event.globalPos()
+
     def mouseMoveEvent(self, event):
         delta = QPoint(event.globalPos() - self.oldPos)
         self.move(self.x() + delta.x(), self.y() + delta.y())
@@ -113,6 +151,7 @@ class QvDocumentacio(QDialog):
             self.close()
         if event.key()==Qt.Key_Return:
             self.obrir()
+
 if __name__=='__main__':
     app = QtWidgets.QApplication(sys.argv)
     doc=QvDocumentacio()
