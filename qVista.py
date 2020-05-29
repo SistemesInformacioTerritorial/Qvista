@@ -23,7 +23,7 @@ from moduls.QVCercadorAdreca import QCercadorAdreca
 from moduls.QVDistrictesBarris import QVDistrictesBarris
 from moduls.QvApp import QvApp
 from moduls.QvPavimentacio import DockPavim
-from moduls.QvMarxesCiutat import MarxesCiutat
+# from moduls.QvMarxesCiutat import MarxesCiutat
 from moduls.QvToolTip import QvToolTip
 from moduls.QvDropFiles import QvDropFiles
 from moduls.QvNews import QvNews
@@ -45,6 +45,7 @@ from moduls.QvCarregadorGPKG import QvCarregadorGPKG
 from moduls.QvVisualitzacioCapa import QvVisualitzacioCapa
 from moduls.QvSobre import QvSobre
 from moduls import QvFuncions
+from moduls.QvEntorns import QvEntorns
 import os        
 
 from pathlib import Path
@@ -340,9 +341,12 @@ class QVista(QMainWindow, Ui_MainWindow):
         # Caldria generalitzar-ho i treure-ho d'aquesta funció
 
         entorn = QgsExpressionContextUtils.projectScope(self.project).variable('qV_entorn')
-
-        if entorn == "'MarxesExploratories'":
-            self.marxesCiutat()
+        if entorn is not None:
+            self.dwEntorn = QvEntorns.entorn(entorn)(self)
+            self.addDockWidget( Qt.RightDockWidgetArea, self.dwEntorn)
+            self.dwEntorn.show() 
+        # if entorn == "'MarxesExploratories'":
+        #     self.marxesCiutat()
 
         # Gestió de les metadades
         metadades=Path(self.pathProjecteActual).with_suffix('.htm')
