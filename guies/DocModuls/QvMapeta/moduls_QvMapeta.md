@@ -1,3 +1,5 @@
+dv. 29/05/2020  8:38:43,32 
+
 *Documentación complementaria y verbosa de algunas funciones de la clase QvMapeta 
 (como excusa para aprender Markdown)*
 
@@ -92,6 +94,9 @@ paintEvent (que es quien pinta la caja y la cruz...)
 - La imagen del mapeta 0º se gira lo que manda la rotación del canvas y se recarga en el mapeta
 
 
-
-
+   
+   
+  
+   Read more [More] (file:///guies/DocModuls/QvMapeta/comprobacionesQvMapeta.md)
+   
 > Written with [StackEdit](https://stackedit.io/).
