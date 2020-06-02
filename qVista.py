@@ -340,11 +340,15 @@ class QVista(QMainWindow, Ui_MainWindow):
         # Lectura de les metadades del projecte per veure si hi ha un entorn associat
         # Caldria generalitzar-ho i treure-ho d'aquesta funció
 
-        entorn = QgsExpressionContextUtils.projectScope(self.project).variable('qV_entorn')
+        nomEntorn = QgsExpressionContextUtils.projectScope(self.project).variable('qV_entorn')
         if entorn is not None:
-            self.dwEntorn = QvEntorns.entorn(entorn)(self)
-            self.addDockWidget( Qt.RightDockWidgetArea, self.dwEntorn)
+            Entorn = QvEntorns.entorn(nomEntorn)
+            self.dwEntorn = Entorn(self)
+            self.addDockWidget(Qt.RightDockWidgetArea, self.dwEntorn)
             self.dwEntorn.show() 
+        else:
+            if hasattr(self,'dwEntorn') and self.dwEntorn is not None:
+                self.dwEntorn.setParent(None)
         # if entorn == "'MarxesExploratories'":
         #     self.marxesCiutat()
 

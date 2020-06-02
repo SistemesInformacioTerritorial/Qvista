@@ -1,9 +1,10 @@
 # Importacions necessàries
 import sys
+import importlib
 # Fi de les importacions necessàries
 
 # Importació d'entorns
-from moduls.QvMarxesCiutat import MarxesCiutat as MarxesExploratories
+# from moduls import entorns
 # Fi de la importació d'entorns
 
 # Ús del mòdul QvEntorns:
@@ -22,5 +23,6 @@ class QvEntorns:
     """
     @staticmethod
     def entorn(nom: str):
-        nom = nom.replace('"',' ').replace("'",' ') # eliminem cometes extra que s'hagin pogut colar
-        return getattr(sys.modules[__name__], nom)
+        nom = nom.replace('"','').replace("'",'') # eliminem cometes extra que s'hagin pogut colar
+        mod = importlib.import_module(f'moduls.entorns.{nom}')
+        return getattr(mod,nom)
