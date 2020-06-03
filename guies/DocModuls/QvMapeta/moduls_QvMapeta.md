@@ -1,6 +1,6 @@
 dv. 29/05/2020 10:47:19,35 
 
-Read more [More](./comprobacionesQvMapeta.md)
+
 
 *Documentación complementaria y verbosa de algunas funciones de la clase QvMapeta 
 (como excusa para aprender Markdown)*
@@ -67,6 +67,8 @@ Casos|mousePress  |mouseMove  |mouseRelease  |Comportamiento | Destinatario fina
  - Si el mapeta esta girado, hay que rotar esas coordenadas (en función de la rotación) para tenerlas en "mapeta 0º" y a partir de ahí buscar su correspondientes coordenadas mundo.
  - **canvas.setExtent() forzará  [pintarMapeta](#pintarMapeta)** 
  - **repaint de mapeta para forzar  [paintEvent](#paintEvent)** (pintar rectangulo y cruz)
+    
+Más info [Comprobaciones](./comprobacionesQvMapeta.md)    
     
 ## paintEvent
 - Pinta en mapeta rectangulo y cruz.
