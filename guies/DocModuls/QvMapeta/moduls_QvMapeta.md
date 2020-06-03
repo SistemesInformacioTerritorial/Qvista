@@ -1,5 +1,6 @@
 dv. 29/05/2020 10:47:19,35 
-Read more [More] (./comprobacionesQvMapeta.md)
+
+Read more [More](./comprobacionesQvMapeta.md)
 
 *Documentación complementaria y verbosa de algunas funciones de la clase QvMapeta 
 (como excusa para aprender Markdown)*
