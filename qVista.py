@@ -341,11 +341,14 @@ class QVista(QMainWindow, Ui_MainWindow):
         # Caldria generalitzar-ho i treure-ho d'aquesta funció
 
         nomEntorn = QgsExpressionContextUtils.projectScope(self.project).variable('qV_entorn')
-        if entorn is not None:
-            Entorn = QvEntorns.entorn(nomEntorn)
-            self.dwEntorn = Entorn(self)
-            self.addDockWidget(Qt.RightDockWidgetArea, self.dwEntorn)
-            self.dwEntorn.show() 
+        if nomEntorn is not None:
+            try:
+                Entorn = QvEntorns.entorn(nomEntorn)
+                self.dwEntorn = Entorn(self)
+                self.addDockWidget(Qt.RightDockWidgetArea, self.dwEntorn)
+                self.dwEntorn.show()
+            except ModuleNotFoundError:
+                missatgeCaixa('Entorn no trobat',f"L'entorn {nomEntorn} no està disponible. Comproveu que teniu la última versió de qVista i si l'error persisteix contacteu amb el propietari del mapa")
         else:
             if hasattr(self,'dwEntorn') and self.dwEntorn is not None:
                 self.dwEntorn.setParent(None)
@@ -2145,10 +2148,11 @@ def obreURL(urlstr=''):
 
 
 def missatgeCaixa(textTitol,textInformacio):
-    msgBox=QMessageBox()
-    msgBox.setText(textTitol)
-    msgBox.setInformativeText(textInformacio)
-    msgBox.exec()
+    QMessageBox.warning(qV,textTitol,textInformacio)
+    # msgBox=QMessageBox()
+    # msgBox.setText(textTitol)
+    # msgBox.setInformativeText(textInformacio)
+    # msgBox.exec()
 
 class QvDockWidget(QDockWidget):
     def __init__(self, *args, **kwargs):
