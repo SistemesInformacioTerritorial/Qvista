@@ -30,9 +30,9 @@ Fichero vba, escrito por QvMapeta_vba.py, que dibuja en el DGN los calculos.
 ## Ejecución
 
  - Ejecutar QvMapeta_vba.py
-	 - Establecer rotacion
-	 - Pulsar botón para comenzar a grabar operaciones.
-	 - Realizar las opperaciones que se quieran comprobar.
+	- Establecer rotacion
+	- Pulsar botón para comenzar a grabar operaciones.
+	- Realizar las opperaciones que se quieran comprobar.
 	 - Pulsar botón para finalizar la grabación de operaciones.
 	
 - Entrar en el ComprobacionesMapeta.dgn
