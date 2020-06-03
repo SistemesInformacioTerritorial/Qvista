@@ -1,12 +1,21 @@
-dv. 29/05/2020 10:47:19,35 
+02/06/2020  9:39 
 
+> He encontrado problemas para sincronizar ficheros de
+> D:\qVista\guies\DocModuls\QvMapeta con GitHub. Despues de bastantes
+> pruebas creo que debe ser un problema de settings de GitHub de
+> SistemesInformacioTerritorial\qVista. Para puentear el problema he
+> clonado qVista, como qVistaMio en local. Editaré los ficheros y los
+> reemplazaré en qVista.
+> 
+> Editado con stackEdit, sincronizado a carpeta D:\ **qVistaMio**\guies\DocModuls\QvMapeta Una vex comprobado que todo funciona correctamente, habrá que copiar todos los ficheros de la
+> carpeta a D:\ **qVista**\guies\DocModuls\QvMapeta y subirlos a GitHub
+> con Visualcode
 
 *Documentación complementaria y verbosa de algunas funciones de la clase QvMapeta 
-(como excusa para aprender Markdown)*
+
 
 # QvMapeta in module moduls.QvMapeta:
-QvMapeta define un pequeño mapa de posicionamiento que controla un 
-canvas.
+QvMapeta define un pequeño mapa de posicionamiento que controla un canvas.
 
 ### Triggers:
 | Event| Ejecuta
@@ -55,7 +64,7 @@ Casos|mousePress  |mouseMove  |mouseRelease  |Comportamiento | Destinatario fina
 - **ejecuta repaint de mapeta para forzar [paintEvent](#paintEvent)**  (que pintará rectángulo y cruz)
 
 ## mouseReleaseEvent
- - Dejamos de hacer presión sobre un botón del ratón mientras está sobre mapeta
+ - Dejamos de hacer presión sobre un botón del ratón mientras está sobre mapeta. Si el cursor esta:
 	- Dentro del circulo inscrito: 
 		- Se puede esta dando punto final de windowArea  -->  casos 1, 3
 		- Se está dando punto final de windowCenter --> caso 2
@@ -66,7 +75,9 @@ Casos|mousePress  |mouseMove  |mouseRelease  |Comportamiento | Destinatario fina
  - Si el mapeta esta girado, hay que rotar esas coordenadas (en función de la rotación) para tenerlas en "mapeta 0º" y a partir de ahí buscar su correspondientes coordenadas mundo.
  - **canvas.setExtent() forzará  [pintarMapeta](#pintarMapeta)** 
  - **repaint de mapeta para forzar  [paintEvent](#paintEvent)** (pintar rectangulo y cruz)
-    
+ 
+[Comprobaciones calculos](./comprobacionesQvMapeta.md)    
+
 ## paintEvent
 - Pinta en mapeta rectangulo y cruz.
 - Se basa en las coordenadas self.begin y self.end. 
@@ -83,7 +94,7 @@ Casos|mousePress  |mouseMove  |mouseRelease  |Comportamiento | Destinatario fina
 - Se invoca cuando cambian el tamaño del canvas y cuando hay una   rotacion del canvas
   -  Despues de seleccionar una ventana en el mapeta, se actualiza   la cartografia correspondiente  en el canvas, y se adapta alas proporciones del canvas (estado inicial y  redimensionamientos).
        
- >Estás proporciones serán diferentes a las de la ventana  del mapeta (nuestra seleccion) y por lo tanto debemos recalcular la ventana del mapeta representando sobre éste el area de cartografia visible y una cruz que indica el centro
+Estás proporciones serán diferentes a las de la ventana  del mapeta (nuestra seleccion) y por lo tanto debemos recalcular la ventana del mapeta representando sobre éste el area de cartografia visible y una cruz que indica el centro
   
 Esta funcion calcula unas coordenadas para que trabaje el 
 paintEvent (que es quien pinta la caja y la cruz...)
@@ -93,11 +104,9 @@ paintEvent (que es quien pinta la caja y la cruz...)
 > Actualiza imagen del mapeta conforme a la rotación del canvas
 - Se invoca en la carga y cuando se detecta una rotación
 - La imagen del mapeta 0º se gira lo que manda la rotación del canvas y se recarga en el mapeta
-
-
-   
-   
-  
-   Read more [More] (file:///guies/DocModuls/QvMapeta/comprobacionesQvMapeta.md)
    
 > Written with [StackEdit](https://stackedit.io/).
+<!--stackedit_data:
+eyJoaXN0b3J5IjpbMzAwMjA4MTI5LDIwNDEyMDMzMDQsLTEzMD
+E5ODAxMzQsLTE5NTQ3NDAxMDAsMzQ0NTY2MDQxXX0=
+-->
