@@ -1121,6 +1121,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.botoMapeta.setIcon(QIcon(os.path.join(imatgesDir,'Mapeta.png')))
         self.botoMapeta.setStyleSheet(stylesheetBotons)
         self.botoMapeta.setIconSize(QSize(24,24))
+        self.botoMapeta.clicked.connect(self.VerOcultarMapeta)
         self.botoMapeta.setCursor(QvConstants.cursorClick())
 
         self.botoMetadades.setIcon(QIcon(os.path.join(imatgesDir,'information-variant.png')))
@@ -1279,6 +1280,13 @@ class QVista(QMainWindow, Ui_MainWindow):
         path = os.path.join(QvTempdir,'tempQgis.qgs')
         self.project.write(path)
         QDesktopServices().openUrl(QUrl(path))
+
+    def VerOcultarMapeta(self):
+        if self.mapeta.isHidden():
+            self.mapeta.show()
+        else:
+            self.mapeta.hide()
+
     
     def tisores(self):
         process = QProcess(self)
