@@ -2,9 +2,9 @@
 
 
 ### Documentación:
-[Ir ](./moduls.QvMapeta.md)  a  ﻿moduls.QvMapeta.md  --> Doc verbosa de QvMapeta
+Ir a [moduls.QvMapeta](./moduls.QvMapeta.md)  --> Doc verbosa de QvMapeta
 
-[Ir ](./comprobacionesQvMapeta.md)  a  ﻿ comprobacionesQvMapeta.md--> Cómo se conecta mapeta con mundo
+Ir a [comprobacionesQvMapeta ](./comprobacionesQvMapeta.md)  --> Cómo se conecta mapeta con mundo
 
 ---
 ### Ficheros auxiliares:
