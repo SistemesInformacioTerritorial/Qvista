@@ -53,9 +53,10 @@ Situacion inicial:
 
 ![Fig01](./fig01.png)
 
-Situacion final:
 
 **He hecho una ventana**
+
+Situacion final:
 
 ![Fig02](./fig02.png)
 
