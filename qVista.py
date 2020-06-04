@@ -348,7 +348,7 @@ class QVista(QMainWindow, Ui_MainWindow):
                 self.addDockWidget(Qt.RightDockWidgetArea, self.dwEntorn)
                 self.dwEntorn.show()
             except ModuleNotFoundError:
-                missatgeCaixa('Entorn no trobat',f"L'entorn {nomEntorn} no està disponible. Comproveu que teniu la última versió de qVista i si l'error persisteix contacteu amb el propietari del mapa")
+                missatgeCaixa('Entorn no trobat',f"L'entorn {nomEntorn} no està disponible. Comproveu que teniu la darrera versió de qVista i si l'error persisteix contacteu amb el propietari del mapa")
         else:
             if hasattr(self,'dwEntorn') and self.dwEntorn is not None:
                 self.dwEntorn.setParent(None)
