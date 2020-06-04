@@ -11,7 +11,7 @@ NOTA 02/06/2020  9:39
 > carpeta a D:\ **qVista**\guies\DocModuls\QvMapeta y subirlos a GitHub
 > con Visualcode
 
-*Documentación complementaria y verbosa de algunas funciones de la clase QvMapeta 
+*Documentación complementaria y verbosa de algunas funciones de la clase QvMapeta*
 
 
 # QvMapeta in module moduls.QvMapeta:
