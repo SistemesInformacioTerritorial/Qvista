@@ -10,3 +10,6 @@ class DobleCanvas(QDockWidget):
         bridge = QgsLayerTreeMapCanvasBridge(root, canvas)
         
         self.setWidget(canvas)
+
+        if 'DobleCanvasTema' in QgsProject.instance().mapThemeCollection().mapThemes():
+            canvas.setTheme('DobleCanvasTema')
