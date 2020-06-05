@@ -1504,7 +1504,7 @@ class QVista(QMainWindow, Ui_MainWindow):
             self.desmaximitza()
 
         else:
-            self.showLblFlotant('Prem F-11, Esc o el botó de maximitzar per sortir de la pantalla completa')
+            self.showLblFlotant('Premeu F-11, Esc o el botó de maximitzar per sortir de la pantalla completa')
             if hasattr(self.canvas,'bMaximitza'):
                 self.canvas.bMaximitza.setIcon(self.canvas.iconaMinimitza)
             self.dockWidgetsVisibles=[x for x in self.findChildren(QvDockWidget) if x.isVisible()]
