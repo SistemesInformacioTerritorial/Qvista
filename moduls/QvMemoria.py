@@ -105,7 +105,7 @@ class QvMemoria(Singleton):
     def setCampsGeocod(self,file,camps):
         self.campsGeocod[file]=camps
     def setGeocodificat(self,path, net):
-        ruta=os.path.join(dadesdir,Path(net).stem+'_Geo.csv')
+        ruta=os.path.join(configuracioQvista.dadesdir,Path(net).stem+'_Geo.csv')
         if not os.path.isfile(path) or not os.path.isfile(ruta):
             return
         self.geocodificats[md5sum(path)]=md5sum(ruta)

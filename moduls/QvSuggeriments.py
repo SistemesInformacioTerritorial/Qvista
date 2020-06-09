@@ -112,7 +112,7 @@ class QvSuggeriments(QDialog):
         self.widgetSup.setStyleSheet('color: %s; background-color: solid %s; border: 0px;'%(QvConstants.COLORBLANCHTML,QvConstants.COLORFOSCHTML))
         
         self.setWindowTitle("qVista - Problemes i Suggeriments")
-        self.setFixedSize(520, 360)
+        # self.setFixedSize(520, 360)
         self.oldPos=self.pos()
     
     def mousePressEvent(self, event):
