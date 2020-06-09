@@ -6,6 +6,7 @@ from qgis.PyQt.QtGui import QFont, QDesktopServices
 class IntegracioPatrimoni(QDockWidget):
     def __init__(self, parent):
         self.parent = parent
+        self.parent.canvas.renderComplete.connect(self.centraCanvas)
         super().__init__("Patrimoni")
         self.setContextMenuPolicy(Qt.PreventContextMenu)
         
@@ -25,24 +26,24 @@ class IntegracioPatrimoni(QDockWidget):
         spacer = QSpacerItem(50, 50, QSizePolicy.Expanding,QSizePolicy.Maximum)
         fPatrimoni.layout().addItem(spacer)
 
-        bBIPE = QvPushButton('BIPE ',flat=True)
+        bBIPE = QvPushButton('BIPE ',flat=False)
         bBIPE.setStyleSheet("Text-align: left")
 
         # bBIPE.clicked.connect(lambda : self.temaBIPE('BIPE'))
         bBIPE.clicked.connect(lambda : self.canvas.setTheme('BIPE'))
 
-        bBIPS = QvPushButton('BIPS ',flat=True)
+        bBIPS = QvPushButton('BIPS ',flat=False)
         bBIPS.setStyleSheet("Text-align: left")
 
         bBIPS.clicked.connect(lambda : self.canvas.setTheme('BIPS'))
 
-        bBILS = QvPushButton('BILS ',flat=True)
+        bBILS = QvPushButton('BILS ',flat=False)
         bBILS.setStyleSheet("Text-align: left")
 
         bBILS.clicked.connect(lambda : self.canvas.setTheme('BILS'))
 
         
-        bCessio = QvPushButton('Cessió',flat=True)
+        bCessio = QvPushButton('Cessió',flat=False)
         bCessio.setStyleSheet("Text-align: left")
 
         bCessio.clicked.connect(lambda : self.canvas.setTheme('Cessió'))
@@ -50,9 +51,17 @@ class IntegracioPatrimoni(QDockWidget):
 
         fPatrimoni.layout().addWidget(bBIPE)
         fPatrimoni.layout().addWidget(bBIPS)
-        fPatrimoni.layout().addWidget(bBIPE)
-        fPatrimoni.layout().addWidget(bBIPS)
+        fPatrimoni.layout().addWidget(bBILS)
+        fPatrimoni.layout().addWidget(bCessio)
         
+        fPatrimoni.layout().addItem(spacer)
+        
+        bCentra = QvPushButton('Centra',flat=True)
+        bCentra.setStyleSheet("Text-align: left")
+
+        bCentra.clicked.connect(self.centraCanvas)
+        fPatrimoni.layout().addWidget(bCentra)
+
         fPatrimoni.layout().addItem(spacer)
 
         self.canvas = QvCanvas()        
@@ -68,6 +77,11 @@ class IntegracioPatrimoni(QDockWidget):
         self.setWidget(fPatrimoni)
         self.setContentsMargins ( 0, 0, 0, 0 )
         self.show()
+
+    def centraCanvas(self):
+        print('centra')
+        self.canvas.setExtent(self.parent.canvas.extent())
+        self.canvas.refresh()
 
     def canviTema(self, tema):
         print(tema)
