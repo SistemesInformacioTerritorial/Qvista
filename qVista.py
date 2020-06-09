@@ -746,6 +746,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.mapeta.setParent(self.canvas)
         self.mapeta.move(20,20)
         self.mapeta.show()
+        self.mapetaVisible = True
    
     def preparacioCrearMapeta(self):
         self.crearMapetaConBotones = QvCrearMapetaConBotones(self.canvas)
@@ -785,7 +786,8 @@ class QVista(QMainWindow, Ui_MainWindow):
         """
         self.layoutFrameLlegenda = QVBoxLayout(self.frameLlegenda)
         self.llegenda = QvLlegenda(self.canvas, self.taulesAtributs)
-        self.llegenda.setMinimumWidth(self.llegenda.minimumWidth())
+        r = 250
+        self.llegenda.setMinimumWidth(r) #si es posa un numero a pelo (250), es mostra en finestra petita
         self.llegenda.currentLayerChanged.connect(self.canviLayer)
         self.llegenda.projecteModificat.connect(lambda: self.setDirtyBit(True)) #Activa el dirty bit al fer servir el dwPrint (i no hauria)
         self.canvas.setLlegenda(self.llegenda)
@@ -1114,6 +1116,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.botoMapeta.setIcon(QIcon(os.path.join(imatgesDir,'Mapeta.png')))
         self.botoMapeta.setStyleSheet(stylesheetBotons)
         self.botoMapeta.setIconSize(QSize(24,24))
+        self.botoMapeta.clicked.connect(self.ensenyaAmagaMapeta)
         self.botoMapeta.setCursor(QvConstants.cursorClick())
 
         self.botoMetadades.setIcon(QIcon(os.path.join(imatgesDir,'information-variant.png')))
@@ -1272,7 +1275,14 @@ class QVista(QMainWindow, Ui_MainWindow):
         path = os.path.join(QvTempdir,'tempQgis.qgs')
         self.project.write(path)
         QDesktopServices().openUrl(QUrl(path))
-    
+
+    def ensenyaAmagaMapeta(self):
+        if self.mapetaVisible:
+            self.mapeta.hide()
+        else:
+            self.mapeta.show()
+        self.mapetaVisible = not self.mapetaVisible
+  
     def tisores(self):
         process = QProcess(self)
         pathApp = r"c:\windows\system32\SnippingTool.exe"
@@ -1303,10 +1313,12 @@ class QVista(QMainWindow, Ui_MainWindow):
         menubar=QvMenuBar(self)
         self.setMenuBar(menubar)
         self.bar = self.menuBar()
+        
         def desplaca(x,y):
             if self.maximitzada:
                 self.restaurarFunc()
             self.move(self.x()+x-self.oldPos.x(),self.y()+y-self.oldPos.y())
+        
         def posCanviada(p):
             self.oldPos=p
         self.bar.desplaca.connect(desplaca)
