@@ -1056,9 +1056,11 @@ class QvMapeta(QFrame):
             with open('D:/qVista/Codi/guies/DocModuls/QvMapeta/cm.bas', 'a') as fbas:  #point
                 linea= '    MbeSendKeyin "pla point":    MbeSendKeyin "co=210":    MbeSendKeyin "lc=0":    MbeSendKeyin "wt=20"\n';  fbas.write( linea) 
                 linea= "    pt.x =  {} :pt.y =  {} :  MbeSendDatapoint pt\n".format(round(self.xIn,2), round(self.yIn,2)); fbas.write( linea)
+                
                 linea= '    MbeSendKeyin "pla point":    MbeSendKeyin "co=Green":    MbeSendKeyin "lc=0":    MbeSendKeyin "wt=16"\n';  fbas.write( linea) 
                 linea= "    pt.x =  {} :pt.y =  {} :  MbeSendDatapoint pt\n".format(round(self.xIn_,2), round(self.yIn_,2)); fbas.write( linea)                
                 linea= '    MbeSendReset\n';  fbas.write( linea)   
+                
                 linea= '    MbeSendKeyin "pla ls":    MbeSendKeyin "co=210":    MbeSendKeyin "lc=3":    MbeSendKeyin "wt=1"\n';  fbas.write( linea) 
                 linea= "    pt.x =  {} :pt.y =  {} :  MbeSendDatapoint pt\n".format(round(self.xIn,2), round(self.yIn,2)); fbas.write( linea)
                 linea= "    pt.x =  {} :pt.y =  {} :  MbeSendDatapoint pt\n".format(round(self.xIn_,2), round(self.yIn_,2)); fbas.write( linea)

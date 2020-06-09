@@ -19,21 +19,21 @@
   </projectCrs>
   <layer-tree-group>
     <customproperties/>
-    <layer-tree-layer expanded="1" checked="Qt::Checked" name="Districtes" id="qVista_default_map_f891068c_424f_4eac_97ef_4b81344800a4" source="./qVista default map.gpkg|layername=Districtes" providerKey="ogr">
+    <layer-tree-layer source="mapesOffline/qVista default map.gpkg|layername=Districtes" expanded="1" providerKey="ogr" id="qVista_default_map_f891068c_424f_4eac_97ef_4b81344800a4" name="Districtes" checked="Qt::Checked">
       <customproperties/>
     </layer-tree-layer>
-    <layer-tree-group expanded="1" checked="Qt::Checked" name="Parcelari">
+    <layer-tree-group expanded="1" name="Parcelari" checked="Qt::Unchecked">
       <customproperties/>
-      <layer-tree-layer expanded="0" checked="Qt::Checked" name="Noms de carrers" id="qVista_default_map_e55f4646_1a54_4785_201906040944402191406" source="./qVista default map.gpkg|layername=noms_carrers" providerKey="ogr">
+      <layer-tree-layer source="mapesOffline/qVista default map.gpkg|layername=noms_carrers" expanded="0" providerKey="ogr" id="qVista_default_map_e55f4646_1a54_4785_201906040944402191406" name="Noms de carrers" checked="Qt::Checked">
         <customproperties/>
       </layer-tree-layer>
-      <layer-tree-layer expanded="1" checked="Qt::Checked" name="Numeració postal" id="qVista_default_map_27f67d6e_e424_4fcb_2019060409444021926581" source="./qVista default map.gpkg|layername=num_postal" providerKey="ogr">
+      <layer-tree-layer source="mapesOffline/qVista default map.gpkg|layername=num_postal" expanded="1" providerKey="ogr" id="qVista_default_map_27f67d6e_e424_4fcb_2019060409444021926581" name="Numeració postal" checked="Qt::Checked">
         <customproperties/>
       </layer-tree-layer>
-      <layer-tree-layer expanded="1" checked="Qt::Checked" name="Polígon de parcel·la" id="qVista_default_map_eb4bcfd3_44cc_4ffa_2019060409444021926618" source="./qVista default map.gpkg|layername=pol_parc" providerKey="ogr">
+      <layer-tree-layer source="mapesOffline/qVista default map.gpkg|layername=pol_parc" expanded="1" providerKey="ogr" id="qVista_default_map_eb4bcfd3_44cc_4ffa_2019060409444021926618" name="Polígon de parcel·la" checked="Qt::Checked">
         <customproperties/>
       </layer-tree-layer>
-      <layer-tree-layer expanded="1" checked="Qt::Checked" name="Polígons d'illa" id="qVista_default_map_66e60ed9_718c_4de4_2019060409444021914016" source="./qVista default map.gpkg|layername=pol_illa" providerKey="ogr">
+      <layer-tree-layer source="mapesOffline/qVista default map.gpkg|layername=pol_illa" expanded="1" providerKey="ogr" id="qVista_default_map_66e60ed9_718c_4de4_2019060409444021914016" name="Polígons d'illa" checked="Qt::Checked">
         <customproperties/>
       </layer-tree-layer>
     </layer-tree-group>
@@ -45,23 +45,23 @@
       <item>qVista_default_map_f891068c_424f_4eac_97ef_4b81344800a4</item>
     </custom-order>
   </layer-tree-group>
-  <snapping-settings mode="2" tolerance="12" type="1" enabled="0" unit="1" intersection-snapping="0">
+  <snapping-settings unit="1" enabled="0" type="1" intersection-snapping="0" mode="2" tolerance="12">
     <individual-layer-settings>
-      <layer-setting tolerance="12" type="1" enabled="0" units="1" id="qVista_default_map_e55f4646_1a54_4785_201906040944402191406"/>
-      <layer-setting tolerance="12" type="1" enabled="0" units="1" id="qVista_default_map_66e60ed9_718c_4de4_2019060409444021914016"/>
-      <layer-setting tolerance="12" type="1" enabled="0" units="1" id="qVista_default_map_eb4bcfd3_44cc_4ffa_2019060409444021926618"/>
-      <layer-setting tolerance="12" type="1" enabled="0" units="1" id="qVista_default_map_f891068c_424f_4eac_97ef_4b81344800a4"/>
-      <layer-setting tolerance="12" type="1" enabled="0" units="1" id="qVista_default_map_27f67d6e_e424_4fcb_2019060409444021926581"/>
+      <layer-setting enabled="0" type="1" id="qVista_default_map_e55f4646_1a54_4785_201906040944402191406" units="1" tolerance="12"/>
+      <layer-setting enabled="0" type="1" id="qVista_default_map_27f67d6e_e424_4fcb_2019060409444021926581" units="1" tolerance="12"/>
+      <layer-setting enabled="0" type="1" id="qVista_default_map_66e60ed9_718c_4de4_2019060409444021914016" units="1" tolerance="12"/>
+      <layer-setting enabled="0" type="1" id="qVista_default_map_eb4bcfd3_44cc_4ffa_2019060409444021926618" units="1" tolerance="12"/>
+      <layer-setting enabled="0" type="1" id="qVista_default_map_f891068c_424f_4eac_97ef_4b81344800a4" units="1" tolerance="12"/>
     </individual-layer-settings>
   </snapping-settings>
   <relations/>
-  <mapcanvas name="theMapCanvas" annotationsVisible="1">
+  <mapcanvas name="" annotationsVisible="1">
     <units>meters</units>
     <extent>
-      <xmin>433247.32659153401618823</xmin>
-      <ymin>4584782.41738672461360693</ymin>
-      <xmax>433389.55959153402363881</xmax>
-      <ymax>4584949.82938672509044409</ymax>
+      <xmin>420445.83437499997671694</xmin>
+      <ymin>4573862.38750000018626451</ymin>
+      <xmax>435847.10312500002328306</xmax>
+      <ymax>4591486.11249999981373549</ymax>
     </extent>
     <rotation>0</rotation>
     <destinationsrs>
@@ -78,40 +78,31 @@
     </destinationsrs>
     <rendermaptile>0</rendermaptile>
   </mapcanvas>
-  <projectModels/>
-  <legend updateDrawingOrder="true">
-    <legendlayer drawingOrder="-1" showFeatureCount="0" checked="Qt::Checked" name="Districtes" open="true">
-      <filegroup hidden="false" open="true">
-        <legendlayerfile isInOverview="0" layerid="qVista_default_map_f891068c_424f_4eac_97ef_4b81344800a4" visible="1"/>
-      </filegroup>
-    </legendlayer>
-    <legendgroup checked="Qt::Checked" name="Parcelari" open="true">
-      <legendlayer drawingOrder="-1" showFeatureCount="0" checked="Qt::Checked" name="Noms de carrers" open="false">
-        <filegroup hidden="false" open="false">
-          <legendlayerfile isInOverview="0" layerid="qVista_default_map_e55f4646_1a54_4785_201906040944402191406" visible="1"/>
-        </filegroup>
-      </legendlayer>
-      <legendlayer drawingOrder="-1" showFeatureCount="0" checked="Qt::Checked" name="Numeració postal" open="true">
-        <filegroup hidden="false" open="true">
-          <legendlayerfile isInOverview="0" layerid="qVista_default_map_27f67d6e_e424_4fcb_2019060409444021926581" visible="1"/>
-        </filegroup>
-      </legendlayer>
-      <legendlayer drawingOrder="-1" showFeatureCount="0" checked="Qt::Checked" name="Polígon de parcel·la" open="true">
-        <filegroup hidden="false" open="true">
-          <legendlayerfile isInOverview="0" layerid="qVista_default_map_eb4bcfd3_44cc_4ffa_2019060409444021926618" visible="1"/>
-        </filegroup>
-      </legendlayer>
-      <legendlayer drawingOrder="-1" showFeatureCount="0" checked="Qt::Checked" name="Polígons d'illa" open="true">
-        <filegroup hidden="false" open="true">
-          <legendlayerfile isInOverview="0" layerid="qVista_default_map_66e60ed9_718c_4de4_2019060409444021914016" visible="1"/>
-        </filegroup>
-      </legendlayer>
-    </legendgroup>
-  </legend>
-  <mapViewDocks/>
-  <mapViewDocks3D/>
+  <mapcanvas theme="PARCELAS" name="" annotationsVisible="1">
+    <units>meters</units>
+    <extent>
+      <xmin>420445.83437499997671694</xmin>
+      <ymin>4573862.38750000018626451</ymin>
+      <xmax>435847.10312500002328306</xmax>
+      <ymax>4591486.11249999981373549</ymax>
+    </extent>
+    <rotation>0</rotation>
+    <destinationsrs>
+      <spatialrefsys>
+        <proj4>+proj=utm +zone=31 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs</proj4>
+        <srsid>2104</srsid>
+        <srid>25831</srid>
+        <authid>EPSG:25831</authid>
+        <description>ETRS89 / UTM zone 31N</description>
+        <projectionacronym>utm</projectionacronym>
+        <ellipsoidacronym>GRS80</ellipsoidacronym>
+        <geographicflag>false</geographicflag>
+      </spatialrefsys>
+    </destinationsrs>
+    <rendermaptile>0</rendermaptile>
+  </mapcanvas>
   <projectlayers>
-    <maplayer autoRefreshTime="0" refreshOnNotifyMessage="" simplifyMaxScale="1" hasScaleBasedVisibilityFlag="1" autoRefreshEnabled="0" minScale="1500" type="vector" styleCategories="AllStyleCategories" simplifyAlgorithm="0" simplifyLocal="1" readOnly="0" refreshOnNotifyEnabled="0" geometry="Point" labelsEnabled="1" maxScale="0" simplifyDrawingHints="0" simplifyDrawingTol="1">
+    <maplayer labelsEnabled="1" refreshOnNotifyMessage="" hasScaleBasedVisibilityFlag="1" simplifyAlgorithm="0" autoRefreshTime="0" autoRefreshEnabled="0" geometry="Point" simplifyLocal="1" simplifyDrawingTol="1" type="vector" simplifyMaxScale="1" simplifyDrawingHints="0" minScale="1500" refreshOnNotifyEnabled="0" styleCategories="AllStyleCategories" readOnly="0" maxScale="0">
       <extent>
         <xmin>421115</xmin>
         <ymin>4574800</ymin>
@@ -175,10 +166,10 @@
         <Removable>1</Removable>
         <Searchable>1</Searchable>
       </flags>
-      <renderer-v2 symbollevels="0" type="singleSymbol" enableorderby="0" forceraster="0">
+      <renderer-v2 symbollevels="0" forceraster="0" type="singleSymbol" enableorderby="0">
         <symbols>
-          <symbol clip_to_extent="1" force_rhr="0" type="marker" name="0" alpha="1">
-            <layer locked="0" pass="0" enabled="1" class="SimpleMarker">
+          <symbol force_rhr="0" type="marker" clip_to_extent="1" name="0" alpha="1">
+            <layer class="SimpleMarker" pass="0" enabled="1" locked="0">
               <prop k="angle" v="0"/>
               <prop k="color" v="0,0,0,0"/>
               <prop k="horizontal_anchor_point" v="1"/>
@@ -212,15 +203,15 @@
       </renderer-v2>
       <labeling type="simple">
         <settings>
-          <text-style useSubstitutions="0" fontStrikeout="0" fontLetterSpacing="0" fontCapitals="0" fieldName="ETIQUETA" fontSize="2" blendMode="0" fontUnderline="0" textColor="56,71,79,255" multilineHeight="1" fontSizeUnit="MapUnit" textOpacity="1" fontSizeMapUnitScale="3x:0,0,0,0,0,0" isExpression="0" previewBkgrdColor="#000000" fontWeight="50" fontItalic="0" namedStyle="Regular" fontWordSpacing="0" fontFamily="Segoe UI Semilight">
-            <text-buffer bufferSizeUnits="MM" bufferDraw="0" bufferColor="255,255,255,255" bufferJoinStyle="64" bufferSizeMapUnitScale="3x:0,0,0,0,0,0" bufferNoFill="0" bufferOpacity="1" bufferBlendMode="0" bufferSize="1"/>
-            <background shapeOpacity="1" shapeRotation="0" shapeSizeUnit="MM" shapeSizeX="0" shapeBorderWidthUnit="MM" shapeSizeMapUnitScale="3x:0,0,0,0,0,0" shapeJoinStyle="64" shapeType="0" shapeRadiiY="0" shapeSizeType="0" shapeOffsetY="0" shapeSVGFile="" shapeSizeY="0" shapeRadiiMapUnitScale="3x:0,0,0,0,0,0" shapeDraw="0" shapeBorderWidth="0" shapeBlendMode="0" shapeOffsetX="0" shapeOffsetUnit="MM" shapeRotationType="0" shapeRadiiUnit="MM" shapeOffsetMapUnitScale="3x:0,0,0,0,0,0" shapeBorderColor="128,128,128,255" shapeBorderWidthMapUnitScale="3x:0,0,0,0,0,0" shapeRadiiX="0" shapeFillColor="255,255,255,255"/>
-            <shadow shadowOffsetMapUnitScale="3x:0,0,0,0,0,0" shadowRadius="1.5" shadowRadiusUnit="MM" shadowOffsetAngle="135" shadowDraw="0" shadowBlendMode="6" shadowOffsetGlobal="1" shadowOpacity="0.7" shadowOffsetDist="1" shadowScale="100" shadowOffsetUnit="MM" shadowRadiusMapUnitScale="3x:0,0,0,0,0,0" shadowColor="0,0,0,255" shadowUnder="0" shadowRadiusAlphaOnly="0"/>
+          <text-style textOpacity="1" fontSizeUnit="MapUnit" fontSize="2" previewBkgrdColor="#ffffff" fontFamily="Segoe UI Semilight" useSubstitutions="0" namedStyle="Regular" fontStrikeout="0" fontWordSpacing="0" fontWeight="50" fontItalic="0" fontSizeMapUnitScale="3x:0,0,0,0,0,0" blendMode="0" isExpression="0" multilineHeight="1" fieldName="ETIQUETA" fontCapitals="0" textColor="56,71,79,255" fontUnderline="0" fontLetterSpacing="0">
+            <text-buffer bufferNoFill="0" bufferSize="1" bufferDraw="0" bufferOpacity="1" bufferSizeMapUnitScale="3x:0,0,0,0,0,0" bufferColor="255,255,255,255" bufferJoinStyle="64" bufferBlendMode="0" bufferSizeUnits="MM"/>
+            <background shapeSizeY="0" shapeOffsetX="0" shapeBorderWidthMapUnitScale="3x:0,0,0,0,0,0" shapeBorderWidth="0" shapeJoinStyle="64" shapeBlendMode="0" shapeSizeUnit="MM" shapeRadiiMapUnitScale="3x:0,0,0,0,0,0" shapeRadiiUnit="MM" shapeBorderWidthUnit="MM" shapeRotationType="0" shapeType="0" shapeFillColor="255,255,255,255" shapeSizeX="0" shapeSizeType="0" shapeSizeMapUnitScale="3x:0,0,0,0,0,0" shapeOffsetY="0" shapeRadiiX="0" shapeRadiiY="0" shapeOffsetMapUnitScale="3x:0,0,0,0,0,0" shapeOffsetUnit="MM" shapeBorderColor="128,128,128,255" shapeSVGFile="" shapeOpacity="1" shapeRotation="0" shapeDraw="0"/>
+            <shadow shadowOffsetDist="1" shadowOffsetGlobal="1" shadowDraw="0" shadowOpacity="0.7" shadowBlendMode="6" shadowRadiusUnit="MM" shadowRadiusAlphaOnly="0" shadowOffsetUnit="MM" shadowRadius="1.5" shadowScale="100" shadowColor="0,0,0,255" shadowOffsetAngle="135" shadowOffsetMapUnitScale="3x:0,0,0,0,0,0" shadowUnder="0" shadowRadiusMapUnitScale="3x:0,0,0,0,0,0"/>
             <substitutions/>
           </text-style>
-          <text-format rightDirectionSymbol=">" addDirectionSymbol="0" reverseDirectionSymbol="0" formatNumbers="0" placeDirectionSymbol="0" wrapChar="" useMaxLineLengthForAutoWrap="1" leftDirectionSymbol="&lt;" decimals="3" autoWrapLength="0" multilineAlign="0" plussign="0"/>
-          <placement placementFlags="10" repeatDistanceUnits="MM" yOffset="0" maxCurvedCharAngleOut="-20" distMapUnitScale="3x:0,0,0,0,0,0" fitInPolygonOnly="0" maxCurvedCharAngleIn="20" predefinedPositionOrder="TR,TL,BR,BL,R,L,TSR,BSR" labelOffsetMapUnitScale="3x:0,0,0,0,0,0" repeatDistance="0" preserveRotation="1" distUnits="MM" quadOffset="4" centroidWhole="1" centroidInside="0" placement="1" dist="0" offsetUnits="MapUnit" repeatDistanceMapUnitScale="3x:0,0,0,0,0,0" priority="5" rotationAngle="0" xOffset="0" offsetType="0"/>
-          <rendering fontMaxPixelSize="10000" obstacleFactor="1" scaleMin="1" obstacleType="0" scaleMax="10000000" displayAll="1" maxNumLabels="2000" scaleVisibility="0" obstacle="1" limitNumLabels="0" minFeatureSize="0" zIndex="5" labelPerPart="0" mergeLines="0" fontLimitPixelSize="0" fontMinPixelSize="3" drawLabels="1" upsidedownLabels="2"/>
+          <text-format addDirectionSymbol="0" decimals="3" useMaxLineLengthForAutoWrap="1" plussign="0" wrapChar="" multilineAlign="0" autoWrapLength="0" reverseDirectionSymbol="0" formatNumbers="0" leftDirectionSymbol="&lt;" placeDirectionSymbol="0" rightDirectionSymbol=">"/>
+          <placement maxCurvedCharAngleOut="-20" fitInPolygonOnly="0" offsetType="0" xOffset="0" placement="1" dist="0" repeatDistance="0" repeatDistanceMapUnitScale="3x:0,0,0,0,0,0" maxCurvedCharAngleIn="20" distMapUnitScale="3x:0,0,0,0,0,0" quadOffset="4" repeatDistanceUnits="MM" offsetUnits="MapUnit" rotationAngle="0" distUnits="MM" predefinedPositionOrder="TR,TL,BR,BL,R,L,TSR,BSR" yOffset="0" centroidWhole="1" preserveRotation="1" centroidInside="0" labelOffsetMapUnitScale="3x:0,0,0,0,0,0" priority="5" placementFlags="10"/>
+          <rendering mergeLines="0" limitNumLabels="0" upsidedownLabels="2" fontMaxPixelSize="10000" scaleMax="10000000" obstacle="1" maxNumLabels="2000" drawLabels="1" zIndex="5" displayAll="1" labelPerPart="0" obstacleType="0" fontLimitPixelSize="0" obstacleFactor="1" scaleMin="1" minFeatureSize="0" scaleVisibility="0" fontMinPixelSize="3"/>
           <dd_properties>
             <Option type="Map">
               <Option type="QString" name="name" value=""/>
@@ -285,36 +276,36 @@
         </field>
       </fieldConfiguration>
       <aliases>
-        <alias index="0" name="" field="fid"/>
-        <alias index="1" name="" field="ID"/>
-        <alias index="2" name="" field="ETIQUETA"/>
-        <alias index="3" name="" field="ANGLE"/>
+        <alias field="fid" index="0" name=""/>
+        <alias field="ID" index="1" name=""/>
+        <alias field="ETIQUETA" index="2" name=""/>
+        <alias field="ANGLE" index="3" name=""/>
       </aliases>
       <excludeAttributesWMS/>
       <excludeAttributesWFS/>
       <defaults>
-        <default expression="" applyOnUpdate="0" field="fid"/>
-        <default expression="" applyOnUpdate="0" field="ID"/>
-        <default expression="" applyOnUpdate="0" field="ETIQUETA"/>
-        <default expression="" applyOnUpdate="0" field="ANGLE"/>
+        <default expression="" field="fid" applyOnUpdate="0"/>
+        <default expression="" field="ID" applyOnUpdate="0"/>
+        <default expression="" field="ETIQUETA" applyOnUpdate="0"/>
+        <default expression="" field="ANGLE" applyOnUpdate="0"/>
       </defaults>
       <constraints>
-        <constraint constraints="3" notnull_strength="1" exp_strength="0" unique_strength="1" field="fid"/>
-        <constraint constraints="0" notnull_strength="0" exp_strength="0" unique_strength="0" field="ID"/>
-        <constraint constraints="0" notnull_strength="0" exp_strength="0" unique_strength="0" field="ETIQUETA"/>
-        <constraint constraints="0" notnull_strength="0" exp_strength="0" unique_strength="0" field="ANGLE"/>
+        <constraint constraints="3" field="fid" unique_strength="1" exp_strength="0" notnull_strength="1"/>
+        <constraint constraints="0" field="ID" unique_strength="0" exp_strength="0" notnull_strength="0"/>
+        <constraint constraints="0" field="ETIQUETA" unique_strength="0" exp_strength="0" notnull_strength="0"/>
+        <constraint constraints="0" field="ANGLE" unique_strength="0" exp_strength="0" notnull_strength="0"/>
       </constraints>
       <constraintExpressions>
-        <constraint exp="" desc="" field="fid"/>
-        <constraint exp="" desc="" field="ID"/>
-        <constraint exp="" desc="" field="ETIQUETA"/>
-        <constraint exp="" desc="" field="ANGLE"/>
+        <constraint desc="" exp="" field="fid"/>
+        <constraint desc="" exp="" field="ID"/>
+        <constraint desc="" exp="" field="ETIQUETA"/>
+        <constraint desc="" exp="" field="ANGLE"/>
       </constraintExpressions>
       <expressionfields/>
       <attributeactions>
         <defaultAction key="Canvas" value="{00000000-0000-0000-0000-000000000000}"/>
       </attributeactions>
-      <attributetableconfig sortExpression="" sortOrder="0" actionWidgetStyle="dropDown">
+      <attributetableconfig actionWidgetStyle="dropDown" sortOrder="0" sortExpression="">
         <columns/>
       </attributetableconfig>
       <conditionalstyles>
@@ -334,7 +325,7 @@
       <previewExpression></previewExpression>
       <mapTip></mapTip>
     </maplayer>
-    <maplayer autoRefreshTime="0" refreshOnNotifyMessage="" simplifyMaxScale="1" hasScaleBasedVisibilityFlag="0" autoRefreshEnabled="0" minScale="6000" type="vector" styleCategories="AllStyleCategories" simplifyAlgorithm="0" simplifyLocal="1" readOnly="0" refreshOnNotifyEnabled="0" geometry="Polygon" labelsEnabled="0" maxScale="0" simplifyDrawingHints="1" simplifyDrawingTol="1">
+    <maplayer labelsEnabled="0" refreshOnNotifyMessage="" hasScaleBasedVisibilityFlag="0" simplifyAlgorithm="0" autoRefreshTime="0" autoRefreshEnabled="0" geometry="Polygon" simplifyLocal="1" simplifyDrawingTol="1" type="vector" simplifyMaxScale="1" simplifyDrawingHints="1" minScale="6000" refreshOnNotifyEnabled="0" styleCategories="AllStyleCategories" readOnly="0" maxScale="0">
       <extent>
         <xmin>420813</xmin>
         <ymin>4574280</ymin>
@@ -391,7 +382,7 @@
           </spatialrefsys>
         </crs>
         <extent>
-          <spatial crs="" minx="0" maxx="0" minz="0" maxz="0" dimensions="2" miny="0" maxy="0"/>
+          <spatial maxy="0" dimensions="2" minx="0" miny="0" crs="" maxx="0" minz="0" maxz="0"/>
           <temporal>
             <period>
               <start></start>
@@ -415,10 +406,10 @@
         <Removable>1</Removable>
         <Searchable>1</Searchable>
       </flags>
-      <renderer-v2 symbollevels="0" type="singleSymbol" enableorderby="0" forceraster="0">
+      <renderer-v2 symbollevels="0" forceraster="0" type="singleSymbol" enableorderby="0">
         <symbols>
-          <symbol clip_to_extent="1" force_rhr="0" type="fill" name="0" alpha="1">
-            <layer locked="0" pass="0" enabled="1" class="SimpleFill">
+          <symbol force_rhr="0" type="fill" clip_to_extent="1" name="0" alpha="1">
+            <layer class="SimpleFill" pass="0" enabled="1" locked="0">
               <prop k="border_width_map_unit_scale" v="3x:0,0,0,0,0,0"/>
               <prop k="color" v="15,83,115,26"/>
               <prop k="joinstyle" v="bevel"/>
@@ -462,13 +453,13 @@
       <blendMode>0</blendMode>
       <featureBlendMode>0</featureBlendMode>
       <layerOpacity>1</layerOpacity>
-      <SingleCategoryDiagramRenderer attributeLegend="1" diagramType="Histogram">
-        <DiagramCategory backgroundAlpha="255" height="15" width="15" penWidth="0" maxScaleDenominator="6000" penColor="#000000" sizeScale="3x:0,0,0,0,0,0" penAlpha="255" opacity="1" rotationOffset="270" lineSizeScale="3x:0,0,0,0,0,0" minimumSize="0" sizeType="MM" diagramOrientation="Up" enabled="0" lineSizeType="MM" minScaleDenominator="0" labelPlacementMethod="XHeight" scaleDependency="Area" scaleBasedVisibility="0" backgroundColor="#ffffff" barWidth="5">
+      <SingleCategoryDiagramRenderer diagramType="Histogram" attributeLegend="1">
+        <DiagramCategory opacity="1" labelPlacementMethod="XHeight" diagramOrientation="Up" maxScaleDenominator="6000" backgroundColor="#ffffff" width="15" scaleDependency="Area" barWidth="5" height="15" enabled="0" penAlpha="255" penColor="#000000" penWidth="0" sizeScale="3x:0,0,0,0,0,0" lineSizeType="MM" scaleBasedVisibility="0" lineSizeScale="3x:0,0,0,0,0,0" minScaleDenominator="0" minimumSize="0" rotationOffset="270" sizeType="MM" backgroundAlpha="255">
           <fontProperties description="MS Shell Dlg 2,8.25,-1,5,50,0,0,0,0,0" style=""/>
-          <attribute label="" color="#000000" field=""/>
+          <attribute color="#000000" label="" field=""/>
         </DiagramCategory>
       </SingleCategoryDiagramRenderer>
-      <DiagramLayerSettings linePlacementFlags="18" showAll="1" obstacle="0" placement="1" zIndex="0" priority="0" dist="0">
+      <DiagramLayerSettings placement="1" zIndex="0" dist="0" obstacle="0" linePlacementFlags="18" priority="0" showAll="1">
         <properties>
           <Option type="Map">
             <Option type="QString" name="name" value=""/>
@@ -512,42 +503,42 @@
         </field>
       </fieldConfiguration>
       <aliases>
-        <alias index="0" name="" field="fid"/>
-        <alias index="1" name="" field="ID"/>
-        <alias index="2" name="" field="DISTRICTE"/>
-        <alias index="3" name="" field="CODI_ILLA"/>
+        <alias field="fid" index="0" name=""/>
+        <alias field="ID" index="1" name=""/>
+        <alias field="DISTRICTE" index="2" name=""/>
+        <alias field="CODI_ILLA" index="3" name=""/>
       </aliases>
       <excludeAttributesWMS/>
       <excludeAttributesWFS/>
       <defaults>
-        <default expression="" applyOnUpdate="0" field="fid"/>
-        <default expression="" applyOnUpdate="0" field="ID"/>
-        <default expression="" applyOnUpdate="0" field="DISTRICTE"/>
-        <default expression="" applyOnUpdate="0" field="CODI_ILLA"/>
+        <default expression="" field="fid" applyOnUpdate="0"/>
+        <default expression="" field="ID" applyOnUpdate="0"/>
+        <default expression="" field="DISTRICTE" applyOnUpdate="0"/>
+        <default expression="" field="CODI_ILLA" applyOnUpdate="0"/>
       </defaults>
       <constraints>
-        <constraint constraints="3" notnull_strength="1" exp_strength="0" unique_strength="1" field="fid"/>
-        <constraint constraints="0" notnull_strength="0" exp_strength="0" unique_strength="0" field="ID"/>
-        <constraint constraints="0" notnull_strength="0" exp_strength="0" unique_strength="0" field="DISTRICTE"/>
-        <constraint constraints="0" notnull_strength="0" exp_strength="0" unique_strength="0" field="CODI_ILLA"/>
+        <constraint constraints="3" field="fid" unique_strength="1" exp_strength="0" notnull_strength="1"/>
+        <constraint constraints="0" field="ID" unique_strength="0" exp_strength="0" notnull_strength="0"/>
+        <constraint constraints="0" field="DISTRICTE" unique_strength="0" exp_strength="0" notnull_strength="0"/>
+        <constraint constraints="0" field="CODI_ILLA" unique_strength="0" exp_strength="0" notnull_strength="0"/>
       </constraints>
       <constraintExpressions>
-        <constraint exp="" desc="" field="fid"/>
-        <constraint exp="" desc="" field="ID"/>
-        <constraint exp="" desc="" field="DISTRICTE"/>
-        <constraint exp="" desc="" field="CODI_ILLA"/>
+        <constraint desc="" exp="" field="fid"/>
+        <constraint desc="" exp="" field="ID"/>
+        <constraint desc="" exp="" field="DISTRICTE"/>
+        <constraint desc="" exp="" field="CODI_ILLA"/>
       </constraintExpressions>
       <expressionfields/>
       <attributeactions>
         <defaultAction key="Canvas" value="{00000000-0000-0000-0000-000000000000}"/>
       </attributeactions>
-      <attributetableconfig sortExpression="" sortOrder="0" actionWidgetStyle="dropDown">
+      <attributetableconfig actionWidgetStyle="dropDown" sortOrder="0" sortExpression="">
         <columns>
-          <column type="field" name="fid" hidden="0" width="-1"/>
-          <column type="field" name="ID" hidden="0" width="-1"/>
-          <column type="field" name="DISTRICTE" hidden="0" width="-1"/>
-          <column type="field" name="CODI_ILLA" hidden="0" width="-1"/>
-          <column type="actions" hidden="1" width="-1"/>
+          <column hidden="0" width="-1" type="field" name="fid"/>
+          <column hidden="0" width="-1" type="field" name="ID"/>
+          <column hidden="0" width="-1" type="field" name="DISTRICTE"/>
+          <column hidden="0" width="-1" type="field" name="CODI_ILLA"/>
+          <column hidden="1" width="-1" type="actions"/>
         </columns>
       </attributetableconfig>
       <conditionalstyles>
@@ -578,22 +569,22 @@ def my_form_open(dialog, layer, feature):
       <featformsuppress>0</featformsuppress>
       <editorlayout>generatedlayout</editorlayout>
       <editable>
-        <field name="CODI_ILLA" editable="1"/>
-        <field name="DISTRICTE" editable="1"/>
-        <field name="ID" editable="1"/>
-        <field name="fid" editable="1"/>
+        <field editable="1" name="CODI_ILLA"/>
+        <field editable="1" name="DISTRICTE"/>
+        <field editable="1" name="ID"/>
+        <field editable="1" name="fid"/>
       </editable>
       <labelOnTop>
-        <field name="CODI_ILLA" labelOnTop="0"/>
-        <field name="DISTRICTE" labelOnTop="0"/>
-        <field name="ID" labelOnTop="0"/>
-        <field name="fid" labelOnTop="0"/>
+        <field labelOnTop="0" name="CODI_ILLA"/>
+        <field labelOnTop="0" name="DISTRICTE"/>
+        <field labelOnTop="0" name="ID"/>
+        <field labelOnTop="0" name="fid"/>
       </labelOnTop>
       <widgets/>
       <previewExpression>fid</previewExpression>
       <mapTip></mapTip>
     </maplayer>
-    <maplayer autoRefreshTime="0" refreshOnNotifyMessage="" simplifyMaxScale="1" hasScaleBasedVisibilityFlag="0" autoRefreshEnabled="0" minScale="3000" type="vector" styleCategories="AllStyleCategories" simplifyAlgorithm="0" simplifyLocal="1" readOnly="0" refreshOnNotifyEnabled="0" geometry="Point" labelsEnabled="1" maxScale="1" simplifyDrawingHints="0" simplifyDrawingTol="1">
+    <maplayer labelsEnabled="1" refreshOnNotifyMessage="" hasScaleBasedVisibilityFlag="0" simplifyAlgorithm="0" autoRefreshTime="0" autoRefreshEnabled="0" geometry="Point" simplifyLocal="1" simplifyDrawingTol="1" type="vector" simplifyMaxScale="1" simplifyDrawingHints="0" minScale="3000" refreshOnNotifyEnabled="0" styleCategories="AllStyleCategories" readOnly="0" maxScale="1">
       <extent>
         <xmin>421281</xmin>
         <ymin>4574800</ymin>
@@ -657,23 +648,23 @@ def my_form_open(dialog, layer, feature):
         <Removable>1</Removable>
         <Searchable>1</Searchable>
       </flags>
-      <renderer-v2 symbollevels="0" type="categorizedSymbol" enableorderby="0" forceraster="0" attr="left(  &quot;NIVELL&quot; ,6)">
+      <renderer-v2 symbollevels="0" forceraster="0" type="categorizedSymbol" attr="left(  &quot;NIVELL&quot; ,6)" enableorderby="0">
         <categories>
-          <category render="true" label="Via urbana molt ampla" symbol="0" value="TOP_20"/>
-          <category render="true" label="Via urbana ampla" symbol="1" value="TOP_21"/>
-          <category render="true" label="Via urbana estreta" symbol="2" value="TOP_22"/>
-          <category render="true" label="Via urbana Estreta Tipus 1 &lt; Estreta" symbol="3" value="TOP_23"/>
-          <category render="true" label="Via urbana Estreta Tipus 2 &lt; Estreta Tipus 1" symbol="4" value="TOP_24"/>
-          <category render="true" label="Vials interiors" symbol="5" value="TOP_25"/>
-          <category render="true" label="Plaça Gran" symbol="6" value="TOP_26"/>
-          <category render="true" label="Plaça Mitjana" symbol="7" value="TOP_27"/>
-          <category render="true" label="Plaça Petita" symbol="8" value="TOP_28"/>
-          <category render="true" label="Plaça Petita Tipus 1 &lt; Petita" symbol="9" value="TOP_29"/>
-          <category render="true" label="Plaça Petita Tipus 2 &lt; Petita Tipus 1" symbol="10" value="TOP_30"/>
+          <category symbol="0" label="Via urbana molt ampla" render="true" value="TOP_20"/>
+          <category symbol="1" label="Via urbana ampla" render="true" value="TOP_21"/>
+          <category symbol="2" label="Via urbana estreta" render="true" value="TOP_22"/>
+          <category symbol="3" label="Via urbana Estreta Tipus 1 &lt; Estreta" render="true" value="TOP_23"/>
+          <category symbol="4" label="Via urbana Estreta Tipus 2 &lt; Estreta Tipus 1" render="true" value="TOP_24"/>
+          <category symbol="5" label="Vials interiors" render="true" value="TOP_25"/>
+          <category symbol="6" label="Plaça Gran" render="true" value="TOP_26"/>
+          <category symbol="7" label="Plaça Mitjana" render="true" value="TOP_27"/>
+          <category symbol="8" label="Plaça Petita" render="true" value="TOP_28"/>
+          <category symbol="9" label="Plaça Petita Tipus 1 &lt; Petita" render="true" value="TOP_29"/>
+          <category symbol="10" label="Plaça Petita Tipus 2 &lt; Petita Tipus 1" render="true" value="TOP_30"/>
         </categories>
         <symbols>
-          <symbol clip_to_extent="1" force_rhr="0" type="marker" name="0" alpha="1">
-            <layer locked="0" pass="0" enabled="1" class="SimpleMarker">
+          <symbol force_rhr="0" type="marker" clip_to_extent="1" name="0" alpha="1">
+            <layer class="SimpleMarker" pass="0" enabled="1" locked="0">
               <prop k="angle" v="0"/>
               <prop k="color" v="0,0,0,0"/>
               <prop k="horizontal_anchor_point" v="1"/>
@@ -701,8 +692,8 @@ def my_form_open(dialog, layer, feature):
               </data_defined_properties>
             </layer>
           </symbol>
-          <symbol clip_to_extent="1" force_rhr="0" type="marker" name="1" alpha="1">
-            <layer locked="0" pass="0" enabled="1" class="SimpleMarker">
+          <symbol force_rhr="0" type="marker" clip_to_extent="1" name="1" alpha="1">
+            <layer class="SimpleMarker" pass="0" enabled="1" locked="0">
               <prop k="angle" v="0"/>
               <prop k="color" v="0,0,0,0"/>
               <prop k="horizontal_anchor_point" v="1"/>
@@ -730,8 +721,8 @@ def my_form_open(dialog, layer, feature):
               </data_defined_properties>
             </layer>
           </symbol>
-          <symbol clip_to_extent="1" force_rhr="0" type="marker" name="10" alpha="1">
-            <layer locked="0" pass="0" enabled="1" class="SimpleMarker">
+          <symbol force_rhr="0" type="marker" clip_to_extent="1" name="10" alpha="1">
+            <layer class="SimpleMarker" pass="0" enabled="1" locked="0">
               <prop k="angle" v="0"/>
               <prop k="color" v="0,0,0,0"/>
               <prop k="horizontal_anchor_point" v="1"/>
@@ -759,8 +750,8 @@ def my_form_open(dialog, layer, feature):
               </data_defined_properties>
             </layer>
           </symbol>
-          <symbol clip_to_extent="1" force_rhr="0" type="marker" name="2" alpha="1">
-            <layer locked="0" pass="0" enabled="1" class="SimpleMarker">
+          <symbol force_rhr="0" type="marker" clip_to_extent="1" name="2" alpha="1">
+            <layer class="SimpleMarker" pass="0" enabled="1" locked="0">
               <prop k="angle" v="0"/>
               <prop k="color" v="0,0,0,0"/>
               <prop k="horizontal_anchor_point" v="1"/>
@@ -788,8 +779,8 @@ def my_form_open(dialog, layer, feature):
               </data_defined_properties>
             </layer>
           </symbol>
-          <symbol clip_to_extent="1" force_rhr="0" type="marker" name="3" alpha="1">
-            <layer locked="0" pass="0" enabled="1" class="SimpleMarker">
+          <symbol force_rhr="0" type="marker" clip_to_extent="1" name="3" alpha="1">
+            <layer class="SimpleMarker" pass="0" enabled="1" locked="0">
               <prop k="angle" v="0"/>
               <prop k="color" v="0,0,0,0"/>
               <prop k="horizontal_anchor_point" v="1"/>
@@ -817,8 +808,8 @@ def my_form_open(dialog, layer, feature):
               </data_defined_properties>
             </layer>
           </symbol>
-          <symbol clip_to_extent="1" force_rhr="0" type="marker" name="4" alpha="1">
-            <layer locked="0" pass="0" enabled="1" class="SimpleMarker">
+          <symbol force_rhr="0" type="marker" clip_to_extent="1" name="4" alpha="1">
+            <layer class="SimpleMarker" pass="0" enabled="1" locked="0">
               <prop k="angle" v="0"/>
               <prop k="color" v="0,0,0,0"/>
               <prop k="horizontal_anchor_point" v="1"/>
@@ -846,8 +837,8 @@ def my_form_open(dialog, layer, feature):
               </data_defined_properties>
             </layer>
           </symbol>
-          <symbol clip_to_extent="1" force_rhr="0" type="marker" name="5" alpha="1">
-            <layer locked="0" pass="0" enabled="1" class="SimpleMarker">
+          <symbol force_rhr="0" type="marker" clip_to_extent="1" name="5" alpha="1">
+            <layer class="SimpleMarker" pass="0" enabled="1" locked="0">
               <prop k="angle" v="0"/>
               <prop k="color" v="0,0,0,0"/>
               <prop k="horizontal_anchor_point" v="1"/>
@@ -875,8 +866,8 @@ def my_form_open(dialog, layer, feature):
               </data_defined_properties>
             </layer>
           </symbol>
-          <symbol clip_to_extent="1" force_rhr="0" type="marker" name="6" alpha="1">
-            <layer locked="0" pass="0" enabled="1" class="SimpleMarker">
+          <symbol force_rhr="0" type="marker" clip_to_extent="1" name="6" alpha="1">
+            <layer class="SimpleMarker" pass="0" enabled="1" locked="0">
               <prop k="angle" v="0"/>
               <prop k="color" v="0,0,0,0"/>
               <prop k="horizontal_anchor_point" v="1"/>
@@ -904,8 +895,8 @@ def my_form_open(dialog, layer, feature):
               </data_defined_properties>
             </layer>
           </symbol>
-          <symbol clip_to_extent="1" force_rhr="0" type="marker" name="7" alpha="1">
-            <layer locked="0" pass="0" enabled="1" class="SimpleMarker">
+          <symbol force_rhr="0" type="marker" clip_to_extent="1" name="7" alpha="1">
+            <layer class="SimpleMarker" pass="0" enabled="1" locked="0">
               <prop k="angle" v="0"/>
               <prop k="color" v="0,0,0,0"/>
               <prop k="horizontal_anchor_point" v="1"/>
@@ -933,8 +924,8 @@ def my_form_open(dialog, layer, feature):
               </data_defined_properties>
             </layer>
           </symbol>
-          <symbol clip_to_extent="1" force_rhr="0" type="marker" name="8" alpha="1">
-            <layer locked="0" pass="0" enabled="1" class="SimpleMarker">
+          <symbol force_rhr="0" type="marker" clip_to_extent="1" name="8" alpha="1">
+            <layer class="SimpleMarker" pass="0" enabled="1" locked="0">
               <prop k="angle" v="0"/>
               <prop k="color" v="0,0,0,0"/>
               <prop k="horizontal_anchor_point" v="1"/>
@@ -962,8 +953,8 @@ def my_form_open(dialog, layer, feature):
               </data_defined_properties>
             </layer>
           </symbol>
-          <symbol clip_to_extent="1" force_rhr="0" type="marker" name="9" alpha="1">
-            <layer locked="0" pass="0" enabled="1" class="SimpleMarker">
+          <symbol force_rhr="0" type="marker" clip_to_extent="1" name="9" alpha="1">
+            <layer class="SimpleMarker" pass="0" enabled="1" locked="0">
               <prop k="angle" v="0"/>
               <prop k="color" v="0,0,0,0"/>
               <prop k="horizontal_anchor_point" v="1"/>
@@ -993,8 +984,8 @@ def my_form_open(dialog, layer, feature):
           </symbol>
         </symbols>
         <source-symbol>
-          <symbol clip_to_extent="1" force_rhr="0" type="marker" name="0" alpha="1">
-            <layer locked="0" pass="0" enabled="1" class="SimpleMarker">
+          <symbol force_rhr="0" type="marker" clip_to_extent="1" name="0" alpha="1">
+            <layer class="SimpleMarker" pass="0" enabled="1" locked="0">
               <prop k="angle" v="0"/>
               <prop k="color" v="104,160,87,255"/>
               <prop k="horizontal_anchor_point" v="1"/>
@@ -1028,17 +1019,17 @@ def my_form_open(dialog, layer, feature):
       </renderer-v2>
       <labeling type="rule-based">
         <rules key="{12a70104-2870-4205-ba2d-670ae2dd3b69}">
-          <rule description="TOP_20  Via urbana molt ample" scalemindenom="1" scalemaxdenom="3000" key="{1fbc3b4e-1ce6-4dab-b7b7-dad1981f1792}" filter="left(  &quot;NIVELL&quot; ,6)='TOP_20'">
+          <rule filter="left(  &quot;NIVELL&quot; ,6)='TOP_20'" key="{1fbc3b4e-1ce6-4dab-b7b7-dad1981f1792}" description="TOP_20  Via urbana molt ample" scalemindenom="1" scalemaxdenom="3000">
             <settings>
-              <text-style useSubstitutions="0" fontStrikeout="0" fontLetterSpacing="0" fontCapitals="0" fieldName="NOM" fontSize="3" blendMode="0" fontUnderline="0" textColor="56,71,79,255" multilineHeight="1" fontSizeUnit="MapUnit" textOpacity="1" fontSizeMapUnitScale="3x:0,0,0,0,0,0" isExpression="0" previewBkgrdColor="#000000" fontWeight="25" fontItalic="0" namedStyle="Regular" fontWordSpacing="0" fontFamily="Segoe UI Light">
-                <text-buffer bufferSizeUnits="MM" bufferDraw="0" bufferColor="255,255,255,255" bufferJoinStyle="64" bufferSizeMapUnitScale="3x:0,0,0,0,0,0" bufferNoFill="0" bufferOpacity="1" bufferBlendMode="0" bufferSize="1"/>
-                <background shapeOpacity="1" shapeRotation="0" shapeSizeUnit="MM" shapeSizeX="0" shapeBorderWidthUnit="MM" shapeSizeMapUnitScale="3x:0,0,0,0,0,0" shapeJoinStyle="64" shapeType="0" shapeRadiiY="0" shapeSizeType="0" shapeOffsetY="0" shapeSVGFile="" shapeSizeY="0" shapeRadiiMapUnitScale="3x:0,0,0,0,0,0" shapeDraw="0" shapeBorderWidth="0" shapeBlendMode="0" shapeOffsetX="0" shapeOffsetUnit="MM" shapeRotationType="0" shapeRadiiUnit="MM" shapeOffsetMapUnitScale="3x:0,0,0,0,0,0" shapeBorderColor="128,128,128,255" shapeBorderWidthMapUnitScale="3x:0,0,0,0,0,0" shapeRadiiX="0" shapeFillColor="255,255,255,255"/>
-                <shadow shadowOffsetMapUnitScale="3x:0,0,0,0,0,0" shadowRadius="1.5" shadowRadiusUnit="MM" shadowOffsetAngle="135" shadowDraw="0" shadowBlendMode="6" shadowOffsetGlobal="1" shadowOpacity="0.7" shadowOffsetDist="1" shadowScale="100" shadowOffsetUnit="MM" shadowRadiusMapUnitScale="3x:0,0,0,0,0,0" shadowColor="0,0,0,255" shadowUnder="0" shadowRadiusAlphaOnly="0"/>
+              <text-style textOpacity="1" fontSizeUnit="MapUnit" fontSize="3" previewBkgrdColor="#ffffff" fontFamily="Segoe UI Light" useSubstitutions="0" namedStyle="Regular" fontStrikeout="0" fontWordSpacing="0" fontWeight="25" fontItalic="0" fontSizeMapUnitScale="3x:0,0,0,0,0,0" blendMode="0" isExpression="0" multilineHeight="1" fieldName="NOM" fontCapitals="0" textColor="56,71,79,255" fontUnderline="0" fontLetterSpacing="0">
+                <text-buffer bufferNoFill="0" bufferSize="1" bufferDraw="0" bufferOpacity="1" bufferSizeMapUnitScale="3x:0,0,0,0,0,0" bufferColor="255,255,255,255" bufferJoinStyle="64" bufferBlendMode="0" bufferSizeUnits="MM"/>
+                <background shapeSizeY="0" shapeOffsetX="0" shapeBorderWidthMapUnitScale="3x:0,0,0,0,0,0" shapeBorderWidth="0" shapeJoinStyle="64" shapeBlendMode="0" shapeSizeUnit="MM" shapeRadiiMapUnitScale="3x:0,0,0,0,0,0" shapeRadiiUnit="MM" shapeBorderWidthUnit="MM" shapeRotationType="0" shapeType="0" shapeFillColor="255,255,255,255" shapeSizeX="0" shapeSizeType="0" shapeSizeMapUnitScale="3x:0,0,0,0,0,0" shapeOffsetY="0" shapeRadiiX="0" shapeRadiiY="0" shapeOffsetMapUnitScale="3x:0,0,0,0,0,0" shapeOffsetUnit="MM" shapeBorderColor="128,128,128,255" shapeSVGFile="" shapeOpacity="1" shapeRotation="0" shapeDraw="0"/>
+                <shadow shadowOffsetDist="1" shadowOffsetGlobal="1" shadowDraw="0" shadowOpacity="0.7" shadowBlendMode="6" shadowRadiusUnit="MM" shadowRadiusAlphaOnly="0" shadowOffsetUnit="MM" shadowRadius="1.5" shadowScale="100" shadowColor="0,0,0,255" shadowOffsetAngle="135" shadowOffsetMapUnitScale="3x:0,0,0,0,0,0" shadowUnder="0" shadowRadiusMapUnitScale="3x:0,0,0,0,0,0"/>
                 <substitutions/>
               </text-style>
-              <text-format rightDirectionSymbol=">" addDirectionSymbol="0" reverseDirectionSymbol="0" formatNumbers="0" placeDirectionSymbol="0" wrapChar="&lt;br>" useMaxLineLengthForAutoWrap="1" leftDirectionSymbol="&lt;" decimals="3" autoWrapLength="0" multilineAlign="1" plussign="0"/>
-              <placement placementFlags="10" repeatDistanceUnits="MM" yOffset="0" maxCurvedCharAngleOut="-20" distMapUnitScale="3x:0,0,0,0,0,0" fitInPolygonOnly="0" maxCurvedCharAngleIn="20" predefinedPositionOrder="TR,TL,BR,BL,R,L,TSR,BSR" labelOffsetMapUnitScale="3x:0,0,0,0,0,0" repeatDistance="0" preserveRotation="1" distUnits="MM" quadOffset="4" centroidWhole="0" centroidInside="0" placement="0" dist="0" offsetUnits="MapUnit" repeatDistanceMapUnitScale="3x:0,0,0,0,0,0" priority="5" rotationAngle="0" xOffset="0" offsetType="0"/>
-              <rendering fontMaxPixelSize="10000" obstacleFactor="1" scaleMin="1" obstacleType="0" scaleMax="10000000" displayAll="1" maxNumLabels="2000" scaleVisibility="0" obstacle="0" limitNumLabels="0" minFeatureSize="0" zIndex="5" labelPerPart="0" mergeLines="0" fontLimitPixelSize="1" fontMinPixelSize="1" drawLabels="1" upsidedownLabels="0"/>
+              <text-format addDirectionSymbol="0" decimals="3" useMaxLineLengthForAutoWrap="1" plussign="0" wrapChar="&lt;br>" multilineAlign="1" autoWrapLength="0" reverseDirectionSymbol="0" formatNumbers="0" leftDirectionSymbol="&lt;" placeDirectionSymbol="0" rightDirectionSymbol=">"/>
+              <placement maxCurvedCharAngleOut="-20" fitInPolygonOnly="0" offsetType="0" xOffset="0" placement="0" dist="0" repeatDistance="0" repeatDistanceMapUnitScale="3x:0,0,0,0,0,0" maxCurvedCharAngleIn="20" distMapUnitScale="3x:0,0,0,0,0,0" quadOffset="4" repeatDistanceUnits="MM" offsetUnits="MapUnit" rotationAngle="0" distUnits="MM" predefinedPositionOrder="TR,TL,BR,BL,R,L,TSR,BSR" yOffset="0" centroidWhole="0" preserveRotation="1" centroidInside="0" labelOffsetMapUnitScale="3x:0,0,0,0,0,0" priority="5" placementFlags="10"/>
+              <rendering mergeLines="0" limitNumLabels="0" upsidedownLabels="0" fontMaxPixelSize="10000" scaleMax="10000000" obstacle="0" maxNumLabels="2000" drawLabels="1" zIndex="5" displayAll="1" labelPerPart="0" obstacleType="0" fontLimitPixelSize="1" obstacleFactor="1" scaleMin="1" minFeatureSize="0" scaleVisibility="0" fontMinPixelSize="1"/>
               <dd_properties>
                 <Option type="Map">
                   <Option type="QString" name="name" value=""/>
@@ -1079,17 +1070,17 @@ def my_form_open(dialog, layer, feature):
               </dd_properties>
             </settings>
           </rule>
-          <rule description="TOP_21  Via urbana ample" scalemindenom="1" scalemaxdenom="3000" key="{da6d7649-6db8-4837-8925-f56ec28ece37}" filter="left(  &quot;NIVELL&quot; ,6)='TOP_21'">
+          <rule filter="left(  &quot;NIVELL&quot; ,6)='TOP_21'" key="{da6d7649-6db8-4837-8925-f56ec28ece37}" description="TOP_21  Via urbana ample" scalemindenom="1" scalemaxdenom="3000">
             <settings>
-              <text-style useSubstitutions="0" fontStrikeout="0" fontLetterSpacing="0" fontCapitals="0" fieldName="NOM" fontSize="2.5" blendMode="0" fontUnderline="0" textColor="56,71,79,255" multilineHeight="1" fontSizeUnit="MapUnit" textOpacity="1" fontSizeMapUnitScale="3x:0,0,0,0,0,0" isExpression="0" previewBkgrdColor="#000000" fontWeight="25" fontItalic="0" namedStyle="Regular" fontWordSpacing="0" fontFamily="Segoe UI Light">
-                <text-buffer bufferSizeUnits="MM" bufferDraw="0" bufferColor="255,255,255,255" bufferJoinStyle="64" bufferSizeMapUnitScale="3x:0,0,0,0,0,0" bufferNoFill="0" bufferOpacity="1" bufferBlendMode="0" bufferSize="1"/>
-                <background shapeOpacity="1" shapeRotation="0" shapeSizeUnit="MM" shapeSizeX="0" shapeBorderWidthUnit="MM" shapeSizeMapUnitScale="3x:0,0,0,0,0,0" shapeJoinStyle="64" shapeType="0" shapeRadiiY="0" shapeSizeType="0" shapeOffsetY="0" shapeSVGFile="" shapeSizeY="0" shapeRadiiMapUnitScale="3x:0,0,0,0,0,0" shapeDraw="0" shapeBorderWidth="0" shapeBlendMode="0" shapeOffsetX="0" shapeOffsetUnit="MM" shapeRotationType="0" shapeRadiiUnit="MM" shapeOffsetMapUnitScale="3x:0,0,0,0,0,0" shapeBorderColor="128,128,128,255" shapeBorderWidthMapUnitScale="3x:0,0,0,0,0,0" shapeRadiiX="0" shapeFillColor="255,255,255,255"/>
-                <shadow shadowOffsetMapUnitScale="3x:0,0,0,0,0,0" shadowRadius="1.5" shadowRadiusUnit="MM" shadowOffsetAngle="135" shadowDraw="0" shadowBlendMode="6" shadowOffsetGlobal="1" shadowOpacity="0.7" shadowOffsetDist="1" shadowScale="100" shadowOffsetUnit="MM" shadowRadiusMapUnitScale="3x:0,0,0,0,0,0" shadowColor="0,0,0,255" shadowUnder="0" shadowRadiusAlphaOnly="0"/>
+              <text-style textOpacity="1" fontSizeUnit="MapUnit" fontSize="2.5" previewBkgrdColor="#ffffff" fontFamily="Segoe UI Light" useSubstitutions="0" namedStyle="Regular" fontStrikeout="0" fontWordSpacing="0" fontWeight="25" fontItalic="0" fontSizeMapUnitScale="3x:0,0,0,0,0,0" blendMode="0" isExpression="0" multilineHeight="1" fieldName="NOM" fontCapitals="0" textColor="56,71,79,255" fontUnderline="0" fontLetterSpacing="0">
+                <text-buffer bufferNoFill="0" bufferSize="1" bufferDraw="0" bufferOpacity="1" bufferSizeMapUnitScale="3x:0,0,0,0,0,0" bufferColor="255,255,255,255" bufferJoinStyle="64" bufferBlendMode="0" bufferSizeUnits="MM"/>
+                <background shapeSizeY="0" shapeOffsetX="0" shapeBorderWidthMapUnitScale="3x:0,0,0,0,0,0" shapeBorderWidth="0" shapeJoinStyle="64" shapeBlendMode="0" shapeSizeUnit="MM" shapeRadiiMapUnitScale="3x:0,0,0,0,0,0" shapeRadiiUnit="MM" shapeBorderWidthUnit="MM" shapeRotationType="0" shapeType="0" shapeFillColor="255,255,255,255" shapeSizeX="0" shapeSizeType="0" shapeSizeMapUnitScale="3x:0,0,0,0,0,0" shapeOffsetY="0" shapeRadiiX="0" shapeRadiiY="0" shapeOffsetMapUnitScale="3x:0,0,0,0,0,0" shapeOffsetUnit="MM" shapeBorderColor="128,128,128,255" shapeSVGFile="" shapeOpacity="1" shapeRotation="0" shapeDraw="0"/>
+                <shadow shadowOffsetDist="1" shadowOffsetGlobal="1" shadowDraw="0" shadowOpacity="0.7" shadowBlendMode="6" shadowRadiusUnit="MM" shadowRadiusAlphaOnly="0" shadowOffsetUnit="MM" shadowRadius="1.5" shadowScale="100" shadowColor="0,0,0,255" shadowOffsetAngle="135" shadowOffsetMapUnitScale="3x:0,0,0,0,0,0" shadowUnder="0" shadowRadiusMapUnitScale="3x:0,0,0,0,0,0"/>
                 <substitutions/>
               </text-style>
-              <text-format rightDirectionSymbol=">" addDirectionSymbol="0" reverseDirectionSymbol="0" formatNumbers="0" placeDirectionSymbol="0" wrapChar="&lt;br>" useMaxLineLengthForAutoWrap="1" leftDirectionSymbol="&lt;" decimals="3" autoWrapLength="0" multilineAlign="1" plussign="0"/>
-              <placement placementFlags="10" repeatDistanceUnits="MM" yOffset="0" maxCurvedCharAngleOut="-20" distMapUnitScale="3x:0,0,0,0,0,0" fitInPolygonOnly="0" maxCurvedCharAngleIn="20" predefinedPositionOrder="TR,TL,BR,BL,R,L,TSR,BSR" labelOffsetMapUnitScale="3x:0,0,0,0,0,0" repeatDistance="0" preserveRotation="1" distUnits="MM" quadOffset="4" centroidWhole="0" centroidInside="0" placement="0" dist="0" offsetUnits="MapUnit" repeatDistanceMapUnitScale="3x:0,0,0,0,0,0" priority="5" rotationAngle="0" xOffset="0" offsetType="0"/>
-              <rendering fontMaxPixelSize="10000" obstacleFactor="1" scaleMin="1" obstacleType="0" scaleMax="10000000" displayAll="1" maxNumLabels="2000" scaleVisibility="0" obstacle="0" limitNumLabels="0" minFeatureSize="0" zIndex="5" labelPerPart="0" mergeLines="0" fontLimitPixelSize="1" fontMinPixelSize="3" drawLabels="1" upsidedownLabels="0"/>
+              <text-format addDirectionSymbol="0" decimals="3" useMaxLineLengthForAutoWrap="1" plussign="0" wrapChar="&lt;br>" multilineAlign="1" autoWrapLength="0" reverseDirectionSymbol="0" formatNumbers="0" leftDirectionSymbol="&lt;" placeDirectionSymbol="0" rightDirectionSymbol=">"/>
+              <placement maxCurvedCharAngleOut="-20" fitInPolygonOnly="0" offsetType="0" xOffset="0" placement="0" dist="0" repeatDistance="0" repeatDistanceMapUnitScale="3x:0,0,0,0,0,0" maxCurvedCharAngleIn="20" distMapUnitScale="3x:0,0,0,0,0,0" quadOffset="4" repeatDistanceUnits="MM" offsetUnits="MapUnit" rotationAngle="0" distUnits="MM" predefinedPositionOrder="TR,TL,BR,BL,R,L,TSR,BSR" yOffset="0" centroidWhole="0" preserveRotation="1" centroidInside="0" labelOffsetMapUnitScale="3x:0,0,0,0,0,0" priority="5" placementFlags="10"/>
+              <rendering mergeLines="0" limitNumLabels="0" upsidedownLabels="0" fontMaxPixelSize="10000" scaleMax="10000000" obstacle="0" maxNumLabels="2000" drawLabels="1" zIndex="5" displayAll="1" labelPerPart="0" obstacleType="0" fontLimitPixelSize="1" obstacleFactor="1" scaleMin="1" minFeatureSize="0" scaleVisibility="0" fontMinPixelSize="3"/>
               <dd_properties>
                 <Option type="Map">
                   <Option type="QString" name="name" value=""/>
@@ -1130,17 +1121,17 @@ def my_form_open(dialog, layer, feature):
               </dd_properties>
             </settings>
           </rule>
-          <rule description="TOP_22  Via urbana estreta" scalemindenom="1" scalemaxdenom="1500" key="{61040142-c948-4c3d-bb41-19969b8966c1}" filter="left(  &quot;NIVELL&quot; ,6)='TOP_22'">
+          <rule filter="left(  &quot;NIVELL&quot; ,6)='TOP_22'" key="{61040142-c948-4c3d-bb41-19969b8966c1}" description="TOP_22  Via urbana estreta" scalemindenom="1" scalemaxdenom="1500">
             <settings>
-              <text-style useSubstitutions="0" fontStrikeout="0" fontLetterSpacing="0" fontCapitals="0" fieldName="NOM" fontSize="2.5" blendMode="0" fontUnderline="0" textColor="56,71,79,255" multilineHeight="1" fontSizeUnit="MapUnit" textOpacity="1" fontSizeMapUnitScale="3x:0,0,0,0,0,0" isExpression="0" previewBkgrdColor="#000000" fontWeight="25" fontItalic="0" namedStyle="Regular" fontWordSpacing="0" fontFamily="Segoe UI Light">
-                <text-buffer bufferSizeUnits="MM" bufferDraw="0" bufferColor="255,255,255,255" bufferJoinStyle="64" bufferSizeMapUnitScale="3x:0,0,0,0,0,0" bufferNoFill="0" bufferOpacity="1" bufferBlendMode="0" bufferSize="1"/>
-                <background shapeOpacity="1" shapeRotation="0" shapeSizeUnit="MM" shapeSizeX="0" shapeBorderWidthUnit="MM" shapeSizeMapUnitScale="3x:0,0,0,0,0,0" shapeJoinStyle="64" shapeType="0" shapeRadiiY="0" shapeSizeType="0" shapeOffsetY="0" shapeSVGFile="" shapeSizeY="0" shapeRadiiMapUnitScale="3x:0,0,0,0,0,0" shapeDraw="0" shapeBorderWidth="0" shapeBlendMode="0" shapeOffsetX="0" shapeOffsetUnit="MM" shapeRotationType="0" shapeRadiiUnit="MM" shapeOffsetMapUnitScale="3x:0,0,0,0,0,0" shapeBorderColor="128,128,128,255" shapeBorderWidthMapUnitScale="3x:0,0,0,0,0,0" shapeRadiiX="0" shapeFillColor="255,255,255,255"/>
-                <shadow shadowOffsetMapUnitScale="3x:0,0,0,0,0,0" shadowRadius="1.5" shadowRadiusUnit="MM" shadowOffsetAngle="135" shadowDraw="0" shadowBlendMode="6" shadowOffsetGlobal="1" shadowOpacity="0.7" shadowOffsetDist="1" shadowScale="100" shadowOffsetUnit="MM" shadowRadiusMapUnitScale="3x:0,0,0,0,0,0" shadowColor="0,0,0,255" shadowUnder="0" shadowRadiusAlphaOnly="0"/>
+              <text-style textOpacity="1" fontSizeUnit="MapUnit" fontSize="2.5" previewBkgrdColor="#ffffff" fontFamily="Segoe UI Light" useSubstitutions="0" namedStyle="Regular" fontStrikeout="0" fontWordSpacing="0" fontWeight="25" fontItalic="0" fontSizeMapUnitScale="3x:0,0,0,0,0,0" blendMode="0" isExpression="0" multilineHeight="1" fieldName="NOM" fontCapitals="0" textColor="56,71,79,255" fontUnderline="0" fontLetterSpacing="0">
+                <text-buffer bufferNoFill="0" bufferSize="1" bufferDraw="0" bufferOpacity="1" bufferSizeMapUnitScale="3x:0,0,0,0,0,0" bufferColor="255,255,255,255" bufferJoinStyle="64" bufferBlendMode="0" bufferSizeUnits="MM"/>
+                <background shapeSizeY="0" shapeOffsetX="0" shapeBorderWidthMapUnitScale="3x:0,0,0,0,0,0" shapeBorderWidth="0" shapeJoinStyle="64" shapeBlendMode="0" shapeSizeUnit="MM" shapeRadiiMapUnitScale="3x:0,0,0,0,0,0" shapeRadiiUnit="MM" shapeBorderWidthUnit="MM" shapeRotationType="0" shapeType="0" shapeFillColor="255,255,255,255" shapeSizeX="0" shapeSizeType="0" shapeSizeMapUnitScale="3x:0,0,0,0,0,0" shapeOffsetY="0" shapeRadiiX="0" shapeRadiiY="0" shapeOffsetMapUnitScale="3x:0,0,0,0,0,0" shapeOffsetUnit="MM" shapeBorderColor="128,128,128,255" shapeSVGFile="" shapeOpacity="1" shapeRotation="0" shapeDraw="0"/>
+                <shadow shadowOffsetDist="1" shadowOffsetGlobal="1" shadowDraw="0" shadowOpacity="0.7" shadowBlendMode="6" shadowRadiusUnit="MM" shadowRadiusAlphaOnly="0" shadowOffsetUnit="MM" shadowRadius="1.5" shadowScale="100" shadowColor="0,0,0,255" shadowOffsetAngle="135" shadowOffsetMapUnitScale="3x:0,0,0,0,0,0" shadowUnder="0" shadowRadiusMapUnitScale="3x:0,0,0,0,0,0"/>
                 <substitutions/>
               </text-style>
-              <text-format rightDirectionSymbol=">" addDirectionSymbol="0" reverseDirectionSymbol="0" formatNumbers="0" placeDirectionSymbol="0" wrapChar="&lt;br>" useMaxLineLengthForAutoWrap="1" leftDirectionSymbol="&lt;" decimals="3" autoWrapLength="0" multilineAlign="1" plussign="0"/>
-              <placement placementFlags="10" repeatDistanceUnits="MM" yOffset="0" maxCurvedCharAngleOut="-20" distMapUnitScale="3x:0,0,0,0,0,0" fitInPolygonOnly="0" maxCurvedCharAngleIn="20" predefinedPositionOrder="TR,TL,BR,BL,R,L,TSR,BSR" labelOffsetMapUnitScale="3x:0,0,0,0,0,0" repeatDistance="0" preserveRotation="1" distUnits="MM" quadOffset="4" centroidWhole="0" centroidInside="0" placement="0" dist="0" offsetUnits="MapUnit" repeatDistanceMapUnitScale="3x:0,0,0,0,0,0" priority="5" rotationAngle="0" xOffset="0" offsetType="0"/>
-              <rendering fontMaxPixelSize="10000" obstacleFactor="1" scaleMin="1" obstacleType="0" scaleMax="10000000" displayAll="1" maxNumLabels="2000" scaleVisibility="0" obstacle="0" limitNumLabels="0" minFeatureSize="0" zIndex="5" labelPerPart="0" mergeLines="0" fontLimitPixelSize="1" fontMinPixelSize="3" drawLabels="1" upsidedownLabels="0"/>
+              <text-format addDirectionSymbol="0" decimals="3" useMaxLineLengthForAutoWrap="1" plussign="0" wrapChar="&lt;br>" multilineAlign="1" autoWrapLength="0" reverseDirectionSymbol="0" formatNumbers="0" leftDirectionSymbol="&lt;" placeDirectionSymbol="0" rightDirectionSymbol=">"/>
+              <placement maxCurvedCharAngleOut="-20" fitInPolygonOnly="0" offsetType="0" xOffset="0" placement="0" dist="0" repeatDistance="0" repeatDistanceMapUnitScale="3x:0,0,0,0,0,0" maxCurvedCharAngleIn="20" distMapUnitScale="3x:0,0,0,0,0,0" quadOffset="4" repeatDistanceUnits="MM" offsetUnits="MapUnit" rotationAngle="0" distUnits="MM" predefinedPositionOrder="TR,TL,BR,BL,R,L,TSR,BSR" yOffset="0" centroidWhole="0" preserveRotation="1" centroidInside="0" labelOffsetMapUnitScale="3x:0,0,0,0,0,0" priority="5" placementFlags="10"/>
+              <rendering mergeLines="0" limitNumLabels="0" upsidedownLabels="0" fontMaxPixelSize="10000" scaleMax="10000000" obstacle="0" maxNumLabels="2000" drawLabels="1" zIndex="5" displayAll="1" labelPerPart="0" obstacleType="0" fontLimitPixelSize="1" obstacleFactor="1" scaleMin="1" minFeatureSize="0" scaleVisibility="0" fontMinPixelSize="3"/>
               <dd_properties>
                 <Option type="Map">
                   <Option type="QString" name="name" value=""/>
@@ -1181,17 +1172,17 @@ def my_form_open(dialog, layer, feature):
               </dd_properties>
             </settings>
           </rule>
-          <rule description="TOP_23  Via urbana Estreta Tipus 1 &lt; Estreta" scalemindenom="1" scalemaxdenom="1500" key="{9d0efa48-319f-4743-a04c-84a8083479c4}" filter="left(  &quot;NIVELL&quot; ,6)='TOP_23'">
+          <rule filter="left(  &quot;NIVELL&quot; ,6)='TOP_23'" key="{9d0efa48-319f-4743-a04c-84a8083479c4}" description="TOP_23  Via urbana Estreta Tipus 1 &lt; Estreta" scalemindenom="1" scalemaxdenom="1500">
             <settings>
-              <text-style useSubstitutions="0" fontStrikeout="0" fontLetterSpacing="0" fontCapitals="0" fieldName="NOM" fontSize="2.5" blendMode="0" fontUnderline="0" textColor="56,71,79,255" multilineHeight="1" fontSizeUnit="MapUnit" textOpacity="1" fontSizeMapUnitScale="3x:0,0,0,0,0,0" isExpression="0" previewBkgrdColor="#000000" fontWeight="25" fontItalic="0" namedStyle="Regular" fontWordSpacing="0" fontFamily="Segoe UI Light">
-                <text-buffer bufferSizeUnits="MM" bufferDraw="0" bufferColor="255,255,255,255" bufferJoinStyle="64" bufferSizeMapUnitScale="3x:0,0,0,0,0,0" bufferNoFill="0" bufferOpacity="1" bufferBlendMode="0" bufferSize="1"/>
-                <background shapeOpacity="1" shapeRotation="0" shapeSizeUnit="MM" shapeSizeX="0" shapeBorderWidthUnit="MM" shapeSizeMapUnitScale="3x:0,0,0,0,0,0" shapeJoinStyle="64" shapeType="0" shapeRadiiY="0" shapeSizeType="0" shapeOffsetY="0" shapeSVGFile="" shapeSizeY="0" shapeRadiiMapUnitScale="3x:0,0,0,0,0,0" shapeDraw="0" shapeBorderWidth="0" shapeBlendMode="0" shapeOffsetX="0" shapeOffsetUnit="MM" shapeRotationType="0" shapeRadiiUnit="MM" shapeOffsetMapUnitScale="3x:0,0,0,0,0,0" shapeBorderColor="128,128,128,255" shapeBorderWidthMapUnitScale="3x:0,0,0,0,0,0" shapeRadiiX="0" shapeFillColor="255,255,255,255"/>
-                <shadow shadowOffsetMapUnitScale="3x:0,0,0,0,0,0" shadowRadius="1.5" shadowRadiusUnit="MM" shadowOffsetAngle="135" shadowDraw="0" shadowBlendMode="6" shadowOffsetGlobal="1" shadowOpacity="0.7" shadowOffsetDist="1" shadowScale="100" shadowOffsetUnit="MM" shadowRadiusMapUnitScale="3x:0,0,0,0,0,0" shadowColor="0,0,0,255" shadowUnder="0" shadowRadiusAlphaOnly="0"/>
+              <text-style textOpacity="1" fontSizeUnit="MapUnit" fontSize="2.5" previewBkgrdColor="#ffffff" fontFamily="Segoe UI Light" useSubstitutions="0" namedStyle="Regular" fontStrikeout="0" fontWordSpacing="0" fontWeight="25" fontItalic="0" fontSizeMapUnitScale="3x:0,0,0,0,0,0" blendMode="0" isExpression="0" multilineHeight="1" fieldName="NOM" fontCapitals="0" textColor="56,71,79,255" fontUnderline="0" fontLetterSpacing="0">
+                <text-buffer bufferNoFill="0" bufferSize="1" bufferDraw="0" bufferOpacity="1" bufferSizeMapUnitScale="3x:0,0,0,0,0,0" bufferColor="255,255,255,255" bufferJoinStyle="64" bufferBlendMode="0" bufferSizeUnits="MM"/>
+                <background shapeSizeY="0" shapeOffsetX="0" shapeBorderWidthMapUnitScale="3x:0,0,0,0,0,0" shapeBorderWidth="0" shapeJoinStyle="64" shapeBlendMode="0" shapeSizeUnit="MM" shapeRadiiMapUnitScale="3x:0,0,0,0,0,0" shapeRadiiUnit="MM" shapeBorderWidthUnit="MM" shapeRotationType="0" shapeType="0" shapeFillColor="255,255,255,255" shapeSizeX="0" shapeSizeType="0" shapeSizeMapUnitScale="3x:0,0,0,0,0,0" shapeOffsetY="0" shapeRadiiX="0" shapeRadiiY="0" shapeOffsetMapUnitScale="3x:0,0,0,0,0,0" shapeOffsetUnit="MM" shapeBorderColor="128,128,128,255" shapeSVGFile="" shapeOpacity="1" shapeRotation="0" shapeDraw="0"/>
+                <shadow shadowOffsetDist="1" shadowOffsetGlobal="1" shadowDraw="0" shadowOpacity="0.7" shadowBlendMode="6" shadowRadiusUnit="MM" shadowRadiusAlphaOnly="0" shadowOffsetUnit="MM" shadowRadius="1.5" shadowScale="100" shadowColor="0,0,0,255" shadowOffsetAngle="135" shadowOffsetMapUnitScale="3x:0,0,0,0,0,0" shadowUnder="0" shadowRadiusMapUnitScale="3x:0,0,0,0,0,0"/>
                 <substitutions/>
               </text-style>
-              <text-format rightDirectionSymbol=">" addDirectionSymbol="0" reverseDirectionSymbol="0" formatNumbers="0" placeDirectionSymbol="0" wrapChar="&lt;br>" useMaxLineLengthForAutoWrap="1" leftDirectionSymbol="&lt;" decimals="3" autoWrapLength="0" multilineAlign="1" plussign="0"/>
-              <placement placementFlags="10" repeatDistanceUnits="MM" yOffset="0" maxCurvedCharAngleOut="-20" distMapUnitScale="3x:0,0,0,0,0,0" fitInPolygonOnly="0" maxCurvedCharAngleIn="20" predefinedPositionOrder="TR,TL,BR,BL,R,L,TSR,BSR" labelOffsetMapUnitScale="3x:0,0,0,0,0,0" repeatDistance="0" preserveRotation="1" distUnits="MM" quadOffset="4" centroidWhole="0" centroidInside="0" placement="0" dist="0" offsetUnits="MapUnit" repeatDistanceMapUnitScale="3x:0,0,0,0,0,0" priority="5" rotationAngle="0" xOffset="0" offsetType="0"/>
-              <rendering fontMaxPixelSize="10000" obstacleFactor="1" scaleMin="1" obstacleType="0" scaleMax="10000000" displayAll="1" maxNumLabels="2000" scaleVisibility="0" obstacle="0" limitNumLabels="0" minFeatureSize="0" zIndex="5" labelPerPart="0" mergeLines="0" fontLimitPixelSize="1" fontMinPixelSize="3" drawLabels="1" upsidedownLabels="0"/>
+              <text-format addDirectionSymbol="0" decimals="3" useMaxLineLengthForAutoWrap="1" plussign="0" wrapChar="&lt;br>" multilineAlign="1" autoWrapLength="0" reverseDirectionSymbol="0" formatNumbers="0" leftDirectionSymbol="&lt;" placeDirectionSymbol="0" rightDirectionSymbol=">"/>
+              <placement maxCurvedCharAngleOut="-20" fitInPolygonOnly="0" offsetType="0" xOffset="0" placement="0" dist="0" repeatDistance="0" repeatDistanceMapUnitScale="3x:0,0,0,0,0,0" maxCurvedCharAngleIn="20" distMapUnitScale="3x:0,0,0,0,0,0" quadOffset="4" repeatDistanceUnits="MM" offsetUnits="MapUnit" rotationAngle="0" distUnits="MM" predefinedPositionOrder="TR,TL,BR,BL,R,L,TSR,BSR" yOffset="0" centroidWhole="0" preserveRotation="1" centroidInside="0" labelOffsetMapUnitScale="3x:0,0,0,0,0,0" priority="5" placementFlags="10"/>
+              <rendering mergeLines="0" limitNumLabels="0" upsidedownLabels="0" fontMaxPixelSize="10000" scaleMax="10000000" obstacle="0" maxNumLabels="2000" drawLabels="1" zIndex="5" displayAll="1" labelPerPart="0" obstacleType="0" fontLimitPixelSize="1" obstacleFactor="1" scaleMin="1" minFeatureSize="0" scaleVisibility="0" fontMinPixelSize="3"/>
               <dd_properties>
                 <Option type="Map">
                   <Option type="QString" name="name" value=""/>
@@ -1232,17 +1223,17 @@ def my_form_open(dialog, layer, feature):
               </dd_properties>
             </settings>
           </rule>
-          <rule description="TOP_24  Via urbana Estreta Tipus 2 &lt; Estreta Tipus 1" scalemindenom="1" scalemaxdenom="1500" key="{5944d04f-bafb-4892-846a-938885bf1a21}" filter="left(  &quot;NIVELL&quot; ,6)='TOP_24'">
+          <rule filter="left(  &quot;NIVELL&quot; ,6)='TOP_24'" key="{5944d04f-bafb-4892-846a-938885bf1a21}" description="TOP_24  Via urbana Estreta Tipus 2 &lt; Estreta Tipus 1" scalemindenom="1" scalemaxdenom="1500">
             <settings>
-              <text-style useSubstitutions="0" fontStrikeout="0" fontLetterSpacing="0" fontCapitals="0" fieldName="NOM" fontSize="2.5" blendMode="0" fontUnderline="0" textColor="56,71,79,255" multilineHeight="1" fontSizeUnit="MapUnit" textOpacity="1" fontSizeMapUnitScale="3x:0,0,0,0,0,0" isExpression="0" previewBkgrdColor="#000000" fontWeight="25" fontItalic="0" namedStyle="Regular" fontWordSpacing="0" fontFamily="Segoe UI Light">
-                <text-buffer bufferSizeUnits="MM" bufferDraw="0" bufferColor="255,255,255,255" bufferJoinStyle="64" bufferSizeMapUnitScale="3x:0,0,0,0,0,0" bufferNoFill="0" bufferOpacity="1" bufferBlendMode="0" bufferSize="1"/>
-                <background shapeOpacity="1" shapeRotation="0" shapeSizeUnit="MM" shapeSizeX="0" shapeBorderWidthUnit="MM" shapeSizeMapUnitScale="3x:0,0,0,0,0,0" shapeJoinStyle="64" shapeType="0" shapeRadiiY="0" shapeSizeType="0" shapeOffsetY="0" shapeSVGFile="" shapeSizeY="0" shapeRadiiMapUnitScale="3x:0,0,0,0,0,0" shapeDraw="0" shapeBorderWidth="0" shapeBlendMode="0" shapeOffsetX="0" shapeOffsetUnit="MM" shapeRotationType="0" shapeRadiiUnit="MM" shapeOffsetMapUnitScale="3x:0,0,0,0,0,0" shapeBorderColor="128,128,128,255" shapeBorderWidthMapUnitScale="3x:0,0,0,0,0,0" shapeRadiiX="0" shapeFillColor="255,255,255,255"/>
-                <shadow shadowOffsetMapUnitScale="3x:0,0,0,0,0,0" shadowRadius="1.5" shadowRadiusUnit="MM" shadowOffsetAngle="135" shadowDraw="0" shadowBlendMode="6" shadowOffsetGlobal="1" shadowOpacity="0.7" shadowOffsetDist="1" shadowScale="100" shadowOffsetUnit="MM" shadowRadiusMapUnitScale="3x:0,0,0,0,0,0" shadowColor="0,0,0,255" shadowUnder="0" shadowRadiusAlphaOnly="0"/>
+              <text-style textOpacity="1" fontSizeUnit="MapUnit" fontSize="2.5" previewBkgrdColor="#ffffff" fontFamily="Segoe UI Light" useSubstitutions="0" namedStyle="Regular" fontStrikeout="0" fontWordSpacing="0" fontWeight="25" fontItalic="0" fontSizeMapUnitScale="3x:0,0,0,0,0,0" blendMode="0" isExpression="0" multilineHeight="1" fieldName="NOM" fontCapitals="0" textColor="56,71,79,255" fontUnderline="0" fontLetterSpacing="0">
+                <text-buffer bufferNoFill="0" bufferSize="1" bufferDraw="0" bufferOpacity="1" bufferSizeMapUnitScale="3x:0,0,0,0,0,0" bufferColor="255,255,255,255" bufferJoinStyle="64" bufferBlendMode="0" bufferSizeUnits="MM"/>
+                <background shapeSizeY="0" shapeOffsetX="0" shapeBorderWidthMapUnitScale="3x:0,0,0,0,0,0" shapeBorderWidth="0" shapeJoinStyle="64" shapeBlendMode="0" shapeSizeUnit="MM" shapeRadiiMapUnitScale="3x:0,0,0,0,0,0" shapeRadiiUnit="MM" shapeBorderWidthUnit="MM" shapeRotationType="0" shapeType="0" shapeFillColor="255,255,255,255" shapeSizeX="0" shapeSizeType="0" shapeSizeMapUnitScale="3x:0,0,0,0,0,0" shapeOffsetY="0" shapeRadiiX="0" shapeRadiiY="0" shapeOffsetMapUnitScale="3x:0,0,0,0,0,0" shapeOffsetUnit="MM" shapeBorderColor="128,128,128,255" shapeSVGFile="" shapeOpacity="1" shapeRotation="0" shapeDraw="0"/>
+                <shadow shadowOffsetDist="1" shadowOffsetGlobal="1" shadowDraw="0" shadowOpacity="0.7" shadowBlendMode="6" shadowRadiusUnit="MM" shadowRadiusAlphaOnly="0" shadowOffsetUnit="MM" shadowRadius="1.5" shadowScale="100" shadowColor="0,0,0,255" shadowOffsetAngle="135" shadowOffsetMapUnitScale="3x:0,0,0,0,0,0" shadowUnder="0" shadowRadiusMapUnitScale="3x:0,0,0,0,0,0"/>
                 <substitutions/>
               </text-style>
-              <text-format rightDirectionSymbol=">" addDirectionSymbol="0" reverseDirectionSymbol="0" formatNumbers="0" placeDirectionSymbol="0" wrapChar="&lt;br>" useMaxLineLengthForAutoWrap="1" leftDirectionSymbol="&lt;" decimals="3" autoWrapLength="0" multilineAlign="1" plussign="0"/>
-              <placement placementFlags="10" repeatDistanceUnits="MM" yOffset="0" maxCurvedCharAngleOut="-20" distMapUnitScale="3x:0,0,0,0,0,0" fitInPolygonOnly="0" maxCurvedCharAngleIn="20" predefinedPositionOrder="TR,TL,BR,BL,R,L,TSR,BSR" labelOffsetMapUnitScale="3x:0,0,0,0,0,0" repeatDistance="0" preserveRotation="1" distUnits="MM" quadOffset="4" centroidWhole="0" centroidInside="0" placement="0" dist="0" offsetUnits="MapUnit" repeatDistanceMapUnitScale="3x:0,0,0,0,0,0" priority="5" rotationAngle="0" xOffset="0" offsetType="0"/>
-              <rendering fontMaxPixelSize="10000" obstacleFactor="1" scaleMin="1" obstacleType="0" scaleMax="10000000" displayAll="1" maxNumLabels="2000" scaleVisibility="0" obstacle="0" limitNumLabels="0" minFeatureSize="0" zIndex="5" labelPerPart="0" mergeLines="0" fontLimitPixelSize="1" fontMinPixelSize="3" drawLabels="1" upsidedownLabels="0"/>
+              <text-format addDirectionSymbol="0" decimals="3" useMaxLineLengthForAutoWrap="1" plussign="0" wrapChar="&lt;br>" multilineAlign="1" autoWrapLength="0" reverseDirectionSymbol="0" formatNumbers="0" leftDirectionSymbol="&lt;" placeDirectionSymbol="0" rightDirectionSymbol=">"/>
+              <placement maxCurvedCharAngleOut="-20" fitInPolygonOnly="0" offsetType="0" xOffset="0" placement="0" dist="0" repeatDistance="0" repeatDistanceMapUnitScale="3x:0,0,0,0,0,0" maxCurvedCharAngleIn="20" distMapUnitScale="3x:0,0,0,0,0,0" quadOffset="4" repeatDistanceUnits="MM" offsetUnits="MapUnit" rotationAngle="0" distUnits="MM" predefinedPositionOrder="TR,TL,BR,BL,R,L,TSR,BSR" yOffset="0" centroidWhole="0" preserveRotation="1" centroidInside="0" labelOffsetMapUnitScale="3x:0,0,0,0,0,0" priority="5" placementFlags="10"/>
+              <rendering mergeLines="0" limitNumLabels="0" upsidedownLabels="0" fontMaxPixelSize="10000" scaleMax="10000000" obstacle="0" maxNumLabels="2000" drawLabels="1" zIndex="5" displayAll="1" labelPerPart="0" obstacleType="0" fontLimitPixelSize="1" obstacleFactor="1" scaleMin="1" minFeatureSize="0" scaleVisibility="0" fontMinPixelSize="3"/>
               <dd_properties>
                 <Option type="Map">
                   <Option type="QString" name="name" value=""/>
@@ -1283,17 +1274,17 @@ def my_form_open(dialog, layer, feature):
               </dd_properties>
             </settings>
           </rule>
-          <rule description="TOP_25  Vials interiors" scalemindenom="1" scalemaxdenom="750" key="{02604514-5d50-400b-a510-5df7b2d2c10d}" filter="left(  &quot;NIVELL&quot; ,6)='TOP_25'">
+          <rule filter="left(  &quot;NIVELL&quot; ,6)='TOP_25'" key="{02604514-5d50-400b-a510-5df7b2d2c10d}" description="TOP_25  Vials interiors" scalemindenom="1" scalemaxdenom="750">
             <settings>
-              <text-style useSubstitutions="0" fontStrikeout="0" fontLetterSpacing="0" fontCapitals="0" fieldName="NOM" fontSize="2.5" blendMode="0" fontUnderline="0" textColor="56,71,79,255" multilineHeight="1" fontSizeUnit="MapUnit" textOpacity="1" fontSizeMapUnitScale="3x:0,0,0,0,0,0" isExpression="0" previewBkgrdColor="#000000" fontWeight="25" fontItalic="0" namedStyle="Regular" fontWordSpacing="0" fontFamily="Segoe UI Light">
-                <text-buffer bufferSizeUnits="MM" bufferDraw="0" bufferColor="255,255,255,255" bufferJoinStyle="64" bufferSizeMapUnitScale="3x:0,0,0,0,0,0" bufferNoFill="0" bufferOpacity="1" bufferBlendMode="0" bufferSize="1"/>
-                <background shapeOpacity="1" shapeRotation="0" shapeSizeUnit="MM" shapeSizeX="0" shapeBorderWidthUnit="MM" shapeSizeMapUnitScale="3x:0,0,0,0,0,0" shapeJoinStyle="64" shapeType="0" shapeRadiiY="0" shapeSizeType="0" shapeOffsetY="0" shapeSVGFile="" shapeSizeY="0" shapeRadiiMapUnitScale="3x:0,0,0,0,0,0" shapeDraw="0" shapeBorderWidth="0" shapeBlendMode="0" shapeOffsetX="0" shapeOffsetUnit="MM" shapeRotationType="0" shapeRadiiUnit="MM" shapeOffsetMapUnitScale="3x:0,0,0,0,0,0" shapeBorderColor="128,128,128,255" shapeBorderWidthMapUnitScale="3x:0,0,0,0,0,0" shapeRadiiX="0" shapeFillColor="255,255,255,255"/>
-                <shadow shadowOffsetMapUnitScale="3x:0,0,0,0,0,0" shadowRadius="1.5" shadowRadiusUnit="MM" shadowOffsetAngle="135" shadowDraw="0" shadowBlendMode="6" shadowOffsetGlobal="1" shadowOpacity="0.7" shadowOffsetDist="1" shadowScale="100" shadowOffsetUnit="MM" shadowRadiusMapUnitScale="3x:0,0,0,0,0,0" shadowColor="0,0,0,255" shadowUnder="0" shadowRadiusAlphaOnly="0"/>
+              <text-style textOpacity="1" fontSizeUnit="MapUnit" fontSize="2.5" previewBkgrdColor="#ffffff" fontFamily="Segoe UI Light" useSubstitutions="0" namedStyle="Regular" fontStrikeout="0" fontWordSpacing="0" fontWeight="25" fontItalic="0" fontSizeMapUnitScale="3x:0,0,0,0,0,0" blendMode="0" isExpression="0" multilineHeight="1" fieldName="NOM" fontCapitals="0" textColor="56,71,79,255" fontUnderline="0" fontLetterSpacing="0">
+                <text-buffer bufferNoFill="0" bufferSize="1" bufferDraw="0" bufferOpacity="1" bufferSizeMapUnitScale="3x:0,0,0,0,0,0" bufferColor="255,255,255,255" bufferJoinStyle="64" bufferBlendMode="0" bufferSizeUnits="MM"/>
+                <background shapeSizeY="0" shapeOffsetX="0" shapeBorderWidthMapUnitScale="3x:0,0,0,0,0,0" shapeBorderWidth="0" shapeJoinStyle="64" shapeBlendMode="0" shapeSizeUnit="MM" shapeRadiiMapUnitScale="3x:0,0,0,0,0,0" shapeRadiiUnit="MM" shapeBorderWidthUnit="MM" shapeRotationType="0" shapeType="0" shapeFillColor="255,255,255,255" shapeSizeX="0" shapeSizeType="0" shapeSizeMapUnitScale="3x:0,0,0,0,0,0" shapeOffsetY="0" shapeRadiiX="0" shapeRadiiY="0" shapeOffsetMapUnitScale="3x:0,0,0,0,0,0" shapeOffsetUnit="MM" shapeBorderColor="128,128,128,255" shapeSVGFile="" shapeOpacity="1" shapeRotation="0" shapeDraw="0"/>
+                <shadow shadowOffsetDist="1" shadowOffsetGlobal="1" shadowDraw="0" shadowOpacity="0.7" shadowBlendMode="6" shadowRadiusUnit="MM" shadowRadiusAlphaOnly="0" shadowOffsetUnit="MM" shadowRadius="1.5" shadowScale="100" shadowColor="0,0,0,255" shadowOffsetAngle="135" shadowOffsetMapUnitScale="3x:0,0,0,0,0,0" shadowUnder="0" shadowRadiusMapUnitScale="3x:0,0,0,0,0,0"/>
                 <substitutions/>
               </text-style>
-              <text-format rightDirectionSymbol=">" addDirectionSymbol="0" reverseDirectionSymbol="0" formatNumbers="0" placeDirectionSymbol="0" wrapChar="&lt;br>" useMaxLineLengthForAutoWrap="1" leftDirectionSymbol="&lt;" decimals="3" autoWrapLength="0" multilineAlign="1" plussign="0"/>
-              <placement placementFlags="10" repeatDistanceUnits="MM" yOffset="0" maxCurvedCharAngleOut="-20" distMapUnitScale="3x:0,0,0,0,0,0" fitInPolygonOnly="0" maxCurvedCharAngleIn="20" predefinedPositionOrder="TR,TL,BR,BL,R,L,TSR,BSR" labelOffsetMapUnitScale="3x:0,0,0,0,0,0" repeatDistance="0" preserveRotation="1" distUnits="MM" quadOffset="4" centroidWhole="0" centroidInside="0" placement="0" dist="0" offsetUnits="MapUnit" repeatDistanceMapUnitScale="3x:0,0,0,0,0,0" priority="5" rotationAngle="0" xOffset="0" offsetType="0"/>
-              <rendering fontMaxPixelSize="10000" obstacleFactor="1" scaleMin="1" obstacleType="0" scaleMax="10000000" displayAll="1" maxNumLabels="2000" scaleVisibility="0" obstacle="0" limitNumLabels="0" minFeatureSize="0" zIndex="5" labelPerPart="0" mergeLines="0" fontLimitPixelSize="1" fontMinPixelSize="3" drawLabels="1" upsidedownLabels="0"/>
+              <text-format addDirectionSymbol="0" decimals="3" useMaxLineLengthForAutoWrap="1" plussign="0" wrapChar="&lt;br>" multilineAlign="1" autoWrapLength="0" reverseDirectionSymbol="0" formatNumbers="0" leftDirectionSymbol="&lt;" placeDirectionSymbol="0" rightDirectionSymbol=">"/>
+              <placement maxCurvedCharAngleOut="-20" fitInPolygonOnly="0" offsetType="0" xOffset="0" placement="0" dist="0" repeatDistance="0" repeatDistanceMapUnitScale="3x:0,0,0,0,0,0" maxCurvedCharAngleIn="20" distMapUnitScale="3x:0,0,0,0,0,0" quadOffset="4" repeatDistanceUnits="MM" offsetUnits="MapUnit" rotationAngle="0" distUnits="MM" predefinedPositionOrder="TR,TL,BR,BL,R,L,TSR,BSR" yOffset="0" centroidWhole="0" preserveRotation="1" centroidInside="0" labelOffsetMapUnitScale="3x:0,0,0,0,0,0" priority="5" placementFlags="10"/>
+              <rendering mergeLines="0" limitNumLabels="0" upsidedownLabels="0" fontMaxPixelSize="10000" scaleMax="10000000" obstacle="0" maxNumLabels="2000" drawLabels="1" zIndex="5" displayAll="1" labelPerPart="0" obstacleType="0" fontLimitPixelSize="1" obstacleFactor="1" scaleMin="1" minFeatureSize="0" scaleVisibility="0" fontMinPixelSize="3"/>
               <dd_properties>
                 <Option type="Map">
                   <Option type="QString" name="name" value=""/>
@@ -1334,17 +1325,17 @@ def my_form_open(dialog, layer, feature):
               </dd_properties>
             </settings>
           </rule>
-          <rule description="TOP_26  Plaça Gran" scalemindenom="1" scalemaxdenom="3000" key="{810fd6fd-ca8c-478a-aa6b-314732d1cdda}" filter="left(  &quot;NIVELL&quot; ,6)='TOP_26'">
+          <rule filter="left(  &quot;NIVELL&quot; ,6)='TOP_26'" key="{810fd6fd-ca8c-478a-aa6b-314732d1cdda}" description="TOP_26  Plaça Gran" scalemindenom="1" scalemaxdenom="3000">
             <settings>
-              <text-style useSubstitutions="0" fontStrikeout="0" fontLetterSpacing="0" fontCapitals="0" fieldName="NOM" fontSize="3" blendMode="0" fontUnderline="0" textColor="56,71,79,255" multilineHeight="1" fontSizeUnit="MapUnit" textOpacity="1" fontSizeMapUnitScale="3x:0,0,0,0,0,0" isExpression="0" previewBkgrdColor="#000000" fontWeight="25" fontItalic="0" namedStyle="Regular" fontWordSpacing="0" fontFamily="Segoe UI Light">
-                <text-buffer bufferSizeUnits="MM" bufferDraw="0" bufferColor="255,255,255,255" bufferJoinStyle="64" bufferSizeMapUnitScale="3x:0,0,0,0,0,0" bufferNoFill="0" bufferOpacity="1" bufferBlendMode="0" bufferSize="1"/>
-                <background shapeOpacity="1" shapeRotation="0" shapeSizeUnit="MM" shapeSizeX="0" shapeBorderWidthUnit="MM" shapeSizeMapUnitScale="3x:0,0,0,0,0,0" shapeJoinStyle="64" shapeType="0" shapeRadiiY="0" shapeSizeType="0" shapeOffsetY="0" shapeSVGFile="" shapeSizeY="0" shapeRadiiMapUnitScale="3x:0,0,0,0,0,0" shapeDraw="0" shapeBorderWidth="0" shapeBlendMode="0" shapeOffsetX="0" shapeOffsetUnit="MM" shapeRotationType="0" shapeRadiiUnit="MM" shapeOffsetMapUnitScale="3x:0,0,0,0,0,0" shapeBorderColor="128,128,128,255" shapeBorderWidthMapUnitScale="3x:0,0,0,0,0,0" shapeRadiiX="0" shapeFillColor="255,255,255,255"/>
-                <shadow shadowOffsetMapUnitScale="3x:0,0,0,0,0,0" shadowRadius="1.5" shadowRadiusUnit="MM" shadowOffsetAngle="135" shadowDraw="0" shadowBlendMode="6" shadowOffsetGlobal="1" shadowOpacity="0.7" shadowOffsetDist="1" shadowScale="100" shadowOffsetUnit="MM" shadowRadiusMapUnitScale="3x:0,0,0,0,0,0" shadowColor="0,0,0,255" shadowUnder="0" shadowRadiusAlphaOnly="0"/>
+              <text-style textOpacity="1" fontSizeUnit="MapUnit" fontSize="3" previewBkgrdColor="#ffffff" fontFamily="Segoe UI Light" useSubstitutions="0" namedStyle="Regular" fontStrikeout="0" fontWordSpacing="0" fontWeight="25" fontItalic="0" fontSizeMapUnitScale="3x:0,0,0,0,0,0" blendMode="0" isExpression="0" multilineHeight="1" fieldName="NOM" fontCapitals="0" textColor="56,71,79,255" fontUnderline="0" fontLetterSpacing="0">
+                <text-buffer bufferNoFill="0" bufferSize="1" bufferDraw="0" bufferOpacity="1" bufferSizeMapUnitScale="3x:0,0,0,0,0,0" bufferColor="255,255,255,255" bufferJoinStyle="64" bufferBlendMode="0" bufferSizeUnits="MM"/>
+                <background shapeSizeY="0" shapeOffsetX="0" shapeBorderWidthMapUnitScale="3x:0,0,0,0,0,0" shapeBorderWidth="0" shapeJoinStyle="64" shapeBlendMode="0" shapeSizeUnit="MM" shapeRadiiMapUnitScale="3x:0,0,0,0,0,0" shapeRadiiUnit="MM" shapeBorderWidthUnit="MM" shapeRotationType="0" shapeType="0" shapeFillColor="255,255,255,255" shapeSizeX="0" shapeSizeType="0" shapeSizeMapUnitScale="3x:0,0,0,0,0,0" shapeOffsetY="0" shapeRadiiX="0" shapeRadiiY="0" shapeOffsetMapUnitScale="3x:0,0,0,0,0,0" shapeOffsetUnit="MM" shapeBorderColor="128,128,128,255" shapeSVGFile="" shapeOpacity="1" shapeRotation="0" shapeDraw="0"/>
+                <shadow shadowOffsetDist="1" shadowOffsetGlobal="1" shadowDraw="0" shadowOpacity="0.7" shadowBlendMode="6" shadowRadiusUnit="MM" shadowRadiusAlphaOnly="0" shadowOffsetUnit="MM" shadowRadius="1.5" shadowScale="100" shadowColor="0,0,0,255" shadowOffsetAngle="135" shadowOffsetMapUnitScale="3x:0,0,0,0,0,0" shadowUnder="0" shadowRadiusMapUnitScale="3x:0,0,0,0,0,0"/>
                 <substitutions/>
               </text-style>
-              <text-format rightDirectionSymbol=">" addDirectionSymbol="0" reverseDirectionSymbol="0" formatNumbers="0" placeDirectionSymbol="0" wrapChar="&lt;br>" useMaxLineLengthForAutoWrap="1" leftDirectionSymbol="&lt;" decimals="3" autoWrapLength="0" multilineAlign="1" plussign="0"/>
-              <placement placementFlags="10" repeatDistanceUnits="MM" yOffset="0" maxCurvedCharAngleOut="-20" distMapUnitScale="3x:0,0,0,0,0,0" fitInPolygonOnly="0" maxCurvedCharAngleIn="20" predefinedPositionOrder="TR,TL,BR,BL,R,L,TSR,BSR" labelOffsetMapUnitScale="3x:0,0,0,0,0,0" repeatDistance="0" preserveRotation="1" distUnits="MM" quadOffset="4" centroidWhole="0" centroidInside="0" placement="0" dist="0" offsetUnits="MapUnit" repeatDistanceMapUnitScale="3x:0,0,0,0,0,0" priority="5" rotationAngle="0" xOffset="0" offsetType="0"/>
-              <rendering fontMaxPixelSize="10000" obstacleFactor="1" scaleMin="1" obstacleType="0" scaleMax="10000000" displayAll="1" maxNumLabels="2000" scaleVisibility="0" obstacle="0" limitNumLabels="0" minFeatureSize="0" zIndex="5" labelPerPart="0" mergeLines="0" fontLimitPixelSize="1" fontMinPixelSize="3" drawLabels="1" upsidedownLabels="0"/>
+              <text-format addDirectionSymbol="0" decimals="3" useMaxLineLengthForAutoWrap="1" plussign="0" wrapChar="&lt;br>" multilineAlign="1" autoWrapLength="0" reverseDirectionSymbol="0" formatNumbers="0" leftDirectionSymbol="&lt;" placeDirectionSymbol="0" rightDirectionSymbol=">"/>
+              <placement maxCurvedCharAngleOut="-20" fitInPolygonOnly="0" offsetType="0" xOffset="0" placement="0" dist="0" repeatDistance="0" repeatDistanceMapUnitScale="3x:0,0,0,0,0,0" maxCurvedCharAngleIn="20" distMapUnitScale="3x:0,0,0,0,0,0" quadOffset="4" repeatDistanceUnits="MM" offsetUnits="MapUnit" rotationAngle="0" distUnits="MM" predefinedPositionOrder="TR,TL,BR,BL,R,L,TSR,BSR" yOffset="0" centroidWhole="0" preserveRotation="1" centroidInside="0" labelOffsetMapUnitScale="3x:0,0,0,0,0,0" priority="5" placementFlags="10"/>
+              <rendering mergeLines="0" limitNumLabels="0" upsidedownLabels="0" fontMaxPixelSize="10000" scaleMax="10000000" obstacle="0" maxNumLabels="2000" drawLabels="1" zIndex="5" displayAll="1" labelPerPart="0" obstacleType="0" fontLimitPixelSize="1" obstacleFactor="1" scaleMin="1" minFeatureSize="0" scaleVisibility="0" fontMinPixelSize="3"/>
               <dd_properties>
                 <Option type="Map">
                   <Option type="QString" name="name" value=""/>
@@ -1385,17 +1376,17 @@ def my_form_open(dialog, layer, feature):
               </dd_properties>
             </settings>
           </rule>
-          <rule description="TOP_27  Plaça mitjana" scalemindenom="1" scalemaxdenom="3000" key="{5acff6e9-e490-4a70-9373-cd39e39c7cfc}" filter="left(  &quot;NIVELL&quot; ,6)='TOP_27'">
+          <rule filter="left(  &quot;NIVELL&quot; ,6)='TOP_27'" key="{5acff6e9-e490-4a70-9373-cd39e39c7cfc}" description="TOP_27  Plaça mitjana" scalemindenom="1" scalemaxdenom="3000">
             <settings>
-              <text-style useSubstitutions="0" fontStrikeout="0" fontLetterSpacing="0" fontCapitals="0" fieldName="NOM" fontSize="2.5" blendMode="0" fontUnderline="0" textColor="56,71,79,255" multilineHeight="1" fontSizeUnit="MapUnit" textOpacity="1" fontSizeMapUnitScale="3x:0,0,0,0,0,0" isExpression="0" previewBkgrdColor="#000000" fontWeight="25" fontItalic="0" namedStyle="Regular" fontWordSpacing="0" fontFamily="Segoe UI Light">
-                <text-buffer bufferSizeUnits="MM" bufferDraw="0" bufferColor="255,255,255,255" bufferJoinStyle="64" bufferSizeMapUnitScale="3x:0,0,0,0,0,0" bufferNoFill="0" bufferOpacity="1" bufferBlendMode="0" bufferSize="1"/>
-                <background shapeOpacity="1" shapeRotation="0" shapeSizeUnit="MM" shapeSizeX="0" shapeBorderWidthUnit="MM" shapeSizeMapUnitScale="3x:0,0,0,0,0,0" shapeJoinStyle="64" shapeType="0" shapeRadiiY="0" shapeSizeType="0" shapeOffsetY="0" shapeSVGFile="" shapeSizeY="0" shapeRadiiMapUnitScale="3x:0,0,0,0,0,0" shapeDraw="0" shapeBorderWidth="0" shapeBlendMode="0" shapeOffsetX="0" shapeOffsetUnit="MM" shapeRotationType="0" shapeRadiiUnit="MM" shapeOffsetMapUnitScale="3x:0,0,0,0,0,0" shapeBorderColor="128,128,128,255" shapeBorderWidthMapUnitScale="3x:0,0,0,0,0,0" shapeRadiiX="0" shapeFillColor="255,255,255,255"/>
-                <shadow shadowOffsetMapUnitScale="3x:0,0,0,0,0,0" shadowRadius="1.5" shadowRadiusUnit="MM" shadowOffsetAngle="135" shadowDraw="0" shadowBlendMode="6" shadowOffsetGlobal="1" shadowOpacity="0.7" shadowOffsetDist="1" shadowScale="100" shadowOffsetUnit="MM" shadowRadiusMapUnitScale="3x:0,0,0,0,0,0" shadowColor="0,0,0,255" shadowUnder="0" shadowRadiusAlphaOnly="0"/>
+              <text-style textOpacity="1" fontSizeUnit="MapUnit" fontSize="2.5" previewBkgrdColor="#ffffff" fontFamily="Segoe UI Light" useSubstitutions="0" namedStyle="Regular" fontStrikeout="0" fontWordSpacing="0" fontWeight="25" fontItalic="0" fontSizeMapUnitScale="3x:0,0,0,0,0,0" blendMode="0" isExpression="0" multilineHeight="1" fieldName="NOM" fontCapitals="0" textColor="56,71,79,255" fontUnderline="0" fontLetterSpacing="0">
+                <text-buffer bufferNoFill="0" bufferSize="1" bufferDraw="0" bufferOpacity="1" bufferSizeMapUnitScale="3x:0,0,0,0,0,0" bufferColor="255,255,255,255" bufferJoinStyle="64" bufferBlendMode="0" bufferSizeUnits="MM"/>
+                <background shapeSizeY="0" shapeOffsetX="0" shapeBorderWidthMapUnitScale="3x:0,0,0,0,0,0" shapeBorderWidth="0" shapeJoinStyle="64" shapeBlendMode="0" shapeSizeUnit="MM" shapeRadiiMapUnitScale="3x:0,0,0,0,0,0" shapeRadiiUnit="MM" shapeBorderWidthUnit="MM" shapeRotationType="0" shapeType="0" shapeFillColor="255,255,255,255" shapeSizeX="0" shapeSizeType="0" shapeSizeMapUnitScale="3x:0,0,0,0,0,0" shapeOffsetY="0" shapeRadiiX="0" shapeRadiiY="0" shapeOffsetMapUnitScale="3x:0,0,0,0,0,0" shapeOffsetUnit="MM" shapeBorderColor="128,128,128,255" shapeSVGFile="" shapeOpacity="1" shapeRotation="0" shapeDraw="0"/>
+                <shadow shadowOffsetDist="1" shadowOffsetGlobal="1" shadowDraw="0" shadowOpacity="0.7" shadowBlendMode="6" shadowRadiusUnit="MM" shadowRadiusAlphaOnly="0" shadowOffsetUnit="MM" shadowRadius="1.5" shadowScale="100" shadowColor="0,0,0,255" shadowOffsetAngle="135" shadowOffsetMapUnitScale="3x:0,0,0,0,0,0" shadowUnder="0" shadowRadiusMapUnitScale="3x:0,0,0,0,0,0"/>
                 <substitutions/>
               </text-style>
-              <text-format rightDirectionSymbol=">" addDirectionSymbol="0" reverseDirectionSymbol="0" formatNumbers="0" placeDirectionSymbol="0" wrapChar="&lt;br>" useMaxLineLengthForAutoWrap="1" leftDirectionSymbol="&lt;" decimals="3" autoWrapLength="0" multilineAlign="1" plussign="0"/>
-              <placement placementFlags="10" repeatDistanceUnits="MM" yOffset="0" maxCurvedCharAngleOut="-20" distMapUnitScale="3x:0,0,0,0,0,0" fitInPolygonOnly="0" maxCurvedCharAngleIn="20" predefinedPositionOrder="TR,TL,BR,BL,R,L,TSR,BSR" labelOffsetMapUnitScale="3x:0,0,0,0,0,0" repeatDistance="0" preserveRotation="1" distUnits="MM" quadOffset="4" centroidWhole="0" centroidInside="0" placement="0" dist="0" offsetUnits="MapUnit" repeatDistanceMapUnitScale="3x:0,0,0,0,0,0" priority="5" rotationAngle="0" xOffset="0" offsetType="0"/>
-              <rendering fontMaxPixelSize="10000" obstacleFactor="1" scaleMin="1" obstacleType="0" scaleMax="10000000" displayAll="1" maxNumLabels="2000" scaleVisibility="0" obstacle="0" limitNumLabels="0" minFeatureSize="0" zIndex="5" labelPerPart="0" mergeLines="0" fontLimitPixelSize="1" fontMinPixelSize="3" drawLabels="1" upsidedownLabels="0"/>
+              <text-format addDirectionSymbol="0" decimals="3" useMaxLineLengthForAutoWrap="1" plussign="0" wrapChar="&lt;br>" multilineAlign="1" autoWrapLength="0" reverseDirectionSymbol="0" formatNumbers="0" leftDirectionSymbol="&lt;" placeDirectionSymbol="0" rightDirectionSymbol=">"/>
+              <placement maxCurvedCharAngleOut="-20" fitInPolygonOnly="0" offsetType="0" xOffset="0" placement="0" dist="0" repeatDistance="0" repeatDistanceMapUnitScale="3x:0,0,0,0,0,0" maxCurvedCharAngleIn="20" distMapUnitScale="3x:0,0,0,0,0,0" quadOffset="4" repeatDistanceUnits="MM" offsetUnits="MapUnit" rotationAngle="0" distUnits="MM" predefinedPositionOrder="TR,TL,BR,BL,R,L,TSR,BSR" yOffset="0" centroidWhole="0" preserveRotation="1" centroidInside="0" labelOffsetMapUnitScale="3x:0,0,0,0,0,0" priority="5" placementFlags="10"/>
+              <rendering mergeLines="0" limitNumLabels="0" upsidedownLabels="0" fontMaxPixelSize="10000" scaleMax="10000000" obstacle="0" maxNumLabels="2000" drawLabels="1" zIndex="5" displayAll="1" labelPerPart="0" obstacleType="0" fontLimitPixelSize="1" obstacleFactor="1" scaleMin="1" minFeatureSize="0" scaleVisibility="0" fontMinPixelSize="3"/>
               <dd_properties>
                 <Option type="Map">
                   <Option type="QString" name="name" value=""/>
@@ -1436,17 +1427,17 @@ def my_form_open(dialog, layer, feature):
               </dd_properties>
             </settings>
           </rule>
-          <rule description="TOP_28  Plaça Petita" scalemindenom="1" scalemaxdenom="1500" key="{81d75a89-9d15-427d-ac62-b92bacbb3c13}" filter="left(  &quot;NIVELL&quot; ,6)='TOP_28'">
+          <rule filter="left(  &quot;NIVELL&quot; ,6)='TOP_28'" key="{81d75a89-9d15-427d-ac62-b92bacbb3c13}" description="TOP_28  Plaça Petita" scalemindenom="1" scalemaxdenom="1500">
             <settings>
-              <text-style useSubstitutions="0" fontStrikeout="0" fontLetterSpacing="0" fontCapitals="0" fieldName="NOM" fontSize="2.5" blendMode="0" fontUnderline="0" textColor="56,71,79,255" multilineHeight="1" fontSizeUnit="MapUnit" textOpacity="1" fontSizeMapUnitScale="3x:0,0,0,0,0,0" isExpression="0" previewBkgrdColor="#000000" fontWeight="25" fontItalic="0" namedStyle="Regular" fontWordSpacing="0" fontFamily="Segoe UI Light">
-                <text-buffer bufferSizeUnits="MM" bufferDraw="0" bufferColor="255,255,255,255" bufferJoinStyle="64" bufferSizeMapUnitScale="3x:0,0,0,0,0,0" bufferNoFill="0" bufferOpacity="1" bufferBlendMode="0" bufferSize="1"/>
-                <background shapeOpacity="1" shapeRotation="0" shapeSizeUnit="MM" shapeSizeX="0" shapeBorderWidthUnit="MM" shapeSizeMapUnitScale="3x:0,0,0,0,0,0" shapeJoinStyle="64" shapeType="0" shapeRadiiY="0" shapeSizeType="0" shapeOffsetY="0" shapeSVGFile="" shapeSizeY="0" shapeRadiiMapUnitScale="3x:0,0,0,0,0,0" shapeDraw="0" shapeBorderWidth="0" shapeBlendMode="0" shapeOffsetX="0" shapeOffsetUnit="MM" shapeRotationType="0" shapeRadiiUnit="MM" shapeOffsetMapUnitScale="3x:0,0,0,0,0,0" shapeBorderColor="128,128,128,255" shapeBorderWidthMapUnitScale="3x:0,0,0,0,0,0" shapeRadiiX="0" shapeFillColor="255,255,255,255"/>
-                <shadow shadowOffsetMapUnitScale="3x:0,0,0,0,0,0" shadowRadius="1.5" shadowRadiusUnit="MM" shadowOffsetAngle="135" shadowDraw="0" shadowBlendMode="6" shadowOffsetGlobal="1" shadowOpacity="0.7" shadowOffsetDist="1" shadowScale="100" shadowOffsetUnit="MM" shadowRadiusMapUnitScale="3x:0,0,0,0,0,0" shadowColor="0,0,0,255" shadowUnder="0" shadowRadiusAlphaOnly="0"/>
+              <text-style textOpacity="1" fontSizeUnit="MapUnit" fontSize="2.5" previewBkgrdColor="#ffffff" fontFamily="Segoe UI Light" useSubstitutions="0" namedStyle="Regular" fontStrikeout="0" fontWordSpacing="0" fontWeight="25" fontItalic="0" fontSizeMapUnitScale="3x:0,0,0,0,0,0" blendMode="0" isExpression="0" multilineHeight="1" fieldName="NOM" fontCapitals="0" textColor="56,71,79,255" fontUnderline="0" fontLetterSpacing="0">
+                <text-buffer bufferNoFill="0" bufferSize="1" bufferDraw="0" bufferOpacity="1" bufferSizeMapUnitScale="3x:0,0,0,0,0,0" bufferColor="255,255,255,255" bufferJoinStyle="64" bufferBlendMode="0" bufferSizeUnits="MM"/>
+                <background shapeSizeY="0" shapeOffsetX="0" shapeBorderWidthMapUnitScale="3x:0,0,0,0,0,0" shapeBorderWidth="0" shapeJoinStyle="64" shapeBlendMode="0" shapeSizeUnit="MM" shapeRadiiMapUnitScale="3x:0,0,0,0,0,0" shapeRadiiUnit="MM" shapeBorderWidthUnit="MM" shapeRotationType="0" shapeType="0" shapeFillColor="255,255,255,255" shapeSizeX="0" shapeSizeType="0" shapeSizeMapUnitScale="3x:0,0,0,0,0,0" shapeOffsetY="0" shapeRadiiX="0" shapeRadiiY="0" shapeOffsetMapUnitScale="3x:0,0,0,0,0,0" shapeOffsetUnit="MM" shapeBorderColor="128,128,128,255" shapeSVGFile="" shapeOpacity="1" shapeRotation="0" shapeDraw="0"/>
+                <shadow shadowOffsetDist="1" shadowOffsetGlobal="1" shadowDraw="0" shadowOpacity="0.7" shadowBlendMode="6" shadowRadiusUnit="MM" shadowRadiusAlphaOnly="0" shadowOffsetUnit="MM" shadowRadius="1.5" shadowScale="100" shadowColor="0,0,0,255" shadowOffsetAngle="135" shadowOffsetMapUnitScale="3x:0,0,0,0,0,0" shadowUnder="0" shadowRadiusMapUnitScale="3x:0,0,0,0,0,0"/>
                 <substitutions/>
               </text-style>
-              <text-format rightDirectionSymbol=">" addDirectionSymbol="0" reverseDirectionSymbol="0" formatNumbers="0" placeDirectionSymbol="0" wrapChar="&lt;br>" useMaxLineLengthForAutoWrap="1" leftDirectionSymbol="&lt;" decimals="3" autoWrapLength="0" multilineAlign="1" plussign="0"/>
-              <placement placementFlags="10" repeatDistanceUnits="MM" yOffset="0" maxCurvedCharAngleOut="-20" distMapUnitScale="3x:0,0,0,0,0,0" fitInPolygonOnly="0" maxCurvedCharAngleIn="20" predefinedPositionOrder="TR,TL,BR,BL,R,L,TSR,BSR" labelOffsetMapUnitScale="3x:0,0,0,0,0,0" repeatDistance="0" preserveRotation="1" distUnits="MM" quadOffset="4" centroidWhole="0" centroidInside="0" placement="0" dist="0" offsetUnits="MapUnit" repeatDistanceMapUnitScale="3x:0,0,0,0,0,0" priority="5" rotationAngle="0" xOffset="0" offsetType="0"/>
-              <rendering fontMaxPixelSize="10000" obstacleFactor="1" scaleMin="1" obstacleType="0" scaleMax="10000000" displayAll="1" maxNumLabels="2000" scaleVisibility="0" obstacle="0" limitNumLabels="0" minFeatureSize="0" zIndex="5" labelPerPart="0" mergeLines="0" fontLimitPixelSize="1" fontMinPixelSize="3" drawLabels="1" upsidedownLabels="0"/>
+              <text-format addDirectionSymbol="0" decimals="3" useMaxLineLengthForAutoWrap="1" plussign="0" wrapChar="&lt;br>" multilineAlign="1" autoWrapLength="0" reverseDirectionSymbol="0" formatNumbers="0" leftDirectionSymbol="&lt;" placeDirectionSymbol="0" rightDirectionSymbol=">"/>
+              <placement maxCurvedCharAngleOut="-20" fitInPolygonOnly="0" offsetType="0" xOffset="0" placement="0" dist="0" repeatDistance="0" repeatDistanceMapUnitScale="3x:0,0,0,0,0,0" maxCurvedCharAngleIn="20" distMapUnitScale="3x:0,0,0,0,0,0" quadOffset="4" repeatDistanceUnits="MM" offsetUnits="MapUnit" rotationAngle="0" distUnits="MM" predefinedPositionOrder="TR,TL,BR,BL,R,L,TSR,BSR" yOffset="0" centroidWhole="0" preserveRotation="1" centroidInside="0" labelOffsetMapUnitScale="3x:0,0,0,0,0,0" priority="5" placementFlags="10"/>
+              <rendering mergeLines="0" limitNumLabels="0" upsidedownLabels="0" fontMaxPixelSize="10000" scaleMax="10000000" obstacle="0" maxNumLabels="2000" drawLabels="1" zIndex="5" displayAll="1" labelPerPart="0" obstacleType="0" fontLimitPixelSize="1" obstacleFactor="1" scaleMin="1" minFeatureSize="0" scaleVisibility="0" fontMinPixelSize="3"/>
               <dd_properties>
                 <Option type="Map">
                   <Option type="QString" name="name" value=""/>
@@ -1487,17 +1478,17 @@ def my_form_open(dialog, layer, feature):
               </dd_properties>
             </settings>
           </rule>
-          <rule description="TOP_29  Plaça Petita Tipus 1 &lt; Petita" scalemindenom="1" scalemaxdenom="1500" key="{4886ee28-0711-4181-a370-61ca404ecac0}" filter="left(  &quot;NIVELL&quot; ,6)='TOP_29'">
+          <rule filter="left(  &quot;NIVELL&quot; ,6)='TOP_29'" key="{4886ee28-0711-4181-a370-61ca404ecac0}" description="TOP_29  Plaça Petita Tipus 1 &lt; Petita" scalemindenom="1" scalemaxdenom="1500">
             <settings>
-              <text-style useSubstitutions="0" fontStrikeout="0" fontLetterSpacing="0" fontCapitals="0" fieldName="NOM" fontSize="2.5" blendMode="0" fontUnderline="0" textColor="56,71,79,255" multilineHeight="1" fontSizeUnit="MapUnit" textOpacity="1" fontSizeMapUnitScale="3x:0,0,0,0,0,0" isExpression="0" previewBkgrdColor="#000000" fontWeight="25" fontItalic="0" namedStyle="Regular" fontWordSpacing="0" fontFamily="Segoe UI Light">
-                <text-buffer bufferSizeUnits="MM" bufferDraw="0" bufferColor="255,255,255,255" bufferJoinStyle="64" bufferSizeMapUnitScale="3x:0,0,0,0,0,0" bufferNoFill="0" bufferOpacity="1" bufferBlendMode="0" bufferSize="1"/>
-                <background shapeOpacity="1" shapeRotation="0" shapeSizeUnit="MM" shapeSizeX="0" shapeBorderWidthUnit="MM" shapeSizeMapUnitScale="3x:0,0,0,0,0,0" shapeJoinStyle="64" shapeType="0" shapeRadiiY="0" shapeSizeType="0" shapeOffsetY="0" shapeSVGFile="" shapeSizeY="0" shapeRadiiMapUnitScale="3x:0,0,0,0,0,0" shapeDraw="0" shapeBorderWidth="0" shapeBlendMode="0" shapeOffsetX="0" shapeOffsetUnit="MM" shapeRotationType="0" shapeRadiiUnit="MM" shapeOffsetMapUnitScale="3x:0,0,0,0,0,0" shapeBorderColor="128,128,128,255" shapeBorderWidthMapUnitScale="3x:0,0,0,0,0,0" shapeRadiiX="0" shapeFillColor="255,255,255,255"/>
-                <shadow shadowOffsetMapUnitScale="3x:0,0,0,0,0,0" shadowRadius="1.5" shadowRadiusUnit="MM" shadowOffsetAngle="135" shadowDraw="0" shadowBlendMode="6" shadowOffsetGlobal="1" shadowOpacity="0.7" shadowOffsetDist="1" shadowScale="100" shadowOffsetUnit="MM" shadowRadiusMapUnitScale="3x:0,0,0,0,0,0" shadowColor="0,0,0,255" shadowUnder="0" shadowRadiusAlphaOnly="0"/>
+              <text-style textOpacity="1" fontSizeUnit="MapUnit" fontSize="2.5" previewBkgrdColor="#ffffff" fontFamily="Segoe UI Light" useSubstitutions="0" namedStyle="Regular" fontStrikeout="0" fontWordSpacing="0" fontWeight="25" fontItalic="0" fontSizeMapUnitScale="3x:0,0,0,0,0,0" blendMode="0" isExpression="0" multilineHeight="1" fieldName="NOM" fontCapitals="0" textColor="56,71,79,255" fontUnderline="0" fontLetterSpacing="0">
+                <text-buffer bufferNoFill="0" bufferSize="1" bufferDraw="0" bufferOpacity="1" bufferSizeMapUnitScale="3x:0,0,0,0,0,0" bufferColor="255,255,255,255" bufferJoinStyle="64" bufferBlendMode="0" bufferSizeUnits="MM"/>
+                <background shapeSizeY="0" shapeOffsetX="0" shapeBorderWidthMapUnitScale="3x:0,0,0,0,0,0" shapeBorderWidth="0" shapeJoinStyle="64" shapeBlendMode="0" shapeSizeUnit="MM" shapeRadiiMapUnitScale="3x:0,0,0,0,0,0" shapeRadiiUnit="MM" shapeBorderWidthUnit="MM" shapeRotationType="0" shapeType="0" shapeFillColor="255,255,255,255" shapeSizeX="0" shapeSizeType="0" shapeSizeMapUnitScale="3x:0,0,0,0,0,0" shapeOffsetY="0" shapeRadiiX="0" shapeRadiiY="0" shapeOffsetMapUnitScale="3x:0,0,0,0,0,0" shapeOffsetUnit="MM" shapeBorderColor="128,128,128,255" shapeSVGFile="" shapeOpacity="1" shapeRotation="0" shapeDraw="0"/>
+                <shadow shadowOffsetDist="1" shadowOffsetGlobal="1" shadowDraw="0" shadowOpacity="0.7" shadowBlendMode="6" shadowRadiusUnit="MM" shadowRadiusAlphaOnly="0" shadowOffsetUnit="MM" shadowRadius="1.5" shadowScale="100" shadowColor="0,0,0,255" shadowOffsetAngle="135" shadowOffsetMapUnitScale="3x:0,0,0,0,0,0" shadowUnder="0" shadowRadiusMapUnitScale="3x:0,0,0,0,0,0"/>
                 <substitutions/>
               </text-style>
-              <text-format rightDirectionSymbol=">" addDirectionSymbol="0" reverseDirectionSymbol="0" formatNumbers="0" placeDirectionSymbol="0" wrapChar="&lt;br>" useMaxLineLengthForAutoWrap="1" leftDirectionSymbol="&lt;" decimals="3" autoWrapLength="0" multilineAlign="1" plussign="0"/>
-              <placement placementFlags="10" repeatDistanceUnits="MM" yOffset="0" maxCurvedCharAngleOut="-20" distMapUnitScale="3x:0,0,0,0,0,0" fitInPolygonOnly="0" maxCurvedCharAngleIn="20" predefinedPositionOrder="TR,TL,BR,BL,R,L,TSR,BSR" labelOffsetMapUnitScale="3x:0,0,0,0,0,0" repeatDistance="0" preserveRotation="1" distUnits="MM" quadOffset="4" centroidWhole="0" centroidInside="0" placement="0" dist="0" offsetUnits="MapUnit" repeatDistanceMapUnitScale="3x:0,0,0,0,0,0" priority="5" rotationAngle="0" xOffset="0" offsetType="0"/>
-              <rendering fontMaxPixelSize="10000" obstacleFactor="1" scaleMin="1" obstacleType="0" scaleMax="10000000" displayAll="1" maxNumLabels="2000" scaleVisibility="0" obstacle="0" limitNumLabels="0" minFeatureSize="0" zIndex="5" labelPerPart="0" mergeLines="0" fontLimitPixelSize="1" fontMinPixelSize="3" drawLabels="1" upsidedownLabels="0"/>
+              <text-format addDirectionSymbol="0" decimals="3" useMaxLineLengthForAutoWrap="1" plussign="0" wrapChar="&lt;br>" multilineAlign="1" autoWrapLength="0" reverseDirectionSymbol="0" formatNumbers="0" leftDirectionSymbol="&lt;" placeDirectionSymbol="0" rightDirectionSymbol=">"/>
+              <placement maxCurvedCharAngleOut="-20" fitInPolygonOnly="0" offsetType="0" xOffset="0" placement="0" dist="0" repeatDistance="0" repeatDistanceMapUnitScale="3x:0,0,0,0,0,0" maxCurvedCharAngleIn="20" distMapUnitScale="3x:0,0,0,0,0,0" quadOffset="4" repeatDistanceUnits="MM" offsetUnits="MapUnit" rotationAngle="0" distUnits="MM" predefinedPositionOrder="TR,TL,BR,BL,R,L,TSR,BSR" yOffset="0" centroidWhole="0" preserveRotation="1" centroidInside="0" labelOffsetMapUnitScale="3x:0,0,0,0,0,0" priority="5" placementFlags="10"/>
+              <rendering mergeLines="0" limitNumLabels="0" upsidedownLabels="0" fontMaxPixelSize="10000" scaleMax="10000000" obstacle="0" maxNumLabels="2000" drawLabels="1" zIndex="5" displayAll="1" labelPerPart="0" obstacleType="0" fontLimitPixelSize="1" obstacleFactor="1" scaleMin="1" minFeatureSize="0" scaleVisibility="0" fontMinPixelSize="3"/>
               <dd_properties>
                 <Option type="Map">
                   <Option type="QString" name="name" value=""/>
@@ -1538,17 +1529,17 @@ def my_form_open(dialog, layer, feature):
               </dd_properties>
             </settings>
           </rule>
-          <rule description="TOP_30  Plaça Petita Tipus 2 &lt; Petita Tipus 1" scalemindenom="1" scalemaxdenom="1500" key="{63122c54-aac1-4ea7-84d5-b18e8547cb0c}" filter="left(  &quot;NIVELL&quot; ,6)='TOP_30'">
+          <rule filter="left(  &quot;NIVELL&quot; ,6)='TOP_30'" key="{63122c54-aac1-4ea7-84d5-b18e8547cb0c}" description="TOP_30  Plaça Petita Tipus 2 &lt; Petita Tipus 1" scalemindenom="1" scalemaxdenom="1500">
             <settings>
-              <text-style useSubstitutions="0" fontStrikeout="0" fontLetterSpacing="0" fontCapitals="0" fieldName="NOM" fontSize="2.5" blendMode="0" fontUnderline="0" textColor="56,71,79,255" multilineHeight="1" fontSizeUnit="MapUnit" textOpacity="1" fontSizeMapUnitScale="3x:0,0,0,0,0,0" isExpression="0" previewBkgrdColor="#000000" fontWeight="25" fontItalic="0" namedStyle="Regular" fontWordSpacing="0" fontFamily="Segoe UI Light">
-                <text-buffer bufferSizeUnits="MM" bufferDraw="0" bufferColor="255,255,255,255" bufferJoinStyle="64" bufferSizeMapUnitScale="3x:0,0,0,0,0,0" bufferNoFill="0" bufferOpacity="1" bufferBlendMode="0" bufferSize="1"/>
-                <background shapeOpacity="1" shapeRotation="0" shapeSizeUnit="MM" shapeSizeX="0" shapeBorderWidthUnit="MM" shapeSizeMapUnitScale="3x:0,0,0,0,0,0" shapeJoinStyle="64" shapeType="0" shapeRadiiY="0" shapeSizeType="0" shapeOffsetY="0" shapeSVGFile="" shapeSizeY="0" shapeRadiiMapUnitScale="3x:0,0,0,0,0,0" shapeDraw="0" shapeBorderWidth="0" shapeBlendMode="0" shapeOffsetX="0" shapeOffsetUnit="MM" shapeRotationType="0" shapeRadiiUnit="MM" shapeOffsetMapUnitScale="3x:0,0,0,0,0,0" shapeBorderColor="128,128,128,255" shapeBorderWidthMapUnitScale="3x:0,0,0,0,0,0" shapeRadiiX="0" shapeFillColor="255,255,255,255"/>
-                <shadow shadowOffsetMapUnitScale="3x:0,0,0,0,0,0" shadowRadius="1.5" shadowRadiusUnit="MM" shadowOffsetAngle="135" shadowDraw="0" shadowBlendMode="6" shadowOffsetGlobal="1" shadowOpacity="0.7" shadowOffsetDist="1" shadowScale="100" shadowOffsetUnit="MM" shadowRadiusMapUnitScale="3x:0,0,0,0,0,0" shadowColor="0,0,0,255" shadowUnder="0" shadowRadiusAlphaOnly="0"/>
+              <text-style textOpacity="1" fontSizeUnit="MapUnit" fontSize="2.5" previewBkgrdColor="#ffffff" fontFamily="Segoe UI Light" useSubstitutions="0" namedStyle="Regular" fontStrikeout="0" fontWordSpacing="0" fontWeight="25" fontItalic="0" fontSizeMapUnitScale="3x:0,0,0,0,0,0" blendMode="0" isExpression="0" multilineHeight="1" fieldName="NOM" fontCapitals="0" textColor="56,71,79,255" fontUnderline="0" fontLetterSpacing="0">
+                <text-buffer bufferNoFill="0" bufferSize="1" bufferDraw="0" bufferOpacity="1" bufferSizeMapUnitScale="3x:0,0,0,0,0,0" bufferColor="255,255,255,255" bufferJoinStyle="64" bufferBlendMode="0" bufferSizeUnits="MM"/>
+                <background shapeSizeY="0" shapeOffsetX="0" shapeBorderWidthMapUnitScale="3x:0,0,0,0,0,0" shapeBorderWidth="0" shapeJoinStyle="64" shapeBlendMode="0" shapeSizeUnit="MM" shapeRadiiMapUnitScale="3x:0,0,0,0,0,0" shapeRadiiUnit="MM" shapeBorderWidthUnit="MM" shapeRotationType="0" shapeType="0" shapeFillColor="255,255,255,255" shapeSizeX="0" shapeSizeType="0" shapeSizeMapUnitScale="3x:0,0,0,0,0,0" shapeOffsetY="0" shapeRadiiX="0" shapeRadiiY="0" shapeOffsetMapUnitScale="3x:0,0,0,0,0,0" shapeOffsetUnit="MM" shapeBorderColor="128,128,128,255" shapeSVGFile="" shapeOpacity="1" shapeRotation="0" shapeDraw="0"/>
+                <shadow shadowOffsetDist="1" shadowOffsetGlobal="1" shadowDraw="0" shadowOpacity="0.7" shadowBlendMode="6" shadowRadiusUnit="MM" shadowRadiusAlphaOnly="0" shadowOffsetUnit="MM" shadowRadius="1.5" shadowScale="100" shadowColor="0,0,0,255" shadowOffsetAngle="135" shadowOffsetMapUnitScale="3x:0,0,0,0,0,0" shadowUnder="0" shadowRadiusMapUnitScale="3x:0,0,0,0,0,0"/>
                 <substitutions/>
               </text-style>
-              <text-format rightDirectionSymbol=">" addDirectionSymbol="0" reverseDirectionSymbol="0" formatNumbers="0" placeDirectionSymbol="0" wrapChar="&lt;br>" useMaxLineLengthForAutoWrap="1" leftDirectionSymbol="&lt;" decimals="3" autoWrapLength="0" multilineAlign="1" plussign="0"/>
-              <placement placementFlags="10" repeatDistanceUnits="MM" yOffset="0" maxCurvedCharAngleOut="-20" distMapUnitScale="3x:0,0,0,0,0,0" fitInPolygonOnly="0" maxCurvedCharAngleIn="20" predefinedPositionOrder="TR,TL,BR,BL,R,L,TSR,BSR" labelOffsetMapUnitScale="3x:0,0,0,0,0,0" repeatDistance="0" preserveRotation="1" distUnits="MM" quadOffset="4" centroidWhole="0" centroidInside="0" placement="0" dist="0" offsetUnits="MapUnit" repeatDistanceMapUnitScale="3x:0,0,0,0,0,0" priority="5" rotationAngle="0" xOffset="0" offsetType="0"/>
-              <rendering fontMaxPixelSize="10000" obstacleFactor="1" scaleMin="1" obstacleType="0" scaleMax="10000000" displayAll="1" maxNumLabels="2000" scaleVisibility="0" obstacle="0" limitNumLabels="0" minFeatureSize="0" zIndex="5" labelPerPart="0" mergeLines="0" fontLimitPixelSize="1" fontMinPixelSize="3" drawLabels="1" upsidedownLabels="0"/>
+              <text-format addDirectionSymbol="0" decimals="3" useMaxLineLengthForAutoWrap="1" plussign="0" wrapChar="&lt;br>" multilineAlign="1" autoWrapLength="0" reverseDirectionSymbol="0" formatNumbers="0" leftDirectionSymbol="&lt;" placeDirectionSymbol="0" rightDirectionSymbol=">"/>
+              <placement maxCurvedCharAngleOut="-20" fitInPolygonOnly="0" offsetType="0" xOffset="0" placement="0" dist="0" repeatDistance="0" repeatDistanceMapUnitScale="3x:0,0,0,0,0,0" maxCurvedCharAngleIn="20" distMapUnitScale="3x:0,0,0,0,0,0" quadOffset="4" repeatDistanceUnits="MM" offsetUnits="MapUnit" rotationAngle="0" distUnits="MM" predefinedPositionOrder="TR,TL,BR,BL,R,L,TSR,BSR" yOffset="0" centroidWhole="0" preserveRotation="1" centroidInside="0" labelOffsetMapUnitScale="3x:0,0,0,0,0,0" priority="5" placementFlags="10"/>
+              <rendering mergeLines="0" limitNumLabels="0" upsidedownLabels="0" fontMaxPixelSize="10000" scaleMax="10000000" obstacle="0" maxNumLabels="2000" drawLabels="1" zIndex="5" displayAll="1" labelPerPart="0" obstacleType="0" fontLimitPixelSize="1" obstacleFactor="1" scaleMin="1" minFeatureSize="0" scaleVisibility="0" fontMinPixelSize="3"/>
               <dd_properties>
                 <Option type="Map">
                   <Option type="QString" name="name" value=""/>
@@ -1651,48 +1642,48 @@ def my_form_open(dialog, layer, feature):
         </field>
       </fieldConfiguration>
       <aliases>
-        <alias index="0" name="" field="fid"/>
-        <alias index="1" name="" field="ID"/>
-        <alias index="2" name="" field="NIVELL"/>
-        <alias index="3" name="" field="CODI"/>
-        <alias index="4" name="" field="ID_SUBTIP"/>
-        <alias index="5" name="" field="NOM"/>
-        <alias index="6" name="" field="ANGLE_TXT"/>
+        <alias field="fid" index="0" name=""/>
+        <alias field="ID" index="1" name=""/>
+        <alias field="NIVELL" index="2" name=""/>
+        <alias field="CODI" index="3" name=""/>
+        <alias field="ID_SUBTIP" index="4" name=""/>
+        <alias field="NOM" index="5" name=""/>
+        <alias field="ANGLE_TXT" index="6" name=""/>
       </aliases>
       <excludeAttributesWMS/>
       <excludeAttributesWFS/>
       <defaults>
-        <default expression="" applyOnUpdate="0" field="fid"/>
-        <default expression="" applyOnUpdate="0" field="ID"/>
-        <default expression="" applyOnUpdate="0" field="NIVELL"/>
-        <default expression="" applyOnUpdate="0" field="CODI"/>
-        <default expression="" applyOnUpdate="0" field="ID_SUBTIP"/>
-        <default expression="" applyOnUpdate="0" field="NOM"/>
-        <default expression="" applyOnUpdate="0" field="ANGLE_TXT"/>
+        <default expression="" field="fid" applyOnUpdate="0"/>
+        <default expression="" field="ID" applyOnUpdate="0"/>
+        <default expression="" field="NIVELL" applyOnUpdate="0"/>
+        <default expression="" field="CODI" applyOnUpdate="0"/>
+        <default expression="" field="ID_SUBTIP" applyOnUpdate="0"/>
+        <default expression="" field="NOM" applyOnUpdate="0"/>
+        <default expression="" field="ANGLE_TXT" applyOnUpdate="0"/>
       </defaults>
       <constraints>
-        <constraint constraints="3" notnull_strength="1" exp_strength="0" unique_strength="1" field="fid"/>
-        <constraint constraints="0" notnull_strength="0" exp_strength="0" unique_strength="0" field="ID"/>
-        <constraint constraints="0" notnull_strength="0" exp_strength="0" unique_strength="0" field="NIVELL"/>
-        <constraint constraints="0" notnull_strength="0" exp_strength="0" unique_strength="0" field="CODI"/>
-        <constraint constraints="0" notnull_strength="0" exp_strength="0" unique_strength="0" field="ID_SUBTIP"/>
-        <constraint constraints="0" notnull_strength="0" exp_strength="0" unique_strength="0" field="NOM"/>
-        <constraint constraints="0" notnull_strength="0" exp_strength="0" unique_strength="0" field="ANGLE_TXT"/>
+        <constraint constraints="3" field="fid" unique_strength="1" exp_strength="0" notnull_strength="1"/>
+        <constraint constraints="0" field="ID" unique_strength="0" exp_strength="0" notnull_strength="0"/>
+        <constraint constraints="0" field="NIVELL" unique_strength="0" exp_strength="0" notnull_strength="0"/>
+        <constraint constraints="0" field="CODI" unique_strength="0" exp_strength="0" notnull_strength="0"/>
+        <constraint constraints="0" field="ID_SUBTIP" unique_strength="0" exp_strength="0" notnull_strength="0"/>
+        <constraint constraints="0" field="NOM" unique_strength="0" exp_strength="0" notnull_strength="0"/>
+        <constraint constraints="0" field="ANGLE_TXT" unique_strength="0" exp_strength="0" notnull_strength="0"/>
       </constraints>
       <constraintExpressions>
-        <constraint exp="" desc="" field="fid"/>
-        <constraint exp="" desc="" field="ID"/>
-        <constraint exp="" desc="" field="NIVELL"/>
-        <constraint exp="" desc="" field="CODI"/>
-        <constraint exp="" desc="" field="ID_SUBTIP"/>
-        <constraint exp="" desc="" field="NOM"/>
-        <constraint exp="" desc="" field="ANGLE_TXT"/>
+        <constraint desc="" exp="" field="fid"/>
+        <constraint desc="" exp="" field="ID"/>
+        <constraint desc="" exp="" field="NIVELL"/>
+        <constraint desc="" exp="" field="CODI"/>
+        <constraint desc="" exp="" field="ID_SUBTIP"/>
+        <constraint desc="" exp="" field="NOM"/>
+        <constraint desc="" exp="" field="ANGLE_TXT"/>
       </constraintExpressions>
       <expressionfields/>
       <attributeactions>
         <defaultAction key="Canvas" value="{00000000-0000-0000-0000-000000000000}"/>
       </attributeactions>
-      <attributetableconfig sortExpression="" sortOrder="0" actionWidgetStyle="dropDown">
+      <attributetableconfig actionWidgetStyle="dropDown" sortOrder="0" sortExpression="">
         <columns/>
       </attributetableconfig>
       <conditionalstyles>
@@ -1712,7 +1703,7 @@ def my_form_open(dialog, layer, feature):
       <previewExpression></previewExpression>
       <mapTip></mapTip>
     </maplayer>
-    <maplayer autoRefreshTime="0" refreshOnNotifyMessage="" simplifyMaxScale="1" hasScaleBasedVisibilityFlag="1" autoRefreshEnabled="0" minScale="6000" type="vector" styleCategories="AllStyleCategories" simplifyAlgorithm="0" simplifyLocal="1" readOnly="0" refreshOnNotifyEnabled="0" geometry="Polygon" labelsEnabled="1" maxScale="0" simplifyDrawingHints="1" simplifyDrawingTol="1">
+    <maplayer labelsEnabled="0" refreshOnNotifyMessage="" hasScaleBasedVisibilityFlag="1" simplifyAlgorithm="0" autoRefreshTime="0" autoRefreshEnabled="0" geometry="Polygon" simplifyLocal="1" simplifyDrawingTol="1" type="vector" simplifyMaxScale="1" simplifyDrawingHints="1" minScale="6000" refreshOnNotifyEnabled="0" styleCategories="AllStyleCategories" readOnly="0" maxScale="0">
       <extent>
         <xmin>420813</xmin>
         <ymin>4574280</ymin>
@@ -1744,15 +1735,6 @@ def my_form_open(dialog, layer, feature):
         <type></type>
         <title></title>
         <abstract></abstract>
-        <contact>
-          <name></name>
-          <organization></organization>
-          <position></position>
-          <voice></voice>
-          <fax></fax>
-          <email></email>
-          <role></role>
-        </contact>
         <links/>
         <fees></fees>
         <encoding></encoding>
@@ -1768,15 +1750,7 @@ def my_form_open(dialog, layer, feature):
             <geographicflag>false</geographicflag>
           </spatialrefsys>
         </crs>
-        <extent>
-          <spatial crs="" minx="0" maxx="0" minz="0" maxz="0" dimensions="2" miny="0" maxy="0"/>
-          <temporal>
-            <period>
-              <start></start>
-              <end></end>
-            </period>
-          </temporal>
-        </extent>
+        <extent/>
       </resourceMetadata>
       <provider encoding="UTF-8">ogr</provider>
       <vectorjoins/>
@@ -1787,16 +1761,16 @@ def my_form_open(dialog, layer, feature):
       <map-layer-style-manager current="per defecte">
         <map-layer-style name="per defecte"/>
       </map-layer-style-manager>
-      <auxiliaryLayer key="fid"/>
+      <auxiliaryLayer/>
       <flags>
         <Identifiable>1</Identifiable>
         <Removable>1</Removable>
         <Searchable>1</Searchable>
       </flags>
-      <renderer-v2 symbollevels="0" type="singleSymbol" enableorderby="0" forceraster="0">
+      <renderer-v2 symbollevels="0" forceraster="0" type="singleSymbol" enableorderby="0">
         <symbols>
-          <symbol clip_to_extent="1" force_rhr="0" type="fill" name="0" alpha="1">
-            <layer locked="0" pass="0" enabled="1" class="SimpleFill">
+          <symbol force_rhr="0" type="fill" clip_to_extent="1" name="0" alpha="1">
+            <layer class="SimpleFill" pass="0" enabled="1" locked="0">
               <prop k="border_width_map_unit_scale" v="3x:0,0,0,0,0,0"/>
               <prop k="color" v="243,243,243,153"/>
               <prop k="joinstyle" v="bevel"/>
@@ -1834,15 +1808,15 @@ def my_form_open(dialog, layer, feature):
       </renderer-v2>
       <labeling type="simple">
         <settings>
-          <text-style useSubstitutions="0" fontStrikeout="0" fontLetterSpacing="0" fontCapitals="0" fieldName="CODI_PARC" fontSize="8.25" blendMode="0" fontUnderline="0" textColor="251,4,45,255" multilineHeight="1" fontSizeUnit="MapUnit" textOpacity="1" fontSizeMapUnitScale="3x:0,0,0,0,0,0" isExpression="0" previewBkgrdColor="#000000" fontWeight="50" fontItalic="0" namedStyle="Normal" fontWordSpacing="0" fontFamily="Arial">
-            <text-buffer bufferSizeUnits="MM" bufferDraw="1" bufferColor="255,255,255,255" bufferJoinStyle="64" bufferSizeMapUnitScale="3x:0,0,0,0,0,0" bufferNoFill="0" bufferOpacity="0.5539999999999999" bufferBlendMode="0" bufferSize="0.3"/>
-            <background shapeOpacity="1" shapeRotation="0" shapeSizeUnit="MM" shapeSizeX="0" shapeBorderWidthUnit="MM" shapeSizeMapUnitScale="3x:0,0,0,0,0,0" shapeJoinStyle="64" shapeType="0" shapeRadiiY="0" shapeSizeType="0" shapeOffsetY="0" shapeSVGFile="" shapeSizeY="0" shapeRadiiMapUnitScale="3x:0,0,0,0,0,0" shapeDraw="0" shapeBorderWidth="0" shapeBlendMode="0" shapeOffsetX="0" shapeOffsetUnit="MM" shapeRotationType="0" shapeRadiiUnit="MM" shapeOffsetMapUnitScale="3x:0,0,0,0,0,0" shapeBorderColor="128,128,128,255" shapeBorderWidthMapUnitScale="3x:0,0,0,0,0,0" shapeRadiiX="0" shapeFillColor="255,255,255,255"/>
-            <shadow shadowOffsetMapUnitScale="3x:0,0,0,0,0,0" shadowRadius="1.5" shadowRadiusUnit="MM" shadowOffsetAngle="135" shadowDraw="0" shadowBlendMode="6" shadowOffsetGlobal="1" shadowOpacity="0.7" shadowOffsetDist="1" shadowScale="100" shadowOffsetUnit="MM" shadowRadiusMapUnitScale="3x:0,0,0,0,0,0" shadowColor="0,0,0,255" shadowUnder="0" shadowRadiusAlphaOnly="0"/>
+          <text-style textOpacity="1" fontSizeUnit="MapUnit" fontSize="8.25" previewBkgrdColor="#ffffff" fontFamily="Arial" useSubstitutions="0" namedStyle="Normal" fontStrikeout="0" fontWordSpacing="0" fontWeight="50" fontItalic="0" fontSizeMapUnitScale="3x:0,0,0,0,0,0" blendMode="0" isExpression="0" multilineHeight="1" fieldName="CODI_PARC" fontCapitals="0" textColor="150,150,150,255" fontUnderline="0" fontLetterSpacing="0">
+            <text-buffer bufferNoFill="0" bufferSize="0.3" bufferDraw="1" bufferOpacity="0.8" bufferSizeMapUnitScale="3x:0,0,0,0,0,0" bufferColor="255,255,255,255" bufferJoinStyle="64" bufferBlendMode="0" bufferSizeUnits="MM"/>
+            <background shapeSizeY="0" shapeOffsetX="0" shapeBorderWidthMapUnitScale="3x:0,0,0,0,0,0" shapeBorderWidth="0" shapeJoinStyle="64" shapeBlendMode="0" shapeSizeUnit="MM" shapeRadiiMapUnitScale="3x:0,0,0,0,0,0" shapeRadiiUnit="MM" shapeBorderWidthUnit="MM" shapeRotationType="0" shapeType="0" shapeFillColor="255,255,255,255" shapeSizeX="0" shapeSizeType="0" shapeSizeMapUnitScale="3x:0,0,0,0,0,0" shapeOffsetY="0" shapeRadiiX="0" shapeRadiiY="0" shapeOffsetMapUnitScale="3x:0,0,0,0,0,0" shapeOffsetUnit="MM" shapeBorderColor="128,128,128,255" shapeSVGFile="" shapeOpacity="1" shapeRotation="0" shapeDraw="0"/>
+            <shadow shadowOffsetDist="1" shadowOffsetGlobal="1" shadowDraw="0" shadowOpacity="0.7" shadowBlendMode="6" shadowRadiusUnit="MM" shadowRadiusAlphaOnly="0" shadowOffsetUnit="MM" shadowRadius="1.5" shadowScale="100" shadowColor="0,0,0,255" shadowOffsetAngle="135" shadowOffsetMapUnitScale="3x:0,0,0,0,0,0" shadowUnder="0" shadowRadiusMapUnitScale="3x:0,0,0,0,0,0"/>
             <substitutions/>
           </text-style>
-          <text-format rightDirectionSymbol=">" addDirectionSymbol="0" reverseDirectionSymbol="0" formatNumbers="0" placeDirectionSymbol="0" wrapChar="" useMaxLineLengthForAutoWrap="1" leftDirectionSymbol="&lt;" decimals="3" autoWrapLength="0" multilineAlign="0" plussign="0"/>
-          <placement placementFlags="10" repeatDistanceUnits="MM" yOffset="0" maxCurvedCharAngleOut="-20" distMapUnitScale="3x:0,0,0,0,0,0" fitInPolygonOnly="0" maxCurvedCharAngleIn="20" predefinedPositionOrder="TR,TL,BR,BL,R,L,TSR,BSR" labelOffsetMapUnitScale="3x:0,0,0,0,0,0" repeatDistance="0" preserveRotation="1" distUnits="MM" quadOffset="4" centroidWhole="1" centroidInside="1" placement="1" dist="0" offsetUnits="MapUnit" repeatDistanceMapUnitScale="3x:0,0,0,0,0,0" priority="5" rotationAngle="0" xOffset="0" offsetType="0"/>
-          <rendering fontMaxPixelSize="10000" obstacleFactor="1" scaleMin="1" obstacleType="0" scaleMax="10000000" displayAll="1" maxNumLabels="2000" scaleVisibility="0" obstacle="1" limitNumLabels="0" minFeatureSize="0" zIndex="2" labelPerPart="0" mergeLines="0" fontLimitPixelSize="0" fontMinPixelSize="3" drawLabels="1" upsidedownLabels="0"/>
+          <text-format addDirectionSymbol="0" decimals="3" useMaxLineLengthForAutoWrap="1" plussign="0" wrapChar="" multilineAlign="0" autoWrapLength="0" reverseDirectionSymbol="0" formatNumbers="0" leftDirectionSymbol="&lt;" placeDirectionSymbol="0" rightDirectionSymbol=">"/>
+          <placement maxCurvedCharAngleOut="-20" fitInPolygonOnly="0" offsetType="0" xOffset="0" placement="1" dist="0" repeatDistance="0" repeatDistanceMapUnitScale="3x:0,0,0,0,0,0" maxCurvedCharAngleIn="20" distMapUnitScale="3x:0,0,0,0,0,0" quadOffset="4" repeatDistanceUnits="MM" offsetUnits="MapUnit" rotationAngle="0" distUnits="MM" predefinedPositionOrder="TR,TL,BR,BL,R,L,TSR,BSR" yOffset="0" centroidWhole="1" preserveRotation="1" centroidInside="1" labelOffsetMapUnitScale="3x:0,0,0,0,0,0" priority="5" placementFlags="10"/>
+          <rendering mergeLines="0" limitNumLabels="0" upsidedownLabels="0" fontMaxPixelSize="10000" scaleMax="10000000" obstacle="1" maxNumLabels="2000" drawLabels="1" zIndex="2" displayAll="1" labelPerPart="0" obstacleType="0" fontLimitPixelSize="0" obstacleFactor="1" scaleMin="1" minFeatureSize="0" scaleVisibility="0" fontMinPixelSize="3"/>
           <dd_properties>
             <Option type="Map">
               <Option type="QString" name="name" value=""/>
@@ -1851,16 +1825,6 @@ def my_form_open(dialog, layer, feature):
                   <Option type="bool" name="active" value="true"/>
                   <Option type="QString" name="expression" value="CASE&#xd;&#xa;WHEN @map_scale>1500 THEN 5.2&#xd;&#xa;WHEN @map_scale>750 THEN 3.2&#xd;&#xa;WHEN @map_scale>375 THEN 2.0&#xd;&#xa;ELSE 1.6&#xd;&#xa;END"/>
                   <Option type="int" name="type" value="3"/>
-                </Option>
-                <Option type="Map" name="PositionX">
-                  <Option type="bool" name="active" value="true"/>
-                  <Option type="QString" name="field" value="auxiliary_storage_labeling_positionx"/>
-                  <Option type="int" name="type" value="2"/>
-                </Option>
-                <Option type="Map" name="PositionY">
-                  <Option type="bool" name="active" value="true"/>
-                  <Option type="QString" name="field" value="auxiliary_storage_labeling_positiony"/>
-                  <Option type="int" name="type" value="2"/>
                 </Option>
                 <Option type="Map" name="Size">
                   <Option type="bool" name="active" value="true"/>
@@ -1873,99 +1837,66 @@ def my_form_open(dialog, layer, feature):
           </dd_properties>
         </settings>
       </labeling>
-      <customproperties>
-        <property key="embeddedWidgets/count" value="0"/>
-        <property key="variableNames"/>
-        <property key="variableValues"/>
-      </customproperties>
+      <customproperties/>
       <blendMode>0</blendMode>
       <featureBlendMode>0</featureBlendMode>
       <layerOpacity>1</layerOpacity>
-      <SingleCategoryDiagramRenderer attributeLegend="1" diagramType="Histogram">
-        <DiagramCategory backgroundAlpha="255" height="15" width="15" penWidth="0" maxScaleDenominator="6000" penColor="#000000" sizeScale="3x:0,0,0,0,0,0" penAlpha="255" opacity="1" rotationOffset="270" lineSizeScale="3x:0,0,0,0,0,0" minimumSize="0" sizeType="MM" diagramOrientation="Up" enabled="0" lineSizeType="MM" minScaleDenominator="0" labelPlacementMethod="XHeight" scaleDependency="Area" scaleBasedVisibility="1" backgroundColor="#ffffff" barWidth="5">
-          <fontProperties description="MS Shell Dlg 2,8,-1,5,50,0,0,0,0,0" style=""/>
-          <attribute label="" color="#000000" field=""/>
-        </DiagramCategory>
-      </SingleCategoryDiagramRenderer>
-      <DiagramLayerSettings linePlacementFlags="18" showAll="1" obstacle="0" placement="1" zIndex="0" priority="0" dist="0">
-        <properties>
-          <Option type="Map">
-            <Option type="QString" name="name" value=""/>
-            <Option name="properties"/>
-            <Option type="QString" name="type" value="collection"/>
-          </Option>
-        </properties>
-      </DiagramLayerSettings>
       <geometryOptions removeDuplicateNodes="0" geometryPrecision="0">
         <activeChecks/>
         <checkConfiguration/>
       </geometryOptions>
       <fieldConfiguration>
         <field name="fid">
-          <editWidget type="TextEdit">
+          <editWidget type="">
             <config>
               <Option/>
             </config>
           </editWidget>
         </field>
         <field name="ID">
-          <editWidget type="TextEdit">
+          <editWidget type="">
             <config>
               <Option/>
             </config>
           </editWidget>
         </field>
         <field name="DISTRICTE">
-          <editWidget type="TextEdit">
+          <editWidget type="">
             <config>
               <Option/>
             </config>
           </editWidget>
         </field>
         <field name="CODI_ILLA">
-          <editWidget type="TextEdit">
+          <editWidget type="">
             <config>
               <Option/>
             </config>
           </editWidget>
         </field>
         <field name="CODI_PARC">
-          <editWidget type="TextEdit">
+          <editWidget type="">
             <config>
               <Option/>
             </config>
           </editWidget>
         </field>
         <field name="PORCIO">
-          <editWidget type="TextEdit">
+          <editWidget type="">
             <config>
               <Option/>
             </config>
           </editWidget>
         </field>
         <field name="SOLAR">
-          <editWidget type="TextEdit">
+          <editWidget type="">
             <config>
               <Option/>
             </config>
           </editWidget>
         </field>
         <field name="REF_CDS">
-          <editWidget type="TextEdit">
-            <config>
-              <Option/>
-            </config>
-          </editWidget>
-        </field>
-        <field name="auxiliary_storage_labeling_positionx">
-          <editWidget type="Hidden">
-            <config>
-              <Option/>
-            </config>
-          </editWidget>
-        </field>
-        <field name="auxiliary_storage_labeling_positiony">
-          <editWidget type="Hidden">
+          <editWidget type="">
             <config>
               <Option/>
             </config>
@@ -1973,73 +1904,53 @@ def my_form_open(dialog, layer, feature):
         </field>
       </fieldConfiguration>
       <aliases>
-        <alias index="0" name="" field="fid"/>
-        <alias index="1" name="" field="ID"/>
-        <alias index="2" name="" field="DISTRICTE"/>
-        <alias index="3" name="" field="CODI_ILLA"/>
-        <alias index="4" name="" field="CODI_PARC"/>
-        <alias index="5" name="" field="PORCIO"/>
-        <alias index="6" name="" field="SOLAR"/>
-        <alias index="7" name="" field="REF_CDS"/>
-        <alias index="8" name="" field="auxiliary_storage_labeling_positionx"/>
-        <alias index="9" name="" field="auxiliary_storage_labeling_positiony"/>
+        <alias field="fid" index="0" name=""/>
+        <alias field="ID" index="1" name=""/>
+        <alias field="DISTRICTE" index="2" name=""/>
+        <alias field="CODI_ILLA" index="3" name=""/>
+        <alias field="CODI_PARC" index="4" name=""/>
+        <alias field="PORCIO" index="5" name=""/>
+        <alias field="SOLAR" index="6" name=""/>
+        <alias field="REF_CDS" index="7" name=""/>
       </aliases>
       <excludeAttributesWMS/>
       <excludeAttributesWFS/>
       <defaults>
-        <default expression="" applyOnUpdate="0" field="fid"/>
-        <default expression="" applyOnUpdate="0" field="ID"/>
-        <default expression="" applyOnUpdate="0" field="DISTRICTE"/>
-        <default expression="" applyOnUpdate="0" field="CODI_ILLA"/>
-        <default expression="" applyOnUpdate="0" field="CODI_PARC"/>
-        <default expression="" applyOnUpdate="0" field="PORCIO"/>
-        <default expression="" applyOnUpdate="0" field="SOLAR"/>
-        <default expression="" applyOnUpdate="0" field="REF_CDS"/>
-        <default expression="" applyOnUpdate="0" field="auxiliary_storage_labeling_positionx"/>
-        <default expression="" applyOnUpdate="0" field="auxiliary_storage_labeling_positiony"/>
+        <default expression="" field="fid" applyOnUpdate="0"/>
+        <default expression="" field="ID" applyOnUpdate="0"/>
+        <default expression="" field="DISTRICTE" applyOnUpdate="0"/>
+        <default expression="" field="CODI_ILLA" applyOnUpdate="0"/>
+        <default expression="" field="CODI_PARC" applyOnUpdate="0"/>
+        <default expression="" field="PORCIO" applyOnUpdate="0"/>
+        <default expression="" field="SOLAR" applyOnUpdate="0"/>
+        <default expression="" field="REF_CDS" applyOnUpdate="0"/>
       </defaults>
       <constraints>
-        <constraint constraints="3" notnull_strength="1" exp_strength="0" unique_strength="1" field="fid"/>
-        <constraint constraints="0" notnull_strength="0" exp_strength="0" unique_strength="0" field="ID"/>
-        <constraint constraints="0" notnull_strength="0" exp_strength="0" unique_strength="0" field="DISTRICTE"/>
-        <constraint constraints="0" notnull_strength="0" exp_strength="0" unique_strength="0" field="CODI_ILLA"/>
-        <constraint constraints="0" notnull_strength="0" exp_strength="0" unique_strength="0" field="CODI_PARC"/>
-        <constraint constraints="0" notnull_strength="0" exp_strength="0" unique_strength="0" field="PORCIO"/>
-        <constraint constraints="0" notnull_strength="0" exp_strength="0" unique_strength="0" field="SOLAR"/>
-        <constraint constraints="0" notnull_strength="0" exp_strength="0" unique_strength="0" field="REF_CDS"/>
-        <constraint constraints="0" notnull_strength="0" exp_strength="0" unique_strength="0" field="auxiliary_storage_labeling_positionx"/>
-        <constraint constraints="0" notnull_strength="0" exp_strength="0" unique_strength="0" field="auxiliary_storage_labeling_positiony"/>
+        <constraint constraints="3" field="fid" unique_strength="1" exp_strength="0" notnull_strength="1"/>
+        <constraint constraints="0" field="ID" unique_strength="0" exp_strength="0" notnull_strength="0"/>
+        <constraint constraints="0" field="DISTRICTE" unique_strength="0" exp_strength="0" notnull_strength="0"/>
+        <constraint constraints="0" field="CODI_ILLA" unique_strength="0" exp_strength="0" notnull_strength="0"/>
+        <constraint constraints="0" field="CODI_PARC" unique_strength="0" exp_strength="0" notnull_strength="0"/>
+        <constraint constraints="0" field="PORCIO" unique_strength="0" exp_strength="0" notnull_strength="0"/>
+        <constraint constraints="0" field="SOLAR" unique_strength="0" exp_strength="0" notnull_strength="0"/>
+        <constraint constraints="0" field="REF_CDS" unique_strength="0" exp_strength="0" notnull_strength="0"/>
       </constraints>
       <constraintExpressions>
-        <constraint exp="" desc="" field="fid"/>
-        <constraint exp="" desc="" field="ID"/>
-        <constraint exp="" desc="" field="DISTRICTE"/>
-        <constraint exp="" desc="" field="CODI_ILLA"/>
-        <constraint exp="" desc="" field="CODI_PARC"/>
-        <constraint exp="" desc="" field="PORCIO"/>
-        <constraint exp="" desc="" field="SOLAR"/>
-        <constraint exp="" desc="" field="REF_CDS"/>
-        <constraint exp="" desc="" field="auxiliary_storage_labeling_positionx"/>
-        <constraint exp="" desc="" field="auxiliary_storage_labeling_positiony"/>
+        <constraint desc="" exp="" field="fid"/>
+        <constraint desc="" exp="" field="ID"/>
+        <constraint desc="" exp="" field="DISTRICTE"/>
+        <constraint desc="" exp="" field="CODI_ILLA"/>
+        <constraint desc="" exp="" field="CODI_PARC"/>
+        <constraint desc="" exp="" field="PORCIO"/>
+        <constraint desc="" exp="" field="SOLAR"/>
+        <constraint desc="" exp="" field="REF_CDS"/>
       </constraintExpressions>
       <expressionfields/>
       <attributeactions>
         <defaultAction key="Canvas" value="{00000000-0000-0000-0000-000000000000}"/>
       </attributeactions>
-      <attributetableconfig sortExpression="" sortOrder="0" actionWidgetStyle="dropDown">
-        <columns>
-          <column type="field" name="fid" hidden="0" width="-1"/>
-          <column type="field" name="ID" hidden="0" width="-1"/>
-          <column type="field" name="DISTRICTE" hidden="0" width="-1"/>
-          <column type="field" name="CODI_ILLA" hidden="0" width="-1"/>
-          <column type="field" name="CODI_PARC" hidden="0" width="-1"/>
-          <column type="field" name="PORCIO" hidden="0" width="-1"/>
-          <column type="field" name="SOLAR" hidden="0" width="-1"/>
-          <column type="field" name="REF_CDS" hidden="0" width="-1"/>
-          <column type="actions" hidden="1" width="-1"/>
-          <column type="field" name="auxiliary_storage_labeling_positionx" hidden="1" width="-1"/>
-          <column type="field" name="auxiliary_storage_labeling_positiony" hidden="1" width="-1"/>
-        </columns>
+      <attributetableconfig actionWidgetStyle="dropDown" sortOrder="0" sortExpression="">
+        <columns/>
       </attributetableconfig>
       <conditionalstyles>
         <rowstyles/>
@@ -2049,50 +1960,16 @@ def my_form_open(dialog, layer, feature):
       <editforminit/>
       <editforminitcodesource>0</editforminitcodesource>
       <editforminitfilepath></editforminitfilepath>
-      <editforminitcode><![CDATA[# -*- coding: utf-8 -*-
-"""
-QGIS forms can have a Python function that is called when the form is
-opened.
-
-Use this function to add extra logic to your forms.
-
-Enter the name of the function in the "Python Init function"
-field.
-An example follows:
-"""
-from qgis.PyQt.QtWidgets import QWidget
-
-def my_form_open(dialog, layer, feature):
-	geom = feature.geometry()
-	control = dialog.findChild(QWidget, "MyLineEdit")
-]]></editforminitcode>
+      <editforminitcode><![CDATA[]]></editforminitcode>
       <featformsuppress>0</featformsuppress>
       <editorlayout>generatedlayout</editorlayout>
-      <editable>
-        <field name="CODI_ILLA" editable="1"/>
-        <field name="CODI_PARC" editable="1"/>
-        <field name="DISTRICTE" editable="1"/>
-        <field name="ID" editable="1"/>
-        <field name="PORCIO" editable="1"/>
-        <field name="REF_CDS" editable="1"/>
-        <field name="SOLAR" editable="1"/>
-        <field name="fid" editable="1"/>
-      </editable>
-      <labelOnTop>
-        <field name="CODI_ILLA" labelOnTop="0"/>
-        <field name="CODI_PARC" labelOnTop="0"/>
-        <field name="DISTRICTE" labelOnTop="0"/>
-        <field name="ID" labelOnTop="0"/>
-        <field name="PORCIO" labelOnTop="0"/>
-        <field name="REF_CDS" labelOnTop="0"/>
-        <field name="SOLAR" labelOnTop="0"/>
-        <field name="fid" labelOnTop="0"/>
-      </labelOnTop>
+      <editable/>
+      <labelOnTop/>
       <widgets/>
-      <previewExpression>CODI_PARC</previewExpression>
+      <previewExpression></previewExpression>
       <mapTip></mapTip>
     </maplayer>
-    <maplayer autoRefreshTime="0" refreshOnNotifyMessage="" simplifyMaxScale="1" hasScaleBasedVisibilityFlag="0" autoRefreshEnabled="0" minScale="1e+08" type="vector" styleCategories="AllStyleCategories" simplifyAlgorithm="0" simplifyLocal="1" readOnly="0" refreshOnNotifyEnabled="0" geometry="Polygon" labelsEnabled="0" maxScale="0" simplifyDrawingHints="1" simplifyDrawingTol="1">
+    <maplayer labelsEnabled="0" refreshOnNotifyMessage="" hasScaleBasedVisibilityFlag="0" simplifyAlgorithm="0" autoRefreshTime="0" autoRefreshEnabled="0" geometry="Polygon" simplifyLocal="1" simplifyDrawingTol="1" type="vector" simplifyMaxScale="1" simplifyDrawingHints="1" minScale="1e+08" refreshOnNotifyEnabled="0" styleCategories="AllStyleCategories" readOnly="0" maxScale="0">
       <extent>
         <xmin>420813</xmin>
         <ymin>4574280</ymin>
@@ -2149,7 +2026,7 @@ def my_form_open(dialog, layer, feature):
           </spatialrefsys>
         </crs>
         <extent>
-          <spatial crs="" minx="0" maxx="0" minz="0" maxz="0" dimensions="2" miny="0" maxy="0"/>
+          <spatial maxy="0" dimensions="2" minx="0" miny="0" crs="" maxx="0" minz="0" maxz="0"/>
           <temporal>
             <period>
               <start></start>
@@ -2173,10 +2050,10 @@ def my_form_open(dialog, layer, feature):
         <Removable>1</Removable>
         <Searchable>1</Searchable>
       </flags>
-      <renderer-v2 symbollevels="0" type="singleSymbol" enableorderby="0" forceraster="0">
+      <renderer-v2 symbollevels="0" forceraster="0" type="singleSymbol" enableorderby="0">
         <symbols>
-          <symbol clip_to_extent="1" force_rhr="0" type="fill" name="0" alpha="1">
-            <layer locked="0" pass="0" enabled="1" class="SimpleFill">
+          <symbol force_rhr="0" type="fill" clip_to_extent="1" name="0" alpha="1">
+            <layer class="SimpleFill" pass="0" enabled="1" locked="0">
               <prop k="border_width_map_unit_scale" v="3x:0,0,0,0,0,0"/>
               <prop k="color" v="127,127,127,255"/>
               <prop k="joinstyle" v="bevel"/>
@@ -2215,13 +2092,13 @@ def my_form_open(dialog, layer, feature):
       <blendMode>0</blendMode>
       <featureBlendMode>0</featureBlendMode>
       <layerOpacity>1</layerOpacity>
-      <SingleCategoryDiagramRenderer attributeLegend="1" diagramType="Histogram">
-        <DiagramCategory backgroundAlpha="255" height="15" width="15" penWidth="0" maxScaleDenominator="1e+08" penColor="#000000" sizeScale="3x:0,0,0,0,0,0" penAlpha="255" opacity="1" rotationOffset="270" lineSizeScale="3x:0,0,0,0,0,0" minimumSize="0" sizeType="MM" diagramOrientation="Up" enabled="0" lineSizeType="MM" minScaleDenominator="0" labelPlacementMethod="XHeight" scaleDependency="Area" scaleBasedVisibility="0" backgroundColor="#ffffff" barWidth="5">
+      <SingleCategoryDiagramRenderer diagramType="Histogram" attributeLegend="1">
+        <DiagramCategory opacity="1" labelPlacementMethod="XHeight" diagramOrientation="Up" maxScaleDenominator="1e+08" backgroundColor="#ffffff" width="15" scaleDependency="Area" barWidth="5" height="15" enabled="0" penAlpha="255" penColor="#000000" penWidth="0" sizeScale="3x:0,0,0,0,0,0" lineSizeType="MM" scaleBasedVisibility="0" lineSizeScale="3x:0,0,0,0,0,0" minScaleDenominator="0" minimumSize="0" rotationOffset="270" sizeType="MM" backgroundAlpha="255">
           <fontProperties description="MS Shell Dlg 2,8.25,-1,5,50,0,0,0,0,0" style=""/>
-          <attribute label="" color="#000000" field=""/>
+          <attribute color="#000000" label="" field=""/>
         </DiagramCategory>
       </SingleCategoryDiagramRenderer>
-      <DiagramLayerSettings linePlacementFlags="18" showAll="1" obstacle="0" placement="1" zIndex="0" priority="0" dist="0">
+      <DiagramLayerSettings placement="1" zIndex="0" dist="0" obstacle="0" linePlacementFlags="18" priority="0" showAll="1">
         <properties>
           <Option type="Map">
             <Option type="QString" name="name" value=""/>
@@ -2335,92 +2212,92 @@ def my_form_open(dialog, layer, feature):
         </field>
       </fieldConfiguration>
       <aliases>
-        <alias index="0" name="" field="fid"/>
-        <alias index="1" name="" field="NIVELL"/>
-        <alias index="2" name="" field="TERME"/>
-        <alias index="3" name="" field="DISTRICTE"/>
-        <alias index="4" name="" field="BARRI"/>
-        <alias index="5" name="" field="AEB"/>
-        <alias index="6" name="" field="SEC_CENS"/>
-        <alias index="7" name="" field="GRANBARRI"/>
-        <alias index="8" name="" field="ZUA"/>
-        <alias index="9" name="" field="AREA_I"/>
-        <alias index="10" name="" field="LITERAL"/>
-        <alias index="11" name="" field="TIPUS_UA"/>
-        <alias index="12" name="" field="AREA"/>
-        <alias index="13" name="" field="PERIMETRE"/>
+        <alias field="fid" index="0" name=""/>
+        <alias field="NIVELL" index="1" name=""/>
+        <alias field="TERME" index="2" name=""/>
+        <alias field="DISTRICTE" index="3" name=""/>
+        <alias field="BARRI" index="4" name=""/>
+        <alias field="AEB" index="5" name=""/>
+        <alias field="SEC_CENS" index="6" name=""/>
+        <alias field="GRANBARRI" index="7" name=""/>
+        <alias field="ZUA" index="8" name=""/>
+        <alias field="AREA_I" index="9" name=""/>
+        <alias field="LITERAL" index="10" name=""/>
+        <alias field="TIPUS_UA" index="11" name=""/>
+        <alias field="AREA" index="12" name=""/>
+        <alias field="PERIMETRE" index="13" name=""/>
       </aliases>
       <excludeAttributesWMS/>
       <excludeAttributesWFS/>
       <defaults>
-        <default expression="" applyOnUpdate="0" field="fid"/>
-        <default expression="" applyOnUpdate="0" field="NIVELL"/>
-        <default expression="" applyOnUpdate="0" field="TERME"/>
-        <default expression="" applyOnUpdate="0" field="DISTRICTE"/>
-        <default expression="" applyOnUpdate="0" field="BARRI"/>
-        <default expression="" applyOnUpdate="0" field="AEB"/>
-        <default expression="" applyOnUpdate="0" field="SEC_CENS"/>
-        <default expression="" applyOnUpdate="0" field="GRANBARRI"/>
-        <default expression="" applyOnUpdate="0" field="ZUA"/>
-        <default expression="" applyOnUpdate="0" field="AREA_I"/>
-        <default expression="" applyOnUpdate="0" field="LITERAL"/>
-        <default expression="" applyOnUpdate="0" field="TIPUS_UA"/>
-        <default expression="" applyOnUpdate="0" field="AREA"/>
-        <default expression="" applyOnUpdate="0" field="PERIMETRE"/>
+        <default expression="" field="fid" applyOnUpdate="0"/>
+        <default expression="" field="NIVELL" applyOnUpdate="0"/>
+        <default expression="" field="TERME" applyOnUpdate="0"/>
+        <default expression="" field="DISTRICTE" applyOnUpdate="0"/>
+        <default expression="" field="BARRI" applyOnUpdate="0"/>
+        <default expression="" field="AEB" applyOnUpdate="0"/>
+        <default expression="" field="SEC_CENS" applyOnUpdate="0"/>
+        <default expression="" field="GRANBARRI" applyOnUpdate="0"/>
+        <default expression="" field="ZUA" applyOnUpdate="0"/>
+        <default expression="" field="AREA_I" applyOnUpdate="0"/>
+        <default expression="" field="LITERAL" applyOnUpdate="0"/>
+        <default expression="" field="TIPUS_UA" applyOnUpdate="0"/>
+        <default expression="" field="AREA" applyOnUpdate="0"/>
+        <default expression="" field="PERIMETRE" applyOnUpdate="0"/>
       </defaults>
       <constraints>
-        <constraint constraints="3" notnull_strength="1" exp_strength="0" unique_strength="1" field="fid"/>
-        <constraint constraints="0" notnull_strength="0" exp_strength="0" unique_strength="0" field="NIVELL"/>
-        <constraint constraints="0" notnull_strength="0" exp_strength="0" unique_strength="0" field="TERME"/>
-        <constraint constraints="0" notnull_strength="0" exp_strength="0" unique_strength="0" field="DISTRICTE"/>
-        <constraint constraints="0" notnull_strength="0" exp_strength="0" unique_strength="0" field="BARRI"/>
-        <constraint constraints="0" notnull_strength="0" exp_strength="0" unique_strength="0" field="AEB"/>
-        <constraint constraints="0" notnull_strength="0" exp_strength="0" unique_strength="0" field="SEC_CENS"/>
-        <constraint constraints="0" notnull_strength="0" exp_strength="0" unique_strength="0" field="GRANBARRI"/>
-        <constraint constraints="0" notnull_strength="0" exp_strength="0" unique_strength="0" field="ZUA"/>
-        <constraint constraints="0" notnull_strength="0" exp_strength="0" unique_strength="0" field="AREA_I"/>
-        <constraint constraints="0" notnull_strength="0" exp_strength="0" unique_strength="0" field="LITERAL"/>
-        <constraint constraints="0" notnull_strength="0" exp_strength="0" unique_strength="0" field="TIPUS_UA"/>
-        <constraint constraints="0" notnull_strength="0" exp_strength="0" unique_strength="0" field="AREA"/>
-        <constraint constraints="0" notnull_strength="0" exp_strength="0" unique_strength="0" field="PERIMETRE"/>
+        <constraint constraints="3" field="fid" unique_strength="1" exp_strength="0" notnull_strength="1"/>
+        <constraint constraints="0" field="NIVELL" unique_strength="0" exp_strength="0" notnull_strength="0"/>
+        <constraint constraints="0" field="TERME" unique_strength="0" exp_strength="0" notnull_strength="0"/>
+        <constraint constraints="0" field="DISTRICTE" unique_strength="0" exp_strength="0" notnull_strength="0"/>
+        <constraint constraints="0" field="BARRI" unique_strength="0" exp_strength="0" notnull_strength="0"/>
+        <constraint constraints="0" field="AEB" unique_strength="0" exp_strength="0" notnull_strength="0"/>
+        <constraint constraints="0" field="SEC_CENS" unique_strength="0" exp_strength="0" notnull_strength="0"/>
+        <constraint constraints="0" field="GRANBARRI" unique_strength="0" exp_strength="0" notnull_strength="0"/>
+        <constraint constraints="0" field="ZUA" unique_strength="0" exp_strength="0" notnull_strength="0"/>
+        <constraint constraints="0" field="AREA_I" unique_strength="0" exp_strength="0" notnull_strength="0"/>
+        <constraint constraints="0" field="LITERAL" unique_strength="0" exp_strength="0" notnull_strength="0"/>
+        <constraint constraints="0" field="TIPUS_UA" unique_strength="0" exp_strength="0" notnull_strength="0"/>
+        <constraint constraints="0" field="AREA" unique_strength="0" exp_strength="0" notnull_strength="0"/>
+        <constraint constraints="0" field="PERIMETRE" unique_strength="0" exp_strength="0" notnull_strength="0"/>
       </constraints>
       <constraintExpressions>
-        <constraint exp="" desc="" field="fid"/>
-        <constraint exp="" desc="" field="NIVELL"/>
-        <constraint exp="" desc="" field="TERME"/>
-        <constraint exp="" desc="" field="DISTRICTE"/>
-        <constraint exp="" desc="" field="BARRI"/>
-        <constraint exp="" desc="" field="AEB"/>
-        <constraint exp="" desc="" field="SEC_CENS"/>
-        <constraint exp="" desc="" field="GRANBARRI"/>
-        <constraint exp="" desc="" field="ZUA"/>
-        <constraint exp="" desc="" field="AREA_I"/>
-        <constraint exp="" desc="" field="LITERAL"/>
-        <constraint exp="" desc="" field="TIPUS_UA"/>
-        <constraint exp="" desc="" field="AREA"/>
-        <constraint exp="" desc="" field="PERIMETRE"/>
+        <constraint desc="" exp="" field="fid"/>
+        <constraint desc="" exp="" field="NIVELL"/>
+        <constraint desc="" exp="" field="TERME"/>
+        <constraint desc="" exp="" field="DISTRICTE"/>
+        <constraint desc="" exp="" field="BARRI"/>
+        <constraint desc="" exp="" field="AEB"/>
+        <constraint desc="" exp="" field="SEC_CENS"/>
+        <constraint desc="" exp="" field="GRANBARRI"/>
+        <constraint desc="" exp="" field="ZUA"/>
+        <constraint desc="" exp="" field="AREA_I"/>
+        <constraint desc="" exp="" field="LITERAL"/>
+        <constraint desc="" exp="" field="TIPUS_UA"/>
+        <constraint desc="" exp="" field="AREA"/>
+        <constraint desc="" exp="" field="PERIMETRE"/>
       </constraintExpressions>
       <expressionfields/>
       <attributeactions>
         <defaultAction key="Canvas" value="{00000000-0000-0000-0000-000000000000}"/>
       </attributeactions>
-      <attributetableconfig sortExpression="" sortOrder="0" actionWidgetStyle="dropDown">
+      <attributetableconfig actionWidgetStyle="dropDown" sortOrder="0" sortExpression="">
         <columns>
-          <column type="field" name="fid" hidden="0" width="-1"/>
-          <column type="field" name="NIVELL" hidden="0" width="-1"/>
-          <column type="field" name="TERME" hidden="0" width="-1"/>
-          <column type="field" name="DISTRICTE" hidden="0" width="-1"/>
-          <column type="field" name="BARRI" hidden="0" width="-1"/>
-          <column type="field" name="AEB" hidden="0" width="-1"/>
-          <column type="field" name="SEC_CENS" hidden="0" width="-1"/>
-          <column type="field" name="GRANBARRI" hidden="0" width="-1"/>
-          <column type="field" name="ZUA" hidden="0" width="-1"/>
-          <column type="field" name="AREA_I" hidden="0" width="-1"/>
-          <column type="field" name="LITERAL" hidden="0" width="-1"/>
-          <column type="field" name="TIPUS_UA" hidden="0" width="-1"/>
-          <column type="field" name="AREA" hidden="0" width="-1"/>
-          <column type="field" name="PERIMETRE" hidden="0" width="-1"/>
-          <column type="actions" hidden="1" width="-1"/>
+          <column hidden="0" width="-1" type="field" name="fid"/>
+          <column hidden="0" width="-1" type="field" name="NIVELL"/>
+          <column hidden="0" width="-1" type="field" name="TERME"/>
+          <column hidden="0" width="-1" type="field" name="DISTRICTE"/>
+          <column hidden="0" width="-1" type="field" name="BARRI"/>
+          <column hidden="0" width="-1" type="field" name="AEB"/>
+          <column hidden="0" width="-1" type="field" name="SEC_CENS"/>
+          <column hidden="0" width="-1" type="field" name="GRANBARRI"/>
+          <column hidden="0" width="-1" type="field" name="ZUA"/>
+          <column hidden="0" width="-1" type="field" name="AREA_I"/>
+          <column hidden="0" width="-1" type="field" name="LITERAL"/>
+          <column hidden="0" width="-1" type="field" name="TIPUS_UA"/>
+          <column hidden="0" width="-1" type="field" name="AREA"/>
+          <column hidden="0" width="-1" type="field" name="PERIMETRE"/>
+          <column hidden="1" width="-1" type="actions"/>
         </columns>
       </attributetableconfig>
       <conditionalstyles>
@@ -2451,36 +2328,36 @@ def my_form_open(dialog, layer, feature):
       <featformsuppress>0</featformsuppress>
       <editorlayout>generatedlayout</editorlayout>
       <editable>
-        <field name="AEB" editable="1"/>
-        <field name="AREA" editable="1"/>
-        <field name="AREA_I" editable="1"/>
-        <field name="BARRI" editable="1"/>
-        <field name="DISTRICTE" editable="1"/>
-        <field name="GRANBARRI" editable="1"/>
-        <field name="LITERAL" editable="1"/>
-        <field name="NIVELL" editable="1"/>
-        <field name="PERIMETRE" editable="1"/>
-        <field name="SEC_CENS" editable="1"/>
-        <field name="TERME" editable="1"/>
-        <field name="TIPUS_UA" editable="1"/>
-        <field name="ZUA" editable="1"/>
-        <field name="fid" editable="1"/>
+        <field editable="1" name="AEB"/>
+        <field editable="1" name="AREA"/>
+        <field editable="1" name="AREA_I"/>
+        <field editable="1" name="BARRI"/>
+        <field editable="1" name="DISTRICTE"/>
+        <field editable="1" name="GRANBARRI"/>
+        <field editable="1" name="LITERAL"/>
+        <field editable="1" name="NIVELL"/>
+        <field editable="1" name="PERIMETRE"/>
+        <field editable="1" name="SEC_CENS"/>
+        <field editable="1" name="TERME"/>
+        <field editable="1" name="TIPUS_UA"/>
+        <field editable="1" name="ZUA"/>
+        <field editable="1" name="fid"/>
       </editable>
       <labelOnTop>
-        <field name="AEB" labelOnTop="0"/>
-        <field name="AREA" labelOnTop="0"/>
-        <field name="AREA_I" labelOnTop="0"/>
-        <field name="BARRI" labelOnTop="0"/>
-        <field name="DISTRICTE" labelOnTop="0"/>
-        <field name="GRANBARRI" labelOnTop="0"/>
-        <field name="LITERAL" labelOnTop="0"/>
-        <field name="NIVELL" labelOnTop="0"/>
-        <field name="PERIMETRE" labelOnTop="0"/>
-        <field name="SEC_CENS" labelOnTop="0"/>
-        <field name="TERME" labelOnTop="0"/>
-        <field name="TIPUS_UA" labelOnTop="0"/>
-        <field name="ZUA" labelOnTop="0"/>
-        <field name="fid" labelOnTop="0"/>
+        <field labelOnTop="0" name="AEB"/>
+        <field labelOnTop="0" name="AREA"/>
+        <field labelOnTop="0" name="AREA_I"/>
+        <field labelOnTop="0" name="BARRI"/>
+        <field labelOnTop="0" name="DISTRICTE"/>
+        <field labelOnTop="0" name="GRANBARRI"/>
+        <field labelOnTop="0" name="LITERAL"/>
+        <field labelOnTop="0" name="NIVELL"/>
+        <field labelOnTop="0" name="PERIMETRE"/>
+        <field labelOnTop="0" name="SEC_CENS"/>
+        <field labelOnTop="0" name="TERME"/>
+        <field labelOnTop="0" name="TIPUS_UA"/>
+        <field labelOnTop="0" name="ZUA"/>
+        <field labelOnTop="0" name="fid"/>
       </labelOnTop>
       <widgets/>
       <previewExpression>fid</previewExpression>
@@ -2495,126 +2372,152 @@ def my_form_open(dialog, layer, feature):
     <layer id="qVista_default_map_f891068c_424f_4eac_97ef_4b81344800a4"/>
   </layerorder>
   <properties>
-    <WMSContactMail type="QString"></WMSContactMail>
-    <WMTSMinScale type="int">5000</WMTSMinScale>
+    <WMSContactOrganization type="QString"></WMSContactOrganization>
+    <WMSContactPosition type="QString"></WMSContactPosition>
+    <WCSUrl type="QString"></WCSUrl>
+    <WMSSegmentizeFeatureInfoGeometry type="bool">false</WMSSegmentizeFeatureInfoGeometry>
+    <WMSServiceTitle type="QString"></WMSServiceTitle>
+    <WMSUseLayerIDs type="bool">false</WMSUseLayerIDs>
+    <WMSImageQuality type="int">90</WMSImageQuality>
+    <WFSUrl type="QString"></WFSUrl>
     <PAL>
+      <ShowingAllLabels type="bool">false</ShowingAllLabels>
       <CandidatesPolygon type="int">30</CandidatesPolygon>
+      <TextFormat type="int">0</TextFormat>
+      <CandidatesLine type="int">50</CandidatesLine>
+      <DrawOutlineLabels type="bool">true</DrawOutlineLabels>
+      <CandidatesPoint type="int">16</CandidatesPoint>
       <SearchMethod type="int">0</SearchMethod>
       <ShowingCandidates type="bool">false</ShowingCandidates>
-      <TextFormat type="int">0</TextFormat>
-      <ShowingPartialsLabels type="bool">true</ShowingPartialsLabels>
-      <CandidatesLine type="int">50</CandidatesLine>
-      <CandidatesPoint type="int">16</CandidatesPoint>
       <DrawRectOnly type="bool">false</DrawRectOnly>
-      <DrawUnplaced type="bool">false</DrawUnplaced>
-      <ShowingAllLabels type="bool">false</ShowingAllLabels>
-      <UnplacedColor type="QString">255,0,0,255</UnplacedColor>
-      <DrawOutlineLabels type="bool">true</DrawOutlineLabels>
+      <ShowingPartialsLabels type="bool">true</ShowingPartialsLabels>
     </PAL>
-    <WMSFees type="QString">conditions unknown</WMSFees>
-    <WMSImageQuality type="int">90</WMSImageQuality>
-    <WMSDefaultMapUnitsPerMm type="double">1</WMSDefaultMapUnitsPerMm>
-    <WMSTileBuffer type="int">0</WMSTileBuffer>
+    <WMSUrl type="QString"></WMSUrl>
     <WMSContactPerson type="QString"></WMSContactPerson>
-    <WMSSegmentizeFeatureInfoGeometry type="bool">false</WMSSegmentizeFeatureInfoGeometry>
-    <Variables>
-      <variableValues type="QStringList">
-        <value>True</value>
-      </variableValues>
-      <variableNames type="QStringList">
-        <value>qV_readOnly</value>
-      </variableNames>
-    </Variables>
-    <WMSKeywordList type="QStringList">
-      <value></value>
-    </WMSKeywordList>
-    <WFSTLayers>
-      <Delete type="QStringList"/>
-      <Update type="QStringList"/>
-      <Insert type="QStringList"/>
-    </WFSTLayers>
+    <WMSContactPhone type="QString"></WMSContactPhone>
+    <WFSLayers type="QStringList"/>
+    <WMSRequestDefinedDataSources type="bool">false</WMSRequestDefinedDataSources>
+    <PositionPrecision>
+      <DecimalPlaces type="int">2</DecimalPlaces>
+      <DegreeFormat type="QString">MU</DegreeFormat>
+      <Automatic type="bool">true</Automatic>
+    </PositionPrecision>
+    <WMTSJpegLayers>
+      <Group type="QStringList"/>
+      <Project type="bool">false</Project>
+      <Layer type="QStringList"/>
+    </WMTSJpegLayers>
+    <WMSFees type="QString">conditions unknown</WMSFees>
+    <WMTSMinScale type="int">5000</WMTSMinScale>
+    <WMSAccessConstraints type="QString">None</WMSAccessConstraints>
     <SpatialRefSys>
       <ProjectionsEnabled type="int">1</ProjectionsEnabled>
     </SpatialRefSys>
-    <WMSUseLayerIDs type="bool">false</WMSUseLayerIDs>
+    <WMSKeywordList type="QStringList">
+      <value></value>
+    </WMSKeywordList>
+    <WMTSLayers>
+      <Group type="QStringList"/>
+      <Project type="bool">false</Project>
+      <Layer type="QStringList"/>
+    </WMTSLayers>
+    <WMSAddWktGeometry type="bool">false</WMSAddWktGeometry>
+    <WMTSUrl type="QString"></WMTSUrl>
+    <Measure>
+      <Ellipsoid type="QString">WGS84</Ellipsoid>
+    </Measure>
+    <WMSServiceAbstract type="QString"></WMSServiceAbstract>
     <Legend>
       <filterByMap type="bool">false</filterByMap>
     </Legend>
-    <Gui>
-      <CanvasColorBluePart type="int">255</CanvasColorBluePart>
-      <CanvasColorGreenPart type="int">255</CanvasColorGreenPart>
-      <SelectionColorRedPart type="int">255</SelectionColorRedPart>
-      <SelectionColorBluePart type="int">0</SelectionColorBluePart>
-      <SelectionColorAlphaPart type="int">255</SelectionColorAlphaPart>
-      <SelectionColorGreenPart type="int">255</SelectionColorGreenPart>
-      <CanvasColorRedPart type="int">255</CanvasColorRedPart>
-    </Gui>
-    <WMSRequestDefinedDataSources type="bool">false</WMSRequestDefinedDataSources>
-    <Measurement>
-      <DistanceUnits type="QString">meters</DistanceUnits>
-      <AreaUnits type="QString">m2</AreaUnits>
-    </Measurement>
-    <WMSUrl type="QString"></WMSUrl>
-    <WCSUrl type="QString"></WCSUrl>
-    <WMSContactPhone type="QString"></WMSContactPhone>
-    <WMTSJpegLayers>
-      <Layer type="QStringList"/>
-      <Project type="bool">false</Project>
-      <Group type="QStringList"/>
-    </WMTSJpegLayers>
-    <WMSMaxAtlasFeatures type="int">1</WMSMaxAtlasFeatures>
-    <WMSContactPosition type="QString"></WMSContactPosition>
-    <WFSLayers type="QStringList"/>
-    <WMSOnlineResource type="QString"></WMSOnlineResource>
-    <WFSUrl type="QString"></WFSUrl>
-    <WMSPrecision type="QString">8</WMSPrecision>
-    <WMSServiceTitle type="QString"></WMSServiceTitle>
-    <PositionPrecision>
-      <Automatic type="bool">true</Automatic>
-      <DegreeFormat type="QString">MU</DegreeFormat>
-      <DecimalPlaces type="int">2</DecimalPlaces>
-    </PositionPrecision>
-    <WMTSUrl type="QString"></WMTSUrl>
+    <WFSTLayers>
+      <Delete type="QStringList"/>
+      <Insert type="QStringList"/>
+      <Update type="QStringList"/>
+    </WFSTLayers>
     <WCSLayers type="QStringList"/>
-    <Paths>
-      <Absolute type="bool">false</Absolute>
-    </Paths>
-    <WMSServiceAbstract type="QString"></WMSServiceAbstract>
-    <Measure>
-      <Ellipsoid type="QString">NONE</Ellipsoid>
-    </Measure>
-    <Macros>
-      <pythonCode type="QString"></pythonCode>
-    </Macros>
-    <WMTSLayers>
-      <Layer type="QStringList"/>
-      <Project type="bool">false</Project>
-      <Group type="QStringList"/>
-    </WMTSLayers>
+    <Gui>
+      <SelectionColorGreenPart type="int">255</SelectionColorGreenPart>
+      <SelectionColorRedPart type="int">255</SelectionColorRedPart>
+      <CanvasColorGreenPart type="int">255</CanvasColorGreenPart>
+      <SelectionColorAlphaPart type="int">255</SelectionColorAlphaPart>
+      <CanvasColorRedPart type="int">255</CanvasColorRedPart>
+      <SelectionColorBluePart type="int">0</SelectionColorBluePart>
+      <CanvasColorBluePart type="int">255</CanvasColorBluePart>
+    </Gui>
+    <Measurement>
+      <AreaUnits type="QString">m2</AreaUnits>
+      <DistanceUnits type="QString">meters</DistanceUnits>
+    </Measurement>
+    <WMSServiceCapabilities type="bool">false</WMSServiceCapabilities>
+    <WMSContactMail type="QString"></WMSContactMail>
     <DefaultStyles>
       <Marker type="QString"></Marker>
       <RandomColors type="bool">true</RandomColors>
-      <Opacity type="double">1</Opacity>
-      <ColorRamp type="QString"></ColorRamp>
-      <Fill type="QString"></Fill>
       <Line type="QString"></Line>
+      <Fill type="QString"></Fill>
+      <ColorRamp type="QString"></ColorRamp>
+      <Opacity type="double">1</Opacity>
     </DefaultStyles>
-    <WMTSGrids>
-      <CRS type="QStringList"/>
-      <Config type="QStringList"/>
-    </WMTSGrids>
-    <WMSServiceCapabilities type="bool">false</WMSServiceCapabilities>
-    <WMSAccessConstraints type="QString">None</WMSAccessConstraints>
-    <WMSRootName type="QString"></WMSRootName>
-    <WMSAddWktGeometry type="bool">false</WMSAddWktGeometry>
-    <WMSContactOrganization type="QString"></WMSContactOrganization>
+    <WMSPrecision type="QString">8</WMSPrecision>
+    <WMSOnlineResource type="QString"></WMSOnlineResource>
+    <Paths>
+      <Absolute type="bool">false</Absolute>
+    </Paths>
     <WMTSPngLayers>
-      <Layer type="QStringList"/>
-      <Project type="bool">false</Project>
       <Group type="QStringList"/>
+      <Project type="bool">false</Project>
+      <Layer type="QStringList"/>
     </WMTSPngLayers>
+    <Macros>
+      <pythonCode type="QString"></pythonCode>
+    </Macros>
   </properties>
-  <visibility-presets/>
+  <visibility-presets>
+    <visibility-preset name="DISTRITOS" has-expanded-info="1">
+      <layer expanded="1" id="qVista_default_map_f891068c_424f_4eac_97ef_4b81344800a4" style="per defecte"/>
+      <expanded-legend-nodes id="qVista_default_map_f891068c_424f_4eac_97ef_4b81344800a4"/>
+      <expanded-group-nodes>
+        <expanded-group-node id="Parcelari"/>
+      </expanded-group-nodes>
+    </visibility-preset>
+    <visibility-preset name="NADA" has-expanded-info="1">
+      <expanded-group-nodes>
+        <expanded-group-node id="Parcelari"/>
+      </expanded-group-nodes>
+    </visibility-preset>
+    <visibility-preset name="PARCELAS" has-expanded-info="1">
+      <layer expanded="1" id="qVista_default_map_66e60ed9_718c_4de4_2019060409444021914016" style="per defecte"/>
+      <expanded-legend-nodes id="qVista_default_map_66e60ed9_718c_4de4_2019060409444021914016"/>
+      <layer expanded="0" id="qVista_default_map_e55f4646_1a54_4785_201906040944402191406" style="per defecte"/>
+      <expanded-legend-nodes id="qVista_default_map_e55f4646_1a54_4785_201906040944402191406"/>
+      <layer expanded="1" id="qVista_default_map_27f67d6e_e424_4fcb_2019060409444021926581" style="per defecte"/>
+      <expanded-legend-nodes id="qVista_default_map_27f67d6e_e424_4fcb_2019060409444021926581"/>
+      <expanded-group-nodes>
+        <expanded-group-node id="Parcelari"/>
+      </expanded-group-nodes>
+    </visibility-preset>
+    <visibility-preset name="POSTALES" has-expanded-info="1">
+      <layer expanded="1" id="qVista_default_map_27f67d6e_e424_4fcb_2019060409444021926581" style="per defecte"/>
+      <expanded-legend-nodes id="qVista_default_map_27f67d6e_e424_4fcb_2019060409444021926581"/>
+      <expanded-group-nodes>
+        <expanded-group-node id="Parcelari"/>
+      </expanded-group-nodes>
+    </visibility-preset>
+    <visibility-preset name="TODO" has-expanded-info="1">
+      <layer expanded="1" id="qVista_default_map_f891068c_424f_4eac_97ef_4b81344800a4" style="per defecte"/>
+      <expanded-legend-nodes id="qVista_default_map_f891068c_424f_4eac_97ef_4b81344800a4"/>
+      <layer expanded="1" id="qVista_default_map_66e60ed9_718c_4de4_2019060409444021914016" style="per defecte"/>
+      <expanded-legend-nodes id="qVista_default_map_66e60ed9_718c_4de4_2019060409444021914016"/>
+      <layer expanded="0" id="qVista_default_map_e55f4646_1a54_4785_201906040944402191406" style="per defecte"/>
+      <expanded-legend-nodes id="qVista_default_map_e55f4646_1a54_4785_201906040944402191406"/>
+      <layer expanded="1" id="qVista_default_map_27f67d6e_e424_4fcb_2019060409444021926581" style="per defecte"/>
+      <expanded-legend-nodes id="qVista_default_map_27f67d6e_e424_4fcb_2019060409444021926581"/>
+      <expanded-group-nodes>
+        <expanded-group-node id="Parcelari"/>
+      </expanded-group-nodes>
+    </visibility-preset>
+  </visibility-presets>
   <transformContext/>
   <projectMetadata>
     <identifier></identifier>
