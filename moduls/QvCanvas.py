@@ -13,6 +13,7 @@ from moduls.QvPushButton import QvPushButton
 from moduls.QvConstants import QvConstants
 from moduls.QvStreetView import *
 from moduls.QvEinesGrafiques import QvMesuraMultiLinia, QvMascaraEinaPlantilla
+import functools
 #from qVista import QVista
 
 
@@ -21,7 +22,7 @@ class QvCanvas(QgsMapCanvas):
     canviMaximitza=pyqtSignal()
     desMaximitza=pyqtSignal()
     mostraStreetView=pyqtSignal()
-    def __init__(self, pare = None, llistaBotons=['zoomIn', 'zoomOut', 'panning', 'centrar'], botoneraHoritzontal = False, posicioBotonera = 'NO', mapesBase = False, llegenda = None): #mapesBase (???)
+    def __init__(self, pare = None, llistaBotons=['zoomIn', 'zoomOut', 'panning', 'centrar', 'temes'], botoneraHoritzontal = False, posicioBotonera = 'NO', mapesBase = False, llegenda = None): #mapesBase (???)
         QgsMapCanvas.__init__(self)
         self.botoneraHoritzontal = botoneraHoritzontal
         self.llistaBotons = llistaBotons
@@ -246,6 +247,14 @@ class QvCanvas(QgsMapCanvas):
 
         if self.llistaBotons is not None:
             self._botons=[]
+            if 'temes' in self.llistaBotons:
+                self.temes = QgsProject.instance().mapThemeCollection().mapThemes()
+                if len(self.temes)>0:
+                    self.cbTemes = QComboBox()
+                    self.cbTemes.addItem('Tema per defecte')
+                    self.cbTemes.addItems(self.temes)
+                    self.cbTemes.currentIndexChanged.connect(self.canviTema)
+                    self.layoutBotoneraMapa.addWidget(self.cbTemes)
             if "apuntar" in self.llistaBotons:
                 self.bApuntar = self._botoMapa(os.path.join(imatgesDir,'apuntar.png'))
                 self.bApuntar.setToolTip("Veure informació d'un objecte")
@@ -345,6 +354,20 @@ class QvCanvas(QgsMapCanvas):
         self.layoutBotoneraMostres.setAlignment(Qt.AlignRight)
         # self.layoutCanvas.addWidget(self.botoneraMapa)
         # self.layoutCanvas.addWidget(self.botoneraMostres)    
+    def canviTema(self, i):
+        if i==0:
+            self.setTheme('')
+        else:
+            self.setTheme(self.temes[i-1])
+    def mostraBotoTemes(self):
+        try:
+            self.temes=QgsProject.instance().mapThemeCollection().mapThemes()
+            if len(self.temes)>0:
+                self.bTemes.show()
+            else:
+                self.bTemes.hide()
+        except:
+            self.bTemes.hide()
     def dragEnterEvent(self, e):
       
         e.accept()
