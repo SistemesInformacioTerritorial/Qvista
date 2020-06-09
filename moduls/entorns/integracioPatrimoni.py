@@ -28,13 +28,28 @@ class IntegracioPatrimoni(QDockWidget):
         bBIPE = QvPushButton('BIPE ',flat=True)
         bBIPE.setStyleSheet("Text-align: left")
 
-        bBIPE.clicked.connect(self.temaBIPE)
+        # bBIPE.clicked.connect(lambda : self.temaBIPE('BIPE'))
+        bBIPE.clicked.connect(lambda : self.canvas.setTheme('BIPE'))
 
-        bBIPS = QvPushButton('BIPs ',flat=True)
+        bBIPS = QvPushButton('BIPS ',flat=True)
         bBIPS.setStyleSheet("Text-align: left")
 
-        bBIPS.clicked.connect(self.temaBIPS)
+        bBIPS.clicked.connect(lambda : self.canvas.setTheme('BIPS'))
 
+        bBILS = QvPushButton('BILS ',flat=True)
+        bBILS.setStyleSheet("Text-align: left")
+
+        bBILS.clicked.connect(lambda : self.canvas.setTheme('BILS'))
+
+        
+        bCessio = QvPushButton('Cessió',flat=True)
+        bCessio.setStyleSheet("Text-align: left")
+
+        bCessio.clicked.connect(lambda : self.canvas.setTheme('Cessió'))
+
+
+        fPatrimoni.layout().addWidget(bBIPE)
+        fPatrimoni.layout().addWidget(bBIPS)
         fPatrimoni.layout().addWidget(bBIPE)
         fPatrimoni.layout().addWidget(bBIPS)
         
@@ -54,13 +69,15 @@ class IntegracioPatrimoni(QDockWidget):
         self.setContentsMargins ( 0, 0, 0, 0 )
         self.show()
 
-    def temaBIPE(self):
-        print('BIPE')
-        self.canvas.setTheme('Tema 1')
-        self.canvas.refresh()
-    
+    def canviTema(self, tema):
+        print(tema)
+        # self.parent.project.mapThemeCollection().applyTheme(tema, self.parent.root, self.parent.llegenda.layerTreeModel())
+        self.canvas.setTheme(tema)
+        # self.canvas.refresh()
+  
     def temaBIPS(self):
-        print('BIPS')
+        print('BIPS') 
+        self.parent.project.mapThemeCollection().applyTheme('Tema 2', self.parent.root, self.parent.llegenda.layerTreeModel())
         self.canvas.setTheme('Tema 2')
         self.canvas.refresh()
    
