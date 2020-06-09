@@ -139,6 +139,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.ubicacions= None
         self.cAdrec= None
         self.catalegMapes = None
+        self.numCanvasAux = []
 
         #Preparem el mapeta abans de les accions, ja que el necessitarem allà
         self.preparacioMapeta()
@@ -314,6 +315,12 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.setDirtyBit(False)
         self.canvas.refresh()
         self.showXY(self.canvas.center())
+
+        for x in self.findChildren(QvDockWidget):
+            if isinstance(x.widget(),QvCanvas):
+                if x.isVisible():
+                    x.close()
+                x.setParent(None)
         
         if rang is not None and QgsExpressionContextUtils.projectScope(self.project).variable('qV_useProjectExtent') != 'True':
             def posaExtent():
@@ -347,11 +354,13 @@ class QVista(QMainWindow, Ui_MainWindow):
                 self.dwEntorn = Entorn(self)
                 self.addDockWidget(Qt.RightDockWidgetArea, self.dwEntorn)
                 self.dwEntorn.show()
+                self.botoMostraEntorn.show()
             except ModuleNotFoundError:
                 missatgeCaixa('Entorn no trobat',f"L'entorn {nomEntorn} no està disponible. Comproveu que teniu la darrera versió de qVista i si l'error persisteix contacteu amb el propietari del mapa")
         else:
             if hasattr(self,'dwEntorn') and self.dwEntorn is not None:
                 self.dwEntorn.setParent(None)
+                self.botoMostraEntorn.hide()
         # if entorn == "'MarxesExploratories'":
         #     self.marxesCiutat()
 
@@ -369,14 +378,6 @@ class QVista(QMainWindow, Ui_MainWindow):
             self.botoMetadades.hide()
 
         carregaMascara(self)
-
-        if len(self.llegenda.temes())>0:
-            self.cbEstil.show()
-            self.cbEstil.clear()
-            self.cbEstil.addItem('Tema per defecte')
-            self.cbEstil.addItems(self.llegenda.temes())
-        else:
-            self.cbEstil.hide()
     
     def startMovie(self):
         QvFuncions.startMovie()
@@ -454,6 +455,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.bTisores = self.botoLateral(tamany = 25, accio=self.actTisores)
         self.bSeleccioGrafica = self.botoLateral(tamany = 25, accio=self.actSeleccioGrafica)
         self.bMesuraGrafica = self.botoLateral(tamany = 25, accio=self.actMesuraGrafica)
+        self.bNouCanvas = self.botoLateral(tamany=25, accio=self.actNouCanvas)
 
         spacer2 = QSpacerItem(1000, 1000, QSizePolicy.Expanding,QSizePolicy.Maximum)
         self.lytBotoneraLateral.addItem(spacer2)
@@ -994,6 +996,12 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.actMesuraGrafica.setIcon(icon)
         self.actMesuraGrafica.triggered.connect(self.mesuraGrafica)
 
+        self.actNouCanvas = QAction("Nou canvas", self)
+        self.actNouCanvas.setStatusTip('Afegir un nou canvas')
+        icon=QIcon(os.path.join(imatgesDir,'map-plus.png'))
+        self.actNouCanvas.setIcon(icon)
+        self.actNouCanvas.triggered.connect(self.nouCanvas)
+
         self.actHelp = QAction("Contingut de l'ajuda", self)
         icon=QIcon(os.path.join(imatgesDir,'help-circle.png'))
         self.actHelp.setIcon(icon)
@@ -1132,6 +1140,13 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.botoMapeta.clicked.connect(self.VerOcultarMapeta)
         self.botoMapeta.setCursor(QvConstants.cursorClick())
 
+        self.botoMostraEntorn.setIcon(QIcon(os.path.join(imatgesDir,'entorn.png')))
+        self.botoMostraEntorn.setStyleSheet(stylesheetBotons)
+        self.botoMostraEntorn.setIconSize(QSize(24,24))
+        self.botoMostraEntorn.clicked.connect(lambda: self.dwEntorn.hide() if self.dwEntorn.isVisible() else self.dwEntorn.show())
+        self.botoMostraEntorn.setCursor(QvConstants.cursorClick())
+        self.botoMostraEntorn.hide()
+
         self.botoMetadades.setIcon(QIcon(os.path.join(imatgesDir,'information-variant.png')))
         self.botoMetadades.setStyleSheet(stylesheetBotons)
         self.botoMetadades.setIconSize(QSize(24,24))
@@ -1216,6 +1231,19 @@ class QVista(QMainWindow, Ui_MainWindow):
         pos=self.bMesuraGrafica.mapToGlobal(self.bMesuraGrafica.pos())
         self.dwMesuraGrafica.move(pos.x()-400,pos.y())
         self.canviLayer()
+    
+    def nouCanvas(self):
+        canvas = QvCanvas(botoneraHoritzontal=True,posicioBotonera='SE')
+        root = QgsProject.instance().layerTreeRoot()
+
+        bridge = QgsLayerTreeMapCanvasBridge(root, canvas)
+
+        num = self.numCanvasAux[-1]+1 if len(self.numCanvasAux)>0 else 1
+        dwCanvas = QvDockWidget(f'Vista auxiliar del mapa ({num})')
+        dwCanvas.tancat.connect(lambda: self.numCanvasAux.remove(num))
+        self.numCanvasAux.append(num)
+        dwCanvas.setWidget(canvas)
+        self.addDockWidget(Qt.RightDockWidgetArea, dwCanvas)
     
     def reload(self):
         #comprovar si hi ha canvis
@@ -1516,6 +1544,8 @@ class QVista(QMainWindow, Ui_MainWindow):
             if hasattr(self.canvas,'bMaximitza'):
                 self.canvas.bMaximitza.setIcon(self.canvas.iconaMinimitza)
             self.dockWidgetsVisibles=[x for x in self.findChildren(QvDockWidget) if x.isVisible()]
+            for x in self.dockWidgetsVisibles:
+                x.hide()
             self.frame_3.hide()
             self.frame_19.hide()
             self.frame_2.hide()
@@ -1763,11 +1793,6 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.lblProjecte.setFrameStyle(QFrame.StyledPanel )
         self.lblProjecte.setFixedHeight(alcada)
 
-        self.cbEstil = QComboBox()
-        self.cbEstil.currentTextChanged.connect(self.canviaTema)
-        # self.cbEstil.setFrameStyle(QFrame.StyledPanel )
-        self.cbEstil.setFixedHeight(alcada)
-
         #Afegim tots els widgets de cop
         #Així fer una reordenació serà més senzill
         self.statusbar.addPermanentWidget( self.lblProjecte, 0 )
@@ -1778,7 +1803,6 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.statusbar.addPermanentWidget(self.wXY, 1 )
         self.statusbar.addPermanentWidget( self.lblProjeccio, 0 )
         self.statusbar.addPermanentWidget( self.wScale, 0 )
-        self.statusbar.addPermanentWidget(self.cbEstil,0)
         # self.statusbar.addPermanentWidget( self.bOrientacio, 0 )
     
     def connectarProgressBarCanvas(self):
@@ -2180,6 +2204,7 @@ def missatgeCaixa(textTitol,textInformacio):
     # msgBox.exec()
 
 class QvDockWidget(QDockWidget):
+    tancat = pyqtSignal()
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.setDockatInici()
@@ -2191,6 +2216,9 @@ class QvDockWidget(QDockWidget):
     def showtq(self):
         #Show tal qual. És a dir, ho mostra on estigués abans
         super().show()
+    def closeEvent(self,e):
+        super().closeEvent(e)
+        self.tancat.emit()
 
 def migraConfigs():
     arxius=('ultimAvisObert','ultimaNewOberta','mapesRecents','directoriDesar','volHints','dadesMascara','geocod.json','geocodificats.json','catalegsLocals')

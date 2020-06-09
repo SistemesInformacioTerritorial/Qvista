@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'Cubista3.ui'
+# Form implementation generated from reading ui file '.\CuBista3.ui'
 #
 # Created by: PyQt5 UI code generator 5.11.3
 #
@@ -111,6 +111,10 @@ class Ui_MainWindow(object):
         self.botoVeureLlegenda.setText("")
         self.botoVeureLlegenda.setObjectName("botoVeureLlegenda")
         self.horizontalLayout_4.addWidget(self.botoVeureLlegenda)
+        self.botoMostraEntorn = QtWidgets.QPushButton(self.frame_15)
+        self.botoMostraEntorn.setText("")
+        self.botoMostraEntorn.setObjectName("botoMostraEntorn")
+        self.horizontalLayout_4.addWidget(self.botoMostraEntorn)
         self.botoMapeta = QtWidgets.QPushButton(self.frame_15)
         self.botoMapeta.setText("")
         self.botoMapeta.setObjectName("botoMapeta")
@@ -221,7 +225,7 @@ class Ui_MainWindow(object):
         self.verticalLayout.addWidget(self.frame_9)
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 1233, 34))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 1233, 26))
         self.menubar.setMinimumSize(QtCore.QSize(0, 0))
         palette = QtGui.QPalette()
         brush = QtGui.QBrush(QtGui.QColor(255, 255, 255))
@@ -384,6 +388,7 @@ class Ui_MainWindow(object):
         self.lblTitolProjecte.setText(_translate("MainWindow", "Qualificacions urbanístiques i suspensions"))
         self.lSpacer.setText(_translate("MainWindow", "TextLabel"))
         self.botoVeureLlegenda.setToolTip(_translate("MainWindow", "<html><head/><body><p>Mostrar/ocultar llegenda</p></body></html>"))
+        self.botoMostraEntorn.setToolTip(_translate("MainWindow", "<html><head/><body><p>Mostra/oculta l\'entorn</p></body></html>"))
         self.botoMapeta.setToolTip(_translate("MainWindow", "<html><head/><body><p>Mostrar/ocultar mapa de situació</p></body></html>"))
         self.botoObrirQGis.setToolTip(_translate("MainWindow", "<html><head/><body><p>Obrir projecte en QGIS</p></body></html>"))
         self.botoReload.setToolTip(_translate("MainWindow", "<html><head/><body><p>Recarregar projecte</p></body></html>"))
