@@ -369,6 +369,14 @@ class QVista(QMainWindow, Ui_MainWindow):
             self.botoMetadades.hide()
 
         carregaMascara(self)
+
+        if len(self.llegenda.temes())>0:
+            self.cbEstil.show()
+            self.cbEstil.clear()
+            self.cbEstil.addItem('Tema per defecte')
+            self.cbEstil.addItems(self.llegenda.temes())
+        else:
+            self.cbEstil.hide()
     
     def startMovie(self):
         QvFuncions.startMovie()
@@ -1504,7 +1512,7 @@ class QVista(QMainWindow, Ui_MainWindow):
             self.desmaximitza()
 
         else:
-            self.showLblFlotant('Prem F-11, Esc o el botó de maximitzar per sortir de la pantalla completa')
+            self.showLblFlotant('Premeu F-11, Esc o el botó de maximitzar per sortir de la pantalla completa')
             if hasattr(self.canvas,'bMaximitza'):
                 self.canvas.bMaximitza.setIcon(self.canvas.iconaMinimitza)
             self.dockWidgetsVisibles=[x for x in self.findChildren(QvDockWidget) if x.isVisible()]
@@ -1646,6 +1654,9 @@ class QVista(QMainWindow, Ui_MainWindow):
         if self.editantEscala:  
             self.editantEscala=False
             self.leScale.hide()
+        
+    def canviaTema(self,tema):
+        self.canvas.setTheme(tema if tema!='Tema per defecte' else '')
 
     def definirLabelsStatus(self):    
         styleheetLabel='''
@@ -1752,6 +1763,11 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.lblProjecte.setFrameStyle(QFrame.StyledPanel )
         self.lblProjecte.setFixedHeight(alcada)
 
+        self.cbEstil = QComboBox()
+        self.cbEstil.currentTextChanged.connect(self.canviaTema)
+        # self.cbEstil.setFrameStyle(QFrame.StyledPanel )
+        self.cbEstil.setFixedHeight(alcada)
+
         #Afegim tots els widgets de cop
         #Així fer una reordenació serà més senzill
         self.statusbar.addPermanentWidget( self.lblProjecte, 0 )
@@ -1762,6 +1778,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.statusbar.addPermanentWidget(self.wXY, 1 )
         self.statusbar.addPermanentWidget( self.lblProjeccio, 0 )
         self.statusbar.addPermanentWidget( self.wScale, 0 )
+        self.statusbar.addPermanentWidget(self.cbEstil,0)
         # self.statusbar.addPermanentWidget( self.bOrientacio, 0 )
     
     def connectarProgressBarCanvas(self):
