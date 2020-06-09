@@ -5,7 +5,7 @@ from qgis.PyQt.QtGui import QFont, QDesktopServices
 class IntegracioPatrimoni(QDockWidget):
     def __init__(self, parent):
         self.parent = parent
-        super().__init__("Marxes exploratòries")
+        super().__init__("Patrimoni")
         self.setContextMenuPolicy(Qt.PreventContextMenu)
         
         fMarxes = QFrame()
@@ -16,20 +16,20 @@ class IntegracioPatrimoni(QDockWidget):
         fMarxes.setLayout(lytMarxes)
         self.setMaximumWidth(500)
         self.setMinimumWidth(500)
-        lDocuments = QLabel('1.- Documents generals del projecte')
+        lDocuments = QLabel('1.- Fitxers patrimonials')
         lDocuments.setAlignment(Qt.AlignCenter)
         f = QFont()
         f.setBold(True)
         lDocuments.setFont(f)
 
-        lBarris = QLabel('2.- Documents de cada marxa')
+        lBarris = QLabel('2.- Consultes diverses')
         lBarris.setAlignment(Qt.AlignCenter)
         f = QFont()
         f.setBold(True)
         lBarris.setFont(f)
 
         
-        lBarris2 = QLabel('2.1- Recull informatiu de cada marxa')
+        lBarris2 = QLabel('2.1- Recull informatiu')
         lBarris2.setAlignment(Qt.AlignLeft)
         f = QFont()
         f.setBold(True)
@@ -37,7 +37,7 @@ class IntegracioPatrimoni(QDockWidget):
 
         
         
-        lBarris3 = QLabel('2.2- Informe de resultats de cada marxa')
+        lBarris3 = QLabel('2.2- Informe de resultats')
         lBarris3.setAlignment(Qt.AlignLeft)
         f = QFont()
         f.setBold(True)
@@ -50,17 +50,17 @@ class IntegracioPatrimoni(QDockWidget):
         lBarris4.setFont(f)
 
 
-        bGuia = QvPushButton('1.1 Mapificació marxes exploratòries: Qué és el projecte?',flat=True)
+        bGuia = QvPushButton('1.1 Qué és el projecte?',flat=True)
         bGuia.setStyleSheet("Text-align: left")
         # bMarxes = QvPushButton('Recull marxes exploratòries dones 2017-18',flat=True)
         # bMarxes.setStyleSheet("Text-align: left")  
       
-        bMapa = QvPushButton('1.2 Mapa de Barcelona identificant les marxes realitzades',flat=True)
+        bMapa = QvPushButton('1.2 Mapa de Barcelona ',flat=True)
         bMapa.setStyleSheet("Text-align: left")
 
 
         
-        bDocGen = QvPushButton('1.3 Document general (guia lectura, info de cada marxa, annexos barri',flat=True)
+        bDocGen = QvPushButton('1.3 Document general',flat=True)
         bDocGen.setStyleSheet("Text-align: left")
 
         bMapaXarxa = QvPushButton('Xarxa quotidiana',flat=True)
