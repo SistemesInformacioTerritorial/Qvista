@@ -422,6 +422,21 @@ class QvCanvas(QgsMapCanvas):
         if event.button()==Qt.RightButton:
             if not isinstance(self.eines[-1],QvMesuraMultiLinia):
                 self.unsetLastMapTool()
+    
+    def sincronitzaCanvas(self, canv: QgsMapCanvas):
+        """Sincronitza els paràmetre implícit amb el canvas passat com a paràmetre
+
+        Args:
+            canv (QgsMapCanvas): [description]
+        """
+        def sync1():
+            canv.setExtent(self.extent())
+            canv.refresh()
+        def sync2():
+            self.setExtent(canv.extent())
+            self.refresh()
+        
+        self.extentsChanged.connect(sync2)
  
 
 
