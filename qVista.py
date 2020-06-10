@@ -1708,14 +1708,8 @@ class QVista(QMainWindow, Ui_MainWindow):
             self.leScale.hide()
         
     def canviaTema(self,tema):
-<<<<<<< HEAD
         # self.canvas.setTheme(tema if tema!='Tema per defecte' else '')
         self.project.mapThemeCollection().applyTheme(tema if tema!='Tema per defecte' else '', self.root, self.llegenda.layerTreeModel())
-=======
-        # He canviat aquesta línia perque d'aquesta manera es modifica la llegenda al canviar de tema
-        self.project.mapThemeCollection().applyTheme(tema, self.root, self.llegenda.layerTreeModel())
-        # self.canvas.setTheme(tema if tema!='Tema per defecte' else '')
->>>>>>> e18d2379d2f9192fff8e96fad1f88a8b70d6efed
 
     def definirLabelsStatus(self):    
         styleheetLabel='''
