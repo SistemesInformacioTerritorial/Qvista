@@ -165,35 +165,14 @@ class Qv_ControlesThemes(QWidget):
         self.comboThemes.clear()
         themesDeColeccion = coleccionThemes.mapThemes()
         self.comboThemes.addItems(themesDeColeccion)
-    def Ver(self):
-        """Ver todos los temas
-                """
-        coleccionThemes = project.mapThemeCollection()
-        themesDeColeccion = coleccionThemes.mapThemes()
-
-        # print(themesDeColeccion)
-        # hay= project.mapThemeCollection().hasMapTheme('DISTRITOS')
-        # print(hay)
-
-
-        # root = project.layerTreeRoot() 
-        # model = QgsLayerTreeModel(root)
-        # # themeCreated= el guardado (o current ? )
-        # themeCreated = coleccionThemes.createThemeFromCurrentState(root, model)
-        # for r in themesDeColeccion:
-        #     if coleccionThemes.mapThemeState(r) == themeCreated :
-        #         print("si: ",r)
-        #     else:
-        #         print("no: ",r)
-        # coleccionThemes.insert(self.eti.text(),themeCreated)
-        print(coleccionThemes.mapThemes())
+    
     def SaveProject(self):
         """Save pro
         """
         try:
             project.write()
         except Exception  as ee:
-            pass   
+            print(str(ee))  
             
 
 
@@ -201,7 +180,7 @@ if __name__ == "__main__":
     def GobiernaPral():
         """Gobierna canvas principal. Su centro se manda a canvasAux
         """
-        print("Gobierna Pral")
+        # print("Gobierna Pral")
         
         try:
             centro=canvasPral.center()
@@ -214,13 +193,13 @@ if __name__ == "__main__":
     def GobiernaAux():
         """Gobierna canvas auxiliar. Su centro se manda a canvasPral
         """
-        print("Gobierna Aux")
+        # print("Gobierna Aux")
         try:
             centro=canvasAux.center()
             canvasPral.setCenter(centro)
             canvasPral.update()
             canvasPral.refresh()
-            pass
+
         except Exception as ee:
             print(str(ee))
 
@@ -236,21 +215,21 @@ if __name__ == "__main__":
 
         """
 
-        if SuId == Id_canvasPral:
-            SuId ='CanvasPrincipal'
-        elif SuId == Id_canvasAux:
-            SuId ='CanvasAux'
+        # if SuId == Id_canvasPral:
+        #     SuId ='CanvasPrincipal'
+        # elif SuId == Id_canvasAux:
+        #     SuId ='CanvasAux'
 
-        print("Themes >> MeClicaPral >> ",SuId)
+        # print("Themes >> MeClicaPral >> ",SuId)
         # desconecto  respuesta a modificación extensión canvasAux
         try:
             canvasAux.extentsChanged.disconnect()
-            print("desconecto GobiernaAux")
+            # print("desconecto GobiernaAux")
         except Exception as ee:
             print(str(ee))
         try:
             canvasPral.extentsChanged.connect(GobiernaPral)  
-            print("conecto GobiernaPral")
+            # print("conecto GobiernaPral")
         except Exception as ee:
             print(str(ee))
 
@@ -261,22 +240,22 @@ if __name__ == "__main__":
         """
         """
 
-        if SuId == Id_canvasPral:
-            SuId ='CanvasPrincipal'
-        elif SuId == Id_canvasAux:
-            SuId ='CanvasAux'
+        # if SuId == Id_canvasPral:
+        #     SuId ='CanvasPrincipal'
+        # elif SuId == Id_canvasAux:
+        #     SuId ='CanvasAux'
         
 
-        print("Themes >> MeClicaAux >> ",SuId)   
+        # print("Themes >> MeClicaAux >> ",SuId)   
         # desconecto  respuesta a modificación extensión canvasPral
         try:
             canvasPral.extentsChanged.disconnect()
-            print("desconecto GobiernaPral")
+            # print("desconecto GobiernaPral")
         except Exception as ee:
             print(str(ee))
         try:            
             canvasAux.extentsChanged.connect(GobiernaAux)
-            print("conecto GobiernaAux")
+            # print("conecto GobiernaAux")
         except Exception as ee:
             print(str(ee))
         # conecto respuesta a modificación extension canvasAux --> Ejecutará GobiernaAux
@@ -297,14 +276,14 @@ if __name__ == "__main__":
         # diciendo que canvas ha recibido el foco
         canvasPral.Sig_QuienMeClica.connect(MeClicaPral) 
 
-        Id_canvasPral= str(id(canvasPral))   
-        print("Themes>> canvasPral id= ",Id_canvasPral)
+        # Id_canvasPral= str(id(canvasPral))   
+        # print("Themes>> canvasPral id= ",Id_canvasPral)
    
         canvasAux = QvCanvas()
         
 
-        Id_canvasAux = str(id(canvasAux))
-        print("Themes>> canvasAux id= ",Id_canvasAux)
+        # Id_canvasAux = str(id(canvasAux))
+        # print("Themes>> canvasAux id= ",Id_canvasAux)
         # 
         # Cuando entra foco en canvasAux ejecutare MeClicaAux
         canvasAux.Sig_QuienMeClica.connect(MeClicaAux)
