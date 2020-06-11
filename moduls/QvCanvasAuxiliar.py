@@ -44,9 +44,14 @@ class QvCanvasAuxiliar(QvCanvas):
 
         # Definició del menú desplegable
         menuBoto = QMenu(':D')
+        grup = QActionGroup(menuBoto)
         actSincExt = menuBoto.addAction('Sincronitza extensió')
         actSincZoom = menuBoto.addAction('Sincronitza zoom')
         actSincCentre = menuBoto.addAction('Sincronitza centre')
+
+        grup.addAction(actSincExt)
+        grup.addAction(actSincZoom)
+        grup.addAction(actSincCentre)
 
         actSincExt.setCheckable(True)
         actSincExt.setChecked(False)
@@ -86,13 +91,17 @@ class QvCanvasAuxiliar(QvCanvas):
     def syncExtensio(self):
         if self.sincronitzaExtensio:
             self.setExtent(self.canvas.extent())
+            self.refresh()
     def syncZoom(self):
         if self.sincronitzaZoom:
-            escala=self.canvas.scale()
-            self.zoomScale(int(self.canvas.scale()))
+            centre = self.center()
+            self.setExtent(self.canvas.extent())
+            self.setCenter(centre)
+            self.refresh()
     def syncCentre(self):
         if self.sincronitzaCentre:
             self.setCenter(self.canvas.center())
+            self.refresh()
     
     def swapSincroniaExtensio(self,check):
         self.sincronitzaExtensio = check
