@@ -198,31 +198,42 @@ class Qv_ControlesThemes(QWidget):
 
 
 if __name__ == "__main__":
-    def fuerzoCentroAux():
-        """[summary]
+    def GobiernaPral():
+        """Gobierna canvas principal. Su centro se manda a canvasAux
         """
-        print("fuerzoCentroAux")
+        print("Gobierna Pral")
         
         try:
             centro=canvasPral.center()
             canvasAux.setCenter(centro)
+            canvasAux.update()
+            canvasAux.refresh()
+
         except Exception as ee:
             print(str(ee))
-    def fuerzoCentroPral():
-        """[summary]
+    def GobiernaAux():
+        """Gobierna canvas auxiliar. Su centro se manda a canvasPral
         """
-        print("fuerzoCentroPral")
+        print("Gobierna Aux")
         try:
             centro=canvasAux.center()
             canvasPral.setCenter(centro)
+            canvasPral.update()
+            canvasPral.refresh()
+            pass
         except Exception as ee:
             print(str(ee))
 
     def MeClicaPral(SuId):
-        """[summary]
+        """ Para saber que canvas  recibe el foco.\n
+        La clase Canvas, emite la signal "Sig_QuienMeClica" cuando recibe el foco.\n 
+        Es el id del canvas instanciado
+        
+        Si ha recibido el foco canvasPral, ha de gobernar, cuando se modifica su extent, a canvasAux
+        Para ello:
+        * desconecto el trigger de extentsChanges de canvasAux y 
+        * conecto el trigger de extentsChanges de canvasPral
 
-        Args:
-            SuId ([type]): [description]
         """
 
         if SuId == Id_canvasPral:
@@ -234,12 +245,12 @@ if __name__ == "__main__":
         # desconecto  respuesta a modificación extensión canvasAux
         try:
             canvasAux.extentsChanged.disconnect()
-            print("desconecto fuerzoCentroPral")
+            print("desconecto GobiernaAux")
         except Exception as ee:
             print(str(ee))
         try:
-            canvasPral.extentsChanged.connect(fuerzoCentroAux)  
-            print("conecto fuerzoCentroAux")
+            canvasPral.extentsChanged.connect(GobiernaPral)  
+            print("conecto GobiernaPral")
         except Exception as ee:
             print(str(ee))
 
@@ -247,10 +258,7 @@ if __name__ == "__main__":
         pass
 
     def MeClicaAux(SuId):
-        """[summary]
-
-        Args:
-            SuId ([type]): [description]
+        """
         """
 
         if SuId == Id_canvasPral:
@@ -263,15 +271,15 @@ if __name__ == "__main__":
         # desconecto  respuesta a modificación extensión canvasPral
         try:
             canvasPral.extentsChanged.disconnect()
-            print("desconecto fuerzoCentroAux")
+            print("desconecto GobiernaPral")
         except Exception as ee:
             print(str(ee))
         try:            
-            canvasAux.extentsChanged.connect(fuerzoCentroPral)
-            print("conecto fuerzoCentroPral")
+            canvasAux.extentsChanged.connect(GobiernaAux)
+            print("conecto GobiernaAux")
         except Exception as ee:
             print(str(ee))
-        # conecto respuesta a modificación extension canvasAux --> Ejecutará fuerzoCentroPral
+        # conecto respuesta a modificación extension canvasAux --> Ejecutará GobiernaAux
 
     with qgisapp() as app:
         from qgis.gui import  QgsLayerTreeMapCanvasBridge
