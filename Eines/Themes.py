@@ -293,6 +293,7 @@ if __name__ == "__main__":
         print("Themes>> canvasPral id= ",Id_canvasPral)
    
         canvasAux = QvCanvas()
+        
 
         Id_canvasAux = str(id(canvasAux))
         print("Themes>> canvasAux id= ",Id_canvasAux)
@@ -315,6 +316,8 @@ if __name__ == "__main__":
             windowTest.setWindowTitle("Canvas principal") 
 
             leyenda = QvLlegenda(canvasPral, atributos1)
+            leyenda = QvLlegenda(canvasAux, atributos2)
+            
             dwleyenda = QDockWidget( "Leyenda", windowTest )
             dwleyenda.setContextMenuPolicy(Qt.PreventContextMenu)
             dwleyenda.setAllowedAreas( Qt.RightDockWidgetArea | Qt.LeftDockWidgetArea )
