@@ -19,16 +19,13 @@ import functools
 
 
 class QvCanvas(QgsMapCanvas):
-    canviMaximitza=pyqtSignal()
-    desMaximitza=pyqtSignal()
-    mostraStreetView=pyqtSignal()
-<<<<<<< HEAD
-    Sig_QuienMeClica=pyqtSignal('QString')  #JNB
+    canviMaximitza = pyqtSignal()
+    desMaximitza = pyqtSignal()
+    mostraStreetView = pyqtSignal()
+
+    Sig_QuienMeClica = pyqtSignal('QString')    #JNB
     
     def __init__(self, pare = None, llistaBotons=['zoomIn', 'zoomOut', 'panning', 'centrar'], botoneraHoritzontal = False, posicioBotonera = 'NO', mapesBase = False, llegenda = None): #mapesBase (???)
-=======
-    def __init__(self, pare = None, llistaBotons=['zoomIn', 'zoomOut', 'panning', 'centrar', 'temes'], botoneraHoritzontal = False, posicioBotonera = 'NO', mapesBase = False, llegenda = None): #mapesBase (???)
->>>>>>> 72287367fbdf1737937e39230d7c0e89477b222d
         QgsMapCanvas.__init__(self)
         self.botoneraHoritzontal = botoneraHoritzontal
         self.llistaBotons = llistaBotons
