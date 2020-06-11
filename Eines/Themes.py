@@ -20,16 +20,20 @@ import math
 
 
 class Qv_ControlesThemes(QWidget):
-    '''
-    '''
+    """Clase para:\n
+
+    * Gestionar themes (añadir, quitar, ver catalogo) de un proyecto y 
+    * Asignarlos a canvas principal y auxiliar
+    """
     def __init__(self):        
-        '''
-        '''
+        """
+        Definición de botones, combo, lineedit.... 
+        """
         self.color= QColor(121,144,155)
         self.tempdir=configuracioQvista.tempdir 
         QWidget.__init__(self)
 
-        #defino botones y las funciones de su click
+        # region Definición de botones  y componentes
         self.botoTocanvasPral = QPushButton("TocanvasPral")
         self.botoTocanvasPral.clicked.connect(self.TocanvasPral)
         self.botoTocanvasPral.setFixedWidth(85) 
@@ -45,18 +49,13 @@ class Qv_ControlesThemes(QWidget):
         self.botoGuardar.setFixedWidth(85)  
         self.botoGuardar.setToolTip("Guardar CurrentTheme en catalogo") 
 
-        # self.botoVer = QPushButton('Ver')
-        # self.botoVer.clicked.connect(self.Ver)
-        # self.botoVer.setFixedWidth(85) 
-        # self.botoVer.setToolTip("Ver catalogo de themes")   
+        self.comboThemes = QComboBox()
+        self.comboThemes.setToolTip("Ver catalogo de themes") 
 
-        self.comboVer = QComboBox()
-        self.comboVer.setToolTip("Ver catalogo de themes") 
-
-        mTC = project.mapThemeCollection()
-        mTs = mTC.mapThemes()
-        self.comboVer.addItems(mTs)
-        self.comboVer.currentTextChanged.connect(self.on_combobox_changed)
+        coleccionThemes = project.mapThemeCollection()
+        themesDeColeccion = coleccionThemes.mapThemes()
+        self.comboThemes.addItems(themesDeColeccion)
+        self.comboThemes.currentTextChanged.connect(self.on_combobox_changed)
 
         self.botoSav = QPushButton('SaveProj')
         self.botoSav.clicked.connect(self.SaveProject)
@@ -68,7 +67,7 @@ class Qv_ControlesThemes(QWidget):
         self.botoDel.setFixedWidth(85) 
         self.botoDel.setToolTip("Eliminar tema de catalogo") 
 
-        self.botoClear = QPushButton('ResetTheme')
+        self.botoClear = QPushButton('ResetThemes')
         self.botoClear.clicked.connect(self.ClearTheme)
         self.botoClear.setFixedWidth(85)    
         self.botoClear.setToolTip("Quitar themes de canvas") 
@@ -80,15 +79,18 @@ class Qv_ControlesThemes(QWidget):
 
         self.eti = QLineEdit()
         try:
-            self.eti.setText(self.comboVer.currentText())
+            self.eti.setText(self.comboThemes.currentText())
         except Exception as ee:
             self.eti.setText('NOM_THEME')
         
         self.eti.setFixedWidth(100)
         self.eti.setToolTip("CurrentTheme (selección desde combo o propuesto por usuario)") 
+
+        # endregion Definición de botones y componentes
         self.layGrid=QGridLayout()
+        # region Botones en GridLayout
         self.layGrid.setColumnStretch(1, 1);
-        self.layGrid.addWidget(self.comboVer,0,0)
+        self.layGrid.addWidget(self.comboThemes,0,0)
         self.layGrid.addWidget(self.eti,0,1) 
         self.layGrid.addWidget(self.botoTocanvasPral,1,0)
         self.layGrid.addWidget(self.botoToCanvasAux,1,1)
@@ -97,89 +99,94 @@ class Qv_ControlesThemes(QWidget):
         self.layGrid.addWidget(self.botoClear,3,0)
         self.layGrid.addWidget(self.botoSav,3,1)        
         self.layGrid.addWidget(self.botoShowCanvasAux,4,0)
+        # endregion Botones en GridLayout
         self.setLayout(self.layGrid)
     def ShowCanvasAux(self):
+        '''
+        Muestra/oculta canvas auxiliar
+        '''
         if dwCanvasAux.isHidden():
             dwCanvasAux.show()
         else:
             dwCanvasAux.hide()
     def on_combobox_changed(self):
-        self.eti.setText(self.comboVer.currentText())
+        self.eti.setText(self.comboThemes.currentText())
     def DelTheme(self):
-        mTC = project.mapThemeCollection()
-        mTs = mTC.mapThemes()
-
-        
-        mTC.removeMapTheme(self.eti.text())
-        print(mTC.mapThemes())
-        self.comboVer.clear()
-
-        mTs = mTC.mapThemes()
-        self.comboVer.addItems(mTs)        
+        """Borra de catalogo el Theme current (está en lineedit)
+        """
+        coleccionThemes = project.mapThemeCollection()
+        coleccionThemes.removeMapTheme(self.eti.text())
+        self.comboThemes.clear()
+        themesDeColeccion = coleccionThemes.mapThemes()
+        self.comboThemes.addItems(themesDeColeccion)        
     def TocanvasPral(self):
-        """To canvas 1
+        """Asigna Theme current a canvas principal
         """
         canvasPral.setTheme(self.eti.text())
         windowTest.setWindowTitle("Canvas principal Theme: " + self.eti.text()) 
     def ToCanvasAux(self):
-        """To canvasAux
+        """Asigna Theme current a canvas auxiliar
         """
-        dwCanvasAux.setWindowTitle("CanvasAux Aux Theme: "+ self.eti.text())
+        dwCanvasAux.setWindowTitle("CanvasAux Theme: "+ self.eti.text())
         canvasAux.setTheme(self.eti.text())
     def ClearTheme(self):
-        """To canvasAux
+        """Limpia canvas principal y auxiliar de Themes.\n
+        Se activa de nuevo la leyenda
         """
         canvasPral.setTheme("")   
         canvasAux.setTheme("")  
-        dwCanvasAux.setWindowTitle("CanvasAux Aux")  
+        dwCanvasAux.setWindowTitle("CanvasAux")  
         windowTest.setWindowTitle("Canvas principal")     
     def Guardar(self):
-        """Guardar
-        """
-        mTC = project.mapThemeCollection()
-        mTs = mTC.mapThemes()
 
-        # print(mTs)
+        # atencion
+        # project.mapThemeCollection().appyTheme(tema,self.root,self.llegenda.layerTreeModel()
+        """Guardar estado leyenda con el nombre de theme current
+        """
+        coleccionThemes = project.mapThemeCollection()
+        themesDeColeccion = coleccionThemes.mapThemes()
+
+        # print(themesDeColeccion)
         # hay= project.mapThemeCollection().hasMapTheme('DISTRITOS')
         # print(hay)
 
         root = project.layerTreeRoot() 
         model = QgsLayerTreeModel(root)
-        # goodTheme= el guardado (o current ? )
-        goodTheme = mTC.createThemeFromCurrentState(root, model)
-        # for r in mTs:
-        #     if mTC.mapThemeState(r) == goodTheme :
+        
+        themeCreated = coleccionThemes.createThemeFromCurrentState(root, model)
+        # for r in themesDeColeccion:
+        #     if coleccionThemes.mapThemeState(r) == themeCreated :
         #         print("si: ",r)
         #     else:
         #         print("no: ",r)
-        mTC.insert(self.eti.text(),goodTheme)
-        print(mTC.mapThemes())
-        self.comboVer.clear()
 
-        mTs = mTC.mapThemes()
-        self.comboVer.addItems(mTs)
+        # Se da nombre al theme creado
+        coleccionThemes.insert(self.eti.text(),themeCreated)
+        self.comboThemes.clear()
+        themesDeColeccion = coleccionThemes.mapThemes()
+        self.comboThemes.addItems(themesDeColeccion)
     def Ver(self):
         """Ver todos los temas
                 """
-        mTC = project.mapThemeCollection()
-        mTs = mTC.mapThemes()
+        coleccionThemes = project.mapThemeCollection()
+        themesDeColeccion = coleccionThemes.mapThemes()
 
-        # print(mTs)
+        # print(themesDeColeccion)
         # hay= project.mapThemeCollection().hasMapTheme('DISTRITOS')
         # print(hay)
 
 
         # root = project.layerTreeRoot() 
         # model = QgsLayerTreeModel(root)
-        # # goodTheme= el guardado (o current ? )
-        # goodTheme = mTC.createThemeFromCurrentState(root, model)
-        # for r in mTs:
-        #     if mTC.mapThemeState(r) == goodTheme :
+        # # themeCreated= el guardado (o current ? )
+        # themeCreated = coleccionThemes.createThemeFromCurrentState(root, model)
+        # for r in themesDeColeccion:
+        #     if coleccionThemes.mapThemeState(r) == themeCreated :
         #         print("si: ",r)
         #     else:
         #         print("no: ",r)
-        # mTC.insert(self.eti.text(),goodTheme)
-        print(mTC.mapThemes())
+        # coleccionThemes.insert(self.eti.text(),themeCreated)
+        print(coleccionThemes.mapThemes())
     def SaveProject(self):
         """Save pro
         """
@@ -191,65 +198,79 @@ class Qv_ControlesThemes(QWidget):
 
 
 if __name__ == "__main__":
-    def cambio1():
+    def fuerzoCentroAux():
         """[summary]
         """
-        print("cambio1")
+        print("fuerzoCentroAux")
         
         try:
             centro=canvasPral.center()
             canvasAux.setCenter(centro)
         except Exception as ee:
             print(str(ee))
-    def cambio2():
+    def fuerzoCentroPral():
         """[summary]
         """
-        print("cambio2")
+        print("fuerzoCentroPral")
         try:
             centro=canvasAux.center()
             canvasPral.setCenter(centro)
-        except Exception as ee:
             print(str(ee))
-    def MeClica1(SuId):
+        except Exception as ee:
+    def MeClicaPral(SuId):
         """[summary]
 
         Args:
             SuId ([type]): [description]
         """
-        print("Themes >> MeClica1 >> ",SuId)
+
+        if SuId == Id_canvasPral:
+            SuId ='CanvasPrincipal'
+        elif SuId == Id_canvasAux:
+            SuId ='CanvasAux'
+
+        print("Themes >> MeClicaPral >> ",SuId)
         # desconecto  respuesta a modificación extensión canvasAux
         try:
-            canvasAux.extentsChanged.disconnect(cambio2)
-            print("desconecto cambio2")
+            canvasAux.extentsChanged.disconnect()
+            print("desconecto fuerzoCentroPral")
         except Exception as ee:
             print(str(ee))
         try:
-            canvasPral.extentsChanged.connect(cambio1)  
-            print("conecto cambio1")
+            canvasPral.extentsChanged.connect(fuerzoCentroAux)  
+            print("conecto fuerzoCentroAux")
         except Exception as ee:
             print(str(ee))
 
+    def foo():
+        pass
 
-    def MeClica2(SuId):
+    def MeClicaAux(SuId):
         """[summary]
 
         Args:
             SuId ([type]): [description]
         """
 
-        print("Themes >> MeClica2 >> ",SuId)   
+        if SuId == Id_canvasPral:
+            SuId ='CanvasPrincipal'
+        elif SuId == Id_canvasAux:
+            SuId ='CanvasAux'
+        
+
+        print("Themes >> MeClicaAux >> ",SuId)   
         # desconecto  respuesta a modificación extensión canvasPral
         try:
-            canvasPral.extentsChanged.disconnect(cambio1)
-            print("desconecto cambio1")
+            canvasPral.extentsChanged.disconnect()
+            print("desconecto fuerzoCentroAux")
         except Exception as ee:
             print(str(ee))
         try:            
-            canvasAux.extentsChanged.connect(cambio2)
-            print("conecto cambio2")
+            canvasAux.extentsChanged.connect(fuerzoCentroPral)
+            print("conecto fuerzoCentroPral")
         except Exception as ee:
             print(str(ee))
-        # conecto respuesta a modificación extension canvasAux --> Ejecutará cambio2
+        # conecto respuesta a modificación extension canvasAux --> Ejecutará fuerzoCentroPral
 
     with qgisapp() as app:
         from qgis.gui import  QgsLayerTreeMapCanvasBridge
@@ -263,16 +284,20 @@ if __name__ == "__main__":
 
 
         canvasPral = QvCanvas()
-        # Cuando entra foco en canvasPral ejecutare MeClica1 gracias a que QvCanvas envia señal
+        # Cuando entra foco en canvasPral ejecutare MeClicaPral gracias a que QvCanvas envia señal
         # diciendo que canvas ha recibido el foco
-        canvasPral.Sig_QuienMeClica.connect(MeClica1)    
-        print("Themes>> canvasPral id= ",str(id(canvasPral)))
-        # Id_canvasPral= str(id(canvasPral))
+        canvasPral.Sig_QuienMeClica.connect(MeClicaPral) 
+
+        Id_canvasPral= str(id(canvasPral))   
+        print("Themes>> canvasPral id= ",Id_canvasPral)
+   
         canvasAux = QvCanvas()
-        print("Themes>> canvasAux id= ",str(id(canvasAux)))
-        # Id_canvasAux = str(id(canvasAux))
-        # Cuando entra foco en canvasAux ejecutare MeClica2
-        canvasAux.Sig_QuienMeClica.connect(MeClica2)
+
+        Id_canvasAux = str(id(canvasAux))
+        print("Themes>> canvasAux id= ",Id_canvasAux)
+        # 
+        # Cuando entra foco en canvasAux ejecutare MeClicaAux
+        canvasAux.Sig_QuienMeClica.connect(MeClicaAux)
 
         atributos1 = QvAtributs(canvasPral)
         atributos2 = QvAtributs(canvasAux)
@@ -308,11 +333,12 @@ if __name__ == "__main__":
             dwControles.show()  #atencion            
             windowTest.addDockWidget( Qt.RightDockWidgetArea, dwControles)
 
-            dwCanvasAux = QDockWidget( "CanvasAux Aux", windowTest )
+            dwCanvasAux = QDockWidget( "CanvasAux", windowTest )
             dwCanvasAux.setContextMenuPolicy(Qt.PreventContextMenu)
             # dwCanvasAux.setAllowedAreas( Qt.RightDockWidgetArea | Qt.LeftDockWidgetArea )
             dwCanvasAux.setContentsMargins ( 1, 1, 1, 1 )
             dwCanvasAux.setWidget(canvasAux) 
+            canvasAux.show()  #jnb
             dwCanvasAux.hide()
             windowTest.addDockWidget( Qt.LeftDockWidgetArea, dwCanvasAux)
           
