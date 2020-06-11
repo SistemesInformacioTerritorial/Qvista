@@ -215,8 +215,9 @@ if __name__ == "__main__":
         try:
             centro=canvasAux.center()
             canvasPral.setCenter(centro)
-            print(str(ee))
         except Exception as ee:
+            print(str(ee))
+
     def MeClicaPral(SuId):
         """[summary]
 
