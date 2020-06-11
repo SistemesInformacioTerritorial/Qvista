@@ -46,7 +46,7 @@ class QvCanvas(QgsMapCanvas):
         self.preparacioStreetView()
 
     def focusInEvent(self,event):  # JNB prueba detectar que canvas tiene foco
-        print("QvCanvas >> focusInEvent "+ str(id(self)))
+        # print("QvCanvas >> focusInEvent "+ str(id(self)))
         self.Sig_QuienMeClica.emit(str(id(self)))
       
 
