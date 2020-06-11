@@ -21,6 +21,8 @@ class QvCanvas(QgsMapCanvas):
     canviMaximitza=pyqtSignal()
     desMaximitza=pyqtSignal()
     mostraStreetView=pyqtSignal()
+    Sig_QuienMeClica=pyqtSignal('QString')  #JNB
+    
     def __init__(self, pare = None, llistaBotons=['zoomIn', 'zoomOut', 'panning', 'centrar'], botoneraHoritzontal = False, posicioBotonera = 'NO', mapesBase = False, llegenda = None): #mapesBase (???)
         QgsMapCanvas.__init__(self)
         self.botoneraHoritzontal = botoneraHoritzontal
@@ -40,6 +42,12 @@ class QvCanvas(QgsMapCanvas):
             self.panCanvas()
             self.panCanvas()
         self.preparacioStreetView()
+
+    def focusInEvent(self,event):  # JNB prueba detectar que canvas tiene foco
+        print("QvCanvas >> focusInEvent "+ str(id(self)))
+        self.Sig_QuienMeClica.emit(str(id(self)))
+      
+
 
     def keyPressEvent(self, event):
         """ Defineix les actuacions del QvMapeta en funció de la tecla apretada.
