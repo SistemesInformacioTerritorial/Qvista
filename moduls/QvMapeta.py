@@ -682,7 +682,7 @@ class QvMapeta(QFrame):
             margen= self.parent().parent().margen
             self.the_data.setX(event.pos().x()+margen)
             self.the_data.setY(event.pos().y()+margen)
-            # print("Mapeta >> mousePressEvent emito the_data",self.the_data)  
+            print("Mapeta >> mousePressEvent emito the_data",self.the_data)  
             self.Sig_dadoPNT.emit(self.the_data)
             return
         else:   
@@ -704,6 +704,9 @@ class QvMapeta(QFrame):
         """
         #print("mouseReleaseEvent",QTime.currentTime().toString(Qt.DefaultLocaleLongDate))
         if event.button()==Qt.RightButton:
+            return
+
+        if self.puntoParaCompass == True:
             return
 
 
