@@ -46,6 +46,7 @@ from moduls.QvVisualitzacioCapa import QvVisualitzacioCapa
 from moduls.QvSobre import QvSobre
 from moduls import QvFuncions
 from moduls.QvEntorns import QvEntorns
+from moduls.QvCanvasAuxiliar import QvCanvasAuxiliar
 import os        
 
 from pathlib import Path
@@ -1244,7 +1245,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.canviLayer()
     
     def nouCanvas(self):
-        canvas = QvCanvas(botoneraHoritzontal=True,posicioBotonera='SE')
+        canvas = QvCanvasAuxiliar(self.canvas, temaInicial=self.tema, botoneraHoritzontal=True,posicioBotonera='SE')
         root = QgsProject.instance().layerTreeRoot()
 
         bridge = QgsLayerTreeMapCanvasBridge(root, canvas)
@@ -1255,16 +1256,6 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.numCanvasAux.append(num)
         dwCanvas.setWidget(canvas)
         self.addDockWidget(Qt.RightDockWidgetArea, dwCanvas)
-        def sincronitza():
-            if self.canvas.extent()==canvas.extent(): return
-            canvas.setExtent(self.canvas.extent())
-            canvas.refresh()
-        def sincronitza2():
-            if self.canvas.extent()==canvas.extent(): return
-            self.canvas.setExtent(canvas.extent())
-            self.canvas.refresh()
-        self.canvas.extentsChanged.connect(sincronitza)
-        # canvas.extentsChanged.connect(sincronitza2)
     
     def reload(self):
         #comprovar si hi ha canvis
@@ -1709,7 +1700,8 @@ class QVista(QMainWindow, Ui_MainWindow):
         
     def canviaTema(self,tema):
         # self.canvas.setTheme(tema if tema!='Tema per defecte' else '')
-        self.project.mapThemeCollection().applyTheme(tema if tema!='Tema per defecte' else '', self.root, self.llegenda.layerTreeModel())
+        self.tema = tema if tema!='Tema per defecte' else ''
+        self.project.mapThemeCollection().applyTheme(self.tema, self.root, self.llegenda.layerTreeModel())
 
     def definirLabelsStatus(self):    
         styleheetLabel='''
