@@ -79,13 +79,12 @@ class IntegracioPatrimoni(QDockWidget):
         self.show()
 
     def centraCanvas(self):
-        print('centra')
         self.canvas.setExtent(self.parent.canvas.extent())
         self.canvas.refresh()
 
     def canviTema(self, tema):
         print(tema)
-        # self.parent.project.mapThemeCollection().applyTheme(tema, self.parent.root, self.parent.llegenda.layerTreeModel())
+        self.parent.project.mapThemeCollection().applyTheme(tema, self.parent.root, self.parent.llegenda.layerTreeModel())
         self.canvas.setTheme(tema)
         # self.canvas.refresh()
   
