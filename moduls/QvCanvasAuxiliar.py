@@ -40,7 +40,7 @@ class QvCanvasAuxiliar(QvCanvas):
     
     def botons(self):
         self.bSincronia = self._botoMapa(os.path.join(imatgesDir,'sync.png'))
-        self.bSincronia.setToolTip('Pantalla completa (F11)')
+        self.bSincronia.setToolTip('Sincronia amb el mapa principal')
         self.layoutBotoneraMapa.insertWidget(0,self.bSincronia)
         self.bSincronia.setCursor(QvConstants.cursorFletxa()) 
         self.bSincronia.setCheckable(False)
