@@ -3,7 +3,7 @@ from moduls.QvCanvas import QvCanvas
 from moduls.QvConstants import QvConstants
 
 class QvCanvasAuxiliar(QvCanvas):
-    def __init__(self, canvas, *args, temaInicial = None, sincronitzaExtensio=False, sincronitzaZoom=False, sincronitzaCentre=False, volemCombo=True, **kwargs):
+    def __init__(self, canvas, *args, temaInicial = None, sincronitzaExtensio=False, sincronitzaZoom=False, sincronitzaCentre=False, sincronitzaRotacio=True, volemCombo=True, **kwargs):
         """Canvas auxiliar, pensat per afegir funcionalitats al QvCanvas.
 
         Permet rebre tots els arguments que rebi QvCanvas, més uns quants extra
@@ -14,6 +14,7 @@ class QvCanvasAuxiliar(QvCanvas):
             sincronitzaExtensio (bool, optional): [description]. Defaults to False.
             sincronitzaZoom (bool, optional): [description]. Defaults to False.
             sincronitzaCentre (bool, optional): [description]. Defaults to False.
+            sincronitzaRotacio (bool, optional): [description]. Defaults to True.
             volemCombo (bool, optional): Indica si volem que hi hagi una combobox per canviar de tema. Defaults to True
         """
         super().__init__(*args, **kwargs)
@@ -21,6 +22,7 @@ class QvCanvasAuxiliar(QvCanvas):
         self.sincronitzaExtensio = sincronitzaExtensio
         self.sincronitzaZoom = sincronitzaZoom
         self.sincronitzaCentre = sincronitzaCentre
+        self.sincronitzaRotacio = sincronitzaRotacio
         self.botons()
         if volemCombo:
             self.preparaCbTemes(temaInicial)
@@ -48,24 +50,35 @@ class QvCanvasAuxiliar(QvCanvas):
         # Definició del menú desplegable
         menuBoto = QMenu(':D')
         grup = QActionGroup(menuBoto)
+        self.actNoSinc = menuBoto.addAction('Sense sincronia')
         self.actSincExt = menuBoto.addAction('Sincronitza extensió')
         self.actSincZoom = menuBoto.addAction('Sincronitza zoom')
         self.actSincCentre = menuBoto.addAction('Sincronitza centre')
-
+        menuBoto.addSeparator()
+        self.actSincRotacio = menuBoto.addAction('Sincronitza rotació')
+        
+        grup.addAction(self.actNoSinc)
         grup.addAction(self.actSincExt)
         grup.addAction(self.actSincZoom)
         grup.addAction(self.actSincCentre)
+        # no afegim self.actSincRotacio perquè volem que la rotació sigui independent
 
+        self.actNoSinc.setCheckable(True)
+        self.actNoSinc.setChecked(True)
         self.actSincExt.setCheckable(True)
-        self.actSincExt.setChecked(False)
+        self.actSincExt.setChecked(self.sincronitzaExtensio)
         self.actSincZoom.setCheckable(True)
-        self.actSincZoom.setChecked(False)
+        self.actSincZoom.setChecked(self.sincronitzaZoom)
         self.actSincCentre.setCheckable(True)
-        self.actSincCentre.setChecked(False)
+        self.actSincCentre.setChecked(self.sincronitzaCentre)
+        self.actSincRotacio.setCheckable(True)
+        self.actSincRotacio.setChecked(self.sincronitzaRotacio)
 
+        self.actNoSinc.triggered.connect(self.swapSincronies)
         self.actSincExt.triggered.connect(self.swapSincronies)
         self.actSincZoom.triggered.connect(self.swapSincronies)
         self.actSincCentre.triggered.connect(self.swapSincronies)
+        self.actSincRotacio.triggered.connect(self.swapSincroniaRotacio)
 
         self.bSincronia.setMenu(menuBoto)
 
@@ -90,6 +103,7 @@ class QvCanvasAuxiliar(QvCanvas):
         self.canvas.extentsChanged.connect(self.syncExtensio)
         self.canvas.scaleChanged.connect(self.syncZoom)
         self.canvas.extentsChanged.connect(self.syncCentre)
+        self.canvas.rotationChanged.connect(self.syncRotacio)
 
         self.extentsChanged.connect(self.syncExtensioOut)
         self.scaleChanged.connect(self.syncZoomOut)
@@ -124,6 +138,9 @@ class QvCanvasAuxiliar(QvCanvas):
         if self.sincronitzaCentre and self.hasFocus():
             self.canvas.setCenter(self.center())
             self.canvas.refresh()
+    def syncRotacio(self):
+        if self.sincronitzaRotacio:
+            self.setRotation(self.canvas.rotation())
 
     def swapSincronies(self):
         self.swapSincroniaExtensio(self.actSincExt.isChecked())
@@ -138,3 +155,6 @@ class QvCanvasAuxiliar(QvCanvas):
     
     def swapSincroniaCentre(self,check):
         self.sincronitzaCentre = check
+    
+    def swapSincroniaRotacio(self,check):
+        self.sincronitzaRotacio = check

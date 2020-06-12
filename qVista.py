@@ -1250,12 +1250,14 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         bridge = QgsLayerTreeMapCanvasBridge(root, canvas)
 
+        canvas.setRotation(self.canvas.rotation())
         num = self.numCanvasAux[-1]+1 if len(self.numCanvasAux)>0 else 1
         dwCanvas = QvDockWidget(f'Vista auxiliar del mapa ({num})')
         dwCanvas.tancat.connect(lambda: self.numCanvasAux.remove(num))
         self.numCanvasAux.append(num)
         dwCanvas.setWidget(canvas)
         self.addDockWidget(Qt.RightDockWidgetArea, dwCanvas)
+        dwCanvas.setFloating(True)
     
     def reload(self):
         #comprovar si hi ha canvis
