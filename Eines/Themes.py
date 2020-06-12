@@ -122,6 +122,12 @@ class Qv_ControlesThemes(QWidget):
     def TocanvasPral(self):
         """Asigna Theme current a canvas principal
         """
+
+        root = project.layerTreeRoot()
+
+        model = QgsLayerTreeModel(root)
+        project.mapThemeCollection().applyTheme(self.eti.text(),root,model)
+
         canvasPral.setTheme(self.eti.text())
         windowTest.setWindowTitle("Canvas principal Theme: " + self.eti.text()) 
     def ToCanvasAux(self):
@@ -169,6 +175,8 @@ class Qv_ControlesThemes(QWidget):
     def SaveProject(self):
         """Save pro
         """
+        self.ClearTheme()
+
         try:
             project.write()
         except Exception  as ee:
