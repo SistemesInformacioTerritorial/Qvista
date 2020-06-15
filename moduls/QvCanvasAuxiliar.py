@@ -110,32 +110,33 @@ class QvCanvasAuxiliar(QvCanvas):
         self.extentsChanged.connect(self.syncCentreOut)
     
     def syncExtensio(self):
-        if self.sincronitzaExtensio and not self.hasFocus():
+        if self.sincronitzaExtensio and not self.underMouse():
             self.setExtent(self.canvas.extent())
             self.refresh()
     def syncZoom(self):
-        if self.sincronitzaZoom and not self.hasFocus():
+        if self.sincronitzaZoom and not self.underMouse():
             centre = self.center()
             self.setExtent(self.canvas.extent())
             self.setCenter(centre)
             self.refresh()
     def syncCentre(self):
-        if self.sincronitzaCentre and not self.hasFocus():
+        if self.sincronitzaCentre and not self.underMouse():
             self.setCenter(self.canvas.center())
             self.refresh()
     
+    # Els moviments de la rodeta a vegades es fan sense tenir el focus en el canvas. Per si de cas, fem servir underMouse i no focus
     def syncExtensioOut(self):
-        if self.sincronitzaExtensio and self.hasFocus():
+        if self.sincronitzaExtensio and self.underMouse():
             self.canvas.setExtent(self.extent())
             self.canvas.refresh()
     def syncZoomOut(self):
-        if self.sincronitzaZoom and self.hasFocus():
+        if self.sincronitzaZoom and self.underMouse():
             centre = self.canvas.center()
             self.canvas.setExtent(self.extent())
             self.canvas.setCenter(centre)
             self.canvas.refresh()
     def syncCentreOut(self):
-        if self.sincronitzaCentre and self.hasFocus():
+        if self.sincronitzaCentre and self.underMouse():
             self.canvas.setCenter(self.center())
             self.canvas.refresh()
     def syncRotacio(self):
