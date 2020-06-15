@@ -24,7 +24,7 @@ import os
 # pyrcc5 images.qrc >images_rc.py
 import images_rc  # NOQA
 
-TEMA_INICIAL = '(INICIAL)'
+TEMA_INICIAL = '(Inicial)'
 TITOL_INICIAL = 'Llegenda'
 
 class QvLlegenda(qgGui.QgsLayerTreeView):
@@ -38,7 +38,6 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
     def __init__(self, canvas=None, atributs=None, canviCapaActiva=None, editable=True):
         qgGui.QgsLayerTreeView.__init__(self)
 
-        self.dockWidget = None
         self.setTitol()
         self.project = qgCor.QgsProject.instance()
         self.root = self.project.layerTreeRoot()
@@ -114,8 +113,8 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
 
     def setTitol(self, titol=TITOL_INICIAL):
         self.setWindowTitle(titol)
-        if self.dockWidget is not None:
-            self.dockWidget.setWindowTitle(titol)
+        if self.parent() is not None:
+            self.parent().setWindowTitle(titol)
 
     def modificacioProjecte(self, txt='userModification'):
         if self.iniSignal:
