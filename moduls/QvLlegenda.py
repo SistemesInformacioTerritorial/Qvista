@@ -58,6 +58,7 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
         self.project.readProject.connect(self.nouProjecte)
         self.project.legendLayersAdded.connect(self.actIcones)
         self.root.layerOrderChanged.connect(self.actIcones)
+        self.root.visibilityChanged.connect(self.aplicaTitolTema)
         # self.project.loadingLayerMessageReceived.connect(self.msgCapes)
 
         # self.setWhatsThis(QvApp().carregaAjuda(self))
@@ -237,9 +238,12 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
             self.modificacioProjecte('filterModified')
 
     def nouProjecte(self):
+        self.setTitol()
         # Borrar tabs de atributos si existen
         if self.atributs is not None:
             self.atributs.deleteTabs()
+            if self.atributs.parent() is not None:
+                self.atributs.parent().close()
 
         self.escales.nouProjecte(self.project)
 
@@ -346,7 +350,7 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
     def titolTema(self):
         tema = self.buscaTema()
         if tema is not None and tema != TEMA_INICIAL:
-            titol = TITOL_INICIAL + ' - Tema ' + tema
+            titol = 'Tema ' + tema
         else:
             titol = TITOL_INICIAL
         self.setTitol(titol)
