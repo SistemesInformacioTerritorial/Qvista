@@ -43,9 +43,12 @@ class QvAccions:
             if nom == 'separator':
                 menu.addSeparator()
             elif nom in accions:
-                menu.addAction(accions[nom])
+                item = accions[nom]
+                if isinstance(item, QAction):
+                    menu.addAction(item)
+                elif isinstance(item, QMenu):
+                    menu.addMenu(item)
         if menuExtra is not None:
             menu.addSeparator()
             menu.addMenu(menuExtra)
-
         return menu

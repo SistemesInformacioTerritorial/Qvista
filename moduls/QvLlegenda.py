@@ -77,12 +77,12 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
         if self.canvas is not None:
             self.canvas.scaleChanged.connect(self.connectaEscala)
 
+        # Lista de acciones que apareceran en el menú
+        self.menuAccions = []
+        self.menuTemes = qtWdg.QMenu('Temes')
         # Acciones disponibles
         self.accions = QvAccions()
         self.setAccions()
-        # Lista de acciones que apareceran en el menú
-        self.menuAccions = []
-        self.menuExtra = None
         self.setMenuProvider(QvMenuLlegenda(self))
 
         self.iconaFiltre = qgGui.QgsLayerTreeViewIndicator()
@@ -362,13 +362,12 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
         except Exception as e:
             print(str(e))
 
-    def menuTemes(self):
+    def setMenuTemes(self):
+        self.menuTemes.clear()
         if self.numTemes() == 0:
-            return None
-        menu = qtWdg.QMenu('Temes')
+            return
         for tema in self.temes():
-            menu.addAction(tema, self.aplicaTemaMenu)
-        return menu
+            self.menuTemes.addAction(tema, self.aplicaTemaMenu)
 
     def capaPerNom(self, nomCapa):
         """
@@ -513,6 +512,8 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
         act.triggered.connect(self.removeFilter)
         self.accions.afegirAccio('removeFilter', act)
 
+        self.accions.afegirAccio('menuTemes', self.menuTemes)
+
     def calcTipusMenu(self):
         # Tipos: none, group, layer, symb
         tipo = 'none'
@@ -532,10 +533,9 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
     def setMenuAccions(self):
         # Menú dinámico según tipo de elemento sobre el que se clicó
         self.menuAccions = []
-        if self.editable:
-            self.menuExtra = self.menuTemes()
-        else:
-            self.menuExtra = None
+        self.setMenuTemes()
+        if self.editable and not self.menuTemes.isEmpty():
+            self.menuAccions += ['menuTemes', 'separator']
         tipo = self.calcTipusMenu()
         if tipo == 'layer':
             capa = self.currentLayer()
