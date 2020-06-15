@@ -27,6 +27,7 @@ import images_rc  # NOQA
 TEMA_INICIAL = '(Inicial)'
 TITOL_INICIAL = 'Llegenda'
 
+
 class QvLlegenda(qgGui.QgsLayerTreeView):
 
     obertaTaulaAtributs = qtCor.pyqtSignal()
@@ -364,8 +365,6 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
 
     def setMenuTemes(self):
         self.menuTemes.clear()
-        if self.numTemes() == 0:
-            return
         for tema in self.temes():
             self.menuTemes.addAction(tema, self.aplicaTemaMenu)
 
@@ -832,6 +831,5 @@ if __name__ == "__main__":
 
         # Conexión de la señal con la función menuContexte para personalizar el menú
         leyenda.clicatMenuContexte.connect(menuContexte)
-
 
         # app.aboutToQuit.connect(QvApp().logFi)

@@ -11,7 +11,6 @@ class QvAccions:
 
         # Conjunto de acciones predefinidas
         self.accions = {}
-        self.iniAccions()
 
     def accio(self, nom):
         if nom in self.accions:
@@ -21,15 +20,6 @@ class QvAccions:
 
     def afegirAccio(self, nom, act):
         self.accions[nom] = act
-
-    def _about(self):
-        QMessageBox().information(None, 'Quant a', 'qVista - Versió 0.1')
-
-    def iniAccions(self):
-        act = QAction()
-        act.setText('Quant a')
-        act.triggered.connect(self._about)
-        self.afegirAccio('about', act)
 
     def menuAccions(self, llistaAccions, accions=None, menuExtra=None):
         if QWhatsThis.inWhatsThisMode():
