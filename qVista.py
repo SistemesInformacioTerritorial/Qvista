@@ -1246,7 +1246,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.canviLayer()
     
     def nouCanvas(self):
-        canvas = QvCanvasAuxiliar(self.canvas, temaInicial=self.tema, botoneraHoritzontal=True,posicioBotonera='SE')
+        canvas = QvCanvasAuxiliar(self.canvas, botoneraHoritzontal=True,posicioBotonera='SE')
         root = QgsProject.instance().layerTreeRoot()
 
         bridge = QgsLayerTreeMapCanvasBridge(root, canvas)
@@ -1700,11 +1700,6 @@ class QVista(QMainWindow, Ui_MainWindow):
         if self.editantEscala:  
             self.editantEscala=False
             self.leScale.hide()
-        
-    def canviaTema(self,tema):
-        # self.canvas.setTheme(tema if tema!='Tema per defecte' else '')
-        self.tema = tema if tema!='Tema per defecte' else ''
-        self.project.mapThemeCollection().applyTheme(self.tema, self.root, self.llegenda.layerTreeModel())
 
     def definirLabelsStatus(self):    
         styleheetLabel='''
