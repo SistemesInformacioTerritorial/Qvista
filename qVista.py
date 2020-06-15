@@ -234,7 +234,6 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.dwLlegenda.setMaximumWidth(9999)
         self.addDockWidget( Qt.LeftDockWidgetArea , self.dwLlegenda )
         self.dwLlegenda.setWidget(self.llegenda)
-        self.llegenda.dockWidget = self.dwLlegenda
         self.dwLlegenda.setWindowFlag(Qt.Window)
         self.dwLlegenda.show()
         self.dwLlegenda.setFloating(True)

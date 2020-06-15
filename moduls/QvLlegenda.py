@@ -24,8 +24,9 @@ import os
 # pyrcc5 images.qrc >images_rc.py
 import images_rc  # NOQA
 
-TEMA_INICIAL = '(INICIAL)'
+TEMA_INICIAL = '(Inicial)'
 TITOL_INICIAL = 'Llegenda'
+
 
 class QvLlegenda(qgGui.QgsLayerTreeView):
 
@@ -38,7 +39,6 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
     def __init__(self, canvas=None, atributs=None, canviCapaActiva=None, editable=True):
         qgGui.QgsLayerTreeView.__init__(self)
 
-        self.dockWidget = None
         self.setTitol()
         self.project = qgCor.QgsProject.instance()
         self.root = self.project.layerTreeRoot()
@@ -78,12 +78,12 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
         if self.canvas is not None:
             self.canvas.scaleChanged.connect(self.connectaEscala)
 
+        # Lista de acciones que apareceran en el menú
+        self.menuAccions = []
+        self.menuTemes = qtWdg.QMenu('Temes')
         # Acciones disponibles
         self.accions = QvAccions()
         self.setAccions()
-        # Lista de acciones que apareceran en el menú
-        self.menuAccions = []
-        self.menuExtra = None
         self.setMenuProvider(QvMenuLlegenda(self))
 
         self.iconaFiltre = qgGui.QgsLayerTreeViewIndicator()
@@ -114,8 +114,8 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
 
     def setTitol(self, titol=TITOL_INICIAL):
         self.setWindowTitle(titol)
-        if self.dockWidget is not None:
-            self.dockWidget.setWindowTitle(titol)
+        if self.parent() is not None:
+            self.parent().setWindowTitle(titol)
 
     def modificacioProjecte(self, txt='userModification'):
         if self.iniSignal:
@@ -363,13 +363,10 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
         except Exception as e:
             print(str(e))
 
-    def menuTemes(self):
-        if self.numTemes() == 0:
-            return None
-        menu = qtWdg.QMenu('Temes')
+    def setMenuTemes(self):
+        self.menuTemes.clear()
         for tema in self.temes():
-            menu.addAction(tema, self.aplicaTemaMenu)
-        return menu
+            self.menuTemes.addAction(tema, self.aplicaTemaMenu)
 
     def capaPerNom(self, nomCapa):
         """
@@ -514,6 +511,8 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
         act.triggered.connect(self.removeFilter)
         self.accions.afegirAccio('removeFilter', act)
 
+        self.accions.afegirAccio('menuTemes', self.menuTemes)
+
     def calcTipusMenu(self):
         # Tipos: none, group, layer, symb
         tipo = 'none'
@@ -533,10 +532,9 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
     def setMenuAccions(self):
         # Menú dinámico según tipo de elemento sobre el que se clicó
         self.menuAccions = []
-        if self.editable:
-            self.menuExtra = self.menuTemes()
-        else:
-            self.menuExtra = None
+        self.setMenuTemes()
+        if self.editable and not self.menuTemes.isEmpty():
+            self.menuAccions += ['menuTemes', 'separator']
         tipo = self.calcTipusMenu()
         if tipo == 'layer':
             capa = self.currentLayer()
@@ -833,6 +831,5 @@ if __name__ == "__main__":
 
         # Conexión de la señal con la función menuContexte para personalizar el menú
         leyenda.clicatMenuContexte.connect(menuContexte)
-
 
         # app.aboutToQuit.connect(QvApp().logFi)
