@@ -114,4 +114,5 @@ class QvMenuLlegenda(qgGui.QgsLayerTreeViewMenuProvider):
     def createContextMenu(self):
         tipo = self.llegenda.setMenuAccions()
         self.llegenda.clicatMenuContexte.emit(tipo)
-        return self.llegenda.accions.menuAccions(self.llegenda.menuAccions)
+        return self.llegenda.accions.menuAccions(self.llegenda.menuAccions,
+                                                 menuExtra=self.llegenda.menuExtra)

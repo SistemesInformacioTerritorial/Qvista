@@ -24,6 +24,8 @@ import os
 # pyrcc5 images.qrc >images_rc.py
 import images_rc  # NOQA
 
+TEMA_INICIAL = '(INICIAL)'
+TITOL_INICIAL = 'Llegenda'
 
 class QvLlegenda(qgGui.QgsLayerTreeView):
 
@@ -36,7 +38,8 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
     def __init__(self, canvas=None, atributs=None, canviCapaActiva=None, editable=True):
         qgGui.QgsLayerTreeView.__init__(self)
 
-        self.setWindowTitle('Llegenda')
+        self.dockWidget = None
+        self.setTitol()
         self.project = qgCor.QgsProject.instance()
         self.root = self.project.layerTreeRoot()
         self.canvas = None
@@ -80,6 +83,7 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
         self.setAccions()
         # Lista de acciones que apareceran en el menú
         self.menuAccions = []
+        self.menuExtra = None
         self.setMenuProvider(QvMenuLlegenda(self))
 
         self.iconaFiltre = qgGui.QgsLayerTreeViewIndicator()
@@ -107,6 +111,11 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
 
         self.fSignal = lambda: self.projecteModificat.emit('canvasLayersChanged')
         self.iniSignal = False
+
+    def setTitol(self, titol=TITOL_INICIAL):
+        self.setWindowTitle(titol)
+        if self.dockWidget is not None:
+            self.dockWidget.setWindowTitle(titol)
 
     def modificacioProjecte(self, txt='userModification'):
         if self.iniSignal:
@@ -247,6 +256,8 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
                 # # self.restoreCanvasPosition()
                 node.setItemVisibilityChecked(True)
 
+        self.creaTemaInicial()
+
     def connectaCanviCapaActiva(self, canviCapaActiva):
         if canviCapaActiva is not None:
             self.currentLayerChanged.connect(canviCapaActiva)
@@ -293,6 +304,72 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
 
     def temes(self):
         return self.project.mapThemeCollection().mapThemes()
+
+    def numTemes(self):
+        return len(self.project.mapThemeCollection().mapThemes())
+
+    def buscaTema(self, rec=None):
+        if rec is None:
+            rec = qgCor.QgsMapThemeCollection.createThemeFromCurrentState(self.root, self.model)
+        for tema in self.temes():
+            if rec == self.project.mapThemeCollection().mapThemeState(tema):
+                return tema
+        return None
+
+    def creaTema(self, tema, rec=None):
+        # Crea o actualiza tema
+        if rec is None:
+            rec = qgCor.QgsMapThemeCollection.createThemeFromCurrentState(self.root, self.model)
+        temes = self.project.mapThemeCollection()
+        if temes.hasMapTheme(tema):
+            temes.update(tema, rec)
+        else:
+            temes.insert(tema, rec)
+
+    def creaTemaInicial(self, force=False):
+        # Si no existen temas y no queremos forzarlo, no se crea
+        if self.numTemes() == 0 and not force:
+            return
+        # Si ya existe un tema que recoge el estado inicial, no se crea
+        rec = qgCor.QgsMapThemeCollection.createThemeFromCurrentState(self.root, self.model)
+        if self.buscaTema(rec) is not None:
+            return
+        # Crear o actualiza tema inicial
+        self.creaTema(TEMA_INICIAL, rec)
+
+    @qtCor.pyqtSlot()
+    def aplicaTitolTema(self):
+        if self.numTemes() == 0:
+            return
+        self.titolTema()
+
+    def titolTema(self):
+        tema = self.buscaTema()
+        if tema is not None and tema != TEMA_INICIAL:
+            titol = TITOL_INICIAL + ' - Tema ' + tema
+        else:
+            titol = TITOL_INICIAL
+        self.setTitol(titol)
+
+    def aplicaTema(self, tema):
+        self.project.mapThemeCollection().applyTheme(tema, self.root, self.model)
+        self.titolTema()
+
+    @qtCor.pyqtSlot()
+    def aplicaTemaMenu(self):
+        try:
+            tema = self.sender().text()
+            self.aplicaTema(tema)
+        except Exception as e:
+            print(str(e))
+
+    def menuTemes(self):
+        if self.numTemes() == 0:
+            return None
+        menu = qtWdg.QMenu('Temes')
+        for tema in self.temes():
+            menu.addAction(tema, self.aplicaTemaMenu)
+        return menu
 
     def capaPerNom(self, nomCapa):
         """
@@ -456,6 +533,10 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
     def setMenuAccions(self):
         # Menú dinámico según tipo de elemento sobre el que se clicó
         self.menuAccions = []
+        if self.editable:
+            self.menuExtra = self.menuTemes()
+        else:
+            self.menuExtra = None
         tipo = self.calcTipusMenu()
         if tipo == 'layer':
             capa = self.currentLayer()
@@ -481,8 +562,8 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
         elif tipo == 'none':
             if self.editable:
                 self.menuAccions += ['addGroup', 'addLayersFromFile']
-                # if QvApp().usuari in ('CPRET', 'DE1717'):
-                #     self.menuAccions += ['addCustomCSV']
+            # if QvApp().usuari in ('CPRET', 'DE1717'):
+            #     self.menuAccions += ['addCustomCSV']
         else:  # 'symb'
             pass
         return tipo
@@ -620,6 +701,7 @@ if __name__ == "__main__":
 
     from qgis.core.contextmanagers import qgisapp
     from moduls.QvApp import QvApp
+    import configuracioQvista as cfg
 
     with qgisapp(sysexit=False) as app:
 
@@ -659,13 +741,13 @@ if __name__ == "__main__":
         atrib = QvAtributs(canv)
 
         leyenda = QvLlegenda(canv, atrib, printCapaActiva)
+        leyenda.projecteModificat.connect(print)
 
-        leyenda.project.read('D:/qVista/EjemploMapSin.qgs')
+        # leyenda.project.read('D:/qVista/EjemploMapSin.qgs')
+        leyenda.project.read(cfg.projecteInicial)
 
         canv.setWindowTitle('Canvas')
         canv.show()
-
-        leyenda.setWindowTitle('Llegenda')
         leyenda.show()
 
         # Acciones personalizadas para menú contextual de la leyenda:
@@ -752,6 +834,5 @@ if __name__ == "__main__":
         # Conexión de la señal con la función menuContexte para personalizar el menú
         leyenda.clicatMenuContexte.connect(menuContexte)
 
-        leyenda.projecteModificat.connect(print)
 
         # app.aboutToQuit.connect(QvApp().logFi)
