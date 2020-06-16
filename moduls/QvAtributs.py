@@ -446,7 +446,7 @@ class QvTaulaAtributs(QgsAttributeTableView):
                 if self.feature is not None and self.feature.isValid():
                     num = self.layer.selectedFeatureCount()
                     dialog = QvFitxesAtributs(self.layer, [self.feature], num == 0)
-                    dialog.setStyleSheet('QWidget{border: 0px}')
+                    # dialog.setStyleSheet('QWidget{border: 0px}')
                 #     dialog = QgsAttributeDialog(
                 #         self.layer, self.feature, False)
                 #     # dialog = QgsAttributeForm(self.layer, self.feature)

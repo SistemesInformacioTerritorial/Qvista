@@ -1248,7 +1248,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         canvas = QvCanvasAuxiliar(self.canvas, botoneraHoritzontal=True,posicioBotonera='SE')
         root = QgsProject.instance().layerTreeRoot()
 
-        bridge = QgsLayerTreeMapCanvasBridge(root, canvas)
+        canvas.bridge = QgsLayerTreeMapCanvasBridge(root, canvas)
 
         canvas.setRotation(self.canvas.rotation())
         num = self.numCanvasAux[-1]+1 if len(self.numCanvasAux)>0 else 1
