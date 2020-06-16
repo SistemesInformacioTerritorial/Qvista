@@ -380,13 +380,13 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         carregaMascara(self)
 
-        if len(self.llegenda.temes())>0:
-            self.cbEstil.show()
-            self.cbEstil.clear()
-            self.cbEstil.addItem('Tema per defecte')
-            self.cbEstil.addItems(self.llegenda.temes())
-        else:
-            self.cbEstil.hide()
+        # if len(self.llegenda.temes())>0:
+        #     self.cbEstil.show()
+        #     self.cbEstil.clear()
+        #     self.cbEstil.addItem('Tema per defecte')
+        #     self.cbEstil.addItems(self.llegenda.temes())
+        # else:
+        #     self.cbEstil.hide()
     
     def startMovie(self):
         QvFuncions.startMovie()
@@ -1245,17 +1245,19 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.canviLayer()
     
     def nouCanvas(self):
-        canvas = QvCanvasAuxiliar(self.canvas, temaInicial=self.tema, botoneraHoritzontal=True,posicioBotonera='SE')
+        canvas = QvCanvasAuxiliar(self.canvas, botoneraHoritzontal=True,posicioBotonera='SE')
         root = QgsProject.instance().layerTreeRoot()
 
         bridge = QgsLayerTreeMapCanvasBridge(root, canvas)
 
+        canvas.setRotation(self.canvas.rotation())
         num = self.numCanvasAux[-1]+1 if len(self.numCanvasAux)>0 else 1
         dwCanvas = QvDockWidget(f'Vista auxiliar del mapa ({num})')
         dwCanvas.tancat.connect(lambda: self.numCanvasAux.remove(num))
         self.numCanvasAux.append(num)
         dwCanvas.setWidget(canvas)
         self.addDockWidget(Qt.RightDockWidgetArea, dwCanvas)
+        dwCanvas.setFloating(True)
     
     def reload(self):
         #comprovar si hi ha canvis
@@ -1697,11 +1699,6 @@ class QVista(QMainWindow, Ui_MainWindow):
         if self.editantEscala:  
             self.editantEscala=False
             self.leScale.hide()
-        
-    def canviaTema(self,tema):
-        # self.canvas.setTheme(tema if tema!='Tema per defecte' else '')
-        self.tema = tema if tema!='Tema per defecte' else ''
-        self.project.mapThemeCollection().applyTheme(self.tema, self.root, self.llegenda.layerTreeModel())
 
     def definirLabelsStatus(self):    
         styleheetLabel='''
@@ -1808,10 +1805,10 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.lblProjecte.setFrameStyle(QFrame.StyledPanel )
         self.lblProjecte.setFixedHeight(alcada)
 
-        self.cbEstil = QComboBox()
-        self.cbEstil.currentTextChanged.connect(self.canviaTema)
-        # self.cbEstil.setFrameStyle(QFrame.StyledPanel )
-        self.cbEstil.setFixedHeight(alcada)
+        # self.cbEstil = QComboBox()
+        # self.cbEstil.currentTextChanged.connect(self.canviaTema)
+        # # self.cbEstil.setFrameStyle(QFrame.StyledPanel )
+        # self.cbEstil.setFixedHeight(alcada)
 
         #Afegim tots els widgets de cop
         #Així fer una reordenació serà més senzill
@@ -1823,7 +1820,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.statusbar.addPermanentWidget(self.wXY, 1 )
         self.statusbar.addPermanentWidget( self.lblProjeccio, 0 )
         self.statusbar.addPermanentWidget( self.wScale, 0 )
-        self.statusbar.addPermanentWidget(self.cbEstil,0)
+        # self.statusbar.addPermanentWidget(self.cbEstil,0)
         # self.statusbar.addPermanentWidget( self.bOrientacio, 0 )
     
     def connectarProgressBarCanvas(self):
