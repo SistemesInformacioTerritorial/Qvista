@@ -336,10 +336,12 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
             return
         # Si ya existe un tema que recoge el estado inicial, no se crea
         rec = qgCor.QgsMapThemeCollection.createThemeFromCurrentState(self.root, self.model)
-        if self.buscaTema(rec) is not None:
-            return
-        # Crear o actualiza tema inicial
-        self.creaTema(TEMA_INICIAL, rec)
+        temaIni = self.buscaTema(rec)
+        if temaIni is None:
+            # Crea tema inicial
+            self.creaTema(TEMA_INICIAL, rec)
+        else:
+            self.titolTema(temaIni)
 
     @qtCor.pyqtSlot()
     def aplicaTitolTema(self):
@@ -347,8 +349,9 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
             return
         self.titolTema()
 
-    def titolTema(self):
-        tema = self.buscaTema()
+    def titolTema(self, tema=None):
+        if tema is None:
+            tema = self.buscaTema()
         if tema is not None and tema != TEMA_INICIAL:
             titol = 'Tema ' + tema
         else:
