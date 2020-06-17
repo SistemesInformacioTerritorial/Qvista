@@ -823,7 +823,9 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.dwLlegenda.setObjectName( "layers" )
         self.dwLlegenda.setAllowedAreas( Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea )
         self.dwLlegenda.setContentsMargins ( 0,0,0,0)
-        self.dwLlegenda.setMinimumWidth(250*QvApp().zoomFactor())
+
+        # El 230 de la següent instrucció és empiric, i caldria fer-lo dependre de la'amplada de la llegenda que es carrega.
+        self.dwLlegenda.setMinimumWidth(230*QvApp().zoomFactor())
         self.dwLlegenda.setMaximumWidth(9999)
         self.addDockWidget( Qt.LeftDockWidgetArea , self.dwLlegenda )
         self.dwLlegenda.setWidget(self.llegenda)
