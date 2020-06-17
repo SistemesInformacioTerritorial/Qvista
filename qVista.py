@@ -225,18 +225,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         #Això abans ho feia al ferGran. Però allà no està bé fer-ho. Ho deixo aquí i ja ho mourem
         self.frameLlegenda.hide()
         self.frame_11.hide()
-        self.dwLlegenda = QvDockWidget( "Llegenda", self )
-        self.dwLlegenda.setContextMenuPolicy(Qt.PreventContextMenu)
-        self.dwLlegenda.setObjectName( "layers" )
-        self.dwLlegenda.setAllowedAreas( Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea )
-        self.dwLlegenda.setContentsMargins ( 0,0,0,0)
-        self.dwLlegenda.setMinimumWidth(0)
-        self.dwLlegenda.setMaximumWidth(9999)
-        self.addDockWidget( Qt.LeftDockWidgetArea , self.dwLlegenda )
-        self.dwLlegenda.setWidget(self.llegenda)
-        self.dwLlegenda.setWindowFlag(Qt.Window)
-        self.dwLlegenda.show()
-        self.dwLlegenda.setFloating(True)
+
         self.ferGran()
 
     # Fins aquí teniem la inicialització de la classe. Ara venen les funcions, o métodes, de la classe. 
@@ -812,6 +801,9 @@ class QVista(QMainWindow, Ui_MainWindow):
         """
         self.layoutFrameLlegenda = QVBoxLayout(self.frameLlegenda)
         self.llegenda = QvLlegenda(self.canvas, self.taulesAtributs)
+
+
+        # self.dwLlegenda.setFloating(True)
         #r = 250
         #self.llegenda.setMinimumWidth(r) #si es posa un numero a pelo (250), es mostra en finestra petita
         self.llegenda.currentLayerChanged.connect(self.canviLayer)
@@ -826,6 +818,18 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.llegenda.clicatMenuContexte.connect(self.menuLlegenda)
         self.llegenda.obertaTaulaAtributs.connect(self.dwTaulaAtributs.show)
         
+        self.dwLlegenda = QvDockWidget( "Llegenda", self )
+        self.dwLlegenda.setContextMenuPolicy(Qt.PreventContextMenu)
+        self.dwLlegenda.setObjectName( "layers" )
+        self.dwLlegenda.setAllowedAreas( Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea )
+        self.dwLlegenda.setContentsMargins ( 0,0,0,0)
+        self.dwLlegenda.setMinimumWidth(250*QvApp().zoomFactor())
+        self.dwLlegenda.setMaximumWidth(9999)
+        self.addDockWidget( Qt.LeftDockWidgetArea , self.dwLlegenda )
+        self.dwLlegenda.setWidget(self.llegenda)
+        self.dwLlegenda.setWindowFlag(Qt.Window)
+        self.dwLlegenda.show()
+
     def preparacioEntorns(self):             
         self.menuEntorns.setFont(QvConstants.FONTSUBTITOLS)
         self.menuEntorns.styleStrategy = QFont.PreferAntialias or QFont.PreferQuality #???
