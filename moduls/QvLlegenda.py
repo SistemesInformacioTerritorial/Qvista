@@ -262,6 +262,10 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
 
         self.creaTemaInicial()
 
+        # if self.canvas is not None:
+        #     for nota in self.project.annotationManager().annotations():
+        #         qgGui.QgsMapCanvasAnnotationItem(nota, self.canvas)
+
     def connectaCanviCapaActiva(self, canviCapaActiva):
         if canviCapaActiva is not None:
             self.currentLayerChanged.connect(canviCapaActiva)
