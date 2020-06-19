@@ -32,13 +32,12 @@ class QvCanvasAuxiliar(QvCanvas):
         self.temes = QgsProject.instance().mapThemeCollection().mapThemes()
         if len(self.temes)>0:
             self.cbTemes = QComboBox()
-            self.cbTemes.addItem('Tema per defecte')
             self.cbTemes.addItems(self.temes)
             self.cbTemes.currentIndexChanged.connect(self.canviTema)
             self.layoutBotoneraMapa.insertWidget(0,self.cbTemes)
 
             if temaInicial in self.temes:
-                self.cbTemes.setCurrentIndex(self.temes.index(temaInicial)+1)
+                self.cbTemes.setCurrentIndex(self.temes.index(temaInicial))
     
     def botons(self):
         self.bSincronia = self._botoMapa(os.path.join(imatgesDir,'sync.png'))
@@ -86,7 +85,7 @@ class QvCanvasAuxiliar(QvCanvas):
         if i==0:
             self.setTheme('')
         else:
-            self.setTheme(self.temes[i-1])
+            self.setTheme(self.temes[i])
             
     def sincronitzaExtensio(self, canv: QgsMapCanvas):
         """Sincronitza els paràmetre implícit amb el canvas passat com a paràmetre

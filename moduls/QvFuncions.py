@@ -195,3 +195,27 @@ def reportarProblema(titol: str, descripcio: str=None):
     else:
         print ('Error al crear el problema {0:s}'.format(titol))
         return False
+
+def creaEntorn(widget: QWidget, **kwargs):
+
+    # inspect.stack() dóna la pila d'execució. 
+    #  Ens interessa conèixer qui ens ha cridat, així que consultem l'element 1
+    #  (el 0 som nosaltres mateixos). 
+    # D'aquí, ens interessa saber on ho assignarem. Està a code_context[0]
+    #  Agafem el que hi ha a l'esquerra de l'igual, eliminem espasi, i ho tenim
+    context = inspect.stack()[1]
+    nomClasse = context.code_context[0].split('=')[0].strip()
+    
+    def init_classe(self,parent):
+        titol = self.titol if hasattr(self,'titol') else nomClasse
+        super(QDockWidget,self).__init__(titol,parent)
+        self.setWidget(widget)
+    atributs = {'__init__':init_classe,**kwargs}
+    # type permet construir una classe. 
+    # Com a primer argument li passem el nom que tindrà aquesta (com a str)
+    # Com a segon argument, una tupla amb les classes de les que hereta
+    # Com a tercer argument, un diccionari amb els atributs de la classe.
+    #  En el nostre cas, els atributs seran els que rebem com a arguments amb nom,
+    #  més una funció __init__ pròpia, que és la creada a sobre.
+    classe = type(nomClasse,(QDockWidget,), atributs)
+    return classe

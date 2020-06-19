@@ -45,9 +45,11 @@ from moduls.QvCarregadorGPKG import QvCarregadorGPKG
 from moduls.QvVisualitzacioCapa import QvVisualitzacioCapa
 from moduls.QvSobre import QvSobre
 from moduls import QvFuncions
-from moduls.QvEntorns import QvEntorns
+from moduls.QvEines import QvEines
 from moduls.QvCanvasAuxiliar import QvCanvasAuxiliar
 import os        
+import importlib
+import itertools
 
 from pathlib import Path
 import functools #Eines de funcions, per exemple per avaluar-ne parcialment una
@@ -337,20 +339,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         # Lectura de les metadades del projecte per veure si hi ha un entorn associat
         # Caldria generalitzar-ho i treure-ho d'aquesta funció
 
-        nomEntorn = QgsExpressionContextUtils.projectScope(self.project).variable('qV_entorn')
-        if nomEntorn is not None:
-            try:
-                Entorn = QvEntorns.entorn(nomEntorn)
-                self.dwEntorn = Entorn(self)
-                self.addDockWidget(Qt.RightDockWidgetArea, self.dwEntorn)
-                self.dwEntorn.show()
-                self.botoMostraEntorn.show()
-            except ModuleNotFoundError:
-                missatgeCaixa('Entorn no trobat',f"L'entorn {nomEntorn} no està disponible. Comproveu que teniu la darrera versió de qVista i si l'error persisteix contacteu amb el propietari del mapa")
-        else:
-            if hasattr(self,'dwEntorn') and self.dwEntorn is not None:
-                self.dwEntorn.setParent(None)
-                self.botoMostraEntorn.hide()
+        self.carregaEntorns()
         # if entorn == "'MarxesExploratories'":
         #     self.marxesCiutat()
 
@@ -1254,7 +1243,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         canvas = QvCanvasAuxiliar(self.canvas, botoneraHoritzontal=True,posicioBotonera='SE')
         root = QgsProject.instance().layerTreeRoot()
 
-        bridge = QgsLayerTreeMapCanvasBridge(root, canvas)
+        canvas.bridge = QgsLayerTreeMapCanvasBridge(root, canvas)
 
         canvas.setRotation(self.canvas.rotation())
         num = self.numCanvasAux[-1]+1 if len(self.numCanvasAux)>0 else 1
@@ -1458,6 +1447,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.menuMapes = self.bar.addMenu ("Mapes")
         self.menuCapes = self.bar.addMenu ("Capes")
         self.menuUtilitats = self.bar.addMenu("Utilitats")
+        self.menuEines = self.bar.addMenu('Eines')
         self.menuAjuda = self.bar.addMenu('Ajuda')
 
         self.menuMapes.setFont(QvConstants.FONTSUBTITOLS)
@@ -1494,11 +1484,93 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.menuUtilitats.addAction(self.actpiuPortal)
         # self.menuUtilitats.addAction(self.actDocumentacio)
 
+        self.menuEines.setFont(QvConstants.FONTSUBTITOLS)
+        self.menuUtilitats.styleStrategy = QFont.PreferAntialias or QFont.PreferQuality
+        self.carregaEines()
+
         self.menuAjuda.setFont(QvConstants.FONTSUBTITOLS)
         self.menuAjuda.addAction(self.actHelp)
         self.menuAjuda.addAction(self.actBug)
         self.menuAjuda.addSeparator()
         self.menuAjuda.addAction(self.actSobre)
+
+    def carregaEines(self):
+        eines = os.listdir('moduls/eines')
+        self.accionsEines = []
+        for x in eines:
+            nom = Path(x).stem
+            try:
+                eina = importlib.import_module(f'moduls.eines.{nom}')
+                classe = getattr(eina,nom)
+                if hasattr(classe,'esEinaGlobal') and classe.esEinaGlobal:
+                    titol = classe.titol if hasattr(classe,'titol') else classe.__name__
+                    act = QAction(titol)
+                    act.triggered.connect(functools.partial(self.obreEina,classe))
+                    self.menuEines.addAction(act)
+                    self.accionsEines.append(act)
+            except Exception as e:
+                print(e)
+    def carregaEntorns(self):
+        def llistaDesDeStr(s):
+            s = s.replace('[','').replace(']','').split(',')
+            s = [x.strip() for x in s]
+            return s
+        def obteTitol(classe):
+            if hasattr(classe,'titol'):
+                return classe.titol
+            return classe.__name__
+        try:
+            if hasattr(self,'dwEines'):
+                for x in self.dwEines:
+                    # x.setParent(None)
+                    x.hide()
+            self.dwEines = []
+            if hasattr(self,'actEines'):
+                for x in self.actEines:
+                    self.menuEines.removeAction(x)
+            self.actEines = []
+            nomsEntorns = QgsExpressionContextUtils.projectScope(self.project).variable('qV_entorn')
+            if nomsEntorns is not None:
+                nomsEntorns = llistaDesDeStr(nomsEntorns)
+                for nomEntorn in nomsEntorns:
+                    Entorn = QvEines.entorn(nomEntorn)
+                    dockWidgets = self.findChildren(Entorn)
+                    if len(dockWidgets)>0:
+                        dwEntorn = dockWidgets[0]
+                    else:
+                        dwEntorn = Entorn(self)
+                    self.addDockWidget(Qt.RightDockWidgetArea, dwEntorn)
+                    if hasattr(dwEntorn,'apareixDockat'):
+                        dwEntorn.setFloating(not dwEntorn.apareixDockat)
+                    else:
+                        dwEntorn.setFloating(True)
+                    self.dwEines.append(dwEntorn)
+            nomsEines = QgsExpressionContextUtils.projectScope(self.project).variable('qV_eines')
+            if nomsEines is not None:
+                self.menuEines.addSeparator()
+                nomsEines = llistaDesDeStr(nomsEines)
+                for nomEina in itertools.chain(nomsEntorns,nomsEines):
+                    Eina = QvEines.entorn(nomEina)
+                    titol=obteTitol(Eina)
+                    # comprovem si ja hi ha alguna acció amb aquest nom. Si hi és, no la repetim
+                    accions = self.menuEines.actions()
+                    accions = [x for x in accions if x.text()==titol]
+                    if len(accions)==0:
+                        act = QAction(titol)
+                        act.triggered.connect(functools.partial(self.obreEina,Eina))
+                        self.actEines.append(act)
+                        self.menuEines.addAction(act)
+        except Exception as e:
+            print(e)
+    def obreEina(self,eina):
+        dockWidgets = self.findChildren(eina)
+        if len(dockWidgets)>0:
+            for x in dockWidgets:
+                x.show()
+        else:
+            dwEina = eina(self)
+            self.addDockWidget(Qt.RightDockWidgetArea,dwEina)
+            dwEina.setFloating(True)
 
     def restaurarFunc(self):
         if self.maximitzada:

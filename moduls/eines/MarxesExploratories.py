@@ -3,6 +3,9 @@ from moduls.QvPushButton import QvPushButton
 from qgis.PyQt.QtGui import QFont, QDesktopServices
 
 class MarxesExploratories(QDockWidget):
+    titol = 'Marxes exploratòries de ciutat'
+    apareixDockat = True
+    esEinaGeneral = False
     def __init__(self, parent):
         self.parent = parent
         super().__init__("Marxes exploratòries")
