@@ -1,5 +1,5 @@
 from moduls.QvImports import *
-from moduls.QvCanvas import QvCanvas
+from moduls.QvCanvasAuxiliar import QvCanvasAuxiliar
 from moduls.QvPushButton import QvPushButton
 from qgis.PyQt.QtGui import QFont, QDesktopServices
 
@@ -64,12 +64,12 @@ class IntegracioPatrimoni(QDockWidget):
 
         fPatrimoni.layout().addItem(spacer)
 
-        self.canvas = QvCanvas()        
-        project = QgsProject.instance()
-        root = QgsProject.instance().layerTreeRoot()
+        self.canvas = QvCanvasAuxiliar(self.parent.canvas)        
+        # project = QgsProject.instance()
+        # root = QgsProject.instance().layerTreeRoot()
         self.canvas.setTheme('BIPE')
 
-        QgsLayerTreeMapCanvasBridge(root, self.canvas)
+        # QgsLayerTreeMapCanvasBridge(root, self.canvas)
 
         fPatrimoni.layout().addWidget(self.canvas)
  
@@ -84,13 +84,5 @@ class IntegracioPatrimoni(QDockWidget):
 
     def canviTema(self, tema):
         print(tema)
-        self.parent.project.mapThemeCollection().applyTheme(tema, self.parent.root, self.parent.llegenda.layerTreeModel())
         self.canvas.setTheme(tema)
         # self.canvas.refresh()
-  
-    def temaBIPS(self):
-        print('BIPS') 
-        self.parent.project.mapThemeCollection().applyTheme('Tema 2', self.parent.root, self.parent.llegenda.layerTreeModel())
-        self.canvas.setTheme('Tema 2')
-        self.canvas.refresh()
-   
