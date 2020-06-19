@@ -1,12 +1,12 @@
-# QvEntorns
-QvEntorns és un mòdul pensat per poder afegir entorns i eines a qVista sense necessitat de modificar l'arxiu de codi principal. 
+# QvEines
+QvEines és un mòdul pensat per poder afegir entorns i eines a qVista sense necessitat de modificar l'arxiu de codi principal. 
 
 Eina: Una *eina* es defineix com un QDockWidget que afegeix alguna informació o funcionalitat extra a qVista. Aquesta eina pot ser general (apareix sempre a qVista) o específica (apareix només en determinats projectes)
 Entorn: Un *entorn* es defineix com una eina que s'obre automàticament en obrir el projecte. Per definició, un entorn va lligat a un projecte concret
 
 ## Com definir una nova eina
 ### Creació del QDockWidget
-Per definir un entorn cal crear una subclasse de QDockWidget definint tot l'entorn. El crearem en un arxiu separat del QvEntorns.py, i allotjat al directori moduls/entorns. Per exemple, el crearem a *moduls/entorns/MarxesExploratories*
+Per definir un entorn cal crear una subclasse de QDockWidget definint tot l'entorn. El crearem en un arxiu separat del QvEines.py, i allotjat al directori moduls/entorns. Per exemple, el crearem a *moduls/entorns/MarxesExploratories*
 
 ```Python
 class MarxesExploratories(QDockWidget):
@@ -49,4 +49,4 @@ return getattr(mod,nom)
 
 La primera línia el que fa és importar el mòdul indicat, i ens l'assigna a la variable *mod*. La segona obté la classe del mòdul i la retorna.
 
-Dins del programa principal de qVista, la gestió és una mica més complexa. Per carregar les eines generals, s'itera tota la carpeta, per cada classe es consulta la variable esEinaGlobal i es fa en funció del seu valor. Per carregar les eines específiques i els entorns, com que ja es tenen els noms, s'importen directament amb QvEntorns, es creen les accions i tot això i es carrega. 
+Dins del programa principal de qVista, la gestió és una mica més complexa. Per carregar les eines generals, s'itera tota la carpeta, per cada classe es consulta la variable esEinaGlobal i es fa en funció del seu valor. Per carregar les eines específiques i els entorns, com que ja es tenen els noms, s'importen directament amb QvEines, es creen les accions i tot això i es carrega. 

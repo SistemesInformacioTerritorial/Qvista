@@ -45,7 +45,7 @@ from moduls.QvCarregadorGPKG import QvCarregadorGPKG
 from moduls.QvVisualitzacioCapa import QvVisualitzacioCapa
 from moduls.QvSobre import QvSobre
 from moduls import QvFuncions
-from moduls.QvEntorns import QvEntorns
+from moduls.QvEines import QvEines
 from moduls.QvCanvasAuxiliar import QvCanvasAuxiliar
 import os        
 import importlib
@@ -1495,12 +1495,12 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.menuAjuda.addAction(self.actSobre)
 
     def carregaEines(self):
-        eines = os.listdir('moduls/entorns')
+        eines = os.listdir('moduls/eines')
         self.accionsEines = []
         for x in eines:
             nom = Path(x).stem
             try:
-                eina = importlib.import_module(f'moduls.entorns.{nom}')
+                eina = importlib.import_module(f'moduls.eines.{nom}')
                 classe = getattr(eina,nom)
                 if hasattr(classe,'esEinaGlobal') and classe.esEinaGlobal:
                     titol = classe.titol if hasattr(classe,'titol') else classe.__name__
@@ -1520,20 +1520,20 @@ class QVista(QMainWindow, Ui_MainWindow):
                 return classe.titol
             return classe.__name__
         try:
-            if hasattr(self,'dwEntorns'):
-                for x in self.dwEntorns:
+            if hasattr(self,'dwEines'):
+                for x in self.dwEines:
                     # x.setParent(None)
                     x.hide()
-            self.dwEntorns = []
-            if hasattr(self,'actEntorns'):
-                for x in self.actEntorns:
+            self.dwEines = []
+            if hasattr(self,'actEines'):
+                for x in self.actEines:
                     self.menuEines.removeAction(x)
-            self.actEntorns = []
+            self.actEines = []
             nomsEntorns = QgsExpressionContextUtils.projectScope(self.project).variable('qV_entorn')
             if nomsEntorns is not None:
                 nomsEntorns = llistaDesDeStr(nomsEntorns)
                 for nomEntorn in nomsEntorns:
-                    Entorn = QvEntorns.entorn(nomEntorn)
+                    Entorn = QvEines.entorn(nomEntorn)
                     dockWidgets = self.findChildren(Entorn)
                     if len(dockWidgets)>0:
                         dwEntorn = dockWidgets[0]
@@ -1544,13 +1544,13 @@ class QVista(QMainWindow, Ui_MainWindow):
                         dwEntorn.setFloating(not dwEntorn.apareixDockat)
                     else:
                         dwEntorn.setFloating(True)
-                    self.dwEntorns.append(dwEntorn)
+                    self.dwEines.append(dwEntorn)
             nomsEines = QgsExpressionContextUtils.projectScope(self.project).variable('qV_eines')
             if nomsEines is not None:
                 self.menuEines.addSeparator()
                 nomsEines = llistaDesDeStr(nomsEines)
                 for nomEina in itertools.chain(nomsEntorns,nomsEines):
-                    Eina = QvEntorns.entorn(nomEina)
+                    Eina = QvEines.entorn(nomEina)
                     titol=obteTitol(Eina)
                     # comprovem si ja hi ha alguna acció amb aquest nom. Si hi és, no la repetim
                     accions = self.menuEines.actions()
@@ -1558,7 +1558,7 @@ class QVista(QMainWindow, Ui_MainWindow):
                     if len(accions)==0:
                         act = QAction(titol)
                         act.triggered.connect(functools.partial(self.obreEina,Eina))
-                        self.actEntorns.append(act)
+                        self.actEines.append(act)
                         self.menuEines.addAction(act)
         except Exception as e:
             print(e)
