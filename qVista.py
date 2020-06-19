@@ -1508,8 +1508,8 @@ class QVista(QMainWindow, Ui_MainWindow):
                     act.triggered.connect(functools.partial(self.obreEina,classe))
                     self.menuEines.addAction(act)
                     self.accionsEines.append(act)
-            except:
-                ...
+            except Exception as e:
+                print(e)
     def carregaEntorns(self):
         def llistaDesDeStr(s):
             s = s.replace('[','').replace(']','').split(',')
