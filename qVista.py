@@ -1496,7 +1496,7 @@ class QVista(QMainWindow, Ui_MainWindow):
             try:
                 eina = importlib.import_module(f'moduls.entorns.{nom}')
                 classe = getattr(eina,nom)
-                if hasattr(classe,'esEina') and classe.esEina:
+                if hasattr(classe,'esEinaGlobal') and classe.esEinaGlobal:
                     titol = classe.titol if hasattr(classe,'titol') else classe.__name__
                     act = QAction(titol)
                     act.triggered.connect(functools.partial(self.obreEina,classe))
@@ -1534,7 +1534,9 @@ class QVista(QMainWindow, Ui_MainWindow):
                     else:
                         dwEntorn = Entorn(self)
                     self.addDockWidget(Qt.RightDockWidgetArea, dwEntorn)
-                    if len(self.dwEntorns)>0:
+                    if hasattr(dwEntorn,'apareixDockat'):
+                        dwEntorn.setFloating(not dwEntorn.apareixDockat)
+                    else:
                         dwEntorn.setFloating(True)
                     self.dwEntorns.append(dwEntorn)
             nomsEines = QgsExpressionContextUtils.projectScope(self.project).variable('qV_eines')
@@ -1543,9 +1545,10 @@ class QVista(QMainWindow, Ui_MainWindow):
                 nomsEines = llistaDesDeStr(nomsEines)
                 for nomEina in itertools.chain(nomsEntorns,nomsEines):
                     Eina = QvEntorns.entorn(nomEina)
-                    obteTitol(Eina)
+                    titol=obteTitol(Eina)
                     # comprovem si ja hi ha alguna acció amb aquest nom. Si hi és, no la repetim
-                    accions = [x if x.text()==titol for x in self.menuEines.findChildren(QAction)]
+                    accions = self.menuEines.actions()
+                    accions = [x for x in accions if x.text()==titol]
                     if len(accions)==0:
                         act = QAction(titol)
                         act.triggered.connect(functools.partial(self.obreEina,Eina))
