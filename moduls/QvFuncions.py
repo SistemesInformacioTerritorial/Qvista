@@ -2,6 +2,7 @@ import os
 import sys
 import time
 import inspect
+from pathlib import Path
 from moduls.QvVideo import QvVideo
 from moduls.QvImports import *
 from moduls.QvConstants import QvConstants
@@ -196,15 +197,19 @@ def reportarProblema(titol: str, descripcio: str=None):
         print ('Error al crear el problema {0:s}'.format(titol))
         return False
 
-def creaEntorn(widget: QWidget, **kwargs):
+def creaEntorn(widget: QWidget, **kwargs) -> type:
+    
+    # Si és la classe, la instanciem abans de fer res. No hauria de ser-ho, però per si de cas...
+    if inspect.isclass(widget):
+        widget=widget()
 
-    # inspect.stack() dóna la pila d'execució. 
-    #  Ens interessa conèixer qui ens ha cridat, així que consultem l'element 1
-    #  (el 0 som nosaltres mateixos). 
-    # D'aquí, ens interessa saber on ho assignarem. Està a code_context[0]
-    #  Agafem el que hi ha a l'esquerra de l'igual, eliminem espasi, i ho tenim
-    context = inspect.stack()[1]
-    nomClasse = context.code_context[0].split('=')[0].strip()
+    # Com a nom de la classe, intentarem posar el nom de l'arxiu des d'on estiguem invocant això
+    try:
+        context = inspect.stack()[1]
+        nomClasse = Path(context.filename).stem
+    except:
+        # Per evitar que peti, si tot ha fallat, posarem un nom qualsevol
+        nomClasse = 'EntornCustom'
     
     def init_classe(self,parent):
         titol = self.titol if hasattr(self,'titol') else nomClasse
@@ -219,3 +224,48 @@ def creaEntorn(widget: QWidget, **kwargs):
     #  més una funció __init__ pròpia, que és la creada a sobre.
     classe = type(nomClasse,(QDockWidget,), atributs)
     return classe
+
+class creaEntorn:
+    """Cridable (callable) per decorar la declaració d'una subclasse de QWidget i crear un QDockWidget que el contingui.
+    Està pensat per fer-se servir com un decorador, i passar-li com a paràmetre
+    Exemple d'ús:
+
+    @QvFuncions.creaEntorn(titol='Hola')
+    class Hola(QDockWidget):
+        ...
+    
+    Això farà que la classe Hola sigui una classe del tipus QDockWidget que contindrà el QWidget definit
+    """
+    def __init__(self,**kwargs):
+        self.kwargs=kwargs
+    
+    def __call__(self,classeWidOrig):
+        """Funció que rep un QWidget i crea una classe del tipus QDockWidget que el conté, pensat per crear entorns
+
+        Args:
+            classeWidOrig (type(QWidget)): Classe del widget que volem que contingui l'entorn
+
+        Returns:
+            type: Una subclasse de QDockWidget (no instanciada)
+        """
+        wid = classeWidOrig()
+        try:
+            context = inspect.stack()[1]
+            nomClasse = Path(context.filename).stem
+        except:
+            # Per evitar que peti, si tot ha fallat, posarem un nom qualsevol
+            nomClasse = 'EntornCustom'
+        
+        def init_classe(self,parent):
+            titol = self.titol if hasattr(self,'titol') else nomClasse
+            super(QDockWidget,self).__init__(titol,parent)
+            self.setWidget(wid)
+        atributs = {'__init__':init_classe,**self.kwargs}
+        # type permet construir una classe. 
+        # Com a primer argument li passem el nom que tindrà aquesta (com a str)
+        # Com a segon argument, una tupla amb les classes de les que hereta
+        # Com a tercer argument, un diccionari amb els atributs de la classe.
+        #  En el nostre cas, els atributs seran els que rebem com a arguments amb nom,
+        #  més una funció __init__ pròpia, que és la creada a sobre.
+        classe = type(nomClasse,(QDockWidget,), atributs)
+        return classe

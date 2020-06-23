@@ -23,6 +23,34 @@ Per donar més informació a qVista sobre aquesta eina, podem declarar les varia
 * **titol:** El títol que volem que aparegui a l'acció del menu. Si no s'especifica, serà el nom de la classe.
 * **apareixDockat:** Si està a True, el dockwidget apareix dockat a la dreta. Si està a False, apareix flotant
 
+#### Creació automàtica del dockwidget
+Una pràctica habitual és la de crear primer el widget, provar-lo de manera independent, i després integrar-lo. Això també és possible aquí. Una primera aproximació és la següent:
+
+```Python
+# Imaginem un arxiu eines/EntornProva.py
+class ElMeuWidget(QWidget):
+    ...
+
+class EntornProva(QDockWidget):
+    titol = 'Entorn de prova'
+    apareixDockat = False
+    esEinaGeneral = False
+    def __init__(self,parent=None):
+        super().__init__(self.titol,parent)
+        self.setWidget(ElMeuWidget())
+```
+
+Aquesta aproximació és perfectament funcional, però obliga a repetir codi contínuament. Però el mòdul QvFuncions ens serveix per poder automatitzar això:
+
+```Python
+# eines/EntornProva.py
+from moduls import QvFuncions
+@QvFuncions.creaEntorn(titol = 'Entorn de prova',apareixDockat = False,esEinaGeneral = False)
+class EntornProva(QWidget):
+    ...
+```
+
+El decorador *creaEntorn* rep com a arguments amb nom totes les variables de classe que vulguem definir dins del QDockWidget (i també funcions), i decora el QWidget per declarar un QDockWidget que el contingui. **IMPORTANT:** El nom de la classe ha de ser el mateix que el de l'arxiu. Amb aquest decorador, el QWidget queda emmascarat pel QDockWidget, i serà com haver-lo declarat directament
 ### Definir les variables de projecte
 Tenim dues variables d'entorn que podem definir en els projectes. **qV_entorn** i **qV_eines**. El seu contingut ha de ser, o bé un únic literal (el nom de l'eina), o bé una llista de literals.
 

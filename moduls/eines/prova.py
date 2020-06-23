@@ -1,7 +1,8 @@
 from moduls import QvFuncions
 from moduls.QvImports import *
 
-class ElMeuWidget(QWidget):
+@QvFuncions.creaEntornDecorador(titol="Prova del generador d'entorns",esEinaGlobal=True,apareixDockat=False)
+class prova(QWidget):
     def __init__(self,parent=None):
         super().__init__(parent)
         self.lay=QVBoxLayout()
@@ -10,5 +11,5 @@ class ElMeuWidget(QWidget):
         self.lay.addWidget(QLabel("Adéu :'("))
         self.setLayout(self.lay)
 
-prova = QvFuncions.creaEntorn(ElMeuWidget(),titol="Prova del generador d'entorns",
-                              esEinaGlobal=True,apareixDockat=False)
+# prova = QvFuncions.creaEntorn(ElMeuWidget(),titol="Prova del generador d'entorns",
+#                               esEinaGlobal=True,apareixDockat=False)
