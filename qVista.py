@@ -1240,7 +1240,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.canviLayer()
     
     def nouCanvas(self):
-        canvas = QvCanvasAuxiliar(self.canvas, botoneraHoritzontal=True,posicioBotonera='SE')
+        canvas = QvCanvasAuxiliar(self.canvas, temaInicial=self.llegenda.buscaTema(), botoneraHoritzontal=True,posicioBotonera='SE')
         root = QgsProject.instance().layerTreeRoot()
 
         canvas.bridge = QgsLayerTreeMapCanvasBridge(root, canvas)
