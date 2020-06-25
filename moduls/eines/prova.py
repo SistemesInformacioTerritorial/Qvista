@@ -1,7 +1,7 @@
 from moduls import QvFuncions
 from moduls.QvImports import *
 
-@QvFuncions.creaEntornDecorador(titol="Prova del generador d'entorns",esEinaGlobal=True,apareixDockat=False)
+@QvFuncions.creaEina(titol="Prova del generador d'entorns",esEinaGlobal=True,apareixDockat=False)
 class prova(QWidget):
     def __init__(self,parent=None):
         super().__init__(parent)
@@ -11,5 +11,11 @@ class prova(QWidget):
         self.lay.addWidget(QLabel("Adéu :'("))
         self.setLayout(self.lay)
 
-# prova = QvFuncions.creaEntorn(ElMeuWidget(),titol="Prova del generador d'entorns",
-#                               esEinaGlobal=True,apareixDockat=False)
+print(f'És subclasse de QDockWidget: {issubclass(prova,QDockWidget)}')
+
+if __name__=='__main__':
+    import sys
+    with qgisapp() as app:
+        wid = prova()
+        wid.show()
+        sys.exit(app.exec())

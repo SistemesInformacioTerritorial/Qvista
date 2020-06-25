@@ -45,12 +45,12 @@ Aquesta aproximació és perfectament funcional, però obliga a repetir codi con
 ```Python
 # eines/EntornProva.py
 from moduls import QvFuncions
-@QvFuncions.creaEntorn(titol = 'Entorn de prova',apareixDockat = False,esEinaGeneral = False)
+@QvFuncions.creaEina(titol = 'Entorn de prova',apareixDockat = False,esEinaGeneral = False)
 class EntornProva(QWidget):
     ...
 ```
 
-El decorador *creaEntorn* rep com a arguments amb nom totes les variables de classe que vulguem definir dins del QDockWidget (i també funcions), i decora el QWidget per declarar un QDockWidget que el contingui. **IMPORTANT:** El nom de la classe ha de ser el mateix que el de l'arxiu. Amb aquest decorador, el QWidget queda emmascarat pel QDockWidget, i serà com haver-lo declarat directament
+El decorador *creaEina* rep com a arguments amb nom totes les variables de classe que vulguem definir dins del QDockWidget (i també funcions), i decora el QWidget per declarar un QDockWidget que el contingui. **IMPORTANT:** El nom de la classe ha de ser el mateix que el de l'arxiu. Amb aquest decorador, el QWidget queda emmascarat pel QDockWidget, i serà com haver-lo declarat directament
 ### Definir les variables de projecte
 Tenim dues variables d'entorn que podem definir en els projectes. **qV_entorn** i **qV_eines**. El seu contingut ha de ser, o bé un únic literal (el nom de l'eina), o bé una llista de literals.
 
