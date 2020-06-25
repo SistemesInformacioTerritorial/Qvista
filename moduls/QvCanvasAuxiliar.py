@@ -149,12 +149,16 @@ class QvCanvasAuxiliar(QvCanvas):
     
     def swapSincroniaExtensio(self,check):
         self.sincronitzaExtensio = check
+        self.syncExtensio()
     
     def swapSincroniaZoom(self,check):
         self.sincronitzaZoom = check
+        self.syncZoom()
     
     def swapSincroniaCentre(self,check):
         self.sincronitzaCentre = check
+        self.syncCentre()
     
     def swapSincroniaRotacio(self,check):
         self.sincronitzaRotacio = check
+        self.syncRotacio()
