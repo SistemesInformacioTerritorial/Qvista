@@ -115,8 +115,6 @@ class QvCanvasAuxiliar(QvCanvas):
             self.refresh()
     def syncZoom(self):
         if self.sincronitzaZoom and not self.underMouse():
-            print(self.canvas.scale())
-            print(self.scale())
             centre = self.center()
             self.setExtent(self.canvas.extent())
             self.setCenter(centre)

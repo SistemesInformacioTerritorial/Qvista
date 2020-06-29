@@ -1245,6 +1245,9 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         canvas.bridge = QgsLayerTreeMapCanvasBridge(root, canvas)
 
+        crs = self.canvas.mapSettings().destinationCrs()
+        canvas.setDestinationCrs(crs)
+
         canvas.setRotation(self.canvas.rotation())
         num = self.numCanvasAux[-1]+1 if len(self.numCanvasAux)>0 else 1
         dwCanvas = QvDockWidget(f'Vista auxiliar del mapa ({num})')
