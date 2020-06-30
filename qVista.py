@@ -106,7 +106,11 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         # Definicions globals
         app.setFont(QvConstants.FONTTEXT)
-        self.setWindowFlags(Qt.FramelessWindowHint)
+        
+        # self.setWindowFlags(Qt.FramelessWindowHint)
+        self.setWindowFlags(QtCore.Qt.CustomizeWindowHint)
+
+
         self.actualitzaWindowFlags()
 
         #Afegim títol a la finestra
