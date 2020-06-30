@@ -32,12 +32,13 @@ class QvCanvasAuxiliar(QvCanvas):
         self.temes = QgsProject.instance().mapThemeCollection().mapThemes()
         if len(self.temes)>0:
             self.cbTemes = QComboBox()
+            self.cbTemes.addItem('Sense tema')
             self.cbTemes.addItems(self.temes)
             self.cbTemes.currentIndexChanged.connect(self.canviTema)
             self.layoutBotoneraMapa.insertWidget(0,self.cbTemes)
 
             if temaInicial in self.temes:
-                self.cbTemes.setCurrentIndex(self.temes.index(temaInicial))
+                self.cbTemes.setCurrentIndex(self.temes.index(temaInicial)+1)
     
     def botons(self):
         self.bSincronia = self._botoMapa(os.path.join(imatgesDir,'sync.png'))
@@ -85,7 +86,7 @@ class QvCanvasAuxiliar(QvCanvas):
         if i==0:
             self.setTheme('')
         else:
-            self.setTheme(self.temes[i])
+            self.setTheme(self.temes[i-1])
             
     def sincronitzaExtensio(self, canv: QgsMapCanvas):
         """Sincronitza els paràmetre implícit amb el canvas passat com a paràmetre
@@ -149,12 +150,16 @@ class QvCanvasAuxiliar(QvCanvas):
     
     def swapSincroniaExtensio(self,check):
         self.sincronitzaExtensio = check
+        self.syncExtensio()
     
     def swapSincroniaZoom(self,check):
         self.sincronitzaZoom = check
+        self.syncZoom()
     
     def swapSincroniaCentre(self,check):
         self.sincronitzaCentre = check
+        self.syncCentre()
     
     def swapSincroniaRotacio(self,check):
         self.sincronitzaRotacio = check
+        self.syncRotacio()

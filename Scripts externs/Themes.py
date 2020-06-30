@@ -196,6 +196,9 @@ if __name__ == "__main__":
             canvasAux.update()
             canvasAux.refresh()
 
+            print(canvasPral.scale())
+            print(canvasAux.scale())
+
         except Exception as ee:
             print(str(ee))
     def GobiernaAux():
