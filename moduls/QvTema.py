@@ -107,7 +107,8 @@ class QvTema:
 
     def menuNouTema(self):
         nom, ok = qtWdg.QInputDialog.getText(self.llegenda, self.llegenda.sender().text(),
-                                             'Nom del tema: ', qtWdg.QLineEdit.Normal, '')
+                                             'Nom del tema: ' + (' ' * 40),
+                                             qtWdg.QLineEdit.Normal, '')
         nom = nom.strip()
         if not ok or nom == '':
             return
@@ -130,7 +131,8 @@ class QvTema:
     def menuCanviaNomTema(self):
         actiu = self.buscaTema()
         nom, ok = qtWdg.QInputDialog.getText(self.llegenda, self.llegenda.sender().text(),
-                                             'Nou nom del tema: ', qtWdg.QLineEdit.Normal, actiu)
+                                             'Nou nom del tema: ' + (' ' * 40),
+                                             qtWdg.QLineEdit.Normal, actiu)
         nom = nom.strip()
         if not ok or nom == '' or nom == actiu:
             return
