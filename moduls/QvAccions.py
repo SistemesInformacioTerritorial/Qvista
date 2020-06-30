@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from qgis.PyQt.QtWidgets import QMenu, QAction
-from qgis.PyQt.QtWidgets import QMessageBox, QWhatsThis
+from qgis.PyQt.QtWidgets import QWhatsThis
 
 
 class QvAccions:
