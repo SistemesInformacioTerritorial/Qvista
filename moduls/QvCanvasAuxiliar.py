@@ -3,7 +3,7 @@ from moduls.QvCanvas import QvCanvas
 from moduls.QvConstants import QvConstants
 
 class QvCanvasAuxiliar(QvCanvas):
-    def __init__(self, canvas, *args, temaInicial = None, sincronitzaExtensio=False, sincronitzaZoom=False, sincronitzaCentre=False, sincronitzaRotacio=True, volemCombo=True, **kwargs):
+    def __init__(self, canvas, *args, temaInicial = None, sincronitzaExtensio=False, sincronitzaZoom=False, sincronitzaCentre=True, sincronitzaRotacio=True, volemCombo=True, **kwargs):
         """Canvas auxiliar, pensat per afegir funcionalitats al QvCanvas.
 
         Permet rebre tots els arguments que rebi QvCanvas, més uns quants extra
@@ -11,7 +11,7 @@ class QvCanvasAuxiliar(QvCanvas):
         Args:
             canvas (QgsMapCanvas): Canvas principal
             temaInicial (str, optional): Nom del tema inicial, si n'hi ha. Defaults to None
-            sincronitzaExtensio (bool, optional): [description]. Defaults to False.
+            sincronitzaExtensio (bool, optional): [description]. Defaults to True.
             sincronitzaZoom (bool, optional): [description]. Defaults to False.
             sincronitzaCentre (bool, optional): [description]. Defaults to False.
             sincronitzaRotacio (bool, optional): [description]. Defaults to True.
