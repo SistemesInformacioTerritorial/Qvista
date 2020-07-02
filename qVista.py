@@ -79,7 +79,8 @@ class QVista(QMainWindow, Ui_MainWindow):
     Des de programa definirem la status bar, sobre la que indicarem escala, projecte i coordenades, 
             així com un tip de les accions que s'executen.
     """
-        
+    dicCanvasDw ={}
+
     def __init__(self,app, prjInicial, titleFinestra):
         """  Inicialització de QVista.
         
@@ -103,6 +104,9 @@ class QVista(QMainWindow, Ui_MainWindow):
         QMainWindow.__init__(self)
         self.setupUi(self)
         self.tempState = self.saveState()
+
+        
+
 
         # Definicions globals
         app.setFont(QvConstants.FONTTEXT)
@@ -745,6 +749,7 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         self.mapeta.setGraphicsEffect(QvConstants.ombra(self,radius=30,color=QvConstants.COLOROMBRA))
         self.mapeta.Sig_MuestraMapeta.connect(self.editarOrientacio)
+        
 
         self.mapeta.setParent(self.canvas)
         self.mapeta.move(20,20)
@@ -1007,6 +1012,8 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.actNouCanvas.setIcon(icon)
         self.actNouCanvas.triggered.connect(self.nouCanvas)
 
+
+
         self.actHelp = QAction("Contingut de l'ajuda", self)
         icon=QIcon(os.path.join(imatgesDir,'help-circle.png'))
         self.actHelp.setIcon(icon)
@@ -1239,7 +1246,10 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.canviLayer()
     
     def nouCanvas(self):
+
+        
         canvas = QvCanvasAuxiliar(self.canvas, temaInicial=self.llegenda.tema.buscaTema(), botoneraHoritzontal=True,posicioBotonera='SE')
+        canvas.Sig_canviTema.connect(self.actualizarTitleCanvasAux)
         root = QgsProject.instance().layerTreeRoot()
 
         canvas.bridge = QgsLayerTreeMapCanvasBridge(root, canvas)
@@ -1253,9 +1263,33 @@ class QVista(QMainWindow, Ui_MainWindow):
         dwCanvas.tancat.connect(lambda: self.numCanvasAux.remove(num))
         self.numCanvasAux.append(num)
         dwCanvas.setWidget(canvas)
+
+        tituloCurrent = dwCanvas.windowTitle() 
+        aConservar = tituloCurrent[0 :tituloCurrent.find(')')+1] 
+        nuevoTitulo = aConservar + " Tema " + canvas.currentTeme
+
+
+        dwCanvas.setWindowTitle(nuevoTitulo)
+        
+        self.dicCanvasDw.setdefault(str(id(canvas)),str(id(dwCanvas)))
+
         self.addDockWidget(Qt.RightDockWidgetArea, dwCanvas)
         dwCanvas.setFloating(True)
     
+    def actualizarTitleCanvasAux(self,idenCanvas,tema):
+        try:
+            suDw = int(self.dicCanvasDw.get(idenCanvas))
+            import _ctypes
+            tituloCurrent = _ctypes.PyObj_FromPtr(suDw).windowTitle() 
+            
+            aConservar = tituloCurrent[0 :tituloCurrent.find(')')+1] 
+            nuevoTitulo = aConservar + " Tema " + tema
+            _ctypes.PyObj_FromPtr(suDw).setWindowTitle(nuevoTitulo)        
+            
+        except Exception as ee:
+            pass
+        
+
     def reload(self):
         #comprovar si hi ha canvis
         if self.teCanvisPendents(): #Posar la comprovació del dirty bit
