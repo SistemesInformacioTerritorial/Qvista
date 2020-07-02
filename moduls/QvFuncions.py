@@ -211,6 +211,26 @@ class creaEina:
     IMPORTANT: si executem el mòdul com a main, no es generarà el QDockWidget. Això és per permetre'ns tenir el QWidget amb un main d'exemple
     """
     def __init__(self,**kwargs):
+        """Inicialitza el decorador amb els atributs que vulguem que tingui la classe
+
+        def funcioExemple(self):
+            print('Sóc un exemple')
+            print('De debò, no faig res útil')
+        @QvFuncions.creaEina('func1':funcioExemple, titol="Hola")
+        class DockWidget(QWidget):
+            ...
+
+
+        Això serà equivalent al codi següent:
+        class Widget(QWidget):
+            ...
+        class DockWidget(QDockWidget):
+            titol = "Hola"
+            def func1(self):
+                print('Sóc un exemple')
+                print('De debò, no faig res útil')
+
+        """
         self.kwargs=kwargs
 
     def __call__(self,classeWidOrig):
