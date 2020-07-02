@@ -67,11 +67,6 @@ class QHLine(QFrame):
         self.setFrameShape(QFrame.HLine)
         self.setFrameShadow(QFrame.Raised)
 
-class QVLine(QFrame):
-    def __init__(self):
-        super(QVLine, self).__init__()
-        self.setFrameShape(QFrame.VLine)
-        self.setFrameShadow(QFrame.Sunken)
 
 # Classe principal QVista
 class QVista(QMainWindow, Ui_MainWindow):
@@ -111,7 +106,11 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         # Definicions globals
         app.setFont(QvConstants.FONTTEXT)
-        self.setWindowFlags(Qt.FramelessWindowHint)
+        
+        # self.setWindowFlags(Qt.FramelessWindowHint)
+        self.setWindowFlags(QtCore.Qt.CustomizeWindowHint)
+
+
         self.actualitzaWindowFlags()
 
         #Afegim títol a la finestra
@@ -1240,7 +1239,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.canviLayer()
     
     def nouCanvas(self):
-        canvas = QvCanvasAuxiliar(self.canvas, temaInicial=self.llegenda.buscaTema(), botoneraHoritzontal=True,posicioBotonera='SE')
+        canvas = QvCanvasAuxiliar(self.canvas, temaInicial=self.llegenda.tema.buscaTema(), botoneraHoritzontal=True,posicioBotonera='SE')
         root = QgsProject.instance().layerTreeRoot()
 
         canvas.bridge = QgsLayerTreeMapCanvasBridge(root, canvas)
