@@ -17,10 +17,13 @@ from moduls import QvFuncions
 @QvFuncions.creaEina(titol="Eina Coordenades", esEinaGlobal = True, apareixDockat = False)
 class EinaCoordenades(QWidget):
 
-    def __init__(self, canvas, pare = None):
+    def __init__(self, pare):
         
         QWidget.__init__(self)
-        self.canvas = canvas
+        if isinstance(pare, QgsMapCanvas):
+            self.canvas = pare
+        else: 
+            self.canvas = pare.canvas
         self.setParent(pare)
         self.pare = pare
         self.nova = True
@@ -176,7 +179,7 @@ if __name__ == "__main__":
         if project.read(projecteInicial):
             root = project.layerTreeRoot()
             bridge = QgsLayerTreeMapCanvasBridge(root, canvas)
-            qvEinaCoords = EinaCoordenades(canvas, pare=canvas)
+            qvEinaCoords = EinaCoordenades(pare=canvas)
             #dwLay = QVBoxLayout()
             dwEC = QDockWidget()
             dwEC.setWidget(qvEinaCoords)
