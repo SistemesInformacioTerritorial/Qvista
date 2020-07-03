@@ -143,20 +143,28 @@ class EinaCoordenades(QWidget):
                 self.canvas = canvas  
                 self.parent = parent
                 self.m1 = QgsVertexMarker(canvas)
+                self.m1.setColor(QColor(255,0, 0)) #(R,G,B)
+                self.m1.setIconSize(12)
+                self.m1.setIconType(QgsVertexMarker.ICON_CROSS)
+                self.m1.setPenWidth(3)
 
             def canvasPressEvent(self, event):
                 self.parent.nova = False
                 x = self.parent.leXcoord1.text()
                 y = self.parent.leYcoord1.text()
                 self.m1.setCenter(QgsPointXY(float(x),float(y)))
-                self.m1.setColor(QColor(255,0, 0)) #(R,G,B)
-                self.m1.setIconSize(12)
-                self.m1.setIconType(QgsVertexMarker.ICON_CROSS)
-                self.m1.setPenWidth(3)
                 self.m1.show()
 
-        tool = PointTool(self.canvas, self)
-        self.canvas.setMapTool(tool)
+        self.tool = PointTool(self.canvas, self)
+        self.canvas.setMapTool(self.tool)
+
+    def hideEvent(self,event):
+        super().hideEvent(event)
+        self.canvas.unsetMapTool(self.tool)
+        self.canvas.scene().removeItem(self.tool.m1)
+        #self.tool.m1.hide()
+
+
         
 if __name__ == "__main__":
        
