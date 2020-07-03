@@ -1,84 +1,122 @@
 # coding:utf-8
 
-from moduls.QvImports import *
+import qgis.core as qgCor
+import qgis.gui as qgGui
+import qgis.PyQt.QtWidgets as qtWdg
+import qgis.PyQt.QtGui as qtGui
+import qgis.PyQt.QtCore as qtCor
+
 from moduls.QvPushButton import QvPushButton
 
 
-projecteInicial='../dades/projectes/BCN11_nord.qgs'
+# class PointTool(qgGui.QgsMapTool):
+#     def __init__(self, parent, canvas):
+#         qgGui.QgsMapTool.__init__(self, canvas)
+#         self.parent = parent
+#         self.moureBoto = False
+#         self.canvas = canvas
+#         self.a = qgCor.QgsTextAnnotation()
+#         self.c = qtGui.QTextDocument()
+#         self.puntOriginal = qgCor.QgsPointXY()
+#         self.xInici = 0
+#         self.yInici = 0
 
-class PointTool(QgsMapTool):
+#     def canvasPressEvent(self, event):
+#         self.puntOriginal = self.toMapCoordinates(event.pos())
+#         self.pOriginal = event.pos()
+#         self.xInici = self.pOriginal.x()
+#         self.yInici = self.pOriginal.y()
+#         # print (self.xInici, self.yInici)
+
+#         self.a = qgCor.QgsTextAnnotation()
+#         self.c = qtGui.QTextDocument()
+
+#         self.c.setHtml(self.parent.entradaText.toPlainText())
+#         self.a.setDocument(self.c)
+
+#         self.layer = qgCor.QgsVectorLayer('Point?crs=epsg:25831', "RectanglePrint", "memory")
+#         qgCor.QgsProject().instance().addMapLayer(self.layer)
+#         self.a.setFrameSize(qtCor.QSizeF(100, 50))
+#         self.a.setMapLayer(self.layer)
+#         self.a.setFrameOffsetFromReferencePoint(qtCor.QPointF(30, 30))
+#         self.a.setMapPosition(self.puntOriginal)
+#         self.a.setMapPositionCrs(qgCor.QgsCoordinateReferenceSystem(25831))
+
+#         self.i = qgGui.QgsMapCanvasAnnotationItem(self.a, self.canvas)  # ???
+#         # print ('press')
+
+#     def canvasMoveEvent(self, event):
+#         self.puntFinal = event.pos()
+
+#         xFinal = self.puntFinal.x()
+#         yFinal = self.puntFinal.y()
+
+#         self.deltaX = xFinal - self.xInici
+#         self.deltaY = yFinal - self.yInici
+
+#         self.a.setFrameOffsetFromReferencePoint(qtCor.QPointF(self.deltaX, self.deltaY))
+
+#     def canvasReleaseEvent(self, event):
+#         self.point = self.toMapCoordinates(event.pos())
+
+#         xMon = self.point.x()  # ???
+#         yMon = self.point.y()  # ???
+
+#         self.a = qgCor.QgsTextAnnotation()
+#         self.c = qtGui.QTextDocument()
+
+#         self.c.setHtml(self.parent.entradaText.toPlainText())
+#         self.a.setDocument(self.c)
+
+
+class QvAnotacionsPunt(qgGui.QgsMapToolEmitPoint):
     def __init__(self, parent, canvas):
-        QgsMapTool.__init__(self, canvas)
+        qgGui.QgsMapToolEmitPoint.__init__(self, canvas)
         self.parent = parent
-        self.moureBoto = False
         self.canvas = canvas
-        self.a = QgsTextAnnotation()
-        self.c = QTextDocument()
-        self.puntOriginal = QgsPointXY()
-        self.xInici = 0
-        self.yInici = 0
-    
-    def canvasPressEvent(self,event):
-        self.puntOriginal = self.toMapCoordinates(event.pos())
-        self.pOriginal = event.pos()
-        self.xInici = self.pOriginal.x()
-        self.yInici = self.pOriginal.y()
-        # print (self.xInici, self.yInici)
-                    
-        self.a = QgsTextAnnotation()
-        self.c = QTextDocument()
-        
-        self.c.setHtml(self.parent.entradaText.toPlainText())
+        self.project = qgCor.QgsProject.instance()
+        self.point = None
+
+    def canvasPressEvent(self, event):
+        self.point = self.toMapCoordinates(self.canvas.mouseLastXY())
+        print('({:.4f}, {:.4f})'.format(self.point[0], self.point[1]))
+        self.a = qgCor.QgsTextAnnotation()
+        self.c = qtGui.QTextDocument(self.parent.entradaText.toPlainText())
+
+        # self.c.setHtml(self.parent.entradaText.toPlainText())
         self.a.setDocument(self.c)
+        self.a.setFrameSizeMm(qtCor.QSizeF(36, 12))
 
-        
-        self.layer = QgsVectorLayer('Point?crs=epsg:25831', "RectanglePrint","memory")
-        QgsProject().instance().addMapLayer(self.layer)
-        self.a.setFrameSize(QSizeF(100, 50))
-        self.a.setMapLayer(self.layer)
-        self.a.setFrameOffsetFromReferencePoint(QtCore.QPointF(30, 30))
-        self.a.setMapPosition(self.puntOriginal)
-        self.a.setMapPositionCrs(QgsCoordinateReferenceSystem(25831))
-       
-        self.i = QgsMapCanvasAnnotationItem(self.a, self.canvas) #???
-        # print ('press')
+        # self.a.setMapLayer(self.layer)
+        # self.a.setFrameOffsetFromReferencePointMm(qtCor.QPointF(6, 2))
+        # self.a.setFrameOffsetFromReferencePointMm(qtCor.QPointF(0, 1))
+        # self.a.setFrameOffsetFromReferencePointMm(qtCor.QPointF(-3, 3))
 
-    def canvasMoveEvent(self, event):
-        self.puntFinal = event.pos()
+        self.a.setMapPosition(self.point)
+        # self.a.setMapPositionCrs(qgCor.QgsCoordinateReferenceSystem(25831))
 
-        xFinal = self.puntFinal.x()
-        yFinal = self.puntFinal.y()
+        self.project.annotationManager().addAnnotation(self.a)
+        qgGui.QgsMapCanvasAnnotationItem(self.a, self.canvas)
 
-        self.deltaX = xFinal - self.xInici
-        self.deltaY = yFinal - self.yInici
-
-        self.a.setFrameOffsetFromReferencePoint(QtCore.QPointF(self.deltaX, self.deltaY))
-
-    def canvasReleaseEvent(self, event):
-        self.point = self.toMapCoordinates(event.pos())
-
-        xMon = self.point.x() #???
-        yMon = self.point.y() #???
-
-        self.a = QgsTextAnnotation()
-        self.c = QTextDocument()
-        
-        self.c.setHtml(self.parent.entradaText.toPlainText())
-        self.a.setDocument(self.c)
+        # for nota in self.canvas.annotationItems():
+        #     nota.deleteLater()
+        # for nota in self.project.annotationManager().cloneAnnotations():
+        #     qgGui.QgsMapCanvasAnnotationItem(nota, self.canvas)
+        # self.canvas.refresh()
 
 
-
-class QvAnotacions(QWidget):
+class QvAnotacions(qtWdg.QWidget):
     def __init__(self, canvas):
-        QWidget.__init__(self)
-        self.layout = QVBoxLayout(self)
+        qtWdg.QWidget.__init__(self)
+        self.layout = qtWdg.QVBoxLayout(self)
         self.setLayout = self.layout
 
         self.setWindowTitle('Anotacions')
         self.canvas = canvas
-        self.pt = PointTool(self, self.canvas)
+        # self.pt = PointTool(self, self.canvas)
+        self.pt = QvAnotacionsPunt(self, self.canvas)
         self.canvas.setMapTool(self.pt)
-        self.entradaText = QTextEdit()
+        self.entradaText = qtWdg.QTextEdit()
         self.entradaText.show()
         self.botoBorrar = QvPushButton('Esborrar anotacions')
         self.botoBorrar.clicked.connect(self.esborrarAnotacions)
@@ -87,23 +125,33 @@ class QvAnotacions(QWidget):
 
     def esborrarAnotacions(self):
         pass
-       
+
 
 if __name__ == "__main__":
-    with qgisapp():
-        canvas=QgsMapCanvas()
-        canvas.setContentsMargins(0,0,0,0)
-        project=QgsProject().instance()
-        root=project.layerTreeRoot()
-        bridge=QgsLayerTreeMapCanvasBridge(root,canvas)
-        bridge.setCanvasLayers()
 
-        # llegim un projecte de demo
+    from qgis.core.contextmanagers import qgisapp
+    from moduls.QvApp import QvApp
+    from moduls.QvCanvas import QvCanvas
+    from moduls.QvLlegenda import QvLlegenda
+    import configuracioQvista as cfg
 
-        project.read(projecteInicial)
-        
-        anotacions = QvAnotacions(canvas)
+    with qgisapp(sysexit=False) as app:
+
+        QvApp().carregaIdioma(app, 'ca')
+
+        # canv = qgGui.QgsMapCanvas()
+        canv = QvCanvas()
+
+        leyenda = QvLlegenda(canv)
+
+        anotacions = QvAnotacions(canv)
+
+        leyenda.project.read(cfg.projecteInicial)
+
+        canv.setWindowTitle('Canvas')
+        canv.show()
+
+        leyenda.setWindowTitle('Llegenda')
+        leyenda.show()
+
         anotacions.show()
-
-        canvas.show()
-
