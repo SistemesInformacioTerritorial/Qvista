@@ -153,14 +153,7 @@ class QvEinaCoordenades(QWidget):
 
         tool = PointTool(self.canvas, self)
         self.canvas.setMapTool(tool)
-
-
-       
-
         
-    
-            
-
 if __name__ == "__main__":
        
     with qgisapp() as app:
