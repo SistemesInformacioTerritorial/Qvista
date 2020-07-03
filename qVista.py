@@ -1260,17 +1260,19 @@ class QVista(QMainWindow, Ui_MainWindow):
         canvas.setRotation(self.canvas.rotation())
         num = self.numCanvasAux[-1]+1 if len(self.numCanvasAux)>0 else 1
         dwCanvas = QvDockWidget(f'Vista auxiliar del mapa ({num})')
+
+        dwCanvas.resize(self.canvas.width()/2.5,self.canvas.height()/2.5)   #JNB
+
         dwCanvas.tancat.connect(lambda: self.numCanvasAux.remove(num))
         self.numCanvasAux.append(num)
         dwCanvas.setWidget(canvas)
 
+        # Guardo el titulo creado para poder añadirle el tema
         tituloCurrent = dwCanvas.windowTitle() 
         aConservar = tituloCurrent[0 :tituloCurrent.find(')')+1] 
-        nuevoTitulo = aConservar + " Tema " + canvas.currentTeme
-
-
+        nuevoTitulo = aConservar + " Tema: " + canvas.currentTeme
         dwCanvas.setWindowTitle(nuevoTitulo)
-        
+        # Añado a diccionario, el id del canvas y de su dw
         self.dicCanvasDw.setdefault(str(id(canvas)),str(id(dwCanvas)))
 
         self.addDockWidget(Qt.RightDockWidgetArea, dwCanvas)
