@@ -9,12 +9,13 @@ from configuracioQvista import *
 from PyQt5.QtWidgets import QWidget, QLabel, QVBoxLayout 
 from PyQt5.QtWidgets import QHBoxLayout, QFrame
 from PyQt5.QtWidgets import  QApplication
+from moduls import QvFuncions
 
 
 # import time
 
-
-class QvEinaCoordenades(QWidget):
+@QvFuncions.creaEina(titol="Eina Coordenades", esEinaGlobal = True, apareixDockat = False)
+class EinaCoordenades(QWidget):
 
     def __init__(self, canvas, pare = None):
         
@@ -175,7 +176,7 @@ if __name__ == "__main__":
         if project.read(projecteInicial):
             root = project.layerTreeRoot()
             bridge = QgsLayerTreeMapCanvasBridge(root, canvas)
-            qvEinaCoords = QvEinaCoordenades(canvas, pare=canvas)
+            qvEinaCoords = EinaCoordenades(canvas, pare=canvas)
             #dwLay = QVBoxLayout()
             dwEC = QDockWidget()
             dwEC.setWidget(qvEinaCoords)
