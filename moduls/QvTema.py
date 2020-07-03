@@ -112,21 +112,25 @@ class QvTema:
         nom = nom.strip()
         if not ok or nom == '':
             return
-        nou, tema = self.creaTema(nom)
-        self.titolTema()
-        msg = f"Creat nou tema '{tema}'" if nou else f"Tema '{tema}' modificat"
-        qtWdg.QMessageBox.information(self.llegenda, 'Informació', msg)
+        item = self.existeTema(nom)
+        if item == '':
+            res = qtWdg.QMessageBox.Yes
+        else:
+            txt = f"Estem a punt de MODIFICAR el tema '{item}'"
+            res = qtWdg.QMessageBox.question(self.llegenda, 'Confirmació',
+                                             txt + "\n\nVol continuar?")
+        if res == qtWdg.QMessageBox.Yes:
+            self.creaTema(nom)
+            self.titolTema()
 
     def menuEsborraTema(self):
         actiu = self.buscaTema()
-        txt = f"Estem a punt d'eliminar el tema '{actiu}'"
+        txt = f"Estem a punt d'ELIMINAR el tema '{actiu}'"
         res = qtWdg.QMessageBox.question(self.llegenda, 'Confirmació',
                                          txt + "\n\nVol continuar?")
         if res == qtWdg.QMessageBox.Yes:
             self.esborraTema(actiu)
             self.titolTema()
-            # msg = f"Esborrat tema '{actiu}'"
-            # qtWdg.QMessageBox.information(self.llegenda, 'Informació', msg)
 
     def menuCanviaNomTema(self):
         actiu = self.buscaTema()

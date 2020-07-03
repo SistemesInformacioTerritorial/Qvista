@@ -15,7 +15,7 @@ class QvCanvasAuxiliar(QvCanvas):
         Args:
             canvas (QgsMapCanvas): Canvas principal
             temaInicial (str, optional): Nom del tema inicial, si n'hi ha. Defaults to None
-            sincronitzaExtensio (bool, optional): [description]. Defaults to False.
+            sincronitzaExtensio (bool, optional): [description]. Defaults to True.
             sincronitzaZoom (bool, optional): [description]. Defaults to False.
             sincronitzaCentre (bool, optional): [description]. Defaults to False.
             sincronitzaRotacio (bool, optional): [description]. Defaults to True.
