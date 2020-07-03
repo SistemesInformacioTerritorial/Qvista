@@ -14,7 +14,9 @@ from moduls.QvMapForms import QvFormSimbMapificacio
 from moduls.QvLlegendaAux import QvModelLlegenda, QvItemLlegenda, QvMenuLlegenda
 from moduls.QvLlegendaMascara import QvLlegendaMascara
 from moduls.QvDiagrama import QvDiagrama
+from moduls.QvTema import QvTema
 from moduls import QvFuncions
+
 
 from configuracioQvista import imatgesDir
 
@@ -24,7 +26,6 @@ import os
 # pyrcc5 images.qrc >images_rc.py
 import images_rc  # NOQA
 
-TEMA_INICIAL = '(Inicial)'
 TITOL_INICIAL = 'Llegenda'
 
 
@@ -52,13 +53,13 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
         self.directory = '.'
         self.mask = None
         self.removing = False
+        self.tema = QvTema(self)
         # self.restoreExtent = 0
         # print('restoreExtent', self.restoreExtent)
 
         self.project.readProject.connect(self.nouProjecte)
         self.project.legendLayersAdded.connect(self.actIcones)
         self.root.layerOrderChanged.connect(self.actIcones)
-        self.root.visibilityChanged.connect(self.aplicaTitolTema)
         # self.project.loadingLayerMessageReceived.connect(self.msgCapes)
 
         # self.setWhatsThis(QvApp().carregaAjuda(self))
@@ -81,7 +82,6 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
 
         # Lista de acciones que apareceran en el menú
         self.menuAccions = []
-        self.menuTemes = qtWdg.QMenu('Temes')
         # Acciones disponibles
         self.accions = QvAccions()
         self.setAccions()
@@ -260,11 +260,14 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
                 # # self.restoreCanvasPosition()
                 node.setItemVisibilityChecked(True)
 
-        self.creaTemaInicial()
+        self.tema.temaInicial()
 
-        # if self.canvas is not None:
-        #     for nota in self.project.annotationManager().annotations():
-        #         qgGui.QgsMapCanvasAnnotationItem(nota, self.canvas)
+        # Preparar anotaciones
+        if self.canvas is not None:
+            for nota in self.canvas.annotationItems():
+                nota.deleteLater()
+            for nota in self.project.annotationManager().cloneAnnotations():
+                qgGui.QgsMapCanvasAnnotationItem(nota, self.canvas)
 
     def connectaCanviCapaActiva(self, canviCapaActiva):
         if canviCapaActiva is not None:
@@ -309,75 +312,6 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
         canvas.setMapUpdateInterval(250)
         canvas.setSegmentationTolerance(0.01745)
         canvas.setSegmentationToleranceType(qgCor.QgsAbstractGeometry.MaximumAngle)
-
-    def temes(self):
-        return self.project.mapThemeCollection().mapThemes()
-
-    def numTemes(self):
-        return len(self.project.mapThemeCollection().mapThemes())
-
-    def buscaTema(self, rec=None):
-        if rec is None:
-            rec = qgCor.QgsMapThemeCollection.createThemeFromCurrentState(self.root, self.model)
-        for tema in self.temes():
-            if rec == self.project.mapThemeCollection().mapThemeState(tema):
-                return tema
-        return None
-
-    def creaTema(self, tema, rec=None):
-        # Crea o actualiza tema
-        if rec is None:
-            rec = qgCor.QgsMapThemeCollection.createThemeFromCurrentState(self.root, self.model)
-        temes = self.project.mapThemeCollection()
-        if temes.hasMapTheme(tema):
-            temes.update(tema, rec)
-        else:
-            temes.insert(tema, rec)
-
-    def creaTemaInicial(self, force=False):
-        # Si no existen temas y no queremos forzarlo, no se crea
-        if self.numTemes() == 0 and not force:
-            return
-        # Si ya existe un tema que recoge el estado inicial, no se crea
-        rec = qgCor.QgsMapThemeCollection.createThemeFromCurrentState(self.root, self.model)
-        temaIni = self.buscaTema(rec)
-        if temaIni is None:
-            # Crea tema inicial
-            self.creaTema(TEMA_INICIAL, rec)
-        else:
-            self.titolTema(temaIni)
-
-    @qtCor.pyqtSlot()
-    def aplicaTitolTema(self):
-        if self.numTemes() == 0:
-            return
-        self.titolTema()
-
-    def titolTema(self, tema=None):
-        if tema is None:
-            tema = self.buscaTema()
-        if tema is not None and tema != TEMA_INICIAL:
-            titol = 'Tema ' + tema
-        else:
-            titol = TITOL_INICIAL
-        self.setTitol(titol)
-
-    def aplicaTema(self, tema):
-        self.project.mapThemeCollection().applyTheme(tema, self.root, self.model)
-        self.titolTema()
-
-    @qtCor.pyqtSlot()
-    def aplicaTemaMenu(self):
-        try:
-            tema = self.sender().text()
-            self.aplicaTema(tema)
-        except Exception as e:
-            print(str(e))
-
-    def setMenuTemes(self):
-        self.menuTemes.clear()
-        for tema in self.temes():
-            self.menuTemes.addAction(tema, self.aplicaTemaMenu)
 
     def capaPerNom(self, nomCapa):
         """
@@ -522,7 +456,7 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
         act.triggered.connect(self.removeFilter)
         self.accions.afegirAccio('removeFilter', act)
 
-        self.accions.afegirAccio('menuTemes', self.menuTemes)
+        self.accions.afegirAccio('menuTema', self.tema.menu)
 
     def calcTipusMenu(self):
         # Tipos: none, group, layer, symb
@@ -543,9 +477,9 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
     def setMenuAccions(self):
         # Menú dinámico según tipo de elemento sobre el que se clicó
         self.menuAccions = []
-        self.setMenuTemes()
-        if self.editable and not self.menuTemes.isEmpty():
-            self.menuAccions += ['menuTemes', 'separator']
+        self.tema.setMenuTemes()
+        if self.editable and not self.tema.menu.isEmpty():
+            self.menuAccions += ['menuTema', 'separator']
         tipo = self.calcTipusMenu()
         if tipo == 'layer':
             capa = self.currentLayer()

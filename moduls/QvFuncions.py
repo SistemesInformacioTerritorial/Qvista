@@ -2,6 +2,7 @@ import os
 import sys
 import time
 import inspect
+from pathlib import Path
 from moduls.QvVideo import QvVideo
 from moduls.QvImports import *
 from moduls.QvConstants import QvConstants
@@ -195,3 +196,78 @@ def reportarProblema(titol: str, descripcio: str=None):
     else:
         print ('Error al crear el problema {0:s}'.format(titol))
         return False
+
+class creaEina:
+    """Cridable (callable) per decorar la declaració d'una subclasse de QWidget i crear un QDockWidget que el contingui.
+    Està pensat per fer-se servir com un decorador, i passar-li com a paràmetre
+    Exemple d'ús:
+
+    @QvFuncions.creaEina(titol='Hola')
+    class Hola(QDockWidget):
+        ...
+    
+    Això farà que la classe Hola sigui una classe del tipus QDockWidget que contindrà el QWidget definit
+
+    IMPORTANT: si executem el mòdul com a main, no es generarà el QDockWidget. Això és per permetre'ns tenir el QWidget amb un main d'exemple
+    """
+    def __init__(self,**kwargs):
+        """Inicialitza el decorador amb els atributs que vulguem que tingui la classe
+
+        def funcioExemple(self):
+            print('Sóc un exemple')
+            print('De debò, no faig res útil')
+        @QvFuncions.creaEina('func1':funcioExemple, titol="Hola")
+        class DockWidget(QWidget):
+            ...
+
+
+        Això serà equivalent al codi següent:
+        class Widget(QWidget):
+            ...
+        class DockWidget(QDockWidget):
+            titol = "Hola"
+            def func1(self):
+                print('Sóc un exemple')
+                print('De debò, no faig res útil')
+
+        """
+        self.kwargs=kwargs
+
+    def __call__(self,classeWidOrig):
+        """Funció que rep un QWidget i crea una classe del tipus QDockWidget que el conté, pensat per crear entorns
+
+        Args:
+            classeWidOrig (type(QWidget)): Classe del widget que volem que contingui l'entorn
+
+        Returns:
+            type: Una subclasse de QDockWidget (no instanciada)
+        """
+        context = inspect.stack()[1]
+        modul = inspect.getmodule(context[0])
+
+        # Si ho hem invocat des del main, no generem el QDockWidget, sinó que retornem el propi QWidget
+        if modul.__name__=='__main__':
+            return classeWidOrig
+        
+        # Obtenim el nom que posarem a la classe
+        try:
+            nomClasse = Path(context.filename).stem
+        except:
+            # Per evitar que peti, si tot ha fallat, posarem un nom qualsevol
+            nomClasse = 'EntornCustom'
+        
+        # Funció __init__ pel QDockWidget
+        def init_classe(self,parent):
+            titol = self.titol if hasattr(self,'titol') else nomClasse
+            super(QDockWidget,self).__init__(titol,parent)
+            self.setWidget(classeWidOrig())
+        atributs = {'__init__':init_classe,**self.kwargs}
+
+        # type permet construir una classe. 
+        # Com a primer argument li passem el nom que tindrà aquesta (com a str)
+        # Com a segon argument, una tupla amb les classes de les que hereta
+        # Com a tercer argument, un diccionari amb els atributs de la classe.
+        #  En el nostre cas, els atributs seran els que rebem com a arguments amb nom,
+        #  més una funció __init__ pròpia, que és la creada a sobre.
+        classe = type(nomClasse,(QDockWidget,), atributs)
+        return classe
