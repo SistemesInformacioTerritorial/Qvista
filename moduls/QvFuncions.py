@@ -260,7 +260,8 @@ class creaEina:
         def init_classe(self,parent):
             titol = self.titol if hasattr(self,'titol') else nomClasse
             super(QDockWidget,self).__init__(titol,parent)
-            self.setWidget(classeWidOrig())
+            wid = classeWidOrig(parent)
+            self.setWidget(wid)
         atributs = {'__init__':init_classe,**self.kwargs}
 
         # type permet construir una classe. 

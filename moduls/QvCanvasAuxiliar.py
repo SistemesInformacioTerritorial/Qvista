@@ -1,9 +1,13 @@
 from moduls.QvImports import *
 from moduls.QvCanvas import QvCanvas
 from moduls.QvConstants import QvConstants
+from qgis.PyQt.QtCore import Qt, pyqtSignal,  pyqtSlot
 
 class QvCanvasAuxiliar(QvCanvas):
-    def __init__(self, canvas, *args, temaInicial = None, sincronitzaExtensio=False, sincronitzaZoom=False, sincronitzaCentre=False, sincronitzaRotacio=True, volemCombo=True, **kwargs):
+
+    Sig_canviTema = pyqtSignal('QString','QString')    #JNB
+
+    def __init__(self, canvas, *args, temaInicial = None, sincronitzaExtensio=False, sincronitzaZoom=False, sincronitzaCentre=True, sincronitzaRotacio=True, volemCombo=True, **kwargs):
         """Canvas auxiliar, pensat per afegir funcionalitats al QvCanvas.
 
         Permet rebre tots els arguments que rebi QvCanvas, més uns quants extra
@@ -11,7 +15,7 @@ class QvCanvasAuxiliar(QvCanvas):
         Args:
             canvas (QgsMapCanvas): Canvas principal
             temaInicial (str, optional): Nom del tema inicial, si n'hi ha. Defaults to None
-            sincronitzaExtensio (bool, optional): [description]. Defaults to False.
+            sincronitzaExtensio (bool, optional): [description]. Defaults to True.
             sincronitzaZoom (bool, optional): [description]. Defaults to False.
             sincronitzaCentre (bool, optional): [description]. Defaults to False.
             sincronitzaRotacio (bool, optional): [description]. Defaults to True.
@@ -19,11 +23,18 @@ class QvCanvasAuxiliar(QvCanvas):
         """
         super().__init__(*args, **kwargs)
         self.canvas = canvas
+
+
         self.sincronitzaExtensio = sincronitzaExtensio
         self.sincronitzaZoom = sincronitzaZoom
         self.sincronitzaCentre = sincronitzaCentre
         self.sincronitzaRotacio = sincronitzaRotacio
         self.botons()
+        self.currentTeme = ''   #JNB
+        self.setExtent(self.canvas.extent())
+        self.refresh()
+
+
         if volemCombo:
             self.preparaCbTemes(temaInicial)
         self.setupSincronia()
@@ -57,20 +68,29 @@ class QvCanvasAuxiliar(QvCanvas):
         menuBoto.addSeparator()
         self.actSincRotacio = menuBoto.addAction('Sincronitza rotació')
         
+
+
         grup.addAction(self.actNoSinc)
         grup.addAction(self.actSincExt)
         grup.addAction(self.actSincZoom)
         grup.addAction(self.actSincCentre)
+
+                
         # no afegim self.actSincRotacio perquè volem que la rotació sigui independent
 
         self.actNoSinc.setCheckable(True)
         self.actNoSinc.setChecked(True)
+
         self.actSincExt.setCheckable(True)
         self.actSincExt.setChecked(self.sincronitzaExtensio)
+        
         self.actSincZoom.setCheckable(True)
         self.actSincZoom.setChecked(self.sincronitzaZoom)
+        
         self.actSincCentre.setCheckable(True)
         self.actSincCentre.setChecked(self.sincronitzaCentre)
+        # self.actSincCentre.setChecked(True)     #JNB
+        
         self.actSincRotacio.setCheckable(True)
         self.actSincRotacio.setChecked(self.sincronitzaRotacio)
 
@@ -82,11 +102,22 @@ class QvCanvasAuxiliar(QvCanvas):
 
         self.bSincronia.setMenu(menuBoto)
 
+
     def canviTema(self, i):
         if i==0:
             self.setTheme('')
+            elTema = 'Sense Tema'
         else:
             self.setTheme(self.temes[i-1])
+            elTema = self.temes[i-1]
+
+        self.currentTeme = elTema
+        elIdCanvas = str(id(self))
+        try:
+            self.Sig_canviTema.emit(elIdCanvas, elTema)
+        except Exception as ee:
+            pass
+            
             
     def sincronitzaExtensio(self, canv: QgsMapCanvas):
         """Sincronitza els paràmetre implícit amb el canvas passat com a paràmetre
