@@ -151,11 +151,10 @@ class QvTema:
         self.menu.clear()
         actiu = self.buscaTema()
         for tema in self.temes():
-            if actiu is not None and actiu == tema:
-                icon = qtGui.QIcon(os.path.join(imatgesDir, 'check-box.png'))
-                self.menu.addAction(icon, tema, self.menuAplicaTema)
-            else:
-                self.menu.addAction(tema, self.menuAplicaTema)
+            act = self.menu.addAction(tema)
+            act.setCheckable(True)
+            act.setChecked(actiu is not None and actiu == tema)
+            act.triggered.connect(self.menuAplicaTema)
         if self.llegenda.editable:
             self.menu.addSeparator()
             if actiu is None:  # or actiu == TEMA_INICIAL:

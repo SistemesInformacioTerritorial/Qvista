@@ -1,4 +1,4 @@
-# coding:utf-8
+# -*- coding: utf-8 -*-
 
 import qgis.core as qgCor
 import qgis.gui as qgGui
@@ -6,125 +6,313 @@ import qgis.PyQt.QtWidgets as qtWdg
 import qgis.PyQt.QtGui as qtGui
 import qgis.PyQt.QtCore as qtCor
 
-from moduls.QvPushButton import QvPushButton
+
+class QvTextAnnotationDialog(qtWdg.QDialog):
+    def __init__(self, llegenda, item: qgGui.QgsMapCanvasAnnotationItem, title: str):
+        self.llegenda = llegenda
+        super().__init__(llegenda.canvas)
+        self.setWindowTitle(title)
+        self.item = item
+        self.toolName = 'Anotacions'
+        self.layout = qtWdg.QFormLayout()
+        self.setLayout(self.layout)
+
+        # Capas disponibles
+        self.layers = qtWdg.QComboBox(self)
+        self.layers.setEditable(False)
+        self.layers.addItem('(Totes)', None)
+        current = item.annotation().mapLayer() or self.llegenda.currentLayer()
+        index = 0
+        for i in llegenda.items():
+            if i.tipus == 'layer':
+                # Capas visibles
+                if i.esVisible():
+                    layer = i.capa()
+                    self.layers.addItem(layer.name(), layer.id())
+                    if current and current.id() == layer.id():
+                        index = self.layers.count() - 1
+        self.layers.setCurrentIndex(index)
+
+        # Posición fija
+        self.position = qtWdg.QCheckBox(self)
+        if item.annotation().hasFixedMapPosition():
+            self.position.setCheckState(qtCor.Qt.Checked)
+        else:
+            self.position.setCheckState(qtCor.Qt.Unchecked)
+
+        # Texto plano de la nota
+        self.text = qtWdg.QTextEdit(self.item.annotation().document().toPlainText(), self)
+
+        # Botones
+        self.bDelete = qtWdg.QPushButton('Esborra')
+        self.bDelete.clicked.connect(self.delete)
+
+        self.buttons = qtWdg.QDialogButtonBox(self)
+        self.buttons.addButton(qtWdg.QDialogButtonBox.Ok)
+        self.buttons.accepted.connect(self.accept)
+        self.buttons.addButton(qtWdg.QDialogButtonBox.Cancel)
+        self.buttons.rejected.connect(self.cancel)
+        self.buttons.addButton(self.bDelete, qtWdg.QDialogButtonBox.ResetRole)
+        [button.setMaximumWidth(90) for button in self.buttons.buttons()]
+
+        # Formulario
+        self.layout.addRow('Capa associada:', self.layers)
+        self.layout.addRow('Posició fixa:', self.position)
+        self.layout.addRow('Text de la nota:', self.text)
+        self.layout.addRow(self.buttons)
+
+    def accept(self):
+        layerId = self.layers.currentData()
+        if layerId:
+            layer = self.llegenda.project.mapLayer(layerId)
+        else:
+            layer = None
+        self.item.annotation().setMapLayer(layer)
+        self.item.annotation().setHasFixedMapPosition(self.position.isChecked())
+        self.item.annotation().document().setPlainText(self.text.toPlainText())
+        self.llegenda.project.setDirty(True)
+        self.hide()
+
+    def cancel(self):
+        self.hide()
+
+    def delete(self):
+        self.llegenda.anotacions.deleteItem(self.item)
+        self.hide()
 
 
-# class PointTool(qgGui.QgsMapTool):
-#     def __init__(self, parent, canvas):
-#         qgGui.QgsMapTool.__init__(self, canvas)
-#         self.parent = parent
-#         self.moureBoto = False
-#         self.canvas = canvas
-#         self.a = qgCor.QgsTextAnnotation()
-#         self.c = qtGui.QTextDocument()
-#         self.puntOriginal = qgCor.QgsPointXY()
-#         self.xInici = 0
-#         self.yInici = 0
+class QvMapToolAnnotation(qgGui.QgsMapTool):
+    def __init__(self, llegenda) -> None:
+        if llegenda is None:
+            raise TypeError('llegenda is None (QvMapToolAnnotation.__init__)')
+        if llegenda.canvas is None:
+            raise TypeError('canvas is None (QvMapToolAnnotation.__init__)')
+        qgGui.QgsMapTool.__init__(self, llegenda.canvas)
+        self.llegenda = llegenda
+        self.llegenda.project.writeProject.connect(self.fromCanvasToProject)
+        self.cursor = None
+        self.currentMoveAction = None
+        self.lastMousePosition = None
+        self.editor = None
+        self.activated.connect(self.noAction)
+        self.deactivated.connect(self.canvas().scene().clearSelection)
+        self.canvas().scene().selectionChanged.connect(self.hideItemEditor)
 
-#     def canvasPressEvent(self, event):
-#         self.puntOriginal = self.toMapCoordinates(event.pos())
-#         self.pOriginal = event.pos()
-#         self.xInici = self.pOriginal.x()
-#         self.yInici = self.pOriginal.y()
-#         # print (self.xInici, self.yInici)
+    # Copia de anotaciones proyecto <-> canvas
 
-#         self.a = qgCor.QgsTextAnnotation()
-#         self.c = qtGui.QTextDocument()
+    def fromProjectToCanvas(self) -> None:
+        for item in self.canvas().annotationItems():
+            item.deleteLater()
+        for item in self.llegenda.project.annotationManager().cloneAnnotations():
+            qgGui.QgsMapCanvasAnnotationItem(item, self.canvas())
 
-#         self.c.setHtml(self.parent.entradaText.toPlainText())
-#         self.a.setDocument(self.c)
+    def fromCanvasToProject(self) -> None:
+        self.llegenda.project.annotationManager().clear()
+        for item in self.canvas().annotationItems():
+            annotation = item.annotation().clone()
+            self.llegenda.project.annotationManager().addAnnotation(annotation)
 
-#         self.layer = qgCor.QgsVectorLayer('Point?crs=epsg:25831', "RectanglePrint", "memory")
-#         qgCor.QgsProject().instance().addMapLayer(self.layer)
-#         self.a.setFrameSize(qtCor.QSizeF(100, 50))
-#         self.a.setMapLayer(self.layer)
-#         self.a.setFrameOffsetFromReferencePoint(qtCor.QPointF(30, 30))
-#         self.a.setMapPosition(self.puntOriginal)
-#         self.a.setMapPositionCrs(qgCor.QgsCoordinateReferenceSystem(25831))
+    # Acciones y cursores
 
-#         self.i = qgGui.QgsMapCanvasAnnotationItem(self.a, self.canvas)  # ???
-#         # print ('press')
+    def noAction(self) -> None:
+        self.cursor = qtGui.QCursor(qtCor.Qt.ArrowCursor)
+        self.currentMoveAction = qgGui.QgsMapCanvasAnnotationItem.NoAction
+        self.canvas().setCursor(qtGui.QCursor(self.cursor))
 
-#     def canvasMoveEvent(self, event):
-#         self.puntFinal = event.pos()
+    def moveAction(self, item: qgGui.QgsMapCanvasAnnotationItem, pos: qtCor.QPoint) -> qgGui.QgsMapCanvasAnnotationItem.MouseMoveAction:
+        action = item.moveActionForPosition(pos)
+        self.canvas().setCursor(qtGui.QCursor(item.cursorShapeForAction(action)))
+        return action
 
-#         xFinal = self.puntFinal.x()
-#         yFinal = self.puntFinal.y()
+    # Selección
 
-#         self.deltaX = xFinal - self.xInici
-#         self.deltaY = yFinal - self.yInici
+    def selectedItem(self) -> qgGui.QgsMapCanvasAnnotationItem:
+        for item in self.canvas().annotationItems():
+            if item.isSelected():
+                return item
+        return None
 
-#         self.a.setFrameOffsetFromReferencePoint(qtCor.QPointF(self.deltaX, self.deltaY))
+    def selectItemAtPos(self, pos: qtCor.QPoint) -> qgGui.QgsMapCanvasAnnotationItem:
+        self.canvas().scene().clearSelection()
+        for item in self.canvas().annotationItems():
+            if item.sceneBoundingRect().contains(pos):
+                item.setSelected(True)
+                return item
+        return None
 
-#     def canvasReleaseEvent(self, event):
-#         self.point = self.toMapCoordinates(event.pos())
+    # Transformación coordenadas
 
-#         xMon = self.point.x()  # ???
-#         yMon = self.point.y()  # ???
+    def transformCanvasToAnnotation(self, p: qgCor.QgsPointXY, annotation: qgCor.QgsAnnotation) -> qgCor.QgsPointXY:
+        if annotation.mapPositionCrs() != self.canvas().mapSettings().destinationCrs():
+            transform = qgCor.QgsCoordinateTransform(self.canvas().mapSettings().destinationCrs(),
+                                                     annotation.mapPositionCrs(),
+                                                     self.llegenda.project)
+            try:
+                p = transform.transform(p)
+            except Exception as e:
+                # ignore
+                print(str(e))
+        return p
 
-#         self.a = qgCor.QgsTextAnnotation()
-#         self.c = qtGui.QTextDocument()
+    # Alta, modificación, borrado
 
-#         self.c.setHtml(self.parent.entradaText.toPlainText())
-#         self.a.setDocument(self.c)
+    def showItemEditor(self, item: qgGui.QgsMapCanvasAnnotationItem) -> None:
+        if not item or not item.annotation() or not isinstance(item.annotation(), qgCor.QgsTextAnnotation):
+            self.editor = None
+        else:
+            self.editor = QvTextAnnotationDialog(self.llegenda, item, 'Annotació')
+            self.editor.show()
 
+    def hideItemEditor(self) -> None:
+        if self.editor:
+            self.editor.hide()
+            self.editor = None
 
-class QvAnotacionsPunt(qgGui.QgsMapToolEmitPoint):
-    def __init__(self, parent, canvas):
-        qgGui.QgsMapToolEmitPoint.__init__(self, canvas)
-        self.parent = parent
-        self.canvas = canvas
-        self.project = qgCor.QgsProject.instance()
-        self.point = None
+    def createItem(self, pos: qtCor.QPoint, size: qtCor.QSizeF = qtCor.QSizeF(50, 25)) -> qgGui.QgsMapCanvasAnnotationItem:
+        annotation = qgCor.QgsTextAnnotation.create()
+        if annotation:
+            mapPos = self.transformCanvasToAnnotation(self.toMapCoordinates(pos), annotation)
+            annotation.setMapPosition(mapPos)
+            annotation.setHasFixedMapPosition(True)
+            annotation.setMapPositionCrs(self.canvas().mapSettings().destinationCrs())
+            annotation.setRelativePosition(qtCor.QPointF(pos.x() / self.canvas().width(),
+                                                         pos.y() / self.canvas().height()))
+            annotation.setFrameSizeMm(size)
+            item = qgGui.QgsMapCanvasAnnotationItem(annotation, self.canvas())
+            [i.setSelected(i == item) for i in self.canvas().annotationItems()]
+            self.llegenda.project.setDirty(True)
+            return item
+        return None
 
-    def canvasPressEvent(self, event):
-        self.point = self.toMapCoordinates(self.canvas.mouseLastXY())
-        print('({:.4f}, {:.4f})'.format(self.point[0], self.point[1]))
-        self.a = qgCor.QgsTextAnnotation()
-        self.c = qtGui.QTextDocument(self.parent.entradaText.toPlainText())
+    def deleteItem(self, item: qgGui.QgsMapCanvasAnnotationItem) -> None:
+        item.deleteLater()
+        self.llegenda.project.setDirty(True)
+        self.noAction()
 
-        # self.c.setHtml(self.parent.entradaText.toPlainText())
-        self.a.setDocument(self.c)
-        self.a.setFrameSizeMm(qtCor.QSizeF(36, 12))
+    def updateItem(self, item: qgGui.QgsMapCanvasAnnotationItem) -> None:
+        item.update()
+        self.llegenda.project.setDirty(True)
 
-        # self.a.setMapLayer(self.layer)
-        # self.a.setFrameOffsetFromReferencePointMm(qtCor.QPointF(6, 2))
-        # self.a.setFrameOffsetFromReferencePointMm(qtCor.QPointF(0, 1))
-        # self.a.setFrameOffsetFromReferencePointMm(qtCor.QPointF(-3, 3))
+    # Cambio posición o tamaño
 
-        self.a.setMapPosition(self.point)
-        # self.a.setMapPositionCrs(qgCor.QgsCoordinateReferenceSystem(25831))
+    def moveMapPosition(self, item: qgGui.QgsMapCanvasAnnotationItem, e: qgGui.QgsMapMouseEvent) -> None:
+        annotation = item.annotation()
+        mapPos = self.transformCanvasToAnnotation(e.snapPoint(), annotation)
+        annotation.setMapPosition(mapPos)
+        annotation.setRelativePosition(qtCor.QPointF(e.pos().x() / self.canvas().width(),
+                                                     e.pos().y() / self.canvas().height()))
 
-        self.project.annotationManager().addAnnotation(self.a)
-        qgGui.QgsMapCanvasAnnotationItem(self.a, self.canvas)
+    def moveFramePosition(self, item: qgGui.QgsMapCanvasAnnotationItem, e: qgGui.QgsMapMouseEvent) -> None:
+        annotation = item.annotation()
+        newCanvasPos = item.pos() + (e.pos() - self.lastMousePosition)
+        if annotation.hasFixedMapPosition():
+            pixelToMmScale = 25.4 / self.canvas().logicalDpiX()
+            deltaX = pixelToMmScale * (e.pos().x() - self.lastMousePosition.x())
+            deltaY = pixelToMmScale * (e.pos().y() - self.lastMousePosition.y())
+            annotation.setFrameOffsetFromReferencePointMm(qtCor.QPointF(annotation.frameOffsetFromReferencePointMm().x() + deltaX,
+                                                                        annotation.frameOffsetFromReferencePointMm().y() + deltaY))
+            annotation.setRelativePosition(qtCor.QPointF(newCanvasPos.x() / self.canvas().width(),
+                                                         newCanvasPos.y() / self.canvas().height()))
+        else:
+            mapPos = self.transformCanvasToAnnotation(self.toMapCoordinates(newCanvasPos.toPoint()), annotation)
+            annotation.setMapPosition(mapPos)
+            annotation.setRelativePosition(qtCor.QPointF(newCanvasPos.x() / self.canvas().width(),
+                                                         newCanvasPos.y() / self.canvas().height()))
 
-        # for nota in self.canvas.annotationItems():
-        #     nota.deleteLater()
-        # for nota in self.project.annotationManager().cloneAnnotations():
-        #     qgGui.QgsMapCanvasAnnotationItem(nota, self.canvas)
-        # self.canvas.refresh()
+    def resizeFrame(self, item: qgGui.QgsMapCanvasAnnotationItem, e: qgGui.QgsMapMouseEvent) -> None:
+        annotation = item.annotation()
+        pixelToMmScale = 25.4 / self.canvas().logicalDpiX()
+        size = annotation.frameSizeMm()
+        xmin = annotation.frameOffsetFromReferencePointMm().x()
+        ymin = annotation.frameOffsetFromReferencePointMm().y()
+        xmax = xmin + size.width()
+        ymax = ymin + size.height()
+        relPosX = annotation.relativePosition().x()
+        relPosY = annotation.relativePosition().y()
 
+        if self.currentMoveAction in (qgGui.QgsMapCanvasAnnotationItem.ResizeFrameRight,
+                                      qgGui.QgsMapCanvasAnnotationItem.ResizeFrameRightDown,
+                                      qgGui.QgsMapCanvasAnnotationItem.ResizeFrameRightUp):
+            xmax = xmax + pixelToMmScale * (e.pos().x() - self.lastMousePosition.x())
 
-class QvAnotacions(qtWdg.QWidget):
-    def __init__(self, canvas):
-        qtWdg.QWidget.__init__(self)
-        self.layout = qtWdg.QVBoxLayout(self)
-        self.setLayout = self.layout
+        if self.currentMoveAction in (qgGui.QgsMapCanvasAnnotationItem.ResizeFrameLeft,
+                                      qgGui.QgsMapCanvasAnnotationItem.ResizeFrameLeftDown,
+                                      qgGui.QgsMapCanvasAnnotationItem.ResizeFrameLeftUp):
+            xmin = xmin + pixelToMmScale * (e.pos().x() - self.lastMousePosition.x())
+            relPosX = (relPosX * self.canvas().width() + e.pos().x() - self.lastMousePosition.x()) / self.canvas().width()
 
-        self.setWindowTitle('Anotacions')
-        self.canvas = canvas
-        # self.pt = PointTool(self, self.canvas)
-        self.pt = QvAnotacionsPunt(self, self.canvas)
-        self.canvas.setMapTool(self.pt)
-        self.entradaText = qtWdg.QTextEdit()
-        self.entradaText.show()
-        self.botoBorrar = QvPushButton('Esborrar anotacions')
-        self.botoBorrar.clicked.connect(self.esborrarAnotacions)
-        self.layout.addWidget(self.entradaText)
-        self.layout.addWidget(self.botoBorrar)
+        if self.currentMoveAction in (qgGui.QgsMapCanvasAnnotationItem.ResizeFrameUp,
+                                      qgGui.QgsMapCanvasAnnotationItem.ResizeFrameLeftUp,
+                                      qgGui.QgsMapCanvasAnnotationItem.ResizeFrameRightUp):
+            ymin = ymin + pixelToMmScale * (e.pos().y() - self.lastMousePosition.y())
+            relPosY = (relPosY * self.canvas().height() + e.pos().y() - self.lastMousePosition.y()) / self.canvas().height()
 
-    def esborrarAnotacions(self):
-        pass
+        if self.currentMoveAction in (qgGui.QgsMapCanvasAnnotationItem.ResizeFrameDown,
+                                      qgGui.QgsMapCanvasAnnotationItem.ResizeFrameLeftDown,
+                                      qgGui.QgsMapCanvasAnnotationItem.ResizeFrameRightDown):
+            ymax = ymax + pixelToMmScale * (e.pos().y() - self.lastMousePosition.y())
+
+        # switch min / max if necessary
+        if xmax < xmin:
+            xmin, xmax = xmax, xmin
+        if ymax < ymin:
+            ymin, ymax = ymax, ymin
+
+        annotation.setFrameOffsetFromReferencePointMm(qtCor.QPointF(xmin, ymin))
+        annotation.setFrameSizeMm(qtCor.QSizeF(xmax - xmin, ymax - ymin))
+        annotation.setRelativePosition(qtCor.QPointF(relPosX, relPosY))
+
+    # ******************** E V E N T O S ********************
+
+    def canvasReleaseEvent(self, e: qgGui.QgsMapMouseEvent) -> None:
+        self.noAction()
+
+    def canvasPressEvent(self, e: qgGui.QgsMapMouseEvent) -> None:
+        if e.button() != qtCor.Qt.LeftButton:
+            return
+        self.lastMousePosition = e.pos()
+        item = self.selectedItem()
+        if item:
+            self.currentMoveAction = self.moveAction(item, e.pos())
+            if self.currentMoveAction != qgGui.QgsMapCanvasAnnotationItem.NoAction:
+                return
+        if not self.selectItemAtPos(e.pos()):
+            item = self.createItem(e.pos())
+            self.showItemEditor(item)
+
+    def canvasDoubleClickEvent(self, e: qgGui.QgsMapMouseEvent) -> None:
+        item = self.selectedItem()
+        if item:
+            self.showItemEditor(item)
+
+    def keyPressEvent(self, e: qtGui.QKeyEvent) -> None:
+        item = self.selectedItem()
+        if not item:
+            return
+        # Borrar elemento
+        if e.key() in (qtCor.Qt.Key_Backspace, qtCor.Qt.Key_Delete):
+            self.deleteItem(item)
+        # Limpiar selección
+        elif e.key() == qtCor.Qt.Key_Escape:
+            item.setSelected(False)
+        # Editar
+        elif e.key() in (qtCor.Qt.Key_Return, qtCor.Qt.Key_Enter):
+            self.showItemEditor(item)
+
+    def canvasMoveEvent(self, e: qgGui.QgsMapMouseEvent) -> None:
+        item = self.selectedItem()
+        if not item or not item.annotation():
+            return
+        self.moveAction(item, e.pos())
+        if self.currentMoveAction != qgGui.QgsMapCanvasAnnotationItem.NoAction:
+            if self.currentMoveAction == qgGui.QgsMapCanvasAnnotationItem.MoveMapPosition:
+                self.moveMapPosition(item, e)
+            elif self.currentMoveAction == qgGui.QgsMapCanvasAnnotationItem.MoveFramePosition:
+                self.moveFramePosition(item, e)
+            else:
+                self.resizeFrame(item, e)
+            self.updateItem(item)
+        self.lastMousePosition = e.pos()
 
 
 if __name__ == "__main__":
@@ -139,19 +327,50 @@ if __name__ == "__main__":
 
         QvApp().carregaIdioma(app, 'ca')
 
-        # canv = qgGui.QgsMapCanvas()
-        canv = QvCanvas()
+        canvas = qgGui.QgsMapCanvas()
+        # canvas = QvCanvas()
 
-        leyenda = QvLlegenda(canv)
+        leyenda = QvLlegenda(canvas)
+        leyenda.project.read('d:/temp/test.qgs')
 
-        anotacions = QvAnotacions(canv)
-
-        leyenda.project.read(cfg.projecteInicial)
-
-        canv.setWindowTitle('Canvas')
-        canv.show()
+        canvas.setWindowTitle('Canvas')
+        canvas.show()
 
         leyenda.setWindowTitle('Llegenda')
         leyenda.show()
 
-        anotacions.show()
+        # Acciones de usuario para el menú
+
+        def setAnnotations():
+            if leyenda.anotacions.isActive():
+                canvas.unsetMapTool(leyenda.anotacions)
+                leyenda.accions.accio('setAnnotations').setChecked(False)
+            else:
+                canvas.setMapTool(leyenda.anotacions)
+                leyenda.accions.accio('setAnnotations').setChecked(True)
+
+        def writeProject():
+            leyenda.project.write()
+
+        act = qtWdg.QAction()
+        act.setCheckable(True)
+        act.setChecked(False)
+        act.setText("Dibuixa anotacions")
+        act.triggered.connect(setAnnotations)
+        leyenda.accions.afegirAccio('setAnnotations', act)
+
+        act = qtWdg.QAction()
+        act.setText("Desa projecte")
+        act.triggered.connect(writeProject)
+        leyenda.accions.afegirAccio('writeProject', act)
+
+        # Adaptación del menú
+
+        def menuContexte(tipo):
+            if tipo == 'none':
+                leyenda.menuAccions.append('separator')
+                leyenda.menuAccions.append('setAnnotations')
+                leyenda.menuAccions.append('writeProject')
+
+        # Conexión de la señal con la función menuContexte para personalizar el menú
+        leyenda.clicatMenuContexte.connect(menuContexte)

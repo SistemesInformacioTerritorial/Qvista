@@ -15,6 +15,7 @@ from moduls.QvLlegendaAux import QvModelLlegenda, QvItemLlegenda, QvMenuLlegenda
 from moduls.QvLlegendaMascara import QvLlegendaMascara
 from moduls.QvDiagrama import QvDiagrama
 from moduls.QvTema import QvTema
+from moduls.QvAnotacions import QvMapToolAnnotation
 from moduls import QvFuncions
 
 
@@ -54,6 +55,7 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
         self.mask = None
         self.removing = False
         self.tema = QvTema(self)
+        self.anotacions = None
         # self.restoreExtent = 0
         # print('restoreExtent', self.restoreExtent)
 
@@ -79,6 +81,8 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
         self.setModel(self.model)
         if self.canvas is not None:
             self.canvas.scaleChanged.connect(self.connectaEscala)
+            # Anotaciones
+            self.anotacions = QvMapToolAnnotation(self)
 
         # Lista de acciones que apareceran en el menú
         self.menuAccions = []
@@ -263,11 +267,8 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
         self.tema.temaInicial()
 
         # Preparar anotaciones
-        if self.canvas is not None:
-            for nota in self.canvas.annotationItems():
-                nota.deleteLater()
-            for nota in self.project.annotationManager().cloneAnnotations():
-                qgGui.QgsMapCanvasAnnotationItem(nota, self.canvas)
+        if self.anotacions:
+            self.anotacions.fromProjectToCanvas()
 
     def connectaCanviCapaActiva(self, canviCapaActiva):
         if canviCapaActiva is not None:
