@@ -94,10 +94,18 @@ class QvMapToolAnnotation(qgGui.QgsMapTool):
         self.currentMoveAction = None
         self.lastMousePosition = None
         self.editor = None
-        self.activated.connect(self.noAction)
+        self.activated.connect(self.activation)
         self.deactivated.connect(self.canvas().scene().clearSelection)
         self.canvas().scene().selectionChanged.connect(self.hideItemEditor)
 
+    # Activación tool
+
+    def activation(self) -> None:
+        self.noAction()
+
+    def deactivation(self) -> None:
+        self.canvas().scene().clearSelection
+    
     # Copia de anotaciones proyecto <-> canvas
 
     def fromProjectToCanvas(self) -> None:
@@ -129,9 +137,12 @@ class QvMapToolAnnotation(qgGui.QgsMapTool):
 
     # Selección y visibilidad
 
-    def toggleItemsVisibility(self) -> None:
+    def itemsVisibility(self, visible: bool = None) -> None:
         for item in self.canvas().annotationItems():
-            item.setVisible(not item.isVisible())
+            if visible is not None:
+                item.setVisible(visible)
+            else:
+                item.setVisible(not item.isVisible())
 
     def selectedItem(self) -> qgGui.QgsMapCanvasAnnotationItem:
         for item in self.canvas().annotationItems():
@@ -308,7 +319,7 @@ class QvMapToolAnnotation(qgGui.QgsMapTool):
     def keyPressEvent(self, e: qtGui.QKeyEvent) -> None:
         # Visibilidad anotaciones
         if e.key() == qtCor.Qt.Key_T and e.modifiers() == qtCor.Qt.ControlModifier:
-            self.toggleItemsVisibility()
+            self.itemsVisibility()
             return
         item = self.selectedItem()
         if not item:

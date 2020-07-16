@@ -2310,7 +2310,7 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         self.project.write(proj)
         qApp.restoreOverrideCursor()
-        app.processEvents()
+        qApp.processEvents()
         self.setDirtyBit(False)
 
     def nouMapa(self):
