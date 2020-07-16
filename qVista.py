@@ -2207,6 +2207,8 @@ class QVista(QMainWindow, Ui_MainWindow):
             from moduls.QvMapForms import QvFormNovaMapificacio
 
             QvFormNovaMapificacio.executa(self.llegenda)
+        elif command == 'anotacions':
+            self.canvas.setMapTool(self.llegenda.anotacions)
         elif command == 'masklabels':
             self.llegenda.setMask(self.llegenda.capaPerNom("MaskLabels"), 1)
         elif command == 'qvtemps':

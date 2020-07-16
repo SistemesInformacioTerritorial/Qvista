@@ -49,12 +49,11 @@ class QvCanvas(QgsMapCanvas):
     def focusInEvent(self,event):  # JNB prueba detectar que canvas tiene foco
         # print("QvCanvas >> focusInEvent "+ str(id(self)))
         self.Sig_QuienMeClica.emit(str(id(self)))
-      
-
 
     def keyPressEvent(self, event):
         """ Defineix les actuacions del QvMapeta en funció de la tecla apretada.
         """
+        super().keyPressEvent(event)  # Para que los mapTools puedan procesar sus teclas
         if event.key() == Qt.Key_Escape:
             self.desMaximitza.emit()
             if self.pare is not None:
