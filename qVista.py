@@ -1824,6 +1824,9 @@ class QVista(QMainWindow, Ui_MainWindow):
 
     def corrijoScale(self):
         # canvas principal
+        rot = self.canvas.rotation()
+        self.canvas.setRotation(0)
+
         incMy= self.canvas.extent().yMaximum() - self.canvas.extent().yMinimum()
         incPy= self.canvas.heightMM()
         EsY=  incMy  / incPy*   1000
@@ -1834,6 +1837,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         factorX= EsX /self.canvas.scale()
         factorY= EsY /self.canvas.scale()       
         self.canvas.setMagnificationFactor((factorY + factorX)/2 * self.canvas.magnificationFactor())
+        self.canvas.setRotation(rot)
         self.canvas.update()
 
 
