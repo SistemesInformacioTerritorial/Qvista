@@ -70,7 +70,7 @@ class QvTextAnnotationDialog(qtWdg.QDialog):
         self.item.annotation().setMapLayer(layer)
         self.item.annotation().setHasFixedMapPosition(self.position.isChecked())
         self.item.annotation().document().setPlainText(self.text.toPlainText())
-        self.llegenda.project.setDirty(True)
+        self.llegenda.projecteModificat.emit('annotationsChanged')
         self.hide()
 
     def cancel(self):
@@ -103,11 +103,13 @@ class QvMapToolAnnotation(qgGui.QgsMapTool):
     def fromProjectToCanvas(self) -> None:
         for item in self.canvas().annotationItems():
             item.deleteLater()
-        for item in self.llegenda.project.annotationManager().cloneAnnotations():
-            qgGui.QgsMapCanvasAnnotationItem(item, self.canvas())
+        for annotation in self.llegenda.project.annotationManager().cloneAnnotations():
+            qgGui.QgsMapCanvasAnnotationItem(annotation, self.canvas())
 
     def fromCanvasToProject(self) -> None:
-        self.llegenda.project.annotationManager().clear()
+        # No usar annotationManager().clear(): lanza una señal que duplica las notas
+        for annotation in self.llegenda.project.annotationManager().annotations():
+            self.llegenda.project.annotationManager().removeAnnotation(annotation)
         for item in self.canvas().annotationItems():
             annotation = item.annotation().clone()
             self.llegenda.project.annotationManager().addAnnotation(annotation)
@@ -124,7 +126,11 @@ class QvMapToolAnnotation(qgGui.QgsMapTool):
         self.canvas().setCursor(qtGui.QCursor(item.cursorShapeForAction(action)))
         return action
 
-    # Selección
+    # Selección y visibilidad
+
+    def toggleItemsVisibility(self) -> None:
+        for item in self.canvas().annotationItems():
+            item.setVisible(not item.isVisible())
 
     def selectedItem(self) -> qgGui.QgsMapCanvasAnnotationItem:
         for item in self.canvas().annotationItems():
@@ -168,7 +174,9 @@ class QvMapToolAnnotation(qgGui.QgsMapTool):
             self.editor.hide()
             self.editor = None
 
-    def createItem(self, pos: qtCor.QPoint, size: qtCor.QSizeF = qtCor.QSizeF(50, 25)) -> qgGui.QgsMapCanvasAnnotationItem:
+    def createItem(self, pos: qtCor.QPoint,
+                   size: qtCor.QSizeF = qtCor.QSizeF(50, 25),
+                   textWidth: float = 100.0) -> qgGui.QgsMapCanvasAnnotationItem:
         annotation = qgCor.QgsTextAnnotation.create()
         if annotation:
             mapPos = self.transformCanvasToAnnotation(self.toMapCoordinates(pos), annotation)
@@ -178,20 +186,21 @@ class QvMapToolAnnotation(qgGui.QgsMapTool):
             annotation.setRelativePosition(qtCor.QPointF(pos.x() / self.canvas().width(),
                                                          pos.y() / self.canvas().height()))
             annotation.setFrameSizeMm(size)
+            annotation.document().setTextWidth(textWidth)
             item = qgGui.QgsMapCanvasAnnotationItem(annotation, self.canvas())
             [i.setSelected(i == item) for i in self.canvas().annotationItems()]
-            self.llegenda.project.setDirty(True)
+            self.llegenda.projecteModificat.emit('annotationsChanged')
             return item
         return None
 
     def deleteItem(self, item: qgGui.QgsMapCanvasAnnotationItem) -> None:
         item.deleteLater()
-        self.llegenda.project.setDirty(True)
+        self.llegenda.projecteModificat.emit('annotationsChanged')
         self.noAction()
 
     def updateItem(self, item: qgGui.QgsMapCanvasAnnotationItem) -> None:
         item.update()
-        self.llegenda.project.setDirty(True)
+        self.llegenda.projecteModificat.emit('annotationsChanged')
 
     # Cambio posición o tamaño
 
@@ -286,6 +295,10 @@ class QvMapToolAnnotation(qgGui.QgsMapTool):
             self.showItemEditor(item)
 
     def keyPressEvent(self, e: qtGui.QKeyEvent) -> None:
+        # Visibilidad anotaciones
+        if e.key() == qtCor.Qt.Key_T and e.modifiers() == qtCor.Qt.ControlModifier:
+            self.toggleItemsVisibility()
+            return
         item = self.selectedItem()
         if not item:
             return
