@@ -3,7 +3,10 @@ from moduls.QvCanvas import QvCanvas
 from moduls.QvConstants import QvConstants
 from qgis.PyQt.QtCore import Qt, pyqtSignal,  pyqtSlot
 
+
+
 class QvCanvasAuxiliar(QvCanvas):
+
 
     Sig_canviTema = pyqtSignal('QString','QString')    #JNB
 
@@ -24,7 +27,6 @@ class QvCanvasAuxiliar(QvCanvas):
         super().__init__(*args, **kwargs)
         self.canvas = canvas
 
-
         self.sincronitzaExtensio = sincronitzaExtensio
         self.sincronitzaZoom = sincronitzaZoom
         self.sincronitzaCentre = sincronitzaCentre
@@ -39,6 +41,8 @@ class QvCanvasAuxiliar(QvCanvas):
             self.preparaCbTemes(temaInicial)
         self.setupSincronia()
     
+
+
     def preparaCbTemes(self, temaInicial):
         self.temes = QgsProject.instance().mapThemeCollection().mapThemes()
         if len(self.temes)>0:
@@ -50,7 +54,6 @@ class QvCanvasAuxiliar(QvCanvas):
 
             if temaInicial in self.temes:
                 self.cbTemes.setCurrentIndex(self.temes.index(temaInicial)+1)
-    
     def botons(self):
         self.bSincronia = self._botoMapa(os.path.join(imatgesDir,'sync.png'))
         self.bSincronia.setToolTip('Sincronia amb el mapa principal')
@@ -110,6 +113,12 @@ class QvCanvasAuxiliar(QvCanvas):
         else:
             self.setTheme(self.temes[i-1])
             elTema = self.temes[i-1]
+
+       
+
+
+
+
 
         self.currentTeme = elTema
         elIdCanvas = str(id(self))
@@ -178,19 +187,15 @@ class QvCanvasAuxiliar(QvCanvas):
         self.swapSincroniaExtensio(self.actSincExt.isChecked())
         self.swapSincroniaZoom(self.actSincZoom.isChecked())
         self.swapSincroniaCentre(self.actSincCentre.isChecked())
-    
     def swapSincroniaExtensio(self,check):
         self.sincronitzaExtensio = check
         self.syncExtensio()
-    
     def swapSincroniaZoom(self,check):
         self.sincronitzaZoom = check
         self.syncZoom()
-    
     def swapSincroniaCentre(self,check):
         self.sincronitzaCentre = check
         self.syncCentre()
-    
     def swapSincroniaRotacio(self,check):
         self.sincronitzaRotacio = check
         self.syncRotacio()

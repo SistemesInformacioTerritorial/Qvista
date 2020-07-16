@@ -18,6 +18,7 @@ import functools
 
 
 
+
 class QvCanvas(QgsMapCanvas):
     canviMaximitza = pyqtSignal()
     desMaximitza = pyqtSignal()
@@ -65,7 +66,17 @@ class QvCanvas(QgsMapCanvas):
                     pass
         if event.key()==Qt.Key_F11:
             self.canviMaximitza.emit()
-            
+
+        if event.key() == Qt.Key_F2:
+            self.paradebug()  #JNB pruebas     
+
+
+
+
+    def paradebug(self):
+        pass
+
+
     def uncheckBotons(self,aExcepcio):
         for x in self._botons:
             if x is not aExcepcio: 

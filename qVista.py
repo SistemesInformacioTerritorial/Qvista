@@ -80,6 +80,7 @@ class QVista(QMainWindow, Ui_MainWindow):
             així com un tip de les accions que s'executen.
     """
     dicCanvasDw ={}
+    dicNumCanvas = {}
 
     def __init__(self,app, prjInicial, titleFinestra):
         """  Inicialització de QVista.
@@ -375,6 +376,8 @@ class QVista(QMainWindow, Ui_MainWindow):
     def stopMovie(self):
         QvFuncions.stopMovie()
 
+   
+
     def keyPressEvent(self, event):
         """Actuacions del qVista en funció de la tecla premuda
 
@@ -383,6 +386,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         """
         if event.key() == Qt.Key_F1:
             print ('Help')
+            
         if event.key() == Qt.Key_F3:
             print('Cercar')
         if event.key() == Qt.Key_F11:
@@ -390,6 +394,8 @@ class QVista(QMainWindow, Ui_MainWindow):
         if event.key() == Qt.Key_F5:
             self.canvas.refresh()
             print('refresh')
+
+                      
 
     def botoLateral(self, text = None, tamany = 40, imatge = None, accio=None, menu=None):
         """Crea un boto per a la botonera lateral.
@@ -484,6 +490,8 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.canvas.setAnnotationsVisible(True)
         self.canvas.xyCoordinates.connect(self.showXY)     
         self.canvas.scaleChanged.connect(self.showScale)   
+        self.canvas.scaleChanged.connect(self.corrijoScale)   
+
         self.canvas.mapCanvasRefreshed.connect(self.canvasRefrescat)
         self.layout = QVBoxLayout(self.frameCentral)
     
@@ -1264,6 +1272,8 @@ class QVista(QMainWindow, Ui_MainWindow):
         dwCanvas.resize(self.canvas.width()/2.5,self.canvas.height()/2.5)   #JNB
 
         dwCanvas.tancat.connect(lambda: self.numCanvasAux.remove(num))
+        dwCanvas.tancat.connect(lambda: self.actualizoDiccionarios(num))
+        
         self.numCanvasAux.append(num)
         dwCanvas.setWidget(canvas)
 
@@ -1274,10 +1284,19 @@ class QVista(QMainWindow, Ui_MainWindow):
         dwCanvas.setWindowTitle(nuevoTitulo)
         # Añado a diccionario, el id del canvas y de su dw
         self.dicCanvasDw.setdefault(str(id(canvas)),str(id(dwCanvas)))
+        # Añado a diccionario, el num de vista y el id del canvas 
+        self.dicNumCanvas.setdefault(num,str(id(canvas)))
 
         self.addDockWidget(Qt.RightDockWidgetArea, dwCanvas)
         dwCanvas.setFloating(True)
     
+    def actualizoDiccionarios(self,num):
+        print("borro: ",num)
+        canvas = self.dicNumCanvas.get(num)
+        del self.dicNumCanvas[num]
+        del self.dicCanvasDw[canvas]
+
+
     def actualizarTitleCanvasAux(self,idenCanvas,tema):
         try:
             suDw = int(self.dicCanvasDw.get(idenCanvas))
@@ -1803,6 +1822,21 @@ class QVista(QMainWindow, Ui_MainWindow):
         fm=QFontMetrics(font)
         self.leXY.setFixedWidth(fm.width(text)*QvApp().zoomFactor())
 
+    def corrijoScale(self):
+        # canvas principal
+        incMy= self.canvas.extent().yMaximum() - self.canvas.extent().yMinimum()
+        incPy= self.canvas.heightMM()
+        EsY=  incMy  / incPy*   1000
+        incMx= self.canvas.extent().xMaximum() - self.canvas.extent().xMinimum()
+        incPx=  self.canvas.widthMM()
+        EsX=  incMx / incPx * 1000  # esta es la buena
+
+        factorX= EsX /self.canvas.scale()
+        factorY= EsY /self.canvas.scale()       
+        self.canvas.setMagnificationFactor((factorY + factorX)/2 * self.canvas.magnificationFactor())
+        self.canvas.update()
+
+
     def showScale(self,scale ):
         """Mostra l'escala a la label corresponent
 
@@ -1815,6 +1849,8 @@ class QVista(QMainWindow, Ui_MainWindow):
         if self.editantEscala:  
             self.editantEscala=False
             self.leScale.hide()
+        
+
 
     def definirLabelsStatus(self):    
         styleheetLabel='''
@@ -2375,7 +2411,7 @@ def qvSplashScreen(imatge):
 def main(argv):
     # Definició 
     global qV
-    global app
+    
 
     # Ajustes de pantalla ANTES de crear la aplicación
     QvFuncions.setDPI()
