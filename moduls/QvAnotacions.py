@@ -121,7 +121,8 @@ class QvMapToolAnnotation(qgGui.QgsMapTool):
         self.currentMoveAction = qgGui.QgsMapCanvasAnnotationItem.NoAction
         self.canvas().setCursor(qtGui.QCursor(self.cursor))
 
-    def moveAction(self, item: qgGui.QgsMapCanvasAnnotationItem, pos: qtCor.QPoint) -> qgGui.QgsMapCanvasAnnotationItem.MouseMoveAction:
+    def moveAction(self, item: qgGui.QgsMapCanvasAnnotationItem,
+                   pos: qtCor.QPoint) -> qgGui.QgsMapCanvasAnnotationItem.MouseMoveAction:
         action = item.moveActionForPosition(pos)
         self.canvas().setCursor(qtGui.QCursor(item.cursorShapeForAction(action)))
         return action
@@ -148,7 +149,8 @@ class QvMapToolAnnotation(qgGui.QgsMapTool):
 
     # Transformación coordenadas
 
-    def transformCanvasToAnnotation(self, p: qgCor.QgsPointXY, annotation: qgCor.QgsAnnotation) -> qgCor.QgsPointXY:
+    def transformCanvasToAnnotation(self, p: qgCor.QgsPointXY,
+                                    annotation: qgCor.QgsAnnotation) -> qgCor.QgsPointXY:
         if annotation.mapPositionCrs() != self.canvas().mapSettings().destinationCrs():
             transform = qgCor.QgsCoordinateTransform(self.canvas().mapSettings().destinationCrs(),
                                                      annotation.mapPositionCrs(),
@@ -163,7 +165,8 @@ class QvMapToolAnnotation(qgGui.QgsMapTool):
     # Alta, modificación, borrado
 
     def showItemEditor(self, item: qgGui.QgsMapCanvasAnnotationItem) -> None:
-        if not item or not item.annotation() or not isinstance(item.annotation(), qgCor.QgsTextAnnotation):
+        if (not item or not item.annotation() or
+           not isinstance(item.annotation(), qgCor.QgsTextAnnotation)):
             self.editor = None
         else:
             self.editor = QvTextAnnotationDialog(self.llegenda, item, 'Annotació')
@@ -204,31 +207,37 @@ class QvMapToolAnnotation(qgGui.QgsMapTool):
 
     # Cambio posición o tamaño
 
-    def moveMapPosition(self, item: qgGui.QgsMapCanvasAnnotationItem, e: qgGui.QgsMapMouseEvent) -> None:
+    def moveMapPosition(self, item: qgGui.QgsMapCanvasAnnotationItem,
+                        e: qgGui.QgsMapMouseEvent) -> None:
         annotation = item.annotation()
         mapPos = self.transformCanvasToAnnotation(e.snapPoint(), annotation)
         annotation.setMapPosition(mapPos)
         annotation.setRelativePosition(qtCor.QPointF(e.pos().x() / self.canvas().width(),
                                                      e.pos().y() / self.canvas().height()))
 
-    def moveFramePosition(self, item: qgGui.QgsMapCanvasAnnotationItem, e: qgGui.QgsMapMouseEvent) -> None:
+    def moveFramePosition(self, item: qgGui.QgsMapCanvasAnnotationItem,
+                          e: qgGui.QgsMapMouseEvent) -> None:
         annotation = item.annotation()
         newCanvasPos = item.pos() + (e.pos() - self.lastMousePosition)
         if annotation.hasFixedMapPosition():
             pixelToMmScale = 25.4 / self.canvas().logicalDpiX()
             deltaX = pixelToMmScale * (e.pos().x() - self.lastMousePosition.x())
             deltaY = pixelToMmScale * (e.pos().y() - self.lastMousePosition.y())
-            annotation.setFrameOffsetFromReferencePointMm(qtCor.QPointF(annotation.frameOffsetFromReferencePointMm().x() + deltaX,
-                                                                        annotation.frameOffsetFromReferencePointMm().y() + deltaY))
+            annotation.setFrameOffsetFromReferencePointMm(qtCor.QPointF(
+                annotation.frameOffsetFromReferencePointMm().x() + deltaX,
+                annotation.frameOffsetFromReferencePointMm().y() + deltaY))
             annotation.setRelativePosition(qtCor.QPointF(newCanvasPos.x() / self.canvas().width(),
                                                          newCanvasPos.y() / self.canvas().height()))
         else:
-            mapPos = self.transformCanvasToAnnotation(self.toMapCoordinates(newCanvasPos.toPoint()), annotation)
+            mapPos = self.transformCanvasToAnnotation(
+                self.toMapCoordinates(newCanvasPos.toPoint()),
+                annotation)
             annotation.setMapPosition(mapPos)
             annotation.setRelativePosition(qtCor.QPointF(newCanvasPos.x() / self.canvas().width(),
                                                          newCanvasPos.y() / self.canvas().height()))
 
-    def resizeFrame(self, item: qgGui.QgsMapCanvasAnnotationItem, e: qgGui.QgsMapMouseEvent) -> None:
+    def resizeFrame(self, item: qgGui.QgsMapCanvasAnnotationItem,
+                    e: qgGui.QgsMapMouseEvent) -> None:
         annotation = item.annotation()
         pixelToMmScale = 25.4 / self.canvas().logicalDpiX()
         size = annotation.frameSizeMm()
@@ -248,13 +257,15 @@ class QvMapToolAnnotation(qgGui.QgsMapTool):
                                       qgGui.QgsMapCanvasAnnotationItem.ResizeFrameLeftDown,
                                       qgGui.QgsMapCanvasAnnotationItem.ResizeFrameLeftUp):
             xmin = xmin + pixelToMmScale * (e.pos().x() - self.lastMousePosition.x())
-            relPosX = (relPosX * self.canvas().width() + e.pos().x() - self.lastMousePosition.x()) / self.canvas().width()
+            relPosX = (relPosX * self.canvas().width() + e.pos().x() -
+                       self.lastMousePosition.x()) / self.canvas().width()
 
         if self.currentMoveAction in (qgGui.QgsMapCanvasAnnotationItem.ResizeFrameUp,
                                       qgGui.QgsMapCanvasAnnotationItem.ResizeFrameLeftUp,
                                       qgGui.QgsMapCanvasAnnotationItem.ResizeFrameRightUp):
             ymin = ymin + pixelToMmScale * (e.pos().y() - self.lastMousePosition.y())
-            relPosY = (relPosY * self.canvas().height() + e.pos().y() - self.lastMousePosition.y()) / self.canvas().height()
+            relPosY = (relPosY * self.canvas().height() + e.pos().y() -
+                       self.lastMousePosition.y()) / self.canvas().height()
 
         if self.currentMoveAction in (qgGui.QgsMapCanvasAnnotationItem.ResizeFrameDown,
                                       qgGui.QgsMapCanvasAnnotationItem.ResizeFrameLeftDown,
@@ -334,14 +345,14 @@ if __name__ == "__main__":
     from moduls.QvApp import QvApp
     from moduls.QvCanvas import QvCanvas
     from moduls.QvLlegenda import QvLlegenda
-    import configuracioQvista as cfg
+    # import configuracioQvista as cfg
 
     with qgisapp(sysexit=False) as app:
 
         QvApp().carregaIdioma(app, 'ca')
 
-        canvas = qgGui.QgsMapCanvas()
-        # canvas = QvCanvas()
+        # canvas = qgGui.QgsMapCanvas()
+        canvas = QvCanvas()
 
         leyenda = QvLlegenda(canvas)
         leyenda.project.read('d:/temp/test.qgs')
