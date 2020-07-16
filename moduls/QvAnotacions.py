@@ -94,18 +94,20 @@ class QvMapToolAnnotation(qgGui.QgsMapTool):
         self.currentMoveAction = None
         self.lastMousePosition = None
         self.editor = None
+        self.visible = True
         self.activated.connect(self.activation)
-        self.deactivated.connect(self.canvas().scene().clearSelection)
+        self.deactivated.connect(self.deactivation)
         self.canvas().scene().selectionChanged.connect(self.hideItemEditor)
 
     # Activación tool
 
     def activation(self) -> None:
         self.noAction()
+        self.itemsVisibility(True)
 
     def deactivation(self) -> None:
-        self.canvas().scene().clearSelection
-    
+        self.canvas().scene().clearSelection()
+
     # Copia de anotaciones proyecto <-> canvas
 
     def fromProjectToCanvas(self) -> None:
@@ -138,11 +140,10 @@ class QvMapToolAnnotation(qgGui.QgsMapTool):
     # Selección y visibilidad
 
     def itemsVisibility(self, visible: bool = None) -> None:
+        if visible is not None:
+            self.visible = visible
         for item in self.canvas().annotationItems():
-            if visible is not None:
-                item.setVisible(visible)
-            else:
-                item.setVisible(not item.isVisible())
+            item.setVisible(self.visible)
 
     def selectedItem(self) -> qgGui.QgsMapCanvasAnnotationItem:
         for item in self.canvas().annotationItems():
@@ -301,6 +302,9 @@ class QvMapToolAnnotation(qgGui.QgsMapTool):
     def canvasPressEvent(self, e: qgGui.QgsMapMouseEvent) -> None:
         if e.button() != qtCor.Qt.LeftButton:
             return
+        if not self.visible:
+            self.itemsVisibility(True)
+            return
         self.lastMousePosition = e.pos()
         item = self.selectedItem()
         if item:
@@ -319,7 +323,7 @@ class QvMapToolAnnotation(qgGui.QgsMapTool):
     def keyPressEvent(self, e: qtGui.QKeyEvent) -> None:
         # Visibilidad anotaciones
         if e.key() == qtCor.Qt.Key_T and e.modifiers() == qtCor.Qt.ControlModifier:
-            self.itemsVisibility()
+            self.itemsVisibility(not self.visible)
             return
         item = self.selectedItem()
         if not item:
