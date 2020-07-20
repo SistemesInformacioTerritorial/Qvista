@@ -109,7 +109,6 @@ class QvMapToolAnnotation(qgGui.QgsMapTool):
 
     def fromProjectToCanvas(self) -> None:
         for item in self.canvas().annotationItems():
-            self.canvas().scene().removeItem(item)
             item.deleteLater()
         for annotation in self.llegenda.project.annotationManager().cloneAnnotations():
             qgGui.QgsMapCanvasAnnotationItem(annotation, self.canvas())
