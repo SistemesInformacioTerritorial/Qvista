@@ -20,7 +20,7 @@ class QvTextAnnotationDialog(qtWdg.QDialog):
         # Capas disponibles
         self.layers = qtWdg.QComboBox(self)
         self.layers.setEditable(False)
-        self.layers.addItem('(Totes)', None)
+        self.layers.addItem('(Tot el mapa)', None)
         current = item.annotation().mapLayer() or self.llegenda.currentLayer()
         index = 0
         for i in llegenda.items():
@@ -40,6 +40,7 @@ class QvTextAnnotationDialog(qtWdg.QDialog):
 
         # Texto plano de la nota
         self.text = qtWdg.QTextEdit(self.item.annotation().document().toPlainText(), self)
+        self.text.setAcceptRichText(False)
 
         # Botones
         self.bDelete = qtWdg.QPushButton('Esborra')
@@ -104,10 +105,11 @@ class QvMapToolAnnotation(qgGui.QgsMapTool):
     def deactivation(self) -> None:
         self.canvas().scene().clearSelection()
 
-    # Copia de anotaciones proyecto <-> canvas
+    # Anotaciones proyecto <-> canvas
 
     def fromProjectToCanvas(self) -> None:
         for item in self.canvas().annotationItems():
+            self.canvas().scene().removeItem(item)
             item.deleteLater()
         for annotation in self.llegenda.project.annotationManager().cloneAnnotations():
             qgGui.QgsMapCanvasAnnotationItem(annotation, self.canvas())
@@ -133,6 +135,17 @@ class QvMapToolAnnotation(qgGui.QgsMapTool):
         return action
 
     # Selección y visibilidad
+
+    def visible(self) -> bool:
+        return self.canvas().annotationsVisible()
+
+    def numAnnotations(self) -> int:
+        return len(self.canvas().annotationItems())
+
+    def toggleAnnotations(self) -> bool:
+        toggle = not self.visible()
+        self.canvas().setAnnotationsVisible(toggle)
+        return toggle
 
     def itemsVisibility(self, visible: bool = None) -> None:
         for item in self.canvas().annotationItems():
@@ -205,6 +218,7 @@ class QvMapToolAnnotation(qgGui.QgsMapTool):
         return None
 
     def deleteItem(self, item: qgGui.QgsMapCanvasAnnotationItem) -> None:
+        self.canvas().scene().removeItem(item)
         item.deleteLater()
         self.llegenda.projecteModificat.emit('annotationsChanged')
         self.noAction()
@@ -315,9 +329,9 @@ class QvMapToolAnnotation(qgGui.QgsMapTool):
 
     def keyPressEvent(self, e: qtGui.QKeyEvent) -> None:
         # Visibilidad anotaciones
-        # if e.key() == qtCor.Qt.Key_T and e.modifiers() == qtCor.Qt.ControlModifier:
-        #     self.itemsVisibility()
-        #     return
+        if e.key() == qtCor.Qt.Key_T and e.modifiers() == qtCor.Qt.ControlModifier:
+            self.itemsVisibility()
+            return
         item = self.selectedItem()
         if not item:
             return

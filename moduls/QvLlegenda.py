@@ -362,12 +362,13 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
             else:
                 node.setItemVisibilityChecked(False)
 
-    def capaVisible(self, capa):
+    def capaVisible(self, capa, escala=True):
         node = self.root.findLayer(capa.id())
         if node is not None:
             v = node.isVisible()
-            if v and capa.hasScaleBasedVisibility() and self.canvas is not None:
-                return capa.isInScaleRange(self.canvas.scale())
+            if escala:
+                if v and capa.hasScaleBasedVisibility() and self.canvas is not None:
+                    return capa.isInScaleRange(self.canvas.scale())
             return v
         return False
 
@@ -395,6 +396,12 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
         # act.setIcon(QIcon(':/Icones/ic_file_upload_black_48dp.png'))ic_beach_access_black_48dp
         act.triggered.connect(self.saveLayersToFile)
         self.accions.afegirAccio('saveLayersToFile', act)
+
+        act = qtWdg.QAction()
+        act.setText("Veure anotacions")
+        act.setCheckable(True)
+        act.triggered.connect(self.viewAnnotations)
+        self.accions.afegirAccio('viewAnnotations', act)
 
         act = qtWdg.QAction()
         act.setText("Canvia nom")
@@ -506,6 +513,9 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
         elif tipo == 'none':
             if self.editable:
                 self.menuAccions += ['addGroup', 'addLayersFromFile']
+            if self.anotacions and self.anotacions.numAnnotations() > 0:
+                self.accions.accio('viewAnnotations').setChecked(self.anotacions.visible())
+                self.menuAccions += ['separator', 'viewAnnotations']
             # if QvApp().usuari in ('CPRET', 'DE1717'):
             #     self.menuAccions += ['addCustomCSV']
         else:  # 'symb'
@@ -536,6 +546,9 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
             ok, txt = qgCor.QgsLayerDefinition.loadLayerDefinition(nfile, self.project, self.root)
             if not ok:
                 print('No se pudo importar capas', txt)
+
+    def viewAnnotations(self):
+        self.accions.accio('viewAnnotations').setChecked(self.anotacions.toggleAnnotations())
 
     def saveStyleToGeoPackage(self, capa, nom="", desc="", default=True):
         s = qgCor.QgsSettings()
