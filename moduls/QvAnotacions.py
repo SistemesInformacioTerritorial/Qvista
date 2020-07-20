@@ -145,6 +145,7 @@ class QvMapToolAnnotation(qgGui.QgsMapTool):
     def toggleAnnotations(self) -> bool:
         toggle = not self.visible()
         self.canvas().setAnnotationsVisible(toggle)
+        self.llegenda.projecteModificat.emit('annotationsChanged')
         return toggle
 
     def itemsVisibility(self, visible: bool = None) -> None:
