@@ -488,7 +488,6 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.canvas.desMaximitza.connect(self.desmaximitza)
 
         self.canvas.setCanvasColor(QColor(253,253,255))
-        self.canvas.setAnnotationsVisible(True)
         self.canvas.xyCoordinates.connect(self.showXY)     
         self.canvas.scaleChanged.connect(self.showScale)   
         self.canvas.scaleChanged.connect(self.corrijoScale)   
@@ -1394,7 +1393,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         process = QProcess(self)
         pathApp = r"c:\windows\system32\SnippingTool.exe"
         process.start(pathApp)
-        app.processEvents()
+        qApp.processEvents()
 
     def definirMenus(self):
         """Definició dels menús de la barra superior.
@@ -1817,7 +1816,8 @@ class QVista(QMainWindow, Ui_MainWindow):
         Arguments:
             p {QgsPointXY} -- Punt del que volem mostrar les coordenades
         """
-        text=str("%.2f" % p.x()) + ", " + str("%.2f" % p.y() )
+        # text=str("%.2f" % p.x()) + ", " + str("%.2f" % p.y() )
+        text = QvApp().locale.toString(p.x(), 'f', 3) + ';' + QvApp().locale.toString(p.y(), 'f', 3)
         self.leXY.setText(text)
         font=QvConstants.FONTTEXT
         fm=QFontMetrics(font)
@@ -2043,18 +2043,28 @@ class QVista(QMainWindow, Ui_MainWindow):
 
     def returnEditarXY(self):
         """Refrescar el canvas centrant-lo a les coordenades que ha pescrit l'usuari"""
-        try:
-            x,y = self.leXY.text().split(',')
-            x = x.strip()
-            y = y.strip()
-            def num_ok(num):
-                return all(char.isdigit() or char=='.' for char in num)
-            if x is not None and y is not None:
-                if num_ok(x) and num_ok(y):
-                    self.canvas.setCenter(QgsPointXY(float(x),float(y)))
-                    self.canvas.refresh()
-        except:
-            print("ERROR >> Coordenades mal escrites")
+        # try:
+        #     x,y = self.leXY.text().split(',')
+        #     x = x.strip()
+        #     y = y.strip()
+        #     def num_ok(num):
+        #         return all(char.isdigit() or char=='.' for char in num)
+        #     if x is not None and y is not None:
+        #         if num_ok(x) and num_ok(y):
+        #             self.canvas.setCenter(QgsPointXY(float(x),float(y)))
+        #             self.canvas.refresh()
+        # except:
+        #     print("ERROR >> Coordenades mal escrites")
+        coords = self.leXY.text().split(';')
+        if len(coords) == 2:
+            x, xOk = QvApp().locale.toFloat(coords[0])
+            y, yOk = QvApp().locale.toFloat(coords[1])
+            if xOk and yOk:
+                self.canvas.setCenter(QgsPointXY(x, y))
+                self.canvas.refresh()
+                return
+        print("ERROR >> Coordenades mal escrites")
+
 
     def editarEscala(self):
         if not self.editantEscala:
