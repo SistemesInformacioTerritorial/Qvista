@@ -1810,14 +1810,15 @@ class QVista(QMainWindow, Ui_MainWindow):
         except:
             pass
 
-    def showXY(self,p):
+    def showXY(self, p, numDec=3):
         """Mostra les coordenades del punt p a la label corresponent
 
         Arguments:
             p {QgsPointXY} -- Punt del que volem mostrar les coordenades
         """
         # text=str("%.2f" % p.x()) + ", " + str("%.2f" % p.y() )
-        text = QvApp().locale.toString(p.x(), 'f', 3) + ';' + QvApp().locale.toString(p.y(), 'f', 3)
+        text = QvApp().locale.toString(p.x(), 'f', numDec) + ';' + \
+               QvApp().locale.toString(p.y(), 'f', numDec)
         self.leXY.setText(text)
         font=QvConstants.FONTTEXT
         fm=QFontMetrics(font)
@@ -2477,8 +2478,9 @@ def main(argv):
 
     with qgisapp(sysexit=False) as app: 
         
-        # Se instancia QvApp al principio para el control de errores
+        # Se instancia QvApp al principio para el control de errores e idioma
         qVapp = QvApp()
+        qVapp.carregaIdioma(app, 'ca')
 
         # Splash image al començar el programa. La tancarem amb splash.finish(qV)
         splash = qvSplashScreen(os.path.join(imatgesDir,'SplashScreen_qVista.png'))
@@ -2500,9 +2502,6 @@ def main(argv):
         if not ok:
             print('ERROR LOG >>', qVapp.logError())
        
-        # Idioma
-        qVapp.carregaIdioma(app, 'ca')
-
         # Estil visual de l'aplicació
         app.setStyle(QStyleFactory.create('fusion'))
         
