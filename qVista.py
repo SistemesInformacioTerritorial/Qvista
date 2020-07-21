@@ -147,6 +147,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.cAdrec= None
         self.catalegMapes = None
         self.numCanvasAux = []
+        self.tipoScale="escNormal"  # "escQGis"
 
         #Preparem el mapeta abans de les accions, ja que el necessitarem allà
         self.preparacioMapeta()
@@ -1847,7 +1848,13 @@ class QVista(QMainWindow, Ui_MainWindow):
         Arguments:
             scale {float} -- Escala actual
         """
-        self.bScale.setText( " Escala 1:" + str(int(round(scale)))) 
+
+
+        if self.tipoScale=="escNormal":
+            self.bScale.setText( " Escala 1:" + str(int(round(self.canvas.scale())))) 
+        else:   # "escQGis"
+            self.bScale.setText( " Escala qGis 1:" + str(int(round(self.canvas.scale())))) 
+               
         #Si estàvem editant l'escala i entrem aquí vol dir que hem abortat missió
         #Per tant, deixem d'editar-la
         if self.editantEscala:  
@@ -1931,11 +1938,27 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.lScale.setContentsMargins(0,0,0,0)
         self.lScale.setSpacing(0)
         self.wScale.setLayout(self.lScale)
-        self.bScale = QvPushButton(flat=True)
+
+        # Menu contextual para establecer funcionamiento de escala, para boton bScale
+        self.menuEscala=QMenu()
+        self.accioScaleNormal=QAction('Escala',self)
+        self.accioScaleNormal.triggered.connect(self.escalaNormal)
+        self.menuEscala.addAction(self.accioScaleNormal)
+
+        self.accioScaleqGis=QAction('Escala qGis',self)
+        self.accioScaleqGis.triggered.connect(self.escalaqGis)
+        self.menuEscala.addAction(self.accioScaleqGis)        
+
+
+        self.bScale = QvPushButton(flat=True)   
+        self.bScale.setToolTip('  Mouse <b>left</b> para escalas predefinidas <br>  Mouse <b>rigth</b> para cambiar el estilo de la escala<br>  <b>ATENCIÓN:</b> la escala qGis es inexacta métricamente en pantalla')
         self.bScale.setStyleSheet(stylesheetButton)
         self.bScale.setFixedHeight(alcada)
         self.lScale.addWidget(self.bScale)
         self.bScale.clicked.connect(self.editarEscala)
+        self.bScale.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.bScale.customContextMenuRequested.connect(self.on_context_menu_bScale)
+        
         self.editantEscala = False
         
         self.leScale = QLineEdit()
@@ -1979,6 +2002,24 @@ class QVista(QMainWindow, Ui_MainWindow):
         # self.statusbar.addPermanentWidget(self.cbEstil,0)
         # self.statusbar.addPermanentWidget( self.bOrientacio, 0 )
     
+    def on_context_menu_bScale(self, point):
+        self.menuEscala.exec_(self.bScale.mapToGlobal(point))        
+    
+    def escalaNormal(self):
+        self.bScale.setText( " Escala 1:" + str(int(round(self.canvas.scale())))) 
+        self.canvas.scaleChanged.connect(self.corrijoScale) 
+        self.corrijoScale()
+        self.tipoScale="escNormal"  
+        
+
+    def escalaqGis(self):
+        self.bScale.setText( " Escala qGis 1:" + str(int(round(self.canvas.scale())))) 
+        self.canvas.setMagnificationFactor(1)
+        self.canvas.scaleChanged.disconnect(self.corrijoScale) 
+        self.tipoScale="escQGis"
+
+
+
     def connectarProgressBarCanvas(self):
         self.canvas.mapCanvasRefreshed.connect(self.hideSB)
         self.canvas.renderStarting.connect(self.showSB)
@@ -2018,7 +2059,9 @@ class QVista(QMainWindow, Ui_MainWindow):
     def editarEscala(self):
         if not self.editantEscala:
             self.editantEscala = True
-            self.bScale.setText(' Escala 1: ')
+            
+            self.bScale.setText(' Escala 1: ')  #JNB
+            
             self.leScale.show()
             escalesPossibles = list(map(str,self.llegenda.escales.llistaCb))
             self.completerEscales=QCompleter(escalesPossibles,self.leScale)
