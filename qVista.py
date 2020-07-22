@@ -1826,6 +1826,7 @@ class QVista(QMainWindow, Ui_MainWindow):
     def corrijoScale(self):
         # canvas principal
         rot = self.canvas.rotation()
+        self.canvas.rotationChanged.disconnect(self.mapeta.qvMapeta.cambiarMapeta)
         self.canvas.setRotation(0)
 
         incMy= self.canvas.extent().yMaximum() - self.canvas.extent().yMinimum()
@@ -1839,6 +1840,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         factorY= EsY /self.canvas.scale()       
         self.canvas.setMagnificationFactor((factorY + factorX)/2 * self.canvas.magnificationFactor())
         self.canvas.setRotation(rot)
+        self.canvas.rotationChanged.connect(self.mapeta.qvMapeta.cambiarMapeta)
         self.canvas.update()
 
 
@@ -1956,7 +1958,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.bScale.setFixedHeight(alcada)
         self.lScale.addWidget(self.bScale)
         self.bScale.clicked.connect(self.editarEscala)
-        self.bScale.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.bScale.setContextMenuPolicy(Qt.CustomContextMenu)   #para menu boton derecho
         self.bScale.customContextMenuRequested.connect(self.on_context_menu_bScale)
         
         self.editantEscala = False
@@ -1983,6 +1985,8 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.lblProjecte.setStyleSheet(styleheetLabel)
         self.lblProjecte.setFrameStyle(QFrame.StyledPanel )
         self.lblProjecte.setFixedHeight(alcada)
+
+
 
         # self.cbEstil = QComboBox()
         # self.cbEstil.currentTextChanged.connect(self.canviaTema)

@@ -73,8 +73,10 @@ class QvCanvas(QgsMapCanvas):
 
 
     def paradebug(self):
-        pass
-
+        if self.bMaximitza.toolTip() == 'Pantalla completa (F11)': 
+            self.bMaximitza.setToolTip('Només mapa (F11)')
+        else:
+            self.bMaximitza.setToolTip('Pantalla completa (F11)')
 
     def uncheckBotons(self,aExcepcio):
         for x in self._botons:
@@ -324,6 +326,7 @@ class QvCanvas(QgsMapCanvas):
                 self.iconaMinimitza=QIcon(os.path.join(imatgesDir,'fullscreen-exit.png'))
                 self.bMaximitza = self._botoMapa(os.path.join(imatgesDir,'fullscreen.png'))
                 self.bMaximitza.setToolTip('Pantalla completa (F11)')
+                
                 self.layoutBotoneraMapa.addWidget(self.bMaximitza)   
                 self.bMaximitza.setCursor(QvConstants.cursorFletxa()) 
                 self.bMaximitza.clicked.connect(self.canviMaximitza.emit)  
