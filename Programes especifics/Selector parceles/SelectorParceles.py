@@ -2,6 +2,7 @@ from qgis.core.contextmanagers import qgisapp
 from qgis.gui import QgsMapCanvas, QgsLayerTreeMapCanvasBridge
 from qgis.core import QgsProject
 from qgis.PyQt.QtWidgets import QMainWindow, QTextEdit, QDialog, QVBoxLayout
+from moduls.QvImports  import *
 import os
 import json
 import SelectorParcelesUi
@@ -37,12 +38,32 @@ class SelectorParceles(QMainWindow,SelectorParcelesUi.Ui_MainWindow):
             # Queixar-nos de que la configuració no està ben escrita
             pass
         self.habilitaBotons()
+
     def habilitaBotons(self):
         habilitats = self.config is not None
         self.bPanning.setEnabled(habilitats)
         self.bSeleccio.setEnabled(habilitats)
 
+
 if __name__=='__main__':
+    from moduls.QvLlegenda import QvLlegenda
     with qgisapp() as app:
         sel = SelectorParceles()
-        sel.show()
+
+        llegenda = QvLlegenda()
+        dwLlegenda = QDockWidget("Dockable")
+        dwLlegenda.setWindowTitle("Llegenda")
+        sel.addDockWidget(Qt.LeftDockWidgetArea, dwLlegenda)
+        dwLlegenda.setWidget(llegenda)
+
+        widgetSel = QWidget()
+        layV = QVBoxLayout()
+        listSel = QListWidget()
+        layV.addWidget(listSel)
+        widgetSel.setLayout(layV)
+        dwLlista = QDockWidget("Dockable")
+        dwLlista.setWindowTitle("Selecció")
+        sel.addDockWidget(Qt.RightDockWidgetArea, dwLlista)
+        dwLlista.setWidget(widgetSel)
+
+        sel.showMaximized()
