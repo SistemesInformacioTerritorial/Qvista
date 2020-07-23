@@ -40,11 +40,11 @@ class SelectorParceles(QMainWindow,SelectorParcelesUi.Ui_MainWindow):
     def __init__(self):
         super().__init__()
         self.setupUi(self)
+        self.canvas = QgsMapCanvas(self)
         self.config = {"campReferencia": "REF_CDS", "colHex": "#FF6215"}
         projecte = QgsProject.instance()
         # projecte.read('MapesOffline/parcel·lari simple.qgs')
         projecte.read('MapesOffline/parcel·lari simple gpkg.qgs') # el correcte és l'anterior, però sense POVI millor aquest
-        self.canvas = QgsMapCanvas(self)
         bridge = QgsLayerTreeMapCanvasBridge(projecte.layerTreeRoot(), self.canvas)
         self.layer = QgsProject.instance().mapLayersByName(capaParceles)[0]
         self.layCanvas.addWidget(self.canvas)
