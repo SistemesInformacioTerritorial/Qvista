@@ -47,6 +47,8 @@ class SelectorParceles(QMainWindow,SelectorParcelesUi.Ui_MainWindow):
         bridge = QgsLayerTreeMapCanvasBridge(projecte.layerTreeRoot(), self.canvas)
         self.layer = QgsProject.instance().mapLayersByName(capaParceles)[0]
         self.layCanvas.addWidget(self.canvas)
+        self.listSel = QListWidget()
+        self.d = [] #contingut llista
 
         self.bPanning.setIcon(QIcon(os.path.join(configuracioQvista.imatgesDir,'pan_tool_black_24x24.png')))
         self.bSeleccio.setIcon(QIcon(os.path.join(configuracioQvista.imatgesDir,'apuntar.png')))
@@ -59,16 +61,26 @@ class SelectorParceles(QMainWindow,SelectorParcelesUi.Ui_MainWindow):
     def mouCanvas(self):
         self.tool = QgsMapToolPan(self.canvas)
         self.canvas.setMapTool(self.tool)
+    
     def selecciona(self):
         self.tool = EinaSeleccio(self.canvas)
         self.canvas.setMapTool(self.tool)
-
-        
         self.tool.featsSeleccionades.connect(self.seleccionaFeats)
+
     def seleccionaFeats(self,feats):
-        ids=[x.id() for x in feats]
-        self.layer.selectByIds(ids)
-        print(self.layer.selectedFeatureIds())
+        #ids=[x.id() for x in feats]
+        ref_catastre = [x[self.config['campReferencia']] for x in feats]
+        #self.layer.selectByIds(ids)
+        #print(self.layer.selectedFeatureIds())
+        for ref in ref_catastre:
+            if str(ref) in self.d:
+                self.d.remove(ref)
+                self.listSel.clear()
+                for i in self.d:
+                    self.listSel.addItem(str(i))
+            else:
+                self.d.append(ref)
+                self.listSel.addItem(str(ref))
     
     def novaSeleccio(self):
         dial = QDialog(self)
@@ -106,9 +118,8 @@ if __name__=='__main__':
         dwLlegenda.setWidget(llegenda)
 
         widgetSel = QWidget()
-        layV = QVBoxLayout()
-        listSel = QListWidget()
-        layV.addWidget(listSel)
+        layV = QVBoxLayout() 
+        layV.addWidget(sel.listSel)
         widgetSel.setLayout(layV)
         dwLlista = QDockWidget("Dockable")
         dwLlista.setWindowTitle("Selecció")
