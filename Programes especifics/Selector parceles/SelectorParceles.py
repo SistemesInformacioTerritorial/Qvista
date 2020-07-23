@@ -40,16 +40,23 @@ class SelectorParceles(QMainWindow,SelectorParcelesUi.Ui_MainWindow):
     def __init__(self):
         super().__init__()
         self.setupUi(self)
-        self.config = {"campReferencia": "REF_CDS", "colHex": "#FF6215"}
-        projecte = QgsProject.instance()
-        # projecte.read('MapesOffline/parcel·lari simple.qgs')
-        projecte.read('MapesOffline/parcel·lari simple gpkg.qgs') # el correcte és l'anterior, però sense POVI millor aquest
+<<<<<<< HEAD
+        self.config = None
         self.canvas = QgsMapCanvas(self)
-        bridge = QgsLayerTreeMapCanvasBridge(projecte.layerTreeRoot(), self.canvas)
+=======
+        self.config = {"campReferencia": "REF_CDS", "colHex": "#FF6215"}
+>>>>>>> a355e1255459d96cde0f854f61adb78de7cdc478
+        projecte = QgsProject.instance()
+        projecte.read('MapesOffline/parcel·lari simple gpkg.qgs') # el correcte és l'anterior, però sense POVI millor aquest
+        root = projecte.layerTreeRoot()
+        bridge = QgsLayerTreeMapCanvasBridge(root, self.canvas)
+        # projecte.read('MapesOffline/parcel·lari simple.qgs')
+
         self.layer = QgsProject.instance().mapLayersByName(capaParceles)[0]
         self.layCanvas.addWidget(self.canvas)
         self.listSel = QListWidget()
-        self.d = [] #contingut llista
+        self.llista_catastral = [] #contingut llista catastral
+        self.llista_ids = []
 
         self.bPanning.setIcon(QIcon(os.path.join(configuracioQvista.imatgesDir,'pan_tool_black_24x24.png')))
         self.bSeleccio.setIcon(QIcon(os.path.join(configuracioQvista.imatgesDir,'apuntar.png')))
@@ -76,18 +83,25 @@ class SelectorParceles(QMainWindow,SelectorParcelesUi.Ui_MainWindow):
         self.tool.featsSeleccionades.connect(self.seleccionaFeats)
 
     def seleccionaFeats(self,feats):
-        #ids=[x.id() for x in feats]
+        ids=[x.id() for x in feats]
         ref_catastre = [x[self.config['campReferencia']] for x in feats]
-        #self.layer.selectByIds(ids)
+        
+        for idx in ids:
+            if idx in self.llista_ids:
+                self.llista_ids.remove(idx)
+            else:
+                self.llista_ids.append(idx)
+        self.layer.selectByIds(self.llista_ids)
         #print(self.layer.selectedFeatureIds())
+
         for ref in ref_catastre:
-            if str(ref) in self.d:
-                self.d.remove(ref)
+            if str(ref) in self.llista_catastral:
+                self.llista_catastral.remove(ref)
                 self.listSel.clear()
-                for i in self.d:
+                for i in self.llista_catastral:
                     self.listSel.addItem(str(i))
             else:
-                self.d.append(ref)
+                self.llista_catastral.append(ref)
                 self.listSel.addItem(str(ref))
     
     def novaConfig(self):
