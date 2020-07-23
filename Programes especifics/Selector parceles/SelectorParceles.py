@@ -101,14 +101,15 @@ class SelectorParceles(QMainWindow,SelectorParcelesUi.Ui_MainWindow):
                 self.listSel.addItem(str(ref))
     
     def novaConfig(self):
-        dial = QDialog(self)
+        dial = QDialog(self,Qt.WindowSystemMenuHint | Qt.WindowTitleHint)
+        dial.setWindowTitle('Nova configuració')
         lay = QVBoxLayout(dial)
 
         layCol = QHBoxLayout()
         layCol.addWidget(QLabel('Color de la selecció:'))
         layCol.addStretch()
         lay.addLayout(layCol)
-        color = '#FF6215'
+        color = self.config['colHex']
         STYLESHEET = 'background-color: %s'
         def obrirDialegColor():
             nonlocal color
@@ -132,6 +133,7 @@ class SelectorParceles(QMainWindow,SelectorParcelesUi.Ui_MainWindow):
         if self.config['campReferencia'] in camps:
             cbCamps.setCurrentIndex(camps.index(self.config['campReferencia']))
 
+        lay.addStretch()
         bAcceptar = QPushButton('Acceptar')
         bAcceptar.clicked.connect(dial.close)
         lay.addWidget(bAcceptar, alignment=Qt.AlignRight)
