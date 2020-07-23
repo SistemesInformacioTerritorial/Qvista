@@ -40,12 +40,8 @@ class SelectorParceles(QMainWindow,SelectorParcelesUi.Ui_MainWindow):
     def __init__(self):
         super().__init__()
         self.setupUi(self)
-<<<<<<< HEAD
-        self.config = None
         self.canvas = QgsMapCanvas(self)
-=======
         self.config = {"campReferencia": "REF_CDS", "colHex": "#FF6215"}
->>>>>>> a355e1255459d96cde0f854f61adb78de7cdc478
         projecte = QgsProject.instance()
         projecte.read('MapesOffline/parcel·lari simple gpkg.qgs') # el correcte és l'anterior, però sense POVI millor aquest
         root = projecte.layerTreeRoot()
