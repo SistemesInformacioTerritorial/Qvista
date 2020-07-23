@@ -1,9 +1,10 @@
 from qgis.core.contextmanagers import qgisapp
 from qgis.gui import QgsMapCanvas, QgsLayerTreeMapCanvasBridge, QgsMapToolPan, QgsMapTool
 from qgis.core import QgsProject, QgsRectangle, QgsFeatureRequest
-from qgis.PyQt.QtWidgets import QMainWindow, QTextEdit, QDialog, QVBoxLayout
+from qgis.PyQt.QtWidgets import QMainWindow, QTextEdit, QDialog, QVBoxLayout, QFileDialog, QComboBox
 from qgis.PyQt.QtGui import QIcon, QColor
 from qgis.PyQt.QtCore import pyqtSignal
+from qgis.PyQt.QtCore import Qt
 import configuracioQvista
 from moduls.QvImports  import *
 import os
@@ -39,8 +40,12 @@ class SelectorParceles(QMainWindow,SelectorParcelesUi.Ui_MainWindow):
     def __init__(self):
         super().__init__()
         self.setupUi(self)
+<<<<<<< HEAD
         self.config = None
         self.canvas = QgsMapCanvas(self)
+=======
+        self.config = {"campReferencia": "REF_CDS", "colHex": "#FF6215"}
+>>>>>>> a355e1255459d96cde0f854f61adb78de7cdc478
         projecte = QgsProject.instance()
         projecte.read('MapesOffline/parcel·lari simple gpkg.qgs') # el correcte és l'anterior, però sense POVI millor aquest
         root = projecte.layerTreeRoot()
@@ -59,7 +64,14 @@ class SelectorParceles(QMainWindow,SelectorParcelesUi.Ui_MainWindow):
         self.bPanning.clicked.connect(self.mouCanvas)
         self.bSeleccio.clicked.connect(self.selecciona)
 
-        self.actionNova_sel_lecci.triggered.connect(self.novaSeleccio)
+        self.actionNova_sel_lecci.triggered.connect(self.novaConfig)
+        self.actionObrir_sel_lecci.triggered.connect(self.obrirConfig)
+        self.actionDesar.triggered.connect(self.desarConfig)
+
+        self.bCancelar.clicked.connect(self.close)
+        # self.bAcceptar.clicked.connect(self.desarResultat) # No implementada
+
+        self.habilitaBotons()
     
     def mouCanvas(self):
         self.tool = QgsMapToolPan(self.canvas)
@@ -92,23 +104,68 @@ class SelectorParceles(QMainWindow,SelectorParcelesUi.Ui_MainWindow):
                 self.llista_catastral.append(ref)
                 self.listSel.addItem(str(ref))
     
-    def novaSeleccio(self):
+    def novaConfig(self):
         dial = QDialog(self)
         lay = QVBoxLayout(dial)
-        tedit = QTextEdit()
-        tedit.setPlainText('{\n'
-            '    "campReferencia":"REF_CDS",\n'
-            '    "colHex":"#FF6215"\n'
-            '}')
-        lay.addWidget(tedit)
-        dial.exec()
+
+        layCol = QHBoxLayout()
+        layCol.addWidget(QLabel('Color de la selecció:'))
+        layCol.addStretch()
+        lay.addLayout(layCol)
+        color = '#FF6215'
+        STYLESHEET = 'background-color: %s'
+        def obrirDialegColor():
+            nonlocal color
+            c = QColorDialog.getColor(QColor(color),dial,'Tria del color')
+            color = c.name()
+            bColor.setStyleSheet(STYLESHEET%color)
+        bColor = QPushButton()
+        bColor.setStyleSheet(STYLESHEET%color)
+        bColor.clicked.connect(obrirDialegColor)
+        layCol.addWidget(bColor)
+
+        layCamp = QHBoxLayout()
+        layCamp.addWidget(QLabel('Camp de les referències cadastrals:'))
+        layCamp.addStretch()
+        lay.addLayout(layCamp)
+
+        cbCamps = QComboBox()
+        camps = [x.name() for x in self.layer.fields()]
+        cbCamps.addItems(camps)
+        layCamp.addWidget(cbCamps)
+        if self.config['campReferencia'] in camps:
+            cbCamps.setCurrentIndex(camps.index(self.config['campReferencia']))
+
+        bAcceptar = QPushButton('Acceptar')
+        bAcceptar.clicked.connect(dial.close)
+        lay.addWidget(bAcceptar, alignment=Qt.AlignRight)
+
+        dial.exec_()
+
+        self.config = {'campReferencia':cbCamps.currentText(), 'colHex': color}
+
+        self.habilitaBotons()
+    
+    def obrirConfig(self):
+        nfile,_ = QFileDialog.getOpenFileName(None, "Obrir fitxer JSON", ".", "JSON (*.json)")
         try:
-            self.config = json.loads(tedit.toPlainText())
+            with open(nfile) as f:
+                self.config = json.loads(f.read())
+            self.config["campReferencia"]
+            self.config["colHex"]
         except:
-            # Queixar-nos de que la configuració no està ben escrita
+            # Queixar-nos
             pass
         self.habilitaBotons()
-
+    
+    def desarConfig(self):
+        nfile, _ = QFileDialog.getSaveFileName(None, "Desar fitxer JSON", ".", "JSON (*.json)")
+        try:
+            with open(nfile,'w') as f:
+                f.write(json.dumps(self.config))
+        except:
+            pass
+            # Queixar-nos
     def habilitaBotons(self):
         habilitats = self.config is not None
         self.bPanning.setEnabled(habilitats)
