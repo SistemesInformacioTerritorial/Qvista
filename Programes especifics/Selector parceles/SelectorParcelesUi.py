@@ -60,9 +60,6 @@ class Ui_MainWindow(object):
         self.statusbar = QtWidgets.QStatusBar(MainWindow)
         self.statusbar.setObjectName("statusbar")
         MainWindow.setStatusBar(self.statusbar)
-        self.toolBar = QtWidgets.QToolBar(MainWindow)
-        self.toolBar.setObjectName("toolBar")
-        MainWindow.addToolBar(QtCore.Qt.TopToolBarArea, self.toolBar)
         self.actionNova_sel_lecci = QtWidgets.QAction(MainWindow)
         self.actionNova_sel_lecci.setObjectName("actionNova_sel_lecci")
         self.actionObrir_sel_lecci = QtWidgets.QAction(MainWindow)
@@ -80,11 +77,10 @@ class Ui_MainWindow(object):
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
-        MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
+        MainWindow.setWindowTitle(_translate("MainWindow", "Selector de parcel·les"))
         self.bConfirmar.setText(_translate("MainWindow", "Confirmar"))
         self.bCancelar.setText(_translate("MainWindow", "Cancelar"))
         self.menuHola.setTitle(_translate("MainWindow", "Arxiu"))
-        self.toolBar.setWindowTitle(_translate("MainWindow", "toolBar"))
         self.actionNova_sel_lecci.setText(_translate("MainWindow", "Nova sel·lecció"))
         self.actionObrir_sel_lecci.setText(_translate("MainWindow", "Obrir sel·lecció"))
         self.actionDesar.setText(_translate("MainWindow", "Desar"))

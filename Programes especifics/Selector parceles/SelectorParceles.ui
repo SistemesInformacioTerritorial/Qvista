@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>MainWindow</string>
+   <string>Selector de parcel·les</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QHBoxLayout" name="horizontalLayout_3">
@@ -107,17 +107,6 @@
    <addaction name="menuHola"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
-  <widget class="QToolBar" name="toolBar">
-   <property name="windowTitle">
-    <string>toolBar</string>
-   </property>
-   <attribute name="toolBarArea">
-    <enum>TopToolBarArea</enum>
-   </attribute>
-   <attribute name="toolBarBreak">
-    <bool>false</bool>
-   </attribute>
-  </widget>
   <action name="actionNova_sel_lecci">
    <property name="text">
     <string>Nova sel·lecció</string>
