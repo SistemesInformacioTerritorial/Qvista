@@ -28,7 +28,7 @@
         <item>
          <widget class="QPushButton" name="bPanning">
           <property name="enabled">
-           <bool>false</bool>
+           <bool>true</bool>
           </property>
           <property name="text">
            <string/>
@@ -42,7 +42,7 @@
         <item>
          <widget class="QPushButton" name="bSeleccio">
           <property name="enabled">
-           <bool>false</bool>
+           <bool>true</bool>
           </property>
           <property name="text">
            <string/>
@@ -99,27 +99,49 @@
     <property name="title">
      <string>Arxiu</string>
     </property>
-    <addaction name="actionNova_sel_lecci"/>
-    <addaction name="actionObrir_sel_lecci"/>
+    <addaction name="actionNova_seleccio"/>
+    <addaction name="actionObrir_seleccio"/>
+    <addaction name="actionDesar_seleccio"/>
     <addaction name="separator"/>
-    <addaction name="actionDesar"/>
+    <addaction name="actionObrir_configuracio"/>
+    <addaction name="actionDesar_configuracio"/>
    </widget>
    <addaction name="menuHola"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
-  <action name="actionNova_sel_lecci">
+  <action name="actionNova_seleccio">
    <property name="text">
-    <string>Nova sel·lecció</string>
+    <string>Nova selecció</string>
    </property>
   </action>
-  <action name="actionObrir_sel_lecci">
+  <action name="actionObrir_seleccio">
    <property name="text">
-    <string>Obrir sel·lecció</string>
+    <string>Obrir selecció</string>
    </property>
   </action>
-  <action name="actionDesar">
+  <action name="actionDesar_configuracio">
    <property name="text">
-    <string>Desar</string>
+    <string>Desar configuració</string>
+   </property>
+  </action>
+  <action name="actionDesar_seleccio">
+   <property name="text">
+    <string>Desar selecció</string>
+   </property>
+  </action>
+  <action name="actionObrir_configuraci">
+   <property name="text">
+    <string>Obrir configuració</string>
+   </property>
+  </action>
+  <action name="actionNova_selecci">
+   <property name="text">
+    <string>Nova configuració</string>
+   </property>
+  </action>
+  <action name="actionObrir_configuracio">
+   <property name="text">
+    <string>Obrir configuració</string>
    </property>
   </action>
  </widget>

@@ -60,14 +60,16 @@ class SelectorParceles(QMainWindow,SelectorParcelesUi.Ui_MainWindow):
         self.bPanning.clicked.connect(self.mouCanvas)
         self.bSeleccio.clicked.connect(self.selecciona)
 
-        self.actionNova_sel_lecci.triggered.connect(self.novaConfig)
-        self.actionObrir_sel_lecci.triggered.connect(self.obrirConfig)
-        self.actionDesar.triggered.connect(self.desarConfig)
+        self.actionNova_seleccio.triggered.connect(self.novaConfig)
+        self.actionObrir_configuracio.triggered.connect(self.obrirConfig)
+        self.actionDesar_configuracio.triggered.connect(self.desarConfig)
+        self.actionObrir_seleccio.triggered.connect(self.obrirSeleccio)
+        self.actionDesar_seleccio.triggered.connect(self.desarResultat)
 
         self.bCancelar.clicked.connect(self.close)
-        # self.bAcceptar.clicked.connect(self.desarResultat) # No implementada
+        self.bConfirmar.clicked.connect(self.desarResultat) # No implementada
 
-        self.habilitaBotons()
+        self.carregaConfig()
     
     def mouCanvas(self):
         self.tool = QgsMapToolPan(self.canvas)
@@ -142,10 +144,11 @@ class SelectorParceles(QMainWindow,SelectorParcelesUi.Ui_MainWindow):
 
         self.config = {'campReferencia':cbCamps.currentText(), 'colHex': color}
 
-        self.habilitaBotons()
+        self.carregaConfig()
     
     def obrirConfig(self):
         nfile,_ = QFileDialog.getOpenFileName(None, "Obrir fitxer JSON", ".", "JSON (*.json)")
+        if nfile=='': return
         try:
             with open(nfile) as f:
                 self.config = json.loads(f.read())
@@ -154,22 +157,45 @@ class SelectorParceles(QMainWindow,SelectorParcelesUi.Ui_MainWindow):
         except:
             # Queixar-nos
             pass
-        self.habilitaBotons()
+        self.carregaConfig()
     
     def desarConfig(self):
         nfile, _ = QFileDialog.getSaveFileName(None, "Desar fitxer JSON", ".", "JSON (*.json)")
+        if nfile=='': return
         try:
             with open(nfile,'w') as f:
                 f.write(json.dumps(self.config))
         except:
             pass
             # Queixar-nos
-    def habilitaBotons(self):
-        habilitats = self.config is not None
-        self.bPanning.setEnabled(habilitats)
-        self.bSeleccio.setEnabled(habilitats)
+    def obrirSeleccio(self):
+        nfile, _ = QFileDialog.getOpenFileName(None, "Obrir fitxer de text", ".", "Arxiu de text (*.txt)")
+        if nfile=='': return
+        try:
+            with open(nfile) as f:
+                self.llista_catastral = [x.replace('\n','') for x in f.readlines()]
+        except:
+            # Queixar-nos
+            pass
+        self.novaConfig()
+        self.listSel.clear()
+        self.listSel.addItems(self.llista_catastral)
+        self.llista_ids=[x.id() for x in self.layer.getFeatures() if x.attribute(self.config['campReferencia']) in self.llista_catastral]
+        self.layer.selectByIds(self.llista_ids)
 
+    def carregaConfig(self):
         self.canvas.setSelectionColor(QColor(self.config['colHex']))
+
+    def desarResultat(self):
+        nfile, _ = QFileDialog.getSaveFileName(None, "Desar fitxer de text", ".", "Arxiu de text (*.txt)")
+        if nfile=='': return
+        try:
+            with open(nfile,'w') as f:
+                f.writelines([x+'\n' for x in self.llista_catastral])
+        except:
+            # Queixar-nos
+            pass
+        self.close()
 
 if __name__=='__main__':
     from moduls.QvLlegenda import QvLlegenda
