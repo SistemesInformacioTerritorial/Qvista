@@ -266,10 +266,6 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
 
         self.tema.temaInicial()
 
-        # Preparar anotaciones
-        if self.anotacions:
-            self.anotacions.fromProjectToCanvas()
-
     def connectaCanviCapaActiva(self, canviCapaActiva):
         if canviCapaActiva is not None:
             self.currentLayerChanged.connect(canviCapaActiva)
@@ -513,13 +509,8 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
         elif tipo == 'none':
             if self.editable:
                 self.menuAccions += ['addGroup', 'addLayersFromFile']
-            if self.anotacions:
-                num = self.anotacions.numAnnotations()
-                if num > 0:
-                    act = self.accions.accio('viewAnnotations')
-                    act.setText(f"Veure anotacions [{num}]")
-                    act.setChecked(self.anotacions.visible())
-                    self.menuAccions += ['separator', 'viewAnnotations']
+            if self.anotacions and self.anotacions.menuVisible(self.accions.accio('viewAnnotations')):
+                self.menuAccions += ['separator', 'viewAnnotations']
             # if QvApp().usuari in ('CPRET', 'DE1717'):
             #     self.menuAccions += ['addCustomCSV']
         else:  # 'symb'
@@ -552,7 +543,7 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
                 print('No se pudo importar capas', txt)
 
     def viewAnnotations(self):
-        self.accions.accio('viewAnnotations').setChecked(self.anotacions.toggleAnnotations())
+        self.sender().setChecked(self.anotacions.toggleAnnotations())
 
     def saveStyleToGeoPackage(self, capa, nom="", desc="", default=True):
         s = qgCor.QgsSettings()
