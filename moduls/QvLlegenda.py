@@ -509,7 +509,8 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
         elif tipo == 'none':
             if self.editable:
                 self.menuAccions += ['addGroup', 'addLayersFromFile']
-            if self.anotacions and self.anotacions.menuVisible(self.accions.accio('viewAnnotations')):
+            if self.anotacions and \
+               self.anotacions.menuVisible(self.accions.accio('viewAnnotations')):
                 self.menuAccions += ['separator', 'viewAnnotations']
             # if QvApp().usuari in ('CPRET', 'DE1717'):
             #     self.menuAccions += ['addCustomCSV']
