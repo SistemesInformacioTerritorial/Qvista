@@ -176,18 +176,18 @@ if __name__=='__main__':
     with qgisapp() as app:
         sel = SelectorParceles()
 
-        llegenda = QvLlegenda()
-        dwLlegenda = QDockWidget("Dockable")
-        dwLlegenda.setWindowTitle("Llegenda")
-        sel.addDockWidget(Qt.LeftDockWidgetArea, dwLlegenda)
-        dwLlegenda.setWidget(llegenda)
+        # llegenda = QvLlegenda()
+        # dwLlegenda = QDockWidget("Dockable")
+        # dwLlegenda.setWindowTitle("Llegenda")
+        # sel.addDockWidget(Qt.LeftDockWidgetArea, dwLlegenda)
+        # dwLlegenda.setWidget(llegenda)
 
         widgetSel = QWidget()
         layV = QVBoxLayout() 
         layV.addWidget(sel.listSel)
         widgetSel.setLayout(layV)
-        dwLlista = QDockWidget("Dockable")
-        dwLlista.setWindowTitle("Selecció")
+        dwLlista = QDockWidget()
+        dwLlista.setWindowTitle("Parcel·les seleccionades")
         sel.addDockWidget(Qt.RightDockWidgetArea, dwLlista)
         dwLlista.setWidget(widgetSel)
 
