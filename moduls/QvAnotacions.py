@@ -169,7 +169,7 @@ class QvMapToolAnnotation(qgGui.QgsMapTool):
     def selectItemAtPos(self, pos: qtCor.QPoint) -> qgGui.QgsMapCanvasAnnotationItem:
         self.canvas().scene().clearSelection()
         for item in self.canvas().annotationItems():
-            if item.sceneBoundingRect().contains(pos):
+            if item.isVisible() and item.sceneBoundingRect().contains(pos):
                 item.setSelected(True)
                 return item
         return None
@@ -177,12 +177,12 @@ class QvMapToolAnnotation(qgGui.QgsMapTool):
     # Formulario de edición
 
     def showItemEditor(self, item: qgGui.QgsMapCanvasAnnotationItem) -> None:
-        if (not item or not item.annotation() or
-           not isinstance(item.annotation(), qgCor.QgsTextAnnotation)):
-            self.editor = None
-        else:
+        if item and item.isVisible() and item.annotation() and \
+           isinstance(item.annotation(), qgCor.QgsTextAnnotation):
             self.editor = QvTextAnnotationDialog(self.llegenda, item, 'Annotació')
             self.editor.show()
+        else:
+            self.hideItemEditor()
 
     def hideItemEditor(self) -> None:
         if self.editor:
