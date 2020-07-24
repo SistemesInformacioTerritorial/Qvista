@@ -103,6 +103,7 @@
     <addaction name="actionObrir_seleccio"/>
     <addaction name="actionDesar_seleccio"/>
     <addaction name="separator"/>
+    <addaction name="actionNova_configuracio"/>
     <addaction name="actionObrir_configuracio"/>
     <addaction name="actionDesar_configuracio"/>
    </widget>
@@ -142,6 +143,11 @@
   <action name="actionObrir_configuracio">
    <property name="text">
     <string>Obrir configuració</string>
+   </property>
+  </action>
+  <action name="actionNova_configuracio">
+   <property name="text">
+    <string>Nova configuració</string>
    </property>
   </action>
  </widget>

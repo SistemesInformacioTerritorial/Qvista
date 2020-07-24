@@ -74,10 +74,13 @@ class Ui_MainWindow(object):
         self.actionNova_selecci.setObjectName("actionNova_selecci")
         self.actionObrir_configuracio = QtWidgets.QAction(MainWindow)
         self.actionObrir_configuracio.setObjectName("actionObrir_configuracio")
+        self.actionNova_configuracio = QtWidgets.QAction(MainWindow)
+        self.actionNova_configuracio.setObjectName("actionNova_configuracio")
         self.menuHola.addAction(self.actionNova_seleccio)
         self.menuHola.addAction(self.actionObrir_seleccio)
         self.menuHola.addAction(self.actionDesar_seleccio)
         self.menuHola.addSeparator()
+        self.menuHola.addAction(self.actionNova_configuracio)
         self.menuHola.addAction(self.actionObrir_configuracio)
         self.menuHola.addAction(self.actionDesar_configuracio)
         self.menubar.addAction(self.menuHola.menuAction())
@@ -98,6 +101,7 @@ class Ui_MainWindow(object):
         self.actionObrir_configuraci.setText(_translate("MainWindow", "Obrir configuració"))
         self.actionNova_selecci.setText(_translate("MainWindow", "Nova configuració"))
         self.actionObrir_configuracio.setText(_translate("MainWindow", "Obrir configuració"))
+        self.actionNova_configuracio.setText(_translate("MainWindow", "Nova configuració"))
 
 
 if __name__ == "__main__":

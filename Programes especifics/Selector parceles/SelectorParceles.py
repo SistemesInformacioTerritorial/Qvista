@@ -60,7 +60,8 @@ class SelectorParceles(QMainWindow,SelectorParcelesUi.Ui_MainWindow):
         self.bPanning.clicked.connect(self.mouCanvas)
         self.bSeleccio.clicked.connect(self.selecciona)
 
-        self.actionNova_seleccio.triggered.connect(self.novaConfig)
+        self.actionNova_seleccio.triggered.connect(self.novaSeleccio)
+        self.actionNova_configuracio.triggered.connect(self.novaConfig)
         self.actionObrir_configuracio.triggered.connect(self.obrirConfig)
         self.actionDesar_configuracio.triggered.connect(self.desarConfig)
         self.actionObrir_seleccio.triggered.connect(self.obrirSeleccio)
@@ -101,7 +102,12 @@ class SelectorParceles(QMainWindow,SelectorParcelesUi.Ui_MainWindow):
             else:
                 self.llista_catastral.append(ref)
                 self.listSel.addItem(str(ref))
-    
+    def novaSeleccio(self):
+        self.novaConfig()
+        self.llista_catastral = []
+        self.llista_ids = []
+        self.listSel.clear()
+        self.layer.selectByIds([])
     def novaConfig(self):
         dial = QDialog(self,Qt.WindowSystemMenuHint | Qt.WindowTitleHint)
         dial.setWindowTitle('Nova configuració')
