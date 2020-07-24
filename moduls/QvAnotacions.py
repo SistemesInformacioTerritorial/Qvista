@@ -115,11 +115,11 @@ class QvMapToolAnnotation(qgGui.QgsMapTool):
         self.lastItem = qgGui.QgsMapCanvasAnnotationItem(annotation, self.canvas())
 
     def removeAnnotations(self) -> None:
+        self.desactiva()
         self.llegenda.project.annotationManager().clear()
         for item in self.canvas().annotationItems():
             self.canvas().scene().removeItem(item)
-            item.deleteLater()
-        self.desactiva()
+            # item.deleteLater()
 
     # Acciones y cursores
 
