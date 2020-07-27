@@ -73,10 +73,7 @@ class QvCanvas(QgsMapCanvas):
 
 
     def paradebug(self):
-        if self.bMaximitza.toolTip() == 'Pantalla completa (F11)': 
-            self.bMaximitza.setToolTip('Només mapa (F11)')
-        else:
-            self.bMaximitza.setToolTip('Pantalla completa (F11)')
+        print(self.magnificationFactor())
 
     def uncheckBotons(self,aExcepcio):
         for x in self._botons:
