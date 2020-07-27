@@ -1,7 +1,7 @@
 from qgis.core.contextmanagers import qgisapp
 from qgis.gui import QgsMapCanvas, QgsLayerTreeMapCanvasBridge, QgsMapToolPan, QgsMapTool
 from qgis.core import QgsProject, QgsRectangle, QgsFeatureRequest
-from qgis.PyQt.QtWidgets import QMainWindow, QTextEdit, QDialog, QVBoxLayout, QFileDialog, QComboBox
+from qgis.PyQt.QtWidgets import QMainWindow, QTextEdit, QDialog, QVBoxLayout, QFileDialog, QComboBox, QMessageBox
 from qgis.PyQt.QtGui import QIcon, QColor
 from qgis.PyQt.QtCore import pyqtSignal
 from qgis.PyQt.QtCore import Qt
@@ -12,6 +12,7 @@ import json
 import SelectorParcelesUi
 
 capaParceles = 'PARCELARI_SIMPLE POLIGONS_PARCELA'
+pathGuardarSeleccio = "\\Programes especifics\\Selector parceles\\seleccio_parceles.txt"
 
 class EinaSeleccio(QgsMapTool):
     featsSeleccionades = pyqtSignal(list)
@@ -69,7 +70,7 @@ class SelectorParceles(QMainWindow,SelectorParcelesUi.Ui_MainWindow):
         self.actionDesar_seleccio.triggered.connect(self.desarResultat)
 
         self.bCancelar.clicked.connect(self.close)
-        self.bConfirmar.clicked.connect(self.desarResultat) # No implementada
+        self.bConfirmar.clicked.connect(self.desarResultat)
 
         self.carregaConfig()
 
@@ -171,7 +172,10 @@ class SelectorParceles(QMainWindow,SelectorParcelesUi.Ui_MainWindow):
             self.config["campReferencia"]
             self.config["colHex"]
         except:
-            # Queixar-nos
+            msgBox = QMessageBox()
+            msgBox.setIcon(QMessageBox.Error)
+            msgBox.setText("No s ha pogut obrir correctament la configuracio.")
+            msgBox.exec()
             pass
         self.carregaConfig()
     
@@ -182,8 +186,12 @@ class SelectorParceles(QMainWindow,SelectorParcelesUi.Ui_MainWindow):
             with open(nfile,'w') as f:
                 f.write(json.dumps(self.config))
         except:
+            msgBox = QMessageBox()
+            msgBox.setIcon(QMessageBox.Error)
+            msgBox.setText("No s ha pogut desar correctament la configuracio.")
+            msgBox.exec()
             pass
-            # Queixar-nos
+
     def obrirSeleccio(self):
         nfile, _ = QFileDialog.getOpenFileName(None, "Obrir fitxer de text", ".", "Arxiu de text (*.txt)")
         if nfile=='': return
@@ -191,8 +199,12 @@ class SelectorParceles(QMainWindow,SelectorParcelesUi.Ui_MainWindow):
             with open(nfile) as f:
                 self.llista_catastral = [x.replace('\n','') for x in f.readlines()]
         except:
-            # Queixar-nos
+            msgBox = QMessageBox()
+            msgBox.setIcon(QMessageBox.Error)
+            msgBox.setText("No s ha pogut obrir correctament la seleccio.")
+            msgBox.exec()
             pass
+
         self.novaConfig()
         self.listSel.clear()
         self.listSel.addItems(self.llista_catastral)
@@ -203,15 +215,25 @@ class SelectorParceles(QMainWindow,SelectorParcelesUi.Ui_MainWindow):
         self.canvas.setSelectionColor(QColor(self.config['colHex']))
 
     def desarResultat(self):
-        nfile, _ = QFileDialog.getSaveFileName(None, "Desar fitxer de text", ".", "Arxiu de text (*.txt)")
+        #nfile, _ = QFileDialog.getSaveFileName(None, "Desar fitxer de text", ".", "Arxiu de text (*.txt)")
+        nfile = os.path.abspath(os.getcwd()) + pathGuardarSeleccio
         if nfile=='': return
         try:
             with open(nfile,'w') as f:
                 f.writelines([x+'\n' for x in self.llista_catastral])
+            msgBox = QMessageBox()
+            msgBox.setIcon(QMessageBox.Information)
+            msgBox.setText("La selecció s ha guardat correctament.")
+            msgBox.exec()
         except:
-            # Queixar-nos
+            msgBox = QMessageBox()
+            msgBox.setIcon(QMessageBox.Error)
+            msgBox.setText("La selecció no s ha pogut guardat correctament.")
+            msgBox.exec()
             pass
+
         self.close()
+
 
 if __name__=='__main__':
     from moduls.QvLlegenda import QvLlegenda
