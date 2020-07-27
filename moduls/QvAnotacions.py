@@ -88,24 +88,25 @@ class QvMapToolAnnotation(qgGui.QgsMapTool):
             raise TypeError('canvas is None (QvMapToolAnnotation.__init__)')
         qgGui.QgsMapTool.__init__(self, llegenda.canvas)
         self.llegenda = llegenda
-        self.llegenda.project.cleared.connect(self.removeAnnotationItems)
+        self.llegenda.project.cleared.connect(self.removeAnnotations)
         self.llegenda.project.annotationManager().annotationAdded.connect(self.annotationCreated)
         self.cursor = None
         self.currentMoveAction = None
         self.lastMousePosition = None
         self.editor = None
         self.lastItem = None
-        self.activated.connect(self.activate)
-        self.deactivated.connect(self.deactivate)
+        self.activated.connect(self.activa)
+        self.deactivated.connect(self.desactiva)
         self.canvas().scene().selectionChanged.connect(self.hideItemEditor)
 
     # Señales de activación
 
-    def activate(self):
+    def activa(self):
         self.noAction()
         self.toggleAnnotations(True)
 
-    def deactivate(self):
+    def desactiva(self):
+        self.hideItemEditor()
         self.canvas().scene().clearSelection()
 
     # Señales de proyecto
@@ -113,11 +114,12 @@ class QvMapToolAnnotation(qgGui.QgsMapTool):
     def annotationCreated(self, annotation: qgCor.QgsAnnotation) -> None:
         self.lastItem = qgGui.QgsMapCanvasAnnotationItem(annotation, self.canvas())
 
-    def removeAnnotationItems(self) -> None:
-        scene = self.canvas().scene()
+    def removeAnnotations(self) -> None:
+        self.desactiva()
+        self.llegenda.project.annotationManager().clear()
         for item in self.canvas().annotationItems():
-            scene.removeItem(item)
-            item.deleteLater()
+            self.canvas().scene().removeItem(item)
+            # item.deleteLater()
 
     # Acciones y cursores
 
