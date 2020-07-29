@@ -2116,9 +2116,8 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         self.bScale = QvPushButton(flat=True)   
         # self.bScale.setToolTip('  <i>Mouse <b>left</b></i>:  para escalas predefinidas. <br>  <i>Mouse <b>rigth</b></i>:  para cambiar el tipo de escala.<br>  <b>ATENCIÓN:</b> el tipo de escala qGis es inexacto métricamente en pantalla')
-        self.bScale.setToolTip('  <i>Mouse <b>left</b></i>:  para escalas predefinidas. <br>  <i>Mouse <b>rigth</b></i>:  para cambiar el tipo de escala.<br>  <span style="color:red;"><b>ATENCIÓN:</b>.</span> el tipo de escala qGis es inexacto métricamente en pantalla')
+        self.bScale.setToolTip('  <i>Mouse <b>left</b></i>:  per a escales predefinides. <br>  <i>Mouse <b>rigth</b></i>:  per a canviar el tipus d\'escala..<br>  <span style="color:red;"><b>ATENCIÓ:</b>.</span> el tipus d\'escala qGis és inexacte mètricament en pantalla')
         
-
         
         self.bScale.setStyleSheet(stylesheetButton)
         self.bScale.setFixedHeight(alcada)
