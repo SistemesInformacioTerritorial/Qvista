@@ -383,7 +383,7 @@ if __name__ == "__main__":
     from moduls.QvApp import QvApp
     from moduls.QvCanvas import QvCanvas
     from moduls.QvLlegenda import QvLlegenda
-    # import configuracioQvista as cfg
+    import configuracioQvista as cfg
 
     with qgisapp(sysexit=False) as app:
 
@@ -393,9 +393,9 @@ if __name__ == "__main__":
         canvas = QvCanvas()
 
         leyenda = QvLlegenda(canvas)
-        leyenda.project.read('d:/temp/test.qgs')
+        leyenda.project.read(cfg.projecteInicial)
 
-        canvas.setWindowTitle('Canvas')
+        canvas.setWindowTitle('Canvas - ' + cfg.projecteInicial)
         canvas.show()
 
         leyenda.setWindowTitle('Llegenda')
@@ -414,6 +414,23 @@ if __name__ == "__main__":
         def writeProject():
             leyenda.project.write()
 
+        def writeProject():
+            leyenda.project.write()
+
+        def openProject():
+            dialegObertura = qtWdg.QFileDialog()
+            dialegObertura.setDirectoryUrl(qtCor.QUrl('D:/Temp/'))
+            mapes = "Tots els mapes acceptats (*.qgs *.qgz);; " \
+                    "Mapes Qgis (*.qgs);;Mapes Qgis comprimits (*.qgz)"
+            nfile, _ = dialegObertura.getOpenFileName(None, "Obrir mapa Qgis",
+                                                      "D:/Temp/", mapes)
+            if nfile != '':
+                ok = leyenda.project.read(nfile)
+                if ok:
+                    canvas.setWindowTitle('Canvas - ' + nfile)
+                else:
+                    print(leyenda.project.error().summary())
+
         act = qtWdg.QAction()
         act.setCheckable(True)
         act.setChecked(False)
@@ -426,6 +443,11 @@ if __name__ == "__main__":
         act.triggered.connect(writeProject)
         leyenda.accions.afegirAccio('writeProject', act)
 
+        act = qtWdg.QAction()
+        act.setText("Obre projecte")
+        act.triggered.connect(openProject)
+        leyenda.accions.afegirAccio('openProject', act)
+
         # Adaptación del menú
 
         def menuContexte(tipo):
@@ -433,6 +455,7 @@ if __name__ == "__main__":
                 leyenda.menuAccions.append('separator')
                 leyenda.menuAccions.append('setAnnotations')
                 leyenda.menuAccions.append('writeProject')
+                leyenda.menuAccions.append('openProject')
 
         # Conexión de la señal con la función menuContexte para personalizar el menú
         leyenda.clicatMenuContexte.connect(menuContexte)
