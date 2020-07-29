@@ -2175,6 +2175,9 @@ class QVista(QMainWindow, Ui_MainWindow):
     
     def escalaNormal(self):
         self.bScale.setText( " Escala 1:" + str(int(round(self.canvas.scale())))) 
+        self.editantEscala=False  #JNB
+        self.leScale.hide()
+        
         self.canvas.scaleChanged.connect(self.corrijoScale) 
         self.corrijoScale()
         self.tipoScale="escNormal"  
@@ -2182,8 +2185,16 @@ class QVista(QMainWindow, Ui_MainWindow):
 
     def escalaqGis(self):
         self.bScale.setText( " Escala qGis 1:" + str(int(round(self.canvas.scale())))) 
+        self.editantEscala=False
+        self.leScale.hide()  #JNB
+        
         self.canvas.setMagnificationFactor(1)
-        self.canvas.scaleChanged.disconnect(self.corrijoScale) 
+        try:
+            self.canvas.scaleChanged.disconnect(self.corrijoScale)
+        except Exception as ee:
+            self.editantEscala=False
+            self.leScale.hide()
+         
         self.tipoScale="escQGis"
 
 
