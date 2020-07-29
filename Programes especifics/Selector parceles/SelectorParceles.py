@@ -1,17 +1,21 @@
 from qgis.core.contextmanagers import qgisapp
 from qgis.gui import QgsMapCanvas, QgsLayerTreeMapCanvasBridge, QgsMapToolPan, QgsMapTool
 from qgis.core import QgsProject, QgsRectangle, QgsFeatureRequest
-from qgis.PyQt.QtWidgets import QMainWindow, QTextEdit, QDialog, QVBoxLayout, QFileDialog, QComboBox
+from qgis.PyQt.QtWidgets import QMainWindow, QTextEdit, QDialog, QVBoxLayout, QHBoxLayout, QFileDialog, QComboBox, QMessageBox,  QListWidget, QWidget, QDockWidget, QLabel
 from qgis.PyQt.QtGui import QIcon, QColor
 from qgis.PyQt.QtCore import pyqtSignal
 from qgis.PyQt.QtCore import Qt
-import configuracioQvista
-from moduls.QvImports  import *
 import os
+from os import path
 import json
 import SelectorParcelesUi
 
 capaParceles = 'PARCELARI_SIMPLE POLIGONS_PARCELA'
+
+#Aquesta variable conté el path on es guardarà la llista (.txt) de les parcel·les seleccionades
+pathGuardarSeleccio = "\\Programes especifics\\Selector parceles\\seleccio_parceles.txt"
+
+pathImatges = "\\Programes especifics\\Selector parceles\\Imatges"
 
 class EinaSeleccio(QgsMapTool):
     featsSeleccionades = pyqtSignal(list)
@@ -55,8 +59,16 @@ class SelectorParceles(QMainWindow,SelectorParcelesUi.Ui_MainWindow):
         self.llista_catastral = [] #contingut llista catastral
         self.llista_ids = [] #per pintar les parcel·les
 
-        self.bPanning.setIcon(QIcon(os.path.join(configuracioQvista.imatgesDir,'pan_tool_black_24x24.png')))
-        self.bSeleccio.setIcon(QIcon(os.path.join(configuracioQvista.imatgesDir,'apuntar.png')))
+        if path.exists(os.path.abspath(os.getcwd()) + pathGuardarSeleccio):
+            with open(os.path.abspath(os.getcwd()) + pathGuardarSeleccio) as f:
+                self.llista_catastral = [x.replace('\n','') for x in f.readlines()]
+            self.llista_ids=[x.id() for x in self.layer.getFeatures() if x.attribute(self.config['campReferencia']) in self.llista_catastral]
+            self.layer.selectByIds(self.llista_ids)
+            for i in self.llista_catastral:
+                self.listSel.addItem(str(i))
+
+        self.bPanning.setIcon(QIcon(os.path.join(os.path.abspath(os.getcwd()) + pathImatges,'pan_tool_black_24x24.png')))
+        self.bSeleccio.setIcon(QIcon(os.path.join(os.path.abspath(os.getcwd()) + pathImatges,'apuntar.png')))
         
         self.bPanning.clicked.connect(self.mouCanvas)
         self.bSeleccio.clicked.connect(self.selecciona)
@@ -69,7 +81,7 @@ class SelectorParceles(QMainWindow,SelectorParcelesUi.Ui_MainWindow):
         self.actionDesar_seleccio.triggered.connect(self.desarResultat)
 
         self.bCancelar.clicked.connect(self.close)
-        self.bConfirmar.clicked.connect(self.desarResultat) # No implementada
+        self.bConfirmar.clicked.connect(self.desarResultat)
 
         self.carregaConfig()
 
@@ -112,12 +124,14 @@ class SelectorParceles(QMainWindow,SelectorParcelesUi.Ui_MainWindow):
             else:
                 self.llista_catastral.append(ref)
                 self.listSel.addItem(str(ref))
+
     def novaSeleccio(self):
-        self.novaConfig()
+        #self.novaConfig()
         self.llista_catastral = []
         self.llista_ids = []
         self.listSel.clear()
         self.layer.selectByIds([])
+
     def novaConfig(self):
         dial = QDialog(self,Qt.WindowSystemMenuHint | Qt.WindowTitleHint)
         dial.setWindowTitle('Nova configuració')
@@ -171,7 +185,10 @@ class SelectorParceles(QMainWindow,SelectorParcelesUi.Ui_MainWindow):
             self.config["campReferencia"]
             self.config["colHex"]
         except:
-            # Queixar-nos
+            msgBox = QMessageBox()
+            msgBox.setIcon(QMessageBox.Error)
+            msgBox.setText("No s ha pogut obrir correctament la configuracio.")
+            msgBox.exec()
             pass
         self.carregaConfig()
     
@@ -182,8 +199,12 @@ class SelectorParceles(QMainWindow,SelectorParcelesUi.Ui_MainWindow):
             with open(nfile,'w') as f:
                 f.write(json.dumps(self.config))
         except:
+            msgBox = QMessageBox()
+            msgBox.setIcon(QMessageBox.Error)
+            msgBox.setText("No s ha pogut desar correctament la configuracio.")
+            msgBox.exec()
             pass
-            # Queixar-nos
+
     def obrirSeleccio(self):
         nfile, _ = QFileDialog.getOpenFileName(None, "Obrir fitxer de text", ".", "Arxiu de text (*.txt)")
         if nfile=='': return
@@ -191,8 +212,12 @@ class SelectorParceles(QMainWindow,SelectorParcelesUi.Ui_MainWindow):
             with open(nfile) as f:
                 self.llista_catastral = [x.replace('\n','') for x in f.readlines()]
         except:
-            # Queixar-nos
+            msgBox = QMessageBox()
+            msgBox.setIcon(QMessageBox.Error)
+            msgBox.setText("No s ha pogut obrir correctament la seleccio.")
+            msgBox.exec()
             pass
+
         self.novaConfig()
         self.listSel.clear()
         self.listSel.addItems(self.llista_catastral)
@@ -203,26 +228,30 @@ class SelectorParceles(QMainWindow,SelectorParcelesUi.Ui_MainWindow):
         self.canvas.setSelectionColor(QColor(self.config['colHex']))
 
     def desarResultat(self):
-        nfile, _ = QFileDialog.getSaveFileName(None, "Desar fitxer de text", ".", "Arxiu de text (*.txt)")
+        #nfile, _ = QFileDialog.getSaveFileName(None, "Desar fitxer de text", ".", "Arxiu de text (*.txt)")
+        nfile = os.path.abspath(os.getcwd()) + pathGuardarSeleccio
         if nfile=='': return
         try:
             with open(nfile,'w') as f:
                 f.writelines([x+'\n' for x in self.llista_catastral])
+            # msgBox = QMessageBox()
+            # msgBox.setIcon(QMessageBox.Information)
+            # msgBox.setText("La selecció s'ha guardat correctament.")
+            # msgBox.exec()
         except:
-            # Queixar-nos
+            msgBox = QMessageBox()
+            msgBox.setIcon(QMessageBox.Error)
+            msgBox.setText("La selecció no s'ha pogut guardat correctament.")
+            msgBox.exec()
             pass
+
         self.close()
+
 
 if __name__=='__main__':
     from moduls.QvLlegenda import QvLlegenda
     with qgisapp() as app:
         sel = SelectorParceles()
-
-        # llegenda = QvLlegenda()
-        # dwLlegenda = QDockWidget("Dockable")
-        # dwLlegenda.setWindowTitle("Llegenda")
-        # sel.addDockWidget(Qt.LeftDockWidgetArea, dwLlegenda)
-        # dwLlegenda.setWidget(llegenda)
 
         widgetSel = QWidget()
         layV = QVBoxLayout() 
