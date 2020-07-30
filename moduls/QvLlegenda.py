@@ -82,7 +82,7 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
         if self.canvas is not None:
             self.canvas.scaleChanged.connect(self.connectaEscala)
             # Anotaciones
-            # self.anotacions = QvMapToolAnnotation(self)
+            self.anotacions = QvMapToolAnnotation(self)
 
         # Lista de acciones que apareceran en el menú
         self.menuAccions = []
