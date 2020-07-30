@@ -51,6 +51,7 @@ class SelectorParceles(QMainWindow,SelectorParcelesUi.Ui_MainWindow):
         self.layer = QgsProject.instance().mapLayersByName(capaParceles)[0]
         self.layCanvas.addWidget(self.canvas)
         self.listSel = QListWidget()
+        self.listSel.itemDoubleClicked.connect(self.clickLlista)
         self.llista_catastral = [] #contingut llista catastral
         self.llista_ids = [] #per pintar les parcel·les
 
@@ -71,6 +72,15 @@ class SelectorParceles(QMainWindow,SelectorParcelesUi.Ui_MainWindow):
         self.bConfirmar.clicked.connect(self.desarResultat) # No implementada
 
         self.carregaConfig()
+
+    def clickLlista(self,item):
+        ref_catastral = item.text()
+        index = self.llista_catastral.index(str(ref_catastral))
+        idx = self.llista_ids[index]
+        feature = self.layer.getFeature(idx)
+        rect = feature.geometry().boundingBox()
+        self.canvas.setExtent(rect)
+        self.canvas.zoomScale(500)
     
     def mouCanvas(self):
         self.tool = QgsMapToolPan(self.canvas)
@@ -83,7 +93,7 @@ class SelectorParceles(QMainWindow,SelectorParcelesUi.Ui_MainWindow):
 
     def seleccionaFeats(self,feats):
         ids=[x.id() for x in feats]
-        ref_catastre = [x[self.config['campReferencia']] for x in feats]
+        refs_catastre = [x[self.config['campReferencia']] for x in feats]
         
         for idx in ids:
             if idx in self.llista_ids:
@@ -93,7 +103,7 @@ class SelectorParceles(QMainWindow,SelectorParcelesUi.Ui_MainWindow):
         self.layer.selectByIds(self.llista_ids)
         #print(self.layer.selectedFeatureIds())
 
-        for ref in ref_catastre:
+        for ref in refs_catastre:
             if str(ref) in self.llista_catastral:
                 self.llista_catastral.remove(ref)
                 self.listSel.clear()
@@ -208,18 +218,18 @@ if __name__=='__main__':
     with qgisapp() as app:
         sel = SelectorParceles()
 
-        llegenda = QvLlegenda()
-        dwLlegenda = QDockWidget("Dockable")
-        dwLlegenda.setWindowTitle("Llegenda")
-        sel.addDockWidget(Qt.LeftDockWidgetArea, dwLlegenda)
-        dwLlegenda.setWidget(llegenda)
+        # llegenda = QvLlegenda()
+        # dwLlegenda = QDockWidget("Dockable")
+        # dwLlegenda.setWindowTitle("Llegenda")
+        # sel.addDockWidget(Qt.LeftDockWidgetArea, dwLlegenda)
+        # dwLlegenda.setWidget(llegenda)
 
         widgetSel = QWidget()
         layV = QVBoxLayout() 
         layV.addWidget(sel.listSel)
         widgetSel.setLayout(layV)
-        dwLlista = QDockWidget("Dockable")
-        dwLlista.setWindowTitle("Selecció")
+        dwLlista = QDockWidget()
+        dwLlista.setWindowTitle("Parcel·les seleccionades")
         sel.addDockWidget(Qt.RightDockWidgetArea, dwLlista)
         dwLlista.setWidget(widgetSel)
 
