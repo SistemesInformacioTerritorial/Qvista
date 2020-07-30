@@ -89,7 +89,12 @@ class QvMapToolAnnotation(qgGui.QgsMapTool):
         qgGui.QgsMapTool.__init__(self, llegenda.canvas)
         self.llegenda = llegenda
         self.llegenda.project.cleared.connect(self.removeAnnotations)
+        self.llegenda.project.readProject.connect(self.readProject)
+        self.llegenda.project.writeProject.connect(self.writeProject)
+
         self.llegenda.project.annotationManager().annotationAdded.connect(self.annotationCreated)
+        self.llegenda.project.annotationManager().annotationAboutToBeRemoved.connect(self.annotationAboutToBeRemoved)
+        self.llegenda.project.annotationManager().annotationRemoved.connect(self.annotationRemoved)
         self.cursor = None
         self.currentMoveAction = None
         self.lastMousePosition = None
@@ -101,25 +106,55 @@ class QvMapToolAnnotation(qgGui.QgsMapTool):
 
     # Señales de activación
 
+    @qtCor.pyqtSlot()
     def activa(self):
         self.noAction()
         self.toggleAnnotations(True)
 
+    @qtCor.pyqtSlot()
     def desactiva(self):
         self.hideItemEditor()
         self.canvas().scene().clearSelection()
 
     # Señales de proyecto
 
+    @qtCor.pyqtSlot(qgCor.QgsAnnotation)
     def annotationCreated(self, annotation: qgCor.QgsAnnotation) -> None:
+        print('add annotation')
         self.lastItem = qgGui.QgsMapCanvasAnnotationItem(annotation, self.canvas())
 
+    @qtCor.pyqtSlot(qgCor.QgsAnnotation)
+    def annotationAboutToBeRemoved(self, annotation: qgCor.QgsAnnotation) -> None:
+        print('about remove annotation')
+
+    @qtCor.pyqtSlot()
+    def annotationRemoved(self) -> None:
+        print('remove annotation')
+
+    @qtCor.pyqtSlot()
+    def readProject(self) -> None:
+        print('READ project')
+
+    @qtCor.pyqtSlot()
+    def writeProject(self) -> None:
+        print('write project')
+
+    @qtCor.pyqtSlot()
     def removeAnnotations(self) -> None:
+        print('project ini cleared')
+        print('- num project: ' + str(len(self.llegenda.project.annotationManager().annotations())))
+        print('- num canvas: ' + str(len(self.canvas().annotationItems())))
         self.desactiva()
         self.llegenda.project.annotationManager().clear()
+        print('project delete 1 cleared')
+        print('- num project: ' + str(len(self.llegenda.project.annotationManager().annotations())))
+        print('- num canvas: ' + str(len(self.canvas().annotationItems())))
         for item in self.canvas().annotationItems():
             self.canvas().scene().removeItem(item)
             # item.deleteLater()
+        print('project delete 2 cleared')
+        print('- num project: ' + str(len(self.llegenda.project.annotationManager().annotations())))
+        print('- num canvas: ' + str(len(self.canvas().annotationItems())))
 
     # Acciones y cursores
 
@@ -381,7 +416,7 @@ if __name__ == "__main__":
 
     from qgis.core.contextmanagers import qgisapp
     from moduls.QvApp import QvApp
-    from moduls.QvCanvas import QvCanvas
+    # from moduls.QvCanvas import QvCanvas
     from moduls.QvLlegenda import QvLlegenda
     import configuracioQvista as cfg
 
@@ -389,13 +424,16 @@ if __name__ == "__main__":
 
         QvApp().carregaIdioma(app, 'ca')
 
-        # canvas = qgGui.QgsMapCanvas()
-        canvas = QvCanvas()
+        canvas = qgGui.QgsMapCanvas()
+        # canvas = QvCanvas()
+
+        inicial = cfg.projecteInicial
+        # inicial = 'd:/temp/test.qgs'
 
         leyenda = QvLlegenda(canvas)
-        leyenda.project.read(cfg.projecteInicial)
+        leyenda.project.read(inicial)
 
-        canvas.setWindowTitle('Canvas - ' + cfg.projecteInicial)
+        canvas.setWindowTitle('Canvas - ' + inicial)
         canvas.show()
 
         leyenda.setWindowTitle('Llegenda')
@@ -412,9 +450,7 @@ if __name__ == "__main__":
                 leyenda.accions.accio('setAnnotations').setChecked(True)
 
         def writeProject():
-            leyenda.project.write()
-
-        def writeProject():
+            print('write file')
             leyenda.project.write()
 
         def openProject():
@@ -425,6 +461,7 @@ if __name__ == "__main__":
             nfile, _ = dialegObertura.getOpenFileName(None, "Obrir mapa Qgis",
                                                       "D:/Temp/", mapes)
             if nfile != '':
+                print('read file ' + nfile)
                 ok = leyenda.project.read(nfile)
                 if ok:
                     canvas.setWindowTitle('Canvas - ' + nfile)
