@@ -261,7 +261,7 @@ class QvApp(Singleton):
             v1 = int(v[1])
             return v1 >= sub
         else:
-            return v0 > sub
+            return v0 > ver
 
     # Metodos db QVISTA
 
