@@ -254,6 +254,15 @@ class QvApp(Singleton):
     def versioQgis(self):
         return Qgis.QGIS_VERSION
 
+    def testVersioQgis(self, ver, sub):
+        v = self.versioQgis().split('.')
+        v0 = int(v[0])
+        if ver == v0:
+            v1 = int(v[1])
+            return sub >= v1
+        else:
+            return ver > v0
+
     # Metodos db QVISTA
 
     def dbLogConnexio(self):
