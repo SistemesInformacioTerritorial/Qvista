@@ -38,7 +38,8 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
     projecteCarregat = qtCor.pyqtSignal(str)
     projecteModificat = qtCor.pyqtSignal(str)
 
-    def __init__(self, canvas=None, atributs=None, canviCapaActiva=None, editable=True):
+    def __init__(self, canvas=None, atributs=None, canviCapaActiva=None,
+                 anotacions=True, editable=True):
         qgGui.QgsLayerTreeView.__init__(self)
 
         self.setTitol()
@@ -82,7 +83,8 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
         if self.canvas is not None:
             self.canvas.scaleChanged.connect(self.connectaEscala)
             # Anotaciones
-            self.anotacions = QvMapToolAnnotation(self)
+            if anotacions:
+                self.anotacions = QvMapToolAnnotation(self)
 
         # Lista de acciones que apareceran en el menú
         self.menuAccions = []
@@ -116,6 +118,11 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
 
         self.fSignal = lambda: self.projecteModificat.emit('canvasLayersChanged')
         self.iniSignal = False
+
+    def readProject(self, fileName):
+        if self.anotacions is not None:
+            self.anotacions.removeAnnotations()
+        return self.project.read(fileName)
 
     def setTitol(self, titol=TITOL_INICIAL):
         self.setWindowTitle(titol)

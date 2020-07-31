@@ -297,7 +297,8 @@ class QVista(QMainWindow, Ui_MainWindow):
         if hasattr(self,'mapaCataleg'): delattr(self,'mapaCataleg')
         if projecte.strip()=='': return
         # Obrir el projecte i col.locarse en rang
-        self.project.read(projecte)
+        self.llegenda.readProject(projecte)
+        # self.project.read(projecte)
 
         if nou:
             md=self.project.metadata()
