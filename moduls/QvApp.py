@@ -257,11 +257,11 @@ class QvApp(Singleton):
     def testVersioQgis(self, ver, sub):
         v = self.versioQgis().split('.')
         v0 = int(v[0])
-        if ver == v0:
+        if v0 == ver:
             v1 = int(v[1])
-            return sub >= v1
+            return v1 >= sub
         else:
-            return ver > v0
+            return v0 > sub
 
     # Metodos db QVISTA
 
