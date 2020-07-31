@@ -126,9 +126,12 @@ class QvMapToolAnnotation(qgGui.QgsMapTool):
     # Manejo de anotaciones de proyecto y de canvas
 
     def annotationCreated(self, annotation: qgCor.QgsAnnotation) -> None:
+        # Necesario para que las anotaciones del proyecto pasen al canvas y se visualicen
         self.lastItem = qgGui.QgsMapCanvasAnnotationItem(annotation, self.canvas())
 
     def removeAnnotations(self) -> None:
+        # Borrado de anotaciones al cambiar de proyecto. Si no se hace así
+        # justo antes del read() de proyecto, el programa aborta
         for item in self.canvas().annotationItems():
             item.annotation().setVisible(False)
         self.llegenda.project.annotationManager().clear()

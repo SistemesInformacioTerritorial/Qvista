@@ -364,7 +364,9 @@ class QvApp(Singleton):
                 y = self.queryGeo.boundValue(':Y')
                 if not isinstance(y, float):
                     y = None
-            return x, y
+                return x, y
+            else:
+                return None, None
         except Exception:
             return None, None
 
