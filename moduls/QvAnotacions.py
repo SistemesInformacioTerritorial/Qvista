@@ -8,7 +8,14 @@ import qgis.PyQt.QtCore as qtCor
 
 
 class QvTextAnnotationDialog(qtWdg.QDialog):
-    def __init__(self, llegenda, item: qgGui.QgsMapCanvasAnnotationItem, title: str):
+    def __init__(self, llegenda, item: qgGui.QgsMapCanvasAnnotationItem, title: str = 'Anotació'):
+        """Cuadro de diálogo de edición de las características de las anotaciones
+
+        Args:
+            llegenda (QvLlegenda).
+            item (QgsMapCanvasAnnotationItem): item de la anotación a modificar.
+            title (str, optional): título del formulario. Defaults to 'Anotació'.
+        """
         self.llegenda = llegenda
         super().__init__(llegenda.canvas)
         self.setWindowTitle(title)
@@ -82,13 +89,20 @@ class QvTextAnnotationDialog(qtWdg.QDialog):
 
 class QvMapToolAnnotation(qgGui.QgsMapTool):
     def __init__(self, llegenda) -> None:
+        """Map Tool de gestión de anotaciones (visualización, alta, baja, modificación)
+
+        Args:
+            llegenda (QvLlegenda).
+
+        Raises:
+            TypeError: Si no hay leyenda o no hay canvas.
+        """
         if llegenda is None:
             raise TypeError('llegenda is None (QvMapToolAnnotation.__init__)')
         if llegenda.canvas is None:
             raise TypeError('canvas is None (QvMapToolAnnotation.__init__)')
         qgGui.QgsMapTool.__init__(self, llegenda.canvas)
         self.llegenda = llegenda
-        self.llegenda.project.cleared.connect(self.removeAnnotations)
         self.llegenda.project.annotationManager().annotationAdded.connect(self.annotationCreated)
         self.cursor = None
         self.currentMoveAction = None
@@ -109,17 +123,20 @@ class QvMapToolAnnotation(qgGui.QgsMapTool):
         self.hideItemEditor()
         self.canvas().scene().clearSelection()
 
-    # Señales de proyecto
+    # Manejo de anotaciones de proyecto y de canvas
 
     def annotationCreated(self, annotation: qgCor.QgsAnnotation) -> None:
+        # Necesario para que las anotaciones del proyecto pasen al canvas y se visualicen
         self.lastItem = qgGui.QgsMapCanvasAnnotationItem(annotation, self.canvas())
 
     def removeAnnotations(self) -> None:
-        self.desactiva()
+        # Borrado de anotaciones al cambiar de proyecto. Si no se hace así
+        # justo antes del read() de proyecto, el programa aborta
+        for item in self.canvas().annotationItems():
+            item.annotation().setVisible(False)
         self.llegenda.project.annotationManager().clear()
         for item in self.canvas().annotationItems():
             self.canvas().scene().removeItem(item)
-            # item.deleteLater()
 
     # Acciones y cursores
 
@@ -181,7 +198,7 @@ class QvMapToolAnnotation(qgGui.QgsMapTool):
     def showItemEditor(self, item: qgGui.QgsMapCanvasAnnotationItem) -> None:
         if item and item.isVisible() and item.annotation() and \
            isinstance(item.annotation(), qgCor.QgsTextAnnotation):
-            self.editor = QvTextAnnotationDialog(self.llegenda, item, 'Annotació')
+            self.editor = QvTextAnnotationDialog(self.llegenda, item)
             self.editor.show()
         else:
             self.hideItemEditor()
@@ -381,21 +398,24 @@ if __name__ == "__main__":
 
     from qgis.core.contextmanagers import qgisapp
     from moduls.QvApp import QvApp
-    from moduls.QvCanvas import QvCanvas
+    # from moduls.QvCanvas import QvCanvas
     from moduls.QvLlegenda import QvLlegenda
-    # import configuracioQvista as cfg
+    import configuracioQvista as cfg
 
     with qgisapp(sysexit=False) as app:
 
         QvApp().carregaIdioma(app, 'ca')
 
-        # canvas = qgGui.QgsMapCanvas()
-        canvas = QvCanvas()
+        canvas = qgGui.QgsMapCanvas()
+        # canvas = QvCanvas()
+
+        inicial = cfg.projecteInicial
+        # inicial = 'd:/temp/test.qgs'
 
         leyenda = QvLlegenda(canvas)
-        leyenda.project.read('d:/temp/test.qgs')
+        leyenda.readProject(inicial)
 
-        canvas.setWindowTitle('Canvas')
+        canvas.setWindowTitle('Canvas - ' + inicial)
         canvas.show()
 
         leyenda.setWindowTitle('Llegenda')
@@ -412,7 +432,24 @@ if __name__ == "__main__":
                 leyenda.accions.accio('setAnnotations').setChecked(True)
 
         def writeProject():
+            print('write file')
             leyenda.project.write()
+
+        def openProject():
+            dialegObertura = qtWdg.QFileDialog()
+            dialegObertura.setDirectoryUrl(qtCor.QUrl('D:/Temp/'))
+            mapes = "Tots els mapes acceptats (*.qgs *.qgz);; " \
+                    "Mapes Qgis (*.qgs);;Mapes Qgis comprimits (*.qgz)"
+            nfile, _ = dialegObertura.getOpenFileName(None, "Obrir mapa Qgis",
+                                                      "D:/Temp/", mapes)
+            if nfile != '':
+
+                print('read file ' + nfile)
+                ok = leyenda.readProject(nfile)
+                if ok:
+                    canvas.setWindowTitle('Canvas - ' + nfile)
+                else:
+                    print(leyenda.project.error().summary())
 
         act = qtWdg.QAction()
         act.setCheckable(True)
@@ -426,6 +463,11 @@ if __name__ == "__main__":
         act.triggered.connect(writeProject)
         leyenda.accions.afegirAccio('writeProject', act)
 
+        act = qtWdg.QAction()
+        act.setText("Obre projecte")
+        act.triggered.connect(openProject)
+        leyenda.accions.afegirAccio('openProject', act)
+
         # Adaptación del menú
 
         def menuContexte(tipo):
@@ -433,6 +475,7 @@ if __name__ == "__main__":
                 leyenda.menuAccions.append('separator')
                 leyenda.menuAccions.append('setAnnotations')
                 leyenda.menuAccions.append('writeProject')
+                leyenda.menuAccions.append('openProject')
 
         # Conexión de la señal con la función menuContexte para personalizar el menú
         leyenda.clicatMenuContexte.connect(menuContexte)

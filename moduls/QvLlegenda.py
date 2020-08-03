@@ -16,6 +16,7 @@ from moduls.QvLlegendaMascara import QvLlegendaMascara
 from moduls.QvDiagrama import QvDiagrama
 from moduls.QvTema import QvTema
 from moduls.QvAnotacions import QvMapToolAnnotation
+from moduls.QvApp import QvApp
 from moduls import QvFuncions
 
 
@@ -38,7 +39,8 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
     projecteCarregat = qtCor.pyqtSignal(str)
     projecteModificat = qtCor.pyqtSignal(str)
 
-    def __init__(self, canvas=None, atributs=None, canviCapaActiva=None, editable=True):
+    def __init__(self, canvas=None, atributs=None, canviCapaActiva=None,
+                 anotacions=True, editable=True):
         qgGui.QgsLayerTreeView.__init__(self)
 
         self.setTitol()
@@ -81,8 +83,9 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
         self.setModel(self.model)
         if self.canvas is not None:
             self.canvas.scaleChanged.connect(self.connectaEscala)
-            # Anotaciones
-            self.anotacions = QvMapToolAnnotation(self)
+            # Anotaciones (solo a partir de la versión 3.10)
+            if anotacions and QvApp().testVersioQgis(3, 10):
+                self.anotacions = QvMapToolAnnotation(self)
 
         # Lista de acciones que apareceran en el menú
         self.menuAccions = []
@@ -116,6 +119,11 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
 
         self.fSignal = lambda: self.projecteModificat.emit('canvasLayersChanged')
         self.iniSignal = False
+
+    def readProject(self, fileName):
+        if self.anotacions is not None:
+            self.anotacions.removeAnnotations()
+        return self.project.read(fileName)
 
     def setTitol(self, titol=TITOL_INICIAL):
         self.setWindowTitle(titol)
@@ -653,7 +661,6 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
 if __name__ == "__main__":
 
     from qgis.core.contextmanagers import qgisapp
-    from moduls.QvApp import QvApp
     import configuracioQvista as cfg
 
     with qgisapp(sysexit=False) as app:

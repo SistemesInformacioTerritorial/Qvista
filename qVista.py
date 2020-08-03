@@ -297,7 +297,9 @@ class QVista(QMainWindow, Ui_MainWindow):
         if hasattr(self,'mapaCataleg'): delattr(self,'mapaCataleg')
         if projecte.strip()=='': return
         # Obrir el projecte i col.locarse en rang
-        self.project.read(projecte)
+        # Se utiliza la función readProject() de la leyenda
+        # para poder borrar adecuadamente las anotaciones
+        self.llegenda.readProject(projecte)
 
         if nou:
             md=self.project.metadata()
@@ -2115,10 +2117,8 @@ class QVista(QMainWindow, Ui_MainWindow):
 
 
         self.bScale = QvPushButton(flat=True)   
-        # self.bScale.setToolTip('  <i>Mouse <b>left</b></i>:  para escalas predefinidas. <br>  <i>Mouse <b>rigth</b></i>:  para cambiar el tipo de escala.<br>  <b>ATENCIÓN:</b> el tipo de escala qGis es inexacto métricamente en pantalla')
-        self.bScale.setToolTip('  <i>Mouse <b>left</b></i>:  para escalas predefinidas. <br>  <i>Mouse <b>rigth</b></i>:  para cambiar el tipo de escala.<br>  <span style="color:red;"><b>ATENCIÓN:</b>.</span> el tipo de escala qGis es inexacto métricamente en pantalla')
+        # self.bScale.setToolTip('  <i>Mouse <b>left</b></i>:  per a escales predefinides. <br>  <i>Mouse <b>rigth</b></i>:  per a canviar el tipus d\'escala..<br>  <span style="color:red;"><b>ATENCIÓ:</b>.</span> el tipus d\'escala qGis és inexacte mètricament en pantalla')
         
-
         
         self.bScale.setStyleSheet(stylesheetButton)
         self.bScale.setFixedHeight(alcada)
@@ -2177,6 +2177,9 @@ class QVista(QMainWindow, Ui_MainWindow):
     
     def escalaNormal(self):
         self.bScale.setText( " Escala 1:" + str(int(round(self.canvas.scale())))) 
+        self.editantEscala=False  #JNB
+        self.leScale.hide()
+        
         self.canvas.scaleChanged.connect(self.corrijoScale) 
         self.corrijoScale()
         self.tipoScale="escNormal"  
@@ -2184,8 +2187,16 @@ class QVista(QMainWindow, Ui_MainWindow):
 
     def escalaqGis(self):
         self.bScale.setText( " Escala qGis 1:" + str(int(round(self.canvas.scale())))) 
+        self.editantEscala=False
+        self.leScale.hide()  #JNB
+        
         self.canvas.setMagnificationFactor(1)
-        self.canvas.scaleChanged.disconnect(self.corrijoScale) 
+        try:
+            self.canvas.scaleChanged.disconnect(self.corrijoScale)
+        except Exception as ee:
+            self.editantEscala=False
+            self.leScale.hide()
+         
         self.tipoScale="escQGis"
 
 
