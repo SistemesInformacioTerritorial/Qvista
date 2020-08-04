@@ -16,6 +16,7 @@ from moduls.QvLlegendaMascara import QvLlegendaMascara
 from moduls.QvDiagrama import QvDiagrama
 from moduls.QvTema import QvTema
 from moduls.QvAnotacions import QvMapToolAnnotation
+from moduls.QvApp import QvApp
 from moduls import QvFuncions
 
 
@@ -82,8 +83,8 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
         self.setModel(self.model)
         if self.canvas is not None:
             self.canvas.scaleChanged.connect(self.connectaEscala)
-            # Anotaciones
-            if anotacions:
+            # Anotaciones (solo a partir de la versión 3.10)
+            if anotacions and QvApp().testVersioQgis(3, 10):
                 self.anotacions = QvMapToolAnnotation(self)
 
         # Lista de acciones que apareceran en el menú
@@ -660,7 +661,6 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
 if __name__ == "__main__":
 
     from qgis.core.contextmanagers import qgisapp
-    from moduls.QvApp import QvApp
     import configuracioQvista as cfg
 
     with qgisapp(sysexit=False) as app:

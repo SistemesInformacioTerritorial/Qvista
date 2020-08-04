@@ -120,8 +120,8 @@ class EinaCoordenades(QWidget):
                         QgsCoordinateReferenceSystem("EPSG:4326"), 
                         QgsProject.instance())
                 self.puntTransformat=self.transformacio.transform(p)
-                y=str(self.puntTransformat.x())
-                x=str(self.puntTransformat.y())
+                y = str("%.7f" % self.puntTransformat.x())
+                x = str("%.7f" % self.puntTransformat.y())
                 self.leXcoord2.setText(x)
                 self.leYcoord2.setText(y)
                 self.text2 = x + ", " + y

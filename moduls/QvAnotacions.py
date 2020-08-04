@@ -9,7 +9,14 @@ import qgis.PyQt.QtCore as qtCor
 
 
 class QvTextAnnotationDialog(qtWdg.QDialog):
-    def __init__(self, llegenda, item: qgGui.QgsMapCanvasAnnotationItem, title: str):
+    def __init__(self, llegenda, item: qgGui.QgsMapCanvasAnnotationItem, title: str = 'Anotació'):
+        """Cuadro de diálogo de edición de las características de las anotaciones
+
+        Args:
+            llegenda (QvLlegenda).
+            item (QgsMapCanvasAnnotationItem): item de la anotación a modificar.
+            title (str, optional): título del formulario. Defaults to 'Anotació'.
+        """
         self.llegenda = llegenda
         super().__init__(llegenda.canvas)
         self.setWindowTitle(title)
@@ -98,6 +105,14 @@ class QvTextAnnotationDialog(qtWdg.QDialog):
 
 class QvMapToolAnnotation(qgGui.QgsMapTool):
     def __init__(self, llegenda) -> None:
+        """Map Tool de gestión de anotaciones (visualización, alta, baja, modificación)
+
+        Args:
+            llegenda (QvLlegenda).
+
+        Raises:
+            TypeError: Si no hay leyenda o no hay canvas.
+        """
         if llegenda is None:
             raise TypeError('llegenda is None (QvMapToolAnnotation.__init__)')
         if llegenda.canvas is None:
@@ -143,10 +158,13 @@ class QvMapToolAnnotation(qgGui.QgsMapTool):
 
 
     def annotationCreated(self, annotation: qgCor.QgsAnnotation) -> None:
+        # Necesario para que las anotaciones del proyecto pasen al canvas y se visualicen
         self.lastItem = qgGui.QgsMapCanvasAnnotationItem(annotation, self.canvas())
         self.lastItem.setToolTip(self.cleanNameLayer(self.lastItem.annotation().mapLayer()))
         
     def removeAnnotations(self) -> None:
+        # Borrado de anotaciones al cambiar de proyecto. Si no se hace así
+        # justo antes del read() de proyecto, el programa aborta
         for item in self.canvas().annotationItems():
             item.annotation().setVisible(False)
 
@@ -215,7 +233,7 @@ class QvMapToolAnnotation(qgGui.QgsMapTool):
     def showItemEditor(self, item: qgGui.QgsMapCanvasAnnotationItem) -> None:
         if item and item.isVisible() and item.annotation() and \
            isinstance(item.annotation(), qgCor.QgsTextAnnotation):
-            self.editor = QvTextAnnotationDialog(self.llegenda, item, 'Annotació')
+            self.editor = QvTextAnnotationDialog(self.llegenda, item)
             self.editor.show()
         else:
             self.hideItemEditor()
