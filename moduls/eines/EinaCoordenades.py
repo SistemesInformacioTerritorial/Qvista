@@ -45,10 +45,17 @@ class EinaCoordenades(QWidget):
 
         lblnom1 = QLabel()
         lblnom1.setText("ETRS 89")
+        lblnom1.setToolTip("EPSG:25831:  ETRS89 / UTM zone 31N")        
+
         lblnom2 = QLabel()
         lblnom2.setText("Lat/Long")
+        lblnom2.setToolTip("EPSG:4326: WGS 84 -- WGS84 - World Geodetic System 1984, used in GPS")
+
+        
         lblnom3 = QLabel()
         lblnom3.setText("TRESOR")
+        lblnom3.setToolTip("Coordenades 'retallades' AJB basades en EPSG:25831")
+
 
         self.leXcoord1 = QLineEdit()
         self.leXcoord1.setReadOnly(True)
