@@ -463,9 +463,6 @@ if __name__ == "__main__":
         leyenda.show()
 
 
-
-
-
         # Acciones de usuario para el menú
 
         def setAnnotations():

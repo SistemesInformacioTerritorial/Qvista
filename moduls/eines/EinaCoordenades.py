@@ -110,11 +110,11 @@ class EinaCoordenades(QWidget):
 
         def showXY(p): 
             if self.nova:
-                x=str("%.3f" % p.x())
-                y=str("%.3f" % p.y())
-                self.leXcoord1.setText(x)
-                self.leYcoord1.setText(y)
-                self.text1 = x + ", " + y
+                x1=str("%.3f" % p.x())
+                y1=str("%.3f" % p.y())
+                self.leXcoord1.setText(x1)
+                self.leYcoord1.setText(y1)
+                self.text1 = x1 + ", " + y1
 
                 self.transformacio = QgsCoordinateTransform(QgsCoordinateReferenceSystem("EPSG:25831"), 
                         QgsCoordinateReferenceSystem("EPSG:4326"), 
@@ -126,8 +126,10 @@ class EinaCoordenades(QWidget):
                 self.leYcoord2.setText(y)
                 self.text2 = x + ", " + y
 
-                x= str(int((p.x() - 400000) * 1000))
-                y= str(int((p.y() - 4500000) * 1000))
+                x= str(int((float(x1) *1000 - 400000000)))
+                y= str(int((float(y1) *1000  -4500000000)))
+
+              
                 self.leXcoord3.setText(x)
                 self.leYcoord3.setText(y)
                 self.text3 = x + ", " + y
