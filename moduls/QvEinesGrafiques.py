@@ -5,6 +5,7 @@ from moduls.QvPushButton import QvPushButton
 from moduls.QvMemoria import QvMemoria
 from moduls.QvConstants import QvConstants
 from moduls.QVDistrictesBarris import QVDistrictesBarris
+from moduls import QvFuncions
 from qgis.gui import QgsMapTool, QgsRubberBand
 import math
 import csv
@@ -59,7 +60,7 @@ class QvSeleccioGrafica(QWidget):
         self.bs5.clicked.connect(self.calcularSeleccio)
 
         self.bs6 = QvPushButton('Crear CSV', flat=True)
-        self.bs6.clicked.connect(self.crearCsv)
+        self.bs6.clicked.connect(lambda: self.crearCsv())
 
         self.twResultats = QTableWidget()
 
@@ -149,6 +150,7 @@ class QvSeleccioGrafica(QWidget):
         self.distBarrisSelMasc.view.clicked.connect(self.clickArbreSelMasc)
         self.lytSeleccioGrafica.addWidget(self.distBarrisSelMasc.view)
     
+    @QvFuncions.mostraSpinner
     def crearCsv(self):
         camps = [camp.text() for camp in self.lwFieldsSelect.selectedItems()]
         if camps==[]:
@@ -160,7 +162,7 @@ class QvSeleccioGrafica(QWidget):
         capa = self.llegenda.currentLayer()
         feats = capa.selectedFeatures()
         with open(nfile,'w', newline='') as f:
-            writer = csv.DictWriter(f,fieldnames=camps)
+            writer = csv.DictWriter(f,fieldnames=camps, delimiter=';')
             writer.writeheader()
             for feat in feats:
                 d = {}
@@ -194,7 +196,10 @@ class QvSeleccioGrafica(QWidget):
             layer = self.llegenda.currentLayer()
             if layer is None:
                 return
-            feat = next(feats)
+            try:
+                feat = next(feats)
+            except StopIteration: # Si no hi ha cap feature, sortim
+                return
             featsPnt = layer.getFeatures(
                 QgsFeatureRequest().setFilterRect(rang))
             for f in featsPnt:
