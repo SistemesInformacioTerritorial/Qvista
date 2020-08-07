@@ -4,7 +4,7 @@ class QVViewer(QWidget):
 
     def __init__(self, carpeta):
         super().__init__()
-        self.title = 'PyQt5 image - pythonspot.com'
+        self.title = "Visor d'imatges"
         self.carpeta = carpeta
         self.left = 100
         self.top = 100
