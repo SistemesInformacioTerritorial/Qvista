@@ -45,10 +45,17 @@ class EinaCoordenades(QWidget):
 
         lblnom1 = QLabel()
         lblnom1.setText("ETRS 89")
+        lblnom1.setToolTip("EPSG:25831:  ETRS89 / UTM zone 31N")        
+
         lblnom2 = QLabel()
         lblnom2.setText("Lat/Long")
+        lblnom2.setToolTip("EPSG:4326: WGS 84 -- WGS84 - World Geodetic System 1984, used in GPS")
+
+        
         lblnom3 = QLabel()
         lblnom3.setText("TRESOR")
+        lblnom3.setToolTip("Coordenades 'retallades' AJB basades en EPSG:25831")
+
 
         self.leXcoord1 = QLineEdit()
         self.leXcoord1.setReadOnly(True)
@@ -110,24 +117,26 @@ class EinaCoordenades(QWidget):
 
         def showXY(p): 
             if self.nova:
-                x=str("%.3f" % p.x())
-                y=str("%.3f" % p.y())
-                self.leXcoord1.setText(x)
-                self.leYcoord1.setText(y)
-                self.text1 = x + ", " + y
+                x1=str("%.3f" % p.x())
+                y1=str("%.3f" % p.y())
+                self.leXcoord1.setText(x1)
+                self.leYcoord1.setText(y1)
+                self.text1 = x1 + ", " + y1
 
                 self.transformacio = QgsCoordinateTransform(QgsCoordinateReferenceSystem("EPSG:25831"), 
                         QgsCoordinateReferenceSystem("EPSG:4326"), 
                         QgsProject.instance())
                 self.puntTransformat=self.transformacio.transform(p)
-                y=str(self.puntTransformat.x())
-                x=str(self.puntTransformat.y())
+                y = str("%.7f" % self.puntTransformat.x())
+                x = str("%.7f" % self.puntTransformat.y())
                 self.leXcoord2.setText(x)
                 self.leYcoord2.setText(y)
                 self.text2 = x + ", " + y
 
-                x= str(int((p.x() - 400000) * 1000))
-                y= str(int((p.y() - 4500000) * 1000))
+                x= str(int((float(x1) *1000 - 400000000)))
+                y= str(int((float(y1) *1000  -4500000000)))
+
+              
                 self.leXcoord3.setText(x)
                 self.leYcoord3.setText(y)
                 self.text3 = x + ", " + y

@@ -11,6 +11,7 @@ from moduls.QvImports import *
 # Carrega de moduls Qv
 iniciTempsModuls = time.time()
 
+
 from moduls.QvUbicacions import QvUbicacions
 from moduls.QvPrint import QvPrint
 from moduls.QvCanvas import QvCanvas
@@ -296,7 +297,9 @@ class QVista(QMainWindow, Ui_MainWindow):
         if hasattr(self,'mapaCataleg'): delattr(self,'mapaCataleg')
         if projecte.strip()=='': return
         # Obrir el projecte i col.locarse en rang
-        self.project.read(projecte)
+        # Se utiliza la función readProject() de la leyenda
+        # para poder borrar adecuadamente las anotaciones
+        self.llegenda.readProject(projecte)
 
         if nou:
             md=self.project.metadata()
@@ -1829,6 +1832,97 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         def distancia(p1,p2):
             return ((p2.x-p1.x)**2+(p2.y-p1.y)**2)**0.5
+    
+        def DetectoCuadrante():
+            """
+            Retorno el cuadrante en que está el angulo de rotacion
+            4  |  1
+            3  |  2
+            """
+            Cuadrante=0
+            if 0 <= self.canvas.rotation() <=90:             Cuadrante=1
+            elif 90 < self.canvas.rotation() <= 180:         Cuadrante=2
+            elif 180 < self.canvas.rotation() <= 270:        Cuadrante=3
+            elif 270 < self.canvas.rotation() <= 360:        Cuadrante=4
+            else:                                            Cuadrante= -1
+            return Cuadrante    
+
+        self.Cuadrante = DetectoCuadrante()
+
+        PPa1=QPoint(); PPa2=QPoint(); PPa3=QPoint();  PPa4=QPoint()  # mundo 
+        Pa1=QPoint();  Pa2=QPoint();  Pa3=QPoint();  Pa4=QPoint()   # mundo
+        rect = self.canvas.extent()
+        PPa1.x= rect.xMinimum();    PPa1.y= rect.yMinimum()   # abajo izquierda
+        PPa3.x= rect.xMaximum();    PPa3.y= rect.yMaximum()   # arriba derecha
+        PPa2.x=  PPa3.x;            PPa2.y=  PPa1.y           # abajo derecha
+        PPa4.x=  PPa1.x;            PPa4.y=  PPa3.y           # arriba izquierda
+        anchoMundoAzul= (PPa3.x - PPa1.x);    altoMundoAzul=  (PPa3.y - PPa1.y)
+        w= self.canvas.widthMM();              h= self.canvas.heightMM()
+        angulo= self.canvas.rotation()
+        self.seno_giro= math.sin(math.radians(angulo))
+        self.coseno_giro= math.cos(math.radians(angulo))
+        self.seno_antigiro= math.sin(math.radians(360 - angulo))
+        self.coseno_antigiro= math.cos(math.radians(360 - angulo))   
+
+        if (self.Cuadrante == 1) or (self.Cuadrante == 3): 
+            if self.Cuadrante == 1:  
+                self.seno_giro_c= math.sin(math.radians(angulo))
+                self.coseno_giro_c= math.cos(math.radians(angulo))
+            elif (self.Cuadrante == 3): 
+                self.seno_giro_c= math.sin(math.radians(angulo-180) )
+                self.coseno_giro_c= math.cos(math.radians(angulo-180))          
+            h1= (w*self.seno_giro_c)
+            h2= (h*self.coseno_giro_c)
+            w1= (w*self.coseno_giro_c)
+            w2= (h*self.seno_giro_c) 
+        elif (self.Cuadrante == 2) or (self.Cuadrante == 4):  
+            if self.Cuadrante == 2:  
+                self.seno_giro_c= math.sin(math.radians(angulo-90))
+                self.coseno_giro_c= math.cos(math.radians(angulo-90))
+            elif (self.Cuadrante == 4): 
+                self.seno_giro_c= math.sin(math.radians(angulo-270) )
+                self.coseno_giro_c= math.cos(math.radians(angulo-270))
+            h1= (w*self.coseno_giro_c)
+            h2= (h*self.seno_giro_c)
+            w1= (h*self.coseno_giro_c)
+            w2= (w*self.seno_giro_c)
+        
+        W = w1 + w2 ;                  H = h1 + h2   
+        Escalax= anchoMundoAzul / W;   Escalay= altoMundoAzul /  H 
+
+        if (self.Cuadrante ==1) or (self.Cuadrante ==3):
+            Pa1.x = PPa1.x;                    Pa1.y = PPa1.y + Escalay * h2  
+            Pa2.x = PPa4.x + Escalax * w1;     Pa2.y = PPa4.y                  
+            Pa3.x = PPa2.x;                    Pa3.y = PPa2.y + Escalay * h1  
+            # Pa4.x = PPa1.x + Escalax * w2;     Pa4.y = PPa1.y 
+        elif (self.Cuadrante ==2)  or (self.Cuadrante ==4):
+            Pa1.x = PPa2.x;                    Pa1.y = PPa2.y + Escalay * h1
+            Pa2.x = PPa1.x + Escalax * w1;     Pa2.y = PPa1.y             
+            Pa3.x = PPa1.x;                    Pa3.y = PPa1.y + Escalay * h2   
+            # Pa4.x = PPa4.x + Escalax * w2;     Pa4.y = PPa4.y    
+
+  
+        incMy= distancia(Pa2,Pa3)
+        incPy= self.canvas.heightMM()
+        EsY=  incMy  / incPy*   1000
+
+        incMx= distancia(Pa1,Pa2)
+        incPx=  self.canvas.widthMM()
+        EsX=  incMx / incPx * 1000  # esta es la buena
+
+        factorX= EsX /self.canvas.scale()
+        factorY= EsY /self.canvas.scale()
+        # print(factorX,factorY)  
+        factor=  (factorY + factorX)/2    
+        self.canvas.setMagnificationFactor(factor * self.canvas.magnificationFactor())
+
+
+    
+    def corrijoScale_ok(self):
+        import math
+
+        def distancia(p1,p2):
+            return ((p2.x-p1.x)**2+(p2.y-p1.y)**2)**0.5
         
         def DetectoCuadrante():
             """
@@ -2023,7 +2117,9 @@ class QVista(QMainWindow, Ui_MainWindow):
 
 
         self.bScale = QvPushButton(flat=True)   
-        self.bScale.setToolTip('  Mouse <b>left</b> para escalas predefinidas <br>  Mouse <b>rigth</b> para cambiar el estilo de la escala<br>  <b>ATENCIÓN:</b> la escala qGis es inexacta métricamente en pantalla')
+        # self.bScale.setToolTip('  <i>Mouse <b>left</b></i>:  per a escales predefinides. <br>  <i>Mouse <b>rigth</b></i>:  per a canviar el tipus d\'escala..<br>  <span style="color:red;"><b>ATENCIÓ:</b>.</span> el tipus d\'escala qGis és inexacte mètricament en pantalla')
+        
+        
         self.bScale.setStyleSheet(stylesheetButton)
         self.bScale.setFixedHeight(alcada)
         self.lScale.addWidget(self.bScale)
@@ -2081,6 +2177,9 @@ class QVista(QMainWindow, Ui_MainWindow):
     
     def escalaNormal(self):
         self.bScale.setText( " Escala 1:" + str(int(round(self.canvas.scale())))) 
+        self.editantEscala=False  #JNB
+        self.leScale.hide()
+        
         self.canvas.scaleChanged.connect(self.corrijoScale) 
         self.corrijoScale()
         self.tipoScale="escNormal"  
@@ -2088,8 +2187,16 @@ class QVista(QMainWindow, Ui_MainWindow):
 
     def escalaqGis(self):
         self.bScale.setText( " Escala qGis 1:" + str(int(round(self.canvas.scale())))) 
+        self.editantEscala=False
+        self.leScale.hide()  #JNB
+        
         self.canvas.setMagnificationFactor(1)
-        self.canvas.scaleChanged.disconnect(self.corrijoScale) 
+        try:
+            self.canvas.scaleChanged.disconnect(self.corrijoScale)
+        except Exception as ee:
+            self.editantEscala=False
+            self.leScale.hide()
+         
         self.tipoScale="escQGis"
 
 

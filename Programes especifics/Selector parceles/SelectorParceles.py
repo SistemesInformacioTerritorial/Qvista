@@ -67,8 +67,10 @@ class SelectorParceles(QMainWindow,SelectorParcelesUi.Ui_MainWindow):
             for i in self.llista_catastral:
                 self.listSel.addItem(str(i))
 
-        self.bPanning.setIcon(QIcon(os.path.join(os.path.abspath(os.getcwd()) + pathImatges,'pan_tool_black_24x24.png')))
-        self.bSeleccio.setIcon(QIcon(os.path.join(os.path.abspath(os.getcwd()) + pathImatges,'apuntar.png')))
+        pa = os.path.join(os.path.abspath(os.getcwd()) + pathImatges)
+        print(pa)
+        self.bPanning.setIcon(QIcon(pa,'pan_tool_black_24x24.png'))
+        self.bSeleccio.setIcon(QIcon(pa,'apuntar.png'))
         
         self.bPanning.clicked.connect(self.mouCanvas)
         self.bSeleccio.clicked.connect(self.selecciona)
@@ -249,7 +251,7 @@ class SelectorParceles(QMainWindow,SelectorParcelesUi.Ui_MainWindow):
 
 
 if __name__=='__main__':
-    from moduls.QvLlegenda import QvLlegenda
+    #from moduls.QvLlegenda import QvLlegenda
     with qgisapp() as app:
         sel = SelectorParceles()
 

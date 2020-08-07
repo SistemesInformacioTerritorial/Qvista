@@ -260,9 +260,23 @@ class creaEina:
         def init_classe(self,parent):
             titol = self.titol if hasattr(self,'titol') else nomClasse
             super(QDockWidget,self).__init__(titol,parent)
-            wid = classeWidOrig(parent)
-            self.setWidget(wid)
-        atributs = {'__init__':init_classe,**self.kwargs}
+            self.wid = classeWidOrig(parent)
+            self.setWidget(self.wid)
+        def showEvent(self,event):
+            super(QDockWidget,self).showEvent(event)
+            # tot això no hauria de caldre, però no funcionava :(
+            self.wid.show()
+            if hasattr(self,'mida'): 
+                self.setMinimumSize(self.midaMin)
+                self.setMaximumSize(self.midaMax)
+                self.resize(self.mida)
+        def hideEvent(self,event):
+            # Això tampoc hauria de caldre
+            self.mida = self.size()
+            self.midaMin = self.minimumSize()
+            self.midaMax = self.maximumSize()
+            super(QDockWidget,self).hideEvent(event)
+        atributs = {'__init__':init_classe, 'showEvent':showEvent, 'hideEvent':hideEvent,**self.kwargs}
 
         # type permet construir una classe. 
         # Com a primer argument li passem el nom que tindrà aquesta (com a str)
