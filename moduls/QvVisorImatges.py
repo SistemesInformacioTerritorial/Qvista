@@ -1,8 +1,5 @@
 import sys, os, glob
 from moduls.QvImports import *
-from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QHBoxLayout, QPushButton
-from PyQt5.QtGui import QIcon, QPixmap
-
 class QVViewer(QWidget):
 
     def __init__(self, carpeta):
@@ -11,7 +8,7 @@ class QVViewer(QWidget):
         self.carpeta = carpeta
         self.left = 100
         self.top = 100
-        self.width = 1000
+        self.width = 1100
         self.height = 800
         self.indexImatge = 0
         # self.carpeta = 'd:/imatgesQGIS/[%igds_text_string%]/'
@@ -26,16 +23,19 @@ class QVViewer(QWidget):
         self.setMaximumHeight(self.height)
     
         # Create widget
-        layout = QHBoxLayout()
+        layout = QVBoxLayout()
+        layoutBotons = QHBoxLayout()
+
         self.setLayout(layout)
         self.label = QLabel(self)
         bEndavant = QPushButton('endavant')
         bEnrrera = QPushButton('enrrera')
         bEndavant.clicked.connect(self.endavant)
         bEnrrera.clicked.connect(self.enrrera)
+        layout.addLayout(layoutBotons)
         layout.addWidget(self.label)
-        layout.addWidget(bEnrrera)
-        layout.addWidget(bEndavant)
+        layoutBotons.addWidget(bEnrrera)
+        layoutBotons.addWidget(bEndavant)
         llistaFitxers=os.listdir(self.carpeta)
         self.llistaImatges=[]
         for fitxer in llistaFitxers:
