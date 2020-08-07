@@ -1,4 +1,4 @@
-import sys, os, glob
+isorimport sys, os, glob
 from moduls.QvImports import *
 class QVViewer(QWidget):
 
@@ -17,7 +17,7 @@ class QVViewer(QWidget):
 
     
     def initUI(self):
-        self.setWindowTitle(self.carpeta)
+        self.setWindowTitle(self.title+' '+self.carpeta)
         self.setGeometry(self.left, self.top, self.width, self.height)
         self.setMaximumWidth(self.width)
         self.setMaximumHeight(self.height)
@@ -27,6 +27,7 @@ class QVViewer(QWidget):
         layoutBotons = QHBoxLayout()
 
         self.setLayout(layout)
+        
         self.label = QLabel(self)
         bEndavant = QPushButton('endavant')
         bEnrrera = QPushButton('enrrera')
