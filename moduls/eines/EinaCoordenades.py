@@ -173,6 +173,12 @@ class EinaCoordenades(QWidget):
         self.canvas.scene().removeItem(self.tool.m1)
         #self.tool.m1.hide()
 
+    def showEvent(self,event):
+        super().showEvent(event)
+        self.canvas.setMapTool(self.tool)
+        self.canvas.scene().addItem(self.tool.m1)
+
+
 
         
 if __name__ == "__main__":
