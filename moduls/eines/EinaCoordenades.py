@@ -108,9 +108,6 @@ class EinaCoordenades(QWidget):
         lay.addLayout(lay2)
         lay.addLayout(lay3)
 
-        sistemaCoords = canvas.mapSettings().destinationCrs().authid()
-        print(sistemaCoords)
-
         def showXY(p): 
             if self.nova:
                 sistemaCoords = canvas.mapSettings().destinationCrs().authid()
@@ -143,9 +140,6 @@ class EinaCoordenades(QWidget):
                 self.leYcoord3.setText(y3)
                 self.text3 = x3 + ", " + y3
         
-        def canvasPressEvent(self,e):
-            print("hola")
-        
         self.canvas.xyCoordinates.connect(showXY)
 
         class PointTool(QgsMapTool):   
@@ -171,14 +165,11 @@ class EinaCoordenades(QWidget):
 
     def hideEvent(self,event):
         super().hideEvent(event)
-        print("sortir")
         self.canvas.unsetMapTool(self.tool)
         self.canvas.scene().removeItem(self.tool.m1)
-        #self.tool.m1.hide()
 
     def showEvent(self,event):
         super().showEvent(event)
-        print("show")
         self.canvas.setMapTool(self.tool)
 
         
