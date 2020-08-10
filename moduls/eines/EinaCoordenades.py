@@ -110,7 +110,10 @@ class EinaCoordenades(QWidget):
 
         def showXY(p): 
             if self.nova:
-                sistemaCoords = canvas.mapSettings().destinationCrs().authid()
+                try:
+                    sistemaCoords = self.canvas.mapSettings().destinationCrs().authid()
+                except:
+                    print("coords malament")
                 
                 if sistemaCoords != "EPSG:25831":
                     self.transformacio = QgsCoordinateTransform(QgsCoordinateReferenceSystem(sistemaCoords), 
