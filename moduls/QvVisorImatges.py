@@ -67,6 +67,7 @@ class QVViewer(QWidget):
         self.layout.addWidget(bEnrrera)
         self.layout.addWidget(self.scrollArea)
         self.layout.addWidget(bEndavant)
+        self.installEventFilter(self)
 
         llistaFitxers=os.listdir(self.carpeta)
         self.llistaImatges=[]
@@ -85,6 +86,23 @@ class QVViewer(QWidget):
         # print ('Argument List:', str(sys.argv))
 
         self.resize(self.imageLabel.width()+229,self.imageLabel.height()+30)
+
+    def eventFilter(self, obj, event):
+        if event.type() == 51:
+            self.keyPressEvent(event)
+        return False        
+
+    def keyPressEvent(self, eventQKeyEvent):
+        key = eventQKeyEvent.key()
+        if key == 16777234:
+            # print ('Izq')
+            self.enrrera()
+        if key == 16777236:
+            # print ('dere')
+            self.endavant()
+
+
+
 
     def createActions(self):
         self.printAct = QAction("&Print...", self, shortcut="Ctrl+P", enabled=True, triggered=self.print_)
