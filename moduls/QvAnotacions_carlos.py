@@ -47,13 +47,7 @@ class QvTextAnnotationDialog(qtWdg.QDialog):
             self.position.setCheckState(qtCor.Qt.Unchecked)
 
         # Texto plano de la nota
-        
-        # JNB
-        aa= self.item.annotation().document().toPlainText()
-        
-        bb=aa.replace('\n','<br>')
-        # self.text = qtWdg.QTextEdit(self.item.annotation().document().toPlainText(), self)
-        self.text = qtWdg.QTextEdit(bb, self)
+        self.text = qtWdg.QTextEdit(self.item.annotation().document().toPlainText(), self)
         self.text.setAcceptRichText(False)
 
         # Botones
@@ -75,7 +69,7 @@ class QvTextAnnotationDialog(qtWdg.QDialog):
         self.layout.addRow(self.buttons)
 
     def accept(self):
-        # javier
+        # carlos
         layerId = self.layers.currentData()
         if layerId:
             layer = self.llegenda.project.mapLayer(layerId)
@@ -84,41 +78,6 @@ class QvTextAnnotationDialog(qtWdg.QDialog):
         self.item.annotation().setMapLayer(layer)
         self.item.annotation().setHasFixedMapPosition(self.position.isChecked())
         self.item.annotation().document().setPlainText(self.text.toPlainText())
-
-        # JNB
-        # color marco
-        self.item.annotation().fillSymbol().symbolLayer(0).setStrokeColor(qtGui.QColor(0, 0, 255))
-        # color perimetro simbolo
-        self.item.annotation().markerSymbol().symbolLayer(0).setStrokeColor(qtGui.QColor(255, 255, 0))  #verde 
-
-        # simbolo
-        color= 'blue'
-        # 'circle' 'square' 'cross' 'rectangle' 'diamond' 'pentagon' 'triangle' 
-        # 'equilateral_triangle' 'star' 'regular_star' 'arrow' 'filled_arrowhead' 'x'
-        forma= 'diamond'     
-        outlinewidth = '0.5'   # grueso linea contorno simbolo
-        symbol = qgCor.QgsMarkerSymbol.createSimple({'name': forma, 'color': color, 'outline_width':outlinewidth})
-        self.item.annotation().setMarkerSymbol(symbol)
-        self.item.annotation().markerSymbol().setSize(5)
-        
-        # texto anotacion
-        doc = qtGui.QTextDocument()
-        el_html= '<p style="font-family: arial; background-color: #EAF4D9; font-weight: bold; font-size: 15px;">***</p>'
-        
-        label = qtWdg.QLabel()
-        label.setFont(qtGui.QFont("arial", 15, qtGui.QFont.Bold))
-        label.setText(self.text.toPlainText())
-        label.adjustSize()
-        self.item.annotation().setFrameSizeMm(qtCor.QSizeF(label.widthMM()+3 , label.heightMM()+3 ))
-        self.item.annotation().setFrameOffsetFromReferencePointMm(qtCor.QPointF(5, 10))
-
-        el_html1=el_html.replace('***', self.text.toPlainText())
-        el_html2=el_html1.replace('\n', '<br>')
-
-        
-        doc.setHtml(el_html2)
-        self.item.annotation().setDocument(doc)
-        
 
         
         def cleanNameLayer(layer):
