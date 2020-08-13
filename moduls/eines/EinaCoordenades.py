@@ -45,17 +45,10 @@ class EinaCoordenades(QWidget):
 
         lblnom1 = QLabel()
         lblnom1.setText("ETRS 89")
-        lblnom1.setToolTip("EPSG:25831:  ETRS89 / UTM zone 31N")        
-
         lblnom2 = QLabel()
         lblnom2.setText("Lat/Long")
-        lblnom2.setToolTip("EPSG:4326: WGS 84 -- WGS84 - World Geodetic System 1984, used in GPS")
-
-        
         lblnom3 = QLabel()
         lblnom3.setText("TRESOR")
-        lblnom3.setToolTip("Coordenades 'retallades' AJB basades en EPSG:25831")
-
 
         self.leXcoord1 = QLineEdit()
         self.leXcoord1.setReadOnly(True)
@@ -117,32 +110,38 @@ class EinaCoordenades(QWidget):
 
         def showXY(p): 
             if self.nova:
+                try:
+                    sistemaCoords = self.canvas.mapSettings().destinationCrs().authid()
+                except:
+                    print("coords malament")
+                
+                if sistemaCoords != "EPSG:25831":
+                    self.transformacio = QgsCoordinateTransform(QgsCoordinateReferenceSystem(sistemaCoords), 
+                        QgsCoordinateReferenceSystem("EPSG:25831"), 
+                        QgsProject.instance())
+                    p=self.transformacio.transform(p)
                 x1=str("%.3f" % p.x())
                 y1=str("%.3f" % p.y())
                 self.leXcoord1.setText(x1)
                 self.leYcoord1.setText(y1)
                 self.text1 = x1 + ", " + y1
 
-                self.transformacio = QgsCoordinateTransform(QgsCoordinateReferenceSystem("EPSG:25831"), 
-                        QgsCoordinateReferenceSystem("EPSG:4326"), 
-                        QgsProject.instance())
-                self.puntTransformat=self.transformacio.transform(p)
-                y = str("%.7f" % self.puntTransformat.x())
-                x = str("%.7f" % self.puntTransformat.y())
-                self.leXcoord2.setText(x)
-                self.leYcoord2.setText(y)
-                self.text2 = x + ", " + y
+                if sistemaCoords != "EPSG:4326":
+                    self.transformacio = QgsCoordinateTransform(QgsCoordinateReferenceSystem(sistemaCoords), 
+                            QgsCoordinateReferenceSystem("EPSG:4326"), 
+                            QgsProject.instance())
+                    p=self.transformacio.transform(p)
+                y2 = str("%.7f" % p.x())
+                x2 = str("%.7f" % p.y())
+                self.leXcoord2.setText(x2)
+                self.leYcoord2.setText(y2)
+                self.text2 = x2 + ", " + y2
 
-                x= str(int((float(x1) *1000 - 400000000)))
-                y= str(int((float(y1) *1000  -4500000000)))
-
-              
-                self.leXcoord3.setText(x)
-                self.leYcoord3.setText(y)
-                self.text3 = x + ", " + y
-        
-        def canvasPressEvent(self,e):
-            print("hola")
+                x3= str(int((float(x1) - 400000) * 1000))
+                y3= str(int((float(y1) - 4500000) * 1000))
+                self.leXcoord3.setText(x3)
+                self.leYcoord3.setText(y3)
+                self.text3 = x3 + ", " + y3
         
         self.canvas.xyCoordinates.connect(showXY)
 
@@ -171,14 +170,10 @@ class EinaCoordenades(QWidget):
         super().hideEvent(event)
         self.canvas.unsetMapTool(self.tool)
         self.canvas.scene().removeItem(self.tool.m1)
-        #self.tool.m1.hide()
 
     def showEvent(self,event):
         super().showEvent(event)
         self.canvas.setMapTool(self.tool)
-        self.canvas.scene().addItem(self.tool.m1)
-
-
 
         
 if __name__ == "__main__":
