@@ -3,6 +3,7 @@ from moduls.QvImports import *
 from moduls.QvPushButton import QvPushButton
 from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QHBoxLayout, QPushButton
 from PyQt5.QtGui import QIcon, QPixmap
+from PyQt5.QtPrintSupport import QPrintDialog, QPrinter
 
 
 import qgis.core as qgCor
@@ -16,6 +17,7 @@ class QVViewer(QWidget):
     def __init__(self, carpeta):
         super().__init__()
         self.scaleFactor = 1.0
+        self.printer = QPrinter()
         self.title = 'PyQt5 image - pythonspot.com'
         self.carpeta = carpeta
         self.left = 100
@@ -78,7 +80,7 @@ class QVViewer(QWidget):
         self.normalSize()
         
         self.show()
-        self.setWindowTitle(self.cual+'   '+ str(self.pixmap.width())+' x '+str(self.pixmap.height())+'      zoom: ' + str(round(self.scaleFactor,2))) 
+        self.setWindowTitle( 'Visor Imatges           zoom:  ' + str(round(self.scaleFactor,2)*100)+ " %") 
         # print ('Number of arguments:', len(sys.argv), 'arguments.')
         # print ('Argument List:', str(sys.argv))
 
@@ -90,14 +92,21 @@ class QVViewer(QWidget):
         self.zoomInAct = QAction("Zoom &In (25%)", self, shortcut="Ctrl++", enabled=True, triggered=self.zoomIn)
         self.zoomOutAct = QAction("Zoom &Out (25%)", self, shortcut="Ctrl+-", enabled=True, triggered=self.zoomOut)
         self.normalSizeAct = QAction("&Normal Size", self, shortcut="Ctrl+S", enabled=True, triggered=self.normalSize)
+        self.infoAct = QAction("&Info", self, shortcut="F1", enabled=True, triggered=self.info)
+        
 
     def menu_bar (self) : 
         self.menuBar = qtWdg.QMenuBar (self)
-        self.fileMenu = self.menuBar.addMenu ("View")
+        self.menuBar.setToolTip("més accions")
+        
+        self.fileMenu = self.menuBar.addMenu (QIcon(os.path.join(imatgesDir,'qv_more.png')),"")
         self.fileMenu.addAction(self.exitAct)
         self.fileMenu.addAction(self.zoomInAct)
         self.fileMenu.addAction(self.zoomOutAct)
         self.fileMenu.addAction(self.normalSizeAct)
+        self.fileMenu.addAction(self.infoAct)
+        self.fileMenu.addAction(self.printAct)
+        
         self.menuBar.show()
    
     def print_(self):
@@ -122,7 +131,7 @@ class QVViewer(QWidget):
         self.imageLabel.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Ignored)
         self.imageLabel.adjustSize()
         self.scaleFactor = 1.0
-        self.setWindowTitle(self.cual+'   '+ str(self.pixmap.width())+' x '+str(self.pixmap.height())+'      zoom: ' + str(round(self.scaleFactor,2)))   
+        self.setWindowTitle( 'Visor Imatges           zoom:  ' + str(round(self.scaleFactor,2)*100)+ " %")   
 
 
     def scaleImage(self, factor):
@@ -138,7 +147,7 @@ class QVViewer(QWidget):
         self.zoomInAct.setEnabled(self.scaleFactor < 4.0)
         self.zoomOutAct.setEnabled(self.scaleFactor > 0.25)        
 
-        self.setWindowTitle(self.cual+'   '+ str(self.pixmap.width())+' x '+str(self.pixmap.height())+'      zoom: ' + str(round(self.scaleFactor,2)))     
+        self.setWindowTitle( 'Visor Imatges           zoom:  ' + str(round(self.scaleFactor,2)*100)+ " %")     
 
     def zoomIn(self):
         self.scaleImage(1.25)
@@ -159,7 +168,7 @@ class QVViewer(QWidget):
         self.imageLabel.setPixmap(self.pixmap)
         self.imageLabel.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Ignored)
         self.normalSize()
-        self.setWindowTitle(self.cual+'   '+ str(self.pixmap.width())+' x '+str(self.pixmap.height())+'      zoom: ' + str(round(self.scaleFactor,2)))   
+        self.setWindowTitle( 'Visor Imatges           zoom:  ' + str(round(self.scaleFactor,2)*100)+ " %")   
         self.resize(self.imageLabel.width()+229,self.imageLabel.height()+30)
 
     def enrrera(self):
@@ -170,11 +179,22 @@ class QVViewer(QWidget):
         self.imageLabel.setPixmap(self.pixmap)
         self.imageLabel.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Ignored)
         self.normalSize()
-        self.setWindowTitle(self.cual+'   '+ str(self.pixmap.width())+' x '+str(self.pixmap.height())+'      zoom: ' + str(round(self.scaleFactor,2)))           
+        self.setWindowTitle( 'Visor Imatges           zoom:  ' + str(round(self.scaleFactor,2)*100)+ " %")           
         self.resize(self.imageLabel.width()+229,self.imageLabel.height()+30)
     def adjustScrollBar(self, scrollBar, factor):
         scrollBar.setValue(int(factor * scrollBar.value()
                                + ((factor - 1) * scrollBar.pageStep() / 2)))
+
+    def info(self):
+
+        info_carpeta= "<b>Carpeta:  </b>"+ self.carpeta +"<br>"
+        fitxer=  "<b>Fitxer:  </b>" + self.cual +"<br>" 
+        tamany = "<b>Size: </b>" +str(self.pixmap.width())+' x '+str(self.pixmap.height())
+        QMessageBox.about(self, "Info ",
+                info_carpeta+ '  '+ fitxer +'  '+ tamany
+        )
+                          
+                          
 
 if __name__ == "__main__":
     with qgisapp() as app:
