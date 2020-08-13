@@ -1,13 +1,9 @@
-isorimport sys, os, glob
+import sys, os, glob
 from moduls.QvImports import *
-<<<<<<< HEAD
 from moduls.QvPushButton import QvPushButton
 from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QHBoxLayout, QPushButton
 from PyQt5.QtGui import QIcon, QPixmap
 
-=======
-class QVViewer(QWidget):
->>>>>>> 6d51f4247fe717806c3383367985500e968d77e7
 
 import qgis.core as qgCor
 import qgis.gui as qgGui
@@ -19,12 +15,8 @@ import qgis.PyQt.QtCore as qtCor
 class QVViewer(QWidget):
     def __init__(self, carpeta):
         super().__init__()
-<<<<<<< HEAD
         self.scaleFactor = 1.0
         self.title = 'PyQt5 image - pythonspot.com'
-=======
-        self.title = "Visor d'imatges"
->>>>>>> 6d51f4247fe717806c3383367985500e968d77e7
         self.carpeta = carpeta
         self.left = 100
         self.top = 100
@@ -38,12 +30,13 @@ class QVViewer(QWidget):
 
     def initUI(self):
         self.setWindowTitle(self.title+' '+self.carpeta)
-        self.setGeometry(self.left, self.top, self.width, self.height)
+        # self.setGeometry(self.left, self.top, self.width, self.height)
+
+
         self.setMaximumWidth(self.width)
         self.setMaximumHeight(self.height)
 
         # Create widget
-<<<<<<< HEAD
         self.layout = QHBoxLayout()
         self.setLayout(self.layout)
     
@@ -73,46 +66,23 @@ class QVViewer(QWidget):
         self.layout.addWidget(self.scrollArea)
         self.layout.addWidget(bEndavant)
 
-=======
-        layout = QVBoxLayout()
-        layoutBotons = QHBoxLayout()
-
-        self.setLayout(layout)
-        
-        self.label = QLabel(self)
-        bEndavant = QPushButton('endavant')
-        bEnrrera = QPushButton('enrrera')
-        bEndavant.clicked.connect(self.endavant)
-        bEnrrera.clicked.connect(self.enrrera)
-        layout.addLayout(layoutBotons)
-        layout.addWidget(self.label)
-        layoutBotons.addWidget(bEnrrera)
-        layoutBotons.addWidget(bEndavant)
->>>>>>> 6d51f4247fe717806c3383367985500e968d77e7
         llistaFitxers=os.listdir(self.carpeta)
         self.llistaImatges=[]
         for fitxer in llistaFitxers:
             if fitxer.endswith(".jpg") or fitxer.endswith(".png") or fitxer.endswith(".bmp") or fitxer.endswith(".jpeg"):
                 self.llistaImatges.append(fitxer)
-<<<<<<< HEAD
         
         self.cual= self.carpeta+self.llistaImatges[self.indexImatge]
         self.pixmap = QPixmap(self.cual)
         self.imageLabel.setPixmap(self.pixmap)
         self.normalSize()
         
-=======
-        pixmap = QPixmap(self.carpeta+self.llistaImatges[self.indexImatge])
-        self.label.setPixmap(pixmap)
-        self.label.setMaximumWidth(self.width-10)
-        self.label.setMaximumHeight(self.height-10)
-        pixmap = self.resize(pixmap.width(),pixmap.height())
->>>>>>> 6d51f4247fe717806c3383367985500e968d77e7
         self.show()
         self.setWindowTitle(self.cual+'   '+ str(self.pixmap.width())+' x '+str(self.pixmap.height())+'      zoom: ' + str(round(self.scaleFactor,2))) 
         # print ('Number of arguments:', len(sys.argv), 'arguments.')
         # print ('Argument List:', str(sys.argv))
 
+        self.resize(self.imageLabel.width()+229,self.imageLabel.height()+30)
 
     def createActions(self):
         self.printAct = QAction("&Print...", self, shortcut="Ctrl+P", enabled=True, triggered=self.print_)
@@ -190,6 +160,7 @@ class QVViewer(QWidget):
         self.imageLabel.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Ignored)
         self.normalSize()
         self.setWindowTitle(self.cual+'   '+ str(self.pixmap.width())+' x '+str(self.pixmap.height())+'      zoom: ' + str(round(self.scaleFactor,2)))   
+        self.resize(self.imageLabel.width()+229,self.imageLabel.height()+30)
 
     def enrrera(self):
         if self.indexImatge > 0:
@@ -200,7 +171,7 @@ class QVViewer(QWidget):
         self.imageLabel.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Ignored)
         self.normalSize()
         self.setWindowTitle(self.cual+'   '+ str(self.pixmap.width())+' x '+str(self.pixmap.height())+'      zoom: ' + str(round(self.scaleFactor,2)))           
-
+        self.resize(self.imageLabel.width()+229,self.imageLabel.height()+30)
     def adjustScrollBar(self, scrollBar, factor):
         scrollBar.setValue(int(factor * scrollBar.value()
                                + ((factor - 1) * scrollBar.pageStep() / 2)))
