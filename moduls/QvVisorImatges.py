@@ -30,8 +30,21 @@ class QVViewer(QWidget):
         self.menu_bar()
 
     def initUI(self):
-        self.setStyleSheet(" QMenuBar {background-color:transparent;color:rgb(0,0,0);}")
-        self.setWindowTitle(self.title+' '+self.carpeta)
+        self.setStyleSheet("""
+            QMenuBar {
+                background-color:transparent;
+                color:rgb(0,0,0);
+            }
+            QPushButton {
+                /* background-color:rgb(255,0,0); */
+                background-color:transparent;
+                color:rgb(0,0,0);
+            }
+
+            """)
+        # self.setWindowTitle(self.title+' '+self.carpeta)
+        
+        
         self.setMaximumWidth(self.width)
         self.setMaximumHeight(self.height)
         # Create widget
@@ -50,14 +63,12 @@ class QVViewer(QWidget):
         icon_anterior=QIcon(os.path.join(imatgesDir,'qv_vista_anteriorG.png'))
         bEnrrera = QPushButton(icon_anterior,"")
         bEnrrera.setIconSize(QSize(50,50))
-        bEnrrera.setStyleSheet('background-color:transparent ;color:#000000;')  
         bEnrrera.clicked.connect(self.enrrera)
 
         icon_seguent=QIcon(os.path.join(imatgesDir,'qv_vista_seguentG.png'))
         bEndavant = QPushButton(icon_seguent,"")
         bEndavant.setIconSize(QSize(50,50));
         bEndavant.clicked.connect(self.endavant)
-        bEndavant.setStyleSheet('background-color:transparent ;color:#000000;')  
 
         self.layout.addWidget(bEnrrera)
         self.layout.addWidget(self.scrollArea)
@@ -76,7 +87,8 @@ class QVViewer(QWidget):
         self.normalSize()
         
         self.show()
-        self.setWindowTitle( 'Zoom:  ' + str(round(self.scaleFactor,2)*100)+ " %    "+str(self.indexImatge +1)+" de "+ str(len(self.llistaImatges)))   
+        self.setWindowTitle('Zoom: {} %   {} de {}'.format(str(round(self.scaleFactor,2)*100),str(self.indexImatge +1),str(len(self.llistaImatges))))
+        
         self.resize(self.imageLabel.width()+229,self.imageLabel.height()+30)
 
     def eventFilter(self, obj, event):
@@ -91,7 +103,20 @@ class QVViewer(QWidget):
         if key == 16777236:   # flecha derecha
             self.endavant()
 
+    def openDirectory(self):
+        options = QFileDialog.Options()
+        options |= QFileDialog.DontUseNativeDialog
+        direc = QFileDialog.getExistingDirectory(self,"Select a directory")
+        
+        if direc:
+            direc= direc+"/"
+            self.close()
+            self.__init__(direc)
+            pass
+
+
     def createActions(self):
+        self.openDirAct = QAction("&Open directory...", self, shortcut="Ctrl+O", triggered=self.openDirectory)
         self.printAct = QAction("&Print...", self, shortcut="Ctrl+P", enabled=True, triggered=self.print_)
         self.exitAct = QAction("E&xit", self, shortcut="Ctrl+Q", triggered=self.close)
         self.zoomInAct = QAction("Zoom &In (25%)", self, shortcut="Ctrl++", enabled=True, triggered=self.zoomIn)
@@ -103,8 +128,12 @@ class QVViewer(QWidget):
         self.menuBar = qtWdg.QMenuBar (self)
         self.menuBar.setToolTip("més accions")
         self.menuBar.resize(40,30)
+        self.menuBar.move(10,10)
         self.fileMenu = self.menuBar.addMenu (QIcon(os.path.join(imatgesDir,'qv_more.png')),"")
+        
         self.fileMenu.addSeparator()
+        
+        self.fileMenu.addAction(self.openDirAct)
         self.fileMenu.addAction(self.zoomInAct)
         self.fileMenu.addAction(self.zoomOutAct)
         self.fileMenu.addAction(self.normalSizeAct)
@@ -138,7 +167,7 @@ class QVViewer(QWidget):
         self.imageLabel.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Ignored)
         self.imageLabel.adjustSize()
         self.scaleFactor = 1.0
-        self.setWindowTitle( 'Zoom:  ' + str(round(self.scaleFactor,2)*100)+ " %    "+str(self.indexImatge +1)+" de "+ str(len(self.llistaImatges)))    
+        self.setWindowTitle('Zoom: {} %   {} de {}'.format(str(round(self.scaleFactor,2)*100),str(self.indexImatge +1),str(len(self.llistaImatges))))    
 
     def scaleImage(self, factor):
         self.scaleFactor *= factor
@@ -153,7 +182,7 @@ class QVViewer(QWidget):
         self.zoomInAct.setEnabled(self.scaleFactor < 4.0)
         self.zoomOutAct.setEnabled(self.scaleFactor > 0.25)        
 
-        self.setWindowTitle( 'Zoom:  ' + str(round(self.scaleFactor,2)*100)+ " %    "+str(self.indexImatge +1)+" de "+ str(len(self.llistaImatges)))   
+        self.setWindowTitle('Zoom: {} %   {} de {}'.format(str(round(self.scaleFactor,2)*100),str(self.indexImatge +1),str(len(self.llistaImatges))))   
 
     def zoomIn(self):
         self.scaleImage(1.25)
@@ -176,8 +205,9 @@ class QVViewer(QWidget):
         self.imageLabel.setPixmap(self.pixmap)
         self.imageLabel.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Ignored)
         self.normalSize()
-        self.setWindowTitle( 'Zoom:  ' + str(round(self.scaleFactor,2)*100)+ " %    "+str(self.indexImatge +1)+" de "+ str(len(self.llistaImatges)))   
+        self.setWindowTitle('Zoom: {} %   {} de {}'.format(str(round(self.scaleFactor,2)*100),str(self.indexImatge +1),str(len(self.llistaImatges))))   
         self.resize(self.imageLabel.width()+229,self.imageLabel.height()+30)
+        # self.resize(self.imageLabel.width(),self.imageLabel.height())
 
     def enrrera(self):
         if self.indexImatge > 0:
@@ -189,7 +219,7 @@ class QVViewer(QWidget):
         self.imageLabel.setPixmap(self.pixmap)
         self.imageLabel.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Ignored)
         self.normalSize()
-        self.setWindowTitle( 'Zoom:  ' + str(round(self.scaleFactor,2)*100)+ " %    "+str(self.indexImatge +1)+" de "+ str(len(self.llistaImatges)))             
+        self.setWindowTitle('Zoom: {} %   {} de {}'.format(str(round(self.scaleFactor,2)*100),str(self.indexImatge +1),str(len(self.llistaImatges))))             
         self.resize(self.imageLabel.width()+229,self.imageLabel.height()+30)
 
     def adjustScrollBar(self, scrollBar, factor):
@@ -208,5 +238,6 @@ class QVViewer(QWidget):
 
 if __name__ == "__main__":
     with qgisapp() as app:
-        viewer = QVViewer('d:/tmp/fotos/')
+        # viewer = QVViewer('d:/tmp/fotos/')
+        viewer = QVViewer('d:/tmp/')
         viewer.show()
