@@ -1,11 +1,9 @@
-import sys, os, glob
+import os
 from moduls.QvImports import *
-from moduls.QvPushButton import QvPushButton
-from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QHBoxLayout, QPushButton
+from PyQt5.QtWidgets import QWidget, QLabel, QHBoxLayout, QPushButton
 from PyQt5.QtGui import QIcon, QPixmap
+
 from PyQt5.QtPrintSupport import QPrintDialog, QPrinter
-
-
 import qgis.core as qgCor
 import qgis.gui as qgGui
 import qgis.PyQt.QtWidgets as qtWdg
@@ -24,6 +22,7 @@ class QVViewer(QWidget):
         self.top = 100
         self.width = 1100
         self.height = 800
+
         self.indexImatge = 0
         self.initUI()
 
@@ -31,13 +30,10 @@ class QVViewer(QWidget):
         self.menu_bar()
 
     def initUI(self):
+        self.setStyleSheet(" QMenuBar {background-color:transparent;color:rgb(0,0,0);}")
         self.setWindowTitle(self.title+' '+self.carpeta)
-        # self.setGeometry(self.left, self.top, self.width, self.height)
-
-
         self.setMaximumWidth(self.width)
         self.setMaximumHeight(self.height)
-
         # Create widget
         self.layout = QHBoxLayout()
         self.setLayout(self.layout)
@@ -47,20 +43,19 @@ class QVViewer(QWidget):
         self.imageLabel.setScaledContents(True)
 
         self.scrollArea = QScrollArea()
-        # self.scrollArea.setBackgroundRole(QPalette.Dark)
         self.scrollArea.setWidget(self.imageLabel)
         self.scrollArea.setVisible(True)
 
         # BOTONES ADELANTE/ATRAS
         icon_anterior=QIcon(os.path.join(imatgesDir,'qv_vista_anteriorG.png'))
         bEnrrera = QPushButton(icon_anterior,"")
-        bEnrrera.setIconSize(QSize(80,80))
+        bEnrrera.setIconSize(QSize(50,50))
         bEnrrera.setStyleSheet('background-color:transparent ;color:#000000;')  
         bEnrrera.clicked.connect(self.enrrera)
 
         icon_seguent=QIcon(os.path.join(imatgesDir,'qv_vista_seguentG.png'))
         bEndavant = QPushButton(icon_seguent,"")
-        bEndavant.setIconSize(QSize(80,80));
+        bEndavant.setIconSize(QSize(50,50));
         bEndavant.clicked.connect(self.endavant)
         bEndavant.setStyleSheet('background-color:transparent ;color:#000000;')  
 
@@ -81,10 +76,7 @@ class QVViewer(QWidget):
         self.normalSize()
         
         self.show()
-        self.setWindowTitle( 'Visor Imatges           zoom:  ' + str(round(self.scaleFactor,2)*100)+ " %") 
-        # print ('Number of arguments:', len(sys.argv), 'arguments.')
-        # print ('Argument List:', str(sys.argv))
-
+        self.setWindowTitle( 'Zoom:  ' + str(round(self.scaleFactor,2)*100)+ " %    "+str(self.indexImatge +1)+" de "+ str(len(self.llistaImatges)))   
         self.resize(self.imageLabel.width()+229,self.imageLabel.height()+30)
 
     def eventFilter(self, obj, event):
@@ -94,15 +86,10 @@ class QVViewer(QWidget):
 
     def keyPressEvent(self, eventQKeyEvent):
         key = eventQKeyEvent.key()
-        if key == 16777234:
-            # print ('Izq')
+        if key == 16777234:   # flecha izquierda
             self.enrrera()
-        if key == 16777236:
-            # print ('dere')
+        if key == 16777236:   # flecha derecha
             self.endavant()
-
-
-
 
     def createActions(self):
         self.printAct = QAction("&Print...", self, shortcut="Ctrl+P", enabled=True, triggered=self.print_)
@@ -112,18 +99,19 @@ class QVViewer(QWidget):
         self.normalSizeAct = QAction("&Normal Size", self, shortcut="Ctrl+S", enabled=True, triggered=self.normalSize)
         self.infoAct = QAction("&Info", self, shortcut="F1", enabled=True, triggered=self.info)
         
-
     def menu_bar (self) : 
         self.menuBar = qtWdg.QMenuBar (self)
         self.menuBar.setToolTip("més accions")
-        
+        self.menuBar.resize(40,30)
         self.fileMenu = self.menuBar.addMenu (QIcon(os.path.join(imatgesDir,'qv_more.png')),"")
-        self.fileMenu.addAction(self.exitAct)
+        self.fileMenu.addSeparator()
         self.fileMenu.addAction(self.zoomInAct)
         self.fileMenu.addAction(self.zoomOutAct)
         self.fileMenu.addAction(self.normalSizeAct)
+        self.fileMenu.addSeparator()
         self.fileMenu.addAction(self.infoAct)
         self.fileMenu.addAction(self.printAct)
+        self.fileMenu.addAction(self.exitAct)
         
         self.menuBar.show()
    
@@ -140,6 +128,7 @@ class QVViewer(QWidget):
     
     def zoomIn(self):
         self.scaleImage(1.25)
+
     def zoomOut(self):
         self.scaleImage(0.8)
 
@@ -149,8 +138,7 @@ class QVViewer(QWidget):
         self.imageLabel.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Ignored)
         self.imageLabel.adjustSize()
         self.scaleFactor = 1.0
-        self.setWindowTitle( 'Visor Imatges           zoom:  ' + str(round(self.scaleFactor,2)*100)+ " %")   
-
+        self.setWindowTitle( 'Zoom:  ' + str(round(self.scaleFactor,2)*100)+ " %    "+str(self.indexImatge +1)+" de "+ str(len(self.llistaImatges)))    
 
     def scaleImage(self, factor):
         self.scaleFactor *= factor
@@ -165,7 +153,7 @@ class QVViewer(QWidget):
         self.zoomInAct.setEnabled(self.scaleFactor < 4.0)
         self.zoomOutAct.setEnabled(self.scaleFactor > 0.25)        
 
-        self.setWindowTitle( 'Visor Imatges           zoom:  ' + str(round(self.scaleFactor,2)*100)+ " %")     
+        self.setWindowTitle( 'Zoom:  ' + str(round(self.scaleFactor,2)*100)+ " %    "+str(self.indexImatge +1)+" de "+ str(len(self.llistaImatges)))   
 
     def zoomIn(self):
         self.scaleImage(1.25)
@@ -179,34 +167,38 @@ class QVViewer(QWidget):
         self.normalSizeAct.setEnabled(not self.fitToWindowAct.isChecked())
 
     def endavant(self):
-        if self.indexImatge<=len(self.llistaImatges):
+        if self.indexImatge<len(self.llistaImatges)-1:
             self.indexImatge = self.indexImatge + 1
+        elif self.indexImatge ==len(self.llistaImatges)-1:
+            self.indexImatge=0
         self.cual= self.carpeta+self.llistaImatges[self.indexImatge]
         self.pixmap = QPixmap(self.cual)
         self.imageLabel.setPixmap(self.pixmap)
         self.imageLabel.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Ignored)
         self.normalSize()
-        self.setWindowTitle( 'Visor Imatges           zoom:  ' + str(round(self.scaleFactor,2)*100)+ " %")   
+        self.setWindowTitle( 'Zoom:  ' + str(round(self.scaleFactor,2)*100)+ " %    "+str(self.indexImatge +1)+" de "+ str(len(self.llistaImatges)))   
         self.resize(self.imageLabel.width()+229,self.imageLabel.height()+30)
 
     def enrrera(self):
         if self.indexImatge > 0:
             self.indexImatge = self.indexImatge - 1
+        elif self.indexImatge == 0:
+            self.indexImatge = len(self.llistaImatges)-1
         self.cual= self.carpeta+self.llistaImatges[self.indexImatge]
         self.pixmap = QPixmap(self.cual)
         self.imageLabel.setPixmap(self.pixmap)
         self.imageLabel.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Ignored)
         self.normalSize()
-        self.setWindowTitle( 'Visor Imatges           zoom:  ' + str(round(self.scaleFactor,2)*100)+ " %")           
+        self.setWindowTitle( 'Zoom:  ' + str(round(self.scaleFactor,2)*100)+ " %    "+str(self.indexImatge +1)+" de "+ str(len(self.llistaImatges)))             
         self.resize(self.imageLabel.width()+229,self.imageLabel.height()+30)
+
     def adjustScrollBar(self, scrollBar, factor):
         scrollBar.setValue(int(factor * scrollBar.value()
                                + ((factor - 1) * scrollBar.pageStep() / 2)))
 
     def info(self):
-
         info_carpeta= "<b>Carpeta:  </b>"+ self.carpeta +"<br>"
-        fitxer=  "<b>Fitxer:  </b>" + self.cual +"<br>" 
+        fitxer=  "<b>Fitxer:  </b>" + os.path.basename(self.cual) +"<br>" 
         tamany = "<b>Size: </b>" +str(self.pixmap.width())+' x '+str(self.pixmap.height())
         QMessageBox.about(self, "Info ",
                 info_carpeta+ '  '+ fitxer +'  '+ tamany
