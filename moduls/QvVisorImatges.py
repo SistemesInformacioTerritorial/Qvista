@@ -24,9 +24,10 @@ class QVViewer(QWidget):
         self.height = 800
 
         self.indexImatge = 0
+        self.createActions() 
         self.initUI()
 
-        self.createActions()        
+       
         self.menu_bar()
 
     def initUI(self):
@@ -81,6 +82,13 @@ class QVViewer(QWidget):
             if fitxer.endswith(".jpg") or fitxer.endswith(".png") or fitxer.endswith(".bmp") or fitxer.endswith(".jpeg"):
                 self.llistaImatges.append(fitxer)
         
+        if len(self.llistaImatges) == 0:
+            self.zoomInAct.setEnabled(False)    
+            self.printAct.setEnabled(False)  
+            self.info1()
+            self.show()
+            return
+            
         self.cual= self.carpeta+self.llistaImatges[self.indexImatge]
         self.pixmap = QPixmap(self.cual)
         self.imageLabel.setPixmap(self.pixmap)
@@ -104,15 +112,16 @@ class QVViewer(QWidget):
             self.endavant()
 
     def openDirectory(self):
-        options = QFileDialog.Options()
-        options |= QFileDialog.DontUseNativeDialog
-        direc = QFileDialog.getExistingDirectory(self,"Select a directory")
-        
+
+        Mydialog = QFileDialog() 
+        Mydialog.resize(300,400)
+        direc = Mydialog.getExistingDirectory(self, "Selecciona carpeta",
+                                                "/home",
+                                                QFileDialog.ShowDirsOnly )
         if direc:
             direc= direc+"/"
             self.close()
             self.__init__(direc)
-            pass
 
 
     def createActions(self):
@@ -131,16 +140,18 @@ class QVViewer(QWidget):
         self.menuBar.move(10,10)
         self.fileMenu = self.menuBar.addMenu (QIcon(os.path.join(imatgesDir,'qv_more.png')),"")
         
-        self.fileMenu.addSeparator()
+        
         
         self.fileMenu.addAction(self.openDirAct)
+        self.fileMenu.addAction(self.exitAct)
+        self.fileMenu.addSeparator()
         self.fileMenu.addAction(self.zoomInAct)
         self.fileMenu.addAction(self.zoomOutAct)
         self.fileMenu.addAction(self.normalSizeAct)
         self.fileMenu.addSeparator()
         self.fileMenu.addAction(self.infoAct)
         self.fileMenu.addAction(self.printAct)
-        self.fileMenu.addAction(self.exitAct)
+
         
         self.menuBar.show()
    
@@ -233,6 +244,11 @@ class QVViewer(QWidget):
         QMessageBox.about(self, "Info ",
                 info_carpeta+ '  '+ fitxer +'  '+ tamany
         )
+
+    def info1(self):
+
+        QMessageBox.about(self, "Error ","Carpeta sin imagenes. ") 
+           
                           
                           
 
