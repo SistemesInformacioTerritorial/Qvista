@@ -12,6 +12,11 @@ import qgis.PyQt.QtCore as qtCor
 
 
 class QVViewer(QWidget):
+
+    
+
+
+
     def __init__(self, carpeta):
         super().__init__()
         self.scaleFactor = 1.0
@@ -26,6 +31,7 @@ class QVViewer(QWidget):
         self.indexImatge = 0
         self.createActions() 
         self.initUI()
+        
 
        
         self.menu_bar()
@@ -65,6 +71,8 @@ class QVViewer(QWidget):
         bEnrrera = QPushButton(icon_anterior,"")
         bEnrrera.setIconSize(QSize(50,50))
         bEnrrera.clicked.connect(self.enrrera)
+        
+        # bEnrrera.setEnabled(False)
 
         icon_seguent=QIcon(os.path.join(imatgesDir,'qv_vista_seguentG.png'))
         bEndavant = QPushButton(icon_seguent,"")
@@ -83,11 +91,18 @@ class QVViewer(QWidget):
                 self.llistaImatges.append(fitxer)
         
         if len(self.llistaImatges) == 0:
+            self.hayImagenes = False
             self.zoomInAct.setEnabled(False)    
+            self.zoomOutAct.setEnabled(False)
+            self.normalSizeAct.setEnabled(False)
             self.printAct.setEnabled(False)  
+            self.infoAct.setEnabled(False)
+            
             self.info1()
             self.show()
             return
+        else:
+            self.hayImagenes = True
             
         self.cual= self.carpeta+self.llistaImatges[self.indexImatge]
         self.pixmap = QPixmap(self.cual)
@@ -105,11 +120,19 @@ class QVViewer(QWidget):
         return False        
 
     def keyPressEvent(self, eventQKeyEvent):
-        key = eventQKeyEvent.key()
-        if key == 16777234:   # flecha izquierda
-            self.enrrera()
-        if key == 16777236:   # flecha derecha
-            self.endavant()
+        if self.hayImagenes == True:
+            key = eventQKeyEvent.key()
+            if key == 16777234:   # flecha izquierda
+                self.enrrera()
+            if key == 16777236:   # flecha derecha
+                self.endavant()
+
+        # key = eventQKeyEvent.key()
+            
+        # if key == 16777234 and self.hayImagenes == True:   # flecha izquierda
+        #     self.enrrera()
+        # if key == 16777236 and self.hayImagenes == True:   # flecha derecha
+        #     self.endavant()
 
     def openDirectory(self):
 
@@ -141,7 +164,6 @@ class QVViewer(QWidget):
         self.fileMenu = self.menuBar.addMenu (QIcon(os.path.join(imatgesDir,'qv_more.png')),"")
         
         
-        
         self.fileMenu.addAction(self.openDirAct)
         self.fileMenu.addAction(self.exitAct)
         self.fileMenu.addSeparator()
@@ -151,7 +173,6 @@ class QVViewer(QWidget):
         self.fileMenu.addSeparator()
         self.fileMenu.addAction(self.infoAct)
         self.fileMenu.addAction(self.printAct)
-
         
         self.menuBar.show()
    
@@ -207,6 +228,8 @@ class QVViewer(QWidget):
         self.normalSizeAct.setEnabled(not self.fitToWindowAct.isChecked())
 
     def endavant(self):
+        if self.hayImagenes == False:
+            return        
         if self.indexImatge<len(self.llistaImatges)-1:
             self.indexImatge = self.indexImatge + 1
         elif self.indexImatge ==len(self.llistaImatges)-1:
@@ -221,6 +244,8 @@ class QVViewer(QWidget):
         # self.resize(self.imageLabel.width(),self.imageLabel.height())
 
     def enrrera(self):
+        if self.hayImagenes == False:
+            return
         if self.indexImatge > 0:
             self.indexImatge = self.indexImatge - 1
         elif self.indexImatge == 0:
@@ -246,7 +271,6 @@ class QVViewer(QWidget):
         )
 
     def info1(self):
-
         QMessageBox.about(self, "Error ","Carpeta sin imagenes. ") 
            
                           
@@ -254,6 +278,6 @@ class QVViewer(QWidget):
 
 if __name__ == "__main__":
     with qgisapp() as app:
-        # viewer = QVViewer('d:/tmp/fotos/')
-        viewer = QVViewer('d:/tmp/')
+        viewer = QVViewer('d:/tmp/fotos/')
+        # viewer = QVViewer('d:/tmp/')
         viewer.show()
