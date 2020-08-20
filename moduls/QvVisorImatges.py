@@ -9,13 +9,10 @@ import qgis.gui as qgGui
 import qgis.PyQt.QtWidgets as qtWdg
 import qgis.PyQt.QtGui as qtGui
 import qgis.PyQt.QtCore as qtCor
+from datetime import datetime
 
 
 class QVViewer(QWidget):
-
-    
-
-
 
     def __init__(self, carpeta):
         super().__init__()
@@ -23,15 +20,15 @@ class QVViewer(QWidget):
         self.printer = QPrinter()
         self.title = 'PyQt5 image - pythonspot.com'
         self.carpeta = carpeta
-        self.left = 100
-        self.top = 100
-        self.width = 1100
-        self.height = 800
+        # self.left = 100
+        # self.top = 100
+        # self.width = 1100
+        # self.height = 800
 
         self.indexImatge = 0
         self.createActions() 
         self.initUI()
-        
+      
 
        
         self.menu_bar()
@@ -49,11 +46,9 @@ class QVViewer(QWidget):
             }
 
             """)
-        # self.setWindowTitle(self.title+' '+self.carpeta)
         
-        
-        self.setMaximumWidth(self.width)
-        self.setMaximumHeight(self.height)
+        # self.setMaximumWidth(self.width)
+        # self.setMaximumHeight(self.height)
         # Create widget
         self.layout = QHBoxLayout()
         self.setLayout(self.layout)
@@ -84,21 +79,25 @@ class QVViewer(QWidget):
         self.layout.addWidget(bEndavant)
         self.installEventFilter(self)
 
-        llistaFitxers=os.listdir(self.carpeta)
-        self.llistaImatges=[]
-        for fitxer in llistaFitxers:
-            if fitxer.endswith(".jpg") or fitxer.endswith(".png") or fitxer.endswith(".bmp") or fitxer.endswith(".jpeg"):
-                self.llistaImatges.append(fitxer)
+        try:
+            llistaFitxers=os.listdir(self.carpeta)
+            self.llistaImatges=[]
+            for fitxer in llistaFitxers:
+                if fitxer.endswith(".jpg") or fitxer.endswith(".png") or fitxer.endswith(".bmp") or fitxer.endswith(".jpeg"):
+                    self.llistaImatges.append(fitxer)
+        except Exception as ee:
+            self.hayImagenes = False
+            self.updateActions()
+            self.show()
+            return
+
+
         
         if len(self.llistaImatges) == 0:
             self.hayImagenes = False
-            self.zoomInAct.setEnabled(False)    
-            self.zoomOutAct.setEnabled(False)
-            self.normalSizeAct.setEnabled(False)
-            self.printAct.setEnabled(False)  
-            self.infoAct.setEnabled(False)
-            
-            self.info1()
+            self.updateActions()
+
+            self.info1("Carpeta sin imagenes. ")
             self.show()
             return
         else:
@@ -115,6 +114,7 @@ class QVViewer(QWidget):
         self.resize(self.imageLabel.width()+229,self.imageLabel.height()+30)
 
     def eventFilter(self, obj, event):
+        # print('Event {}  hora {} '.format(event.type(), datetime.now().strftime("%m/%d/%Y, %H:%M:%S")))
         if event.type() == 51:
             self.keyPressEvent(event)
         return False        
@@ -127,15 +127,7 @@ class QVViewer(QWidget):
             if key == 16777236:   # flecha derecha
                 self.endavant()
 
-        # key = eventQKeyEvent.key()
-            
-        # if key == 16777234 and self.hayImagenes == True:   # flecha izquierda
-        #     self.enrrera()
-        # if key == 16777236 and self.hayImagenes == True:   # flecha derecha
-        #     self.endavant()
-
     def openDirectory(self):
-
         Mydialog = QFileDialog() 
         Mydialog.resize(300,400)
         direc = Mydialog.getExistingDirectory(self, "Selecciona carpeta",
@@ -146,7 +138,6 @@ class QVViewer(QWidget):
             self.close()
             self.__init__(direc)
 
-
     def createActions(self):
         self.openDirAct = QAction("&Open directory...", self, shortcut="Ctrl+O", triggered=self.openDirectory)
         self.printAct = QAction("&Print...", self, shortcut="Ctrl+P", enabled=True, triggered=self.print_)
@@ -155,7 +146,16 @@ class QVViewer(QWidget):
         self.zoomOutAct = QAction("Zoom &Out (25%)", self, shortcut="Ctrl+-", enabled=True, triggered=self.zoomOut)
         self.normalSizeAct = QAction("&Normal Size", self, shortcut="Ctrl+S", enabled=True, triggered=self.normalSize)
         self.infoAct = QAction("&Info", self, shortcut="F1", enabled=True, triggered=self.info)
+        self.maxiAct = QAction("&Maximizar", self, shortcut="F11", enabled=True, triggered=self.maxi)
         
+    def maxi(self):
+        if self.isMaximized():
+            self.showNormal()
+        else:
+            self.showMaximized()
+
+
+
     def menu_bar (self) : 
         self.menuBar = qtWdg.QMenuBar (self)
         self.menuBar.setToolTip("més accions")
@@ -170,6 +170,7 @@ class QVViewer(QWidget):
         self.fileMenu.addAction(self.zoomInAct)
         self.fileMenu.addAction(self.zoomOutAct)
         self.fileMenu.addAction(self.normalSizeAct)
+        self.fileMenu.addAction(self.maxiAct)
         self.fileMenu.addSeparator()
         self.fileMenu.addAction(self.infoAct)
         self.fileMenu.addAction(self.printAct)
@@ -223,11 +224,16 @@ class QVViewer(QWidget):
         self.scaleImage(0.8)
 
     def updateActions(self):
-        self.zoomInAct.setEnabled(not self.fitToWindowAct.isChecked())
-        self.zoomOutAct.setEnabled(not self.fitToWindowAct.isChecked())
-        self.normalSizeAct.setEnabled(not self.fitToWindowAct.isChecked())
+        self.zoomInAct.setEnabled(False)    
+        self.zoomOutAct.setEnabled(False)
+        self.normalSizeAct.setEnabled(False)
+        self.printAct.setEnabled(False)  
+        self.infoAct.setEnabled(False)
+
 
     def endavant(self):
+        self.showNormal()
+        
         if self.hayImagenes == False:
             return        
         if self.indexImatge<len(self.llistaImatges)-1:
@@ -241,9 +247,11 @@ class QVViewer(QWidget):
         self.normalSize()
         self.setWindowTitle('Zoom: {} %   {} de {}'.format(str(round(self.scaleFactor,2)*100),str(self.indexImatge +1),str(len(self.llistaImatges))))   
         self.resize(self.imageLabel.width()+229,self.imageLabel.height()+30)
-        # self.resize(self.imageLabel.width(),self.imageLabel.height())
+        
 
     def enrrera(self):
+        self.showNormal()
+        
         if self.hayImagenes == False:
             return
         if self.indexImatge > 0:
@@ -257,6 +265,7 @@ class QVViewer(QWidget):
         self.normalSize()
         self.setWindowTitle('Zoom: {} %   {} de {}'.format(str(round(self.scaleFactor,2)*100),str(self.indexImatge +1),str(len(self.llistaImatges))))             
         self.resize(self.imageLabel.width()+229,self.imageLabel.height()+30)
+       
 
     def adjustScrollBar(self, scrollBar, factor):
         scrollBar.setValue(int(factor * scrollBar.value()
@@ -270,8 +279,8 @@ class QVViewer(QWidget):
                 info_carpeta+ '  '+ fitxer +'  '+ tamany
         )
 
-    def info1(self):
-        QMessageBox.about(self, "Error ","Carpeta sin imagenes. ") 
+    def info1(self,msg):
+        QMessageBox.about(self, "Error ",msg) 
            
                           
                           
@@ -279,5 +288,6 @@ class QVViewer(QWidget):
 if __name__ == "__main__":
     with qgisapp() as app:
         viewer = QVViewer('d:/tmp/fotos/')
-        # viewer = QVViewer('d:/tmp/')
+        # viewer = QVViewer('')
+        
         viewer.show()
