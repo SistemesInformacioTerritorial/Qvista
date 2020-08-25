@@ -258,6 +258,13 @@ text-align: left;</string>
               </widget>
              </item>
              <item>
+              <widget class="QPushButton" name="botoMon">
+               <property name="text">
+                <string/>
+               </property>
+              </widget>
+             </item>
+             <item>
               <widget class="QPushButton" name="botoMapeta">
                <property name="toolTip">
                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Mostrar/ocultar mapa de situació&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -587,7 +594,7 @@ text-align: left;</string>
      <x>0</x>
      <y>0</y>
      <width>1233</width>
-     <height>26</height>
+     <height>34</height>
     </rect>
    </property>
    <property name="minimumSize">

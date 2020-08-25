@@ -1161,8 +1161,14 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.botoMapeta.setStyleSheet(stylesheetBotons)
         self.botoMapeta.setIconSize(QSize(24,24))
         self.botoMapeta.clicked.connect(self.VerOcultarMapeta)
-
         self.botoMapeta.setCursor(QvConstants.cursorClick())
+
+        self.botoMon.setIcon(QIcon(os.path.join(imatgesDir,'earth.png')))
+        self.botoMon.setStyleSheet(stylesheetBotons)
+        self.botoMon.setIconSize(QSize(24,24))
+        self.botoMon.clicked.connect(self.fonsMapa)
+        self.botoMon.setCursor(QvConstants.cursorClick())
+        self.fonsVisible = False
 
         self.botoMostraEntorn.setIcon(QIcon(os.path.join(imatgesDir,'entorn.png')))
         self.botoMostraEntorn.setStyleSheet(stylesheetBotons)
@@ -1391,6 +1397,17 @@ class QVista(QMainWindow, Ui_MainWindow):
             self.mapeta.show()
         else:
             self.mapeta.hide()
+
+    def fonsMapa(self):
+        if not self.fonsVisible:
+            urlWithParams = 'type=xyz&url=https://a.tile.openstreetmap.org/%7Bz%7D/%7Bx%7D/%7By%7D.png&zmax=19&zmin=0&crs=EPSG3857'
+            self.rlayer = QgsRasterLayer(urlWithParams, 'OpenStreetMap', 'wms')  
+            self.project.addMapLayer(self.rlayer)
+            self.fonsVisible = True
+        else:
+            self.project.removeMapLayer(self.project.mapLayersByName('OpenStreetMap')[0].id())
+            self.canvas.refresh()
+            self.fonsVisible = False
 
     def tisores(self):
         process = QProcess(self)

@@ -41,29 +41,47 @@ class EinaCoordenades(QWidget):
 
         lay1 = QHBoxLayout()
         lay2 = QHBoxLayout()
-        lay3 = QHBoxLayout()
+
+        try:
+            self.sistemaCoords = self.canvas.mapSettings().destinationCrs().authid()
+        except:
+            print("coords malament")
 
         lblnom1 = QLabel()
-        lblnom1.setText("ETRS 89")
-        lblnom2 = QLabel()
-        lblnom2.setText("Lat/Long")
-        lblnom3 = QLabel()
-        lblnom3.setText("TRESOR")
+        lblnom1.setMinimumWidth(75)
+        lblnom1.setText(self.sistemaCoords)
+        lblnom2 = QComboBox()
+        lblnom2.setMinimumWidth(75)
+        lblnom2.addItem("Lat/Long")
+        lblnom2.addItem("ETRS89")
+        lblnom2.addItem("TRESOR")
+        lblnom2.addItem("ETRS3857")
 
         self.leXcoord1 = QLineEdit()
-        self.leXcoord1.setReadOnly(True)
         self.leYcoord1 = QLineEdit()
-        self.leYcoord1.setReadOnly(True)
+
+        def is_number(s):
+            try:
+                float(s)
+                return True
+            except ValueError:
+                return False
+
+        def transformaPunt():
+            if is_number(self.leXcoord1.text()) and is_number(self.leYcoord1.text()):
+                x = float(self.leXcoord1.text())
+                y = float(self.leYcoord1.text())
+                p = QgsPointXY(x,y)
+                estat_nova = self.nova 
+                self.nova = True
+                showXY(p)
+                self.nova = estat_nova
+                
+        self.leXcoord1.returnPressed.connect(transformaPunt)
+        self.leYcoord1.returnPressed.connect(transformaPunt)
 
         self.leXcoord2 = QLineEdit()
-        self.leXcoord2.setReadOnly(True)
         self.leYcoord2 = QLineEdit()
-        self.leYcoord2.setReadOnly(True)
-
-        self.leXcoord3 = QLineEdit()
-        self.leXcoord3.setReadOnly(True)
-        self.leYcoord3 = QLineEdit()
-        self.leYcoord3.setReadOnly(True)
 
         def f1():
             clipboard = QApplication.clipboard()
@@ -72,10 +90,6 @@ class EinaCoordenades(QWidget):
         def f2():
             clipboard = QApplication.clipboard()
             clipboard.setText(self.text2)
-        
-        def f3():
-            clipboard = QApplication.clipboard()
-            clipboard.setText(self.text3)
 
         icona_copiar = QIcon('Imatges/file-document.png')
         b1 = QPushButton()
@@ -86,10 +100,6 @@ class EinaCoordenades(QWidget):
         b2.pressed.connect(f2)
         b2.setIcon(icona_copiar)
         b2.setToolTip("Copia al portaretalls")
-        b3 = QPushButton()
-        b3.pressed.connect(f3)
-        b3.setIcon(icona_copiar)
-        b3.setToolTip("Copia al portaretalls")
 
         lay1.addWidget(lblnom1)
         lay1.addWidget(self.leXcoord1)
@@ -99,49 +109,58 @@ class EinaCoordenades(QWidget):
         lay2.addWidget(self.leXcoord2)
         lay2.addWidget(self.leYcoord2)
         lay2.addWidget(b2)
-        lay3.addWidget(lblnom3)
-        lay3.addWidget(self.leXcoord3)
-        lay3.addWidget(self.leYcoord3)
-        lay3.addWidget(b3)
 
         lay.addLayout(lay1)
         lay.addLayout(lay2)
-        lay.addLayout(lay3)
 
         def showXY(p): 
             if self.nova:
-                try:
-                    sistemaCoords = self.canvas.mapSettings().destinationCrs().authid()
-                except:
-                    print("coords malament")
-                
-                if sistemaCoords != "EPSG:25831":
-                    self.transformacio = QgsCoordinateTransform(QgsCoordinateReferenceSystem(sistemaCoords), 
-                        QgsCoordinateReferenceSystem("EPSG:25831"), 
-                        QgsProject.instance())
-                    p=self.transformacio.transform(p)
                 x1=str("%.3f" % p.x())
                 y1=str("%.3f" % p.y())
                 self.leXcoord1.setText(x1)
                 self.leYcoord1.setText(y1)
                 self.text1 = x1 + ", " + y1
 
-                if sistemaCoords != "EPSG:4326":
-                    self.transformacio = QgsCoordinateTransform(QgsCoordinateReferenceSystem(sistemaCoords), 
-                            QgsCoordinateReferenceSystem("EPSG:4326"), 
+                if lblnom2.currentText() == "Lat/Long": #WGS84
+                    if self.sistemaCoords != "EPSG:4326":
+                        self.transformacio = QgsCoordinateTransform(QgsCoordinateReferenceSystem(self.sistemaCoords), 
+                                QgsCoordinateReferenceSystem("EPSG:4326"), 
+                                QgsProject.instance())
+                        p=self.transformacio.transform(p)
+                    y2 = str("%.7f" % p.x())
+                    x2 = str("%.7f" % p.y())
+
+                elif lblnom2.currentText() == "TRESOR": #ETRS89
+                    self.transformacio = QgsCoordinateTransform(QgsCoordinateReferenceSystem(self.sistemaCoords), 
+                            QgsCoordinateReferenceSystem("EPSG:25831"), 
                             QgsProject.instance())
                     p=self.transformacio.transform(p)
-                y2 = str("%.7f" % p.x())
-                x2 = str("%.7f" % p.y())
+                    x2= str(int((float(p.x()) - 400000) * 1000))
+                    y2= str(int((float(p.y()) - 4500000) * 1000))
+
+                #TRESOR  ED50
+                
+                elif lblnom2.currentText() == "ETRS89":
+                    if self.sistemaCoords != "EPSG:25831":
+                        self.transformacio = QgsCoordinateTransform(QgsCoordinateReferenceSystem(self.sistemaCoords), 
+                                QgsCoordinateReferenceSystem("EPSG:25831"), 
+                                QgsProject.instance())
+                        p=self.transformacio.transform(p)
+                    x2 = str("%.3f" % p.x())
+                    y2 = str("%.3f" % p.y())
+
+                elif lblnom2.currentText() == "ETRS3857": #pseudomercator
+                    if self.sistemaCoords != "EPSG:3857":
+                        self.transformacio = QgsCoordinateTransform(QgsCoordinateReferenceSystem(self.sistemaCoords), 
+                                QgsCoordinateReferenceSystem("EPSG:3857"), 
+                                QgsProject.instance())
+                        p=self.transformacio.transform(p)
+                    x2 = str("%.3f" % p.x())
+                    y2 = str("%.3f" % p.y())
+
                 self.leXcoord2.setText(x2)
                 self.leYcoord2.setText(y2)
                 self.text2 = x2 + ", " + y2
-
-                x3= str(int((float(x1) - 400000) * 1000))
-                y3= str(int((float(y1) - 4500000) * 1000))
-                self.leXcoord3.setText(x3)
-                self.leYcoord3.setText(y3)
-                self.text3 = x3 + ", " + y3
         
         self.canvas.xyCoordinates.connect(showXY)
 
