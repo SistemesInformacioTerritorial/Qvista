@@ -2226,6 +2226,11 @@ class QVista(QMainWindow, Ui_MainWindow):
     def showSB(self):
         self.actualitzantCanvas = True
         self.sbCarregantCanvas.show()
+        if hasattr(self,'m1') and hasattr(self, 'm1visible'):
+            if self.m1visible == True:
+                self.m1visible = False
+            else:
+                self.m1.hide()
 
     def hideSB(self):
         self.actualitzantCanvas = False
@@ -2260,6 +2265,14 @@ class QVista(QMainWindow, Ui_MainWindow):
             if xOk and yOk:
                 self.canvas.setCenter(QgsPointXY(x, y))
                 self.canvas.refresh()
+                self.m1 = QgsVertexMarker(self.canvas)
+                self.m1.setColor(QColor(255,0, 0)) #(R,G,B)
+                self.m1.setIconSize(15)
+                self.m1.setIconType(QgsVertexMarker.ICON_CROSS)
+                self.m1.setPenWidth(3)
+                self.m1.setCenter(QgsPointXY(float(x),float(y)))
+                self.m1.show()
+                self.m1visible = True
                 return
         print("ERROR >> Coordenades mal escrites")
 
