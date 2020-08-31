@@ -7,7 +7,6 @@ import qgis.PyQt.QtGui as qtGui
 import qgis.PyQt.QtCore as qtCor
 
 
-
 class QvTextAnnotationDialog(qtWdg.QDialog):
     def __init__(self, llegenda, item: qgGui.QgsMapCanvasAnnotationItem, title: str = 'Anotació'):
         """Cuadro de diálogo de edición de las características de las anotaciones
@@ -69,7 +68,6 @@ class QvTextAnnotationDialog(qtWdg.QDialog):
         self.layout.addRow(self.buttons)
 
     def accept(self):
-        # carlos
         layerId = self.layers.currentData()
         if layerId:
             layer = self.llegenda.project.mapLayer(layerId)
@@ -78,21 +76,6 @@ class QvTextAnnotationDialog(qtWdg.QDialog):
         self.item.annotation().setMapLayer(layer)
         self.item.annotation().setHasFixedMapPosition(self.position.isChecked())
         self.item.annotation().document().setPlainText(self.text.toPlainText())
-
-        
-        def cleanNameLayer(layer):
-            linea= str(layer)
-
-            ini= linea.find("'")+1
-            if ini== 0:
-                return 'capa associada: (Tot el mapa)'
-            linea1 = linea[ini:]
-            fin = linea1.rfind("'")
-            linea2 = linea1[:fin]
-            return 'capa associada: '+linea2
-
-        self.item.setToolTip(cleanNameLayer(self.item.annotation().mapLayer()))
-
         self.llegenda.projecteModificat.emit('annotationsChanged')
         self.hide()
 
@@ -129,9 +112,6 @@ class QvMapToolAnnotation(qgGui.QgsMapTool):
         self.activated.connect(self.activa)
         self.deactivated.connect(self.desactiva)
         self.canvas().scene().selectionChanged.connect(self.hideItemEditor)
-        for item in self.canvas().annotationItems():
-            item.setToolTip(self.cleanNameLayer(item.annotation().mapLayer()))
-
 
     # Señales de activación
 
@@ -145,30 +125,15 @@ class QvMapToolAnnotation(qgGui.QgsMapTool):
 
     # Manejo de anotaciones de proyecto y de canvas
 
-    def cleanNameLayer(self,layer):
-        linea= str(layer)
-
-        ini= linea.find("'")+1
-        if ini== 0:
-            return 'capa associada: (Tot el mapa)'
-        linea1 = linea[ini:]
-        fin = linea1.rfind("'")
-        linea2 = linea1[:fin]
-        return 'capa associada: '+linea2
-
-
-
     def annotationCreated(self, annotation: qgCor.QgsAnnotation) -> None:
         # Necesario para que las anotaciones del proyecto pasen al canvas y se visualicen
         self.lastItem = qgGui.QgsMapCanvasAnnotationItem(annotation, self.canvas())
-        self.lastItem.setToolTip(self.cleanNameLayer(self.lastItem.annotation().mapLayer()))
-        
+
     def removeAnnotations(self) -> None:
         # Borrado de anotaciones al cambiar de proyecto. Si no se hace así
         # justo antes del read() de proyecto, el programa aborta
         for item in self.canvas().annotationItems():
             item.annotation().setVisible(False)
-
         self.llegenda.project.annotationManager().clear()
         for item in self.canvas().annotationItems():
             self.canvas().scene().removeItem(item)
@@ -216,7 +181,6 @@ class QvMapToolAnnotation(qgGui.QgsMapTool):
 
     def selectedItem(self) -> qgGui.QgsMapCanvasAnnotationItem:
         for item in self.canvas().annotationItems():
-            
             if item.isSelected():
                 return item
         return None
@@ -274,8 +238,6 @@ class QvMapToolAnnotation(qgGui.QgsMapTool):
                                                          pos.y() / self.canvas().height()))
             annotation.setFrameSizeMm(size)
             annotation.document().setTextWidth(textWidth)
-
-          
             # Dar de alta en project (y en canvas por señal)
             self.lastItem = None
             self.llegenda.project.annotationManager().addAnnotation(annotation)
@@ -283,8 +245,6 @@ class QvMapToolAnnotation(qgGui.QgsMapTool):
             if item is not None:
                 self.canvas().scene().clearSelection()
                 item.setSelected(True)
-                
-                
                 self.llegenda.projecteModificat.emit('annotationsChanged')
             return item
         return None
@@ -301,7 +261,6 @@ class QvMapToolAnnotation(qgGui.QgsMapTool):
     def updateItem(self, item: qgGui.QgsMapCanvasAnnotationItem) -> None:
         if item is None:
             return
-       
         item.update()
         self.llegenda.projecteModificat.emit('annotationsChanged')
 
@@ -400,7 +359,6 @@ class QvMapToolAnnotation(qgGui.QgsMapTool):
             item = self.createItem(e.pos())
             self.showItemEditor(item)
 
-
     def canvasDoubleClickEvent(self, e: qgGui.QgsMapMouseEvent) -> None:
         item = self.selectedItem()
         if item:
@@ -462,7 +420,6 @@ if __name__ == "__main__":
 
         leyenda.setWindowTitle('Llegenda')
         leyenda.show()
-
 
         # Acciones de usuario para el menú
 
