@@ -6,8 +6,18 @@ import qgis.PyQt.QtWidgets as qtWdg
 import qgis.PyQt.QtGui as qtGui
 import qgis.PyQt.QtCore as qtCor
 
+# Texto de Tooltips de anotaciones
 
-
+def _toolTipText(item: qgGui.QgsMapCanvasAnnotationItem) -> str:
+    try:
+        layer = item.annotation().mapLayer()
+        if layer is None:
+            return "Anotació general del mapa"
+        else:
+            return f"Anotació de la capa '{layer.name()}'"
+    except:
+        return ''
+ 
 class QvTextAnnotationDialog(qtWdg.QDialog):
     def __init__(self, llegenda, item: qgGui.QgsMapCanvasAnnotationItem, title: str = 'Anotació'):
         """Cuadro de diálogo de edición de las características de las anotaciones
@@ -47,13 +57,7 @@ class QvTextAnnotationDialog(qtWdg.QDialog):
             self.position.setCheckState(qtCor.Qt.Unchecked)
 
         # Texto plano de la nota
-        
-        # JNB
-        aa= self.item.annotation().document().toPlainText()
-        
-        bb=aa.replace('\n','<br>')
-        # self.text = qtWdg.QTextEdit(self.item.annotation().document().toPlainText(), self)
-        self.text = qtWdg.QTextEdit(bb, self)
+        self.text = qtWdg.QTextEdit(self.item.annotation().document().toPlainText(), self)
         self.text.setAcceptRichText(False)
 
         # Botones
@@ -75,65 +79,15 @@ class QvTextAnnotationDialog(qtWdg.QDialog):
         self.layout.addRow(self.buttons)
 
     def accept(self):
-        # javier
         layerId = self.layers.currentData()
         if layerId:
             layer = self.llegenda.project.mapLayer(layerId)
         else:
             layer = None
         self.item.annotation().setMapLayer(layer)
+        self.item.setToolTip(_toolTipText(self.item))
         self.item.annotation().setHasFixedMapPosition(self.position.isChecked())
         self.item.annotation().document().setPlainText(self.text.toPlainText())
-
-        # JNB
-        # color marco
-        self.item.annotation().fillSymbol().symbolLayer(0).setStrokeColor(qtGui.QColor(0, 0, 255))
-        # color perimetro simbolo
-        self.item.annotation().markerSymbol().symbolLayer(0).setStrokeColor(qtGui.QColor(255, 255, 0))  #verde 
-
-        # simbolo
-        color= 'blue'
-        # 'circle' 'square' 'cross' 'rectangle' 'diamond' 'pentagon' 'triangle' 
-        # 'equilateral_triangle' 'star' 'regular_star' 'arrow' 'filled_arrowhead' 'x'
-        forma= 'diamond'     
-        outlinewidth = '0.5'   # grueso linea contorno simbolo
-        symbol = qgCor.QgsMarkerSymbol.createSimple({'name': forma, 'color': color, 'outline_width':outlinewidth})
-        self.item.annotation().setMarkerSymbol(symbol)
-        self.item.annotation().markerSymbol().setSize(5)
-        
-        # texto anotacion
-        doc = qtGui.QTextDocument()
-        el_html= '<p style="font-family: arial; background-color: #EAF4D9; font-weight: bold; font-size: 15px;">***</p>'
-        
-        label = qtWdg.QLabel()
-        label.setFont(qtGui.QFont("arial", 15, qtGui.QFont.Bold))
-        label.setText(self.text.toPlainText())
-        label.adjustSize()
-        self.item.annotation().setFrameSizeMm(qtCor.QSizeF(label.widthMM()+3 , label.heightMM()+3 ))
-        self.item.annotation().setFrameOffsetFromReferencePointMm(qtCor.QPointF(5, 10))
-
-        el_html1=el_html.replace('***', self.text.toPlainText())
-        el_html2=el_html1.replace('\n', '<br>')
-
-        
-        doc.setHtml(el_html2)
-        self.item.annotation().setDocument(doc)
-        
-
-        
-        def cleanNameLayer(layer):
-            linea= str(layer)
-
-            ini= linea.find("'")+1
-            if ini== 0:
-                return 'capa associada: (Tot el mapa)'
-            linea1 = linea[ini:]
-            fin = linea1.rfind("'")
-            linea2 = linea1[:fin]
-            return 'capa associada: '+linea2
-
-        self.item.setToolTip(cleanNameLayer(self.item.annotation().mapLayer()))
-
         self.llegenda.projecteModificat.emit('annotationsChanged')
         self.hide()
 
@@ -170,9 +124,6 @@ class QvMapToolAnnotation(qgGui.QgsMapTool):
         self.activated.connect(self.activa)
         self.deactivated.connect(self.desactiva)
         self.canvas().scene().selectionChanged.connect(self.hideItemEditor)
-        for item in self.canvas().annotationItems():
-            item.setToolTip(self.cleanNameLayer(item.annotation().mapLayer()))
-
 
     # Señales de activación
 
@@ -186,30 +137,16 @@ class QvMapToolAnnotation(qgGui.QgsMapTool):
 
     # Manejo de anotaciones de proyecto y de canvas
 
-    def cleanNameLayer(self,layer):
-        linea= str(layer)
-
-        ini= linea.find("'")+1
-        if ini== 0:
-            return 'capa associada: (Tot el mapa)'
-        linea1 = linea[ini:]
-        fin = linea1.rfind("'")
-        linea2 = linea1[:fin]
-        return 'capa associada: '+linea2
-
-
-
     def annotationCreated(self, annotation: qgCor.QgsAnnotation) -> None:
         # Necesario para que las anotaciones del proyecto pasen al canvas y se visualicen
         self.lastItem = qgGui.QgsMapCanvasAnnotationItem(annotation, self.canvas())
-        self.lastItem.setToolTip(self.cleanNameLayer(self.lastItem.annotation().mapLayer()))
-        
+        self.lastItem.setToolTip(_toolTipText(self.lastItem))
+
     def removeAnnotations(self) -> None:
         # Borrado de anotaciones al cambiar de proyecto. Si no se hace así
         # justo antes del read() de proyecto, el programa aborta
         for item in self.canvas().annotationItems():
             item.annotation().setVisible(False)
-
         self.llegenda.project.annotationManager().clear()
         for item in self.canvas().annotationItems():
             self.canvas().scene().removeItem(item)
@@ -257,7 +194,6 @@ class QvMapToolAnnotation(qgGui.QgsMapTool):
 
     def selectedItem(self) -> qgGui.QgsMapCanvasAnnotationItem:
         for item in self.canvas().annotationItems():
-            
             if item.isSelected():
                 return item
         return None
@@ -315,8 +251,6 @@ class QvMapToolAnnotation(qgGui.QgsMapTool):
                                                          pos.y() / self.canvas().height()))
             annotation.setFrameSizeMm(size)
             annotation.document().setTextWidth(textWidth)
-
-          
             # Dar de alta en project (y en canvas por señal)
             self.lastItem = None
             self.llegenda.project.annotationManager().addAnnotation(annotation)
@@ -324,8 +258,6 @@ class QvMapToolAnnotation(qgGui.QgsMapTool):
             if item is not None:
                 self.canvas().scene().clearSelection()
                 item.setSelected(True)
-                
-                
                 self.llegenda.projecteModificat.emit('annotationsChanged')
             return item
         return None
@@ -342,7 +274,6 @@ class QvMapToolAnnotation(qgGui.QgsMapTool):
     def updateItem(self, item: qgGui.QgsMapCanvasAnnotationItem) -> None:
         if item is None:
             return
-       
         item.update()
         self.llegenda.projecteModificat.emit('annotationsChanged')
 
@@ -441,7 +372,6 @@ class QvMapToolAnnotation(qgGui.QgsMapTool):
             item = self.createItem(e.pos())
             self.showItemEditor(item)
 
-
     def canvasDoubleClickEvent(self, e: qgGui.QgsMapMouseEvent) -> None:
         item = self.selectedItem()
         if item:
@@ -503,7 +433,6 @@ if __name__ == "__main__":
 
         leyenda.setWindowTitle('Llegenda')
         leyenda.show()
-
 
         # Acciones de usuario para el menú
 

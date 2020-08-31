@@ -67,6 +67,13 @@ class QvTextAnnotationDialog(qtWdg.QDialog):
         self.layout.addRow('Text de la nota:', self.text)
         self.layout.addRow(self.buttons)
 
+    def toolTipText(self, item: qgGui.QgsMapCanvasAnnotationItem) -> str:
+        layer = item.annotation().mapLayer()
+        if layer is None:
+            return "Anotació general del mapa"
+        else:
+            f"Anotació de la capa '{layer.name()}'"
+
     def accept(self):
         layerId = self.layers.currentData()
         if layerId:
