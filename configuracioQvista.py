@@ -17,7 +17,8 @@ pathPlantilles = "plantillesMapes/"
 
 estatConnexio = "Xarxa municipal: Connectat"
 
-QvTempdir='C:/temp/qVista/'
+dirTemp='C:/temp/'
+QvTempdir=os.path.join(dirTemp,'qVista/')
 tempdir=os.path.join(QvTempdir,'temp/') #Seran els arxius temporals de qVista que no s'han de guardar entre execucions
 dadesdir=os.path.join(QvTempdir,'dades/') #Arxius temporals que volem conservar
 configdir=os.path.join(QvTempdir+'config/') #Configuracions i coses
@@ -41,7 +42,7 @@ widthLlegenda = 250 #percentatge
 # except:
 #     pathDesarPerDefecte='.'
 
-for x in (QvTempdir, tempdir, dadesdir, configdir):
+for x in (dirTemp, QvTempdir, tempdir, dadesdir, configdir):
     if not os.path.exists(x):
         try:
             os.mkdir(x)
