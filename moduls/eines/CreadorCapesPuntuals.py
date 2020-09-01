@@ -19,6 +19,10 @@ class CreadorCapesPuntuals(QWidget):
         lay = QVBoxLayout()
         self.setLayout(lay)
 
+        self.leNomCapa = QLineEdit()
+        self.leNomCapa.textChanged.connect(self.canviaNomCapa)
+        lay.addWidget(self.leNomCapa)
+
         self.taula = QTableWidget(2,0)
         self.taula.setSizePolicy(QSizePolicy.Maximum,QSizePolicy.Maximum)
         lay.addWidget(self.taula)
@@ -27,6 +31,7 @@ class CreadorCapesPuntuals(QWidget):
         lay.addLayout(layH)
 
         self.leNomCamp = QLineEdit()
+        self.leNomCamp.setEnabled(False)
         self.cbTipus = QComboBox()
         layH.addWidget(self.leNomCamp)
         layH.addWidget(self.cbTipus)
@@ -35,10 +40,17 @@ class CreadorCapesPuntuals(QWidget):
 
         self.leNomCamp.returnPressed.connect(self.afegirCamp)
 
-        self.bCrearCapa = QPushButton('Crear capa')
+        layB = QHBoxLayout()
+        lay.addLayout(layB)
+        self.bCrearCapa = QPushButton('Afegir elements')
         self.bCrearCapa.clicked.connect(self.switchBoto)
         self.bCrearCapa.setCheckable(True)
-        lay.addWidget(self.bCrearCapa)
+        layB.addWidget(self.bCrearCapa)
+
+        self.bDesar = QPushButton('Desar capa')
+        self.bDesar.clicked.connect(self.desar)
+        self.bDesar.setEnabled(False)
+        layB.addWidget(self.bDesar)
 
         self.capa = self.novaCapa()
     
@@ -58,18 +70,18 @@ class CreadorCapesPuntuals(QWidget):
                     # Faltaria fer el diàleg per afegir la informació
                     
                     self.pare.afegirFeature(feat)
-            self.bCrearCapa.setText('Desar capa')
             self.eina = EinaCrearCapa(self)
             self.canvas.setMapTool(self.eina)
-            pass
         else:
-            QgsProject.instance().addMapLayer(self.capa)
             self.canvas.refresh()
             self.canvas.unsetMapTool(self.eina)
-            self.bCrearCapa.setText('Crear capa')
-            self.taula.clear()
-            self.taula.setColumnCount(0)
-            self.capa = self.novaCapa()
+    def desar(self):
+        self.taula.clear()
+        self.taula.setColumnCount(0)
+        self.capa = self.novaCapa()
+        self.leNomCapa.clear()
+        self.bDesar.setEnabled(False)
+        self.leNomCamp.setEnabled(True)
     def afegirCamp(self):
         dictTipus = {'Int':QVariant.Int, 'String':QVariant.String}
         pr = self.capa.dataProvider()
@@ -90,8 +102,13 @@ class CreadorCapesPuntuals(QWidget):
             QgsProject.instance().addMapLayer(self.capa)
             self.afegida = True
             self.canvas.refresh()
+            self.bDesar.setEnabled(True)
+            self.leNomCamp.setEnabled(False)
         self.capa.dataProvider().addFeature(feat)
         self.capa.triggerRepaint()
+    def canviaNomCapa(self):
+        self.capa.setName(self.leNomCapa.text())
+        self.leNomCamp.setEnabled(self.leNomCapa.text()!='')
 
 
 if __name__ == "__main__":
