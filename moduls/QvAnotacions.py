@@ -19,18 +19,20 @@ def _toolTipText(item: qgGui.QgsMapCanvasAnnotationItem) -> str:
         return ''
  
 class QvTextAnnotationDialog(qtWdg.QDialog):
-    def __init__(self, llegenda, item: qgGui.QgsMapCanvasAnnotationItem, title: str = 'Anotació'):
+    def __init__(self, llegenda, item: qgGui.QgsMapCanvasAnnotationItem, richText: bool = True, title: str = 'Anotació'):
         """Cuadro de diálogo de edición de las características de las anotaciones
 
         Args:
             llegenda (QvLlegenda).
             item (QgsMapCanvasAnnotationItem): item de la anotación a modificar.
+            richText (bool, optional): indica si permite texto enriquecido. Defaults to True.
             title (str, optional): título del formulario. Defaults to 'Anotació'.
         """
         self.llegenda = llegenda
         super().__init__(llegenda.canvas)
         self.setWindowTitle(title)
         self.item = item
+        self.richText = richText
         self.toolName = 'Anotacions'
         self.layout = qtWdg.QFormLayout()
         self.setLayout(self.layout)
@@ -56,9 +58,13 @@ class QvTextAnnotationDialog(qtWdg.QDialog):
         else:
             self.position.setCheckState(qtCor.Qt.Unchecked)
 
-        # Texto plano de la nota
-        self.text = qtWdg.QTextEdit(self.item.annotation().document().toPlainText(), self)
-        self.text.setAcceptRichText(False)
+        # Texto plano o enriquecido de la nota
+        if self.richText:
+            self.text = qtWdg.QTextEdit(self)
+            self.text.setDocument(self.item.annotation().document())
+        else:
+            self.text = qtWdg.QTextEdit(self.item.annotation().document().toPlainText(), self)
+        self.text.setAcceptRichText(self.richText)
 
         # Botones
         self.bDelete = qtWdg.QPushButton('Esborra')
@@ -87,7 +93,10 @@ class QvTextAnnotationDialog(qtWdg.QDialog):
         self.item.annotation().setMapLayer(layer)
         self.item.setToolTip(_toolTipText(self.item))
         self.item.annotation().setHasFixedMapPosition(self.position.isChecked())
-        self.item.annotation().document().setPlainText(self.text.toPlainText())
+        if self.richText:
+            self.item.annotation().setDocument(self.text.document())
+        else:
+            self.item.annotation().document().setPlainText(self.text.toPlainText())
         self.llegenda.projecteModificat.emit('annotationsChanged')
         self.hide()
 
