@@ -1,0 +1,124 @@
+[
+    {
+        "name": "Rètol",
+        "text": {
+            "font": "Garamond",
+            "size": "large",
+            "margin": "3.0"
+        },
+        "marker": {
+            "name": "square",
+            "color": "white",
+            "size": "4.0",
+            "outline_color": "black",
+            "outline_width": "0.6"
+        },
+        "fill": {
+            "color": "249,249,249",
+            "outline_color": "darkslategrey",
+            "outline_width": "0.4",
+            "alpha": "0.9"
+        }
+    },
+    {
+        "name": "Informació",
+        "text": {
+            "font": "Candara",
+            "size": "normal",
+            "margin": "2.0"
+        },
+        "marker": {
+            "name": "diamond",
+            "color": "steelblue",
+            "size": "5.0",
+            "outline_color": "navy",
+            "outline_width": "0.5"
+        },
+        "fill": {
+            "color": "lightskyblue",
+            "outline_color": "navy",
+            "outline_width": "0.4",
+            "alpha": "0.9"
+        }
+    },
+    {
+        "name": "Destacat",
+        "text": {
+            "font": "Calibri",
+            "size": "normal",
+            "margin": "2.0"
+        },
+        "marker": {
+            "name": "star",
+            "color": "linen",
+            "size": "6.0",
+            "outline_color": "orangered",
+            "outline_width": "0.5"
+        },
+        "fill": {
+            "color": "linen",
+            "outline_color": "orangered",
+            "alpha": "0.9"
+        }
+    },
+    {
+        "name": "Semàfor Verd",
+        "text": {
+            "font": "Arial",
+            "size": "normal",
+            "margin": "3.0"
+        },
+        "marker": {
+            "name": "circle",
+            "color": "limegreen",
+            "size": "5.0",
+            "outline_color": "darkslategrey",
+            "outline_width": "0.6"
+        },
+        "fill": {
+            "color": "limegreen",
+            "outline_color": "darkslategrey",
+            "alpha": "0.9"
+        }
+    },
+    {
+        "name": "Semàfor Groc",
+        "text": {
+            "font": "Arial",
+            "size": "normal",
+            "margin": "3.0"
+        },
+        "marker": {
+            "name": "circle",
+            "color": "gold",
+            "size": "5.0",
+            "outline_color": "darkslategrey",
+            "outline_width": "0.6"
+        },
+        "fill": {
+            "color": "gold",
+            "outline_color": "darkslategrey",
+            "alpha": "0.9"
+        }
+    },
+    {
+        "name": "Semàfor Vermell",
+        "text": {
+            "font": "Arial",
+            "size": "normal",
+            "margin": "3.0"
+        },
+        "marker": {
+            "name": "circle",
+            "color": "255,20,20",
+            "size": "5.0",
+            "outline_color": "darkslategrey",
+            "outline_width": "0.6"
+        },
+        "fill": {
+            "color": "255,20,20",
+            "outline_color": "darkslategrey",
+            "alpha": "0.9"
+        }
+    }
+]
