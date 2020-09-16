@@ -4,7 +4,10 @@ import os
 versio="0.9"
 titolFinestra = "qVista %s  Sistema d'Informació Territorial de Barcelona"%versio
 
-carpetaCataleg = "N:/9SITEB/Publicacions/qVista/Cataleg/Capes/"
+carpetaCataleg = "N:/9SITEB/Publicacions/qVista/Cataleg/Catàleg de capes corporatives/"
+carpetaCatalegPrivat = 'L:/DADES/SIT/qVista/CATALEG/Catàleg de capes privades/'
+carpetaCatalegLocal = os.path.abspath('../dades/Catàleg de capes local')
+carpetaCatalegLlista = [carpetaCataleg, carpetaCatalegPrivat, carpetaCatalegLocal]
 #Definim per separat els directoris de projectes públics i privats, de manera que puguem comprovar en qualsevol moment si un directori és de projectes públics o privats
 carpetaCatalegProjectesPublics=["N:/9SITEB/Publicacions/qVista/Cataleg/Mapes publics/"]
 carpetaCatalegProjectesPrivats=['L:/DADES/SIT/qVista/CATALEG/MAPES PRIVATS/']

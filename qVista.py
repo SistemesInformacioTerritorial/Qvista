@@ -38,7 +38,7 @@ from moduls.QvNouMapa import QvNouMapa
 from moduls.QvVisorHTML import QvVisorHTML
 from moduls.QvDocumentacio import QvDocumentacio
 from moduls.QvNouCataleg import QvNouCataleg, QvCreadorCataleg
-from moduls.QvCatalegCapes import QvCatalegCapes
+from moduls.QvCatalegCapes import QvCatalegCapes, QvCreadorCatalegCapes
 from moduls.QvSabiesQue import QvSabiesQue
 from moduls.QvMemoria import QvMemoria
 from moduls.QvBafarada import QvBafarada
@@ -1042,6 +1042,10 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.actObrirCataleg.setStatusTip("Catàleg d'Informació Territorial")
         #self.actObrirCataleg.setIcon(QIcon(os.path.join(imatgesDir,'layers_2.png')))
         self.actObrirCataleg.triggered.connect(self.obrirCataleg)
+
+        self.actCreadorCataleg = QAction('Afegir al catàleg')
+        self.actCreadorCataleg.setStatusTip('Afegir entrada al catàleg de capes')
+        self.actCreadorCataleg.triggered.connect(self.afegirCatalegCapes)
         
         self.actFerGran = QAction("Ampliar àrea de treball", self)
         self.actFerGran.setIcon(QIcon(os.path.join(imatgesDir,'arrow-expand.png')))
@@ -1545,6 +1549,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.menuCapes.setFont(QvConstants.FONTSUBTITOLS)
         self.menuCapes.styleStrategy = QFont.PreferAntialias or QFont.PreferQuality #???
         self.menuCapes.addAction(self.actObrirCataleg)
+        self.menuCapes.addAction(self.actCreadorCataleg)
         self.menuCapes.addSeparator()
         self.menuCapes.addAction(self.actAfegirCapa)
         self.menuCapes.addAction(self.actCrearCapa1)
@@ -2322,6 +2327,14 @@ class QVista(QMainWindow, Ui_MainWindow):
     def obrirCataleg(self):
         # dock widget catàleg de capes
         self.dwCataleg.show()
+    def afegirCatalegCapes(self):
+        nodes = self.llegenda.selectedNodes()
+        if nodes is not None and len(nodes)>0:
+            dial = QvCreadorCatalegCapes(nodes, self.canvas, self.project, parent=self)
+            dial.show()
+        else:
+            QMessageBox.information(self,'Atenció','Seleccioneu una capa o grup a la llegenda per poder-la afegir al catàleg')
+            pass
 
     def obrirDialegProjecte(self):
         if self.teCanvisPendents(): #Posar la comprovació del dirty bit
@@ -2487,6 +2500,8 @@ class QVista(QMainWindow, Ui_MainWindow):
             filtraMascara(self)
         elif command in ('versio', 'versió'):
             QMessageBox.information(self,'Versió de QGIS',f'La versió de QGIS actual és la {QvApp().versioQgis()}')
+        elif command == 'afegircatalegcapes':
+            self.afegirCataleg()
         else:
             layer=self.llegenda.currentLayer()
             if layer is not None:
