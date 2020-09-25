@@ -11,8 +11,6 @@ class prova(QWidget):
         self.lay.addWidget(QLabel("Adéu :'("))
         self.setLayout(self.lay)
 
-print(f'És subclasse de QDockWidget: {issubclass(prova,QDockWidget)}')
-
 if __name__=='__main__':
     import sys
     with qgisapp() as app:

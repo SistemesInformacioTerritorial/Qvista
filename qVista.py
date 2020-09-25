@@ -546,11 +546,13 @@ class QVista(QMainWindow, Ui_MainWindow):
     def canvasRefrescat(self):
         if self.marcaLlocPosada:
             self.marcaLlocPosada = False
+            self.canvas.scene().removeItem(self.marcaLloc)
         else:
-            try:
-                self.canvas.scene().removeItem(self.marcaLloc)
-            except Exception as e:
-                print(e)
+            pass
+            # try:
+            #     self.canvas.scene().removeItem(self.marcaLloc)
+            # except Exception as e:
+            #     print(e)
 
     def preparacioUbicacions(self): #???
         """
@@ -1577,7 +1579,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.menuAjuda.addAction(self.actSobre)
 
     def carregaEines(self):
-        eines = os.listdir('moduls/eines')
+        eines = filter(lambda x: x.endswith('py'), os.listdir('moduls/eines'))
         self.accionsEines = []
         for x in eines:
             nom = Path(x).stem
