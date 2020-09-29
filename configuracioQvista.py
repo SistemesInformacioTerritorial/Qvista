@@ -45,7 +45,7 @@ widthLlegenda = 250 #percentatge
 # except:
 #     pathDesarPerDefecte='.'
 
-for x in (dirTemp, QvTempdir, tempdir, dadesdir, configdir):
+for x in (dirTemp, QvTempdir, tempdir, dadesdir, configdir, carpetaCatalegLocal):
     if not os.path.exists(x):
         try:
             os.mkdir(x)
