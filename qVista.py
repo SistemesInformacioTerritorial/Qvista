@@ -456,6 +456,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.bSeleccioGrafica = self.botoLateral(tamany = 25, accio=self.actSeleccioGrafica)
         self.bMesuraGrafica = self.botoLateral(tamany = 25, accio=self.actMesuraGrafica)
         self.bNouCanvas = self.botoLateral(tamany=25, accio=self.actNouCanvas)
+        self.bAnotacions = self.botoLateral(tamany=25, accio=self.actAnotacions)
 
         spacer2 = QSpacerItem(1000, 1000, QSizePolicy.Expanding,QSizePolicy.Maximum)
         self.lytBotoneraLateral.addItem(spacer2)
@@ -1025,6 +1026,12 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.actNouCanvas.setIcon(icon)
         self.actNouCanvas.triggered.connect(self.nouCanvas)
 
+        self.actAnotacions = QAction("Gestió d'anotacions", self)
+        self.actAnotacions.setStatusTip('Afegir i modificar anotacions')
+        icon=QIcon(os.path.join(imatgesDir,'anotacions.png'))
+        self.actAnotacions.setIcon(icon)
+        self.actAnotacions.triggered.connect(self.anotacions)
+
 
 
         self.actHelp = QAction("Contingut de l'ajuda", self)
@@ -1268,9 +1275,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.dwMesuraGrafica.move(pos.x()-400,pos.y())
         self.canviLayer()
     
-    def nouCanvas(self):
-
-        
+    def nouCanvas(self):        
         canvas = QvCanvasAuxiliar(self.canvas, temaInicial=self.llegenda.tema.buscaTema(), botoneraHoritzontal=True,posicioBotonera='SE')
         canvas.Sig_canviTema.connect(self.actualizarTitleCanvasAux)
         root = QgsProject.instance().layerTreeRoot()
@@ -1305,6 +1310,9 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.addDockWidget(Qt.RightDockWidgetArea, dwCanvas)
         dwCanvas.setFloating(True)
     
+    def anotacions(self):
+        self.canvas.setMapTool(self.llegenda.anotacions)
+
     def actualizoDiccionarios(self,num):
         print("borro: ",num)
         canvas = self.dicNumCanvas.get(num)
@@ -2490,8 +2498,6 @@ class QVista(QMainWindow, Ui_MainWindow):
             from moduls.QvMapForms import QvFormNovaMapificacio
 
             QvFormNovaMapificacio.executa(self.llegenda)
-        elif command == 'anotacions':
-            self.canvas.setMapTool(self.llegenda.anotacions)
         elif command == 'masklabels':
             self.llegenda.setMask(self.llegenda.capaPerNom("MaskLabels"), 1)
         elif command == 'qvtemps':

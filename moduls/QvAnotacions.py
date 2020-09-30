@@ -342,7 +342,6 @@ class QvMapToolAnnotation(qgGui.QgsMapTool):
         qgGui.QgsMapTool.__init__(self, llegenda.canvas)
         self.llegenda = llegenda
         self.llegenda.project.annotationManager().annotationAdded.connect(self.annotationCreated)
-        self.cursor = None
         self.currentMoveAction = None
         self.lastMousePosition = None
         self.editor = None
@@ -380,9 +379,8 @@ class QvMapToolAnnotation(qgGui.QgsMapTool):
     # Acciones y cursores
 
     def noAction(self) -> None:
-        self.cursor = qtGui.QCursor(qtCor.Qt.ArrowCursor)
         self.currentMoveAction = qgGui.QgsMapCanvasAnnotationItem.NoAction
-        self.canvas().setCursor(qtGui.QCursor(self.cursor))
+        self.canvas().setCursor(qtGui.QCursor(qtCor.Qt.ArrowCursor))
 
     def moveAction(self, item: qgGui.QgsMapCanvasAnnotationItem,
                    pos: qtCor.QPoint) -> qgGui.QgsMapCanvasAnnotationItem.MouseMoveAction:
