@@ -9,7 +9,7 @@ from moduls.QvSingleton import Singleton
 from moduls.QvPythonRunner import QvPythonRunner
 from moduls.QvGithub import QvGithub
 from moduls.QvSqlite import QvSqlite
-from moduls import QvFuncions
+# from moduls import QvFuncions
 from pathlib import Path
 import sys
 import getpass
@@ -62,7 +62,6 @@ class QvApp(Singleton):
     def __init__(self):
         if hasattr(self, 'gh'):                     # Se inicializa una vez
             return
-
         self.gh = None
         self.ruta, self.rutaBase = self.calcRuta()  # Path de la aplicación
         self.cfg = self.readCfg()                   # Config de instalación
@@ -245,10 +244,16 @@ class QvApp(Singleton):
             return ''
 
     def zoomFactor(self):
+        # donat que QvFuncions importa QvApp, i QvApp importa QvFuncions, hi havia certs problemes
+        # Concretament, el decorador cronometraDebug no funcionava si es volia utilitzar dins del propi QvFuncions
+        # Si movem el seu import a les funcions que el requereixin, evitem el problema
+        from moduls import QvFuncions
         zoomFactor = QApplication.desktop().screen().logicalDpiX() / QvFuncions.DPI
         return zoomFactor
 
     def nomUsuari(self):
+        # ídem
+        from moduls import QvFuncions
         return QvFuncions.getUserName(self.usuari)
 
     def versioQgis(self):
