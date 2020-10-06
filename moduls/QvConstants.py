@@ -135,7 +135,7 @@ class QvConstants:
     @staticmethod
     def cursorAnotacio():
         if QvConstants.CURSORANOTACIO is None:
-            QvConstants.CURSORANOTACIO=QCursor(QPixmap(os.path.join(imatgesDir,'dedo.cur')))
+           QvConstants.CURSORANOTACIO=QCursor(QPixmap(os.path.join(imatgesDir,'anotacions.ico')), 0, 23)
         return QvConstants.CURSORANOTACIO
     @staticmethod
     def cursorFletxa():
