@@ -89,8 +89,8 @@ class QvCanvas(QgsMapCanvas):
             self.uncheckBotons(self.bPanning)
            
             self.tool_pan = QgsMapToolPan(self)
-            self.setMapTool(self.tool_pan)
             self.einesBotons[self.tool_pan]=self.bPanning
+            self.setMapTool(self.tool_pan)
 
 
         else: 
@@ -112,8 +112,8 @@ class QvCanvas(QgsMapCanvas):
            
             self.tool_zoomin = QgsMapToolZoom(self, False)
             self.tool_zoomin.setCursor(QvConstants.cursorZoomIn())
-            self.setMapTool(self.tool_zoomin)
             self.einesBotons[self.tool_zoomin]=self.bZoomIn
+            self.setMapTool(self.tool_zoomin)
         else: 
             self.bZoomIn.setChecked(True)
         self.setCursor(QvConstants.cursorZoomIn())
@@ -124,8 +124,8 @@ class QvCanvas(QgsMapCanvas):
            
             self.tool_zoomout = QgsMapToolZoom(self, True)
             self.tool_zoomout.setCursor(QvConstants.cursorZoomOut())
-            self.setMapTool(self.tool_zoomout)
             self.einesBotons[self.tool_zoomout]=self.bZoomOut
+            self.setMapTool(self.tool_zoomout)
         else: 
             self.bZoomOut.setChecked(True)
 
@@ -145,8 +145,8 @@ class QvCanvas(QgsMapCanvas):
             try:
                 self.tool = QvSeleccioElement(self, llegenda = self.llegenda)
                 self.tool.setCursor(QvConstants.cursorDit())
-                self.setMapTool(self.tool)
                 self.einesBotons[self.tool]=self.bApuntar
+                self.setMapTool(self.tool)
             except:
                 pass
         else:
