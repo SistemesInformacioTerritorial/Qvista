@@ -53,6 +53,7 @@ class QvConstants:
     CURSORZOOMIN=None
     CURSORZOOMOUT=None
     CURSORDIT=None
+    CURSORANOTACIO=None
     CURSOROCUPAT=Qt.WaitCursor
 
     @staticmethod
@@ -131,6 +132,11 @@ class QvConstants:
         if QvConstants.CURSORDIT is None:
             QvConstants.CURSORDIT=QCursor(QPixmap(os.path.join(imatgesDir,'dedo.cur')))
         return QvConstants.CURSORDIT
+    @staticmethod
+    def cursorAnotacio():
+        if QvConstants.CURSORANOTACIO is None:
+            QvConstants.CURSORANOTACIO=QCursor(QPixmap(os.path.join(imatgesDir,'dedo.cur')))
+        return QvConstants.CURSORANOTACIO
     @staticmethod
     def cursorFletxa():
         return QvConstants.CURSORFLETXA

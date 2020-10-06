@@ -10,6 +10,9 @@ import qgis.PyQt.QtCore as qtCor
 from pathlib import Path, PureWindowsPath
 from typing import Tuple
 import json
+from moduls import QvConstants
+
+from moduls.QvConstants import QvConstants
 
 class QvAnnotation:
     """Métodos estáticos relacionados con anotaciones
@@ -342,6 +345,7 @@ class QvMapToolAnnotation(qgGui.QgsMapTool):
         qgGui.QgsMapTool.__init__(self, llegenda.canvas)
         self.llegenda = llegenda
         self.llegenda.project.annotationManager().annotationAdded.connect(self.annotationCreated)
+        self.cursor = QvConstants.cursorAnotacio()
         self.currentMoveAction = None
         self.lastMousePosition = None
         self.editor = None
@@ -380,12 +384,16 @@ class QvMapToolAnnotation(qgGui.QgsMapTool):
 
     def noAction(self) -> None:
         self.currentMoveAction = qgGui.QgsMapCanvasAnnotationItem.NoAction
-        self.canvas().setCursor(qtGui.QCursor(qtCor.Qt.ArrowCursor))
+        self.canvas().setCursor(qtGui.QCursor(self.cursor))
 
     def moveAction(self, item: qgGui.QgsMapCanvasAnnotationItem,
                    pos: qtCor.QPoint) -> qgGui.QgsMapCanvasAnnotationItem.MouseMoveAction:
         action = item.moveActionForPosition(pos)
-        self.canvas().setCursor(qtGui.QCursor(item.cursorShapeForAction(action)))
+        if action == qgGui.QgsMapCanvasAnnotationItem.NoAction:
+            cursor = self.cursor
+        else:
+            cursor = item.cursorShapeForAction(action)
+        self.canvas().setCursor(qtGui.QCursor(cursor))
         return action
 
     # Selección y visibilidad
