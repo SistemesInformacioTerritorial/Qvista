@@ -155,12 +155,16 @@ class QvCanvas(QgsMapCanvas):
         self.setCursor(QvConstants.cursorDit())
 
     def anotacions(self):
-        if  self.bAnotacions.isChecked():
-            self.uncheckBotons(self.bAnotacions)
-            self.einesBotons[self.llegenda.anotacions]=self.bAnotacions
-            self.setMapTool(self.llegenda.anotacions)
-        else: 
-            self.bAnotacions.setChecked(True)
+        if self.llegenda.anotacions:
+            if  self.bAnotacions.isChecked():
+                self.uncheckBotons(self.bAnotacions)
+                self.einesBotons[self.llegenda.anotacions]=self.bAnotacions
+                self.setMapTool(self.llegenda.anotacions)
+            else: 
+                self.bAnotacions.setChecked(True)
+        else:
+            self.bAnotacions.setChecked(False)
+            QMessageBox.information(self,'Atenció',"La gestió d'anotacions només funciona amb versions de QGIS superiors a la 3.10")
 
     def copyToClipboard(self):
         '''Potser no és la millor manera, però el que fa és desar la imatge temporalment i copiar-la d'allà'''
