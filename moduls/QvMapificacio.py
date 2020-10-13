@@ -163,7 +163,8 @@ class QvMapificacio(QObject):
         for linia in self.mostra:
             aux = linia.strip()
             aux = re.sub('"[^"]*"', '', aux)  # Elimina strings entre comillas dobles
-            aux = ''.join([i for i in aux if not i.isalnum()])  # Elimina caracteres alfanuméricos
+            # aux = ''.join([i for i in aux if not i.isalnum()])  # Elimina caracteres alfanuméricos
+            aux = ''.join([i for i in aux if i in (',',';','|','\t')])
             cont.update(aux)
         # Retornamos el caracter con más apariciones en total
         elems = cont.most_common(1)
