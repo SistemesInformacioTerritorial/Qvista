@@ -456,7 +456,6 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.bSeleccioGrafica = self.botoLateral(tamany = 25, accio=self.actSeleccioGrafica)
         self.bMesuraGrafica = self.botoLateral(tamany = 25, accio=self.actMesuraGrafica)
         self.bNouCanvas = self.botoLateral(tamany=25, accio=self.actNouCanvas)
-        self.bAnotacions = self.botoLateral(tamany=25, accio=self.actAnotacions)
 
         spacer2 = QSpacerItem(1000, 1000, QSizePolicy.Expanding,QSizePolicy.Maximum)
         self.lytBotoneraLateral.addItem(spacer2)
@@ -485,7 +484,8 @@ class QVista(QMainWindow, Ui_MainWindow):
     def preparacioEntornGrafic(self):
         """Preparacio entorn grafic del canvas"""
 
-        llistaBotons = ['streetview','apuntar', 'zoomIn', 'zoomOut', 'panning', 'centrar', 'enrere', 'endavant', 'maximitza']
+        # llistaBotons = ['streetview','apuntar', 'zoomIn', 'zoomOut', 'panning', 'centrar', 'enrere', 'endavant', 'maximitza']
+        llistaBotons = ['streetview','apuntar', 'zoomIn', 'zoomOut', 'panning', 'centrar', 'maximitza', 'anotacions']
         
         self.canvas = QvCanvas(llistaBotons=llistaBotons, posicioBotonera = 'SE', botoneraHoritzontal = True, pare=self)
         self.canvas.canviMaximitza.connect(self.ferGran)
@@ -1026,14 +1026,6 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.actNouCanvas.setIcon(icon)
         self.actNouCanvas.triggered.connect(self.nouCanvas)
 
-        self.actAnotacions = QAction("Gestió d'anotacions", self)
-        self.actAnotacions.setStatusTip('Afegir i modificar anotacions')
-        icon=QIcon(os.path.join(imatgesDir,'anotacions.png'))
-        self.actAnotacions.setIcon(icon)
-        self.actAnotacions.triggered.connect(self.anotacions)
-
-
-
         self.actHelp = QAction("Contingut de l'ajuda", self)
         icon=QIcon(os.path.join(imatgesDir,'help-circle.png'))
         self.actHelp.setIcon(icon)
@@ -1309,9 +1301,7 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         self.addDockWidget(Qt.RightDockWidgetArea, dwCanvas)
         dwCanvas.setFloating(True)
-    
-    def anotacions(self):
-        self.canvas.setMapTool(self.llegenda.anotacions)
+
 
     def actualizoDiccionarios(self,num):
         print("borro: ",num)

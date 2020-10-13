@@ -153,6 +153,19 @@ class QvCanvas(QgsMapCanvas):
             self.bApuntar.setChecked(True)
         
         self.setCursor(QvConstants.cursorDit())
+
+    def anotacions(self):
+        if self.llegenda.anotacions:
+            if  self.bAnotacions.isChecked():
+                self.uncheckBotons(self.bAnotacions)
+                self.einesBotons[self.llegenda.anotacions]=self.bAnotacions
+                self.setMapTool(self.llegenda.anotacions)
+            else: 
+                self.bAnotacions.setChecked(True)
+        else:
+            self.bAnotacions.setChecked(False)
+            QMessageBox.information(self,'Atenció',"La gestió d'anotacions només funciona amb versions de QGIS superiors a la 3.10")
+
     def copyToClipboard(self):
         '''Potser no és la millor manera, però el que fa és desar la imatge temporalment i copiar-la d'allà'''
         nom=os.path.join(tempdir,str(time.time())+'.png')
@@ -309,6 +322,12 @@ class QvCanvas(QgsMapCanvas):
                 self.bEndavant.setCursor(QvConstants.cursorFletxa())
                 self.bEndavant.clicked.connect(self.zoomToNextExtent)
                 self.bEndavant.setCheckable(False)
+            if "anotacions" in self.llistaBotons:
+                self.bAnotacions = self._botoMapa(os.path.join(imatgesDir,'anotacions.png'))
+                self.bAnotacions.setToolTip("Gestió d'anotacions")
+                self.layoutBotoneraMapa.addWidget(self.bAnotacions)  
+                self.bAnotacions.setCursor(QvConstants.cursorAnotacio())       
+                self.bAnotacions.clicked.connect(self.anotacions)
             if "streetview" in self.llistaBotons:
                 self.bstreetview = self._botoMapa(os.path.join(imatgesDir,'littleMan.png'))
                 self.bstreetview.setDragable(True)
