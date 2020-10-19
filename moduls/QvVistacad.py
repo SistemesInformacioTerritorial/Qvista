@@ -14,6 +14,112 @@ from moduls.QvApp import QvApp
 
 import math
 
+class QvObjVcad:
+    def __init__(self, db):
+        self.db = db
+
+    def ejecuta(self, select):
+        if self.db is None: return None
+        query = qtSql.QSqlQuery(self.db)
+        try:
+            query.setForwardOnly(True)
+            query.exec_(select)
+            return query
+        except Exception as e:
+            print(str(e))
+            return None
+
+    def siguiente(self):
+        if self.db is None: return False
+        ok = self.query.next()
+        if ok:
+            self.registro()
+        return ok
+
+    def num(self):
+        return self.query.at()
+
+    def primero(self):
+        return self.num() == 0
+
+    def registro(self):
+        pass
+
+class QvCapaVcad(QvObjVcad):
+    
+    def __init__(self, db, idProyecto, idsCapasExcluidas='0', orden=''):
+        super().__init__(db)
+        self.idProyecto = idProyecto
+        self.idsCapasExcluidas = idsCapasExcluidas
+        self.orden = orden
+        self.select = self.consulta()
+        self.query = self.ejecuta(self.select)
+
+    def consulta(self):
+        return f"select p.nom nom_projecte, p.descripcio desc_projecte, c.* " \
+               f"from vistacad_u.projectes p, vistacad_u.capes c " \
+               f"where p.id = {self.idProyecto} and p.actiu = 1 " \
+               f"and p.id = c.id_projecte and c.actiu = 1 " \
+               f"and c.id not in ({self.idsCapasExcluidas}) " \
+               f"order by ordre_visual {self.orden}"
+
+    def registro(self):
+        self.NOM_PROJECTE = self.query.value('NOM_PROJECTE')
+        self.DESC_PROJECTE = self.query.value('DESC_PROJECTE')
+        self.ID = math.trunc(self.query.value('ID'))
+        self.NOM = self.query.value('NOM')
+        self.TIPUS = math.trunc(self.query.value('TIPUS'))
+        self.MOSTRAR_ETIQUETA = math.trunc(self.query.value('MOSTRAR_ETIQUETA'))
+        self.ESCALA_MIN = self.query.value('ESCALA_MIN')
+        self.ESCALA_MAX = self.query.value('ESCALA_MAX')
+
+    def selectQgis(self, atributos):
+        ini = f"select id, etiqueta, "
+        fin = f"geom from vistacad_u.geometries where actiu = 1 and id_capa = {self.ID}"
+        if atributos is None:
+            select = f"{ini}{fin}"
+        else:
+            select = f"{ini}{atributos}{fin}"
+        return select
+
+    def __str__(self):
+        if self.primero():
+            if self.DESC_PROJECTE.isNull():
+                linea = f"Proyecto: {self.NOM_PROJECTE}"
+            else:
+                linea = f"Proyecto: {self.NOM_PROJECTE}, {self.DESC_PROJECTE}"
+            print(linea)
+        return f"- Capa {self.num()+1}: {self.ID}, {self.NOM}, {self.TIPUS}"
+
+class QvAtributosVcad(QvObjVcad):
+
+    def __init__(self, db, idCapa):
+        super().__init__(db)
+        self.idCapa = idCapa
+        self.select = self.consulta()
+        self.query = self.ejecuta(self.select)
+        self.lista = ''
+
+    def consulta(self):
+        return f"select a.* " \
+               f"from vistacad_u.capes c, vistacad_u.formularis f, vistacad_u.atributs a " \
+               f"where c.id = {self.idCapa} and c.actiu = 1 " \
+               f"and c.id_formulari = f.id and f.actiu = 1 " \
+               f"and a.id_formulari = f.id and a.actiu = 1 " \
+               f"order by a.ordre"
+
+    def registro(self):
+        self.ID = math.trunc(self.query.value('ID'))
+        self.NOM = self.query.value('NOM')
+        self.TIPUS = math.trunc(self.query.value('TIPUS'))
+        self.lista = f"extractValue(attrs,'/OBJ/a{self.ID}') {self.NOM}, "
+
+    def listaQgis(self):
+        return self.lista
+
+    def __str__(self):
+        return f"  + Atributo {self.num()+1}: {self.NOM}, {self.TIPUS}"
+
 class QvVistacad:
     """ Clase para importar projectos de Visatacad a Qvista
         Tablas consultadas: projectes, capes, formularis, atributs, geometries
@@ -31,77 +137,7 @@ class QvVistacad:
             QvApp().dbLogConnexio()
             self.db = QvApp().dbLog
         self.project = qgCor.QgsProject.instance()
-
-    def capesSelect(self, idProyecto, idsCapasExcluidas='0', orden=''):
-        return f"select p.nom nom_projecte, p.descripcio desc_projecte, c.* " \
-               f"from vistacad_u.projectes p, vistacad_u.capes c " \
-               f"where p.id = {idProyecto} and p.actiu = 1 " \
-               f"and p.id = c.id_projecte and c.actiu = 1 " \
-               f"and c.id not in ({idsCapasExcluidas}) " \
-               f"order by ordre_visual {orden}"
-
-    def capaPrint(self, query):
-        if query is None: return
-        try:
-            num = query.at()
-            if num == 0:
-                nom = query.value('NOM_PROJECTE')
-                desc = query.value('DESC_PROJECTE')
-                if desc.isNull():
-                    linea = f"Proyecto: {nom}"
-                else:
-                    linea = f"Proyecto: {nom}, {desc}"
-                print(linea)
-            linea = f"- Capa {num+1}: {math.trunc(query.value('ID'))}, {query.value('NOM')}, {math.trunc(query.value('TIPUS'))}"
-            print(linea)
-        except Exception as e:
-            print(str(e))
-
-    def atributsSelect(self, idCapa):
-        return f"select a.* " \
-               f"from vistacad_u.capes c, vistacad_u.formularis f, vistacad_u.atributs a " \
-               f"where c.id = {idCapa} and c.actiu = 1 " \
-               f"and c.id_formulari = f.id and f.actiu = 1 " \
-               f"and a.id_formulari = f.id and a.actiu = 1 " \
-               f"order by a.ordre"
-
-    def atributPrint(self, query):
-        if query is None: return
-        try:
-            num = query.at()
-            linea = f"  + Atributo {num+1}: {query.value('NOM')}, {math.trunc(query.value('TIPUS'))}"
-            print(linea)
-        except Exception as e:
-            print(str(e))
-
-    def capaAtributs(self, query):
-        if query is None: return
-        try:
-            num = query.at()
-            if num == 0: self.atributsCapa = ""
-            item = f"extractValue(attrs,'/OBJ/a{math.trunc(query.value('ID'))}') {query.value('NOM')}"
-            self.atributsCapa = f"{self.atributsCapa}{item}, "
-        except Exception as e:
-            print(str(e))
-
-    def capaSelect(self, idCapa):
-        ini = f"select id, etiqueta, "
-        fin = f"geom from vistacad_u.geometries where actiu = 1 and id_capa = {idCapa}"
-        if self.atributsCapa is None:
-            return f"{ini}{fin}"
-        else:
-            return f"{ini}{self.atributsCapa}{fin}"
-
-    def queryExec(self, select):
-        if self.db is None: return None
-        query = qtSql.QSqlQuery(self.db)
-        try:
-            query.setForwardOnly(True)
-            query.exec_(select)
-            return query
-        except Exception as e:
-            print(str(e))
-            return None
+        self.root = self.project.layerTreeRoot()
 
     def loadLayer(self, nom, tipus, select, srid='25831', id="ID", geom="GEOM"):
         uri = qgCor.QgsDataSourceUri()
@@ -121,41 +157,35 @@ class QvVistacad:
 
     def loadProject(self, idProyecto, idsCapasExcluidas='0', agrupar=True, srid='25831'):
         if self.db is None: return
-        if agrupar: order = ''
-        else: order = 'desc'
-        queryCapes = self.queryExec(self.capesSelect(idProyecto, idsCapasExcluidas, orden=order))
+        if agrupar: orden = ''
+        else: orden = 'desc'
+        capa = QvCapaVcad(self.db, idProyecto, idsCapasExcluidas, orden=orden)
         grupo = None
-        while queryCapes.next():
-            if agrupar and queryCapes.at() == 0:
-                nomProyecto = queryCapes.value('NOM_PROJECTE')
-                root = self.project.layerTreeRoot()
-                grupo = root.addGroup(nomProyecto)
-            # self.capaPrint(queryCapes)
-            idCapa = math.trunc(queryCapes.value('ID'))
-            nomCapa = queryCapes.value('NOM')
-            tipusCapa = math.trunc(queryCapes.value('TIPUS'))
-            queryAtributs = self.queryExec(self.atributsSelect(idCapa))
-            self.atributsCapa = None
-            while queryAtributs.next():
-                # self.atributPrint(queryAtributs)
-                self.capaAtributs(queryAtributs)
-            selectCapa = self.capaSelect(idCapa)
-            # print('  -> ', selectCapa)
-            capa = self.loadLayer(nomCapa, tipusCapa, selectCapa, srid)
-            minScale = queryCapes.value('ESCALA_MIN')
-            maxScale = queryCapes.value('ESCALA_MAX')
-            if minScale > 0.0 or maxScale > 0.0:
-                capa.setScaleBasedVisibility(True)
-                capa.setMinimumScale(maxScale)  # Al revés ????
-                capa.setMaximumScale(minScale)
-            else:
-                capa.setScaleBasedVisibility(False)
-            if capa is not None:
-                if agrupar:
-                    self.project.addMapLayer(capa, False)
-                    grupo.addLayer(capa)
+        while capa.siguiente():
+            if agrupar and capa.primero():
+                grupo = self.root.addGroup(capa.NOM_PROJECTE)
+            # print(capa)
+            atributos = QvAtributosVcad(self.db, capa.ID)
+            while atributos.siguiente():
+                # print(atributos)
+                pass
+            selectLayer = capa.selectQgis(atributos.listaQgis())
+            # print('  ->', selectLayer)
+            layer = self.loadLayer(capa.NOM, capa.TIPUS, selectLayer, srid)
+            if layer is not None:
+                if capa.MOSTRAR_ETIQUETA == 1:
+                    layer.setDisplayExpression('ETIQUETA')
+                if capa.ESCALA_MIN > 0.0 or capa.ESCALA_MAX > 0.0:
+                    layer.setScaleBasedVisibility(True)
+                    layer.setMinimumScale(capa.ESCALA_MAX)  # Al revés ????
+                    layer.setMaximumScale(capa.ESCALA_MIN)
                 else:
-                    self.project.addMapLayer(capa)
+                    layer.setScaleBasedVisibility(False)
+                if agrupar:
+                    self.project.addMapLayer(layer, False)
+                    grupo.addLayer(layer)
+                else:
+                    self.project.addMapLayer(layer)
 
 if __name__ == "__main__":
 
