@@ -284,7 +284,10 @@ class QvApp(Singleton):
                     db.setPassword(self.dbQvista['Password'])
                     if db.open():
                         self.dbLog = db
-        except Exception:
+                    else:
+                        self.dbLog = None
+        except Exception as e:
+            print(str(e))
             self.dbLog = None
 
     def dbLogDesconnexio(self):
@@ -296,7 +299,8 @@ class QvApp(Singleton):
                 self.dbLog.close()
                 self.dbLog = None
                 QSqlDatabase.removeDatabase(conName)
-        except Exception:
+        except Exception as e:
+            print(str(e))
             self.dbLog = None
 
     # Metodos de LOG en Oracle

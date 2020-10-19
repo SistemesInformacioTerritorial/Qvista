@@ -2486,8 +2486,11 @@ class QVista(QMainWindow, Ui_MainWindow):
             self.infoQVista()
         elif command == 'mapificacio':
             from moduls.QvMapForms import QvFormNovaMapificacio
-
             QvFormNovaMapificacio.executa(self.llegenda)
+        elif command == 'carrilsbici':
+            from moduls.QvVistacad import QvVistacad
+            vCad = QvVistacad()
+            vCad.loadProject('341', '3601, 3602')
         elif command == 'masklabels':
             self.llegenda.setMask(self.llegenda.capaPerNom("MaskLabels"), 1)
         elif command == 'qvtemps':
