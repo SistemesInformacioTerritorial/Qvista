@@ -11,11 +11,13 @@ import qgis.PyQt.QtCore as qtCor
 import qgis.PyQt.QtSql as qtSql
 
 from moduls.QvApp import QvApp
+from moduls.QvVistacadVars import *
 
 import math
 
 class QvObjVcad:
     def __init__(self, db: qtSql.QSqlDatabase) -> None:
+        self.debug = (__name__ == "__main__")
         self.db = db
 
     def ejecuta(self, select: str) -> qtSql.QSqlQuery:
@@ -70,10 +72,11 @@ class QvCapaVcad(QvObjVcad):
             filtroCapas = ''
         else:
             filtroCapas = f"and c.id not in ({self.idsCapasExcluidas}) "
-        return f"select p.nom nom_projecte, p.descripcio desc_projecte, c.* " \
-               f"from vistacad_u.projectes p, vistacad_u.capes c " \
+        return f"select p.nom nom_projecte, p.descripcio desc_projecte, c.*, s.nom nom_simbol, s.rotable rotable_simbol " \
+               f"from vistacad_u.projectes p, vistacad_u.capes c, vistacad_u.construccions_grafiques s " \
                f"where p.id = {self.idProyecto} and p.actiu = 1 " \
                f"and p.id = c.id_projecte and c.actiu = 1 " \
+               f"and c.id_const_grafica = s.id(+) " \
                f"{filtroCapas}" \
                f"order by ordre_visual {self.orden}"
 
@@ -86,11 +89,65 @@ class QvCapaVcad(QvObjVcad):
         self.MOSTRAR_ETIQUETA = math.trunc(self.query.value('MOSTRAR_ETIQUETA'))
         self.ESCALA_MIN = self.query.value('ESCALA_MIN')
         self.ESCALA_MAX = self.query.value('ESCALA_MAX')
+        self.NOM_SIMBOL = self.query.value('NOM_SIMBOL')
+        variant = self.query.value('ROTABLE_SIMBOL')
+        if isinstance(variant, float):
+            self.ROTABLE_SIMBOL = math.trunc(variant)
+        else:
+            self.ROTABLE_SIMBOL = 0
+        self.LINIA_GRUIX = math.trunc(self.query.value('LINIA_GRUIX'))
+        self.LINIA_COLOR = math.trunc(self.query.value('LINIA_COLOR'))
+        self.LINIA_TIPUS = math.trunc(self.query.value('LINIA_TIPUS'))
+
+    def colorQgis(self) -> str:
+        return VCAD_COLORS[self.LINIA_COLOR] + ',255'
+
+    def styleQgis(self) -> str:
+        return VCAD_LINE_STYLES[self.LINIA_TIPUS]
+
+    def widthQgis(self) -> str:
+        if self.LINIA_GRUIX == 0:
+            width = 0.1
+        else:
+            width = 0.1 * self.LINIA_GRUIX
+        return f"{width:.5f}"
+
+    def symbolQgis(self) -> dict:
+        if self.NOM_SIMBOL and self.NOM_SIMBOL in VCAD_SYMBOLS:
+            return VCAD_SYMBOLS[self.NOM_SIMBOL]
+        else:
+            return None
 
     def selectQgis(self, atributos: str) -> str:
-        ini = f"select id, etiqueta, "
-        fin = f"geom from vistacad_u.geometries where actiu = 1 and id_capa = {self.ID}"
-        return f"{ini}{atributos}{fin}"
+        if self.TIPUS == 1: # Punto
+            campos = "trunc(rotacio) \"Rotació\", "
+        else:
+            campos = ""
+        return f"select id, etiqueta \"Etiqueta\", {campos}{atributos}" \
+               f"geom from vistacad_u.geometries where actiu = 1 and id_capa = {self.ID}"
+
+    def simbologia(self, symbol: qgCor.QgsSymbol) -> None:
+        if self.TIPUS == 1: # Punto
+            props = self.symbolQgis()
+            if props:
+                props['color'] = self.colorQgis()
+                symbolLayer = qgCor.QgsSimpleMarkerSymbolLayer.create(props)
+                if self.ROTABLE_SIMBOL == 1:
+                    prop = qgCor.QgsProperty()
+                    prop.setExpressionString(f"-\"Rotació\"{props['angle']}") 
+                    symbolLayer.setDataDefinedProperty(qgCor.QgsSymbolLayer.PropertyAngle, prop)
+                symbol.changeSymbolLayer(0, symbolLayer)
+                if self.debug: print('NEW STYLE', symbol.symbolLayer(0).properties())
+        elif self.TIPUS == 2: # Linea
+            props = symbol.symbolLayer(0).properties()
+            if self.debug: print('OLD STYLE', symbol.symbolLayer(0).properties())
+            props['line_color'] = self.colorQgis()
+            props['line_style'] = self.styleQgis()
+            props['line_width'] = self.widthQgis()
+            props['line_width_unit'] = 'MM'
+            symbolLayer = qgCor.QgsSimpleLineSymbolLayer.create(props)
+            symbol.changeSymbolLayer(0, symbolLayer)
+            if self.debug: print('NEW STYLE', symbol.symbolLayer(0).properties())
 
 class QvAtributosVcad(QvObjVcad):
 
@@ -127,7 +184,8 @@ class QvVistacad:
         Tablas consultadas: projectes, capes, formularis, atributs, geometries
 
         Falta incorporar:
-        - Simbología geometrías
+        - Orden visualización capas
+        - Simbología geometrías estatica y dinámica
         - Simbología etiquetas
         - Tipos de atributos y formulario
         - Bases cartográficas
@@ -202,10 +260,7 @@ class QvVistacad:
                 if self.debug: print('  ->', selectLayer)
                 layer = self.loadLayer(capa.NOM, capa.TIPUS, selectLayer, srid)
                 if layer is not None:
-                    # Simbología lineal:
-                    # LINEA_GRUIX
-                    # LINIA_COLOR
-                    # LINIA_TIPUS
+                    capa.simbologia(layer.renderer().symbol())
                     if capa.MOSTRAR_ETIQUETA == 1:
                         layer.setDisplayExpression('ETIQUETA')
                     if capa.ESCALA_MIN > 0.0 or capa.ESCALA_MAX > 0.0:
@@ -239,8 +294,8 @@ if __name__ == "__main__":
         canvas = qgGui.QgsMapCanvas()
         # canvas = QvCanvas()
 
-        inicial = cfg.projecteInicial
-        # inicial = 'd:/temp/test.qgs'
+        # inicial = cfg.projecteInicial
+        inicial = 'd:/temp/carrilsbici.qgs'
 
         leyenda = QvLlegenda(canvas)
         leyenda.readProject(inicial)
@@ -257,8 +312,22 @@ if __name__ == "__main__":
             print('ini carrils bici')
             # vCad = QvVistacad()
             # vCad.loadProject('341', '3601, 3602')
-            QvVistacad.carregaProjecte('341', '3601, 3602')
+            QvVistacad.carregaProjecte('341')
             print('fin carrils bici')
+
+            # layer = leyenda.capaPerNom('Senyals')
+            # renderer = layer.renderer()
+            # symbol = renderer.symbol()
+            # print('OLD:', symbol.symbolLayer(0).properties())
+            # newSymbolLayer = qgCor.QgsSimpleLineSymbolLayer.create(
+            # {'capstyle': 'square', 'customdash': '5;2', 'customdash_map_unit_scale': '3x:0,0,0,0,0,0', 'customdash_unit': 'MM', 'draw_inside_polygon': '0', 
+            # 'joinstyle': 'bevel', 'line_color': '255,0,0,255', 'line_style': 'dash', 'line_width': '3', 'line_width_unit': 'Pixel', 'offset': '0', 
+            # 'offset_map_unit_scale': '3x:0,0,0,0,0,0', 'offset_unit': 'MM', 'ring_filter': '0', 'use_custom_dash': '0', 'width_map_unit_scale': '3x:0,0,0,0,0,0'}
+            # )
+            # symbol.changeSymbolLayer(0, newSymbolLayer)
+            # print('NEW:', symbol.symbolLayer(0).properties())
+            # leyenda.refreshLayerSymbology(layer.id())
+            # layer.triggerRepaint()
 
         def writeProject():
             print('write file')
