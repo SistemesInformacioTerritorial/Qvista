@@ -24,6 +24,7 @@ class QvObjVcad:
         if self.db is None: return None
         query = qtSql.QSqlQuery(self.db)
         try:
+            if self.debug: print('Select:', select)
             query.setForwardOnly(True)
             query.exec_(select)
             return query
@@ -58,14 +59,18 @@ class QvCapaVcad(QvObjVcad):
         self.query = self.ejecuta(self.select)
 
     def __str__(self):
-        if not hasattr(self, 'ID'): return ''
-        if self.primero():
-            if self.DESC_PROJECTE.isNull():
-                linea = f"Proyecto: {self.NOM_PROJECTE}"
-            else:
-                linea = f"Proyecto: {self.NOM_PROJECTE}, {self.DESC_PROJECTE}"
-            print(linea)
-        return f"- Capa {self.num()+1}: {self.ID}, {self.NOM}, {self.TIPUS}"
+        try:
+            if not hasattr(self, 'ID'): return ''
+            if self.primero():
+                if isinstance(self.DESC_PROJECTE, str) and self.DESC_PROJECTE != '':
+                    linea = f"Proyecto: {self.NOM_PROJECTE} - {self.DESC_PROJECTE}"
+                else:
+                    linea = f"Proyecto: {self.NOM_PROJECTE}"
+                print(linea)
+            return f"- Capa {self.num()+1}: {self.ID}, {self.NOM}, {self.TIPUS}"
+        except Exception as e:
+            print(str(e))
+            return ''
 
     def consulta(self) -> str:
         if self.idsCapasExcluidas == '':
@@ -118,12 +123,32 @@ class QvCapaVcad(QvObjVcad):
         else:
             return None
 
+# Let's define the following handy function:
+
+# def setColumnVisibility( layer, columnName, visible ):
+#     config = layer.attributeTableConfig()
+#     columns = config.columns()
+#     for column in columns:
+#         if column.name == columnName:
+#             column.hidden = not visible
+#             break
+#     config.setColumns( columns )
+#     layer.setAttributeTableConfig( config )
+
+# And then you can call it to hide or show columns in the attribute table. For example:
+
+# vLayer = iface.activeLayer()
+# setColumnVisibility( vLayer, 'FIRST_COLUMN', False ) # Hide FIRST_COLUMN
+# setColumnVisibility( vLayer, 'area', False ) # Hide area column
+# setColumnVisibility( vLayer, 'FIRST_COLUMN', True ) # Show FIRST_COLUMN
+# setColumnVisibility( vLayer, 'area', True ) # Show area column
+
     def selectQgis(self, atributos: str) -> str:
         if self.TIPUS == 1: # Punto
             campos = "trunc(rotacio) \"Rotació\", "
         else:
             campos = ""
-        return f"select id, etiqueta \"Etiqueta\", {campos}{atributos}" \
+        return f"select id, {atributos}{campos}" \
                f"geom from vistacad_u.geometries where actiu = 1 and id_capa = {self.ID}"
 
     def simbologia(self, symbol: qgCor.QgsSymbol) -> None:
@@ -159,8 +184,12 @@ class QvAtributosVcad(QvObjVcad):
         self.lista = ''
 
     def __str__(self):
-        if not hasattr(self, 'ID'): return ''
-        return f"  + Atributo {self.num()+1}: {self.NOM}, {self.TIPUS}"
+        try:
+            if not hasattr(self, 'ID'): return ''
+            return f"  + Atributo {self.num()+1}: {self.NOM}, {self.TIPUS}"
+        except Exception as e:
+            print(str(e))
+            return ''
 
     def consulta(self) -> str:
         return f"select a.* " \
@@ -174,7 +203,7 @@ class QvAtributosVcad(QvObjVcad):
         self.ID = math.trunc(self.query.value('ID'))
         self.NOM = self.query.value('NOM')
         self.TIPUS = math.trunc(self.query.value('TIPUS'))
-        self.lista = f"extractValue(attrs,'/OBJ/a{self.ID}') \"{self.NOM}\", "
+        self.lista += f"extractValue(attrs,'/OBJ/a{self.ID}') \"{self.NOM}\", "
 
     def listaQgis(self) -> str:
         return self.lista
@@ -209,6 +238,16 @@ class QvVistacad:
         self.project = qgCor.QgsProject.instance()
         self.root = self.project.layerTreeRoot()
 
+    # def setVisibiltyColumn(self, layer, columnName, visible):
+    #     config = layer.attributeTableConfig()
+    #     columns = config.columns()
+    #     for column in columns:
+    #         if column.name == columnName:
+    #             column.hidden = not visible
+    #             config.setColumns(columns)
+    #             layer.setAttributeTableConfig(config)
+    #             break
+
     def loadLayer(self, nom: str, tipus: int, select: str, srid: str = '25831', id: str = 'ID', geom: str = 'GEOM') -> qgCor.QgsVectorLayer:
         uri = qgCor.QgsDataSourceUri()
         uri.setConnection(self.conexion['HostName'],
@@ -221,6 +260,8 @@ class QvVistacad:
         uri.setSrid(srid)
         layer = qgCor.QgsVectorLayer(uri.uri(), nom, "oracle")
         if layer.isValid():
+            # if tipus == 1: # No funciona
+            #     self.setVisibiltyColumn(layer, "Rotació", False)
             return layer
         else:
             return None
@@ -261,8 +302,8 @@ class QvVistacad:
                 layer = self.loadLayer(capa.NOM, capa.TIPUS, selectLayer, srid)
                 if layer is not None:
                     capa.simbologia(layer.renderer().symbol())
-                    if capa.MOSTRAR_ETIQUETA == 1:
-                        layer.setDisplayExpression('ETIQUETA')
+                    # if capa.MOSTRAR_ETIQUETA == 1:
+                    #     layer.setDisplayExpression('ETIQUETA')
                     if capa.ESCALA_MIN > 0.0 or capa.ESCALA_MAX > 0.0:
                         layer.setScaleBasedVisibility(True)
                         layer.setMinimumScale(capa.ESCALA_MAX)  # Al revés ????
@@ -295,7 +336,7 @@ if __name__ == "__main__":
         # canvas = QvCanvas()
 
         # inicial = cfg.projecteInicial
-        inicial = 'd:/temp/carrilsbici.qgs'
+        inicial = 'd:/temp/TestVistacad.qgs'
 
         leyenda = QvLlegenda(canvas)
         leyenda.readProject(inicial)
@@ -308,12 +349,17 @@ if __name__ == "__main__":
 
         # Acciones de usuario para el menú
 
-        def carrilsBici():
-            print('ini carrils bici')
+        def testVistacad():
+            print('ini test Vistacad')
             # vCad = QvVistacad()
             # vCad.loadProject('341', '3601, 3602')
+            # 341 - CarrilsBici
+            # 2761 - Superilles
+            # 3461 - Idees_per_Qvista
             QvVistacad.carregaProjecte('341')
-            print('fin carrils bici')
+            QvVistacad.carregaProjecte('2761')
+            QvVistacad.carregaProjecte('3461')
+            print('fin test Vistacad')
 
             # layer = leyenda.capaPerNom('Senyals')
             # renderer = layer.renderer()
@@ -350,9 +396,9 @@ if __name__ == "__main__":
                     print(leyenda.project.error().summary())
 
         act = qtWdg.QAction()
-        act.setText("Carrils bici")
-        act.triggered.connect(carrilsBici)
-        leyenda.accions.afegirAccio('carrilsBici', act)
+        act.setText("Test Vistacad")
+        act.triggered.connect(testVistacad)
+        leyenda.accions.afegirAccio('testVistacad', act)
 
         act = qtWdg.QAction()
         act.setText("Desa projecte")
@@ -369,7 +415,7 @@ if __name__ == "__main__":
         def menuContexte(tipo):
             if tipo == 'none':
                 leyenda.menuAccions.append('separator')
-                leyenda.menuAccions.append('carrilsBici')
+                leyenda.menuAccions.append('testVistacad')
                 leyenda.menuAccions.append('writeProject')
                 leyenda.menuAccions.append('openProject')
 
