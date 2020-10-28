@@ -94,28 +94,49 @@ class QvCapaVcad(QvObjVcad):
         self.MOSTRAR_ETIQUETA = math.trunc(self.query.value('MOSTRAR_ETIQUETA'))
         self.ESCALA_MIN = self.query.value('ESCALA_MIN')
         self.ESCALA_MAX = self.query.value('ESCALA_MAX')
+        # Simbolo
         self.NOM_SIMBOL = self.query.value('NOM_SIMBOL')
         variant = self.query.value('ROTABLE_SIMBOL')
         if isinstance(variant, float):
             self.ROTABLE_SIMBOL = math.trunc(variant)
         else:
             self.ROTABLE_SIMBOL = 0
+        # Línea
         self.LINIA_GRUIX = math.trunc(self.query.value('LINIA_GRUIX'))
         self.LINIA_COLOR = math.trunc(self.query.value('LINIA_COLOR'))
         self.LINIA_TIPUS = math.trunc(self.query.value('LINIA_TIPUS'))
+        # Relleno
+        self.NO2REL1TR0 = math.trunc(self.query.value('NO2REL1TR0')) # 0=Vacío 1=Uniforme 2=Trama
+        self.OPA1TRANS0 = math.trunc(self.query.value('OPA1TRANS0')) # 0=Transparente 1=Opaco
+        self.RELLENO_TIPUS = math.trunc(self.query.value('RELLENO_TIPUS'))
+        self.RELLENO_COLOR = math.trunc(self.query.value('RELLENO_COLOR'))
+        self.RELLENO_COLOR_TRAMA = math.trunc(self.query.value('RELLENO_COLOR_TRAMA'))
 
-    def colorQgis(self) -> str:
+    def lineColorQgis(self) -> str:
         return VCAD_COLORS[self.LINIA_COLOR] + ',255'
 
-    def styleQgis(self) -> str:
+    def lineStyleQgis(self) -> str:
         return VCAD_LINE_STYLES[self.LINIA_TIPUS]
 
-    def widthQgis(self) -> str:
+    def lineWidthQgis(self) -> str:
         if self.LINIA_GRUIX == 0:
             width = 0.1
         else:
             width = 0.1 * self.LINIA_GRUIX
         return f"{width:.5f}"
+
+    def fillColorQgis(self) -> str:
+        if self.OPA1TRANS0 == 0:
+            alpha = '170'
+        else:
+            alpha = '255'
+        return VCAD_COLORS[self.RELLENO_COLOR] + ',' + alpha
+
+    def fillStyleQgis(self) -> str:
+        return VCAD_FILL_STYLES[self.RELLENO_TIPUS]
+
+    def fillColorStyleQgis(self) -> str:
+        return VCAD_COLORS[self.RELLENO_COLOR_TRAMA] + ',255'
 
     def symbolQgis(self) -> dict:
         if self.NOM_SIMBOL and self.NOM_SIMBOL in VCAD_SYMBOLS:
@@ -155,7 +176,7 @@ class QvCapaVcad(QvObjVcad):
         if self.TIPUS == 1: # Punto
             props = self.symbolQgis()
             if props:
-                props['color'] = self.colorQgis()
+                props['color'] = self.lineColorQgis()
                 symbolLayer = qgCor.QgsSimpleMarkerSymbolLayer.create(props)
                 if self.ROTABLE_SIMBOL == 1:
                     prop = qgCor.QgsProperty()
@@ -166,14 +187,34 @@ class QvCapaVcad(QvObjVcad):
         elif self.TIPUS == 2: # Linea
             props = symbol.symbolLayer(0).properties()
             if self.debug: print('OLD STYLE', symbol.symbolLayer(0).properties())
-            props['line_color'] = self.colorQgis()
-            props['line_style'] = self.styleQgis()
-            props['line_width'] = self.widthQgis()
+            props['line_color'] = self.lineColorQgis()
+            props['line_style'] = self.lineStyleQgis()
+            props['line_width'] = self.lineWidthQgis()
             props['line_width_unit'] = 'MM'
             symbolLayer = qgCor.QgsSimpleLineSymbolLayer.create(props)
             symbol.changeSymbolLayer(0, symbolLayer)
             if self.debug: print('NEW STYLE', symbol.symbolLayer(0).properties())
-
+        elif self.TIPUS == 3: # Polígono
+            props = symbol.symbolLayer(0).properties()
+            if self.debug: print('OLD STYLE', symbol.symbolLayer(0).properties())
+            props['outline_color'] = self.lineColorQgis()
+            props['outline_style'] = self.lineStyleQgis()
+            props['outline_width'] = self.lineWidthQgis()
+            props['outline_width_unit'] = 'MM'
+            # Relleno
+            if self.NO2REL1TR0 == 2: # Nada
+                props['style'] = 'no'
+                props['color'] = '0,0,0,0'
+            else:
+                props['style'] = 'solid'
+                props['color'] = self.fillColorQgis()
+                if self.NO2REL1TR0 == 0: # Trama
+                    pass   # POR ACABAR
+                    # props['style'] = self.fillStyleQgis()
+                    # props['color'] = self.fillColorStyleQgis()
+            symbolLayer = qgCor.QgsSimpleFillSymbolLayer.create(props)
+            symbol.changeSymbolLayer(0, symbolLayer)
+            if self.debug: print('NEW STYLE', symbol.symbolLayer(0).properties())
 class QvAtributosVcad(QvObjVcad):
 
     def __init__(self, db: qtSql.QSqlDatabase, idCapa: str):
@@ -269,8 +310,8 @@ class QvVistacad:
     def printProject(self, idProyecto: str, idsCapasExcluidas: str = '', agrupar: bool = True, srid: str = '25831') -> None:
         if self.db is None: return
         try:
-            if agrupar: orden = ''
-            else: orden = 'desc'
+            if agrupar: orden = 'desc'
+            else: orden = ''
             capa = QvCapaVcad(self.db, idProyecto, idsCapasExcluidas, orden=orden)
             while capa.siguiente():
                 print(capa)
@@ -286,8 +327,8 @@ class QvVistacad:
         if self.db is None: return
         try:
             qtWdg.QApplication.instance().setOverrideCursor(qtCor.Qt.WaitCursor)
-            if agrupar: orden = ''
-            else: orden = 'desc'
+            if agrupar: orden = 'desc'
+            else: orden = ''
             capa = QvCapaVcad(self.db, idProyecto, idsCapasExcluidas, orden=orden)
             grupo = None
             while capa.siguiente():

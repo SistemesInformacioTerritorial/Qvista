@@ -5,6 +5,7 @@ from qgis.PyQt.QtGui import QColor
 VCAD_COLORS = []       # Tabla de 256 colores
 VCAD_LINE_STYLES = []  # Tabla de 8 estilos de línea (en QGIS hay 5 predefinidos,
                        # aunque es posible usar un patrón de guiones personalizado)
+VCAD_FILL_STYLES = []  # Tabla de 6 estilos de relleno
 VCAD_SYMBOLS = {}      # Construcciones
 
 VCAD_COLORS.append('255,255,255')  # Blanco 
@@ -272,6 +273,14 @@ VCAD_LINE_STYLES.append("dot")
 VCAD_LINE_STYLES.append("dash")
 VCAD_LINE_STYLES.append("dash dot dot")
 VCAD_LINE_STYLES.append("dash dot")
+
+VCAD_FILL_STYLES.append("solid")
+VCAD_FILL_STYLES.append("horizontal")
+VCAD_FILL_STYLES.append("vertical")
+VCAD_FILL_STYLES.append("f_diagonal")
+VCAD_FILL_STYLES.append("b_diagonal")
+VCAD_FILL_STYLES.append("cross")
+VCAD_FILL_STYLES.append("diagonal_x")
 
 VCAD_SYMBOLS['Cap de Fletxa'] = {
     'angle': '-90', 'color': '0,0,160,255', 'horizontal_anchor_point': '1', 'joinstyle': 'bevel', 'name': 'filled_arrowhead', 'offset': '0,0', 
