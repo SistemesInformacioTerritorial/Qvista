@@ -2490,7 +2490,9 @@ class QVista(QMainWindow, Ui_MainWindow):
         elif command == 'carrilsbici':
             from moduls.QvVistacad import QvVistacad
             QvVistacad.carregaProjecte('341')
-            # QvVistacad.carregaProjecte('341', '3601, 3602')
+        elif command == 'vistacad':
+            from moduls.QvVistacad import QvVistacad
+            QvVistacad.formulariProjectes()
         elif command == 'masklabels':
             self.llegenda.setMask(self.llegenda.capaPerNom("MaskLabels"), 1)
         elif command == 'qvtemps':

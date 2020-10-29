@@ -305,6 +305,14 @@ class QvVistacad:
         except Exception as e:
             print('Error QvVistacad.carregaProjecte: ' + str(e))
 
+    @classmethod
+    def formulariProjectes(cls) -> None:
+        try:
+            vCad = cls()
+            vCad.formProjects()
+        except Exception as e:
+            print('Error QvVistacad.formulariProjectes: ' + str(e))
+
     def __init__(self):
         self.debug = (__name__ == "__main__")
         self.conexion = QvApp().dbQvista
@@ -401,6 +409,7 @@ class QvVistacad:
     def loadProject(self, idProyecto: str, idsCapasExcluidas: str = '',
                     srid: str = '25831', agrupar: bool = True, exportar: bool = True) -> None:
         if self.db is None: return
+        if idProyecto is None or idProyecto == '': return
         try:
             qtWdg.QApplication.instance().setOverrideCursor(qtCor.Qt.WaitCursor)
             capa = QvCapaVcad(self.db, idProyecto, idsCapasExcluidas)
@@ -448,30 +457,40 @@ class QvVistacad:
             if self.debug: print(proyectos)
         if len(proyectos.lista) < 1: return
         form = QvProyectoFormVcad(proyectos.lista)
-        ret = form.exec()
-        if ret == qtWdg.QDialogButtonBox.Ok:
-            print('OK')
+        if form.exec_() and form.idProjecte:
+            self.loadProject(form.idProjecte)
 
 class QvProyectoFormVcad(qtWdg.QDialog):
     def __init__(self, lista, parent=None, modal=True):
         super().__init__(parent, modal=modal)
         self.setWindowTitle('Importar projecte de Vistacad')
 
+        self.idProjecte = ''
         self.combo = qtWdg.QComboBox(self)
         self.combo.setEditable(False)
         self.combo.addItem('Selecciona projecte…')
         for id, nombre in lista.items():
             self.combo.addItem(f"{nombre} ({id})", id)
 
-        self.buttons = qtWdg.QDialogButtonBox()
-        self.buttons.addButton(qtWdg.QDialogButtonBox.Ok)
-        self.buttons.addButton(qtWdg.QDialogButtonBox.Cancel)
+        self.buttons = qtWdg.QDialogButtonBox(qtWdg.QDialogButtonBox.Ok | qtWdg.QDialogButtonBox.Cancel)
+        self.buttons.accepted.connect(self.accept)
+        self.buttons.rejected.connect(self.cancel)
 
         self.layout = qtWdg.QVBoxLayout()
         self.layout.addWidget(self.combo)
         self.layout.addWidget(self.buttons)
         self.setLayout(self.layout)
-        
+
+    def accept(self):
+        if self.combo.currentData() is None:
+            self.idProjecte = ''
+        else:
+            self.idProjecte = str(self.combo.currentData())
+        super().accept()
+
+    def cancel(self):
+        self.idProjecte = ''
+        super().reject()
 
 if __name__ == "__main__":
 
@@ -505,15 +524,16 @@ if __name__ == "__main__":
         def testVistacad():
             print('ini test Vistacad')
 
-            # vCad = QvVistacad()
-            # vCad.formProjects()
+            vCad = QvVistacad()
+            vCad.formProjects()
 
             # 341 - CarrilsBici
             # 2761 - Superilles
             # 3461 - Idees_per_Qvista
-            QvVistacad.carregaProjecte('341')
+            # QvVistacad.carregaProjecte('341')
             # QvVistacad.carregaProjecte('2761')
             # QvVistacad.carregaProjecte('3461')
+
             print('fin test Vistacad')
 
             # layer = leyenda.capaPerNom('Senyals')
