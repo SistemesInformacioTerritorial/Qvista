@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from typing import List
 
 import qgis.core as qgCor
 import qgis.gui as qgGui
@@ -10,10 +9,13 @@ import qgis.PyQt.QtGui as qtGui
 import qgis.PyQt.QtCore as qtCor
 import qgis.PyQt.QtSql as qtSql
 
+from configuracioQvista import dadesdir
 from moduls.QvApp import QvApp
 from moduls.QvVistacadVars import *
 
+from typing import List
 import math
+from pathlib import Path
 
 class QvObjVcad:
     def __init__(self, db: qtSql.QSqlDatabase) -> None:
@@ -48,9 +50,39 @@ class QvObjVcad:
     def registro(self) -> None:
         pass
 
+class QvProjectoVcad(QvObjVcad):
+    
+    def __init__(self, db: qtSql.QSqlDatabase):
+        super().__init__(db)
+        self.usuari = QvApp().usuari
+        self.select = self.consulta()
+        self.query = self.ejecuta(self.select)
+        self.lista = {}
+
+    def __str__(self):
+        try:
+            if not hasattr(self, 'ID'): return ''
+            return f"- Proyecto {self.ID}: {self.NOM}"
+        except Exception as e:
+            print(str(e))
+            return ''
+
+    def consulta(self) -> str:
+        return f"select p.* from vistacad_u.permisos u, vistacad_u.projectes p " \
+               f"where u.usuari = '{self.usuari}' and u.actiu = 1 " \
+               f"and u.id_projecte = p.id and p.actiu = 1 " \
+               f"order by p.data_creacio"
+
+    def registro(self) -> None:
+        self.ID = math.trunc(self.query.value('ID'))
+        self.NOM = self.query.value('NOM')
+        self.NOM = self.NOM.strip()
+        self.DESCRIPCIO = self.query.value('DESCRIPCIO')
+        self.lista[self.ID] = self.NOM
+
 class QvCapaVcad(QvObjVcad):
     
-    def __init__(self, db: qtSql.QSqlDatabase, idProyecto: str, idsCapasExcluidas: str = '0', orden: str = ''):
+    def __init__(self, db: qtSql.QSqlDatabase, idProyecto: str, idsCapasExcluidas: str = '0', orden: str = 'c.nom'):
         super().__init__(db)
         self.idProyecto = idProyecto
         self.idsCapasExcluidas = idsCapasExcluidas
@@ -83,13 +115,16 @@ class QvCapaVcad(QvObjVcad):
                f"and p.id = c.id_projecte and c.actiu = 1 " \
                f"and c.id_const_grafica = s.id(+) " \
                f"{filtroCapas}" \
-               f"order by ordre_visual {self.orden}"
+               f"order by {self.orden}"
 
     def registro(self) -> None:
         self.NOM_PROJECTE = self.query.value('NOM_PROJECTE')
+        self.NOM_PROJECTE = self.NOM_PROJECTE.strip()
         self.DESC_PROJECTE = self.query.value('DESC_PROJECTE')
         self.ID = math.trunc(self.query.value('ID'))
         self.NOM = self.query.value('NOM')
+        self.NOM = self.NOM.strip()
+
         self.TIPUS = math.trunc(self.query.value('TIPUS'))
         self.MOSTRAR_ETIQUETA = math.trunc(self.query.value('MOSTRAR_ETIQUETA'))
         self.ESCALA_MIN = self.query.value('ESCALA_MIN')
@@ -215,7 +250,7 @@ class QvCapaVcad(QvObjVcad):
             symbolLayer = qgCor.QgsSimpleFillSymbolLayer.create(props)
             symbol.changeSymbolLayer(0, symbolLayer)
             if self.debug: print('NEW STYLE', symbol.symbolLayer(0).properties())
-class QvAtributosVcad(QvObjVcad):
+class QvAtributoVcad(QvObjVcad):
 
     def __init__(self, db: qtSql.QSqlDatabase, idCapa: str):
         super().__init__(db)
@@ -243,6 +278,7 @@ class QvAtributosVcad(QvObjVcad):
     def registro(self) -> None:
         self.ID = math.trunc(self.query.value('ID'))
         self.NOM = self.query.value('NOM')
+        self.NOM = self.NOM.strip()
         self.TIPUS = math.trunc(self.query.value('TIPUS'))
         self.lista += f"extractValue(attrs,'/OBJ/a{self.ID}') \"{self.NOM}\", "
 
@@ -251,9 +287,9 @@ class QvAtributosVcad(QvObjVcad):
 
 class QvVistacad:
     """ Clase para importar projectos de Visatacad a Qvista
-        Tablas consultadas: projectes, capes, formularis, atributs, geometries
+        Tablas consultadas: permisos, projectes, capes, formularis, atributs, geometries
 
-        Falta incorporar:
+        Falta incorporar o comprobar:
         - Orden visualización capas
         - Simbología geometrías estatica y dinámica
         - Simbología etiquetas
@@ -262,10 +298,10 @@ class QvVistacad:
         - Paneles
     """ 
     @classmethod
-    def carregaProjecte(cls, idProjecte: str, idsCapesExcluides: str = '', agrupar: bool = True, srid: str = '25831') -> None:
+    def carregaProjecte(cls, idProjecte: str, idsCapesExcluides: str = '') -> None:
         try:
             vCad = cls()
-            vCad.loadProject(idProjecte, idsCapesExcluides, agrupar, srid)
+            vCad.loadProject(idProjecte, idsCapesExcluides)
         except Exception as e:
             print('Error QvVistacad.carregaProjecte: ' + str(e))
 
@@ -278,6 +314,7 @@ class QvVistacad:
             self.db = QvApp().dbLog
         self.project = qgCor.QgsProject.instance()
         self.root = self.project.layerTreeRoot()
+        self.gpkgFile = ''
 
     # def setVisibiltyColumn(self, layer, columnName, visible):
     #     config = layer.attributeTableConfig()
@@ -315,7 +352,7 @@ class QvVistacad:
             capa = QvCapaVcad(self.db, idProyecto, idsCapasExcluidas, orden=orden)
             while capa.siguiente():
                 print(capa)
-                atributos = QvAtributosVcad(self.db, capa.ID)
+                atributos = QvAtributoVcad(self.db, capa.ID)
                 while atributos.siguiente():
                     print(atributos)
                 selectLayer = capa.selectQgis(atributos.listaQgis())
@@ -323,17 +360,55 @@ class QvVistacad:
         except Exception as e:
             print(str(e))
 
-    def loadProject(self, idProyecto: str, idsCapasExcluidas: str = '', agrupar: bool = True, srid: str = '25831') -> None:
+    def exportLayer(self, layer, nomProyecto, nomCapa):
+        # Guardar geopackage
+        gpkgPath = Path(dadesdir, nomProyecto).with_suffix('.gpkg')
+        self.gpkgFile = str(gpkgPath)
+        options = qgCor.QgsVectorFileWriter.SaveVectorOptions()
+        options.driverName = "GPKG"
+        options.layerName = nomCapa
+        if gpkgPath.exists():
+            options.actionOnExistingFile = qgCor.QgsVectorFileWriter.CreateOrOverwriteLayer
+        else:
+            options.actionOnExistingFile = qgCor.QgsVectorFileWriter.CreateOrOverwriteFile
+        if QvApp().testVersioQgis(3, 10):
+            res, txt = qgCor.QgsVectorFileWriter.writeAsVectorFormatV2(
+                layer, self.gpkgFile, qgCor.QgsCoordinateTransformContext(), options)
+        else:
+            res, txt = qgCor.QgsVectorFileWriter.writeAsVectorFormat(layer, self.gpkgFile, options)
+        if res != qgCor.QgsVectorFileWriter.NoError:
+            print(f"*** Error guardando geopackage: {res}:{txt}")
+        # Guardar fichero estilo
+        qmlPath = Path(dadesdir, nomCapa).with_suffix('.qml')
+        qmlFile = str(qmlPath)
+        txt, res = layer.saveNamedStyle(qmlFile)
+        if not res:
+            print(f"*** Error guardando qml: {txt}")
+        # Guardar estilo en geopackage
+        gpkgLayer = qgCor.QgsVectorLayer(f'{self.gpkgFile}|layername={nomCapa}', nomCapa, 'ogr')
+        if gpkgLayer.isValid():
+            res = gpkgLayer.loadNamedStyle(qmlFile)
+            if res:
+                s = qgCor.QgsSettings()
+                s.setValue("qgis/overwriteStyle", True)
+                txt = gpkgLayer.saveStyleToDatabase("vistacad", "", True, "")
+                if txt != '':
+                    print(f"*** Error guardando simbologia: {txt}")
+            else:
+                print(f"*** Error fichero qml: {qmlFile}") 
+        qmlPath.unlink()
+
+    def loadProject(self, idProyecto: str, idsCapasExcluidas: str = '',
+                    srid: str = '25831', agrupar: bool = True, exportar: bool = True) -> None:
         if self.db is None: return
         try:
             qtWdg.QApplication.instance().setOverrideCursor(qtCor.Qt.WaitCursor)
-            if agrupar: orden = 'desc'
-            else: orden = ''
-            capa = QvCapaVcad(self.db, idProyecto, idsCapasExcluidas, orden=orden)
+            capa = QvCapaVcad(self.db, idProyecto, idsCapasExcluidas)
             grupo = None
+            self.gpkgFile = ''
             while capa.siguiente():
                 if self.debug: print(capa)
-                atributos = QvAtributosVcad(self.db, capa.ID)
+                atributos = QvAtributoVcad(self.db, capa.ID)
                 while atributos.siguiente():
                     if self.debug: print(atributos)
                 if agrupar and capa.primero():
@@ -356,10 +431,47 @@ class QvVistacad:
                         grupo.addLayer(layer)
                     else:
                         self.project.addMapLayer(layer)
-        except Exception as e:
-            print(str(e))
-        finally:
+                    if exportar:
+                        self.exportLayer(layer, capa.NOM_PROJECTE, capa.NOM)
             qtWdg.QApplication.instance().restoreOverrideCursor()
+            if exportar:
+                qtWdg.QMessageBox.information(None, 'Informació',
+                    f"Les capes del projecte de Vistacad \"{capa.NOM_PROJECTE}\" s'han desat a l'arxiu \"{self.gpkgFile}\"")
+        except Exception as e:
+            qtWdg.QApplication.instance().restoreOverrideCursor()
+            print(str(e))
+
+    def formProjects(self) -> None:
+        if self.db is None: return
+        proyectos = QvProjectoVcad(self.db)
+        while proyectos.siguiente():
+            if self.debug: print(proyectos)
+        if len(proyectos.lista) < 1: return
+        form = QvProyectoFormVcad(proyectos.lista)
+        ret = form.exec()
+        if ret == qtWdg.QDialogButtonBox.Ok:
+            print('OK')
+
+class QvProyectoFormVcad(qtWdg.QDialog):
+    def __init__(self, lista, parent=None, modal=True):
+        super().__init__(parent, modal=modal)
+        self.setWindowTitle('Importar projecte de Vistacad')
+
+        self.combo = qtWdg.QComboBox(self)
+        self.combo.setEditable(False)
+        self.combo.addItem('Selecciona projecte…')
+        for id, nombre in lista.items():
+            self.combo.addItem(f"{nombre} ({id})", id)
+
+        self.buttons = qtWdg.QDialogButtonBox()
+        self.buttons.addButton(qtWdg.QDialogButtonBox.Ok)
+        self.buttons.addButton(qtWdg.QDialogButtonBox.Cancel)
+
+        self.layout = qtWdg.QVBoxLayout()
+        self.layout.addWidget(self.combo)
+        self.layout.addWidget(self.buttons)
+        self.setLayout(self.layout)
+        
 
 if __name__ == "__main__":
 
@@ -392,14 +504,16 @@ if __name__ == "__main__":
 
         def testVistacad():
             print('ini test Vistacad')
+
             # vCad = QvVistacad()
-            # vCad.loadProject('341', '3601, 3602')
+            # vCad.formProjects()
+
             # 341 - CarrilsBici
             # 2761 - Superilles
             # 3461 - Idees_per_Qvista
             QvVistacad.carregaProjecte('341')
-            QvVistacad.carregaProjecte('2761')
-            QvVistacad.carregaProjecte('3461')
+            # QvVistacad.carregaProjecte('2761')
+            # QvVistacad.carregaProjecte('3461')
             print('fin test Vistacad')
 
             # layer = leyenda.capaPerNom('Senyals')
