@@ -13,7 +13,7 @@ from configuracioQvista import dadesdir
 from moduls.QvApp import QvApp
 from moduls.QvVistacadVars import *
 
-from typing import List
+from typing import List, TextIO
 import math
 from pathlib import Path
 
@@ -68,10 +68,15 @@ class QvProjectoVcad(QvObjVcad):
             return ''
 
     def consulta(self) -> str:
-        return f"select p.* from vistacad_u.permisos u, vistacad_u.projectes p " \
-               f"where u.usuari = '{self.usuari}' and u.actiu = 1 " \
-               f"and u.id_projecte = p.id and p.actiu = 1 " \
-               f"order by p.data_creacio"
+        if self.debug and self.usuari == 'DE1717':
+            return f"select p.* from vistacad_u.projectes p " \
+                   f"where p.actiu = 1 " \
+                   f"order by p.data_modificacio desc"
+        else:
+            return f"select p.* from vistacad_u.permisos u, vistacad_u.projectes p " \
+                   f"where u.usuari = '{self.usuari}' and u.actiu = 1 " \
+                   f"and u.id_projecte = p.id and p.actiu = 1 " \
+                   f"order by p.data_creacio"
 
     def registro(self) -> None:
         self.ID = math.trunc(self.query.value('ID'))
@@ -80,12 +85,75 @@ class QvProjectoVcad(QvObjVcad):
         self.DESCRIPCIO = self.query.value('DESCRIPCIO')
         self.lista[self.ID] = self.NOM
 
+class QvAtributoVcad(QvObjVcad):
+
+    def __init__(self, db: qtSql.QSqlDatabase, idCapa: str, lookup: bool = True, types: bool = False):
+        super().__init__(db)
+        self.idCapa = idCapa
+        self.select = self.consulta()
+        self.query = self.ejecuta(self.select)
+        self.lookup = lookup
+        self.types = types
+        self.lista = ''
+
+    def __str__(self):
+        try:
+            if not hasattr(self, 'ID'): return ''
+            return f"  + Atributo {self.num()+1}: {self.NOM}, {self.TIPUS}"
+        except Exception as e:
+            print(str(e))
+            return ''
+
+    def consulta(self) -> str:
+        return f"select a.* " \
+               f"from vistacad_u.capes c, vistacad_u.formularis f, vistacad_u.atributs a " \
+               f"where c.id = {self.idCapa} and c.actiu = 1 " \
+               f"and c.id_formulari = f.id and f.actiu = 1 " \
+               f"and a.id_formulari = f.id and a.actiu = 1 " \
+               f"order by a.ordre"
+
+    def campo(self) -> str:
+        # TIPUS:
+        #  0 - Texto
+        #  1 - Entero
+        #  2 - Real
+        #  3 - Fecha
+        #  4 - Fecha y hora
+        #  5 - Opciones de lista
+        #  6 - Opción de geometria
+        #  7 - Opción de lista externa
+        #  8 - Enlace a fichero o URL
+        #  9 - Booleano
+        # 10 - Lista de subformulario
+        valor = f"extractValue(attrs,'/OBJ/a{self.ID}')" 
+        if self.types:
+            if self.TIPUS == 1: # Entero
+                valor = f"cast({valor} as NUMBER(*,0))"
+            elif self.TIPUS == 2: # Real
+                valor = f"cast({valor} as FLOAT)"
+            elif self.TIPUS == 3: # Fecha
+                valor = f"to_date({valor}, 'DD/MM/YYYY')"
+            elif self.TIPUS == 4: # Fecha y hora
+                valor = f"to_date({valor}, 'DD/MM/YYYY')" #...........
+        alias = f"{valor} \"{self.NOM}\", "
+        if self.TIPUS == 5 and self.lookup: # Opciones de lista
+            alias += f"vistacad_u.VALOR_ATRIBUTO({self.ID}, {valor}) \"{self.NOM} Text\", "
+        return alias
+
+    def registro(self) -> None:
+        self.ID = math.trunc(self.query.value('ID'))
+        self.NOM = self.query.value('NOM')
+        self.NOM = self.NOM.strip()
+        self.TIPUS = math.trunc(self.query.value('TIPUS'))
+        self.lista += self.campo()
+
 class QvCapaVcad(QvObjVcad):
     
-    def __init__(self, db: qtSql.QSqlDatabase, idProyecto: str, idsCapasExcluidas: str = '0', orden: str = 'c.nom'):
+    def __init__(self, db: qtSql.QSqlDatabase, idProyecto: str, idsCapas: str = '', capasIncluidas: bool = True, orden: str = 'c.nom'):
         super().__init__(db)
         self.idProyecto = idProyecto
-        self.idsCapasExcluidas = idsCapasExcluidas
+        self.idsCapas = idsCapas
+        self.capasIncluidas = capasIncluidas
         self.orden = orden
         self.select = self.consulta()
         self.query = self.ejecuta(self.select)
@@ -105,10 +173,14 @@ class QvCapaVcad(QvObjVcad):
             return ''
 
     def consulta(self) -> str:
-        if self.idsCapasExcluidas == '':
+        if self.idsCapas == '':
             filtroCapas = ''
         else:
-            filtroCapas = f"and c.id not in ({self.idsCapasExcluidas}) "
+            if self.capasIncluidas:
+                switch = ''
+            else:
+                switch = 'not '
+            filtroCapas = f"and c.id {switch}in ({self.idsCapas}) "
         return f"select p.nom nom_projecte, p.descripcio desc_projecte, c.*, s.nom nom_simbol, s.rotable rotable_simbol " \
                f"from vistacad_u.projectes p, vistacad_u.capes c, vistacad_u.construccions_grafiques s " \
                f"where p.id = {self.idProyecto} and p.actiu = 1 " \
@@ -124,8 +196,11 @@ class QvCapaVcad(QvObjVcad):
         self.ID = math.trunc(self.query.value('ID'))
         self.NOM = self.query.value('NOM')
         self.NOM = self.NOM.strip()
-
         self.TIPUS = math.trunc(self.query.value('TIPUS'))
+        # TIPUS:
+        # 1 - Punto
+        # 2 - Línea
+        # 3 - Polígono
         self.MOSTRAR_ETIQUETA = math.trunc(self.query.value('MOSTRAR_ETIQUETA'))
         self.ESCALA_MIN = self.query.value('ESCALA_MIN')
         self.ESCALA_MAX = self.query.value('ESCALA_MAX')
@@ -179,33 +254,14 @@ class QvCapaVcad(QvObjVcad):
         else:
             return None
 
-# Let's define the following handy function:
-
-# def setColumnVisibility( layer, columnName, visible ):
-#     config = layer.attributeTableConfig()
-#     columns = config.columns()
-#     for column in columns:
-#         if column.name == columnName:
-#             column.hidden = not visible
-#             break
-#     config.setColumns( columns )
-#     layer.setAttributeTableConfig( config )
-
-# And then you can call it to hide or show columns in the attribute table. For example:
-
-# vLayer = iface.activeLayer()
-# setColumnVisibility( vLayer, 'FIRST_COLUMN', False ) # Hide FIRST_COLUMN
-# setColumnVisibility( vLayer, 'area', False ) # Hide area column
-# setColumnVisibility( vLayer, 'FIRST_COLUMN', True ) # Show FIRST_COLUMN
-# setColumnVisibility( vLayer, 'area', True ) # Show area column
-
-    def selectQgis(self, atributos: str) -> str:
+    def selectQgis(self, atributos: QvAtributoVcad) -> str:
         if self.TIPUS == 1: # Punto
-            campos = "trunc(rotacio) \"Rotació\", "
+            campos = f"trunc(rotacio) \"{ROTATION_FIELD}\", "
         else:
             campos = ""
-        return f"select id, {atributos}{campos}" \
-               f"geom from vistacad_u.geometries where actiu = 1 and id_capa = {self.ID}"
+        return f"select id, {atributos.lista}{campos}" \
+               f"geom from vistacad_u.geometries g " \
+               f"where actiu = 1 and id_capa = {self.ID}"
 
     def simbologia(self, symbol: qgCor.QgsSymbol) -> None:
         if self.TIPUS == 1: # Punto
@@ -215,7 +271,7 @@ class QvCapaVcad(QvObjVcad):
                 symbolLayer = qgCor.QgsSimpleMarkerSymbolLayer.create(props)
                 if self.ROTABLE_SIMBOL == 1:
                     prop = qgCor.QgsProperty()
-                    prop.setExpressionString(f"-\"Rotació\"{props['angle']}") 
+                    prop.setExpressionString(f"-\"{ROTATION_FIELD}\"{props['angle']}") 
                     symbolLayer.setDataDefinedProperty(qgCor.QgsSymbolLayer.PropertyAngle, prop)
                 symbol.changeSymbolLayer(0, symbolLayer)
                 if self.debug: print('NEW STYLE', symbol.symbolLayer(0).properties())
@@ -250,40 +306,6 @@ class QvCapaVcad(QvObjVcad):
             symbolLayer = qgCor.QgsSimpleFillSymbolLayer.create(props)
             symbol.changeSymbolLayer(0, symbolLayer)
             if self.debug: print('NEW STYLE', symbol.symbolLayer(0).properties())
-class QvAtributoVcad(QvObjVcad):
-
-    def __init__(self, db: qtSql.QSqlDatabase, idCapa: str):
-        super().__init__(db)
-        self.idCapa = idCapa
-        self.select = self.consulta()
-        self.query = self.ejecuta(self.select)
-        self.lista = ''
-
-    def __str__(self):
-        try:
-            if not hasattr(self, 'ID'): return ''
-            return f"  + Atributo {self.num()+1}: {self.NOM}, {self.TIPUS}"
-        except Exception as e:
-            print(str(e))
-            return ''
-
-    def consulta(self) -> str:
-        return f"select a.* " \
-               f"from vistacad_u.capes c, vistacad_u.formularis f, vistacad_u.atributs a " \
-               f"where c.id = {self.idCapa} and c.actiu = 1 " \
-               f"and c.id_formulari = f.id and f.actiu = 1 " \
-               f"and a.id_formulari = f.id and a.actiu = 1 " \
-               f"order by a.ordre"
-
-    def registro(self) -> None:
-        self.ID = math.trunc(self.query.value('ID'))
-        self.NOM = self.query.value('NOM')
-        self.NOM = self.NOM.strip()
-        self.TIPUS = math.trunc(self.query.value('TIPUS'))
-        self.lista += f"extractValue(attrs,'/OBJ/a{self.ID}') \"{self.NOM}\", "
-
-    def listaQgis(self) -> str:
-        return self.lista
 
 class QvVistacad:
     """ Clase para importar projectos de Visatacad a Qvista
@@ -298,10 +320,10 @@ class QvVistacad:
         - Paneles
     """ 
     @classmethod
-    def carregaProjecte(cls, idProjecte: str, idsCapesExcluides: str = '') -> None:
+    def carregaProjecte(cls, idProjecte: str, idsCapes: str = '', capesIncluides: bool = True) -> None:
         try:
             vCad = cls()
-            vCad.loadProject(idProjecte, idsCapesExcluides)
+            vCad.loadProject(idProjecte, idsCapes, capesIncluides)
         except Exception as e:
             print('Error QvVistacad.carregaProjecte: ' + str(e))
 
@@ -324,16 +346,6 @@ class QvVistacad:
         self.root = self.project.layerTreeRoot()
         self.gpkgFile = ''
 
-    # def setVisibiltyColumn(self, layer, columnName, visible):
-    #     config = layer.attributeTableConfig()
-    #     columns = config.columns()
-    #     for column in columns:
-    #         if column.name == columnName:
-    #             column.hidden = not visible
-    #             config.setColumns(columns)
-    #             layer.setAttributeTableConfig(config)
-    #             break
-
     def loadLayer(self, nom: str, tipus: int, select: str, srid: str = '25831', id: str = 'ID', geom: str = 'GEOM') -> qgCor.QgsVectorLayer:
         uri = qgCor.QgsDataSourceUri()
         uri.setConnection(self.conexion['HostName'],
@@ -346,29 +358,11 @@ class QvVistacad:
         uri.setSrid(srid)
         layer = qgCor.QgsVectorLayer(uri.uri(), nom, "oracle")
         if layer.isValid():
-            # if tipus == 1: # No funciona
-            #     self.setVisibiltyColumn(layer, "Rotació", False)
             return layer
         else:
             return None
 
-    def printProject(self, idProyecto: str, idsCapasExcluidas: str = '', agrupar: bool = True, srid: str = '25831') -> None:
-        if self.db is None: return
-        try:
-            if agrupar: orden = 'desc'
-            else: orden = ''
-            capa = QvCapaVcad(self.db, idProyecto, idsCapasExcluidas, orden=orden)
-            while capa.siguiente():
-                print(capa)
-                atributos = QvAtributoVcad(self.db, capa.ID)
-                while atributos.siguiente():
-                    print(atributos)
-                selectLayer = capa.selectQgis(atributos.listaQgis())
-                print('  ->', selectLayer)
-        except Exception as e:
-            print(str(e))
-
-    def exportLayer(self, layer, nomProyecto, nomCapa):
+    def exportLayer(self, layer: qgCor.QgsVectorLayer, nomProyecto: str, nomCapa: str) -> None:
         # Guardar geopackage
         gpkgPath = Path(dadesdir, nomProyecto).with_suffix('.gpkg')
         self.gpkgFile = str(gpkgPath)
@@ -406,13 +400,13 @@ class QvVistacad:
                 print(f"*** Error fichero qml: {qmlFile}") 
         qmlPath.unlink()
 
-    def loadProject(self, idProyecto: str, idsCapasExcluidas: str = '',
+    def loadProject(self, idProyecto: str, idsCapas: str = '', capasIncluidas: bool = True,
                     srid: str = '25831', agrupar: bool = True, exportar: bool = True) -> None:
         if self.db is None: return
         if idProyecto is None or idProyecto == '': return
         try:
             qtWdg.QApplication.instance().setOverrideCursor(qtCor.Qt.WaitCursor)
-            capa = QvCapaVcad(self.db, idProyecto, idsCapasExcluidas)
+            capa = QvCapaVcad(self.db, idProyecto, idsCapas, capasIncluidas)
             grupo = None
             self.gpkgFile = ''
             while capa.siguiente():
@@ -422,7 +416,7 @@ class QvVistacad:
                     if self.debug: print(atributos)
                 if agrupar and capa.primero():
                     grupo = self.root.addGroup(capa.NOM_PROJECTE)
-                selectLayer = capa.selectQgis(atributos.listaQgis())
+                selectLayer = capa.selectQgis(atributos)
                 if self.debug: print('  ->', selectLayer)
                 layer = self.loadLayer(capa.NOM, capa.TIPUS, selectLayer, srid)
                 if layer is not None:
@@ -443,9 +437,10 @@ class QvVistacad:
                     if exportar:
                         self.exportLayer(layer, capa.NOM_PROJECTE, capa.NOM)
             qtWdg.QApplication.instance().restoreOverrideCursor()
-            if exportar:
+            if self.gpkgFile != '':
                 qtWdg.QMessageBox.information(None, 'Informació',
                     f"Les capes del projecte de Vistacad \"{capa.NOM_PROJECTE}\" s'han desat a l'arxiu \"{self.gpkgFile}\"")
+            
         except Exception as e:
             qtWdg.QApplication.instance().restoreOverrideCursor()
             print(str(e))
@@ -458,19 +453,21 @@ class QvVistacad:
         if len(proyectos.lista) < 1: return
         form = QvProyectoFormVcad(proyectos.lista)
         if form.exec_() and form.idProjecte:
-            self.loadProject(form.idProjecte)
+            self.loadProject(form.idProjecte, exportar=form.exportar)
 
 class QvProyectoFormVcad(qtWdg.QDialog):
     def __init__(self, lista, parent=None, modal=True):
         super().__init__(parent, modal=modal)
         self.setWindowTitle('Importar projecte de Vistacad')
+        self.init()
 
-        self.idProjecte = ''
         self.combo = qtWdg.QComboBox(self)
         self.combo.setEditable(False)
         self.combo.addItem('Selecciona projecte…')
         for id, nombre in lista.items():
             self.combo.addItem(f"{nombre} ({id})", id)
+
+        self.geopackage = qtWdg.QCheckBox('Desar arxiu geopackage')
 
         self.buttons = qtWdg.QDialogButtonBox(qtWdg.QDialogButtonBox.Ok | qtWdg.QDialogButtonBox.Cancel)
         self.buttons.accepted.connect(self.accept)
@@ -478,18 +475,24 @@ class QvProyectoFormVcad(qtWdg.QDialog):
 
         self.layout = qtWdg.QVBoxLayout()
         self.layout.addWidget(self.combo)
+        self.layout.addWidget(self.geopackage)
         self.layout.addWidget(self.buttons)
         self.setLayout(self.layout)
+
+    def init(self):
+        self.idProjecte = ''
+        self.exportar = False
 
     def accept(self):
         if self.combo.currentData() is None:
             self.idProjecte = ''
         else:
             self.idProjecte = str(self.combo.currentData())
+        self.exportar = self.geopackage.isChecked()
         super().accept()
 
     def cancel(self):
-        self.idProjecte = ''
+        self.init()
         super().reject()
 
 if __name__ == "__main__":
@@ -503,6 +506,7 @@ if __name__ == "__main__":
     with qgisapp(sysexit=False) as app:
 
         QvApp().carregaIdioma(app, 'ca')
+        QvApp().intranet = True
 
         canvas = qgGui.QgsMapCanvas()
         # canvas = QvCanvas()
@@ -533,6 +537,7 @@ if __name__ == "__main__":
             # QvVistacad.carregaProjecte('341')
             # QvVistacad.carregaProjecte('2761')
             # QvVistacad.carregaProjecte('3461')
+            # QvVistacad.carregaProjecte('341', '3601')
 
             print('fin test Vistacad')
 

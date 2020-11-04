@@ -2,6 +2,8 @@
 
 from qgis.PyQt.QtGui import QColor
 
+ROTATION_FIELD = "Rotació"
+
 VCAD_COLORS = []       # Tabla de 256 colores
 VCAD_LINE_STYLES = []  # Tabla de 8 estilos de línea (en QGIS hay 5 predefinidos,
                        # aunque es posible usar un patrón de guiones personalizado)
