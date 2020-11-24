@@ -15,13 +15,14 @@ def get_args():
     parser = argparse.ArgumentParser(description='Geocodifica un arxiu csv, afegint-li camps de coordenades ETRS89 al final')
     # afegir l'adreça del csv
     parser.add_argument('arxiu',help="Ruta de l'arxiu a geocodificar", type=str, nargs=1)
-    parser.add_argument('--tipus-via',help="Camp on tenim el tipus de via de l'adreça", default=None)
-    # parser.add_argument('--via',help="Camp on tenim la via de l'adreça", default=None)
-    parser.add_argument('--via',help="Camp on tenim la via de l'adreça", default="Nom_via")
-    # parser.add_argument('--num',help="Camp on tenim el número de l'adreça", default=None)
-    parser.add_argument('--num',help="Camp on tenim el número de l'adreça", default="Numero_via")
-    parser.add_argument('--barri',help="Camp on tenim el nom del barri", default="Barri")
-    parser.add_argument('--districte',help="Camp on tenim el nom del districte", default="Districte")
+    parser.add_argument('--sortida',help="Ruta on volem l'arxiu de sortida. Si no s'indica, sortirà en un directori per defecte", default=None)
+    parser.add_argument('--tipus-via',help="Camp on tenim el tipus de via de l'adreça, si en tenim", default=None)
+    parser.add_argument('--via',help="Camp on tenim la via de l'adreça, si en tenim", default="Nom_via")
+    parser.add_argument('--num',help="Camp on tenim el número de l'adreça, si en tenim", default="Numero_via")
+    parser.add_argument('--nom-barri',help="Camp on tenim el nom del barri, si en tenim", default="Barri")
+    parser.add_argument('--nom-districte',help="Camp on tenim el nom del districte, si en tenim", default="Districte")
+    parser.add_argument('--codi-barri', help="Camp on tenim el codi del barri, si en tenim", default=None)
+    parser.add_argument('--codi-districte', help="Camp on tenim el codi del districte, si en tenim", default=None)
 
     return parser.parse_args()
 
@@ -58,75 +59,109 @@ def main():
     print(args)
     with qgisapp(guienabled=False) as app:
         QvApp() # instanciem el singleton, per garantir que tingui la base de dades
-        if not hasattr(args,'arxiu'):
-            print("ERROR! No s'ha indicat arxiu a geocodificar")
-            sys.exit(1)
+        # if not os.path.isfile(args.arxiu):
+        #     print(f"ERROR! No existeix l'arxiu {args.arxiu}")
+        #     sys.exit(1)
         mapificador = QvMapificacio(args.arxiu[0])
         camps = args.tipus_via, args.via, args.num
-        zones = 'Coordenada', 'Districte', 'Barri'
-        print('Comencem mapificació')
+        # el mapificador espera rebre una llista o una tupla, amb les zones. 
+        # Per tant, posant la coma, zones serà una tupla amb un únic element
+        zones = 'Coordenada',
         try:
             res = mapificador.geocodificacio(camps, zones)
         except Exception as e:
             print(e)
-        print('Acabem mapificació')
         if not res:
-            #Error
+            print('ERROR de mapificació:',mapificador.msgError)
             pass
-        print('Anem a comprovar si hi ha barri o districte')
-        if args.barri is not None or args.districte is not None:
-            print('Anem a mirar si tenim el pandas')
+        if args.nom_barri is not None or args.nom_districte is not None or args.codi_barri is not None or args.codi_districte is not None:
             if PANDAS_ENABLED:
-                print('Tenim el pandas')
                 try:
                     df = pd.read_csv(mapificador.fZones, header=0, sep=';')
                 except Exception as e:
                     print(e)
                 pathZones = 'dades/Zones.gpkg'
-                print('PATH DE ZONES:',os.path.abspath(pathZones))
                 pathBarris = pathZones+'|layername=barris'
                 layerBarris = QgsVectorLayer(pathBarris, 'ogr')
                 pathDistrictes = pathZones+'|layername=districtes'
                 layerDistrictes = QgsVectorLayer(pathDistrictes, 'ogr')
                 barris = {}
+                barris_codi = {}
                 for rowB in layerBarris.getFeatures():
                     atributs = rowB.attributes()
                     # num_barri = atributs[1]
                     nom_barri = adapta_nom(atributs[2])
+                    codi_barri = atributs[1]
                     # num_districte = atributs[3]
                     centre = rowB.geometry().centroid().asPoint()
 
                     barris[nom_barri] = centre
+                    barris_codi[codi_barri] = centre
                 
                 districtes = {}
+                districtes_codi = {}
                 for rowD in layerDistrictes.getFeatures():
                     atributs = rowD.attributes()
                     nom_districte = adapta_nom(atributs[2])
+                    codi_districte = atributs[1]
                     centre = rowB.geometry().centroid().asPoint()
                     districtes[nom_districte]=centre
+                    districtes_codi[codi_districte]=centre
+                def obte_punt_codi(row, camp_codi, dic):
+                    """Obté un punt a partir del codi (de districte o de barri)
+
+                    Args:
+                        row (dict): Fila del csv d'on hem de treure el codi
+                        camp_codi (str): Nom del camp d'on hem de treure el codi
+                        dic (dict): Diccionari d'on hem de treure el punt (districtes_codi o barris_codi)
+
+                    Returns:
+                        QgsPointXY: Centroide del districte/barri buscat
+                    """
+                    try:
+                        codi = row[camp_codi]
+                        if codi is None:
+                            return None
+                        codi = str(codi)
+                        if len(codi)==1:
+                            codi = '0'+codi
+                        return dic[codi]
+                    except:
+                        return None
+                def obte_punt_nom(row, camp_nom, dic):
+                    """Obté un punt a partir del nom del districte o del barri
+
+                    Args:
+                        row (dict): Fila del csv d'on hem de treure el nom
+                        camp_nom (str): Nom del camp d'on hem de treure el nom del districte/barri
+                        dic (dict): Diccionari d'on hem de treure el punt (districtes_codi o barris_codi)
+
+                    Returns:
+                        QgsPointXY: Centroide del districte/barri buscat
+                    """
+                    try:
+                        nom = arregla(row[camp_nom])
+                        return dic[nom]
+                    except:
+                        return None
                 for (index, row) in df.iterrows():
                     if math.isnan(row['QVISTA_ETRS89_COORD_X']):
-                        # obtenir a partir del barri o del districte
-                        fet = False
-                        if args.barri is not None:
-                            try:
-                                punt = barris[adapta_nom(row[args.barri])]
-                                df.loc[index,'QVISTA_ETRS89_COORD_X'] = punt.x()
-                                df.loc[index,'QVISTA_ETRS89_COORD_Y'] = punt.y()
-                                fet = True
-                            except KeyError as e:
-                                # No s'ha pogut reconèixer el barri
-                                pass
-                        if not fet and args.districte is not None:
-                            try:
-                                punt = districtes[adapta_nom(row[args.districte])]
-                                df.loc[index,'QVISTA_ETRS89_COORD_X'] = punt.x()
-                                df.loc[index,'QVISTA_ETRS89_COORD_Y'] = punt.y()
-                                fet = True
-                            except KeyError as e:
-                                # No s'ha pogut reconèixer el districte
-                                pass
-                df.to_csv(mapificador.fZones, index=False, sep=';')
+                        punts_possibles = (
+                            obte_punt_codi(row, args.codi_barri, barris_codi),
+                            obte_punt_nom(row, args.nom_barri, barris),
+                            obte_punt_codi(row,args.codi_districte, districtes_codi),
+                            obte_punt_nom(row,args.nom_districte, districtes)
+                        )
+                        punts = filter(lambda x: x is not None, punts_possibles)
+                        try:
+                            punt = next(punts)
+                        except:
+                            continue
+                        df.loc[index,'QVISTA_ETRS89_COORD_X'] = punt.x()
+                        df.loc[index,'QVISTA_ETRS89_COORD_Y'] = punt.y()
+                sortida = args.sortida if args.sortida is not None else mapificador.fZones
+                df.to_csv(sortida, index=False, sep=';')
+                print(f'Arxiu desat a {sortida}')
             else:
                 print("ERROR. No s'ha pogut accedir al mòdul pandas")
 
