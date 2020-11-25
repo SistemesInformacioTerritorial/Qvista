@@ -353,6 +353,20 @@ class QvTaulaAtributs(QgsAttributeTableView):
         self.filter.setFilterMode(QgsAttributeTableFilterModel.ShowAll)
         self.setModel(self.filter)
 
+    # def setHidenColumns(self, prefijo='__'):
+    #     changed = False
+    #     config = self.layer.attributeTableConfig()
+    #     columns = config.columns()
+    #     for column in columns:
+    #         if column.name.startswith("__"):
+    #             column.hidden = True
+    #             changed = True
+    #     if changed:
+    #         config.setColumns(columns)
+    #         self.layer.setAttributeTableConfig(config)
+    #         self.filter.setAttributeTableConfig(config)
+    #         self.setAttributeTableConfig(config)
+
     def setAccions(self):
         act = QAction()
         act.setText("Selecciona element")
@@ -446,7 +460,7 @@ class QvTaulaAtributs(QgsAttributeTableView):
                 if self.feature is not None and self.feature.isValid():
                     num = self.layer.selectedFeatureCount()
                     dialog = QvFitxesAtributs(self.layer, [self.feature], num == 0)
-                    dialog.setStyleSheet('QWidget{border: 0px}')
+                    # dialog.setStyleSheet('QWidget{border: 0px}')
                 #     dialog = QgsAttributeDialog(
                 #         self.layer, self.feature, False)
                 #     # dialog = QgsAttributeForm(self.layer, self.feature)

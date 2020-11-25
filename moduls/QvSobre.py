@@ -1,17 +1,18 @@
 from qgis.PyQt.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, QGridLayout, QLabel, QFrame, QSizePolicy
 from qgis.PyQt.QtGui import QFont, QIcon
 from qgis.PyQt.QtCore import Qt
+import os
 from moduls.QvApp import QvApp
 from moduls.QvConstants import QvConstants
 
-from configuracioQvista import *
+import configuracioQvista
 
 class QvSobre(QDialog):
     def __init__(self,parent=None):
         super().__init__(parent,Qt.WindowSystemMenuHint | Qt.WindowTitleHint | Qt.WindowCloseButtonHint)
         # self.setMinimumWidth(600)
         self.setWindowTitle('Sobre qVista')
-        self.setWindowIcon(QIcon(os.path.join(imatgesDir,'QVistaLogo_256.png')))
+        self.setWindowIcon(QIcon(os.path.join(configuracioQvista.imatgesDir,'QVistaLogo_256.png')))
 
         self._lay=QGridLayout()
         self._i=0
@@ -19,7 +20,7 @@ class QvSobre(QDialog):
         # lay.setSpacing(0)
         self.setLayout(self._lay)
 
-        self._creaFila('Versió de qVista:',versio)
+        self._creaFila('Versió de qVista:',configuracioQvista.versio)
 
         self._creaFila('Versió de QGIS:',QvApp().versioQgis())
 

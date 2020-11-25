@@ -112,3 +112,5 @@ class QvPushButton(QPushButton):
         super().mousePressEvent(e)
 
 
+
+

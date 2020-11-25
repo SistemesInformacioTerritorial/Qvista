@@ -10,6 +10,7 @@ from moduls.QvVisorHTML import QvVisorHTML
 import re
 from moduls.QvFavorits import QvFavorits
 from moduls.QvMemoria import QvMemoria
+from moduls import QvFuncions
 
 
 class QvNouCataleg(QWidget):
@@ -1208,36 +1209,13 @@ class QvCreadorCataleg(QDialog):
         # Crear document de text
         # Crear metadades
 
-        image_location = os.path.join(tempdir, "render.png")
-
-        options = QgsMapSettings()
-        options.setLayers(self._canvas.layers())
-        options.setBackgroundColor(QColor(255, 255, 255))
-        options.setOutputSize(QSize(300, 180))
-        options.setExtent(self._rubberband.asGeometry().boundingBox())
-
-        render = QgsMapRendererParallelJob(options)
-
-        def finished():
-            try:
-                render
-            except Exception as e:
-                print(e)
-                import time
-                time.sleep(0.5)
-                finished()
-            img = render.renderedImage()
-            img.save(image_location, "png")
-            self._pixmap = QPixmap(image_location)
-            lblImatge = QLabel()
-            lblImatge.setPixmap(self._pixmap)
-            self._layImatge.replaceWidget(self._imatge, lblImatge)
-            self._imatge = lblImatge
-            self.actualitzaEstatBDesar()
-
-        render.finished.connect(finished)
-
-        render.start()
+        image_location = QvFuncions.capturarImatge(self._rubberband.asGeometry(), self._canvas, QSize(300,180))
+        self._pixmap = QPixmap(str(image_location))
+        lblImatge = QLabel()
+        lblImatge.setPixmap(self._pixmap)
+        self._layImatge.replaceWidget(self._imatge, lblImatge)
+        self._imatge = lblImatge
+        self.actualitzaEstatBDesar()
 
     def hideEvent(self, e):
         super().hideEvent(e)
@@ -1246,7 +1224,7 @@ class QvCreadorCataleg(QDialog):
 
 
 if __name__ == "__main__":
-    from configuracioQvista import *
+    import configuracioQvista
     from moduls.QvCanvas import QvCanvas
     from moduls.QvAtributs import QvAtributs
     from moduls.QvLlegenda import QvLlegenda
@@ -1260,7 +1238,7 @@ if __name__ == "__main__":
         projecte = QgsProject.instance()
         root = projecte.layerTreeRoot()
         bridge = QgsLayerTreeMapCanvasBridge(root, canvas)
-        projecte.read(projecteInicial)
+        projecte.read(configuracioQvista.projecteInicial)
         llegenda = QvLlegenda(canvas, atributs)
         llegenda.show()
         cataleg = QvNouCataleg()

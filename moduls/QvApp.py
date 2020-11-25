@@ -9,6 +9,7 @@ from moduls.QvSingleton import Singleton
 from moduls.QvPythonRunner import QvPythonRunner
 from moduls.QvGithub import QvGithub
 from moduls.QvSqlite import QvSqlite
+# from moduls import QvFuncions
 from pathlib import Path
 import sys
 import getpass
@@ -61,7 +62,6 @@ class QvApp(Singleton):
     def __init__(self):
         if hasattr(self, 'gh'):                     # Se inicializa una vez
             return
-
         self.gh = None
         self.ruta, self.rutaBase = self.calcRuta()  # Path de la aplicación
         self.cfg = self.readCfg()                   # Config de instalación
@@ -222,7 +222,6 @@ class QvApp(Singleton):
             txt = ''
             file = Path(nomFich)
             if file.is_file():
-                #file.open()
                 with file.open():
                     txt = file.read_text()
             return txt
@@ -243,33 +242,32 @@ class QvApp(Singleton):
         except Exception as e:
             print(str(e))
             return ''
+
     def zoomFactor(self):
-        #Windows per defecte utilitza un dpi de 96. Si hem aplicat un factor de zoom, serà més
-        #Per tant, dividint entre 96 tindrem l'escalat en tant per 1
-        # return 1
-        zoomFactor=QApplication.desktop().screen().logicalDpiX()/96
+        # donat que QvFuncions importa QvApp, i QvApp importa QvFuncions, hi havia certs problemes
+        # Concretament, el decorador cronometraDebug no funcionava si es volia utilitzar dins del propi QvFuncions
+        # Si movem el seu import a les funcions que el requereixin, evitem el problema
+        from moduls import QvFuncions
+        zoomFactor = QApplication.desktop().screen().logicalDpiX() / QvFuncions.DPI
         return zoomFactor
+
     def nomUsuari(self):
-        try:
-            #Copia-pega de https://sjohannes.wordpress.com/2010/06/19/win32-python-getting-users-display-name-using-ctypes/
-            #No sé per què va, però va
-            import ctypes
-            GetUserNameEx = ctypes.windll.secur32.GetUserNameExW
-            NameDisplay = 3
+        # ídem
+        from moduls import QvFuncions
+        return QvFuncions.getUserName(self.usuari)
 
-            size = ctypes.pointer(ctypes.c_ulong(0))
-            GetUserNameEx(NameDisplay, None, size)
-
-            nameBuffer = ctypes.create_unicode_buffer(size.contents.value)
-            GetUserNameEx(NameDisplay, nameBuffer, size)
-            return nameBuffer.value
-        except:
-            print('Sembla que no estàs a Windows :D')
-            #Si no funciona l'anterior, posem l'usuari del login
-            return self.usuari
     def versioQgis(self):
         return Qgis.QGIS_VERSION
-    
+
+    def testVersioQgis(self, ver, sub):
+        v = self.versioQgis().split('.')
+        v0 = int(v[0])
+        if v0 == ver:
+            v1 = int(v[1])
+            return v1 >= sub
+        else:
+            return v0 > ver
+
     # Metodos db QVISTA
 
     def dbLogConnexio(self):
@@ -286,7 +284,10 @@ class QvApp(Singleton):
                     db.setPassword(self.dbQvista['Password'])
                     if db.open():
                         self.dbLog = db
-        except Exception:
+                    else:
+                        self.dbLog = None
+        except Exception as e:
+            print(str(e))
             self.dbLog = None
 
     def dbLogDesconnexio(self):
@@ -298,7 +299,8 @@ class QvApp(Singleton):
                 self.dbLog.close()
                 self.dbLog = None
                 QSqlDatabase.removeDatabase(conName)
-        except Exception:
+        except Exception as e:
+            print(str(e))
             self.dbLog = None
 
     # Metodos de LOG en Oracle
@@ -371,7 +373,9 @@ class QvApp(Singleton):
                 y = self.queryGeo.boundValue(':Y')
                 if not isinstance(y, float):
                     y = None
-            return x, y
+                return x, y
+            else:
+                return None, None
         except Exception:
             return None, None
 

@@ -706,6 +706,9 @@ class QvMapeta(QFrame):
         if event.button()==Qt.RightButton:
             return
 
+        if self.puntoParaCompass == True:
+            return
+
 
 
         #region declaracion variables

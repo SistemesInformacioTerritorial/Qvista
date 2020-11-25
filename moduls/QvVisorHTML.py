@@ -81,7 +81,7 @@ class QvVisorHTML(QDialog):
         self.layoutCaixaText.setContentsMargins(10,10,2,10)
         self.widgetSup.setGraphicsEffect(QvConstants.ombraHeader(self.widgetSup))
 
-        self.setWindowTitle("titol")
+        self.setWindowTitle(titol)
         self.resize(640, 480)
         self.oldPos = self.pos()
 

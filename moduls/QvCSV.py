@@ -38,7 +38,7 @@ def nivellCsv(projecte, llegenda, fitxer: str, delimitador: str, campX: str, cam
 def esCoordAux(coord, rangs):
     try:
         coord = float(coord)
-    except ValueError as e:
+    except Exception as e:
         return False
     return any(map(lambda x: coord > x[0] and coord < x[1], rangs))
 

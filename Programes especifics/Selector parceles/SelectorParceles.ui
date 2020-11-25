@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>800</width>
+    <height>600</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Selector de parcel·les</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QHBoxLayout" name="horizontalLayout_3">
+    <item>
+     <layout class="QVBoxLayout" name="verticalLayout">
+      <item>
+       <layout class="QHBoxLayout" name="layCanvas"/>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="layBotons">
+        <property name="sizeConstraint">
+         <enum>QLayout::SetMaximumSize</enum>
+        </property>
+        <item>
+         <widget class="QPushButton" name="bPanning">
+          <property name="enabled">
+           <bool>true</bool>
+          </property>
+          <property name="text">
+           <string/>
+          </property>
+          <property name="icon">
+           <iconset>
+            <normaloff>../../Imatges/pan_tool_black_24x24.png</normaloff>../../Imatges/pan_tool_black_24x24.png</iconset>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="bSeleccio">
+          <property name="enabled">
+           <bool>true</bool>
+          </property>
+          <property name="text">
+           <string/>
+          </property>
+          <property name="icon">
+           <iconset>
+            <normaloff>../../Imatges/apuntar.png</normaloff>../../Imatges/apuntar.png</iconset>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <spacer name="horizontalSpacer">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item>
+         <widget class="QPushButton" name="bConfirmar">
+          <property name="text">
+           <string>Confirmar</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="bCancelar">
+          <property name="text">
+           <string>Cancelar</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+     </layout>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>800</width>
+     <height>18</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menuHola">
+    <property name="title">
+     <string>Arxiu</string>
+    </property>
+    <addaction name="actionNova_seleccio"/>
+    <addaction name="actionObrir_seleccio"/>
+    <addaction name="actionDesar_seleccio"/>
+    <addaction name="separator"/>
+    <addaction name="actionNova_configuracio"/>
+    <addaction name="actionObrir_configuracio"/>
+    <addaction name="actionDesar_configuracio"/>
+   </widget>
+   <addaction name="menuHola"/>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+  <action name="actionNova_seleccio">
+   <property name="text">
+    <string>Nova selecció</string>
+   </property>
+  </action>
+  <action name="actionObrir_seleccio">
+   <property name="text">
+    <string>Obrir selecció</string>
+   </property>
+  </action>
+  <action name="actionDesar_configuracio">
+   <property name="text">
+    <string>Desar configuració</string>
+   </property>
+  </action>
+  <action name="actionDesar_seleccio">
+   <property name="text">
+    <string>Desar selecció</string>
+   </property>
+  </action>
+  <action name="actionObrir_configuraci">
+   <property name="text">
+    <string>Obrir configuració</string>
+   </property>
+  </action>
+  <action name="actionNova_selecci">
+   <property name="text">
+    <string>Nova configuració</string>
+   </property>
+  </action>
+  <action name="actionObrir_configuracio">
+   <property name="text">
+    <string>Obrir configuració</string>
+   </property>
+  </action>
+  <action name="actionNova_configuracio">
+   <property name="text">
+    <string>Nova configuració</string>
+   </property>
+  </action>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

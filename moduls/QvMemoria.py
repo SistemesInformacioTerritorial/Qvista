@@ -1,19 +1,21 @@
-from configuracioQvista import *
+import configuracioQvista
 from moduls.QvSingleton import Singleton
 import json
 import hashlib
+from pathlib import Path
 
 from qgis.PyQt.QtGui import QColor
+import os
 
-arxiuTmpAvis=os.path.join(configdir,'ultimAvisObert')
-arxiuTmpNews=os.path.join(configdir,'ultimaNewOberta')
-arxiuMapesRecents=os.path.join(configdir,'mapesRecents')
-arxiuDirectoriDesar=os.path.join(configdir,'directoriDesar')
-arxiuVolHints=os.path.join(configdir,'volHints')
-arxiuDadesMascara=os.path.join(configdir,'dadesMascara')
-arxiuCampsGeocod=os.path.join(configdir,'geocod.json')
-arxiuGeocodificats=os.path.join(configdir,'geocodificats.json')
-arxiuCatalegsLocals=os.path.join(configdir+'catalegsLocals')
+arxiuTmpAvis=os.path.join(configuracioQvista.configdir,'ultimAvisObert')
+arxiuTmpNews=os.path.join(configuracioQvista.configdir,'ultimaNewOberta')
+arxiuMapesRecents=os.path.join(configuracioQvista.configdir,'mapesRecents')
+arxiuDirectoriDesar=os.path.join(configuracioQvista.configdir,'directoriDesar')
+arxiuVolHints=os.path.join(configuracioQvista.configdir,'volHints')
+arxiuDadesMascara=os.path.join(configuracioQvista.configdir,'dadesMascara')
+arxiuCampsGeocod=os.path.join(configuracioQvista.configdir,'geocod.json')
+arxiuGeocodificats=os.path.join(configuracioQvista.configdir,'geocodificats.json')
+arxiuCatalegsLocals=os.path.join(configuracioQvista.configdir+'catalegsLocals')
 
 def llegirArxiu(f,encoding='utf-8'):
     with open(f,encoding=encoding) as arxiu:
@@ -103,12 +105,12 @@ class QvMemoria(Singleton):
     def setCampsGeocod(self,file,camps):
         self.campsGeocod[file]=camps
     def setGeocodificat(self,path, net):
-        ruta=os.path.join(dadesdir,Path(net).stem+'_Geo.csv')
+        ruta=os.path.join(configuracioQvista.dadesdir,Path(net).stem+'_Geo.csv')
         if not os.path.isfile(path) or not os.path.isfile(ruta):
             return
         self.geocodificats[md5sum(path)]=md5sum(ruta)
     def getGeocodificat(self,path, net):
-        ruta=os.path.join(dadesdir,Path(net).stem+'_Geo.csv')
+        ruta=os.path.join(configuracioQvista.dadesdir,Path(net).stem+'_Geo.csv')
         if os.path.isfile(ruta):
             suma_orig=md5sum(path)
             if suma_orig in self.geocodificats:
@@ -119,7 +121,7 @@ class QvMemoria(Singleton):
         if not os.path.isfile(arxiuCatalegsLocals):
             return [os.path.abspath('../dades/CatalegProjectes')]
         with open(arxiuCatalegsLocals) as f:
-            return list(f.readlines())
+            return [linia.strip('\n') for linia in f.readlines()]
     def setCatalegLocal(self,path,posal=True):
         cont=self.getCatalegsLocals()
         path=os.path.abspath(path)
@@ -128,7 +130,7 @@ class QvMemoria(Singleton):
         else:
             cont=cont.remove(path)
         with open(arxiuCatalegsLocals,'w',newline='\n') as f:
-            f.writelines(cont)
+            f.writelines('\n'.join(cont))
     def pafuera(self):
         if hasattr(self,'mapesRecents'):
             with open(arxiuMapesRecents,'w',encoding='utf-8') as f:

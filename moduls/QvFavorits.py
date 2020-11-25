@@ -47,6 +47,7 @@ class QvFavorits(Singleton):
         
     def afegeixFavorit(self,mapa,usuari=getpass.getuser().upper()):
         if not self.__CONNECTA_BASE_DADES__(usuari):
+            QMessageBox.critical(None,"Atenció","No s'ha pogut afegir el mapa a favorits. Intenteu-ho més tard, si us plau")
             return False
         query=QSqlQuery(self.db)
         query.prepare("insert into QV_MAPES_FAVORITS (iduser, nom_mapa) values (:IDUSER,:NOM_MAPA)")
@@ -59,6 +60,7 @@ class QvFavorits(Singleton):
         
     def eliminaFavorit(self,mapa,usuari=getpass.getuser().upper()):
         if not self.__CONNECTA_BASE_DADES__(usuari):
+            QMessageBox.critical("Atenció","No s'ha pogut eliminar el mapa de favorits. Intenteu-ho més tard, si us plau")
             return False
         query=QSqlQuery(self.db)
         query.prepare("delete from QV_MAPES_FAVORITS where iduser=:IDUSER and nom_mapa=:NOM_MAPA")

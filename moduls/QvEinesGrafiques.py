@@ -5,13 +5,15 @@ from moduls.QvPushButton import QvPushButton
 from moduls.QvMemoria import QvMemoria
 from moduls.QvConstants import QvConstants
 from moduls.QVDistrictesBarris import QVDistrictesBarris
+from moduls import QvFuncions
 from qgis.gui import QgsMapTool, QgsRubberBand
 import math
+import csv
 
 
 class QvSeleccioGrafica(QWidget):
     '''Widget de seleccionar i emmascarar'''
-
+    __zones = r'Dades\Zones.gpkg'
     def __init__(self, canvas, projecte, llegenda):
         QWidget.__init__(self)
         self.canvas = canvas
@@ -58,7 +60,7 @@ class QvSeleccioGrafica(QWidget):
         self.bs5.clicked.connect(self.calcularSeleccio)
 
         self.bs6 = QvPushButton('Crear CSV', flat=True)
-        # self.bs6.clicked.connect(self.crearCsv)
+        self.bs6.clicked.connect(lambda: self.crearCsv())
 
         self.twResultats = QTableWidget()
 
@@ -147,17 +149,42 @@ class QvSeleccioGrafica(QWidget):
         self.distBarrisSelMasc = QVDistrictesBarris()
         self.distBarrisSelMasc.view.clicked.connect(self.clickArbreSelMasc)
         self.lytSeleccioGrafica.addWidget(self.distBarrisSelMasc.view)
+    
+    @QvFuncions.mostraSpinner
+    def crearCsv(self):
+        camps = [camp.text() for camp in self.lwFieldsSelect.selectedItems()]
+        if camps==[]:
+            # Queixar-nos de que no hi ha cap camp
+            pass
+        nfile, _ = QFileDialog.getSaveFileName(None, "Desar arxiu CSV", ".", "Arxius CSV (*.csv)")
+        if nfile=='': return
+        
+        capa = self.llegenda.currentLayer()
+        feats = capa.selectedFeatures()
+        with open(nfile,'w', newline='') as f:
+            writer = csv.DictWriter(f,fieldnames=camps, delimiter=';')
+            writer.writeheader()
+            for feat in feats:
+                d = {}
+                for camp in camps:
+                    d[camp] = feat[camp]
+                writer.writerow(d)
+
 
     def clickArbreSelMasc(self):
         rang = self.distBarrisSelMasc.llegirRang()
         # self.canvas.zoomToFeatureExtent(rang)
 
         ID = self.distBarrisSelMasc.llegirID()
+        path = self.__zones
         if self.distBarrisSelMasc.esDistricte():
-            vLayer = QgsVectorLayer(
-                'Dades/Districtes.sqlite', 'Districtes_aux', 'ogr')
+            # vLayer = QgsVectorLayer(
+            #     'Dades/Districtes.sqlite', 'Districtes_aux', 'ogr')
+            path += '|layername=districtes'
         else:
-            vLayer = QgsVectorLayer('Dades/Barris.sqlite', 'Barris_aux', 'ogr')
+            # vLayer = QgsVectorLayer('Dades/Barris.sqlite', 'Barris_aux', 'ogr')
+            path += '|layername=barris'
+        vLayer = QgsVectorLayer(path, 'ogr')
         vLayer.setProviderEncoding("UTF-8")
         if not vLayer.isValid():
             return
@@ -169,7 +196,10 @@ class QvSeleccioGrafica(QWidget):
             layer = self.llegenda.currentLayer()
             if layer is None:
                 return
-            feat = next(feats)
+            try:
+                feat = next(feats)
+            except StopIteration: # Si no hi ha cap feature, sortim
+                return
             featsPnt = layer.getFeatures(
                 QgsFeatureRequest().setFilterRect(rang))
             for f in featsPnt:
@@ -203,6 +233,7 @@ class QvSeleccioGrafica(QWidget):
             self.canvas.scene().removeItem(self.toolSelect.rubberband)
         except:
             pass
+        self.calcularSeleccio()
         if mascara:
             try:
                 # qV.project.removeMapLayer(qV.project.mapLayersByName('Màscara')[0])
@@ -253,10 +284,15 @@ class QvSeleccioGrafica(QWidget):
         taula.setColumnCount(3)
         taula.setHorizontalHeaderLabels(['', 'Total', 'Mitjana'])
         nombreFieldsSeleccionats = 0
-        for a in self.lwFieldsSelect.selectedItems():
-            nombreFieldsSeleccionats = nombreFieldsSeleccionats+1
+
+        layerActiu = self.llegenda.currentLayer()
+        campsNumerics = [field.name() for field in layerActiu.fields() if field.typeName() in ('Integer64','Real')]
+        itemsNumerics = [x for x in self.lwFieldsSelect.selectedItems() if x.text() in campsNumerics]
+        # for a in itemsNumerics:
+        #     nombreFieldsSeleccionats = nombreFieldsSeleccionats+1
+        nombreFieldsSeleccionats = len(itemsNumerics)
         taula.setRowCount(nombreFieldsSeleccionats+1)
-        for a in self.lwFieldsSelect.selectedItems():
+        for a in itemsNumerics:
             total = 0
             item = QTableWidgetItem(a.text())
             taula.setItem(fila+1, 0, item)
@@ -286,10 +322,9 @@ class QvSeleccioGrafica(QWidget):
     def calculaFields(self, layerActiu):
         fields = layerActiu.fields()
         for field in fields:
-            # print(field.typeName())
-            # if (field.typeName()!='String' and field.typeName()!='Date' and field.typeName()!='Date'):
-            if (field.typeName() == 'Real' or field.typeName() == 'Integer64'):
-                self.lwFieldsSelect.addItem(field.name())
+            # if (field.typeName() == 'Real' or field.typeName() == 'Integer64'):
+            #     self.lwFieldsSelect.addItem(field.name())
+            self.lwFieldsSelect.addItem(field.name())
 
 
 class QvMesuraGrafica(QWidget):
@@ -453,6 +488,9 @@ class QvMesuraGrafica(QWidget):
                 self.canvas.scene().removeItem(x)
             for x in self.toolMesura.cercles:
                 self.canvas.scene().removeItem(x)
+            self.canvas.scene().removeItem(self.toolMesura.rubberband)
+            self.canvas.scene().removeItem(self.toolMesura.rubberband2)
+            self.canvas.scene().removeItem(self.toolMesura.rubberbandCercle)
             self.clear()
             # self.lwMesuresHist.clear()
 

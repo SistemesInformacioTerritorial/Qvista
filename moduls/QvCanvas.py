@@ -13,15 +13,20 @@ from moduls.QvPushButton import QvPushButton
 from moduls.QvConstants import QvConstants
 from moduls.QvStreetView import *
 from moduls.QvEinesGrafiques import QvMesuraMultiLinia, QvMascaraEinaPlantilla
+import functools
 #from qVista import QVista
 
 
 
+
 class QvCanvas(QgsMapCanvas):
-    canviMaximitza=pyqtSignal()
-    desMaximitza=pyqtSignal()
-    mostraStreetView=pyqtSignal()
-    def __init__(self, pare = None, llistaBotons= None, botoneraHoritzontal = False, posicioBotonera = 'NO', mapesBase = False, llegenda = None): #mapesBase (???)
+    canviMaximitza = pyqtSignal()
+    desMaximitza = pyqtSignal()
+    mostraStreetView = pyqtSignal()
+
+    Sig_QuienMeClica = pyqtSignal('QString')    #JNB
+    
+    def __init__(self, pare = None, llistaBotons=['zoomIn', 'zoomOut', 'panning', 'centrar'], botoneraHoritzontal = True, posicioBotonera = 'NO', mapesBase = False, llegenda = None): #mapesBase (???)
         QgsMapCanvas.__init__(self)
         self.botoneraHoritzontal = botoneraHoritzontal
         self.llistaBotons = llistaBotons
@@ -41,9 +46,14 @@ class QvCanvas(QgsMapCanvas):
             self.panCanvas()
         self.preparacioStreetView()
 
+    def focusInEvent(self,event):  # JNB prueba detectar que canvas tiene foco
+        # print("QvCanvas >> focusInEvent "+ str(id(self)))
+        self.Sig_QuienMeClica.emit(str(id(self)))
+
     def keyPressEvent(self, event):
         """ Defineix les actuacions del QvMapeta en funció de la tecla apretada.
         """
+        super().keyPressEvent(event)  # Para que los mapTools puedan procesar sus teclas
         if event.key() == Qt.Key_Escape:
             self.desMaximitza.emit()
             if self.pare is not None:
@@ -55,7 +65,16 @@ class QvCanvas(QgsMapCanvas):
                     pass
         if event.key()==Qt.Key_F11:
             self.canviMaximitza.emit()
-            
+
+        if event.key() == Qt.Key_F2:
+            self.paradebug()  #JNB pruebas     
+
+
+
+
+    def paradebug(self):
+        print(self.magnificationFactor())
+
     def uncheckBotons(self,aExcepcio):
         for x in self._botons:
             if x is not aExcepcio: 
@@ -70,8 +89,8 @@ class QvCanvas(QgsMapCanvas):
             self.uncheckBotons(self.bPanning)
            
             self.tool_pan = QgsMapToolPan(self)
-            self.setMapTool(self.tool_pan)
             self.einesBotons[self.tool_pan]=self.bPanning
+            self.setMapTool(self.tool_pan)
 
 
         else: 
@@ -93,8 +112,8 @@ class QvCanvas(QgsMapCanvas):
            
             self.tool_zoomin = QgsMapToolZoom(self, False)
             self.tool_zoomin.setCursor(QvConstants.cursorZoomIn())
-            self.setMapTool(self.tool_zoomin)
             self.einesBotons[self.tool_zoomin]=self.bZoomIn
+            self.setMapTool(self.tool_zoomin)
         else: 
             self.bZoomIn.setChecked(True)
         self.setCursor(QvConstants.cursorZoomIn())
@@ -105,8 +124,8 @@ class QvCanvas(QgsMapCanvas):
            
             self.tool_zoomout = QgsMapToolZoom(self, True)
             self.tool_zoomout.setCursor(QvConstants.cursorZoomOut())
-            self.setMapTool(self.tool_zoomout)
             self.einesBotons[self.tool_zoomout]=self.bZoomOut
+            self.setMapTool(self.tool_zoomout)
         else: 
             self.bZoomOut.setChecked(True)
 
@@ -126,14 +145,27 @@ class QvCanvas(QgsMapCanvas):
             try:
                 self.tool = QvSeleccioElement(self, llegenda = self.llegenda)
                 self.tool.setCursor(QvConstants.cursorDit())
-                self.setMapTool(self.tool)
                 self.einesBotons[self.tool]=self.bApuntar
+                self.setMapTool(self.tool)
             except:
                 pass
         else:
             self.bApuntar.setChecked(True)
         
         self.setCursor(QvConstants.cursorDit())
+
+    def anotacions(self):
+        if self.llegenda.anotacions:
+            if  self.bAnotacions.isChecked():
+                self.uncheckBotons(self.bAnotacions)
+                self.einesBotons[self.llegenda.anotacions]=self.bAnotacions
+                self.setMapTool(self.llegenda.anotacions)
+            else: 
+                self.bAnotacions.setChecked(True)
+        else:
+            self.bAnotacions.setChecked(False)
+            QMessageBox.information(self,'Atenció',"La gestió d'anotacions només funciona amb versions de QGIS superiors a la 3.10")
+
     def copyToClipboard(self):
         '''Potser no és la millor manera, però el que fa és desar la imatge temporalment i copiar-la d'allà'''
         nom=os.path.join(tempdir,str(time.time())+'.png')
@@ -290,6 +322,12 @@ class QvCanvas(QgsMapCanvas):
                 self.bEndavant.setCursor(QvConstants.cursorFletxa())
                 self.bEndavant.clicked.connect(self.zoomToNextExtent)
                 self.bEndavant.setCheckable(False)
+            if "anotacions" in self.llistaBotons:
+                self.bAnotacions = self._botoMapa(os.path.join(imatgesDir,'anotacions.png'))
+                self.bAnotacions.setToolTip("Gestió d'anotacions")
+                self.layoutBotoneraMapa.addWidget(self.bAnotacions)  
+                self.bAnotacions.setCursor(QvConstants.cursorAnotacio())       
+                self.bAnotacions.clicked.connect(self.anotacions)
             if "streetview" in self.llistaBotons:
                 self.bstreetview = self._botoMapa(os.path.join(imatgesDir,'littleMan.png'))
                 self.bstreetview.setDragable(True)
@@ -304,6 +342,7 @@ class QvCanvas(QgsMapCanvas):
                 self.iconaMinimitza=QIcon(os.path.join(imatgesDir,'fullscreen-exit.png'))
                 self.bMaximitza = self._botoMapa(os.path.join(imatgesDir,'fullscreen.png'))
                 self.bMaximitza.setToolTip('Pantalla completa (F11)')
+                
                 self.layoutBotoneraMapa.addWidget(self.bMaximitza)   
                 self.bMaximitza.setCursor(QvConstants.cursorFletxa()) 
                 self.bMaximitza.clicked.connect(self.canviMaximitza.emit)  
@@ -345,6 +384,15 @@ class QvCanvas(QgsMapCanvas):
         self.layoutBotoneraMostres.setAlignment(Qt.AlignRight)
         # self.layoutCanvas.addWidget(self.botoneraMapa)
         # self.layoutCanvas.addWidget(self.botoneraMostres)    
+    def mostraBotoTemes(self):
+        try:
+            self.temes=QgsProject.instance().mapThemeCollection().mapThemes()
+            if len(self.temes)>0:
+                self.bTemes.show()
+            else:
+                self.bTemes.hide()
+        except:
+            self.bTemes.hide()
     def dragEnterEvent(self, e):
       
         e.accept()
@@ -399,6 +447,7 @@ class QvCanvas(QgsMapCanvas):
         if event.button()==Qt.RightButton:
             if not isinstance(self.eines[-1],QvMesuraMultiLinia):
                 self.unsetLastMapTool()
+    
  
 
 
