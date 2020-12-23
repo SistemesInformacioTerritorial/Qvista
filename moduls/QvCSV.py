@@ -13,14 +13,32 @@ from moduls.QvMemoria import QvMemoria
 
 
 def nivellCsv(projecte, llegenda, fitxer: str, delimitador: str, campX: str, campY: str, projeccio: int = 25831, nomCapa: str = 'Capa sense nom', color='red', symbol='circle'):
-    uri = "file:///"+fitxer + \
-        "?type=csv&delimiter=%s&xField=%s&yField=%s" % (
-            delimitador, campX, campY)
+    if projeccio<0:
+        try:
+            import pandas as pd
+        except ModuleNotFoundError:
+            return False
+
+        # si és -X, serà que són coordenades reduïdes en format X.
+        df = pd.read_csv(fitxer, engine='python', sep=delimitador)
+        nouCampX = f'{campX}_COMPLET'
+        nouCampY = f'{campY}_COMPLET'
+        nouFitxer = str(Path(fitxer).with_suffix('.coordenades_completes.csv')).replace('.coordenades_completes','_coordenades_completes')
+        df[nouCampX]=df[campX]/1000+400000
+        df[nouCampY]=df[campY]/1000+4500000
+        df.to_csv(nouFitxer, sep=delimitador)
+        
+        campX, campY = nouCampX, nouCampY
+        fitxer = nouFitxer
+        projeccio = -projeccio
+        
+    # uri = "file:///"+fitxer + "?type=csv&delimiter=%s&xField=%s&yField=%s" % (delimitador, campX, campY)
+    uri = f'file:///{fitxer}?type=csv&delimiter={delimitador}&xField={campX}&yField={campY}'
     layer = QgsVectorLayer(uri, nomCapa, 'delimitedtext')
     layer.setCrs(QgsCoordinateReferenceSystem(
         projeccio, QgsCoordinateReferenceSystem.EpsgCrsId))
     if layer is not None or layer is not NoneType:
-        symbol = QgsMarkerSymbol.createSimple({'name': symbol, 'color': color, 'outline_width':'0.3'})
+        symbol = QgsMarkerSymbol.createSimple({'name': symbol, 'color': color, 'outline_width':'0.05'})
         # if layer.renderer() is not None:
         #     layer.renderer().setSymbol(symbol)
         pr=layer.dataProvider()
@@ -31,8 +49,10 @@ def nivellCsv(projecte, llegenda, fitxer: str, delimitador: str, campX: str, cam
         llegenda.saveStyleToGeoPackage(capaGpkg)
         # qV.project.addMapLayer(layer)
         # qV.setDirtyBit(True)
+        return True
     else:
         print("no s'ha pogut afegir la nova layer")
+        return False
 
 
 def esCoordAux(coord, rangs):
@@ -299,7 +319,8 @@ class CsvCoords(CsvPagina):
         self._proj = {'EPSG:25831 UTM 31N ETRS89': 25831,
                       'EPSG:3857 Pseudo Mercator (Google)': 3857,
                       'EPSG:4326 WGS 84': 4326,
-                      'EPSG:23031 UTM 31N ED50': 23031}
+                      'EPSG:23031 UTM 31N ED50': 23031,
+                      'EPSG:23031 UTM 31N ED50 Reduïdes': -23031}
         if proj is None:
             proj='EPSG:25831 UTM ETRS89 31N'
         layX = QHBoxLayout()
@@ -321,7 +342,7 @@ class CsvCoords(CsvPagina):
         layY.addWidget(self._cbY)
 
         def canviaLbls(x):
-            if x in (0,3):
+            if x in (0,3,4):
                 lblX.setText('Coordenada X:')
                 lblY.setText('Coordenada Y:')
             else:
@@ -761,8 +782,8 @@ class CsvAfegir(CsvPagina):
     def _enrere(self):
         self.salta.emit(CsvGeocodificat([],0,self._carregador))
     def afegir(self):
-        nivellCsv(self._carregador._projecte, self._carregador._llegenda, self._carregador._csv, self._carregador._separador,
-                  self._campCoordX, self._campCoordY, self._projeccio, self._leNomCapa.text(), self._color, symbol=self._forma)
+        if not nivellCsv(self._carregador._projecte, self._carregador._llegenda, self._carregador._csv, self._carregador._separador, self._campCoordX, self._campCoordY, self._projeccio, self._leNomCapa.text(), self._color, symbol=self._forma):
+            QMessageBox.warning(self,"No s'ha pogut afegir la capa","No s'ha pogut afegir aquest arxiu. Contacteu amb la persona de referència")
         self._carregador.close()
 
 
