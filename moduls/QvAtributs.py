@@ -189,6 +189,7 @@ class QvAtributs(QTabWidget):
         taula.canviNomTaula.connect(self.setTabText)
         self.setCurrentIndex(i)
         self.setTabText(i,self.tabText(i))
+
     def setTabText(self,i,text):
         l=len(self.widget(i))
         super().setTabText(i,text+(' (%i)'%l if l!=0 else ''))
@@ -290,7 +291,6 @@ class QvAtributs(QTabWidget):
     def setCurrentIndex(self,i):
         super().setCurrentIndex(i)
         try:
-            
             taula=self.currentWidget()
             try:
                 self.filtra.disconnect()
@@ -304,6 +304,7 @@ class QvAtributs(QTabWidget):
         except:
             pass
         #Mirar si està filtrat
+
     def actualitzaBoto(self):
         taula=self.currentWidget()
         filtre=taula.layer.subsetString()
@@ -311,7 +312,6 @@ class QvAtributs(QTabWidget):
             self.eliminaFiltre.hide()
         else:
             self.eliminaFiltre.show()
-
 
 class QvTaulaAtributs(QgsAttributeTableView):
 
@@ -451,41 +451,33 @@ class QvTaulaAtributs(QgsAttributeTableView):
             if menu is not None:
                 menu.exec_(QCursor.pos())
 
+    def currentFeature(self):
+        feature = None
+        modelIndex = self.currentIndex()
+        if modelIndex is not None and modelIndex.isValid():
+            modelIndex = self.filter.mapToMaster(modelIndex)
+            if modelIndex is not None and modelIndex.isValid():
+                feature = self.model.feature(modelIndex)
+        return feature
+
     def crearDialog(self):
         dialog = None
         try:
-            modelIndex = self.currentIndex()
-            if modelIndex is not None and modelIndex.isValid():
-                self.feature = self.model.feature(modelIndex)
-                if self.feature is not None and self.feature.isValid():
-                    num = self.layer.selectedFeatureCount()
-                    dialog = QvFitxesAtributs(self.layer, [self.feature], num == 0)
-                    # dialog.setStyleSheet('QWidget{border: 0px}')
-                #     dialog = QgsAttributeDialog(
-                #         self.layer, self.feature, False)
-                #     # dialog = QgsAttributeForm(self.layer, self.feature)
-                #     if filtre:
-                #         dialog.setWindowTitle(self.layer.name() + ' - Filtres')
-                #         dialog.setMode(QgsAttributeForm.SearchMode)
-                #     else:
-                #         dialog.setWindowTitle(
-                #             self.layer.name() +
-                #             ' - Element ' + str(self.feature.id()))
-                #         dialog.setMode(QgsAttributeForm.SingleEditMode)
-        except Exception:
-            pass
+            self.feature = self.currentFeature()
+            if self.feature is not None and self.feature.isValid():
+                num = self.layer.selectedFeatureCount()
+                dialog = QvFitxesAtributs(self.layer, [self.feature], num == 0)
+        except Exception as e:
+            print(str(e))
         return dialog
 
     def featureActions(self):
         try:
-            modelIndex = self.currentIndex()
-            if modelIndex is not None and modelIndex.isValid():
-                self.feature = self.model.feature(modelIndex)
-                if self.feature is not None and self.feature.isValid():
-                    menuExtra = QgsActionMenu(
-                        self.layer, self.feature, 'Feature', self.canvas)
-                    if menuExtra is not None and not menuExtra.isEmpty():
-                        return menuExtra
+            self.feature = self.currentFeature()
+            if self.feature is not None and self.feature.isValid():
+                menuExtra = QgsActionMenu(self.layer, self.feature, 'Feature', self.canvas)
+                if menuExtra is not None and not menuExtra.isEmpty():
+                    return menuExtra
             return None
         except Exception:
             return None

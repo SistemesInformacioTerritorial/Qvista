@@ -419,6 +419,7 @@ class QvCanvas(QgsMapCanvas):
             self.uncheckBotons(self.einesBotons[tool])
         else:
             self.uncheckBotons(None)
+
     def unsetMapTool(self,eina, ultima=False):
         super().unsetMapTool(eina)
         if isinstance(eina,QvMascaraEinaPlantilla):
@@ -437,19 +438,21 @@ class QvCanvas(QgsMapCanvas):
                 self.uncheckBotons(self.einesBotons[self.eines[-1]])
                 self.einesBotons[self.eines[-1]].setChecked(True)
             super().setMapTool(self.eines[-1])
+
     def unsetLastMapTool(self):
         if len(self.eines)>1:
             eina=self.eines.pop()
             self.unsetMapTool(eina,True)
 
     def mousePressEvent(self,event):
+        from qgis.gui import QgsMapToolDigitizeFeature
         super().mousePressEvent(event)
         if event.button()==Qt.RightButton:
-            if not isinstance(self.eines[-1],QvMesuraMultiLinia):
+            eina = self.eines[-1]
+            if not isinstance(eina, QvMesuraMultiLinia) and \
+               not isinstance(eina, QgsMapToolDigitizeFeature):
                 self.unsetLastMapTool()
     
- 
-
 
 class Marc(QFrame):
     def __init__(self, master=None):

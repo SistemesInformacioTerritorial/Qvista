@@ -2700,7 +2700,6 @@ def main(argv):
     # Definició 
     global qV
     
-
     # Ajustes de pantalla ANTES de crear la aplicación
     QvFuncions.setDPI()
 
@@ -2733,9 +2732,15 @@ def main(argv):
         # Estil visual de l'aplicació
         app.setStyle(QStyleFactory.create('fusion'))
         
+        # Proyecto inicial
+        if len(argv) > 1:
+            iniProj = argv[1] # Lo toma de la línea de comandos o...
+        else:
+            iniProj = projecteInicial # ...de configuracioQvista.py
+
         # Instanciem la classe QVista i fem qV global per poder ser utilitzada arreu
         # Paso app, para que QvCanvas pueda cambiar cursores
-        qV = QVista(app, projecteInicial,titolFinestra)
+        qV = QVista(app, iniProj, titolFinestra)
        
         # Restauració del est
         qV.restoreState(qV.tempState) 
