@@ -165,6 +165,9 @@ class QvAtributs(QTabWidget):
                 # print('tabTaula:', txt)
                 if current:
                     self.setCurrentIndex(i)
+                    # taula.model.loadLayer()
+                    # taula.repaintRequested()
+                    # QvApp().appQgis.processEvents()
                 return True
         return False
 

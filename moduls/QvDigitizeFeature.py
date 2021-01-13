@@ -6,34 +6,107 @@ import qgis.utils as qgUts
 import qgis.PyQt.QtWidgets as qtWdg
 import qgis.PyQt.QtGui as qtGui
 import qgis.PyQt.QtCore as qtCor
-import qgis.PyQt.QtSql as qtSql
 
 from moduls.QvSingleton import singleton
-from moduls.QvAtributs import QvFitxesAtributs
+
+# TODO
+# - Forms de atributos en modo edición
 
 class QvDigitizeFeature(qgGui.QgsMapToolDigitizeFeature):
 
-    @classmethod
-    def new(cls, layer, canvas, attributes=None):
-        try:
-            if layer.type() == qgCor.QgsMapLayerType.VectorLayer:
-                if layer.isEditable() or layer.startEditing():
-                    dig = cls(layer, canvas, attributes)
-                    dig.newInit()
-        except Exception as e:
-            print('Error QvDigitizeFeature.new: ' + str(e))
-
-    def __init__(self, layer, canvas, attributes=None):
+    def __init__(self, llegenda, capa):
+        if llegenda.canvas is None or capa.type() != qgCor.QgsMapLayerType.VectorLayer:
+            return
         if len(qgGui.QgsGui.editorWidgetRegistry().factories()) == 0:
             qgGui.QgsGui.editorWidgetRegistry().initEditors()
-        self.layer = layer
-        self.canvas = canvas
-        self.attributes = attributes
+        self.llegenda = llegenda
+        self.capa = capa
+        self.project = self.llegenda.project
+        self.canvas = self.llegenda.canvas
+        self.atributs = self.llegenda.atributs
         self.widget = QvDigitizeWidget(self.canvas)
         super().__init__(self.canvas, self.widget)
-        self.setLayer(self.layer)
-        self.snap = QvSnapping(self.canvas)
-        # self.activate()
+        self.setLayer(self.capa)
+        self.signal = None
+        self.menu = qtWdg.QMenu('Edició')
+
+    def iniSignal(self):
+        if self.signal is not None:
+            self.digitizingCompleted.disconnect(self.signal)
+            self.llegenda.currentLayerChanged.disconnect(self.unset)
+            self.signal = None
+
+    def newSignal(self, signal):
+        if self.signal is None:
+            self.signal = signal
+            self.digitizingCompleted.connect(self.signal)
+            self.llegenda.currentLayerChanged.connect(self.unset)
+        else:
+            if self.signal != signal:
+                self.digitizingCompleted.disconnect(self.signal)
+                self.signal = signal
+                self.digitizingCompleted.connect(self.signal)
+
+    def unset(self):
+        self.iniSignal()
+        self.clean()
+        self.canvas.unsetLastMapTool()
+
+    def start(self):
+        if self.capa.isEditable() or self.capa.startEditing():
+            self.iniSignal()
+            self.llegenda.digitize.modifInfoCapa(self.capa, self)
+            self.capa.editBuffer().layerModified.connect(lambda: self.llegenda.actIconesCapa(self.capa))
+            return True
+        else:
+            return False
+
+    def finish(self, save):
+        if self.capa.isEditable():
+            if save:
+                b = self.capa.commitChanges()
+            else:
+                b = self.capa.rollBack()
+            self.canvas.unsetLastMapTool()
+            self.llegenda.digitize.modifInfoCapa(self.capa, True)
+            return b
+        else:
+            return False
+
+    def finishDlg(self):
+        if self.modified():
+            r = qtWdg.QMessageBox.question(self.llegenda, "Finalitza edició de capa",
+                                           f"Vol desar les modificacions realitzades a la capa '{self.capa.name()}' o descartar-les?", 
+                                           buttons = qtWdg.QMessageBox.Save | qtWdg.QMessageBox.Discard | qtWdg.QMessageBox.Cancel,
+                                           defaultButton = qtWdg.QMessageBox.Save)
+            if r == qtWdg.QMessageBox.Save: self.end()
+            elif r == qtWdg.QMessageBox.Discard: self.cancel()
+        else:
+            self.cancel()
+
+    # def commit(self):
+    #     return self.layer.commitChanges(False)
+
+    def modified(self):
+        try:
+            buff = self.capa.editBuffer()
+            if buff is None:
+                return False
+            return buff.isModified()
+        except:
+            return False
+
+    def end(self):
+        return self.finish(True)
+
+    def cancel(self):
+        return self.finish(False)
+
+    def new(self):
+        if self.capa.isEditable():
+            self.newSignal(self.newFeature)
+            self.canvas.setMapTool(self)
+            self.canvas.activateWindow()
 
     # def canvasReleaseEvent(self, e):
     #     if e.button() == qtCor.Qt.RightButton:
@@ -44,35 +117,27 @@ class QvDigitizeFeature(qgGui.QgsMapToolDigitizeFeature):
     #     if e.button() == qtCor.Qt.RightButton:
     #         print("Botón derecho 2")
     #     super().cadCanvasReleaseEvent(e)
-
-    def newInit(self):
-        self.digitizingCompleted.connect(self.newFeature)
-        self.digitizingFinished.connect(self.end)
-        self.canvas.setMapTool(self)
-        self.canvas.activateWindow()
-
+    
     def newFeature(self, feature):
-        # if self.layer.isEditable():
-        #     self.layer.commitChanges()
-            # self.layer.commitErrors()
-        print('New feature')
-        dialog = qgGui.QgsAttributeDialog(self.layer, feature, False, self.canvas)
-        dialog.setMode(qgGui.QgsAttributeEditorContext.AddFeatureMode)
-        dialog.setAttribute(qtCor.Qt.WA_DeleteOnClose)
-        if dialog.exec_() == qtWdg.QDialog.Accepted:
-            # self.feature = self.dialog.feature()
-            self.layer.commitChanges() # Si no, no se graba
-            if self.attributes is not None:
-                self.attributes.tabTaula(self.layer, True)
-                # Falta refrescar tabla datos
+        self.dialog = qgGui.QgsAttributeDialog(self.capa, feature, False, self.canvas)
+        self.dialog.setMode(qgGui.QgsAttributeEditorContext.AddFeatureMode)
+        if self.dialog.exec_() == qtWdg.QDialog.Accepted:
+            self.feature = self.dialog.feature()
+            if self.atributs is not None:
+                self.atributs.tabTaula(self.capa, True)
+        self.dialog = None
         # self.canvas.unsetLastMapTool()
 
-    def end(self):
-        if self.layer.isEditable():
-            self.layer.rollBack()
-        # self.widget.clear()
-        # self.widget.hide()
-        print('End')
+    def setMenu(self):
+        self.menu.clear()
+        self.menu.addAction('Nou element', self.new)
+        self.menu.addSeparator()
+        if self.modified():
+            self.menu.addAction('Desa canvis', self.end)
+            self.menu.addAction('Cancel·la edició', self.cancel)
+        else:
+            self.menu.addAction('Finalitza edició', self.cancel)
+        return self.menu
 
 @singleton
 class QvDigitizeWidget(qgGui.QgsAdvancedDigitizingDockWidget):
@@ -83,21 +148,6 @@ class QvDigitizeWidget(qgGui.QgsAdvancedDigitizingDockWidget):
         self.setWindowTitle("Digitalització avançada")
         self.shortcut = qtWdg.QShortcut(qtGui.QKeySequence(keys), self.canvas)
         self.shortcut.activated.connect(self.toggleUserVisible)
-
-class QvSnapping(qgCor.QgsSnappingConfig):
-
-    def __init__(self, canvas):
-        super().__init__()
-        self.canvas = canvas
-        self.setEnabled(True)
-        self.setType(qgCor.QgsSnappingConfig.VertexAndSegment)
-        self.setUnits(qgCor.QgsTolerance.Pixels)
-        self.setTolerance(10)
-        self.setMode(qgCor.QgsSnappingConfig.AllLayers)
-        self.setIntersectionSnapping(True)
-        self.snapUtils = qgGui.QgsMapCanvasSnappingUtils(self.canvas)
-        self.snapUtils.setConfig(self)
-        self.canvas.setSnappingUtils(self.snapUtils)
 
 if __name__ == "__main__":
 
@@ -134,12 +184,33 @@ if __name__ == "__main__":
         atributos.setGeometry(100, 700, 1310, 300)
         leyenda.obertaTaulaAtributs.connect(atributos.show)
 
+        # QvDigitizeFeature.configSnap(canvas)
+        # digitList = {}
+        # for capa in leyenda.capes():
+        #     if QvDigitizeContext.testEditable(capa):
+        #         digitList[capa.id()] = QvDigitizeFeature(leyenda, capa)
+                
         # Acciones de usuario para el menú
 
-        def testDigitize():
-            print('ini test digitize')
-            QvDigitizeFeature.new(leyenda.currentLayer(), canvas, atributos)
-            print('fin test digitize')
+        # def editStart():
+        #     df = leyenda.currentDigitize()
+        #     if df: df.start()
+
+        # def editNew():
+        #     df = leyenda.currentDigitize()
+        #     if df: df.new()
+
+        # # def editCommit():
+        # # df = leyenda.currentDigitize()
+        # #     if df: df.commit()
+
+        # def editEnd():
+        #     df = leyenda.currentDigitize()
+        #     if df: df.end()
+
+        # def editCancel():
+        #     df = leyenda.currentDigitize()
+        #     if df: df.cancel()
 
         def writeProject():
             print('write file')
@@ -160,10 +231,30 @@ if __name__ == "__main__":
                 else:
                     print(leyenda.project.error().summary())
 
-        act = qtWdg.QAction()
-        act.setText("Test Digitize")
-        act.triggered.connect(testDigitize)
-        leyenda.accions.afegirAccio('testDigitize', act)
+        # act = qtWdg.QAction()
+        # act.setText("Edit: start")
+        # act.triggered.connect(editStart)
+        # leyenda.accions.afegirAccio('Edit: start', act)
+
+        # act = qtWdg.QAction()
+        # act.setText("Edit: new")
+        # act.triggered.connect(editNew)
+        # leyenda.accions.afegirAccio('Edit: new', act)
+
+        # act = qtWdg.QAction()
+        # act.setText("Edit: commit")
+        # act.triggered.connect(editCommit)
+        # leyenda.accions.afegirAccio('Edit: commit', act)
+
+        # act = qtWdg.QAction()
+        # act.setText("Edit: end")
+        # act.triggered.connect(editEnd)
+        # leyenda.accions.afegirAccio('Edit: end', act)
+
+        # act = qtWdg.QAction()
+        # act.setText("Edit: cancel")
+        # act.triggered.connect(editCancel)
+        # leyenda.accions.afegirAccio('Edit: cancel', act)
 
         act = qtWdg.QAction()
         act.setText("Desa projecte")
@@ -182,10 +273,16 @@ if __name__ == "__main__":
                 leyenda.menuAccions.append('separator')
                 leyenda.menuAccions.append('writeProject')
                 leyenda.menuAccions.append('openProject')
-            elif tipo == 'layer':
-                leyenda.menuAccions.append('separator')
-                leyenda.menuAccions.append('testDigitize')
-
+            # elif tipo == 'layer':
+            #     estado, _ = leyenda.stateDigitize()
+            #     if estado is None:
+            #         return
+            #     if estado:
+            #         leyenda.menuAccions.append('separator')
+            #         leyenda.menuAccions.append('Edit: new')
+            #         leyenda.menuAccions.append('Edit: commit')
+            #         leyenda.menuAccions.append('Edit: end')
+            #         leyenda.menuAccions.append('Edit: cancel')
 
         # Conexión de la señal con la función menuContexte para personalizar el menú
 
