@@ -9,6 +9,7 @@ from moduls import QvFuncions
 from qgis.gui import QgsMapTool, QgsRubberBand
 import math
 import csv
+import itertools
 
 
 class QvSeleccioGrafica(QWidget):
@@ -28,8 +29,8 @@ class QvSeleccioGrafica(QWidget):
         self.lytSeleccioGrafica.setAlignment(Qt.AlignTop)
         self.setLayout(self.lytSeleccioGrafica)
         self.lytBotonsSeleccio = QHBoxLayout()
-        self.leSel2 = QLineEdit()
-        self.lytSeleccioGrafica.addWidget(self.leSel2)
+        # self.leSel2 = QLineEdit()
+        # self.lytSeleccioGrafica.addWidget(self.leSel2)
         # self.leSel2.editingFinished.connect(seleccioExpressio)
         self.lytSeleccioGrafica.addLayout(self.lytBotonsSeleccio)
 
@@ -62,7 +63,54 @@ class QvSeleccioGrafica(QWidget):
         self.bs6 = QvPushButton('Crear CSV', flat=True)
         self.bs6.clicked.connect(lambda: self.crearCsv())
 
+        # Tool Box de resultats, on afegirem múltiples pestanyes
+        self.tbResultats = QToolBox()
+        self.gbResultats = QGroupBox('Hola :D')
+        layGB = QVBoxLayout() # Layout d'un únic element, per posar la taula dins d'una Group Box
+        layGB.addWidget(self.tbResultats)
+        self.gbResultats.setLayout(layGB)
+
+        # Taula de resultats
         self.twResultats = QTableWidget()
+        layCalculsNumerics = QVBoxLayout()
+        lblCalculsNumerics = QLabel('Suma i mitjana dels camps seleccionats que siguin numèrics.')
+        lblCalculsNumerics.setWordWrap(True)
+        layCalculsNumerics.addWidget(lblCalculsNumerics)
+        layCalculsNumerics.addWidget(self.twResultats)
+        widCalculs = QWidget()
+        widCalculs.setLayout(layCalculsNumerics)
+
+        # Taula de les previsualitzacions (no implementada)
+        self.twPreview = QTableWidget()
+        layPreview = QVBoxLayout()
+        lblPreview = QLabel('Previsualització del contingut seleccionat. En aquesta taula es visualitzen els 20 primers elements seleccionats')
+        lblPreview.setWordWrap(True)
+        layPreview.addWidget(lblPreview)
+        layPreview.addWidget(self.twPreview)
+        widPreview = QWidget()
+        widPreview.setLayout(layPreview)
+
+        # Arbre de selecció
+        self.distBarrisSelMasc = QVDistrictesBarris()
+        self.distBarrisSelMasc.view.clicked.connect(self.clickArbreSelMasc)
+
+        layCamps = QVBoxLayout()
+        lblCamps = QLabel('Seleccioneu els camps dels que voleu fer-ne una extracció a un arxiu CSV')
+        lblCamps.setWordWrap(True)
+        layCamps.addWidget(lblCamps)
+        layCamps.addWidget(self.lwFieldsSelect)
+        layCamps.addWidget(self.bs6)
+        widCamps = QWidget()
+        widCamps.setLayout(layCamps)
+
+        self.tbResultats.addItem(widCamps, 'Selecció i extracció de camps')
+        # self.tbResultats.addItem(self.twResultats, 'Càlculs numèrics')
+        self.tbResultats.addItem(widCalculs, 'Càlculs numèrics')
+        self.tbResultats.addItem(widPreview,'Preview de la selecció')
+        self.tbResultats.addItem(self.distBarrisSelMasc.view, 'Selecció per zones')
+        # layGB = QVBoxLayout()
+        # layGB.addWidget(self.twResultats)
+        # self.gbResultats.setLayout(layGB)
 
         # Ja no són checkbox però no els canviem el nom jaja salu2
         self.checkOverlap = QRadioButton('Solapant')
@@ -141,14 +189,13 @@ class QvSeleccioGrafica(QWidget):
         self.lytSeleccioGrafica.addWidget(self.frameColorOpacitat)
         # self.lytSeleccioGrafica.addWidget(self.lblNombreElementsSeleccionats)
         self.lytSeleccioGrafica.addWidget(self.lblCapaSeleccionada)
-        self.lytSeleccioGrafica.addWidget(self.lwFieldsSelect)
+        # self.lytSeleccioGrafica.addWidget(self.lwFieldsSelect)
         # self.lytSeleccioGrafica.addWidget(self.bs5)
-        self.lytSeleccioGrafica.addWidget(self.bs6)
-        self.lytSeleccioGrafica.addWidget(self.twResultats)
+        # self.lytSeleccioGrafica.addStretch()
+        # self.lytSeleccioGrafica.addWidget(self.bs6)
+        # self.lytSeleccioGrafica.addWidget(self.twResultats)
+        self.lytSeleccioGrafica.addWidget(self.gbResultats)
 
-        self.distBarrisSelMasc = QVDistrictesBarris()
-        self.distBarrisSelMasc.view.clicked.connect(self.clickArbreSelMasc)
-        self.lytSeleccioGrafica.addWidget(self.distBarrisSelMasc.view)
     
     @QvFuncions.mostraSpinner
     def crearCsv(self):
@@ -169,6 +216,26 @@ class QvSeleccioGrafica(QWidget):
                 for camp in camps:
                     d[camp] = feat[camp]
                 writer.writerow(d)
+    
+    def setPreview(self):
+        camps = [camp.text() for camp in self.lwFieldsSelect.selectedItems()]
+        capa = self.llegenda.currentLayer()
+        # capa.selectedFeatures() retorna un iterable amb els elements, però només volem els 20 primers
+        # una altra opció seria fer alguna cosa similar a:
+        # feats = list(capa.selectedFeatures())[:20]
+        # Això ens donaria també els 20 primers elements, però amb un cost molt més gran
+        # en cas que tinguéssim molts elements seleccionats, ja que primer fem una llista enorme i després la partim
+        feats = list(itertools.islice(capa.selectedFeatures(),20))
+        self.twPreview.setColumnCount(len(camps))
+        self.twPreview.setRowCount(len(feats))
+        self.twPreview.setHorizontalHeaderLabels(camps)
+
+        # self.twPreview.horizontalHeader().setResizeMode(QHeaderView.Stretch | QHeaderView.Interactive)
+        self.twPreview.horizontalHeader().setStretchLastSection(True)
+
+        for (i,feat) in enumerate(feats):
+            for (j,camp) in enumerate(camps):
+                self.twPreview.setItem(i,j,QTableWidgetItem(str(feat[camp])))
 
 
     def clickArbreSelMasc(self):
@@ -285,6 +352,8 @@ class QvSeleccioGrafica(QWidget):
         taula.setHorizontalHeaderLabels(['', 'Total', 'Mitjana'])
         nombreFieldsSeleccionats = 0
 
+        if len(self.lwFieldsSelect.selectedItems())==0: # Si no hi ha cap item seleccionat, se seleccionen tots
+            self.lwFieldsSelect.selectAll()
         layerActiu = self.llegenda.currentLayer()
         campsNumerics = [field.name() for field in layerActiu.fields() if field.typeName() in ('Integer64','Real')]
         itemsNumerics = [x for x in self.lwFieldsSelect.selectedItems() if x.text() in campsNumerics]
@@ -317,7 +386,10 @@ class QvSeleccioGrafica(QWidget):
         taula.setItem(0, 0, item)
         item = QTableWidgetItem(str(nombreElements))
         taula.setItem(0, 1, item)
+        self.bs6.setText(f'Crear CSV ({nombreElements} seleccionats=')
         taula.resizeColumnsToContents()
+
+        self.setPreview()
 
     def calculaFields(self, layerActiu):
         fields = layerActiu.fields()

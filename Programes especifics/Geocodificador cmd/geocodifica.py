@@ -140,7 +140,7 @@ def main():
                         QgsPointXY: Centroide del districte/barri buscat
                     """
                     try:
-                        nom = arregla(row[camp_nom])
+                        nom = adapta_nom(row[camp_nom])
                         return dic[nom]
                     except:
                         return None
