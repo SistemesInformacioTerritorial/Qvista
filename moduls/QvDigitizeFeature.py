@@ -9,8 +9,17 @@ import qgis.PyQt.QtCore as qtCor
 
 from moduls.QvSingleton import singleton
 
+# 
 # TODO
+#
+# - Widget digitalización avanzada: dock en leyenda
 # - Forms de atributos en modo edición
+# - Al salir de qVista, controlar si hay ediciones abiertas con modificaciones pendientes
+# - Leyenda: las opciones desactivadas del menú no se ven muy bien
+# - Scroll a elemento de tabla no funciona con los nuevos (fid = 0)
+# 
+# https://docs.qgis.org/3.16/en/docs/user_manual/working_with_vector/editing_geometry_attributes.html
+# 
 
 class QvDigitizeFeature(qgGui.QgsMapToolDigitizeFeature):
 
@@ -28,7 +37,7 @@ class QvDigitizeFeature(qgGui.QgsMapToolDigitizeFeature):
         super().__init__(self.canvas, self.widget)
         self.setLayer(self.capa)
         self.signal = None
-        self.menu = qtWdg.QMenu('Edició')
+        self.menu = None
 
     def iniSignal(self):
         if self.signal is not None:
@@ -50,13 +59,15 @@ class QvDigitizeFeature(qgGui.QgsMapToolDigitizeFeature):
     def unset(self):
         self.iniSignal()
         self.clean()
-        self.canvas.unsetLastMapTool()
+        self.canvas.unsetMapTool(self)
 
     def start(self):
         if self.capa.isEditable() or self.capa.startEditing():
             self.iniSignal()
             self.llegenda.digitize.modifInfoCapa(self.capa, self)
             self.capa.editBuffer().layerModified.connect(lambda: self.llegenda.actIconesCapa(self.capa))
+            self.llegenda.veureCapa(self.capa)
+            self.llegenda.showFeatureTable()
             return True
         else:
             return False
@@ -73,7 +84,7 @@ class QvDigitizeFeature(qgGui.QgsMapToolDigitizeFeature):
         else:
             return False
 
-    def finishDlg(self):
+    def stop(self):
         if self.modified():
             r = qtWdg.QMessageBox.question(self.llegenda, "Finalitza edició de capa",
                                            f"Vol desar les modificacions realitzades a la capa '{self.capa.name()}' o descartar-les?", 
@@ -102,6 +113,24 @@ class QvDigitizeFeature(qgGui.QgsMapToolDigitizeFeature):
     def cancel(self):
         return self.finish(False)
 
+    def canUndo(self):
+        return self.capa.undoStack().canUndo()
+
+    def undo(self):
+        if self.canUndo():
+            self.capa.undoStack().undo()
+            self.atributs.tabTaula(self.capa, True)
+            self.capa.repaintRequested.emit()
+
+    def canRedo(self):
+        return self.capa.undoStack().canRedo()
+
+    def redo(self):
+        if self.canRedo():
+            self.capa.undoStack().redo()
+            self.atributs.tabTaula(self.capa, True)
+            self.capa.repaintRequested.emit()
+
     def new(self):
         if self.capa.isEditable():
             self.newSignal(self.newFeature)
@@ -123,20 +152,25 @@ class QvDigitizeFeature(qgGui.QgsMapToolDigitizeFeature):
         self.dialog.setMode(qgGui.QgsAttributeEditorContext.AddFeatureMode)
         if self.dialog.exec_() == qtWdg.QDialog.Accepted:
             self.feature = self.dialog.feature()
-            if self.atributs is not None:
-                self.atributs.tabTaula(self.capa, True)
+            taula = self.atributs.tabTaula(self.capa, True)
+            # if taula is not None:
+            #     taula.filter.reloadVisible()
         self.dialog = None
         # self.canvas.unsetLastMapTool()
 
     def setMenu(self):
-        self.menu.clear()
+        self.menu = qtWdg.QMenu('Edició')
+        # Grupo 1 - Comandos de edición
         self.menu.addAction('Nou element', self.new)
         self.menu.addSeparator()
-        if self.modified():
-            self.menu.addAction('Desa canvis', self.end)
-            self.menu.addAction('Cancel·la edició', self.cancel)
-        else:
-            self.menu.addAction('Finalitza edició', self.cancel)
+        # Grupo 2 - Undo / Redo
+        act = self.menu.addAction('Desfés canvi', self.undo)
+        act.setEnabled(self.canUndo())
+        act = self.menu.addAction('Refés canvi', self.redo)
+        act.setEnabled(self.canRedo())
+        self.menu.addSeparator()
+        # Grupo 3: Cierre de edición
+        self.menu.addAction('Finalitza edició', self.stop)
         return self.menu
 
 @singleton

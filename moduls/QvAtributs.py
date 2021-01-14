@@ -152,10 +152,10 @@ class QvAtributs(QTabWidget):
             self.menuAccions += ['removeFilter']
         self.menuAccions += ['saveToCSV']
 
-    def tabTaula(self, layer, current=False):
-        # Ver si la tabla ya está abierta y, eventualmente, activar la pestaña
+    def tabTaula(self, layer, current=False, fid=None):
+        # Ver si la tabla ya está abierta y, eventualmente, activar la pestaña y mostrat registro
         if layer is None:
-            return False
+            return None
         num = self.count()
         for i in range(0, num):
             taula = self.widget(i)
@@ -165,18 +165,17 @@ class QvAtributs(QTabWidget):
                 # print('tabTaula:', txt)
                 if current:
                     self.setCurrentIndex(i)
-                    # taula.model.loadLayer()
-                    # taula.repaintRequested()
-                    # QvApp().appQgis.processEvents()
-                return True
-        return False
+                    if fid is not None:
+                        taula.scrollToFid(fid)
+                return taula
+        return None
 
     def obrirTaula(self, layer):
         # Abrir tabla por layer
         if layer is None:
             return
         # Si la tabla está abierta, mostrarla y actualizar nomnbre
-        if self.tabTaula(layer, True):
+        if self.tabTaula(layer, True) is not None:
             return
         layer.subsetStringChanged.connect(self.actualitzaBoto)
         # Si no se ha encontrado la tabla, añadirla
@@ -196,6 +195,15 @@ class QvAtributs(QTabWidget):
     def setTabText(self,i,text):
         l=len(self.widget(i))
         super().setTabText(i,text+(' (%i)'%l if l!=0 else ''))
+
+    def removeTab(self, i):
+        super().removeTab(i)
+        if self.count() == 0:
+            dw = self.parent()
+            if dw is None:
+                self.hide()
+            else:
+                dw.hide()
 
     def tancarTab(self, i):
         # Cerrar tabla por número de tab
@@ -453,6 +461,12 @@ class QvTaulaAtributs(QgsAttributeTableView):
                                             self.featureActions())
             if menu is not None:
                 menu.exec_(QCursor.pos())
+
+    def scrollToFid(self, fid):
+        index = self.filter.fidToIndex(fid)
+        if not index.isValid():
+            return
+        self.scrollTo(index)
 
     def currentFeature(self):
         feature = None

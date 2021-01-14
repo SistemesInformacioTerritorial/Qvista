@@ -14,7 +14,7 @@ class QvDigitize:
     def __init__(self, llegenda):
         self.llegenda = llegenda
         self.llista = {}
-        self.menu = qtWdg.QMenu('Edicions')
+        self.menu = None
 
     def configSnap(self, canvas):
         snap = canvas.snappingUtils().config()
@@ -57,32 +57,51 @@ class QvDigitize:
                 df = QvDigitizeFeature(self.llegenda, capa)
             df.start()
         elif estado:
-            df.finishDlg()
+            df.stop()
 
     def setMenu(self):
-        self.menu.clear()
-        if self.modified():
-            self.menu.addAction('Desa totes les modificacions', self.end)
-            self.menu.addAction('Cancel·la totes les edicions', self.cancel)
+        if self.started():
+            self.menu = qtWdg.QAction()
+            self.menu.setText("Finalitza les edicions")
+            self.menu.triggered.connect(self.stop)
             return self.menu
         return None
 
-    def modified(self):
+    def editions(self):
         for val in self.llista.values():
             _, df = self.testInfoCapa(val)
-            if df is not None and df.modified():
+            if df is not None:
+                yield df
+
+    def started(self):
+        for df in self.editions():
+            return True
+        return False
+
+    def modified(self):
+        for df in self.editions():
+            if df.modified():
                 return True
         return False
 
     def finish(self, save):
-        for val in self.llista.values():
-            _, df = self.testInfoCapa(val)
-            if df is not None:
-                df.finish(save)
+        for df in self.editions():
+            df.finish(save)
     
     def end(self):
         self.finish(True)
 
     def cancel(self):
         self.finish(False)
+
+    def stop(self):
+        if self.modified():
+            r = qtWdg.QMessageBox.question(self.llegenda, "Finalitza edicions del mapa",
+                                           f"Vol desar les modificacions realitzades al mapa o descartar-les totes?", 
+                                           buttons = qtWdg.QMessageBox.Save | qtWdg.QMessageBox.Discard | qtWdg.QMessageBox.Cancel,
+                                           defaultButton = qtWdg.QMessageBox.Save)
+            if r == qtWdg.QMessageBox.Save: self.end()
+            elif r == qtWdg.QMessageBox.Discard: self.cancel()
+        else:
+            self.cancel()
 
