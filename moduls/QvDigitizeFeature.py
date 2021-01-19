@@ -4,10 +4,10 @@ import qgis.core as qgCor
 import qgis.gui as qgGui
 import qgis.utils as qgUts
 import qgis.PyQt.QtWidgets as qtWdg
-import qgis.PyQt.QtGui as qtGui
+# import qgis.PyQt.QtGui as qtGui
 import qgis.PyQt.QtCore as qtCor
 
-from moduls.QvSingleton import singleton
+from moduls.QvAtributsForms import QvFormAtributs
 
 # 
 # TODO
@@ -33,8 +33,7 @@ class QvDigitizeFeature(qgGui.QgsMapToolDigitizeFeature):
         self.project = self.llegenda.project
         self.canvas = self.llegenda.canvas
         self.atributs = self.llegenda.atributs
-        self.widget = QvDigitizeWidget(self.canvas)
-        super().__init__(self.canvas, self.widget)
+        super().__init__(self.canvas, self.llegenda.digitize.widget)
         self.setLayer(self.capa)
         self.signal = None
         self.menu = None
@@ -78,7 +77,7 @@ class QvDigitizeFeature(qgGui.QgsMapToolDigitizeFeature):
                 b = self.capa.commitChanges()
             else:
                 b = self.capa.rollBack()
-            self.canvas.unsetLastMapTool()
+            self.canvas.unsetMapTool(self)
             self.llegenda.digitize.modifInfoCapa(self.capa, True)
             return b
         else:
@@ -148,15 +147,16 @@ class QvDigitizeFeature(qgGui.QgsMapToolDigitizeFeature):
     #     super().cadCanvasReleaseEvent(e)
     
     def newFeature(self, feature):
-        self.dialog = qgGui.QgsAttributeDialog(self.capa, feature, False, self.canvas)
-        self.dialog.setMode(qgGui.QgsAttributeEditorContext.AddFeatureMode)
+        # self.dialog = qgGui.QgsAttributeDialog(self.capa, feature, False, self.canvas)
+        # self.dialog.resize(600, 650)
+        # self.dialog.setMode(qgGui.QgsAttributeEditorContext.AddFeatureMode)
+        # self.dialog = QvFitxaAtributs(self.capa, feature, self.canvas, qgGui.QgsAttributeEditorContext.AddFeatureMode)
+
+        self.dialog = QvFormAtributs.create(self.capa, feature, parent=self.canvas, new=True)
         if self.dialog.exec_() == qtWdg.QDialog.Accepted:
             self.feature = self.dialog.feature()
-            taula = self.atributs.tabTaula(self.capa, True)
-            # if taula is not None:
-            #     taula.filter.reloadVisible()
+            self.atributs.tabTaula(self.capa, True)
         self.dialog = None
-        # self.canvas.unsetLastMapTool()
 
     def setMenu(self):
         self.menu = qtWdg.QMenu('Edició')
@@ -172,16 +172,6 @@ class QvDigitizeFeature(qgGui.QgsMapToolDigitizeFeature):
         # Grupo 3: Cierre de edición
         self.menu.addAction('Finalitza edició', self.stop)
         return self.menu
-
-@singleton
-class QvDigitizeWidget(qgGui.QgsAdvancedDigitizingDockWidget):
-
-    def __init__(self, canvas, keys="Ctrl+4"):
-        self.canvas = canvas
-        super().__init__(self.canvas)
-        self.setWindowTitle("Digitalització avançada")
-        self.shortcut = qtWdg.QShortcut(qtGui.QKeySequence(keys), self.canvas)
-        self.shortcut.activated.connect(self.toggleUserVisible)
 
 if __name__ == "__main__":
 

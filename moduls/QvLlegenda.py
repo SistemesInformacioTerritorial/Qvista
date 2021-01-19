@@ -51,6 +51,8 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
         self.bridge = None
         self.bridges = []
         self.atributs = atributs
+        if self.atributs is not None:
+            self.atributs.llegenda = self
         self.editable = True
         self.lastExtent = None
         self.escales = None
@@ -59,7 +61,6 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
         self.removing = False
         self.tema = QvTema(self)
         self.anotacions = None
-        self.digitize = QvDigitize(self)
         # self.restoreExtent = 0
         # print('restoreExtent', self.restoreExtent)
 
@@ -70,8 +71,9 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
 
         # self.setWhatsThis(QvApp().carregaAjuda(self))
 
-        # Asociar canvas y bridges
+        # Asociar canvas y bridges; digitalización
         self.mapBridge(canvas)
+        self.digitize = QvDigitize(self)
 
         # Evento de nueva capa seleccionada
         self.connectaCanviCapaActiva(canviCapaActiva)

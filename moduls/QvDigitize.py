@@ -1,20 +1,42 @@
 # -*- coding: utf-8 -*-
 
 import qgis.core as qgCor
-# import qgis.gui as qgGui
+import qgis.gui as qgGui
 import qgis.PyQt.QtWidgets as qtWdg
-# import qgis.PyQt.QtGui as qtGui
-# import qgis.PyQt.QtCore as qtCor
+import qgis.PyQt.QtGui as qtGui
+import qgis.PyQt.QtCore as qtCor
 
 from moduls.QvDigitizeFeature import QvDigitizeFeature
 from moduls.QvDigitizeContext import QvDigitizeContext
+from moduls.QvSingleton import singleton
+
+@singleton
+class QvDigitizeWidget(qgGui.QgsAdvancedDigitizingDockWidget):
+
+    def __init__(self, canvas, keys="Ctrl+4"):
+        self.canvas = canvas
+        super().__init__(self.canvas)
+        self.setWindowTitle("Digitalització avançada")
+        self.shortcut = qtWdg.QShortcut(qtGui.QKeySequence(keys), self.canvas)
+        self.setAllowedAreas(qtCor.Qt.LeftDockWidgetArea)
+        # self.setWindowFlag(qtCor.Qt.Window)
+        self.hide()
+
 
 class QvDigitize:
 
     def __init__(self, llegenda):
         self.llegenda = llegenda
+        self.widget = QvDigitizeWidget(self.llegenda.canvas)
+        self.widget.shortcut.activated.connect(self.widgetVisible)
         self.llista = {}
         self.menu = None
+
+    def widgetVisible(self):
+        if self.started():
+            self.widget.toggleUserVisible()
+        else:
+            self.widget.hide()
 
     def configSnap(self, canvas):
         snap = canvas.snappingUtils().config()
@@ -48,6 +70,13 @@ class QvDigitize:
         val = self.llista.get(capa.id())
         return self.testInfoCapa(val)
 
+    def editing(self, capa):
+        ret, _=self.infoCapa(capa)
+        if ret is None or not ret:
+            return False
+        else:
+            return True
+
     def activaCapa(self, switch):
         capa = self.llegenda.currentLayer()
         estado, df = self.infoCapa(capa)
@@ -61,10 +90,18 @@ class QvDigitize:
 
     def setMenu(self):
         if self.started():
-            self.menu = qtWdg.QAction()
-            self.menu.setText("Finalitza les edicions")
-            self.menu.triggered.connect(self.stop)
+            self.menu = qtWdg.QMenu('Edició')
+            act = self.menu.addAction(self.widget.windowTitle(), self.widgetVisible)
+            act.setCheckable(True)
+            act.setChecked(self.widget.isVisible())
+            self.menu.addSeparator()
+            self.menu.addAction("Finalitza les edicions", self.stop)
             return self.menu
+
+            # self.menu = qtWdg.QAction()
+            # self.menu.setText("Finalitza les edicions")
+            # self.menu.triggered.connect(self.stop)
+            # return self.menu
         return None
 
     def editions(self):
@@ -85,6 +122,7 @@ class QvDigitize:
         return False
 
     def finish(self, save):
+        self.widget.hide()
         for df in self.editions():
             df.finish(save)
     
