@@ -129,6 +129,19 @@ def campsNum(csvPath,sep,cod):
     nomCamps = ('num','npost','n_post','n post','núm')
     return campsPref(csvPath,sep,cod,nomCamps)
 
+def creaCsvAmbNums(ruta, sep, cod, campAdreca):
+    nom_res = str(Path(tempdir,Path(ruta).name))
+    # nom_res = f'{tempdir}/{Path(ruta).name}'
+    with open(ruta, encoding=cod) as f, open(nom_res,'w', encoding=cod) as ff:
+        read = csv.DictReader(f, delimiter=sep)
+        writ = csv.DictWriter(ff, delimiter=sep, fieldnames=read.fieldnames+['NUM_INFERIT_QVISTA'])
+        writ.writeheader()
+        for row in read:
+            adreca = row[campAdreca].split(',')
+            row[campAdreca], row['NUM_INFERIT_QVISTA'] = ','.join(adreca[:-1]), adreca[-1]
+            writ.writerow(row)
+    return nom_res
+
 class QvCarregaCsv(QDialog):
     def __init__(self, rutaCsv: str, projecte, llegenda, parent=None):
         super().__init__(parent,Qt.WindowSystemMenuHint | Qt.WindowTitleHint | Qt.WindowCloseButtonHint)
@@ -426,7 +439,7 @@ class CsvAdreca(CsvPagina):
         
 
         self._cbNumI = QComboBox()
-        self._cbNumI.addItems(camps)
+        self._cbNumI.addItems(['']+camps)
         layNumI = QHBoxLayout()
         lblNumI = QLabel('Número postal inicial:')
         lblNumI.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
@@ -513,11 +526,17 @@ class CsvAdreca(CsvPagina):
                 self._carregador._mapificador=QvMapificacio(geocod)
                 self.salta.emit(CsvGeocodificat(None,0, self._carregador))
                 return
-        QvMemoria().setCampsGeocod(self._carregador._csv,{'teCoords':False,'camps':{'tipusVia':self._cbTipusVia.currentText(),'via':self._cbVia.currentText(),'numI':self._cbNumI.currentText(),
-            'lletraI':self._cbLletraI.currentText(),'numF':self._cbNumF.currentText(),'lletraF':self._cbLletraF.currentText()}})
-        
-        self.salta.emit(CsvGeocod([x.currentText() for x in (self._cbTipusVia, self._cbVia,
-                                                             self._cbNumI, self._cbLletraI, self._cbNumF, self._cbLletraF)], self._carregador))
+        camps = [x.currentText() for x in (self._cbTipusVia, self._cbVia,
+                 self._cbNumI, self._cbLletraI, self._cbNumF, self._cbLletraF)]
+            
+        QvMemoria().setCampsGeocod(self._carregador._csv,{'teCoords':False,'camps':{'tipusVia':camps[0],'via':camps[1],'numI':camps[2],
+                'lletraI':camps[3],'numF':camps[4],'lletraF':camps[5]}})
+        if camps[2]=='':
+            nouCsv = creaCsvAmbNums(self._carregador._csv, self._carregador._separador, self._carregador._codificacio, self._cbVia.currentText())
+            self._carregador._csv = nouCsv
+            camps[2]='NUM_INFERIT_QVISTA'
+            self._carregador.loadMap()
+        self.salta.emit(CsvGeocod(camps, self._carregador))
 
 
 class CsvGeocod(CsvPagina):
@@ -564,6 +583,7 @@ class CsvGeocod(CsvPagina):
         #     self._carregador.loadMap()
         self.fil=QvFuncioFil(lambda: self._carregador._mapificador.geocodificacio(self._camps, ('Coordenada', 'Districte', 'Barri', 'Codi postal', "Illa", "Solar", "Àrea estadística bàsica",
                                                                       "Secció censal"), percentatgeProces=self._canviPercentatge, procesAcabat=self.acabat, errorAdreca=self._unErrorMes, filesGeocodificades=self._filesGeocod))
+        self.fil.funcioAcabada.connect(lambda: self.acabat(-1))
         self.fil.start()
         # self._carregador._mapificador.geocodificacio(self._camps, ('Coordenada', 'Districte', 'Barri', 'Codi postal', "Illa", "Solar", "Àrea estadística bàsica",
         #                                                               "Secció censal"), percentatgeProces=self._canviPercentatge, procesAcabat=self.acabat)
@@ -586,6 +606,10 @@ class CsvGeocod(CsvPagina):
     def acabat(self, n):
         if self._carregador._mapificador.cancel:
             self.salta.emit(self._carregador.getPrimeraPantalla())
+        elif  not self.fil.resultat:
+            QMessageBox.critical(self,'Error de geocodificació',f'Hi ha hagut un error durant la geocodificació:\n{self._carregador._mapificador.msgError}')
+            self._carregador._mapificador.cancel = True
+            self.acabat(n)
         else:
             # Aquí saltar al resultat
             arxiuNet=str(Path(self._carregador._csv).parent)+'\\'+self._carregador._mapificador.netejaString(Path(self._carregador._csv).stem,True)+'.csv'
