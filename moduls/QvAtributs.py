@@ -4,94 +4,27 @@ from qgis.core import QgsMapLayer, QgsVectorLayerCache
 from qgis.PyQt import QtWidgets  # , uic
 from qgis.PyQt.QtCore import Qt, pyqtSignal, QSize, pyqtSlot
 from qgis.PyQt.QtGui import QCursor, QIcon
-from qgis.PyQt.QtWidgets import QAction, QHBoxLayout, QMenuBar, QTabWidget, QWidget
+from qgis.PyQt.QtWidgets import QAction, QHBoxLayout, QTabWidget, QWidget
 from qgis.gui import (QgsGui,
                       QgsAttributeTableModel,
                       QgsAttributeTableView,
                       QgsAttributeTableFilterModel,
-                      QgsAttributeForm,
+                      QgsAttributeEditorContext,
                       QgsSearchQueryBuilder,
                       QgsActionMenu)
 from moduls.QvAccions import QvAccions
 from moduls.QvApp import QvApp
 from moduls.QvPushButton import QvPushButton
 from moduls.QvDiagrama import QvDiagrama
+from moduls.QvAtributsForms import QvFormAtributs
 
 # import images_rc  # NOQA
 # import recursos
+import os
 import csv
 # import xlwt - .xls
-from qgis.PyQt.QtWidgets import QDialog
 
-from moduls.Ui_AtributsForm import Ui_AtributsForm
-from configuracioQvista import *
-
-
-class QvFitxesAtributs(QDialog):
-    def __init__(self, layer, features, selectFeature=True):
-        QDialog.__init__(self)
-        self.ui = Ui_AtributsForm()
-        self.ui.setupUi(self)
-        self.ui.buttonBox.accepted.connect(self.accept)
-        self.finished.connect(self.finish)
-        self.layer = layer
-        self.features = features
-        self.selectFeature = selectFeature
-        self.title = self.windowTitle()
-        self.total = len(self.features)
-        if self.total > 0:
-            for feature in self.features:
-                form = QgsAttributeForm(self.layer, feature)
-                self.ui.stackedWidget.addWidget(form)
-            self.visibleButtons()
-            self.go(0)
-
-    def setTitle(self, n):
-        if self.total > 1:
-            self.setWindowTitle(self.title + ' (' + str(n+1) + ' de ' + str(self.total) + ')')
-        else:
-            self.setWindowTitle(self.title)
-
-    def setMenu(self, n):
-        self.menuBar = QMenuBar()
-        self.menu = QgsActionMenu(self.layer, self.features[n], 'Feature')
-        if self.menu is not None and not self.menu.isEmpty():
-            self.menuBar.addMenu(self.menu)
-            self.menuBar.setVisible(True)
-        else:
-            self.menuBar.setVisible(False)
-        self.layout().setMenuBar(self.menuBar)
-
-    def select(self, n=None):
-        if not self.selectFeature:
-            return
-        if n is None:
-            self.layer.selectByIds([])
-        else:
-            self.layer.selectByIds([self.features[n].id()])
-
-    def go(self, n):
-        if n >= 0 and n < self.total:
-            self.select(n)
-            self.setTitle(n)
-            self.setMenu(n)
-            self.ui.stackedWidget.setCurrentIndex(n)
-
-    def move(self, inc):
-        n = (self.ui.stackedWidget.currentIndex() + inc) % self.total
-        self.go(n)
-
-    def visibleButtons(self):
-        if self.total > 1:
-            self.ui.bPrev.clicked.connect(lambda: self.move(-1))
-            self.ui.bNext.clicked.connect(lambda: self.move(1))
-            self.ui.groupBox.setVisible(True)
-        else:
-            self.ui.groupBox.setVisible(False)
-
-    def finish(self, int):
-        self.select(None)
-
+from configuracioQvista import imatgesDir
 
 class QvAtributs(QTabWidget):
 
@@ -101,6 +34,7 @@ class QvAtributs(QTabWidget):
     def __init__(self, canvas):
         super().__init__()
         self.canvas = canvas
+        self.llegenda = None
         # self.layout = QVBoxLayout(self)
         self.setMovable(True)
         self.setUsesScrollButtons(True)
@@ -152,10 +86,10 @@ class QvAtributs(QTabWidget):
             self.menuAccions += ['removeFilter']
         self.menuAccions += ['saveToCSV']
 
-    def tabTaula(self, layer, current=False):
-        # Ver si la tabla ya está abierta y, eventualmente, activar la pestaña
+    def tabTaula(self, layer, current=False, fid=None):
+        # Ver si la tabla ya está abierta y, eventualmente, activar la pestaña y mostrat registro
         if layer is None:
-            return False
+            return None
         num = self.count()
         for i in range(0, num):
             taula = self.widget(i)
@@ -165,15 +99,17 @@ class QvAtributs(QTabWidget):
                 # print('tabTaula:', txt)
                 if current:
                     self.setCurrentIndex(i)
-                return True
-        return False
+                    if fid is not None:
+                        taula.scrollToFid(fid)
+                return taula
+        return None
 
     def obrirTaula(self, layer):
         # Abrir tabla por layer
         if layer is None:
             return
         # Si la tabla está abierta, mostrarla y actualizar nomnbre
-        if self.tabTaula(layer, True):
+        if self.tabTaula(layer, True) is not None:
             return
         layer.subsetStringChanged.connect(self.actualitzaBoto)
         # Si no se ha encontrado la tabla, añadirla
@@ -193,6 +129,15 @@ class QvAtributs(QTabWidget):
     def setTabText(self,i,text):
         l=len(self.widget(i))
         super().setTabText(i,text+(' (%i)'%l if l!=0 else ''))
+
+    def removeTab(self, i):
+        super().removeTab(i)
+        if self.count() == 0:
+            dw = self.parent()
+            if dw is None:
+                self.hide()
+            else:
+                dw.hide()
 
     def tancarTab(self, i):
         # Cerrar tabla por número de tab
@@ -451,6 +396,12 @@ class QvTaulaAtributs(QgsAttributeTableView):
             if menu is not None:
                 menu.exec_(QCursor.pos())
 
+    def scrollToFid(self, fid):
+        index = self.filter.fidToIndex(fid)
+        if not index.isValid():
+            return
+        self.scrollTo(index)
+
     def currentFeature(self):
         feature = None
         modelIndex = self.currentIndex()
@@ -461,15 +412,21 @@ class QvTaulaAtributs(QgsAttributeTableView):
         return feature
 
     def crearDialog(self):
-        dialog = None
         try:
             self.feature = self.currentFeature()
             if self.feature is not None and self.feature.isValid():
-                num = self.layer.selectedFeatureCount()
-                dialog = QvFitxesAtributs(self.layer, [self.feature], num == 0)
+                return QvFormAtributs.create(self.layer, self.feature, parent=self.parent, digitize=self.parent.llegenda.digitize)
+
+                # if self.parent.llegenda is not None:
+                #     editing, _ = self.parent.llegenda.digitize.infoCapa(self.layer)
+                #     if editing:
+                #         return QvFitxaAtributs(self.layer, self.feature, self.parent, QgsAttributeEditorContext.SingleEditMode)
+                # num = self.layer.selectedFeatureCount()
+                # return QvFitxesAtributs(self.layer, [self.feature], num == 0)
+                
         except Exception as e:
             print(str(e))
-        return dialog
+        return None
 
     def featureActions(self):
         try:

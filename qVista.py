@@ -105,6 +105,8 @@ class QVista(QMainWindow, Ui_MainWindow):
         """
         QMainWindow.__init__(self)
         self.setupUi(self)
+        # Evita docks tabulados
+        self.setDockOptions(QMainWindow.AnimatedDocks)
         self.tempState = self.saveState()
 
         
@@ -838,6 +840,8 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.dwLlegenda.setWidget(self.llegenda)
         self.dwLlegenda.setWindowFlag(Qt.Window)
         self.dwLlegenda.show()
+
+        self.addDockWidget( Qt.LeftDockWidgetArea , self.llegenda.digitize.widget )
 
     def preparacioEntorns(self):             
         self.menuEntorns.setFont(QvConstants.FONTSUBTITOLS)

@@ -1,5 +1,5 @@
 from moduls.QvImports import *
-from moduls.QvAtributs import QvFitxesAtributs
+from moduls.QvAtributsForms import QvFormAtributs
 from moduls.QvApp import QvApp
 from moduls.QvPushButton import QvPushButton
 from moduls.QvMemoria import QvMemoria
@@ -1445,7 +1445,8 @@ class QvSeleccioElement(QgsMapTool):
                 # ids = [i.id() for i in it]
                 # layer.selectByIds(ids)
                 if len(features) > 0:
-                    self.fitxaAtributs = QvFitxesAtributs(layer, features)
+                    # self.fitxaAtributs = QvFitxesAtributs(layer, features)
+                    self.fitxaAtributs = QvFormAtributs.create(layer, features, parent=self.canvas, digitize=self.llegenda.digitize)
                     self.fitxaAtributs.exec_()
                     self.fitxaAtributs = None
 
