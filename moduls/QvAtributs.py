@@ -87,7 +87,7 @@ class QvAtributs(QTabWidget):
         self.menuAccions += ['saveToCSV']
 
     def tabTaula(self, layer, current=False, fid=None):
-        # Ver si la tabla ya está abierta y, eventualmente, activar la pestaña y mostrat registro
+        # Ver si la tabla ya está abierta y, eventualmente, activar la pestaña y mostrar registro
         if layer is None:
             return None
         num = self.count()
@@ -96,7 +96,7 @@ class QvAtributs(QTabWidget):
             if taula.layer.id() == layer.id():
                 txt = taula.layerNom()
                 self.setTabText(i, txt)
-                # print('tabTaula:', txt)
+                # print('tabTaula', int(i), layer.name(), txt)
                 if current:
                     self.setCurrentIndex(i)
                     if fid is not None:
@@ -398,9 +398,8 @@ class QvTaulaAtributs(QgsAttributeTableView):
 
     def scrollToFid(self, fid):
         index = self.filter.fidToIndex(fid)
-        if not index.isValid():
-            return
-        self.scrollTo(index)
+        if index.isValid():
+            self.scrollTo(index)
 
     def currentFeature(self):
         feature = None
@@ -415,15 +414,7 @@ class QvTaulaAtributs(QgsAttributeTableView):
         try:
             self.feature = self.currentFeature()
             if self.feature is not None and self.feature.isValid():
-                return QvFormAtributs.create(self.layer, self.feature, parent=self.parent, digitize=self.parent.llegenda.digitize)
-
-                # if self.parent.llegenda is not None:
-                #     editing, _ = self.parent.llegenda.digitize.infoCapa(self.layer)
-                #     if editing:
-                #         return QvFitxaAtributs(self.layer, self.feature, self.parent, QgsAttributeEditorContext.SingleEditMode)
-                # num = self.layer.selectedFeatureCount()
-                # return QvFitxesAtributs(self.layer, [self.feature], num == 0)
-                
+                return QvFormAtributs.create(self.layer, self.feature, self.parent, self.parent)                
         except Exception as e:
             print(str(e))
         return None
@@ -536,7 +527,6 @@ class QvTaulaAtributs(QgsAttributeTableView):
             QgsAttributeTableFilterModel.ShowSelected)
     def __len__(self):
         return max(0,self.layer.featureCount())
-
 
 if __name__ == "__main__":
 

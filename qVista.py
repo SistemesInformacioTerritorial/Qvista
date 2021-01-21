@@ -841,7 +841,8 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.dwLlegenda.setWindowFlag(Qt.Window)
         self.dwLlegenda.show()
 
-        self.addDockWidget( Qt.LeftDockWidgetArea , self.llegenda.digitize.widget )
+        if QvApp().testVersioQgis(3, 10):
+            self.addDockWidget( Qt.LeftDockWidgetArea , self.llegenda.digitize.widget )
 
     def preparacioEntorns(self):             
         self.menuEntorns.setFont(QvConstants.FONTSUBTITOLS)

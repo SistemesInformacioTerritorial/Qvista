@@ -13,6 +13,7 @@ from moduls.QvPushButton import QvPushButton
 from moduls.QvConstants import QvConstants
 from moduls.QvStreetView import *
 from moduls.QvEinesGrafiques import QvMesuraMultiLinia, QvMascaraEinaPlantilla
+from moduls.QvApp import QvApp
 import functools
 #from qVista import QVista
 
@@ -444,15 +445,18 @@ class QvCanvas(QgsMapCanvas):
             eina=self.eines.pop()
             self.unsetMapTool(eina,True)
 
+    def testDigitizeTool(self, eina):
+        if QvApp().testVersioQgis(3, 10):
+            from qgis.gui import QgsMapToolDigitizeFeature
+            return isinstance(eina, QgsMapToolDigitizeFeature)
+        return False
+
     def mousePressEvent(self,event):
-        from qgis.gui import QgsMapToolDigitizeFeature
         super().mousePressEvent(event)
         if event.button()==Qt.RightButton:
             eina = self.eines[-1]
-            if not isinstance(eina, QvMesuraMultiLinia) and \
-               not isinstance(eina, QgsMapToolDigitizeFeature):
-                self.unsetLastMapTool()
-    
+            if not isinstance(eina, QvMesuraMultiLinia) and not self.testDigitizeTool(eina):
+                self.unsetLastMapTool()    
 
 class Marc(QFrame):
     def __init__(self, master=None):

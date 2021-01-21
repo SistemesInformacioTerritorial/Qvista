@@ -6,17 +6,18 @@ from qgis.PyQt.QtWidgets import QDialog, QMenuBar
 from moduls.Ui_AtributsForm import Ui_AtributsForm
 
 class QvFormAtributs:
+
     @staticmethod
-    def create(layer, features, parent=None, digitize=None, new=False):
+    def create(layer, features, parent=None, attributes=None, new=False):
         """Crea un formulario para dar de alta, modificar o consultar datos alfanuméricos de un elemento.
-           Cuando se trata de una consulta, puede tratarse de una lista de elementos.
+           Cuando se trata de una consulta, puede mostrar una lista de elementos.
 
         Args:
             layer (QgsVectorLayer): Capa
             features (QgsFeature o [QgsFeature]): Elemento o lista de elementos
             parent (QWidget, optional): Widget padre del formulario creado. Defaults to None.
-            digitize (QvDigitize, optional): Información del estado de digitalización de la capa.
-                                             Necesario si no se trata de un alta. Defaults to None.
+            attributes (QvAtributs, optional): Widget con las tablas de atributos para mostrar el
+                                               registro seleccionado. Defaults to None.
             new (bool, optional): Si es True se trata de un alta. Defaults to False.
 
         Returns:
@@ -24,52 +25,70 @@ class QvFormAtributs:
         """
         # Alta de elemento
         if new:
-            if features is not None and isinstance(features, list): features = features[0]
-            return QvFitxaAtributs(layer, features, parent, QgsAttributeEditorContext.AddFeatureMode)
+            return QvFitxaAtributs(layer, features, parent, attributes, new)
         # Modificación de elemento
-        if digitize is not None and digitize.editing(layer):
-            if features is not None and isinstance(features, list): features = features[0]
-            return QvFitxaAtributs(layer, features, parent, QgsAttributeEditorContext.SingleEditMode)
+        if attributes is not None and attributes.llegenda is not None and attributes.llegenda.editing(layer):
+            return QvFitxaAtributs(layer, features, parent, attributes)
         # Consulta de elemento(s)
-        if features is not None and not isinstance(features, list): features = [features]
-        return QvFitxesAtributs(layer, features, layer.selectedFeatureCount() == 0)
+        return QvFitxesAtributs(layer, features, parent, attributes)
 
 
 class QvFitxaAtributs(QgsAttributeDialog):
-    def __init__(self, layer, feature, parent=None, mode=None, selectFeature=True):
-        super().__init__(layer, feature, False, parent)
-        self.layer = layer
-        self.selectFeature = selectFeature
+
+    def __init__(self, layer, features, parent=None, attributes=None, new=False):
+        self.reg = self.oneFeature(features)
+        super().__init__(layer, self.reg, False, parent)
         self.resize(600, 650)
-        if mode is not None:
-            self.setMode(mode)
-        if self.selectFeature:
-            self.layer.selectByIds([feature.id()])
+        self.layer = layer
+        self.attributes = attributes
+        self.new = new
+        if self.new:
+            self.setMode(QgsAttributeEditorContext.AddFeatureMode)
+        else:
+            self.setMode(QgsAttributeEditorContext.SingleEditMode)
+            self.select(self.reg.id())
             self.finished.connect(self.finish)
 
-    def finish(self, int):
-        if self.selectFeature:
-            self.layer.selectByIds([])
+    def oneFeature(self, features):
+        if features is not None and isinstance(features, list):
+            features = features[0]
+        return features
+
+    def select(self, fid):
+        # Importante: Primero poner tab de capa y luego seleccionar feature
+        if self.attributes is not None:
+            self.attributes.tabTaula(self.layer, True, fid)
+        self.layer.selectByIds([fid])
+
+    def finish(self):
+        self.layer.selectByIds([])
 
 
 class QvFitxesAtributs(QDialog):
-    def __init__(self, layer, features, selectFeature=True):
-        QDialog.__init__(self)
+
+    def __init__(self, layer, features, parent=None, attributes=None):
+        QDialog.__init__(self, parent)
         self.ui = Ui_AtributsForm()
         self.ui.setupUi(self)
         self.ui.buttonBox.accepted.connect(self.accept)
         self.finished.connect(self.finish)
         self.layer = layer
-        self.features = features
-        self.selectFeature = selectFeature
+        self.regs = self.listFeatures(features)
+        self.attributes = attributes
+        # self.selectFeature = self.layer.selectedFeatureCount() == 0
         self.title = self.layer.name() + " - Atributs d'objecte"
-        self.total = len(self.features)
+        self.total = len(self.regs)
         if self.total > 0:
-            for feature in self.features:
+            for feature in self.regs:
                 form = QgsAttributeForm(self.layer, feature)
                 self.ui.stackedWidget.addWidget(form)
             self.visibleButtons()
             self.go(0)
+
+    def listFeatures(self, features):
+        if features is not None and not isinstance(features, list):
+            features = [features]
+        return features
 
     def setTitle(self, n):
         if self.total > 1:
@@ -79,7 +98,7 @@ class QvFitxesAtributs(QDialog):
 
     def setMenu(self, n):
         self.menuBar = QMenuBar()
-        self.menu = QgsActionMenu(self.layer, self.features[n], 'Feature')
+        self.menu = QgsActionMenu(self.layer, self.regs[n], 'Feature')
         if self.menu is not None and not self.menu.isEmpty():
             self.menuBar.addMenu(self.menu)
             self.menuBar.setVisible(True)
@@ -88,12 +107,16 @@ class QvFitxesAtributs(QDialog):
         self.layout().setMenuBar(self.menuBar)
 
     def select(self, n=None):
-        if not self.selectFeature:
-            return
+        # if not self.selectFeature:
+        #     return
         if n is None:
             self.layer.selectByIds([])  
         else:
-            self.layer.selectByIds([self.features[n].id()])
+            fid = self.regs[n].id()
+            # Importante: Primero poner tab de capa y luego seleccionar feature
+            if self.attributes is not None:
+                self.attributes.tabTaula(self.layer, True, fid)
+            self.layer.selectByIds([fid])
 
     def go(self, n):
         if n >= 0 and n < self.total:

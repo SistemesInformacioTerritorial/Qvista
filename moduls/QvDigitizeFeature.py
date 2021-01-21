@@ -4,16 +4,17 @@ import qgis.core as qgCor
 import qgis.gui as qgGui
 import qgis.utils as qgUts
 import qgis.PyQt.QtWidgets as qtWdg
-# import qgis.PyQt.QtGui as qtGui
+import qgis.PyQt.QtGui as qtGui
 import qgis.PyQt.QtCore as qtCor
 
 from moduls.QvAtributsForms import QvFormAtributs
+from configuracioQvista import imatgesDir
+
+import os
 
 # 
 # TODO
 #
-# - Widget digitalización avanzada: dock en leyenda
-# - Forms de atributos en modo edición
 # - Al salir de qVista, controlar si hay ediciones abiertas con modificaciones pendientes
 # - Leyenda: las opciones desactivadas del menú no se ven muy bien
 # - Scroll a elemento de tabla no funciona con los nuevos (fid = 0)
@@ -147,19 +148,14 @@ class QvDigitizeFeature(qgGui.QgsMapToolDigitizeFeature):
     #     super().cadCanvasReleaseEvent(e)
     
     def newFeature(self, feature):
-        # self.dialog = qgGui.QgsAttributeDialog(self.capa, feature, False, self.canvas)
-        # self.dialog.resize(600, 650)
-        # self.dialog.setMode(qgGui.QgsAttributeEditorContext.AddFeatureMode)
-        # self.dialog = QvFitxaAtributs(self.capa, feature, self.canvas, qgGui.QgsAttributeEditorContext.AddFeatureMode)
-
-        self.dialog = QvFormAtributs.create(self.capa, feature, parent=self.canvas, new=True)
+        self.dialog = QvFormAtributs.create(self.capa, feature, self.canvas, self.atributs, new=True)
         if self.dialog.exec_() == qtWdg.QDialog.Accepted:
-            self.feature = self.dialog.feature()
-            self.atributs.tabTaula(self.capa, True)
+            self.feature = self.dialog.reg
         self.dialog = None
 
     def setMenu(self):
         self.menu = qtWdg.QMenu('Edició')
+        self.menu.setIcon(qtGui.QIcon(os.path.join(imatgesDir, 'edit_on.png')))
         # Grupo 1 - Comandos de edición
         self.menu.addAction('Nou element', self.new)
         self.menu.addSeparator()
