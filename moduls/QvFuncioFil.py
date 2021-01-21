@@ -1,4 +1,4 @@
-from qgis.PyQt.QtCore import QThread
+from qgis.PyQt.QtCore import QThread, pyqtSignal
 
 class QvFuncioFil(QThread):
     '''Classe per executar una funció (sense paràmetres) en un fil. Si volem passar-hi paràmetres, haurem de fer una nova funció sense paràmetres que ho gestioni
@@ -14,10 +14,12 @@ Per comunicar aquest codi amb altres widgets ho haurem de fer utilitzant signals
 
 IMPORTANT: no cridar directament la funció run. Sempre invocar amb start
 '''
+    funcioAcabada = pyqtSignal()
     def __init__(self,f):
         super().__init__()
         self._f=f
     def __del__(self):
         self.wait()
     def run(self):
-        self._f()
+        self.resultat=self._f()
+        self.funcioAcabada.emit()
