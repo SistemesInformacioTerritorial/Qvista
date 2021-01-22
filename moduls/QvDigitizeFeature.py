@@ -158,6 +158,8 @@ class QvDigitizeFeature(qgGui.QgsMapToolDigitizeFeature):
         self.menu.setIcon(qtGui.QIcon(os.path.join(imatgesDir, 'edit_on.png')))
         # Grupo 1 - Comandos de edición
         self.menu.addAction('Nou element', self.new)
+        act = self.menu.addAction('Esborra seleccionat(s)', self.capa.deleteSelectedFeatures)
+        act.setEnabled(self.capa.selectedFeatureCount())
         self.menu.addSeparator()
         # Grupo 2 - Undo / Redo
         act = self.menu.addAction('Desfés canvi', self.undo)

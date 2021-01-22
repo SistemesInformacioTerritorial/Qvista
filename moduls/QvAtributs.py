@@ -4,7 +4,7 @@ from qgis.core import QgsMapLayer, QgsVectorLayerCache
 from qgis.PyQt import QtWidgets  # , uic
 from qgis.PyQt.QtCore import Qt, pyqtSignal, QSize, pyqtSlot
 from qgis.PyQt.QtGui import QCursor, QIcon
-from qgis.PyQt.QtWidgets import QAction, QHBoxLayout, QTabWidget, QWidget
+from qgis.PyQt.QtWidgets import QAction, QHBoxLayout, QTabWidget, QWidget, QMenu, QMessageBox
 from qgis.gui import (QgsGui,
                       QgsAttributeTableModel,
                       QgsAttributeTableView,
@@ -71,8 +71,25 @@ class QvAtributs(QTabWidget):
         self.currentChanged.connect(self.setCurrentIndex)
         # self.filtra.clicked.connect(self.filterElements)
 
+    def setMenuEdicio(self, layer):
+        taula = self.tabTaula(layer)
+        if taula is None: return None
+        menu = QMenu('Edició')
+        menu.setIcon(QIcon(os.path.join(imatgesDir, 'edit_on.png')))
+        menu.addAction("Modifica fitxa", taula.showFeature)
+        menu.addAction("Esborra element", taula.removeFeature)
+        return menu
+
     def setMenuAccions(self, layer):
-        self.menuAccions = ['showFeature', 'selectElement', 'selectAll']
+        self.menuAccions = []
+        if self.llegenda.editing(layer):
+            menu = self.setMenuEdicio(layer)
+            if menu is not None:
+                self.accions.afegirAccio('menuEdicio', menu)
+                self.menuAccions = ['menuEdicio', 'separator']
+        if not self.menuAccions:
+            self.menuAccions = ['showFeature']
+        self.menuAccions += ['selectElement', 'selectAll']
         if layer.selectedFeatureCount() > 0:
             self.menuAccions += [
                 'separator',
@@ -188,6 +205,9 @@ class QvAtributs(QTabWidget):
 
     def filtrarCapa(self, layer, on=True):
         try:
+            if self.llegenda is not None and self.llegenda.editing(layer):
+                QMessageBox.information(self, "Atenció", "No es pot modificar el filtre d'una capa mentre s'està editant")
+                return
             filtro = layer.subsetString()
             if on:
                 dlgFiltre = QgsSearchQueryBuilder(layer)
@@ -207,6 +227,7 @@ class QvAtributs(QTabWidget):
 
             if nuevoFiltro != filtro:
                 layer.setSubsetString(nuevoFiltro)
+                self.tabTaula(layer)
                 self.modificatFiltreCapa.emit(layer)
 
         except Exception as e:
@@ -361,6 +382,12 @@ class QvTaulaAtributs(QgsAttributeTableView):
         self.accions.afegirAccio('showFeature', act)
 
         act = QAction()
+        act.setText("Esborra element")
+        # act.setIcon(QIcon(':/Icones/ic_file_upload_black_48dp.png'))
+        act.triggered.connect(self.removeFeature)
+        self.accions.afegirAccio('removeFeature', act)
+
+        act = QAction()
         act.setText("Filtra elements")
         # act.setIcon(QIcon(':/Icones/ic_file_upload_black_48dp.png'))
         act.triggered.connect(self.filterElements)
@@ -439,6 +466,13 @@ class QvTaulaAtributs(QgsAttributeTableView):
         dlgFitxa = self.crearDialog()
         if dlgFitxa is not None:
             dlgFitxa.exec_()
+
+    def removeFeature(self):
+        self.feature = self.currentFeature()
+        if self.feature is not None and self.feature.isValid():
+            self.layer.deleteFeature(self.feature.id())
+            self.parent.tabTaula(self.layer)
+            self.layer.repaintRequested.emit()
 
     def flashSelection(self):
         features = self.layer.selectedFeatureIds()

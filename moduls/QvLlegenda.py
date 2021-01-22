@@ -60,6 +60,7 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
         self.escales = None
         self.directory = '.'
         self.mask = None
+        self.renaming = None
         self.removing = False
         self.tema = QvTema(self)
         self.anotacions = None
@@ -88,8 +89,9 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
         self.model.setFlag(qgCor.QgsLegendModel.ShowLegend, True)
         self.model.setFlag(qgCor.QgsLegendModel.ShowLegendAsTree, True)
         self.editarLlegenda(editable)
-
         self.setModel(self.model)
+        self.model.dataChanged.connect(self.itemChanged)
+
         if self.canvas is not None:
             self.canvas.scaleChanged.connect(self.connectaEscala)
             # Anotaciones (solo a partir de la versión 3.10)
@@ -505,10 +507,10 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
         act.triggered.connect(self.removeFilter)
         self.accions.afegirAccio('removeFilter', act)
 
-    def calcTipusMenu(self):
+    def calcTipusMenu(self, idx=None):
         # Tipos: none, group, layer, symb
         tipo = 'none'
-        idx = self.currentIndex()
+        if idx is None: idx = self.currentIndex()
         if idx.isValid():
             node = self.currentNode()
             if node is None:
@@ -545,7 +547,7 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
             if self.editable:
                 self.menuAccions += ['addGroup', 'renameGroupOrLayer', 'removeGroupOrLayer']
             self.menuAccions += ['saveLayersToFile', 'addCatalogueLayers']
-            if self.digitize is not None:
+            if capa is not None and self.digitize is not None:
                 _, df = self.digitize.infoCapa(capa)
                 if df is not None:
                     menu = df.setMenu()
@@ -572,8 +574,15 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
             pass
         return tipo
 
-    def renameGroupOrLayer(self):
+    def itemChanged(self, index1, index2):
         self.modificacioProjecte('renameGroupOrLayer')
+        if self.renaming is not None and self.renaming == index1 and self.renaming == index2:
+            self.renaming = None
+            if self.atributs is not None and self.calcTipusMenu() == 'layer':
+                self.atributs.tabTaula(self.currentNode().layer())
+
+    def renameGroupOrLayer(self):
+        self.renaming = self.currentIndex()
         self.defaultActions().renameGroupOrLayer()
 
     def removeGroupOrLayer(self):
@@ -649,24 +658,11 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
         layer = self.currentLayer()
         if layer is not None and self.atributs is not None:
             self.atributs.filtrarCapa(layer, True)
-            # self.actIconaFiltre(layer)
-            # try:
-            #     dlgFiltre = QgsSearchQueryBuilder(layer)
-            #     dlgFiltre.setSearchString(layer.subsetString())
-            #     dlgFiltre.exec_()
-            #     layer.setSubsetString(dlgFiltre.searchString())
-            #     self.actIconaFiltre(layer)
-            # except Exception as e:
-            #     print(str(e))
 
     def removeFilter(self):
         layer = self.currentLayer()
         if layer is not None and self.atributs is not None:
             self.atributs.filtrarCapa(layer, False)
-            # self.actIconaFiltre(layer)
-        # if layer is not None:
-        #     layer.setSubsetString('')
-        #     self.actIconaFiltre(layer)
 
     def nodes(self):
         def recurse(parent):
