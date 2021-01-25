@@ -596,6 +596,7 @@ class CsvGeocod(CsvPagina):
         self._numErr += 1
         self._modificaLblErr()
     def _filesGeocod(self,f,files):
+        # actualitzem la label cada 10 files. Això permet que es vegi més fluid
         if f%10==0 or f==files:
             self._lblFilesGeocod.setText("Files geocodificades: %i d'aproximadament %i"%(f,files))
 
@@ -606,7 +607,7 @@ class CsvGeocod(CsvPagina):
     def acabat(self, n):
         if self._carregador._mapificador.cancel:
             self.salta.emit(self._carregador.getPrimeraPantalla())
-        elif  not self.fil.resultat:
+        elif self.fil.resultat==False: # no podem posar "not self.fil.resultat", perquè el cas "None" s'avaluaria també
             QMessageBox.critical(self,'Error de geocodificació',f'Hi ha hagut un error durant la geocodificació:\n{self._carregador._mapificador.msgError}')
             self._carregador._mapificador.cancel = True
             self.acabat(n)
