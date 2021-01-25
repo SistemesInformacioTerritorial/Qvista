@@ -9,6 +9,9 @@ import qgis.PyQt.QtCore as qtCor
 from moduls.QvDigitizeFeature import QvDigitizeFeature
 from moduls.QvDigitizeContext import QvDigitizeContext
 from moduls.QvSingleton import singleton
+from configuracioQvista import imatgesDir
+
+import os
 
 @singleton
 class QvDigitizeWidget(qgGui.QgsAdvancedDigitizingDockWidget):
@@ -19,16 +22,42 @@ class QvDigitizeWidget(qgGui.QgsAdvancedDigitizingDockWidget):
         self.setWindowTitle("Digitalització avançada")
         self.shortcut = qtWdg.QShortcut(qtGui.QKeySequence(keys), self.canvas)
         self.setAllowedAreas(qtCor.Qt.LeftDockWidgetArea)
-        # self.setWindowFlag(qtCor.Qt.Window)
         self.hide()
+
+
+@singleton
+class QvSnapping:
+
+    def __init__(self, canvas):
+        self.canvas = canvas
+
+    def config(self, enabled=True):
+        snap = self.canvas.snappingUtils().config()
+        snap.setType(qgCor.QgsSnappingConfig.VertexAndSegment)
+        snap.setUnits(qgCor.QgsTolerance.Pixels)
+        snap.setTolerance(10)
+        snap.setMode(qgCor.QgsSnappingConfig.AllLayers)
+        snap.setIntersectionSnapping(True)
+        snap.setEnabled(enabled)
+        self.canvas.snappingUtils().setConfig(snap)
+
+    def isEnabled(self):
+        return self.canvas.snappingUtils().config().enabled()
+
+    def toggleEnabled(self):
+        snap = self.canvas.snappingUtils().config()
+        snap.setEnabled(not snap.enabled())
+        self.canvas.snappingUtils().setConfig(snap)
 
 
 class QvDigitize:
 
     def __init__(self, llegenda):
         self.llegenda = llegenda
-        self.widget = QvDigitizeWidget(self.llegenda.canvas)
+        self.canvas = self.llegenda.canvas
+        self.widget = QvDigitizeWidget(self.canvas)
         self.widget.shortcut.activated.connect(self.widgetVisible)
+        self.snap = QvSnapping(self.canvas)
         self.llista = {}
         self.menu = None
 
@@ -38,19 +67,9 @@ class QvDigitize:
         else:
             self.widget.hide()
 
-    def configSnap(self, canvas):
-        snap = canvas.snappingUtils().config()
-        snap.setType(qgCor.QgsSnappingConfig.VertexAndSegment)
-        snap.setUnits(qgCor.QgsTolerance.Pixels)
-        snap.setTolerance(10)
-        snap.setMode(qgCor.QgsSnappingConfig.AllLayers)
-        snap.setIntersectionSnapping(True)
-        snap.setEnabled(True)
-        canvas.snappingUtils().setConfig(snap)
-
     def nouProjecte(self, canvas):
         self.llista = {}
-        self.configSnap(canvas)
+        self.snap.config()
 
     def modifInfoCapa(self, capa, val):
         self.llista[capa.id()] = val
@@ -64,18 +83,25 @@ class QvDigitize:
             return True, val    # Edición activada
         elif val:
             return False, None  # Edición activable
-        return None, None   # Edición prohibida
+        return None, None       # Edición prohibida
 
     def infoCapa(self, capa):
         val = self.llista.get(capa.id())
         return self.testInfoCapa(val)
 
     def editing(self, capa):
-        ret, _=self.infoCapa(capa)
+        ret, _ = self.infoCapa(capa)
         if ret is None or not ret:
             return False
         else:
             return True
+
+    def edition(self, capa):
+        ret, df = self.infoCapa(capa)
+        if ret is None or not ret:
+            return None
+        else:
+            return df
 
     def activaCapa(self, switch):
         capa = self.llegenda.currentLayer()
@@ -91,17 +117,18 @@ class QvDigitize:
     def setMenu(self):
         if self.started():
             self.menu = qtWdg.QMenu('Edició')
-            act = self.menu.addAction(self.widget.windowTitle(), self.widgetVisible)
+            self.menu.setIcon(qtGui.QIcon(os.path.join(imatgesDir, 'edit_on.png')))
+            # Grupo 1: Parámetros de edición y snap
+            act = self.menu.addAction("Activa magnetisme", self.snap.toggleEnabled)
+            act.setCheckable(True)
+            act.setChecked(self.snap.isEnabled())
+            act = self.menu.addAction("Mostra digitalització avançada", self.widgetVisible)
             act.setCheckable(True)
             act.setChecked(self.widget.isVisible())
             self.menu.addSeparator()
+            # Grupo 2: Fin de ediciones
             self.menu.addAction("Finalitza les edicions", self.stop)
             return self.menu
-
-            # self.menu = qtWdg.QAction()
-            # self.menu.setText("Finalitza les edicions")
-            # self.menu.triggered.connect(self.stop)
-            # return self.menu
         return None
 
     def editions(self):

@@ -4,7 +4,7 @@ from qgis.core import QgsMapLayer, QgsVectorLayerCache
 from qgis.PyQt import QtWidgets  # , uic
 from qgis.PyQt.QtCore import Qt, pyqtSignal, QSize, pyqtSlot
 from qgis.PyQt.QtGui import QCursor, QIcon
-from qgis.PyQt.QtWidgets import QAction, QHBoxLayout, QTabWidget, QWidget
+from qgis.PyQt.QtWidgets import QAction, QHBoxLayout, QTabWidget, QWidget, QMenu, QMessageBox
 from qgis.gui import (QgsGui,
                       QgsAttributeTableModel,
                       QgsAttributeTableView,
@@ -71,8 +71,25 @@ class QvAtributs(QTabWidget):
         self.currentChanged.connect(self.setCurrentIndex)
         # self.filtra.clicked.connect(self.filterElements)
 
+    def setMenuEdicio(self, layer):
+        taula = self.tabTaula(layer)
+        if taula is None: return None
+        menu = QMenu('Edició')
+        menu.setIcon(QIcon(os.path.join(imatgesDir, 'edit_on.png')))
+        menu.addAction("Modifica fitxa", taula.showFeature)
+        menu.addAction("Esborra element", taula.removeFeature)
+        return menu
+
     def setMenuAccions(self, layer):
-        self.menuAccions = ['showFeature', 'selectElement', 'selectAll']
+        self.menuAccions = []
+        if self.llegenda.editing(layer):
+            menu = self.setMenuEdicio(layer)
+            if menu is not None:
+                self.accions.afegirAccio('menuEdicio', menu)
+                self.menuAccions = ['menuEdicio', 'separator']
+        if not self.menuAccions:
+            self.menuAccions = ['showFeature']
+        self.menuAccions += ['selectElement', 'selectAll']
         if layer.selectedFeatureCount() > 0:
             self.menuAccions += [
                 'separator',
@@ -87,7 +104,7 @@ class QvAtributs(QTabWidget):
         self.menuAccions += ['saveToCSV']
 
     def tabTaula(self, layer, current=False, fid=None):
-        # Ver si la tabla ya está abierta y, eventualmente, activar la pestaña y mostrat registro
+        # Ver si la tabla ya está abierta y, eventualmente, activar la pestaña y mostrar registro
         if layer is None:
             return None
         num = self.count()
@@ -96,7 +113,7 @@ class QvAtributs(QTabWidget):
             if taula.layer.id() == layer.id():
                 txt = taula.layerNom()
                 self.setTabText(i, txt)
-                # print('tabTaula:', txt)
+                # print('tabTaula', int(i), layer.name(), txt)
                 if current:
                     self.setCurrentIndex(i)
                     if fid is not None:
@@ -188,6 +205,9 @@ class QvAtributs(QTabWidget):
 
     def filtrarCapa(self, layer, on=True):
         try:
+            if self.llegenda is not None and self.llegenda.editing(layer):
+                QMessageBox.information(self, "Atenció", "No es pot modificar el filtre d'una capa mentre s'està editant")
+                return
             filtro = layer.subsetString()
             if on:
                 dlgFiltre = QgsSearchQueryBuilder(layer)
@@ -207,6 +227,7 @@ class QvAtributs(QTabWidget):
 
             if nuevoFiltro != filtro:
                 layer.setSubsetString(nuevoFiltro)
+                self.tabTaula(layer)
                 self.modificatFiltreCapa.emit(layer)
 
         except Exception as e:
@@ -361,6 +382,12 @@ class QvTaulaAtributs(QgsAttributeTableView):
         self.accions.afegirAccio('showFeature', act)
 
         act = QAction()
+        act.setText("Esborra element")
+        # act.setIcon(QIcon(':/Icones/ic_file_upload_black_48dp.png'))
+        act.triggered.connect(self.removeFeature)
+        self.accions.afegirAccio('removeFeature', act)
+
+        act = QAction()
         act.setText("Filtra elements")
         # act.setIcon(QIcon(':/Icones/ic_file_upload_black_48dp.png'))
         act.triggered.connect(self.filterElements)
@@ -398,9 +425,8 @@ class QvTaulaAtributs(QgsAttributeTableView):
 
     def scrollToFid(self, fid):
         index = self.filter.fidToIndex(fid)
-        if not index.isValid():
-            return
-        self.scrollTo(index)
+        if index.isValid():
+            self.scrollTo(index)
 
     def currentFeature(self):
         feature = None
@@ -415,15 +441,7 @@ class QvTaulaAtributs(QgsAttributeTableView):
         try:
             self.feature = self.currentFeature()
             if self.feature is not None and self.feature.isValid():
-                return QvFormAtributs.create(self.layer, self.feature, parent=self.parent, digitize=self.parent.llegenda.digitize)
-
-                # if self.parent.llegenda is not None:
-                #     editing, _ = self.parent.llegenda.digitize.infoCapa(self.layer)
-                #     if editing:
-                #         return QvFitxaAtributs(self.layer, self.feature, self.parent, QgsAttributeEditorContext.SingleEditMode)
-                # num = self.layer.selectedFeatureCount()
-                # return QvFitxesAtributs(self.layer, [self.feature], num == 0)
-                
+                return QvFormAtributs.create(self.layer, self.feature, self.parent, self.parent)                
         except Exception as e:
             print(str(e))
         return None
@@ -448,6 +466,13 @@ class QvTaulaAtributs(QgsAttributeTableView):
         dlgFitxa = self.crearDialog()
         if dlgFitxa is not None:
             dlgFitxa.exec_()
+
+    def removeFeature(self):
+        self.feature = self.currentFeature()
+        if self.feature is not None and self.feature.isValid():
+            self.layer.deleteFeature(self.feature.id())
+            self.parent.tabTaula(self.layer)
+            self.layer.repaintRequested.emit()
 
     def flashSelection(self):
         features = self.layer.selectedFeatureIds()
@@ -536,7 +561,6 @@ class QvTaulaAtributs(QgsAttributeTableView):
             QgsAttributeTableFilterModel.ShowSelected)
     def __len__(self):
         return max(0,self.layer.featureCount())
-
 
 if __name__ == "__main__":
 

@@ -1466,8 +1466,7 @@ class QvSeleccioElement(QgsMapTool):
                 # ids = [i.id() for i in it]
                 # layer.selectByIds(ids)
                 if len(features) > 0:
-                    # self.fitxaAtributs = QvFitxesAtributs(layer, features)
-                    self.fitxaAtributs = QvFormAtributs.create(layer, features, parent=self.canvas, digitize=self.llegenda.digitize)
+                    self.fitxaAtributs = QvFormAtributs.create(layer, features, self.canvas, self.llegenda.atributs)
                     self.fitxaAtributs.exec_()
                     self.fitxaAtributs = None
 
