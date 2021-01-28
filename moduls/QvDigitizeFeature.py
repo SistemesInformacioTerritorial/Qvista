@@ -16,8 +16,10 @@ import os
 # TODO
 #
 # - Al salir de qVista, controlar si hay ediciones abiertas con modificaciones pendientes
+# - Formulario de opciones de snapping (topología no)
+# - Errores de commit
 # - Leyenda: las opciones desactivadas del menú no se ven muy bien
-# - Scroll a elemento de tabla no funciona con los nuevos (fid = 0)
+# - Edicion de geonetría: QgsVectorLayerEditUtils 
 # 
 # https://docs.qgis.org/3.16/en/docs/user_manual/working_with_vector/editing_geometry_attributes.html
 # 

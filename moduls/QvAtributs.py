@@ -4,7 +4,8 @@ from qgis.core import QgsMapLayer, QgsVectorLayerCache
 from qgis.PyQt import QtWidgets  # , uic
 from qgis.PyQt.QtCore import Qt, pyqtSignal, QSize, pyqtSlot
 from qgis.PyQt.QtGui import QCursor, QIcon
-from qgis.PyQt.QtWidgets import QAction, QHBoxLayout, QTabWidget, QWidget, QMenu, QMessageBox
+from qgis.PyQt.QtWidgets import QAction, QHBoxLayout, QTabWidget, QWidget, QMenu, QMessageBox, QAbstractItemView
+
 from qgis.gui import (QgsGui,
                       QgsAttributeTableModel,
                       QgsAttributeTableView,
@@ -76,8 +77,19 @@ class QvAtributs(QTabWidget):
         if taula is None: return None
         menu = QMenu('Edició')
         menu.setIcon(QIcon(os.path.join(imatgesDir, 'edit_on.png')))
+        # Grupo 1 - Comandos de edición
         menu.addAction("Modifica fitxa", taula.showFeature)
         menu.addAction("Esborra element", taula.removeFeature)
+        act = menu.addAction('Esborra seleccionat(s)', layer.deleteSelectedFeatures)
+        act.setEnabled(layer.selectedFeatureCount())
+        # Grupo 2 - Undo / Redo
+        df = self.llegenda.edition(layer)
+        if df is not None:
+            menu.addSeparator()
+            act = menu.addAction('Desfés canvi', df.undo)
+            act.setEnabled(df.canUndo())
+            act = menu.addAction('Refés canvi', df.redo)
+            act.setEnabled(df.canRedo())
         return menu
 
     def setMenuAccions(self, layer):
@@ -283,12 +295,12 @@ class QvTaulaAtributs(QgsAttributeTableView):
 
     canviNomTaula = pyqtSignal(int, str)
 
-    def __init__(self, parent=None, layer=None, canvas=None, numCache=10000):
+    def __init__(self, parent=None, layer=None, canvas=None, numCache=10000, readOnly=True):
         if len(QgsGui.editorWidgetRegistry().factories()) == 0:
             QgsGui.editorWidgetRegistry().initEditors()
         super().__init__(parent)
         self.parent = parent
-        self.init(layer, canvas, numCache)
+        self.init(layer, canvas, numCache, readOnly)
 
         # Conjunto de acciones predefinidas
         self.accions = QvAccions()
@@ -298,10 +310,10 @@ class QvTaulaAtributs(QgsAttributeTableView):
         # self.menuAccions = []
         self.setContextMenuPolicy(Qt.CustomContextMenu)
         self.customContextMenuRequested.connect(self.contextMenu)
-
+        
         self.layer.selectionChanged.connect(self.layerSelection)
 
-    def init(self, layer, canvas, numCache=10000):
+    def init(self, layer, canvas, numCache, readOnly):
         if not layer or not canvas:
             return
         if layer.type() != QgsMapLayer.VectorLayer:
@@ -318,6 +330,10 @@ class QvTaulaAtributs(QgsAttributeTableView):
         self.filter = QgsAttributeTableFilterModel(self.canvas, self.model)
         self.filter.setFilterMode(QgsAttributeTableFilterModel.ShowAll)
         self.setModel(self.filter)
+
+        # Edition
+        if readOnly:
+            self.setEditTriggers(QAbstractItemView.NoEditTriggers)
 
     # def setHidenColumns(self, prefijo='__'):
     #     changed = False
@@ -467,8 +483,11 @@ class QvTaulaAtributs(QgsAttributeTableView):
         if dlgFitxa is not None:
             dlgFitxa.exec_()
 
-    def removeFeature(self):
-        self.feature = self.currentFeature()
+    def removeFeature(self, feature=None):
+        if feature == None:
+            self.feature = self.currentFeature()
+        else:
+            self.feature = feature
         if self.feature is not None and self.feature.isValid():
             self.layer.deleteFeature(self.feature.id())
             self.parent.tabTaula(self.layer)

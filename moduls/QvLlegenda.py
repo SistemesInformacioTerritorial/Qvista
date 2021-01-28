@@ -153,6 +153,12 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
         else:
             return False
 
+    def edition(self, capa):
+        if self.digitize is not None:
+            return self.digitize.edition(capa)
+        else:
+            return None
+
     def readProject(self, fileName):
         if self.anotacions is not None:
             self.anotacions.removeAnnotations()
