@@ -34,7 +34,8 @@ class QvCanvas(QgsMapCanvas):
         self.posicioBotonera = posicioBotonera
         self.llegenda = llegenda
         self.pare = pare
-        self.setSelectionColor(QvConstants.COLORDESTACAT)
+        # self.setSelectionColor(QvConstants.COLORDESTACAT)
+        self.setSelectionColor(QColor('yellow'))
         self.setAcceptDrops(True)
         
         # self.setWhatsThis(QvApp().carregaAjuda(self))

@@ -18,6 +18,7 @@ IMPORTANT: no cridar directament la funció run. Sempre invocar amb start
     def __init__(self,f):
         super().__init__()
         self._f=f
+        self.resultat = None
     def __del__(self):
         self.wait()
     def run(self):

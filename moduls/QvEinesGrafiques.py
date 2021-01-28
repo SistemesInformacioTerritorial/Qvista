@@ -60,12 +60,12 @@ class QvSeleccioGrafica(QWidget):
         self.bs5 = QvPushButton('Calcular', flat=True)
         self.bs5.clicked.connect(self.calcularSeleccio)
 
-        self.bs6 = QvPushButton('Crear CSV', flat=True)
+        self.bs6 = QvPushButton('Crear CSV')
         self.bs6.clicked.connect(lambda: self.crearCsv())
 
         # Tool Box de resultats, on afegirem múltiples pestanyes
         self.tbResultats = QToolBox()
-        self.gbResultats = QGroupBox('Hola :D')
+        self.gbResultats = QGroupBox('0 elements seleccionats')
         layGB = QVBoxLayout() # Layout d'un únic element, per posar la taula dins d'una Group Box
         layGB.addWidget(self.tbResultats)
         self.gbResultats.setLayout(layGB)
@@ -308,6 +308,8 @@ class QvSeleccioGrafica(QWidget):
                 self.canvas.refresh()
             except Exception as e:
                 print(e)
+        if self.tool is not None:
+            self.tool.eliminaRubberbands()
 
     def foraEines(self):
         self.canvas.panCanvas()
@@ -386,7 +388,8 @@ class QvSeleccioGrafica(QWidget):
         taula.setItem(0, 0, item)
         item = QTableWidgetItem(str(nombreElements))
         taula.setItem(0, 1, item)
-        self.bs6.setText(f'Crear CSV ({nombreElements} seleccionats=')
+        self.bs6.setText(f'Crear CSV ({nombreElements} seleccionats)')
+        self.gbResultats.setTitle(f'{nombreElements} elements seleccionats')
         taula.resizeColumnsToContents()
 
         self.setPreview()
@@ -773,6 +776,9 @@ def seleccioClick():
 
 
 class QvMascaraEinaPlantilla(QgsMapTool):
+    # les rubberbands de totes les instàncies seran compartides
+    # això permet que, quan es canvia d'eina, es conservin fins que es fa una nova selecció
+    rubberbands = [] 
     def __init__(self, wSeleccioGrafica, projecte, canvas, llegenda, **kwargs):
         QgsMapTool.__init__(self, canvas)
         self.wSeleccioGrafica = wSeleccioGrafica
@@ -780,7 +786,7 @@ class QvMascaraEinaPlantilla(QgsMapTool):
         self.projecte = projecte
         self.llegenda = llegenda
         self.setParametres(**kwargs)
-        self.rubberbands = []
+        # self.rubberbands = []
 
     def canvasPressEvent(self, event):
         pass
@@ -841,7 +847,9 @@ class QvMascaraEinaPlantilla(QgsMapTool):
         self.setOpacitat(opacitat/100)
         self.actualitza()
 
-    def novaRubberband(self):
+    def novaRubberband(self, elimina=False):
+        if elimina:
+            self.eliminaRubberbands()
         rb = QgsRubberBand(self.canvas, True)
         rb.setColor(QvConstants.COLORDESTACAT)
         rb.setWidth(2)
@@ -851,6 +859,8 @@ class QvMascaraEinaPlantilla(QgsMapTool):
     def eliminaRubberbands(self):
         for x in self.rubberbands:
             x.hide()
+    def __del__(self):
+        self.eliminaRubberbands()
 
 
 class QvMascaraEinaClick(QvMascaraEinaPlantilla):
@@ -867,6 +877,7 @@ class QvMascaraEinaClick(QvMascaraEinaPlantilla):
 
     def canvasReleaseEvent(self, event):
         # Get the click
+        self.eliminaRubberbands()
         x = event.pos().x()
         y = event.pos().y()
         layer = self.llegenda.currentLayer()
@@ -924,6 +935,7 @@ class QvMascaraEinaDibuixa(QvMascaraEinaPlantilla):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.points = []
+        self.point = None
         self.rubberband = self.novaRubberband()
         layer = self.llegenda.currentLayer()
         if layer is None and self.seleccionar:
@@ -936,6 +948,9 @@ class QvMascaraEinaDibuixa(QvMascaraEinaPlantilla):
         if event.button() == Qt.RightButton:
             # Tancar polígon??
             return
+        if self.point is None:
+            self.rubberband = self.novaRubberband(True)
+            self.points = []
         self.point = self.toMapCoordinates(event.pos())
         self.points.append(QgsPointXY(self.point))
         if len(self.points) == 1:
@@ -948,6 +963,8 @@ class QvMascaraEinaDibuixa(QvMascaraEinaPlantilla):
         poligono = QgsGeometry.fromPolylineXY(
             self.points+[self.toMapCoordinates(event.pos())])
         try:
+            if self.point is None:
+                return
             self.rubberband.setToGeometry(
                 poligono, self.getCapa())  # falta establir la layer
         except Exception as e:
@@ -978,11 +995,11 @@ class QvMascaraEinaDibuixa(QvMascaraEinaPlantilla):
                         if featPnt.geometry().within(geom):
                             layer.select(featPnt.id())
                 self.wSeleccioGrafica.calcularSeleccio()
-            self.rubberband.hide()
-            self.rubberband = self.novaRubberband()
+            # self.rubberband.hide()
+            # self.rubberband = self.novaRubberband()
             self.actualitza()
             self.point = None
-            self.points = []
+            # self.points = []
         except Exception as e:
             print(e)
 
@@ -1002,8 +1019,8 @@ class QvMascaraEinaCercle(QvMascaraEinaPlantilla):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.rubberbandRadi = self.novaRubberband()
-        self.rubberbandCercle = self.novaRubberband()
+        # self.rubberbandRadi = self.novaRubberband()
+        # self.rubberbandCercle = self.novaRubberband()
         layer = self.llegenda.currentLayer()
         self.centre = None
         if layer is None and self.seleccionar:
@@ -1016,6 +1033,10 @@ class QvMascaraEinaCercle(QvMascaraEinaPlantilla):
         if event.button() == Qt.RightButton:
             # Tancar polígon??
             return
+        if self.centre is None:
+            self.rubberbandCercle = self.novaRubberband(True)
+            self.rubberbandRadi = self.novaRubberband(True)
+            self.points = []
         self.centre = self.toMapCoordinates(event.pos())
 
     def canvasMoveEvent(self, event):
@@ -1045,7 +1066,7 @@ class QvMascaraEinaCercle(QvMascaraEinaPlantilla):
             self.wSeleccioGrafica.calcularSeleccio()
         self.centre = None
         self.actualitza()
-        self.rubberbandCercle.hide()
+        # self.rubberbandCercle.hide()
 
     def rbcircle(self, center, edgePoint, segments=100):
         self.rubberbandCercle.reset(True)
@@ -1081,7 +1102,7 @@ class QvMesuraMultiLinia(QgsMapTool):
 
         self.rubberbandCercle = self.creaRubberband(cercle=True)
 
-        self.rubberbands = []
+        # self.rubberbands = []
         self.cercles = []
 
         self.point = None
