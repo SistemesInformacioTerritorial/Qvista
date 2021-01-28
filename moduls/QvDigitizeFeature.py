@@ -17,7 +17,6 @@ import os
 #
 # - Al salir de qVista, controlar si hay ediciones abiertas con modificaciones pendientes
 # - Formulario de opciones de snapping (topología no)
-# - Errores de commit
 # - Leyenda: las opciones desactivadas del menú no se ven muy bien
 # - Edicion de geonetría: QgsVectorLayerEditUtils 
 # 
@@ -75,17 +74,28 @@ class QvDigitizeFeature(qgGui.QgsMapToolDigitizeFeature):
             return False
 
     def finish(self, save):
+        ok = False
         if self.capa.isEditable():
-            if save:
-                b = self.capa.commitChanges()
-            else:
-                b = self.capa.rollBack()
             self.canvas.unsetMapTool(self)
-            self.llegenda.digitize.modifInfoCapa(self.capa, True)
-            return b
-        else:
-            return False
+            if save:
+                ok = self.capa.commitChanges()
+            else:
+                ok = self.capa.rollBack()
+            if ok:
+                self.llegenda.digitize.modifInfoCapa(self.capa, True)
+            else:
+                self.errors()
+        return ok
 
+    def errors(self):
+        try:
+            err =  self.capa.commitErrors()
+            sep = "\n"
+            msg = f"S'han produït errors en la capa '{self.capa.name()}':{sep}{sep}{sep.join(err)}"
+            qtWdg.QMessageBox.critical(self.llegenda, "Error al finalitzar edició de capa", msg)
+        except Exception as e:
+            print(str(e))
+            
     def stop(self):
         if self.modified():
             r = qtWdg.QMessageBox.question(self.llegenda, "Finalitza edició de capa",

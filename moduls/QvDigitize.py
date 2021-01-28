@@ -119,7 +119,7 @@ class QvDigitize:
             self.menu = qtWdg.QMenu('Edició')
             self.menu.setIcon(qtGui.QIcon(os.path.join(imatgesDir, 'edit_on.png')))
             # Grupo 1: Parámetros de edición y snap
-            act = self.menu.addAction("Activa magnetisme", self.snap.toggleEnabled)
+            act = self.menu.addAction("Activa l'ajust de digitalització", self.snap.toggleEnabled)
             act.setCheckable(True)
             act.setChecked(self.snap.isEnabled())
             act = self.menu.addAction("Mostra digitalització avançada", self.widgetVisible)
