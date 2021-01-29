@@ -8,6 +8,8 @@ import qgis.PyQt.QtGui as qtGui
 import qgis.PyQt.QtCore as qtCor
 
 from moduls.QvAtributsForms import QvFormAtributs
+from moduls.QvEinesGrafiques import QvSeleccioElement
+from moduls.QvDigitizeContext import QvDigitizeContext
 from configuracioQvista import imatgesDir
 
 import os
@@ -15,6 +17,7 @@ import os
 # 
 # TODO
 #
+# - Al cambiar de capa se pierden los elementos seleccionados
 # - Al salir de qVista, controlar si hay ediciones abiertas con modificaciones pendientes
 # - Formulario de opciones de snapping (topología no)
 # - Leyenda: las opciones desactivadas del menú no se ven muy bien
@@ -39,6 +42,7 @@ class QvDigitizeFeature(qgGui.QgsMapToolDigitizeFeature):
         self.setLayer(self.capa)
         self.signal = None
         self.menu = None
+        self.tool = None
 
     def iniSignal(self):
         if self.signal is not None:
@@ -57,10 +61,19 @@ class QvDigitizeFeature(qgGui.QgsMapToolDigitizeFeature):
                 self.signal = signal
                 self.digitizingCompleted.connect(self.signal)
 
+    def go(self, tool, removeSelection):
+        self.tool = tool
+        if removeSelection:
+            self.capa.removeSelection()
+        self.canvas.setMapTool(self.tool)
+        self.canvas.activateWindow()
+
     def unset(self):
         self.iniSignal()
         self.clean()
-        self.canvas.unsetMapTool(self)
+        if self.tool is not None:
+            self.canvas.unsetMapTool(self.tool)
+            self.tool = None
 
     def start(self):
         if self.capa.isEditable() or self.capa.startEditing():
@@ -143,33 +156,50 @@ class QvDigitizeFeature(qgGui.QgsMapToolDigitizeFeature):
             self.atributs.tabTaula(self.capa, True)
             self.capa.repaintRequested.emit()
 
-    def new(self):
+    ################################## Nuevo elemento ##################################
+
+    def new(self, signal=None):
         if self.capa.isEditable():
-            self.newSignal(self.newFeature)
-            self.canvas.setMapTool(self)
-            self.canvas.activateWindow()
+            if signal is None:
+                self.newSignal(self.newFeature)
+                self.go(self, True)
+            else:
+                self.newSignal(signal)
+                self.go(self, False)
 
-    # def canvasReleaseEvent(self, e):
-    #     if e.button() == qtCor.Qt.RightButton:
-    #         print("Botón derecho 1")
-    #     super().canvasReleaseEvent(e)
-
-    # def cadCanvasReleaseEvent(self, e):
-    #     if e.button() == qtCor.Qt.RightButton:
-    #         print("Botón derecho 2")
-    #     super().cadCanvasReleaseEvent(e)
-    
     def newFeature(self, feature):
         self.dialog = QvFormAtributs.create(self.capa, feature, self.canvas, self.atributs, new=True)
-        if self.dialog.exec_() == qtWdg.QDialog.Accepted:
-            self.feature = self.dialog.reg
+        self.dialog.exec_()
         self.dialog = None
 
+    ################################## Redibujar elemento ##################################
+
+    def redraw(self):
+        if self.capa.isEditable():
+            tool = QvSeleccioElement(self.canvas, self.llegenda, senyal=True)
+            tool.elementsSeleccionats.connect(self.selectFeature)
+            self.go(tool, True)
+
+    def selectFeature(self, layer, features):
+        if layer.id() != self.capa.id():
+            return
+        self.feature = features[0]        
+        QvDigitizeContext.selectAndScrollFeature(self.feature.id(), self.capa, self.atributs)
+        self.canvas.unsetMapTool(self.tool)
+        self.new(self.redrawFeature)
+
+    def redrawFeature(self, feature):
+        self.capa.changeGeometry(self.feature.id(), feature.geometry())
+        self.capa.removeSelection()
+        self.unset()
+
     def setMenu(self):
+        self.unset()
         self.menu = qtWdg.QMenu('Edició')
         self.menu.setIcon(qtGui.QIcon(os.path.join(imatgesDir, 'edit_on.png')))
         # Grupo 1 - Comandos de edición
         self.menu.addAction('Nou element', self.new)
+        self.menu.addAction('Redibuixa element', self.redraw)
         act = self.menu.addAction('Esborra seleccionat(s)', self.capa.deleteSelectedFeatures)
         act.setEnabled(self.capa.selectedFeatureCount())
         self.menu.addSeparator()

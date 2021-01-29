@@ -27,6 +27,12 @@ class QvDigitizeContext:
             return None
 
     @staticmethod
+    def selectAndScrollFeature(fid, layer, atributs):
+        if atributs is not None:
+            atributs.tabTaula(layer, True, fid)
+        layer.selectByIds([fid])
+
+    @staticmethod
     def testReadOnly(project: QgsProject = QgsProject.instance(), nom: str = 'qV_readOnly') -> bool:
         """Comprueba si un proyecto QGIS está en modo de sólo lectura para qVista.
         Esto es así si existe una variable de proyecto llamada 'qV_readOnly' con el valor True.

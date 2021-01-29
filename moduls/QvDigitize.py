@@ -33,11 +33,11 @@ class QvSnapping:
 
     def config(self, enabled=True):
         snap = self.canvas.snappingUtils().config()
-        snap.setType(qgCor.QgsSnappingConfig.VertexAndSegment)
+        snap.setType(qgCor.QgsSnappingConfig.Vertex)
         snap.setUnits(qgCor.QgsTolerance.Pixels)
         snap.setTolerance(10)
         snap.setMode(qgCor.QgsSnappingConfig.AllLayers)
-        snap.setIntersectionSnapping(True)
+        snap.setIntersectionSnapping(False)
         snap.setEnabled(enabled)
         self.canvas.snappingUtils().setConfig(snap)
 
@@ -48,7 +48,6 @@ class QvSnapping:
         snap = self.canvas.snappingUtils().config()
         snap.setEnabled(not snap.enabled())
         self.canvas.snappingUtils().setConfig(snap)
-
 
 class QvDigitize:
 

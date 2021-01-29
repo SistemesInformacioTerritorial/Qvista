@@ -115,23 +115,46 @@ class QvAtributs(QTabWidget):
             self.menuAccions += ['removeFilter']
         self.menuAccions += ['saveToCSV']
 
+    def numTaula(self, layer):
+        if layer is not None:
+            num = self.count()
+            for i in range(0, num):
+                taula = self.widget(i)
+                if taula.layer.id() == layer.id():
+                    return i
+        return -1
+
     def tabTaula(self, layer, current=False, fid=None):
         # Ver si la tabla ya está abierta y, eventualmente, activar la pestaña y mostrar registro
-        if layer is None:
-            return None
-        num = self.count()
-        for i in range(0, num):
+        i = self.numTaula(layer)
+        if i >= 0:
             taula = self.widget(i)
-            if taula.layer.id() == layer.id():
-                txt = taula.layerNom()
-                self.setTabText(i, txt)
-                # print('tabTaula', int(i), layer.name(), txt)
-                if current:
-                    self.setCurrentIndex(i)
-                    if fid is not None:
-                        taula.scrollToFid(fid)
-                return taula
+            txt = taula.layerNom()
+            self.setTabText(i, txt)
+            if current:
+                self.setCurrentIndex(i)
+                if fid is not None:
+                    taula.scrollToFid(fid)
+            return taula
         return None
+
+    # def tabTaula(self, layer, current=False, fid=None):
+    #     # Ver si la tabla ya está abierta y, eventualmente, activar la pestaña y mostrar registro
+    #     if layer is None:
+    #         return None
+    #     num = self.count()
+    #     for i in range(0, num):
+    #         taula = self.widget(i)
+    #         if taula.layer.id() == layer.id():
+    #             txt = taula.layerNom()
+    #             self.setTabText(i, txt)
+    #             # print('tabTaula', int(i), layer.name(), txt)
+    #             if current:
+    #                 self.setCurrentIndex(i)
+    #                 if fid is not None:
+    #                     taula.scrollToFid(fid)
+    #             return taula
+    #     return None
 
     def obrirTaula(self, layer):
         # Abrir tabla por layer
@@ -545,8 +568,7 @@ class QvTaulaAtributs(QgsAttributeTableView):
         return txt
 
     def layerTab(self):
-        tab = self.parentWidget()
-        i = tab.currentIndex()
+        i = self.parent.numTaula(self.layer)
         txt = self.layerNom()
         self.canviNomTaula.emit(i, txt)
 

@@ -4,6 +4,7 @@ from qgis.gui import QgsAttributeForm, QgsAttributeDialog, QgsActionMenu, QgsAtt
 from qgis.PyQt.QtWidgets import QDialog, QMenuBar, QDialogButtonBox, QPushButton
 
 from moduls.Ui_AtributsForm import Ui_AtributsForm
+from moduls.QvDigitizeContext import QvDigitizeContext
 
 class QvFormAtributs:
 
@@ -123,13 +124,9 @@ class QvFitxesAtributs(QDialog):
         # if not self.selectFeature:
         #     return
         if n is None:
-            self.layer.selectByIds([])  
+            self.layer.removeSelection()
         else:
-            fid = self.features[n].id()
-            # Importante: Primero poner tab de capa y luego seleccionar feature
-            if self.attributes is not None:
-                self.attributes.tabTaula(self.layer, True, fid)
-            self.layer.selectByIds([fid])
+            QvDigitizeContext.selectAndScrollFeature(self.features[n].id(), self.layer, self.attributes)
 
     def go(self, n):
         if n >= 0 and n < self.total:
