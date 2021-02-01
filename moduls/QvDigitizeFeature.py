@@ -138,25 +138,7 @@ class QvDigitizeFeature(qgGui.QgsMapToolDigitizeFeature):
     def cancel(self):
         return self.finish(False)
 
-    def canUndo(self):
-        return self.capa.undoStack().canUndo()
-
-    def undo(self):
-        if self.canUndo():
-            self.capa.undoStack().undo()
-            self.atributs.tabTaula(self.capa, True)
-            self.capa.repaintRequested.emit()
-
-    def canRedo(self):
-        return self.capa.undoStack().canRedo()
-
-    def redo(self):
-        if self.canRedo():
-            self.capa.undoStack().redo()
-            self.atributs.tabTaula(self.capa, True)
-            self.capa.repaintRequested.emit()
-
-    ################################## Nuevo elemento ##################################
+    ##### Nuevo elemento
 
     def new(self, signal=None):
         if self.capa.isEditable():
@@ -172,7 +154,7 @@ class QvDigitizeFeature(qgGui.QgsMapToolDigitizeFeature):
         self.dialog.exec_()
         self.dialog = None
 
-    ################################## Redibujar elemento ##################################
+    ##### Redibujar elemento
 
     def redraw(self):
         if self.capa.isEditable():
@@ -193,6 +175,32 @@ class QvDigitizeFeature(qgGui.QgsMapToolDigitizeFeature):
         self.capa.removeSelection()
         self.unset()
 
+    ##### Borrar elemento(s)
+
+    def delete(self):
+        self.capa.deleteSelectedFeatures()
+        self.atributs.tabTaula(self.capa)
+
+    ##### Undo y Redo
+
+    def canUndo(self):
+        return self.capa.undoStack().canUndo()
+
+    def undo(self):
+        if self.canUndo():
+            self.capa.undoStack().undo()
+            self.atributs.tabTaula(self.capa)
+            self.capa.repaintRequested.emit()
+
+    def canRedo(self):
+        return self.capa.undoStack().canRedo()
+
+    def redo(self):
+        if self.canRedo():
+            self.capa.undoStack().redo()
+            self.atributs.tabTaula(self.capa)
+            self.capa.repaintRequested.emit()
+
     def setMenu(self):
         self.unset()
         self.menu = qtWdg.QMenu('Edició')
@@ -200,7 +208,7 @@ class QvDigitizeFeature(qgGui.QgsMapToolDigitizeFeature):
         # Grupo 1 - Comandos de edición
         self.menu.addAction('Nou element', self.new)
         self.menu.addAction('Redibuixa element', self.redraw)
-        act = self.menu.addAction('Esborra seleccionat(s)', self.capa.deleteSelectedFeatures)
+        act = self.menu.addAction('Esborra seleccionat(s)', self.delete)
         act.setEnabled(self.capa.selectedFeatureCount())
         self.menu.addSeparator()
         # Grupo 2 - Undo / Redo

@@ -88,6 +88,7 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
         self.model = QvModelLlegenda(self.root)
         self.model.setFlag(qgCor.QgsLegendModel.ShowLegend, True)
         self.model.setFlag(qgCor.QgsLegendModel.ShowLegendAsTree, True)
+        self.model.setFlag(qgCor.QgsLegendModel.UseTextFormatting, True)
         self.editarLlegenda(editable)
         self.setModel(self.model)
         self.model.dataChanged.connect(self.itemChanged)
