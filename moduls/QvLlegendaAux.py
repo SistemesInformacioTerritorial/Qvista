@@ -91,20 +91,41 @@ class QvModelLlegenda(qgCor.QgsLegendModel):
     def setScale(self, scale):
         self.scale = scale
 
+    def layerInScale(self, index):
+        node = self.index2node(index)
+        if node is not None and node.nodeType() == qgCor.QgsLayerTreeNode.NodeLayer:
+            layer = node.layer()
+            if layer is not None:
+                if node.isVisible() and layer.isInScaleRange(self.scale):
+                    return True
+                else:
+                    return False
+        return None
+
     def data(self, index, role):
+        # Tratamiento de capas con visibilidad controlada por escala
+        # - Texto en itálica cuando la capa no se ve
+        if index.isValid() and role == qtCor.Qt.FontRole:
+            inScale = self.layerInScale(index)
+            if inScale is not None:
+                italic = not inScale
+                font = super().data(index, role)
+                font.setItalic(italic)
+                return font
+        # - Texto en gris cuando la capa no se ve
         if index.isValid() and role == qtCor.Qt.ForegroundRole:
-            node = self.index2node(index)
-            if node is not None and node.nodeType() == qgCor.QgsLayerTreeNode.NodeLayer:
-                layer = node.layer()
-                if layer is not None and layer.hasScaleBasedVisibility():
-                    if layer.isInScaleRange(self.scale):
-                        color = qtGui.QColor('#000000')
-                    else:
-                        color = qtGui.QColor('#c0c0c0')
-                    return color
+            inScale = self.layerInScale(index)
+            if inScale is not None:
+                if inScale:
+                    color = qtGui.QColor('#000000')
+                else:
+                    color = qtGui.QColor('#909090')
+                brush = super().data(index, role)
+                brush.setColor(color)
+                return brush
+        # - Resto
         return super().data(index, role)
-
-
+    
 class QvMenuLlegenda(qgGui.QgsLayerTreeViewMenuProvider):
 
     def __init__(self, llegenda):

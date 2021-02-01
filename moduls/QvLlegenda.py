@@ -243,9 +243,12 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
     def connectaEscala(self, escala):
         # print('Cambio escala:', escala)
         self.model.setScale(escala)
+        b = self.iniSignal
+        self.iniSignal = False
         for capa in self.capes():
             if capa.hasScaleBasedVisibility():
                 capa.nameChanged.emit()
+        self.iniSignal = b
 
     def capaLocal(self, capa):
         try:
