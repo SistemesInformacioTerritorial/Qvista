@@ -80,6 +80,7 @@ class QvFitxesAtributs(QDialog):
             self.ui.groupBox.setVisible(False)
 
     def edicion(self):
+        self.newFeature = None
         self.total = 1
         form = QgsAttributeDialog(self.layer, self.features[0], False)
         form.setMode(self.mode)
@@ -91,11 +92,20 @@ class QvFitxesAtributs(QDialog):
             bDel.clicked.connect(lambda: self.remove(form.feature()))
             buttonBox = form.findChild(QDialogButtonBox)
             buttonBox.addButton(bDel, QDialogButtonBox.ResetRole)
-        form.accepted.connect(self.close)
+        form.attributeForm().featureSaved.connect(self.featureSaved)
+        form.accepted.connect(self.formAccepted)
         form.rejected.connect(self.close)
         self.ui.stackedWidget.addWidget(form)
         self.ui.groupBox.setVisible(False)
         self.ui.buttonBox.setVisible(False)
+
+    def featureSaved(self, feature):
+        self.newFeature = feature
+
+    def formAccepted(self):
+        if self.newFeature is not None:
+            self.attributes.tabTaula(self.layer, True, self.newFeature.id())
+        self.close()
 
     def remove(self, feature):
         taula = self.attributes.tabTaula(self.layer)

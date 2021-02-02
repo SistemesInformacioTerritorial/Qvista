@@ -44,6 +44,16 @@ class QvDigitizeFeature(qgGui.QgsMapToolDigitizeFeature):
         self.menu = None
         self.tool = None
 
+    def cadCanvasReleaseEvent(self, event):
+        # Finaliza tool de dibujo con botón derecho cuando no hay puntos dibujados
+        if self.tool == self and self.size() == 0 and event.button() == qtCor.Qt.RightButton:
+            # Si estamos redibujando, vuelve al principio para seleccionar otro elemento
+            redraw = (self.signal == self.redrawFeature)
+            self.unset()
+            if redraw: self.redraw()
+        else:
+            super().cadCanvasReleaseEvent(event)
+
     def iniSignal(self):
         if self.signal is not None:
             self.digitizingCompleted.disconnect(self.signal)
@@ -138,7 +148,7 @@ class QvDigitizeFeature(qgGui.QgsMapToolDigitizeFeature):
     def cancel(self):
         return self.finish(False)
 
-    ##### Nuevo elemento
+    ######################### Nuevo elemento
 
     def new(self, signal=None):
         if self.capa.isEditable():
@@ -154,7 +164,7 @@ class QvDigitizeFeature(qgGui.QgsMapToolDigitizeFeature):
         self.dialog.exec_()
         self.dialog = None
 
-    ##### Redibujar elemento
+    ######################### Redibujar elemento
 
     def redraw(self):
         if self.capa.isEditable():
@@ -174,14 +184,15 @@ class QvDigitizeFeature(qgGui.QgsMapToolDigitizeFeature):
         self.capa.changeGeometry(self.feature.id(), feature.geometry())
         self.capa.removeSelection()
         self.unset()
+        self.redraw()
 
-    ##### Borrar elemento(s)
+    ######################### Borrar elemento(s)
 
     def delete(self):
         self.capa.deleteSelectedFeatures()
         self.atributs.tabTaula(self.capa)
 
-    ##### Undo y Redo
+    ######################### Undo y Redo
 
     def canUndo(self):
         return self.capa.undoStack().canUndo()
