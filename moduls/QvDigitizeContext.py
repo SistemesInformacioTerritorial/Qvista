@@ -63,26 +63,30 @@ class QvDigitizeContext:
         Returns:
             bool: True si el usuario de qVista puede modificar la capa.
         """
-        def testVar(var):
-            if var == '*': return True
-            if var == '-': return False
-            users = QvDigitizeContext.varList(var, str)
-            if users is None: return False
-            return any(QvApp().usuari in u.upper() for u in users)
-            
+        def testVar(nom, object, scope):
+            try:
+                var = scope(object).variable(nom)
+                var = QvDigitizeContext.varClear(var)
+                if var is None or var == '': return None
+                if var == '*': return True
+                if var == '-': return False
+                users = QvDigitizeContext.varList(var, str)
+                if users is None: return False
+                return any(QvApp().usuari in u.upper() for u in users)
+            except Exception as e:
+                print(str(e))
+                return None
+
         try:
             if layer.type() != QgsMapLayer.VectorLayer: return False
             if QvDigitizeContext.testReadOnly(): return False
-            varP = QgsExpressionContextUtils.projectScope(project).variable(nom)
-            varP = QvDigitizeContext.varClear(varP)
-            varL = QgsExpressionContextUtils.layerScope(layer).variable(nom)
-            varL = QvDigitizeContext.varClear(varL)
-            if varL is not None:
-                return testVar(varL)
+            ok = testVar(nom, layer, QgsExpressionContextUtils.layerScope)
+            if ok is None:
+                ok = testVar(nom, project, QgsExpressionContextUtils.projectScope)
+            if ok is None:
+                return False
             else:
-                if varP is not None:
-                    return testVar(varP)
-            return False
+                return ok
         except Exception as e:
             print(str(e))
             return False

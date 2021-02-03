@@ -138,24 +138,6 @@ class QvAtributs(QTabWidget):
             return taula
         return None
 
-    # def tabTaula(self, layer, current=False, fid=None):
-    #     # Ver si la tabla ya está abierta y, eventualmente, activar la pestaña y mostrar registro
-    #     if layer is None:
-    #         return None
-    #     num = self.count()
-    #     for i in range(0, num):
-    #         taula = self.widget(i)
-    #         if taula.layer.id() == layer.id():
-    #             txt = taula.layerNom()
-    #             self.setTabText(i, txt)
-    #             # print('tabTaula', int(i), layer.name(), txt)
-    #             if current:
-    #                 self.setCurrentIndex(i)
-    #                 if fid is not None:
-    #                     taula.scrollToFid(fid)
-    #             return taula
-    #     return None
-
     def obrirTaula(self, layer):
         # Abrir tabla por layer
         if layer is None:
