@@ -513,7 +513,7 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
         self.accions.afegirAccio('filterElements', act)
 
         act = qtWdg.QAction()
-        act.setText("Esborra filtre")
+        act.setText("Suprimeix filtre")
         act.triggered.connect(self.removeFilter)
         self.accions.afegirAccio('removeFilter', act)
 

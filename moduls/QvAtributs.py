@@ -368,7 +368,7 @@ class QvTaulaAtributs(QgsAttributeTableView):
         self.accions.afegirAccio('selectAll', act)
 
         act = QAction()
-        act.setText("Esborra selecció")
+        act.setText("Suprimeix selecció")
         # act.setIcon(QIcon(':/Icones/ic_file_upload_black_48dp.png'))
         act.triggered.connect(self.removeSelection)
         self.accions.afegirAccio('removeSelection', act)
@@ -415,7 +415,7 @@ class QvTaulaAtributs(QgsAttributeTableView):
         self.accions.afegirAccio('filterElements', act)
 
         act = QAction()
-        act.setText("Esborra filtre")
+        act.setText("Suprimeix filtre")
         # act.setIcon(QIcon(':/Icones/ic_file_upload_black_48dp.png'))
         act.triggered.connect(self.removeFilter)
         self.accions.afegirAccio('removeFilter', act)

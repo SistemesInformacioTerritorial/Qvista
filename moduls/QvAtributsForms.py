@@ -88,7 +88,7 @@ class QvFitxesAtributs(QDialog):
             self.title = self.layer.name() + " - Fitxa nou element"
         elif self.mode == QgsAttributeEditorContext.SingleEditMode:
             self.title = self.layer.name() + " - Edició fitxa element"
-            bDel = QPushButton("Esborra")
+            bDel = QPushButton("Esborra element")
             bDel.clicked.connect(lambda: self.remove(form.feature()))
             buttonBox = form.findChild(QDialogButtonBox)
             buttonBox.addButton(bDel, QDialogButtonBox.ResetRole)

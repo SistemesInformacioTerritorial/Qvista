@@ -17,8 +17,8 @@ import os
 # 
 # TODO
 #
-# - Al cambiar de capa se pierden los elementos seleccionados
 # - Al salir de qVista, controlar si hay ediciones abiertas con modificaciones pendientes
+# - Repasar activacion dirty bit
 # - Formulario de opciones de snapping (topología no)
 # - Leyenda: las opciones desactivadas del menú no se ven muy bien
 # - Edicion de geonetría: QgsVectorLayerEditUtils 
