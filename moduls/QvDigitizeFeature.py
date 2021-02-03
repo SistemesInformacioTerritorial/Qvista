@@ -218,14 +218,28 @@ class QvDigitizeFeature(qgGui.QgsMapToolDigitizeFeature):
         self.menu.setIcon(qtGui.QIcon(os.path.join(imatgesDir, 'edit_on.png')))
         # Grupo 1 - Comandos de edición
         self.menu.addAction('Nou element', self.new)
-        self.menu.addAction('Redibuixa element', self.redraw)
+        if self.capa.geometryType() == qgCor.QgsWkbTypes.PointGeometry:
+            tipo = 'punt'
+        elif self.capa.geometryType() == qgCor.QgsWkbTypes.LineGeometry:
+            tipo = 'línia'
+        elif self.capa.geometryType() == qgCor.QgsWkbTypes.PolygonGeometry:
+            tipo = 'polígon'
+        else:
+            tipo = 'geometria'
+        self.menu.addAction(f"Modifica {tipo} element", self.redraw)
         act = self.menu.addAction('Esborra seleccionat(s)', self.delete)
         act.setEnabled(self.capa.selectedFeatureCount())
         self.menu.addSeparator()
         # Grupo 2 - Undo / Redo
         act = self.menu.addAction('Desfés canvi', self.undo)
+        # act.setShortcut("Ctrl+Z")
+        # act.setShortcutContext(qtCor.Qt.ApplicationShortcut)
+        # act.setShortcutVisibleInContextMenu(True)
         act.setEnabled(self.canUndo())
         act = self.menu.addAction('Refés canvi', self.redo)
+        # act.setShortcut("Ctrl+Y")
+        # act.setShortcutContext(qtCor.Qt.ApplicationShortcut)
+        # act.setShortcutVisibleInContextMenu(True)
         act.setEnabled(self.canRedo())
         self.menu.addSeparator()
         # Grupo 3: Cierre de edición
