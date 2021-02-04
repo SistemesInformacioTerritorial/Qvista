@@ -18,9 +18,10 @@ import os
 # TODO
 #
 # - Al salir de qVista, controlar si hay ediciones abiertas con modificaciones pendientes
+# - Shortcuts en menu contextual / menu principal?
+# - Pruebas edición tabla Oracle
 # - Repasar activacion dirty bit
 # - Formulario de opciones de snapping (topología no)
-# - Leyenda: las opciones desactivadas del menú no se ven muy bien
 # - Edicion de geonetría: QgsVectorLayerEditUtils 
 # 
 # https://docs.qgis.org/3.16/en/docs/user_manual/working_with_vector/editing_geometry_attributes.html
@@ -226,19 +227,19 @@ class QvDigitizeFeature(qgGui.QgsMapToolDigitizeFeature):
             tipo = 'polígon'
         else:
             tipo = 'geometria'
-        self.menu.addAction(f"Modifica {tipo} element", self.redraw)
+        self.menu.addAction(f"Modifica {tipo} d'element", self.redraw)
         act = self.menu.addAction('Esborra seleccionat(s)', self.delete)
         act.setEnabled(self.capa.selectedFeatureCount())
         self.menu.addSeparator()
         # Grupo 2 - Undo / Redo
         act = self.menu.addAction('Desfés canvi', self.undo)
         # act.setShortcut("Ctrl+Z")
-        # act.setShortcutContext(qtCor.Qt.ApplicationShortcut)
+        # act.setShortcutContext(qtCor.Qt.WidgetWithChildrenShortcut)
         # act.setShortcutVisibleInContextMenu(True)
         act.setEnabled(self.canUndo())
         act = self.menu.addAction('Refés canvi', self.redo)
         # act.setShortcut("Ctrl+Y")
-        # act.setShortcutContext(qtCor.Qt.ApplicationShortcut)
+        # act.setShortcutContext(qtCor.Qt.WidgetWithChildrenShortcut)
         # act.setShortcutVisibleInContextMenu(True)
         act.setEnabled(self.canRedo())
         self.menu.addSeparator()

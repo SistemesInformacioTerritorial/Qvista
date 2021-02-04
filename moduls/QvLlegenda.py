@@ -309,7 +309,7 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
         self.escales.nouProjecte(self.project)
 
         if self.digitize is not None:
-            self.digitize.nouProjecte(self.canvas)
+            self.digitize.nouProjecte()
 
         for capa in self.capes():
             # if layer.type() == qgCor.QgsMapLayer.VectorLayer:

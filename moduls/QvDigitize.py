@@ -59,6 +59,7 @@ class QvDigitize:
         self.snap = QvSnapping(self.canvas)
         self.llista = {}
         self.menu = None
+        self.editable = False
 
     def widgetVisible(self):
         if self.started():
@@ -66,12 +67,14 @@ class QvDigitize:
         else:
             self.widget.hide()
 
-    def nouProjecte(self, canvas):
+    def nouProjecte(self):
         self.llista = {}
+        self.editable = False
         self.snap.config()
 
     def modifInfoCapa(self, capa, val):
         self.llista[capa.id()] = val
+        if val: self.editable = True
         self.llegenda.actIconesCapa(capa)
 
     def iniInfoCapa(self, capa):
@@ -113,9 +116,11 @@ class QvDigitize:
         elif estado:
             df.stop()
 
-    def setMenu(self):
+    def setMenu(self, menu=None):
+        self.menu = menu
         if self.started():
-            self.menu = qtWdg.QMenu('Edició')
+            if self.menu is None:
+                self.menu = qtWdg.QMenu('Edició')
             self.menu.setIcon(qtGui.QIcon(os.path.join(imatgesDir, 'edit_on.png')))
             # Grupo 1: Parámetros de edición y snap
             act = self.menu.addAction("Activa l'ajust de digitalització", self.snap.toggleEnabled)
@@ -127,8 +132,7 @@ class QvDigitize:
             self.menu.addSeparator()
             # Grupo 2: Fin de ediciones
             self.menu.addAction("Finalitza les edicions", self.stop)
-            return self.menu
-        return None
+        return self.menu
 
     def editions(self):
         for val in self.llista.values():
