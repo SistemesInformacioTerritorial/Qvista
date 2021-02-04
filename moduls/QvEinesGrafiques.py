@@ -1,3 +1,4 @@
+from types import prepare_class
 from moduls.QvImports import *
 from moduls.QvAtributsForms import QvFormAtributs
 from moduls.QvApp import QvApp
@@ -1398,21 +1399,26 @@ class QvSeleccioElement(QgsMapTool):
        Si la llegenda no té un layer actiu, és treballa amb el primer visible al canvas.
     """
 
-    def __init__(self, canvas, llegenda, radi=10):
+    elementsSeleccionats = pyqtSignal('PyQt_PyObject', 'PyQt_PyObject') # layer, features
+
+    def __init__(self, canvas, llegenda, radi=10, senyal=False):
         """[summary]
 
         Arguments:
-            canvas {[QgsMapCanvas]} -- [El canvas de la app]
+            canvas {QgsMapCanvas} -- El canvas de la app
             llegenda {QvLlegenda} -- La llegenda de la app
 
         Keyword Arguments:
-            radi {int} -- [El radi de tolerancia de la seleccio] (default: {20})
+            radi {int} -- [El radi de tolerancia de la seleccio (default: 20)
+            senyal {bool} -- False: mostra fitxa del(s) element(s) seleccionat(s)
+                             True: llença un senyal (default: False)
         """
 
         QgsMapTool.__init__(self, canvas)
         self.canvas = canvas
         self.llegenda = llegenda
         self.radi = radi
+        self.senyal = senyal
         self.fitxaAtributs = None
 
     def keyPressEvent(self, event):
@@ -1492,11 +1498,14 @@ class QvSeleccioElement(QgsMapTool):
 
                 # ids = [i.id() for i in it]
                 # layer.selectByIds(ids)
-                if len(features) > 0:
-                    self.fitxaAtributs = QvFormAtributs.create(layer, features, self.canvas, self.llegenda.atributs)
-                    self.fitxaAtributs.exec_()
-                    self.fitxaAtributs = None
 
+                if len(features) > 0:
+                    if self.senyal:
+                        self.elementsSeleccionats.emit(layer, features)
+                    else:
+                        self.fitxaAtributs = QvFormAtributs.create(layer, features, self.canvas, self.llegenda.atributs)
+                        self.fitxaAtributs.exec_()
+                        self.fitxaAtributs = None
             else:
                 self.missatgeCaixa('Cal tenir seleccionat un nivell per poder fer una selecció.',
                                    'Marqueu un nivell a la llegenda sobre el que aplicar la consulta.')
