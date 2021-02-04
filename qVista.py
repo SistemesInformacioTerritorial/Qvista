@@ -1247,7 +1247,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.preparacioMapTips()
         self.layerActiu = self.llegenda.currentLayer()        
         self.wSeleccioGrafica.lwFieldsSelect.clear()
-        self.esborrarSeleccio(True)
+        # self.esborrarSeleccio(True)
         self.esborrarMesures(True)
         
         if self.layerActiu is not None:
@@ -1255,6 +1255,7 @@ class QVista(QMainWindow, Ui_MainWindow):
             self.wSeleccioGrafica.setInfoLbl("Capa activa: "+ self.layerActiu.name())
             if self.layerActiu.type() == QgsMapLayer.VectorLayer:
                 self.wSeleccioGrafica.calculaFields(self.layerActiu)
+                self.wSeleccioGrafica.canviLayer()
             else:
                 self.lblCapaSeleccionadaInf.setText("Capa activa sense dades.")
                 self.wSeleccioGrafica.setInfoLbl("Capa activa sense dades.")
@@ -2522,7 +2523,8 @@ class QVista(QMainWindow, Ui_MainWindow):
                                 textCercat = textCercat + field.name()+" LIKE '%" + self.leSeleccioExpressio.text()+ "%'"
                                 textCercat = textCercat + ' OR '
                         textCercat=textCercat[:-4]
-                    layer.setSubsetString(textCercat)
+                    # layer.setSubsetString(textCercat)
+                    layer.selectByExpression(textCercat)
                     self.llegenda.actIconaFiltre(layer)
                     ids = [feature.id() for feature in layer.getFeatures()]
                     self.canvas.zoomToFeatureIds(layer, ids)
