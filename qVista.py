@@ -826,7 +826,8 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.llegenda.accions.afegirAccio('actTot', self.actFerGran)
         self.llegenda.clicatMenuContexte.connect(self.menuLlegenda)
         self.llegenda.obertaTaulaAtributs.connect(self.dwTaulaAtributs.show)
-        self.llegenda.menuEdicio = self.menuEdicio
+        if QvApp().testVersioQgis(3, 10):
+            self.llegenda.setMenuEdicio(self.menuEdicio)
         
         self.dwLlegenda = QvDockWidget( "Llegenda", self )
         self.dwLlegenda.setContextMenuPolicy(Qt.PreventContextMenu)
@@ -1535,11 +1536,10 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.menuMapes = self.bar.addMenu ("Mapes")
         self.menuCapes = self.bar.addMenu ("Capes")
 
-        self.menuEdicio = self.bar.addMenu('Edició')
-        self.menuEdicio.setFont(QvConstants.FONTSUBTITOLS)
-        self.menuEdicio.styleStrategy = QFont.PreferAntialias or QFont.PreferQuality
-        self.menuEdicio.menuAction().setEnabled(False)
-        self.menuEdicio.menuAction().setVisible(False)
+        if QvApp().testVersioQgis(3, 10):
+            self.menuEdicio = self.bar.addMenu('Edició')
+            self.menuEdicio.setFont(QvConstants.FONTSUBTITOLS)
+            self.menuEdicio.styleStrategy = QFont.PreferAntialias or QFont.PreferQuality
 
         self.menuUtilitats = self.bar.addMenu("Utilitats")
         self.menuEines = self.bar.addMenu('Eines')
