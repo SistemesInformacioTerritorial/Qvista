@@ -1,3 +1,4 @@
+from types import prepare_class
 from moduls.QvImports import *
 from moduls.QvAtributsForms import QvFormAtributs
 from moduls.QvApp import QvApp
@@ -349,13 +350,14 @@ class QvSeleccioGrafica(QWidget):
         numeroFields = 0  # ???
         fila = 0
         columna = 0  # ???
-        nombreElements = 0
+        
         taula.setColumnCount(3)
         taula.setHorizontalHeaderLabels(['', 'Total', 'Mitjana'])
         nombreFieldsSeleccionats = 0
 
         if len(self.lwFieldsSelect.selectedItems())==0: # Si no hi ha cap item seleccionat, se seleccionen tots
             self.lwFieldsSelect.selectAll()
+        nombreElements = len(layer.selectedFeatures())
         layerActiu = self.llegenda.currentLayer()
         campsNumerics = [field.name() for field in layerActiu.fields() if field.typeName() in ('Integer64','Real')]
         itemsNumerics = [x for x in self.lwFieldsSelect.selectedItems() if x.text() in campsNumerics]
@@ -363,17 +365,16 @@ class QvSeleccioGrafica(QWidget):
         #     nombreFieldsSeleccionats = nombreFieldsSeleccionats+1
         nombreFieldsSeleccionats = len(itemsNumerics)
         taula.setRowCount(nombreFieldsSeleccionats+1)
+        
         for a in itemsNumerics:
             total = 0
             item = QTableWidgetItem(a.text())
             taula.setItem(fila+1, 0, item)
-            # print (field)
-            nombreElements = 0
-            for feature in layer.selectedFeatures():
-                calcul = feature.attributes(
-                )[layer.fields().lookupField(a.text())]
-                total = total+calcul
-                nombreElements = nombreElements+1
+            # for feature in layer.selectedFeatures():
+            #     calcul = feature.attributes(
+            #     )[layer.fields().lookupField(a.text())]
+            #     total = total+calcul
+            total = sum(feature.attributes()[layer.fields().lookupField(a.text())] for feature in layer.selectedFeatures())
             if nombreElements > 0:
                 mitjana = total/nombreElements
             else:
@@ -400,6 +401,11 @@ class QvSeleccioGrafica(QWidget):
             # if (field.typeName() == 'Real' or field.typeName() == 'Integer64'):
             #     self.lwFieldsSelect.addItem(field.name())
             self.lwFieldsSelect.addItem(field.name())
+    def canviLayer(self):
+        if self.llegenda.currentLayer() is not None:
+            # self.calculaFields()
+            self.calcularSeleccio()
+        pass
 
 
 class QvMesuraGrafica(QWidget):
@@ -745,11 +751,11 @@ def seleccioClicks(wSeleccioGrafica):
 
 def seleccioLliure(wSeleccioGrafica):
     # qV.markers.hide()
-    try:
-        # Això no hauria de funcionar
-        wSeleccioGrafica.esborrarSeleccio()
-    except:
-        pass
+    # try:
+    #     # Això no hauria de funcionar
+    #     wSeleccioGrafica.esborrarSeleccio()
+    # except:
+    #     pass
 
     try:
         wSeleccioGrafica.actionMapSelect = QAction(
@@ -861,6 +867,17 @@ class QvMascaraEinaPlantilla(QgsMapTool):
             x.hide()
     def __del__(self):
         self.eliminaRubberbands()
+    def selecciona(self, ids):
+        layer = self.llegenda.currentLayer()
+        seleccionats = set(layer.selectedFeatureIds())
+        ids = set(ids)
+        if ids<=seleccionats:
+            aSeleccionar = list(seleccionats-ids)
+        else:
+            aSeleccionar = list(seleccionats | ids)
+        layer.selectByIds(aSeleccionar)
+        self.wSeleccioGrafica.calcularSeleccio()
+
 
 
 class QvMascaraEinaClick(QvMascaraEinaPlantilla):
@@ -901,9 +918,10 @@ class QvMascaraEinaClick(QvMascaraEinaPlantilla):
                     aplicaMascara(self.projecte, self.canvas,
                                   geoms, self.getCapa())
                 if self.seleccionar:
-                    seleccionats = layer.selectedFeatureIds()
-                    layer.selectByIds(seleccionats+ids)
-                    self.wSeleccioGrafica.calcularSeleccio()
+                    # seleccionats = layer.selectedFeatureIds()
+                    # layer.selectByIds(seleccionats+ids)
+                    # self.wSeleccioGrafica.calcularSeleccio()
+                    self.selecciona(ids)
                 # La part d'eliminar funciona màgicament. No existeix cap raó lògica que ens digui que s'eliminarà, però ho fa
                 self.actualitza()
             except Exception as e:
@@ -987,14 +1005,19 @@ class QvMascaraEinaDibuixa(QvMascaraEinaPlantilla):
                 # Seleccionem coses
                 featsPnt = layer.getFeatures(
                     QgsFeatureRequest().setFilterRect(geom.boundingBox()))
-                for featPnt in featsPnt:
-                    if self.overlap:
-                        if featPnt.geometry().intersects(geom):
-                            layer.select(featPnt.id())
-                    else:
-                        if featPnt.geometry().within(geom):
-                            layer.select(featPnt.id())
-                self.wSeleccioGrafica.calcularSeleccio()
+                # for featPnt in featsPnt:
+                #     if self.overlap:
+                #         if featPnt.geometry().intersects(geom):
+                #             layer.select(featPnt.id())
+                #     else:
+                #         if featPnt.geometry().within(geom):
+                #             layer.select(featPnt.id())
+                if self.overlap:
+                    ids = [featPnt.id() for featPnt in featsPnt if featPnt.geometry().intersects(geom)]
+                else:
+                    ids = [featPnt.id() for featPnt in featsPnt if featPnt.geometry().within(geom)]
+                self.selecciona(ids)
+                # self.wSeleccioGrafica.calcularSeleccio()
             # self.rubberband.hide()
             # self.rubberband = self.novaRubberband()
             self.actualitza()
@@ -1056,14 +1079,19 @@ class QvMascaraEinaCercle(QvMascaraEinaPlantilla):
             # Seleccionem coses
             featsPnt = layer.getFeatures(
                 QgsFeatureRequest().setFilterRect(poligon.boundingBox()))
-            for featPnt in featsPnt:
-                if self.overlap:
-                    if featPnt.geometry().intersects(poligon):
-                        layer.select(featPnt.id())
-                else:
-                    if featPnt.geometry().within(poligon):
-                        layer.select(featPnt.id())
-            self.wSeleccioGrafica.calcularSeleccio()
+            # for featPnt in featsPnt:
+            #     if self.overlap:
+            #         if featPnt.geometry().intersects(poligon):
+            #             layer.select(featPnt.id())
+            #     else:
+            #         if featPnt.geometry().within(poligon):
+            #             layer.select(featPnt.id())
+            # self.wSeleccioGrafica.calcularSeleccio()
+            if self.overlap:
+                ids = [featPnt.id() for featPnt in featsPnt if featPnt.geometry().intersects(poligon)]
+            else:
+                ids = [featPnt.id() for featPnt in featsPnt if featPnt.geometry().within(poligon)]
+            self.selecciona(ids)
         self.centre = None
         self.actualitza()
         # self.rubberbandCercle.hide()
@@ -1371,21 +1399,26 @@ class QvSeleccioElement(QgsMapTool):
        Si la llegenda no té un layer actiu, és treballa amb el primer visible al canvas.
     """
 
-    def __init__(self, canvas, llegenda, radi=10):
+    elementsSeleccionats = pyqtSignal('PyQt_PyObject', 'PyQt_PyObject') # layer, features
+
+    def __init__(self, canvas, llegenda, radi=10, senyal=False):
         """[summary]
 
         Arguments:
-            canvas {[QgsMapCanvas]} -- [El canvas de la app]
+            canvas {QgsMapCanvas} -- El canvas de la app
             llegenda {QvLlegenda} -- La llegenda de la app
 
         Keyword Arguments:
-            radi {int} -- [El radi de tolerancia de la seleccio] (default: {20})
+            radi {int} -- [El radi de tolerancia de la seleccio (default: 20)
+            senyal {bool} -- False: mostra fitxa del(s) element(s) seleccionat(s)
+                             True: llença un senyal (default: False)
         """
 
         QgsMapTool.__init__(self, canvas)
         self.canvas = canvas
         self.llegenda = llegenda
         self.radi = radi
+        self.senyal = senyal
         self.fitxaAtributs = None
 
     def keyPressEvent(self, event):
@@ -1465,11 +1498,14 @@ class QvSeleccioElement(QgsMapTool):
 
                 # ids = [i.id() for i in it]
                 # layer.selectByIds(ids)
-                if len(features) > 0:
-                    self.fitxaAtributs = QvFormAtributs.create(layer, features, self.canvas, self.llegenda.atributs)
-                    self.fitxaAtributs.exec_()
-                    self.fitxaAtributs = None
 
+                if len(features) > 0:
+                    if self.senyal:
+                        self.elementsSeleccionats.emit(layer, features)
+                    else:
+                        self.fitxaAtributs = QvFormAtributs.create(layer, features, self.canvas, self.llegenda.atributs)
+                        self.fitxaAtributs.exec_()
+                        self.fitxaAtributs = None
             else:
                 self.missatgeCaixa('Cal tenir seleccionat un nivell per poder fer una selecció.',
                                    'Marqueu un nivell a la llegenda sobre el que aplicar la consulta.')

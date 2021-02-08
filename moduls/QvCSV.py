@@ -1,6 +1,7 @@
 from moduls.QvImports import *
 from qgis.PyQt.QtWidgets import *
 import itertools
+import shutil
 from moduls.QvMapificacio import QvMapificacio
 from moduls.QvPushButton import QvPushButton
 from moduls.QvEditorCsv import QvEditorCsv
@@ -152,8 +153,6 @@ class QvCarregaCsv(QDialog):
         self._csv = self._primerCsv = rutaCsv
         self.loadMap()
         # self._mapificador = QvMapificacio(rutaCsv)
-        self.setSeparador()
-        self._codificacio = self._mapificador.codi
         self._widgetSup = QWidget(objectName='layout')
         self._layoutGran = QVBoxLayout()
         self.setLayout(self._layoutGran)
@@ -174,6 +173,8 @@ class QvCarregaCsv(QDialog):
         self.oldPos = self.pos()
     def loadMap(self):
         self._mapificador = QvMapificacio(self._csv)
+        self._codificacio = self._mapificador.codi
+        self.setSeparador()
     def setSeparador(self):
         self._separador = self._mapificador.separador
     def getPrimeraPantalla(self):
@@ -664,6 +665,8 @@ class CsvGeocodificat(CsvPagina):
         self._layBotons.addWidget(self._bMapifica)
         self._lay.addLayout(self._layBotons)
     def _enrere(self):
+        self._carregador._csv = self._carregador._primerCsv
+        self._carregador.loadMap()
         self.salta.emit(CsvTab(self._carregador))
         
     def _definirErrors(self, errors):
@@ -728,6 +731,10 @@ class CsvAfegir(CsvPagina):
         layTries.addWidget(self._bColor)
         # layColor.addStretch()
         setColorBoto()
+        self.cbDesaCsv = QCheckBox('Desar CSV geocodificat')
+        self.cbDesaGpkg = QCheckBox('Desar capa resultant en arxiu GPKG')
+        layTries.addWidget(self.cbDesaCsv)
+        layTries.addWidget(self.cbDesaGpkg)
         # self._lay.addLayout(layColor)
         self._lay.addStretch()
         # Forma
@@ -809,6 +816,15 @@ class CsvAfegir(CsvPagina):
     def afegir(self):
         if not nivellCsv(self._carregador._projecte, self._carregador._llegenda, self._carregador._csv, self._carregador._separador, self._campCoordX, self._campCoordY, self._projeccio, self._leNomCapa.text(), self._color, symbol=self._forma):
             QMessageBox.warning(self,"No s'ha pogut afegir la capa","No s'ha pogut afegir aquest arxiu. Contacteu amb la persona de referència")
+        nomBase = str(Path(self._carregador._csv).stem)
+        if self.cbDesaCsv.isChecked():
+            nom, _ = QFileDialog.getSaveFileName(self,'Desar csv',f'{QvMemoria().getDirectoriDesar()}/{nomBase}.csv',"(*.csv)")
+            if nom!='':
+                shutil.copyfile(self._carregador._csv,nom)
+        if self.cbDesaGpkg.isChecked():
+            nom, _ = QFileDialog.getSaveFileName(self,'Desar GPKG',f'{QvMemoria().getDirectoriDesar()}/{nomBase}.gpkg',"(*.gpkg)")
+            if nom!='':
+                shutil.copyfile(self._carregador._csv.replace('.csv','.gpkg'), nom)
         self._carregador.close()
 
 

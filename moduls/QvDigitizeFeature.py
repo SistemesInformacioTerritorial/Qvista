@@ -8,6 +8,8 @@ import qgis.PyQt.QtGui as qtGui
 import qgis.PyQt.QtCore as qtCor
 
 from moduls.QvAtributsForms import QvFormAtributs
+from moduls.QvEinesGrafiques import QvSeleccioElement
+from moduls.QvDigitizeContext import QvDigitizeContext
 from configuracioQvista import imatgesDir
 
 import os
@@ -16,8 +18,11 @@ import os
 # TODO
 #
 # - Al salir de qVista, controlar si hay ediciones abiertas con modificaciones pendientes
-# - Leyenda: las opciones desactivadas del menú no se ven muy bien
-# - Scroll a elemento de tabla no funciona con los nuevos (fid = 0)
+# - Shortcuts en menu contextual / menu principal?
+# - Pruebas edición tabla Oracle
+# - Repasar activacion dirty bit
+# - Formulario de opciones de snapping (topología no)
+# - Edicion de geonetría: QgsVectorLayerEditUtils 
 # 
 # https://docs.qgis.org/3.16/en/docs/user_manual/working_with_vector/editing_geometry_attributes.html
 # 
@@ -38,6 +43,17 @@ class QvDigitizeFeature(qgGui.QgsMapToolDigitizeFeature):
         self.setLayer(self.capa)
         self.signal = None
         self.menu = None
+        self.tool = None
+
+    def cadCanvasReleaseEvent(self, event):
+        # Finaliza tool de dibujo con botón derecho cuando no hay puntos dibujados
+        if self.tool == self and self.size() == 0 and event.button() == qtCor.Qt.RightButton:
+            # Si estamos redibujando, vuelve al principio para seleccionar otro elemento
+            redraw = (self.signal == self.redrawFeature)
+            self.unset()
+            if redraw: self.redraw()
+        else:
+            super().cadCanvasReleaseEvent(event)
 
     def iniSignal(self):
         if self.signal is not None:
@@ -56,10 +72,19 @@ class QvDigitizeFeature(qgGui.QgsMapToolDigitizeFeature):
                 self.signal = signal
                 self.digitizingCompleted.connect(self.signal)
 
+    def go(self, tool, removeSelection):
+        self.tool = tool
+        if removeSelection:
+            self.capa.removeSelection()
+        self.canvas.setMapTool(self.tool)
+        self.canvas.activateWindow()
+
     def unset(self):
         self.iniSignal()
         self.clean()
-        self.canvas.unsetMapTool(self)
+        if self.tool is not None:
+            self.canvas.unsetMapTool(self.tool)
+            self.tool = None
 
     def start(self):
         if self.capa.isEditable() or self.capa.startEditing():
@@ -73,17 +98,28 @@ class QvDigitizeFeature(qgGui.QgsMapToolDigitizeFeature):
             return False
 
     def finish(self, save):
+        ok = False
         if self.capa.isEditable():
-            if save:
-                b = self.capa.commitChanges()
-            else:
-                b = self.capa.rollBack()
             self.canvas.unsetMapTool(self)
-            self.llegenda.digitize.modifInfoCapa(self.capa, True)
-            return b
-        else:
-            return False
+            if save:
+                ok = self.capa.commitChanges()
+            else:
+                ok = self.capa.rollBack()
+            if ok:
+                self.llegenda.digitize.modifInfoCapa(self.capa, True)
+            else:
+                self.errors()
+        return ok
 
+    def errors(self):
+        try:
+            err =  self.capa.commitErrors()
+            sep = "\n"
+            msg = f"S'han produït errors en la capa '{self.capa.name()}':{sep}{sep}{sep.join(err)}"
+            qtWdg.QMessageBox.critical(self.llegenda, "Error al finalitzar edició de capa", msg)
+        except Exception as e:
+            print(str(e))
+            
     def stop(self):
         if self.modified():
             r = qtWdg.QMessageBox.question(self.llegenda, "Finalitza edició de capa",
@@ -113,13 +149,59 @@ class QvDigitizeFeature(qgGui.QgsMapToolDigitizeFeature):
     def cancel(self):
         return self.finish(False)
 
+    ######################### Nuevo elemento
+
+    def new(self, signal=None):
+        if self.capa.isEditable():
+            if signal is None:
+                self.newSignal(self.newFeature)
+                self.go(self, True)
+            else:
+                self.newSignal(signal)
+                self.go(self, False)
+
+    def newFeature(self, feature):
+        self.dialog = QvFormAtributs.create(self.capa, feature, self.canvas, self.atributs, new=True)
+        self.dialog.exec_()
+        self.dialog = None
+
+    ######################### Redibujar elemento
+
+    def redraw(self):
+        if self.capa.isEditable():
+            tool = QvSeleccioElement(self.canvas, self.llegenda, senyal=True)
+            tool.elementsSeleccionats.connect(self.selectFeature)
+            self.go(tool, True)
+
+    def selectFeature(self, layer, features):
+        if layer.id() != self.capa.id():
+            return
+        self.feature = features[0]        
+        QvDigitizeContext.selectAndScrollFeature(self.feature.id(), self.capa, self.atributs)
+        self.canvas.unsetMapTool(self.tool)
+        self.new(self.redrawFeature)
+
+    def redrawFeature(self, feature):
+        self.capa.changeGeometry(self.feature.id(), feature.geometry())
+        self.capa.removeSelection()
+        self.unset()
+        self.redraw()
+
+    ######################### Borrar elemento(s)
+
+    def delete(self):
+        self.capa.deleteSelectedFeatures()
+        self.atributs.tabTaula(self.capa)
+
+    ######################### Undo y Redo
+
     def canUndo(self):
         return self.capa.undoStack().canUndo()
 
     def undo(self):
         if self.canUndo():
             self.capa.undoStack().undo()
-            self.atributs.tabTaula(self.capa, True)
+            self.atributs.tabTaula(self.capa)
             self.capa.repaintRequested.emit()
 
     def canRedo(self):
@@ -128,43 +210,37 @@ class QvDigitizeFeature(qgGui.QgsMapToolDigitizeFeature):
     def redo(self):
         if self.canRedo():
             self.capa.undoStack().redo()
-            self.atributs.tabTaula(self.capa, True)
+            self.atributs.tabTaula(self.capa)
             self.capa.repaintRequested.emit()
 
-    def new(self):
-        if self.capa.isEditable():
-            self.newSignal(self.newFeature)
-            self.canvas.setMapTool(self)
-            self.canvas.activateWindow()
-
-    # def canvasReleaseEvent(self, e):
-    #     if e.button() == qtCor.Qt.RightButton:
-    #         print("Botón derecho 1")
-    #     super().canvasReleaseEvent(e)
-
-    # def cadCanvasReleaseEvent(self, e):
-    #     if e.button() == qtCor.Qt.RightButton:
-    #         print("Botón derecho 2")
-    #     super().cadCanvasReleaseEvent(e)
-    
-    def newFeature(self, feature):
-        self.dialog = QvFormAtributs.create(self.capa, feature, self.canvas, self.atributs, new=True)
-        if self.dialog.exec_() == qtWdg.QDialog.Accepted:
-            self.feature = self.dialog.reg
-        self.dialog = None
-
     def setMenu(self):
+        self.unset()
         self.menu = qtWdg.QMenu('Edició')
         self.menu.setIcon(qtGui.QIcon(os.path.join(imatgesDir, 'edit_on.png')))
         # Grupo 1 - Comandos de edición
         self.menu.addAction('Nou element', self.new)
-        act = self.menu.addAction('Esborra seleccionat(s)', self.capa.deleteSelectedFeatures)
+        if self.capa.geometryType() == qgCor.QgsWkbTypes.PointGeometry:
+            tipo = 'punt'
+        elif self.capa.geometryType() == qgCor.QgsWkbTypes.LineGeometry:
+            tipo = 'línia'
+        elif self.capa.geometryType() == qgCor.QgsWkbTypes.PolygonGeometry:
+            tipo = 'polígon'
+        else:
+            tipo = 'geometria'
+        self.menu.addAction(f"Modifica {tipo} d'element", self.redraw)
+        act = self.menu.addAction('Esborra seleccionat(s)', self.delete)
         act.setEnabled(self.capa.selectedFeatureCount())
         self.menu.addSeparator()
         # Grupo 2 - Undo / Redo
         act = self.menu.addAction('Desfés canvi', self.undo)
+        # act.setShortcut("Ctrl+Z")
+        # act.setShortcutContext(qtCor.Qt.WidgetWithChildrenShortcut)
+        # act.setShortcutVisibleInContextMenu(True)
         act.setEnabled(self.canUndo())
         act = self.menu.addAction('Refés canvi', self.redo)
+        # act.setShortcut("Ctrl+Y")
+        # act.setShortcutContext(qtCor.Qt.WidgetWithChildrenShortcut)
+        # act.setShortcutVisibleInContextMenu(True)
         act.setEnabled(self.canRedo())
         self.menu.addSeparator()
         # Grupo 3: Cierre de edición

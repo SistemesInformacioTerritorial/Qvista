@@ -88,6 +88,7 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
         self.model = QvModelLlegenda(self.root)
         self.model.setFlag(qgCor.QgsLegendModel.ShowLegend, True)
         self.model.setFlag(qgCor.QgsLegendModel.ShowLegendAsTree, True)
+        self.model.setFlag(qgCor.QgsLegendModel.UseTextFormatting, True)
         self.editarLlegenda(editable)
         self.setModel(self.model)
         self.model.dataChanged.connect(self.itemChanged)
@@ -152,6 +153,12 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
             return self.digitize.editing(capa)
         else:
             return False
+
+    def edition(self, capa):
+        if self.digitize is not None:
+            return self.digitize.edition(capa)
+        else:
+            return None
 
     def readProject(self, fileName):
         if self.anotacions is not None:
@@ -236,9 +243,12 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
     def connectaEscala(self, escala):
         # print('Cambio escala:', escala)
         self.model.setScale(escala)
+        b = self.iniSignal
+        self.iniSignal = False
         for capa in self.capes():
             if capa.hasScaleBasedVisibility():
                 capa.nameChanged.emit()
+        self.iniSignal = b
 
     def capaLocal(self, capa):
         try:
@@ -299,7 +309,7 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
         self.escales.nouProjecte(self.project)
 
         if self.digitize is not None:
-            self.digitize.nouProjecte(self.canvas)
+            self.digitize.nouProjecte()
 
         for capa in self.capes():
             # if layer.type() == qgCor.QgsMapLayer.VectorLayer:
@@ -503,7 +513,7 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
         self.accions.afegirAccio('filterElements', act)
 
         act = qtWdg.QAction()
-        act.setText("Esborra filtre")
+        act.setText("Suprimeix filtre")
         act.triggered.connect(self.removeFilter)
         self.accions.afegirAccio('removeFilter', act)
 

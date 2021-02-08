@@ -51,6 +51,7 @@ from moduls.QvCanvasAuxiliar import QvCanvasAuxiliar
 import os        
 import importlib
 import itertools
+import re
 
 from pathlib import Path
 import functools #Eines de funcions, per exemple per avaluar-ne parcialment una
@@ -826,6 +827,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.llegenda.accions.afegirAccio('actTot', self.actFerGran)
         self.llegenda.clicatMenuContexte.connect(self.menuLlegenda)
         self.llegenda.obertaTaulaAtributs.connect(self.dwTaulaAtributs.show)
+        self.llegenda.menuEdicio = self.menuEdicio
         
         self.dwLlegenda = QvDockWidget( "Llegenda", self )
         self.dwLlegenda.setContextMenuPolicy(Qt.PreventContextMenu)
@@ -943,14 +945,14 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.actObrirProjecte.setStatusTip("Obrir mapa QGis")
         self.actObrirProjecte.triggered.connect(lambda: self.obrirDialegProjecte())
         
-        self.actGuardarProjecte = QAction("Desar", self)
-        self.actGuardarProjecte.setShortcut("Ctrl+S")
-        self.actGuardarProjecte.setStatusTip("Guardar Mapa")
-        self.actGuardarProjecte.triggered.connect(self.guardarProjecte)
+        self.actdesarProjecte = QAction("Desar", self)
+        self.actdesarProjecte.setShortcut("Ctrl+S")
+        self.actdesarProjecte.setStatusTip("Guardar Mapa")
+        self.actdesarProjecte.triggered.connect(self.desarProjecte)
 
         self.actGuardarComAProjecte=QAction('Anomena i desa...', self)
         self.actGuardarComAProjecte.setStatusTip("Desar una còpia del mapa actual")
-        self.actGuardarComAProjecte.triggered.connect(self.guardarDialegProjecte)
+        self.actGuardarComAProjecte.triggered.connect(self.dialegDesarComA)
 
         self.actNouMapa = QAction("Nou", self)
         self.actNouMapa.setStatusTip("Nou Mapa")
@@ -1158,7 +1160,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.botoDesarProjecte.setIcon(self.iconaSenseCanvisPendents)
         self.botoDesarProjecte.setStyleSheet(stylesheetBotons)
         self.botoDesarProjecte.setIconSize(QSize(24, 24))
-        self.botoDesarProjecte.clicked.connect(self.guardarProjecte) 
+        self.botoDesarProjecte.clicked.connect(self.desarProjecte) 
         self.botoDesarProjecte.setCursor(QvConstants.cursorClick())
 
         self.botoObrirQGis.setIcon(QIcon(os.path.join(imatgesDir,'qgis-3.png')))
@@ -1247,7 +1249,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.preparacioMapTips()
         self.layerActiu = self.llegenda.currentLayer()        
         self.wSeleccioGrafica.lwFieldsSelect.clear()
-        self.esborrarSeleccio(True)
+        # self.esborrarSeleccio(True)
         self.esborrarMesures(True)
         
         if self.layerActiu is not None:
@@ -1255,6 +1257,7 @@ class QVista(QMainWindow, Ui_MainWindow):
             self.wSeleccioGrafica.setInfoLbl("Capa activa: "+ self.layerActiu.name())
             if self.layerActiu.type() == QgsMapLayer.VectorLayer:
                 self.wSeleccioGrafica.calculaFields(self.layerActiu)
+                self.wSeleccioGrafica.canviLayer()
             else:
                 self.lblCapaSeleccionadaInf.setText("Capa activa sense dades.")
                 self.wSeleccioGrafica.setInfoLbl("Capa activa sense dades.")
@@ -1334,7 +1337,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         if self.teCanvisPendents(): #Posar la comprovació del dirty bit
             ret = self.missatgeDesar(titol='Recàrrega del mapa',txtCancelar='Cancel·lar')
             if ret == QMessageBox.AcceptRole:
-                b = self.guardarProjecte()
+                b = self.desarProjecte()
                 if not b: return
             elif ret ==  QMessageBox.RejectRole: #Aquest i el seguent estàn invertits en teoria, però així funciona bé
                 pass
@@ -1347,7 +1350,7 @@ class QVista(QMainWindow, Ui_MainWindow):
             if self.teCanvisPendents(): #Posar la comprovació del dirty bit
                 ret = self.missatgeDesar(titol='Recàrrega del mapa',txtCancelar='Cancel·lar')
                 if ret == QMessageBox.AcceptRole:
-                    b = self.sguardarProjecte()
+                    b = self.sdesarProjecte()
                     if b:
                         self.obrirProjecte(pathProjecteActual) 
                     else:
@@ -1532,6 +1535,13 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         self.menuMapes = self.bar.addMenu ("Mapes")
         self.menuCapes = self.bar.addMenu ("Capes")
+
+        self.menuEdicio = self.bar.addMenu('Edició')
+        self.menuEdicio.setFont(QvConstants.FONTSUBTITOLS)
+        self.menuEdicio.styleStrategy = QFont.PreferAntialias or QFont.PreferQuality
+        self.menuEdicio.menuAction().setEnabled(False)
+        self.menuEdicio.menuAction().setVisible(False)
+
         self.menuUtilitats = self.bar.addMenu("Utilitats")
         self.menuEines = self.bar.addMenu('Eines')
         self.menuAjuda = self.bar.addMenu('Ajuda')
@@ -1543,7 +1553,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.menuMapes.addSeparator()
         self.menuMapes.addAction(self.actNouMapa)
         self.menuMapes.addAction(self.actObrirProjecte)
-        self.menuMapes.addAction(self.actGuardarProjecte)
+        self.menuMapes.addAction(self.actdesarProjecte)
         self.menuMapes.addAction(self.actGuardarComAProjecte)
         #Aquí originalment creàvem el menú de Mapes recents
         #No obstant, com que a actualitzaMapesRecents es crea de nou, no cal crear-lo aquí
@@ -2345,7 +2355,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         if self.teCanvisPendents(): #Posar la comprovació del dirty bit
             ret = self.missatgeDesar(titol='Crear un nou mapa',txtCancelar='Cancel·lar')
             if ret == QMessageBox.AcceptRole:
-                b = self.guardarProjecte()
+                b = self.desarProjecte()
                 if b:
                     self.obrirProjecte(pathProjecteActual)
                 else:
@@ -2412,12 +2422,117 @@ class QVista(QMainWindow, Ui_MainWindow):
         msgBox.addButton(QvPushButton(txtCancelar),QMessageBox.RejectRole)
         return msgBox.exec()
 
+    #A més de desar, retornarà un booleà indicant si l'usuari ha desat (True) o ha cancelat (False)
+    def desarProjecte(self):
+        """ la funcio retorna si s'ha acabat guardant o no """
+        """  Protecció dels projectes read-only: tres vies:
+        -       Variable del projecte qV_readOnly=’True’
+        -       Ubicació en una carpeta de només-lectura
+        -       Ubicació en una de les subcarpetes de N:\SITEB\APL\PyQgis\qVista
+        -       Ubicació en una de les subcarpetes de N:\9SITEB\Publicacions\qVista
+        """
+    
+        if QgsExpressionContextUtils.projectScope(self.project).variable('qV_readOnly') == 'True':
+            b = self.dialegDesarComA()
+        elif not self.directoriValidDesar(self.pathProjecteActual):
+            b = self.dialegDesarComA()
+        # elif self.pathProjecteActual == 'mapesOffline/qVista default map.qgs':
+        #     b = self.dialegDesarComA()
+        # elif self.pathProjecteActual.startswith( 'n:/siteb/apl/pyqgis/qvista' ):
+        #     b = self.dialegDesarComA()
+        # elif self.pathProjecteActual.startswith( 'n:/9siteb/publicacions/qvista' ):
+        #     b = self.dialegDesarComA()
+        elif hasattr(self,'mapaCataleg'):
+            b = self.dialegDesarComA()
+        else:
+            self._desaElProjecte(self.pathProjecteActual)
+            b = True
+        if b:
+            self.obrirProjecte(self.pathProjecteActual)
+        return b
+    def directoriValidDesar(self,nfile):
+        def path_fill(p1,p2):
+            # retorna true si p1 penja de p2
+            # per exemple, 'C:/' i 'C:/hola.qgs'
+            p1 = Path(p1).absolute()
+            p2 = Path(p2).absolute()
+
+            d1, _ = os.path.splitdrive(p1)
+            d2, _ = os.path.splitdrive(p2)
+            # si són discs diferents, fora
+            if d1!=d2: return False
+            res = Path(os.path.commonpath([p1,p2]))==p2
+            return res
+        # si comparem strings, podem tenir problemes 
+        #  ('C:/exemple.qgs' és diferent de 'C://exemple.qgs' i de 'C:\exemple.qgs')
+        # A python 3.9 podrem fer path.is_relative_to(x)
+        path = Path(nfile).absolute()
+        # return path!=Path(projecteInicial) and not any(path.is_relative_to, carpetaCatalegProjectesLlista)
+        return path!=Path(projecteInicial).absolute() and not any(map(lambda x: path_fill(path,x), carpetaCatalegProjectesLlista+QvMemoria().getCatalegsLocals()))
+        # return not(nfile.endswith('mapesOffline/qVista default map.qgs') or nfile.startswith( 'n:/siteb/apl/pyqgis/qvista' ) or nfile.startswith( 'n:/9siteb/publicacions/qvista' ))
+    
+    # Gestiona el diàleg "Desar com a" (guardar como)
+    def dialegDesarComA(self):
+        #https://stackoverflow.com/a/46801075
+        def get_valid_filename(s):
+            s = str(s).strip().replace(' ', '_')
+            return re.sub(r'(?u)[^-\w.]', '', s)
+        pathDesarPerDefecte = QvMemoria().getDirectoriDesar()
+
+        # nom = re.sub(r'?a[\W_]+','',self.titolProjecte).strip()
+        nom = get_valid_filename(self.titolProjecte)
+
+        pathOnDesem = os.path.join(pathDesarPerDefecte,nom)
+        nfile,_ = QFileDialog.getSaveFileName(None,"Desar Projecte Qgis", pathOnDesem, "Projectes Qgis (*.qgs)")
+        
+        if nfile=='': return False
+        elif not self.directoriValidDesar(nfile):
+            QMessageBox.warning(self,'Advertència','No es pot desar en aquesta adreça. Proveu de fer-ho en una altra')
+            # msgBox = QMessageBox()
+            # msgBox.setWindowTitle("Advertència")
+            # msgBox.setIcon(QMessageBox.Warning)
+            # msgBox.setText("No pots guardar el teu mapa en aquesta adreça.")
+            # msgBox.setInformativeText("Prova de fer-ho en una altre.")
+            # msgBox.setStandardButtons(QMessageBox.Ok)
+            # msgBox.setDefaultButton(QMessageBox.Ok)
+            # msgBox.exec()
+            return False 
+        self._desaElProjecte(nfile)
+        QvMemoria().setDirectoriDesar(str(Path(nfile).parent))
+        return True
+
+    @QvFuncions.mostraSpinner
+    def _desaElProjecte(self,proj):
+        '''La funció que desa el projecte com a tal
+           No invocar directament. Per desar un projecte, cal utilitzar self.dialegDesarComA() o bé self.desarProjecte()'''
+        qApp.setOverrideCursor(QvConstants.cursorOcupat())
+
+        # si hem desat un nou mapa, aquest no serà readOnly
+        QgsExpressionContextUtils.setProjectVariable(self.project,'qV_readOnly','False')
+
+        # l'autor d'aquest projecte serà l'usuari actual, i no pas el creador del projecte base
+        md=self.project.metadata()
+        md.setAuthor(QvApp().nomUsuari())
+        self.project.setMetadata(md)
+
+        # si estem desant a un lloc diferent de l'actual, passem a apuntar al lloc nou
+        if proj!=self.pathProjecteActual:
+            self.pathProjecteActual=proj
+            self.lblProjecte.setText(self.project.baseName())
+
+        # desem com a tal
+        self.project.write(proj)
+        qApp.restoreOverrideCursor()
+        qApp.processEvents()
+        # Deixem de tenir canvis pendents
+        self.setDirtyBit(False)
+
     def provaDeTancar(self):
         QvMemoria().pafuera()
         if self.teCanvisPendents():
             ret = self.missatgeDesar()
             if ret == QMessageBox.AcceptRole:
-                b = self.guardarProjecte()
+                b = self.desarProjecte()
                 if not b: return
                 #Si cancel·la, retornem. Si no, cridem a gestioSortida
                 self.gestioSortida()
@@ -2522,89 +2637,20 @@ class QVista(QMainWindow, Ui_MainWindow):
                                 textCercat = textCercat + field.name()+" LIKE '%" + self.leSeleccioExpressio.text()+ "%'"
                                 textCercat = textCercat + ' OR '
                         textCercat=textCercat[:-4]
-                    layer.setSubsetString(textCercat)
+                    # layer.setSubsetString(textCercat)
+                    layer.selectByExpression(textCercat)
                     self.llegenda.actIconaFiltre(layer)
                     ids = [feature.id() for feature in layer.getFeatures()]
                     self.canvas.zoomToFeatureIds(layer, ids)
             else:
                 missatgeCaixa('Cal tenir seleccionat un nivell per poder fer una selecció.','Marqueu un nivell a la llegenda sobre el que aplicar la consulta.')
 
-    #A més de desar, retornarà un booleà indicant si l'usuari ha desat (True) o ha cancelat (False)
-    def guardarProjecte(self):
-        """ la funcio retorna si s'ha acabat guardant o no """
-        """  Protecció dels projectes read-only: tres vies:
-        -       Variable del projecte qV_readOnly=’True’
-        -       Ubicació en una carpeta de només-lectura
-        -       Ubicació en una de les subcarpetes de N:\SITEB\APL\PyQgis\qVista
-        -       Ubicació en una de les subcarpetes de N:\9SITEB\Publicacions\qVista
-        """
-
-        if QgsExpressionContextUtils.projectScope(self.project).variable('qV_readOnly') == 'True':
-            b = self.guardarDialegProjecte()
-        elif self.pathProjecteActual == 'mapesOffline/qVista default map.qgs':
-            b = self.guardarDialegProjecte()
-        elif self.pathProjecteActual.startswith( 'n:/siteb/apl/pyqgis/qvista' ):
-            b = self.guardarDialegProjecte()
-        elif self.pathProjecteActual.startswith( 'n:/9siteb/publicacions/qvista' ):
-            b = self.guardarDialegProjecte()
-        elif hasattr(self,'mapaCataleg'):
-            b = self.guardarDialegProjecte()
-        else:
-            self.desaElProjecte(self.pathProjecteActual)
-            b = True
-        if b:
-            self.obrirProjecte(self.pathProjecteActual)
-        return b
-        
-    #Anomena i desa (Guardar como)
-    def guardarDialegProjecte(self):
-        #variable definida al configuracioQvista
-        pathDesarPerDefecte=QvMemoria().getDirectoriDesar()
-        trans=str.maketrans(r'<>:"/\|?*',r'---------')
-
-        pathOnDesem=pathDesarPerDefecte+'/'+self.titolProjecte.translate(trans).replace('-','')
-        pathOnDesem=pathOnDesem.replace('.','') #Fora punts, per si de cas, ja que Windows li dóna massa importància
-        pathOnDesem=pathOnDesem.strip() #Fora espais al principi (que no n'hi haurà) i al final (que poden haver-n'hi)
-        nfile,_ = QFileDialog.getSaveFileName(None,"Guardar Projecte Qgis", pathOnDesem, "Projectes Qgis (*.qgs)")
-        
-        if nfile=='': return False
-        elif nfile.endswith('mapesOffline/qVista default map.qgs') or nfile.startswith( 'n:/siteb/apl/pyqgis/qvista' ) or nfile.startswith( 'n:/9siteb/publicacions/qvista' ):
-            msgBox = QMessageBox()
-            msgBox.setWindowTitle("Advertència")
-            msgBox.setIcon(QMessageBox.Warning)
-            msgBox.setText("No pots guardar el teu mapa en aquesta adreça.")
-            msgBox.setInformativeText("Prova de fer-ho en una altre.")
-            msgBox.setStandardButtons(QMessageBox.Ok)
-            msgBox.setDefaultButton(QMessageBox.Ok)
-            msgBox.exec()
-            return False 
-        self.desaElProjecte(nfile)
-        QvMemoria().setDirectoriDesar(str(Path(nfile).parent))
-        return True
-
-    @QvFuncions.mostraSpinner
-    def desaElProjecte(self,proj):
-        '''La funció que desa el projecte com a tal'''
-        #TODO: desactivar readonly
-        qApp.setOverrideCursor(QvConstants.cursorOcupat())
-        QgsExpressionContextUtils.setProjectVariable(self.project,'qV_readOnly','False')
-        md=self.project.metadata()
-        md.setAuthor(QvApp().nomUsuari())
-        self.project.setMetadata(md)
-        if proj!=self.pathProjecteActual:
-            self.pathProjecteActual=proj
-            self.lblProjecte.setText(self.project.baseName())
-
-        self.project.write(proj)
-        qApp.restoreOverrideCursor()
-        qApp.processEvents()
-        self.setDirtyBit(False)
 
     def nouMapa(self):
         if self.teCanvisPendents(): #Posar la comprovació del dirty bit
             ret = self.missatgeDesar(titol='Crear un nou mapa',txtCancelar='Cancel·lar')
             if ret == QMessageBox.AcceptRole:
-                b = self.guardarProjecte()
+                b = self.desarProjecte()
                 if b:
                     self.obrirProjecte(pathProjecteActual)
                 else: 
