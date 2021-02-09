@@ -18,10 +18,12 @@ import os
 # TODO
 #
 # - Al salir de qVista, controlar si hay ediciones abiertas con modificaciones pendientes
+# - Propiedades de capa: identificable, searchable, necesaria, readonly
+# - Herramienta de seleccion en todas las capas
 # - Shortcuts en menu contextual / menu principal?
 # - Pruebas edición tabla Oracle
 # - Repasar activacion dirty bit
-# - Formulario de opciones de snapping (topología no)
+# - Formulario de opciones de snapping
 # - Edicion de geonetría: QgsVectorLayerEditUtils 
 # 
 # https://docs.qgis.org/3.16/en/docs/user_manual/working_with_vector/editing_geometry_attributes.html
@@ -29,12 +31,13 @@ import os
 
 class QvDigitizeFeature(qgGui.QgsMapToolDigitizeFeature):
 
-    def __init__(self, llegenda, capa):
-        if llegenda.canvas is None or capa.type() != qgCor.QgsMapLayerType.VectorLayer:
+    def __init__(self, digitize, capa):
+        if digitize.llegenda is None or digitize.llegenda.canvas is None or capa.type() != qgCor.QgsMapLayerType.VectorLayer:
             return
         if len(qgGui.QgsGui.editorWidgetRegistry().factories()) == 0:
             qgGui.QgsGui.editorWidgetRegistry().initEditors()
-        self.llegenda = llegenda
+        self.digitize = digitize
+        self.llegenda = self.digitize.llegenda
         self.capa = capa
         self.project = self.llegenda.project
         self.canvas = self.llegenda.canvas
@@ -126,13 +129,22 @@ class QvDigitizeFeature(qgGui.QgsMapToolDigitizeFeature):
                                            f"Vol desar les modificacions realitzades a la capa '{self.capa.name()}' o descartar-les?", 
                                            buttons = qtWdg.QMessageBox.Save | qtWdg.QMessageBox.Discard | qtWdg.QMessageBox.Cancel,
                                            defaultButton = qtWdg.QMessageBox.Save)
-            if r == qtWdg.QMessageBox.Save: self.end()
-            elif r == qtWdg.QMessageBox.Discard: self.cancel()
+            if r == qtWdg.QMessageBox.Save: return self.end()
+            elif r == qtWdg.QMessageBox.Discard: return self.cancel()
         else:
-            self.cancel()
+            return self.cancel()
 
     # def commit(self):
     #     return self.layer.commitChanges(False)
+
+    def editing(self):
+        try:
+            buff = self.capa.editBuffer()
+            if buff is None:
+                return False
+            return True
+        except:
+            return False
 
     def modified(self):
         try:
@@ -153,12 +165,12 @@ class QvDigitizeFeature(qgGui.QgsMapToolDigitizeFeature):
 
     def new(self, signal=None):
         if self.capa.isEditable():
-            if signal is None:
-                self.newSignal(self.newFeature)
-                self.go(self, True)
-            else:
+            if signal:
                 self.newSignal(signal)
                 self.go(self, False)
+            else:
+                self.newSignal(self.newFeature)
+                self.go(self, True)
 
     def newFeature(self, feature):
         self.dialog = QvFormAtributs.create(self.capa, feature, self.canvas, self.atributs, new=True)
@@ -212,6 +224,16 @@ class QvDigitizeFeature(qgGui.QgsMapToolDigitizeFeature):
             self.capa.undoStack().redo()
             self.atributs.tabTaula(self.capa)
             self.capa.repaintRequested.emit()
+
+    def nomGeometria(self):
+        if self.capa:
+            if self.capa.geometryType() == qgCor.QgsWkbTypes.PointGeometry:
+                return 'punt'
+            elif self.capa.geometryType() == qgCor.QgsWkbTypes.LineGeometry:
+                return 'línia'
+            elif self.capa.geometryType() == qgCor.QgsWkbTypes.PolygonGeometry:
+                return 'polígon'
+        return 'geometria'
 
     def setMenu(self):
         self.unset()
