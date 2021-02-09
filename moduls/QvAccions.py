@@ -12,6 +12,11 @@ class QvAccions:
         # Conjunto de acciones predefinidas
         self.accions = {}
 
+    def esborrarAccions(self):
+        for act in self.accions.values():
+            act.deleteLater()
+        self.accions = {}
+
     def accio(self, nom):
         if nom in self.accions:
             return self.accions[nom]
@@ -21,14 +26,14 @@ class QvAccions:
     def afegirAccio(self, nom, act):
         self.accions[nom] = act
 
-    def menuAccions(self, llistaAccions, accions=None, menuExtra=None):
+    def menuAccions(self, llistaAccions, accions=None, menuExtra=None, menu=None):
         if QWhatsThis.inWhatsThisMode():
             return None
         if accions is None:
             accions = self.accions
         else:
             accions.update(self.accions)
-        menu = QMenu()
+        if menu is None: menu = QMenu()
         for nom in llistaAccions:
             if nom == 'separator':
                 menu.addSeparator()

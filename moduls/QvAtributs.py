@@ -10,7 +10,6 @@ from qgis.gui import (QgsGui,
                       QgsAttributeTableModel,
                       QgsAttributeTableView,
                       QgsAttributeTableFilterModel,
-                      QgsAttributeEditorContext,
                       QgsSearchQueryBuilder,
                       QgsActionMenu)
 from moduls.QvAccions import QvAccions
@@ -72,36 +71,9 @@ class QvAtributs(QTabWidget):
         self.currentChanged.connect(self.setCurrentIndex)
         # self.filtra.clicked.connect(self.filterElements)
 
-    def setMenuEdicio(self, layer):
-        taula = self.tabTaula(layer)
-        if taula is None: return None
-        menu = QMenu('Edició')
-        menu.setIcon(QIcon(os.path.join(imatgesDir, 'edit_on.png')))
-        # Grupo 1 - Comandos de edición
-        menu.addAction("Modifica fitxa", taula.showFeature)
-        menu.addAction("Esborra element", taula.removeFeature)
-        act = menu.addAction('Esborra seleccionat(s)', layer.deleteSelectedFeatures)
-        act.setEnabled(layer.selectedFeatureCount())
-        # Grupo 2 - Undo / Redo
-        df = self.llegenda.edition(layer)
-        if df is not None:
-            menu.addSeparator()
-            act = menu.addAction('Desfés canvi', df.undo)
-            act.setEnabled(df.canUndo())
-            act = menu.addAction('Refés canvi', df.redo)
-            act.setEnabled(df.canRedo())
-        return menu
-
     def setMenuAccions(self, layer):
         self.menuAccions = []
-        if self.llegenda.editing(layer):
-            menu = self.setMenuEdicio(layer)
-            if menu is not None:
-                self.accions.afegirAccio('menuEdicio', menu)
-                self.menuAccions = ['menuEdicio', 'separator']
-        if not self.menuAccions:
-            self.menuAccions = ['showFeature']
-        self.menuAccions += ['selectElement', 'selectAll']
+        self.menuAccions += ['showFeature', 'selectElement', 'selectAll']
         if layer.selectedFeatureCount() > 0:
             self.menuAccions += [
                 'separator',
@@ -438,6 +410,12 @@ class QvTaulaAtributs(QgsAttributeTableView):
         if self.layer is not None and self.parent is not None:
             self.parent.setMenuAccions(self.layer)
             self.parent.clicatMenuContexte.emit(self.layer)
+            act = self.accions.accio('showFeature')
+            if act is not None and self.parent.llegenda is not None:
+                if self.parent.llegenda.editing(self.layer):
+                    act.setText("Modifica fitxa")
+                else:
+                    act.setText("Mostra fitxa")
             menu = self.accions.menuAccions(self.parent.menuAccions,
                                             self.parent.accions.accions,
                                             self.featureActions())

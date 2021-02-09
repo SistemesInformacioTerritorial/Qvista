@@ -8,7 +8,9 @@ import qgis.PyQt.QtCore as qtCor
 
 from moduls.QvDigitizeFeature import QvDigitizeFeature
 from moduls.QvDigitizeContext import QvDigitizeContext
+from moduls.QvAccions import QvAccions
 from moduls.QvSingleton import singleton
+
 from configuracioQvista import imatgesDir
 
 import os
@@ -58,6 +60,8 @@ class QvDigitize:
         self.widget.shortcut.activated.connect(self.widgetVisible)
         self.snap = QvSnapping(self.canvas)
         self.llista = {}
+        self.accions = QvAccions()
+        self.menuAccions = []
         self.menu = None
         self.editable = False
 
@@ -107,32 +111,165 @@ class QvDigitize:
 
     def activaCapa(self, switch):
         capa = self.llegenda.currentLayer()
+        if capa is None: return
         estado, df = self.infoCapa(capa)
         if estado is None: return
         if switch:
             if not estado:
-                df = QvDigitizeFeature(self.llegenda, capa)
+                df = QvDigitizeFeature(self, capa)
             df.start()
         elif estado:
             df.stop()
 
-    def setMenu(self, menu=None):
+    def setAccions(self, parent=None):
+        self.accions = QvAccions()
+
+        act = qtWdg.QAction('Nou element', parent)
+        act.setEnabled(False)
+        self.accions.afegirAccio('newElement', act)
+
+        act = qtWdg.QAction("Modifica geometria d'element", parent)
+        act.setEnabled(False)
+        self.accions.afegirAccio('modGeometria', act)
+
+        act = qtWdg.QAction('Esborra element(s) seleccionat(s)', parent)
+        act.setEnabled(False)
+        self.accions.afegirAccio('delElements', act)
+
+        act = qtWdg.QAction('Desfés canvi', parent)
+        act.setEnabled(False)
+        self.accions.afegirAccio('undo', act)
+
+        act = qtWdg.QAction('Refés canvi', parent)
+        act.setEnabled(False)
+        self.accions.afegirAccio('redo', act)
+
+        act = qtWdg.QAction("Activa l'ajust de digitalització", parent)
+        act.setCheckable(True)
+        act.triggered.connect(self.snap.toggleEnabled)
+        act.setChecked(self.snap.isEnabled())
+        act.setEnabled(self.started())
+        self.accions.afegirAccio('snap', act)
+
+        act = qtWdg.QAction('Mostra digitalització avançada', parent)
+        act.setCheckable(True)
+        act.triggered.connect(self.widgetVisible)
+        act.setChecked(self.widget.isVisible())
+        act.setEnabled(self.started())
+        self.accions.afegirAccio('showWidget', act)
+
+        act = qtWdg.QAction('Finalitza edició de capa activa', parent)
+        act.setEnabled(False)
+        self.accions.afegirAccio('endLayer', act)
+
+        act = qtWdg.QAction('Finalitza totes les edicions', parent)
+        act.triggered.connect(self.stop)
+        act.setEnabled(self.started())
+        self.accions.afegirAccio('endAll', act)
+
+    def modAccions(self, df):
+        if self.accions is None or df is None: return
+        act = self.accions.accio('newElement')
+        if act is not None:
+            if df:
+                act.triggered.connect(df.new)
+                act.setEnabled(True)
+            else:
+                act.setEnabled(False)
+        act = self.accions.accio('modGeometria')
+        if act is not None:
+            if df:
+                act.setText(f"Modifica {df.nomGeometria()} d'element")
+                act.triggered.connect(df.redraw)
+                act.setEnabled(True)
+            else:
+                act.setEnabled(False)
+        act = self.accions.accio('delElements')
+        if act is not None:
+            if df:
+                act.triggered.connect(df.delete)
+                act.setEnabled(df.capa.selectedFeatureCount())
+            else:
+                act.setEnabled(False)
+        act = self.accions.accio('undo')
+        if act is not None:
+            if df:
+                act.triggered.connect(df.undo)
+                act.setEnabled(df.canUndo())
+            else:
+                act.setEnabled(False)
+            txt = "Desfés canvi"
+            if act.isEnabled():
+                txt += "\tCtrl+Z"
+            act.setText(txt)
+        act = self.accions.accio('redo')
+        if act is not None:
+            if df:
+                act.triggered.connect(df.redo)
+                act.setEnabled(df.canRedo())
+            else:
+                act.setEnabled(False)
+            txt = "Refés canvi"
+            if act.isEnabled():
+                txt += "\tCtrl+Y"
+            act.setText(txt)
+        act = self.accions.accio('endLayer')
+        if act is not None:
+            if df:
+                act.triggered.connect(df.stop)
+                act.setEnabled(True)
+            else:
+                act.setEnabled(False)
+
+    def setMenuAccions(self):
+        self.menuAccions = []
+        # Grupo 1 - Comandos de edición
+        self.menuAccions += ['newElement', 'modGeometria', 'delElements']
+        self.menuAccions += ['separator']
+        # Grupo 2 - Undo / Redo
+        self.menuAccions += ['undo', 'redo']
+        self.menuAccions += ['separator']
+        # Grupo 3: Parámetros de edición y snap
+        self.menuAccions += ['snap', 'showWidget']
+        self.menuAccions += ['separator']
+        # Grupo 4: Cierre de ediciones
+        self.menuAccions += ['endLayer', 'endAll']
+
+    def undo(self):
+        df = self.df()
+        if df is not None:
+            df.undo()
+
+    def redo(self):
+        df = self.df()
+        if df is not None:
+            df.redo()
+
+    def setUndoRedo(self, parent):
+        self.ctrlZ = qtWdg.QShortcut("Ctrl+Z", parent)
+        self.ctrlZ.activated.connect(self.undo)
+        self.ctrlY = qtWdg.QShortcut("Ctrl+Y", parent)
+        self.ctrlY.activated.connect(self.redo)
+
+    def setMenu(self, menu):
         self.menu = menu
-        if self.started():
-            if self.menu is None:
-                self.menu = qtWdg.QMenu('Edició')
-            self.menu.setIcon(qtGui.QIcon(os.path.join(imatgesDir, 'edit_on.png')))
-            # Grupo 1: Parámetros de edición y snap
-            act = self.menu.addAction("Activa l'ajust de digitalització", self.snap.toggleEnabled)
-            act.setCheckable(True)
-            act.setChecked(self.snap.isEnabled())
-            act = self.menu.addAction("Mostra digitalització avançada", self.widgetVisible)
-            act.setCheckable(True)
-            act.setChecked(self.widget.isVisible())
-            self.menu.addSeparator()
-            # Grupo 2: Fin de ediciones
-            self.menu.addAction("Finalitza les edicions", self.stop)
+        self.setUndoRedo(self.menu.parent().parent()) # Se asigna a QVista (QMainWindow)
+        self.setMenuAccions()
+        self.menu.aboutToShow.connect(self.showMenu)
         return self.menu
+
+    def df(self):
+        val = None
+        capa = self.llegenda.currentLayer()
+        if capa is not None:
+            val = self.edition(capa)
+        return val
+
+    def showMenu(self):
+        if self.menu is None: return
+        self.setAccions()
+        self.modAccions(self.df())
+        self.accions.menuAccions(self.menuAccions, menu=self.menu)
 
     def editions(self):
         for val in self.llista.values():
@@ -172,4 +309,3 @@ class QvDigitize:
             elif r == qtWdg.QMessageBox.Discard: self.cancel()
         else:
             self.cancel()
-

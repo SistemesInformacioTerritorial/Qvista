@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from qgis.core import QgsExpressionContextUtils, QgsMapLayer, QgsProject
+import qgis.core as qgCor
 
 from moduls.QvApp import QvApp
 
@@ -33,7 +33,7 @@ class QvDigitizeContext:
         layer.selectByIds([fid])
 
     @staticmethod
-    def testReadOnly(project: QgsProject = QgsProject.instance(), nom: str = 'qV_readOnly') -> bool:
+    def testReadOnly(project: qgCor.QgsProject = qgCor.QgsProject.instance(), nom: str = 'qV_readOnly') -> bool:
         """Comprueba si un proyecto QGIS está en modo de sólo lectura para qVista.
         Esto es así si existe una variable de proyecto llamada 'qV_readOnly' con el valor True.
 
@@ -44,14 +44,13 @@ class QvDigitizeContext:
         Returns:
             bool: True si el proyecto es de sólo lectura.
         """
-        return QgsExpressionContextUtils.projectScope(project).variable(nom).upper() == 'TRUE'
+        return qgCor.QgsExpressionContextUtils.projectScope(project).variable(nom).upper() == 'TRUE'
 
     @staticmethod
-    def testEditable(layer: QgsMapLayer, project: QgsProject = QgsProject.instance(), nom: str = 'qV_editable') -> bool:
+    def testEditable(layer: qgCor.QgsMapLayer, project: qgCor.QgsProject = qgCor.QgsProject.instance(), nom: str = 'qV_editable') -> bool:
         """Comprueba si una capa puede editarse desde qVista por un usuario determinado.
-        Para que una capa pueda ser modificada, ha de ser vectorial y el proyecto que la incluye
-        no puede estar en modo de sólo lectura. Además, tiene que haberse definido una variable
-        de 'qV_editable'; esta puede contener una lista de los códigos de usuario que tienen permitida la edición,
+        Para que una capa pueda ser modificada, ha de ser de tipo vectorial. Además, es necesario definir una variable 
+        llamada 'qV_editable'; esta puede contener una lista de los códigos de usuario que tienen permitida la edición,
         o bien un asterisco ('*') que significa que cualquier usuario puede modificarla, o bien un signo menos ('-') que
         indica que nadie puede modificarla. La variable puede estar definida a nivel de proyecto o de capa;
         tendrá preponderancia siempre la de capa a la de proyecto.
@@ -78,11 +77,11 @@ class QvDigitizeContext:
                 return None
 
         try:
-            if layer.type() != QgsMapLayer.VectorLayer: return False
-            if QvDigitizeContext.testReadOnly(): return False
-            ok = testVar(nom, layer, QgsExpressionContextUtils.layerScope)
+            if layer.type() != qgCor.QgsMapLayer.VectorLayer: return False
+            # if QvDigitizeContext.testReadOnly(): return False
+            ok = testVar(nom, layer, qgCor.QgsExpressionContextUtils.layerScope)
             if ok is None:
-                ok = testVar(nom, project, QgsExpressionContextUtils.projectScope)
+                ok = testVar(nom, project, qgCor.QgsExpressionContextUtils.projectScope)
             if ok is None:
                 return False
             else:
@@ -90,7 +89,3 @@ class QvDigitizeContext:
         except Exception as e:
             print(str(e))
             return False
-
-
-
-    
