@@ -2640,8 +2640,9 @@ class QVista(QMainWindow, Ui_MainWindow):
                     # layer.setSubsetString(textCercat)
                     layer.selectByExpression(textCercat)
                     self.llegenda.actIconaFiltre(layer)
-                    ids = [feature.id() for feature in layer.getFeatures()]
-                    self.canvas.zoomToFeatureIds(layer, ids)
+                    # ids = [feature.id() for feature in layer.getFeatures()]
+                    # self.canvas.zoomToFeatureIds(layer, ids)
+                    self.canvas.setExtent(layer.boundingBoxOfSelected())
             else:
                 missatgeCaixa('Cal tenir seleccionat un nivell per poder fer una selecció.','Marqueu un nivell a la llegenda sobre el que aplicar la consulta.')
 
