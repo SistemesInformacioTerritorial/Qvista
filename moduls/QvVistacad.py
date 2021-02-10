@@ -497,8 +497,11 @@ class QvProyectoFormVcad(qtWdg.QDialog):
 
 if __name__ == "__main__":
 
-    from qgis.core.contextmanagers import qgisapp
     from moduls.QvApp import QvApp
+    QvApp(produccio='True')
+    QvApp().intranet = True
+
+    from qgis.core.contextmanagers import qgisapp
     # from moduls.QvCanvas import QvCanvas
     from moduls.QvLlegenda import QvLlegenda
     import configuracioQvista as cfg
@@ -506,7 +509,6 @@ if __name__ == "__main__":
     with qgisapp(sysexit=False) as app:
 
         QvApp().carregaIdioma(app, 'ca')
-        QvApp().intranet = True
 
         canvas = qgGui.QgsMapCanvas()
         # canvas = QvCanvas()
