@@ -17,10 +17,10 @@ import os
 # 
 # TODO
 #
+# - Autogenerar clave fid desactivado en nueva versión QGIS
 # - Al salir de qVista, controlar si hay ediciones abiertas con modificaciones pendientes
 # - Propiedades de capa: identificable, searchable, necesaria, readonly
 # - Herramienta de seleccion en todas las capas
-# - Shortcuts en menu contextual / menu principal?
 # - Pruebas edición tabla Oracle
 # - Repasar activacion dirty bit
 # - Formulario de opciones de snapping
@@ -109,7 +109,7 @@ class QvDigitizeFeature(qgGui.QgsMapToolDigitizeFeature):
             else:
                 ok = self.capa.rollBack()
             if ok:
-                self.llegenda.digitize.modifInfoCapa(self.capa, True)
+                self.llegenda.digitize.modifInfoCapa(self.capa, None)
             else:
                 self.errors()
         return ok

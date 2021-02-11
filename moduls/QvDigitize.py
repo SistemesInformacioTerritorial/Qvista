@@ -59,11 +59,11 @@ class QvDigitize:
         self.widget = QvDigitizeWidget(self.canvas)
         self.widget.shortcut.activated.connect(self.widgetVisible)
         self.snap = QvSnapping(self.canvas)
+        self.snap.config()
         self.llista = {}
         self.accions = QvAccions()
         self.menuAccions = []
         self.menu = None
-        self.editable = False
 
     def widgetVisible(self):
         if self.started():
@@ -73,50 +73,39 @@ class QvDigitize:
 
     def nouProjecte(self):
         self.llista = {}
-        self.editable = False
-        self.snap.config()
 
-    def modifInfoCapa(self, capa, val):
-        self.llista[capa.id()] = val
-        if val: self.editable = True
+    ### Gestión de lista de capas editables
+
+    def altaInfoCapa(self, capa):
+        if QvDigitizeContext.testEditable(capa):
+            self.modifInfoCapa(capa, None)
+
+    def modifInfoCapa(self, capa, df):
+        self.llista[capa.id()] = df
         self.llegenda.actIconesCapa(capa)
 
-    def iniInfoCapa(self, capa):
-        self.modifInfoCapa(capa, QvDigitizeContext.testEditable(capa))
-
-    def testInfoCapa(self, val):
-        if isinstance(val, QvDigitizeFeature):
-            return True, val    # Edición activada
-        elif val:
-            return False, None  # Edición activable
-        return None, None       # Edición prohibida
+    def bajaInfoCapa(self, capaId):
+        if capaId in self.llista:
+            del self.llista[capaId]
 
     def infoCapa(self, capa):
-        val = self.llista.get(capa.id())
-        return self.testInfoCapa(val)
+        if capa.id() in self.llista:
+            df = self.llista[capa.id()]
+            if df is None:
+                return False, None  # Edición activable
+            else:
+                return True, df     # Edición activada
+        return None, None           # Edición prohibida
 
-    def editing(self, capa):
-        ret, _ = self.infoCapa(capa)
-        if ret is None or not ret:
-            return False
-        else:
-            return True
-
-    def edition(self, capa):
-        ret, df = self.infoCapa(capa)
-        if ret is None or not ret:
-            return None
-        else:
-            return df
+    ### Inicio / fin de edición de capa
 
     def activaCapa(self, switch):
         capa = self.llegenda.currentLayer()
-        if capa is None: return
+        if capa is None or capa.type() != qgCor.QgsMapLayerType.VectorLayer: return
         estado, df = self.infoCapa(capa)
         if estado is None: return
         if switch:
-            if not estado:
-                df = QvDigitizeFeature(self, capa)
+            if not estado: df = QvDigitizeFeature(self, capa)
             df.start()
         elif estado:
             df.stop()
@@ -271,9 +260,30 @@ class QvDigitize:
         self.modAccions(self.df())
         self.accions.menuAccions(self.menuAccions, menu=self.menu)
 
+    ### Gestión de estados
+
+    def editing(self, capa):
+        ret, _ = self.infoCapa(capa)
+        if ret is None or not ret:
+            return False
+        else:
+            return True
+
+    def edition(self, capa):
+        ret, df = self.infoCapa(capa)
+        if ret is None or not ret:
+            return None
+        else:
+            return df
+
+    def editable(self):
+        if len(self.llista) > 0:
+            return True
+        else:
+            return False
+
     def editions(self):
-        for val in self.llista.values():
-            _, df = self.testInfoCapa(val)
+        for df in self.llista.values():
             if df is not None:
                 yield df
 

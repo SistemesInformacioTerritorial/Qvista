@@ -301,7 +301,7 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
         self.modificacioProjecte('filterModified')
 
     def mapaEditable(self):
-        if self.digitize and self.digitize.editable:
+        if self.digitize and self.digitize.editable():
             return True
         return False
 
@@ -337,7 +337,7 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
             #     self.actIconaFiltre(layer)
 
             if self.digitize is not None:
-                self.digitize.iniInfoCapa(capa)
+                self.digitize.altaInfoCapa(capa)
 
             if capa.type() == qgCor.QgsMapLayer.RasterLayer and self.capaMarcada(capa):
                 node = self.root.findLayer(capa.id())
@@ -503,11 +503,8 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
 
         act = qtWdg.QAction()
         act.setText("Esborra capa o grup")
-        if self.atributs is not None:
-            act.triggered.connect(lambda: self.atributs.tancarTaules(
-                qgCor.QgsLayerTreeUtils.collectMapLayersRecursive([self.currentNode()])))
+        # No se usa defaultActions() porque elimina todos los seleccionados; además, hay que cerrar las tablas de datos
         act.triggered.connect(self.removeGroupOrLayer)
-        # No se usa defaultActions() porque elimina todos los seleccionados
         self.accions.afegirAccio('removeGroupOrLayer', act)
 
         act = qtWdg.QAction()
@@ -625,6 +622,8 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
             if self.mapaEditable() and self.nodeEditing(node):
                 qtWdg.QMessageBox.information(self, "Atenció", "No es pot esborrar una capa quan s'està editant")
             else:
+                if self.atributs is not None:
+                    self.atributs.tancarTaules(qgCor.QgsLayerTreeUtils.collectMapLayersRecursive([node]))
                 node.parent().removeChildNode(node)
         self.removing = False
 
