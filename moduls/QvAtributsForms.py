@@ -18,10 +18,10 @@ class QvFormAtributs:
             features (QgsFeature o [QgsFeature]): Elemento o lista de elementos
             parent (QWidget, optional): Widget padre del formulario creado. Defaults to None.
             attributes (QvAtributs, optional): Widget con las tablas de atributos. Defaults to None.
-            new (bool, optional): Si es True se trata de un alta; si no, puede ser consulta o 
-                                  modificación, según el estado de la capa. Defaults to False.
+            new (bool, optional): Indica que se trata de un alta cuando se está en modo edición.
+                                  Defaults to False.
         Returns:
-            QDialog: Formulario de alta / edición / consulta de elemento(s)
+            QDialog: Formulario de alta / modificación / consulta de elemento(s)
         """
         return QvFitxesAtributs(layer, features, parent, attributes, new)
 
