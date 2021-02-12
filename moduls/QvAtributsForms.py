@@ -23,16 +23,7 @@ class QvFormAtributs:
         Returns:
             QDialog: Formulario de alta / edición / consulta de elemento(s)
         """
-        if new:
-            # Alta de elemento
-            return QvFitxesAtributs(layer, features, parent, attributes, mode=QgsAttributeEditorContext.AddFeatureMode)
-        else:
-            if attributes is not None and attributes.llegenda is not None and attributes.llegenda.editing(layer):
-                # Modificación / borrado de elemento
-                return QvFitxesAtributs(layer, features, parent, attributes, mode=QgsAttributeEditorContext.SingleEditMode)
-            else:
-                # Consulta de elemento(s)
-                return QvFitxesAtributs(layer, features, parent, attributes)
+        return QvFitxesAtributs(layer, features, parent, attributes, new)
 
     @staticmethod
     def toList(var):
@@ -46,18 +37,18 @@ class QvFormAtributs:
 
 class QvFitxesAtributs(QDialog):
 
-    def __init__(self, layer, features, parent=None, attributes=None, mode=None):
+    def __init__(self, layer, features, parent=None, attributes=None, new=False):
         QDialog.__init__(self, parent)
         self.initUI()
         self.layer = layer
         self.features, self.total = QvFormAtributs.toList(features)
         self.attributes = attributes
-        self.mode = mode
+        self.mode = None
         # self.selectFeature = self.layer.selectedFeatureCount() == 0
-        if self.mode is None:
-            self.consulta()
+        if self.attributes is not None and self.attributes.llegenda is not None and self.attributes.llegenda.editing(layer):
+            self.edicion(new)
         else:
-            self.edicion()
+            self.consulta()
         self.go(0)
 
     def initUI(self):
@@ -79,19 +70,21 @@ class QvFitxesAtributs(QDialog):
             self.title = self.layer.name() + " - Consulta fitxa element"
             self.ui.groupBox.setVisible(False)
 
-    def edicion(self):
+    def edicion(self, new):
         self.newFeature = None
         self.total = 1
         form = QgsAttributeDialog(self.layer, self.features[0], False)
-        form.setMode(self.mode)
-        if self.mode == QgsAttributeEditorContext.AddFeatureMode:
+        if new:
+            self.mode = QgsAttributeEditorContext.AddFeatureMode 
             self.title = self.layer.name() + " - Fitxa nou element"
-        elif self.mode == QgsAttributeEditorContext.SingleEditMode:
+        else:
+            self.mode = QgsAttributeEditorContext.SingleEditMode
             self.title = self.layer.name() + " - Edició fitxa element"
             bDel = QPushButton("Esborra element")
             bDel.clicked.connect(lambda: self.remove(form.feature()))
             buttonBox = form.findChild(QDialogButtonBox)
             buttonBox.addButton(bDel, QDialogButtonBox.ResetRole)
+        form.setMode(self.mode)
         form.attributeForm().featureSaved.connect(self.featureSaved)
         form.accepted.connect(self.formAccepted)
         form.rejected.connect(self.close)
@@ -120,7 +113,7 @@ class QvFitxesAtributs(QDialog):
             self.setWindowTitle(self.title)
 
     def setMenu(self, n):
-        if self.mode is None:
+        if self.mode is None: # Consulta
             self.menuBar = QMenuBar()
             self.menu = QgsActionMenu(self.layer, self.features[n], 'Feature')
             if self.menu is not None and not self.menu.isEmpty():

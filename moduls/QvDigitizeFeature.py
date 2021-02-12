@@ -18,6 +18,7 @@ import os
 # TODO
 #
 # - Autogenerar clave fid desactivado en nueva versión QGIS
+# - Comado alta y luego modif altera el reset de salida
 # - Al salir de qVista, controlar si hay ediciones abiertas con modificaciones pendientes
 # - Propiedades de capa: identificable, searchable, necesaria, readonly
 # - Herramienta de seleccion en todas las capas
