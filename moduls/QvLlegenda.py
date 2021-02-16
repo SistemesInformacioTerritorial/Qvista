@@ -260,8 +260,8 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
         except Exception:
             return False
 
-    def actIconesCapa(self, capa):
-        if capa.type() == qgCor.QgsMapLayer.VectorLayer:
+    def actIconesCapa(self, capa, modif=True):
+        if capa is not None and capa.type() == qgCor.QgsMapLayer.VectorLayer:
             node = self.root.findLayer(capa.id())
             if node is not None:
                 self.removeIndicator(node, self.iconaFiltre)
@@ -288,13 +288,14 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
                                 self.addIndicator(node, self.iconaEditOn)
                         else:
                             self.addIndicator(node, self.iconaEditOff)
-                capa.nameChanged.emit()
+                if modif:
+                    capa.nameChanged.emit()
 
     def actIcones(self):
         if self.removing:
             return
         for capa in self.capes():
-            self.actIconesCapa(capa)
+            self.actIconesCapa(capa, False)
 
     def actIconaFiltre(self, capa):
         self.actIconesCapa(capa)
