@@ -362,7 +362,7 @@ class QvVistacad:
         else:
             return None
 
-    def exportLayer(self, layer: qgCor.QgsVectorLayer, nomProyecto: str, nomCapa: str) -> None:
+    def exportLayer(self, layer: qgCor.QgsVectorLayer, nomProyecto: str, nomCapa: str, simbologia: bool = False) -> None:
         # Guardar geopackage
         gpkgPath = Path(dadesdir, nomProyecto).with_suffix('.gpkg')
         self.gpkgFile = str(gpkgPath)
@@ -380,28 +380,29 @@ class QvVistacad:
             res, txt = qgCor.QgsVectorFileWriter.writeAsVectorFormat(layer, self.gpkgFile, options)
         if res != qgCor.QgsVectorFileWriter.NoError:
             print(f"*** Error guardando geopackage: {res}:{txt}")
-        # Guardar fichero estilo
-        qmlPath = Path(dadesdir, nomCapa).with_suffix('.qml')
-        qmlFile = str(qmlPath)
-        txt, res = layer.saveNamedStyle(qmlFile)
-        if not res:
-            print(f"*** Error guardando qml: {txt}")
-        # Guardar estilo en geopackage
-        gpkgLayer = qgCor.QgsVectorLayer(f'{self.gpkgFile}|layername={nomCapa}', nomCapa, 'ogr')
-        if gpkgLayer.isValid():
-            res = gpkgLayer.loadNamedStyle(qmlFile)
-            if res:
-                s = qgCor.QgsSettings()
-                s.setValue("qgis/overwriteStyle", True)
-                txt = gpkgLayer.saveStyleToDatabase("vistacad", "", True, "")
-                if txt != '':
-                    print(f"*** Error guardando simbologia: {txt}")
-            else:
-                print(f"*** Error fichero qml: {qmlFile}") 
-        qmlPath.unlink()
+        if simbologia:
+            # Guardar fichero estilo
+            qmlPath = Path(dadesdir, nomCapa).with_suffix('.qml')
+            qmlFile = str(qmlPath)
+            txt, res = layer.saveNamedStyle(qmlFile)
+            if not res:
+                print(f"*** Error guardando qml: {txt}")
+            # Guardar estilo en geopackage
+            gpkgLayer = qgCor.QgsVectorLayer(f'{self.gpkgFile}|layername={nomCapa}', nomCapa, 'ogr')
+            if gpkgLayer.isValid():
+                res = gpkgLayer.loadNamedStyle(qmlFile)
+                if res:
+                    s = qgCor.QgsSettings()
+                    s.setValue("qgis/overwriteStyle", True)
+                    txt = gpkgLayer.saveStyleToDatabase("vistacad", "", True, "")
+                    if txt != '':
+                        print(f"*** Error guardando simbologia: {txt}")
+                else:
+                    print(f"*** Error fichero qml: {qmlFile}") 
+            qmlPath.unlink()
 
-    def loadProject(self, idProyecto: str, idsCapas: str = '', capasIncluidas: bool = True,
-                    srid: str = '25831', agrupar: bool = True, exportar: bool = True) -> None:
+    def loadProject(self, idProyecto: str, idsCapas: str = '', capasIncluidas: bool = True, srid: str = '25831',
+                    agrupar: bool = False, simbologia: bool = False, geopackage: bool = False) -> None:
         if self.db is None: return
         if idProyecto is None or idProyecto == '': return
         try:
@@ -420,22 +421,23 @@ class QvVistacad:
                 if self.debug: print('  ->', selectLayer)
                 layer = self.loadLayer(capa.NOM, capa.TIPUS, selectLayer, srid)
                 if layer is not None:
-                    capa.simbologia(layer.renderer().symbol())
-                    # if capa.MOSTRAR_ETIQUETA == 1:
-                    #     layer.setDisplayExpression('ETIQUETA')
-                    if capa.ESCALA_MIN > 0.0 or capa.ESCALA_MAX > 0.0:
-                        layer.setScaleBasedVisibility(True)
-                        layer.setMinimumScale(capa.ESCALA_MAX)  # Al revés ????
-                        layer.setMaximumScale(capa.ESCALA_MIN)
-                    else:
-                        layer.setScaleBasedVisibility(False)
+                    if simbologia:
+                        capa.simbologia(layer.renderer().symbol())
+                        # if capa.MOSTRAR_ETIQUETA == 1:
+                        #     layer.setDisplayExpression('ETIQUETA')
+                        if capa.ESCALA_MIN > 0.0 or capa.ESCALA_MAX > 0.0:
+                            layer.setScaleBasedVisibility(True)
+                            layer.setMinimumScale(capa.ESCALA_MAX)  # Al revés ????
+                            layer.setMaximumScale(capa.ESCALA_MIN)
+                        else:
+                            layer.setScaleBasedVisibility(False)
                     if agrupar:
                         self.project.addMapLayer(layer, False)
                         grupo.addLayer(layer)
                     else:
                         self.project.addMapLayer(layer)
-                    if exportar:
-                        self.exportLayer(layer, capa.NOM_PROJECTE, capa.NOM)
+                    if geopackage:
+                        self.exportLayer(layer, capa.NOM_PROJECTE, capa.NOM, simbologia)
             qtWdg.QApplication.instance().restoreOverrideCursor()
             if self.gpkgFile != '':
                 qtWdg.QMessageBox.information(None, 'Informació',
@@ -453,7 +455,7 @@ class QvVistacad:
         if len(proyectos.lista) < 1: return
         form = QvProyectoFormVcad(proyectos.lista)
         if form.exec_() and form.idProjecte:
-            self.loadProject(form.idProjecte, exportar=form.exportar)
+            self.loadProject(form.idProjecte, agrupar=form.agrupar.isChecked(), simbologia=form.simbologia.isChecked(), geopackage=form.geopackage.isChecked())
 
 class QvProyectoFormVcad(qtWdg.QDialog):
     def __init__(self, lista, parent=None, modal=True):
@@ -467,6 +469,8 @@ class QvProyectoFormVcad(qtWdg.QDialog):
         for id, nombre in lista.items():
             self.combo.addItem(f"{nombre} ({id})", id)
 
+        self.agrupar = qtWdg.QCheckBox('Agrupar capes')
+        self.simbologia = qtWdg.QCheckBox('Importar simbologia')
         self.geopackage = qtWdg.QCheckBox('Desar arxiu geopackage')
 
         self.buttons = qtWdg.QDialogButtonBox(qtWdg.QDialogButtonBox.Ok | qtWdg.QDialogButtonBox.Cancel)
@@ -475,20 +479,20 @@ class QvProyectoFormVcad(qtWdg.QDialog):
 
         self.layout = qtWdg.QVBoxLayout()
         self.layout.addWidget(self.combo)
+        self.layout.addWidget(self.agrupar)
+        self.layout.addWidget(self.simbologia)
         self.layout.addWidget(self.geopackage)
         self.layout.addWidget(self.buttons)
         self.setLayout(self.layout)
 
     def init(self):
         self.idProjecte = ''
-        self.exportar = False
 
     def accept(self):
         if self.combo.currentData() is None:
             self.idProjecte = ''
         else:
             self.idProjecte = str(self.combo.currentData())
-        self.exportar = self.geopackage.isChecked()
         super().accept()
 
     def cancel(self):
@@ -497,8 +501,11 @@ class QvProyectoFormVcad(qtWdg.QDialog):
 
 if __name__ == "__main__":
 
-    from qgis.core.contextmanagers import qgisapp
     from moduls.QvApp import QvApp
+    QvApp(produccio='True')
+    QvApp().intranet = True
+
+    from qgis.core.contextmanagers import qgisapp
     # from moduls.QvCanvas import QvCanvas
     from moduls.QvLlegenda import QvLlegenda
     import configuracioQvista as cfg
@@ -506,7 +513,6 @@ if __name__ == "__main__":
     with qgisapp(sysexit=False) as app:
 
         QvApp().carregaIdioma(app, 'ca')
-        QvApp().intranet = True
 
         canvas = qgGui.QgsMapCanvas()
         # canvas = QvCanvas()

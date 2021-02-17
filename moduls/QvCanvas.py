@@ -13,6 +13,7 @@ from moduls.QvPushButton import QvPushButton
 from moduls.QvConstants import QvConstants
 from moduls.QvStreetView import *
 from moduls.QvEinesGrafiques import QvMesuraMultiLinia, QvMascaraEinaPlantilla
+from moduls.QvApp import QvApp
 import functools
 #from qVista import QVista
 
@@ -33,7 +34,8 @@ class QvCanvas(QgsMapCanvas):
         self.posicioBotonera = posicioBotonera
         self.llegenda = llegenda
         self.pare = pare
-        self.setSelectionColor(QvConstants.COLORDESTACAT)
+        # self.setSelectionColor(QvConstants.COLORDESTACAT)
+        self.setSelectionColor(QColor('yellow'))
         self.setAcceptDrops(True)
         
         # self.setWhatsThis(QvApp().carregaAjuda(self))
@@ -419,6 +421,7 @@ class QvCanvas(QgsMapCanvas):
             self.uncheckBotons(self.einesBotons[tool])
         else:
             self.uncheckBotons(None)
+
     def unsetMapTool(self,eina, ultima=False):
         super().unsetMapTool(eina)
         if isinstance(eina,QvMascaraEinaPlantilla):
@@ -437,19 +440,24 @@ class QvCanvas(QgsMapCanvas):
                 self.uncheckBotons(self.einesBotons[self.eines[-1]])
                 self.einesBotons[self.eines[-1]].setChecked(True)
             super().setMapTool(self.eines[-1])
+
     def unsetLastMapTool(self):
         if len(self.eines)>1:
             eina=self.eines.pop()
             self.unsetMapTool(eina,True)
 
+    def testDigitizeTool(self, eina):
+        if QvApp().testVersioQgis(3, 10):
+            from qgis.gui import QgsMapToolDigitizeFeature
+            return isinstance(eina, QgsMapToolDigitizeFeature)
+        return False
+
     def mousePressEvent(self,event):
         super().mousePressEvent(event)
         if event.button()==Qt.RightButton:
-            if not isinstance(self.eines[-1],QvMesuraMultiLinia):
-                self.unsetLastMapTool()
-    
- 
-
+            eina = self.eines[-1]
+            if not isinstance(eina, QvMesuraMultiLinia) and not self.testDigitizeTool(eina):
+                self.unsetLastMapTool()    
 
 class Marc(QFrame):
     def __init__(self, master=None):

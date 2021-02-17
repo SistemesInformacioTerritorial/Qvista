@@ -1,5 +1,6 @@
+from types import prepare_class
 from moduls.QvImports import *
-from moduls.QvAtributs import QvFitxesAtributs
+from moduls.QvAtributsForms import QvFormAtributs
 from moduls.QvApp import QvApp
 from moduls.QvPushButton import QvPushButton
 from moduls.QvMemoria import QvMemoria
@@ -9,6 +10,7 @@ from moduls import QvFuncions
 from qgis.gui import QgsMapTool, QgsRubberBand
 import math
 import csv
+import itertools
 
 
 class QvSeleccioGrafica(QWidget):
@@ -28,8 +30,8 @@ class QvSeleccioGrafica(QWidget):
         self.lytSeleccioGrafica.setAlignment(Qt.AlignTop)
         self.setLayout(self.lytSeleccioGrafica)
         self.lytBotonsSeleccio = QHBoxLayout()
-        self.leSel2 = QLineEdit()
-        self.lytSeleccioGrafica.addWidget(self.leSel2)
+        # self.leSel2 = QLineEdit()
+        # self.lytSeleccioGrafica.addWidget(self.leSel2)
         # self.leSel2.editingFinished.connect(seleccioExpressio)
         self.lytSeleccioGrafica.addLayout(self.lytBotonsSeleccio)
 
@@ -59,10 +61,57 @@ class QvSeleccioGrafica(QWidget):
         self.bs5 = QvPushButton('Calcular', flat=True)
         self.bs5.clicked.connect(self.calcularSeleccio)
 
-        self.bs6 = QvPushButton('Crear CSV', flat=True)
+        self.bs6 = QvPushButton('Crear CSV')
         self.bs6.clicked.connect(lambda: self.crearCsv())
 
+        # Tool Box de resultats, on afegirem múltiples pestanyes
+        self.tbResultats = QToolBox()
+        self.gbResultats = QGroupBox('0 elements seleccionats')
+        layGB = QVBoxLayout() # Layout d'un únic element, per posar la taula dins d'una Group Box
+        layGB.addWidget(self.tbResultats)
+        self.gbResultats.setLayout(layGB)
+
+        # Taula de resultats
         self.twResultats = QTableWidget()
+        layCalculsNumerics = QVBoxLayout()
+        lblCalculsNumerics = QLabel('Suma i mitjana dels camps seleccionats que siguin numèrics.')
+        lblCalculsNumerics.setWordWrap(True)
+        layCalculsNumerics.addWidget(lblCalculsNumerics)
+        layCalculsNumerics.addWidget(self.twResultats)
+        widCalculs = QWidget()
+        widCalculs.setLayout(layCalculsNumerics)
+
+        # Taula de les previsualitzacions (no implementada)
+        self.twPreview = QTableWidget()
+        layPreview = QVBoxLayout()
+        lblPreview = QLabel('Previsualització del contingut seleccionat. En aquesta taula es visualitzen els 20 primers elements seleccionats')
+        lblPreview.setWordWrap(True)
+        layPreview.addWidget(lblPreview)
+        layPreview.addWidget(self.twPreview)
+        widPreview = QWidget()
+        widPreview.setLayout(layPreview)
+
+        # Arbre de selecció
+        self.distBarrisSelMasc = QVDistrictesBarris()
+        self.distBarrisSelMasc.view.clicked.connect(self.clickArbreSelMasc)
+
+        layCamps = QVBoxLayout()
+        lblCamps = QLabel('Seleccioneu els camps dels que voleu fer-ne una extracció a un arxiu CSV')
+        lblCamps.setWordWrap(True)
+        layCamps.addWidget(lblCamps)
+        layCamps.addWidget(self.lwFieldsSelect)
+        layCamps.addWidget(self.bs6)
+        widCamps = QWidget()
+        widCamps.setLayout(layCamps)
+
+        self.tbResultats.addItem(widCamps, 'Selecció i extracció de camps')
+        # self.tbResultats.addItem(self.twResultats, 'Càlculs numèrics')
+        self.tbResultats.addItem(widCalculs, 'Càlculs numèrics')
+        self.tbResultats.addItem(widPreview,'Preview de la selecció')
+        self.tbResultats.addItem(self.distBarrisSelMasc.view, 'Selecció per zones')
+        # layGB = QVBoxLayout()
+        # layGB.addWidget(self.twResultats)
+        # self.gbResultats.setLayout(layGB)
 
         # Ja no són checkbox però no els canviem el nom jaja salu2
         self.checkOverlap = QRadioButton('Solapant')
@@ -141,14 +190,13 @@ class QvSeleccioGrafica(QWidget):
         self.lytSeleccioGrafica.addWidget(self.frameColorOpacitat)
         # self.lytSeleccioGrafica.addWidget(self.lblNombreElementsSeleccionats)
         self.lytSeleccioGrafica.addWidget(self.lblCapaSeleccionada)
-        self.lytSeleccioGrafica.addWidget(self.lwFieldsSelect)
+        # self.lytSeleccioGrafica.addWidget(self.lwFieldsSelect)
         # self.lytSeleccioGrafica.addWidget(self.bs5)
-        self.lytSeleccioGrafica.addWidget(self.bs6)
-        self.lytSeleccioGrafica.addWidget(self.twResultats)
+        # self.lytSeleccioGrafica.addStretch()
+        # self.lytSeleccioGrafica.addWidget(self.bs6)
+        # self.lytSeleccioGrafica.addWidget(self.twResultats)
+        self.lytSeleccioGrafica.addWidget(self.gbResultats)
 
-        self.distBarrisSelMasc = QVDistrictesBarris()
-        self.distBarrisSelMasc.view.clicked.connect(self.clickArbreSelMasc)
-        self.lytSeleccioGrafica.addWidget(self.distBarrisSelMasc.view)
     
     @QvFuncions.mostraSpinner
     def crearCsv(self):
@@ -169,6 +217,26 @@ class QvSeleccioGrafica(QWidget):
                 for camp in camps:
                     d[camp] = feat[camp]
                 writer.writerow(d)
+    
+    def setPreview(self):
+        camps = [camp.text() for camp in self.lwFieldsSelect.selectedItems()]
+        capa = self.llegenda.currentLayer()
+        # capa.selectedFeatures() retorna un iterable amb els elements, però només volem els 20 primers
+        # una altra opció seria fer alguna cosa similar a:
+        # feats = list(capa.selectedFeatures())[:20]
+        # Això ens donaria també els 20 primers elements, però amb un cost molt més gran
+        # en cas que tinguéssim molts elements seleccionats, ja que primer fem una llista enorme i després la partim
+        feats = list(itertools.islice(capa.selectedFeatures(),20))
+        self.twPreview.setColumnCount(len(camps))
+        self.twPreview.setRowCount(len(feats))
+        self.twPreview.setHorizontalHeaderLabels(camps)
+
+        # self.twPreview.horizontalHeader().setResizeMode(QHeaderView.Stretch | QHeaderView.Interactive)
+        self.twPreview.horizontalHeader().setStretchLastSection(True)
+
+        for (i,feat) in enumerate(feats):
+            for (j,camp) in enumerate(camps):
+                self.twPreview.setItem(i,j,QTableWidgetItem(str(feat[camp])))
 
 
     def clickArbreSelMasc(self):
@@ -241,6 +309,8 @@ class QvSeleccioGrafica(QWidget):
                 self.canvas.refresh()
             except Exception as e:
                 print(e)
+        if self.tool is not None:
+            self.tool.eliminaRubberbands()
 
     def foraEines(self):
         self.canvas.panCanvas()
@@ -280,11 +350,14 @@ class QvSeleccioGrafica(QWidget):
         numeroFields = 0  # ???
         fila = 0
         columna = 0  # ???
-        nombreElements = 0
+        
         taula.setColumnCount(3)
         taula.setHorizontalHeaderLabels(['', 'Total', 'Mitjana'])
         nombreFieldsSeleccionats = 0
 
+        if len(self.lwFieldsSelect.selectedItems())==0: # Si no hi ha cap item seleccionat, se seleccionen tots
+            self.lwFieldsSelect.selectAll()
+        nombreElements = len(layer.selectedFeatures())
         layerActiu = self.llegenda.currentLayer()
         campsNumerics = [field.name() for field in layerActiu.fields() if field.typeName() in ('Integer64','Real')]
         itemsNumerics = [x for x in self.lwFieldsSelect.selectedItems() if x.text() in campsNumerics]
@@ -292,17 +365,16 @@ class QvSeleccioGrafica(QWidget):
         #     nombreFieldsSeleccionats = nombreFieldsSeleccionats+1
         nombreFieldsSeleccionats = len(itemsNumerics)
         taula.setRowCount(nombreFieldsSeleccionats+1)
+        
         for a in itemsNumerics:
             total = 0
             item = QTableWidgetItem(a.text())
             taula.setItem(fila+1, 0, item)
-            # print (field)
-            nombreElements = 0
-            for feature in layer.selectedFeatures():
-                calcul = feature.attributes(
-                )[layer.fields().lookupField(a.text())]
-                total = total+calcul
-                nombreElements = nombreElements+1
+            # for feature in layer.selectedFeatures():
+            #     calcul = feature.attributes(
+            #     )[layer.fields().lookupField(a.text())]
+            #     total = total+calcul
+            total = sum(feature.attributes()[layer.fields().lookupField(a.text())] for feature in layer.selectedFeatures())
             if nombreElements > 0:
                 mitjana = total/nombreElements
             else:
@@ -317,7 +389,11 @@ class QvSeleccioGrafica(QWidget):
         taula.setItem(0, 0, item)
         item = QTableWidgetItem(str(nombreElements))
         taula.setItem(0, 1, item)
+        self.bs6.setText(f'Crear CSV ({nombreElements} seleccionats)')
+        self.gbResultats.setTitle(f'{nombreElements} elements seleccionats')
         taula.resizeColumnsToContents()
+
+        self.setPreview()
 
     def calculaFields(self, layerActiu):
         fields = layerActiu.fields()
@@ -325,6 +401,11 @@ class QvSeleccioGrafica(QWidget):
             # if (field.typeName() == 'Real' or field.typeName() == 'Integer64'):
             #     self.lwFieldsSelect.addItem(field.name())
             self.lwFieldsSelect.addItem(field.name())
+    def canviLayer(self):
+        if self.llegenda.currentLayer() is not None:
+            # self.calculaFields()
+            self.calcularSeleccio()
+        pass
 
 
 class QvMesuraGrafica(QWidget):
@@ -670,11 +751,11 @@ def seleccioClicks(wSeleccioGrafica):
 
 def seleccioLliure(wSeleccioGrafica):
     # qV.markers.hide()
-    try:
-        # Això no hauria de funcionar
-        wSeleccioGrafica.esborrarSeleccio()
-    except:
-        pass
+    # try:
+    #     # Això no hauria de funcionar
+    #     wSeleccioGrafica.esborrarSeleccio()
+    # except:
+    #     pass
 
     try:
         wSeleccioGrafica.actionMapSelect = QAction(
@@ -701,6 +782,9 @@ def seleccioClick():
 
 
 class QvMascaraEinaPlantilla(QgsMapTool):
+    # les rubberbands de totes les instàncies seran compartides
+    # això permet que, quan es canvia d'eina, es conservin fins que es fa una nova selecció
+    rubberbands = [] 
     def __init__(self, wSeleccioGrafica, projecte, canvas, llegenda, **kwargs):
         QgsMapTool.__init__(self, canvas)
         self.wSeleccioGrafica = wSeleccioGrafica
@@ -708,7 +792,7 @@ class QvMascaraEinaPlantilla(QgsMapTool):
         self.projecte = projecte
         self.llegenda = llegenda
         self.setParametres(**kwargs)
-        self.rubberbands = []
+        # self.rubberbands = []
 
     def canvasPressEvent(self, event):
         pass
@@ -769,7 +853,9 @@ class QvMascaraEinaPlantilla(QgsMapTool):
         self.setOpacitat(opacitat/100)
         self.actualitza()
 
-    def novaRubberband(self):
+    def novaRubberband(self, elimina=False):
+        if elimina:
+            self.eliminaRubberbands()
         rb = QgsRubberBand(self.canvas, True)
         rb.setColor(QvConstants.COLORDESTACAT)
         rb.setWidth(2)
@@ -779,6 +865,19 @@ class QvMascaraEinaPlantilla(QgsMapTool):
     def eliminaRubberbands(self):
         for x in self.rubberbands:
             x.hide()
+    def __del__(self):
+        self.eliminaRubberbands()
+    def selecciona(self, ids):
+        layer = self.llegenda.currentLayer()
+        seleccionats = set(layer.selectedFeatureIds())
+        ids = set(ids)
+        if ids<=seleccionats:
+            aSeleccionar = list(seleccionats-ids)
+        else:
+            aSeleccionar = list(seleccionats | ids)
+        layer.selectByIds(aSeleccionar)
+        self.wSeleccioGrafica.calcularSeleccio()
+
 
 
 class QvMascaraEinaClick(QvMascaraEinaPlantilla):
@@ -795,6 +894,7 @@ class QvMascaraEinaClick(QvMascaraEinaPlantilla):
 
     def canvasReleaseEvent(self, event):
         # Get the click
+        self.eliminaRubberbands()
         x = event.pos().x()
         y = event.pos().y()
         layer = self.llegenda.currentLayer()
@@ -818,9 +918,10 @@ class QvMascaraEinaClick(QvMascaraEinaPlantilla):
                     aplicaMascara(self.projecte, self.canvas,
                                   geoms, self.getCapa())
                 if self.seleccionar:
-                    seleccionats = layer.selectedFeatureIds()
-                    layer.selectByIds(seleccionats+ids)
-                    self.wSeleccioGrafica.calcularSeleccio()
+                    # seleccionats = layer.selectedFeatureIds()
+                    # layer.selectByIds(seleccionats+ids)
+                    # self.wSeleccioGrafica.calcularSeleccio()
+                    self.selecciona(ids)
                 # La part d'eliminar funciona màgicament. No existeix cap raó lògica que ens digui que s'eliminarà, però ho fa
                 self.actualitza()
             except Exception as e:
@@ -852,6 +953,7 @@ class QvMascaraEinaDibuixa(QvMascaraEinaPlantilla):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.points = []
+        self.point = None
         self.rubberband = self.novaRubberband()
         layer = self.llegenda.currentLayer()
         if layer is None and self.seleccionar:
@@ -864,6 +966,9 @@ class QvMascaraEinaDibuixa(QvMascaraEinaPlantilla):
         if event.button() == Qt.RightButton:
             # Tancar polígon??
             return
+        if self.point is None:
+            self.rubberband = self.novaRubberband(True)
+            self.points = []
         self.point = self.toMapCoordinates(event.pos())
         self.points.append(QgsPointXY(self.point))
         if len(self.points) == 1:
@@ -876,6 +981,8 @@ class QvMascaraEinaDibuixa(QvMascaraEinaPlantilla):
         poligono = QgsGeometry.fromPolylineXY(
             self.points+[self.toMapCoordinates(event.pos())])
         try:
+            if self.point is None:
+                return
             self.rubberband.setToGeometry(
                 poligono, self.getCapa())  # falta establir la layer
         except Exception as e:
@@ -898,19 +1005,24 @@ class QvMascaraEinaDibuixa(QvMascaraEinaPlantilla):
                 # Seleccionem coses
                 featsPnt = layer.getFeatures(
                     QgsFeatureRequest().setFilterRect(geom.boundingBox()))
-                for featPnt in featsPnt:
-                    if self.overlap:
-                        if featPnt.geometry().intersects(geom):
-                            layer.select(featPnt.id())
-                    else:
-                        if featPnt.geometry().within(geom):
-                            layer.select(featPnt.id())
-                self.wSeleccioGrafica.calcularSeleccio()
-            self.rubberband.hide()
-            self.rubberband = self.novaRubberband()
+                # for featPnt in featsPnt:
+                #     if self.overlap:
+                #         if featPnt.geometry().intersects(geom):
+                #             layer.select(featPnt.id())
+                #     else:
+                #         if featPnt.geometry().within(geom):
+                #             layer.select(featPnt.id())
+                if self.overlap:
+                    ids = [featPnt.id() for featPnt in featsPnt if featPnt.geometry().intersects(geom)]
+                else:
+                    ids = [featPnt.id() for featPnt in featsPnt if featPnt.geometry().within(geom)]
+                self.selecciona(ids)
+                # self.wSeleccioGrafica.calcularSeleccio()
+            # self.rubberband.hide()
+            # self.rubberband = self.novaRubberband()
             self.actualitza()
             self.point = None
-            self.points = []
+            # self.points = []
         except Exception as e:
             print(e)
 
@@ -930,8 +1042,8 @@ class QvMascaraEinaCercle(QvMascaraEinaPlantilla):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.rubberbandRadi = self.novaRubberband()
-        self.rubberbandCercle = self.novaRubberband()
+        # self.rubberbandRadi = self.novaRubberband()
+        # self.rubberbandCercle = self.novaRubberband()
         layer = self.llegenda.currentLayer()
         self.centre = None
         if layer is None and self.seleccionar:
@@ -944,6 +1056,10 @@ class QvMascaraEinaCercle(QvMascaraEinaPlantilla):
         if event.button() == Qt.RightButton:
             # Tancar polígon??
             return
+        if self.centre is None:
+            self.rubberbandCercle = self.novaRubberband(True)
+            self.rubberbandRadi = self.novaRubberband(True)
+            self.points = []
         self.centre = self.toMapCoordinates(event.pos())
 
     def canvasMoveEvent(self, event):
@@ -963,17 +1079,22 @@ class QvMascaraEinaCercle(QvMascaraEinaPlantilla):
             # Seleccionem coses
             featsPnt = layer.getFeatures(
                 QgsFeatureRequest().setFilterRect(poligon.boundingBox()))
-            for featPnt in featsPnt:
-                if self.overlap:
-                    if featPnt.geometry().intersects(poligon):
-                        layer.select(featPnt.id())
-                else:
-                    if featPnt.geometry().within(poligon):
-                        layer.select(featPnt.id())
-            self.wSeleccioGrafica.calcularSeleccio()
+            # for featPnt in featsPnt:
+            #     if self.overlap:
+            #         if featPnt.geometry().intersects(poligon):
+            #             layer.select(featPnt.id())
+            #     else:
+            #         if featPnt.geometry().within(poligon):
+            #             layer.select(featPnt.id())
+            # self.wSeleccioGrafica.calcularSeleccio()
+            if self.overlap:
+                ids = [featPnt.id() for featPnt in featsPnt if featPnt.geometry().intersects(poligon)]
+            else:
+                ids = [featPnt.id() for featPnt in featsPnt if featPnt.geometry().within(poligon)]
+            self.selecciona(ids)
         self.centre = None
         self.actualitza()
-        self.rubberbandCercle.hide()
+        # self.rubberbandCercle.hide()
 
     def rbcircle(self, center, edgePoint, segments=100):
         self.rubberbandCercle.reset(True)
@@ -1009,7 +1130,7 @@ class QvMesuraMultiLinia(QgsMapTool):
 
         self.rubberbandCercle = self.creaRubberband(cercle=True)
 
-        self.rubberbands = []
+        # self.rubberbands = []
         self.cercles = []
 
         self.point = None
@@ -1278,21 +1399,26 @@ class QvSeleccioElement(QgsMapTool):
        Si la llegenda no té un layer actiu, és treballa amb el primer visible al canvas.
     """
 
-    def __init__(self, canvas, llegenda, radi=10):
+    elementsSeleccionats = pyqtSignal('PyQt_PyObject', 'PyQt_PyObject') # layer, features
+
+    def __init__(self, canvas, llegenda, radi=10, senyal=False):
         """[summary]
 
         Arguments:
-            canvas {[QgsMapCanvas]} -- [El canvas de la app]
+            canvas {QgsMapCanvas} -- El canvas de la app
             llegenda {QvLlegenda} -- La llegenda de la app
 
         Keyword Arguments:
-            radi {int} -- [El radi de tolerancia de la seleccio] (default: {20})
+            radi {int} -- [El radi de tolerancia de la seleccio (default: 20)
+            senyal {bool} -- False: mostra fitxa del(s) element(s) seleccionat(s)
+                             True: llença un senyal (default: False)
         """
 
         QgsMapTool.__init__(self, canvas)
         self.canvas = canvas
         self.llegenda = llegenda
         self.radi = radi
+        self.senyal = senyal
         self.fitxaAtributs = None
 
     def keyPressEvent(self, event):
@@ -1372,11 +1498,14 @@ class QvSeleccioElement(QgsMapTool):
 
                 # ids = [i.id() for i in it]
                 # layer.selectByIds(ids)
-                if len(features) > 0:
-                    self.fitxaAtributs = QvFitxesAtributs(layer, features)
-                    self.fitxaAtributs.exec_()
-                    self.fitxaAtributs = None
 
+                if len(features) > 0:
+                    if self.senyal:
+                        self.elementsSeleccionats.emit(layer, features)
+                    else:
+                        self.fitxaAtributs = QvFormAtributs.create(layer, features, self.canvas, self.llegenda.atributs)
+                        self.fitxaAtributs.exec_()
+                        self.fitxaAtributs = None
             else:
                 self.missatgeCaixa('Cal tenir seleccionat un nivell per poder fer una selecció.',
                                    'Marqueu un nivell a la llegenda sobre el que aplicar la consulta.')

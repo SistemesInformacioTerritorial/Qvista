@@ -1,6 +1,7 @@
 from moduls.QvImports import *
 from qgis.PyQt.QtWidgets import *
 import itertools
+import shutil
 from moduls.QvMapificacio import QvMapificacio
 from moduls.QvPushButton import QvPushButton
 from moduls.QvEditorCsv import QvEditorCsv
@@ -13,14 +14,32 @@ from moduls.QvMemoria import QvMemoria
 
 
 def nivellCsv(projecte, llegenda, fitxer: str, delimitador: str, campX: str, campY: str, projeccio: int = 25831, nomCapa: str = 'Capa sense nom', color='red', symbol='circle'):
-    uri = "file:///"+fitxer + \
-        "?type=csv&delimiter=%s&xField=%s&yField=%s" % (
-            delimitador, campX, campY)
+    if projeccio<0:
+        try:
+            import pandas as pd
+        except ModuleNotFoundError:
+            return False
+
+        # si és -X, serà que són coordenades reduïdes en format X.
+        df = pd.read_csv(fitxer, engine='python', sep=delimitador)
+        nouCampX = f'{campX}_COMPLET'
+        nouCampY = f'{campY}_COMPLET'
+        nouFitxer = str(Path(fitxer).with_suffix('.coordenades_completes.csv')).replace('.coordenades_completes','_coordenades_completes')
+        df[nouCampX]=df[campX]/1000+400000
+        df[nouCampY]=df[campY]/1000+4500000
+        df.to_csv(nouFitxer, sep=delimitador)
+        
+        campX, campY = nouCampX, nouCampY
+        fitxer = nouFitxer
+        projeccio = -projeccio
+        
+    # uri = "file:///"+fitxer + "?type=csv&delimiter=%s&xField=%s&yField=%s" % (delimitador, campX, campY)
+    uri = f'file:///{fitxer}?type=csv&delimiter={delimitador}&xField={campX}&yField={campY}'
     layer = QgsVectorLayer(uri, nomCapa, 'delimitedtext')
     layer.setCrs(QgsCoordinateReferenceSystem(
         projeccio, QgsCoordinateReferenceSystem.EpsgCrsId))
     if layer is not None or layer is not NoneType:
-        symbol = QgsMarkerSymbol.createSimple({'name': symbol, 'color': color, 'outline_width':'0.3'})
+        symbol = QgsMarkerSymbol.createSimple({'name': symbol, 'color': color, 'outline_width':'0.05'})
         # if layer.renderer() is not None:
         #     layer.renderer().setSymbol(symbol)
         pr=layer.dataProvider()
@@ -31,8 +50,10 @@ def nivellCsv(projecte, llegenda, fitxer: str, delimitador: str, campX: str, cam
         llegenda.saveStyleToGeoPackage(capaGpkg)
         # qV.project.addMapLayer(layer)
         # qV.setDirtyBit(True)
+        return True
     else:
         print("no s'ha pogut afegir la nova layer")
+        return False
 
 
 def esCoordAux(coord, rangs):
@@ -109,6 +130,19 @@ def campsNum(csvPath,sep,cod):
     nomCamps = ('num','npost','n_post','n post','núm')
     return campsPref(csvPath,sep,cod,nomCamps)
 
+def creaCsvAmbNums(ruta, sep, cod, campAdreca):
+    nom_res = str(Path(tempdir,Path(ruta).name))
+    # nom_res = f'{tempdir}/{Path(ruta).name}'
+    with open(ruta, encoding=cod) as f, open(nom_res,'w', encoding=cod) as ff:
+        read = csv.DictReader(f, delimiter=sep)
+        writ = csv.DictWriter(ff, delimiter=sep, fieldnames=read.fieldnames+['NUM_INFERIT_QVISTA'])
+        writ.writeheader()
+        for row in read:
+            adreca = row[campAdreca].split(',')
+            row[campAdreca], row['NUM_INFERIT_QVISTA'] = ','.join(adreca[:-1]), adreca[-1]
+            writ.writerow(row)
+    return nom_res
+
 class QvCarregaCsv(QDialog):
     def __init__(self, rutaCsv: str, projecte, llegenda, parent=None):
         super().__init__(parent,Qt.WindowSystemMenuHint | Qt.WindowTitleHint | Qt.WindowCloseButtonHint)
@@ -119,8 +153,6 @@ class QvCarregaCsv(QDialog):
         self._csv = self._primerCsv = rutaCsv
         self.loadMap()
         # self._mapificador = QvMapificacio(rutaCsv)
-        self.setSeparador()
-        self._codificacio = self._mapificador.codi
         self._widgetSup = QWidget(objectName='layout')
         self._layoutGran = QVBoxLayout()
         self.setLayout(self._layoutGran)
@@ -141,6 +173,8 @@ class QvCarregaCsv(QDialog):
         self.oldPos = self.pos()
     def loadMap(self):
         self._mapificador = QvMapificacio(self._csv)
+        self._codificacio = self._mapificador.codi
+        self.setSeparador()
     def setSeparador(self):
         self._separador = self._mapificador.separador
     def getPrimeraPantalla(self):
@@ -299,7 +333,8 @@ class CsvCoords(CsvPagina):
         self._proj = {'EPSG:25831 UTM 31N ETRS89': 25831,
                       'EPSG:3857 Pseudo Mercator (Google)': 3857,
                       'EPSG:4326 WGS 84': 4326,
-                      'EPSG:23031 UTM 31N ED50': 23031}
+                      'EPSG:23031 UTM 31N ED50': 23031,
+                      'EPSG:23031 UTM 31N ED50 Reduïdes': -23031}
         if proj is None:
             proj='EPSG:25831 UTM ETRS89 31N'
         layX = QHBoxLayout()
@@ -321,7 +356,7 @@ class CsvCoords(CsvPagina):
         layY.addWidget(self._cbY)
 
         def canviaLbls(x):
-            if x in (0,3):
+            if x in (0,3,4):
                 lblX.setText('Coordenada X:')
                 lblY.setText('Coordenada Y:')
             else:
@@ -405,7 +440,7 @@ class CsvAdreca(CsvPagina):
         
 
         self._cbNumI = QComboBox()
-        self._cbNumI.addItems(camps)
+        self._cbNumI.addItems(['']+camps)
         layNumI = QHBoxLayout()
         lblNumI = QLabel('Número postal inicial:')
         lblNumI.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
@@ -492,11 +527,17 @@ class CsvAdreca(CsvPagina):
                 self._carregador._mapificador=QvMapificacio(geocod)
                 self.salta.emit(CsvGeocodificat(None,0, self._carregador))
                 return
-        QvMemoria().setCampsGeocod(self._carregador._csv,{'teCoords':False,'camps':{'tipusVia':self._cbTipusVia.currentText(),'via':self._cbVia.currentText(),'numI':self._cbNumI.currentText(),
-            'lletraI':self._cbLletraI.currentText(),'numF':self._cbNumF.currentText(),'lletraF':self._cbLletraF.currentText()}})
-        
-        self.salta.emit(CsvGeocod([x.currentText() for x in (self._cbTipusVia, self._cbVia,
-                                                             self._cbNumI, self._cbLletraI, self._cbNumF, self._cbLletraF)], self._carregador))
+        camps = [x.currentText() for x in (self._cbTipusVia, self._cbVia,
+                 self._cbNumI, self._cbLletraI, self._cbNumF, self._cbLletraF)]
+            
+        QvMemoria().setCampsGeocod(self._carregador._csv,{'teCoords':False,'camps':{'tipusVia':camps[0],'via':camps[1],'numI':camps[2],
+                'lletraI':camps[3],'numF':camps[4],'lletraF':camps[5]}})
+        if camps[2]=='':
+            nouCsv = creaCsvAmbNums(self._carregador._csv, self._carregador._separador, self._carregador._codificacio, self._cbVia.currentText())
+            self._carregador._csv = nouCsv
+            camps[2]='NUM_INFERIT_QVISTA'
+            self._carregador.loadMap()
+        self.salta.emit(CsvGeocod(camps, self._carregador))
 
 
 class CsvGeocod(CsvPagina):
@@ -543,6 +584,7 @@ class CsvGeocod(CsvPagina):
         #     self._carregador.loadMap()
         self.fil=QvFuncioFil(lambda: self._carregador._mapificador.geocodificacio(self._camps, ('Coordenada', 'Districte', 'Barri', 'Codi postal', "Illa", "Solar", "Àrea estadística bàsica",
                                                                       "Secció censal"), percentatgeProces=self._canviPercentatge, procesAcabat=self.acabat, errorAdreca=self._unErrorMes, filesGeocodificades=self._filesGeocod))
+        self.fil.funcioAcabada.connect(lambda: self.acabat(-1))
         self.fil.start()
         # self._carregador._mapificador.geocodificacio(self._camps, ('Coordenada', 'Districte', 'Barri', 'Codi postal', "Illa", "Solar", "Àrea estadística bàsica",
         #                                                               "Secció censal"), percentatgeProces=self._canviPercentatge, procesAcabat=self.acabat)
@@ -555,6 +597,7 @@ class CsvGeocod(CsvPagina):
         self._numErr += 1
         self._modificaLblErr()
     def _filesGeocod(self,f,files):
+        # actualitzem la label cada 10 files. Això permet que es vegi més fluid
         if f%10==0 or f==files:
             self._lblFilesGeocod.setText("Files geocodificades: %i d'aproximadament %i"%(f,files))
 
@@ -565,6 +608,10 @@ class CsvGeocod(CsvPagina):
     def acabat(self, n):
         if self._carregador._mapificador.cancel:
             self.salta.emit(self._carregador.getPrimeraPantalla())
+        elif self.fil.resultat==False: # no podem posar "not self.fil.resultat", perquè el cas "None" s'avaluaria també
+            QMessageBox.critical(self,'Error de geocodificació',f'Hi ha hagut un error durant la geocodificació:\n{self._carregador._mapificador.msgError}')
+            self._carregador._mapificador.cancel = True
+            self.acabat(n)
         else:
             # Aquí saltar al resultat
             arxiuNet=str(Path(self._carregador._csv).parent)+'\\'+self._carregador._mapificador.netejaString(Path(self._carregador._csv).stem,True)+'.csv'
@@ -618,6 +665,8 @@ class CsvGeocodificat(CsvPagina):
         self._layBotons.addWidget(self._bMapifica)
         self._lay.addLayout(self._layBotons)
     def _enrere(self):
+        self._carregador._csv = self._carregador._primerCsv
+        self._carregador.loadMap()
         self.salta.emit(CsvTab(self._carregador))
         
     def _definirErrors(self, errors):
@@ -682,6 +731,10 @@ class CsvAfegir(CsvPagina):
         layTries.addWidget(self._bColor)
         # layColor.addStretch()
         setColorBoto()
+        self.cbDesaCsv = QCheckBox('Desar CSV geocodificat')
+        self.cbDesaGpkg = QCheckBox('Desar capa resultant en arxiu GPKG')
+        layTries.addWidget(self.cbDesaCsv)
+        layTries.addWidget(self.cbDesaGpkg)
         # self._lay.addLayout(layColor)
         self._lay.addStretch()
         # Forma
@@ -761,8 +814,17 @@ class CsvAfegir(CsvPagina):
     def _enrere(self):
         self.salta.emit(CsvGeocodificat([],0,self._carregador))
     def afegir(self):
-        nivellCsv(self._carregador._projecte, self._carregador._llegenda, self._carregador._csv, self._carregador._separador,
-                  self._campCoordX, self._campCoordY, self._projeccio, self._leNomCapa.text(), self._color, symbol=self._forma)
+        if not nivellCsv(self._carregador._projecte, self._carregador._llegenda, self._carregador._csv, self._carregador._separador, self._campCoordX, self._campCoordY, self._projeccio, self._leNomCapa.text(), self._color, symbol=self._forma):
+            QMessageBox.warning(self,"No s'ha pogut afegir la capa","No s'ha pogut afegir aquest arxiu. Contacteu amb la persona de referència")
+        nomBase = str(Path(self._carregador._csv).stem)
+        if self.cbDesaCsv.isChecked():
+            nom, _ = QFileDialog.getSaveFileName(self,'Desar csv',f'{QvMemoria().getDirectoriDesar()}/{nomBase}.csv',"(*.csv)")
+            if nom!='':
+                shutil.copyfile(self._carregador._csv,nom)
+        if self.cbDesaGpkg.isChecked():
+            nom, _ = QFileDialog.getSaveFileName(self,'Desar GPKG',f'{QvMemoria().getDirectoriDesar()}/{nomBase}.gpkg',"(*.gpkg)")
+            if nom!='':
+                shutil.copyfile(self._carregador._csv.replace('.csv','.gpkg'), nom)
         self._carregador.close()
 
 

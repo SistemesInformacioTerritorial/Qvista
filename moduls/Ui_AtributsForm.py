@@ -12,7 +12,7 @@ class Ui_AtributsForm(object):
     def setupUi(self, AtributsForm):
         AtributsForm.setObjectName("AtributsForm")
         AtributsForm.setWindowModality(QtCore.Qt.WindowModal)
-        AtributsForm.resize(600, 650)
+        AtributsForm.resize(700, 800)
         AtributsForm.setModal(True)
         self.verticalLayout_2 = QtWidgets.QVBoxLayout(AtributsForm)
         self.verticalLayout_2.setObjectName("verticalLayout_2")
@@ -57,8 +57,8 @@ class Ui_AtributsForm(object):
         self.buttonBox.setEnabled(True)
         self.buttonBox.setMinimumSize(QtCore.QSize(100, 36))
         self.buttonBox.setMaximumSize(QtCore.QSize(100, 36))
-        self.buttonBox.setStandardButtons(QtWidgets.QDialogButtonBox.Ok)
         self.buttonBox.setObjectName("buttonBox")
+        self.buttonBox.setStandardButtons(QtWidgets.QDialogButtonBox.Ok)
         self.horizontalLayout.addWidget(self.buttonBox)
         self.verticalLayout_2.addLayout(self.horizontalLayout)
 
