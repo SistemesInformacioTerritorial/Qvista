@@ -230,7 +230,7 @@ class QvSqlite:
             if self.query.exec_(select) and self.query.next():
                 result = {}
                 for i, camp in enumerate(camps):
-                    camp = QvSqlite.getAlias(camp)
+                    camp = QvSqlite().getAlias(camp)
                     result[camp] = self.query.value(i)
                 self.query.finish()
                 return result

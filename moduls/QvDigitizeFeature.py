@@ -17,13 +17,14 @@ import os
 # 
 # TODO
 #
+# - Combinar comandos dibujo con los de visualización
 # - Autogenerar clave fid desactivado en nueva versión QGIS
-# - Comado alta y luego modif altera el reset de salida
+# - Valor de default: QgsField(), QgsDefaultValue()
 # - Al salir de qVista, controlar si hay ediciones abiertas con modificaciones pendientes
-# - Propiedades de capa: identificable, searchable, necesaria, readonly
-# - Herramienta de seleccion en todas las capas
 # - Pruebas edición tabla Oracle
 # - Repasar activacion dirty bit
+# - Propiedades de capa: identificable, searchable, necesaria, readonly
+# - Herramienta de seleccion en todas las capas
 # - Formulario de opciones de snapping
 # - Edicion de geonetría: QgsVectorLayerEditUtils 
 # 
@@ -51,7 +52,7 @@ class QvDigitizeFeature(qgGui.QgsMapToolDigitizeFeature):
 
     def cadCanvasReleaseEvent(self, event):
         # Finaliza tool de dibujo con botón derecho cuando no hay puntos dibujados
-        if self.tool == self and self.size() == 0 and event.button() == qtCor.Qt.RightButton:
+        if event.button() == qtCor.Qt.RightButton and (self.tool == self) and self.size() == 0:
             # Si estamos redibujando, vuelve al principio para seleccionar otro elemento
             redraw = (self.signal == self.redrawFeature)
             self.unset()
@@ -182,6 +183,8 @@ class QvDigitizeFeature(qgGui.QgsMapToolDigitizeFeature):
 
     def redraw(self):
         if self.capa.isEditable():
+            if self.tool == self:
+                self.unset()
             tool = QvSeleccioElement(self.canvas, self.llegenda, senyal=True)
             tool.elementsSeleccionats.connect(self.selectFeature)
             self.go(tool, True)
