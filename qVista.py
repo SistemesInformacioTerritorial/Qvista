@@ -2424,8 +2424,8 @@ class QVista(QMainWindow, Ui_MainWindow):
 
     #A més de desar, retornarà un booleà indicant si l'usuari ha desat (True) o ha cancelat (False)
     def desarProjecte(self):
-        """ la funcio retorna si s'ha acabat guardant o no """
-        """  Protecció dels projectes read-only: tres vies:
+        """ la funcio retorna si s'ha acabat guardant o no
+            Protecció dels projectes read-only: tres vies:
         -       Variable del projecte qV_readOnly=’True’
         -       Ubicació en una carpeta de només-lectura
         -       Ubicació en una de les subcarpetes de N:\SITEB\APL\PyQgis\qVista
