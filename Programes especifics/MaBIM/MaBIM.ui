@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>MainWindow</class>
- <widget class="QMainWindow" name="MainWindow">
+ <class>qMaBIM</class>
+ <widget class="QMainWindow" name="qMaBIM">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -17,7 +17,7 @@
    </font>
   </property>
   <property name="windowTitle">
-   <string>MainWindow</string>
+   <string>qMaBIM</string>
   </property>
   <property name="styleSheet">
    <string notr="true">font-family: &quot;Verdana&quot;;
@@ -35,10 +35,22 @@ font-size: 24px</string>
       </property>
       <item>
        <widget class="QFrame" name="frame">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>60</height>
+         </size>
+        </property>
         <property name="maximumSize">
          <size>
           <width>16777215</width>
-          <height>40</height>
+          <height>60</height>
          </size>
         </property>
         <property name="palette">
@@ -479,7 +491,13 @@ font-size: 24px</string>
           <number>0</number>
          </property>
          <item>
-          <widget class="QLabel" name="label">
+          <widget class="QLabel" name="lblLogoMaBIM">
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>60</height>
+            </size>
+           </property>
            <property name="lineWidth">
             <number>0</number>
            </property>
@@ -493,6 +511,12 @@ font-size: 24px</string>
          </item>
          <item>
           <widget class="QLabel" name="label_3">
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>60</height>
+            </size>
+           </property>
            <property name="palette">
             <palette>
              <active>
@@ -931,14 +955,20 @@ font-size: 24px</string>
          </item>
          <item>
           <widget class="QLineEdit" name="leCercador">
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>40</height>
+            </size>
+           </property>
            <property name="maximumSize">
             <size>
-             <width>370</width>
+             <width>450</width>
              <height>16777215</height>
             </size>
            </property>
            <property name="styleSheet">
-            <string notr="true">font-size: 12px</string>
+            <string notr="true">font-size: 12pt</string>
            </property>
           </widget>
          </item>
@@ -960,7 +990,7 @@ font-size: 24px</string>
           </property>
           <property name="maximumSize">
            <size>
-            <width>16777215</width>
+            <width>275</width>
             <height>16777215</height>
            </size>
           </property>
@@ -976,6 +1006,7 @@ font-size: 24px</string>
                 height: 36px;
                 text-align: left;
                 padding-left: 10px;
+				font-size: 18px;
 }
 QToolButton:checked{
                 background: solid #dfdfdf;
@@ -1437,6 +1468,9 @@ QToolButton:checked{
              <property name="margin">
               <number>10</number>
              </property>
+             <property name="indent">
+              <number>5</number>
+             </property>
             </widget>
            </item>
            <item>
@@ -1680,13 +1714,19 @@ QToolButton:checked{
            <item>
             <widget class="QLabel" name="label_4">
              <property name="text">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:11pt; font-weight:600;&quot;&gt;SIT - Sistemes d'Informació Territorial&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-size:11pt;&quot;&gt;Institut Municipal d'Informàtica&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:7pt; font-weight:600;&quot;&gt;SIT - Sistemes d'Informació Territorial&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-size:7pt;&quot;&gt;Institut Municipal d'Informàtica&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
              <property name="textFormat">
               <enum>Qt::RichText</enum>
              </property>
+             <property name="alignment">
+              <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+             </property>
              <property name="margin">
               <number>10</number>
+             </property>
+             <property name="indent">
+              <number>5</number>
              </property>
             </widget>
            </item>
@@ -2234,7 +2274,7 @@ QTabBar::tab:selected{
                    <item row="1" column="0">
                     <widget class="QLabel" name="label_25">
                      <property name="text">
-                      <string>TextLabel</string>
+                      <string/>
                      </property>
                     </widget>
                    </item>
@@ -2563,12 +2603,6 @@ QTabBar::tab:selected{
                 <string>Plànol Cadastral</string>
                </attribute>
                <layout class="QVBoxLayout" name="verticalLayout_7"/>
-              </widget>
-              <widget class="QWidget" name="tPlanolR">
-               <attribute name="title">
-                <string>Plànol Registral</string>
-               </attribute>
-               <layout class="QVBoxLayout" name="verticalLayout_8"/>
               </widget>
              </widget>
             </item>
