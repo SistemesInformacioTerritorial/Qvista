@@ -615,7 +615,7 @@ if __name__ == "__main__":
         # print(type(chart))
         # print(vars(chart))
 
-        chart = QvChart()
+        chart = QvChart('C:/temp/qVista/dades/provaAtrs.html','Gràfic de prova atributs')
         chart.setGeometry(50, 50, 1200, 700)
         chart.setWindowTitle('Gràfics')
 

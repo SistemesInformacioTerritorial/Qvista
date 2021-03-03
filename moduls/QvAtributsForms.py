@@ -70,20 +70,31 @@ class QvFitxesAtributs(QDialog):
             self.title = self.layer.name() + " - Consulta fitxa element"
             self.ui.groupBox.setVisible(False)
 
+    def setDefaultValues(self, feature):
+        for idx in self.layer.attributeList():
+            vDef = self.layer.defaultValue(idx, feature)
+            feature.setAttribute(idx, vDef)
+
+    def addRemoveButton(self, form):
+        bDel = QPushButton("Esborra element")
+        bDel.clicked.connect(lambda: self.remove(form.feature()))
+        buttonBox = form.findChild(QDialogButtonBox)
+        buttonBox.addButton(bDel, QDialogButtonBox.ResetRole)
+
     def edicion(self, new):
         self.newFeature = None
         self.total = 1
-        form = QgsAttributeDialog(self.layer, self.features[0], False)
+        feature = self.features[0]
         if new:
             self.mode = QgsAttributeEditorContext.AddFeatureMode 
             self.title = self.layer.name() + " - Fitxa nou element"
+            self.setDefaultValues(feature)
+            form = QgsAttributeDialog(self.layer, feature, False)
         else:
             self.mode = QgsAttributeEditorContext.SingleEditMode
             self.title = self.layer.name() + " - Edició fitxa element"
-            bDel = QPushButton("Esborra element")
-            bDel.clicked.connect(lambda: self.remove(form.feature()))
-            buttonBox = form.findChild(QDialogButtonBox)
-            buttonBox.addButton(bDel, QDialogButtonBox.ResetRole)
+            form = QgsAttributeDialog(self.layer, feature, False)
+            self.addRemoveButton(form)
         form.setMode(self.mode)
         form.attributeForm().featureSaved.connect(self.featureSaved)
         form.accepted.connect(self.formAccepted)
