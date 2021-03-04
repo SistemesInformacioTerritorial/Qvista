@@ -7,6 +7,10 @@ from qgis.PyQt.QtCore import pyqtSignal
 from qgis.PyQt.QtWebKitWidgets import QWebView , QWebPage #QWebPage (???)
 from moduls.QvPushButton import QvPushButton
 
+def ignora_errors_ssl(reply, errors):
+    # funció per evitar els errors de SSL que donen a vegades
+    reply.ignoreSslErrors()
+
 class BotoQvBrowser(QvPushButton):
     def __init__(self):
         super().__init__()
@@ -21,6 +25,7 @@ class QvBrowser(QWidget):
         QWidget.__init__(self)
         self.parent = parent
         self.browser = QWebView()
+        self.browser.page().networkAccessManager().sslErrors.connect(ignora_errors_ssl)
         self.browser.setContentsMargins(0,0,0,0)
         # self.browser.setUrl(QUrl("http://www.qt.io"))
         self.browser.resize(512, 375)
