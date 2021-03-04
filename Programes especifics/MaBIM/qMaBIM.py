@@ -1,15 +1,19 @@
 #from MaBIM-ui import Ui_MainWindow
-from PyQt5 import QtWidgets, uic, QtCore
+from PyQt5 import QtWidgets, uic, QtCore, QtGui
 from PyQt5.QtSql import QSqlDatabase, QSqlQuery
 from qgis.core.contextmanagers import qgisapp
 from moduls.QvCanvas import QvCanvas
+from moduls.QvCanvasAuxiliar import QvCanvasAuxiliar
 from moduls.QvMapetaBrujulado import QvMapetaBrujulado
 from moduls.QvSingleton import Singleton
+from moduls.QvAtributs import QvAtributs
+from moduls.QvLlegenda import QvLlegenda
+from moduls.QVCercadorAdreca import QCercadorAdreca
 import functools
 import sys
 from typing import Sequence
-from qgis.core import QgsProject
-from qgis.gui import  QgsLayerTreeMapCanvasBridge
+from qgis.core import QgsProject, QgsCoordinateReferenceSystem
+from qgis.gui import  QgsLayerTreeMapCanvasBridge, QgsVertexMarker
 
 # Consulta a partir del text escrit al camp de cerca. 
 # Obté el codi BIM, la descripció i la denominació.
@@ -124,6 +128,7 @@ class Consulta(Singleton):
         if not self.TANCA_DB() and self.db.isOpen():
             # No s'ha tancat la base de dades :'(
                 pass
+
 class Completador(QtWidgets.QCompleter):
     def __init__(self):
         super().__init__()
@@ -151,13 +156,58 @@ class Completador(QtWidgets.QCompleter):
         return [path]
         # print(path)
     
+
+class WidgetCercador(QtWidgets.QWidget):
+    def __init__(self, canvas, parent=None):
+        super().__init__(parent)
+        self.canvas = canvas
+        self.marcaLloc = None
+        lay = QtWidgets.QHBoxLayout()
+        self.setLayout(lay)
+        self.leCarrer = QtWidgets.QLineEdit()
+        self.leCarrer.setPlaceholderText('Carrer')
+        self.leNumero = QtWidgets.QLineEdit()
+        self.leNumero.setPlaceholderText('Número')
+        self.lblIcona = QtWidgets.QLabel()
+        pix = QtGui.QPixmap('imatges/MaBIM/cercador-icona.png')
+        self.lblIcona.setPixmap(pix.scaledToHeight(20))
+        self.cercador = QCercadorAdreca(self.leCarrer, self.leNumero, 'SQLITE')
+        lay.addWidget(self.leCarrer)
+        lay.addStretch()
+        lay.addWidget(self.leNumero)
+        # lay.addWidget(self.lblIcona)
+
+        self.cercador.sHanTrobatCoordenades.connect(self.resultatCercador)
     
+    def resultatCercador(self, codi, info):
+        if codi == 0:
+            self.canvas.setCenter(self.cercador.coordAdreca)
+            print(self.canvas.scale(), self.canvas.mapUnits())
+            self.canvas.zoomScale(1000)
+            print(self.canvas.scale())
+            self.canvas.scene().removeItem(self.marcaLloc)
+
+            self.marcaLloc = QgsVertexMarker(self.canvas)
+            self.marcaLloc.setCenter( self.cercador.coordAdreca )
+            self.marcaLloc.setColor(QtGui.QColor(255, 0, 0))
+            self.marcaLloc.setIconSize(15)
+            self.marcaLloc.setIconType(QgsVertexMarker.ICON_BOX) # or ICON_CROSS, ICON_X
+            self.marcaLloc.setPenWidth(3)
+            self.marcaLloc.show()
+            self.marcaLlocPosada = True
+    
+    def resizeEvent(self, event):
+        self.leCarrer.setFixedSize(400,20)
+        self.leNumero.setFixedSize(80,20)
+        print(self.leCarrer.width(), self.leNumero.width())
+        self.setFixedSize(self.leCarrer.width()+self.leNumero.width()+20, 30)
+        self.move(self.parentWidget().width()-self.width()-2, 2)
+        super().resizeEvent(event)
     
     # def cerca(self):
     #     txt = self.leCercador.text()
     #     print(txt)
     #     self.leCercador.clear()
-
 
 class QMaBIM(QtWidgets.QMainWindow):
     def __init__(self,*args,**kwargs):
@@ -169,6 +219,32 @@ class QMaBIM(QtWidgets.QMainWindow):
         self.connectaCercador()
         self.configuraPlanols()
         self.connectaDB()
+        self.setIcones()
+    
+    def setIcones(self):
+        self.setIconesBotons()
+        # Qt com a tal no permet fer  una label amb imatge i text. HTML sí que ho permet
+        # Ja que les labels permeten tenir com a contingut un HTML,
+        # doncs posem un mini HTML amb la imatge i el text
+        self.lblLogoMaBIM.setText(f"""<html><img src=imatges/MaBIM/MaBIM.png height={self.lblLogoMaBIM.height()}><span style="font-size:18pt; color:#ffffff; vertical-align: middle;"> MaBIM</span></html>""")
+        self.lblLogoMaBIM.setFixedWidth(275)
+        print(self.widget_3.width())
+    
+    def setIconesBotons(self):
+        # afegir les icones des del designer donava problemes
+        # per tant, les afegim aquí i té un comportament més consistent
+        parelles = (
+            (self.bFavorits, 'botonera-fav.png'),
+            (self.bBIMs, 'botonera-BIM.png'),
+            (self.bPublicar, 'botonera-publicar.png'),
+            (self.bPIP, 'botonera-PIP.png'),
+            (self.bProjectes, 'botonera-projectes'),
+            (self.bConsultes, 'botonera-consultes'),
+            (self.bDocumentacio, 'botonera-documentacio'),
+            (self.bEines, 'botonera-eines')
+        )
+        for (boto, icona) in parelles:
+            boto.setIcon(QtGui.QIcon(f'Imatges/MaBIM/{icona}'))
 
     def connectaDB(self):
         pass
@@ -204,6 +280,7 @@ class QMaBIM(QtWidgets.QMainWindow):
                 lbl.setText(txt)
 
                 lbl.setFont(font)
+                lbl.setWordWrap(True)
             else:
                 lbl.setText('')
         self.twDadesBIM.setRowCount(len(self.dadesTaula))
@@ -222,29 +299,66 @@ class QMaBIM(QtWidgets.QMainWindow):
         self.lSubtipologiaRegistral.setFont(font)
         self.lTipusBeRegistral.setFont(font)
 
+        cerca = f"BIM LIKE '{self.dadesLabelsDades[0]}'"
+        
+        layer = self.llegenda.capaPerNom('MABIM')
+        # for field in layer.fields():
+        #     print(field.name(), field.typeName())
+        # layer.selectByExpression(cerca)
+        # capes = [x for x in self.llegenda.capes() if 'BIM' in [camp.name() for camp in x.fields()]]
+        # for x in capes:
+        #     x.setSubsetString('')
+        #     x.setSubsetString(cerca)
+        #     x.selectAll()
+        layer.setSubsetString(cerca)
+        layer.selectAll()
+        self.canvasA.zoomToSelected(layer)
+        layer.removeSelection()
+        # for x in capes:
+        #     x.removeSelection()
+        QtCore.QTimer.singleShot(0, self.leCercador.clear)
+
     def configuraPlanols(self):
-        QgsProject.instance().read('D:/MABIM-DADES/MABIM_Desembre.qgs')
-        # QgsProject.instance().read(r'L:\DADES\SIT\qVista\CATALEG\MAPES PRIVATS\Patrimoni\Planol del Patrimoni Municipal.qgs')
+        # QgsProject.instance().read('D:/MABIM-DADES/mabimAUX.qgs')
+        QgsProject.instance().read('U:/QUOTA/Comu_imi/patrimoni/Oriol/PPM_CatRegles_geopackage.qgs')
         root = QgsProject.instance().layerTreeRoot()
         planolA = self.tabCentral.widget(2)
         planolC = self.tabCentral.widget(3)
         planolR = self.tabCentral.widget(4)
 
         mapetaPng = "mapesOffline/default.png"
-        canvasA = QvCanvas(planolA, posicioBotonera='SE')
-        mapeta = QvMapetaBrujulado(mapetaPng, canvasA,  pare=canvasA)
-        QgsLayerTreeMapCanvasBridge(root, canvasA)
-        planolA.layout().addWidget(canvasA)
+        self.canvasA = QvCanvas(planolA, posicioBotonera='SE')
+        self.canvasA.setDestinationCrs(QgsCoordinateReferenceSystem('EPSG:25831'))
+        mapeta = QvMapetaBrujulado(mapetaPng, self.canvasA,  pare=self.canvasA)
+        QgsLayerTreeMapCanvasBridge(root, self.canvasA)
+        planolA.layout().addWidget(self.canvasA)
+        self.cerca1 = WidgetCercador(self.canvasA, self.canvasA)
+        self.cerca1.show()
 
-        canvasC = QvCanvas(planolC, posicioBotonera='SE')
+
+        # canvasC = QvCanvas(planolC, posicioBotonera='SE')
+        canvasC = QvCanvasAuxiliar(self.canvasA, sincronitzaExtensio=True, posicioBotonera='SE')
         mapeta = QvMapetaBrujulado(mapetaPng, canvasC,  pare=canvasC)
         QgsLayerTreeMapCanvasBridge(root, canvasC)
         planolC.layout().addWidget(canvasC)
 
-        canvasR = QvCanvas(planolR, posicioBotonera='SE')
-        mapeta = QvMapetaBrujulado(mapetaPng, canvasR,  pare=canvasR)
-        QgsLayerTreeMapCanvasBridge(root, canvasR)
-        planolR.layout().addWidget(canvasR)
+        taulesAtributs = QvAtributs(self.canvasA)
+        # self.llegendes = [QvLlegenda(x, taulesAtributs, editable=False) for x in (canvasA, canvasC, canvasR)]
+        self.llegenda = QvLlegenda(self.canvasA, taulesAtributs)
+
+        self.tabCentral.currentChanged.connect(self.canviaTab)
+    
+    def canviaTab(self):
+        return
+        i = self.tabCentral.currentIndex()
+        # if i in range(2,4):
+        #     self.llegendes[i-2].show()
+        # else:
+        #     for x in self.llegendes:
+        #         x.hide()
+        if i==2:
+            self.llegenda.show()
+            self.cerca1.show()
 
     def connectBotons(self):
         for (i,x) in enumerate(self.llistaBotons):
