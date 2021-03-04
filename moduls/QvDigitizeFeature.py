@@ -53,16 +53,22 @@ class QvDigitizeFeature(qgGui.QgsMapToolDigitizeFeature):
         self.signal = None
         self.menu = None
         self.tool = None
+        self.ignoreRightButton = False
 
     def cadCanvasReleaseEvent(self, event):
-        # Finaliza tool de dibujo con botón derecho cuando no hay puntos dibujados
-        if event.button() == qtCor.Qt.RightButton and (self.tool == self) and self.size() == 0:
-            # Si estamos redibujando, vuelve al principio para seleccionar otro elemento
-            redraw = (self.signal == self.redrawFeature)
-            self.unset()
-            if redraw: self.redraw()
-        else:
-            super().cadCanvasReleaseEvent(event)
+        if event.button() == qtCor.Qt.RightButton:
+            # Se ignora botón derecho cuando volvemos de otro tool
+            if self.ignoreRightButton:
+                self.ignoreRightButton = False
+                return
+            # Finaliza tool de dibujo con botón derecho cuando no hay puntos dibujados
+            if (self.tool == self) and self.size() == 0:
+                # Aunque, si estamos redibujando, vuelve al principio para seleccionar otro elemento
+                redraw = (self.signal == self.redrawFeature)
+                self.unset()
+                if redraw: self.redraw()
+                return
+        super().cadCanvasReleaseEvent(event)
 
     def iniSignal(self):
         if self.signal is not None:
@@ -187,8 +193,8 @@ class QvDigitizeFeature(qgGui.QgsMapToolDigitizeFeature):
 
     def redraw(self):
         if self.capa.isEditable():
-            if self.tool == self:
-                self.unset()
+            if self.tool == self: self.unset()
+            self.capa.removeSelection()
             tool = QvSeleccioElement(self.canvas, self.llegenda, senyal=True)
             tool.elementsSeleccionats.connect(self.selectFeature)
             self.go(tool, True)
@@ -210,6 +216,7 @@ class QvDigitizeFeature(qgGui.QgsMapToolDigitizeFeature):
     ######################### Borrar elemento(s)
 
     def delete(self):
+        if self.tool == self: self.unset()
         self.capa.deleteSelectedFeatures()
         self.atributs.tabTaula(self.capa)
 
@@ -263,14 +270,8 @@ class QvDigitizeFeature(qgGui.QgsMapToolDigitizeFeature):
         self.menu.addSeparator()
         # Grupo 2 - Undo / Redo
         act = self.menu.addAction('Desfés canvi', self.undo)
-        # act.setShortcut("Ctrl+Z")
-        # act.setShortcutContext(qtCor.Qt.WidgetWithChildrenShortcut)
-        # act.setShortcutVisibleInContextMenu(True)
         act.setEnabled(self.canUndo())
         act = self.menu.addAction('Refés canvi', self.redo)
-        # act.setShortcut("Ctrl+Y")
-        # act.setShortcutContext(qtCor.Qt.WidgetWithChildrenShortcut)
-        # act.setShortcutVisibleInContextMenu(True)
         act.setEnabled(self.canRedo())
         self.menu.addSeparator()
         # Grupo 3: Cierre de edición

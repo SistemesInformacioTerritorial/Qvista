@@ -113,7 +113,7 @@ class QvDigitize:
     def setAccions(self, parent=None):
         self.accions = QvAccions()
 
-        act = qtWdg.QAction('Nou element', parent)
+        act = qtWdg.QAction('Dibuixa nou element', parent)
         act.setEnabled(False)
         self.accions.afegirAccio('newElement', act)
 
@@ -154,6 +154,8 @@ class QvDigitize:
         act = qtWdg.QAction('Finalitza totes les edicions', parent)
         act.triggered.connect(self.stop)
         act.setEnabled(self.started())
+        if act.isEnabled():
+            act.setText(act.text() + "\tCtrl+.") 
         self.accions.afegirAccio('endAll', act)
 
     def modAccions(self, df):
@@ -162,13 +164,14 @@ class QvDigitize:
         if act is not None:
             if df:
                 act.triggered.connect(df.new)
+                act.setText("Dibuixa nou element\tCtrl++")
                 act.setEnabled(True)
             else:
                 act.setEnabled(False)
         act = self.accions.accio('modGeometria')
         if act is not None:
             if df:
-                act.setText(f"Modifica {df.nomGeometria()} d'element")
+                act.setText(f"Modifica {df.nomGeometria()} d'element\tCtrl+*")
                 act.triggered.connect(df.redraw)
                 act.setEnabled(True)
             else:
@@ -180,6 +183,9 @@ class QvDigitize:
                 act.setEnabled(df.capa.selectedFeatureCount())
             else:
                 act.setEnabled(False)
+        txt = "Esborra element(s) seleccionat(s)"
+        if act.isEnabled(): txt += "\tCtrl+-"
+        act.setText(txt)
         act = self.accions.accio('undo')
         if act is not None:
             if df:
@@ -188,8 +194,7 @@ class QvDigitize:
             else:
                 act.setEnabled(False)
             txt = "Desfés canvi"
-            if act.isEnabled():
-                txt += "\tCtrl+Z"
+            if act.isEnabled(): txt += "\tCtrl+Z"
             act.setText(txt)
         act = self.accions.accio('redo')
         if act is not None:
@@ -199,8 +204,7 @@ class QvDigitize:
             else:
                 act.setEnabled(False)
             txt = "Refés canvi"
-            if act.isEnabled():
-                txt += "\tCtrl+Y"
+            if act.isEnabled(): txt += "\tCtrl+Y"
             act.setText(txt)
         act = self.accions.accio('endLayer')
         if act is not None:
@@ -224,25 +228,32 @@ class QvDigitize:
         # Grupo 4: Cierre de ediciones
         self.menuAccions += ['endLayer', 'endAll']
 
-    def undo(self):
+    def dfCommand(self, name):
         df = self.df()
         if df is not None:
-            df.undo()
+            try:
+                method = getattr(df, name)
+                method()
+            except Exception as e:
+                print(str(e))
 
-    def redo(self):
-        df = self.df()
-        if df is not None:
-            df.redo()
-
-    def setUndoRedo(self, parent):
+    def setShortcuts(self, parent):
+        self.ctrlPlus = qtWdg.QShortcut("Ctrl++", parent)
+        self.ctrlPlus.activated.connect(lambda: self.dfCommand('new'))
+        self.ctrlAsterisk = qtWdg.QShortcut("Ctrl+*", parent)
+        self.ctrlAsterisk.activated.connect(lambda: self.dfCommand('redraw'))
+        self.ctrlMinus = qtWdg.QShortcut("Ctrl+-", parent)
+        self.ctrlMinus.activated.connect(lambda: self.dfCommand('delete'))
         self.ctrlZ = qtWdg.QShortcut("Ctrl+Z", parent)
-        self.ctrlZ.activated.connect(self.undo)
+        self.ctrlZ.activated.connect(lambda: self.dfCommand('undo'))
         self.ctrlY = qtWdg.QShortcut("Ctrl+Y", parent)
-        self.ctrlY.activated.connect(self.redo)
+        self.ctrlY.activated.connect(lambda: self.dfCommand('redo'))
+        self.ctrlDot = qtWdg.QShortcut("Ctrl+.", parent)
+        self.ctrlDot.activated.connect(self.stop)
 
     def setMenu(self, menu):
         self.menu = menu
-        self.setUndoRedo(self.menu.parent().parent()) # Se asigna a QVista (QMainWindow)
+        self.setShortcuts(self.menu.parent().parent()) # Se asigna a QVista (QMainWindow)
         self.setMenuAccions()
         self.menu.aboutToShow.connect(self.showMenu)
         return self.menu

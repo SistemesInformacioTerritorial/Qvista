@@ -60,6 +60,7 @@ class QvFitxesAtributs(QDialog):
     def consulta(self):
         for feature in self.features:
             form = QgsAttributeForm(self.layer, feature)
+            # form.setMode(QgsAttributeEditorContext.IdentifyMode)
             self.ui.stackedWidget.addWidget(form)
         if self.total > 1:
             self.title = self.layer.name() + " - Consulta fitxa elements"
