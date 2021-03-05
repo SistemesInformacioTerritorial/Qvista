@@ -285,6 +285,8 @@ class QVista(QMainWindow, Ui_MainWindow):
         Arguments:
             projecte {str} -- Ruta del projecte que volem obrir
         """
+        # Falta trataminento de guardar proyecto!!!
+        self.teCanvisPendents()
         self.obrirProjecte(projecte, self.canvas.extent())
 
     def obrirProjecte(self, projecte, rang = None, nou=False):
