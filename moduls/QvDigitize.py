@@ -320,12 +320,18 @@ class QvDigitize:
     def cancel(self):
         self.finish(False)
 
-    def stop(self):
+    def stop(self, salir=False):
         if self.modified():
-            r = qtWdg.QMessageBox.question(self.llegenda, "Finalitza edicions del mapa",
-                                           f"Vol desar les modificacions realitzades al mapa o descartar-les totes?", 
-                                           buttons = qtWdg.QMessageBox.Save | qtWdg.QMessageBox.Discard | qtWdg.QMessageBox.Cancel,
-                                           defaultButton = qtWdg.QMessageBox.Save)
+            if salir:
+                r = qtWdg.QMessageBox.warning(self.llegenda, "Hi ha edicions obertes sense desar",
+                                               f"Vol desar les modificacions realitzades al mapa o descartar-les totes?", 
+                                               buttons = qtWdg.QMessageBox.Save | qtWdg.QMessageBox.Discard,
+                                               defaultButton = qtWdg.QMessageBox.Save)
+            else:
+                r = qtWdg.QMessageBox.question(self.llegenda, "Finalitza edicions del mapa",
+                                               f"Vol desar les modificacions realitzades al mapa o descartar-les totes?", 
+                                               buttons = qtWdg.QMessageBox.Save | qtWdg.QMessageBox.Discard | qtWdg.QMessageBox.Cancel,
+                                               defaultButton = qtWdg.QMessageBox.Save)
             if r == qtWdg.QMessageBox.Save: self.end()
             elif r == qtWdg.QMessageBox.Discard: self.cancel()
         else:
