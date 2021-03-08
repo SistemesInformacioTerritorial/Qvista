@@ -150,6 +150,12 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
         self.fSignal = lambda: self.projecteModificat.emit('canvasLayersChanged')
         self.iniSignal = False
 
+    def qVista(self):
+        try:
+            return self.parent().parent()
+        except:
+            return None
+
     def editing(self, capa):
         if self.digitize is not None:
             return self.digitize.editing(capa)
@@ -306,15 +312,22 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
             return True
         return False
 
-    def menuEdicioVisible(self, on=None):
+    def botoQgisVisible(self, visible):
+        qV = self.qVista()
+        if qV is not None:
+            try:
+                qV.botoObrirQGis.setEnabled(visible)
+                qV.botoObrirQGis.setVisible(visible)
+            except:
+                pass
+
+    def menuEdicioVisible(self, visible=None):
+        if visible is None:               
+            visible = self.mapaEditable()
         if self.menuEdicio is not None:
-            if on is None:               
-                if self.mapaEditable():
-                    on = True
-                else:
-                    on = False
-            self.menuEdicio.menuAction().setEnabled(on)
-            self.menuEdicio.menuAction().setVisible(on)
+            self.menuEdicio.menuAction().setEnabled(visible)
+            self.menuEdicio.menuAction().setVisible(visible)
+        return visible
 
     def setMenuEdicio(self, menu):
         self.menuEdicio = self.digitize.setMenu(menu)
@@ -350,7 +363,8 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
                 # # self.restoreCanvasPosition()
                 node.setItemVisibilityChecked(True)
 
-        self.menuEdicioVisible()
+        visible = self.menuEdicioVisible()
+        self.botoQgisVisible(not visible)
 
         self.tema.temaInicial()
 
