@@ -17,9 +17,6 @@ import os
 # 
 # TODO
 #
-# - Valores default de campos al modificar atributos o geometría
-# - Combinar comandos dibujo con los de visualización
-# - Al salir de qVista, controlar si hay ediciones abiertas con modificaciones pendientes
 # - Pruebas edición tabla Oracle
 # - Repasar activacion dirty bit
 # - Propiedades de capa: identificable, searchable, necesaria, readonly
@@ -29,7 +26,7 @@ import os
 # - Password Manager para acceder a capas protegidas
 # - En qVista no se ven las capas protegidas
 # - Geocodificación número 0
-# - L:\Dades\SIT\VistaMoitor que apunte al nuevo QGIS
+# - L:\Dades\SIT\VistaMonitor que apunte al nuevo QGIS
 # - Fotos geolocalizadas / asignadas a un punto
 # 
 # https://docs.qgis.org/3.16/en/docs/user_manual/working_with_vector/editing_geometry_attributes.html

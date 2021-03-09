@@ -47,7 +47,7 @@ class QvDigitizeContext:
         return qgCor.QgsExpressionContextUtils.projectScope(project).variable(nom).upper() == 'TRUE'
 
     @staticmethod
-    def testEditable(layer: qgCor.QgsMapLayer, project: qgCor.QgsProject = qgCor.QgsProject.instance(), nom: str = 'qV_editable') -> bool:
+    def testUserEditable(layer: qgCor.QgsMapLayer, project: qgCor.QgsProject = qgCor.QgsProject.instance(), nom: str = 'qV_editable') -> bool:
         """Comprueba si una capa puede editarse desde qVista por un usuario determinado.
         Para que una capa pueda ser modificada, ha de ser de tipo vectorial. Además, es necesario definir una variable 
         llamada 'qV_editable'; esta puede contener una lista de los códigos de usuario que tienen permitida la edición,

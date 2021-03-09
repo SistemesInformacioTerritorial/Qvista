@@ -77,7 +77,7 @@ class QvDigitize:
     ### Gestión de lista de capas editables
 
     def altaInfoCapa(self, capa):
-        if QvDigitizeContext.testEditable(capa):
+        if QvDigitizeContext.testUserEditable(capa):
             self.modifInfoCapa(capa, None)
 
     def modifInfoCapa(self, capa, df):
@@ -113,7 +113,7 @@ class QvDigitize:
     def setAccions(self, parent=None):
         self.accions = QvAccions()
 
-        act = qtWdg.QAction('Dibuixa nou element', parent)
+        act = qtWdg.QAction('Nou element', parent)
         act.setEnabled(False)
         self.accions.afegirAccio('newElement', act)
 
@@ -164,7 +164,7 @@ class QvDigitize:
         if act is not None:
             if df:
                 act.triggered.connect(df.new)
-                act.setText("Dibuixa nou element\tCtrl++")
+                act.setText("Nou element\tCtrl++")
                 act.setEnabled(True)
             else:
                 act.setEnabled(False)
