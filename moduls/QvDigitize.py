@@ -77,7 +77,7 @@ class QvDigitize:
     ### Gestión de lista de capas editables
 
     def altaInfoCapa(self, capa):
-        if QvDigitizeContext.testUserEditable(capa):
+        if self.llegenda.isLayerEditable(capa) and QvDigitizeContext.testUserEditable(capa):
             self.modifInfoCapa(capa, None)
 
     def modifInfoCapa(self, capa, df):

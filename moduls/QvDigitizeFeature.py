@@ -17,11 +17,16 @@ import os
 # 
 # TODO
 #
-# - Pruebas edición tabla Oracle
+# - Configuración de snapping
+# - Edición de vértices
 # - Repasar activacion dirty bit
-# - Propiedades de capa: identificable, searchable, necesaria, readonly
-# - Formulario de opciones de snapping
-# - Edicion de geonetría: QgsVectorLayerEditUtils 
+# - Pruebas edición tabla Oracle
+# - Propiedades de capa: 
+#   * identificable: pueden consultarse con identify tool - ¿?
+#   * solo lectura: no puede editarse - funciona en QGIS y en qVista
+#   * consultable (localizable): pueden consultarse con locator widget - ¿?
+#   * necesaria (requerida): protegida contra el borrado en el proyecto - funciona en QGIS, no en qVista
+# - Edicion de geonetría: QgsVectorLayerEditUtils
 #
 # - Password Manager para acceder a capas protegidas
 # - En qVista no se ven las capas protegidas
