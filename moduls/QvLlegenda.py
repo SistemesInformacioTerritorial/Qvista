@@ -273,6 +273,7 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
             return False
 
     def actIconesCapa(self, capa, modif=True):
+        if not self.editable: return
         if capa is not None and capa.type() == qgCor.QgsMapLayer.VectorLayer:
             node = self.root.findLayer(capa.id())
             if node is not None:
