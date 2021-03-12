@@ -122,7 +122,7 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
 
         self.iconaRequired = qgGui.QgsLayerTreeViewIndicator()
         self.iconaRequired.setIcon(qtGui.QIcon(':/images/themes/default/mIndicatorNonRemovable.svg'))
-        self.iconaRequired.setToolTip('Capa necessaria per al mapa')
+        self.iconaRequired.setToolTip('Capa necessària per al mapa')
 
         if self.digitize is not None:
             self.iconaEditOff = qgGui.QgsLayerTreeViewIndicator()

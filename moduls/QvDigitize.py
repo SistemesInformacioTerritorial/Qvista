@@ -30,18 +30,24 @@ class QvDigitizeWidget(qgGui.QgsAdvancedDigitizingDockWidget):
 @singleton
 class QvSnapping:
 
-    def __init__(self, canvas):
+    def __init__(self, project, canvas):
+        self.project = project
         self.canvas = canvas
 
-    def config(self, enabled=True):
-        snap = self.canvas.snappingUtils().config()
-        snap.setType(qgCor.QgsSnappingConfig.Vertex)
-        snap.setUnits(qgCor.QgsTolerance.Pixels)
-        snap.setTolerance(10)
-        snap.setMode(qgCor.QgsSnappingConfig.AllLayers)
-        snap.setIntersectionSnapping(False)
-        snap.setEnabled(enabled)
-        self.canvas.snappingUtils().setConfig(snap)
+    def projectConfig(self):
+        config = self.project.snappingConfig()
+        config.setEnabled(True)
+        self.canvas.snappingUtils().setConfig(config)
+
+    # def config(self, enabled=True):
+    #     snap = self.canvas.snappingUtils().config()
+    #     snap.setType(qgCor.QgsSnappingConfig.Vertex)
+    #     snap.setUnits(qgCor.QgsTolerance.Pixels)
+    #     snap.setTolerance(10)
+    #     snap.setMode(qgCor.QgsSnappingConfig.AllLayers)
+    #     snap.setIntersectionSnapping(False)
+    #     snap.setEnabled(enabled)
+    #     self.canvas.snappingUtils().setConfig(snap)
 
     def isEnabled(self):
         return self.canvas.snappingUtils().config().enabled()
@@ -55,11 +61,11 @@ class QvDigitize:
 
     def __init__(self, llegenda):
         self.llegenda = llegenda
+        self.project = self.llegenda.project
         self.canvas = self.llegenda.canvas
         self.widget = QvDigitizeWidget(self.canvas)
         self.widget.shortcut.activated.connect(self.widgetVisible)
-        self.snap = QvSnapping(self.canvas)
-        self.snap.config()
+        self.snap = QvSnapping(self.project, self.canvas)
         self.llista = {}
         self.accions = QvAccions()
         self.menuAccions = []
@@ -73,6 +79,7 @@ class QvDigitize:
 
     def nouProjecte(self):
         self.llista = {}
+        self.snap.projectConfig()
 
     ### Gestión de lista de capas editables
 
