@@ -454,7 +454,7 @@ class QMaBIM(QtWidgets.QMainWindow):
 
     def configuraPlanols(self):
         # QgsProject.instance().read('D:/MABIM-DADES/mabimAUX.qgs')
-        QgsProject.instance().read('U:/QUOTA/Comu_imi/patrimoni/Oriol/PPM_CatRegles_geopackage.qgs')
+        QgsProject.instance().read('L:/DADES/SIT/qVista/CATALEG/MAPES PRIVATS/Patrimoni/PPM_CatRegles_geopackage.qgs')
         root = QgsProject.instance().layerTreeRoot()
         planolA = self.tabCentral.widget(2)
         planolC = self.tabCentral.widget(3)
