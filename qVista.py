@@ -285,6 +285,8 @@ class QVista(QMainWindow, Ui_MainWindow):
         Arguments:
             projecte {str} -- Ruta del projecte que volem obrir
         """
+        # Falta trataminento de guardar proyecto!!!
+        self.teCanvisPendents()
         self.obrirProjecte(projecte, self.canvas.extent())
 
     def obrirProjecte(self, projecte, rang = None, nou=False):
@@ -944,7 +946,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.actObrirProjecte = QAction("Obrir...", self)
         self.actObrirProjecte.setShortcut("Ctrl+O")
         self.actObrirProjecte.setStatusTip("Obrir mapa QGis")
-        self.actObrirProjecte.triggered.connect(lambda: self.obrirDialegProjecte())
+        self.actObrirProjecte.triggered.connect(self.obrirDialegProjecte)
         
         self.actdesarProjecte = QAction("Desar", self)
         self.actdesarProjecte.setShortcut("Ctrl+S")
@@ -2409,6 +2411,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.obrirDialegNovaCapa(["Arxius csv (*.csv)", "Otro esquema"],"CSV (*.csv);;Tots els arxius (*.*)")
 
     def teCanvisPendents(self):
+        if self.llegenda.digitize is not None: self.llegenda.digitize.stop(True)
         return self.canvisPendents
 
     def missatgeDesar(self, titol="Sortir de qVista", txtDesar='Desar-los', txtDescartar='Descartar-los',txtCancelar='Romandre a qVista'):
@@ -2424,8 +2427,8 @@ class QVista(QMainWindow, Ui_MainWindow):
 
     #A més de desar, retornarà un booleà indicant si l'usuari ha desat (True) o ha cancelat (False)
     def desarProjecte(self):
-        """ la funcio retorna si s'ha acabat guardant o no """
-        """  Protecció dels projectes read-only: tres vies:
+        """ la funcio retorna si s'ha acabat guardant o no
+            Protecció dels projectes read-only: tres vies:
         -       Variable del projecte qV_readOnly=’True’
         -       Ubicació en una carpeta de només-lectura
         -       Ubicació en una de les subcarpetes de N:\SITEB\APL\PyQgis\qVista
@@ -2640,8 +2643,10 @@ class QVista(QMainWindow, Ui_MainWindow):
                     # layer.setSubsetString(textCercat)
                     layer.selectByExpression(textCercat)
                     self.llegenda.actIconaFiltre(layer)
-                    ids = [feature.id() for feature in layer.getFeatures()]
-                    self.canvas.zoomToFeatureIds(layer, ids)
+                    # ids = [feature.id() for feature in layer.getFeatures()]
+                    # self.canvas.zoomToFeatureIds(layer, ids)
+                    if layer.selectedFeatureCount() != 0:
+                        self.canvas.setExtent(layer.boundingBoxOfSelected())
             else:
                 missatgeCaixa('Cal tenir seleccionat un nivell per poder fer una selecció.','Marqueu un nivell a la llegenda sobre el que aplicar la consulta.')
 

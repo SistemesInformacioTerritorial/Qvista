@@ -161,6 +161,9 @@ class QvCanvas(QgsMapCanvas):
             if  self.bAnotacions.isChecked():
                 self.uncheckBotons(self.bAnotacions)
                 self.einesBotons[self.llegenda.anotacions]=self.bAnotacions
+                # Si estábamos digitalizando, acabar comando
+                eina = self.mapTool()
+                if self.testDigitizeTool(eina): eina.unset()
                 self.setMapTool(self.llegenda.anotacions)
             else: 
                 self.bAnotacions.setChecked(True)
@@ -193,6 +196,33 @@ class QvCanvas(QgsMapCanvas):
         boto.setIconSize(QSize(24,24))
         boto.setGeometry(0,0,24,24)
         self._botons.append(boto)
+        return boto
+    
+    def afegirBotoCustom(self, nomBoto, imatge=None, toolTip = None, posicio=-1):
+        """Afegeix un botó no estàndard al canvas.
+
+        Si el paràmetre nomBoto té com a valor "botoReset", 
+         un cop executada la funció el botó creat estarà a self.botoReset.
+         El botó també serà retornat, per poder treballar amb ell
+
+         En cas d'existir ja un atribut amb el nom donat, es provarà d'afegir-lo amb una _ al final
+          (en l'exemple, si self.botoReset ja existís es tornaria a provar amb self.botoReset_)
+
+        Args:
+            nomBoto (str): Nom de la variable que contindrà el botó
+            imatge (str, optional): Ruta de la imatge de la icona. Defaults to None.
+            toolTip (str, optional): Tooltip del botó. Defaults to None.
+            posicio (int, optional): Posició de la botonera on volem posar-lo. Si no s'especifica, serà al final. Defaults to -1.
+
+        Returns:
+            QvPushButton: Botó que s'ha creat
+        """
+        if hasattr(self,nomBoto):
+            return self.afegirBotoCustom(self, nomBoto+'_', imatge, toolTip)
+        boto = self._botoMapa(imatge)
+        boto.setToolTip(toolTip)
+        setattr(self, nomBoto, boto)
+        self.layoutBotoneraMapa.insertWidget(posicio, boto)
         return boto
 
     def _preparacioBotonsCanvas(self):
@@ -401,7 +431,6 @@ class QvCanvas(QgsMapCanvas):
         
 
     def dropEvent(self, e):
-
         position = e.pos()
         self.qvSv.rp.llevameP(position)
         self.mostraStreetView.emit()
@@ -409,6 +438,7 @@ class QvCanvas(QgsMapCanvas):
 
         e.setDropAction(Qt.MoveAction)
         e.accept()
+
     def setMapTool(self,tool):
         if isinstance(tool,QvMascaraEinaPlantilla):
             while tool in self.eines: 
@@ -447,7 +477,7 @@ class QvCanvas(QgsMapCanvas):
             self.unsetMapTool(eina,True)
 
     def testDigitizeTool(self, eina):
-        if QvApp().testVersioQgis(3, 10):
+        if eina is not None and QvApp().testVersioQgis(3, 10):
             from qgis.gui import QgsMapToolDigitizeFeature
             return isinstance(eina, QgsMapToolDigitizeFeature)
         return False
@@ -457,7 +487,10 @@ class QvCanvas(QgsMapCanvas):
         if event.button()==Qt.RightButton:
             eina = self.eines[-1]
             if not isinstance(eina, QvMesuraMultiLinia) and not self.testDigitizeTool(eina):
-                self.unsetLastMapTool()    
+                self.unsetLastMapTool()
+                # Si volvemos a digitalización, ignorar RightButton
+                eina = self.mapTool()
+                if self.testDigitizeTool(eina): eina.ignoreRightButton = True
 
 class Marc(QFrame):
     def __init__(self, master=None):

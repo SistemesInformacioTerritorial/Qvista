@@ -5,7 +5,7 @@ from qgis.PyQt.QtCore import QTranslator, QLibraryInfo, QLocale
 from qgis.PyQt.QtWidgets import QApplication
 from qgis.PyQt.QtNetwork import QNetworkProxy
 from qgis.core import QgsPythonRunner, Qgis
-from moduls.QvSingleton import Singleton
+from moduls.QvSingleton import singleton
 from moduls.QvPythonRunner import QvPythonRunner
 from moduls.QvGithub import QvGithub
 from moduls.QvSqlite import QvSqlite
@@ -56,12 +56,9 @@ def _fatalError(type, value, tb):
 #     print('ERROR -', error)
 #     QvApp().logRegistre('LOG_ERROR', error[-1000:])
 
-
-class QvApp(Singleton):
-
-    def __init__(self):
-        if hasattr(self, 'gh'):                     # Se inicializa una vez
-            return
+@singleton
+class QvApp:
+    def __init__(self, produccio=None):
         self.gh = None
         self.ruta, self.rutaBase = self.calcRuta()  # Path de la aplicación
         self.cfg = self.readCfg()                   # Config de instalación
@@ -69,7 +66,7 @@ class QvApp(Singleton):
         if val != "True":
             sys.excepthook = _fatalError
 
-        self.entorn = self.calcEntorn()             # 'DSV' o 'PRO'
+        self.entorn = self.calcEntorn(produccio)       # 'DSV' o 'PRO'
 
         self.usuari = getpass.getuser().upper()     # Id de usuario
         self.sessio = str(uuid.uuid1())             # Id único de sesión
@@ -188,8 +185,8 @@ class QvApp(Singleton):
             self.bugException(err)
             return None
 
-    def calcEntorn(self):
-        val = self.paramCfg('Producció', 'False')
+    def calcEntorn(self, val=None):
+        if val is None: val = self.paramCfg('Producció', 'False')
         if val == 'True':
             return 'PRO'
         else:

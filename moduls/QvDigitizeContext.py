@@ -47,13 +47,12 @@ class QvDigitizeContext:
         return qgCor.QgsExpressionContextUtils.projectScope(project).variable(nom).upper() == 'TRUE'
 
     @staticmethod
-    def testEditable(layer: qgCor.QgsMapLayer, project: qgCor.QgsProject = qgCor.QgsProject.instance(), nom: str = 'qV_editable') -> bool:
+    def testUserEditable(layer: qgCor.QgsMapLayer, project: qgCor.QgsProject = qgCor.QgsProject.instance(), nom: str = 'qV_editable') -> bool:
         """Comprueba si una capa puede editarse desde qVista por un usuario determinado.
         Para que una capa pueda ser modificada, ha de ser de tipo vectorial. Además, es necesario definir una variable 
         llamada 'qV_editable'; esta puede contener una lista de los códigos de usuario que tienen permitida la edición,
         o bien un asterisco ('*') que significa que cualquier usuario puede modificarla, o bien un signo menos ('-') que
-        indica que nadie puede modificarla. La variable puede estar definida a nivel de proyecto o de capa;
-        tendrá preponderancia siempre la de capa a la de proyecto.
+        indica que nadie puede modificarla. La variable solo actúa si está definida a nivel de capa.
 
         Args:
             layer (QgsMapLayer): Capa a testear.
@@ -62,9 +61,9 @@ class QvDigitizeContext:
         Returns:
             bool: True si el usuario de qVista puede modificar la capa.
         """
-        def testVar(nom, object, scope):
+        def testVar(nom, scope):
             try:
-                var = scope(object).variable(nom)
+                var = scope.variable(nom)
                 var = QvDigitizeContext.varClear(var)
                 if var is None or var == '': return None
                 if var == '*': return True
@@ -76,16 +75,13 @@ class QvDigitizeContext:
                 print(str(e))
                 return None
 
+        ok = False
         try:
             if layer.type() != qgCor.QgsMapLayer.VectorLayer: return False
-            # if QvDigitizeContext.testReadOnly(): return False
-            ok = testVar(nom, layer, qgCor.QgsExpressionContextUtils.layerScope)
-            if ok is None:
-                ok = testVar(nom, project, qgCor.QgsExpressionContextUtils.projectScope)
-            if ok is None:
-                return False
-            else:
-                return ok
+            scope = qgCor.QgsExpressionContextUtils.layerScope(layer)
+            ok = testVar(nom, scope)
+            if ok is None: ok = False
         except Exception as e:
             print(str(e))
-            return False
+        finally:
+            return ok

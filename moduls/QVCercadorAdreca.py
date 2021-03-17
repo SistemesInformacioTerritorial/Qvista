@@ -257,6 +257,7 @@ class QCercadorAdreca(QObject):
         self.numeroCarrer = ''
         self.coordAdreca = None
         self.infoAdreca = None
+        self.NumeroOficial = ''
 
     def connectarLineEdits(self):
         self.leCarrer.textChanged.connect(self.esborrarNumero)

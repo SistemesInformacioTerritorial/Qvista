@@ -46,6 +46,8 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
                  anotacions=True, editable=True):
         qgGui.QgsLayerTreeView.__init__(self)
 
+        # OJO: la inicialización en QGIS se realiza en: QgisApp::initLayerTreeView()
+
         self.setTitol()
         self.project = qgCor.QgsProject.instance()
         self.root = self.project.layerTreeRoot()
@@ -118,6 +120,10 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
         self.iconaMap.setToolTip('Categories de mapificació')
         self.iconaMap.clicked.connect(lambda: QvFormSimbMapificacio.executa(self))
 
+        self.iconaRequired = qgGui.QgsLayerTreeViewIndicator()
+        self.iconaRequired.setIcon(qtGui.QIcon(':/images/themes/default/mIndicatorNonRemovable.svg'))
+        self.iconaRequired.setToolTip('Capa necessària per al mapa')
+
         if self.digitize is not None:
             self.iconaEditOff = qgGui.QgsLayerTreeViewIndicator()
             self.iconaEditOff.setIcon(qtGui.QIcon(os.path.join(imatgesDir, 'edit_off.png')))
@@ -149,6 +155,12 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
 
         self.fSignal = lambda: self.projecteModificat.emit('canvasLayersChanged')
         self.iniSignal = False
+
+    def qVista(self):
+        try:
+            return self.parent().parent()
+        except:
+            return None
 
     def editing(self, capa):
         if self.digitize is not None:
@@ -260,16 +272,21 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
         except Exception:
             return False
 
-    def actIconesCapa(self, capa):
-        if capa.type() == qgCor.QgsMapLayer.VectorLayer:
+    def actIconesCapa(self, capa, modif=True):
+        if not self.editable: return
+        if capa is not None and capa.type() == qgCor.QgsMapLayer.VectorLayer:
             node = self.root.findLayer(capa.id())
             if node is not None:
                 self.removeIndicator(node, self.iconaFiltre)
                 self.removeIndicator(node, self.iconaMap)
+                self.removeIndicator(node, self.iconaRequired)
                 if self.digitize is not None:
                     self.removeIndicator(node, self.iconaEditOn)
                     self.removeIndicator(node, self.iconaEditOff)
                     self.removeIndicator(node, self.iconaEditMod)
+                # Requerida
+                if not self.isLayerRemovable(capa):
+                    self.addIndicator(node, self.iconaRequired)
                 # Filtro
                 if capa.subsetString() != '':
                     self.addIndicator(node, self.iconaFiltre)
@@ -288,32 +305,40 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
                                 self.addIndicator(node, self.iconaEditOn)
                         else:
                             self.addIndicator(node, self.iconaEditOff)
-                capa.nameChanged.emit()
+                if modif:
+                    capa.nameChanged.emit()
 
     def actIcones(self):
         if self.removing:
             return
         for capa in self.capes():
-            self.actIconesCapa(capa)
+            self.actIconesCapa(capa, False)
 
     def actIconaFiltre(self, capa):
         self.actIconesCapa(capa)
         self.modificacioProjecte('filterModified')
 
     def mapaEditable(self):
-        if self.digitize and self.digitize.editable:
+        if self.digitize and self.digitize.editable():
             return True
         return False
 
-    def menuEdicioVisible(self, on=None):
+    def botoQgisVisible(self, visible):
+        qV = self.qVista()
+        if qV is not None:
+            try:
+                qV.botoObrirQGis.setEnabled(visible)
+                qV.botoObrirQGis.setVisible(visible)
+            except:
+                pass
+
+    def menuEdicioVisible(self, visible=None):
+        if visible is None:               
+            visible = self.mapaEditable()
         if self.menuEdicio is not None:
-            if on is None:               
-                if self.mapaEditable():
-                    on = True
-                else:
-                    on = False
-            self.menuEdicio.menuAction().setEnabled(on)
-            self.menuEdicio.menuAction().setVisible(on)
+            self.menuEdicio.menuAction().setEnabled(visible)
+            self.menuEdicio.menuAction().setVisible(visible)
+        return visible
 
     def setMenuEdicio(self, menu):
         self.menuEdicio = self.digitize.setMenu(menu)
@@ -337,7 +362,7 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
             #     self.actIconaFiltre(layer)
 
             if self.digitize is not None:
-                self.digitize.iniInfoCapa(capa)
+                self.digitize.altaInfoCapa(capa)
 
             if capa.type() == qgCor.QgsMapLayer.RasterLayer and self.capaMarcada(capa):
                 node = self.root.findLayer(capa.id())
@@ -349,7 +374,8 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
                 # # self.restoreCanvasPosition()
                 node.setItemVisibilityChecked(True)
 
-        self.menuEdicioVisible()
+        visible = self.menuEdicioVisible()
+        self.botoQgisVisible(not visible)
 
         self.tema.temaInicial()
 
@@ -503,11 +529,8 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
 
         act = qtWdg.QAction()
         act.setText("Esborra capa o grup")
-        if self.atributs is not None:
-            act.triggered.connect(lambda: self.atributs.tancarTaules(
-                qgCor.QgsLayerTreeUtils.collectMapLayersRecursive([self.currentNode()])))
+        # No se usa defaultActions() porque elimina todos los seleccionados; además, hay que cerrar las tablas de datos
         act.triggered.connect(self.removeGroupOrLayer)
-        # No se usa defaultActions() porque elimina todos los seleccionados
         self.accions.afegirAccio('removeGroupOrLayer', act)
 
         act = qtWdg.QAction()
@@ -556,6 +579,33 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
                     tipo = 'layer'
         return tipo
 
+    def testFlags(self, flags, mask):
+        return int(flags & mask) == mask
+
+    def isGroupRemovable(self, node=None):
+        if node is None: node = self.currentNode()
+        if node is None: return False
+        for item in node.findLayers():
+            capa = item.layer()
+            if not self.isLayerRemovable(capa):
+                return False
+        return True
+
+    def isLayerRemovable(self, capa=None):
+        if capa is None: capa = self.currentLayer()
+        if capa is None: return False
+        return self.testFlags(capa.flags(), qgCor.QgsMapLayer.LayerFlag.Removable)
+
+    def isLayerEditable(self, capa=None):
+        if capa is None: capa = self.currentLayer()
+        if capa is None: return False
+        if not capa.isValid(): return False
+        if capa.readOnly(): return False
+        if capa.type() != qgCor.QgsMapLayerType.VectorLayer: return False
+        dP = capa.dataProvider()
+        if dP is None: return False
+        return self.testFlags(dP.capabilities(), qgCor.QgsVectorDataProvider.EditingCapabilities)
+
     def setMenuAccions(self):
         # Menú dinámico según tipo de elemento sobre el que se clicó
         self.menuAccions = []
@@ -578,12 +628,15 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
                 self.menuAccions += ['showLayerMap']
             self.menuAccions += ['separator']
             if self.editable:
-                self.menuAccions += ['addGroup', 'renameGroupOrLayer', 'removeGroupOrLayer']
+                self.menuAccions += ['addGroup', 'renameGroupOrLayer']
+                if capa is not None and self.isLayerRemovable(capa):
+                    self.menuAccions += ['removeGroupOrLayer']
             self.menuAccions += ['saveLayersToFile', 'addCatalogueLayers']
         elif tipo == 'group':
             if self.editable:
-                self.menuAccions += ['addGroup', 'renameGroupOrLayer', 'addLayersFromFile',
-                                     'removeGroupOrLayer']
+                self.menuAccions += ['addGroup', 'renameGroupOrLayer', 'addLayersFromFile']
+                if self.isGroupRemovable():
+                    self.menuAccions += ['removeGroupOrLayer']
             self.menuAccions += ['saveLayersToFile', 'addCatalogueLayers']
         elif tipo == 'none':
             if self.editable:
@@ -625,6 +678,8 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
             if self.mapaEditable() and self.nodeEditing(node):
                 qtWdg.QMessageBox.information(self, "Atenció", "No es pot esborrar una capa quan s'està editant")
             else:
+                if self.atributs is not None:
+                    self.atributs.tancarTaules(qgCor.QgsLayerTreeUtils.collectMapLayersRecursive([node]))
                 node.parent().removeChildNode(node)
         self.removing = False
 
