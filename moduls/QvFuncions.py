@@ -19,9 +19,6 @@ def setDPI():
     if hasattr(QtCore.Qt, 'AA_UseHighDpiPixmaps'):
         QApplication.setAttribute(QtCore.Qt.AA_UseHighDpiPixmaps, True)
 
-    if hasattr(QtCore.Qt, 'AA_EnableHighDpiScaling'):
-        QApplication.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling, True)
-
 def cronometra(func):
     """Funció decoradora que cronometra la funció passada com a paràmetre i imprimeix el temps per pantalla
     Aquesta funció està pensada per ser utilitzada per cronometraDebug i evitar ser invasiva amb prints
