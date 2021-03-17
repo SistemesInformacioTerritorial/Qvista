@@ -17,19 +17,21 @@ import os
 # 
 # TODO
 #
-# - Valores default de campos al modificar atributos o geometría
-# - Combinar comandos dibujo con los de visualización
-# - Al salir de qVista, controlar si hay ediciones abiertas con modificaciones pendientes
-# - Pruebas edición tabla Oracle
+# - Configuración de snapping
+# - Edición de vértices
 # - Repasar activacion dirty bit
-# - Propiedades de capa: identificable, searchable, necesaria, readonly
-# - Formulario de opciones de snapping
-# - Edicion de geonetría: QgsVectorLayerEditUtils 
+# - Pruebas edición tabla Oracle
+# - Propiedades de capa: 
+#   * identificable: pueden consultarse con identify tool - ¿?
+#   * solo lectura: no puede editarse - funciona en QGIS y en qVista
+#   * consultable (localizable): pueden consultarse con locator widget - ¿?
+#   * necesaria (requerida): protegida contra el borrado en el proyecto - funciona en QGIS, no en qVista
+# - Edicion de geonetría: QgsVectorLayerEditUtils
 #
 # - Password Manager para acceder a capas protegidas
 # - En qVista no se ven las capas protegidas
 # - Geocodificación número 0
-# - L:\Dades\SIT\VistaMoitor que apunte al nuevo QGIS
+# - L:\Dades\SIT\VistaMonitor que apunte al nuevo QGIS
 # - Fotos geolocalizadas / asignadas a un punto
 # 
 # https://docs.qgis.org/3.16/en/docs/user_manual/working_with_vector/editing_geometry_attributes.html
@@ -53,16 +55,22 @@ class QvDigitizeFeature(qgGui.QgsMapToolDigitizeFeature):
         self.signal = None
         self.menu = None
         self.tool = None
+        self.ignoreRightButton = False
 
     def cadCanvasReleaseEvent(self, event):
-        # Finaliza tool de dibujo con botón derecho cuando no hay puntos dibujados
-        if event.button() == qtCor.Qt.RightButton and (self.tool == self) and self.size() == 0:
-            # Si estamos redibujando, vuelve al principio para seleccionar otro elemento
-            redraw = (self.signal == self.redrawFeature)
-            self.unset()
-            if redraw: self.redraw()
-        else:
-            super().cadCanvasReleaseEvent(event)
+        if event.button() == qtCor.Qt.RightButton:
+            # Se ignora botón derecho cuando volvemos de otro tool
+            if self.ignoreRightButton:
+                self.ignoreRightButton = False
+                return
+            # Finaliza tool de dibujo con botón derecho cuando no hay puntos dibujados
+            if (self.tool == self) and self.size() == 0:
+                # Aunque, si estamos redibujando, vuelve al principio para seleccionar otro elemento
+                redraw = (self.signal == self.redrawFeature)
+                self.unset()
+                if redraw: self.redraw()
+                return
+        super().cadCanvasReleaseEvent(event)
 
     def iniSignal(self):
         if self.signal is not None:
@@ -187,8 +195,8 @@ class QvDigitizeFeature(qgGui.QgsMapToolDigitizeFeature):
 
     def redraw(self):
         if self.capa.isEditable():
-            if self.tool == self:
-                self.unset()
+            if self.tool == self: self.unset()
+            self.capa.removeSelection()
             tool = QvSeleccioElement(self.canvas, self.llegenda, senyal=True)
             tool.elementsSeleccionats.connect(self.selectFeature)
             self.go(tool, True)
@@ -210,6 +218,7 @@ class QvDigitizeFeature(qgGui.QgsMapToolDigitizeFeature):
     ######################### Borrar elemento(s)
 
     def delete(self):
+        if self.tool == self: self.unset()
         self.capa.deleteSelectedFeatures()
         self.atributs.tabTaula(self.capa)
 
@@ -263,14 +272,8 @@ class QvDigitizeFeature(qgGui.QgsMapToolDigitizeFeature):
         self.menu.addSeparator()
         # Grupo 2 - Undo / Redo
         act = self.menu.addAction('Desfés canvi', self.undo)
-        # act.setShortcut("Ctrl+Z")
-        # act.setShortcutContext(qtCor.Qt.WidgetWithChildrenShortcut)
-        # act.setShortcutVisibleInContextMenu(True)
         act.setEnabled(self.canUndo())
         act = self.menu.addAction('Refés canvi', self.redo)
-        # act.setShortcut("Ctrl+Y")
-        # act.setShortcutContext(qtCor.Qt.WidgetWithChildrenShortcut)
-        # act.setShortcutVisibleInContextMenu(True)
         act.setEnabled(self.canRedo())
         self.menu.addSeparator()
         # Grupo 3: Cierre de edición

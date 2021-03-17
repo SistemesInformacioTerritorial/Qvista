@@ -285,6 +285,8 @@ class QVista(QMainWindow, Ui_MainWindow):
         Arguments:
             projecte {str} -- Ruta del projecte que volem obrir
         """
+        # Falta trataminento de guardar proyecto!!!
+        self.teCanvisPendents()
         self.obrirProjecte(projecte, self.canvas.extent())
 
     def obrirProjecte(self, projecte, rang = None, nou=False):
@@ -944,7 +946,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.actObrirProjecte = QAction("Obrir...", self)
         self.actObrirProjecte.setShortcut("Ctrl+O")
         self.actObrirProjecte.setStatusTip("Obrir mapa QGis")
-        self.actObrirProjecte.triggered.connect(lambda: self.obrirDialegProjecte())
+        self.actObrirProjecte.triggered.connect(self.obrirDialegProjecte)
         
         self.actdesarProjecte = QAction("Desar", self)
         self.actdesarProjecte.setShortcut("Ctrl+S")
@@ -2409,6 +2411,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.obrirDialegNovaCapa(["Arxius csv (*.csv)", "Otro esquema"],"CSV (*.csv);;Tots els arxius (*.*)")
 
     def teCanvisPendents(self):
+        if self.llegenda.digitize is not None: self.llegenda.digitize.stop(True)
         return self.canvisPendents
 
     def missatgeDesar(self, titol="Sortir de qVista", txtDesar='Desar-los', txtDescartar='Descartar-los',txtCancelar='Romandre a qVista'):

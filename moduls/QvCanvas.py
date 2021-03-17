@@ -161,6 +161,9 @@ class QvCanvas(QgsMapCanvas):
             if  self.bAnotacions.isChecked():
                 self.uncheckBotons(self.bAnotacions)
                 self.einesBotons[self.llegenda.anotacions]=self.bAnotacions
+                # Si estábamos digitalizando, acabar comando
+                eina = self.mapTool()
+                if self.testDigitizeTool(eina): eina.unset()
                 self.setMapTool(self.llegenda.anotacions)
             else: 
                 self.bAnotacions.setChecked(True)
@@ -428,7 +431,6 @@ class QvCanvas(QgsMapCanvas):
         
 
     def dropEvent(self, e):
-
         position = e.pos()
         self.qvSv.rp.llevameP(position)
         self.mostraStreetView.emit()
@@ -436,6 +438,7 @@ class QvCanvas(QgsMapCanvas):
 
         e.setDropAction(Qt.MoveAction)
         e.accept()
+
     def setMapTool(self,tool):
         if isinstance(tool,QvMascaraEinaPlantilla):
             while tool in self.eines: 
@@ -474,7 +477,7 @@ class QvCanvas(QgsMapCanvas):
             self.unsetMapTool(eina,True)
 
     def testDigitizeTool(self, eina):
-        if QvApp().testVersioQgis(3, 10):
+        if eina is not None and QvApp().testVersioQgis(3, 10):
             from qgis.gui import QgsMapToolDigitizeFeature
             return isinstance(eina, QgsMapToolDigitizeFeature)
         return False
@@ -484,7 +487,10 @@ class QvCanvas(QgsMapCanvas):
         if event.button()==Qt.RightButton:
             eina = self.eines[-1]
             if not isinstance(eina, QvMesuraMultiLinia) and not self.testDigitizeTool(eina):
-                self.unsetLastMapTool()    
+                self.unsetLastMapTool()
+                # Si volvemos a digitalización, ignorar RightButton
+                eina = self.mapTool()
+                if self.testDigitizeTool(eina): eina.ignoreRightButton = True
 
 class Marc(QFrame):
     def __init__(self, master=None):

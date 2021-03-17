@@ -30,18 +30,24 @@ class QvDigitizeWidget(qgGui.QgsAdvancedDigitizingDockWidget):
 @singleton
 class QvSnapping:
 
-    def __init__(self, canvas):
+    def __init__(self, project, canvas):
+        self.project = project
         self.canvas = canvas
 
-    def config(self, enabled=True):
-        snap = self.canvas.snappingUtils().config()
-        snap.setType(qgCor.QgsSnappingConfig.Vertex)
-        snap.setUnits(qgCor.QgsTolerance.Pixels)
-        snap.setTolerance(10)
-        snap.setMode(qgCor.QgsSnappingConfig.AllLayers)
-        snap.setIntersectionSnapping(False)
-        snap.setEnabled(enabled)
-        self.canvas.snappingUtils().setConfig(snap)
+    def projectConfig(self):
+        config = self.project.snappingConfig()
+        config.setEnabled(True)
+        self.canvas.snappingUtils().setConfig(config)
+
+    # def config(self, enabled=True):
+    #     snap = self.canvas.snappingUtils().config()
+    #     snap.setType(qgCor.QgsSnappingConfig.Vertex)
+    #     snap.setUnits(qgCor.QgsTolerance.Pixels)
+    #     snap.setTolerance(10)
+    #     snap.setMode(qgCor.QgsSnappingConfig.AllLayers)
+    #     snap.setIntersectionSnapping(False)
+    #     snap.setEnabled(enabled)
+    #     self.canvas.snappingUtils().setConfig(snap)
 
     def isEnabled(self):
         return self.canvas.snappingUtils().config().enabled()
@@ -55,11 +61,11 @@ class QvDigitize:
 
     def __init__(self, llegenda):
         self.llegenda = llegenda
+        self.project = self.llegenda.project
         self.canvas = self.llegenda.canvas
         self.widget = QvDigitizeWidget(self.canvas)
         self.widget.shortcut.activated.connect(self.widgetVisible)
-        self.snap = QvSnapping(self.canvas)
-        self.snap.config()
+        self.snap = QvSnapping(self.project, self.canvas)
         self.llista = {}
         self.accions = QvAccions()
         self.menuAccions = []
@@ -73,11 +79,12 @@ class QvDigitize:
 
     def nouProjecte(self):
         self.llista = {}
+        self.snap.projectConfig()
 
     ### Gestión de lista de capas editables
 
     def altaInfoCapa(self, capa):
-        if QvDigitizeContext.testEditable(capa):
+        if self.llegenda.isLayerEditable(capa) and QvDigitizeContext.testUserEditable(capa):
             self.modifInfoCapa(capa, None)
 
     def modifInfoCapa(self, capa, df):
@@ -154,6 +161,8 @@ class QvDigitize:
         act = qtWdg.QAction('Finalitza totes les edicions', parent)
         act.triggered.connect(self.stop)
         act.setEnabled(self.started())
+        if act.isEnabled():
+            act.setText(act.text() + "\tCtrl+.") 
         self.accions.afegirAccio('endAll', act)
 
     def modAccions(self, df):
@@ -162,13 +171,14 @@ class QvDigitize:
         if act is not None:
             if df:
                 act.triggered.connect(df.new)
+                act.setText("Nou element\tCtrl++")
                 act.setEnabled(True)
             else:
                 act.setEnabled(False)
         act = self.accions.accio('modGeometria')
         if act is not None:
             if df:
-                act.setText(f"Modifica {df.nomGeometria()} d'element")
+                act.setText(f"Modifica {df.nomGeometria()} d'element\tCtrl+*")
                 act.triggered.connect(df.redraw)
                 act.setEnabled(True)
             else:
@@ -180,6 +190,9 @@ class QvDigitize:
                 act.setEnabled(df.capa.selectedFeatureCount())
             else:
                 act.setEnabled(False)
+        txt = "Esborra element(s) seleccionat(s)"
+        if act.isEnabled(): txt += "\tCtrl+-"
+        act.setText(txt)
         act = self.accions.accio('undo')
         if act is not None:
             if df:
@@ -188,8 +201,7 @@ class QvDigitize:
             else:
                 act.setEnabled(False)
             txt = "Desfés canvi"
-            if act.isEnabled():
-                txt += "\tCtrl+Z"
+            if act.isEnabled(): txt += "\tCtrl+Z"
             act.setText(txt)
         act = self.accions.accio('redo')
         if act is not None:
@@ -199,8 +211,7 @@ class QvDigitize:
             else:
                 act.setEnabled(False)
             txt = "Refés canvi"
-            if act.isEnabled():
-                txt += "\tCtrl+Y"
+            if act.isEnabled(): txt += "\tCtrl+Y"
             act.setText(txt)
         act = self.accions.accio('endLayer')
         if act is not None:
@@ -224,25 +235,32 @@ class QvDigitize:
         # Grupo 4: Cierre de ediciones
         self.menuAccions += ['endLayer', 'endAll']
 
-    def undo(self):
+    def dfCommand(self, name):
         df = self.df()
         if df is not None:
-            df.undo()
+            try:
+                method = getattr(df, name)
+                method()
+            except Exception as e:
+                print(str(e))
 
-    def redo(self):
-        df = self.df()
-        if df is not None:
-            df.redo()
-
-    def setUndoRedo(self, parent):
+    def setShortcuts(self, parent):
+        self.ctrlPlus = qtWdg.QShortcut("Ctrl++", parent)
+        self.ctrlPlus.activated.connect(lambda: self.dfCommand('new'))
+        self.ctrlAsterisk = qtWdg.QShortcut("Ctrl+*", parent)
+        self.ctrlAsterisk.activated.connect(lambda: self.dfCommand('redraw'))
+        self.ctrlMinus = qtWdg.QShortcut("Ctrl+-", parent)
+        self.ctrlMinus.activated.connect(lambda: self.dfCommand('delete'))
         self.ctrlZ = qtWdg.QShortcut("Ctrl+Z", parent)
-        self.ctrlZ.activated.connect(self.undo)
+        self.ctrlZ.activated.connect(lambda: self.dfCommand('undo'))
         self.ctrlY = qtWdg.QShortcut("Ctrl+Y", parent)
-        self.ctrlY.activated.connect(self.redo)
+        self.ctrlY.activated.connect(lambda: self.dfCommand('redo'))
+        self.ctrlDot = qtWdg.QShortcut("Ctrl+.", parent)
+        self.ctrlDot.activated.connect(self.stop)
 
     def setMenu(self, menu):
         self.menu = menu
-        self.setUndoRedo(self.menu.parent().parent()) # Se asigna a QVista (QMainWindow)
+        self.setShortcuts(self.menu.parent().parent()) # Se asigna a QVista (QMainWindow)
         self.setMenuAccions()
         self.menu.aboutToShow.connect(self.showMenu)
         return self.menu
@@ -309,12 +327,18 @@ class QvDigitize:
     def cancel(self):
         self.finish(False)
 
-    def stop(self):
+    def stop(self, salir=False):
         if self.modified():
-            r = qtWdg.QMessageBox.question(self.llegenda, "Finalitza edicions del mapa",
-                                           f"Vol desar les modificacions realitzades al mapa o descartar-les totes?", 
-                                           buttons = qtWdg.QMessageBox.Save | qtWdg.QMessageBox.Discard | qtWdg.QMessageBox.Cancel,
-                                           defaultButton = qtWdg.QMessageBox.Save)
+            if salir:
+                r = qtWdg.QMessageBox.warning(self.llegenda, "Hi ha edicions obertes sense desar",
+                                               f"Vol desar les modificacions realitzades al mapa o descartar-les totes?", 
+                                               buttons = qtWdg.QMessageBox.Save | qtWdg.QMessageBox.Discard,
+                                               defaultButton = qtWdg.QMessageBox.Save)
+            else:
+                r = qtWdg.QMessageBox.question(self.llegenda, "Finalitza edicions del mapa",
+                                               f"Vol desar les modificacions realitzades al mapa o descartar-les totes?", 
+                                               buttons = qtWdg.QMessageBox.Save | qtWdg.QMessageBox.Discard | qtWdg.QMessageBox.Cancel,
+                                               defaultButton = qtWdg.QMessageBox.Save)
             if r == qtWdg.QMessageBox.Save: self.end()
             elif r == qtWdg.QMessageBox.Discard: self.cancel()
         else:

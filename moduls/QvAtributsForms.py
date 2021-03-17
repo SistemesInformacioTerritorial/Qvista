@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from qgis.gui import QgsAttributeForm, QgsAttributeDialog, QgsActionMenu, QgsAttributeEditorContext
+from qgis.gui import QgsAttributeForm, QgsAttributeDialog, QgsActionMenu, QgsAttributeEditorContext, QgsGui
 from qgis.PyQt.QtWidgets import QDialog, QMenuBar, QDialogButtonBox, QPushButton
 
 from moduls.Ui_AtributsForm import Ui_AtributsForm
@@ -38,6 +38,8 @@ class QvFormAtributs:
 class QvFitxesAtributs(QDialog):
 
     def __init__(self, layer, features, parent=None, attributes=None, new=False):
+        if len(QgsGui.editorWidgetRegistry().factories()) == 0:
+            QgsGui.editorWidgetRegistry().initEditors()
         QDialog.__init__(self, parent)
         self.initUI()
         self.layer = layer
@@ -60,6 +62,7 @@ class QvFitxesAtributs(QDialog):
     def consulta(self):
         for feature in self.features:
             form = QgsAttributeForm(self.layer, feature)
+            # form.setMode(QgsAttributeEditorContext.IdentifyMode)
             self.ui.stackedWidget.addWidget(form)
         if self.total > 1:
             self.title = self.layer.name() + " - Consulta fitxa elements"
