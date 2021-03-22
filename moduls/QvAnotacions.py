@@ -318,7 +318,7 @@ class QvAnnotationDialog(qtWdg.QDialog):
         # Actualizar documento de la nota
         self.doc.update(estilo, titulo, texto, html)
 
-        self.llegenda.projecteModificat.emit('annotationsChanged')
+        self.llegenda.modificacioProjecte('updateAnnotation')
         self.hide()
 
     def cancel(self):
@@ -421,7 +421,7 @@ class QvMapToolAnnotation(qgGui.QgsMapTool):
             else:
                 visible = item.annotation().mapLayer() in self.canvas().mapSettings().layers()
             item.setVisible(visible)
-        self.llegenda.projecteModificat.emit('annotationsChanged')
+        self.llegenda.modificacioProjecte('visibleAnnotation')
         return toggle
 
     def selectedItem(self) -> qgGui.QgsMapCanvasAnnotationItem:
@@ -490,7 +490,7 @@ class QvMapToolAnnotation(qgGui.QgsMapTool):
             if item is not None:
                 self.canvas().scene().clearSelection()
                 item.setSelected(True)
-                self.llegenda.projecteModificat.emit('annotationsChanged')
+                self.llegenda.modificacioProjecte('addAnnotation')
             return item
         return None
 
@@ -500,14 +500,14 @@ class QvMapToolAnnotation(qgGui.QgsMapTool):
         self.llegenda.project.annotationManager().removeAnnotation(item.annotation())
         self.canvas().scene().removeItem(item)
         item.deleteLater()
-        self.llegenda.projecteModificat.emit('annotationsChanged')
+        self.llegenda.modificacioProjecte('deleteAnnotation')
         self.noAction()
 
     def updateItem(self, item: qgGui.QgsMapCanvasAnnotationItem) -> None:
         if item is None:
             return
         item.update()
-        self.llegenda.projecteModificat.emit('annotationsChanged')
+        self.llegenda.modificacioProjecte('moveAnnotation')
 
     # Cambio posición o tamaño
 

@@ -124,7 +124,7 @@ class QvDigitize:
         act.setEnabled(False)
         self.accions.afegirAccio('newElement', act)
 
-        act = qtWdg.QAction("Modifica geometria d'element", parent)
+        act = qtWdg.QAction("Redibuixa geometria d'element", parent)
         act.setEnabled(False)
         self.accions.afegirAccio('modGeometria', act)
 
@@ -178,7 +178,7 @@ class QvDigitize:
         act = self.accions.accio('modGeometria')
         if act is not None:
             if df:
-                act.setText(f"Modifica {df.nomGeometria()} d'element\tCtrl+*")
+                act.setText(f"Redibuixa {df.nomGeometria()} d'element\tCtrl+*")
                 act.triggered.connect(df.redraw)
                 act.setEnabled(True)
             else:
@@ -343,3 +343,144 @@ class QvDigitize:
             elif r == qtWdg.QMessageBox.Discard: self.cancel()
         else:
             self.cancel()
+
+if __name__ == "__main__":
+
+    from qgis.core.contextmanagers import qgisapp
+    from moduls.QvApp import QvApp
+    from moduls.QvCanvas import QvCanvas
+    from moduls.QvLlegenda import QvLlegenda
+    from moduls.QvAtributs import QvAtributs
+    import configuracioQvista as cfg
+    import multiprocessing as mp
+    from moduls.QvTest import test
+
+    qInput = mp.Queue()
+    qOutput = mp.Queue()
+    proc = mp.Process(target=test, args=(qOutput, qInput, 'D:/Temp/Test_edició.qgs',))
+    proc.daemon = True
+    proc.start()
+
+    with qgisapp() as app:
+
+        def action(msg, qOutput):
+            try:
+                linea = msg.split('&')
+
+                if linea[0] == "NAME":
+                    mapes.setTabText(1, linea[1])
+
+            except Exception as e:
+                print(str(e))
+
+        def listenMsg(app, qInput, qOutput):
+            while True:
+                if not qInput.empty():
+                    action(qInput.get(), qOutput)
+                app.processEvents()
+        
+        qapp = QvApp()
+        qapp.carregaIdioma(app, 'ca')
+
+        canvas = QvCanvas()
+
+        atributs = QvAtributs(canvas)
+
+        llegenda = QvLlegenda(canvas, atributs)
+
+        llegenda.project.read(cfg.projecteInicial)
+
+        llegenda.setWindowTitle('Llegenda')
+        llegenda.setGeometry(50, 50, 300, 400)
+
+        canvas.setWindowTitle('Mapa')
+        canvas.setGeometry(400, 50, 700, 400)
+
+        atributs.setWindowTitle('Atributs')
+        atributs.setGeometry(50, 300, 1050, 250)
+
+        mapes = qtWdg.QTabWidget()
+        mapes.setWindowTitle('Mapes')
+        mapes.setGeometry(400, 50, 900, 600)
+        mapes.addTab(canvas, llegenda.project.title())
+        canvas2 = qtWdg.QWidget()
+        mapes.addTab(canvas2, '')
+        mapes.show()
+        qOutput.put("NAME")
+
+        llegenda.show()
+        canvas.show()
+
+        # id = queue.get()
+        # print(id)
+        # win = qtGui.QWindow.fromWinId(id)
+
+        # Acciones de usuario para el menú
+
+        def putCenter():
+            linea = f"CENTER&{canvas.scale()}&{canvas.center().x()}&{canvas.center().y()}"
+            qOutput.put(linea)
+
+        def putShow():
+            g = canvas.geometry()
+            p1 = canvas.mapToGlobal(qtCor.QPoint(0, 0))
+            p2 = canvas.mapToGlobal(qtCor.QPoint(g.width(), g.height()))
+            linea = f"SHOW&{p1.x()}&{p1.y()}&{p2.x()-p1.x()}&{p2.y()-p1.y()}"
+            qOutput.put(linea)
+
+        act = qtWdg.QAction()
+        act.setText("SHOW")
+        act.triggered.connect(putShow)
+        llegenda.accions.afegirAccio("SHOW", act)
+
+        act = qtWdg.QAction()
+        act.setText("HIDE")
+        act.triggered.connect(lambda: qOutput.put("HIDE"))
+        llegenda.accions.afegirAccio("HIDE", act)
+
+        act = qtWdg.QAction()
+        act.setText("CENTER")
+        act.triggered.connect(putCenter)
+        llegenda.accions.afegirAccio("CENTER", act)
+
+        act = qtWdg.QAction()
+        act.setText("ZONES")
+        act.triggered.connect(lambda: qOutput.put("ZONES"))
+        llegenda.accions.afegirAccio("ZONES", act)
+
+        # Adaptación del menú
+
+        def menuContexte(tipo):
+            if tipo == 'none':
+                llegenda.menuAccions.append('separator')
+                llegenda.menuAccions.append('SHOW')
+                llegenda.menuAccions.append('CENTER')
+                llegenda.menuAccions.append('HIDE')
+                llegenda.menuAccions.append('ZONES')
+
+        # Conexión de la señal con la función menuContexte para personalizar el menú
+
+        llegenda.clicatMenuContexte.connect(menuContexte)
+
+        listenMsg(app, qInput, qOutput)
+
+
+    # import multiprocessing as mp
+    # from moduls.QvTest import test
+
+    # q = mp.Queue()
+
+    # p1 = mp.Process(target=test, args=(q,))
+    # p1.start()
+    # print('Start 1')
+
+    # p2 = mp.Process(target=test, args=(q, 'C:/temp/qVista/Dades Usuari/PruebaPuntosPoligonos.qgs',))
+    # p2.daemon = True
+    # p2.start()
+    # print('Start 2')
+
+    # q.put('SHOW')
+    
+    # p1.join()
+    # # p2.join()
+    # print('Join')
