@@ -197,6 +197,33 @@ class QvCanvas(QgsMapCanvas):
         boto.setGeometry(0,0,24,24)
         self._botons.append(boto)
         return boto
+    
+    def afegirBotoCustom(self, nomBoto, imatge=None, toolTip = None, posicio=-1):
+        """Afegeix un botó no estàndard al canvas.
+
+        Si el paràmetre nomBoto té com a valor "botoReset", 
+         un cop executada la funció el botó creat estarà a self.botoReset.
+         El botó també serà retornat, per poder treballar amb ell
+
+         En cas d'existir ja un atribut amb el nom donat, es provarà d'afegir-lo amb una _ al final
+          (en l'exemple, si self.botoReset ja existís es tornaria a provar amb self.botoReset_)
+
+        Args:
+            nomBoto (str): Nom de la variable que contindrà el botó
+            imatge (str, optional): Ruta de la imatge de la icona. Defaults to None.
+            toolTip (str, optional): Tooltip del botó. Defaults to None.
+            posicio (int, optional): Posició de la botonera on volem posar-lo. Si no s'especifica, serà al final. Defaults to -1.
+
+        Returns:
+            QvPushButton: Botó que s'ha creat
+        """
+        if hasattr(self,nomBoto):
+            return self.afegirBotoCustom(self, nomBoto+'_', imatge, toolTip)
+        boto = self._botoMapa(imatge)
+        boto.setToolTip(toolTip)
+        setattr(self, nomBoto, boto)
+        self.layoutBotoneraMapa.insertWidget(posicio, boto)
+        return boto
 
     def _preparacioBotonsCanvas(self):
         self.botoneraMapa = QFrame()

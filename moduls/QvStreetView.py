@@ -7,6 +7,10 @@ from qgis.PyQt.QtCore import pyqtSignal
 from qgis.PyQt.QtWebKitWidgets import QWebView , QWebPage #QWebPage (???)
 from moduls.QvPushButton import QvPushButton
 
+def ignora_errors_ssl(reply, errors):
+    # funció per evitar els errors de SSL que donen a vegades
+    reply.ignoreSslErrors()
+
 class BotoQvBrowser(QvPushButton):
     def __init__(self):
         super().__init__()
@@ -15,12 +19,27 @@ class BotoQvBrowser(QvPushButton):
         # self.setMinimumWidth(100)
         # self.setMaximumWidth(100)
 
+class Browser(QWebView):
+    def __init__(self):
+        QWebView.__init__(self)
+        self.loadFinished.connect(self._result_available)
+
+    def _result_available(self, ok):
+        if (ok):
+            frame = self.page().mainFrame()
+            document = frame.documentElement()
+            button = document.findFirst("div[id=consent-bump]")
+
+            if (not button.isNull()):
+                button.takeFromDocument()
+
 class QvBrowser(QWidget):
     svMogut=pyqtSignal(float,float)
     def __init__(self, parent):
         QWidget.__init__(self)
         self.parent = parent
-        self.browser = QWebView()
+        self.browser = Browser()
+        self.browser.page().networkAccessManager().sslErrors.connect(ignora_errors_ssl)
         self.browser.setContentsMargins(0,0,0,0)
         # self.browser.setUrl(QUrl("http://www.qt.io"))
         self.browser.resize(512, 375)
