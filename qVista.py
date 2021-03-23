@@ -2603,7 +2603,7 @@ class QVista(QMainWindow, Ui_MainWindow):
             msg = QMessageBox()
             msg.setIcon(QMessageBox.Warning)
             
-            msg.setText(string(ee))
+            msg.setText(str(ee))
             msg.setStandardButtons(QMessageBox.Close)
             msg.exec_()
 

@@ -189,17 +189,18 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
 
     def modificacioProjecte(self, txt='layersChanged'):
 
-        # Emite señal cuando:
-        #                 |  Grupo  |  Capa  | Anotación
-        #  ---------------+---------+--------+-----------
-        #  Alta           |    X    |   X    |     X     
-        #  Modificación   |    X    |   X    |     X     
-        #  Movimiento     |   (*)   |   X    |     X     
-        #  Visibilidad    |   (*)   |   X    |     X     
-        #  Baja           |    X    |   X    |     X     
+        # Emite señal cuando hay cambios en los filtros y:
+        #
+        #                |  Grupo  |  Capa  | Anotación
+        # ---------------+---------+--------+-----------
+        # Alta           |    X    |   X    |     X     
+        # Modificación   |    X    |   X    |     X     
+        # Movimiento     |   (*)   |   X    |     X     
+        # Visibilidad    |   (*)   |   X    |     X     
+        # Borrado        |    X    |   X    |     X     
         # 
-        #  (*) - Solo cuando el cambio en el grupo
-        #        afecta a alguna capa
+        # (*) - Solo cuando el cambio en el grupo
+        #       afecta también a alguna capa
 
         if self.iniSignal:
             # print('-> Emit projecteModificat', txt)
