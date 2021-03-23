@@ -11,8 +11,10 @@ from moduls.QvLlegenda import QvLlegenda
 from moduls.QVCercadorAdreca import QCercadorAdreca
 from moduls.QvAtributsForms import QvFitxesAtributs
 from moduls.QvConstants import QvConstants
+from moduls import QvFuncions
 import functools
 import sys
+import os
 from typing import Sequence
 from qgis.core import QgsProject, QgsCoordinateReferenceSystem, QgsRectangle, QgsFeatureRequest
 from qgis.gui import  QgsLayerTreeMapCanvasBridge, QgsVertexMarker, QgsMapTool, QgsGui
@@ -317,6 +319,7 @@ class QMaBIM(QtWidgets.QMainWindow):
         self.connectBotons()
         self.connectaCercador()
         self.configuraPlanols()
+        self.inicialitzaProjecte()
         self.connectaDB()
         self.setIcones()
 
@@ -325,7 +328,7 @@ class QMaBIM(QtWidgets.QMainWindow):
 
         if len(QgsGui.editorWidgetRegistry().factories()) == 0:
             QgsGui.editorWidgetRegistry().initEditors()
-
+    
     def seleccioGrafica(self, feats):
         form = FormulariAtributs(self.getCapaBIMs(), feats, self)
         form.exec()
@@ -453,8 +456,6 @@ class QMaBIM(QtWidgets.QMainWindow):
         layer.setSubsetString('')
 
     def configuraPlanols(self):
-        # QgsProject.instance().read('D:/MABIM-DADES/mabimAUX.qgs')
-        QgsProject.instance().read('L:/DADES/SIT/qVista/CATALEG/MAPES PRIVATS/Patrimoni/PPM_CatRegles_geopackage.qgs')
         root = QgsProject.instance().layerTreeRoot()
         planolA = self.tabCentral.widget(2)
         planolC = self.tabCentral.widget(3)
@@ -503,11 +504,13 @@ class QMaBIM(QtWidgets.QMainWindow):
 
         taulesAtributs = QvAtributs(self.canvasA)
         taulesAtributs.setWindowTitle("Taules d'atributs")
-        # self.llegendes = [QvLlegenda(x, taulesAtributs, editable=False) for x in (canvasA, canvasC, canvasR)]
         self.llegenda = QvLlegenda(self.canvasA, taulesAtributs)
         self.llegenda.resize(500, 600)
 
         self.tabCentral.currentChanged.connect(self.canviaTab)
+    
+    def inicialitzaProjecte(self):
+        QgsProject.instance().read('L:/DADES/SIT/qVista/CATALEG/MAPES PRIVATS/Patrimoni/PPM_CatRegles_geopackage.qgs')
     
     def getCapaBIMs(self):
         return self.llegenda.capaPerNom('MABIM')
@@ -532,13 +535,24 @@ class QMaBIM(QtWidgets.QMainWindow):
             else:
                 x.setChecked(True)
 
-
+def splashScreen():
+    splash_pix = QtGui.QPixmap('imatges/SplashScreen_qVista.png')
+    splash = QtWidgets.QSplashScreen(splash_pix, QtCore.Qt.WindowStaysOnTopHint)
+    splash.setWindowFlags(QtCore.Qt.WindowStaysOnTopHint | QtCore.Qt.FramelessWindowHint)
+    splash.setEnabled(True)
+    splash.showMessage("""Institut Municipal d'Informàtica (IMI) MaBIM""",QtCore.Qt.AlignRight | QtCore.Qt.AlignBottom, QvConstants.COLORFOSC)
+    splash.setFont(QtGui.QFont(QvConstants.NOMFONT,8))
+    splash.show()
+    return splash
 def main():
-    with qgisapp() as app:
+    with qgisapp(sysexit=False) as app:
         app.setWindowIcon(QtGui.QIcon('imatges/MaBIM/Logo48.png'))
+        splash = splashScreen()
+        app.processEvents()
         main = QMaBIM()
+        splash.finish(main)
         main.showMaximized()
-        sys.exit(app.exec())
+        # sys.exit(app.exec())
 
 if __name__ == '__main__':
     main()

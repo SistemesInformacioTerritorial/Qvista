@@ -17,22 +17,13 @@ import os
 # 
 # TODO
 #
-# - Configuración de snapping
 # - Edición de vértices
 # - Repasar activacion dirty bit
 # - Pruebas edición tabla Oracle
-# - Propiedades de capa: 
-#   * identificable: pueden consultarse con identify tool - ¿?
-#   * solo lectura: no puede editarse - funciona en QGIS y en qVista
-#   * consultable (localizable): pueden consultarse con locator widget - ¿?
-#   * necesaria (requerida): protegida contra el borrado en el proyecto - funciona en QGIS, no en qVista
-# - Edicion de geonetría: QgsVectorLayerEditUtils
+# - Edicion de geometría: QgsVectorLayerEditUtils
 #
-# - Password Manager para acceder a capas protegidas
-# - En qVista no se ven las capas protegidas
 # - Geocodificación número 0
 # - L:\Dades\SIT\VistaMonitor que apunte al nuevo QGIS
-# - Fotos geolocalizadas / asignadas a un punto
 # 
 # https://docs.qgis.org/3.16/en/docs/user_manual/working_with_vector/editing_geometry_attributes.html
 # 
