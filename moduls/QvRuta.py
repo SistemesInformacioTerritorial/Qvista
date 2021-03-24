@@ -128,19 +128,23 @@ class Ruta():
         """ Pre: la ruta ja ha estat calculada. project és un QgsMapCanvas
         """
 
-        polyline = QgsRubberBand(canvas, False)
-
-        points = []
+        polylines = []
 
         for tram in self.tramsRuta:
+            points = []
+            polyline = QgsRubberBand(canvas, False)
+            polylines.append(polyline)
             for point in tram.getCoords():
                 points.append(QgsPoint(point))
 
-        polyline.setToGeometry(QgsGeometry.fromPolyline(points), None)
-        polyline.setColor(QColor(255, 0, 0))
-        polyline.setWidth(3)
+            polyline.setToGeometry(QgsGeometry.fromPolyline(points), None)
+            if (tram.getCirculable() == False):
+                polyline.setColor(QColor(255, 0, 0))
+            else:
+                polyline.setColor(QColor(0, 0, 255))
 
-        polyline.show()
+            polyline.setWidth(3)
+            polyline.show()
 
 
 
