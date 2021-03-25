@@ -35,7 +35,7 @@ class EinaRuta(QWidget):
         def calcularRuta():
             ruta = Ruta(self.startPoint,self.endPoint)
             ruta.calculaRuta()
-            ruta.pintarRuta(canvas)
+            ruta.pintarRuta(self.canvas)
    
         QWidget.__init__(self)
 
