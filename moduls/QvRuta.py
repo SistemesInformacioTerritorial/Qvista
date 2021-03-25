@@ -118,8 +118,8 @@ class Ruta():
 
         URL = "http://netiproa.corppro.imi.bcn:81/karta/api/Ruta/Utm/" + str(self.coordInici.x()) + "/" + str(self.coordInici.y()) + "/" + str(self.coordFinal.x()) + "/" + str(self.coordFinal.y()) + "/EPSG:25831"
 
-        #filecontent = readRemoteXML(URL)
-        filecontent = readLocalXML(r"C:/QVista/ruta1.xml")
+        filecontent = readRemoteXML(URL)
+        #filecontent = readLocalXML(r"C:/QVista/ruta1.xml")
 
         parseXML(filecontent)
 
