@@ -128,6 +128,9 @@ class QvFitxesAtributs(QDialog):
 
     def setMenu(self, n):
         if self.mode is None: # Consulta
+            # Al añadir el menú, cambia el tamaño del form.
+            # Hay que guardarlo y restaurarlo
+            size = self.size()
             self.menuBar = QMenuBar()
             self.menu = QgsActionMenu(self.layer, self.features[n], 'Feature')
             if self.menu is not None and not self.menu.isEmpty():
@@ -136,6 +139,7 @@ class QvFitxesAtributs(QDialog):
             else:
                 self.menuBar.setVisible(False)
             self.layout().setMenuBar(self.menuBar)
+            self.resize(size)
 
     def select(self, n=None):
         # if not self.selectFeature:
