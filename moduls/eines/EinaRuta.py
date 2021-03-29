@@ -21,9 +21,16 @@ class EinaRuta(QWidget):
         1 - seleccionar punt inicial
         2 - seleccionar punt final
     """
-    actPoint = QgsPointXY(float(0),float(0))
+    # canvas = None
+    tool = None
+
     startPoint = QgsPointXY(float(0),float(0))
     endPoint = QgsPointXY(float(0),float(0))
+
+    mStart = None
+    mEnd = None
+
+    polylines = []
 
     def __init__(self, pare):
         def getCoordInici():
@@ -35,7 +42,7 @@ class EinaRuta(QWidget):
         def calcularRuta():
             ruta = Ruta(self.startPoint,self.endPoint)
             ruta.calculaRuta()
-            ruta.pintarRuta(self.canvas)
+            self.polylines = ruta.pintarRuta(self.canvas)
    
         QWidget.__init__(self)
 
@@ -62,23 +69,12 @@ class EinaRuta(QWidget):
         calcRouteButton.setText("Calcular ruta")
         lay.addWidget(calcRouteButton)
 
-        class PointTool(QgsMapTool):   
+        self.initMarkers()
+        class PointTool(QgsMapTool):  
             def __init__(self, canvas, parent):
                 QgsMapTool.__init__(self, canvas)
                 self.canvas = canvas  
                 self.parent = parent
-
-                self.mStart = QgsVertexMarker(canvas)
-                self.mStart.setColor(QColor(255,0, 0)) #(R,G,B)
-                self.mStart.setIconSize(12)
-                self.mStart.setIconType(QgsVertexMarker.ICON_CROSS)
-                self.mStart.setPenWidth(3)
-
-                self.mEnd = QgsVertexMarker(canvas)
-                self.mEnd.setColor(QColor(0,0, 255)) #(R,G,B)
-                self.mEnd.setIconSize(12)
-                self.mEnd.setIconType(QgsVertexMarker.ICON_CROSS)
-                self.mEnd.setPenWidth(3)
 
             def canvasPressEvent(self, event):
                 if self.parent.getPoint == 1:
@@ -90,23 +86,47 @@ class EinaRuta(QWidget):
                     print("Start Point is " + str(startPoint))
                     self.parent.startPoint = startPoint
                     self.parent.getPoint = 2 
-                    self.mStart.setCenter(startPoint)
+                    self.parent.mStart.setCenter(startPoint)
 
                 elif self.parent.getPoint == 2:
                     endPoint = QgsPointXY(event.mapPoint())
                     print("End Point is " + str(endPoint))
                     self.parent.endPoint = endPoint
                     self.parent.getPoint = 0
-                    self.mEnd.setCenter(endPoint)
+                    self.parent.mEnd.setCenter(endPoint)
     
         self.tool = PointTool(self.canvas, self)
         self.canvas.setMapTool(self.tool)
 
+    def initMarkers(self):
+        self.mStart = QgsVertexMarker(self.canvas)
+        self.mStart.setColor(QColor(255,0, 0)) #(R,G,B)
+        self.mStart.setIconSize(12)
+        self.mStart.setIconType(QgsVertexMarker.ICON_CROSS)
+        self.mStart.setPenWidth(3)
+
+        self.mEnd = QgsVertexMarker(self.canvas)
+        self.mEnd.setColor(QColor(0,0, 255)) #(R,G,B)
+        self.mEnd.setIconSize(12)
+        self.mEnd.setIconType(QgsVertexMarker.ICON_CROSS)
+        self.mEnd.setPenWidth(3)
+
+    def removeRouteline(self):
+        for polyline in self.polylines:
+            polyline.reset()
+
     def hideEvent(self,event):
         super().hideEvent(event)
         self.canvas.unsetMapTool(self.tool)
-        self.canvas.scene().removeItem(self.tool.mStart)
-        self.canvas.scene().removeItem(self.tool.mEnd)
+        self.canvas.scene().removeItem(self.mStart)
+        self.canvas.scene().removeItem(self.mEnd)
+        self.removeRouteline()
+
+    def showEvent(self,event):
+        super().showEvent(event)
+        self.canvas.setMapTool(self.tool)
+        self.initMarkers()
+        self.getPoint = 1
 
 if __name__ == "__main__":
     with qgisapp() as app:

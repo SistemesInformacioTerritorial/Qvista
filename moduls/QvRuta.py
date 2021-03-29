@@ -146,7 +146,7 @@ class Ruta():
             polyline.setWidth(3)
             polyline.show()
 
-
+        return polylines
 
     #def mostrarLlegenda(window? qwidget?):
         """ Pre: la ruta ha estat calculada
