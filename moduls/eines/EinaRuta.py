@@ -32,6 +32,12 @@ class EinaRuta(QWidget):
 
     polylines = []
 
+    def netejarRutes(self):
+        for linia in self.polylines:
+            linia.reset()
+
+        self.polylines.clear()
+
     def __init__(self, pare):
         def getCoordInici():
             self.getPoint = 1
@@ -39,20 +45,32 @@ class EinaRuta(QWidget):
         def getCoordFi():
             self.getPoint = 2
 
-        def netejarRutes():
-            for linia in self.polylines:
-                linia.reset()
-
-            polylines.clear()
 
         def pintarRuta():
             for linia in self.polylines:
                 linia.show()
 
         def calcularRuta():
+            self.netejarRutes()
             ruta = Ruta(self.startPoint,self.endPoint)
             ruta.calculaRuta()
-            self.polylines = ruta.obtenirRuta(self.canvas)
+            trams = ruta.obtenirRuta()
+
+            for tram in trams:
+                points = []
+                polyline = QgsRubberBand(canvas, False)
+                self.polylines.append(polyline)
+                for point in tram.getCoords():
+                    points.append(QgsPoint(point))
+
+                polyline.setToGeometry(QgsGeometry.fromPolyline(points), None)
+                if (tram.getCirculable() == False):
+                    polyline.setColor(QColor(255, 0, 0))
+                else:
+                    polyline.setColor(QColor(0, 0, 255))
+
+            polyline.setWidth(3)
+
             pintarRuta()
    
         QWidget.__init__(self)
@@ -122,16 +140,13 @@ class EinaRuta(QWidget):
         self.mEnd.setIconType(QgsVertexMarker.ICON_CROSS)
         self.mEnd.setPenWidth(3)
 
-    def removeRouteline(self):
-        for polyline in self.polylines:
-            polyline.reset()
 
     def hideEvent(self,event):
         super().hideEvent(event)
         self.canvas.unsetMapTool(self.tool)
         self.canvas.scene().removeItem(self.mStart)
         self.canvas.scene().removeItem(self.mEnd)
-        self.removeRouteline()
+        self.netejarRutes()
 
     def showEvent(self,event):
         super().showEvent(event)

@@ -117,34 +117,17 @@ class Ruta():
 
         URL = "http://netiproa.corppro.imi.bcn:81/karta/api/Ruta/Utm/" + str(self.coordInici.x()) + "/" + str(self.coordInici.y()) + "/" + str(self.coordFinal.x()) + "/" + str(self.coordFinal.y()) + "/EPSG:25831"
 
-        filecontent = readRemoteXML(URL)
-        #filecontent = readLocalXML(r"C:/QVista/ruta1.xml")
+        #filecontent = readRemoteXML(URL)
+        filecontent = readLocalXML(r"C:/QVista/ruta1.xml")
 
         parseXML(filecontent)
 
 
-    def obtenirRuta(self,canvas):
+    def obtenirRuta(self):
         """ Pre: la ruta ja ha estat calculada. project és un QgsMapCanvas
         """
 
-        polylines = []
-
-        for tram in self.tramsRuta:
-            points = []
-            polyline = QgsRubberBand(canvas, False)
-            polylines.append(polyline)
-            for point in tram.getCoords():
-                points.append(QgsPoint(point))
-
-            polyline.setToGeometry(QgsGeometry.fromPolyline(points), None)
-            if (tram.getCirculable() == False):
-                polyline.setColor(QColor(255, 0, 0))
-            else:
-                polyline.setColor(QColor(0, 0, 255))
-
-            polyline.setWidth(3)
-
-        return polylines
+        return self.tramsRuta
 
     #def mostrarLlegenda(window? qwidget?):
         """ Pre: la ruta ha estat calculada
