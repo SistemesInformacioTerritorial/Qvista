@@ -6,14 +6,16 @@ from qgis.core import QgsPointXY
 from qgis.gui import QgsMapCanvas, QgsRubberBand
 
 class Gir():
+    descripcio = ""
     coord = QgsPointXY() #Coordenada()
 
-    def __init__(self,inp_coord):
+    def __init__(self,inp_coord,descr):
         """
         Pre: inp_coord és una coordenada inicialitzada
         Post: s'inicialitza la variable coord
         """
         self.coord = inp_coord
+        self.descripcio = descr
 
 class Tram():
     circulable = False #boolean
@@ -41,7 +43,6 @@ class Ruta():
     coordFinal = QgsPointXY()
     coordFinal_descripcio = ""
 
-    descripcioRuta = [] #array d'Strings
     girsRuta = [] #array de Gir
     tramsRuta = [] #array de Tram
     distanciaRuta = 0
@@ -94,12 +95,10 @@ class Ruta():
             self.distanciaRuta = int(root.find("nsruta:distancia",ns).text)
             self.duradaRuta = int(root.find("nsruta:durada",ns).text)
 
-            for descripcio in root.find("nsruta:descripcio",ns).findall("d2p1:string",ns):
-                self.descripcioRuta.append(descripcio.text)
-
-            for gir in root.find("nsruta:girs",ns).findall("nsruta:Gir",ns):
+            for index,gir in enumerate(root.find("nsruta:girs",ns).findall("nsruta:Gir",ns)):
                 temp_coord = QgsPointXY(float(gir.find("nsruta:coord",ns).find("nsruta:x",ns).text), float(gir.find("nsruta:coord",ns).find("nsruta:y",ns).text))
-                self.girsRuta.append(temp_coord)
+                descr = root.find("nsruta:descripcio",ns).findall("d2p1:string",ns)[index+1].text
+                self.girsRuta.append(Gir(temp_coord,descr.split(" - ")[1]))
 
             for tram in root.find("nsruta:trams",ns).findall("nsruta:Tram",ns):
                 coords = []
@@ -124,7 +123,7 @@ class Ruta():
         parseXML(filecontent)
 
 
-    def pintarRuta(self,canvas):
+    def obtenirRuta(self,canvas):
         """ Pre: la ruta ja ha estat calculada. project és un QgsMapCanvas
         """
 
@@ -144,7 +143,6 @@ class Ruta():
                 polyline.setColor(QColor(0, 0, 255))
 
             polyline.setWidth(3)
-            polyline.show()
 
         return polylines
 
@@ -169,6 +167,6 @@ if __name__ == "__main__":
         
         ruta = Ruta(QgsPointXY(434799.933, 4584672.930),QgsPointXY(433463.058, 4583356.121))
         ruta.calculaRuta()
-        ruta.pintarRuta(canvas)
+        ruta.obtenirRuta(canvas)
 
         canvas.show()

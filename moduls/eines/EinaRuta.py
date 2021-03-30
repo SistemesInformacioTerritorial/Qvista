@@ -39,10 +39,21 @@ class EinaRuta(QWidget):
         def getCoordFi():
             self.getPoint = 2
 
+        def netejarRutes():
+            for linia in self.polylines:
+                linia.reset()
+
+            polylines.clear()
+
+        def pintarRuta():
+            for linia in self.polylines:
+                linia.show()
+
         def calcularRuta():
             ruta = Ruta(self.startPoint,self.endPoint)
             ruta.calculaRuta()
-            self.polylines = ruta.pintarRuta(self.canvas)
+            self.polylines = ruta.obtenirRuta(self.canvas)
+            pintarRuta()
    
         QWidget.__init__(self)
 
