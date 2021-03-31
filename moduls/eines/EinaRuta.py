@@ -24,6 +24,8 @@ class EinaRuta(QWidget):
     # canvas = None
     tool = None
 
+    pGirs = [] #punts de gir
+
     startPoint = QgsPointXY(float(0),float(0))
     endPoint = QgsPointXY(float(0),float(0))
 
@@ -34,7 +36,8 @@ class EinaRuta(QWidget):
 
     def netejarRutes(self):
         for linia in self.polylines:
-            linia.reset()
+            linia.reset(True)
+            linia.hide()
 
         self.polylines.clear()
 
@@ -46,32 +49,28 @@ class EinaRuta(QWidget):
             self.getPoint = 2
 
 
-        def pintarRuta():
-            for linia in self.polylines:
-                linia.show()
+        def mostrarGirs():
+            girs = self.ruta.obtenirPuntsGir()
+
+            for gir in girs:
+                pGir = QgsTextAnnotation(self.canvas)
+                pGir.setDocument(QTextDocument(gir.getDescription()))
+                pGir.setMapPosition(gir.getCoord())
+                i = QgsMapCanvasAnnotationItem(pGir, self.canvas)
+                # self.pGirs.append(i)
+
+
 
         def calcularRuta():
             self.netejarRutes()
-            ruta = Ruta(self.startPoint,self.endPoint)
-            ruta.calculaRuta()
-            trams = ruta.obtenirRuta()
+            self.ruta = Ruta(self.startPoint,self.endPoint)
+            self.ruta.calculaRuta()
+            trams = []
+            trams = self.ruta.obtenirRuta()
 
-            for tram in trams:
-                points = []
-                polyline = QgsRubberBand(canvas, False)
-                self.polylines.append(polyline)
-                for point in tram.getCoords():
-                    points.append(QgsPoint(point))
+            self.polylines = pintarRuta(trams,self.canvas)
 
-                polyline.setToGeometry(QgsGeometry.fromPolyline(points), None)
-                if (tram.getCirculable() == False):
-                    polyline.setColor(QColor(255, 0, 0))
-                else:
-                    polyline.setColor(QColor(0, 0, 255))
-
-            polyline.setWidth(3)
-
-            pintarRuta()
+            #mostrarGirs()
    
         QWidget.__init__(self)
 

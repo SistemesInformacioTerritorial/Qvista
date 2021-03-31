@@ -5,6 +5,29 @@ from moduls.QvImports import *
 from qgis.core import QgsPointXY
 from qgis.gui import QgsMapCanvas, QgsRubberBand
 
+
+def pintarRuta(trams,canvas):
+    for tram in trams:
+        points = []
+        polylines = []
+        polyline = QgsRubberBand(canvas, False)
+        polylines.append(polyline)
+        for point in tram.getCoords():
+            points.append(QgsPoint(point))
+
+        polyline.setToGeometry(QgsGeometry.fromPolyline(points), None)
+        if (tram.getCirculable() == False):
+            polyline.setColor(QColor(255, 0, 0))
+        else:
+            polyline.setColor(QColor(0, 0, 255))
+
+        polyline.setWidth(3)
+
+        for linia in polylines:
+            linia.show()
+
+        return polylines
+
 class Gir():
     descripcio = ""
     coord = QgsPointXY() #Coordenada()
@@ -16,6 +39,12 @@ class Gir():
         """
         self.coord = inp_coord
         self.descripcio = descr
+
+    def getCoord(self):
+        return self.coord
+
+    def getDescription(self):
+        return self.descripcio
 
 class Tram():
     circulable = False #boolean
@@ -59,6 +88,9 @@ class Ruta():
 
         self.coordInici = coordA
         self.coordFinal = coordB
+
+        self.tramsRuta.clear()
+        self.girsRuta.clear()
 
     def calculaRuta(self):
         """ 
@@ -133,6 +165,9 @@ class Ruta():
         """ Pre: la ruta ha estat calculada
         """
 
+    def obtenirPuntsGir(self):
+        return self.girsRuta
+
 
 if __name__ == "__main__":
     projecteInicial='mapesOffline/qVista default map.qgs'
@@ -150,6 +185,5 @@ if __name__ == "__main__":
         
         ruta = Ruta(QgsPointXY(434799.933, 4584672.930),QgsPointXY(433463.058, 4583356.121))
         ruta.calculaRuta()
-        ruta.obtenirRuta(canvas)
-
+        pintarRuta(ruta.obtenirRuta(),canvas)
         canvas.show()
