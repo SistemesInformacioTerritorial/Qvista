@@ -15,9 +15,15 @@ def setDPI():
     from qgis.PyQt import QtCore
     from qgis.PyQt.QtWidgets import QApplication
     
-    setDPIScaling()
+    #setDPIScaling()
+    os.environ["QT_AUTO_SCREEN_SCALE_FACTOR"] = "1" #QT < 5.14
+    os.environ["QT_ENABLE_HIGHDPI_SCALING"] = "1" #QT >= 5.14
+    
     if hasattr(QtCore.Qt, 'AA_UseHighDpiPixmaps'):
         QApplication.setAttribute(QtCore.Qt.AA_UseHighDpiPixmaps, True)
+
+    if hasattr(QtCore.Qt, 'AA_EnableHighDpiScaling'):
+        QApplication.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling, True)
 
 def cronometra(func):
     """Funció decoradora que cronometra la funció passada com a paràmetre i imprimeix el temps per pantalla
