@@ -15,6 +15,7 @@ from moduls import QvFuncions
 import functools
 import sys
 import os
+import math
 from typing import Sequence
 from qgis.core import QgsProject, QgsCoordinateReferenceSystem, QgsRectangle, QgsFeatureRequest
 from qgis.gui import  QgsLayerTreeMapCanvasBridge, QgsVertexMarker, QgsMapTool, QgsGui
@@ -66,6 +67,7 @@ WHERE
 
 # això estaria millor dins de la classe Consulta, però no va
 # No es pot utilitzar fora d'aquesta classe
+# és un decorador que garanteix que la Base de Dades estigui oberta
 def connexio(func):
     def _funcio(self,*args,**kwargs):
         if self.OBRE_DB():
@@ -146,6 +148,10 @@ class Consulta(Singleton):
                 pass
 
 class Completador(QtWidgets.QCompleter):
+    """Completador pel cercador. Gestiona les suggerències quan cerques alguna cosa
+       - Filtra en funció de si el contingut conté el string cercat
+       - Primer mostra les que contenen algun substring que comenci per la cerca, i després les que contenen la cerca
+    """
     def __init__(self):
         super().__init__()
         self.setModel(QtCore.QStringListModel())
@@ -160,17 +166,24 @@ class Completador(QtWidgets.QCompleter):
             return not comenca(x)
         return list(filter(comenca,llista)), list(filter(no_comenca,llista))
     def update(self, text):
-        # self.model().setStringList(self.consulta(text))
+        # actualitza el contingut del completer en funció del text cercat
+        # fa la consulta a la base de dades, i ordena el resultat
         self.llista=Consulta().consulta(CONSULTA_CERCADOR,{':pText':text},(0,1,2))
         self.m_word = text
+        # converteix el resultat de la consulta 
+        #  (llista de llistes, amb els camps de la base de dades)
+        #  en una llista de strings, que conté els camps no nuls separats per espais
         res = [' '.join([str(y) for y in x if str(y).upper()!='NULL']) for x in self.llista]
         comencen, contenen = self.separa(res, text)
         self.model().setStringList(comencen+contenen)
         self.complete()
     def splitPath(self,path):
+        # funció que en els QCompleter rep el que vols cercar
+        #  i retorna una llista de strings per fer el match
+        #  en aquest cas aprofitem per actualitzar el model que conté els resultats,
+        #  ja que la nostra cerca es basa en una base de dades
         self.update(path)
         return [path]
-        # print(path)
 
 class QvSeleccioBIM(QgsMapTool):
     """Aquesta clase és un QgsMapTool que selecciona l'element clickat. 
@@ -219,11 +232,13 @@ class QvSeleccioBIM(QgsMapTool):
         msgBox.exec()
 
     def canvasReleaseEvent(self, event):
-        # Lllegim posició del mouse
+        # Llegim posició del mouse
+        # Donat que el cursor no selecciona exactament al centre, desplacem un petit offset
         x = event.pos().x()-1
         y = event.pos().y()-8
         try:
-
+            # Per fer la selecció triarem dues cantonades (esquerra-dalt i dreta-baix) d'un rectangle
+            #  si tenim una rotació aplicada, caldrà rotar també els punts
             if self.canvas.rotation() == 0:
                 esquerraDalt = self.canvas.getCoordinateTransform().toMapCoordinates(x - self.radi, y-self.radi)
                 dretaBaix = self.canvas.getCoordinateTransform().toMapCoordinates(x + self.radi, y+self.radi)
@@ -231,8 +246,9 @@ class QvSeleccioBIM(QgsMapTool):
                 esquerraDalt = self.canvas.getCoordinateTransform().toMapCoordinates(x-self.radi*math.sqrt(2), y-self.radi*math.sqrt(2))
                 dretaBaix = self.canvas.getCoordinateTransform().toMapCoordinates(x+self.radi*math.sqrt(2), y-self.radi*math.sqrt(2))
             rect = QgsRectangle(esquerraDalt.x(), esquerraDalt.y(), dretaBaix.x(), dretaBaix.y())
-            it = self.layer.getFeatures(QgsFeatureRequest().setFilterRect(rect))
-            features = [feature for feature in it]
+
+            # la funció getFeatures retorna un iterable. Volem una llista
+            features = list(self.layer.getFeatures(QgsFeatureRequest().setFilterRect(rect)))
 
             if len(features) > 0:
                     self.elementsSeleccionats.emit(features)
@@ -240,6 +256,9 @@ class QvSeleccioBIM(QgsMapTool):
             print(str(e))
 
 class FormulariAtributs(QvFitxesAtributs):
+    """Formulari d'atributs del qVista, ampliat per tenir un botó extra de seleccionar
+        Per fer-ho, bàsicament a la funció __init__ afegim el botó
+    """
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.ui.bSeleccionar = self.ui.buttonBox.addButton('Seleccionar', QtWidgets.QDialogButtonBox.ActionRole)
@@ -283,9 +302,7 @@ class WidgetCercador(QtWidgets.QWidget):
     def resultatCercador(self, codi, info):
         if codi == 0:
             self.canvas.setCenter(self.cercador.coordAdreca)
-            print(self.canvas.scale(), self.canvas.mapUnits())
             self.canvas.zoomScale(1000)
-            print(self.canvas.scale())
             self.canvas.scene().removeItem(self.marcaLloc)
 
             self.marcaLloc = QgsVertexMarker(self.canvas)
@@ -300,7 +317,6 @@ class WidgetCercador(QtWidgets.QWidget):
     def resizeEvent(self, event):
         self.leCarrer.setFixedSize(400,20)
         self.leNumero.setFixedSize(80,20)
-        print(self.leCarrer.width(), self.leNumero.width())
         self.setFixedSize(self.leCarrer.width()+self.leNumero.width()+20, 30)
         self.move(self.parentWidget().width()-self.width()-2, 2)
         super().resizeEvent(event)
@@ -339,9 +355,8 @@ class QMaBIM(QtWidgets.QMainWindow):
         # Qt com a tal no permet fer  una label amb imatge i text. HTML sí que ho permet
         # Ja que les labels permeten tenir com a contingut un HTML,
         # doncs posem un mini HTML amb la imatge i el text
-        self.lblLogoMaBIM.setText(f"""<html><img src=imatges/MaBIM/MaBIM.png height={self.lblLogoMaBIM.height()}><span style="font-size:18pt; color:#ffffff; vertical-align: middle;"> MaBIM</span></html>""")
+        self.lblLogoMaBIM.setText(f"""<html><img src=imatges/MaBIM/MaBIM.png height={self.lblLogoMaBIM.height()}><span style="font-size:18pt; color:#ffffff;"> MaBIM</span></html>""")
         self.lblLogoMaBIM.setFixedWidth(275)
-        print(self.widget_3.width())
     
     def setIconesBotons(self):
         # afegir les icones des del designer donava problemes
@@ -366,6 +381,9 @@ class QMaBIM(QtWidgets.QMainWindow):
         self.leCercador.setCompleter(completer)
         completer.activated.connect(self.consulta)
     def consulta(self):
+        # funció que fa les consultes a la Base de Dades, per omplir els diferents camps i taules
+
+        # Donat que el primer camp del Line Edit és el BIM, l'utiltizarem per fer la consulta definitiva
         txt = self.leCercador.text().split(' ')[0]
         cons = Consulta()
         try:
@@ -379,6 +397,7 @@ class QMaBIM(QtWidgets.QMainWindow):
         self.recarregaLabelsDades()
         
     def recarregaLabelsDades(self):
+        # un cop hem obtingut la nova informació, recarreguem la informació de les labels i taules
         self.lCapcaleraBIM.setText(f'BIM {self.dadesLabelsDades[0]}  {self.dadesLabelsDades[3]}')
 
         # Labels pestanya "Dades Identificatives"
@@ -408,7 +427,6 @@ class QMaBIM(QtWidgets.QMainWindow):
         for (i,x) in enumerate(self.dadesTaula):
             for (j,elem) in enumerate(x):
                 if type(elem)!=str:
-                    print(type(elem))
                     elem = str(elem)
                     if elem=='NULL': elem=''
                 self.twDadesBIM.setItem(i,j,QtWidgets.QTableWidgetItem(elem))
@@ -438,7 +456,6 @@ class QMaBIM(QtWidgets.QMainWindow):
         
         
         layer = self.getCapaBIMs()
-        layer.subsetString()
         layer.setSubsetString(cerca)
         # Si no hi ha cap feature després d'aplicar el filtre, eliminem el filtre i mostrem tota l'extensió
         if layer.featureCount()==0:
@@ -451,6 +468,7 @@ class QMaBIM(QtWidgets.QMainWindow):
         # Fent servir un QTimer es pot saltar això
         # https://stackoverflow.com/a/49032473
         QtCore.QTimer.singleShot(0, self.leCercador.clear)
+
     def netejaFiltre(self):
         layer = self.getCapaBIMs()
         layer.setSubsetString('')
@@ -459,8 +477,6 @@ class QMaBIM(QtWidgets.QMainWindow):
         root = QgsProject.instance().layerTreeRoot()
         planolA = self.tabCentral.widget(2)
         planolC = self.tabCentral.widget(3)
-        planolR = self.tabCentral.widget(4)
-
         
         mapetaPng = "mapesOffline/default.png"
         botons = ['zoomIn', 'zoomOut', 'panning', 'centrar', 'streetview']
