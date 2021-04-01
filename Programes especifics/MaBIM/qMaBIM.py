@@ -296,6 +296,7 @@ class WidgetCercador(QtWidgets.QWidget):
         lay.addWidget(self.leCarrer)
         lay.addStretch()
         lay.addWidget(self.leNumero)
+        self.marcaLlocPosada = False
         # lay.addWidget(self.lblIcona)
 
         self.cercador.sHanTrobatCoordenades.connect(self.resultatCercador)
@@ -406,6 +407,7 @@ class QMaBIM(QtWidgets.QMainWindow):
 
         # Eliminem la marca del cercador
         self.cerca1.eliminaMarcaLloc()
+        self.dadesLabelsDades[0] = self.dadesLabelsDades[0].lstrip("0")
         self.lCapcaleraBIM.setText(f'BIM {self.dadesLabelsDades[0]}  {self.dadesLabelsDades[3]}')
 
         # Labels pestanya "Dades Identificatives"
@@ -487,7 +489,7 @@ class QMaBIM(QtWidgets.QMainWindow):
         planolC = self.tabCentral.widget(3)
         
         mapetaPng = "mapesOffline/default.png"
-        botons = ['zoomIn', 'zoomOut', 'panning', 'centrar', 'streetview']
+        botons = ['panning', 'streetview', 'zoomIn', 'zoomOut', 'centrar']
 
         # instanciem el canvas que representarà el Plànol de l'Ajuntament
         self.canvasA = QvCanvas(planolA, posicioBotonera='SE', llistaBotons=botons)
@@ -508,13 +510,13 @@ class QMaBIM(QtWidgets.QMainWindow):
         self.cerca1.show()
         # self.cerca1.move(-200,0)
 
-        botoNeteja = self.canvasA.afegirBotoCustom('botoNeteja', 'imatges/MaBIM/canvas_neteja_filtre.png', 'Mostra tots els BIMs')
-        botoNeteja.clicked.connect(self.netejaFiltre)
-        botoNeteja.setCheckable(False)
-        botoSelecciona = self.canvasA.afegirBotoCustom('botoSelecciona', 'imatges/apuntar.png', 'Selecciona BIM gràficament', 0)
+        botoSelecciona = self.canvasA.afegirBotoCustom('botoSelecciona', 'imatges/apuntar.png', 'Selecciona BIM gràficament', 1)
         botoSelecciona.clicked.connect(lambda: self.canvasA.setMapTool(self.einaSeleccio))
         botoSelecciona.setCheckable(True)
-        botoLlegenda = self.canvasA.afegirBotoCustom('botoLlegenda', 'imatges/map-legend.png', 'Mostrar/ocultar llegenda')
+        botoNeteja = self.canvasA.afegirBotoCustom('botoNeteja', 'imatges/MaBIM/canvas_neteja_filtre.png', 'Mostra tots els BIMs', 2)
+        botoNeteja.clicked.connect(self.netejaFiltre)
+        botoNeteja.setCheckable(False)
+        botoLlegenda = self.canvasA.afegirBotoCustom('botoLlegenda', 'imatges/map-legend.png', 'Mostrar/ocultar llegenda', 3)
         botoLlegenda.clicked.connect(lambda: self.llegenda.setVisible(not self.llegenda.isVisible()))
         botoLlegenda.setCheckable(False)
 
@@ -570,7 +572,7 @@ def splashScreen():
     return splash
 def main():
     with qgisapp(sysexit=False) as app:
-        app.setWindowIcon(QtGui.QIcon('imatges/MaBIM/Logo48.png'))
+        app.setWindowIcon(QtGui.QIcon('imatges/MaBIM/MaBIM.png'))
         splash = splashScreen()
         app.processEvents()
         main = QMaBIM()
