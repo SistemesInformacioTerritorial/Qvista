@@ -314,6 +314,10 @@ class WidgetCercador(QtWidgets.QWidget):
             self.marcaLloc.setPenWidth(3)
             self.marcaLloc.show()
             self.marcaLlocPosada = True
+    def eliminaMarcaLloc(self):
+        if self.marcaLlocPosada:
+            self.canvas.scene().removeItem(self.marcaLloc)
+            self.marcaLlocPosada = False
     
     def resizeEvent(self, event):
         self.leCarrer.setFixedSize(400,20)
@@ -399,6 +403,9 @@ class QMaBIM(QtWidgets.QMainWindow):
         
     def recarregaLabelsDades(self):
         # un cop hem obtingut la nova informació, recarreguem la informació de les labels i taules
+
+        # Eliminem la marca del cercador
+        self.cerca1.eliminaMarcaLloc()
         self.lCapcaleraBIM.setText(f'BIM {self.dadesLabelsDades[0]}  {self.dadesLabelsDades[3]}')
 
         # Labels pestanya "Dades Identificatives"
