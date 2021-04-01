@@ -155,6 +155,7 @@ class Completador(QtWidgets.QCompleter):
     def __init__(self):
         super().__init__()
         self.setModel(QtCore.QStringListModel())
+        self.setCaseSensitivity(QtCore.Qt.CaseInsensitive)
         self.setFilterMode(QtCore.Qt.MatchContains)
     @staticmethod
     def separa(llista, word):
@@ -168,7 +169,7 @@ class Completador(QtWidgets.QCompleter):
     def update(self, text):
         # actualitza el contingut del completer en funció del text cercat
         # fa la consulta a la base de dades, i ordena el resultat
-        self.llista=Consulta().consulta(CONSULTA_CERCADOR,{':pText':text},(0,1,2))
+        self.llista=Consulta().consulta(CONSULTA_CERCADOR,{':pText':text.upper()},(0,1,2))
         self.m_word = text
         # converteix el resultat de la consulta 
         #  (llista de llistes, amb els camps de la base de dades)
