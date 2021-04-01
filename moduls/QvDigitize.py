@@ -124,7 +124,7 @@ class QvDigitize:
         act.setEnabled(False)
         self.accions.afegirAccio('newElement', act)
 
-        act = qtWdg.QAction("Modifica geometria d'element", parent)
+        act = qtWdg.QAction("Redibuixa geometria d'element", parent)
         act.setEnabled(False)
         self.accions.afegirAccio('modGeometria', act)
 
@@ -178,7 +178,7 @@ class QvDigitize:
         act = self.accions.accio('modGeometria')
         if act is not None:
             if df:
-                act.setText(f"Modifica {df.nomGeometria()} d'element\tCtrl+*")
+                act.setText(f"Redibuixa {df.nomGeometria()} d'element\tCtrl+*")
                 act.triggered.connect(df.redraw)
                 act.setEnabled(True)
             else:

@@ -278,15 +278,30 @@ class QVista(QMainWindow, Ui_MainWindow):
     def actualitzaBotoFav(self,fav):
         self.favorit=fav
         self.botoFavorits.setIcon(self.iconaFavMarcat if fav else self.iconaFavDesmarcat)
-    
-    def obrirProjecteAmbRang(self,projecte):
+
+    def obrirRecentAmbRang(self, projecte):
+        """Obre un projecte recent passant-li el rang que tingui el projecte actual
+
+        Arguments:
+            projecte {str} -- Ruta del projecte que volem obrir
+        """
+        if self.teCanvisPendents(): #Posar la comprovació del dirty bit
+            ret = self.missatgeDesar(titol='Desa el mapa',txtCancelar='Cancel·lar')
+            if ret == QMessageBox.AcceptRole:
+                b = self.desarProjecte(False)
+                if not b: return
+            elif ret ==  QMessageBox.RejectRole: #Aquest i el seguent estàn invertits en teoria, però així funciona bé
+                pass
+            elif ret == QMessageBox.DestructiveRole:
+                return
+        self.obrirProjecteAmbRang(projecte)
+
+    def obrirProjecteAmbRang(self, projecte):
         """Obre un projecte passant-li el rang que tingui el projecte actual
 
         Arguments:
             projecte {str} -- Ruta del projecte que volem obrir
         """
-        # Falta trataminento de guardar proyecto!!!
-        self.teCanvisPendents()
         self.obrirProjecte(projecte, self.canvas.extent())
 
     def obrirProjecte(self, projecte, rang = None, nou=False):
@@ -819,7 +834,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         #r = 250
         #self.llegenda.setMinimumWidth(r) #si es posa un numero a pelo (250), es mostra en finestra petita
         self.llegenda.currentLayerChanged.connect(self.canviLayer)
-        self.llegenda.projecteModificat.connect(lambda: self.setDirtyBit(True)) #Activa el dirty bit al fer servir el dwPrint (i no hauria)
+        self.llegenda.projecteModificat.connect(self.setDirtyBit) #Activa el dirty bit al fer servir el dwPrint (i no hauria)
         self.canvas.setLlegenda(self.llegenda)
         self.layoutFrameLlegenda.setContentsMargins ( 5, 13, 5, 0 )
         self.llegenda.setStyleSheet("QvLlegenda {color: #38474f; background-color: #F9F9F9; border: 0px solid red;}")
@@ -1353,9 +1368,9 @@ class QVista(QMainWindow, Ui_MainWindow):
             if self.teCanvisPendents(): #Posar la comprovació del dirty bit
                 ret = self.missatgeDesar(titol='Recàrrega del mapa',txtCancelar='Cancel·lar')
                 if ret == QMessageBox.AcceptRole:
-                    b = self.sdesarProjecte()
+                    b = self.desarProjecte()
                     if b:
-                        self.obrirProjecte(pathProjecteActual) 
+                        self.obrirProjecte(self.pathProjecteActual) 
                     else:
                         return
                 elif ret ==  QMessageBox.RejectRole: #Aquest i el seguent estàn invertits en teoria, però així funciona bé
@@ -2359,7 +2374,7 @@ class QVista(QMainWindow, Ui_MainWindow):
             if ret == QMessageBox.AcceptRole:
                 b = self.desarProjecte()
                 if b:
-                    self.obrirProjecte(pathProjecteActual)
+                    self.obrirProjecte(self.pathProjecteActual)
                 else:
                     return
             elif ret ==  QMessageBox.RejectRole: #Aquest i el seguent estàn invertits en teoria, però així funciona bé
@@ -2426,7 +2441,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         return msgBox.exec()
 
     #A més de desar, retornarà un booleà indicant si l'usuari ha desat (True) o ha cancelat (False)
-    def desarProjecte(self):
+    def desarProjecte(self, reload=True):
         """ la funcio retorna si s'ha acabat guardant o no
             Protecció dels projectes read-only: tres vies:
         -       Variable del projecte qV_readOnly=’True’
@@ -2434,7 +2449,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         -       Ubicació en una de les subcarpetes de N:\SITEB\APL\PyQgis\qVista
         -       Ubicació en una de les subcarpetes de N:\9SITEB\Publicacions\qVista
         """
-    
+        self.teCanvisPendents()
         if QgsExpressionContextUtils.projectScope(self.project).variable('qV_readOnly') == 'True':
             b = self.dialegDesarComA()
         elif not self.directoriValidDesar(self.pathProjecteActual):
@@ -2450,7 +2465,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         else:
             self._desaElProjecte(self.pathProjecteActual)
             b = True
-        if b:
+        if b and reload:
             self.obrirProjecte(self.pathProjecteActual)
         return b
     def directoriValidDesar(self,nfile):
@@ -2564,7 +2579,7 @@ class QVista(QMainWindow, Ui_MainWindow):
             #functools.partial crea una funció a partir de passar-li uns determinats paràmetres a una altra
             #Teòricament serveix per passar-li només una part, però whatever
             #Si fèiem connect a lambda: self.obrirProjecte(y) o similars, no funcionava i sempre rebia com a paràmetre la última y :'(
-            x.triggered.connect(functools.partial(self.obrirProjecteAmbRang,y))
+            x.triggered.connect(functools.partial(self.obrirRecentAmbRang,y))
             self.menuRecents.addAction(x)
         if ultim is not None:
             self.mapesRecents.insert(0,ultim)
@@ -2588,7 +2603,7 @@ class QVista(QMainWindow, Ui_MainWindow):
             msg = QMessageBox()
             msg.setIcon(QMessageBox.Warning)
             
-            msg.setText(strin(ee))
+            msg.setText(str(ee))
             msg.setStandardButtons(QMessageBox.Close)
             msg.exec_()
 
@@ -2657,7 +2672,7 @@ class QVista(QMainWindow, Ui_MainWindow):
             if ret == QMessageBox.AcceptRole:
                 b = self.desarProjecte()
                 if b:
-                    self.obrirProjecte(pathProjecteActual)
+                    self.obrirProjecte(self.pathProjecteActual)
                 else: 
                     return
             elif ret ==  QMessageBox.RejectRole: #Aquest i el seguent estàn invertits en teoria, però així funciona bé

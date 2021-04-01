@@ -153,7 +153,10 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
             self.canvas.renderStarting.connect(self.fiProjecte)
             # self.canvas.renderComplete.connect(self.fiProjecte)
 
-        self.fSignal = lambda: self.projecteModificat.emit('canvasLayersChanged')
+        # ANULADO
+        # Emitted when the set of layers (or order of layers) visible in the canvas changes. 
+        # self.fSignal = lambda: self.projecteModificat.emit('canvasLayersChanged')
+
         self.iniSignal = False
 
     def qVista(self):
@@ -184,14 +187,32 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
         if self.parent() is not None:
             self.parent().setWindowTitle(titol)
 
-    def modificacioProjecte(self, txt='userModification'):
+    def modificacioProjecte(self, txt='layersChanged'):
+
+        # Emite señal cuando hay cambios en los filtros y:
+        #
+        #                |  Grupo  |  Capa  | Anotación
+        # ---------------+---------+--------+-----------
+        # Alta           |    X    |   X    |     X     
+        # Modificación   |    X    |   X    |     X     
+        # Movimiento     |   (*)   |   X    |     X     
+        # Visibilidad    |   (*)   |   X    |     X     
+        # Borrado        |    X    |   X    |     X     
+        # 
+        # (*) - Solo cuando el cambio en el grupo
+        #       afecta también a alguna capa
+
         if self.iniSignal:
+            # print('-> Emit projecteModificat', txt)
             self.projecteModificat.emit(txt)
 
     def iniProjecte(self, num, tot):
         # La carga de un proyecto se inicia con la capa #0
         if self.iniSignal:
-            self.bridge.canvasLayersChanged.disconnect(self.fSignal)
+            # self.bridge.canvasLayersChanged.disconnect(self.fSignal)
+            # self.project.layerLoaded.disconnect(self.modificacioProjecte)
+            # self.project.layerRemoved.disconnect(self.modificacioProjecte)
+            self.canvas.layersChanged.disconnect(self.modificacioProjecte)
             self.iniSignal = False
 
         if self.projecteCapes is None and num == 0:
@@ -215,7 +236,10 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
                 self.player.hide()
             self.projecteCarregat.emit(self.project.fileName())
             if not self.iniSignal:
-                self.bridge.canvasLayersChanged.connect(self.fSignal)
+                # self.bridge.canvasLayersChanged.connect(self.fSignal)
+                # self.project.layerLoaded.connect(self.modificacioProjecte)
+                # self.project.layerRemoved.connect(self.modificacioProjecte)
+                self.canvas.layersChanged.connect(self.modificacioProjecte)
                 self.iniSignal = True
 
     def setPlayer(self, fich, ancho=170, alto=170):
@@ -490,7 +514,7 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
     def setAccions(self):
         act = qtWdg.QAction()
         act.setText("Defineix grup")
-        act.triggered.connect(self.defaultActions().addGroup)
+        act.triggered.connect(self.addGroup)
         self.accions.afegirAccio('addGroup', act)
 
         act = qtWdg.QAction()
@@ -649,8 +673,8 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
         return tipo
 
     def itemChanged(self, index1, index2):
-        self.modificacioProjecte('renameGroupOrLayer')
         if self.renaming is not None and self.renaming == index1 and self.renaming == index2:
+            self.modificacioProjecte('renameGroupOrLayer')
             self.renaming = None
             if self.atributs is not None and self.calcTipusMenu() == 'layer':
                 self.atributs.tabTaula(self.currentNode().layer())
@@ -671,6 +695,10 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
                     return True
         return False
 
+    def addGroup(self):
+        self.defaultActions().addGroup()
+        self.modificacioProjecte('addGroup')
+
     def removeGroupOrLayer(self):
         self.removing = True
         node = self.currentNode()
@@ -681,6 +709,7 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
                 if self.atributs is not None:
                     self.atributs.tancarTaules(qgCor.QgsLayerTreeUtils.collectMapLayersRecursive([node]))
                 node.parent().removeChildNode(node)
+                self.modificacioProjecte('removeGroupOrLayer')
         self.removing = False
 
     def addLayersFromFile(self):
