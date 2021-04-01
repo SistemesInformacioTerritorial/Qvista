@@ -5,29 +5,6 @@ from moduls.QvImports import *
 from qgis.core import QgsPointXY
 from qgis.gui import QgsMapCanvas, QgsRubberBand
 
-
-def pintarRuta(trams,canvas):
-    for tram in trams:
-        points = []
-        polylines = []
-        polyline = QgsRubberBand(canvas, False)
-        polylines.append(polyline)
-        for point in tram.getCoords():
-            points.append(QgsPoint(point))
-
-        polyline.setToGeometry(QgsGeometry.fromPolyline(points), None)
-        if (tram.getCirculable() == False):
-            polyline.setColor(QColor(255, 0, 0))
-        else:
-            polyline.setColor(QColor(0, 0, 255))
-
-        polyline.setWidth(3)
-
-        for linia in polylines:
-            linia.show()
-
-        return polylines
-
 class Gir():
     descripcio = ""
     coord = QgsPointXY() #Coordenada()
@@ -79,6 +56,12 @@ class Ruta():
 
     coord_Final_descripcio = ""
 
+    polylines = []
+    pGirs = []
+
+    def __init(self):
+        pass
+
     def __init__(self, coordA, coordB):
         """ 
         Pre: coordA i coordB són instàncies de la classe QgsPointXY
@@ -91,6 +74,9 @@ class Ruta():
 
         self.tramsRuta.clear()
         self.girsRuta.clear()
+
+        self.ocultarRuta()
+        self.ocultarPuntsGir()
 
     def calculaRuta(self):
         """ 
@@ -120,6 +106,7 @@ class Ruta():
 
             if (int(root.find("nsruta:codiResultat",ns).text) != 0):
                 print("XML parse error")
+                return -1
 
             self.coordInici_descripcio = root.find("nsruta:sortida",ns).find("nsruta:descripcio",ns).text
             self.coordFinal_descripcio = root.find("nsruta:arribada",ns).find("nsruta:descripcio",ns).text
@@ -127,10 +114,23 @@ class Ruta():
             self.distanciaRuta = int(root.find("nsruta:distancia",ns).text)
             self.duradaRuta = int(root.find("nsruta:durada",ns).text)
 
-            for index,gir in enumerate(root.find("nsruta:girs",ns).findall("nsruta:Gir",ns)):
+            descripcionsRuta = []
+            for descripcio in root.find("nsruta:descripcio",ns).findall("d2p1:string",ns):
+                if (len(descripcio.text.split(" - ",1)) > 1):
+                    descripcionsRuta.append(descripcio.text.split(" - ",1)[1])
+
+            aux_girsRuta = []
+            for gir in root.find("nsruta:girs",ns).findall("nsruta:Gir",ns):
                 temp_coord = QgsPointXY(float(gir.find("nsruta:coord",ns).find("nsruta:x",ns).text), float(gir.find("nsruta:coord",ns).find("nsruta:y",ns).text))
-                descr = root.find("nsruta:descripcio",ns).findall("d2p1:string",ns)[index+1].text
-                self.girsRuta.append(Gir(temp_coord,descr.split(" - ")[1]))
+                aux_girsRuta.append(temp_coord)
+
+            d = 0
+            g = 0
+            while d < (len(descripcionsRuta)) and g < len(aux_girsRuta):
+                self.girsRuta.append(Gir(aux_girsRuta[g],descripcionsRuta[d]))
+                d = d + 1
+                g = g + 1
+                    
 
             for tram in root.find("nsruta:trams",ns).findall("nsruta:Tram",ns):
                 coords = []
@@ -147,26 +147,72 @@ class Ruta():
 
                 self.tramsRuta.append(Tram(circulable,coords))
 
+            return 0
+
         URL = "http://netiproa.corppro.imi.bcn:81/karta/api/Ruta/Utm/" + str(self.coordInici.x()) + "/" + str(self.coordInici.y()) + "/" + str(self.coordFinal.x()) + "/" + str(self.coordFinal.y()) + "/EPSG:25831"
 
-        #filecontent = readRemoteXML(URL)
-        filecontent = readLocalXML(r"C:/QVista/ruta1.xml")
+        filecontent = readRemoteXML(URL)
+        #filecontent = readLocalXML(r"C:/QVista/ruta2.xml")
 
-        parseXML(filecontent)
+        if (parseXML(filecontent) >= 0):
+            self.ruta_calculada = True
 
 
-    def obtenirRuta(self):
+    def pintarRuta(self,canvas):
         """ Pre: la ruta ja ha estat calculada. project és un QgsMapCanvas
         """
+        self.ocultarRuta()
 
-        return self.tramsRuta
+        for tram in self.tramsRuta:
+            points = []
+            polylines = []
+            polyline = QgsRubberBand(canvas, False)
+            polylines.append(polyline)
+            for point in tram.getCoords():
+                points.append(QgsPoint(point))
+
+            polyline.setToGeometry(QgsGeometry.fromPolyline(points), None)
+            if (tram.getCirculable() == False):
+                polyline.setColor(QColor(255, 0, 0))
+            else:
+                polyline.setColor(QColor(0, 0, 255))
+
+            polyline.setWidth(3)
+
+            for linia in polylines:
+                linia.show()
+
+        self.polylines = polylines
+
+    def ocultarRuta(self):
+        for linia in self.polylines:
+            linia.hide()
+            linia.reset(True)
+
+        self.polylines.clear()
 
     #def mostrarLlegenda(window? qwidget?):
         """ Pre: la ruta ha estat calculada
         """
 
-    def obtenirPuntsGir(self):
-        return self.girsRuta
+    def pintarPuntsGir(self,canvas):
+        self.ocultarPuntsGir()
+
+        pGirs = []
+        for gir in self.girsRuta:
+            pGir = QgsTextAnnotation(canvas)
+            pGir.setDocument(QTextDocument(gir.getDescription()))
+            pGir.setMapPosition(gir.getCoord())
+            pGir.setFrameOffsetFromReferencePoint(QPointF(0, 0))
+            i = QgsMapCanvasAnnotationItem(pGir, canvas)
+            pGirs.append(i)
+
+        self.pGirs = pGirs
+
+    def ocultarPuntsGir(self):
+        for pGir in self.pGirs:
+            pGir.hide()
+        self.pGirs.clear()
 
 
 if __name__ == "__main__":
@@ -185,5 +231,5 @@ if __name__ == "__main__":
         
         ruta = Ruta(QgsPointXY(434799.933, 4584672.930),QgsPointXY(433463.058, 4583356.121))
         ruta.calculaRuta()
-        pintarRuta(ruta.obtenirRuta(),canvas)
+        ruta.pintarRuta(canvas)
         canvas.show()

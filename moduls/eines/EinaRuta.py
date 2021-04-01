@@ -8,7 +8,7 @@ from moduls.QvPushButton import QvPushButton
 from configuracioQvista import *
 from PyQt5.QtWidgets import QWidget, QLabel, QVBoxLayout 
 from PyQt5.QtWidgets import QHBoxLayout, QFrame
-from PyQt5.QtWidgets import  QApplication
+from PyQt5.QtWidgets import  QApplication, QMessageBox
 from moduls import QvFuncions
 from moduls.QvRuta import *
 
@@ -32,14 +32,7 @@ class EinaRuta(QWidget):
     mStart = None
     mEnd = None
 
-    polylines = []
-
-    def netejarRutes(self):
-        for linia in self.polylines:
-            linia.reset(True)
-            linia.hide()
-
-        self.polylines.clear()
+    ruta = Ruta(None,None)
 
     def __init__(self, pare):
         def getCoordInici():
@@ -48,29 +41,22 @@ class EinaRuta(QWidget):
         def getCoordFi():
             self.getPoint = 2
 
-
-        def mostrarGirs():
-            girs = self.ruta.obtenirPuntsGir()
-
-            for gir in girs:
-                pGir = QgsTextAnnotation(self.canvas)
-                pGir.setDocument(QTextDocument(gir.getDescription()))
-                pGir.setMapPosition(gir.getCoord())
-                i = QgsMapCanvasAnnotationItem(pGir, self.canvas)
-                # self.pGirs.append(i)
-
-
-
         def calcularRuta():
-            self.netejarRutes()
+            self.ruta.ocultarRuta()
+            self.ruta.ocultarPuntsGir()
             self.ruta = Ruta(self.startPoint,self.endPoint)
             self.ruta.calculaRuta()
-            trams = []
-            trams = self.ruta.obtenirRuta()
-
-            self.polylines = pintarRuta(trams,self.canvas)
-
-            #mostrarGirs()
+            if (self.ruta.ruta_calculada == False):
+                print("error calculant la ruta")
+                msg = QMessageBox()
+                msg.setIcon(QMessageBox.Critical)
+                msg.setText("Error calculant la ruta")
+                msg.setInformativeText("La ruta no s'ha pogut calcular. Provi amb uns altres punts")
+                msg.setWindowTitle("Error")
+                msg.exec_()
+            else:
+                self.ruta.pintarRuta(self.canvas)
+                self.ruta.pintarPuntsGir(self.canvas)
    
         QWidget.__init__(self)
 
@@ -139,13 +125,13 @@ class EinaRuta(QWidget):
         self.mEnd.setIconType(QgsVertexMarker.ICON_CROSS)
         self.mEnd.setPenWidth(3)
 
-
     def hideEvent(self,event):
         super().hideEvent(event)
         self.canvas.unsetMapTool(self.tool)
         self.canvas.scene().removeItem(self.mStart)
         self.canvas.scene().removeItem(self.mEnd)
-        self.netejarRutes()
+        self.ruta.ocultarRuta()
+        self.ruta.ocultarPuntsGir()
 
     def showEvent(self,event):
         super().showEvent(event)
