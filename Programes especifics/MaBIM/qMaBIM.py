@@ -461,7 +461,7 @@ class QMaBIM(QtWidgets.QMainWindow):
         # Si no hi ha cap feature després d'aplicar el filtre, eliminem el filtre i mostrem tota l'extensió
         if layer.featureCount()==0:
             self.netejaFiltre()
-            QtWidgets.QMessageBox.warning(self,"Atenció!", "No s'ha pogut localitzar el BIM en el mapa. Contacteu amb l'administrador")
+            QtWidgets.QMessageBox.warning(self,"Atenció!", "No s'ha pogut localitzar el BIM en el mapa.")
         self.canvasA.setExtent(layer.extent())
 
         # Si intentes eliminar el contingut d'un QLineEdit que té un QCompleter associat,
