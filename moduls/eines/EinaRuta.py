@@ -10,11 +10,12 @@ from PyQt5.QtWidgets import QWidget, QLabel, QVBoxLayout
 from PyQt5.QtWidgets import QHBoxLayout, QFrame
 from PyQt5.QtWidgets import  QApplication, QMessageBox
 from moduls import QvFuncions
+from moduls.QVCercadorAdreca import QCercadorAdreca
 from moduls.QvRuta import *
 
 @QvFuncions.creaEina(titol="Eina Ruta", esEinaGlobal = True, apareixDockat = False)
 class EinaRuta(QWidget):
-    getPoint = 1
+    getPoint = 0
     """
     Valors del getPoint:
         0 - no seleccionar un punt
@@ -34,12 +35,36 @@ class EinaRuta(QWidget):
 
     ruta = Ruta(None,None)
 
+    def APostaltoCoord_Inici(self,rsc):
+        if rsc==0:
+            self.startPoint = self.cercadorInici.coordAdreca
+            self.mStart.setCenter(self.startPoint)
+
+    def APostaltoCoord_Final(self,rsc):
+        if rsc==0:
+            self.endPoint = self.cercadorFinal.coordAdreca
+            self.mEnd.setCenter(self.endPoint)
+
     def __init__(self, pare):
         def getCoordInici():
-            self.getPoint = 1
+            if (self.IniciButtonGPS.isChecked() == True):
+                self.getPoint = 1
+                self.IniciLECarrer.setEnabled(False)
+                self.IniciLENumero.setEnabled(False)
+            else:
+                self.getPoint = 0
+                self.IniciLECarrer.setEnabled(True)
+                self.IniciLENumero.setEnabled(True)
 
         def getCoordFi():
-            self.getPoint = 2
+            if (self.FiButtonGPS.isChecked() == True):
+                self.getPoint = 2
+                self.FiLECarrer.setEnabled(False)
+                self.FiLENumero.setEnabled(False)
+            else:
+                self.getPoint = 0
+                self.FiLECarrer.setEnabled(True)
+                self.FiLENumero.setEnabled(True)
 
         def calcularRuta():
             self.ruta.ocultarRuta()
@@ -58,32 +83,111 @@ class EinaRuta(QWidget):
                 self.ruta.pintarRuta(self.canvas)
                 self.ruta.pintarPuntsGir(self.canvas)
    
-        QWidget.__init__(self)
+        def preparacioUI():
+            def preparacioCercadorPostal(lay):
+                def preparacioCercadorStartPoint(lay):
+                    #layout vertical per posar títol
+                    layoutLlocInici = QVBoxLayout()
+                    lblTextInici = QLabel("Lloc d'inici")
+                    layoutLlocInici.addWidget(lblTextInici)
 
-        if isinstance(pare, QgsMapCanvas):
-            self.canvas = pare
-        else: 
-            self.canvas = pare.canvas
-        
-        lay = QVBoxLayout()
-        self.setLayout(lay)
+                    layoutAdrecaInicial = QHBoxLayout()              
+                    layoutLlocInici.addLayout(layoutAdrecaInicial)
 
-        startButton = QPushButton()
-        startButton.pressed.connect(getCoordInici)
-        startButton.setText("Punt inici")
-        lay.addWidget(startButton)
+                    #elements layout cercador
+                    lblTextCarrer = QLabel('Carrer:')
+                    lblTextNumero = QLabel('Num:')
 
-        endButton = QPushButton()
-        endButton.pressed.connect(getCoordFi)
-        endButton.setText("Punt final")
-        lay.addWidget(endButton)
+                    self.IniciLECarrer=QLineEdit()
+                    self.IniciLECarrer.setToolTip('Introdueix adreça i selecciona de la llista')
+                    self.IniciLECarrer.setMinimumWidth(200)
 
-        calcRouteButton = QPushButton()
-        calcRouteButton.pressed.connect(calcularRuta)
-        calcRouteButton.setText("Calcular ruta")
-        lay.addWidget(calcRouteButton)
+                    self.IniciLENumero=QLineEdit()
+                    self.IniciLENumero.setToolTip('Introdueix número, selecciona de la llista i prem RETURN')
+                    self.IniciLENumero.setMaximumWidth(100)
+                    self.IniciLENumero.setMinimumWidth(100)
 
-        self.initMarkers()
+                    self.IniciButtonGPS = QPushButton("", self)
+                    self.IniciButtonGPS.setGeometry(200, 150, 100, 30)
+                    self.IniciButtonGPS.clicked.connect(getCoordInici)
+                    self.IniciButtonGPS.setCheckable(True)
+                    self.IniciButtonGPS.setIcon(QIcon('Imatges/logoGPS.png'))
+
+                    #afegir elements al layout cercador
+                    layoutAdrecaInicial.addWidget(lblTextCarrer)
+                    layoutAdrecaInicial.addWidget(self.IniciLECarrer)
+                    layoutAdrecaInicial.addWidget(lblTextNumero)
+                    layoutAdrecaInicial.addWidget(self.IniciLENumero)
+                    layoutAdrecaInicial.addWidget(self.IniciButtonGPS)
+
+                    lay.addLayout(layoutLlocInici)
+
+                    # Activem la clase de cerca d'adreces
+                    self.cercadorInici = QCercadorAdreca(self.IniciLECarrer, self.IniciLENumero,'SQLITE')
+                    self.cercadorInici.sHanTrobatCoordenades.connect(self.APostaltoCoord_Inici)
+
+                def preparacioCercadorEndPoint(lay):
+                    #layout vertical per posar títol
+                    layoutLlocFinal = QVBoxLayout()
+                    lblTextInici = QLabel("Lloc d'arribada")
+                    layoutLlocFinal.addWidget(lblTextInici)
+
+                    layoutAdrecaFinal = QHBoxLayout()
+                    layoutLlocFinal.addLayout(layoutAdrecaFinal)
+
+                    #Elementos para layout H, del cercador
+                    lblTextCarrer = QLabel('Carrer:')
+                    lblTextNumero = QLabel('Num:')
+
+                    self.FiLECarrer=QLineEdit()
+                    self.FiLECarrer.setToolTip('Introdueix adreça i selecciona de la llista')
+                    self.FiLECarrer.setMinimumWidth(200) 
+
+                    self.FiLENumero=QLineEdit()                           
+                    self.FiLENumero.setToolTip('Introdueix número, selecciona de la llista i prem RETURN')
+                    self.FiLENumero.setMaximumWidth(100)                   
+                    self.FiLENumero.setMinimumWidth(100)
+
+                    self.FiButtonGPS = QPushButton("", self)
+                    self.FiButtonGPS.setGeometry(200, 150, 100, 30)
+                    self.FiButtonGPS.clicked.connect(getCoordFi)
+                    self.FiButtonGPS.setCheckable(True)
+                    self.FiButtonGPS.setIcon(QIcon('Imatges/logoGPS.png'))
+
+                    # llenamos layout horizontal de adreca
+                    layoutAdrecaFinal.addWidget(lblTextCarrer)
+                    layoutAdrecaFinal.addWidget(self.FiLECarrer)
+                    layoutAdrecaFinal.addWidget(lblTextNumero)
+                    layoutAdrecaFinal.addWidget(self.FiLENumero)
+                    layoutAdrecaFinal.addWidget(self.FiButtonGPS)
+
+                    lay.addLayout(layoutLlocFinal)
+
+                    # Activem la clase de cerca d'adreces
+                    self.cercadorFinal = QCercadorAdreca(self.FiLECarrer, self.FiLENumero,'SQLITE')
+                    self.cercadorFinal.sHanTrobatCoordenades.connect(self.APostaltoCoord_Final)
+
+                preparacioCercadorStartPoint(lay)
+                preparacioCercadorEndPoint(lay)
+
+            QWidget.__init__(self)
+
+            if isinstance(pare, QgsMapCanvas):
+                self.canvas = pare
+            else: 
+                self.canvas = pare.canvas
+            
+            lay = QVBoxLayout()
+            self.setLayout(lay)
+
+
+            preparacioCercadorPostal(lay)
+
+            calcRouteButton = QPushButton()
+            calcRouteButton.pressed.connect(calcularRuta)
+            calcRouteButton.setText("Calcular ruta")
+            lay.addWidget(calcRouteButton)
+
         class PointTool(QgsMapTool):  
             def __init__(self, canvas, parent):
                 QgsMapTool.__init__(self, canvas)
@@ -97,18 +201,16 @@ class EinaRuta(QWidget):
                     Post: el següent click és per seleccionar el punt final. Estableix un marker
                     """
                     startPoint = QgsPointXY(event.mapPoint())
-                    print("Start Point is " + str(startPoint))
                     self.parent.startPoint = startPoint
-                    self.parent.getPoint = 2 
                     self.parent.mStart.setCenter(startPoint)
 
                 elif self.parent.getPoint == 2:
                     endPoint = QgsPointXY(event.mapPoint())
-                    print("End Point is " + str(endPoint))
                     self.parent.endPoint = endPoint
-                    self.parent.getPoint = 0
                     self.parent.mEnd.setCenter(endPoint)
-    
+
+        preparacioUI()
+        self.initMarkers()
         self.tool = PointTool(self.canvas, self)
         self.canvas.setMapTool(self.tool)
 
@@ -137,7 +239,7 @@ class EinaRuta(QWidget):
         super().showEvent(event)
         self.canvas.setMapTool(self.tool)
         self.initMarkers()
-        self.getPoint = 1
+        self.getPoint = 0
 
 if __name__ == "__main__":
     with qgisapp() as app:
@@ -149,7 +251,7 @@ if __name__ == "__main__":
      
         # Canvas, projecte i bridge
         start1 = time.time()
-        canvas=QgsMapCanvas()
+        canvas = QgsMapCanvas()
         
         canvas.show()
         canvas.setRotation(0)

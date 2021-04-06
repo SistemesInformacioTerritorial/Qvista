@@ -545,6 +545,8 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.titolAnterior=self.lblTitolProjecte.text()
 
     def titolEditat(self):
+        if not hasattr(self, "titolAnterior"):
+            self.titolAnterior = self.leTitolProjecte.text()
         self.lblTitolProjecte.show()
         self.leTitolProjecte.hide()
         #TODO: definir el títol anterior
