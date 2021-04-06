@@ -162,10 +162,10 @@ class Ruta():
         """ Pre: la ruta ja ha estat calculada. project és un QgsMapCanvas
         """
         self.ocultarRuta()
+        polylines = []
 
         for tram in self.tramsRuta:
             points = []
-            polylines = []
             polyline = QgsRubberBand(canvas, False)
             polylines.append(polyline)
             for point in tram.getCoords():
