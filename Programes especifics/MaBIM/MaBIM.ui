@@ -1021,16 +1021,7 @@ QToolButton:disabled{
            <property name="spacing">
             <number>0</number>
            </property>
-           <property name="leftMargin">
-            <number>0</number>
-           </property>
-           <property name="topMargin">
-            <number>0</number>
-           </property>
-           <property name="rightMargin">
-            <number>0</number>
-           </property>
-           <property name="bottomMargin">
+           <property name="margin">
             <number>0</number>
            </property>
            <item>
@@ -1772,10 +1763,25 @@ QToolButton:disabled{
           <widget class="QWidget" name="BIMs">
            <layout class="QVBoxLayout" name="verticalLayout_4">
             <item>
-             <widget class="QLabel" name="lCapcaleraBIM">
-              <property name="text">
-               <string/>
-              </property>
+             <widget class="QWidget" name="widget" native="true">
+              <layout class="QHBoxLayout" name="horizontalLayout_4">
+               <item>
+                <layout class="QHBoxLayout" name="layCapcaleraBIM">
+                 <item>
+                  <widget class="QLabel" name="lCapcaleraBIM">
+                   <property name="text">
+                    <string/>
+                   </property>
+                   <property name="wordWrap">
+                    <bool>true</bool>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </item>
+              </layout>
+              <zorder>lCapcaleraBIM</zorder>
+              <zorder>horizontalLayoutWidget</zorder>
              </widget>
             </item>
             <item>

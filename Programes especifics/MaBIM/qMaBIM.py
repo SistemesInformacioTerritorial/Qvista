@@ -39,7 +39,7 @@ TIPOLOGIA_BIM, SUBTIPOLOGIA_BIM, TIPUS_IMMOBLE, QUALIFICACIO_JURIDICA
 FROM 
 ZAFT_0002 
 WHERE 
-((BIM LIKE :pText||'%')
+((BIM LIKE '%'||:pText||'%')
     OR (UPPER(DESCRIPCIO_BIM) LIKE '%'||:pText||'%')
     OR (UPPER(DENOMINACIO_BIM) LIKE '%'||:pText||'%')
     OR (UPPER(REF_CADASTRE_BIM) LIKE '%'||:pText||'%'))
@@ -292,12 +292,16 @@ class WidgetCercador(QtWidgets.QWidget):
         self.lblIcona = QtWidgets.QLabel()
         pix = QtGui.QPixmap('imatges/MaBIM/cercador-icona.png')
         self.lblIcona.setPixmap(pix.scaledToHeight(20))
+        self.leCarrer.setFixedSize(400,20)
+        self.leNumero.setFixedSize(80,20)
+        self.setFixedSize(self.leCarrer.width()+self.leNumero.width()+20, 30)
         self.cercador = QCercadorAdreca(self.leCarrer, self.leNumero, 'SQLITE')
         lay.addWidget(self.leCarrer)
         lay.addStretch()
         lay.addWidget(self.leNumero)
         self.marcaLlocPosada = False
         # lay.addWidget(self.lblIcona)
+        self.setStyleSheet('font-size: 14px;')
 
         self.cercador.sHanTrobatCoordenades.connect(self.resultatCercador)
     
@@ -315,6 +319,8 @@ class WidgetCercador(QtWidgets.QWidget):
             self.marcaLloc.setPenWidth(3)
             self.marcaLloc.show()
             self.marcaLlocPosada = True
+        self.leCarrer.clear()
+        self.leNumero.clear()
     def eliminaMarcaLloc(self):
         if self.marcaLlocPosada:
             self.canvas.scene().removeItem(self.marcaLloc)
@@ -350,6 +356,10 @@ class QMaBIM(QtWidgets.QMainWindow):
 
         if len(QgsGui.editorWidgetRegistry().factories()) == 0:
             QgsGui.editorWidgetRegistry().initEditors()
+
+    def showEvent(self, e):
+        super().showEvent(e)
+        self.tabCentral.setCurrentIndex(2)
     
     def seleccioGrafica(self, feats):
         form = FormulariAtributs(self.getCapaBIMs(), feats, self)
@@ -407,7 +417,7 @@ class QMaBIM(QtWidgets.QMainWindow):
 
         # Eliminem la marca del cercador
         self.cerca1.eliminaMarcaLloc()
-        self.dadesLabelsDades[0] = self.dadesLabelsDades[0].lstrip("0")
+        self.dadesLabelsDades[0] = self.dadesLabelsDades[0].replace('0000', ' ').lstrip()
         self.lCapcaleraBIM.setText(f'BIM {self.dadesLabelsDades[0]}  {self.dadesLabelsDades[3]}')
 
         # Labels pestanya "Dades Identificatives"
@@ -462,7 +472,7 @@ class QMaBIM(QtWidgets.QMainWindow):
                 self.twFinquesRegistrals.setItem(i,j,QtWidgets.QTableWidgetItem(elem))
         self.twFinquesRegistrals.resizeColumnsToContents()
 
-        cerca = f"BIM LIKE '{self.dadesLabelsDades[0]}'"
+        cerca = f"BIM LIKE '0000{self.dadesLabelsDades[0]}'"
         
         
         layer = self.getCapaBIMs()
@@ -507,7 +517,9 @@ class QMaBIM(QtWidgets.QMainWindow):
         QvMapetaBrujulado(mapetaPng, canvasC, pare=canvasC)
         
         self.cerca1 = WidgetCercador(self.canvasA, self.canvasA)
-        self.cerca1.show()
+        self.cerca1.cercador.sHanTrobatCoordenades.connect(lambda: self.tabCentral.setCurrentIndex(2))
+        # self.cerca1.show()
+        self.layCapcaleraBIM.addWidget(self.cerca1)
         # self.cerca1.move(-200,0)
 
         botoSelecciona = self.canvasA.afegirBotoCustom('botoSelecciona', 'imatges/apuntar.png', 'Selecciona BIM gràficament', 1)
