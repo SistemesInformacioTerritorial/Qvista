@@ -49,6 +49,9 @@ def conte(sub, string):
 def comenca(sub, string):
     '''Retorna True si alguna de les paraules de string comença per alguna de les paraules de sub'''
     string = string.lower()
+    #cal treure els parèntesis a l'hora de fer regex donat que hi ha problemes en el moment de fer parse amb re
+    string = string.replace("(","")
+    string = string.replace(")","")
     subs = sub.split(' ')
     # comencaUna = False
     # for x in subs:

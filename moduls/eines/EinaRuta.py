@@ -76,7 +76,7 @@ class EinaRuta(QWidget):
                 msg = QMessageBox()
                 msg.setIcon(QMessageBox.Critical)
                 msg.setText("Error calculant la ruta")
-                msg.setInformativeText("La ruta no s'ha pogut calcular. Provi amb uns altres punts")
+                msg.setInformativeText("La ruta no s'ha pogut calcular. Provi amb uns altres punts i asseguri's que el seu ordinador està connectat a la xarxa interna.")
                 msg.setWindowTitle("Error")
                 msg.exec_()
             else:

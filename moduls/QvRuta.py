@@ -96,7 +96,10 @@ class Ruta():
             headers = {
                 "Accept": "application/xml",
             }
-            var = requests.get(URL,headers=headers).text
+            try:
+                var = requests.get(URL,headers=headers).text
+            except requests.exceptions.ConnectionError as err:
+                var = "-1"
             return var 
 
         def parseXML(content):
@@ -154,8 +157,9 @@ class Ruta():
         filecontent = readRemoteXML(URL)
         #filecontent = readLocalXML(r"C:/QVista/ruta2.xml")
 
-        if (parseXML(filecontent) >= 0):
-            self.ruta_calculada = True
+        if (filecontent != "-1"):
+            if (parseXML(filecontent) >= 0):
+                self.ruta_calculada = True
 
 
     def pintarRuta(self,canvas):
