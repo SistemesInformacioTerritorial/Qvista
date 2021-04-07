@@ -505,7 +505,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         """Preparacio entorn grafic del canvas"""
 
         # llistaBotons = ['streetview','apuntar', 'zoomIn', 'zoomOut', 'panning', 'centrar', 'enrere', 'endavant', 'maximitza']
-        llistaBotons = ['streetview','apuntar', 'zoomIn', 'zoomOut', 'panning', 'centrar', 'maximitza', 'anotacions']
+        llistaBotons = ['apuntar', 'panning', 'centrar', 'zoomIn', 'zoomOut', 'anotacions', 'streetview', 'maximitza']
         
         self.canvas = QvCanvas(llistaBotons=llistaBotons, posicioBotonera = 'SE', botoneraHoritzontal = True, pare=self)
         self.canvas.canviMaximitza.connect(self.ferGran)
@@ -1749,7 +1749,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         else:
             self.showLblFlotant('Premeu F-11, Esc o el botó de maximitzar per sortir de la pantalla completa')
             if hasattr(self.canvas,'bMaximitza'):
-                self.canvas.bMaximitza.setIcon(self.canvas.iconaMinimitza)
+                self.canvas.actualitzaBotoMaximitza(True)
             self.dockWidgetsVisibles=[x for x in self.findChildren(QvDockWidget) if x.isVisible()]
             for x in self.dockWidgetsVisibles:
                 x.hide()
@@ -1768,7 +1768,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.hideLblFlotant()
         self.showMaximized()
         if hasattr(self.canvas,'bMaximitza'):
-            self.canvas.bMaximitza.setIcon(self.canvas.iconaMaximitza)
+            self.canvas.actualitzaBotoMaximitza(False)
         self.frame_3.show()
         self.frame_19.show()
         self.frame_2.show()
@@ -2603,7 +2603,7 @@ class QVista(QMainWindow, Ui_MainWindow):
             msg = QMessageBox()
             msg.setIcon(QMessageBox.Warning)
             
-            msg.setText(string(ee))
+            msg.setText(str(ee))
             msg.setStandardButtons(QMessageBox.Close)
             msg.exec_()
 
