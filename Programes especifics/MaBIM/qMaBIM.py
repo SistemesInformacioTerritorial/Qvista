@@ -574,7 +574,7 @@ class QMaBIM(QtWidgets.QMainWindow):
                 x.setChecked(True)
 
 def splashScreen():
-    splash_pix = QtGui.QPixmap('imatges/SplashScreen_qVista.png')
+    splash_pix = QtGui.QPixmap('imatges/MABIM/MABIMSplash.png')
     splash = QtWidgets.QSplashScreen(splash_pix, QtCore.Qt.WindowStaysOnTopHint)
     splash.setWindowFlags(QtCore.Qt.WindowStaysOnTopHint | QtCore.Qt.FramelessWindowHint)
     splash.setEnabled(True)
