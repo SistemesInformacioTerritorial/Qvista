@@ -551,7 +551,7 @@ class QMaBIM(QtWidgets.QMainWindow):
         QgsProject.instance().read('L:/DADES/SIT/qVista/CATALEG/MAPES PRIVATS/Patrimoni/PPM_CatRegles_geopackage.qgs')
     
     def getCapaBIMs(self):
-        return self.llegenda.capaPerNom('MABIM')
+        return self.llegenda.capaPerNom('Inventari municipal')
     
     def canviaTab(self):
         return
