@@ -319,8 +319,8 @@ class WidgetCercador(QtWidgets.QWidget):
             self.marcaLloc.setPenWidth(3)
             self.marcaLloc.show()
             self.marcaLlocPosada = True
-        self.leCarrer.clear()
-        self.leNumero.clear()
+            self.leCarrer.clear()
+            self.leNumero.clear()
     def eliminaMarcaLloc(self):
         if self.marcaLlocPosada:
             self.canvas.scene().removeItem(self.marcaLloc)
