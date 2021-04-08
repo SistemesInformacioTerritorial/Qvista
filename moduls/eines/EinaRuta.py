@@ -26,6 +26,7 @@ class EinaRuta(QWidget):
     tool = None
 
     pGirs = [] #punts de gir
+    indicacions = [] #descripcions de la ruta
 
     startPoint = QgsPointXY(float(0),float(0))
     endPoint = QgsPointXY(float(0),float(0))
@@ -34,6 +35,8 @@ class EinaRuta(QWidget):
     mEnd = None
 
     ruta = Ruta(None,None)
+
+    indicacioBox = QComboBox()
 
     def APostaltoCoord_Inici(self,rsc):
         if rsc==0:
@@ -66,6 +69,12 @@ class EinaRuta(QWidget):
                 self.FiLECarrer.setEnabled(True)
                 self.FiLENumero.setEnabled(True)
 
+        def getIndicacions(girs):
+            descripcions = []
+            for gir in girs:
+                descripcions.append(gir.descripcio)
+            return descripcions
+
         def calcularRuta():
             self.ruta.ocultarRuta()
             self.ruta.ocultarPuntsGir()
@@ -80,8 +89,19 @@ class EinaRuta(QWidget):
                 msg.setWindowTitle("Error")
                 msg.exec_()
             else:
+                self.indicacioBox.clear()
+                self.indicacioBox.wheelEvent = lambda event: None
+                self.indicacioBox.setEditable(False)
                 self.ruta.pintarRuta(self.canvas)
                 self.ruta.pintarPuntsGir(self.canvas)
+                self.pGirs = self.ruta.girsRuta      
+                self.pGirs.insert(0, Gir(self.startPoint, 'Punt Inici'))
+                self.pGirs.append(Gir(self.endPoint, 'Punt Final'))  
+                self.indicacions = getIndicacions(self.pGirs)     
+                self.indicacioBox.addItems(self.indicacions)
+                self.indicacioBox.view().pressed.connect(self.eventComboBox)
+                self.layout().addWidget(self.indicacioBox)
+                self.indicacions.clear()
    
         def preparacioUI():
             def preparacioCercadorPostal(lay):
@@ -213,6 +233,12 @@ class EinaRuta(QWidget):
         self.initMarkers()
         self.tool = PointTool(self.canvas, self)
         self.canvas.setMapTool(self.tool)
+
+    def eventComboBox(self, index):
+
+        self.canvas.setCenter(self.pGirs[int(index.row())].coord)
+        self.canvas.zoomScale(1000)
+        self.canvas.refresh()
 
     def initMarkers(self):
         self.mStart = QgsVertexMarker(self.canvas)
