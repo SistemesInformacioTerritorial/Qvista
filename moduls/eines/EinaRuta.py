@@ -89,7 +89,7 @@ class EinaRuta(QWidget):
                 msg.setWindowTitle("Error")
                 msg.exec_()
             else:
-                self.indicacioBox.clear()
+                
                 self.indicacioBox.wheelEvent = lambda event: None
                 self.indicacioBox.setEditable(False)
                 self.ruta.pintarRuta(self.canvas)
@@ -97,7 +97,8 @@ class EinaRuta(QWidget):
                 self.pGirs = self.ruta.girsRuta      
                 self.pGirs.insert(0, Gir(self.startPoint, 'Punt Inici'))
                 self.pGirs.append(Gir(self.endPoint, 'Punt Final'))  
-                self.indicacions = getIndicacions(self.pGirs)     
+                self.indicacions = getIndicacions(self.pGirs) 
+                self.indicacioBox.show()    
                 self.indicacioBox.addItems(self.indicacions)
                 self.indicacioBox.view().pressed.connect(self.eventComboBox)
                 self.layout().addWidget(self.indicacioBox)
@@ -260,6 +261,8 @@ class EinaRuta(QWidget):
         self.canvas.scene().removeItem(self.mEnd)
         self.ruta.ocultarRuta()
         self.ruta.ocultarPuntsGir()
+        self.indicacioBox.hide()
+        self.indicacioBox.clear()
 
     def showEvent(self,event):
         super().showEvent(event)
