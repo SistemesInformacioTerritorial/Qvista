@@ -13,6 +13,14 @@ from moduls import QvFuncions
 from moduls.QVCercadorAdreca import QCercadorAdreca
 from moduls.QvRuta import *
 
+class QAdrecaPostalLineEdit(QLineEdit):
+    def focusInEvent(self, event):
+        if (self.text() == '-- Punt seleccionat al mapa --'):
+            self.setText('')
+        super(QAdrecaPostalLineEdit, self).focusInEvent(event)
+
+
+
 @QvFuncions.creaEina(titol="Eina Ruta", esEinaGlobal = True, apareixDockat = False)
 class EinaRuta(QWidget):
     getPoint = 0
@@ -51,6 +59,9 @@ class EinaRuta(QWidget):
     def __init__(self, pare):
         def getCoordInici():
             if (self.IniciButtonGPS.isChecked() == True):
+                self.FiButtonGPS.setChecked(False)
+                self.FiLECarrer.setEnabled(True)
+                self.FiLENumero.setEnabled(True)
                 self.getPoint = 1
                 self.IniciLECarrer.setEnabled(False)
                 self.IniciLENumero.setEnabled(False)
@@ -61,6 +72,9 @@ class EinaRuta(QWidget):
 
         def getCoordFi():
             if (self.FiButtonGPS.isChecked() == True):
+                self.IniciButtonGPS.setChecked(False)
+                self.IniciLECarrer.setEnabled(True)
+                self.IniciLENumero.setEnabled(True)
                 self.getPoint = 2
                 self.FiLECarrer.setEnabled(False)
                 self.FiLENumero.setEnabled(False)
@@ -76,6 +90,9 @@ class EinaRuta(QWidget):
             return descripcions
 
         def calcularRuta():
+            self.IniciButtonGPS.setChecked(False)
+            self.FiButtonGPS.setChecked(False)
+            self.getPoint = 0
             self.ruta.ocultarRuta()
             self.ruta.ocultarPuntsGir()
             self.ruta = Ruta(self.startPoint,self.endPoint)
@@ -119,7 +136,7 @@ class EinaRuta(QWidget):
                     lblTextCarrer = QLabel('Carrer:')
                     lblTextNumero = QLabel('Num:')
 
-                    self.IniciLECarrer=QLineEdit()
+                    self.IniciLECarrer=QAdrecaPostalLineEdit()
                     self.IniciLECarrer.setToolTip('Introdueix adreça i selecciona de la llista')
                     self.IniciLECarrer.setMinimumWidth(200)
 
@@ -160,7 +177,7 @@ class EinaRuta(QWidget):
                     lblTextCarrer = QLabel('Carrer:')
                     lblTextNumero = QLabel('Num:')
 
-                    self.FiLECarrer=QLineEdit()
+                    self.FiLECarrer=QAdrecaPostalLineEdit()
                     self.FiLECarrer.setToolTip('Introdueix adreça i selecciona de la llista')
                     self.FiLECarrer.setMinimumWidth(200) 
 
@@ -217,18 +234,16 @@ class EinaRuta(QWidget):
 
             def canvasPressEvent(self, event):
                 if self.parent.getPoint == 1:
-                    """
-                    Pre: -
-                    Post: el següent click és per seleccionar el punt final. Estableix un marker
-                    """
                     startPoint = QgsPointXY(event.mapPoint())
                     self.parent.startPoint = startPoint
                     self.parent.mStart.setCenter(startPoint)
+                    self.parent.IniciLECarrer.setText("-- Punt seleccionat al mapa --")
 
                 elif self.parent.getPoint == 2:
                     endPoint = QgsPointXY(event.mapPoint())
                     self.parent.endPoint = endPoint
                     self.parent.mEnd.setCenter(endPoint)
+                    self.parent.FiLECarrer.setText("-- Punt seleccionat al mapa --")
 
         preparacioUI()
         self.initMarkers()
@@ -269,6 +284,16 @@ class EinaRuta(QWidget):
         self.canvas.setMapTool(self.tool)
         self.initMarkers()
         self.getPoint = 0
+        self.IniciLECarrer.setEnabled(True)
+        self.IniciLENumero.setEnabled(True)
+        self.FiLECarrer.setEnabled(True)
+        self.FiLENumero.setEnabled(True)
+        self.IniciButtonGPS.setChecked(False)
+        self.IniciLECarrer.setText("")
+        self.IniciLENumero.setText("")
+        self.FiButtonGPS.setChecked(False)
+        self.FiLECarrer.setText("")
+        self.FiLENumero.setText("")
 
 if __name__ == "__main__":
     with qgisapp() as app:

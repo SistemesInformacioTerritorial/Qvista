@@ -267,7 +267,7 @@ class QCercadorAdreca(QObject):
         self.leCarrer.editingFinished.connect(self.trobatCarrer)
         # CUARENTENA
         # self.leCarrer.mouseDoubleClickEvent = self.clear_leNumero_leCarrer
-        self.leCarrer.mouseDoubleClickEvent = self.SeleccPalabraOTodoEnFrase
+        # self.leCarrer.mouseDoubleClickEvent = self.SeleccPalabraOTodoEnFrase
         self.leCarrer.setAlignment(Qt.AlignLeft)
 
         self.leNumero.editingFinished.connect(self.trobatNumero)
