@@ -11,6 +11,7 @@ from moduls.QvLlegenda import QvLlegenda
 from moduls.QVCercadorAdreca import QCercadorAdreca
 from moduls.QvAtributsForms import QvFitxesAtributs
 from moduls.QvConstants import QvConstants
+from moduls.QvApp import QvApp
 from moduls import QvFuncions
 import functools
 import sys
@@ -279,6 +280,9 @@ class FormulariAtributs(QvFitxesAtributs):
     
 
 class WidgetCercador(QtWidgets.QWidget):
+    MIDALBLCARRER = 400, 40
+    MIDALBLNUMERO = 80, 40
+    MIDALBLICONA = 20, 20
     def __init__(self, canvas, parent=None):
         super().__init__(parent)
         self.canvas = canvas
@@ -291,14 +295,15 @@ class WidgetCercador(QtWidgets.QWidget):
         self.leNumero.setPlaceholderText('Número')
         self.lblIcona = QtWidgets.QLabel()
         pix = QtGui.QPixmap('imatges/MaBIM/cercador-icona.png')
-        self.lblIcona.setPixmap(pix.scaledToHeight(20))
-        self.leCarrer.setFixedSize(400,20)
-        self.leNumero.setFixedSize(80,20)
-        self.setFixedSize(self.leCarrer.width()+self.leNumero.width()+20, 30)
+        self.lblIcona.setPixmap(pix.scaledToHeight(self.MIDALBLICONA[0]))
+        self.leCarrer.setFixedSize(*self.MIDALBLCARRER)
+        self.leNumero.setFixedSize(*self.MIDALBLNUMERO)
+        self.setFixedSize(self.leCarrer.width()+self.leNumero.width()+20, 50)
         self.cercador = QCercadorAdreca(self.leCarrer, self.leNumero, 'SQLITE')
         lay.addWidget(self.leCarrer)
         lay.addStretch()
         lay.addWidget(self.leNumero)
+        lay.addWidget(self.lblIcona, 0, QtCore.Qt.AlignVCenter)
         self.marcaLlocPosada = False
         # lay.addWidget(self.lblIcona)
         self.setStyleSheet('font-size: 14px;')
@@ -327,9 +332,10 @@ class WidgetCercador(QtWidgets.QWidget):
             self.marcaLlocPosada = False
     
     def resizeEvent(self, event):
-        self.leCarrer.setFixedSize(400,20)
-        self.leNumero.setFixedSize(80,20)
-        self.setFixedSize(self.leCarrer.width()+self.leNumero.width()+20, 30)
+        self.leCarrer.setFixedSize(*self.MIDALBLCARRER)
+        self.leNumero.setFixedSize(*self.MIDALBLNUMERO)
+        self.lblIcona.setFixedSize(*self.MIDALBLICONA)
+        self.setFixedSize(self.MIDALBLCARRER[0]+self.MIDALBLNUMERO[0]+self.MIDALBLICONA[0], 50)
         self.move(self.parentWidget().width()-self.width()-2, 2)
         super().resizeEvent(event)
     
@@ -522,6 +528,23 @@ class QMaBIM(QtWidgets.QMainWindow):
         self.layCapcaleraBIM.addWidget(self.cerca1)
         # self.cerca1.move(-200,0)
 
+        layStatus = QtWidgets.QHBoxLayout() # Això serà una Statusbar. Però per sortir del pas, primer ho fem així
+        planolA.layout().addLayout(layStatus)
+        lblCoordenades = QtWidgets.QLabel()
+        def showXY(p, numDec=3):
+            text = QvApp().locale.toString(p.x(), 'f', numDec) + ';' + \
+               QvApp().locale.toString(p.y(), 'f', numDec)
+            lblCoordenades.setText(text)
+            font=QvConstants.FONTTEXT
+            fm=QtGui.QFontMetrics(font)
+            lblCoordenades.setFixedWidth(fm.width(text)*QvApp().zoomFactor()+5)
+        self.canvasA.xyCoordinates.connect(showXY)
+        lblEscala = QtWidgets.QLabel()
+        self.canvasA.scaleChanged.connect(lambda: lblEscala.setText( " Escala 1:" + str(int(round(self.canvasA.scale())))))
+        layStatus.addStretch()
+        layStatus.addWidget(lblCoordenades)
+        layStatus.addWidget(lblEscala)
+
         botoSelecciona = self.canvasA.afegirBotoCustom('botoSelecciona', 'imatges/apuntar.png', 'Selecciona BIM gràficament', 1)
         botoSelecciona.clicked.connect(lambda: self.canvasA.setMapTool(self.einaSeleccio))
         botoSelecciona.setCheckable(True)
@@ -531,6 +554,9 @@ class QMaBIM(QtWidgets.QMainWindow):
         botoLlegenda = self.canvasA.afegirBotoCustom('botoLlegenda', 'imatges/map-legend.png', 'Mostrar/ocultar llegenda', 3)
         botoLlegenda.clicked.connect(lambda: self.llegenda.setVisible(not self.llegenda.isVisible()))
         botoLlegenda.setCheckable(False)
+        botoCaptura = self.canvasA.afegirBotoCustom('botoCaptura','imatges/content-copy.png','Copiar una captura del mapa al portarretalls')
+        botoCaptura.clicked.connect(self.canvasA.copyToClipboard)
+        botoCaptura.setCheckable(False)
 
         # Donem estil als canvas
         with open('style.qss') as f:

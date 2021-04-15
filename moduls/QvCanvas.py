@@ -102,9 +102,8 @@ class QvCanvas(QgsMapCanvas):
         self.bstreetview.setChecked(False)
 
     def centrarMapa(self):
-        if self.bCentrar.isChecked():
-            self.zoomToFullExtent()
-            self.refresh()
+        self.zoomToFullExtent()
+        self.refresh()
         self.bCentrar.setChecked(False)
         # self.bCentrar.setChecked(True)
 
