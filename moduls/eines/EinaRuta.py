@@ -18,8 +18,24 @@ class QAdrecaPostalLineEdit(QLineEdit):
         if (self.text() == '-- Punt seleccionat al mapa --'):
             self.setText('')
         super(QAdrecaPostalLineEdit, self).focusInEvent(event)
+class PointTool(QgsMapTool):  
+        def __init__(self, canvas, parent):
+            QgsMapTool.__init__(self, canvas)
+            self.canvas = canvas  
+            self.parent = parent
 
+        def canvasPressEvent(self, event):
+            if self.parent.getPoint == 1:
+                startPoint = QgsPointXY(event.mapPoint())
+                self.parent.startPoint = startPoint
+                self.parent.mStart.setCenter(startPoint)
+                self.parent.IniciLECarrer.setText("-- Punt seleccionat al mapa --")
 
+            elif self.parent.getPoint == 2:
+                endPoint = QgsPointXY(event.mapPoint())
+                self.parent.endPoint = endPoint
+                self.parent.mEnd.setCenter(endPoint)
+                self.parent.FiLECarrer.setText("-- Punt seleccionat al mapa --")
 
 @QvFuncions.creaEina(titol="Eina Ruta", esEinaGlobal = True, apareixDockat = False)
 class EinaRuta(QWidget):
@@ -58,7 +74,11 @@ class EinaRuta(QWidget):
 
     def __init__(self, pare):
         def getCoordInici():
+            """
+            handling botó d'obtenir punt inicial
+            """
             if (self.IniciButtonGPS.isChecked() == True):
+                self.canvas.setMapTool(self.tool)
                 self.FiButtonGPS.setChecked(False)
                 self.FiLECarrer.setEnabled(True)
                 self.FiLENumero.setEnabled(True)
@@ -69,9 +89,15 @@ class EinaRuta(QWidget):
                 self.getPoint = 0
                 self.IniciLECarrer.setEnabled(True)
                 self.IniciLENumero.setEnabled(True)
+                if (self.FiButtonGPS.isChecked() == False):
+                    self.canvas.unsetMapTool(self.tool)
 
         def getCoordFi():
+            """
+            handling botó d'obtenir punt final
+            """
             if (self.FiButtonGPS.isChecked() == True):
+                self.canvas.setMapTool(self.tool)
                 self.IniciButtonGPS.setChecked(False)
                 self.IniciLECarrer.setEnabled(True)
                 self.IniciLENumero.setEnabled(True)
@@ -82,6 +108,8 @@ class EinaRuta(QWidget):
                 self.getPoint = 0
                 self.FiLECarrer.setEnabled(True)
                 self.FiLENumero.setEnabled(True)
+                if (self.IniciButtonGPS.isChecked() == False):
+                    self.canvas.unsetMapTool(self.tool)
 
         def getIndicacions(girs):
             descripcions = []
@@ -94,7 +122,9 @@ class EinaRuta(QWidget):
             self.FiButtonGPS.setChecked(False)
             self.IniciLECarrer.setEnabled(True)
             self.FiLECarrer.setEnabled(True)
+            self.canvas.unsetMapTool(self.tool)
             self.getPoint = 0
+
             self.ruta.ocultarRuta()
             self.ruta.ocultarPuntsGir()
             self.ruta = Ruta(self.startPoint,self.endPoint)
@@ -107,8 +137,8 @@ class EinaRuta(QWidget):
                 msg.setInformativeText("La ruta no s'ha pogut calcular. Provi amb uns altres punts i asseguri's que el seu ordinador està connectat a la xarxa interna.")
                 msg.setWindowTitle("Error")
                 msg.exec_()
-            else:
                 
+            else:
                 self.indicacioBox.wheelEvent = lambda event: None
                 self.indicacioBox.setEditable(False)
                 self.ruta.pintarRuta(self.canvas)
@@ -228,29 +258,9 @@ class EinaRuta(QWidget):
             calcRouteButton.setText("Calcular ruta")
             lay.addWidget(calcRouteButton)
 
-        class PointTool(QgsMapTool):  
-            def __init__(self, canvas, parent):
-                QgsMapTool.__init__(self, canvas)
-                self.canvas = canvas  
-                self.parent = parent
-
-            def canvasPressEvent(self, event):
-                if self.parent.getPoint == 1:
-                    startPoint = QgsPointXY(event.mapPoint())
-                    self.parent.startPoint = startPoint
-                    self.parent.mStart.setCenter(startPoint)
-                    self.parent.IniciLECarrer.setText("-- Punt seleccionat al mapa --")
-
-                elif self.parent.getPoint == 2:
-                    endPoint = QgsPointXY(event.mapPoint())
-                    self.parent.endPoint = endPoint
-                    self.parent.mEnd.setCenter(endPoint)
-                    self.parent.FiLECarrer.setText("-- Punt seleccionat al mapa --")
-
         preparacioUI()
         self.initMarkers()
         self.tool = PointTool(self.canvas, self)
-        self.canvas.setMapTool(self.tool)
 
     def eventComboBox(self, index):
 
@@ -283,7 +293,6 @@ class EinaRuta(QWidget):
 
     def showEvent(self,event):
         super().showEvent(event)
-        self.canvas.setMapTool(self.tool)
         self.initMarkers()
         self.getPoint = 0
         self.IniciLECarrer.setEnabled(True)
