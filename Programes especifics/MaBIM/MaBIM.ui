@@ -970,6 +970,9 @@ font-size: 18pt</string>
            <property name="styleSheet">
             <string notr="true">font-size: 12pt</string>
            </property>
+           <property name="placeholderText">
+            <string>Cercar per nom, número o descripció del BIM</string>
+           </property>
           </widget>
          </item>
         </layout>
@@ -1021,7 +1024,16 @@ QToolButton:disabled{
            <property name="spacing">
             <number>0</number>
            </property>
-           <property name="margin">
+           <property name="leftMargin">
+            <number>0</number>
+           </property>
+           <property name="topMargin">
+            <number>0</number>
+           </property>
+           <property name="rightMargin">
+            <number>0</number>
+           </property>
+           <property name="bottomMargin">
             <number>0</number>
            </property>
            <item>
@@ -1765,10 +1777,34 @@ QToolButton:disabled{
             <item>
              <widget class="QWidget" name="widget" native="true">
               <layout class="QHBoxLayout" name="horizontalLayout_4">
+               <property name="spacing">
+                <number>0</number>
+               </property>
+               <property name="leftMargin">
+                <number>0</number>
+               </property>
+               <property name="topMargin">
+                <number>0</number>
+               </property>
+               <property name="rightMargin">
+                <number>0</number>
+               </property>
+               <property name="bottomMargin">
+                <number>0</number>
+               </property>
                <item>
                 <layout class="QHBoxLayout" name="layCapcaleraBIM">
                  <item>
                   <widget class="QLabel" name="lCapcaleraBIM">
+                   <property name="font">
+                    <font>
+                     <family>Verdana</family>
+                     <pointsize>14</pointsize>
+                    </font>
+                   </property>
+                   <property name="styleSheet">
+                    <string notr="true">font-size: 14pt</string>
+                   </property>
                    <property name="text">
                     <string/>
                    </property>
@@ -1780,8 +1816,6 @@ QToolButton:disabled{
                 </layout>
                </item>
               </layout>
-              <zorder>lCapcaleraBIM</zorder>
-              <zorder>horizontalLayoutWidget</zorder>
              </widget>
             </item>
             <item>
