@@ -92,6 +92,8 @@ class EinaRuta(QWidget):
         def calcularRuta():
             self.IniciButtonGPS.setChecked(False)
             self.FiButtonGPS.setChecked(False)
+            self.IniciLECarrer.setEnabled(True)
+            self.FiLECarrer.setEnabled(True)
             self.getPoint = 0
             self.ruta.ocultarRuta()
             self.ruta.ocultarPuntsGir()
