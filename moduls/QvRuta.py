@@ -126,6 +126,8 @@ class Ruta():
             for gir in root.find("nsruta:girs",ns).findall("nsruta:Gir",ns):
                 temp_coord = QgsPointXY(float(gir.find("nsruta:coord",ns).find("nsruta:x",ns).text), float(gir.find("nsruta:coord",ns).find("nsruta:y",ns).text))
                 aux_girsRuta.append(temp_coord)
+            
+            self.girsRuta.append(Gir(self.coordInici, "Inici"))
 
             d = 0
             g = 0
@@ -133,7 +135,8 @@ class Ruta():
                 self.girsRuta.append(Gir(aux_girsRuta[g],descripcionsRuta[d]))
                 d = d + 1
                 g = g + 1
-                    
+
+            self.girsRuta.append(Gir(self.coordFinal, "Final"))    
 
             for tram in root.find("nsruta:trams",ns).findall("nsruta:Tram",ns):
                 coords = []
@@ -210,7 +213,6 @@ class Ruta():
             pGir.setFrameOffsetFromReferencePoint(QPointF(0, 0))
             i = QgsMapCanvasAnnotationItem(pGir, canvas)
             pGirs.append(i)
-
         self.pGirs = pGirs
 
     def ocultarPuntsGir(self):

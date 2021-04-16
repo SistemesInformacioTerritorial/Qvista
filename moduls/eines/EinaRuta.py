@@ -145,14 +145,16 @@ class EinaRuta(QWidget):
                 self.indicacioBox.clear()
                 # Incialitzem layout per a mostrar descripcio de la ruta i els seus botons
                 indicacionsLay = QHBoxLayout()
-                # indicacionsLay.setGeometry()
-                indicacionsLay.setAlignment(QtCore.Qt.AlignVCenter)
-                self.botoPrevi.setText("◀")             
+
+                self.botoPrevi.setText("◀")
+                self.botoPrevi.setFixedSize(QSize(25, 25))             
                 self.botoNext.setText("▶")
+                self.botoNext.setFixedSize(QSize(25, 25))  
 
                 indicacionsLay.addWidget(self.indicacioBox)
                 indicacionsLay.addWidget(self.botoPrevi)
                 indicacionsLay.addWidget(self.botoNext)
+                self.layout().addLayout(indicacionsLay)
 
                 self.indicacioBox.show()
                 self.botoPrevi.show()
@@ -161,20 +163,13 @@ class EinaRuta(QWidget):
                 self.indicacioBox.setEditable(False)
                 self.ruta.pintarRuta(self.canvas)
                 self.ruta.pintarPuntsGir(self.canvas)
-                self.pGirs = self.ruta.girsRuta      
-                self.pGirs.insert(0, Gir(self.startPoint, 'Punt Inici'))
-                self.pGirs.append(Gir(self.endPoint, 'Punt Final'))  
+                self.pGirs = self.ruta.girsRuta       
                 self.indicacions = getIndicacions(self.pGirs)
     
                 self.indicacioBox.addItems(self.indicacions)
                 self.indicacioBox.view().pressed.connect(self.eventComboBox)       
                 self.botoNext.clicked.connect(self.goNext)
                 self.botoPrevi.clicked.connect(self.goPrev)
-
-                indicacionsLay.addWidget(self.indicacioBox)
-                indicacionsLay.addWidget(self.botoPrevi)
-                indicacionsLay.addWidget(self.botoNext)
-                self.layout().addLayout(indicacionsLay)
 
                 self.indicacions.clear()              
                 self.index = 0
