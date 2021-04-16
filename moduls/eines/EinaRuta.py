@@ -61,6 +61,9 @@ class EinaRuta(QWidget):
     ruta = Ruta(None,None)
 
     indicacioBox = QComboBox()
+    botoPrevi = QPushButton()
+    botoNext = QPushButton()
+    index = 0
 
     def APostaltoCoord_Inici(self,rsc):
         if rsc==0:
@@ -139,6 +142,21 @@ class EinaRuta(QWidget):
                 msg.exec_()
                 
             else:
+                self.indicacioBox.clear()
+                # Incialitzem layout per a mostrar descripcio de la ruta i els seus botons
+                indicacionsLay = QHBoxLayout()
+                # indicacionsLay.setGeometry()
+                indicacionsLay.setAlignment(QtCore.Qt.AlignVCenter)
+                self.botoPrevi.setText("◀")             
+                self.botoNext.setText("▶")
+
+                indicacionsLay.addWidget(self.indicacioBox)
+                indicacionsLay.addWidget(self.botoPrevi)
+                indicacionsLay.addWidget(self.botoNext)
+
+                self.indicacioBox.show()
+                self.botoPrevi.show()
+                self.botoNext.show()
                 self.indicacioBox.wheelEvent = lambda event: None
                 self.indicacioBox.setEditable(False)
                 self.ruta.pintarRuta(self.canvas)
@@ -146,12 +164,20 @@ class EinaRuta(QWidget):
                 self.pGirs = self.ruta.girsRuta      
                 self.pGirs.insert(0, Gir(self.startPoint, 'Punt Inici'))
                 self.pGirs.append(Gir(self.endPoint, 'Punt Final'))  
-                self.indicacions = getIndicacions(self.pGirs) 
-                self.indicacioBox.show()    
+                self.indicacions = getIndicacions(self.pGirs)
+    
                 self.indicacioBox.addItems(self.indicacions)
-                self.indicacioBox.view().pressed.connect(self.eventComboBox)
-                self.layout().addWidget(self.indicacioBox)
-                self.indicacions.clear()
+                self.indicacioBox.view().pressed.connect(self.eventComboBox)       
+                self.botoNext.clicked.connect(self.goNext)
+                self.botoPrevi.clicked.connect(self.goPrev)
+
+                indicacionsLay.addWidget(self.indicacioBox)
+                indicacionsLay.addWidget(self.botoPrevi)
+                indicacionsLay.addWidget(self.botoNext)
+                self.layout().addLayout(indicacionsLay)
+
+                self.indicacions.clear()              
+                self.index = 0
    
         def preparacioUI():
             def preparacioCercadorPostal(lay):
@@ -250,7 +276,6 @@ class EinaRuta(QWidget):
             lay = QVBoxLayout()
             self.setLayout(lay)
 
-
             preparacioCercadorPostal(lay)
 
             calcRouteButton = QPushButton()
@@ -263,10 +288,27 @@ class EinaRuta(QWidget):
         self.tool = PointTool(self.canvas, self)
 
     def eventComboBox(self, index):
-
         self.canvas.setCenter(self.pGirs[int(index.row())].coord)
         self.canvas.zoomScale(1000)
         self.canvas.refresh()
+    
+    def goNext(self):
+        if(self.index != None):
+            if(int(self.index) < self.indicacioBox.count()-1):
+                self.index += 1
+                self.canvas.setCenter(self.pGirs[self.index].coord)
+                self.indicacioBox.setCurrentIndex(self.index)
+                self.canvas.zoomScale(1000)
+                self.canvas.refresh()
+
+    def goPrev(self):
+        if(self.index != None):
+            if(int(self.index) > 0):
+                self.index -= 1
+                self.canvas.setCenter(self.pGirs[self.index].coord)
+                self.indicacioBox.setCurrentIndex(self.index)
+                self.canvas.zoomScale(1000)
+                self.canvas.refresh()
 
     def initMarkers(self):
         self.mStart = QgsVertexMarker(self.canvas)
@@ -289,6 +331,8 @@ class EinaRuta(QWidget):
         self.ruta.ocultarRuta()
         self.ruta.ocultarPuntsGir()
         self.indicacioBox.hide()
+        self.botoPrevi.hide()
+        self.botoNext.hide()
         self.indicacioBox.clear()
 
     def showEvent(self,event):
