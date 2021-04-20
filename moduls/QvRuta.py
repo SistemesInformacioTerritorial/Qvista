@@ -163,7 +163,9 @@ class Ruta():
         if (filecontent != "-1"):
             if (parseXML(filecontent) >= 0):
                 self.ruta_calculada = True
-
+    
+    def getDistanciaDurada(self):
+        return self.distanciaRuta, self.duradaRuta
 
     def pintarRuta(self,canvas):
         """ Pre: la ruta ja ha estat calculada. project és un QgsMapCanvas

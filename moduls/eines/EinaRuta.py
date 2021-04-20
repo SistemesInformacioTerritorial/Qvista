@@ -43,7 +43,7 @@ class PointTool(QgsMapTool):
                 self.parent.mEnd.setCenter(endPoint)
 
                 #TODO: imrpove speed
-                reverseSearch = QvReverse(startPoint)
+                reverseSearch = QvReverse(endPoint)
                 self.parent.FiLECarrer.setText("-- " + reverseSearch.nomCarrer + " --")
                 if (reverseSearch.numCarrer != ""):
                     self.parent.FiLENumero.setText("-- " + reverseSearch.numCarrer + " --")
@@ -71,10 +71,14 @@ class EinaRuta(QWidget):
 
     ruta = Ruta(None,None)
 
+    layoutInfo = QVBoxLayout()
+    lblDistancia = QLabel()
+    lblDurada = QLabel()
     indicacioBox = QComboBox()
     botoPrevi = QPushButton()
     botoNext = QPushButton()
     index = 0
+
 
     def APostaltoCoord_Inici(self,rsc):
         if rsc==0:
@@ -143,6 +147,12 @@ class EinaRuta(QWidget):
             self.ruta.ocultarPuntsGir()
             self.ruta = Ruta(self.startPoint,self.endPoint)
             self.ruta.calculaRuta()
+
+            self.indicacioBox.clear()
+            self.lblDistancia.setText("")
+            self.lblDurada.setText("")
+            indicacionsLay = QHBoxLayout()
+
             if (self.ruta.ruta_calculada == False):
                 print("error calculant la ruta")
                 msg = QMessageBox()
@@ -151,12 +161,22 @@ class EinaRuta(QWidget):
                 msg.setInformativeText("La ruta no s'ha pogut calcular. Provi amb uns altres punts i asseguri's que el seu ordinador està connectat a la xarxa interna.")
                 msg.setWindowTitle("Error")
                 msg.exec_()
+                self.layout().removeItem(self.layoutInfo)
+                self.layout().removeItem(indicacionsLay)
                 
             else:
-                self.indicacioBox.clear()
-                # Incialitzem layout per a mostrar descripcio de la ruta i els seus botons
-                indicacionsLay = QHBoxLayout()
+                # Mostra distancia i durada de la ruta
+                distancia, durada = self.ruta.getDistanciaDurada()
+                distancia_km = distancia / 1000
+                m, s = divmod(durada, 60)
+                h, m = divmod(m, 60)               
+                self.lblDistancia.setText("Distancia: " + str(distancia_km) + 'km')
+                self.layoutInfo.addWidget(self.lblDistancia)              
+                self.lblDurada.setText("Durada: " + str(h) + 'h' + ' : ' + str(m) + 'm' +' : ' + str(s) + 's')
+                self.layoutInfo.addWidget(self.lblDurada)
+                self.layout().addLayout(self.layoutInfo)
 
+                # Incialitzem layout per a mostrar descripcio de la ruta i els seus botons
                 self.botoPrevi.setText("◀")
                 self.botoPrevi.setFixedSize(QSize(25, 25))             
                 self.botoNext.setText("▶")
@@ -340,6 +360,8 @@ class EinaRuta(QWidget):
         self.botoPrevi.hide()
         self.botoNext.hide()
         self.indicacioBox.clear()
+        self.lblDistancia.clear()
+        self.lblDurada.clear()
 
     def showEvent(self,event):
         super().showEvent(event)
