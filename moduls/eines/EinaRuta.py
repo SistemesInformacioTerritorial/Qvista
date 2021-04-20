@@ -12,10 +12,11 @@ from PyQt5.QtWidgets import  QApplication, QMessageBox
 from moduls import QvFuncions
 from moduls.QVCercadorAdreca import QCercadorAdreca
 from moduls.QvRuta import *
+from moduls.QvReverse import QvReverse
 
 class QAdrecaPostalLineEdit(QLineEdit):
     def focusInEvent(self, event):
-        if (self.text() == '-- Punt seleccionat al mapa --'):
+        if self.text().startswith("--"):
             self.setText('')
         super(QAdrecaPostalLineEdit, self).focusInEvent(event)
 class PointTool(QgsMapTool):  
@@ -29,13 +30,23 @@ class PointTool(QgsMapTool):
                 startPoint = QgsPointXY(event.mapPoint())
                 self.parent.startPoint = startPoint
                 self.parent.mStart.setCenter(startPoint)
-                self.parent.IniciLECarrer.setText("-- Punt seleccionat al mapa --")
+
+                #TODO: improve speed
+                reverseSearch = QvReverse(startPoint)
+                self.parent.IniciLECarrer.setText("-- " + reverseSearch.nomCarrer + " --")
+                if (reverseSearch.numCarrer != ""):
+                    self.parent.IniciLENumero.setText("-- " + reverseSearch.numCarrer + " --")
 
             elif self.parent.getPoint == 2:
                 endPoint = QgsPointXY(event.mapPoint())
                 self.parent.endPoint = endPoint
                 self.parent.mEnd.setCenter(endPoint)
-                self.parent.FiLECarrer.setText("-- Punt seleccionat al mapa --")
+
+                #TODO: imrpove speed
+                reverseSearch = QvReverse(startPoint)
+                self.parent.FiLECarrer.setText("-- " + reverseSearch.nomCarrer + " --")
+                if (reverseSearch.numCarrer != ""):
+                    self.parent.FiLENumero.setText("-- " + reverseSearch.numCarrer + " --")
 
 @QvFuncions.creaEina(titol="Eina Ruta", esEinaGlobal = True, apareixDockat = False)
 class EinaRuta(QWidget):
@@ -193,7 +204,7 @@ class EinaRuta(QWidget):
                     self.IniciLECarrer.setToolTip('Introdueix adreça i selecciona de la llista')
                     self.IniciLECarrer.setMinimumWidth(200)
 
-                    self.IniciLENumero=QLineEdit()
+                    self.IniciLENumero=QAdrecaPostalLineEdit()
                     self.IniciLENumero.setToolTip('Introdueix número, selecciona de la llista i prem RETURN')
                     self.IniciLENumero.setMaximumWidth(100)
                     self.IniciLENumero.setMinimumWidth(100)
@@ -234,7 +245,7 @@ class EinaRuta(QWidget):
                     self.FiLECarrer.setToolTip('Introdueix adreça i selecciona de la llista')
                     self.FiLECarrer.setMinimumWidth(200) 
 
-                    self.FiLENumero=QLineEdit()                           
+                    self.FiLENumero=QAdrecaPostalLineEdit()                           
                     self.FiLENumero.setToolTip('Introdueix número, selecciona de la llista i prem RETURN')
                     self.FiLENumero.setMaximumWidth(100)                   
                     self.FiLENumero.setMinimumWidth(100)
