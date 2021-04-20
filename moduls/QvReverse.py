@@ -2,13 +2,25 @@ from qgis.core import QgsPointXY, QgsCoordinateTransform, QgsCoordinateReference
 import json, requests
 """
 Mòdul basat en Nominatim, un servei lliure que té una API que utilitza les dades d'OpenStreetMap per a cercar llocs al mapa. 
-També permet fer una cerca inversa (a partir d'un punt obtenir l'adreça postal). 
+També permet fer una cerca inversa (a partir d'un punt obtenir l'adreça postal).
+
+Aquest mòdul retorna una adreça postal a partir d'unes coordenades. El sistema de coordenades s'estableix a coordSystem -per
+defecte es fa servir l'EPSG:25831-. La coordenada a cercar s'introdueix a la inicialitzadora. Exemple de codi:
+
+reverseSearch = QvReverse(QgsPointXY)
+nom_del_carrer = reverseSearch.nomCarrer
+num_del_carrer = reverseSearch.numCarrer
+municipi = reverseSearch.municipi
+
+Els atributs obtinguts de l'API són ampliables. El JSON de l'URL que hi ha a continuació és un exemple dels elements que es
+poden extreure: https://nominatim.openstreetmap.org/reverse?lat=41.40985626933818&lon=2.194237452533018&format=json
 
 Documentació: https://nominatim.org/
 """
 class QvReverse():
     nomCarrer = ""
     numCarrer = ""
+    municipi = ""
     mappoint = QgsPointXY(-1,-1)
     coordSystem = "EPSG:25831" #default coord system is ETRS89
 
@@ -49,8 +61,9 @@ class QvReverse():
                 self.nomCarrer = response["address"]["road"]
             if "house_number" in response["address"]:
                 self.numCarrer = response["address"]["house_number"]
+            if "city" in response["address"]:
+                self.municipi = response["address"]["city"]
                 
-
     #conversió de sistema de coordenades EPSG:25831 a EPSG:4326
     def _transformETRS89toLatLon(self):
         #TODO: caldria adaptar el codi a altres sistemes de geoposició
