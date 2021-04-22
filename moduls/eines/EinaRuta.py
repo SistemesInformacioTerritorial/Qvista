@@ -71,6 +71,10 @@ class EinaRuta(QWidget):
 
     ruta = Ruta(None,None)
 
+    FiLECarrer = QAdrecaPostalLineEdit()
+    FiLENumero = QAdrecaPostalLineEdit()
+
+    botoRevertir = QPushButton()
     layoutInfo = QVBoxLayout()
     lblDistancia = QLabel()
     lblDurada = QLabel()
@@ -78,7 +82,6 @@ class EinaRuta(QWidget):
     botoPrevi = QPushButton()
     botoNext = QPushButton()
     index = 0
-
 
     def APostaltoCoord_Inici(self,rsc):
         if rsc==0:
@@ -204,7 +207,32 @@ class EinaRuta(QWidget):
 
                 self.indicacions.clear()              
                 self.index = 0
-   
+
+        def getRutaInversa():
+
+            # Invertim els punts d'inici i final
+            aux = self.endPoint
+            self.endPoint = self.startPoint
+            self.startPoint = aux
+
+            # Invertim els markers          
+            self.mEnd.setCenter(self.endPoint)
+            self.mStart.setCenter(self.startPoint)
+
+            # Invertim les entrades de text als lineedits
+            aux = self.FiLECarrer.text()
+            self.FiLECarrer.setText(self.IniciLECarrer.text())
+            self.IniciLECarrer.setText(aux)
+
+            aux = self.FiLENumero.text()
+            self.FiLENumero.setText(self.IniciLENumero.text())
+            self.IniciLENumero.setText(aux)
+
+            # Ocultem la ruta
+            self.ruta.ocultarRuta()
+            self.ruta.ocultarPuntsGir()
+            self.canvas.refresh()
+                    
         def preparacioUI():
             def preparacioCercadorPostal(lay):
                 def preparacioCercadorStartPoint(lay):
@@ -220,11 +248,11 @@ class EinaRuta(QWidget):
                     lblTextCarrer = QLabel('Carrer:')
                     lblTextNumero = QLabel('Num:')
 
-                    self.IniciLECarrer=QAdrecaPostalLineEdit()
+                    self.IniciLECarrer = QAdrecaPostalLineEdit()
                     self.IniciLECarrer.setToolTip('Introdueix adreça i selecciona de la llista')
                     self.IniciLECarrer.setMinimumWidth(200)
 
-                    self.IniciLENumero=QAdrecaPostalLineEdit()
+                    self.IniciLENumero = QAdrecaPostalLineEdit()
                     self.IniciLENumero.setToolTip('Introdueix número, selecciona de la llista i prem RETURN')
                     self.IniciLENumero.setMaximumWidth(100)
                     self.IniciLENumero.setMinimumWidth(100)
@@ -288,8 +316,20 @@ class EinaRuta(QWidget):
                     # Activem la clase de cerca d'adreces
                     self.cercadorFinal = QCercadorAdreca(self.FiLECarrer, self.FiLENumero,'SQLITE')
                     self.cercadorFinal.sHanTrobatCoordenades.connect(self.APostaltoCoord_Final)
+                
+                def preparacioBotoInvertirRuta(lay):
+                    layoutRevertir = QHBoxLayout()
 
+                    self.botoRevertir = QPushButton("Invertir inici i final", self)
+                    self.botoRevertir.setFixedSize(QSize(150, 30)) 
+                    self.botoRevertir.clicked.connect(getRutaInversa)
+                    self.botoRevertir.setIcon(QIcon('Imatges/change.png'))
+
+                    layoutRevertir.addWidget(self.botoRevertir)
+                    lay.addLayout(layoutRevertir)
+                    
                 preparacioCercadorStartPoint(lay)
+                preparacioBotoInvertirRuta(lay)
                 preparacioCercadorEndPoint(lay)
 
             QWidget.__init__(self)
@@ -338,13 +378,13 @@ class EinaRuta(QWidget):
 
     def initMarkers(self):
         self.mStart = QgsVertexMarker(self.canvas)
-        self.mStart.setColor(QColor(255,0, 0)) #(R,G,B)
+        self.mStart.setColor(QColor(255, 0, 0)) #(R,G,B)
         self.mStart.setIconSize(12)
         self.mStart.setIconType(QgsVertexMarker.ICON_CROSS)
         self.mStart.setPenWidth(3)
 
         self.mEnd = QgsVertexMarker(self.canvas)
-        self.mEnd.setColor(QColor(0,0, 255)) #(R,G,B)
+        self.mEnd.setColor(QColor(0, 0, 255)) #(R,G,B)
         self.mEnd.setIconSize(12)
         self.mEnd.setIconType(QgsVertexMarker.ICON_CROSS)
         self.mEnd.setPenWidth(3)
