@@ -4,6 +4,7 @@ import requests
 from moduls.QvImports import *
 from qgis.core import QgsPointXY
 from qgis.gui import QgsMapCanvas, QgsRubberBand
+from moduls import QvFuncions
 
 class Gir():
     descripcio = ""
@@ -78,6 +79,7 @@ class Ruta():
         self.ocultarRuta()
         self.ocultarPuntsGir()
 
+    @QvFuncions.mostraSpinner
     def calculaRuta(self):
         """ 
         Pre: coordInici i coordFi han estat establerts i són a Barcelona.
