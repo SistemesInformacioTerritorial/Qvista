@@ -154,7 +154,6 @@ class EinaRuta(QWidget):
             self.indicacioBox.clear()
             self.lblDistancia.setText("")
             self.lblDurada.setText("")
-            indicacionsLay = QHBoxLayout()
 
             if (self.ruta.ruta_calculada == False):
                 print("error calculant la ruta")
@@ -164,49 +163,57 @@ class EinaRuta(QWidget):
                 msg.setInformativeText("La ruta no s'ha pogut calcular. Provi amb uns altres punts i asseguri's que el seu ordinador està connectat a la xarxa interna.")
                 msg.setWindowTitle("Error")
                 msg.exec_()
-                self.layout().removeItem(self.layoutInfo)
-                self.layout().removeItem(indicacionsLay)
+                self.lblDistancia.setText("Distancia: No s'ha pogut obtenir")
+                self.lblDurada.setText("Durada: No s'ha pogut obtenir")
+                # self.layoutInfo.removeWidget(self.lblDistancia)
+                # self.layoutInfo.removeWidget(self.lblDurada)
                 
             else:
                 # Mostra distancia i durada de la ruta
-                distancia, durada = self.ruta.getDistanciaDurada()
-                distancia_km = distancia / 1000
-                m, s = divmod(durada, 60)
-                h, m = divmod(m, 60)               
-                self.lblDistancia.setText("Distancia: " + str(distancia_km) + 'km')
-                self.layoutInfo.addWidget(self.lblDistancia)              
-                self.lblDurada.setText("Durada: " + str(h) + 'h' + ' : ' + str(m) + 'm' +' : ' + str(s) + 's')
-                self.layoutInfo.addWidget(self.lblDurada)
-                self.layout().addLayout(self.layoutInfo)
-
+                getDistanciaDurada()
                 # Incialitzem layout per a mostrar descripcio de la ruta i els seus botons
-                self.botoPrevi.setText("◀")
-                self.botoPrevi.setFixedSize(QSize(25, 25))             
-                self.botoNext.setText("▶")
-                self.botoNext.setFixedSize(QSize(25, 25))  
+                getIndicacionsDeRuta()
 
-                indicacionsLay.addWidget(self.indicacioBox)
-                indicacionsLay.addWidget(self.botoPrevi)
-                indicacionsLay.addWidget(self.botoNext)
-                self.layout().addLayout(indicacionsLay)
+        def getDistanciaDurada():
+            distancia, durada = self.ruta.getDistanciaDurada()
+            distancia_km = distancia / 1000
+            m, s = divmod(durada, 60)
+            h, m = divmod(m, 60)               
+            self.lblDistancia.setText("Distancia: " + str(distancia_km) + 'km')
+            self.layoutInfo.addWidget(self.lblDistancia)              
+            self.lblDurada.setText("Durada: " + str(h) + 'h' + ' : ' + str(m) + 'm' +' : ' + str(s) + 's')
+            self.layoutInfo.addWidget(self.lblDurada)
+            self.layout().addLayout(self.layoutInfo)
 
-                self.indicacioBox.show()
-                self.botoPrevi.show()
-                self.botoNext.show()
-                self.indicacioBox.wheelEvent = lambda event: None
-                self.indicacioBox.setEditable(False)
-                self.ruta.pintarRuta(self.canvas)
-                self.ruta.pintarPuntsGir(self.canvas)
-                self.pGirs = self.ruta.girsRuta       
-                self.indicacions = getIndicacions(self.pGirs)
-    
-                self.indicacioBox.addItems(self.indicacions)
-                self.indicacioBox.view().pressed.connect(self.eventComboBox)       
-                self.botoNext.clicked.connect(self.goNext)
-                self.botoPrevi.clicked.connect(self.goPrev)
+        def getIndicacionsDeRuta():
+            indicacionsLay = QHBoxLayout()
+            self.botoPrevi.setText("◀")
+            self.botoPrevi.setFixedSize(QSize(25, 25))             
+            self.botoNext.setText("▶")
+            self.botoNext.setFixedSize(QSize(25, 25))  
 
-                self.indicacions.clear()              
-                self.index = 0
+            indicacionsLay.addWidget(self.indicacioBox)
+            indicacionsLay.addWidget(self.botoPrevi)
+            indicacionsLay.addWidget(self.botoNext)
+            self.layout().addLayout(indicacionsLay)
+
+            self.indicacioBox.show()
+            self.botoPrevi.show()
+            self.botoNext.show()
+            self.indicacioBox.wheelEvent = lambda event: None
+            self.indicacioBox.setEditable(False)
+            self.ruta.pintarRuta(self.canvas)
+            self.ruta.pintarPuntsGir(self.canvas)
+            self.pGirs = self.ruta.girsRuta       
+            self.indicacions = getIndicacions(self.pGirs)
+
+            self.indicacioBox.addItems(self.indicacions)
+            self.indicacioBox.view().pressed.connect(self.eventComboBox)       
+            self.botoNext.clicked.connect(self.goNext)
+            self.botoPrevi.clicked.connect(self.goPrev)
+
+            self.indicacions.clear()              
+            self.index = 0
 
         def getRutaInversa():
 
