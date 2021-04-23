@@ -50,10 +50,10 @@ class QvReverse():
 
         response = _makeRequest(url)
         if (response == "-1"):
-            #TODO: mostrar missatge d'error
+            #TODO: error handling
             return
 
-        #decodificar response (és un JSON)
+        #decodificar response (JSON)
         response = json.loads(response)
 
         if "address" in response:
@@ -73,7 +73,6 @@ class QvReverse():
                     QgsCoordinateReferenceSystem("EPSG:4326"), 
                     QgsProject.instance())
             self.mappoint = pointTransformation.transform(self.mappoint)
-            print(self.mappoint)
 
 if __name__ == "__main__":
         project = QgsProject.instance()
