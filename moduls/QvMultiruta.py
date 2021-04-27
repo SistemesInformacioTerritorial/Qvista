@@ -16,7 +16,7 @@ TODO: escriure exemple
 
 punts = [QgsPointXY(_,_),QgsPointXY(_,_),QgsPointXY(_,_)...]
 multiruta = QvMultiruta(punts)
-multiruta.setOptions(true,true,true)
+multiruta.setRouteOptions(True,True,True)
 multiruta.getRoute()
 
 URL d'exemple WebService:
