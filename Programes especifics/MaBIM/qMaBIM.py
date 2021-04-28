@@ -13,6 +13,7 @@ from moduls.QvAtributsForms import QvFitxesAtributs
 from moduls.QvConstants import QvConstants
 from moduls.QvApp import QvApp
 from moduls import QvFuncions
+from moduls.QvStatusBar import QvStatusBar
 import functools
 import sys
 import os
@@ -348,6 +349,7 @@ class QMaBIM(QtWidgets.QMainWindow):
     def __init__(self,*args,**kwargs):
         super().__init__(*args, **kwargs)
         uic.loadUi('Programes especifics/MaBIM/MaBIM.ui',self)
+        
         self.llistaBotons = (self.bFavorits, self.bBIMs, self.bPIP, self.bProjectes, self.bConsultes, self.bDocumentacio, self.bEines)
 
         self.connectBotons()
@@ -359,6 +361,8 @@ class QMaBIM(QtWidgets.QMainWindow):
 
         self.einaSeleccio = QvSeleccioBIM(self.canvasA, self.llegenda, self.getCapaBIMs())
         self.einaSeleccio.elementsSeleccionats.connect(self.seleccioGrafica)
+
+        self.setStatusBar(QvStatusBar(self,['nomProjecte', 'connexio','capaSeleccionada',('seleccioExpressio',1), 'progressBar',('coordenades',1),'projeccio', 'escala'],self.canvasA,self.llegenda))
 
         if len(QgsGui.editorWidgetRegistry().factories()) == 0:
             QgsGui.editorWidgetRegistry().initEditors()
