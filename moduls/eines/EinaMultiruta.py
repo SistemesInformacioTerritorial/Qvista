@@ -142,6 +142,10 @@ class PointUI:
         if (result.numCarrer != ""):
             self.pointList[item].LENumero.setText(result.numCarrer)
 
+    def hideMarkers(self):
+        for i in reversed(range(len(self.pointList))):
+            self.eina.canvas.scene().removeItem(self.pointList[i].marker)
+
     def resetUI(self):
         #TODO: improve speed
         for i in reversed(range(len(self.pointList))):
@@ -271,6 +275,8 @@ class EinaMultiruta(QWidget):
     roundtrip = False
     source = True
     destination = True
+    trip = True
+    transportationMode = "vehicle"
 
     #pointUI
     pointUI_index = -1
@@ -307,6 +313,16 @@ class EinaMultiruta(QWidget):
     def setRouteOptions_destination(self, boolean):
         self.destination = boolean
 
+    def setRouteType(self,boolean):
+        self.trip = boolean
+        if (self.trip):
+            self.tripOptions_groupbox.setEnabled(True)
+        else:
+            self.tripOptions_groupbox.setEnabled(False)
+
+    def setTransportationMode(self,mode):
+        self.transportationMode = mode
+
     def __init__(self, pare):
         # def getIndicacions(girs):
         #     descripcions = []
@@ -322,6 +338,8 @@ class EinaMultiruta(QWidget):
             # self.ruta.ocultarPuntsGir()
             self.ruta = QvMultiruta(self.pointUI.getPoints())
             self.ruta.setRouteOptions(self.roundtrip, self.source, self.destination)
+            self.ruta.setRouteType(self.trip)
+            self.ruta.setTransportationMode(self.transportationMode)
             self.ruta.getRoute()
             self.ruta.printRoute(self.canvas)
 
@@ -352,38 +370,64 @@ class EinaMultiruta(QWidget):
                     
         def preparacioUI():
             def UIrouteOptions():
+                #creació del layout principal
                 self.routeOptionsLayout = QVBoxLayout()
 
+                #opcions de ruta. a peu, en bicicleta o en vehicle motoritzat.
+                transportMode_groupbox = QGroupBox("Mode de desplaçament")
+                transportMode_layout = QHBoxLayout()
+                transportMode_groupbox.setLayout(transportMode_layout)
+                transportMode_walk = QRadioButton("A peu")
+                transportMode_walk.clicked.connect(lambda:self.setTransportationMode("walk"))
+                transportMode_bike = QRadioButton("En bicicleta")
+                transportMode_bike.clicked.connect(lambda:self.setTransportationMode("bike"))
+                transportMode_vehicle = QRadioButton("En automòbil")
+                transportMode_vehicle.clicked.connect(lambda:self.setTransportationMode("vehicle"))
+                transportMode_vehicle.setChecked(True)
+                transportMode_layout.addWidget(transportMode_walk)
+                transportMode_layout.addWidget(transportMode_bike)
+                transportMode_layout.addWidget(transportMode_vehicle)
+
+                #tipus de ruta. trip o route
+                typeofRoute_groupbox = QGroupBox("Tipus de ruta")
                 typeofRoute_layout = QHBoxLayout()
+                typeofRoute_groupbox.setLayout(typeofRoute_layout)
+                typeofRoute_radiobutton_route = QRadioButton("Ruta convencional")
+                typeofRoute_radiobutton_route.setToolTip("La ruta calculada serà la ruta més ràpida que passi per tots els punts, respectant l'ordre introduït per l'usuari.")
+                typeofRoute_radiobutton_trip = QRadioButton("Ruta òptima")
+                typeofRoute_radiobutton_trip.setToolTip("La ruta calculada serà una aproximació a la ruta més ràpida que passi per tots els punts sense ordenar")
+                typeofRoute_radiobutton_route.clicked.connect(lambda:self.setRouteType(False))
+                typeofRoute_radiobutton_trip.clicked.connect(lambda:self.setRouteType(True))
+                typeofRoute_radiobutton_trip.setChecked(True)
+                typeofRoute_layout.addWidget(typeofRoute_radiobutton_route)
+                typeofRoute_layout.addWidget(typeofRoute_radiobutton_trip)
 
-                tripOptions_groupbox = QGroupBox("Opcions de ruta òptima")
+                #configuració de ruta tipus trip
+                self.tripOptions_groupbox = QGroupBox("Opcions de ruta òptima")
                 tripOptions_layout = QHBoxLayout()
-                tripOptions_groupbox.setLayout(tripOptions_layout)
-
+                self.tripOptions_groupbox.setLayout(tripOptions_layout)
                 self.tripOptions_circular = QCheckBox("Ruta circular")
                 self.tripOptions_circular.stateChanged.connect(lambda:self.setRouteOptions_roundtrip(self.tripOptions_circular.isChecked()))
-
                 self.tripOptions_puntinici = QCheckBox("Punt de sortida fixat")
                 self.tripOptions_puntinici.setToolTip("El primer punt de la llista serà el punt de sortida de la ruta")
                 self.tripOptions_puntinici.stateChanged.connect(lambda:self.setRouteOptions_source(self.tripOptions_puntinici.isChecked()))
-
                 self.tripOptions_puntfinal = QCheckBox("Punt d'arribada fixat")
                 self.tripOptions_puntfinal.setToolTip("L'últim punt de la llista serà el punt de sortida de la ruta")
                 self.tripOptions_puntfinal.stateChanged.connect(lambda:self.setRouteOptions_destination(self.tripOptions_puntfinal.isChecked()))
-
                 tripOptions_layout.addWidget(self.tripOptions_circular)
                 tripOptions_layout.addWidget(self.tripOptions_puntinici)
                 tripOptions_layout.addWidget(self.tripOptions_puntfinal)
-
-                self.routeOptionsLayout.addWidget(tripOptions_groupbox)
-
-                #defualt values
                 self.tripOptions_circular.setChecked(False)
                 self.tripOptions_puntinici.setEnabled(False)
                 self.tripOptions_puntinici.setChecked(True)
                 self.tripOptions_puntfinal.setEnabled(False)
                 self.tripOptions_puntfinal.setChecked(True)
 
+                #configuració del layout
+                self.routeOptionsLayout.addWidget(transportMode_groupbox)
+                self.routeOptionsLayout.addWidget(typeofRoute_groupbox)
+                self.routeOptionsLayout.addWidget(self.tripOptions_groupbox)
+                
 
             QWidget.__init__(self)
 
@@ -395,15 +439,15 @@ class EinaMultiruta(QWidget):
             lay = QVBoxLayout()
             self.setLayout(lay)
 
+            points_groubox = QGroupBox("Llistat de punts")
             self.pointLayout = QVBoxLayout()
+            points_groubox.setLayout(self.pointLayout)
 
             self.pointUI = PointUI(self.pointLayout,self)
-            self.pointUI.addItem("Punt inici")
-            self.pointUI.addItem("Punt final")
 
             UIrouteOptions()
             lay.addLayout(self.routeOptionsLayout)
-            lay.addLayout(self.pointLayout)
+            lay.addWidget(points_groubox)
 
             calcRouteButton = QPushButton()
             calcRouteButton.pressed.connect(calcularRuta)
@@ -454,11 +498,12 @@ class EinaMultiruta(QWidget):
         super().hideEvent(event)
         self.canvas.unsetMapTool(self.tool)
         self.ruta.hideRoute()
-        self.pointUI.resetUI()
+        self.pointUI.hideMarkers()
 
     def showEvent(self,event):
         super().showEvent(event)
         self.getPoint = 0
+        self.pointUI.resetUI()
         # self.resize(self.minimumSizeHint())
 
 if __name__ == "__main__":

@@ -38,6 +38,8 @@ class QvMultiruta():
     coordSystem = "EPSG:25831" #ETRS89. TODO: agafar de variable global de qVista
 
     #configuracio ruta
+    routeType = True #True si tipus trip, False si tipus Route
+    transportationMode = "vehicle"
     roundtrip = True
     source = False
     destination = False
@@ -75,6 +77,22 @@ class QvMultiruta():
 
         #TODO: comprovacio incompatibilitats
 
+    def setRouteType(self,routeType):
+        """
+        Si bool és TRUE, el tipus de ruta és Trip.
+        Si bool és FALSE, el tipus de ruta és Route.
+        """
+        self.routeType = routeType
+
+    def setTransportationMode(self, mode):
+        """
+        mode pot ser:
+        - walk
+        - bike
+        - vehicle
+        """
+        self.transportationMode = mode
+
     def getRoute(self):
         self._request()
 
@@ -88,27 +106,45 @@ class QvMultiruta():
                 var = "-1"
             return var
 
-        url = "http://router.project-osrm.org/trip/v1/driving/"
+        url = "https://routing.openstreetmap.de/routed-"
+
+        #mode de transport. pot ser a peu (walk), en bicicleta (bike) o en automòbil (vehicle)
+        if (self.transportationMode == "walk"):
+            url += "foot/"
+        elif (self.transportationMode == "bike"):
+            url += "bike/"
+        else:
+            url += "car/"
+
+        #tipus de ruta. si routeType = True, és tipus trip. sinó és Route
+        if (self.routeType):
+            url += "trip/v1/driving/"
+        else:
+            url += "route/v1/driving/"
+
+        
+
         for index, p in enumerate(self.points):
             url += str(p.x()) + ',' + str(p.y())
             if index < len(self.points)-1:
                 url += ';'
 
         url += "?geometries=geojson&overview=full" #necessari per obtenir ruta detallada i en format geoJSON
-        if (self.roundtrip):
-            url += "&roundtrip=true" 
-        else:
-            url += "&roundtrip=false" 
+        if (self.routeType):
+            if (self.roundtrip):
+                url += "&roundtrip=true" 
+            else:
+                url += "&roundtrip=false" 
 
-        if (self.source):
-            url += "&source=first" 
-        else:
-            url += "&source=any" 
+            if (self.source):
+                url += "&source=first" 
+            else:
+                url += "&source=any" 
 
-        if (self.destination):
-            url += "&destination=last" 
-        else:
-            url += "&destination=any" 
+            if (self.destination):
+                url += "&destination=last" 
+            else:
+                url += "&destination=any" 
 
         print(url)
 
@@ -123,8 +159,12 @@ class QvMultiruta():
         self.routePoints = [] #reset de l'array
 
         #afegir punts ruta a routePoints
-        if "trips" in response:
-            for trip in response["trips"]:
+        keyname = "trips"
+        if not self.routeType:
+            keyname = "routes"
+
+        if keyname in response:
+            for trip in response[keyname]:
                 tripPoints = []
                 #obtenir coordenades de la ruta per cada trip. format geojson.
                 if "geometry" in trip:
