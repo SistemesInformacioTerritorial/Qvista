@@ -15,60 +15,77 @@ from moduls.QvApp import QvApp
 def encaixa(sub, string):
     '''Retorna True si alguna de les paraules de sub encaixa exactament dins de string (és a dir, a sub hi ha "... xxx ..." i a string també) i la resta apareixen però no necessàriament encaixant'''
     string = string.lower()
-    # pos=string.find(chr(29))
-    # string=string[:pos]
     subs = sub.split(' ')
     words = string.split(' ')
-    encaixaUna = False
-    for x in subs:
-        if len(x) < 3:
-            continue  # no té sentit si escrius "av d" que et posi a dalt de tot el Carrer d'Aiguablava perquè la d encaixa exactament amb una paraula
-        if x not in string:
-            return False  # Un dels substrings de la cerca no apareix dins de l'adreça
-        if x in words:
-            encaixaUna = True  # Hem trobat una que encaixa
-    return encaixaUna
+    # encaixaUna = False
+    # for x in subs:
+    #     if len(x) < 3:
+    #         continue  # no té sentit si escrius "av d" que et posi a dalt de tot el Carrer d'Aiguablava perquè la d encaixa exactament amb una paraula
+    #     if x not in string:
+    #         return False  # Un dels substrings de la cerca no apareix dins de l'adreça
+    #     if x in words:
+    #         encaixaUna = True  # Hem trobat una que encaixa
+    # return encaixaUna
+
+    def x_in_words(x):
+        return x in words and len(x)>=3
+    return any(map(x_in_words, subs))
 
 
 def conte(sub, string):
     '''Retorna true si string conté tots els strings representats a subs '''
     string = string.lower()
     subs = sub.split(' ')
-    for x in subs:
-        if x not in string:
-            return False
-    return True
+    # for x in subs:
+    #     if x not in string:
+    #         return False
+    # return True
+    
+    def x_not_in_string(x):
+        return x not in string
+    return not any(map(x_not_in_string, subs))
 
 
 def comenca(sub, string):
     '''Retorna True si alguna de les paraules de string comença per alguna de les paraules de sub'''
     string = string.lower()
+    #cal treure els parèntesis a l'hora de fer regex donat que hi ha problemes en el moment de fer parse amb re
+    string = string.replace("(","")
+    string = string.replace(")","")
     subs = sub.split(' ')
-    comencaUna = False
-    for x in subs:
-        if x == '':
-            continue
-        trobat = (x in string)
-        if not trobat:
-            return False
-        # Si ja hem trobat que comença amb una no cal tornar a comprovar-ho. Seguim iterant només perquè la resta han d'estar contingudes
-        if not comencaUna and re.search(' '+x, ' '+string) is not None:
-            comencaUna = True
-    return comencaUna
+    # comencaUna = False
+    # for x in subs:
+    #     if x == '':
+    #         print(':(')
+    #         continue
+    #     trobat = (x in string)
+    #     if not trobat:
+    #         return False
+    #     # Si ja hem trobat que comença amb una no cal tornar a comprovar-ho. Seguim iterant només perquè la resta han d'estar contingudes
+    #     if not comencaUna and re.search(' '+x, ' '+string) is not None:
+    #         comencaUna = True
+    # return comencaUna
+
+    def x_in_string(x):
+        return x in string
+    def substring_comenca_per_x(x):
+        return re.search(' '+x, ' '+string) is not None
+
+    totes_hi_son = any(map(x_in_string, subs))
+    comenca_una = any(map(substring_comenca_per_x, subs))
+    # podria tenir sentit posar els any al return directament. Així, si la primera és falsa, la segona no s'arriba a mirar.
+    # guanyaríem velocitat gràcies a la lazy evaluation, però perdríem llegibilitat
+    return totes_hi_son and comenca_una
 
 
 def variant(sub, string, variants):
-    # TODO: Fer test de velocitat. Si va massa lent, busquem simplement que sub estigui dins d'una variant
-    for x in variants.split(','):
-        # esVariant = True
-        # for y in subs:
-        #     if y not in x:
-        #         esVariant = False
-        #         break
-        # if esVariant:
-        #     return True
-        if sub in x: return True
-    return False
+    # for x in variants.split(','):
+    #     if sub in x: return True
+    # return False
+
+    def sub_in_x(x):
+        return sub in x
+    return any(map(sub_in_x,variants.split(',')))
 
 
 class CompleterAdreces(QCompleter):
@@ -243,13 +260,14 @@ class QCercadorAdreca(QObject):
         self.numeroCarrer = ''
         self.coordAdreca = None
         self.infoAdreca = None
+        self.NumeroOficial = ''
 
     def connectarLineEdits(self):
         self.leCarrer.textChanged.connect(self.esborrarNumero)
         self.leCarrer.editingFinished.connect(self.trobatCarrer)
         # CUARENTENA
         # self.leCarrer.mouseDoubleClickEvent = self.clear_leNumero_leCarrer
-        self.leCarrer.mouseDoubleClickEvent = self.SeleccPalabraOTodoEnFrase
+        # self.leCarrer.mouseDoubleClickEvent = self.SeleccPalabraOTodoEnFrase
         self.leCarrer.setAlignment(Qt.AlignLeft)
 
         self.leNumero.editingFinished.connect(self.trobatNumero)

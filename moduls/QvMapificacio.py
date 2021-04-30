@@ -163,7 +163,8 @@ class QvMapificacio(QObject):
         for linia in self.mostra:
             aux = linia.strip()
             aux = re.sub('"[^"]*"', '', aux)  # Elimina strings entre comillas dobles
-            aux = ''.join([i for i in aux if not i.isalnum()])  # Elimina caracteres alfanuméricos
+            # aux = ''.join([i for i in aux if not i.isalnum()])  # Elimina caracteres alfanuméricos
+            aux = ''.join([i for i in aux if i in (',',';','|','\t')])
             cont.update(aux)
         # Retornamos el caracter con más apariciones en total
         elems = cont.most_common(1)
@@ -375,7 +376,7 @@ class QvMapificacio(QObject):
                 self.camps = [self.netejaString(camp) for camp in self.camps]
 
                 for campZona in self.campsZones:
-                    campZona = QvSqlite.getAlias(campZona)
+                    campZona = QvSqlite().getAlias(campZona)
                     campSortida = self.prefixe + campZona
                     if campSortida not in self.camps:
                         self.camps.append(campSortida)
@@ -404,7 +405,7 @@ class QvMapificacio(QObject):
                         num += 1
                     else:
                         for campZona in self.campsZones:
-                            campZona = QvSqlite.getAlias(campZona)
+                            campZona = QvSqlite().getAlias(campZona)
                             campSortida = self.prefixe + campZona
                             campNou = (campSortida not in row.keys())
                             if (campNou or self.substituir or
@@ -503,7 +504,7 @@ class QvMapificacio(QObject):
             return False
         else:
             self.valZona = mv.MAP_ZONES[self.zona]
-        self.campZona = self.prefixe + QvSqlite.getAlias(self.valZona[0])
+        self.campZona = self.prefixe + QvSqlite().getAlias(self.valZona[0])
         if self.campZona not in self.camps:
             return False
         return True
@@ -714,7 +715,7 @@ class QvMapificacio(QObject):
             if campExt != '':
                 cnt = csv[campExt].value_counts(normalize=True)
                 if cnt.iloc[0] >= mv.MAP_FEQ_EXTENSIO:
-                    if campExtensio == QvSqlite.getAlias(self.valZona[0]):
+                    if campExtensio == QvSqlite().getAlias(self.valZona[0]):
                         campExtensio = 'CODI'
                     valExtensio = cnt.index[0]
                     listExtensions = cnt.index.tolist()

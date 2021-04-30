@@ -147,7 +147,7 @@ class QvTema:
             msg = f"No s'ha pogut canvia el nom del tema '{actiu}'"
             qtWdg.QMessageBox.critical(self.llegenda, 'Error', msg)
 
-    def setMenuTemes(self):
+    def setMenu(self):
         self.menu.clear()
         actiu = self.buscaTema()
         for tema in self.temes():
@@ -165,3 +165,7 @@ class QvTema:
             else:
                 self.menu.addAction(f"Canvia nom '{actiu}'", self.menuCanviaNomTema)
                 self.menu.addAction(f"Esborra '{actiu}'", self.menuEsborraTema)
+        if self.menu.isEmpty():
+            return None
+        else:
+            return self.menu

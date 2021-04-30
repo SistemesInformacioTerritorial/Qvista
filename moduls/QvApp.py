@@ -5,11 +5,11 @@ from qgis.PyQt.QtCore import QTranslator, QLibraryInfo, QLocale
 from qgis.PyQt.QtWidgets import QApplication
 from qgis.PyQt.QtNetwork import QNetworkProxy
 from qgis.core import QgsPythonRunner, Qgis
-from moduls.QvSingleton import Singleton
+from moduls.QvSingleton import singleton
 from moduls.QvPythonRunner import QvPythonRunner
 from moduls.QvGithub import QvGithub
 from moduls.QvSqlite import QvSqlite
-from moduls import QvFuncions
+# from moduls import QvFuncions
 from pathlib import Path
 import sys
 import getpass
@@ -56,13 +56,9 @@ def _fatalError(type, value, tb):
 #     print('ERROR -', error)
 #     QvApp().logRegistre('LOG_ERROR', error[-1000:])
 
-
-class QvApp(Singleton):
-
-    def __init__(self):
-        if hasattr(self, 'gh'):                     # Se inicializa una vez
-            return
-
+@singleton
+class QvApp:
+    def __init__(self, produccio=None):
         self.gh = None
         self.ruta, self.rutaBase = self.calcRuta()  # Path de la aplicación
         self.cfg = self.readCfg()                   # Config de instalación
@@ -70,7 +66,7 @@ class QvApp(Singleton):
         if val != "True":
             sys.excepthook = _fatalError
 
-        self.entorn = self.calcEntorn()             # 'DSV' o 'PRO'
+        self.entorn = self.calcEntorn(produccio)       # 'DSV' o 'PRO'
 
         self.usuari = getpass.getuser().upper()     # Id de usuario
         self.sessio = str(uuid.uuid1())             # Id único de sesión
@@ -189,8 +185,8 @@ class QvApp(Singleton):
             self.bugException(err)
             return None
 
-    def calcEntorn(self):
-        val = self.paramCfg('Producció', 'False')
+    def calcEntorn(self, val=None):
+        if val is None: val = self.paramCfg('Producció', 'False')
         if val == 'True':
             return 'PRO'
         else:
@@ -245,10 +241,16 @@ class QvApp(Singleton):
             return ''
 
     def zoomFactor(self):
+        # donat que QvFuncions importa QvApp, i QvApp importa QvFuncions, hi havia certs problemes
+        # Concretament, el decorador cronometraDebug no funcionava si es volia utilitzar dins del propi QvFuncions
+        # Si movem el seu import a les funcions que el requereixin, evitem el problema
+        from moduls import QvFuncions
         zoomFactor = QApplication.desktop().screen().logicalDpiX() / QvFuncions.DPI
         return zoomFactor
 
     def nomUsuari(self):
+        # ídem
+        from moduls import QvFuncions
         return QvFuncions.getUserName(self.usuari)
 
     def versioQgis(self):
@@ -279,7 +281,10 @@ class QvApp(Singleton):
                     db.setPassword(self.dbQvista['Password'])
                     if db.open():
                         self.dbLog = db
-        except Exception:
+                    else:
+                        self.dbLog = None
+        except Exception as e:
+            print(str(e))
             self.dbLog = None
 
     def dbLogDesconnexio(self):
@@ -291,7 +296,8 @@ class QvApp(Singleton):
                 self.dbLog.close()
                 self.dbLog = None
                 QSqlDatabase.removeDatabase(conName)
-        except Exception:
+        except Exception as e:
+            print(str(e))
             self.dbLog = None
 
     # Metodos de LOG en Oracle

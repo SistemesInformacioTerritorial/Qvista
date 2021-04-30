@@ -13,6 +13,7 @@ from moduls.QvPushButton import QvPushButton
 from moduls.QvConstants import QvConstants
 from moduls.QvStreetView import *
 from moduls.QvEinesGrafiques import QvMesuraMultiLinia, QvMascaraEinaPlantilla
+from moduls.QvApp import QvApp
 import functools
 #from qVista import QVista
 
@@ -33,7 +34,8 @@ class QvCanvas(QgsMapCanvas):
         self.posicioBotonera = posicioBotonera
         self.llegenda = llegenda
         self.pare = pare
-        self.setSelectionColor(QvConstants.COLORDESTACAT)
+        # self.setSelectionColor(QvConstants.COLORDESTACAT)
+        self.setSelectionColor(QColor('yellow'))
         self.setAcceptDrops(True)
         
         # self.setWhatsThis(QvApp().carregaAjuda(self))
@@ -89,8 +91,8 @@ class QvCanvas(QgsMapCanvas):
             self.uncheckBotons(self.bPanning)
            
             self.tool_pan = QgsMapToolPan(self)
-            self.setMapTool(self.tool_pan)
             self.einesBotons[self.tool_pan]=self.bPanning
+            self.setMapTool(self.tool_pan)
 
 
         else: 
@@ -100,9 +102,8 @@ class QvCanvas(QgsMapCanvas):
         self.bstreetview.setChecked(False)
 
     def centrarMapa(self):
-        if self.bCentrar.isChecked():
-            self.zoomToFullExtent()
-            self.refresh()
+        self.zoomToFullExtent()
+        self.refresh()
         self.bCentrar.setChecked(False)
         # self.bCentrar.setChecked(True)
 
@@ -112,8 +113,8 @@ class QvCanvas(QgsMapCanvas):
            
             self.tool_zoomin = QgsMapToolZoom(self, False)
             self.tool_zoomin.setCursor(QvConstants.cursorZoomIn())
-            self.setMapTool(self.tool_zoomin)
             self.einesBotons[self.tool_zoomin]=self.bZoomIn
+            self.setMapTool(self.tool_zoomin)
         else: 
             self.bZoomIn.setChecked(True)
         self.setCursor(QvConstants.cursorZoomIn())
@@ -124,8 +125,8 @@ class QvCanvas(QgsMapCanvas):
            
             self.tool_zoomout = QgsMapToolZoom(self, True)
             self.tool_zoomout.setCursor(QvConstants.cursorZoomOut())
-            self.setMapTool(self.tool_zoomout)
             self.einesBotons[self.tool_zoomout]=self.bZoomOut
+            self.setMapTool(self.tool_zoomout)
         else: 
             self.bZoomOut.setChecked(True)
 
@@ -145,14 +146,30 @@ class QvCanvas(QgsMapCanvas):
             try:
                 self.tool = QvSeleccioElement(self, llegenda = self.llegenda)
                 self.tool.setCursor(QvConstants.cursorDit())
-                self.setMapTool(self.tool)
                 self.einesBotons[self.tool]=self.bApuntar
+                self.setMapTool(self.tool)
             except:
                 pass
         else:
             self.bApuntar.setChecked(True)
         
         self.setCursor(QvConstants.cursorDit())
+
+    def anotacions(self):
+        if self.llegenda.anotacions:
+            if  self.bAnotacions.isChecked():
+                self.uncheckBotons(self.bAnotacions)
+                self.einesBotons[self.llegenda.anotacions]=self.bAnotacions
+                # Si estábamos digitalizando, acabar comando
+                eina = self.mapTool()
+                if self.testDigitizeTool(eina): eina.unset()
+                self.setMapTool(self.llegenda.anotacions)
+            else: 
+                self.bAnotacions.setChecked(True)
+        else:
+            self.bAnotacions.setChecked(False)
+            QMessageBox.information(self,'Atenció',"La gestió d'anotacions només funciona amb versions de QGIS superiors a la 3.10")
+
     def copyToClipboard(self):
         '''Potser no és la millor manera, però el que fa és desar la imatge temporalment i copiar-la d'allà'''
         nom=os.path.join(tempdir,str(time.time())+'.png')
@@ -178,6 +195,33 @@ class QvCanvas(QgsMapCanvas):
         boto.setIconSize(QSize(24,24))
         boto.setGeometry(0,0,24,24)
         self._botons.append(boto)
+        return boto
+    
+    def afegirBotoCustom(self, nomBoto, imatge=None, toolTip = None, posicio=-1):
+        """Afegeix un botó no estàndard al canvas.
+
+        Si el paràmetre nomBoto té com a valor "botoReset", 
+         un cop executada la funció el botó creat estarà a self.botoReset.
+         El botó també serà retornat, per poder treballar amb ell
+
+         En cas d'existir ja un atribut amb el nom donat, es provarà d'afegir-lo amb una _ al final
+          (en l'exemple, si self.botoReset ja existís es tornaria a provar amb self.botoReset_)
+
+        Args:
+            nomBoto (str): Nom de la variable que contindrà el botó
+            imatge (str, optional): Ruta de la imatge de la icona. Defaults to None.
+            toolTip (str, optional): Tooltip del botó. Defaults to None.
+            posicio (int, optional): Posició de la botonera on volem posar-lo. Si no s'especifica, serà al final. Defaults to -1.
+
+        Returns:
+            QvPushButton: Botó que s'ha creat
+        """
+        if hasattr(self,nomBoto):
+            return self.afegirBotoCustom(self, nomBoto+'_', imatge, toolTip)
+        boto = self._botoMapa(imatge)
+        boto.setToolTip(toolTip)
+        setattr(self, nomBoto, boto)
+        self.layoutBotoneraMapa.insertWidget(posicio, boto)
         return boto
 
     def _preparacioBotonsCanvas(self):
@@ -262,73 +306,117 @@ class QvCanvas(QgsMapCanvas):
             # self.botoneraMapa.setMaximumWidth(9999)
             # self.botoneraMapa.setMinimumWidth(100)
 
+        # configuració dels possibles botons del canvas
+        # és un diccionari on les claus són strings identificant el botó, i el valor un diccionari amb la configuració d'aquest botó
+        # EXEMPLE:
+        # SETUP_BOTONS = {
+        #     'apuntar':{
+        #         # Si nom_var és 'bApuntar', podrem accedir al botó utilitzant self.bApuntar
+        #         # IMPORTANT: si la variable ja existia, se sobreescriurà
+        #         'nom_var':'bApuntar', 
+
+        #         # La icona del botó serà {imatgesdir}/apuntar.png
+        #         'icona':'apuntar.png', 
+
+        #         # El toolTip del botó
+        #         'toolTip':"Veure informació d'un objecte", 
+
+        #         # La funció que es cridarà quan es faci click al botó
+        #         # NOTA: la funció s'ha de posar sense els parèntesis
+        #         'clicked':self.seleccioClick, 
+
+        #         # [OPCIONAL] indica si el botó es queda marcat quan el prems
+        #         # En cas de no posar-ho, per defecte és True
+        #         'checkable':True, 
+
+        #         # [OPCIONAL] Una funció que s'executarà després d'haver instanciat el botó. 
+        #         # Ens permet configurar coses més concretes
+        #         # Per exemple, en el cas del botó de StreetView podem fer que sigui arrossegable fent
+        #         #  self.bstreetview.setDragable(True)
+        #         'altres': lambda: self.bApuntar.setStyleSheet('background: purple') 
+        #     }
+        # }
+        SETUP_BOTONS = {
+            'apuntar':{
+                'nom_var':'bApuntar',
+                'icona':'apuntar.png', 
+                'toolTip':"Veure informació d'un objecte",
+                'clicked':self.seleccioClick
+            },
+            'panning':{
+                'nom_var':'bPanning',
+                'icona':'pan_tool_black_24x24.png', 
+                'toolTip':"Desplaçar el mapa", 
+                'clicked':self.panCanvas
+            },
+            'centrar':{
+                'nom_var':'bCentrar',
+                'icona':'fit.png', 
+                'toolTip':"Enquadrar el mapa complet a la pantalla", 
+                'clicked':self.centrarMapa,
+                'checkable':False
+            },
+            'zoomIn':{
+                'nom_var':'bZoomIn',
+                'icona':'zoom_in.png', 
+                'toolTip':'Zoom per apropar-se', 
+                'clicked':self.zoomIn
+            },
+            'zoomOut':{
+                'nom_var':'bZoomOut',
+                'icona':'zoom_out.png', 
+                'toolTip':'Zoom per allunyar-se', 
+                'clicked':self.zoomOut
+            },
+            'enrere':{
+                'nom_var':'bEnrere',
+                'icona':'qv_vista_anterior.png', 
+                'toolTip':'Retrocedir al zoom anterior', 
+                'clicked':self.zoomToPreviousExtent,
+                'checkable':False
+            },
+            'endavant':{
+                'nom_var':'bEndavant',
+                'icona':'qv_vista_seguent.png', 
+                'toolTip':'Avançar al zoom següent', 
+                'clicked':self.zoomToNextExtent,
+                'checkable':False
+            },
+            'anotacions':{
+                'nom_var':'bAnotacions',
+                'icona':'anotacions.png', 
+                'toolTip':"Gestió d'anotacions", 
+                'clicked':self.anotacions
+            },
+            'streetview':{
+                'nom_var':'bstreetview',
+                'icona':'littleMan.png', 
+                'toolTip':"Google Street view", 
+                'clicked':self.anotacions,
+                'altres': lambda: self.bstreetview.setDragable(True)
+            },
+            'maximitza':{
+                'nom_var':'bMaximitza',
+                'icona':'fullscreen.png', 
+                'toolTip':"Pantalla completa (F11)", 
+                'clicked':self.canviMaximitza.emit,
+                'checkable':False
+            },
+        }
 
         if self.llistaBotons is not None:
-            self._botons=[]
-            if "apuntar" in self.llistaBotons:
-                self.bApuntar = self._botoMapa(os.path.join(imatgesDir,'apuntar.png'))
-                self.bApuntar.setToolTip("Veure informació d'un objecte")
-                self.layoutBotoneraMapa.addWidget(self.bApuntar)  
-                self.bApuntar.setCursor(QvConstants.cursorFletxa())       
-                self.bApuntar.clicked.connect(self.seleccioClick)
-            if "panning" in self.llistaBotons:
-                self.bPanning = self._botoMapa(os.path.join(imatgesDir,'pan_tool_black_24x24.png'))
-                self.bPanning.setToolTip('Desplaçar el mapa')
-                self.layoutBotoneraMapa.addWidget(self.bPanning)   
-                self.bPanning.setCursor(QvConstants.cursorFletxa())   
-                self.bPanning.clicked.connect(self.panCanvas)
-            if "centrar" in self.llistaBotons:
-                self.bCentrar = self._botoMapa(os.path.join(imatgesDir,'fit.png'))
-                self.bCentrar.setToolTip('Enquadrar el mapa complet a la pantalla')
-                self.layoutBotoneraMapa.addWidget(self.bCentrar) 
-                self.bCentrar.setCursor(QvConstants.cursorFletxa())     
-                self.bCentrar.clicked.connect(self.centrarMapa)
-            if "zoomIn" in self.llistaBotons:
-                self.bZoomIn = self._botoMapa(os.path.join(imatgesDir,'zoom_in.png'))
-                self.bZoomIn.setToolTip('Zoom per apropar-se')
-                self.layoutBotoneraMapa.addWidget(self.bZoomIn)  
-                self.bZoomIn.setCursor(QvConstants.cursorFletxa())
-                self.bZoomIn.clicked.connect(self.zoomIn)
-            if "zoomOut" in self.llistaBotons:
-                self.bZoomOut = self._botoMapa(os.path.join(imatgesDir,'zoom_out.png'))
-                self.bZoomOut.setToolTip('Zoom per allunyar-se')
-                self.layoutBotoneraMapa.addWidget(self.bZoomOut) 
-                self.bZoomOut.setCursor(QvConstants.cursorFletxa())  
-                self.bZoomOut.clicked.connect(self.zoomOut)
-            if 'enrere' in self.llistaBotons:
-                self.bEnrere=self._botoMapa(os.path.join(imatgesDir,'qv_vista_anterior.png'))
-                self.bEnrere.setToolTip('Retrocedir al zoom anterior')
-                self.layoutBotoneraMapa.addWidget(self.bEnrere)
-                self.bEnrere.setCursor(QvConstants.cursorFletxa())
-                self.bEnrere.clicked.connect(self.zoomToPreviousExtent)
-                self.bEnrere.setCheckable(False)
-            if 'endavant' in self.llistaBotons:
-                self.bEndavant=self._botoMapa(os.path.join(imatgesDir,'qv_vista_seguent.png'))
-                self.bEndavant.setToolTip('Avançar al zoom següent')
-                self.layoutBotoneraMapa.addWidget(self.bEndavant)
-                self.bEndavant.setCursor(QvConstants.cursorFletxa())
-                self.bEndavant.clicked.connect(self.zoomToNextExtent)
-                self.bEndavant.setCheckable(False)
-            if "streetview" in self.llistaBotons:
-                self.bstreetview = self._botoMapa(os.path.join(imatgesDir,'littleMan.png'))
-                self.bstreetview.setDragable(True)
-                self.bstreetview.setCheckable(False)
-                self.bstreetview.setToolTip('Google Street view')
-                self.layoutBotoneraMapa.addWidget(self.bstreetview)   
-                self.bstreetview.setCursor(QvConstants.cursorFletxa()) 
-                # self.bstreetview.clicked.connect(self.amagaStreetView)  
-                #self.bstreetview.clicked.connect(QvStreetView.segueixBoto)
-            if 'maximitza' in self.llistaBotons:
-                self.iconaMaximitza=QIcon(os.path.join(imatgesDir,'fullscreen.png'))
-                self.iconaMinimitza=QIcon(os.path.join(imatgesDir,'fullscreen-exit.png'))
-                self.bMaximitza = self._botoMapa(os.path.join(imatgesDir,'fullscreen.png'))
-                self.bMaximitza.setToolTip('Pantalla completa (F11)')
-                
-                self.layoutBotoneraMapa.addWidget(self.bMaximitza)   
-                self.bMaximitza.setCursor(QvConstants.cursorFletxa()) 
-                self.bMaximitza.clicked.connect(self.canviMaximitza.emit)  
-                self.bMaximitza.setCheckable(False)
-
+            self._botons = []
+            for x in self.llistaBotons:
+                info = SETUP_BOTONS[x]
+                boto = self._botoMapa(os.path.join(imatgesDir,info['icona']))
+                setattr(self, info['nom_var'], boto)
+                boto.setToolTip(info['toolTip'])
+                boto.setCursor(QvConstants.cursorFletxa())
+                boto.clicked.connect(info['clicked'])
+                if 'checkable' in info: boto.setCheckable(info['checkable'])
+                if 'altres' in info: info['altres']()
+                self.layoutBotoneraMapa.addWidget(boto)
+                self._botons.append(boto)
         # spacer = QSpacerItem(0, 50, QSizePolicy.Expanding, QSizePolicy.Maximum)
         # self.layoutBotoneraMapa.addSpacerItem(spacer)
 
@@ -365,6 +453,13 @@ class QvCanvas(QgsMapCanvas):
         self.layoutBotoneraMostres.setAlignment(Qt.AlignRight)
         # self.layoutCanvas.addWidget(self.botoneraMapa)
         # self.layoutCanvas.addWidget(self.botoneraMostres)    
+    
+    def actualitzaBotoMaximitza(self, maximitzat):
+        if maximitzat:
+            self.bMaximitza.setIcon(QIcon(os.path.join(imatgesDir,'fullscreen-exit.png')))
+        else:
+            self.bMaximitza.setIcon(QIcon(os.path.join(imatgesDir,'fullscreen.png')))
+
     def mostraBotoTemes(self):
         try:
             self.temes=QgsProject.instance().mapThemeCollection().mapThemes()
@@ -380,7 +475,6 @@ class QvCanvas(QgsMapCanvas):
         
 
     def dropEvent(self, e):
-
         position = e.pos()
         self.qvSv.rp.llevameP(position)
         self.mostraStreetView.emit()
@@ -388,6 +482,7 @@ class QvCanvas(QgsMapCanvas):
 
         e.setDropAction(Qt.MoveAction)
         e.accept()
+
     def setMapTool(self,tool):
         if isinstance(tool,QvMascaraEinaPlantilla):
             while tool in self.eines: 
@@ -400,6 +495,7 @@ class QvCanvas(QgsMapCanvas):
             self.uncheckBotons(self.einesBotons[tool])
         else:
             self.uncheckBotons(None)
+
     def unsetMapTool(self,eina, ultima=False):
         super().unsetMapTool(eina)
         if isinstance(eina,QvMascaraEinaPlantilla):
@@ -418,19 +514,27 @@ class QvCanvas(QgsMapCanvas):
                 self.uncheckBotons(self.einesBotons[self.eines[-1]])
                 self.einesBotons[self.eines[-1]].setChecked(True)
             super().setMapTool(self.eines[-1])
+
     def unsetLastMapTool(self):
         if len(self.eines)>1:
             eina=self.eines.pop()
             self.unsetMapTool(eina,True)
 
+    def testDigitizeTool(self, eina):
+        if eina is not None and QvApp().testVersioQgis(3, 10):
+            from qgis.gui import QgsMapToolDigitizeFeature
+            return isinstance(eina, QgsMapToolDigitizeFeature)
+        return False
+
     def mousePressEvent(self,event):
         super().mousePressEvent(event)
         if event.button()==Qt.RightButton:
-            if not isinstance(self.eines[-1],QvMesuraMultiLinia):
+            eina = self.eines[-1]
+            if not isinstance(eina, QvMesuraMultiLinia) and not self.testDigitizeTool(eina):
                 self.unsetLastMapTool()
-    
- 
-
+                # Si volvemos a digitalización, ignorar RightButton
+                eina = self.mapTool()
+                if self.testDigitizeTool(eina): eina.ignoreRightButton = True
 
 class Marc(QFrame):
     def __init__(self, master=None):

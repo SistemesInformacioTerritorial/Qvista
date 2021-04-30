@@ -6,7 +6,7 @@ from pathlib import Path
 from moduls.QvVideo import QvVideo
 from moduls.QvImports import *
 from moduls.QvConstants import QvConstants
-import moduls.QvApp
+from moduls import QvApp
 
 if sys.platform == 'win32':
     from moduls.QvFuncionsWin32 import *
@@ -15,9 +15,15 @@ def setDPI():
     from qgis.PyQt import QtCore
     from qgis.PyQt.QtWidgets import QApplication
     
-    setDPIScaling()
+    #setDPIScaling()
+    os.environ["QT_AUTO_SCREEN_SCALE_FACTOR"] = "1" #QT < 5.14
+    os.environ["QT_ENABLE_HIGHDPI_SCALING"] = "1" #QT >= 5.14
+    
     if hasattr(QtCore.Qt, 'AA_UseHighDpiPixmaps'):
         QApplication.setAttribute(QtCore.Qt.AA_UseHighDpiPixmaps, True)
+
+    if hasattr(QtCore.Qt, 'AA_EnableHighDpiScaling'):
+        QApplication.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling, True)
 
 def cronometra(func):
     """Funció decoradora que cronometra la funció passada com a paràmetre i imprimeix el temps per pantalla
@@ -30,9 +36,9 @@ def cronometra(func):
         Callable -- Una funció que internament executa func i retorna el mateix resultat, però imprimint per pantalla el temps requerit per executar-la
     """
     def embolcall(*args, **kwargs):
-        t=time.time()
+        t=time.process_time()
         res=func(*args, **kwargs)
-        print(f'DEBUG: Temps per executar {str(func)}: {time.time()-t}')
+        print(f'DEBUG: Temps per executar {str(func)}: {time.process_time()-t}')
         return res
     return embolcall
 
@@ -53,7 +59,7 @@ def cronometraDebug(func):
     Returns:
         Callable -- Una funció que internament executa func i retorna el mateix resultat. Si el mode debug està desactivat, no fa res més. Si està activat, imprimeix per pantalla el temps requerit per executar-la
     """
-    if moduls.QvApp.QvApp().paramCfg('Debug','False')=='True':
+    if QvApp.QvApp().paramCfg('Debug','False')=='True':
         return cronometra(func)
     return func
 
@@ -197,6 +203,47 @@ def reportarProblema(titol: str, descripcio: str=None):
         print ('Error al crear el problema {0:s}'.format(titol))
         return False
 
+@cronometraDebug
+def capturarImatge(geom: QgsGeometry, canvas: QgsMapCanvas, mida: QSize = None, nfile: str = None) -> Path:
+    """Captura una imatge d'un canvas, garantint que contingui una geometria donada
+
+    Args:
+        geom (QgsGeometry): [description]
+        canvas (QgsMapCanvas): [description]
+        mida (QSize, optional): [description]. Defaults to None.
+        nfile (str, optional): [description]. Defaults to None.
+
+    Returns:
+        Path: [description]
+    """
+    if nfile is None:
+        nfile='render.png'
+    if mida is None:
+        # mida = QSize(geom.boundingBox().height(), geom.boundingBox().width())
+        amplada = 1920 # L'amplada d'una pantalla FullHD
+        alçada = amplada*geom.boundingBox().height()/geom.boundingBox().width()
+        mida = QSize(amplada, alçada)
+    else:
+        print(geom.boundingBox().height(), geom.boundingBox().width())
+    path = Path(tempdir, nfile).with_suffix('.png')
+
+    # rotem la geometria
+    geom.rotate(canvas.rotation(),geom.centroid().asPoint())
+
+    options = QgsMapSettings()
+    options.setLayers(canvas.layers())
+    options.setDestinationCrs(QgsProject.instance().crs())
+    # options.setBackgroundColor(QColor(255, 255, 255))
+    options.setOutputSize(mida)
+    options.setExtent(geom.boundingBox())
+    options.setRotation(canvas.rotation())
+
+    render = QgsMapRendererParallelJob(options)
+    render.start()
+    render.waitForFinished()
+    img = render.renderedImage()
+    img.save(str(path), "png")
+    return path
 class creaEina:
     """Cridable (callable) per decorar la declaració d'una subclasse de QWidget i crear un QDockWidget que el contingui.
     Està pensat per fer-se servir com un decorador, i passar-li com a paràmetre

@@ -432,11 +432,15 @@ class QvFormNovaMapificacio(QvFormBaseMapificacio):
         # Carga combo con zonas si el campo correspondiente está en el fichero CSV
         num = 0
         for zona, val in mv.MAP_ZONES.items():
-            if val[1] != '' and self.fCSV.prefixe + QvSqlite.getAlias(val[0]) in self.fCSV.camps:
+            if val[1] != '' and self.fCSV.prefixe + QvSqlite().getAlias(val[0]) in self.fCSV.camps:
                 self.zona.addItem(zona)
                 num = num + 1
 
-        # Comprobar si la extensión del mapa está limitada
+        # Comprobar si la extensión del mapa está limitada:
+        # Si lo está (el fichero contiene más de 75% de registros con el mismo distrito):
+        # - La mapificación por distrito se desahabilita.
+        # Si no (el fichero abarca la totalidad de Barcelona):
+        # - Se impide la mapificación por solar.
         if num > 0:
             extensio = self.fCSV.testExtensioArxiu(mv.MAP_EXTENSIO)
             if extensio:  # Mapa limitado

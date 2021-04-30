@@ -1,14 +1,174 @@
 # -*- coding: utf-8 -*-
 
+from typing import List
 import qgis.core as qgCor
 import qgis.gui as qgGui
 import qgis.PyQt.QtWidgets as qtWdg
 import qgis.PyQt.QtGui as qtGui
 import qgis.PyQt.QtCore as qtCor
 
+from pathlib import Path, PureWindowsPath
+from typing import Tuple
+import json
+from moduls import QvConstants
 
+from moduls.QvConstants import QvConstants
 
-class QvTextAnnotationDialog(qtWdg.QDialog):
+class QvAnnotation:
+    """Métodos estáticos relacionados con anotaciones
+    """
+    @staticmethod 
+    def toolTipText(item: qgGui.QgsMapCanvasAnnotationItem) -> str:
+        try:
+            layer = item.annotation().mapLayer()
+            if layer is None:
+                return "Anotació general del mapa"
+            else:
+                return f"Anotació de la capa '{layer.name()}'"
+        except:
+            return ''
+
+    @staticmethod 
+    def updateMargins(item: qgGui.QgsMapCanvasAnnotationItem, margin: float) -> None:
+        margen = qgCor.QgsMargins()
+        margen.setTop(margin)
+        item.setContentsMargin(margen)
+
+class QvAnnotationHtml:
+    def __init__(self, font: str = 'Arial', size: str = 'normal') -> None:
+        """Generación de html para definir el texto enriquecido de una anotación
+
+        Args:
+            font (str, optional): Fuente del texto. Defaults to 'Arial'.
+            size (str, optional): Tamaño del texto ('small', 'normal' o 'large'). Defaults to 'normal'.
+        """
+        self.htmlIni = '<body style="background-color:transparent;font-family:{font}">'
+        self.htmlTit = '<p align="center" style="margin:12px;font-size:{size};font-weight:bold">{text}</p>'
+        self.htmlTxt = '<p align="left" style="margin:8px;font-size:{size};text-indent:8px">{text}</p>'
+        self.htmlFin = '</body>'
+        self.setFont(font)
+        self.setSize(size)
+
+    def setFont(self, font: str = '') -> None:
+        if font is None or font.strip() == '':
+            font = 'Arial'
+        self.font = font.strip()
+
+    def setSize(self, size: str = '') -> None:
+        if size is None or size.strip() == '':
+            size = 'normal'
+        size = size.lower().strip()
+        if size == 'small':
+            val = ('small', 'normal')
+        elif size == 'large':
+            val = ('large', 'x-large')
+        else:
+            val = ('normal', 'large')
+        self.sizeTxt, self.sizeTit = val
+
+    def calc(self, titulo: str, texto: str) -> str:
+        html = self.htmlIni.format(font=self.font)
+        if titulo != '':
+            html += self.htmlTit.format(size=self.sizeTit, text=titulo)
+        for linea in texto.splitlines():
+            html += self.htmlTxt.format(size=self.sizeTxt, text=linea.strip())
+        html += self.htmlFin
+        return html
+
+class QvAnnotationParams:
+    def __init__(self, file: str = '') -> None:
+        """Gestión de los estilos de una anotación. Cada estilo incluye parámetros de texto y 
+           de los símbolos de marca y relleno
+
+        Args:
+            file (str, optional): Fichero json que contiene la lista de estilos. Default to: se
+                                  usa el mismo nombre que el fichero acutal con extensión 'json'.
+        """
+        if file == '':
+            self.file = PureWindowsPath(__file__).with_suffix('.json')
+        else:
+            self.file = file
+        self.list = None
+        self.item = None
+
+    def read(self) -> bool:
+        try:
+            self.list = json.loads(Path(self.file).read_text(encoding="utf-8"))
+            return True
+        except Exception as e:
+            print(str(e))
+            self.list = None
+            return True
+
+    def names(self) -> Tuple[str, dict]:
+        for item in self.list:
+            if 'name' in item:
+                yield item['name'], item
+
+    def byName(self, name: str) -> None:
+        for n, item in self.names():
+            if name == n:
+                self.item = item
+                return True
+        self.item = None
+        return False
+
+    def setColorTransparency(self, params: dict) -> None:
+        try:
+            alpha = params.get('alpha')
+            color = params.get('color')
+            if alpha is None or color is None:
+                return
+            del params['alpha']
+            qColor = qgCor.QgsSymbolLayerUtils.decodeColor(color)
+            qColor.setAlpha(256 * float(alpha))
+            params['color'] = qgCor.QgsSymbolLayerUtils.encodeColor(qColor)
+        except Exception as e:
+            print(str(e))
+
+    def paramsSymbol(self, id: str) -> dict:
+        if id in self.item:
+            params = self.item[id]
+            self.setColorTransparency(params)
+            return params
+        else:
+            return None
+
+class QvAnnotationDoc:
+    def __init__(self, doc: qtGui.QTextDocument) -> None:
+        """Gestión del documento de una anotación, manejando su título y texto y
+           la metainformación asociada
+
+        Args:
+            doc (qtGui.QTextDocument): Documento de la anotación
+        """
+        self.doc = doc
+        self.setMetaInfo()
+        self.setText()
+
+    def setMetaInfo(self) -> None:
+        meta = self.doc.metaInformation(qtGui.QTextDocument.DocumentTitle)
+        try:
+            self.titulo = meta.split("\n")[0]
+        except:
+            self.titulo = ''
+        try:
+            self.estilo = meta.split("\n")[1]
+        except:
+            self.estilo = ''
+
+    def setText(self) -> None:
+        self.texto = self.doc.toPlainText()
+
+    def update(self, estilo: str, titulo: str, texto: str,  html: str) -> None:
+        self.estilo = estilo
+        self.titulo = titulo
+        self.texto = texto
+        self.doc.setHtml(html)
+        meta = self.titulo + '\n' + self.estilo
+        self.doc.setMetaInformation(qtGui.QTextDocument.DocumentTitle, meta)
+
+class QvAnnotationDialog(qtWdg.QDialog):
     def __init__(self, llegenda, item: qgGui.QgsMapCanvasAnnotationItem, title: str = 'Anotació'):
         """Cuadro de diálogo de edición de las características de las anotaciones
 
@@ -39,6 +199,26 @@ class QvTextAnnotationDialog(qtWdg.QDialog):
                     index = self.layers.count() - 1
         self.layers.setCurrentIndex(index)
 
+        # Leer metadatos del documento
+        self.doc = QvAnnotationDoc(self.item.annotation().document())
+
+        # Estilos disponibles (json)
+        self.params = QvAnnotationParams()
+        if self.params.read():
+            self.estil = qtWdg.QComboBox(self)
+            self.estil.setEditable(False)
+            self.estil.addItem('(Cap)')
+            current = 0
+            i = 1
+            for estilo, _ in self.params.names():
+                self.estil.addItem(estilo)
+                if estilo == self.doc.estilo:
+                    current = i
+                i = i + 1
+            self.estil.setCurrentIndex(current)
+        else:
+            self.estil = None
+
         # Posición fija
         self.position = qtWdg.QCheckBox(self)
         if item.annotation().hasFixedMapPosition():
@@ -46,14 +226,17 @@ class QvTextAnnotationDialog(qtWdg.QDialog):
         else:
             self.position.setCheckState(qtCor.Qt.Unchecked)
 
-        # Texto plano de la nota
-        
-        # JNB
-        aa= self.item.annotation().document().toPlainText()
-        
-        bb=aa.replace('\n','<br>')
-        # self.text = qtWdg.QTextEdit(self.item.annotation().document().toPlainText(), self)
-        self.text = qtWdg.QTextEdit(bb, self)
+        # Titulo de la nota
+        self.title = qtWdg.QLineEdit(self.doc.titulo, self)
+
+        # Texto de la nota
+        self.text = qtWdg.QTextEdit(self)
+        lineaTitulo = True and self.doc.titulo != ''
+        for linea in self.doc.texto.split("\n"):
+            if lineaTitulo:
+                lineaTitulo = False
+                continue
+            self.text.append(linea)
         self.text.setAcceptRichText(False)
 
         # Botones
@@ -71,70 +254,71 @@ class QvTextAnnotationDialog(qtWdg.QDialog):
         # Formulario
         self.layout.addRow('Capa associada:', self.layers)
         self.layout.addRow('Posició fixa:', self.position)
-        self.layout.addRow('Text de la nota:', self.text)
+        if self.estil:
+            self.layout.addRow('Estil:', self.estil)
+        self.layout.addRow('Títol:', self.title)
+        self.layout.addRow('Nota:', self.text)
         self.layout.addRow(self.buttons)
 
     def accept(self):
-        # javier
         layerId = self.layers.currentData()
         if layerId:
             layer = self.llegenda.project.mapLayer(layerId)
         else:
             layer = None
+        if self.item is None:
+            self.hide()
+            return
         self.item.annotation().setMapLayer(layer)
+        self.item.setToolTip(QvAnnotation.toolTipText(self.item))
         self.item.annotation().setHasFixedMapPosition(self.position.isChecked())
-        self.item.annotation().document().setPlainText(self.text.toPlainText())
 
-        # JNB
-        # color marco
-        self.item.annotation().fillSymbol().symbolLayer(0).setStrokeColor(qtGui.QColor(0, 0, 255))
-        # color perimetro simbolo
-        self.item.annotation().markerSymbol().symbolLayer(0).setStrokeColor(qtGui.QColor(255, 255, 0))  #verde 
+        # Tratamiento del estilo (símbolos de marca y relleno)
+        estilo = ''
+        paramsText = None
+        if self.estil and self.estil.currentIndex() >= 0:
+            try:
+                # - Marker: https://qgis.org/api/qgsmarkersymbollayer_8cpp_source.html#l00715
+                # - Formas: https://qgis.org/api/qgsmarkersymbollayer_8cpp_source.html#l00292
+                # - Fill: https://qgis.org/api/qgsfillsymbollayer_8cpp_source.html#l00150
+                # - Colores: https://www.w3.org/TR/SVG11/types.html#ColorKeywords
+                if self.estil.currentIndex() == 0:
+                    estilo = self.doc.estilo # Aplicar estilo anterior
+                else:
+                    estilo = self.estil.currentText()
+                if self.params.byName(estilo):
+                    paramsMarker = self.params.paramsSymbol('marker')
+                    if paramsMarker:
+                        markerSymbol = qgCor.QgsMarkerSymbol.createSimple(paramsMarker)
+                        self.item.annotation().setMarkerSymbol(markerSymbol)
+                    paramsFill = self.params.paramsSymbol('fill')
+                    if paramsFill:
+                        fillSymbol = qgCor.QgsFillSymbol.createSimple(paramsFill)
+                        self.item.annotation().setFillSymbol(fillSymbol)
+                    paramsText = self.params.item.get('text')
+            except Exception as e:
+                print(str(e))
 
-        # simbolo
-        color= 'blue'
-        # 'circle' 'square' 'cross' 'rectangle' 'diamond' 'pentagon' 'triangle' 
-        # 'equilateral_triangle' 'star' 'regular_star' 'arrow' 'filled_arrowhead' 'x'
-        forma= 'diamond'     
-        outlinewidth = '0.5'   # grueso linea contorno simbolo
-        symbol = qgCor.QgsMarkerSymbol.createSimple({'name': forma, 'color': color, 'outline_width':outlinewidth})
-        self.item.annotation().setMarkerSymbol(symbol)
-        self.item.annotation().markerSymbol().setSize(5)
+        # Generar html de la nota
+        htmlDoc = QvAnnotationHtml()
+        if paramsText:
+            htmlDoc.setFont(paramsText.get('font'))
+            htmlDoc.setSize(paramsText.get('size'))
+        titulo = self.title.text().strip()
+        texto = self.text.toPlainText().strip()
+        html = htmlDoc.calc(titulo, texto)
+
+        # Actualizar márgenes
+        if paramsText:
+            margin = float(paramsText.get('margin', 2.5))
+        else:
+            margin = 2.5
+        QvAnnotation.updateMargins(self.item.annotation(), margin)
         
-        # texto anotacion
-        doc = qtGui.QTextDocument()
-        el_html= '<p style="font-family: arial; background-color: #EAF4D9; font-weight: bold; font-size: 15px;">***</p>'
-        
-        label = qtWdg.QLabel()
-        label.setFont(qtGui.QFont("arial", 15, qtGui.QFont.Bold))
-        label.setText(self.text.toPlainText())
-        label.adjustSize()
-        self.item.annotation().setFrameSizeMm(qtCor.QSizeF(label.widthMM()+3 , label.heightMM()+3 ))
-        self.item.annotation().setFrameOffsetFromReferencePointMm(qtCor.QPointF(5, 10))
+        # Actualizar documento de la nota
+        self.doc.update(estilo, titulo, texto, html)
 
-        el_html1=el_html.replace('***', self.text.toPlainText())
-        el_html2=el_html1.replace('\n', '<br>')
-
-        
-        doc.setHtml(el_html2)
-        self.item.annotation().setDocument(doc)
-        
-
-        
-        def cleanNameLayer(layer):
-            linea= str(layer)
-
-            ini= linea.find("'")+1
-            if ini== 0:
-                return 'capa associada: (Tot el mapa)'
-            linea1 = linea[ini:]
-            fin = linea1.rfind("'")
-            linea2 = linea1[:fin]
-            return 'capa associada: '+linea2
-
-        self.item.setToolTip(cleanNameLayer(self.item.annotation().mapLayer()))
-
-        self.llegenda.projecteModificat.emit('annotationsChanged')
+        self.llegenda.modificacioProjecte('updateAnnotation')
         self.hide()
 
     def cancel(self):
@@ -143,7 +327,6 @@ class QvTextAnnotationDialog(qtWdg.QDialog):
     def delete(self):
         self.llegenda.anotacions.deleteItem(self.item)
         self.hide()
-
 
 class QvMapToolAnnotation(qgGui.QgsMapTool):
     def __init__(self, llegenda) -> None:
@@ -162,7 +345,7 @@ class QvMapToolAnnotation(qgGui.QgsMapTool):
         qgGui.QgsMapTool.__init__(self, llegenda.canvas)
         self.llegenda = llegenda
         self.llegenda.project.annotationManager().annotationAdded.connect(self.annotationCreated)
-        self.cursor = None
+        self.cursor = QvConstants.cursorAnotacio()
         self.currentMoveAction = None
         self.lastMousePosition = None
         self.editor = None
@@ -170,9 +353,6 @@ class QvMapToolAnnotation(qgGui.QgsMapTool):
         self.activated.connect(self.activa)
         self.deactivated.connect(self.desactiva)
         self.canvas().scene().selectionChanged.connect(self.hideItemEditor)
-        for item in self.canvas().annotationItems():
-            item.setToolTip(self.cleanNameLayer(item.annotation().mapLayer()))
-
 
     # Señales de activación
 
@@ -186,30 +366,16 @@ class QvMapToolAnnotation(qgGui.QgsMapTool):
 
     # Manejo de anotaciones de proyecto y de canvas
 
-    def cleanNameLayer(self,layer):
-        linea= str(layer)
-
-        ini= linea.find("'")+1
-        if ini== 0:
-            return 'capa associada: (Tot el mapa)'
-        linea1 = linea[ini:]
-        fin = linea1.rfind("'")
-        linea2 = linea1[:fin]
-        return 'capa associada: '+linea2
-
-
-
     def annotationCreated(self, annotation: qgCor.QgsAnnotation) -> None:
         # Necesario para que las anotaciones del proyecto pasen al canvas y se visualicen
         self.lastItem = qgGui.QgsMapCanvasAnnotationItem(annotation, self.canvas())
-        self.lastItem.setToolTip(self.cleanNameLayer(self.lastItem.annotation().mapLayer()))
-        
+        self.lastItem.setToolTip(QvAnnotation.toolTipText(self.lastItem))
+
     def removeAnnotations(self) -> None:
         # Borrado de anotaciones al cambiar de proyecto. Si no se hace así
         # justo antes del read() de proyecto, el programa aborta
         for item in self.canvas().annotationItems():
             item.annotation().setVisible(False)
-
         self.llegenda.project.annotationManager().clear()
         for item in self.canvas().annotationItems():
             self.canvas().scene().removeItem(item)
@@ -217,14 +383,17 @@ class QvMapToolAnnotation(qgGui.QgsMapTool):
     # Acciones y cursores
 
     def noAction(self) -> None:
-        self.cursor = qtGui.QCursor(qtCor.Qt.ArrowCursor)
         self.currentMoveAction = qgGui.QgsMapCanvasAnnotationItem.NoAction
         self.canvas().setCursor(qtGui.QCursor(self.cursor))
 
     def moveAction(self, item: qgGui.QgsMapCanvasAnnotationItem,
                    pos: qtCor.QPoint) -> qgGui.QgsMapCanvasAnnotationItem.MouseMoveAction:
         action = item.moveActionForPosition(pos)
-        self.canvas().setCursor(qtGui.QCursor(item.cursorShapeForAction(action)))
+        if action == qgGui.QgsMapCanvasAnnotationItem.NoAction:
+            cursor = self.cursor
+        else:
+            cursor = item.cursorShapeForAction(action)
+        self.canvas().setCursor(qtGui.QCursor(cursor))
         return action
 
     # Selección y visibilidad
@@ -252,12 +421,11 @@ class QvMapToolAnnotation(qgGui.QgsMapTool):
             else:
                 visible = item.annotation().mapLayer() in self.canvas().mapSettings().layers()
             item.setVisible(visible)
-        self.llegenda.projecteModificat.emit('annotationsChanged')
+        self.llegenda.modificacioProjecte('visibleAnnotation')
         return toggle
 
     def selectedItem(self) -> qgGui.QgsMapCanvasAnnotationItem:
         for item in self.canvas().annotationItems():
-            
             if item.isSelected():
                 return item
         return None
@@ -275,7 +443,7 @@ class QvMapToolAnnotation(qgGui.QgsMapTool):
     def showItemEditor(self, item: qgGui.QgsMapCanvasAnnotationItem) -> None:
         if item and item.isVisible() and item.annotation() and \
            isinstance(item.annotation(), qgCor.QgsTextAnnotation):
-            self.editor = QvTextAnnotationDialog(self.llegenda, item)
+            self.editor = QvAnnotationDialog(self.llegenda, item)
             self.editor.show()
         else:
             self.hideItemEditor()
@@ -315,8 +483,6 @@ class QvMapToolAnnotation(qgGui.QgsMapTool):
                                                          pos.y() / self.canvas().height()))
             annotation.setFrameSizeMm(size)
             annotation.document().setTextWidth(textWidth)
-
-          
             # Dar de alta en project (y en canvas por señal)
             self.lastItem = None
             self.llegenda.project.annotationManager().addAnnotation(annotation)
@@ -324,9 +490,7 @@ class QvMapToolAnnotation(qgGui.QgsMapTool):
             if item is not None:
                 self.canvas().scene().clearSelection()
                 item.setSelected(True)
-                
-                
-                self.llegenda.projecteModificat.emit('annotationsChanged')
+                self.llegenda.modificacioProjecte('addAnnotation')
             return item
         return None
 
@@ -336,15 +500,14 @@ class QvMapToolAnnotation(qgGui.QgsMapTool):
         self.llegenda.project.annotationManager().removeAnnotation(item.annotation())
         self.canvas().scene().removeItem(item)
         item.deleteLater()
-        self.llegenda.projecteModificat.emit('annotationsChanged')
+        self.llegenda.modificacioProjecte('deleteAnnotation')
         self.noAction()
 
     def updateItem(self, item: qgGui.QgsMapCanvasAnnotationItem) -> None:
         if item is None:
             return
-       
         item.update()
-        self.llegenda.projecteModificat.emit('annotationsChanged')
+        self.llegenda.modificacioProjecte('moveAnnotation')
 
     # Cambio posición o tamaño
 
@@ -441,7 +604,6 @@ class QvMapToolAnnotation(qgGui.QgsMapTool):
             item = self.createItem(e.pos())
             self.showItemEditor(item)
 
-
     def canvasDoubleClickEvent(self, e: qgGui.QgsMapMouseEvent) -> None:
         item = self.selectedItem()
         if item:
@@ -503,7 +665,6 @@ if __name__ == "__main__":
 
         leyenda.setWindowTitle('Llegenda')
         leyenda.show()
-
 
         # Acciones de usuario para el menú
 

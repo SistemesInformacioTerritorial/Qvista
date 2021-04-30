@@ -1,10 +1,13 @@
 import os
 
 #Parametres configuració inicial
-versio="0.9"
+versio="0.99"
 titolFinestra = "qVista %s  Sistema d'Informació Territorial de Barcelona"%versio
 
-carpetaCataleg = "N:/9SITEB/Publicacions/qVista/Cataleg/Capes/"
+carpetaCataleg = "N:/9SITEB/Publicacions/qVista/Cataleg/Catàleg de capes corporatives/"
+carpetaCatalegPrivat = 'L:/DADES/SIT/qVista/CATALEG/Catàleg de capes privades/'
+carpetaCatalegLocal = os.path.abspath('../dades/Catàleg de capes local')
+carpetaCatalegLlista = [carpetaCataleg, carpetaCatalegPrivat, carpetaCatalegLocal]
 #Definim per separat els directoris de projectes públics i privats, de manera que puguem comprovar en qualsevol moment si un directori és de projectes públics o privats
 carpetaCatalegProjectesPublics=["N:/9SITEB/Publicacions/qVista/Cataleg/Mapes publics/"]
 carpetaCatalegProjectesPrivats=['L:/DADES/SIT/qVista/CATALEG/MAPES PRIVATS/']
@@ -17,7 +20,8 @@ pathPlantilles = "plantillesMapes/"
 
 estatConnexio = "Xarxa municipal: Connectat"
 
-QvTempdir='C:/temp/qVista/'
+dirTemp='C:/temp/'
+QvTempdir=os.path.join(dirTemp,'qVista/')
 tempdir=os.path.join(QvTempdir,'temp/') #Seran els arxius temporals de qVista que no s'han de guardar entre execucions
 dadesdir=os.path.join(QvTempdir,'dades/') #Arxius temporals que volem conservar
 configdir=os.path.join(QvTempdir+'config/') #Configuracions i coses
@@ -41,7 +45,7 @@ widthLlegenda = 250 #percentatge
 # except:
 #     pathDesarPerDefecte='.'
 
-for x in (QvTempdir, tempdir, dadesdir, configdir):
+for x in (dirTemp, QvTempdir, tempdir, dadesdir, configdir, carpetaCatalegLocal):
     if not os.path.exists(x):
         try:
             os.mkdir(x)
