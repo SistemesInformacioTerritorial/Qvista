@@ -1463,7 +1463,7 @@ class QvSeleccioElement(QgsMapTool):
             if layer is None:
                 layer = self.canvas.layers()[0]
 
-            # point = self.canvas.getCoordinateTransform().toMapCoordinates(x, y)
+            point = self.canvas.getCoordinateTransform().toMapCoordinates(x, y)
             if self.canvas.rotation() == 0:
                 esquerraDalt = self.canvas.getCoordinateTransform().toMapCoordinates(x -
                                                                                      self.radi, y-self.radi)
@@ -1475,22 +1475,28 @@ class QvSeleccioElement(QgsMapTool):
                 dretaBaix = self.canvas.getCoordinateTransform().toMapCoordinates(
                     x+self.radi*math.sqrt(2), y-self.radi*math.sqrt(2))
 
-            # marcaLloc = QgsVertexMarker(self.canvas)
-            # marcaLloc.setCenter( point )
-            # marcaLloc.setColor(QColor(255, 0, 0))
-            # marcaLloc.setIconSize(15)
-            # marcaLloc.setIconType(QgsVertexMarker.ICON_CROSS) # or ICON_CROSS, ICON_X
-            # marcaLloc.setPenWidth(0)
-            # marcaLloc.show()
+            marcaLloc = QgsVertexMarker(self.canvas)
+            marcaLloc.setCenter( point )
+            marcaLloc.setColor(QColor(255, 0, 0))
+            marcaLloc.setIconSize(15)
+            marcaLloc.setIconType(QgsVertexMarker.ICON_CROSS) # or ICON_CROSS, ICON_X
+            marcaLloc.setPenWidth(0)
+            marcaLloc.show()
+
             # return
 
             # rect = QgsRectangle(point.x() - self.radi, point.y() - self.radi, point.x() + self.radi, point.y() + self.radi)
             rect = QgsRectangle(
                 esquerraDalt.x(), esquerraDalt.y(), dretaBaix.x(), dretaBaix.y())
+            rb = QgsRubberBand(self.canvas, True)
+            rb.setToGeometry(QgsGeometry().fromRect(rect))
+            rb.show()
             # ids=[]
             features = []
             if layer is not None and layer.type() == QgsMapLayer.VectorLayer:
-                it = layer.getFeatures(QgsFeatureRequest().setFilterRect(rect))
+                # per defecte calcula la intersecció utilitzant les bounding box. Forcem a que ho faci amb una intersecció exacta
+                it = layer.getFeatures(QgsFeatureRequest().setFilterRect(rect).setFlags(QgsFeatureRequest.ExactIntersect))
+                # it = layer.getFeatures(QgsFeatureRequest().setFilterRect(rect))
 
                 for feature in it:
                     # ids.append(feature.id())
