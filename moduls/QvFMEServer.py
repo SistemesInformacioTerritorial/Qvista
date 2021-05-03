@@ -8,10 +8,12 @@ import qgis.PyQt.QtGui as qtGui
 import qgis.PyQt.QtCore as qtCor
 
 import requests
+import json
 import pathlib
 from zipfile import ZipFile
 
 # Servicios Web FME: https://docs.safe.com/fme/html/FME_Server_Documentation/ReferenceManual/FME_Server_Web_Services.htm
+# Ejemplo datastriming GeoJSON: https://community.safe.com/s/article/streaming-geojson-with-fme-server-2016
 
 DIR_TEMP = "D:/Temp"
 FILE_TOKEN = "D:/qVista/Token.txt"
@@ -21,7 +23,22 @@ FMW_PARAMS['Layers qVista/ZonesAdmGpkg.fmw'] = {
     'name': 'ZonesAdm',
     'desc': 'Zones Administratives',
     'params': 'ORACLE_SPATIAL=QVISTA_CONS&TEMPLATE_GEOPACKAGE=$(FME_SHAREDRESOURCE_DATA)/qVista/ZonesAdmBase.gpkg',
+    'service': 'download',
     'group': 'Yes'
+}
+FMW_PARAMS['Layers qVista/BusTMBGeoJSON.fmw'] = {
+    'name': 'BusTMB',
+    'desc': 'Xarxa bus TMB',
+    'params': 'ORACLE_SPATIAL=QVISTA_CONS',
+    'service': 'streaming',
+    'group': 'Yes'
+}
+FMW_PARAMS['Layers qVista/BUSLiniesGeoJSON.fmw'] = {
+    'name': 'LiniesBus',
+    'desc': 'Línies bus TMB',
+    'params': 'ORACLE_SPATIAL=QVISTA_CONS',
+    'service': 'streaming',
+    'group': 'No'
 }
 
 class QvFMEServer:
@@ -73,20 +90,58 @@ class QvFMEServer:
             qtWdg.QMessageBox.critical(None, 'FME Server', f"Error: {r.status_code}")
 
     def jobServer(self):
-        if self.jobId < 0:
-            self.dataService()
-        else:
-            self.dataDownload()
+        service = self.fmwInfo('service')
+        if service == ('download'):
+            if self.jobId < 0:
+                self.dataDownloadIni()
+            else:
+                self.dataDownloadEnd()
+        elif service == ('streaming'):
+            self.dataStreaming()
 
     def msgService(self, r):
         try:
             resp = r.json()
             # Ejemplo: 'serviceResponse': {'statusInfo': {'message': 'Invalid service mode: kkasync', 'mode': 'kkasync', 'status': 'failure'}}
-            return resp['serviceResponse']['statusInfo']['message']
+            msg = resp['serviceResponse']['statusInfo']['message']
+            return f"\nMissatge: {msg}"
         except:
-            return None
+            return ''
 
-    def dataService(self):
+    def loadGeojson(self, geojson, grupo=None, i=0):
+        if i == 0: # Primero (o único)
+            sufijo = ''
+        else: # Resto
+            sufijo = str(i)
+        name = self.fmwInfo('name') + sufijo
+        fJson = pathlib.Path(DIR_TEMP, name).with_suffix('.json')
+        with open(fJson, 'w') as f:
+            json.dump(geojson, f)
+        layer = qgCor.QgsVectorLayer(str(fJson), geojson['name'], 'ogr')
+        qgCor.QgsProject.instance().addMapLayer(layer, grupo is None)
+        if grupo is not None:
+            grupo.addLayer(layer)
+
+    def dataStreaming(self):
+        self.iniJob()
+        url = f"{self.server}/fmedatastreaming/{self.fmw}" \
+              f"/?opt_responseformat=json&{self.fmwInfo('params')}" 
+        r = requests.get(url, headers=self.header())
+        if r.status_code == 200: # OK
+            resp = r.json()
+            if self.fmwInfo('group') == 'Yes':
+                grupo = qgCor.QgsProject.instance().layerTreeRoot().addGroup(self.fmwInfo('desc'))
+            else:
+                grupo = None
+            if 'features' in resp:  # 1 solo Geojson
+                self.loadGeojson(resp, grupo)
+            else:                   # Varios Geojson
+                for i in range(len(resp)):
+                    self.loadGeojson(resp[i], grupo, i)
+        else:
+            qtWdg.QMessageBox.warning(None, 'Atenció', f"Petició rebutjada\nEstat: {r.status_code}{self.msgService(r)}")
+
+    def dataDownloadIni(self):
         self.iniJob()
         url = f"{self.server}/fmedatadownload/{self.fmw}" \
               f"/?opt_servicemode=async&opt_responseformat=json&{self.fmwInfo('params')}" 
@@ -97,12 +152,7 @@ class QvFMEServer:
             self.jobId = int(resp['serviceResponse']['jobID'])
             qtWdg.QMessageBox.information(None, 'Petició enviada', f"ID: {self.jobId}\nNom: {self.fmwInfo('desc')}")
         else:
-            error = self.msgService(r)
-            if error is None:
-                msg = ''
-            else:
-                msg = f"\nMissatge: {error}"
-            qtWdg.QMessageBox.warning(None, 'Atenció', f"Petició rebutjada\nEstat: {r.status_code}{msg}")
+            qtWdg.QMessageBox.warning(None, 'Atenció', f"Petició rebutjada\nEstat: {r.status_code}{self.msgService(r)}")
 
     # def submit(self):
     #     self.iniJob()
@@ -132,7 +182,7 @@ class QvFMEServer:
     #     else:
     #         qtWdg.QMessageBox.warning(None, 'Atenció', f"Petició rebutjada\nEstat: {r.status_code}\nMissatge: {resp.get('message', '-')}")
 
-    def dataDownload(self):
+    def dataDownloadEnd(self):
         url = f"{self.server}/fmerest/v3/transformations/jobs/id/{self.jobId}"
         r = requests.get(url, headers=self.header())
         if r.status_code == 200: # Ok
@@ -210,24 +260,32 @@ if __name__ == "__main__":
 
         # Adaptación del menú
 
-        fme = QvFMEServer("Layers qVista", "ZonesAdmGpkg.fmw")
+        fmeZonesAdm = QvFMEServer("Layers qVista", "ZonesAdmGpkg.fmw")
         # fme.jobId = 11990
 
         act = qtWdg.QAction()
-        act.setText("FME-SERVER - Informació")
-        act.triggered.connect(fme.infoServer)
+        act.setText("FME-SERVER: Informació")
+        act.triggered.connect(fmeZonesAdm.infoServer)
         leyenda.accions.afegirAccio('infoServer', act)
 
         act = qtWdg.QAction()
-        act.setText("FME-SERVER - Petició " + fme.fmwInfo('desc'))
-        act.triggered.connect(fme.jobServer)
-        leyenda.accions.afegirAccio('jobServer', act)
+        act.setText(f"FME-SERVER ({fmeZonesAdm.fmwInfo('service')}): {fmeZonesAdm.fmwInfo('desc')}") 
+        act.triggered.connect(fmeZonesAdm.jobServer)
+        leyenda.accions.afegirAccio('fmeZonesAdm', act)
+
+        fmeBusTMB = QvFMEServer("Layers qVista", "BusTMBGeoJSON.fmw")
+
+        act = qtWdg.QAction()
+        act.setText(f"FME-SERVER ({fmeBusTMB.fmwInfo('service')}): {fmeBusTMB.fmwInfo('desc')}") 
+        act.triggered.connect(fmeBusTMB.jobServer)
+        leyenda.accions.afegirAccio('fmeBusTMB', act)
 
         def menuContexte(tipo):
             if tipo == 'none':
                 leyenda.menuAccions.append('separator')
                 leyenda.menuAccions.append('infoServer')
-                leyenda.menuAccions.append('jobServer')
+                leyenda.menuAccions.append('fmeZonesAdm')
+                leyenda.menuAccions.append('fmeBusTMB')
 
         # Conexión de la señal con la función menuContexte para personalizar el menú
 

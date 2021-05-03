@@ -4,6 +4,7 @@ import requests
 from moduls.QvImports import *
 from qgis.core import QgsPointXY
 from qgis.gui import QgsMapCanvas, QgsRubberBand
+from moduls import QvFuncions
 
 class Gir():
     descripcio = ""
@@ -78,6 +79,7 @@ class Ruta():
         self.ocultarRuta()
         self.ocultarPuntsGir()
 
+    @QvFuncions.mostraSpinner
     def calculaRuta(self):
         """ 
         Pre: coordInici i coordFi han estat establerts i són a Barcelona.
@@ -126,6 +128,8 @@ class Ruta():
             for gir in root.find("nsruta:girs",ns).findall("nsruta:Gir",ns):
                 temp_coord = QgsPointXY(float(gir.find("nsruta:coord",ns).find("nsruta:x",ns).text), float(gir.find("nsruta:coord",ns).find("nsruta:y",ns).text))
                 aux_girsRuta.append(temp_coord)
+            
+            self.girsRuta.append(Gir(self.coordInici, "Inici"))
 
             d = 0
             g = 0
@@ -133,7 +137,8 @@ class Ruta():
                 self.girsRuta.append(Gir(aux_girsRuta[g],descripcionsRuta[d]))
                 d = d + 1
                 g = g + 1
-                    
+
+            self.girsRuta.append(Gir(self.coordFinal, "Final"))    
 
             for tram in root.find("nsruta:trams",ns).findall("nsruta:Tram",ns):
                 coords = []
@@ -160,7 +165,9 @@ class Ruta():
         if (filecontent != "-1"):
             if (parseXML(filecontent) >= 0):
                 self.ruta_calculada = True
-
+    
+    def getDistanciaDurada(self):
+        return self.distanciaRuta, self.duradaRuta
 
     def pintarRuta(self,canvas):
         """ Pre: la ruta ja ha estat calculada. project és un QgsMapCanvas
@@ -210,7 +217,6 @@ class Ruta():
             pGir.setFrameOffsetFromReferencePoint(QPointF(0, 0))
             i = QgsMapCanvasAnnotationItem(pGir, canvas)
             pGirs.append(i)
-
         self.pGirs = pGirs
 
     def ocultarPuntsGir(self):

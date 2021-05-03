@@ -18,8 +18,8 @@ import sys
 import os
 import math
 from typing import Sequence
-from qgis.core import QgsProject, QgsCoordinateReferenceSystem, QgsRectangle, QgsFeatureRequest
-from qgis.gui import  QgsLayerTreeMapCanvasBridge, QgsVertexMarker, QgsMapTool, QgsGui
+from qgis.core import QgsProject, QgsCoordinateReferenceSystem, QgsRectangle, QgsFeatureRequest, QgsMapLayer, QgsVectorLayer, QgsGeometry
+from qgis.gui import  QgsLayerTreeMapCanvasBridge, QgsVertexMarker, QgsMapTool, QgsGui, QgsRubberBand
 
 # Consulta a partir del text escrit al camp de cerca. 
 # Obté el codi BIM, la descripció i la denominació.
@@ -249,8 +249,12 @@ class QvSeleccioBIM(QgsMapTool):
                 dretaBaix = self.canvas.getCoordinateTransform().toMapCoordinates(x+self.radi*math.sqrt(2), y-self.radi*math.sqrt(2))
             rect = QgsRectangle(esquerraDalt.x(), esquerraDalt.y(), dretaBaix.x(), dretaBaix.y())
 
-            # la funció getFeatures retorna un iterable. Volem una llista
-            features = list(self.layer.getFeatures(QgsFeatureRequest().setFilterRect(rect)))
+            features = []
+            for layer in self.llegenda.capes():
+                if layer.type()==QgsMapLayer.VectorLayer and 'BIM' in layer.fields().names():
+                    # la funció getFeatures retorna un iterable. Volem una llista
+                    featsAct = [(feat, layer) for feat in layer.getFeatures(QgsFeatureRequest().setFilterRect(rect).setFlags(QgsFeatureRequest.ExactIntersect))]
+                    features.extend(featsAct)
 
             if len(features) > 0:
                     self.elementsSeleccionats.emit(features)
@@ -263,10 +267,12 @@ class FormulariAtributs(QvFitxesAtributs):
     """
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.ui.buttonBox.removeButton(self.ui.buttonBox.buttons()[0])
         self.ui.bSeleccionar = self.ui.buttonBox.addButton('Seleccionar', QtWidgets.QDialogButtonBox.ActionRole)
         self.ui.bSeleccionar.clicked.connect(self.selecciona)
         self.ui.stackedWidget.setStyleSheet('background: transparent; color: black; font-size: 14px')
         self.ui.buttonBox.setFixedWidth(300)
+        # self.ui.buttonBox.hide()
         for x in (self.ui.bNext, self.ui.bPrev, *self.ui.buttonBox.buttons()):
             x.setStyleSheet('QAbstractButton{font-size: 14px; padding: 2px}')
             x.setFixedSize(100,30)
@@ -480,11 +486,12 @@ class QMaBIM(QtWidgets.QMainWindow):
 
         cerca = f"BIM LIKE '0000{self.dadesLabelsDades[0]}'"
         
-        
-        layer = self.getCapaBIMs()
-        layer.setSubsetString(cerca)
+        # layer = self.getCapaBIMs()
+        layers = self.getCapesBIMs()
+        for layer in layers:
+            layer.setSubsetString(cerca)
         # Si no hi ha cap feature després d'aplicar el filtre, eliminem el filtre i mostrem tota l'extensió
-        if layer.featureCount()==0:
+        if sum(layer.featureCount() for layer in layers)==0:
             self.netejaFiltre()
             QtWidgets.QMessageBox.warning(self,"Atenció!", "No s'ha pogut localitzar el BIM en el mapa.")
         self.canvasA.setExtent(layer.extent())
@@ -496,10 +503,15 @@ class QMaBIM(QtWidgets.QMainWindow):
         QtCore.QTimer.singleShot(0, self.leCercador.clear)
 
     def netejaFiltre(self):
-        layer = self.getCapaBIMs()
-        layer.setSubsetString('')
+        # layer = self.getCapaBIMs()
+        layers = self.getCapesBIMs()
+        for layer in layers:
+            layer.setSubsetString('')
 
+    @QvFuncions.cronometraDebug
     def configuraPlanols(self):
+        # QgsProject.instance().read('mapesOffline/accelerator.qgs')
+        # QgsProject.instance().read('mapesOffline/qVista default map.qgs')
         root = QgsProject.instance().layerTreeRoot()
         planolA = self.tabCentral.widget(2)
         planolC = self.tabCentral.widget(3)
@@ -514,19 +526,17 @@ class QMaBIM(QtWidgets.QMainWindow):
         self.canvasA.setDestinationCrs(QgsCoordinateReferenceSystem('EPSG:25831'))
         self.canvasA.mostraStreetView.connect(lambda: self.canvasA.getStreetView().show())
         
-        canvasC = QvCanvasAuxiliar(self.canvasA, sincronitzaExtensio=True, posicioBotonera='SE')
-        QgsLayerTreeMapCanvasBridge(root, canvasC)
-        planolC.layout().addWidget(canvasC)
+        # canvasC = QvCanvasAuxiliar(self.canvasA, sincronitzaExtensio=True, posicioBotonera='SE')
+        # QgsLayerTreeMapCanvasBridge(root, canvasC)
+        # planolC.layout().addWidget(canvasC)
 
         # instanciem els mapetes
         QvMapetaBrujulado(mapetaPng, self.canvasA, pare=self.canvasA)
-        QvMapetaBrujulado(mapetaPng, canvasC, pare=canvasC)
+        # QvMapetaBrujulado(mapetaPng, canvasC, pare=canvasC)
         
         self.cerca1 = WidgetCercador(self.canvasA, self.canvasA)
         self.cerca1.cercador.sHanTrobatCoordenades.connect(lambda: self.tabCentral.setCurrentIndex(2))
-        # self.cerca1.show()
         self.layCapcaleraBIM.addWidget(self.cerca1)
-        # self.cerca1.move(-200,0)
 
         layStatus = QtWidgets.QHBoxLayout() # Això serà una Statusbar. Però per sortir del pas, primer ho fem així
         planolA.layout().addLayout(layStatus)
@@ -562,22 +572,27 @@ class QMaBIM(QtWidgets.QMainWindow):
         with open('style.qss') as f:
             estilCanvas = f.read()
         self.canvasA.setStyleSheet(estilCanvas)
-        canvasC.setStyleSheet(estilCanvas)
+        # canvasC.setStyleSheet(estilCanvas)
 
         
 
         taulesAtributs = QvAtributs(self.canvasA)
         taulesAtributs.setWindowTitle("Taules d'atributs")
         self.llegenda = QvLlegenda(self.canvasA, taulesAtributs)
+        self.canvasA.setLlegenda(self.llegenda)
         self.llegenda.resize(500, 600)
 
         self.tabCentral.currentChanged.connect(self.canviaTab)
     
+    @QvFuncions.cronometraDebug
     def inicialitzaProjecte(self):
-        QgsProject.instance().read('L:/DADES/SIT/qVista/CATALEG/MAPES PRIVATS/Patrimoni/PPM_CatRegles_geopackage.qgs')
+        # QgsProject.instance().read('L:/DADES/SIT/qVista/CATALEG/MAPES PRIVATS/Patrimoni/PPM_CatRegles_geopackage.qgs')
+        self.llegenda.readProject('L:/DADES/SIT/qVista/CATALEG/MAPES PRIVATS/Patrimoni/PPM_CatRegles_geopackage.qgs')
     
     def getCapaBIMs(self):
         return self.llegenda.capaPerNom('Inventari municipal')
+    def getCapesBIMs(self):
+        return [capa for capa in self.llegenda.capes() if 'BIM' in capa.fields().names()]
     
     def canviaTab(self):
         return
@@ -616,7 +631,7 @@ def main():
         main = QMaBIM()
         splash.finish(main)
         main.showMaximized()
-        # sys.exit(app.exec())
+        # main.inicialitzaProjecte()
 
 if __name__ == '__main__':
     main()
