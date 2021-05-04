@@ -590,7 +590,7 @@ class QMaBIM(QtWidgets.QMainWindow):
         self.llegenda.readProject('L:/DADES/SIT/qVista/CATALEG/MAPES PRIVATS/Patrimoni/PPM_CatRegles_geopackage.qgs')
     
     def getCapaBIMs(self):
-        return self.llegenda.capaPerNom('Inventari municipal')
+        return self.llegenda.capaPerNom('Entitats en PV')
     def getCapesBIMs(self):
         return [capa for capa in self.llegenda.capes() if 'BIM' in capa.fields().names()]
     
