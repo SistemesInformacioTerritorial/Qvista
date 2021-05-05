@@ -323,139 +323,209 @@ class EinaMultiruta(QWidget):
     def setTransportationMode(self,mode):
         self.transportationMode = mode
 
-    def __init__(self, pare):
-        # def getIndicacions(girs):
-        #     descripcions = []
-        #     for gir in girs:
-        #         descripcions.append(gir.descripcio)
-        #     return descripcions
+    #funció de càlcul de ruta. és cridada quan es clica al botó "calcular ruta"
+    def calcularRuta(self):
+        self.canvas.unsetMapTool(self.tool)
+        self.getPoint = 0
 
-        def calcularRuta():
-            self.canvas.unsetMapTool(self.tool)
-            self.getPoint = 0
+        #TODO: activar el QLineEdit que hi havia activat i deseleccionar el maptool
 
-            self.ruta.hideRoute()
-            # self.ruta.ocultarPuntsGir()
-            self.ruta = QvMultiruta(self.pointUI.getPoints())
-            self.ruta.setRouteOptions(self.roundtrip, self.source, self.destination)
-            self.ruta.setRouteType(self.trip)
-            self.ruta.setTransportationMode(self.transportationMode)
-            self.ruta.getRoute()
-            self.ruta.printRoute(self.canvas)
+        self.ruta.hideRoute() #reset ruta anterior
+        self.ruta = QvMultiruta(self.pointUI.getPoints())
+        self.ruta.setRouteOptions(self.roundtrip, self.source, self.destination)
+        self.ruta.setRouteType(self.trip)
+        self.ruta.setTransportationMode(self.transportationMode)
+        self.ruta.getRoute()
+        self.ruta.printRoute(self.canvas)
 
-            # self.indicacioBox.clear()
-            # self.lblDistancia.setText("")
-            # self.lblDurada.setText("")
+        if (self.ruta.routeOK == False):
+            print("error calculant la ruta")
+            msg = QMessageBox()
+            msg.setIcon(QMessageBox.Critical)
+            msg.setText("Error calculant la ruta")
+            msg.setInformativeText("La ruta no s'ha pogut calcular, asseguri's que té connexió a Internet. L'API d'OpenStreetMaps podria estar caiguda.")
+            msg.setWindowTitle("Error")
+            msg.exec_()
 
-            if (self.ruta.routeOK == False):
-                print("error calculant la ruta")
-                msg = QMessageBox()
-                msg.setIcon(QMessageBox.Critical)
-                msg.setText("Error calculant la ruta")
-                msg.setInformativeText("La ruta no s'ha pogut calcular. Provi amb uns altres punts i asseguri's que el seu ordinador està connectat a la xarxa interna.")
-                msg.setWindowTitle("Error")
-                msg.exec_()
-                self.lblDistancia.setText("Distancia: No s'ha pogut obtenir")
-                self.lblDurada.setText("Durada: No s'ha pogut obtenir")
-                # self.layoutInfo.removeWidget(self.lblDistancia)
-                # self.layoutInfo.removeWidget(self.lblDurada)
-                
+        else: #ruta calculada.
+            self.setUI_Result()
+
+    def exportRoute(self):
+        pass
+
+    #preparació UI pantalla resultat
+    def setUI_Result(self):
+        #layout principal
+        container = QWidget()
+        routeResult = QVBoxLayout(container)
+
+        #groupbox
+        routeResult_layout = QVBoxLayout()
+        routeResult_groupbox = QGroupBox("Resultats de la ruta")
+        routeResult_groupbox.setLayout(routeResult_layout)
+
+        ####### UI dels punts visitats
+        #creació d'un scrollable
+        routeResult_scrollable = QScrollArea()
+        routeResult_scrollable_widget = QWidget()
+        routeResult_scrollable_layout = QVBoxLayout()
+        routeResult_scrollable_widget.setLayout(routeResult_scrollable_layout)
+        routeResult_scrollable.setWidget(routeResult_scrollable_widget)
+
+        #opcions del scrollable
+        routeResult_scrollable.setFixedHeight(450)
+        routeResult_scrollable.setWidgetResizable(True)
+        routeResult_scrollable.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+        
+        for i, wp in enumerate(self.ruta.waypoints):
+            if (self.ruta.routeType):
+                point_index = wp["waypoint_index"]
             else:
-                # Mostra distancia i durada de la ruta
-                # getDistanciaDurada()
-                # Incialitzem layout per a mostrar descripcio de la ruta i els seus botons
-                # getIndicacionsDeRuta()
-                pass
-
-                    
-        def preparacioUI():
-            def UIrouteOptions():
-                #creació del layout principal
-                self.routeOptionsLayout = QVBoxLayout()
-
-                #opcions de ruta. a peu, en bicicleta o en vehicle motoritzat.
-                transportMode_groupbox = QGroupBox("Mode de desplaçament")
-                transportMode_layout = QHBoxLayout()
-                transportMode_groupbox.setLayout(transportMode_layout)
-                transportMode_walk = QRadioButton("A peu")
-                transportMode_walk.clicked.connect(lambda:self.setTransportationMode("walk"))
-                transportMode_bike = QRadioButton("En bicicleta")
-                transportMode_bike.clicked.connect(lambda:self.setTransportationMode("bike"))
-                transportMode_vehicle = QRadioButton("En automòbil")
-                transportMode_vehicle.clicked.connect(lambda:self.setTransportationMode("vehicle"))
-                transportMode_vehicle.setChecked(True)
-                transportMode_layout.addWidget(transportMode_walk)
-                transportMode_layout.addWidget(transportMode_bike)
-                transportMode_layout.addWidget(transportMode_vehicle)
-
-                #tipus de ruta. trip o route
-                typeofRoute_groupbox = QGroupBox("Tipus de ruta")
-                typeofRoute_layout = QHBoxLayout()
-                typeofRoute_groupbox.setLayout(typeofRoute_layout)
-                typeofRoute_radiobutton_route = QRadioButton("Ruta convencional")
-                typeofRoute_radiobutton_route.setToolTip("La ruta calculada serà la ruta més ràpida que passi per tots els punts, respectant l'ordre introduït per l'usuari.")
-                typeofRoute_radiobutton_trip = QRadioButton("Ruta òptima")
-                typeofRoute_radiobutton_trip.setToolTip("La ruta calculada serà una aproximació a la ruta més ràpida que passi per tots els punts sense ordenar")
-                typeofRoute_radiobutton_route.clicked.connect(lambda:self.setRouteType(False))
-                typeofRoute_radiobutton_trip.clicked.connect(lambda:self.setRouteType(True))
-                typeofRoute_radiobutton_trip.setChecked(True)
-                typeofRoute_layout.addWidget(typeofRoute_radiobutton_route)
-                typeofRoute_layout.addWidget(typeofRoute_radiobutton_trip)
-
-                #configuració de ruta tipus trip
-                self.tripOptions_groupbox = QGroupBox("Opcions de ruta òptima")
-                tripOptions_layout = QHBoxLayout()
-                self.tripOptions_groupbox.setLayout(tripOptions_layout)
-                self.tripOptions_circular = QCheckBox("Ruta circular")
-                self.tripOptions_circular.stateChanged.connect(lambda:self.setRouteOptions_roundtrip(self.tripOptions_circular.isChecked()))
-                self.tripOptions_puntinici = QCheckBox("Punt de sortida fixat")
-                self.tripOptions_puntinici.setToolTip("El primer punt de la llista serà el punt de sortida de la ruta")
-                self.tripOptions_puntinici.stateChanged.connect(lambda:self.setRouteOptions_source(self.tripOptions_puntinici.isChecked()))
-                self.tripOptions_puntfinal = QCheckBox("Punt d'arribada fixat")
-                self.tripOptions_puntfinal.setToolTip("L'últim punt de la llista serà el punt de sortida de la ruta")
-                self.tripOptions_puntfinal.stateChanged.connect(lambda:self.setRouteOptions_destination(self.tripOptions_puntfinal.isChecked()))
-                tripOptions_layout.addWidget(self.tripOptions_circular)
-                tripOptions_layout.addWidget(self.tripOptions_puntinici)
-                tripOptions_layout.addWidget(self.tripOptions_puntfinal)
-                self.tripOptions_circular.setChecked(False)
-                self.tripOptions_puntinici.setEnabled(False)
-                self.tripOptions_puntinici.setChecked(True)
-                self.tripOptions_puntfinal.setEnabled(False)
-                self.tripOptions_puntfinal.setChecked(True)
-
-                #configuració del layout
-                self.routeOptionsLayout.addWidget(transportMode_groupbox)
-                self.routeOptionsLayout.addWidget(typeofRoute_groupbox)
-                self.routeOptionsLayout.addWidget(self.tripOptions_groupbox)
-                
-
-            QWidget.__init__(self)
-
-            if isinstance(pare, QgsMapCanvas):
-                self.canvas = pare
-            else: 
-                self.canvas = pare.canvas
+                point_index = i
             
-            lay = QVBoxLayout()
-            self.setLayout(lay)
+            point_name = self.pointUI.pointList[point_index].LECarrer.text().split(" (")[0] + ' ' + self.pointUI.pointList[point_index].LENumero.text()
 
-            points_groubox = QGroupBox("Llistat de punts")
-            self.pointLayout = QVBoxLayout()
-            points_groubox.setLayout(self.pointLayout)
+            if (i < len(self.ruta.legs) or ( self.ruta.routeType and self.ruta.roundtrip and i == len(self.ruta.legs))):
+                point_duration = self.ruta.legs[i]["duration"]
+                point_distance = self.ruta.legs[i]["distance"]
+            else:
+                point_duration = -1
+                point_distance = -1
 
-            self.pointUI = PointUI(self.pointLayout,self)
+            waypoint_label = QLabel(point_name)
+            waypoint_label.setFont(QFont("Times",10,weight=QFont.Bold))
+            routeResult_scrollable_layout.addWidget(waypoint_label)
 
-            UIrouteOptions()
-            lay.addLayout(self.routeOptionsLayout)
-            lay.addWidget(points_groubox)
+            if (point_duration > -1):
+                waypoint_distduration = QLabel(str(int(point_duration/60)) + " min (" +  "{:.2f}".format(point_distance/1000) + " km)")
+                waypoint_distduration.setAlignment(Qt.AlignRight)
 
-            calcRouteButton = QPushButton()
-            calcRouteButton.pressed.connect(calcularRuta)
-            calcRouteButton.setText("Calcular ruta")
-            lay.addWidget(calcRouteButton)
+                routeResult_scrollable_layout.addWidget(waypoint_distduration)
+        
+        #afegir al layout l'scrollable dels punts
+        routeResult_layout.addWidget(routeResult_scrollable)
 
-        preparacioUI()
-        # self.initMarkers()
+        #DEFINICIÓ DE ZONA DE BOTONS
+        buttons_layout = QHBoxLayout()
+        routeResult_layout.addLayout(buttons_layout)
+        #botó de tornar a la pantalla de planificació de ruta
+        routeOptions = QPushButton("Planificació de ruta")
+        routeOptions.clicked.connect(lambda:self.switchScreen(container))
+        buttons_layout.addWidget(routeOptions)
+
+        #exportació de rutes en format kmx
+        routeExport = QPushButton("Exportar ruta")
+        routeExport.clicked.connect(self.exportRoute)
+        buttons_layout.addWidget(routeExport)
+
+        #canviar el layout del window als resultats de la ruta
+        routeResult.addWidget(routeResult_groupbox)
+        self.layout().addWidget(container)
+        self.layout().setCurrentIndex(1)
+
+    #passar de pantalla de preparació de ruta a resultats de ruta
+    def switchScreen(self,container):
+        self.layout().setCurrentIndex(0)
+        self.layout().removeWidget(container)
+        
+    #preparació UI pantalla preparació
+    def setUI_RoutePlanning(self):
+        #creació del layout principal
+        self.routeOptionsLayout = QVBoxLayout()
+
+        #opcions de ruta. a peu, en bicicleta o en vehicle motoritzat.
+        transportMode_groupbox = QGroupBox("Mode de desplaçament")
+        transportMode_layout = QHBoxLayout()
+        transportMode_groupbox.setLayout(transportMode_layout)
+        transportMode_walk = QRadioButton("A peu")
+        transportMode_walk.clicked.connect(lambda:self.setTransportationMode("walk"))
+        transportMode_bike = QRadioButton("En bicicleta")
+        transportMode_bike.clicked.connect(lambda:self.setTransportationMode("bike"))
+        transportMode_vehicle = QRadioButton("En cotxe")
+        transportMode_vehicle.clicked.connect(lambda:self.setTransportationMode("vehicle"))
+        transportMode_vehicle.setChecked(True)
+        transportMode_layout.addWidget(transportMode_walk)
+        transportMode_layout.addWidget(transportMode_bike)
+        transportMode_layout.addWidget(transportMode_vehicle)
+
+        #tipus de ruta. trip o route
+        typeofRoute_groupbox = QGroupBox("Tipus de ruta")
+        typeofRoute_layout = QHBoxLayout()
+        typeofRoute_groupbox.setLayout(typeofRoute_layout)
+        typeofRoute_radiobutton_route = QRadioButton("Ruta seqüencial")
+        typeofRoute_radiobutton_route.setToolTip("La ruta calculada serà la ruta més ràpida que passi per tots els punts, respectant l'ordre introduït per l'usuari.")
+        typeofRoute_radiobutton_trip = QRadioButton("Ruta òptima")
+        typeofRoute_radiobutton_trip.setToolTip("La ruta calculada serà una aproximació a la ruta més ràpida que passi per tots els punts sense ordenar")
+        typeofRoute_radiobutton_route.clicked.connect(lambda:self.setRouteType(False))
+        typeofRoute_radiobutton_trip.clicked.connect(lambda:self.setRouteType(True))
+        typeofRoute_radiobutton_trip.setChecked(True)
+        typeofRoute_layout.addWidget(typeofRoute_radiobutton_route)
+        typeofRoute_layout.addWidget(typeofRoute_radiobutton_trip)
+
+        #configuració de ruta tipus trip
+        self.tripOptions_groupbox = QGroupBox("Opcions de ruta òptima")
+        tripOptions_layout = QHBoxLayout()
+        self.tripOptions_groupbox.setLayout(tripOptions_layout)
+        self.tripOptions_circular = QCheckBox("Ruta circular")
+        self.tripOptions_circular.stateChanged.connect(lambda:self.setRouteOptions_roundtrip(self.tripOptions_circular.isChecked()))
+        self.tripOptions_puntinici = QCheckBox("Punt de sortida fixat")
+        self.tripOptions_puntinici.setToolTip("El primer punt de la llista serà el punt de sortida de la ruta")
+        self.tripOptions_puntinici.stateChanged.connect(lambda:self.setRouteOptions_source(self.tripOptions_puntinici.isChecked()))
+        self.tripOptions_puntfinal = QCheckBox("Punt d'arribada fixat")
+        self.tripOptions_puntfinal.setToolTip("L'últim punt de la llista serà el punt de sortida de la ruta")
+        self.tripOptions_puntfinal.stateChanged.connect(lambda:self.setRouteOptions_destination(self.tripOptions_puntfinal.isChecked()))
+        tripOptions_layout.addWidget(self.tripOptions_circular)
+        tripOptions_layout.addWidget(self.tripOptions_puntinici)
+        tripOptions_layout.addWidget(self.tripOptions_puntfinal)
+        self.tripOptions_circular.setChecked(False)
+        self.tripOptions_puntinici.setEnabled(False)
+        self.tripOptions_puntinici.setChecked(True)
+        self.tripOptions_puntfinal.setEnabled(False)
+        self.tripOptions_puntfinal.setChecked(True)
+
+        #configuració del layout
+        self.routeOptionsLayout.addWidget(transportMode_groupbox)
+        self.routeOptionsLayout.addWidget(typeofRoute_groupbox)
+        self.routeOptionsLayout.addWidget(self.tripOptions_groupbox)
+                
+    def __init__(self, pare):
+        QWidget.__init__(self)
+
+        if isinstance(pare, QgsMapCanvas):
+            self.canvas = pare
+        else: 
+            self.canvas = pare.canvas
+        
+        #layout de la finestra. es defineix un QStackedLayout per permetre que la finestra tingui difernets layouts (calcul de ruta i resultats de ruta)
+        #el contenidor és una espècie de wrapper d'un layout per a que es pugui afegir al stacked layout.
+
+
+        windowStack = QStackedLayout()
+        self.setLayout(windowStack)
+        container = QWidget()
+        windowStack.addWidget(container)
+        self.calcRouteLayout = QVBoxLayout(container)
+
+
+        #definició del layout de llistat de punts
+        points_groupbox = QGroupBox("Llistat de punts")
+        self.pointLayout = QVBoxLayout()
+        points_groupbox.setLayout(self.pointLayout)
+        self.pointUI = PointUI(self.pointLayout,self) 
+        self.setUI_RoutePlanning() #crida a funció que crea els QLineEdits
+
+        #afegir layouts de'opcions de ruta
+        self.calcRouteLayout.addLayout(self.routeOptionsLayout)
+        #afegir layout de llistat de punts
+        self.calcRouteLayout.addWidget(points_groupbox)
+
+        #botons
+        calcRouteButton = QPushButton()
+        calcRouteButton.pressed.connect(self.calcularRuta)
+        calcRouteButton.setText("Calcular ruta")
+        self.calcRouteLayout.addWidget(calcRouteButton)
+
+        #definir el tool de l'eina
         self.tool = PointTool(self.canvas, self)
 
     def eventComboBox(self, index):

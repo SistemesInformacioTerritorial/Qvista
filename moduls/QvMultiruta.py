@@ -17,6 +17,8 @@ TODO: escriure exemple
 punts = [QgsPointXY(_,_),QgsPointXY(_,_),QgsPointXY(_,_)...]
 multiruta = QvMultiruta(punts)
 multiruta.setRouteOptions(True,True,True)
+multiruta.setRouteType(True) #True= trip, False= route
+multiruta.setTransportationMode("string")#string pot ser walk, bike, vehicle
 multiruta.getRoute()
 
 URL d'exemple WebService:
@@ -101,10 +103,14 @@ class QvMultiruta():
         #fer GET a la API. 
         def _makeRequest(url):
             try:
-                var = requests.get(url).text
+                response = requests.get(url)
             except requests.exceptions.ConnectionError as err:
-                var = "-1"
-            return var
+                return "-1"
+
+            if not response.ok:
+                return "-1"
+            else:
+                return response.text
 
         url = "https://routing.openstreetmap.de/routed-"
 
@@ -129,7 +135,7 @@ class QvMultiruta():
             if index < len(self.points)-1:
                 url += ';'
 
-        url += "?geometries=geojson&overview=full" #necessari per obtenir ruta detallada i en format geoJSON
+        url += "?geometries=geojson&overview=full&generate_hints=false&steps=true" #necessari per obtenir ruta detallada, en format geoJSON i amb indicacions
         if (self.routeType):
             if (self.roundtrip):
                 url += "&roundtrip=true" 
@@ -179,6 +185,19 @@ class QvMultiruta():
                     self.trips_distance.append(trip["distance"])
                 if "duration" in trip:
                     self.trips_duration.append(trip["duration"])
+                if "legs" in trip:
+                    self.legs = []
+                    for leg in trip["legs"]:
+                        #leg és un json amb els següents atributs
+                        #steps,weight,distance,summary,duration
+                        self.legs.append(leg)
+
+        if "waypoints" in response:
+            self.waypoints = []
+            for wp in response["waypoints"]:
+                #wp és un json amb els següents atributs
+                #waypoint_index, trips_index, distance, location i name
+                self.waypoints.append(wp)
 
         #convertir routePoints a ETRS89
         aux_routePoints = []
