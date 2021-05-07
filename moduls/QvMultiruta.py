@@ -194,10 +194,19 @@ class QvMultiruta():
 
         if "waypoints" in response:
             self.waypoints = []
-            for wp in response["waypoints"]:
+            #inicialitzar vector amb n posicions, tantes com te waypoints
+            if (self.routeType):
+                for i in range (len(response["waypoints"])):
+                    self.waypoints.append(None)
+
+            for i, wp in enumerate(response["waypoints"]):
                 #wp és un json amb els següents atributs
                 #waypoint_index, trips_index, distance, location i name
-                self.waypoints.append(wp)
+                if (self.routeType):
+                    wp["original_index"] = i
+                    self.waypoints[wp["waypoint_index"]] = wp
+                else:
+                    self.waypoints.append(wp)
 
         #convertir routePoints a ETRS89
         aux_routePoints = []

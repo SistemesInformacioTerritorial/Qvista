@@ -47,6 +47,8 @@ class PointUI:
         self.checkRemoveButtons()
 
     def addBetweenPoints(self,actPoint,customName):
+        #unpress the pressed buttons
+        self.unpressButtons()
         new_element = PointUI_element(self.layout,actPoint,customName,self) #la classe PointUI_element ja s'encarrega d'afegir al layout el conjunt d'elements
         i = actPoint
         while i < len(self.pointList):
@@ -72,6 +74,14 @@ class PointUI:
         for el in self.pointList:
             el.buttonRemovePoint.setEnabled(False)
 
+    def unpressButtons(self):
+        for el in self.pointList:
+            if (el.buttonGPS.isChecked()):
+                self.eina.canvas.unsetMapTool(self.eina.tool)
+                el.buttonGPS.setChecked(False)
+                el.LECarrer.setEnabled(True)
+                el.LENumero.setEnabled(True)
+
     def refreshLayout(self):
         #eliminar i tornar a afegir els layouts per a que estiguin endreçats
         for i in reversed(range(self.layout.count())): 
@@ -86,6 +96,9 @@ class PointUI:
             el.updateLbl()
 
     def removeItem(self,item):
+        #unpress the pressed buttons
+        self.unpressButtons()
+        
         actLayout = self.layout.itemAt(item)
 
         #delete the marker
@@ -325,6 +338,9 @@ class EinaMultiruta(QWidget):
 
     #funció de càlcul de ruta. és cridada quan es clica al botó "calcular ruta"
     def calcularRuta(self):
+        #treure botons de seleccionar punt al mapa
+        self.pointUI.unpressButtons()
+
         self.canvas.unsetMapTool(self.tool)
         self.getPoint = 0
 
@@ -378,8 +394,8 @@ class EinaMultiruta(QWidget):
         routeResult_scrollable.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
         
         for i, wp in enumerate(self.ruta.waypoints):
-            if (self.ruta.routeType):
-                point_index = wp["waypoint_index"]
+            if (self.ruta.routeType): #en cas de ruta tipus trip
+                point_index = wp["original_index"]
             else:
                 point_index = i
             
@@ -421,7 +437,7 @@ class EinaMultiruta(QWidget):
         #canviar el layout del window als resultats de la ruta
         routeResult.addWidget(routeResult_groupbox)
         self.layout().addWidget(container)
-        self.layout().setCurrentIndex(1)
+        self.layout().setCurrentIndex(self.layout().count()-1)
 
     #passar de pantalla de preparació de ruta a resultats de ruta
     def switchScreen(self,container):
