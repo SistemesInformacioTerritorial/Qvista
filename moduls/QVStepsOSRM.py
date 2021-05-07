@@ -1,5 +1,10 @@
 """
-Mòdul d'interpretació de les indicacions de rutes d'OSRM
+Mòdul d'interpretació de les indicacions de rutes d'OSRM. Funcionament:
+step és una part del json de l'api d'OSRM. concretament un step individual, que conté interseccions, driving_side, geometry, distance, name, weight, maneuver i mode.
+stepinfo = QVStepsOSRM(step)
+if (stepinfo.ok):
+    image_path = stepinfo.indication_image_path
+    string = stepinfo.indication_string
 """
 import pprint
 import json
@@ -8,7 +13,6 @@ import os
 class QVStepsOSRM:
     ok = True  # Si la indicació és prescindible 
     indication_image_path = "" 
-    indication_string = ""
     indication_string = ''
     posicio_conduccio = ''
     nom_via = ''
@@ -26,21 +30,21 @@ class QVStepsOSRM:
 
     def processaJson(self):
 
-        if "driving_side" in json["intersections"]:
-            self.posicio_conduccio = json['driving_side']
+        if "driving_side" in self.json["intersections"]:
+            self.posicio_conduccio = self.json['driving_side']
 
-        if "name" in json: 
-            self.nom_via = json['name']
+        if "name" in self.json: 
+            self.nom_via = self.json['name']
 
-        if "rotary_name" in json:
-            self.nom_rotonda = json['rotary_name']
+        if "rotary_name" in self.json:
+            self.nom_rotonda = self.json['rotary_name']
 
-        if "maneuver" in json:
-            if "modifier" in json["maneuver"]:
-                self.tipus_maniobra = json['maneuver']['type']
-                self.direccio_maniobra = json['maneuver']['modifier']
-            if "exit" in json["maneuver"]:
-                self.exit_rotonda = json["maneuver"]["exit"]   
+        if "maneuver" in self.json:
+            if "modifier" in self.json["maneuver"]:
+                self.tipus_maniobra = self.json['maneuver']['type']
+                self.direccio_maniobra = self.json['maneuver']['modifier']
+            if "exit" in self.json["maneuver"]:
+                self.exit_rotonda = self.json["maneuver"]["exit"]   
     
     def switch_direccio_maniobra(self):
         switcherDireccio = {
@@ -67,16 +71,16 @@ class QVStepsOSRM:
             'new name': "Continuï per "+ self.direccio_maniobra,
             'depart': "Surti per mà "+ self.direccio_maniobra,
             'arrive': "Arribada al destí "+ self.direccio_maniobra,
-            'merge': "Incorporis a la via "+self.direccio_maniobra,
+            'merge': "Incorpori's a la via "+self.direccio_maniobra,
             'ramp': "DEPRECATED "+ self.direccio_maniobra,
             'on ramp': "Prengui l'entrada en direccció " + self.direccio_maniobra,
             'off ramp': "Prengui la sortida en direccció " + self.direccio_maniobra,
             'fork': "Continuï per la bifurcació " + self.direccio_maniobra,
             'end of road': "Al final de la vía continuï en direcció " + self.direccio_maniobra,
             'use lane': "Continui recte per " + self.direccio_maniobra,
-            'continue': "Mantinguís en la via " + self.direccio_maniobra,
+            'continue': "Mantingui's en la via " + self.direccio_maniobra,
             'roundabout': "roundabout",
-            'rotatory': "rotary",
+            'rotary': "rotary",
             'roundabout turn': "Entri a la rotonda i giri a " + self.direccio_maniobra,
             'notification': "Giri a mà " + self.direccio_maniobra
         }
@@ -91,7 +95,7 @@ class QVStepsOSRM:
                     self.indication_string = "Entri a la rotonda i segueixi per mà " + self.direccio_maniobra
         else:
             print("ERROR: " + self.tipus_maniobra)
-            raise
+            self.ok = False
 
         if self.nom_rotonda == '':
             self.indication_string = self.indication_string + self.nom_via
@@ -112,12 +116,15 @@ class QVStepsOSRM:
         'slight left': "Imatges/imgsOSRM/slightesquerra.png",
         'straight': "Imatges/imgsOSRM/recte.png" 
         }
-        if json['maneuver']['modifier'] in switcherPath:
-            self.indication_image_path = switcherPath[json['maneuver']['modifier']]
+        if 'modifier' in self.json['maneuver']:
+            if self.json['maneuver']['modifier'] in switcherPath:
+                self.indication_image_path = switcherPath[self.json['maneuver']['modifier']]
             # print(self.indication_image_path, json['maneuver']['modifier'])
         else:
-            print("ERROR: " + self.direccio_maniobra)
-            raise
+            self.indication_image_path = switcherPath['straight']
+        # else:
+        #     print("ERROR: " + self.direccio_maniobra)
+        #     raise
 
 if __name__ == "__main__":
     
@@ -177,7 +184,7 @@ if __name__ == "__main__":
 #             case 'use lane':
 #                 indication_string = "Continui recte per "
 #             case 'continue':
-#                 indication_string = "Mantinguís en la via "
+#                 indication_string = "Mantinguis en la via "
 #             case 'roundabout':
 #                 if exit_rotonda != '':
 #                     indication_string = "Surti de la rotonda per la sortida número " + str(exit)

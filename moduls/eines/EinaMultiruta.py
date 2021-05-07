@@ -11,6 +11,8 @@ from moduls import QvFuncions
 from moduls.QVCercadorAdreca import QCercadorAdreca
 from moduls.QvMultiruta import *
 from moduls.QvReverse import QvReverse
+from moduls.QvTextColorMarker import QvTextColorMarker
+from moduls.QVStepsOSRM import QVStepsOSRM
 
 class QAdrecaPostalLineEdit(QLineEdit):
     def focusInEvent(self, event):
@@ -58,6 +60,7 @@ class PointUI:
         self.pointList.insert(actPoint, new_element)
         self.refreshLayout()
         self.checkRemoveButtons()
+        self.renumeratePoints()
 
     #check whether the remove items need to be enabled or not
     def checkRemoveButtons(self):
@@ -102,7 +105,8 @@ class PointUI:
         actLayout = self.layout.itemAt(item)
 
         #delete the marker
-        self.eina.canvas.scene().removeItem(self.pointList[item].marker)
+        self.pointList[item].marker.hide()
+
 
         #delete all the widgets from the layout
         for i in reversed(range(actLayout.count())):
@@ -113,14 +117,18 @@ class PointUI:
         actLayout.setParent(None)
         self.pointList.pop(item)
 
-        #renumerate the points
-        for i, el in enumerate(self.pointList):
-            el.pointNumber = i
+        self.renumeratePoints()
 
         #refresca els textos dels noms dels punts
         self.refreshLabels()
 
         self.checkRemoveButtons()
+
+    def renumeratePoints(self):
+        #renumerate the points
+        for i, el in enumerate(self.pointList):
+            el.pointNumber = i
+            el.marker.refresh(i)
 
     def pressButtonGPS(self,item):
         if self.pointList[item].buttonGPS.isChecked():
@@ -157,12 +165,12 @@ class PointUI:
 
     def hideMarkers(self):
         for i in reversed(range(len(self.pointList))):
-            self.eina.canvas.scene().removeItem(self.pointList[i].marker)
+            self.pointList[i].marker.hide()
 
     def resetUI(self):
         #TODO: improve speed
         for i in reversed(range(len(self.pointList))):
-            self.eina.canvas.scene().removeItem(self.pointList[i].marker)
+            self.pointList[i].marker.hide()
             actLayout = self.pointList[i].layoutPunt
             #delete all the widgets from the layout
             for j in reversed(range(actLayout.count())):
@@ -198,7 +206,10 @@ class PointUI_element:
         self.pointNumber = pointNumber
         self.UIparent = UIparent
         self.point = QgsPointXY(-1,-1)
-        self.marker = QgsVertexMarker(self.UIparent.eina.canvas)
+
+        color = QColor(255, 0, 0)
+        self.marker = QvTextColorMarker(self.UIparent.eina.canvas, self.point, self.pointNumber)
+        # self.marker.setColor(QColor(255,123,12))
         eina = UIparent.eina
 
         self.layoutPunt = QHBoxLayout()
@@ -411,6 +422,34 @@ class EinaMultiruta(QWidget):
             waypoint_label = QLabel(point_name)
             waypoint_label.setFont(QFont("Times",10,weight=QFont.Bold))
             routeResult_scrollable_layout.addWidget(waypoint_label)
+
+            #afegir steps de la ruta
+            if i < len(self.ruta.legs):
+                if "steps" in self.ruta.legs[i]:
+                    for step in self.ruta.legs[i]["steps"]:
+                        stepinfo = QVStepsOSRM(step)
+                        if (stepinfo.ok): #ok indica si cal que l'step es mostri
+                            indication_image_path = stepinfo.indication_image_path
+                            indication_string = stepinfo.indication_string
+
+                            #layout de l'step
+                            indicacio_layout = QHBoxLayout()
+                            
+                            #layout icona step
+                            indicacio_imatge = QLabel()
+                            indicacio_imatge.setPixmap(QPixmap(indication_image_path))
+                            indicacio_imatge.setFixedWidth(40)
+
+                            indicacio_text = QLabel()
+                            indicacio_text.setText(indication_string)
+                            indicacio_text.setFixedWidth(600)
+
+                            indicacio_layout.addWidget(indicacio_imatge)
+                            indicacio_layout.addWidget(indicacio_text)
+
+                            routeResult_scrollable_layout.addLayout(indicacio_layout)
+
+                    
 
             if (point_duration > -1):
                 waypoint_distduration = QLabel(str(int(point_duration/60)) + " min (" +  "{:.2f}".format(point_distance/1000) + " km)")
