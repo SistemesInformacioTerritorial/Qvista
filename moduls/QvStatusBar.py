@@ -2,8 +2,8 @@ from qgis.core.contextmanagers import qgisapp
 from qgis.PyQt.QtWidgets import QStatusBar, QLineEdit, QMainWindow, QLabel, QProgressBar, QMessageBox, QMenu, QAction, QCompleter
 from qgis.core import QgsProject, QgsPointXY
 from qgis.gui import QgsLayerTreeMapCanvasBridge
-from qgis.PyQt.QtCore import pyqtSignal, QPoint, Qt
-from qgis.PyQt.QtGui import QFontMetrics
+from qgis.PyQt.QtCore import pyqtSignal, QPoint, Qt, QStringListModel
+from qgis.PyQt.QtGui import QFontMetrics, QIntValidator
 from pathlib import Path
 from moduls.QvCanvas import QvCanvas
 from moduls.QvAtributs import QvAtributs
@@ -53,7 +53,7 @@ class QvLineEditPS(QLineEdit):
 
         # quan entrem a començar a editar, el completer mostrarà totes les possibilitats
         self.completer().setCompletionMode(QCompleter.UnfilteredPopupCompletion)
-        self.completer().complete()
+        # self.completer().complete()
     def focusOutEvent(self,e):
         self.setText(self.textComplet())
         super().focusOutEvent(e)
@@ -94,6 +94,7 @@ class QvStatusBar(QStatusBar):
     def __init__(self, parent, llistaWidgets=[], canvas=None, llegenda=None):
         super().__init__(parent)
         parent.setStatusBar(self)
+        self.setSizeGripEnabled(True)
 
         self.canvas = canvas
         self.llegenda = llegenda
@@ -103,7 +104,6 @@ class QvStatusBar(QStatusBar):
         self.setStyleSheet(STYLESHEET)
         self.setFont(QvConstants.FONTTEXT)
 
-        self.escalesPossibles = list(map(str,self.llegenda.escales.llistaCb))
         for x in llistaWidgets:
             if not isinstance(x, str):
                 try:
@@ -113,41 +113,47 @@ class QvStatusBar(QStatusBar):
             else:
                 stretch = 0
             if x == 'nomProjecte':
-                wid = QLabel(f'QGS: {Path(QgsProject.instance().fileName()).stem}')
+                wid = QLabel(f'QGS: {Path(QgsProject.instance().fileName()).stem}', self)
                 wid.setToolTip(f'{Path(QgsProject.instance().fileName())}')
-                QgsProject.instance().fileNameChanged.connect(self.canviPathProjecte)
+                QgsProject.instance().readProject.connect(self.canviPathProjecte)
                 nomWid = 'lblProjecte'
             elif x == 'connexio':
-                wid = QLabel(configuracioQvista.estatConnexio)
+                wid = QLabel(configuracioQvista.estatConnexio, self)
                 nomWid = 'lblConnexio'
             elif x == 'capaSeleccionada':
-                wid = QLabel('No hi ha capa activa')
+                wid = QLabel('No hi ha capa activa', self)
                 self.llegenda.currentLayerChanged.connect(self.canviLayer)
                 nomWid = 'lblCapaSeleccionada'
             elif x == 'seleccioExpressio':
-                wid = QLineEdit()
+                wid = QLineEdit(self)
                 wid.returnPressed.connect(self.seleccioExpressio)
                 wid.setPlaceholderText('Introduïu un text per filtrar elements a la capa seleccionada')
                 nomWid = 'leSeleccioExpressio'
             elif x == 'progressBar':
-                wid = QProgressBar()
+                wid = QProgressBar(self)
                 self.canvas.renderStarting.connect(self.showPB)
                 self.canvas.renderComplete.connect(self.hidePB)
                 wid.setRange(0,0)
                 nomWid = 'sbCarregantCanvas'
             elif x == 'coordenades':
-                wid = QLineEdit()
+                wid = QLineEdit(self.getXY(self.canvas.center()),self)
                 self.canvas.xyCoordinates.connect(self.showXY)
                 wid.returnPressed.connect(self.returnEditarXY)
                 nomWid = 'leXY'
             elif x == 'projeccio':
-                wid = QLabel()
+                wid = QLabel(self)
                 QgsProject.instance().fileNameChanged.connect(lambda: self.lblProjeccio.setText(QgsProject.instance().crs().description()))
                 nomWid = 'lblProjeccio'
             elif x == 'escala':
-                wid = QvLineEditPS(prefix='Escala 1:')
+                wid = QvLineEditPS(prefix='Escala 1:', parent=self)
+                wid.setValidator(QIntValidator(wid))
                 self.canvas.scaleChanged.connect(self.setEscala)
                 wid.returnPressed.connect(self.escalaEditada)
+                QgsProject.instance().readProject.connect(self.actualitzaEscales)
+                try:
+                    self.escalesPossibles = list(map(str,self.llegenda.escales.llistaCb))
+                except:
+                    self.escalesPossibles = []
                 self.completerEscales = QCompleter(self.escalesPossibles, wid)
                 wid.setCompleter(self.completerEscales)
                 # self.completerEscales.highlighted.connect(self.completerEscales.widget().clearFocus)
@@ -166,12 +172,24 @@ class QvStatusBar(QStatusBar):
                 # llençar excepció
                 continue
             wid.setFont(QvConstants.FONTTEXT)
+            wid.setStyleSheet(STYLESHEET)
             self.afegirWidget(nomWid, wid, stretch)
+    def actualitzaEscales(self):
+        try:
+            self.escalesPossibles = list(map(str,self.llegenda.escales.llistaCb))
+            self.showXY(self.canvas.center())
+        except:
+            self.escalesPossibles = []
+        # self.completerEscales = QCompleter(self.escalesPossibles, self.leEscala)
+        self.completerEscales.setModel(QStringListModel(self.escalesPossibles,self.completerEscales))
+        self.leEscala.setCompleter(self.completerEscales)
+        pass
     def afegirWidget(self, nom, wid, stretch=0, posicio=-1):
         self.insertPermanentWidget(posicio, wid, stretch)
         setattr(self,nom, wid)
     def canviPathProjecte(self):
         self.lblProjecte.setText(f'QGS: {Path(QgsProject.instance().fileName()).stem}')
+        self.lblProjecte.setToolTip(f'{Path(QgsProject.instance().fileName())}')
     def canviLayer(self):
         layer = self.llegenda.currentLayer()
         if layer is not None:
@@ -348,10 +366,13 @@ class QvStatusBar(QStatusBar):
         self.sbCarregantCanvas.show()
     def hidePB(self):
         self.sbCarregantCanvas.hide()
+    def getXY(self, p, numDec=3):
+        text = QvApp().locale.toString(p.x(), 'f', numDec) + ';' + \
+                QvApp().locale.toString(p.y(), 'f', numDec)
+        return text
     def showXY(self, p, numDec=3):
         try:
-            text = QvApp().locale.toString(p.x(), 'f', numDec) + ';' + \
-                QvApp().locale.toString(p.y(), 'f', numDec)
+            text = self.getXY(p,numDec)
             self.leXY.setText(text)
             self.fixaMidaNecessariaLE(self.leXY)
             # font=QvConstants.FONTTEXT
