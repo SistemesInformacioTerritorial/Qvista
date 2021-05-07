@@ -58,10 +58,10 @@ class QVStepsOSRM:
             'uturn': "faci un gir de 180 graus, per ",
             'sharp right': ", atenció, gir pronunciat a la dreta per ",
             'right': "la dreta per ",
-            'slight right': "i giri lleugerament a la dreta per ",
+            'slight right': "lleugerament a la dreta per ",
             'sharp left': ", atenció, gir pronunciat a l'esquerra per ",
             'left': "l'esquerra per ",
-            'slight left': "i giri lleugerament a l'esquerra per ",
+            'slight left': "lleugerament a l'esquerra per ",
             'straight': "recte per "
         }
         if self.direccio_maniobra in switcherDireccio:
@@ -111,7 +111,7 @@ class QVStepsOSRM:
         else:
             self.indication_string = self.indication_string + self.nom_rotonda
 
-        print(self.indication_string)
+        # print(self.indication_string)
 
     def switch_path_imatge(self):
         switcherPath = {
