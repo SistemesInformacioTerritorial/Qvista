@@ -93,7 +93,7 @@ class QVStepsOSRM:
         }
         if self.tipus_maniobra in switcherTipus:
             self.indication_string = switcherTipus[self.tipus_maniobra]
-            if switcherTipus[self.tipus_maniobra] == 'turn' and self.direccio_maniobra == 'straight':
+            if self.tipus_maniobra == 'turn' and self.direccio_maniobra == 'straight':
                 self.indication_string = "Vagi recte per "
             if switcherTipus[self.tipus_maniobra] == 'roundabout' or switcherTipus[self.tipus_maniobra] == 'rotary':
                 if self.exit_rotonda != '':
@@ -111,7 +111,7 @@ class QVStepsOSRM:
         else:
             self.indication_string = self.indication_string + self.nom_rotonda
 
-        # print(self.indication_string)
+        print(self.indication_string)
 
     def switch_path_imatge(self):
         switcherPath = {
