@@ -59,7 +59,7 @@ class QVStepsOSRM:
     def switch_direccio_maniobra(self):
         switcherDireccio = {
             '':'',
-            'uturn': "faci un gir de 180 graus, per ",
+            'uturn': "i faci un gir de 180 graus, per ",
             'sharp right': "amb precaució, hi ha un gir pronunciat a la dreta per ",
             'right': "a la dreta per ",
             'slight right': "lleugerament a la dreta per ",
