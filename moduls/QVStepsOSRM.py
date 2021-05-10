@@ -19,6 +19,7 @@ class QVStepsOSRM:
     tipus_maniobra = ''
     direccio_maniobra = ''
     exit_rotonda = ''
+    destinacions = ''
 
     indication_image_path = '' 
     indication_string = ''
@@ -45,6 +46,9 @@ class QVStepsOSRM:
         if "rotary_name" in self.json:
             self.nom_rotonda = self.json['rotary_name']
 
+        if "destinations" in self.json:
+            self.destinacions = self.json['destinations']
+
         if "maneuver" in self.json:
             if "modifier" in self.json["maneuver"]:
                 self.tipus_maniobra = self.json['maneuver']['type']
@@ -56,11 +60,11 @@ class QVStepsOSRM:
         switcherDireccio = {
             '':'',
             'uturn': "faci un gir de 180 graus, per ",
-            'sharp right': ", atenció, gir pronunciat a la dreta per ",
-            'right': "la dreta per ",
+            'sharp right': "amb precaució, hi ha un gir pronunciat a la dreta per ",
+            'right': "a la dreta per ",
             'slight right': "lleugerament a la dreta per ",
-            'sharp left': ", atenció, gir pronunciat a l'esquerra per ",
-            'left': "l'esquerra per ",
+            'sharp left': "amb precaució, hi ha un gir pronunciat a l'esquerra per ",
+            'left': "a l'esquerra per ",
             'slight left': "lleugerament a l'esquerra per ",
             'straight': "recte per "
         }
@@ -68,27 +72,27 @@ class QVStepsOSRM:
             self.indicacioDireccioManiobra = switcherDireccio[self.direccio_maniobra]
         else:
             print("ERROR: " + self.direccio_maniobra)
-            raise
 
     def switch_tipus_maniobra(self):
         switcherTipus = {
             '':'',
-            'turn': "Giri cap a " + self.indicacioDireccioManiobra,
+            'turn': "Giri " + self.indicacioDireccioManiobra,
             'new name': "Continuï "+ self.indicacioDireccioManiobra,
-            'depart': "Surti per "+ self.indicacioDireccioManiobra,
+            'depart': "Surti "+ self.indicacioDireccioManiobra,
             'arrive': "Arribada al destí ",
             'merge': "Incorpori's a la via "+self.indicacioDireccioManiobra,
             'ramp': "DEPRECATED "+ self.indicacioDireccioManiobra,
-            'on ramp': "Prengui l'entrada en direccció " + self.indicacioDireccioManiobra,
-            'off ramp': "Prengui la sortida en direccció " + self.indicacioDireccioManiobra,
-            'fork': "Continuï per la bifurcació " + self.indicacioDireccioManiobra,
-            'end of road': "Al final de la vía continuï en direcció " + self.indicacioDireccioManiobra,
+            'on ramp': "Prengui l'entrada que es troba " + self.indicacioDireccioManiobra,
+            'off ramp': "Prengui la sortida que es troba " + self.indicacioDireccioManiobra,
+            'fork': "En la bifurcació giri " + self.indicacioDireccioManiobra,
+            'end of road': "Al final de la vía vagi " + self.indicacioDireccioManiobra,
             'use lane': "Continuï recte per " + self.indicacioDireccioManiobra,
             'continue': "Segueixi " + self.indicacioDireccioManiobra,
             'roundabout': "roundabout",
             'rotary': "rotary",
             'roundabout turn': "Entri a ",
-            'exit rotary':  "Surti de la rotonda per la " + str(self.exit_rotonda) + "a sortida cap a ",
+            'exit roundabout': "Surti de la rotonda en la " + str(self.exit_rotonda) + "a sortida cap a ",
+            'exit rotary': "Surti de la rotonda en la " + str(self.exit_rotonda) + "a sortida cap a ",
             'notification': "Giri a " + self.indicacioDireccioManiobra
         }
         if self.tipus_maniobra in switcherTipus:
@@ -101,7 +105,7 @@ class QVStepsOSRM:
                 if self.exit_rotonda == 'undefined':
                     self.indication_string = "Arribada al destí "
                 else:
-                    self.indication_string = "Entri a la rotonda i giri " + self.indicacioDireccioManiobra
+                    self.indication_string = "Entri a la rotonda i vagi " + self.indicacioDireccioManiobra
         else:
             print("ERROR: " + self.tipus_maniobra)
             self.ok = False
@@ -110,6 +114,12 @@ class QVStepsOSRM:
             self.indication_string = self.indication_string + self.nom_via
         else:
             self.indication_string = self.indication_string + self.nom_rotonda
+
+        if self.nom_via == '':
+            self.indication_string = self.indication_string.replace("per", "")
+            self.indication_string = self.indication_string.replace("cap a", "")
+        elif self.destinacions != '':
+            self.indication_string = self.indication_string + "i segueixi les indicacions del cartell " + self.destinacions
 
         # print(self.indication_string)
 
@@ -123,12 +133,15 @@ class QVStepsOSRM:
         'sharp left': "Imatges/imgsOSRM/sharpesquerra.png",
         'left': "Imatges/imgsOSRM/90esquerra.png",
         'slight left': "Imatges/imgsOSRM/slightesquerra.png",
-        'straight': "Imatges/imgsOSRM/recte.png" 
+        'straight': "Imatges/imgsOSRM/recte.png" ,
+        'exit roundabout': "Imatges/imgsOSRM/exitrotonda.png",
+        'exit rotary': "Imatges/imgsOSRM/exitrotonda.png"
         }
         if 'modifier' in self.json['maneuver']:
             if self.direccio_maniobra in switcherPath:
                 self.indication_image_path = switcherPath[self.direccio_maniobra]
-            # print(self.indication_image_path, json['maneuver']['modifier'])
+            if self.tipus_maniobra in switcherPath:
+                self.indication_image_path = switcherPath[self.tipus_maniobra]
         else:
             self.indication_image_path = switcherPath['straight']
         # else:
