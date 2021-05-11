@@ -535,24 +535,6 @@ class QMaBIM(QtWidgets.QMainWindow):
         
         self.cerca1 = Cercador(self.canvasA, self.leCarrer, self.leNumero, self.lblIcona)
         self.cerca1.cercador.sHanTrobatCoordenades.connect(lambda: self.tabCentral.setCurrentIndex(2))
-        # self.layCapcaleraBIM.addWidget(self.cerca1)
-
-        layStatus = QtWidgets.QHBoxLayout() # Això serà una Statusbar. Però per sortir del pas, primer ho fem així
-        planolA.layout().addLayout(layStatus)
-        lblCoordenades = QtWidgets.QLabel()
-        def showXY(p, numDec=3):
-            text = QvApp().locale.toString(p.x(), 'f', numDec) + ';' + \
-               QvApp().locale.toString(p.y(), 'f', numDec)
-            lblCoordenades.setText(text)
-            font=QvConstants.FONTTEXT
-            fm=QtGui.QFontMetrics(font)
-            lblCoordenades.setFixedWidth(fm.width(text)*QvApp().zoomFactor()+5)
-        self.canvasA.xyCoordinates.connect(showXY)
-        lblEscala = QtWidgets.QLabel()
-        self.canvasA.scaleChanged.connect(lambda: lblEscala.setText( " Escala 1:" + str(int(round(self.canvasA.scale())))))
-        layStatus.addStretch()
-        layStatus.addWidget(lblCoordenades)
-        layStatus.addWidget(lblEscala)
 
         botoSelecciona = self.canvasA.afegirBotoCustom('botoSelecciona', 'imatges/apuntar.png', 'Selecciona BIM gràficament', 1)
         botoSelecciona.clicked.connect(lambda: self.canvasA.setMapTool(self.einaSeleccio))
