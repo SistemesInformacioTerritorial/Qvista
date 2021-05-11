@@ -285,34 +285,27 @@ class FormulariAtributs(QvFitxesAtributs):
         self.close()
     
 
-class WidgetCercador(QtWidgets.QWidget):
+class Cercador:
     MIDALBLCARRER = 400, 40
     MIDALBLNUMERO = 80, 40
     MIDALBLICONA = 20, 20
-    def __init__(self, canvas, parent=None):
-        super().__init__(parent)
+    def __init__(self, canvas, leCarrer, leNumero, lblIcona):
+        super().__init__()
         self.canvas = canvas
         self.marcaLloc = None
-        lay = QtWidgets.QHBoxLayout()
-        self.setLayout(lay)
-        self.leCarrer = QtWidgets.QLineEdit()
+        self.leCarrer = leCarrer
         self.leCarrer.setPlaceholderText('Carrer')
-        self.leNumero = QtWidgets.QLineEdit()
+        self.leNumero = leNumero
         self.leNumero.setPlaceholderText('Número')
-        self.lblIcona = QtWidgets.QLabel()
+        self.lblIcona = lblIcona
         pix = QtGui.QPixmap('imatges/MaBIM/cercador-icona.png')
         self.lblIcona.setPixmap(pix.scaledToHeight(self.MIDALBLICONA[0]))
         self.leCarrer.setFixedSize(*self.MIDALBLCARRER)
         self.leNumero.setFixedSize(*self.MIDALBLNUMERO)
-        self.setFixedSize(self.leCarrer.width()+self.leNumero.width()+20, 50)
+        # self.setFixedSize(self.leCarrer.width()+self.leNumero.width()+20, 50)
         self.cercador = QCercadorAdreca(self.leCarrer, self.leNumero, 'SQLITE')
-        lay.addWidget(self.leCarrer)
-        lay.addStretch()
-        lay.addWidget(self.leNumero)
-        lay.addWidget(self.lblIcona, 0, QtCore.Qt.AlignVCenter)
         self.marcaLlocPosada = False
-        # lay.addWidget(self.lblIcona)
-        self.setStyleSheet('font-size: 14px;')
+        # self.setStyleSheet('font-size: 14px;')
 
         self.cercador.sHanTrobatCoordenades.connect(self.resultatCercador)
     
@@ -337,13 +330,13 @@ class WidgetCercador(QtWidgets.QWidget):
             self.canvas.scene().removeItem(self.marcaLloc)
             self.marcaLlocPosada = False
     
-    def resizeEvent(self, event):
-        self.leCarrer.setFixedSize(*self.MIDALBLCARRER)
-        self.leNumero.setFixedSize(*self.MIDALBLNUMERO)
-        self.lblIcona.setFixedSize(*self.MIDALBLICONA)
-        self.setFixedSize(self.MIDALBLCARRER[0]+self.MIDALBLNUMERO[0]+self.MIDALBLICONA[0], 50)
-        self.move(self.parentWidget().width()-self.width()-2, 2)
-        super().resizeEvent(event)
+    # def resizeEvent(self, event):
+    #     self.leCarrer.setFixedSize(*self.MIDALBLCARRER)
+    #     self.leNumero.setFixedSize(*self.MIDALBLNUMERO)
+    #     self.lblIcona.setFixedSize(*self.MIDALBLICONA)
+    #     self.setFixedSize(self.MIDALBLCARRER[0]+self.MIDALBLNUMERO[0]+self.MIDALBLICONA[0], 50)
+    #     self.move(self.parentWidget().width()-self.width()-2, 2)
+    #     super().resizeEvent(event)
     
     # def cerca(self):
     #     txt = self.leCercador.text()
@@ -375,6 +368,7 @@ class QMaBIM(QtWidgets.QMainWindow):
     
     def seleccioGrafica(self, feats):
         form = FormulariAtributs(self.getCapaBIMs(), feats, self)
+        form.move(self.width()-form.width(),(self.height()-form.height())//2)
         form.exec()
         self.canvasA.bPanning.click()
     
@@ -383,8 +377,9 @@ class QMaBIM(QtWidgets.QMainWindow):
         # Qt com a tal no permet fer  una label amb imatge i text. HTML sí que ho permet
         # Ja que les labels permeten tenir com a contingut un HTML,
         # doncs posem un mini HTML amb la imatge i el text
-        self.lblLogoMaBIM.setText(f"""<html><img src=imatges/MaBIM/MaBIM.png height={self.lblLogoMaBIM.height()}><span style="font-size:18pt; color:#ffffff;"> MaBIM</span></html>""")
-        self.lblLogoMaBIM.setFixedWidth(275)
+        self.lblLogoMaBIM.setFixedSize(275,60)
+        self.lblLogoMaBIM.setText(f"""<html><img src=imatges/MaBIM/MaBIM-text.png height={self.lblLogoMaBIM.height()}><span style="font-size:18pt; color:#ffffff;"></span></html>""")
+        # self.lblLogoMaBIM.setFixedWidth(275)
     
     def setIconesBotons(self):
         # afegir les icones des del designer donava problemes
@@ -534,9 +529,9 @@ class QMaBIM(QtWidgets.QMainWindow):
         QvMapetaBrujulado(mapetaPng, self.canvasA, pare=self.canvasA)
         # QvMapetaBrujulado(mapetaPng, canvasC, pare=canvasC)
         
-        self.cerca1 = WidgetCercador(self.canvasA, self.canvasA)
+        self.cerca1 = Cercador(self.canvasA, self.leCarrer, self.leNumero, self.lblIcona)
         self.cerca1.cercador.sHanTrobatCoordenades.connect(lambda: self.tabCentral.setCurrentIndex(2))
-        self.layCapcaleraBIM.addWidget(self.cerca1)
+        # self.layCapcaleraBIM.addWidget(self.cerca1)
 
         layStatus = QtWidgets.QHBoxLayout() # Això serà una Statusbar. Però per sortir del pas, primer ho fem així
         planolA.layout().addLayout(layStatus)
