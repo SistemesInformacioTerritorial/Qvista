@@ -7,18 +7,44 @@ from moduls.QvConstants import QvConstants
 from moduls.QvPushButton import QvPushButton
 from configuracioQvista import *
 from PyQt5.QtWidgets import QWidget, QLabel, QVBoxLayout, QHBoxLayout, QFrame, QApplication, QMessageBox
+from PyQt5 import QtSvg
 from moduls import QvFuncions
 from moduls.QVCercadorAdreca import QCercadorAdreca
 from moduls.QvMultiruta import *
 from moduls.QvReverse import QvReverse
 from moduls.QvTextColorMarker import QvTextColorMarker
 from moduls.QVStepsOSRM import QVStepsOSRM
+import simplekml
 
 class QAdrecaPostalLineEdit(QLineEdit):
     def focusInEvent(self, event):
         if self.text().startswith("Punt seleccionat"):
             self.setText('')
         super(QAdrecaPostalLineEdit, self).focusInEvent(event)
+
+class QClickableLabel(QLabel):
+    clicked = pyqtSignal()
+    coordSystem = "EPSG:25831"
+    def __init__(self, *args):
+        QLabel.__init__(self, *args)
+
+    def setPoint(self, point, canvas):
+        self.point = point
+        self.canvas = canvas
+   
+    def mouseReleaseEvent(self, ev):
+        self.centerMap()
+
+    def transformFromLatLon(self,point):
+        pointTransformation = QgsCoordinateTransform(
+                QgsCoordinateReferenceSystem("EPSG:4326"), 
+                QgsCoordinateReferenceSystem(self.coordSystem), 
+                QgsProject.instance())
+        return pointTransformation.transform(point)
+
+    def centerMap(self):
+        self.canvas.setCenter(self.transformFromLatLon(self.point))
+        self.canvas.zoomScale(5000)
 
 class QPointNameLabel(QLabel):
     def __init__(self, buddy, parent = None):
@@ -279,6 +305,7 @@ class PointTool(QgsMapTool):
 
 @QvFuncions.creaEina(titol="Eina Multiruta (OSRM)", esEinaGlobal = True, apareixDockat = False)
 class EinaMultiruta(QWidget):
+    coordSystem = "EPSG:25831"
     getPoint = 0
     """
     Valors del getPoint:
@@ -355,8 +382,6 @@ class EinaMultiruta(QWidget):
         self.canvas.unsetMapTool(self.tool)
         self.getPoint = 0
 
-        #TODO: activar el QLineEdit que hi havia activat i deseleccionar el maptool
-
         self.ruta.hideRoute() #reset ruta anterior
         self.ruta = QvMultiruta(self.pointUI.getPoints())
         self.ruta.setRouteOptions(self.roundtrip, self.source, self.destination)
@@ -378,7 +403,40 @@ class EinaMultiruta(QWidget):
             self.setUI_Result()
 
     def exportRoute(self):
-        pass
+        kml=simplekml.Kml()
+
+        pointTransformation = QgsCoordinateTransform(
+                QgsCoordinateReferenceSystem(self.coordSystem), 
+                QgsCoordinateReferenceSystem("EPSG:4326"), 
+                QgsProject.instance())
+
+        #només exporta el primer trip.
+        #punts a visitar
+        for i, routePoint in enumerate(self.ruta.points):
+            #TODO: finalitzar nom per exportar. nom personalitzat per l'usuari, numero de carrer i municipi
+            kml.newpoint(name=self.pointUI.pointList[i].LECarrer.text(),coords=[(routePoint.x(),routePoint.y())])
+
+        #rubberband
+        coords = []
+        for routePoint in self.ruta.routePoints[0]:
+            routePoint = pointTransformation.transform(routePoint)
+            coords.append([routePoint.x(),routePoint.y()])
+
+        kml.newlinestring(name="Ruta",description="Ruta generada per qVista",coords=coords)
+
+        saveAs = QFileDialog()
+        saveAs.setMimeTypeFilters(["application/vnd.google-earth.kml+xml"])
+        saveAs.setDirectory(QDir.homePath())
+        saveAs.setAcceptMode(QFileDialog.AcceptSave)
+        saveAs.setDefaultSuffix("kml")
+        saveAs.selectFile("Ruta")
+        saveAs.exec_()
+        
+        filename = saveAs.selectedFiles()[0]
+        if(filename):
+            kml.save(filename)
+        
+
 
     #preparació UI pantalla resultat
     def setUI_Result(self):
@@ -419,9 +477,31 @@ class EinaMultiruta(QWidget):
                 point_duration = -1
                 point_distance = -1
 
-            waypoint_label = QLabel(point_name)
-            waypoint_label.setFont(QFont("Times",10,weight=QFont.Bold))
-            routeResult_scrollable_layout.addWidget(waypoint_label)
+            waypoint_layout = QHBoxLayout()
+
+            waypoint_title = QLabel(point_name)
+            waypoint_title.setFont(QFont("Times",10,weight=QFont.Bold))
+
+            #icona waypoint
+            path = 'Imatges/pointMap_sq.svg'
+            waypoint_bytes = open(path).read()
+            waypoint_bytes = waypoint_bytes.replace("param(fill) #FFF", self.pointUI.pointList[point_index].marker.color.name())
+            if (point_index >= 10):
+                waypoint_bytes = waypoint_bytes.replace("600px","400px")
+            waypoint_bytes = waypoint_bytes.replace("###", str(point_index))
+            waypoint_icon = QtSvg.QSvgWidget()
+            waypoint_icon.load(bytearray(waypoint_bytes, encoding='utf-8'))
+            waypoint_icon.setFixedWidth(16)
+            waypoint_icon.setFixedHeight(23)
+            # painter = QPainter(waypoint_icon)
+            # painter.restore()
+            # renderer.render(painter)
+
+            waypoint_layout.addWidget(waypoint_icon)
+            waypoint_layout.addWidget(waypoint_title)
+
+
+            routeResult_scrollable_layout.addLayout(waypoint_layout)
 
             #afegir steps de la ruta
             if i < len(self.ruta.legs):
@@ -429,6 +509,11 @@ class EinaMultiruta(QWidget):
                     for step in self.ruta.legs[i]["steps"]:
                         stepinfo = QVStepsOSRM(step)
                         if (stepinfo.ok): #ok indica si cal que l'step es mostri
+                            if (step["distance"] < 1000):
+                                distance = str(step["distance"]) + " m"
+                            else:
+                                distance = "{:.2f}".format(step["distance"]/1000) + " km"
+
                             indication_image_path = stepinfo.indication_image_path
                             indication_string = stepinfo.indication_string
 
@@ -439,13 +524,20 @@ class EinaMultiruta(QWidget):
                             indicacio_imatge = QLabel()
                             indicacio_imatge.setPixmap(QPixmap(indication_image_path))
                             indicacio_imatge.setFixedWidth(40)
+                            indicacio_imatge.setFixedHeight(40)
+                            indicacio_imatge.setContentsMargins(0,0,0,0)
 
-                            indicacio_text = QLabel()
-                            indicacio_text.setText(indication_string)
-                            indicacio_text.setFixedWidth(600)
+                            #TODO: el nom del label ha d'incloure el nom de l'usuari
+                            indicacio_text = QClickableLabel()
+                            indicacio_text.setText("<html>" + indication_string + "<h5 style=\"color:grey\">" + distance + "</h5>")
+                            indicacio_text.setFixedWidth(450)
+                            indicacio_text.setWordWrap(True)
+                            indicacio_text.setContentsMargins(0,0,0,0)
+                            indicacio_text.setPoint(QgsPointXY(step["maneuver"]["location"][0],step["maneuver"]["location"][1]),self.canvas)
 
                             indicacio_layout.addWidget(indicacio_imatge)
                             indicacio_layout.addWidget(indicacio_text)
+                            indicacio_layout.setContentsMargins(0,0,0,0)
 
                             routeResult_scrollable_layout.addLayout(indicacio_layout)
 

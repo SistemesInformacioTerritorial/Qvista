@@ -45,7 +45,10 @@ class QvTextColorMarker:
         text = QTextDocument()
         text.setHtml("<span style=\" text-align: center; font-weight:600; color:#ffffff;\" >" + str(self.number) + "</span")
         font = QFont()
-        font.setPointSize(6)
+        if (self.number >= 10):
+            font.setPointSize(8)
+        else:
+            font.setPointSize(12)        
         text.setDefaultStyleSheet("color: rgb(100,0,0)")
         text.setDefaultFont(font)
 
@@ -55,7 +58,6 @@ class QvTextColorMarker:
         # Create SVG marker symbol
         self.svgStyle = {
             "name": "Imatges/pointMap.svg",
-            "outline": "#000000",
             "size": "5",
             "fill": self.color.name(),
         }
@@ -66,7 +68,7 @@ class QvTextColorMarker:
         self.annotation.setMarkerSymbol(svgSymbol)
         self.annotation.setFillSymbol(None)
         
-        self.annotation.setFrameOffsetFromReferencePointMm(QPointF(-2.5, -8.5))
+        self.annotation.setFrameOffsetFromReferencePointMm(QPointF(-2.5, -7.5))
         self.annotationItem = QgsMapCanvasAnnotationItem(self.annotation, self.canvas)
 
     def hide(self):
@@ -75,7 +77,6 @@ class QvTextColorMarker:
     def setCenter(self, location):
         self.location = location
         self.annotation.setMapPosition(self.location)
-        # self.canvas.refresh() #TODO: canviar-ho. causa delay.
 
     def setColor(self, color):
         self.svgStyle["fill"] = color.name()
@@ -98,7 +99,10 @@ class QvTextColorMarker:
         text = QTextDocument()
         text.setHtml("<span style=\" text-align: center; font-weight:600; color:#ffffff;\" >" + str(self.number) + "</span")
         font = QFont()
-        font.setPointSize(6)
+        if (self.number >= 10):
+            font.setPointSize(8)
+        else:
+            font.setPointSize(12)
         text.setDefaultStyleSheet("color: rgb(100,0,0)")
         text.setDefaultFont(font)
 

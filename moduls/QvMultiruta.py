@@ -77,8 +77,6 @@ class QvMultiruta():
         self.source = source
         self.destination = destination
 
-        #TODO: comprovacio incompatibilitats
-
     def setRouteType(self,routeType):
         """
         Si bool és TRUE, el tipus de ruta és Trip.
@@ -211,7 +209,7 @@ class QvMultiruta():
         #convertir routePoints a ETRS89
         aux_routePoints = []
         for trip in self.routePoints:
-            aux_routePoints.append(self._transformArrayfromLatLon(trip))
+            aux_routePoints.append(self.transformArrayfromLatLon(trip))
         self.routePoints = aux_routePoints
 
         self.routeOK = True
@@ -227,6 +225,7 @@ class QvMultiruta():
             polyline.setToGeometry(QgsGeometry.fromPolyline(QgsPoint_trip), None)
             polyline.setColor(QColor(0, 0, 255))
             polyline.setWidth(3)
+            polyline.setZValue(-1) #mostrar darrere les icones
             self.polylines.append(polyline)
 
     #neteja del canvas
@@ -257,7 +256,7 @@ class QvMultiruta():
         return transformedArray
 
     #convertir punts en sistema EPSG4326 al sistema del projecte
-    def _transformArrayfromLatLon(self,array):
+    def transformArrayfromLatLon(self,array):
         transformedArray = []
         for point in array:
             pointTransformation = QgsCoordinateTransform(
