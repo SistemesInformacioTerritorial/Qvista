@@ -773,7 +773,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.mapetaDefaultPng= "mapesOffline/default.png"
         self.mapeta  = QvMapetaBrujulado(self.mapetaDefaultPng, self.canvas,  pare=self.canvas, mapeta_default="mapesOffline/default.png")
 
-        self.mapeta.setGraphicsEffect(QvConstants.ombra(self,radius=30,color=QvConstants.COLOROMBRA))
+        self.mapeta.setGraphicsEffect(QvConstants.ombra(self,radius=10,color=QvConstants.COLOROMBRA))
         self.mapeta.Sig_MuestraMapeta.connect(self.editarOrientacio)
         
 
