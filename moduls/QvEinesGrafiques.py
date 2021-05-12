@@ -1465,15 +1465,11 @@ class QvSeleccioElement(QgsMapTool):
 
             point = self.canvas.getCoordinateTransform().toMapCoordinates(x, y)
             if self.canvas.rotation() == 0:
-                esquerraDalt = self.canvas.getCoordinateTransform().toMapCoordinates(x -
-                                                                                     self.radi, y-self.radi)
-                dretaBaix = self.canvas.getCoordinateTransform().toMapCoordinates(x +
-                                                                                  self.radi, y+self.radi)
+                esquerraDalt = self.canvas.getCoordinateTransform().toMapCoordinates(x - self.radi, y-self.radi)
+                dretaBaix = self.canvas.getCoordinateTransform().toMapCoordinates(x + self.radi, y+self.radi)
             else:
-                esquerraDalt = self.canvas.getCoordinateTransform().toMapCoordinates(
-                    x-self.radi*math.sqrt(2), y-self.radi*math.sqrt(2))
-                dretaBaix = self.canvas.getCoordinateTransform().toMapCoordinates(
-                    x+self.radi*math.sqrt(2), y-self.radi*math.sqrt(2))
+                esquerraDalt = self.canvas.getCoordinateTransform().toMapCoordinates(x-self.radi*math.sqrt(2), y-self.radi*math.sqrt(2))
+                dretaBaix = self.canvas.getCoordinateTransform().toMapCoordinates(x+self.radi*math.sqrt(2), y-self.radi*math.sqrt(2))
 
             marcaLloc = QgsVertexMarker(self.canvas)
             marcaLloc.setCenter( point )

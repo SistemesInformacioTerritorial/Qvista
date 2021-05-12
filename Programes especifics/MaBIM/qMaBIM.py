@@ -196,7 +196,7 @@ class QvSeleccioBIM(QgsMapTool):
 
     elementsSeleccionats = QtCore.pyqtSignal('PyQt_PyObject') # layer, features
 
-    def __init__(self, canvas, llegenda, layer, radi=10):
+    def __init__(self, canvas, llegenda, radi=10):
         """[summary]
 
         Arguments:
@@ -213,7 +213,6 @@ class QvSeleccioBIM(QgsMapTool):
         self.canvas = canvas
         self.llegenda = llegenda
         self.radi = radi
-        self.layer = layer
         self.setCursor(QvConstants.cursorDit())
 
     def keyPressEvent(self, event):
@@ -358,10 +357,10 @@ class QMaBIM(QtWidgets.QMainWindow):
         self.connectaDB()
         self.setIcones()
 
-        self.einaSeleccio = QvSeleccioBIM(self.canvasA, self.llegenda, self.getCapaBIMs())
+        self.einaSeleccio = QvSeleccioBIM(self.canvasA, self.llegenda)
         self.einaSeleccio.elementsSeleccionats.connect(self.seleccioGrafica)
 
-        self.setStatusBar(QvStatusBar(self,['nomProjecte', 'connexio','capaSeleccionada',('seleccioExpressio',1), 'progressBar',('coordenades',1),'projeccio', 'escala'],self.canvasA,self.llegenda))
+        self.setStatusBar(QvStatusBar(self,['progressBar',('coordenades',1),'projeccio', 'escala'],self.canvasA,self.llegenda))
 
         if len(QgsGui.editorWidgetRegistry().factories()) == 0:
             QgsGui.editorWidgetRegistry().initEditors()
@@ -372,7 +371,7 @@ class QMaBIM(QtWidgets.QMainWindow):
     
     def seleccioGrafica(self, feats):
         form = FormulariAtributs(self.getCapaBIMs(), feats, self)
-        form.move(self.width()-form.width(),(self.height()-form.height())//2)
+        form.moveWid(self.width()-form.width(),(self.height()-form.height())//2)
         form.exec()
         self.canvasA.bPanning.click()
     
@@ -485,7 +484,6 @@ class QMaBIM(QtWidgets.QMainWindow):
 
         cerca = f"BIM LIKE '0000{self.dadesLabelsDades[0]}'"
         
-        # layer = self.getCapaBIMs()
         layers = self.getCapesBIMs()
         for layer in layers:
             layer.setSubsetString(cerca)
@@ -502,7 +500,6 @@ class QMaBIM(QtWidgets.QMainWindow):
         QtCore.QTimer.singleShot(0, self.leCercador.clear)
 
     def netejaFiltre(self):
-        # layer = self.getCapaBIMs()
         layers = self.getCapesBIMs()
         for layer in layers:
             layer.setSubsetString('')
@@ -571,7 +568,10 @@ class QMaBIM(QtWidgets.QMainWindow):
         self.llegenda.readProject('L:/DADES/SIT/qVista/CATALEG/MAPES PRIVATS/Patrimoni/PPM_CatRegles_geopackage.qgs')
     
     def getCapaBIMs(self):
-        return self.llegenda.capaPerNom('Entitats en PV')
+        # Retorna una capa amb camp de BIMs
+        #  nota: millor evitar-la, això només per quan ens veiem forçats a passar una única capa
+        # return self.llegenda.capaPerNom('Entitats en PV')
+        return self.getCapesBIMs()[0]
     def getCapesBIMs(self):
         return [capa for capa in self.llegenda.capes() if 'BIM' in capa.fields().names()]
     

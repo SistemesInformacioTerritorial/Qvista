@@ -184,8 +184,13 @@ class QvStatusBar(QStatusBar):
         self.completerEscales.setModel(QStringListModel(self.escalesPossibles,self.completerEscales))
         self.leEscala.setCompleter(self.completerEscales)
         pass
-    def afegirWidget(self, nom, wid, stretch=0, posicio=-1):
-        self.insertPermanentWidget(posicio, wid, stretch)
+    def afegirWidget(self, nom, wid, stretch=0, posicio=None):
+        # insertar a la posició -1 faria que s'insertés al final, però surt un warning per la terminal
+        # Per tant, fem un cas especial
+        if posicio==None:
+            self.addPermanentWidget(wid, stretch)
+        else:
+            self.insertPermanentWidget(posicio, wid, stretch)
         setattr(self,nom, wid)
     def canviPathProjecte(self):
         self.lblProjecte.setText(f'QGS: {Path(QgsProject.instance().fileName()).stem}')
