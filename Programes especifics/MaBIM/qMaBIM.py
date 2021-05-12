@@ -13,6 +13,7 @@ from moduls.QvAtributsForms import QvFitxesAtributs
 from moduls.QvConstants import QvConstants
 from moduls.QvApp import QvApp
 from moduls import QvFuncions
+from moduls.QvStatusBar import QvStatusBar
 import functools
 import sys
 import os
@@ -195,7 +196,7 @@ class QvSeleccioBIM(QgsMapTool):
 
     elementsSeleccionats = QtCore.pyqtSignal('PyQt_PyObject') # layer, features
 
-    def __init__(self, canvas, llegenda, layer, radi=10):
+    def __init__(self, canvas, llegenda, radi=10):
         """[summary]
 
         Arguments:
@@ -212,7 +213,6 @@ class QvSeleccioBIM(QgsMapTool):
         self.canvas = canvas
         self.llegenda = llegenda
         self.radi = radi
-        self.layer = layer
         self.setCursor(QvConstants.cursorDit())
 
     def keyPressEvent(self, event):
@@ -285,34 +285,27 @@ class FormulariAtributs(QvFitxesAtributs):
         self.close()
     
 
-class WidgetCercador(QtWidgets.QWidget):
+class Cercador:
     MIDALBLCARRER = 400, 40
     MIDALBLNUMERO = 80, 40
     MIDALBLICONA = 20, 20
-    def __init__(self, canvas, parent=None):
-        super().__init__(parent)
+    def __init__(self, canvas, leCarrer, leNumero, lblIcona):
+        super().__init__()
         self.canvas = canvas
         self.marcaLloc = None
-        lay = QtWidgets.QHBoxLayout()
-        self.setLayout(lay)
-        self.leCarrer = QtWidgets.QLineEdit()
+        self.leCarrer = leCarrer
         self.leCarrer.setPlaceholderText('Carrer')
-        self.leNumero = QtWidgets.QLineEdit()
+        self.leNumero = leNumero
         self.leNumero.setPlaceholderText('Número')
-        self.lblIcona = QtWidgets.QLabel()
+        self.lblIcona = lblIcona
         pix = QtGui.QPixmap('imatges/MaBIM/cercador-icona.png')
         self.lblIcona.setPixmap(pix.scaledToHeight(self.MIDALBLICONA[0]))
         self.leCarrer.setFixedSize(*self.MIDALBLCARRER)
         self.leNumero.setFixedSize(*self.MIDALBLNUMERO)
-        self.setFixedSize(self.leCarrer.width()+self.leNumero.width()+20, 50)
+        # self.setFixedSize(self.leCarrer.width()+self.leNumero.width()+20, 50)
         self.cercador = QCercadorAdreca(self.leCarrer, self.leNumero, 'SQLITE')
-        lay.addWidget(self.leCarrer)
-        lay.addStretch()
-        lay.addWidget(self.leNumero)
-        lay.addWidget(self.lblIcona, 0, QtCore.Qt.AlignVCenter)
         self.marcaLlocPosada = False
-        # lay.addWidget(self.lblIcona)
-        self.setStyleSheet('font-size: 14px;')
+        # self.setStyleSheet('font-size: 14px;')
 
         self.cercador.sHanTrobatCoordenades.connect(self.resultatCercador)
     
@@ -337,13 +330,13 @@ class WidgetCercador(QtWidgets.QWidget):
             self.canvas.scene().removeItem(self.marcaLloc)
             self.marcaLlocPosada = False
     
-    def resizeEvent(self, event):
-        self.leCarrer.setFixedSize(*self.MIDALBLCARRER)
-        self.leNumero.setFixedSize(*self.MIDALBLNUMERO)
-        self.lblIcona.setFixedSize(*self.MIDALBLICONA)
-        self.setFixedSize(self.MIDALBLCARRER[0]+self.MIDALBLNUMERO[0]+self.MIDALBLICONA[0], 50)
-        self.move(self.parentWidget().width()-self.width()-2, 2)
-        super().resizeEvent(event)
+    # def resizeEvent(self, event):
+    #     self.leCarrer.setFixedSize(*self.MIDALBLCARRER)
+    #     self.leNumero.setFixedSize(*self.MIDALBLNUMERO)
+    #     self.lblIcona.setFixedSize(*self.MIDALBLICONA)
+    #     self.setFixedSize(self.MIDALBLCARRER[0]+self.MIDALBLNUMERO[0]+self.MIDALBLICONA[0], 50)
+    #     self.move(self.parentWidget().width()-self.width()-2, 2)
+    #     super().resizeEvent(event)
     
     # def cerca(self):
     #     txt = self.leCercador.text()
@@ -354,6 +347,7 @@ class QMaBIM(QtWidgets.QMainWindow):
     def __init__(self,*args,**kwargs):
         super().__init__(*args, **kwargs)
         uic.loadUi('Programes especifics/MaBIM/MaBIM.ui',self)
+        
         self.llistaBotons = (self.bFavorits, self.bBIMs, self.bPIP, self.bProjectes, self.bConsultes, self.bDocumentacio, self.bEines)
 
         self.connectBotons()
@@ -363,8 +357,10 @@ class QMaBIM(QtWidgets.QMainWindow):
         self.connectaDB()
         self.setIcones()
 
-        self.einaSeleccio = QvSeleccioBIM(self.canvasA, self.llegenda, self.getCapaBIMs())
+        self.einaSeleccio = QvSeleccioBIM(self.canvasA, self.llegenda)
         self.einaSeleccio.elementsSeleccionats.connect(self.seleccioGrafica)
+
+        self.setStatusBar(QvStatusBar(self,['progressBar',('coordenades',1),'projeccio', 'escala'],self.canvasA,self.llegenda))
 
         if len(QgsGui.editorWidgetRegistry().factories()) == 0:
             QgsGui.editorWidgetRegistry().initEditors()
@@ -375,6 +371,7 @@ class QMaBIM(QtWidgets.QMainWindow):
     
     def seleccioGrafica(self, feats):
         form = FormulariAtributs(self.getCapaBIMs(), feats, self)
+        form.moveWid(self.width()-form.width(),(self.height()-form.height())//2)
         form.exec()
         self.canvasA.bPanning.click()
     
@@ -383,8 +380,9 @@ class QMaBIM(QtWidgets.QMainWindow):
         # Qt com a tal no permet fer  una label amb imatge i text. HTML sí que ho permet
         # Ja que les labels permeten tenir com a contingut un HTML,
         # doncs posem un mini HTML amb la imatge i el text
-        self.lblLogoMaBIM.setText(f"""<html><img src=imatges/MaBIM/MaBIM.png height={self.lblLogoMaBIM.height()}><span style="font-size:18pt; color:#ffffff;"> MaBIM</span></html>""")
-        self.lblLogoMaBIM.setFixedWidth(275)
+        self.lblLogoMaBIM.setFixedSize(275,60)
+        self.lblLogoMaBIM.setText(f"""<html><img src=imatges/MaBIM/MaBIM-text.png height={self.lblLogoMaBIM.height()}><span style="font-size:18pt; color:#ffffff;"></span></html>""")
+        # self.lblLogoMaBIM.setFixedWidth(275)
     
     def setIconesBotons(self):
         # afegir les icones des del designer donava problemes
@@ -486,7 +484,6 @@ class QMaBIM(QtWidgets.QMainWindow):
 
         cerca = f"BIM LIKE '0000{self.dadesLabelsDades[0]}'"
         
-        # layer = self.getCapaBIMs()
         layers = self.getCapesBIMs()
         for layer in layers:
             layer.setSubsetString(cerca)
@@ -503,7 +500,6 @@ class QMaBIM(QtWidgets.QMainWindow):
         QtCore.QTimer.singleShot(0, self.leCercador.clear)
 
     def netejaFiltre(self):
-        # layer = self.getCapaBIMs()
         layers = self.getCapesBIMs()
         for layer in layers:
             layer.setSubsetString('')
@@ -534,26 +530,8 @@ class QMaBIM(QtWidgets.QMainWindow):
         QvMapetaBrujulado(mapetaPng, self.canvasA, pare=self.canvasA)
         # QvMapetaBrujulado(mapetaPng, canvasC, pare=canvasC)
         
-        self.cerca1 = WidgetCercador(self.canvasA, self.canvasA)
+        self.cerca1 = Cercador(self.canvasA, self.leCarrer, self.leNumero, self.lblIcona)
         self.cerca1.cercador.sHanTrobatCoordenades.connect(lambda: self.tabCentral.setCurrentIndex(2))
-        self.layCapcaleraBIM.addWidget(self.cerca1)
-
-        layStatus = QtWidgets.QHBoxLayout() # Això serà una Statusbar. Però per sortir del pas, primer ho fem així
-        planolA.layout().addLayout(layStatus)
-        lblCoordenades = QtWidgets.QLabel()
-        def showXY(p, numDec=3):
-            text = QvApp().locale.toString(p.x(), 'f', numDec) + ';' + \
-               QvApp().locale.toString(p.y(), 'f', numDec)
-            lblCoordenades.setText(text)
-            font=QvConstants.FONTTEXT
-            fm=QtGui.QFontMetrics(font)
-            lblCoordenades.setFixedWidth(fm.width(text)*QvApp().zoomFactor()+5)
-        self.canvasA.xyCoordinates.connect(showXY)
-        lblEscala = QtWidgets.QLabel()
-        self.canvasA.scaleChanged.connect(lambda: lblEscala.setText( " Escala 1:" + str(int(round(self.canvasA.scale())))))
-        layStatus.addStretch()
-        layStatus.addWidget(lblCoordenades)
-        layStatus.addWidget(lblEscala)
 
         botoSelecciona = self.canvasA.afegirBotoCustom('botoSelecciona', 'imatges/apuntar.png', 'Selecciona BIM gràficament', 1)
         botoSelecciona.clicked.connect(lambda: self.canvasA.setMapTool(self.einaSeleccio))
@@ -590,7 +568,10 @@ class QMaBIM(QtWidgets.QMainWindow):
         self.llegenda.readProject('L:/DADES/SIT/qVista/CATALEG/MAPES PRIVATS/Patrimoni/PPM_CatRegles_geopackage.qgs')
     
     def getCapaBIMs(self):
-        return self.llegenda.capaPerNom('Entitats en PV')
+        # Retorna una capa amb camp de BIMs
+        #  nota: millor evitar-la, això només per quan ens veiem forçats a passar una única capa
+        # return self.llegenda.capaPerNom('Entitats en PV')
+        return self.getCapesBIMs()[0]
     def getCapesBIMs(self):
         return [capa for capa in self.llegenda.capes() if 'BIM' in capa.fields().names()]
     

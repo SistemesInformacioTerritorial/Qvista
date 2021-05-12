@@ -177,6 +177,13 @@ class QvFitxesAtributs(QDialog):
     def move(self, inc):
         n = (self.ui.stackedWidget.currentIndex() + inc) % self.total
         self.go(n)
+    def moveWid(self,x,y):
+        # En general, els QWidgets tenen una funció move, que serveix per moure el widget de posició
+        # En aquest cas, donat que hem fet una funció "move" que feia una altra cosa (canviar la pantalla),
+        #  necessitem una altra funció move per fer el move normal
+        # més info: https://doc.qt.io/qt-5/qwidget.html#pos-prop
+        # Nota: potser calgui fer-ne una altra per fer el move(QPoint)
+        super().move(x,y)
 
     def finish(self, int):
         self.select(None)

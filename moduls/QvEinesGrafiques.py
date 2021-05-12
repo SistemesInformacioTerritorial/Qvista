@@ -1464,16 +1464,15 @@ class QvSeleccioElement(QgsMapTool):
                 layer = self.canvas.layers()[0]
 
             point = self.canvas.getCoordinateTransform().toMapCoordinates(x, y)
-            if self.canvas.rotation() == 0:
-                esquerraDalt = self.canvas.getCoordinateTransform().toMapCoordinates(x -
-                                                                                     self.radi, y-self.radi)
-                dretaBaix = self.canvas.getCoordinateTransform().toMapCoordinates(x +
-                                                                                  self.radi, y+self.radi)
-            else:
-                esquerraDalt = self.canvas.getCoordinateTransform().toMapCoordinates(
-                    x-self.radi*math.sqrt(2), y-self.radi*math.sqrt(2))
-                dretaBaix = self.canvas.getCoordinateTransform().toMapCoordinates(
-                    x+self.radi*math.sqrt(2), y-self.radi*math.sqrt(2))
+
+            pnt= QgsPointXY(x,y) 
+            alfa=180+45  # 45, para que sea cuadrado, 180 por distinto punto origen angulos
+            pntEsquerraDalt = pnt.project(self.radi, alfa - self.canvas.rotation())
+            esquerraDalt = self.canvas.getCoordinateTransform().toMapCoordinates(pntEsquerraDalt.x(),  pntEsquerraDalt.y())
+
+            alfa=alfa+180
+            pntDretaBaix = pnt.project(self.radi, alfa - self.canvas.rotation())
+            dretaBaix = self.canvas.getCoordinateTransform().toMapCoordinates(pntDretaBaix.x(), pntDretaBaix.y())
 
             marcaLloc = QgsVertexMarker(self.canvas)
             marcaLloc.setCenter( point )
@@ -1482,21 +1481,38 @@ class QvSeleccioElement(QgsMapTool):
             marcaLloc.setIconType(QgsVertexMarker.ICON_CROSS) # or ICON_CROSS, ICON_X
             marcaLloc.setPenWidth(0)
             marcaLloc.show()
+          
 
-            # return
-
-            # rect = QgsRectangle(point.x() - self.radi, point.y() - self.radi, point.x() + self.radi, point.y() + self.radi)
+            rect = QgsRectangle(point.x() - self.radi, point.y() - self.radi, point.x() + self.radi, point.y() + self.radi)
             rect = QgsRectangle(
                 esquerraDalt.x(), esquerraDalt.y(), dretaBaix.x(), dretaBaix.y())
+
             rb = QgsRubberBand(self.canvas, True)
             rb.setToGeometry(QgsGeometry().fromRect(rect))
+
+
+            # import math
+            # pi =3.1416
+            # llistaPunts=[]
+            # theta = 1*(2.0 * pi/360)
+            # segments=360
+            
+            # for itheta in range(segments+1):
+            #     theta = itheta*(2.0 * pi/segments)
+            #     xx= point.x()+self.radi*math.cos(theta)
+            #     yy= point.y()+self.radi*math.sin(theta)
+            #     llistaPunts.append(QgsPointXY(xx,yy))
+            
+            # polygon= QgsGeometry.fromPolygonXY([llistaPunts])
+            # rb = QgsRubberBand(self.canvas, True)            
+            # rb.setToGeometry(polygon)
+
             rb.show()
             # ids=[]
             features = []
             if layer is not None and layer.type() == QgsMapLayer.VectorLayer:
                 # per defecte calcula la intersecció utilitzant les bounding box. Forcem a que ho faci amb una intersecció exacta
                 it = layer.getFeatures(QgsFeatureRequest().setFilterRect(rect).setFlags(QgsFeatureRequest.ExactIntersect))
-                # it = layer.getFeatures(QgsFeatureRequest().setFilterRect(rect))
 
                 for feature in it:
                     # ids.append(feature.id())
