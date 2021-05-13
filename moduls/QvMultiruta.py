@@ -94,6 +94,8 @@ class QvMultiruta():
         self.transportationMode = mode
 
     def getRoute(self):
+        self.trips_distance = []
+        self.trips_duration = []
         self._request()
 
     #petició web i obtenció del resultat

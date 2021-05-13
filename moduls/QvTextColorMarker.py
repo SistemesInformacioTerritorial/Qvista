@@ -38,7 +38,7 @@ class QvTextColorMarker:
     def __init__(self, canvas, location, number):
         self.canvas = canvas 
         self.location = location
-        self.number = number
+        self.number = number+1
         self.color = QColor(self.colorlist[self.number % len(self.colorlist)])
 
         self.annotation = QgsTextAnnotation(self.canvas)
@@ -87,7 +87,7 @@ class QvTextColorMarker:
         self.annotation.setMarkerSymbol(svgSymbol)
 
     def refresh(self, number):
-        self.number = number
+        self.number = number+1
         self.color = QColor(self.colorlist[self.number % len(self.colorlist)])
         
 

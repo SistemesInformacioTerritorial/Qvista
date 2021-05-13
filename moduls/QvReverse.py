@@ -27,6 +27,7 @@ class QvReverse():
     def __init__(self,qgspoint):
         self.nomCarrer = "Punt seleccionat al mapa"
         self.numCarrer = ""
+        self.nomMunicipi = ""
         self.mappoint = qgspoint
         
         self._transformETRS89toLatLon()
@@ -62,7 +63,14 @@ class QvReverse():
             if "house_number" in response["address"]:
                 self.numCarrer = response["address"]["house_number"]
             if "city" in response["address"]:
-                self.municipi = response["address"]["city"]
+                self.nomMunicipi = response["address"]["city"]
+            elif "town" in response["address"]:
+                self.nomMunicipi = response["address"]["town"]
+            elif "village" in response["address"]:
+                self.nomMunicipi = response["address"]["village"]
+            elif "municipality" in response["address"]:
+                self.nomMunicipi = response["address"]["municipality"]
+
                 
     #conversió de sistema de coordenades EPSG:25831 a EPSG:4326
     def _transformETRS89toLatLon(self):

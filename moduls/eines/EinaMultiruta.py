@@ -71,20 +71,23 @@ class PointUI:
         self.pointList.append(new_element)
         # self.eina.routePoints.append(QgsPointXY(-1,-1))
         # self.eina.routePointMarkers.append(QgsVertexMarker(self.eina.canvas))
-        self.refreshLayout()
+        #self.refreshLayout()
+        self.layout.insertLayout(-1,new_element.layoutPunt)
         self.checkRemoveButtons()
 
     def addBetweenPoints(self,actPoint,customName):
         #unpress the pressed buttons
         self.unpressButtons()
         new_element = PointUI_element(self.layout,actPoint,customName,self) #la classe PointUI_element ja s'encarrega d'afegir al layout el conjunt d'elements
+        #actualitzar els punts següents.
         i = actPoint
         while i < len(self.pointList):
             self.pointList[i].pointNumber = self.pointList[i].pointNumber + 1
             self.pointList[i].updateLbl()
             i += 1
         self.pointList.insert(actPoint, new_element)
-        self.refreshLayout()
+        #self.refreshLayout()
+        self.layout.insertLayout(actPoint,new_element.layoutPunt)
         self.checkRemoveButtons()
         self.renumeratePoints()
 
@@ -133,6 +136,8 @@ class PointUI:
         #delete the marker
         self.pointList[item].marker.hide()
 
+        #change the focus on another button to avoid "Carrer dels Llebrencs" to be auto-picked
+        self.pointList[0].buttonNewPoint.setFocus()
 
         #delete all the widgets from the layout
         for i in reversed(range(actLayout.count())):
@@ -149,6 +154,7 @@ class PointUI:
         self.refreshLabels()
 
         self.checkRemoveButtons()
+
 
     def renumeratePoints(self):
         #renumerate the points
@@ -185,6 +191,7 @@ class PointUI:
 
     #escriure el resultat de la reverse search als QLineEdits
     def setReverse(self,item,result):
+        self.pointList[item].reverse = result
         self.pointList[item].LECarrer.setText(result.nomCarrer)
         if (result.numCarrer != ""):
             self.pointList[item].LENumero.setText(result.numCarrer)
@@ -240,12 +247,13 @@ class PointUI_element:
 
         self.layoutPunt = QHBoxLayout()
 
-        self.pointText_edit = QLineEdit()
-        self.pointText_edit.hide()
-        self.pointText_edit.editingFinished.connect(self.pointNameEdited)
-        self.pointText_label = QPointNameLabel(self.pointText_edit)
-        self.pointText_label.setText("Punt #" + str(self.pointNumber) + " " + self.customName) #TODO: personalitzar noms
-        self.layoutPunt.addWidget(self.pointText_edit)
+        # self.pointText_edit = QLineEdit()
+        # self.pointText_edit.hide()
+        # self.pointText_edit.editingFinished.connect(self.pointNameEdited)
+        # self.pointText_label = QLineEdit(self.pointText_edit)
+        self.pointText_label = QLabel()
+        self.pointText_label.setText("Punt #" + str(self.pointNumber+1) + " ") #(deprecated) TODO: personalitzar noms
+        # self.layoutPunt.addWidget(self.pointText_edit)
         self.layoutPunt.addWidget(self.pointText_label)
 
         self.layoutAdrecaPostal = QHBoxLayout()
@@ -446,7 +454,7 @@ class EinaMultiruta(QWidget):
 
         #groupbox
         routeResult_layout = QVBoxLayout()
-        routeResult_groupbox = QGroupBox("Resultats de la ruta")
+        routeResult_groupbox = QGroupBox("Informació de la ruta")
         routeResult_groupbox.setLayout(routeResult_layout)
 
         ####### UI dels punts visitats
@@ -461,7 +469,12 @@ class EinaMultiruta(QWidget):
         routeResult_scrollable.setFixedHeight(450)
         routeResult_scrollable.setWidgetResizable(True)
         routeResult_scrollable.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+
+        #Informació general de la ruta
+        routeInfo = QLabel("<html><h3>" + str(int(self.ruta.trips_duration[0]/60)) + " min</h3> <h4>" +  "{:.2f}".format(self.ruta.trips_distance[0]/1000) + " km </h4></html>")
+        routeResult.addWidget(routeInfo)
         
+        #Informació de la ruta entre cadascun dels punts
         for i, wp in enumerate(self.ruta.waypoints):
             if (self.ruta.routeType): #en cas de ruta tipus trip
                 point_index = wp["original_index"]
@@ -469,6 +482,7 @@ class EinaMultiruta(QWidget):
                 point_index = i
             
             point_name = self.pointUI.pointList[point_index].LECarrer.text().split(" (")[0] + ' ' + self.pointUI.pointList[point_index].LENumero.text()
+            municipi_name = self.pointUI.pointList[point_index].reverse.nomMunicipi
 
             if (i < len(self.ruta.legs) or ( self.ruta.routeType and self.ruta.roundtrip and i == len(self.ruta.legs))):
                 point_duration = self.ruta.legs[i]["duration"]
@@ -479,8 +493,13 @@ class EinaMultiruta(QWidget):
 
             waypoint_layout = QHBoxLayout()
 
-            waypoint_title = QLabel(point_name)
-            waypoint_title.setFont(QFont("Times",10,weight=QFont.Bold))
+            waypoint_title = QLabel()
+            HTMLcontent = "<html><h4>"+point_name+"</h4>"
+            if (municipi_name != ""):
+                HTMLcontent += "<h5>"+municipi_name+"</h5>"
+            HTMLcontent += "</html>"
+
+            waypoint_title.setText(HTMLcontent)
 
             #icona waypoint
             path = 'Imatges/pointMap_sq.svg'
@@ -488,7 +507,7 @@ class EinaMultiruta(QWidget):
             waypoint_bytes = waypoint_bytes.replace("param(fill) #FFF", self.pointUI.pointList[point_index].marker.color.name())
             if (point_index >= 10):
                 waypoint_bytes = waypoint_bytes.replace("600px","400px")
-            waypoint_bytes = waypoint_bytes.replace("###", str(point_index))
+            waypoint_bytes = waypoint_bytes.replace("###", str(point_index+1))
             waypoint_icon = QtSvg.QSvgWidget()
             waypoint_icon.load(bytearray(waypoint_bytes, encoding='utf-8'))
             waypoint_icon.setFixedWidth(16)
@@ -653,12 +672,36 @@ class EinaMultiruta(QWidget):
         windowStack.addWidget(container)
         self.calcRouteLayout = QVBoxLayout(container)
 
-
-        #definició del layout de llistat de punts
+        #definició del layout de llistat de punts.
+        #ESTRUCTURA DEL LAYOUT
+        #Layout principal
+        #  Groupbox
+        #    Groupbox Layout 
+        #      Scrollable Widget
+        #        Scrollable Layout 
+        
         points_groupbox = QGroupBox("Llistat de punts")
-        self.pointLayout = QVBoxLayout()
-        points_groupbox.setLayout(self.pointLayout)
-        self.pointUI = PointUI(self.pointLayout,self) 
+        points_groupbox_layout = QVBoxLayout()
+
+        points_scrollable = QScrollArea()
+        points_scrollable_widget = QWidget()
+        points_scrollable_layout = QVBoxLayout()
+        points_scrollable_widget.setLayout(points_scrollable_layout)
+        points_scrollable.setWidget(points_scrollable_widget)
+
+        points_groupbox_layout.addWidget(points_scrollable)
+
+        #configuració del layout scrollable del llistat de punts
+        points_scrollable.setFixedHeight(450)
+        # points_scrollable.setFixedWidth(400)
+        points_scrollable.setWidgetResizable(True)
+        points_scrollable.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
+        points_scrollable.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        points_scrollable.setMinimumWidth(600)
+        points_scrollable_layout.setAlignment(Qt.AlignTop)
+
+        points_groupbox.setLayout(points_groupbox_layout)
+        self.pointUI = PointUI(points_scrollable_layout,self) 
         self.setUI_RoutePlanning() #crida a funció que crea els QLineEdits
 
         #afegir layouts de'opcions de ruta
@@ -674,42 +717,6 @@ class EinaMultiruta(QWidget):
 
         #definir el tool de l'eina
         self.tool = PointTool(self.canvas, self)
-
-    def eventComboBox(self, index):
-        self.canvas.setCenter(self.pGirs[int(index.row())].coord)
-        self.canvas.zoomScale(1000)
-        self.canvas.refresh()
-    
-    # def goNext(self):
-    #     if(self.index != None):
-    #         if(int(self.index) < self.indicacioBox.count()-1):
-    #             self.index += 1
-    #             self.canvas.setCenter(self.pGirs[self.index].coord)
-    #             self.indicacioBox.setCurrentIndex(self.index)
-    #             self.canvas.zoomScale(1000)
-    #             self.canvas.refresh()
-
-    # def goPrev(self):
-    #     if(self.index != None):
-    #         if(int(self.index) > 0):
-    #             self.index -= 1
-    #             self.canvas.setCenter(self.pGirs[self.index].coord)
-    #             self.indicacioBox.setCurrentIndex(self.index)
-    #             self.canvas.zoomScale(1000)
-    #             self.canvas.refresh()
-
-    # def initMarkers(self):
-    #     self.mStart = QgsVertexMarker(self.canvas)
-    #     self.mStart.setColor(QColor(255, 0, 0)) #(R,G,B)
-    #     self.mStart.setIconSize(12)
-    #     self.mStart.setIconType(QgsVertexMarker.ICON_CROSS)
-    #     self.mStart.setPenWidth(3)
-
-    #     self.mEnd = QgsVertexMarker(self.canvas)
-    #     self.mEnd.setColor(QColor(0, 0, 255)) #(R,G,B)
-    #     self.mEnd.setIconSize(12)
-    #     self.mEnd.setIconType(QgsVertexMarker.ICON_CROSS)
-    #     self.mEnd.setPenWidth(3)
 
     def hideEvent(self,event):
         super().hideEvent(event)
