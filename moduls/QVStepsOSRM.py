@@ -60,10 +60,10 @@ class QVStepsOSRM:
         switcherDireccio = {
             '':'',
             'uturn': "i faci un gir de 180 graus, per ",
-            'sharp right': "amb precaució, hi ha un gir pronunciat a la dreta per ",
+            'sharp right': "pronunciadament a la dreta per ",
             'right': "a la dreta per ",
             'slight right': "lleugerament a la dreta per ",
-            'sharp left': "amb precaució, hi ha un gir pronunciat a l'esquerra per ",
+            'sharp left': "pronunciadament a l'esquerra per ",
             'left': "a l'esquerra per ",
             'slight left': "lleugerament a l'esquerra per ",
             'straight': "recte per "
@@ -85,7 +85,7 @@ class QVStepsOSRM:
             'on ramp': "Prengui l'entrada que es troba " + self.indicacioDireccioManiobra,
             'off ramp': "Prengui la sortida que es troba " + self.indicacioDireccioManiobra,
             'fork': "En la bifurcació giri " + self.indicacioDireccioManiobra,
-            'end of road': "Al final de la vía vagi " + self.indicacioDireccioManiobra,
+            'end of road': "Al final de la via segueixi " + self.indicacioDireccioManiobra,
             'use lane': "Continuï recte per " + self.indicacioDireccioManiobra,
             'continue': "Segueixi " + self.indicacioDireccioManiobra,
             'roundabout': "roundabout",
@@ -98,14 +98,14 @@ class QVStepsOSRM:
         if self.tipus_maniobra in switcherTipus:
             self.indication_string = switcherTipus[self.tipus_maniobra]
             if self.tipus_maniobra == 'turn' and self.direccio_maniobra == 'straight':
-                self.indication_string = "Vagi recte per "
+                self.indication_string = "Segueixi recte per "
             if switcherTipus[self.tipus_maniobra] == 'roundabout' or switcherTipus[self.tipus_maniobra] == 'rotary':
                 if self.exit_rotonda != '':
                     self.indication_string = "Surti de la rotonda per la sortida número " + str(self.exit_rotonda)
                 if self.exit_rotonda == 'undefined':
                     self.indication_string = "Arribada al destí "
                 else:
-                    self.indication_string = "Entri a la rotonda i vagi " + self.indicacioDireccioManiobra
+                    self.indication_string = "Entri a la rotonda i segueixi " + self.indicacioDireccioManiobra
         else:
             print("ERROR: " + self.tipus_maniobra)
             self.ok = False
@@ -119,7 +119,7 @@ class QVStepsOSRM:
             self.indication_string = self.indication_string.replace("per", "")
             self.indication_string = self.indication_string.replace("cap a", "")
         elif self.destinacions != '':
-            self.indication_string = self.indication_string + "i segueixi les indicacions del cartell " + self.destinacions
+            self.indication_string = self.indication_string + " i segueixi les indicacions del cartell " + self.destinacions
 
         # print(self.indication_string)
 
