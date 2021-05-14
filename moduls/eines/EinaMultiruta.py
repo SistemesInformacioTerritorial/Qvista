@@ -14,7 +14,7 @@ from moduls.QvMultiruta import *
 from moduls.QvReverse import QvReverse
 from moduls.QvTextColorMarker import QvTextColorMarker
 from moduls.QVStepsOSRM import QVStepsOSRM
-import simplekml
+import moduls.imported.simplekml.kml as simplekml
 
 class QAdrecaPostalLineEdit(QLineEdit):
     def focusInEvent(self, event):
@@ -466,7 +466,7 @@ class EinaMultiruta(QWidget):
         routeResult_scrollable.setWidget(routeResult_scrollable_widget)
 
         #opcions del scrollable
-        routeResult_scrollable.setFixedHeight(450)
+        routeResult_scrollable.setFixedHeight(600)
         routeResult_scrollable.setWidgetResizable(True)
         routeResult_scrollable.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
 
