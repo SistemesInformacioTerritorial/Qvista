@@ -1,7 +1,7 @@
 """
 Copyright 2011-2018 Kyle Lancaster | 2019 Patrick Eisoldt
 
-Simplekml is free software: you can redistribute it and/or modify
+moduls.imported.simplekml is free software: you can redistribute it and/or modify
 it under the terms of the GNU Lesser General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
@@ -16,8 +16,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 
-from simplekml.base import Kmlable, check
-from simplekml.timeprimitive import GxTimeStamp, GxTimeSpan
+from moduls.imported.simplekml.base import Kmlable, check
+from moduls.imported.simplekml.timeprimitive import GxTimeStamp, GxTimeSpan
 
 
 class GxViewerOptions(Kmlable):
@@ -32,7 +32,7 @@ class GxViewerOptions(Kmlable):
             self.gxoptions += gxoptions
 
     def newgxoption(self, name, enabled=True):
-        """Creates a :class:`simplekml.GxOption` with name `name` and sets it to `enabled`."""
+        """Creates a :class:`moduls.imported.simplekml.GxOption` with name `name` and sets it to `enabled`."""
         self.gxoptions.append(GxOption(name, enabled))
 
     def __str__(self):
@@ -44,7 +44,7 @@ class GxViewerOptions(Kmlable):
 
 
 class AbstractView(Kmlable):
-    """Abstract element, extended by :class:`simplekml.Camera` and :class:`simplekml.LookAt`
+    """Abstract element, extended by :class:`moduls.imported.simplekml.Camera` and :class:`moduls.imported.simplekml.LookAt`
 
     The arguments are the same as the properties.
     
@@ -127,7 +127,7 @@ class AbstractView(Kmlable):
     def altitudemode(self):
         """Specifies how the altitude for the Camera is interpreted.
 
-        Accepts :class:`simplekml.AltitudeMode` constants.
+        Accepts :class:`moduls.imported.simplekml.AltitudeMode` constants.
 
         """
         return self._kml['altitudeMode']
@@ -141,7 +141,7 @@ class AbstractView(Kmlable):
         """Specifies how the altitude for the Camera is interpreted.
 
         With the addition of being relative to the sea floor.
-        Accepts :class:`simplekml.GxAltitudeMode` constants.
+        Accepts :class:`moduls.imported.simplekml.GxAltitudeMode` constants.
 
         """
         return self._kml['gx:altitudeMode']
@@ -152,7 +152,7 @@ class AbstractView(Kmlable):
 
     @property
     def gxtimestamp(self):
-        """Represents a single moment in time, accepts :class:`simplekml.GxTimeStamp`"""
+        """Represents a single moment in time, accepts :class:`moduls.imported.simplekml.GxTimeStamp`"""
         if self._kml['gx:TimeStamp_'] is None:
             self._kml['gx:TimeStamp_'] = GxTimeStamp()
         return self._kml['gx:TimeStamp_']
@@ -164,7 +164,7 @@ class AbstractView(Kmlable):
 
     @property
     def gxtimespan(self):
-        """Period of time, accepts :class:`simplekml.GxTimeSpan`"""
+        """Period of time, accepts :class:`moduls.imported.simplekml.GxTimeSpan`"""
         if self._kml['gx:TimeSpan_'] is None:
             self._kml['gx:TimeSpan_'] = GxTimeSpan()
         return self._kml['gx:TimeSpan_']
@@ -185,7 +185,7 @@ class AbstractView(Kmlable):
         
     @property
     def gxvieweroptions(self):
-        """Enables special viewing modes , accepts :class:`simplekml.GxViewerOptions`"""
+        """Enables special viewing modes , accepts :class:`moduls.imported.simplekml.GxViewerOptions`"""
         if self._kml['gx:ViewerOptions_'] is None:
             self._kml['gx:ViewerOptions_'] = GxViewerOptions()
         return self._kml['gx:ViewerOptions_']
@@ -203,8 +203,8 @@ class Camera(AbstractView):
 
     Basic Usage::
 
-        import simplekml
-        kml = simplekml.Kml()
+        import moduls.imported.simplekml
+        kml = moduls.imported.simplekml.Kml()
         pnt = kml.newpoint()
         pnt.camera.latitude = 0.02
         pnt.camera.longitude = 0.012
@@ -212,16 +212,16 @@ class Camera(AbstractView):
         pnt.camera.tilt = 45
         pnt.camera.heading = 0
         pnt.camera.roll = 0
-        pnt.camera.altitudemode = simplekml.AltitudeMode.relativetoground
+        pnt.camera.altitudemode = moduls.imported.simplekml.AltitudeMode.relativetoground
         kml.save("Camera.kml")
 
     Assignment Usage::
 
-        import simplekml
-        kml = simplekml.Kml()
+        import moduls.imported.simplekml
+        kml = moduls.imported.simplekml.Kml()
         pnt = kml.newpoint()
-        camera = simplekml.Camera(latitude=0.0, longitude=0.0, altitude=0.0, roll=0, tilt=45,
-                                  altitudemode=simplekml.AltitudeMode.relativetoground)
+        camera = moduls.imported.simplekml.Camera(latitude=0.0, longitude=0.0, altitude=0.0, roll=0, tilt=45,
+                                  altitudemode=moduls.imported.simplekml.AltitudeMode.relativetoground)
         pnt.camera = camera
         kml.save("Camera Alternative.kml")
     """
@@ -244,17 +244,17 @@ class LookAt(AbstractView):
     """Positions the camera in relation to the object that is being viewed.
 
     The arguments are the same as the properties (most inherited from
-    :class:`simplekml.AbstractView`)
+    :class:`moduls.imported.simplekml.AbstractView`)
 
     Usage::
 
-        import simplekml
-        kml = simplekml.Kml()
+        import moduls.imported.simplekml
+        kml = moduls.imported.simplekml.Kml()
         ls = kml.newlinestring(name='A LineString')
         ls.coords = [(18.333868,-34.038274,10.0), (18.370618,-34.034421,10.0)]
         ls.extrude = 1
-        ls.altitudemode = simplekml.AltitudeMode.relativetoground
-        ls.lookat.gxaltitudemode = simplekml.GxAltitudeMode.relativetoseafloor
+        ls.altitudemode = moduls.imported.simplekml.AltitudeMode.relativetoground
+        ls.lookat.gxaltitudemode = moduls.imported.simplekml.GxAltitudeMode.relativetoseafloor
         ls.lookat.latitude = -34.028242
         ls.lookat.longitude = 18.356852
         ls.lookat.range = 3000
@@ -278,7 +278,7 @@ class LookAt(AbstractView):
 
 
 class GxOption(Kmlable):
-    """Child element of :class:`simplekml.GxViewerOptions`.
+    """Child element of :class:`moduls.imported.simplekml.GxViewerOptions`.
 
     The arguments are the same as the properties.
     """
@@ -295,8 +295,8 @@ class GxOption(Kmlable):
     def name(self):
         """Name of the effect being applied.
 
-        The following strings can be used :attr:`simplekml.GxOption.streetview`,
-        :attr:`simplekml.GxOption.historicalimagery` or :attr:`simplekml.GxOption.sunlight`
+        The following strings can be used :attr:`moduls.imported.simplekml.GxOption.streetview`,
+        :attr:`moduls.imported.simplekml.GxOption.historicalimagery` or :attr:`moduls.imported.simplekml.GxOption.sunlight`
         """
         return self._kml['name']
 

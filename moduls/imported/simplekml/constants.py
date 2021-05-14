@@ -1,7 +1,7 @@
 """
 Copyright 2011-2018 Kyle Lancaster | 2019 Patrick Eisoldt
 
-Simplekml is free software: you can redistribute it and/or modify
+moduls.imported.simplekml is free software: you can redistribute it and/or modify
 it under the terms of the GNU Lesser General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
@@ -124,11 +124,11 @@ class Color(object):
     Same as HTML and CSS standard colors. All constants are lowercase.
 
     Class methods:
-      * :func:`simplekml.Color.rgb` - convert RGB to KML HEX
-      * :func:`simplekml.Color.hex` - convert HEX to KML HEX
-      * :func:`simplekml.Color.hexa` - convert HEX (with alpha) to KML HEX
-      * :func:`simplekml.Color.changealpha` - change KML HEX alpha value with a HEX
-      * :func:`simplekml.Color.changealphaint` - change KML HEX alpha value with an int
+      * :func:`moduls.imported.simplekml.Color.rgb` - convert RGB to KML HEX
+      * :func:`moduls.imported.simplekml.Color.hex` - convert HEX to KML HEX
+      * :func:`moduls.imported.simplekml.Color.hexa` - convert HEX (with alpha) to KML HEX
+      * :func:`moduls.imported.simplekml.Color.changealpha` - change KML HEX alpha value with a HEX
+      * :func:`moduls.imported.simplekml.Color.changealphaint` - change KML HEX alpha value with an int
     """
 
     @classmethod

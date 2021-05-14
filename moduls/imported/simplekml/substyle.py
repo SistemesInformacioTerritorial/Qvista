@@ -1,7 +1,7 @@
 """
 Copyright 2011-2018 Kyle Lancaster | 2019 Patrick Eisoldt
 
-Simplekml is free software: you can redistribute it and/or modify
+moduls.imported.simplekml is free software: you can redistribute it and/or modify
 it under the terms of the GNU Lesser General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
@@ -16,9 +16,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 
-from simplekml.base import Kmlable, HotSpot, check
-from simplekml.constants import ColorMode, DisplayMode, ListItemType
-from simplekml.icon import Icon, ItemIcon
+from moduls.imported.simplekml.base import Kmlable, HotSpot, check
+from moduls.imported.simplekml.constants import ColorMode, DisplayMode, ListItemType
+from moduls.imported.simplekml.icon import Icon, ItemIcon
 
 
 class ColorStyle(Kmlable):

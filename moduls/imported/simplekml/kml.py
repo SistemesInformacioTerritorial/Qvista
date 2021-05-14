@@ -1,7 +1,7 @@
 """
 Copyright 2011-2018 Kyle Lancaster | 2019 Patrick Eisoldt
 
-Simplekml is free software: you can redistribute it and/or modify
+moduls.imported.simplekml is free software: you can redistribute it and/or modify
 it under the terms of the GNU Lesser General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
@@ -21,10 +21,10 @@ import zipfile
 import codecs
 import os
 
-from simplekml.base import Kmlable, KmlElement, check
-from simplekml.featgeom import Document, Container
-from simplekml.makeunicode import u
-from simplekml.networklinkcontrol import NetworkLinkControl
+from moduls.imported.simplekml.base import Kmlable, KmlElement, check
+from moduls.imported.simplekml.featgeom import Document, Container
+from moduls.imported.simplekml.makeunicode import u
+from moduls.imported.simplekml.networklinkcontrol import NetworkLinkControl
 
 
 class Kml(Kmlable):

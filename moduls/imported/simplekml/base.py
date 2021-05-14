@@ -1,7 +1,7 @@
 """
 Copyright 2011-2018 Kyle Lancaster | 2019 Patrick Eisoldt
 
-Simplekml is free software: you can redistribute it and/or modify
+moduls.imported.simplekml is free software: you can redistribute it and/or modify
 it under the terms of the GNU Lesser General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
@@ -24,7 +24,7 @@ else:
     import html
 import xml.dom.minidom
 import warnings
-from simplekml.makeunicode import u
+from moduls.imported.simplekml.makeunicode import u
 
 class Kmlable(object):
     """Enables a subclass to be converted into KML."""
@@ -113,8 +113,8 @@ class Vector2(object):
     Args:
       * x: int in xunits (default None)
       * y: int in yunits (default None)
-      * xunits: string of type of x units. See :class:`simplekml.Units` (default None)
-      * yunits: string of type of y units. See :class:`simplekml.Units` (default None)
+      * xunits: string of type of x units. See :class:`moduls.imported.simplekml.Units` (default None)
+      * yunits: string of type of y units. See :class:`moduls.imported.simplekml.Units` (default None)
       
     .. note::
       Not to be used directly.
@@ -161,7 +161,7 @@ class Vector2(object):
 
     @property
     def yunits(self):
-        """Type of y units, See :class:`simplekml.Units` for values."""
+        """Type of y units, See :class:`moduls.imported.simplekml.Units` for values."""
         return self._kml['yunits']
 
     @yunits.setter
@@ -175,7 +175,7 @@ class Vector2(object):
 
 
 class OverlayXY(Vector2):
-    """Point in overlay image that is mapped to screen coordinate :class:`simplekml.ScreenXY`
+    """Point in overlay image that is mapped to screen coordinate :class:`moduls.imported.simplekml.ScreenXY`
 
     Arguments are the same as the properties.
     """
@@ -301,11 +301,11 @@ def check(classtype, subclass=False):
                 if subclass:
                     if not isinstance(value, classtype):
                         raise TypeError("{0} is an invalid type. Accepts an instance of a subclass of " \
-                                        "simplekml.{1}".format(value.__class__.__name__, classtype.__name__))
+                                        "moduls.imported.simplekml.{1}".format(value.__class__.__name__, classtype.__name__))
                 else:
                     if not type(value) is classtype:
                         raise TypeError("{0} is an invalid type. Accepts an instance of " \
-                                        "simplekml.{1}".format(value.__class__.__name__, classtype.__name__))
+                                        "moduls.imported.simplekml.{1}".format(value.__class__.__name__, classtype.__name__))
             return f(self, value)
         return _inner
     return _second

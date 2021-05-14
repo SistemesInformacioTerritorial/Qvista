@@ -16,18 +16,18 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 
-from simplekml.abstractview import Camera, LookAt
-from simplekml.base import Kmlable, Snippet, OverlayXY, ScreenXY, RotationXY, Size, check
-from simplekml.coordinates import Coordinates
-from simplekml.icon import Icon, Link
-from simplekml.model import Location, Orientation, Scale, ResourceMap
-from simplekml.overlay import ViewVolume, ImagePyramid
-from simplekml.region import LatLonBox, GxLatLonQuad, Region
-from simplekml.schema import ExtendedData, Schema
-from simplekml.styleselector import Style, StyleMap
-from simplekml.substyle import IconStyle, LabelStyle, BalloonStyle, LineStyle, ListStyle, PolyStyle
-from simplekml.timeprimitive import TimeSpan, TimeStamp
-from simplekml.tour import GxTour
+from moduls.imported.simplekml.abstractview import Camera, LookAt
+from moduls.imported.simplekml.base import Kmlable, Snippet, OverlayXY, ScreenXY, RotationXY, Size, check
+from moduls.imported.simplekml.coordinates import Coordinates
+from moduls.imported.simplekml.icon import Icon, Link
+from moduls.imported.simplekml.model import Location, Orientation, Scale, ResourceMap
+from moduls.imported.simplekml.overlay import ViewVolume, ImagePyramid
+from moduls.imported.simplekml.region import LatLonBox, GxLatLonQuad, Region
+from moduls.imported.simplekml.schema import ExtendedData, Schema
+from moduls.imported.simplekml.styleselector import Style, StyleMap
+from moduls.imported.simplekml.substyle import IconStyle, LabelStyle, BalloonStyle, LineStyle, ListStyle, PolyStyle
+from moduls.imported.simplekml.timeprimitive import TimeSpan, TimeStamp
+from moduls.imported.simplekml.tour import GxTour
 
 
 class Feature(Kmlable):
