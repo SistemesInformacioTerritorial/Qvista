@@ -13,7 +13,7 @@ from moduls.QvMemoria import QvMemoria
 # Còpia de la funció definida dins de qVista.py. Millor aquí???
 
 
-def nivellCsv(projecte, llegenda, fitxer: str, delimitador: str, campX: str, campY: str, projeccio: int = 25831, nomCapa: str = 'Capa sense nom', color='red', symbol='circle'):
+def nivellCsv(projecte, llegenda, fitxer: str, delimitador: str, campX: str, campY: str, projeccio: int = 25831, nomCapa: str = 'Capa sense nom', color='red', symbol='circle', separadorDec='.'):
     if projeccio<0:
         try:
             import pandas as pd
@@ -34,7 +34,7 @@ def nivellCsv(projecte, llegenda, fitxer: str, delimitador: str, campX: str, cam
         projeccio = -projeccio
         
     # uri = "file:///"+fitxer + "?type=csv&delimiter=%s&xField=%s&yField=%s" % (delimitador, campX, campY)
-    uri = f'file:///{fitxer}?type=csv&delimiter={delimitador}&xField={campX}&yField={campY}'
+    uri = fr'file:///{fitxer}?type=csv&delimiter={delimitador}&xField={campX}&yField={campY}&decimalPoint={separadorDec}'
     layer = QgsVectorLayer(uri, nomCapa, 'delimitedtext')
     layer.setCrs(QgsCoordinateReferenceSystem(
         projeccio, QgsCoordinateReferenceSystem.EpsgCrsId))
@@ -45,7 +45,7 @@ def nivellCsv(projecte, llegenda, fitxer: str, delimitador: str, campX: str, cam
         pr=layer.dataProvider()
         writer=QgsVectorFileWriter.writeAsVectorFormat(layer,fitxer[:-4],pr.encoding(),pr.crs(),symbologyExport=QgsVectorFileWriter.SymbolLayerSymbology)
         capaGpkg=QgsVectorLayer(fitxer[:-4]+'.gpkg',nomCapa,'ogr')
-        capaGpkg.renderer().setSymbol(symbol)
+        # capaGpkg.renderer().setSymbol(symbol)
         projecte.addMapLayer(capaGpkg)
         llegenda.saveStyleToGeoPackage(capaGpkg)
         # qV.project.addMapLayer(layer)
@@ -813,8 +813,24 @@ class CsvAfegir(CsvPagina):
         self._leNomCapa.selectAll()
     def _enrere(self):
         self.salta.emit(CsvGeocodificat([],0,self._carregador))
+    def calculaSeparadorDec(self):
+        def conteComa(x):
+            return ',' in x[self._campCoordX] or ',' in x[self._campCoordY]
+        def contePunt(x):
+            return '.' in x[self._campCoordX] or '.' in x[self._campCoordY]
+
+        with open(self._carregador._csv) as f:
+            reader = csv.DictReader(f, delimiter=self._carregador._separador)
+            ambDecimals = filter(lambda x: conteComa(x) or contePunt(x), reader)
+            try:
+                primer = next(ambDecimals)
+                if contePunt(primer):
+                    return '.'
+                return ','
+            except:
+                return ''
     def afegir(self):
-        if not nivellCsv(self._carregador._projecte, self._carregador._llegenda, self._carregador._csv, self._carregador._separador, self._campCoordX, self._campCoordY, self._projeccio, self._leNomCapa.text(), self._color, symbol=self._forma):
+        if not nivellCsv(self._carregador._projecte, self._carregador._llegenda, self._carregador._csv, self._carregador._separador, self._campCoordX, self._campCoordY, self._projeccio, self._leNomCapa.text(), self._color, symbol=self._forma, separadorDec=self.calculaSeparadorDec()):
             QMessageBox.warning(self,"No s'ha pogut afegir la capa","No s'ha pogut afegir aquest arxiu. Contacteu amb la persona de referència")
         nomBase = str(Path(self._carregador._csv).stem)
         if self.cbDesaCsv.isChecked():
