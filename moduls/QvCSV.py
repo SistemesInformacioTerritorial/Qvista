@@ -45,7 +45,7 @@ def nivellCsv(projecte, llegenda, fitxer: str, delimitador: str, campX: str, cam
         pr=layer.dataProvider()
         writer=QgsVectorFileWriter.writeAsVectorFormat(layer,fitxer[:-4],pr.encoding(),pr.crs(),symbologyExport=QgsVectorFileWriter.SymbolLayerSymbology)
         capaGpkg=QgsVectorLayer(fitxer[:-4]+'.gpkg',nomCapa,'ogr')
-        # capaGpkg.renderer().setSymbol(symbol)
+        capaGpkg.renderer().setSymbol(symbol)
         projecte.addMapLayer(capaGpkg)
         llegenda.saveStyleToGeoPackage(capaGpkg)
         # qV.project.addMapLayer(layer)
@@ -360,8 +360,8 @@ class CsvCoords(CsvPagina):
                 lblX.setText('Coordenada X:')
                 lblY.setText('Coordenada Y:')
             else:
-                lblX.setText('Latitud:')
-                lblY.setText('Longitud:')
+                lblX.setText('Longitud:')
+                lblY.setText('Latitud:')
 
         layProj = QHBoxLayout()
         lblProj = QLabel('Projecció:')
@@ -369,8 +369,8 @@ class CsvCoords(CsvPagina):
         layProj.addWidget(lblProj)
         self._cbProj = QComboBox()
         self._cbProj.addItems(self._proj.keys())
-        self._cbProj.setCurrentText(proj)
         self._cbProj.currentIndexChanged.connect(canviaLbls)
+        self._cbProj.setCurrentText(proj)
         layProj.addWidget(self._cbProj)
 
         self._layCamps.addLayout(layX)

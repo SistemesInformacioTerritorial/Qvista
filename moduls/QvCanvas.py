@@ -102,12 +102,9 @@ class QvCanvas(QgsMapCanvas):
         self.bstreetview.setChecked(False)
 
     def centrarMapa(self):
-        import time
-        t = time.time()
         self.zoomToFullExtent()
         self.refresh()
         self.bCentrar.setChecked(False)
-        print(t-time.time())
         # self.bCentrar.setChecked(True)
 
     def zoomIn(self):
