@@ -530,7 +530,7 @@ class QMaBIM(QtWidgets.QMainWindow):
         # planolC.layout().addWidget(canvasC)
 
         # instanciem els mapetes
-        QvMapetaBrujulado(mapetaPng, self.canvasA, pare=self.canvasA)
+        self.mapetaA = QvMapetaBrujulado(mapetaPng, self.canvasA, pare=self.canvasA)
         # QvMapetaBrujulado(mapetaPng, canvasC, pare=canvasC)
         
         self.cerca1 = Cercador(self.canvasA, self.leCarrer, self.leNumero, self.lblIcona)
@@ -548,6 +548,9 @@ class QMaBIM(QtWidgets.QMainWindow):
         botoLlegenda = self.canvasA.afegirBotoCustom('botoLlegenda', 'imatges/map-legend.png', 'Mostrar/ocultar llegenda', 3)
         botoLlegenda.clicked.connect(lambda: self.llegenda.setVisible(not self.llegenda.isVisible()))
         botoLlegenda.setCheckable(False)
+        botoMapeta = self.canvasA.afegirBotoCustom('botoMapeta', 'imatges/mapeta.png', 'Mostrar/ocultar mapa de situació',4)
+        botoMapeta.clicked.connect(lambda: self.mapetaA.setVisible(not self.mapetaA.isVisible()))
+        botoMapeta.setCheckable(False)
         botoCaptura = self.canvasA.afegirBotoCustom('botoCaptura','imatges/content-copy.png','Copiar una captura del mapa al portarretalls')
         botoCaptura.clicked.connect(self.canvasA.copyToClipboard)
         botoCaptura.setCheckable(False)
