@@ -137,6 +137,7 @@ class QvStatusBar(QStatusBar):
                 nomWid = 'sbCarregantCanvas'
             elif x == 'coordenades':
                 wid = QLineEdit(self.getXY(self.canvas.center()),self)
+                self.fixaMidaNecessariaLE(wid)
                 self.canvas.xyCoordinates.connect(self.showXY)
                 wid.returnPressed.connect(self.returnEditarXY)
                 nomWid = 'leXY'
@@ -307,6 +308,7 @@ class QvStatusBar(QStatusBar):
         self.leEscala.setContingut(f'{round(escala)}')
         if not self.escalaQgis:
             self.corrijoScale()
+        self.fixaMidaNecessariaLE(self.leEscala)
     
     def escalaEditada(self):
         escala = self.leEscala.text()

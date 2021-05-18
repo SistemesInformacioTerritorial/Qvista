@@ -19,7 +19,7 @@ import sys
 import os
 import math
 from typing import Sequence
-from qgis.core import QgsProject, QgsCoordinateReferenceSystem, QgsRectangle, QgsFeatureRequest, QgsMapLayer, QgsVectorLayer, QgsGeometry
+from qgis.core import QgsProject, QgsCoordinateReferenceSystem, QgsRectangle, QgsPointXY, QgsFeatureRequest, QgsMapLayer, QgsVectorLayer, QgsGeometry
 from qgis.gui import  QgsLayerTreeMapCanvasBridge, QgsVertexMarker, QgsMapTool, QgsGui, QgsRubberBand
 
 # Consulta a partir del text escrit al camp de cerca. 
@@ -348,7 +348,7 @@ class QMaBIM(QtWidgets.QMainWindow):
         super().__init__(*args, **kwargs)
         uic.loadUi('Programes especifics/MaBIM/MaBIM.ui',self)
         
-        self.llistaBotons = (self.bFavorits, self.bBIMs, self.bPIP, self.bProjectes, self.bConsultes, self.bDocumentacio, self.bEines)
+        self.llistaBotons = (self.bFavorits, self.bBIMs, self.bPIP, self.bProjectes, self.bConsultes)
 
         self.connectBotons()
         self.connectaCercador()
@@ -382,6 +382,8 @@ class QMaBIM(QtWidgets.QMainWindow):
         # doncs posem un mini HTML amb la imatge i el text
         self.lblLogoMaBIM.setFixedSize(275,60)
         self.lblLogoMaBIM.setText(f"""<html><img src=imatges/MaBIM/MaBIM-text.png height={self.lblLogoMaBIM.height()}><span style="font-size:18pt; color:#ffffff;"></span></html>""")
+        self.lblLogoAjuntament.setFixedSize(275,90)
+        self.lblLogoAjuntament.setPixmap(QtGui.QPixmap('imatges/logo-ajuntament-de-barcelona-png-3.png').scaledToWidth(275))
         # self.lblLogoMaBIM.setFixedWidth(275)
     
     def setIconesBotons(self):
@@ -392,9 +394,7 @@ class QMaBIM(QtWidgets.QMainWindow):
             (self.bBIMs, 'botonera-BIM.png'),
             (self.bPIP, 'botonera-PIP.png'),
             (self.bProjectes, 'botonera-projectes'),
-            (self.bConsultes, 'botonera-consultes'),
-            (self.bDocumentacio, 'botonera-documentacio'),
-            (self.bEines, 'botonera-eines')
+            (self.bConsultes, 'botonera-consultes')
         )
         for (boto, icona) in parelles:
             boto.setIcon(QtGui.QIcon(f'Imatges/MaBIM/{icona}'))
@@ -428,7 +428,7 @@ class QMaBIM(QtWidgets.QMainWindow):
         # Eliminem la marca del cercador
         self.cerca1.eliminaMarcaLloc()
         self.dadesLabelsDades[0] = self.dadesLabelsDades[0].replace('0000', ' ').lstrip()
-        self.lCapcaleraBIM.setText(f'BIM {self.dadesLabelsDades[0]}  {self.dadesLabelsDades[3]}')
+        # self.lCapcaleraBIM.setText(f'BIM {self.dadesLabelsDades[0]}  {self.dadesLabelsDades[3]}')
 
         # Labels pestanya "Dades Identificatives"
         labels = (self.lNumBIM, self.lEstatBIM, self.lBIMAdscrit, 
@@ -521,6 +521,9 @@ class QMaBIM(QtWidgets.QMainWindow):
         planolA.layout().addWidget(self.canvasA)
         self.canvasA.setDestinationCrs(QgsCoordinateReferenceSystem('EPSG:25831'))
         self.canvasA.mostraStreetView.connect(lambda: self.canvasA.getStreetView().show())
+
+        self.canvasA.bCentrar.disconnect()
+        self.canvasA.bCentrar.clicked.connect(self.centrarMapa)
         
         # canvasC = QvCanvasAuxiliar(self.canvasA, sincronitzaExtensio=True, posicioBotonera='SE')
         # QgsLayerTreeMapCanvasBridge(root, canvasC)
@@ -534,7 +537,10 @@ class QMaBIM(QtWidgets.QMainWindow):
         self.cerca1.cercador.sHanTrobatCoordenades.connect(lambda: self.tabCentral.setCurrentIndex(2))
 
         botoSelecciona = self.canvasA.afegirBotoCustom('botoSelecciona', 'imatges/apuntar.png', 'Selecciona BIM gràficament', 1)
-        botoSelecciona.clicked.connect(lambda: self.canvasA.setMapTool(self.einaSeleccio))
+        def setEinaSeleccionar():
+            self.canvasA.setMapTool(self.einaSeleccio)
+            botoSelecciona.setChecked(True)
+        botoSelecciona.clicked.connect(setEinaSeleccionar)
         botoSelecciona.setCheckable(True)
         botoNeteja = self.canvasA.afegirBotoCustom('botoNeteja', 'imatges/MaBIM/canvas_neteja_filtre.png', 'Mostra tots els BIMs', 2)
         botoNeteja.clicked.connect(self.netejaFiltre)
@@ -547,8 +553,20 @@ class QMaBIM(QtWidgets.QMainWindow):
         botoCaptura.setCheckable(False)
 
         # Donem estil als canvas
-        with open('style.qss') as f:
-            estilCanvas = f.read()
+        estilCanvas = '''
+            QvPushButton {
+                background-color: #F9F9F9 transparent;
+                color: #38474F;
+                margin: 0px;
+                border: 0px;
+            }
+
+            QvPushButton:checked{
+                background-color: #DDDDDD;
+                color: #38474F;
+                border: 2px solid #FF6215;
+                padding: 2px 2px;
+            }'''
         self.canvasA.setStyleSheet(estilCanvas)
         # canvasC.setStyleSheet(estilCanvas)
 
@@ -561,11 +579,17 @@ class QMaBIM(QtWidgets.QMainWindow):
         self.llegenda.resize(500, 600)
 
         self.tabCentral.currentChanged.connect(self.canviaTab)
+
+    def centrarMapa(self):
+        self.canvasA.setExtent(QgsRectangle(QgsPointXY(414127.01575411413796246, 4575872.23396269045770168), QgsPointXY(444425.93594902532640845, 4590993.16400346532464027)))
+        self.canvasA.refresh()
+        self.canvasA.bCentrar.setChecked(False)
     
     @QvFuncions.cronometraDebug
     def inicialitzaProjecte(self):
         # QgsProject.instance().read('L:/DADES/SIT/qVista/CATALEG/MAPES PRIVATS/Patrimoni/PPM_CatRegles_geopackage.qgs')
         self.llegenda.readProject('L:/DADES/SIT/qVista/CATALEG/MAPES PRIVATS/Patrimoni/PPM_CatRegles_geopackage.qgs')
+        self.centrarMapa()
     
     def getCapaBIMs(self):
         # Retorna una capa amb camp de BIMs
