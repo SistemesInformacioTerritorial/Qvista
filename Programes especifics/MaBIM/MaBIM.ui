@@ -12,16 +12,16 @@
   </property>
   <property name="font">
    <font>
-    <family>Verdana</family>
-    <pointsize>18</pointsize>
+    <family>verdana</family>
+    <pointsize>10</pointsize>
    </font>
   </property>
   <property name="windowTitle">
    <string>qMaBIM</string>
   </property>
   <property name="styleSheet">
-   <string notr="true">font-family: &quot;Verdana&quot;;
-font-size: 18pt</string>
+   <string notr="true">font-family: verdana;
+font-size: 10pt;</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout_3">
@@ -616,8 +616,8 @@ font-size: 18pt</string>
           </property>
           <property name="font">
            <font>
-            <family>Verdana</family>
-            <pointsize>18</pointsize>
+            <family>verdana</family>
+            <pointsize>10</pointsize>
            </font>
           </property>
           <property name="autoFillBackground">
@@ -688,7 +688,7 @@ QToolButton:disabled{
              </property>
              <property name="font">
               <font>
-               <family>Verdana</family>
+               <family>verdana</family>
                <pointsize>11</pointsize>
               </font>
              </property>
@@ -719,7 +719,7 @@ QToolButton:disabled{
              </property>
              <property name="font">
               <font>
-               <family>Verdana</family>
+               <family>verdana</family>
                <pointsize>11</pointsize>
               </font>
              </property>
@@ -750,7 +750,7 @@ QToolButton:disabled{
              </property>
              <property name="font">
               <font>
-               <family>Verdana</family>
+               <family>verdana</family>
                <pointsize>11</pointsize>
               </font>
              </property>
@@ -778,7 +778,7 @@ QToolButton:disabled{
              </property>
              <property name="font">
               <font>
-               <family>Verdana</family>
+               <family>verdana</family>
                <pointsize>11</pointsize>
               </font>
              </property>
@@ -806,7 +806,7 @@ QToolButton:disabled{
              </property>
              <property name="font">
               <font>
-               <family>Verdana</family>
+               <family>verdana</family>
                <pointsize>11</pointsize>
               </font>
              </property>
@@ -856,30 +856,14 @@ QToolButton:disabled{
              </property>
             </widget>
            </item>
-           <item>
-            <widget class="QLabel" name="label_4">
-             <property name="text">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:7pt; font-weight:600;&quot;&gt;&lt;br/&gt;SIT - Sistemes d'Informació Territorial&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-size:7pt;&quot;&gt;Institut Municipal d'Informàtica&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-             </property>
-             <property name="textFormat">
-              <enum>Qt::RichText</enum>
-             </property>
-             <property name="alignment">
-              <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-             </property>
-             <property name="margin">
-              <number>10</number>
-             </property>
-             <property name="indent">
-              <number>5</number>
-             </property>
-            </widget>
-           </item>
           </layout>
          </widget>
         </item>
         <item>
          <widget class="QStackedWidget" name="stackedWidget">
+          <property name="styleSheet">
+           <string notr="true">background: transparent; color: black; font-size: 14px</string>
+          </property>
           <property name="lineWidth">
            <number>0</number>
           </property>
@@ -916,17 +900,19 @@ QToolButton:disabled{
             <item>
              <widget class="QTabWidget" name="tabCentral">
               <property name="styleSheet">
-               <string notr="true">font-size: 10pt; 
+               <string notr="true">QWidget{
+	font-size: 10pt; 
+}
+
+QTabBar{
+	font-weight: bold;
+}
+
+QTabBar::tab:!selected{
+	font-weight: normal;
+}
+
 QTabWidget::tab-bar{
-}
-
-QTabBar::tab{
-	background: blue;
-	border: 1px solid blue;
-}
-
-QTabBar::tab:selected{
-	background: lightgray;
 }</string>
               </property>
               <property name="currentIndex">
@@ -937,507 +923,7 @@ QTabBar::tab:selected{
                 <string>Dades identificatives</string>
                </attribute>
                <layout class="QGridLayout" name="gridLayout">
-                <item row="1" column="2">
-                 <widget class="QWidget" name="widgetDades" native="true">
-                  <property name="styleSheet">
-                   <string notr="true">QLabel[accessibleName^=&quot;lab&quot;l]{
-	font-weight: bold
-}</string>
-                  </property>
-                  <layout class="QGridLayout" name="gridLayout_2">
-                   <item row="2" column="2">
-                    <layout class="QVBoxLayout" name="verticalLayout_12">
-                     <item>
-                      <widget class="QLabel" name="label_9">
-                       <property name="font">
-                        <font>
-                         <family>Verdana</family>
-                         <pointsize>10</pointsize>
-                        </font>
-                       </property>
-                       <property name="styleSheet">
-                        <string notr="true">color: grey</string>
-                       </property>
-                       <property name="text">
-                        <string>Adscrit</string>
-                       </property>
-                      </widget>
-                     </item>
-                     <item>
-                      <widget class="QLabel" name="lBIMAdscrit">
-                       <property name="text">
-                        <string/>
-                       </property>
-                      </widget>
-                     </item>
-                    </layout>
-                   </item>
-                   <item row="5" column="0">
-                    <layout class="QVBoxLayout" name="verticalLayout_13">
-                     <item>
-                      <widget class="QLabel" name="label_15">
-                       <property name="font">
-                        <font>
-                         <family>Verdana</family>
-                         <pointsize>10</pointsize>
-                        </font>
-                       </property>
-                       <property name="styleSheet">
-                        <string notr="true">color: grey</string>
-                       </property>
-                       <property name="text">
-                        <string>Descripció BIM</string>
-                       </property>
-                      </widget>
-                     </item>
-                     <item>
-                      <widget class="QLabel" name="lDescripcioBIM">
-                       <property name="text">
-                        <string/>
-                       </property>
-                      </widget>
-                     </item>
-                    </layout>
-                   </item>
-                   <item row="2" column="0">
-                    <layout class="QVBoxLayout" name="verticalLayout_10">
-                     <item>
-                      <widget class="QLabel" name="label_12">
-                       <property name="palette">
-                        <palette>
-                         <active>
-                          <colorrole role="WindowText">
-                           <brush brushstyle="SolidPattern">
-                            <color alpha="255">
-                             <red>128</red>
-                             <green>128</green>
-                             <blue>128</blue>
-                            </color>
-                           </brush>
-                          </colorrole>
-                          <colorrole role="Text">
-                           <brush brushstyle="SolidPattern">
-                            <color alpha="255">
-                             <red>128</red>
-                             <green>128</green>
-                             <blue>128</blue>
-                            </color>
-                           </brush>
-                          </colorrole>
-                          <colorrole role="ButtonText">
-                           <brush brushstyle="SolidPattern">
-                            <color alpha="255">
-                             <red>128</red>
-                             <green>128</green>
-                             <blue>128</blue>
-                            </color>
-                           </brush>
-                          </colorrole>
-                         </active>
-                         <inactive>
-                          <colorrole role="WindowText">
-                           <brush brushstyle="SolidPattern">
-                            <color alpha="255">
-                             <red>128</red>
-                             <green>128</green>
-                             <blue>128</blue>
-                            </color>
-                           </brush>
-                          </colorrole>
-                          <colorrole role="Text">
-                           <brush brushstyle="SolidPattern">
-                            <color alpha="255">
-                             <red>128</red>
-                             <green>128</green>
-                             <blue>128</blue>
-                            </color>
-                           </brush>
-                          </colorrole>
-                          <colorrole role="ButtonText">
-                           <brush brushstyle="SolidPattern">
-                            <color alpha="255">
-                             <red>128</red>
-                             <green>128</green>
-                             <blue>128</blue>
-                            </color>
-                           </brush>
-                          </colorrole>
-                         </inactive>
-                         <disabled>
-                          <colorrole role="WindowText">
-                           <brush brushstyle="SolidPattern">
-                            <color alpha="255">
-                             <red>128</red>
-                             <green>128</green>
-                             <blue>128</blue>
-                            </color>
-                           </brush>
-                          </colorrole>
-                          <colorrole role="Text">
-                           <brush brushstyle="SolidPattern">
-                            <color alpha="255">
-                             <red>128</red>
-                             <green>128</green>
-                             <blue>128</blue>
-                            </color>
-                           </brush>
-                          </colorrole>
-                          <colorrole role="ButtonText">
-                           <brush brushstyle="SolidPattern">
-                            <color alpha="255">
-                             <red>128</red>
-                             <green>128</green>
-                             <blue>128</blue>
-                            </color>
-                           </brush>
-                          </colorrole>
-                         </disabled>
-                        </palette>
-                       </property>
-                       <property name="font">
-                        <font>
-                         <family>Verdana</family>
-                         <pointsize>10</pointsize>
-                        </font>
-                       </property>
-                       <property name="accessibleName">
-                        <string>label_12</string>
-                       </property>
-                       <property name="styleSheet">
-                        <string notr="true">color: grey</string>
-                       </property>
-                       <property name="text">
-                        <string>Número BIM</string>
-                       </property>
-                      </widget>
-                     </item>
-                     <item>
-                      <widget class="QLabel" name="lNumBIM">
-                       <property name="text">
-                        <string/>
-                       </property>
-                      </widget>
-                     </item>
-                    </layout>
-                   </item>
-                   <item row="7" column="3">
-                    <layout class="QVBoxLayout" name="verticalLayout_17">
-                     <item>
-                      <widget class="QLabel" name="label_20">
-                       <property name="font">
-                        <font>
-                         <family>Verdana</family>
-                         <pointsize>10</pointsize>
-                        </font>
-                       </property>
-                       <property name="styleSheet">
-                        <string notr="true">color: grey</string>
-                       </property>
-                       <property name="text">
-                        <string>Tipus bé immoble real</string>
-                       </property>
-                      </widget>
-                     </item>
-                     <item>
-                      <widget class="QLabel" name="lTipusBeReal">
-                       <property name="text">
-                        <string/>
-                       </property>
-                      </widget>
-                     </item>
-                    </layout>
-                   </item>
-                   <item row="7" column="2">
-                    <layout class="QVBoxLayout" name="verticalLayout_16">
-                     <item>
-                      <widget class="QLabel" name="label_19">
-                       <property name="font">
-                        <font>
-                         <family>Verdana</family>
-                         <pointsize>10</pointsize>
-                        </font>
-                       </property>
-                       <property name="styleSheet">
-                        <string notr="true">color: grey</string>
-                       </property>
-                       <property name="text">
-                        <string>Subtipologia real</string>
-                       </property>
-                      </widget>
-                     </item>
-                     <item>
-                      <widget class="QLabel" name="lSubtipologiaReal">
-                       <property name="text">
-                        <string/>
-                       </property>
-                      </widget>
-                     </item>
-                    </layout>
-                   </item>
-                   <item row="7" column="0">
-                    <layout class="QVBoxLayout" name="verticalLayout_15">
-                     <item>
-                      <widget class="QLabel" name="label_18">
-                       <property name="font">
-                        <font>
-                         <family>Verdana</family>
-                         <pointsize>10</pointsize>
-                        </font>
-                       </property>
-                       <property name="styleSheet">
-                        <string notr="true">color: grey</string>
-                       </property>
-                       <property name="text">
-                        <string>Tipologia real</string>
-                       </property>
-                      </widget>
-                     </item>
-                     <item>
-                      <widget class="QLabel" name="lTipologiaReal">
-                       <property name="text">
-                        <string/>
-                       </property>
-                      </widget>
-                     </item>
-                    </layout>
-                   </item>
-                   <item row="5" column="2">
-                    <layout class="QVBoxLayout" name="verticalLayout_14">
-                     <item>
-                      <widget class="QLabel" name="label_16">
-                       <property name="font">
-                        <font>
-                         <family>Verdana</family>
-                         <pointsize>10</pointsize>
-                        </font>
-                       </property>
-                       <property name="styleSheet">
-                        <string notr="true">color: grey</string>
-                       </property>
-                       <property name="text">
-                        <string>Denominació BIM</string>
-                       </property>
-                      </widget>
-                     </item>
-                     <item>
-                      <widget class="QLabel" name="lDenominacioBIM">
-                       <property name="text">
-                        <string/>
-                       </property>
-                      </widget>
-                     </item>
-                    </layout>
-                   </item>
-                   <item row="2" column="1">
-                    <layout class="QVBoxLayout" name="verticalLayout_11">
-                     <item>
-                      <widget class="QLabel" name="label_11">
-                       <property name="font">
-                        <font>
-                         <family>Verdana</family>
-                         <pointsize>10</pointsize>
-                        </font>
-                       </property>
-                       <property name="styleSheet">
-                        <string notr="true">color: grey</string>
-                       </property>
-                       <property name="text">
-                        <string>Estat</string>
-                       </property>
-                      </widget>
-                     </item>
-                     <item>
-                      <widget class="QLabel" name="lEstatBIM">
-                       <property name="text">
-                        <string/>
-                       </property>
-                      </widget>
-                     </item>
-                    </layout>
-                   </item>
-                   <item row="9" column="2">
-                    <layout class="QVBoxLayout" name="verticalLayout_20">
-                     <item>
-                      <widget class="QLabel" name="label_27">
-                       <property name="font">
-                        <font>
-                         <family>Verdana</family>
-                         <pointsize>10</pointsize>
-                        </font>
-                       </property>
-                       <property name="styleSheet">
-                        <string notr="true">color: grey</string>
-                       </property>
-                       <property name="text">
-                        <string>Subtipologia registral</string>
-                       </property>
-                      </widget>
-                     </item>
-                     <item>
-                      <widget class="QLabel" name="lSubtipologiaRegistral">
-                       <property name="text">
-                        <string/>
-                       </property>
-                      </widget>
-                     </item>
-                    </layout>
-                   </item>
-                   <item row="9" column="0">
-                    <layout class="QVBoxLayout" name="verticalLayout_19">
-                     <item>
-                      <widget class="QLabel" name="label_26">
-                       <property name="font">
-                        <font>
-                         <family>Verdana</family>
-                         <pointsize>10</pointsize>
-                        </font>
-                       </property>
-                       <property name="styleSheet">
-                        <string notr="true">color: grey</string>
-                       </property>
-                       <property name="text">
-                        <string>Tipologia registral</string>
-                       </property>
-                      </widget>
-                     </item>
-                     <item>
-                      <widget class="QLabel" name="lTipologiaRegistral">
-                       <property name="text">
-                        <string/>
-                       </property>
-                      </widget>
-                     </item>
-                    </layout>
-                   </item>
-                   <item row="9" column="3">
-                    <layout class="QVBoxLayout" name="verticalLayout_21">
-                     <item>
-                      <widget class="QLabel" name="label_28">
-                       <property name="font">
-                        <font>
-                         <family>Verdana</family>
-                         <pointsize>10</pointsize>
-                        </font>
-                       </property>
-                       <property name="styleSheet">
-                        <string notr="true">color: grey</string>
-                       </property>
-                       <property name="text">
-                        <string>Tipus bé immoble registral</string>
-                       </property>
-                      </widget>
-                     </item>
-                     <item>
-                      <widget class="QLabel" name="lTipusBeRegistral">
-                       <property name="text">
-                        <string/>
-                       </property>
-                      </widget>
-                     </item>
-                    </layout>
-                   </item>
-                   <item row="3" column="0">
-                    <spacer name="verticalSpacer_3">
-                     <property name="orientation">
-                      <enum>Qt::Vertical</enum>
-                     </property>
-                     <property name="sizeType">
-                      <enum>QSizePolicy::Fixed</enum>
-                     </property>
-                     <property name="sizeHint" stdset="0">
-                      <size>
-                       <width>20</width>
-                       <height>20</height>
-                      </size>
-                     </property>
-                    </spacer>
-                   </item>
-                   <item row="7" column="4">
-                    <layout class="QVBoxLayout" name="verticalLayout_18">
-                     <item>
-                      <widget class="QLabel" name="label_22">
-                       <property name="font">
-                        <font>
-                         <family>Verdana</family>
-                         <pointsize>10</pointsize>
-                        </font>
-                       </property>
-                       <property name="styleSheet">
-                        <string notr="true">color: grey</string>
-                       </property>
-                       <property name="text">
-                        <string>Qualificació jurídica</string>
-                       </property>
-                      </widget>
-                     </item>
-                     <item>
-                      <widget class="QLabel" name="lQualificacioJuridica">
-                       <property name="text">
-                        <string/>
-                       </property>
-                      </widget>
-                     </item>
-                    </layout>
-                   </item>
-                   <item row="6" column="0">
-                    <spacer name="verticalSpacer_4">
-                     <property name="orientation">
-                      <enum>Qt::Vertical</enum>
-                     </property>
-                     <property name="sizeType">
-                      <enum>QSizePolicy::Fixed</enum>
-                     </property>
-                     <property name="sizeHint" stdset="0">
-                      <size>
-                       <width>20</width>
-                       <height>20</height>
-                      </size>
-                     </property>
-                    </spacer>
-                   </item>
-                   <item row="8" column="0">
-                    <spacer name="verticalSpacer_5">
-                     <property name="orientation">
-                      <enum>Qt::Vertical</enum>
-                     </property>
-                     <property name="sizeType">
-                      <enum>QSizePolicy::Fixed</enum>
-                     </property>
-                     <property name="sizeHint" stdset="0">
-                      <size>
-                       <width>20</width>
-                       <height>20</height>
-                      </size>
-                     </property>
-                    </spacer>
-                   </item>
-                   <item row="1" column="0">
-                    <widget class="QLabel" name="label_25">
-                     <property name="font">
-                      <font>
-                       <family>Verdana</family>
-                       <pointsize>10</pointsize>
-                      </font>
-                     </property>
-                     <property name="text">
-                      <string>Cerqueu un BIM per visualitzar-ne la informació</string>
-                     </property>
-                    </widget>
-                   </item>
-                  </layout>
-                 </widget>
-                </item>
-                <item row="0" column="2">
-                 <widget class="QLabel" name="label_29">
-                  <property name="styleSheet">
-                   <string notr="true">background: lightgray; padding: 2px</string>
-                  </property>
-                  <property name="text">
-                   <string>Dades identificatives</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="3" column="2">
+                <item row="2" column="2">
                  <widget class="QTableWidget" name="twDadesBIM">
                   <property name="styleSheet">
                    <string notr="true">font-size: 15px; </string>
@@ -1457,22 +943,22 @@ QTabBar::tab:selected{
                   </column>
                   <column>
                    <property name="text">
-                    <string>Núm. ini.</string>
+                    <string>Número inicial</string>
                    </property>
                   </column>
                   <column>
                    <property name="text">
-                    <string>Lletra ini.</string>
+                    <string>Lletra inicial</string>
                    </property>
                   </column>
                   <column>
                    <property name="text">
-                    <string>Núm. fin.</string>
+                    <string>Número final</string>
                    </property>
                   </column>
                   <column>
                    <property name="text">
-                    <string>Lletra fin.</string>
+                    <string>Lletra final</string>
                    </property>
                   </column>
                   <column>
@@ -1502,27 +988,12 @@ QTabBar::tab:selected{
                   </column>
                   <column>
                    <property name="text">
-                    <string>Codi carrer</string>
-                   </property>
-                  </column>
-                  <column>
-                   <property name="text">
                     <string>Tipus</string>
-                   </property>
-                  </column>
-                  <column>
-                   <property name="text">
-                    <string>Estat</string>
-                   </property>
-                  </column>
-                  <column>
-                   <property name="text">
-                    <string>Id. Prov.</string>
                    </property>
                   </column>
                  </widget>
                 </item>
-                <item row="2" column="2">
+                <item row="1" column="2">
                  <widget class="QLabel" name="label_30">
                   <property name="styleSheet">
                    <string notr="true">background: lightgray; padding: 2px</string>
@@ -1530,6 +1001,564 @@ QTabBar::tab:selected{
                   <property name="text">
                    <string>Adreces BIM</string>
                   </property>
+                 </widget>
+                </item>
+                <item row="0" column="2">
+                 <widget class="QWidget" name="widgetDades" native="true">
+                  <property name="styleSheet">
+                   <string notr="true">QLabel[accessibleName^=&quot;lab&quot;l]{
+	font-weight: bold
+}</string>
+                  </property>
+                  <layout class="QGridLayout" name="gridLayout_2">
+                   <item row="8" column="0">
+                    <layout class="QVBoxLayout" name="verticalLayout_19">
+                     <item>
+                      <widget class="QLabel" name="label_26">
+                       <property name="font">
+                        <font>
+                         <family>verdana</family>
+                         <pointsize>10</pointsize>
+                        </font>
+                       </property>
+                       <property name="styleSheet">
+                        <string notr="true">color: grey</string>
+                       </property>
+                       <property name="text">
+                        <string>Tipologia registral</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QLabel" name="lTipologiaRegistral">
+                       <property name="text">
+                        <string/>
+                       </property>
+                      </widget>
+                     </item>
+                    </layout>
+                   </item>
+                   <item row="4" column="0">
+                    <layout class="QVBoxLayout" name="verticalLayout_13">
+                     <item>
+                      <widget class="QLabel" name="label_15">
+                       <property name="font">
+                        <font>
+                         <family>verdana</family>
+                         <pointsize>10</pointsize>
+                        </font>
+                       </property>
+                       <property name="styleSheet">
+                        <string notr="true">color: grey</string>
+                       </property>
+                       <property name="text">
+                        <string>Descripció BIM</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QLabel" name="lDescripcioBIM">
+                       <property name="text">
+                        <string/>
+                       </property>
+                      </widget>
+                     </item>
+                    </layout>
+                   </item>
+                   <item row="4" column="2">
+                    <layout class="QVBoxLayout" name="verticalLayout_14">
+                     <item>
+                      <widget class="QLabel" name="label_16">
+                       <property name="font">
+                        <font>
+                         <family>verdana</family>
+                         <pointsize>10</pointsize>
+                        </font>
+                       </property>
+                       <property name="styleSheet">
+                        <string notr="true">color: grey</string>
+                       </property>
+                       <property name="text">
+                        <string>Denominació BIM</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QLabel" name="lDenominacioBIM">
+                       <property name="text">
+                        <string/>
+                       </property>
+                      </widget>
+                     </item>
+                    </layout>
+                   </item>
+                   <item row="1" column="0">
+                    <layout class="QVBoxLayout" name="verticalLayout_10">
+                     <item>
+                      <widget class="QLabel" name="label_12">
+                       <property name="palette">
+                        <palette>
+                         <active>
+                          <colorrole role="WindowText">
+                           <brush brushstyle="SolidPattern">
+                            <color alpha="255">
+                             <red>128</red>
+                             <green>128</green>
+                             <blue>128</blue>
+                            </color>
+                           </brush>
+                          </colorrole>
+                          <colorrole role="Button">
+                           <brush brushstyle="SolidPattern">
+                            <color alpha="0">
+                             <red>0</red>
+                             <green>0</green>
+                             <blue>0</blue>
+                            </color>
+                           </brush>
+                          </colorrole>
+                          <colorrole role="Text">
+                           <brush brushstyle="SolidPattern">
+                            <color alpha="255">
+                             <red>128</red>
+                             <green>128</green>
+                             <blue>128</blue>
+                            </color>
+                           </brush>
+                          </colorrole>
+                          <colorrole role="ButtonText">
+                           <brush brushstyle="SolidPattern">
+                            <color alpha="255">
+                             <red>128</red>
+                             <green>128</green>
+                             <blue>128</blue>
+                            </color>
+                           </brush>
+                          </colorrole>
+                          <colorrole role="Base">
+                           <brush brushstyle="SolidPattern">
+                            <color alpha="0">
+                             <red>0</red>
+                             <green>0</green>
+                             <blue>0</blue>
+                            </color>
+                           </brush>
+                          </colorrole>
+                          <colorrole role="Window">
+                           <brush brushstyle="SolidPattern">
+                            <color alpha="0">
+                             <red>0</red>
+                             <green>0</green>
+                             <blue>0</blue>
+                            </color>
+                           </brush>
+                          </colorrole>
+                         </active>
+                         <inactive>
+                          <colorrole role="WindowText">
+                           <brush brushstyle="SolidPattern">
+                            <color alpha="255">
+                             <red>128</red>
+                             <green>128</green>
+                             <blue>128</blue>
+                            </color>
+                           </brush>
+                          </colorrole>
+                          <colorrole role="Button">
+                           <brush brushstyle="SolidPattern">
+                            <color alpha="0">
+                             <red>0</red>
+                             <green>0</green>
+                             <blue>0</blue>
+                            </color>
+                           </brush>
+                          </colorrole>
+                          <colorrole role="Text">
+                           <brush brushstyle="SolidPattern">
+                            <color alpha="255">
+                             <red>128</red>
+                             <green>128</green>
+                             <blue>128</blue>
+                            </color>
+                           </brush>
+                          </colorrole>
+                          <colorrole role="ButtonText">
+                           <brush brushstyle="SolidPattern">
+                            <color alpha="255">
+                             <red>128</red>
+                             <green>128</green>
+                             <blue>128</blue>
+                            </color>
+                           </brush>
+                          </colorrole>
+                          <colorrole role="Base">
+                           <brush brushstyle="SolidPattern">
+                            <color alpha="0">
+                             <red>0</red>
+                             <green>0</green>
+                             <blue>0</blue>
+                            </color>
+                           </brush>
+                          </colorrole>
+                          <colorrole role="Window">
+                           <brush brushstyle="SolidPattern">
+                            <color alpha="0">
+                             <red>0</red>
+                             <green>0</green>
+                             <blue>0</blue>
+                            </color>
+                           </brush>
+                          </colorrole>
+                         </inactive>
+                         <disabled>
+                          <colorrole role="WindowText">
+                           <brush brushstyle="SolidPattern">
+                            <color alpha="255">
+                             <red>128</red>
+                             <green>128</green>
+                             <blue>128</blue>
+                            </color>
+                           </brush>
+                          </colorrole>
+                          <colorrole role="Button">
+                           <brush brushstyle="SolidPattern">
+                            <color alpha="0">
+                             <red>0</red>
+                             <green>0</green>
+                             <blue>0</blue>
+                            </color>
+                           </brush>
+                          </colorrole>
+                          <colorrole role="Text">
+                           <brush brushstyle="SolidPattern">
+                            <color alpha="255">
+                             <red>128</red>
+                             <green>128</green>
+                             <blue>128</blue>
+                            </color>
+                           </brush>
+                          </colorrole>
+                          <colorrole role="ButtonText">
+                           <brush brushstyle="SolidPattern">
+                            <color alpha="255">
+                             <red>128</red>
+                             <green>128</green>
+                             <blue>128</blue>
+                            </color>
+                           </brush>
+                          </colorrole>
+                          <colorrole role="Base">
+                           <brush brushstyle="SolidPattern">
+                            <color alpha="0">
+                             <red>0</red>
+                             <green>0</green>
+                             <blue>0</blue>
+                            </color>
+                           </brush>
+                          </colorrole>
+                          <colorrole role="Window">
+                           <brush brushstyle="SolidPattern">
+                            <color alpha="0">
+                             <red>0</red>
+                             <green>0</green>
+                             <blue>0</blue>
+                            </color>
+                           </brush>
+                          </colorrole>
+                         </disabled>
+                        </palette>
+                       </property>
+                       <property name="font">
+                        <font>
+                         <family>verdana</family>
+                         <pointsize>10</pointsize>
+                        </font>
+                       </property>
+                       <property name="accessibleName">
+                        <string>label_12</string>
+                       </property>
+                       <property name="styleSheet">
+                        <string notr="true">color: grey</string>
+                       </property>
+                       <property name="text">
+                        <string>Número BIM</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QLabel" name="lNumBIM">
+                       <property name="text">
+                        <string/>
+                       </property>
+                      </widget>
+                     </item>
+                    </layout>
+                   </item>
+                   <item row="6" column="2">
+                    <layout class="QVBoxLayout" name="verticalLayout_16">
+                     <item>
+                      <widget class="QLabel" name="label_19">
+                       <property name="font">
+                        <font>
+                         <family>verdana</family>
+                         <pointsize>10</pointsize>
+                        </font>
+                       </property>
+                       <property name="styleSheet">
+                        <string notr="true">color: grey</string>
+                       </property>
+                       <property name="text">
+                        <string>Subtipologia real</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QLabel" name="lSubtipologiaReal">
+                       <property name="text">
+                        <string/>
+                       </property>
+                      </widget>
+                     </item>
+                    </layout>
+                   </item>
+                   <item row="8" column="3">
+                    <layout class="QVBoxLayout" name="verticalLayout_21">
+                     <item>
+                      <widget class="QLabel" name="label_28">
+                       <property name="font">
+                        <font>
+                         <family>verdana</family>
+                         <pointsize>10</pointsize>
+                        </font>
+                       </property>
+                       <property name="styleSheet">
+                        <string notr="true">color: grey</string>
+                       </property>
+                       <property name="text">
+                        <string>Tipus bé immoble registral</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QLabel" name="lTipusBeRegistral">
+                       <property name="text">
+                        <string/>
+                       </property>
+                      </widget>
+                     </item>
+                    </layout>
+                   </item>
+                   <item row="6" column="3">
+                    <layout class="QVBoxLayout" name="verticalLayout_17">
+                     <item>
+                      <widget class="QLabel" name="label_20">
+                       <property name="font">
+                        <font>
+                         <family>verdana</family>
+                         <pointsize>10</pointsize>
+                        </font>
+                       </property>
+                       <property name="styleSheet">
+                        <string notr="true">color: grey</string>
+                       </property>
+                       <property name="text">
+                        <string>Tipus bé immoble real</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QLabel" name="lTipusBeReal">
+                       <property name="text">
+                        <string/>
+                       </property>
+                      </widget>
+                     </item>
+                    </layout>
+                   </item>
+                   <item row="6" column="0">
+                    <layout class="QVBoxLayout" name="verticalLayout_15">
+                     <item>
+                      <widget class="QLabel" name="label_18">
+                       <property name="font">
+                        <font>
+                         <family>verdana</family>
+                         <pointsize>10</pointsize>
+                        </font>
+                       </property>
+                       <property name="styleSheet">
+                        <string notr="true">color: grey</string>
+                       </property>
+                       <property name="text">
+                        <string>Tipologia real</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QLabel" name="lTipologiaReal">
+                       <property name="text">
+                        <string/>
+                       </property>
+                      </widget>
+                     </item>
+                    </layout>
+                   </item>
+                   <item row="1" column="1">
+                    <layout class="QVBoxLayout" name="verticalLayout_11">
+                     <item>
+                      <widget class="QLabel" name="label_11">
+                       <property name="font">
+                        <font>
+                         <family>verdana</family>
+                         <pointsize>10</pointsize>
+                        </font>
+                       </property>
+                       <property name="styleSheet">
+                        <string notr="true">color: grey</string>
+                       </property>
+                       <property name="text">
+                        <string>Estat</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QLabel" name="lEstatBIM">
+                       <property name="text">
+                        <string/>
+                       </property>
+                      </widget>
+                     </item>
+                    </layout>
+                   </item>
+                   <item row="8" column="2">
+                    <layout class="QVBoxLayout" name="verticalLayout_20">
+                     <item>
+                      <widget class="QLabel" name="label_27">
+                       <property name="font">
+                        <font>
+                         <family>verdana</family>
+                         <pointsize>10</pointsize>
+                        </font>
+                       </property>
+                       <property name="styleSheet">
+                        <string notr="true">color: grey</string>
+                       </property>
+                       <property name="text">
+                        <string>Subtipologia registral</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QLabel" name="lSubtipologiaRegistral">
+                       <property name="text">
+                        <string/>
+                       </property>
+                      </widget>
+                     </item>
+                    </layout>
+                   </item>
+                   <item row="5" column="0">
+                    <spacer name="verticalSpacer_4">
+                     <property name="orientation">
+                      <enum>Qt::Vertical</enum>
+                     </property>
+                     <property name="sizeType">
+                      <enum>QSizePolicy::Fixed</enum>
+                     </property>
+                     <property name="sizeHint" stdset="0">
+                      <size>
+                       <width>20</width>
+                       <height>20</height>
+                      </size>
+                     </property>
+                    </spacer>
+                   </item>
+                   <item row="2" column="0">
+                    <spacer name="verticalSpacer_3">
+                     <property name="orientation">
+                      <enum>Qt::Vertical</enum>
+                     </property>
+                     <property name="sizeType">
+                      <enum>QSizePolicy::Fixed</enum>
+                     </property>
+                     <property name="sizeHint" stdset="0">
+                      <size>
+                       <width>20</width>
+                       <height>20</height>
+                      </size>
+                     </property>
+                    </spacer>
+                   </item>
+                   <item row="7" column="0">
+                    <spacer name="verticalSpacer_5">
+                     <property name="orientation">
+                      <enum>Qt::Vertical</enum>
+                     </property>
+                     <property name="sizeType">
+                      <enum>QSizePolicy::Fixed</enum>
+                     </property>
+                     <property name="sizeHint" stdset="0">
+                      <size>
+                       <width>20</width>
+                       <height>20</height>
+                      </size>
+                     </property>
+                    </spacer>
+                   </item>
+                   <item row="1" column="3">
+                    <layout class="QVBoxLayout" name="verticalLayout_12">
+                     <item>
+                      <widget class="QLabel" name="label_9">
+                       <property name="font">
+                        <font>
+                         <family>verdana</family>
+                         <pointsize>10</pointsize>
+                        </font>
+                       </property>
+                       <property name="styleSheet">
+                        <string notr="true">color: grey</string>
+                       </property>
+                       <property name="text">
+                        <string>Adscrit</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QLabel" name="lBIMAdscrit">
+                       <property name="text">
+                        <string/>
+                       </property>
+                      </widget>
+                     </item>
+                    </layout>
+                   </item>
+                   <item row="1" column="2">
+                    <layout class="QVBoxLayout" name="verticalLayout_18">
+                     <item>
+                      <widget class="QLabel" name="label_22">
+                       <property name="font">
+                        <font>
+                         <family>verdana</family>
+                         <pointsize>10</pointsize>
+                        </font>
+                       </property>
+                       <property name="styleSheet">
+                        <string notr="true">color: grey</string>
+                       </property>
+                       <property name="text">
+                        <string>Qualificació jurídica</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QLabel" name="lQualificacioJuridica">
+                       <property name="text">
+                        <string/>
+                       </property>
+                      </widget>
+                     </item>
+                    </layout>
+                   </item>
+                  </layout>
                  </widget>
                 </item>
                </layout>
@@ -1601,7 +1630,7 @@ QTabBar::tab:selected{
                        <string notr="true">color: grey</string>
                       </property>
                       <property name="text">
-                       <string>Sup. sòl registre</string>
+                       <string>Superfície sòl</string>
                       </property>
                      </widget>
                     </item>
@@ -1622,7 +1651,7 @@ QTabBar::tab:selected{
                        <string notr="true">color: grey</string>
                       </property>
                       <property name="text">
-                       <string>Sup. cons. registre</string>
+                       <string>Superfície construcció</string>
                       </property>
                      </widget>
                     </item>
@@ -1750,12 +1779,6 @@ QTabBar::tab:selected{
                </attribute>
                <layout class="QVBoxLayout" name="verticalLayout_5"/>
               </widget>
-              <widget class="QWidget" name="tPlanolC">
-               <attribute name="title">
-                <string>Plànol Cadastral</string>
-               </attribute>
-               <layout class="QVBoxLayout" name="verticalLayout_7"/>
-              </widget>
              </widget>
             </item>
            </layout>
@@ -1780,7 +1803,7 @@ QTabBar::tab:selected{
      <x>0</x>
      <y>0</y>
      <width>1623</width>
-     <height>42</height>
+     <height>26</height>
     </rect>
    </property>
   </widget>

@@ -15,29 +15,23 @@ import configuracioQvista
 # Stylesheet dels widgets de la statusbar
 # Donat que és un f-string, quan vulguem posar un '{' o '}' haurem de posar-lo duplicat
 STYLESHEET = f'''
-    font-size: 15px;
+    QWidget {{
+        font-size: 15px;
+        border: 1px solid {QvConstants.COLORGRISHTML};
+        margin: 0px;
+        padding: 2px;
+    }}
     QLabel {{
         background-color: {QvConstants.COLORBLANCHTML};
         color: {QvConstants.COLORFOSCHTML};
-        border: 0px;
-        margin: 0px;
-        padding: 4px;
-    }}
-    QvPushButton {{
-        background-color: {QvConstants.COLORBLANCHTML};
-        color: {QvConstants.COLORFOSCHTML};
-        margin: 0px;
-        border: 0px;
-        padding: 4px;
-    }}
-    QLineEdit {{
-        margin: 0px; border: 0px; padding: 0px;
     }}
     QLineEdit[text=""] {{
         color: {QvConstants.COLORTEXTHINTHTML};
     }}
+    QProgressBar{{
+        background: transparent;
+    }}
 '''
-
 class QvLineEditPS(QLineEdit):
     def __init__(self, *args, prefix='', sufix='', **kwargs):
         super().__init__(*args, **kwargs)
@@ -173,7 +167,6 @@ class QvStatusBar(QStatusBar):
                 # llençar excepció
                 continue
             wid.setFont(QvConstants.FONTTEXT)
-            wid.setStyleSheet(STYLESHEET)
             self.afegirWidget(nomWid, wid, stretch)
     def actualitzaEscales(self):
         try:
@@ -193,6 +186,8 @@ class QvStatusBar(QStatusBar):
         else:
             self.insertPermanentWidget(posicio, wid, stretch)
         setattr(self,nom, wid)
+        wid.setStyleSheet(STYLESHEET)
+        # wid.setStyleSheet(f'QLabel, QLineEdit{{border: 4px solid {QvConstants.COLORGRISHTML}}}')
     def canviPathProjecte(self):
         self.lblProjecte.setText(f'QGS: {Path(QgsProject.instance().fileName()).stem}')
         self.lblProjecte.setToolTip(f'{Path(QgsProject.instance().fileName())}')
