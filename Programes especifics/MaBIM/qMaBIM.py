@@ -50,7 +50,7 @@ AND (ROWNUM < 100)'''
 # Consulta que obté informació de ZAFT_0003 a partir del codi BIM
 CONSULTA_INFO_BIM_Z3 = '''SELECT TIPUS_VIA, NOM_VIA, NUM_INI, 
 LLETRA_INI, NUM_FI, LLETRA_FI, DISTRICTE, BARRI, MUNICIPI, CP,
-PROVINCIA, CODI_CARRER, TIPUS, ESTAT, ID_PROV 
+PROVINCIA, TIPUS
 FROM ZAFT_0003
 WHERE
 ((BIM LIKE '%'||:pText||'%') AND (ROWNUM<100))'''
@@ -270,7 +270,7 @@ class FormulariAtributs(QvFitxesAtributs):
         self.ui.buttonBox.removeButton(self.ui.buttonBox.buttons()[0])
         self.ui.bSeleccionar = self.ui.buttonBox.addButton('Seleccionar', QtWidgets.QDialogButtonBox.ActionRole)
         self.ui.bSeleccionar.clicked.connect(self.selecciona)
-        self.ui.stackedWidget.setStyleSheet('background: transparent; color: black; font-size: 14px')
+        # self.ui.stackedWidget.setStyleSheet('background: transparent; color: black; font-size: 14px')
         self.ui.buttonBox.setFixedWidth(300)
         # self.ui.buttonBox.hide()
         for x in (self.ui.bNext, self.ui.bPrev, *self.ui.buttonBox.buttons()):
@@ -361,6 +361,9 @@ class QMaBIM(QtWidgets.QMainWindow):
         self.einaSeleccio.elementsSeleccionats.connect(self.seleccioGrafica)
 
         self.setStatusBar(QvStatusBar(self,['progressBar',('coordenades',1),'projeccio', 'escala'],self.canvasA,self.llegenda))
+        self.statusBar().afegirWidget('lblSIT',QtWidgets.QLabel("SIT - Sistemes d'Informació Territorial"),0,0)
+        self.statusBar().afegirWidget('lblSIT',QtWidgets.QLabel("Direcció de Patrimoni"),0,1)
+        self.statusBar().afegirWidget('spacer',QtWidgets.QWidget(),1,2)
 
         if len(QgsGui.editorWidgetRegistry().factories()) == 0:
             QgsGui.editorWidgetRegistry().initEditors()
@@ -371,6 +374,7 @@ class QMaBIM(QtWidgets.QMainWindow):
     
     def seleccioGrafica(self, feats):
         form = FormulariAtributs(self.getCapaBIMs(), feats, self)
+        form.setStyleSheet('QWidget{font-size: 12pt}')
         form.moveWid(self.width()-form.width(),(self.height()-form.height())//2)
         form.exec()
         self.canvasA.bPanning.click()
@@ -382,8 +386,8 @@ class QMaBIM(QtWidgets.QMainWindow):
         # doncs posem un mini HTML amb la imatge i el text
         self.lblLogoMaBIM.setFixedSize(275,60)
         self.lblLogoMaBIM.setText(f"""<html><img src=imatges/MaBIM/MaBIM-text.png height={self.lblLogoMaBIM.height()}><span style="font-size:18pt; color:#ffffff;"></span></html>""")
-        self.lblLogoAjuntament.setFixedSize(275,90)
-        self.lblLogoAjuntament.setPixmap(QtGui.QPixmap('imatges/logo-ajuntament-de-barcelona-png-3.png').scaledToWidth(275))
+        self.lblLogoAjuntament.setFixedSize(275//2,45)
+        self.lblLogoAjuntament.setPixmap(QtGui.QPixmap('imatges/logo-ajuntament-de-barcelona-png-3.png').scaledToHeight(45))
         # self.lblLogoMaBIM.setFixedWidth(275)
     
     def setIconesBotons(self):
@@ -436,7 +440,7 @@ class QMaBIM(QtWidgets.QMainWindow):
                   self.lTipologiaReal, self.lSubtipologiaReal, self.lTipusBeReal, self.lQualificacioJuridica)
         # totes les labels tindran la mateixa font. Per tant, agafem la d'una qualsevol
         font = self.lNumBIM.font()
-        font.setBold(True)
+        # font.setBold(True)
         for (lbl,txt) in zip(labels, self.dadesLabelsDades):
             if str(txt).upper()!='NULL':
                 lbl.setText(txt)
@@ -510,7 +514,6 @@ class QMaBIM(QtWidgets.QMainWindow):
         # QgsProject.instance().read('mapesOffline/qVista default map.qgs')
         root = QgsProject.instance().layerTreeRoot()
         planolA = self.tabCentral.widget(2)
-        planolC = self.tabCentral.widget(3)
         
         mapetaPng = "mapesOffline/default.png"
         botons = ['panning', 'streetview', 'zoomIn', 'zoomOut', 'centrar']
@@ -524,14 +527,9 @@ class QMaBIM(QtWidgets.QMainWindow):
 
         self.canvasA.bCentrar.disconnect()
         self.canvasA.bCentrar.clicked.connect(self.centrarMapa)
-        
-        # canvasC = QvCanvasAuxiliar(self.canvasA, sincronitzaExtensio=True, posicioBotonera='SE')
-        # QgsLayerTreeMapCanvasBridge(root, canvasC)
-        # planolC.layout().addWidget(canvasC)
 
-        # instanciem els mapetes
+        # instanciem el mapeta
         self.mapetaA = QvMapetaBrujulado(mapetaPng, self.canvasA, pare=self.canvasA)
-        # QvMapetaBrujulado(mapetaPng, canvasC, pare=canvasC)
         
         self.cerca1 = Cercador(self.canvasA, self.leCarrer, self.leNumero, self.lblIcona)
         self.cerca1.cercador.sHanTrobatCoordenades.connect(lambda: self.tabCentral.setCurrentIndex(2))
@@ -571,7 +569,6 @@ class QMaBIM(QtWidgets.QMainWindow):
                 padding: 2px 2px;
             }'''
         self.canvasA.setStyleSheet(estilCanvas)
-        # canvasC.setStyleSheet(estilCanvas)
 
         
 
