@@ -55,7 +55,7 @@ FROM ZAFT_0003
 WHERE
 ((BIM LIKE '%'||:pText||'%') AND (ROWNUM<100))'''
 
-CONSULTA_INFO_BIM_Z13 = '''SELECT PROPIETARI_SOL, PROPIETARI_CONS
+CONSULTA_INFO_BIM_Z13 = '''SELECT PROPIETARI_SOL, PROPIETARI_CONS, SUP_REGISTRAL_SOL, SUP_REGISTRAL_CONS
 FROM ZAFT_0013
 WHERE
 ((BIM LIKE '%'||:pText||'%') AND (ROWNUM<100))
@@ -300,9 +300,6 @@ class Cercador:
         self.lblIcona = lblIcona
         pix = QtGui.QPixmap('imatges/MaBIM/cercador-icona.png')
         self.lblIcona.setPixmap(pix.scaledToHeight(self.MIDALBLICONA[0]))
-        self.leCarrer.setFixedSize(*self.MIDALBLCARRER)
-        self.leNumero.setFixedSize(*self.MIDALBLNUMERO)
-        # self.setFixedSize(self.leCarrer.width()+self.leNumero.width()+20, 50)
         self.cercador = QCercadorAdreca(self.leCarrer, self.leNumero, 'SQLITE')
         self.marcaLlocPosada = False
         # self.setStyleSheet('font-size: 14px;')
@@ -374,7 +371,7 @@ class QMaBIM(QtWidgets.QMainWindow):
     
     def seleccioGrafica(self, feats):
         form = FormulariAtributs(self.getCapaBIMs(), feats, self)
-        form.setStyleSheet('QWidget{font-size: 12pt}')
+        # form.setStyleSheet('QWidget{font-size: 12pt}')
         form.moveWid(self.width()-form.width(),(self.height()-form.height())//2)
         form.exec()
         self.canvasA.bPanning.click()
@@ -470,7 +467,7 @@ class QMaBIM(QtWidgets.QMainWindow):
         labels = (self.lPropietariSol, self.lPropietariCons, self.lSupSolReg, self.lSupConsReg)
         for (lbl,txt) in zip(labels, self.dadesTitularitat):
             if str(txt).upper()!='NULL':
-                lbl.setText(txt)
+                lbl.setText(str(txt))
 
                 lbl.setFont(font)
                 lbl.setWordWrap(True)
@@ -581,7 +578,7 @@ class QMaBIM(QtWidgets.QMainWindow):
         self.tabCentral.currentChanged.connect(self.canviaTab)
 
     def centrarMapa(self):
-        self.canvasA.setExtent(QgsRectangle(QgsPointXY(414127.01575411413796246, 4575872.23396269045770168), QgsPointXY(444425.93594902532640845, 4590993.16400346532464027)))
+        self.canvasA.setExtent(QgsRectangle(QgsPointXY(405960, 4572210), QgsPointXY(452330 , 4595090)))
         self.canvasA.refresh()
         self.canvasA.bCentrar.setChecked(False)
     
