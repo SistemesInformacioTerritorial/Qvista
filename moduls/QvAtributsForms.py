@@ -157,7 +157,8 @@ class QvFitxesAtributs(QDialog):
         # if not self.selectFeature:
         #     return
         if n is None:
-            self.layer.removeSelection()
+            for layer in self.capesCorresponents.values():
+                layer.removeSelection()
         else:
             layer = self.capesCorresponents[self.features[n]]
             QvDigitizeContext.selectAndScrollFeature(self.features[n].id(), layer, self.attributes)

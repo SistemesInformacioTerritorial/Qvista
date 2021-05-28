@@ -505,14 +505,14 @@ font-size: 10pt;</string>
         <widget class="QLineEdit" name="leCarrer">
          <property name="minimumSize">
           <size>
-           <width>0</width>
+           <width>400</width>
            <height>40</height>
           </size>
          </property>
          <property name="maximumSize">
           <size>
-           <width>650</width>
-           <height>16777215</height>
+           <width>400</width>
+           <height>40</height>
           </size>
          </property>
          <property name="styleSheet">
@@ -527,13 +527,13 @@ font-size: 10pt;</string>
         <widget class="QLineEdit" name="leNumero">
          <property name="minimumSize">
           <size>
-           <width>0</width>
+           <width>80</width>
            <height>40</height>
           </size>
          </property>
          <property name="maximumSize">
           <size>
-           <width>650</width>
+           <width>80</width>
            <height>16777215</height>
           </size>
          </property>
@@ -547,6 +547,18 @@ font-size: 10pt;</string>
        </item>
        <item>
         <widget class="QLabel" name="lblIcona">
+         <property name="minimumSize">
+          <size>
+           <width>20</width>
+           <height>20</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>20</width>
+           <height>20</height>
+          </size>
+         </property>
          <property name="styleSheet">
           <string notr="true">b</string>
          </property>
@@ -554,19 +566,6 @@ font-size: 10pt;</string>
           <string/>
          </property>
         </widget>
-       </item>
-       <item>
-        <spacer name="horizontalSpacer">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>40</width>
-           <height>20</height>
-          </size>
-         </property>
-        </spacer>
        </item>
        <item>
         <widget class="QLineEdit" name="leCercador">
@@ -589,6 +588,19 @@ font-size: 10pt;</string>
           <string>Núm. BIM - Descripció/Denominació BIM</string>
          </property>
         </widget>
+       </item>
+       <item>
+        <spacer name="horizontalSpacer">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
        </item>
       </layout>
      </widget>
@@ -912,11 +924,22 @@ QTabBar::tab:!selected{
 	font-weight: normal;
 }
 
-QTabWidget::tab-bar{
+QTableView{
+	font-size: 15px;
+	gridline-color: lightgrey;
+}
+
+QHeaderView{
+	border: 1px solid lightgrey;
+}
+
+QScrollBar::handle{
+	border: none;
+	background: lightgrey;
 }</string>
               </property>
               <property name="currentIndex">
-               <number>0</number>
+               <number>1</number>
               </property>
               <widget class="QWidget" name="tDadesIdentificatives">
                <attribute name="title">
@@ -925,9 +948,6 @@ QTabWidget::tab-bar{
                <layout class="QGridLayout" name="gridLayout">
                 <item row="2" column="2">
                  <widget class="QTableWidget" name="twDadesBIM">
-                  <property name="styleSheet">
-                   <string notr="true">font-size: 15px; </string>
-                  </property>
                   <property name="sortingEnabled">
                    <bool>true</bool>
                   </property>
@@ -1565,19 +1585,9 @@ QTabWidget::tab-bar{
               </widget>
               <widget class="QWidget" name="tTitularitat">
                <attribute name="title">
-                <string>Titularitat i Registral</string>
+                <string>Dades titularitat</string>
                </attribute>
                <layout class="QVBoxLayout" name="verticalLayout_6">
-                <item>
-                 <widget class="QLabel" name="label_7">
-                  <property name="styleSheet">
-                   <string notr="true">background: lightgray; padding: 2px</string>
-                  </property>
-                  <property name="text">
-                   <string>Dades titularitat</string>
-                  </property>
-                 </widget>
-                </item>
                 <item>
                  <layout class="QGridLayout" name="gridLayout_3">
                   <item row="0" column="0">
@@ -1665,6 +1675,22 @@ QTabWidget::tab-bar{
                    </layout>
                   </item>
                  </layout>
+                </item>
+                <item>
+                 <spacer name="verticalSpacer_6">
+                  <property name="orientation">
+                   <enum>Qt::Vertical</enum>
+                  </property>
+                  <property name="sizeType">
+                   <enum>QSizePolicy::Fixed</enum>
+                  </property>
+                  <property name="sizeHint" stdset="0">
+                   <size>
+                    <width>20</width>
+                    <height>40</height>
+                   </size>
+                  </property>
+                 </spacer>
                 </item>
                 <item>
                  <widget class="QLabel" name="label_8">
