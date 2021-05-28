@@ -939,7 +939,7 @@ QScrollBar::handle{
 }</string>
               </property>
               <property name="currentIndex">
-               <number>0</number>
+               <number>1</number>
               </property>
               <widget class="QWidget" name="tDadesIdentificatives">
                <attribute name="title">
@@ -1585,19 +1585,9 @@ QScrollBar::handle{
               </widget>
               <widget class="QWidget" name="tTitularitat">
                <attribute name="title">
-                <string>Titularitat i Registral</string>
+                <string>Dades titularitat</string>
                </attribute>
                <layout class="QVBoxLayout" name="verticalLayout_6">
-                <item>
-                 <widget class="QLabel" name="label_7">
-                  <property name="styleSheet">
-                   <string notr="true">background: lightgray; padding: 2px</string>
-                  </property>
-                  <property name="text">
-                   <string>Dades titularitat</string>
-                  </property>
-                 </widget>
-                </item>
                 <item>
                  <layout class="QGridLayout" name="gridLayout_3">
                   <item row="0" column="0">
