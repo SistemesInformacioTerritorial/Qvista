@@ -188,7 +188,10 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
     def readProject(self, fileName):
         if self.anotacions is not None:
             self.anotacions.removeAnnotations()
-        return self.project.read(fileName)
+        ok = self.project.read(fileName)
+        if not ok:
+            print(f"readProject: {self.project.error()}")
+        return ok
 
     def setTitol(self, titol=TITOL_INICIAL):
         self.setWindowTitle(titol)

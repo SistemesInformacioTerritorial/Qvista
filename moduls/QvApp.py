@@ -3,7 +3,7 @@
 from qgis.PyQt.QtSql import QSqlDatabase, QSqlQuery, QSql
 from qgis.PyQt.QtCore import QTranslator, QLibraryInfo, QLocale
 from qgis.PyQt.QtWidgets import QApplication
-from qgis.PyQt.QtNetwork import QNetworkProxy
+from qgis.PyQt.QtNetwork import QNetworkProxy, QNetworkProxyFactory
 from qgis.core import QgsPythonRunner, Qgis
 from moduls.QvSingleton import singleton
 from moduls.QvPythonRunner import QvPythonRunner
@@ -42,7 +42,7 @@ _DB_QVISTA['PRO'] = {
     'Password': 'QVISTA_CONS'
 }
 
-_PROXY = {
+_PROXY_IMI = {
     'HostName': 'iprx.imi.bcn',
     'Port': 8080
 }
@@ -171,16 +171,25 @@ class QvApp:
 
     def setProxy(self):
         try:
-            val = self.paramCfg('Proxy', 'False')
-            if self.intranet and val == 'True':
-                proxy = QNetworkProxy()
-                proxy.setType(QNetworkProxy.DefaultProxy)
-                proxy.setHostName = _PROXY['HostName']
-                proxy.setPort = _PROXY['Port']
-                proxy.setApplicationProxy(proxy)
-                return proxy
-            else:
-                return None
+            proxy = None
+            if self.intranet:
+                val = self.paramCfg('Proxy', 'False')
+                if val == 'True':
+                    QNetworkProxyFactory.setUseSystemConfiguration(True)
+                    proxies = QNetworkProxyFactory.systemProxyForQuery()
+                    proxy = next(iter(proxies), None)
+                elif val == 'IMI':                    
+                    proxy = QNetworkProxy()
+                    proxy.setType(QNetworkProxy.DefaultProxy)
+                    proxy.setHostName = _PROXY_IMI['HostName']
+                    proxy.setPort = _PROXY_IMI['Port']
+                if proxy is None or proxy.type() == QNetworkProxy.NoProxy:
+                    proxy = None
+                    print(f"Proxy: NO")
+                else:
+                    proxy.setApplicationProxy(proxy)
+                    print(f"Proxy: {proxy.hostName()}:{proxy.port()}")
+            return proxy
         except Exception as err:
             self.bugException(err)
             return None
