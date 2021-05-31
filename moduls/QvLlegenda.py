@@ -70,6 +70,14 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
         # self.restoreExtent = 0
         # print('restoreExtent', self.restoreExtent)
 
+        
+        # L'opertura de projectes Oracle va lenta si és la primera
+        # Obrim un arxiu "inútil", i així s'obren més ràpid
+        if self.project.homePath()=='':
+            try:
+                self.project.read('mapesOffline/accelerator.qgs')
+            except:
+                pass
         self.project.readProject.connect(self.nouProjecte)
         self.project.legendLayersAdded.connect(self.actIcones)
         self.root.layerOrderChanged.connect(self.actIcones)
@@ -180,7 +188,10 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
     def readProject(self, fileName):
         if self.anotacions is not None:
             self.anotacions.removeAnnotations()
-        return self.project.read(fileName)
+        ok = self.project.read(fileName)
+        if not ok:
+            print(f"readProject: {self.project.error()}")
+        return ok
 
     def setTitol(self, titol=TITOL_INICIAL):
         self.setWindowTitle(titol)

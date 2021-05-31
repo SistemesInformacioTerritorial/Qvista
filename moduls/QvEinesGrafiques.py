@@ -183,6 +183,20 @@ class QvSeleccioGrafica(QWidget):
         self.frameColorOpacitat.hide()
         self.frameColorOpacitat.setFrameStyle(QFrame.StyledPanel)
 
+        self.leRadiCercle = QLineEdit()
+        val = QIntValidator()
+        val.setBottom(0)
+        self.leRadiCercle.setValidator(val)
+        self.leRadiCercle.returnPressed.connect(self.radiCercle)
+        self.cbFixarRadi = QCheckBox('Fixar radi')
+        self.cbFixarRadi.stateChanged.connect(self.radiCercle)
+        layRadi = QHBoxLayout()
+        layRadi.addWidget(self.leRadiCercle)
+        layRadi.addWidget(self.cbFixarRadi)
+        self.lytSeleccioGrafica.addLayout(layRadi)
+        self.leRadiCercle.hide()
+        self.cbFixarRadi.hide()
+
         self.gbOverlap = QGroupBox()
         self.gbOverlap.setLayout(lytOverlap)
         self.lytSeleccioGrafica.addWidget(gbSelMasc)
@@ -196,7 +210,15 @@ class QvSeleccioGrafica(QWidget):
         # self.lytSeleccioGrafica.addWidget(self.bs6)
         # self.lytSeleccioGrafica.addWidget(self.twResultats)
         self.lytSeleccioGrafica.addWidget(self.gbResultats)
-
+    
+    def radiCercle(self):
+        radi = self.leRadiCercle.text()
+        if self.cbFixarRadi.isChecked() and radi!='' and int(radi)!=0:
+            self.toolSelect.cercleFixe = True
+            self.toolSelect.radiCercle = int(radi)
+        else:
+            self.toolSelect.cercleFixe = False
+            self.toolSelect.rubberbandCercle.reset(True)
     
     @QvFuncions.mostraSpinner
     def crearCsv(self):
@@ -329,6 +351,7 @@ class QvSeleccioGrafica(QWidget):
 
     def actualitzaTool(self):
         QvMemoria().setParametresMascara(self.color, self.sliderOpacitat.value())
+        self.tool.setParametres(self.checkMascara.isChecked(), self.checkSeleccio.isChecked(), self.checkOverlap.isChecked())
         self.gbOverlap.setVisible(self.checkSeleccio.isChecked())
         self.frameColorOpacitat.setVisible(self.checkMascara.isChecked())
         masc = obteMascara(self.projecte, self.canvas)
@@ -345,7 +368,9 @@ class QvSeleccioGrafica(QWidget):
         self.lblCapaSeleccionada.setText(txtSelec)
 
     def calcularSeleccio(self):
-        layer = self.llegenda.currentLayer()
+        layerActiu = self.llegenda.currentLayer()
+        if layerActiu is None:
+            return
         taula = self.twResultats
         numeroFields = 0  # ???
         fila = 0
@@ -357,8 +382,7 @@ class QvSeleccioGrafica(QWidget):
 
         if len(self.lwFieldsSelect.selectedItems())==0: # Si no hi ha cap item seleccionat, se seleccionen tots
             self.lwFieldsSelect.selectAll()
-        nombreElements = len(layer.selectedFeatures())
-        layerActiu = self.llegenda.currentLayer()
+        nombreElements = len(layerActiu.selectedFeatures())
         campsNumerics = [field.name() for field in layerActiu.fields() if field.typeName() in ('Integer64','Real')]
         itemsNumerics = [x for x in self.lwFieldsSelect.selectedItems() if x.text() in campsNumerics]
         # for a in itemsNumerics:
@@ -374,7 +398,7 @@ class QvSeleccioGrafica(QWidget):
             #     calcul = feature.attributes(
             #     )[layer.fields().lookupField(a.text())]
             #     total = total+calcul
-            total = sum(feature.attributes()[layer.fields().lookupField(a.text())] for feature in layer.selectedFeatures())
+            total = sum(feature.attributes()[layerActiu.fields().lookupField(a.text())] for feature in layerActiu.selectedFeatures())
             if nombreElements > 0:
                 mitjana = total/nombreElements
             else:
@@ -406,6 +430,11 @@ class QvSeleccioGrafica(QWidget):
             # self.calculaFields()
             self.calcularSeleccio()
         pass
+    def hideEvent(self,e):
+        super().hideEvent(e)
+        self.foraEines()
+        if hasattr(self,'tool') and self.tool is not None:
+            self.tool.eliminaRubberbands()
 
 
 class QvMesuraGrafica(QWidget):
@@ -716,6 +745,8 @@ def eliminaMascara(projecte, tambeAuxiliar=True):
 
 def seleccioCercle(wSeleccioGrafica):
     seleccioClick()
+    wSeleccioGrafica.leRadiCercle.show()
+    wSeleccioGrafica.cbFixarRadi.show()
     try:
         wSeleccioGrafica.canvas.scene().removeItem(
             wSeleccioGrafica.toolSelect.rubberband)
@@ -733,6 +764,8 @@ def seleccioCercle(wSeleccioGrafica):
 
 def seleccioClicks(wSeleccioGrafica):
     seleccioClick()
+    wSeleccioGrafica.leRadiCercle.hide()
+    wSeleccioGrafica.cbFixarRadi.hide()
     try:
         wSeleccioGrafica.canvas.scene().removeItem(
             wSeleccioGrafica.toolSelect.rubberband)
@@ -756,6 +789,8 @@ def seleccioLliure(wSeleccioGrafica):
     #     wSeleccioGrafica.esborrarSeleccio()
     # except:
     #     pass
+    wSeleccioGrafica.leRadiCercle.hide()
+    wSeleccioGrafica.cbFixarRadi.hide()
 
     try:
         wSeleccioGrafica.actionMapSelect = QAction(
@@ -1043,9 +1078,11 @@ class QvMascaraEinaCercle(QvMascaraEinaPlantilla):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # self.rubberbandRadi = self.novaRubberband()
-        # self.rubberbandCercle = self.novaRubberband()
+        self.rubberbandCercle = self.novaRubberband()
         layer = self.llegenda.currentLayer()
         self.centre = None
+        self.cercleFixe = False
+        self.radiCercle = 0
         if layer is None and self.seleccionar:
             self.missatgeCaixa('Cal tenir seleccionat un nivell per poder fer una selecció',
                                'Marqueu un nivell a la llegenda sobre el que aplicar la consulta.')
@@ -1056,45 +1093,55 @@ class QvMascaraEinaCercle(QvMascaraEinaPlantilla):
         if event.button() == Qt.RightButton:
             # Tancar polígon??
             return
-        if self.centre is None:
+        if self.cercleFixe:
+            centre = self.toMapCoordinates(event.pos())
+            poligon, _ = self.getPoligon(centre,centre+QgsVector(self.radiCercle,0),100)
+            if self.emmascarar:
+                self.emmascaraPoligon(poligon)
+            if self.seleccionar:
+                self.seleccionaPoligon(poligon)
+            
+        elif self.centre is None:
             self.rubberbandCercle = self.novaRubberband(True)
             self.rubberbandRadi = self.novaRubberband(True)
             self.points = []
         self.centre = self.toMapCoordinates(event.pos())
 
     def canvasMoveEvent(self, event):
-        if self.centre is not None:
-            self.rbcircle(self.centre, self.toMapCoordinates(event.pos()))
+        if self.cercleFixe:
+            centre = self.toMapCoordinates(event.pos())
+            self.rbcircle(centre, centre+QgsVector(self.radiCercle,0))
+        elif self.centre is not None:
+            punt = self.toMapCoordinates(event.pos())
+            self.rbcircle(self.centre, punt)
+            dist = self.centre.distance(punt)
+            self.wSeleccioGrafica.leRadiCercle.setText(str(int(dist)))
 
     def canvasReleaseEvent(self, event):
         mascara = self.getCapa()
         poligon, _ = self.getPoligon(
             self.centre, self.toMapCoordinates(event.pos()), 100)
         if self.emmascarar:
-            aplicaMascara(self.projecte, self.canvas,
-                          [poligon], self.getCapa())
+            self.emmascaraPoligon(poligon)
+        
+        if self.seleccionar:
+            self.seleccionaPoligon(poligon)
+        self.centre = None
+        self.actualitza()
+        # self.rubberbandCercle.hide()
 
+    def emmascaraPoligon(self,poligon):
+        aplicaMascara(self.projecte, self.canvas,[poligon], self.getCapa())
+    def seleccionaPoligon(self,poligon):
         layer = self.llegenda.currentLayer()
-        if self.seleccionar and layer is not None:
-            # Seleccionem coses
+        if layer is not None:
             featsPnt = layer.getFeatures(
                 QgsFeatureRequest().setFilterRect(poligon.boundingBox()))
-            # for featPnt in featsPnt:
-            #     if self.overlap:
-            #         if featPnt.geometry().intersects(poligon):
-            #             layer.select(featPnt.id())
-            #     else:
-            #         if featPnt.geometry().within(poligon):
-            #             layer.select(featPnt.id())
-            # self.wSeleccioGrafica.calcularSeleccio()
             if self.overlap:
                 ids = [featPnt.id() for featPnt in featsPnt if featPnt.geometry().intersects(poligon)]
             else:
                 ids = [featPnt.id() for featPnt in featsPnt if featPnt.geometry().within(poligon)]
             self.selecciona(ids)
-        self.centre = None
-        self.actualitza()
-        # self.rubberbandCercle.hide()
 
     def rbcircle(self, center, edgePoint, segments=100):
         self.rubberbandCercle.reset(True)
@@ -1130,7 +1177,7 @@ class QvMesuraMultiLinia(QgsMapTool):
 
         self.rubberbandCercle = self.creaRubberband(cercle=True)
 
-        # self.rubberbands = []
+        self.rubberbands = []
         self.cercles = []
 
         self.point = None
@@ -1463,34 +1510,56 @@ class QvSeleccioElement(QgsMapTool):
             if layer is None:
                 layer = self.canvas.layers()[0]
 
-            # point = self.canvas.getCoordinateTransform().toMapCoordinates(x, y)
-            if self.canvas.rotation() == 0:
-                esquerraDalt = self.canvas.getCoordinateTransform().toMapCoordinates(x -
-                                                                                     self.radi, y-self.radi)
-                dretaBaix = self.canvas.getCoordinateTransform().toMapCoordinates(x +
-                                                                                  self.radi, y+self.radi)
-            else:
-                esquerraDalt = self.canvas.getCoordinateTransform().toMapCoordinates(
-                    x-self.radi*math.sqrt(2), y-self.radi*math.sqrt(2))
-                dretaBaix = self.canvas.getCoordinateTransform().toMapCoordinates(
-                    x+self.radi*math.sqrt(2), y-self.radi*math.sqrt(2))
+            point = self.canvas.getCoordinateTransform().toMapCoordinates(x, y)
 
-            # marcaLloc = QgsVertexMarker(self.canvas)
-            # marcaLloc.setCenter( point )
-            # marcaLloc.setColor(QColor(255, 0, 0))
-            # marcaLloc.setIconSize(15)
-            # marcaLloc.setIconType(QgsVertexMarker.ICON_CROSS) # or ICON_CROSS, ICON_X
-            # marcaLloc.setPenWidth(0)
-            # marcaLloc.show()
-            # return
+            pnt= QgsPointXY(x,y) 
+            alfa=180+45  # 45, para que sea cuadrado, 180 por distinto punto origen angulos
+            pntEsquerraDalt = pnt.project(self.radi, alfa - self.canvas.rotation())
+            esquerraDalt = self.canvas.getCoordinateTransform().toMapCoordinates(pntEsquerraDalt.x(),  pntEsquerraDalt.y())
 
-            # rect = QgsRectangle(point.x() - self.radi, point.y() - self.radi, point.x() + self.radi, point.y() + self.radi)
+            alfa=alfa+180
+            pntDretaBaix = pnt.project(self.radi, alfa - self.canvas.rotation())
+            dretaBaix = self.canvas.getCoordinateTransform().toMapCoordinates(pntDretaBaix.x(), pntDretaBaix.y())
+
+            marcaLloc = QgsVertexMarker(self.canvas)
+            marcaLloc.setCenter( point )
+            marcaLloc.setColor(QColor(255, 0, 0))
+            marcaLloc.setIconSize(15)
+            marcaLloc.setIconType(QgsVertexMarker.ICON_CROSS) # or ICON_CROSS, ICON_X
+            marcaLloc.setPenWidth(0)
+            marcaLloc.show()
+          
+
+            rect = QgsRectangle(point.x() - self.radi, point.y() - self.radi, point.x() + self.radi, point.y() + self.radi)
             rect = QgsRectangle(
                 esquerraDalt.x(), esquerraDalt.y(), dretaBaix.x(), dretaBaix.y())
+
+            rb = QgsRubberBand(self.canvas, True)
+            rb.setToGeometry(QgsGeometry().fromRect(rect))
+
+
+            # import math
+            # pi =3.1416
+            # llistaPunts=[]
+            # theta = 1*(2.0 * pi/360)
+            # segments=360
+            
+            # for itheta in range(segments+1):
+            #     theta = itheta*(2.0 * pi/segments)
+            #     xx= point.x()+self.radi*math.cos(theta)
+            #     yy= point.y()+self.radi*math.sin(theta)
+            #     llistaPunts.append(QgsPointXY(xx,yy))
+            
+            # polygon= QgsGeometry.fromPolygonXY([llistaPunts])
+            # rb = QgsRubberBand(self.canvas, True)            
+            # rb.setToGeometry(polygon)
+
+            rb.show()
             # ids=[]
             features = []
             if layer is not None and layer.type() == QgsMapLayer.VectorLayer:
-                it = layer.getFeatures(QgsFeatureRequest().setFilterRect(rect))
+                # per defecte calcula la intersecció utilitzant les bounding box. Forcem a que ho faci amb una intersecció exacta
+                it = layer.getFeatures(QgsFeatureRequest().setFilterRect(rect).setFlags(QgsFeatureRequest.ExactIntersect))
 
                 for feature in it:
                     # ids.append(feature.id())

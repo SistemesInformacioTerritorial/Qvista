@@ -909,8 +909,8 @@ if __name__ == "__main__":
 
 
         # z = QvMapificacio('U:/QUOTA/Comu_imi/Becaris/CarrecsAnsi100.csv')
-        # z = QvMapificacio('CarrecsUTF8.csv')
-        z = QvMapificacio('C:/temp/qVista/dades/Terrasses.csv')
+        z = QvMapificacio('C:/temp/qVista/Dades Usuari/CarrecsUTF8.csv')
+        # z = QvMapificacio('C:/temp/qVista/dades/Terrasses.csv')
 
         if z.msgError != '':
             print('Error:', z.msgError)
@@ -927,10 +927,11 @@ if __name__ == "__main__":
         # w.show()
 
         # campsAdreca = ('Tipus de via', 'Via', 'Número')
-        # campsAdreca = ('', 'NOM_CARRER_GPL', 'NUM_I_GPL', '', 'NUM_F_GPL')
-        campsAdreca = ('Tipus via', 'Carrer', 'Numero')
+        campsAdreca = ('', 'NOM_CARRER_GPL', 'NUM_I_GPL', '', 'NUM_F_GPL')
+        # campsAdreca = ('Tipus via', 'Carrer', 'Numero')
 
-        zones = ('Coordenada', 'Districte', 'Barri', 'Codi postal', "Illa", "Solar", "Àrea estadística bàsica", "Secció censal")
+        # zones = ('Coordenada', 'Districte', 'Barri', 'Codi postal', "Illa", "Solar", "Àrea estadística bàsica", "Secció censal")
+        zones = ('Coordenada', 'Districte')
         ok = z.geocodificacio(campsAdreca, zones,
             percentatgeProces=lambda n: print('... Procesado', str(n), '% ...'),
             errorAdreca=lambda f: print('Fila sin geocodificar -', f),

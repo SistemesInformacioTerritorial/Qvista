@@ -44,6 +44,10 @@ class QvFitxesAtributs(QDialog):
         self.initUI()
         self.layer = layer
         self.features, self.total = QvFormAtributs.toList(features)
+        # Donat que fer un if-else en una dict comprehension és molt estrany, fem primer un generador amb el contingut, i després ho passem al diccionari
+        capesAux = ((feat[0],feat[1]) if isinstance(feat, tuple) else (feat,layer) for feat in self.features)
+        self.capesCorresponents = {x[0]:x[1] for x in capesAux}
+        self.features = list(self.capesCorresponents.keys())
         self.attributes = attributes
         self.mode = None
         # self.selectFeature = self.layer.selectedFeatureCount() == 0
@@ -60,22 +64,28 @@ class QvFitxesAtributs(QDialog):
         self.ui.buttonBox.accepted.connect(self.accept)
 
     def consulta(self):
+        layersDiferents = set()
         for feature in self.features:
-            form = QgsAttributeForm(self.layer, feature)
+            layer = self.capesCorresponents[feature]
+            form = QgsAttributeForm(layer, feature)
+            layersDiferents.add(layer)
             # form.setMode(QgsAttributeEditorContext.IdentifyMode)
             self.ui.stackedWidget.addWidget(form)
+        # baseTitol = self.layer.name() if len(layersDiferents)==1 else 'Consulta multicapa'
+        baseTitol = '{}'
         if self.total > 1:
-            self.title = self.layer.name() + " - Consulta fitxa elements"
+            self.title = baseTitol + " - Consulta fitxa elements"
             self.ui.bPrev.clicked.connect(lambda: self.move(-1))
             self.ui.bNext.clicked.connect(lambda: self.move(1))
             self.ui.groupBox.setVisible(True)
         else:
-            self.title = self.layer.name() + " - Consulta fitxa element"
+            self.title = baseTitol + " - Consulta fitxa element"
             self.ui.groupBox.setVisible(False)
 
     def setDefaultValues(self, feature):
-        for idx in self.layer.attributeList():
-            vDef = self.layer.defaultValue(idx, feature)
+        layer = self.capesCorresponents[feature]
+        for idx in layer.attributeList():
+            vDef = layer.defaultValue(idx, feature)
             feature.setAttribute(idx, vDef)
 
     def addRemoveButton(self, form):
@@ -88,15 +98,16 @@ class QvFitxesAtributs(QDialog):
         self.newFeature = None
         self.total = 1
         feature = self.features[0]
+        layer = self.capesCorresponents[feature]
         if new:
             self.mode = QgsAttributeEditorContext.AddFeatureMode 
-            self.title = self.layer.name() + " - Fitxa nou element"
+            self.title = layer.name() + " - Fitxa nou element"
             self.setDefaultValues(feature)
-            form = QgsAttributeDialog(self.layer, feature, False)
+            form = QgsAttributeDialog(layer, feature, False)
         else:
             self.mode = QgsAttributeEditorContext.SingleEditMode
-            self.title = self.layer.name() + " - Edició fitxa element"
-            form = QgsAttributeDialog(self.layer, feature, False)
+            self.title = layer.name() + " - Edició fitxa element"
+            form = QgsAttributeDialog(layer, feature, False)
             self.addRemoveButton(form)
         form.setMode(self.mode)
         form.attributeForm().featureSaved.connect(self.featureSaved)
@@ -121,10 +132,11 @@ class QvFitxesAtributs(QDialog):
         self.close()
 
     def setTitle(self, n):
+        titolAct = self.title.format(self.capesCorresponents[self.features[n]].name())
         if self.total > 1:
-            self.setWindowTitle(self.title + ' (' + str(n+1) + ' de ' + str(self.total) + ')')
+            self.setWindowTitle(titolAct + ' (' + str(n+1) + ' de ' + str(self.total) + ')')
         else:
-            self.setWindowTitle(self.title)
+            self.setWindowTitle(titolAct)
 
     def setMenu(self, n):
         if self.mode is None: # Consulta
@@ -145,12 +157,19 @@ class QvFitxesAtributs(QDialog):
         # if not self.selectFeature:
         #     return
         if n is None:
-            self.layer.removeSelection()
+            for layer in self.capesCorresponents.values():
+                layer.removeSelection()
         else:
-            QvDigitizeContext.selectAndScrollFeature(self.features[n].id(), self.layer, self.attributes)
+            layer = self.capesCorresponents[self.features[n]]
+            QvDigitizeContext.selectAndScrollFeature(self.features[n].id(), layer, self.attributes)
+    
+    def deselect(self,n):
+        layer = self.capesCorresponents[self.features[n]]
+        layer.removeSelection()
 
     def go(self, n):
         if n >= 0 and n < self.total:
+            self.deselect(self.ui.stackedWidget.currentIndex())
             self.select(n)
             self.setTitle(n)
             self.setMenu(n)
@@ -159,6 +178,13 @@ class QvFitxesAtributs(QDialog):
     def move(self, inc):
         n = (self.ui.stackedWidget.currentIndex() + inc) % self.total
         self.go(n)
+    def moveWid(self,x,y):
+        # En general, els QWidgets tenen una funció move, que serveix per moure el widget de posició
+        # En aquest cas, donat que hem fet una funció "move" que feia una altra cosa (canviar la pantalla),
+        #  necessitem una altra funció move per fer el move normal
+        # més info: https://doc.qt.io/qt-5/qwidget.html#pos-prop
+        # Nota: potser calgui fer-ne una altra per fer el move(QPoint)
+        super().move(x,y)
 
     def finish(self, int):
         self.select(None)
