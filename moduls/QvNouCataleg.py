@@ -61,7 +61,7 @@ class QvNouCataleg(QWidget):
         self.bReload.setFixedHeight(40)
         self.bReload.setStyleSheet(
             "background-color:%s; border: 0px; margin: 0px; padding: 0px;" % QvConstants.COLORFOSCHTML)
-        self.bReload.clicked.connect(self.recarrega)
+        self.bReload.clicked.connect(lambda: self.recarrega())
         lblEspai=QLabel(' ')
         lblEspai.setMinimumHeight(40)
         lblEspai.setSizePolicy(QSizePolicy.Expanding,QSizePolicy.Maximum)
@@ -173,14 +173,19 @@ class QvNouCataleg(QWidget):
 
         #Widget del costat (necessari per la funció carregaBandaEsquerra)
         self.wBanda = QWidget()
+        self.sBanda = QScrollArea(self)
+        self.sBanda.setWidgetResizable(True)
+        # self.sBanda.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
         self.wBanda.setStyleSheet('background: %s;' %
                                   QvConstants.COLORGRISCLARHTML)
-        self.wBanda.setFixedWidth(256)
-        self.layoutContingut.addWidget(self.wBanda)
+        # self.wBanda.setFixedWidth(256)
+        self.sBanda.setFixedWidth(300)
+        self.layoutContingut.addWidget(self.sBanda)
         self.lBanda = QVBoxLayout()
         self.lBanda.setContentsMargins(0, 0, 0, 0)
         self.lBanda.setSpacing(0)
         self.wBanda.setLayout(self.lBanda)
+        self.sBanda.setWidget(self.wBanda)
 
         
         self.carregaBandaEsquerra()
@@ -202,6 +207,7 @@ class QvNouCataleg(QWidget):
         self.esPotMoure = False
         self.clickTots()
 
+    @QvFuncions.mostraSpinner
     def recarrega(self):
         self.setCursor(QvConstants.cursorOcupat())
         self.carregaBandaEsquerra()
@@ -1075,7 +1081,10 @@ class QvCreadorCataleg(QDialog):
             self._leNovaCat.hide()
 
     def _populaSubCarpetes(self):
-        root, dirs, _ = next(os.walk(self._cbCatalegs.currentText()))
+        try:
+            root, dirs, _ = next(os.walk(self._cbCatalegs.currentText()))
+        except:
+            return
         if len(dirs) == 0:
             # Avisar de que hauran de crear algun directori
             pass
