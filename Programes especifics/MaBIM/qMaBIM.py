@@ -357,7 +357,7 @@ class QMaBIM(QtWidgets.QMainWindow):
         self.einaSeleccio = QvSeleccioBIM(self.canvasA, self.llegenda)
         self.einaSeleccio.elementsSeleccionats.connect(self.seleccioGrafica)
 
-        self.setStatusBar(QvStatusBar(self,['progressBar',('coordenades',1),'projeccio', 'escala'],self.canvasA,self.llegenda))
+        self.setStatusBar(QvStatusBar(self,['progressBar',('coordenades',1), 'escala'],self.canvasA,self.llegenda))
         self.statusBar().afegirWidget('lblSIT',QtWidgets.QLabel("SIT - Sistemes d'Informació Territorial"),0,0)
         self.statusBar().afegirWidget('lblSIT',QtWidgets.QLabel("Direcció de Patrimoni"),0,1)
         self.statusBar().afegirWidget('spacer',QtWidgets.QWidget(),1,2)

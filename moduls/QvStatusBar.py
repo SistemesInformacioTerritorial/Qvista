@@ -136,8 +136,8 @@ class QvStatusBar(QStatusBar):
                 wid.returnPressed.connect(self.returnEditarXY)
                 nomWid = 'leXY'
             elif x == 'projeccio':
-                wid = QLabel(self)
-                QgsProject.instance().fileNameChanged.connect(lambda: self.lblProjeccio.setText(QgsProject.instance().crs().description()))
+                wid = QLabel(QgsProject.instance().crs().description(),self)
+                QgsProject.instance().readProject.connect(lambda: self.lblProjeccio.setText(QgsProject.instance().crs().description()))
                 nomWid = 'lblProjeccio'
             elif x == 'escala':
                 wid = QvLineEditPS(prefix='Escala 1:', parent=self)
