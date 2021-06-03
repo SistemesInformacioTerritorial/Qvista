@@ -11,13 +11,14 @@ import re
 from moduls.QvFavorits import QvFavorits
 from moduls.QvMemoria import QvMemoria
 from moduls import QvFuncions
+import subprocess
 
 
 class QvNouCataleg(QWidget):
     # Senyal per obrir un projecte. Passa un string (ruta de l'arxiu), un booleà (si aquell era favorit o no) i un widget (el botó al qual s'ha fet click).
     # El segon i el tercer només calen si volem poder gestionar els favorits des de fora del catàleg
     obrirProjecte = pyqtSignal(str, bool, QWidget)
-
+    external = False
     def __init__(self, parent: QtWidgets.QWidget = None):
         '''Construeix el catàleg
         El codi és més o menys el mateix que s'utilitza per construir moltes altres finestres frameless. 
@@ -26,6 +27,7 @@ class QvNouCataleg(QWidget):
         El cos conté una botonera lateral a l'esquerra, amb un botó per cada carpeta del catàleg, i un layout redimensionable que mostra el contingut dels directoris seleccionats
         '''
         super().__init__()
+        
         self.parent = parent
         self.setWindowFlags(Qt.FramelessWindowHint)
         self.actualitzaWindowFlags()
@@ -206,6 +208,10 @@ class QvNouCataleg(QWidget):
         self.oldPos = self.pos()
         self.esPotMoure = False
         self.clickTots()
+    
+    def setExternal(self):
+        """ Funció per a saber si el catàleg s'ha inicialitzat desde fora """
+        self.external = True  
 
     @QvFuncions.mostraSpinner
     def recarrega(self):
@@ -374,13 +380,23 @@ class QvNouCataleg(QWidget):
 
     def obreProjecte(self, dir: str, favorit: bool, widgetAssociat):
         '''Obre el projecte amb qVista. Li indica a qVista si és favorit o no, perquè pugui posar el botó com toca'''
-        try:
-            self.obrirProjecte.emit(dir, favorit, widgetAssociat)
-            if self.parent is not None:
-                self.parent.show()
-        except:
-            QMessageBox.warning(self, "No s'ha pogut obrir el mapa",
-                                "El mapa no ha pogut ser obert. Si el problema persisteix, contacteu amb el gestor del catàleg")
+    
+        if self.external == True:
+            dirQVista = os.getcwd()
+            myPythonExe = sys.executable
+            dirProjecte = dir
+            # comando = "c:; cd " + dirQVista + "; & " + myPythonExe + " " + dirQVista + "\qVista.py" + ' "' + dirProjecte + '"'
+            comando = [myPythonExe, dirQVista + "\qVista.py", dirProjecte]
+            p = subprocess.Popen(comando)
+
+        else:
+            try:
+                self.obrirProjecte.emit(dir, favorit, widgetAssociat)
+                if self.parent is not None:
+                    self.parent.show()
+            except:
+                QMessageBox.warning(self, "No s'ha pogut obrir el mapa",
+                                    "El mapa no ha pogut ser obert. Si el problema persisteix, contacteu amb el gestor del catàleg")
 
     def obrirEnQGis(self, dir: str):
         '''Obre el projecte amb QGis. El copia al directori temporal, per si l'usuari modifica alguna cosa'''
@@ -1240,18 +1256,19 @@ if __name__ == "__main__":
     with qgisapp() as app:
         with open('style.qss') as f:
             app.setStyleSheet(f.read())
-        canvas = QvCanvas(
-            llistaBotons=["panning", "zoomIn", "zoomOut", "streetview"])
-        canvas.show()
-        atributs = QvAtributs(canvas)
+        # canvas = QvCanvas(
+        #     llistaBotons=["panning", "zoomIn", "zoomOut", "streetview"])
+        # canvas.show()
+        # atributs = QvAtributs(canvas)
         projecte = QgsProject.instance()
-        root = projecte.layerTreeRoot()
-        bridge = QgsLayerTreeMapCanvasBridge(root, canvas)
-        projecte.read(configuracioQvista.projecteInicial)
-        llegenda = QvLlegenda(canvas, atributs)
-        llegenda.show()
+        # root = projecte.layerTreeRoot()
+        # bridge = QgsLayerTreeMapCanvasBridge(root, canvas)
+        # projecte.read(configuracioQvista.projecteInicial)
+        # llegenda = QvLlegenda(canvas, atributs)
+        # llegenda.show()
         cataleg = QvNouCataleg()
+        cataleg.setExternal()
         cataleg.showMaximized()
         cataleg.obrirProjecte.connect(lambda x: projecte.read(x))
-        creador = QvCreadorCataleg(canvas, projecte, cataleg)
-        creador.show()
+        # creador = QvCreadorCataleg(canvas, projecte, cataleg)
+        # creador.show()
