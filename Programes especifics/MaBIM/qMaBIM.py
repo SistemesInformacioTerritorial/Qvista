@@ -357,7 +357,7 @@ class QMaBIM(QtWidgets.QMainWindow):
         self.einaSeleccio = QvSeleccioBIM(self.canvasA, self.llegenda)
         self.einaSeleccio.elementsSeleccionats.connect(self.seleccioGrafica)
 
-        self.setStatusBar(QvStatusBar(self,['progressBar',('coordenades',1),'projeccio', 'escala'],self.canvasA,self.llegenda))
+        self.setStatusBar(QvStatusBar(self,['progressBar',('coordenades',1), 'escala'],self.canvasA,self.llegenda))
         self.statusBar().afegirWidget('lblSIT',QtWidgets.QLabel("SIT - Sistemes d'Informació Territorial"),0,0)
         self.statusBar().afegirWidget('lblSIT',QtWidgets.QLabel("Direcció de Patrimoni"),0,1)
         self.statusBar().afegirWidget('spacer',QtWidgets.QWidget(),1,2)
@@ -587,6 +587,27 @@ class QMaBIM(QtWidgets.QMainWindow):
         # QgsProject.instance().read('L:/DADES/SIT/qVista/CATALEG/MAPES PRIVATS/Patrimoni/PPM_CatRegles_geopackage.qgs')
         self.llegenda.readProject('L:/DADES/SIT/qVista/CATALEG/MAPES PRIVATS/Patrimoni/PPM_CatRegles_geopackage.qgs')
         self.centrarMapa()
+
+        # cal comprovar si les capes ... i ... són visibles
+        model = self.llegenda.model
+        capa1 = self.llegenda.capaPerNom('Entitats en PH')
+        nodeCapa1 = QgsProject.instance().layerTreeRoot().findLayer(capa1.id())
+        nodeBaixa1 = [node for node in model.layerLegendNodes(nodeCapa1) if 'PH: Baixa' in node.data(QtCore.Qt.DisplayRole)]
+        capa2 = self.llegenda.capaPerNom('Entitats en PV')
+        nodeCapa2 = QgsProject.instance().layerTreeRoot().findLayer(capa2.id())
+        nodeBaixa2 = [node for node in model.layerLegendNodes(nodeCapa2) if 'Baixes' in node.data(QtCore.Qt.DisplayRole)]
+
+        self.nodesBaixes = *nodeBaixa1, *nodeBaixa2
+
+        self.cbBaixesVisibles.stateChanged.connect(self.swapVisibilitatBaixes)
+    
+    def swapVisibilitatBaixes(self,check):
+        if check:
+            for x in self.nodesBaixes:
+                x.setData(QtCore.Qt.Checked, QtCore.Qt.CheckStateRole)
+        else:
+            for x in self.nodesBaixes:
+                x.setData(QtCore.Qt.Unchecked, QtCore.Qt.CheckStateRole)
     
     def getCapaBIMs(self):
         # Retorna una capa amb camp de BIMs
