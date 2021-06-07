@@ -646,6 +646,36 @@ class BotoLateral(QPushButton):
         return self.local
 
 
+class DraggableLabel(QLabel):
+    def __init__(self,parent,image, dir):
+        super(QLabel,self).__init__(parent)
+        self.setPixmap(QPixmap(image))
+        self.dir = dir
+        #self.dir = dir.replace(r"\",'/')
+        self.show()
+    def mousePressEvent(self, event):
+        if event.button() == Qt.LeftButton:
+            self.drag_start_position = event.pos()
+
+    def mouseMoveEvent(self, event):
+        if not (event.buttons() & Qt.LeftButton):
+            return
+        if (event.pos() - self.drag_start_position).manhattanLength() < QApplication.startDragDistance():
+            return
+        drag = QDrag(self)
+        mimedata = QMimeData()
+        dataUrl = QUrl("file:///" + os.path.abspath(self.dir))
+        mimedata.setUrls([dataUrl])
+
+        drag.setMimeData(mimedata)
+        pixmap = QPixmap(self.size())
+        painter = QPainter(pixmap)
+        painter.drawPixmap(self.rect(), self.grab())
+        painter.end()
+        drag.setPixmap(pixmap)
+        drag.setHotSpot(event.pos())
+        drag.exec_(Qt.LinkAction)
+
 class MapaCataleg(QFrame):
     '''Widget que representa la preview del mapa
     Conté una imatge i un text
@@ -675,7 +705,8 @@ class MapaCataleg(QFrame):
         self.layout.setSpacing(0)
 
         self.imatge = QPixmap(dir)
-        self.lblImatge = QLabel()
+        aux = QLabel()
+        self.lblImatge = DraggableLabel(aux, self.imatge, dir+'.qgs')
         self.lblImatge.setPixmap(self.imatge)
         # La mida que volem, restant-li el que ocuparà el border
         self.lblImatge.setFixedSize(300, 180)
