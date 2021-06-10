@@ -80,7 +80,7 @@ class ConstantsMaBIM:
     rutaUI= 'Programes especifics/MaBIM/MaBIM.ui'
     rutaProjecte = 'L:/DADES/SIT/qVista/CATALEG/MAPES PRIVATS/Patrimoni/PPM_CatRegles_geopackage.qgs'
 
-    rutaLogoAjuntament = 'imatges/logo-ajuntament-de-barcelona-png-3.png'
+    rutaLogoAjuntament = 'imatges/escutDreta.png'
 
     nomCapaPH = 'Entitats en PH'
     nomCapaPV = 'Entitats en PV'
