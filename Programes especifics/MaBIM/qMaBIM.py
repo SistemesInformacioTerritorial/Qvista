@@ -67,6 +67,29 @@ WHERE
 ((BIM LIKE '%'||:pText||'%') AND (ROWNUM<100))
 '''
 
+class ConstantsMaBIM:
+    DB_MABIM_PRO = {
+        'Database': 'QOCISPATIAL',
+        'HostName': 'GEOPR1.imi.bcn',
+        'Port': 1551,
+        'DatabaseName': 'GEOPR1',
+        'UserName': 'PATRIMONI_CONS',
+        'Password': 'PATRIMONI_CONS'
+    }
+
+    rutaUI= 'Programes especifics/MaBIM/MaBIM.ui'
+    rutaProjecte = 'L:/DADES/SIT/qVista/CATALEG/MAPES PRIVATS/Patrimoni/PPM_CatRegles_geopackage.qgs'
+
+    rutaLogoAjuntament = 'imatges/logo-ajuntament-de-barcelona-png-3.png'
+
+    nomCapaPH = 'Entitats en PH'
+    nomCapaPV = 'Entitats en PV'
+
+    nomsCapes = [nomCapaPH, nomCapaPV]
+
+    rangBarcelona = QgsRectangle(QgsPointXY(405960, 4572210), QgsPointXY(452330 , 4595090))
+
+
 # això estaria millor dins de la classe Consulta, però no va
 # No es pot utilitzar fora d'aquesta classe
 # és un decorador que garanteix que la Base de Dades estigui oberta
@@ -78,21 +101,10 @@ def connexio(func):
     return _funcio
 
 class Consulta(Singleton):
-    _DB_MABIM_PRO = {
-        'Database': 'QOCISPATIAL',
-        'HostName': 'GEOPR1.imi.bcn',
-        'Port': 1551,
-        'DatabaseName': 'GEOPR1',
-        # 'UserName': None,
-        # 'Password': None
-        'UserName': 'PATRIMONI_CONS',
-        'Password': 'PATRIMONI_CONS'
-    }
-
     def __init__(self):
         if hasattr(self,'db'):
             return
-        self.dbMaBIM=self._DB_MABIM_PRO
+        self.dbMaBIM=ConstantsMaBIM.DB_MABIM_PRO
         self.obte_camps_restants()
         self.db = QSqlDatabase.addDatabase(self.dbMaBIM['Database'], 'FAV')
         if self.db.isValid():
@@ -298,8 +310,8 @@ class Cercador:
         self.leNumero = leNumero
         self.leNumero.setPlaceholderText('Número')
         self.lblIcona = lblIcona
-        pix = QtGui.QPixmap('imatges/MaBIM/cercador-icona.png')
-        self.lblIcona.setPixmap(pix.scaledToHeight(self.MIDALBLICONA[0]))
+        # pix = QtGui.QPixmap('imatges/MaBIM/cercador-icona.png')
+        # self.lblIcona.setPixmap(pix.scaledToHeight(self.MIDALBLICONA[0]))
         self.cercador = QCercadorAdreca(self.leCarrer, self.leNumero, 'SQLITE')
         self.marcaLlocPosada = False
         # self.setStyleSheet('font-size: 14px;')
@@ -343,7 +355,7 @@ class Cercador:
 class QMaBIM(QtWidgets.QMainWindow):
     def __init__(self,*args,**kwargs):
         super().__init__(*args, **kwargs)
-        uic.loadUi('Programes especifics/MaBIM/MaBIM.ui',self)
+        uic.loadUi(ConstantsMaBIM.rutaUI,self)
         
         self.llistaBotons = (self.bFavorits, self.bBIMs, self.bPIP, self.bProjectes, self.bConsultes)
 
@@ -383,8 +395,9 @@ class QMaBIM(QtWidgets.QMainWindow):
         # doncs posem un mini HTML amb la imatge i el text
         self.lblLogoMaBIM.setFixedSize(275,60)
         self.lblLogoMaBIM.setText(f"""<html><img src=imatges/MaBIM/MaBIM-text.png height={self.lblLogoMaBIM.height()}><span style="font-size:18pt; color:#ffffff;"></span></html>""")
-        self.lblLogoAjuntament.setFixedSize(275//2,45)
-        self.lblLogoAjuntament.setPixmap(QtGui.QPixmap('imatges/logo-ajuntament-de-barcelona-png-3.png').scaledToHeight(45))
+        # self.lblLogoAjuntament.setFixedSize(275,82)
+        self.lblLogoAjuntament.setFixedHeight(82)
+        self.lblLogoAjuntament.setPixmap(QtGui.QPixmap(ConstantsMaBIM.rutaLogoAjuntament).scaledToHeight(82))
         # self.lblLogoMaBIM.setFixedWidth(275)
     
     def setIconesBotons(self):
@@ -507,8 +520,6 @@ class QMaBIM(QtWidgets.QMainWindow):
 
     @QvFuncions.cronometraDebug
     def configuraPlanols(self):
-        # QgsProject.instance().read('mapesOffline/accelerator.qgs')
-        # QgsProject.instance().read('mapesOffline/qVista default map.qgs')
         root = QgsProject.instance().layerTreeRoot()
         planolA = self.tabCentral.widget(2)
         
@@ -578,36 +589,64 @@ class QMaBIM(QtWidgets.QMainWindow):
         self.tabCentral.currentChanged.connect(self.canviaTab)
 
     def centrarMapa(self):
-        self.canvasA.setExtent(QgsRectangle(QgsPointXY(405960, 4572210), QgsPointXY(452330 , 4595090)))
+        self.canvasA.setExtent(ConstantsMaBIM.rangBarcelona)
         self.canvasA.refresh()
         self.canvasA.bCentrar.setChecked(False)
     
     @QvFuncions.cronometraDebug
     def inicialitzaProjecte(self):
         # QgsProject.instance().read('L:/DADES/SIT/qVista/CATALEG/MAPES PRIVATS/Patrimoni/PPM_CatRegles_geopackage.qgs')
-        self.llegenda.readProject('L:/DADES/SIT/qVista/CATALEG/MAPES PRIVATS/Patrimoni/PPM_CatRegles_geopackage.qgs')
+        self.llegenda.readProject(ConstantsMaBIM.rutaProjecte)
         self.centrarMapa()
 
         # cal comprovar si les capes ... i ... són visibles
+        def nodeConteBaixa(node):
+            nomNode = node.data(QtCore.Qt.DisplayRole).lower()
+            return 'baixa' in nomNode or 'baixes' in nomNode
         model = self.llegenda.model
-        capa1 = self.llegenda.capaPerNom('Entitats en PH')
-        nodeCapa1 = QgsProject.instance().layerTreeRoot().findLayer(capa1.id())
-        nodeBaixa1 = [node for node in model.layerLegendNodes(nodeCapa1) if 'PH: Baixa' in node.data(QtCore.Qt.DisplayRole)]
-        capa2 = self.llegenda.capaPerNom('Entitats en PV')
-        nodeCapa2 = QgsProject.instance().layerTreeRoot().findLayer(capa2.id())
-        nodeBaixa2 = [node for node in model.layerLegendNodes(nodeCapa2) if 'Baixes' in node.data(QtCore.Qt.DisplayRole)]
+        capes = (self.llegenda.capaPerNom(nomCapa) for nomCapa in ConstantsMaBIM.nomsCapes)
+        nodesCapes = (QgsProject.instance().layerTreeRoot().findLayer(capa.id()) for capa in capes)
+        self.nodesBaixes = [node for nodeCapa in nodesCapes for node in model.layerLegendNodes(nodeCapa) if nodeConteBaixa(node)]
 
-        self.nodesBaixes = *nodeBaixa1, *nodeBaixa2
 
-        self.cbBaixesVisibles.stateChanged.connect(self.swapVisibilitatBaixes)
+        QgsProject.instance().layerTreeRoot().visibilityChanged.connect(self.canviVisibilitatLlegenda)
+        for x in self.nodesBaixes:
+            x.dataChanged.connect(lambda: self.canviVisibilitatLlegenda(x))
+
+        self.nodeRegistrals = QgsProject.instance().layerTreeRoot().findLayer(self.llegenda.capaPerNom('SECCIONS_REGISTRALS').id())
+
+        self.cbBaixesVisibles.clicked.connect(self.swapVisibilitatBaixes)
+        self.cbRegistresPropietat.clicked.connect(self.swapVisibilitatRegistre)
+    
+    def canviVisibilitatLlegenda(self,node):
+        if node in self.nodesBaixes:
+            visibles = [x.data(QtCore.Qt.CheckStateRole)==QtCore.Qt.Checked for x in self.nodesBaixes]
+            # visibles = [x.flags().testFlag(QtCore.Qt.ItemIsEnabled) for x in self.nodesBaixes]
+            if all(visibles):
+                self.cbBaixesVisibles.setTristate(False)
+                self.cbBaixesVisibles.setCheckState(QtCore.Qt.Checked)
+                self.cbBaixesVisibles.setChecked(True)
+            elif any(visibles):
+                self.cbBaixesVisibles.setTristate(True)
+                self.cbBaixesVisibles.setCheckState(QtCore.Qt.PartiallyChecked)
+            else:
+                self.cbBaixesVisibles.setTristate(False)
+                self.cbBaixesVisibles.setChecked(False)
+        elif node==self.nodeRegistrals:
+            self.cbRegistresPropietat.setChecked(node.isVisible())
     
     def swapVisibilitatBaixes(self,check):
+        self.cbBaixesVisibles.setTristate(False)
         if check:
             for x in self.nodesBaixes:
                 x.setData(QtCore.Qt.Checked, QtCore.Qt.CheckStateRole)
         else:
             for x in self.nodesBaixes:
                 x.setData(QtCore.Qt.Unchecked, QtCore.Qt.CheckStateRole)
+    
+    def swapVisibilitatRegistre(self,check):
+        capa = self.llegenda.capaPerNom('SECCIONS_REGISTRALS')
+        self.llegenda.setLayerVisible(capa, check)
     
     def getCapaBIMs(self):
         # Retorna una capa amb camp de BIMs
