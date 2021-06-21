@@ -14,11 +14,14 @@ from moduls.QvConstants import QvConstants
 from moduls.QvApp import QvApp
 from moduls import QvFuncions
 from moduls.QvStatusBar import QvStatusBar
+import configuracioQvista
 import functools
 import sys
 import os
 import math
+import subprocess
 from typing import Sequence
+from pathlib import Path
 from qgis.core import QgsProject, QgsCoordinateReferenceSystem, QgsRectangle, QgsPointXY, QgsFeatureRequest, QgsMapLayer, QgsVectorLayer, QgsGeometry
 from qgis.gui import  QgsLayerTreeMapCanvasBridge, QgsVertexMarker, QgsMapTool, QgsGui, QgsRubberBand
 
@@ -79,6 +82,7 @@ class ConstantsMaBIM:
 
     rutaUI= 'Programes especifics/MaBIM/MaBIM.ui'
     rutaProjecte = 'L:/DADES/SIT/qVista/CATALEG/MAPES PRIVATS/Patrimoni/PPM_CatRegles_geopackage.qgs'
+    rutaProjecteEdicio = 'L:/DADES/SIT/qVista/CATALEG/MAPES PRIVATS/Patrimoni/mabimEDICIO_v3.qgs'
 
     rutaLogoAjuntament = 'imatges/escutDreta.png'
 
@@ -373,10 +377,32 @@ class QMaBIM(QtWidgets.QMainWindow):
         self.statusBar().afegirWidget('lblSIT',QtWidgets.QLabel("SIT - Sistemes d'Informació Territorial"),0,0)
         self.statusBar().afegirWidget('lblSIT',QtWidgets.QLabel("Direcció de Patrimoni"),0,1)
         self.statusBar().afegirWidget('spacer',QtWidgets.QWidget(),1,2)
+    
+        self.bObrirQGIS.clicked.connect(self.obrirEnQGIS)
 
         if len(QgsGui.editorWidgetRegistry().factories()) == 0:
             QgsGui.editorWidgetRegistry().initEditors()
 
+    def obrirEnQGIS(self):
+        # L'executable de Python acostuma a estar a la ruta [DIR]/OSGeo4W{64,}/apps/Python[NUM]/python.exe
+        # A partir d'ell podem trobar la carpeta d'instal·lació de OSGeo4W
+        executablePython = sys.executable
+        rutaOSGEO = str(Path(executablePython).parent.parent.parent)
+
+        # Per si de cas falla, posem alguna ruta extra on buscar
+        rutesInstalacio = (rutaOSGEO, 'C:/OSGeo4W', 'C:/OSGeo4W64', 'D:/OSGeo4W', 'D:/OSGeo4W64')
+
+        possiblesRutes = (f'{x}/bin' for x in rutesInstalacio if os.path.isdir(x))
+
+        for ruta in possiblesRutes:
+            executables = [rutaExe for rutaExe in (f'{ruta}/{nomExe}' for nomExe in ('qgis-ltr.bat','qgis.bat')) if os.path.isfile(rutaExe)]
+            if len(executables)!=0:            
+                extensio = self.canvasA.extent()
+                cmd = executables[0], '--project', ConstantsMaBIM.rutaProjecteEdicio, '--extent', f'{extensio.xMinimum()},{extensio.yMinimum()},{extensio.xMaximum()},{extensio.yMaximum()}'
+                subprocess.Popen(cmd, env=os.environ, shell=False, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT, creationflags=subprocess.CREATE_NO_WINDOW)
+                return
+        
+        # Si arribem aquí, ens queixem
     def showEvent(self, e):
         super().showEvent(e)
         self.tabCentral.setCurrentIndex(2)
