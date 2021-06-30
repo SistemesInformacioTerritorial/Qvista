@@ -14,6 +14,7 @@ from moduls.QvConstants import QvConstants
 from moduls.QvApp import QvApp
 from moduls import QvFuncions
 from moduls.QvStatusBar import QvStatusBar
+from moduls.QvFavorits import QvFavorits
 import configuracioQvista
 import functools
 import sys
@@ -110,7 +111,7 @@ class Consulta(Singleton):
             return
         self.dbMaBIM=ConstantsMaBIM.DB_MABIM_PRO
         self.obte_camps_restants()
-        self.db = QSqlDatabase.addDatabase(self.dbMaBIM['Database'], 'FAV')
+        self.db = QSqlDatabase.addDatabase(self.dbMaBIM['Database'], 'CERCADOR')
         if self.db.isValid():
             self.db.setHostName(self.dbMaBIM['HostName'])
             self.db.setPort(self.dbMaBIM['Port'])
@@ -356,6 +357,24 @@ class Cercador:
     #     print(txt)
     #     self.leCercador.clear()
 
+# class FavoritsMaBIM(QvFavorits):
+#     dadesDB = {}
+
+#     dadesTaula = {'nomCampInfo':'BIM',
+#                   'nomTaula':'Favorits',
+#                   'nomCampId':'iduser'}
+#     def configuraBD(self):
+#         self.db = QSqlDatabase.addDatabase('QSQLITE','FAVMABIM')
+#         self.db.setDatabaseName('C:/temp/qVista/dades/favoritsMaBIM.sqlite')
+#         # self.db.setConnectOptions("QSQLITE_OPEN_READONLY")
+
+class FavoritsMaBIM(QvFavorits):
+    dadesDB = ConstantsMaBIM.DB_MABIM_PRO
+
+    dadesTaula = {'nomCampInfo':'NOM_MAPA',
+                  'nomTaula':'BIMS_FAVORITS',
+                  'nomCampId':'IDUSER'}
+
 class QMaBIM(QtWidgets.QMainWindow):
     def __init__(self,*args,**kwargs):
         super().__init__(*args, **kwargs)
@@ -379,9 +398,47 @@ class QMaBIM(QtWidgets.QMainWindow):
         self.statusBar().afegirWidget('spacer',QtWidgets.QWidget(),1,2)
     
         self.bObrirQGIS.clicked.connect(self.obrirEnQGIS)
+        # La senyal "clicked" passa un paràmetre a la funció a la que es connecta
+        # La funció "setFavorit" permet passar-li paràmetres, però en aquest cas concret no en volem cap
+        # Per tal de que no li passi, fem la trampa d'una lambda sense paràmetres
+        self.bAfegirFavorit.clicked.connect(lambda: self.setFavorit())
+        self.bAfegirFavorit.clicked.connect(self.mostraFavorits)
+        self.bAfegirFavorit.hide()
+        self.actualitzaLlistaFavorits()
 
         if len(QgsGui.editorWidgetRegistry().factories()) == 0:
             QgsGui.editorWidgetRegistry().initEditors()
+        
+    def actualitzaLlistaFavorits(self):
+        self.favorits = set(map(str,sorted(FavoritsMaBIM().getFavorits())))
+        
+    def setFavorit(self, BIM=None, fav=None):
+        if BIM is None:
+            if not hasattr(self,'dadesLabelsDades'):
+                return
+            BIM = self.dadesLabelsDades[0]
+        if fav is None:
+            # fav = self.bAfegirFavorit.isChecked()
+            fav = not BIM in self.favorits
+        # BIM = self.dadesLabelsDades[0]
+        # if self.bAfegirFavorit.isChecked():
+        if fav:
+            if FavoritsMaBIM().afegeixFavorit(BIM):
+                self.actualitzaLlistaFavorits()
+            else:
+                self.bAfegirFavorit.setChecked(False)
+        else:
+            if FavoritsMaBIM().eliminaFavorit(BIM):
+                self.actualitzaLlistaFavorits()
+            else:
+                self.bAfegirFavorit.setChecked(True)
+        self.actualitzaLlistaFavorits()
+        self.actualitzaBotoFavorit()
+        # self.mostraFavorits()
+    
+    def actualitzaBotoFavorit(self):
+        if hasattr(self,'dadesLabelsDades'):
+            self.bAfegirFavorit.setChecked(self.dadesLabelsDades[0].lstrip('0') in self.favorits)
 
     def obrirEnQGIS(self):
         # L'executable de Python acostuma a estar a la ruta [DIR]/OSGeo4W{64,}/apps/Python[NUM]/python.exe
@@ -399,7 +456,7 @@ class QMaBIM(QtWidgets.QMainWindow):
             if len(executables)!=0:            
                 extensio = self.canvasA.extent()
                 cmd = executables[0], '--project', ConstantsMaBIM.rutaProjecteEdicio, '--extent', f'{extensio.xMinimum()},{extensio.yMinimum()},{extensio.xMaximum()},{extensio.yMaximum()}'
-                subprocess.Popen(cmd, env=os.environ, shell=False, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT, creationflags=subprocess.CREATE_NO_WINDOW)
+                p = subprocess.Popen(cmd, env=os.environ, shell=False, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT, creationflags=subprocess.CREATE_NO_WINDOW)
                 return
         
         # Si arribem aquí, ens queixem
@@ -470,6 +527,8 @@ class QMaBIM(QtWidgets.QMainWindow):
         self.dadesLabelsDades[0] = self.dadesLabelsDades[0].replace('0000', ' ').lstrip()
         # self.lCapcaleraBIM.setText(f'BIM {self.dadesLabelsDades[0]}  {self.dadesLabelsDades[3]}')
 
+        self.bAfegirFavorit.show()
+        self.bAfegirFavorit.setChecked(self.dadesLabelsDades[0] in self.favorits)
         # Labels pestanya "Dades Identificatives"
         labels = (self.lNumBIM, self.lEstatBIM, self.lBIMAdscrit, 
                   self.lDescripcioBIM, self.lDenominacioBIM, 
@@ -688,8 +747,39 @@ class QMaBIM(QtWidgets.QMainWindow):
         if i==2:
             self.llegenda.show()
             self.cerca1.show()
+    
+    def selecciona(self, BIM):
+        self.leCercador.setText(BIM)
+        self.consulta()
+        self.actualitzaLlistaFavorits()
+        self.bAfegirFavorit.setChecked(BIM in self.favorits)
+    
+    def actualitzaFav(self,BIM):
+        self.setFavorit(BIM, not BIM in self.favorits)
+        
+
+    def mostraFavorits(self):
+        self.actualitzaLlistaFavorits()
+        self.tFavorits.setRowCount(len(self.favorits))
+        for (i,x) in enumerate(self.favorits):
+            info = Consulta().consulta(CONSULTA_CERCADOR,{':pText':x},(0,1,2))
+            for (j, elem) in enumerate(info[0]):
+                if elem is not None and not isinstance(elem, QtCore.QVariant):
+                    self.tFavorits.setItem(i,j,QtWidgets.QTableWidgetItem(elem))
+            BIM = info[0][0].lstrip('0')
+            bSelecciona = QtWidgets.QPushButton('Seleccionar')
+            bSelecciona.clicked.connect(functools.partial(self.selecciona, BIM))
+            bSelecciona.setCursor(QvConstants.cursorClick())
+            self.tFavorits.setCellWidget(i,3,bSelecciona)
+            cbDesmarcaFav = QtWidgets.QCheckBox('Favorit')
+            cbDesmarcaFav.setChecked(True)
+            cbDesmarcaFav.clicked.connect(functools.partial(self.actualitzaFav,BIM))
+            self.tFavorits.setCellWidget(i,4,cbDesmarcaFav)
+            # info = Consulta().consulta(CONSULTA_CERCADOR)
+        self.tFavorits.resizeColumnsToContents()
 
     def connectBotons(self):
+        self.llistaBotons[0].clicked.connect(self.mostraFavorits)
         for (i,x) in enumerate(self.llistaBotons):
             x.clicked.connect(functools.partial(self.desmarcaBotons,x))
             x.clicked.connect(functools.partial(self.switchPantallaP,i))

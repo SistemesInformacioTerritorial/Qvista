@@ -603,6 +603,19 @@ font-size: 10pt;</string>
         </spacer>
        </item>
        <item>
+        <widget class="QCheckBox" name="bAfegirFavorit">
+         <property name="enabled">
+          <bool>true</bool>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">color: white</string>
+         </property>
+         <property name="text">
+          <string>Favorit</string>
+         </property>
+        </widget>
+       </item>
+       <item>
         <widget class="QLabel" name="lblLogoAjuntament">
          <property name="maximumSize">
           <size>
@@ -712,7 +725,7 @@ QToolButton:disabled{
            <item>
             <widget class="QToolButton" name="bFavorits">
              <property name="enabled">
-              <bool>false</bool>
+              <bool>true</bool>
              </property>
              <property name="sizePolicy">
               <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
@@ -958,7 +971,42 @@ QToolButton:disabled{
           <property name="currentIndex">
            <number>1</number>
           </property>
-          <widget class="QWidget" name="Favorits"/>
+          <widget class="QWidget" name="Favorits">
+           <layout class="QVBoxLayout" name="verticalLayout_23">
+            <item>
+             <widget class="QTableWidget" name="tFavorits">
+              <property name="editTriggers">
+               <set>QAbstractItemView::NoEditTriggers</set>
+              </property>
+              <column>
+               <property name="text">
+                <string>Núm BIM</string>
+               </property>
+              </column>
+              <column>
+               <property name="text">
+                <string>Descripció BIM</string>
+               </property>
+              </column>
+              <column>
+               <property name="text">
+                <string>Denominació BIM</string>
+               </property>
+              </column>
+              <column>
+               <property name="text">
+                <string>Seleccionar</string>
+               </property>
+              </column>
+              <column>
+               <property name="text">
+                <string>Favorit</string>
+               </property>
+              </column>
+             </widget>
+            </item>
+           </layout>
+          </widget>
           <widget class="QWidget" name="BIMs">
            <layout class="QVBoxLayout" name="verticalLayout_4">
             <item>
@@ -1015,7 +1063,7 @@ QScrollBar::handle{
 }</string>
               </property>
               <property name="currentIndex">
-               <number>1</number>
+               <number>2</number>
               </property>
               <widget class="QWidget" name="tDadesIdentificatives">
                <attribute name="title">
