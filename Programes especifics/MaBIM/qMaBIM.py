@@ -763,6 +763,7 @@ class QMaBIM(QtWidgets.QMainWindow):
         self.tFavorits.setRowCount(len(self.favorits))
         for (i,x) in enumerate(self.favorits):
             info = Consulta().consulta(CONSULTA_CERCADOR,{':pText':x},(0,1,2))
+            if len(info)==0 or len(info[0])==0: continue
             for (j, elem) in enumerate(info[0]):
                 if elem is not None and not isinstance(elem, QtCore.QVariant):
                     self.tFavorits.setItem(i,j,QtWidgets.QTableWidgetItem(elem))
