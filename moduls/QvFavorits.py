@@ -1,5 +1,6 @@
 from moduls.QvSingleton import Singleton
 from qgis.PyQt.QtSql import QSqlDatabase, QSqlQuery
+from qgis.PyQt.QtCore import Qt
 import getpass
 from moduls.QvApp import _DB_QVISTA, QvApp
 from qgis.PyQt.QtWidgets import QMessageBox
@@ -7,19 +8,28 @@ from qgis.PyQt.QtWidgets import QMessageBox
 
 
 class QvFavorits(Singleton):
+    dadesDB = _DB_QVISTA[QvApp().calcEntorn()]
+
+    dadesTaula = {'nomCampInfo':'nom_mapa',
+                  'nomTaula':'QV_MAPES_FAVORITS',
+                  'nomCampId':'iduser'}
+    consultaGet = "select {nomCampInfo} from {nomTaula} where {nomCampId}=:IDUSER"
+    consultaAfegeix = "insert into {nomTaula} ({nomCampId}, {nomCampInfo}) values (:IDUSER,:NOM_FAVORIT)"
+    consultaElimina = "delete from {nomTaula} where {nomCampId}=:IDUSER and {nomCampInfo}=:NOM_FAVORIT"
     def __init__(self):
         if hasattr(self,'db'):
             return
-        self.dbQvista=_DB_QVISTA[QvApp().calcEntorn()]
-        self.db = QSqlDatabase.addDatabase(self.dbQvista['Database'], 'FAV')
+        self.configuraBD()
+    def configuraBD(self):
+        self.db = QSqlDatabase.addDatabase(self.dadesDB['Database'], 'FAV')
         if self.db.isValid():
-            self.db.setHostName(self.dbQvista['HostName'])
-            self.db.setPort(self.dbQvista['Port'])
-            self.db.setDatabaseName(self.dbQvista['DatabaseName'])
-            self.db.setUserName(self.dbQvista['UserName'])
-            self.db.setPassword(self.dbQvista['Password'])
+            self.db.setHostName(self.dadesDB['HostName'])
+            self.db.setPort(self.dadesDB['Port'])
+            self.db.setDatabaseName(self.dadesDB['DatabaseName'])
+            self.db.setUserName(self.dadesDB['UserName'])
+            self.db.setPassword(self.dadesDB['Password'])
     def __CONNECTA_BASE_DADES__(self,usuari):
-        if not self.db.open():
+        if not self.db.isOpen() and not self.db.open():
             #No ens hem pogut connectar
             return False
         return True
@@ -35,7 +45,8 @@ class QvFavorits(Singleton):
         if not self.__CONNECTA_BASE_DADES__(usuari):
             return []
         query=QSqlQuery(self.db)
-        query.prepare("select nom_mapa from QV_MAPES_FAVORITS where iduser=:IDUSER")
+        consulta = self.consultaGet.format(**self.dadesTaula)
+        query.prepare(consulta)
         query.bindValue(':IDUSER',usuari)
         query.exec()
         res=[]
@@ -44,32 +55,43 @@ class QvFavorits(Singleton):
         #Consulta
         self.__DESCONNECTA_BASE_DADES__(usuari,False)
         return res
-        
-    def afegeixFavorit(self,mapa,usuari=getpass.getuser().upper()):
+    
+    def mostra_error(self, icona, titol, text, text_extra, text_detallat=None):
+        msg = QMessageBox(icona, titol, text, QMessageBox.Ok)
+        # msg.setIcon(icona)
+        # msg.setText(text)
+        if text_extra is not None: msg.setInformativeText(text_extra)
+        if text_detallat is not None: msg.setDetailedText(text_detallat)
+        # msg.setStandardButtons(QMessageBox.Ok)
+        msg.setWindowFlag(Qt.WindowStaysOnTopHint)
+        msg.exec_()
+    
+    def actualitzaFavorit(self, favorit, usuari, consulta):
         if not self.__CONNECTA_BASE_DADES__(usuari):
-            QMessageBox.critical(None,"Atenció","No s'ha pogut afegir el mapa a favorits. Intenteu-ho més tard, si us plau")
-            return False
+            return False, self.db.lastError().text()
         query=QSqlQuery(self.db)
-        query.prepare("insert into QV_MAPES_FAVORITS (iduser, nom_mapa) values (:IDUSER,:NOM_MAPA)")
+        query.prepare(consulta.format(**self.dadesTaula))
         query.bindValue(':IDUSER',usuari)
-        query.bindValue(':NOM_MAPA',mapa)
-        if not query.exec():
-            QMessageBox.critical(None,"Atenció","No s'ha pogut afegir el mapa a favorits. Intenteu-ho més tard, si us plau")
+        query.bindValue(':NOM_FAVORIT',favorit)
+        executada = query.exec()
         self.__DESCONNECTA_BASE_DADES__(usuari)
-        return True
+        if not executada: 
+            return executada, self.db.lastError.text()
+        else:
+            return executada, ''
         
-    def eliminaFavorit(self,mapa,usuari=getpass.getuser().upper()):
-        if not self.__CONNECTA_BASE_DADES__(usuari):
-            QMessageBox.critical("Atenció","No s'ha pogut eliminar el mapa de favorits. Intenteu-ho més tard, si us plau")
-            return False
-        query=QSqlQuery(self.db)
-        query.prepare("delete from QV_MAPES_FAVORITS where iduser=:IDUSER and nom_mapa=:NOM_MAPA")
-        query.bindValue(':IDUSER',usuari)
-        query.bindValue(':NOM_MAPA',mapa)
-        if not query.exec():
-            QMessageBox.critical("Atenció","No s'ha pogut eliminar el mapa de favorits. Intenteu-ho més tard, si us plau")
-        self.__DESCONNECTA_BASE_DADES__(usuari)
-        return True
+    def afegeixFavorit(self,favorit,usuari=getpass.getuser().upper()):
+        executada, error = self.actualitzaFavorit(favorit, usuari, self.consultaAfegeix)
+        if not executada:
+            self.mostra_error(QMessageBox.Warning, 'Atenció', "No s'ha pogut afegir a favorits. Intenteu-ho més tard, si us plau", None, error)
+            # QMessageBox.critical(None,"Atenció","No s'ha pogut afegir a favorits. Intenteu-ho més tard, si us plau")
+        return executada
+        
+    def eliminaFavorit(self,favorit,usuari=getpass.getuser().upper()):
+        executada, error = self.actualitzaFavorit(favorit, usuari, self.consultaElimina)
+        if not executada:
+            QMessageBox.critical(None,"Atenció","No s'ha pogut afegir a favorits. Intenteu-ho més tard, si us plau")
+        return executada
         
 
 if __name__=='__main__':

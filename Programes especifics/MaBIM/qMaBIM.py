@@ -14,12 +14,14 @@ from moduls.QvConstants import QvConstants
 from moduls.QvApp import QvApp
 from moduls import QvFuncions
 from moduls.QvStatusBar import QvStatusBar
+from moduls.QvFavorits import QvFavorits
 import configuracioQvista
 import functools
 import sys
 import os
 import math
 import subprocess
+import getpass
 from typing import Sequence
 from pathlib import Path
 from qgis.core import QgsProject, QgsCoordinateReferenceSystem, QgsRectangle, QgsPointXY, QgsFeatureRequest, QgsMapLayer, QgsVectorLayer, QgsGeometry
@@ -110,7 +112,7 @@ class Consulta(Singleton):
             return
         self.dbMaBIM=ConstantsMaBIM.DB_MABIM_PRO
         self.obte_camps_restants()
-        self.db = QSqlDatabase.addDatabase(self.dbMaBIM['Database'], 'FAV')
+        self.db = QSqlDatabase.addDatabase(self.dbMaBIM['Database'], 'CERCADOR')
         if self.db.isValid():
             self.db.setHostName(self.dbMaBIM['HostName'])
             self.db.setPort(self.dbMaBIM['Port'])
@@ -234,7 +236,7 @@ class QvSeleccioBIM(QgsMapTool):
     def keyPressEvent(self, event):
         """ Defineix les actuacions del QvMapeta en funció de la tecla apretada.
         """
-        if event.key() == Qt.Key_Escape:
+        if event.key() == QtCore.Qt.Key_Escape:
             pass
 
     def canvasPressEvent(self, event):
@@ -356,6 +358,73 @@ class Cercador:
     #     print(txt)
     #     self.leCercador.clear()
 
+# class FavoritsMaBIM(QvFavorits):
+#     dadesDB = {}
+
+#     dadesTaula = {'nomCampInfo':'BIM',
+#                   'nomTaula':'Favorits',
+#                   'nomCampId':'iduser'}
+#     def configuraBD(self):
+#         self.db = QSqlDatabase.addDatabase('QSQLITE','FAVMABIM')
+#         self.db.setDatabaseName('C:/temp/qVista/dades/favoritsMaBIM.sqlite')
+#         # self.db.setConnectOptions("QSQLITE_OPEN_READONLY")
+
+class FavoritsMaBIM(QvFavorits):
+    dadesDB = ConstantsMaBIM.DB_MABIM_PRO
+
+    dadesTaula = {'nomCampInfo':'NOM_MAPA',
+                  'nomTaula':'BIMS_FAVORITS',
+                  'nomCampId':'IDUSER',
+                  'nomCampObs': 'OBSERVACIONS'}
+    consultaGet = "select {nomCampInfo},{nomCampObs} from {nomTaula} where {nomCampId}=:IDUSER"
+    consultaAfegeix = "insert into {nomTaula} ({nomCampId}, {nomCampInfo}, {nomCampObs}) values (:IDUSER,:NOM_FAVORIT,:OBSERVACIONS)"
+    consultaUpdate = "update {nomTaula} set {nomCampObs}=:OBSERVACIONS where {nomCampId}=:IDUSER and {nomCampInfo}=:NOM_FAVORIT"
+
+    def getFavorits(self,usuari=getpass.getuser().upper()):
+        '''Comentari explicant'''
+        if not self.__CONNECTA_BASE_DADES__(usuari):
+            return []
+        query=QSqlQuery(self.db)
+        consulta = self.consultaGet.format(**self.dadesTaula)
+        query.prepare(consulta)
+        query.bindValue(':IDUSER',usuari)
+        query.exec()
+        res=[]
+        while query.next():
+            res.append((query.value(0), query.value(1)))
+        #Consulta
+        self.__DESCONNECTA_BASE_DADES__(usuari,False)
+        return res
+    def afegeixFavorit(self,favorit,observacio=None,usuari=getpass.getuser().upper()):
+        if not self.__CONNECTA_BASE_DADES__(usuari):
+            self.mostra_error(QMessageBox.Warning, 'Atenció', "No s'ha pogut afegir a favorits. Intenteu-ho més tard, si us plau", None, self.db.lastError().text())
+            return False
+        query=QSqlQuery(self.db)
+        query.prepare(self.consultaAfegeix.format(**self.dadesTaula))
+        query.bindValue(':IDUSER',usuari)
+        query.bindValue(':NOM_FAVORIT',favorit)
+        query.bindValue(':OBSERVACIONS', observacio)
+        executada = query.exec()
+        self.__DESCONNECTA_BASE_DADES__(usuari)
+        if not executada: 
+            self.mostra_error(QMessageBox.Warning, 'Atenció', "No s'ha pogut afegir a favorits. Intenteu-ho més tard, si us plau", None, self.db.lastError.text())
+        return executada
+    def actualitzaObservacio(self,favorit,observacio,usuari=getpass.getuser().upper()):
+        if not self.__CONNECTA_BASE_DADES__(usuari):
+            self.mostra_error(QMessageBox.Warning, 'Atenció', "No s'ha pogut afegir a favorits. Intenteu-ho més tard, si us plau", None, self.db.lastError().text())
+            return False
+        query=QSqlQuery(self.db)
+        query.prepare(self.consultaUpdate.format(**self.dadesTaula))
+        query.bindValue(':IDUSER',usuari)
+        query.bindValue(':NOM_FAVORIT',favorit)
+        query.bindValue(':OBSERVACIONS', observacio)
+        executada = query.exec()
+        self.__DESCONNECTA_BASE_DADES__(usuari)
+        if not executada: 
+            self.mostra_error(QMessageBox.Warning, 'Atenció', "No s'ha pogut afegir a favorits. Intenteu-ho més tard, si us plau", None, self.db.lastError.text())
+        return executada
+
+
 class QMaBIM(QtWidgets.QMainWindow):
     def __init__(self,*args,**kwargs):
         super().__init__(*args, **kwargs)
@@ -379,9 +448,64 @@ class QMaBIM(QtWidgets.QMainWindow):
         self.statusBar().afegirWidget('spacer',QtWidgets.QWidget(),1,2)
     
         self.bObrirQGIS.clicked.connect(self.obrirEnQGIS)
+        # La senyal "clicked" passa un paràmetre a la funció a la que es connecta
+        # La funció "setFavorit" permet passar-li paràmetres, però en aquest cas concret no en volem cap
+        # Per tal de que no li passi, fem la trampa d'una lambda sense paràmetres
+        # self.bAfegirFavorit.clicked.connect(lambda: self.setFavorit())
+        self.bAfegirFavorit.clicked.connect(self.dialegSetFavorit)
+        self.bAfegirFavorit.clicked.connect(self.mostraFavorits)
+        self.bAfegirFavorit.hide()
+        self.actualitzaLlistaFavorits()
+
+        self.tFavorits.cellDoubleClicked.connect(self.favoritsCelaDobleClick)
+        self.tFavorits.cellChanged.connect(self.observacioEditada)
 
         if len(QgsGui.editorWidgetRegistry().factories()) == 0:
             QgsGui.editorWidgetRegistry().initEditors()
+    
+    def dialegSetFavorit(self):
+        if self.bAfegirFavorit.isChecked():
+            text, ok = QtWidgets.QInputDialog.getText(self, 'Afegir com a favorit', "Observacions")
+            if ok:
+                self.setFavorit(observacio=text)
+        else:
+            self.setFavorit()
+    def actualitzaLlistaFavorits(self):
+        favorits = [(str(x),y) for (x,y) in FavoritsMaBIM().getFavorits()]
+
+        self.favObs = dict(favorits)
+        self.favorits = set(self.favObs.keys())
+        pass
+        
+    def setFavorit(self, BIM=None, fav=None, observacio=''):
+        if BIM is None:
+            if not hasattr(self,'dadesLabelsDades'):
+                return
+            BIM = self.dadesLabelsDades[0]
+        if fav is None:
+            # fav = self.bAfegirFavorit.isChecked()
+            fav = not BIM in self.favorits
+        # BIM = self.dadesLabelsDades[0]
+        # if self.bAfegirFavorit.isChecked():
+        if fav:
+            FavoritsMaBIM().afegeixFavorit(BIM, observacio)
+            # if FavoritsMaBIM().afegeixFavorit(BIM, observacio):
+            #     self.actualitzaLlistaFavorits()
+            # else:
+            #     self.bAfegirFavorit.setChecked(False)
+        else:
+            FavoritsMaBIM().eliminaFavorit(BIM)
+            # if FavoritsMaBIM().eliminaFavorit(BIM):
+            #     self.actualitzaLlistaFavorits()
+            # else:
+            #     self.bAfegirFavorit.setChecked(True)
+        self.actualitzaLlistaFavorits()
+        self.actualitzaBotoFavorit()
+        # self.mostraFavorits()
+    
+    def actualitzaBotoFavorit(self):
+        if hasattr(self,'dadesLabelsDades'):
+            self.bAfegirFavorit.setChecked(self.dadesLabelsDades[0].replace('0000','') in self.favorits)
 
     def obrirEnQGIS(self):
         # L'executable de Python acostuma a estar a la ruta [DIR]/OSGeo4W{64,}/apps/Python[NUM]/python.exe
@@ -399,7 +523,7 @@ class QMaBIM(QtWidgets.QMainWindow):
             if len(executables)!=0:            
                 extensio = self.canvasA.extent()
                 cmd = executables[0], '--project', ConstantsMaBIM.rutaProjecteEdicio, '--extent', f'{extensio.xMinimum()},{extensio.yMinimum()},{extensio.xMaximum()},{extensio.yMaximum()}'
-                subprocess.Popen(cmd, env=os.environ, shell=False, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT, creationflags=subprocess.CREATE_NO_WINDOW)
+                p = subprocess.Popen(cmd, env=os.environ, shell=False, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT, creationflags=subprocess.CREATE_NO_WINDOW)
                 return
         
         # Si arribem aquí, ens queixem
@@ -470,6 +594,8 @@ class QMaBIM(QtWidgets.QMainWindow):
         self.dadesLabelsDades[0] = self.dadesLabelsDades[0].replace('0000', ' ').lstrip()
         # self.lCapcaleraBIM.setText(f'BIM {self.dadesLabelsDades[0]}  {self.dadesLabelsDades[3]}')
 
+        self.bAfegirFavorit.show()
+        self.bAfegirFavorit.setChecked(self.dadesLabelsDades[0] in self.favorits)
         # Labels pestanya "Dades Identificatives"
         labels = (self.lNumBIM, self.lEstatBIM, self.lBIMAdscrit, 
                   self.lDescripcioBIM, self.lDenominacioBIM, 
@@ -557,7 +683,7 @@ class QMaBIM(QtWidgets.QMainWindow):
         QgsLayerTreeMapCanvasBridge(root, self.canvasA)
         planolA.layout().addWidget(self.canvasA)
         self.canvasA.setDestinationCrs(QgsCoordinateReferenceSystem('EPSG:25831'))
-        self.canvasA.mostraStreetView.connect(lambda: self.canvasA.getStreetView().show())
+        self.canvasA.mostraStreetView.connect(self.canvasA.getStreetView().show)
 
         self.canvasA.bCentrar.disconnect()
         self.canvasA.bCentrar.clicked.connect(self.centrarMapa)
@@ -688,8 +814,71 @@ class QMaBIM(QtWidgets.QMainWindow):
         if i==2:
             self.llegenda.show()
             self.cerca1.show()
+    
+    def selecciona(self, BIM):
+        self.leCercador.setText(BIM)
+        self.consulta()
+        self.actualitzaLlistaFavorits()
+        self.bAfegirFavorit.setChecked(BIM in self.favorits)
+        self.bBIMs.click()
+    
+    def actualitzaFav(self,fila, columna):
+        BIM = self.tFavorits.item(fila,0).text().replace('0000','')
+        observacio = self.tFavorits.item(fila,5).text()
+        self.setFavorit(BIM, not BIM in self.favorits, observacio)
+        
+
+    def mostraFavorits(self):
+        self.actualitzaLlistaFavorits()
+        self.tFavorits.blockSignals(True)
+        self.tFavorits.setRowCount(len(self.favorits))
+        for (i,x) in enumerate(self.favorits):
+            info = Consulta().consulta(CONSULTA_CERCADOR,{':pText':x},(0,1,2))
+            if len(info)==0 or len(info[0])==0: continue
+            for (j, elem) in enumerate(info[0]):
+                if elem is not None and not isinstance(elem, QtCore.QVariant):
+                    self.tFavorits.setItem(i,j,QtWidgets.QTableWidgetItem(elem))
+                    self.tFavorits.item(i,j).setFlags(self.tFavorits.item(i,j).flags()&~QtCore.Qt.ItemIsEditable)
+            BIM = info[0][0].replace('0000','')
+            bSelecciona = QtWidgets.QPushButton('Seleccionar')
+            # Equivaldria a:
+            #  bSelecciona.clicked.connect(lambda: self.selecciona(BIM))
+            # No obstant, quan fas connects així dins d'un for a vegades fa coses inesperades
+            # EXEMPLE DE L'ERROR:
+            #  aux = [lambda x: x*i for i in range(10)]
+            #  for func in aux: print(func(2))
+            #  Esperaríem que ens mostrés 0, 2, 4, 6, 8,...,18. No obstant, ens imprimeix 18, 18, 18...
+            # functools.partial evita aquest tipus d'errors
+            bSelecciona.clicked.connect(functools.partial(self.selecciona, BIM))
+            bSelecciona.setCursor(QvConstants.cursorClick())
+            self.tFavorits.setCellWidget(i,3,bSelecciona)
+            cbDesmarcaFav = QtWidgets.QCheckBox('Favorit')
+            cbDesmarcaFav.setChecked(True)
+            cbDesmarcaFav.clicked.connect(functools.partial(self.actualitzaFav,i,4))
+            self.tFavorits.setCellWidget(i,4,cbDesmarcaFav)
+            observacio = self.favObs[BIM]
+            self.tFavorits.setItem(i,5,QtWidgets.QTableWidgetItem(observacio if isinstance(observacio,str) else ''))
+            # self.tFavorits.item(i,5).setFlags(self.tFavorits.item(i,5).flags()&~QtCore.Qt.ItemIsEditable)
+            # info = Consulta().consulta(CONSULTA_CERCADOR)
+        self.tFavorits.resizeColumnsToContents()
+        self.tFavorits.blockSignals(False)
+    
+    def favoritsCelaDobleClick(self, fila, columna):
+        if columna==5:
+            pass
+            # self.tFavorits.item(fila, columna).setFlags(QtCore.Qt.ItemIsEditable)
+        else:
+            BIM = self.tFavorits.item(fila, 0).text()
+            self.selecciona(BIM)
+            self.actualitzaBotoFavorit()
+    def observacioEditada(self,fila,columna):
+        if columna==5:
+            BIM = self.tFavorits.item(fila,0).text().replace('0000','')
+            if BIM in self.favorits:
+                FavoritsMaBIM().actualitzaObservacio(BIM, self.tFavorits.item(fila,5).text())
 
     def connectBotons(self):
+        self.llistaBotons[0].clicked.connect(self.mostraFavorits)
         for (i,x) in enumerate(self.llistaBotons):
             x.clicked.connect(functools.partial(self.desmarcaBotons,x))
             x.clicked.connect(functools.partial(self.switchPantallaP,i))

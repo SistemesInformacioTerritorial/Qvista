@@ -603,6 +603,19 @@ font-size: 10pt;</string>
         </spacer>
        </item>
        <item>
+        <widget class="QCheckBox" name="bAfegirFavorit">
+         <property name="enabled">
+          <bool>true</bool>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">color: white</string>
+         </property>
+         <property name="text">
+          <string>Favorit</string>
+         </property>
+        </widget>
+       </item>
+       <item>
         <widget class="QLabel" name="lblLogoAjuntament">
          <property name="maximumSize">
           <size>
@@ -658,7 +671,7 @@ font-size: 10pt;</string>
            <bool>true</bool>
           </property>
           <property name="styleSheet">
-           <string notr="true">QToolButton{
+           <string notr="true">QToolButton, QCheckBox, QLabel{
                 background: #f4f4f4;
                 color: #38474F;
                 border: none;
@@ -712,7 +725,7 @@ QToolButton:disabled{
            <item>
             <widget class="QToolButton" name="bFavorits">
              <property name="enabled">
-              <bool>false</bool>
+              <bool>true</bool>
              </property>
              <property name="sizePolicy">
               <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
@@ -856,28 +869,18 @@ QToolButton:disabled{
             </widget>
            </item>
            <item>
-            <spacer name="verticalSpacer_2">
-             <property name="orientation">
-              <enum>Qt::Vertical</enum>
-             </property>
-             <property name="sizeHint" stdset="0">
-              <size>
-               <width>20</width>
-               <height>40</height>
-              </size>
-             </property>
-            </spacer>
-           </item>
-           <item>
             <layout class="QVBoxLayout" name="verticalLayout_7">
+             <property name="spacing">
+              <number>0</number>
+             </property>
              <property name="leftMargin">
-              <number>11</number>
+              <number>0</number>
              </property>
              <property name="topMargin">
               <number>11</number>
              </property>
              <property name="rightMargin">
-              <number>11</number>
+              <number>0</number>
              </property>
              <item>
               <widget class="QLabel" name="label">
@@ -916,14 +919,17 @@ QToolButton:disabled{
            </item>
            <item>
             <layout class="QVBoxLayout" name="verticalLayout_8">
+             <property name="spacing">
+              <number>0</number>
+             </property>
              <property name="leftMargin">
-              <number>11</number>
+              <number>0</number>
              </property>
              <property name="topMargin">
               <number>11</number>
              </property>
              <property name="rightMargin">
-              <number>11</number>
+              <number>0</number>
              </property>
              <property name="bottomMargin">
               <number>11</number>
@@ -942,6 +948,19 @@ QToolButton:disabled{
                </property>
               </widget>
              </item>
+             <item>
+              <spacer name="verticalSpacer_2">
+               <property name="orientation">
+                <enum>Qt::Vertical</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>20</width>
+                 <height>40</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
             </layout>
            </item>
           </layout>
@@ -958,7 +977,47 @@ QToolButton:disabled{
           <property name="currentIndex">
            <number>1</number>
           </property>
-          <widget class="QWidget" name="Favorits"/>
+          <widget class="QWidget" name="Favorits">
+           <layout class="QVBoxLayout" name="verticalLayout_23">
+            <item>
+             <widget class="QTableWidget" name="tFavorits">
+              <property name="editTriggers">
+               <set>QAbstractItemView::AllEditTriggers</set>
+              </property>
+              <column>
+               <property name="text">
+                <string>Núm BIM</string>
+               </property>
+              </column>
+              <column>
+               <property name="text">
+                <string>Descripció BIM</string>
+               </property>
+              </column>
+              <column>
+               <property name="text">
+                <string>Denominació BIM</string>
+               </property>
+              </column>
+              <column>
+               <property name="text">
+                <string>Seleccionar</string>
+               </property>
+              </column>
+              <column>
+               <property name="text">
+                <string>Favorit</string>
+               </property>
+              </column>
+              <column>
+               <property name="text">
+                <string>Observacions</string>
+               </property>
+              </column>
+             </widget>
+            </item>
+           </layout>
+          </widget>
           <widget class="QWidget" name="BIMs">
            <layout class="QVBoxLayout" name="verticalLayout_4">
             <item>
@@ -1015,7 +1074,7 @@ QScrollBar::handle{
 }</string>
               </property>
               <property name="currentIndex">
-               <number>1</number>
+               <number>2</number>
               </property>
               <widget class="QWidget" name="tDadesIdentificatives">
                <attribute name="title">
