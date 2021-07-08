@@ -465,7 +465,7 @@ class QMaBIM(QtWidgets.QMainWindow):
     
     def dialegSetFavorit(self):
         if self.bAfegirFavorit.isChecked():
-            text, ok = QtWidgets.QInputDialog.getText(self, 'Afegir com a favorit', "Introduïu l'observació pel favorit")
+            text, ok = QtWidgets.QInputDialog.getText(self, 'Afegir com a favorit', "Observacions")
             if ok:
                 self.setFavorit(observacio=text)
         else:
