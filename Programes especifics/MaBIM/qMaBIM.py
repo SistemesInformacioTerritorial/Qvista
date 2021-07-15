@@ -1,31 +1,36 @@
 #from MaBIM-ui import Ui_MainWindow
-from PyQt5 import QtWidgets, uic, QtCore, QtGui
-from PyQt5.QtSql import QSqlDatabase, QSqlQuery
-from qgis.core.contextmanagers import qgisapp
+import functools
+import getpass
+import math
+import os
+import subprocess
+import sys
+from pathlib import Path
+from typing import Sequence
+
+import configuracioQvista
+from moduls import QvFuncions
+from moduls.QvApp import QvApp
+from moduls.QvAtributs import QvAtributs
+from moduls.QvAtributsForms import QvFitxesAtributs
 from moduls.QvCanvas import QvCanvas
 from moduls.QvCanvasAuxiliar import QvCanvasAuxiliar
+from moduls.QVCercadorAdreca import QCercadorAdreca
+from moduls.QvConstants import QvConstants
+from moduls.QvEinesGrafiques import QvMesuraGrafica
+from moduls.QvFavorits import QvFavorits
+from moduls.QvLlegenda import QvLlegenda
 from moduls.QvMapetaBrujulado import QvMapetaBrujulado
 from moduls.QvSingleton import Singleton
-from moduls.QvAtributs import QvAtributs
-from moduls.QvLlegenda import QvLlegenda
-from moduls.QVCercadorAdreca import QCercadorAdreca
-from moduls.QvAtributsForms import QvFitxesAtributs
-from moduls.QvConstants import QvConstants
-from moduls.QvApp import QvApp
-from moduls import QvFuncions
 from moduls.QvStatusBar import QvStatusBar
-from moduls.QvFavorits import QvFavorits
-import configuracioQvista
-import functools
-import sys
-import os
-import math
-import subprocess
-import getpass
-from typing import Sequence
-from pathlib import Path
-from qgis.core import QgsProject, QgsCoordinateReferenceSystem, QgsRectangle, QgsPointXY, QgsFeatureRequest, QgsMapLayer, QgsVectorLayer, QgsGeometry
-from qgis.gui import  QgsLayerTreeMapCanvasBridge, QgsVertexMarker, QgsMapTool, QgsGui, QgsRubberBand
+from PyQt5 import QtCore, QtGui, QtWidgets, uic
+from PyQt5.QtSql import QSqlDatabase, QSqlQuery
+from qgis.core import (QgsCoordinateReferenceSystem, QgsFeatureRequest,
+                       QgsGeometry, QgsMapLayer, QgsPointXY, QgsProject,
+                       QgsRectangle, QgsVectorLayer)
+from qgis.core.contextmanagers import qgisapp
+from qgis.gui import (QgsGui, QgsLayerTreeMapCanvasBridge, QgsMapTool,
+                      QgsRubberBand, QgsVertexMarker)
 
 # Consulta a partir del text escrit al camp de cerca. 
 # Obté el codi BIM, la descripció i la denominació.
@@ -442,6 +447,11 @@ class QMaBIM(QtWidgets.QMainWindow):
         self.einaSeleccio = QvSeleccioBIM(self.canvasA, self.llegenda)
         self.einaSeleccio.elementsSeleccionats.connect(self.seleccioGrafica)
 
+        self.wMesuraGrafica = QvMesuraGrafica(self.canvasA, self.llegenda, self.canvasA)
+        self.wMesuraGrafica.setWindowFlag(QtCore.Qt.WindowStaysOnTopHint)
+        self.wMesuraGrafica.setWindowTitle('Mesures gràfiques')
+
+
         self.setStatusBar(QvStatusBar(self,['progressBar',('coordenades',1), 'escala'],self.canvasA,self.llegenda))
         self.statusBar().afegirWidget('lblSIT',QtWidgets.QLabel("SIT - Sistemes d'Informació Territorial"),0,0)
         self.statusBar().afegirWidget('lblSIT',QtWidgets.QLabel("Direcció de Patrimoni"),0,1)
@@ -462,6 +472,9 @@ class QMaBIM(QtWidgets.QMainWindow):
 
         if len(QgsGui.editorWidgetRegistry().factories()) == 0:
             QgsGui.editorWidgetRegistry().initEditors()
+    
+    def mostraMesures(self):
+        self.wMesuraGrafica.show()
     
     def dialegSetFavorit(self):
         if self.bAfegirFavorit.isChecked():
@@ -669,6 +682,7 @@ class QMaBIM(QtWidgets.QMainWindow):
         layers = self.getCapesBIMs()
         for layer in layers:
             layer.setSubsetString('')
+        self.bAfegirFavorit.hide()
 
     @QvFuncions.cronometraDebug
     def configuraPlanols(self):
@@ -684,6 +698,12 @@ class QMaBIM(QtWidgets.QMainWindow):
         planolA.layout().addWidget(self.canvasA)
         self.canvasA.setDestinationCrs(QgsCoordinateReferenceSystem('EPSG:25831'))
         self.canvasA.mostraStreetView.connect(self.canvasA.getStreetView().show)
+
+        taulesAtributs = QvAtributs(self.canvasA)
+        taulesAtributs.setWindowTitle("Taules d'atributs")
+        self.llegenda = QvLlegenda(self.canvasA, taulesAtributs)
+        self.canvasA.setLlegenda(self.llegenda)
+        self.llegenda.resize(500, 600)
 
         self.canvasA.bCentrar.disconnect()
         self.canvasA.bCentrar.clicked.connect(self.centrarMapa)
@@ -712,6 +732,9 @@ class QMaBIM(QtWidgets.QMainWindow):
         botoCaptura = self.canvasA.afegirBotoCustom('botoCaptura','imatges/content-copy.png','Copiar una captura del mapa al portarretalls')
         botoCaptura.clicked.connect(self.canvasA.copyToClipboard)
         botoCaptura.setCheckable(False)
+        botoMesures = self.canvasA.afegirBotoCustom('botoMesura', 'imatges/regle.png', 'Mesures gràfiques sobre el mapa')
+        botoMesures.clicked.connect(self.mostraMesures)
+        botoMesures.setCheckable(False)
 
         # Donem estil als canvas
         estilCanvas = '''
@@ -732,11 +755,6 @@ class QMaBIM(QtWidgets.QMainWindow):
 
         
 
-        taulesAtributs = QvAtributs(self.canvasA)
-        taulesAtributs.setWindowTitle("Taules d'atributs")
-        self.llegenda = QvLlegenda(self.canvasA, taulesAtributs)
-        self.canvasA.setLlegenda(self.llegenda)
-        self.llegenda.resize(500, 600)
 
         self.tabCentral.currentChanged.connect(self.canviaTab)
 
@@ -823,7 +841,7 @@ class QMaBIM(QtWidgets.QMainWindow):
         self.bBIMs.click()
     
     def actualitzaFav(self,fila, columna):
-        BIM = self.tFavorits.item(fila,0).text().replace('0000','')
+        BIM = self.tFavorits.item(fila,0).text()
         observacio = self.tFavorits.item(fila,5).text()
         self.setFavorit(BIM, not BIM in self.favorits, observacio)
         
@@ -835,11 +853,13 @@ class QMaBIM(QtWidgets.QMainWindow):
         for (i,x) in enumerate(self.favorits):
             info = Consulta().consulta(CONSULTA_CERCADOR,{':pText':x},(0,1,2))
             if len(info)==0 or len(info[0])==0: continue
+            info[0][0]=info[0][0].replace('0000','')
             for (j, elem) in enumerate(info[0]):
                 if elem is not None and not isinstance(elem, QtCore.QVariant):
                     self.tFavorits.setItem(i,j,QtWidgets.QTableWidgetItem(elem))
-                    self.tFavorits.item(i,j).setFlags(self.tFavorits.item(i,j).flags()&~QtCore.Qt.ItemIsEditable)
-            BIM = info[0][0].replace('0000','')
+                else:
+                    self.tFavorits.setItem(i,j,QtWidgets.QTableWidgetItem(''))
+                self.tFavorits.item(i,j).setFlags(self.tFavorits.item(i,j).flags()&~QtCore.Qt.ItemIsEditable)
             bSelecciona = QtWidgets.QPushButton('Seleccionar')
             # Equivaldria a:
             #  bSelecciona.clicked.connect(lambda: self.selecciona(BIM))
@@ -849,6 +869,7 @@ class QMaBIM(QtWidgets.QMainWindow):
             #  for func in aux: print(func(2))
             #  Esperaríem que ens mostrés 0, 2, 4, 6, 8,...,18. No obstant, ens imprimeix 18, 18, 18...
             # functools.partial evita aquest tipus d'errors
+            BIM = info[0][0]
             bSelecciona.clicked.connect(functools.partial(self.selecciona, BIM))
             bSelecciona.setCursor(QvConstants.cursorClick())
             self.tFavorits.setCellWidget(i,3,bSelecciona)
@@ -873,7 +894,7 @@ class QMaBIM(QtWidgets.QMainWindow):
             self.actualitzaBotoFavorit()
     def observacioEditada(self,fila,columna):
         if columna==5:
-            BIM = self.tFavorits.item(fila,0).text().replace('0000','')
+            BIM = self.tFavorits.item(fila,0).text()
             if BIM in self.favorits:
                 FavoritsMaBIM().actualitzaObservacio(BIM, self.tFavorits.item(fila,5).text())
 
@@ -902,7 +923,7 @@ def splashScreen():
     return splash
 def main():
     with qgisapp(sysexit=False) as app:
-        app.setWindowIcon(QtGui.QIcon('imatges/MaBIM/MaBIM.png'))
+        app.setWindowIcon(QtGui.QIcon('imatges/MaBIM/MaBIM vermell.png'))
         splash = splashScreen()
         app.processEvents()
         main = QMaBIM()
