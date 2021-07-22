@@ -228,7 +228,6 @@ class QvSeleccioGrafica(QWidget):
             pass
         nfile, _ = QFileDialog.getSaveFileName(None, "Desar arxiu CSV", ".", "Arxius CSV (*.csv)")
         if nfile=='': return
-        
         capa = self.llegenda.currentLayer()
         feats = capa.selectedFeatures()
         with open(nfile,'w', newline='') as f:
@@ -237,8 +236,30 @@ class QvSeleccioGrafica(QWidget):
             for feat in feats:
                 d = {}
                 for camp in camps:
-                    d[camp] = feat[camp]
+                    field = capa.fields().field(camp)
+                    # pyQt és un embolcall de Qt en C++. A C++ els float eren de 32 bits
+                    # Els float utilitzen IEEE 754, que permet representar un gran ventall de números, però sense ser del tot exacte
+                    # Reproducció de l'error:
+                    #   import numpy
+                    #   num = numpy.float32(72.32)
+                    #   print(float(num)) # imprimeix 72.31999969482422
+                    # Per evitar aquest problema, fem un arrodoniment a la precisió que tenia el camp de la base de dades
+                    if 'NUMBER' in field.typeName() and not isinstance(feat[camp],QVariant):
+                        if  field.precision()>0:
+                            try:
+                                res = round(feat[camp], field.precision())
+                            except Exception as e:
+                                res = feat[camp]
+                        else:
+                            try:
+                                res = int(feat[camp])
+                            except:
+                                res = feat[camp]
+                    else:
+                        res = feat[camp]
+                    d[camp] = res
                 writer.writerow(d)
+        
     
     def setPreview(self):
         camps = [camp.text() for camp in self.lwFieldsSelect.selectedItems()]
