@@ -1,4 +1,5 @@
 #from MaBIM-ui import Ui_MainWindow
+import argparse
 import functools
 import getpass
 import math
@@ -273,7 +274,10 @@ class QvSeleccioBIM(QgsMapTool):
             rect = QgsRectangle(esquerraDalt.x(), esquerraDalt.y(), dretaBaix.x(), dretaBaix.y())
 
             features = []
-            for layer in self.llegenda.capes():
+            node = self.llegenda.nodePerNom('Inventari municipal')
+            for nodeLayer in node.findLayers():
+                layer = nodeLayer.layer()
+            # for layer in self.llegenda.capes():
                 if layer.type()==QgsMapLayer.VectorLayer and 'BIM' in layer.fields().names():
                     # la funció getFeatures retorna un iterable. Volem una llista
                     featsAct = [(feat, layer) for feat in layer.getFeatures(QgsFeatureRequest().setFilterRect(rect).setFlags(QgsFeatureRequest.ExactIntersect))]
@@ -431,7 +435,7 @@ class FavoritsMaBIM(QvFavorits):
 
 
 class QMaBIM(QtWidgets.QMainWindow):
-    def __init__(self,*args,**kwargs):
+    def __init__(self, projecte, *args,**kwargs):
         super().__init__(*args, **kwargs)
         uic.loadUi(ConstantsMaBIM.rutaUI,self)
         
@@ -440,7 +444,7 @@ class QMaBIM(QtWidgets.QMainWindow):
         self.connectBotons()
         self.connectaCercador()
         self.configuraPlanols()
-        self.inicialitzaProjecte()
+        self.inicialitzaProjecte(projecte)
         self.connectaDB()
         self.setIcones()
 
@@ -764,9 +768,9 @@ class QMaBIM(QtWidgets.QMainWindow):
         self.canvasA.bCentrar.setChecked(False)
     
     @QvFuncions.cronometraDebug
-    def inicialitzaProjecte(self):
+    def inicialitzaProjecte(self, projecte):
         # QgsProject.instance().read('L:/DADES/SIT/qVista/CATALEG/MAPES PRIVATS/Patrimoni/PPM_CatRegles_geopackage.qgs')
-        self.llegenda.readProject(ConstantsMaBIM.rutaProjecte)
+        self.llegenda.readProject(projecte)
         self.centrarMapa()
 
         # cal comprovar si les capes ... i ... són visibles
@@ -921,12 +925,17 @@ def splashScreen():
     splash.setFont(QtGui.QFont(QvConstants.NOMFONT,8))
     splash.show()
     return splash
+def arguments():
+    parser = argparse.ArgumentParser(description='')
+    parser.add_argument('--projecte',help='Ruta del projecte del MaBIM', default=ConstantsMaBIM.rutaProjecte)
+    return parser.parse_args()
 def main():
     with qgisapp(sysexit=False) as app:
+        args = arguments()
         app.setWindowIcon(QtGui.QIcon('imatges/MaBIM/MaBIM vermell.png'))
         splash = splashScreen()
         app.processEvents()
-        main = QMaBIM()
+        main = QMaBIM(args.projecte)
         splash.finish(main)
         main.showMaximized()
         # main.inicialitzaProjecte()
