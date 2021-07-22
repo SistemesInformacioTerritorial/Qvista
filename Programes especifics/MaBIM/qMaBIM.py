@@ -273,7 +273,10 @@ class QvSeleccioBIM(QgsMapTool):
             rect = QgsRectangle(esquerraDalt.x(), esquerraDalt.y(), dretaBaix.x(), dretaBaix.y())
 
             features = []
-            for layer in self.llegenda.capes():
+            node = self.llegenda.nodePerNom('Inventari municipal')
+            for nodeLayer in node.findLayers():
+                layer = nodeLayer.layer()
+            # for layer in self.llegenda.capes():
                 if layer.type()==QgsMapLayer.VectorLayer and 'BIM' in layer.fields().names():
                     # la funció getFeatures retorna un iterable. Volem una llista
                     featsAct = [(feat, layer) for feat in layer.getFeatures(QgsFeatureRequest().setFilterRect(rect).setFlags(QgsFeatureRequest.ExactIntersect))]
