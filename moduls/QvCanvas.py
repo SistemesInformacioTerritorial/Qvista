@@ -530,7 +530,7 @@ class QvCanvas(QgsMapCanvas):
         super().mousePressEvent(event)
         if event.button()==Qt.RightButton:
             eina = self.eines[-1]
-            if not isinstance(eina, QvMesuraMultiLinia) and not self.testDigitizeTool(eina):
+            if not isinstance(eina, (QvMesuraMultiLinia, QvMascaraEinaPlantilla)) and not self.testDigitizeTool(eina):
                 self.unsetLastMapTool()
                 # Si volvemos a digitalización, ignorar RightButton
                 eina = self.mapTool()
