@@ -1020,17 +1020,21 @@ class QvMascaraEinaDibuixa(QvMascaraEinaPlantilla):
 
     def canvasPressEvent(self, event):
         if event.button() == Qt.RightButton:
-            # Tancar polígon??
-            return
-        if self.point is None:
-            self.rubberband = self.novaRubberband(True)
-            self.points = []
-        self.point = self.toMapCoordinates(event.pos())
+            if len(self.points)>2:
+                self.point = self.points[0]
+            else:
+                # netejar
+                pass
+        else:
+            if self.point is None:
+                self.rubberband = self.novaRubberband()
+                self.points = []
+            self.point = self.toMapCoordinates(event.pos())
         self.points.append(QgsPointXY(self.point))
         if len(self.points) == 1:
             self.posB = event.pos()
-        self.selectPoly(event)
-        if len(self.points) > 2 and self.qpointsDistance(self.toCanvasCoordinates(self.points[0]), event.pos()) < 10:
+        self.selectPoly()
+        if len(self.points) > 2 and self.qpointsDistance(self.toCanvasCoordinates(self.points[0]), self.toCanvasCoordinates(self.points[-1])) < 10:
             self.tancarPoligon()
 
     def canvasMoveEvent(self, event):
@@ -1049,6 +1053,7 @@ class QvMascaraEinaDibuixa(QvMascaraEinaPlantilla):
 
             list_polygon = []
             mascara = self.getCapa()
+            self.selectPoly()
             self.points = self.points[:-1]
             for x in self.points:
                 list_polygon.append(QgsPointXY(x))
@@ -1082,7 +1087,7 @@ class QvMascaraEinaDibuixa(QvMascaraEinaPlantilla):
         except Exception as e:
             print(e)
 
-    def selectPoly(self, e):
+    def selectPoly(self):
         try:
 
             poligono = QgsGeometry.fromPolylineXY(self.points)
@@ -1104,6 +1109,7 @@ class QvMascaraEinaCercle(QvMascaraEinaPlantilla):
         self.centre = None
         self.cercleFixe = False
         self.radiCercle = 0
+        self.markers = []
         if layer is None and self.seleccionar:
             self.missatgeCaixa('Cal tenir seleccionat un nivell per poder fer una selecció',
                                'Marqueu un nivell a la llegenda sobre el que aplicar la consulta.')
@@ -1116,17 +1122,21 @@ class QvMascaraEinaCercle(QvMascaraEinaPlantilla):
             return
         if self.cercleFixe:
             centre = self.toMapCoordinates(event.pos())
+            
             poligon, _ = self.getPoligon(centre,centre+QgsVector(self.radiCercle,0),100)
+            # self.rbcircle(centre, centre+QgsVector(self.radiCercle,0))
+            self.rubberbandCercle = self.novaRubberband()
             if self.emmascarar:
                 self.emmascaraPoligon(poligon)
             if self.seleccionar:
                 self.seleccionaPoligon(poligon)
             
         elif self.centre is None:
-            self.rubberbandCercle = self.novaRubberband(True)
-            self.rubberbandRadi = self.novaRubberband(True)
+            self.rubberbandCercle = self.novaRubberband()
+            self.rubberbandRadi = self.novaRubberband()
             self.points = []
         self.centre = self.toMapCoordinates(event.pos())
+        self.marker(self.centre)
 
     def canvasMoveEvent(self, event):
         if self.cercleFixe:
@@ -1165,12 +1175,21 @@ class QvMascaraEinaCercle(QvMascaraEinaPlantilla):
             self.selecciona(ids)
 
     def rbcircle(self, center, edgePoint, segments=100):
-        self.rubberbandCercle.reset(True)
+        try:
+            self.rubberbandCercle.reset(True)
+        except:
+            pass
         self.poligon, llistaPunts = self.getPoligon(
             center, edgePoint, segments)
         for x in llistaPunts:
             self.rubberbandCercle.addPoint(x)
 
+    def marker(self, centre):
+        marker = QgsVertexMarker(self.canvas)
+        marker.setCenter(centre)
+        marker.setPenWidth(2)
+        self.markers.append(marker)
+        return marker
     def getPoligon(self, center, edgePoint, segments):
         r = math.sqrt(center.sqrDist(edgePoint))
         llistaPunts = []
@@ -1180,6 +1199,11 @@ class QvMascaraEinaCercle(QvMascaraEinaPlantilla):
             llistaPunts.append(QgsPointXY(
                 center.x()+r*math.cos(theta), center.y()+r*math.sin(theta)))
         return QgsGeometry.fromPolygonXY([llistaPunts[:-2]]), llistaPunts
+    
+    def eliminaRubberbands(self, *args, **kwargs):
+        super().eliminaRubberbands(*args, **kwargs)
+        for x in self.markers:
+            x.hide()
 
 
 class QvMesuraMultiLinia(QgsMapTool):
