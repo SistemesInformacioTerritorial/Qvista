@@ -372,7 +372,8 @@ class QvSeleccioGrafica(QWidget):
 
     def actualitzaTool(self):
         QvMemoria().setParametresMascara(self.color, self.sliderOpacitat.value())
-        self.tool.setParametres(self.checkMascara.isChecked(), self.checkSeleccio.isChecked(), self.checkOverlap.isChecked())
+        if hasattr(self,'tool') and self.tool is not None:
+            self.tool.setParametres(self.checkMascara.isChecked(), self.checkSeleccio.isChecked(), self.checkOverlap.isChecked())
         self.gbOverlap.setVisible(self.checkSeleccio.isChecked())
         self.frameColorOpacitat.setVisible(self.checkMascara.isChecked())
         masc = obteMascara(self.projecte, self.canvas)
