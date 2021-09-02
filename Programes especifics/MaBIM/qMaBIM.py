@@ -144,7 +144,7 @@ class Consulta(Singleton):
         Realitza una consulta a la base de dades
 
         Arguments:
-            consulta {str} -- Consulta que volem executar
+            consulta {str} -- Consulta SQL que volem executar
 
         Keyword Arguments:
             binds {dict} -- Arguments que volem lligar a la consulta.
@@ -159,7 +159,6 @@ class Consulta(Singleton):
         query.exec()
         res = []
         while query.next():
-            # vals = query.value(0), query.value(1), query.value(2)
             if camps is None:
                 camps = range(query.record().count())
             vals = [query.value(i) for i in camps]
@@ -270,7 +269,6 @@ class QvSeleccioBIM(QgsMapTool):
             node = self.llegenda.nodePerNom('Inventari municipal')
             for nodeLayer in node.findLayers():
                 layer = nodeLayer.layer()
-            # for layer in self.llegenda.capes():
                 if layer.type()==QgsMapLayer.VectorLayer and 'BIM' in layer.fields().names():
                     # la funció getFeatures retorna un iterable. Volem una llista
                     featsAct = [(feat, layer) for feat in layer.getFeatures(QgsFeatureRequest().setFilterRect(rect).setFlags(QgsFeatureRequest.ExactIntersect))]
@@ -290,9 +288,7 @@ class FormulariAtributs(QvFitxesAtributs):
         self.ui.buttonBox.removeButton(self.ui.buttonBox.buttons()[0])
         self.ui.bSeleccionar = self.ui.buttonBox.addButton('Seleccionar', QtWidgets.QDialogButtonBox.ActionRole)
         self.ui.bSeleccionar.clicked.connect(self.selecciona)
-        # self.ui.stackedWidget.setStyleSheet('background: transparent; color: black; font-size: 14px')
         self.ui.buttonBox.setFixedWidth(300)
-        # self.ui.buttonBox.hide()
         for x in (self.ui.bNext, self.ui.bPrev, *self.ui.buttonBox.buttons()):
             x.setStyleSheet('QAbstractButton{font-size: 14px; padding: 2px}')
             x.setFixedSize(100,30)
@@ -320,11 +316,8 @@ class Cercador:
         self.leNumero = leNumero
         self.leNumero.setPlaceholderText('Número')
         self.lblIcona = lblIcona
-        # pix = QtGui.QPixmap('imatges/MaBIM/cercador-icona.png')
-        # self.lblIcona.setPixmap(pix.scaledToHeight(self.MIDALBLICONA[0]))
         self.cercador = QCercadorAdreca(self.leCarrer, self.leNumero, 'SQLITE')
         self.marcaLlocPosada = False
-        # self.setStyleSheet('font-size: 14px;')
 
         self.cercador.sHanTrobatCoordenades.connect(self.resultatCercador)
 
@@ -338,7 +331,7 @@ class Cercador:
             self.marcaLloc.setCenter( self.cercador.coordAdreca )
             self.marcaLloc.setColor(QtGui.QColor(255, 0, 0))
             self.marcaLloc.setIconSize(15)
-            self.marcaLloc.setIconType(QgsVertexMarker.ICON_BOX) # or ICON_CROSS, ICON_X
+            self.marcaLloc.setIconType(QgsVertexMarker.ICON_BOX)
             self.marcaLloc.setPenWidth(3)
             self.marcaLloc.show()
             self.marcaLlocPosada = True
@@ -372,7 +365,6 @@ class FavoritsMaBIM(QvFavorits):
         res=[]
         while query.next():
             res.append((query.value(0), query.value(1)))
-        #Consulta
         self.__DESCONNECTA_BASE_DADES__(usuari,False)
         return res
     def afegeixFavorit(self,favorit,observacio=None,usuari=getpass.getuser().upper()):
@@ -433,10 +425,6 @@ class QMaBIM(QtWidgets.QMainWindow):
         self.statusBar().afegirWidget('spacer',QtWidgets.QWidget(),1,2)
 
         self.bObrirQGIS.clicked.connect(self.obrirEnQGIS)
-        # La senyal "clicked" passa un paràmetre a la funció a la que es connecta
-        # La funció "setFavorit" permet passar-li paràmetres, però en aquest cas concret no en volem cap
-        # Per tal de que no li passi, fem la trampa d'una lambda sense paràmetres
-        # self.bAfegirFavorit.clicked.connect(lambda: self.setFavorit())
         self.bAfegirFavorit.clicked.connect(self.dialegSetFavorit)
         self.bAfegirFavorit.clicked.connect(self.mostraFavorits)
         self.bAfegirFavorit.hide()
@@ -453,7 +441,7 @@ class QMaBIM(QtWidgets.QMainWindow):
 
     def dialegSetFavorit(self):
         if self.bAfegirFavorit.isChecked():
-            text, ok = QtWidgets.QInputDialog.getText(self, 'Afegir com a favorit', "Observacions")
+            text, ok = QtWidgets.QInputDialog.getText(self, 'Afegir com a favorit', "Observacions", flags=QtCore.Qt.WindowSystemMenuHint | QtCore.Qt.WindowTitleHint)
             if ok:
                 self.setFavorit(observacio=text)
         else:
@@ -471,25 +459,13 @@ class QMaBIM(QtWidgets.QMainWindow):
                 return
             BIM = self.dadesLabelsDades[0]
         if fav is None:
-            # fav = self.bAfegirFavorit.isChecked()
             fav = not BIM in self.favorits
-        # BIM = self.dadesLabelsDades[0]
-        # if self.bAfegirFavorit.isChecked():
         if fav:
             FavoritsMaBIM().afegeixFavorit(BIM, observacio)
-            # if FavoritsMaBIM().afegeixFavorit(BIM, observacio):
-            #     self.actualitzaLlistaFavorits()
-            # else:
-            #     self.bAfegirFavorit.setChecked(False)
         else:
             FavoritsMaBIM().eliminaFavorit(BIM)
-            # if FavoritsMaBIM().eliminaFavorit(BIM):
-            #     self.actualitzaLlistaFavorits()
-            # else:
-            #     self.bAfegirFavorit.setChecked(True)
         self.actualitzaLlistaFavorits()
         self.actualitzaBotoFavorit()
-        # self.mostraFavorits()
 
     def actualitzaBotoFavorit(self):
         if hasattr(self,'dadesLabelsDades'):
@@ -521,7 +497,6 @@ class QMaBIM(QtWidgets.QMainWindow):
 
     def seleccioGrafica(self, feats):
         form = FormulariAtributs(self.getCapaBIMs(), feats, self)
-        # form.setStyleSheet('QWidget{font-size: 12pt}')
         form.moveWid(self.width()-form.width(),(self.height()-form.height())//2)
         form.exec()
         self.canvasA.bPanning.click()
@@ -533,10 +508,8 @@ class QMaBIM(QtWidgets.QMainWindow):
         # doncs posem un mini HTML amb la imatge i el text
         self.lblLogoMaBIM.setFixedSize(275,60)
         self.lblLogoMaBIM.setText(f"""<html><img src=imatges/MaBIM/MaBIM-text.png height={self.lblLogoMaBIM.height()}><span style="font-size:18pt; color:#ffffff;"></span></html>""")
-        # self.lblLogoAjuntament.setFixedSize(275,82)
         self.lblLogoAjuntament.setFixedHeight(82)
         self.lblLogoAjuntament.setPixmap(QtGui.QPixmap(ConstantsMaBIM.rutaLogoAjuntament).scaledToHeight(82))
-        # self.lblLogoMaBIM.setFixedWidth(275)
 
     def setIconesBotons(self):
         # afegir les icones des del designer donava problemes
@@ -554,7 +527,6 @@ class QMaBIM(QtWidgets.QMainWindow):
     def connectaDB(self):
         pass
     def connectaCercador(self):
-        # self.leCercador.editingFinished.connect(self.consulta)
         completer = Completador()
         self.leCercador.setCompleter(completer)
         completer.activated.connect(self.consulta)
@@ -580,7 +552,6 @@ class QMaBIM(QtWidgets.QMainWindow):
         # Eliminem la marca del cercador
         self.cerca1.eliminaMarcaLloc()
         self.dadesLabelsDades[0] = self.dadesLabelsDades[0].replace('0000', ' ').lstrip()
-        # self.lCapcaleraBIM.setText(f'BIM {self.dadesLabelsDades[0]}  {self.dadesLabelsDades[3]}')
 
         self.bAfegirFavorit.show()
         self.bAfegirFavorit.setChecked(self.dadesLabelsDades[0] in self.favorits)
@@ -590,7 +561,6 @@ class QMaBIM(QtWidgets.QMainWindow):
                   self.lTipologiaReal, self.lSubtipologiaReal, self.lTipusBeReal, self.lQualificacioJuridica)
         # totes les labels tindran la mateixa font. Per tant, agafem la d'una qualsevol
         font = self.lNumBIM.font()
-        # font.setBold(True)
         for (lbl,txt) in zip(labels, self.dadesLabelsDades):
             if str(txt).upper()!='NULL':
                 lbl.setText(txt)
@@ -740,7 +710,6 @@ class QMaBIM(QtWidgets.QMainWindow):
 
     @QvFuncions.cronometraDebug
     def inicialitzaProjecte(self, projecte):
-        # QgsProject.instance().read('L:/DADES/SIT/qVista/CATALEG/MAPES PRIVATS/Patrimoni/PPM_CatRegles_geopackage.qgs')
         self.llegenda.readProject(projecte)
         self.centrarMapa()
 
@@ -766,7 +735,6 @@ class QMaBIM(QtWidgets.QMainWindow):
     def canviVisibilitatLlegenda(self,node):
         if node in self.nodesBaixes:
             visibles = [x.data(QtCore.Qt.CheckStateRole)==QtCore.Qt.Checked for x in self.nodesBaixes]
-            # visibles = [x.flags().testFlag(QtCore.Qt.ItemIsEnabled) for x in self.nodesBaixes]
             if all(visibles):
                 self.cbBaixesVisibles.setTristate(False)
                 self.cbBaixesVisibles.setCheckState(QtCore.Qt.Checked)
@@ -802,11 +770,9 @@ class QMaBIM(QtWidgets.QMainWindow):
         return [capa for capa in self.llegenda.capes() if 'BIM' in capa.fields().names()]
 
     def canviaTab(self):
+        # abans s'utilitzava per mostrar i ocultar la llegenda
+        # queda la funció buida per si en algun moment cal fer alguna cosa en canviar de pestanya
         return
-        i = self.tabCentral.currentIndex()
-        if i==2:
-            self.llegenda.show()
-            self.cerca1.show()
 
     def selecciona(self, BIM):
         self.leCercador.setText(BIM)
@@ -860,7 +826,6 @@ class QMaBIM(QtWidgets.QMainWindow):
     def favoritsCelaDobleClick(self, fila, columna):
         if columna==5:
             pass
-            # self.tFavorits.item(fila, columna).setFlags(QtCore.Qt.ItemIsEditable)
         else:
             BIM = self.tFavorits.item(fila, 0).text()
             self.selecciona(BIM)
@@ -907,7 +872,6 @@ def main():
         main = QMaBIM(args.projecte)
         splash.finish(main)
         main.showMaximized()
-        # main.inicialitzaProjecte()
 
 if __name__ == '__main__':
     main()
