@@ -33,50 +33,6 @@ from qgis.core.contextmanagers import qgisapp
 from qgis.gui import (QgsGui, QgsLayerTreeMapCanvasBridge, QgsMapTool,
                       QgsRubberBand, QgsVertexMarker)
 
-# Consulta a partir del text escrit al camp de cerca. 
-# Obté el codi BIM, la descripció i la denominació.
-CONSULTA_CERCADOR = '''SELECT BIM, DESCRIPCIO_BIM, DENOMINACIO_BIM
-FROM 
-ZAFT_0002
-WHERE
-((BIM LIKE '%'||:pText||'%')
-    OR (UPPER(DESCRIPCIO_BIM) LIKE '%'||:pText||'%')
-    OR (UPPER(DENOMINACIO_BIM) LIKE '%'||:pText||'%')
-    OR (UPPER(REF_CADASTRE_BIM) LIKE '%'||:pText||'%'))
-AND (ROWNUM < 100)''' #aquesta consulta haurà d'estar en un arxiu, però ja es farà
-
-
-CONSULTA_INFO_BIM_Z2 = '''SELECT BIM, ESTAT, ADSCRIT, 
-DESCRIPCIO_BIM, DENOMINACIO_BIM, 
-TIPOLOGIA_BIM, SUBTIPOLOGIA_BIM, TIPUS_IMMOBLE, QUALIFICACIO_JURIDICA
-FROM 
-ZAFT_0002 
-WHERE 
-((BIM LIKE '%'||:pText||'%')
-    OR (UPPER(DESCRIPCIO_BIM) LIKE '%'||:pText||'%')
-    OR (UPPER(DENOMINACIO_BIM) LIKE '%'||:pText||'%')
-    OR (UPPER(REF_CADASTRE_BIM) LIKE '%'||:pText||'%'))
-AND (ROWNUM < 100)'''
-
-# Consulta que obté informació de ZAFT_0003 a partir del codi BIM
-CONSULTA_INFO_BIM_Z3 = '''SELECT TIPUS_VIA, NOM_VIA, NUM_INI, 
-LLETRA_INI, NUM_FI, LLETRA_FI, DISTRICTE, BARRI, MUNICIPI, CP,
-PROVINCIA, TIPUS
-FROM ZAFT_0003
-WHERE
-((BIM LIKE '%'||:pText||'%') AND (ROWNUM<100))'''
-
-CONSULTA_INFO_BIM_Z13 = '''SELECT PROPIETARI_SOL, PROPIETARI_CONS, SUP_REGISTRAL_SOL, SUP_REGISTRAL_CONS
-FROM ZAFT_0013
-WHERE
-((BIM LIKE '%'||:pText||'%') AND (ROWNUM<100))
-'''
-
-CONSULTA_INFO_BIM_Z11 = '''SELECT FINCA, NUM_REGISTRE, MUNICIPI, SECCIO, TOM, LLIBRE, FOLI, INSCRIP, CRU, SUP_REGISTRAL_SOL, SUP_REGISTRAL_CONS
-FROM ZAFT_0011
-WHERE
-((BIM LIKE '%'||:pText||'%') AND (ROWNUM<100))
-'''
 
 class ConstantsMaBIM:
     DB_MABIM_PRO = {
@@ -100,6 +56,50 @@ class ConstantsMaBIM:
     nomsCapes = [nomCapaPH, nomCapaPV]
 
     rangBarcelona = QgsRectangle(QgsPointXY(405960, 4572210), QgsPointXY(452330 , 4595090))
+
+
+    # Consulta a partir del text escrit al camp de cerca.
+    # Obté el codi BIM, la descripció i la denominació.
+    CONSULTA_CERCADOR = '''SELECT BIM, DESCRIPCIO_BIM, DENOMINACIO_BIM
+                            FROM
+                            ZAFT_0002
+                            WHERE
+                            ((BIM LIKE '%'||:pText||'%')
+                                OR (UPPER(DESCRIPCIO_BIM) LIKE '%'||:pText||'%')
+                                OR (UPPER(DENOMINACIO_BIM) LIKE '%'||:pText||'%')
+                                OR (UPPER(REF_CADASTRE_BIM) LIKE '%'||:pText||'%'))
+                            AND (ROWNUM < 100)''' #aquesta consulta haurà d'estar en un arxiu, però ja es farà
+
+
+    CONSULTA_INFO_BIM_Z2 = '''SELECT BIM, ESTAT, ADSCRIT,
+                               DESCRIPCIO_BIM, DENOMINACIO_BIM,
+                               TIPOLOGIA_BIM, SUBTIPOLOGIA_BIM, TIPUS_IMMOBLE, QUALIFICACIO_JURIDICA
+                               FROM
+                               ZAFT_0002
+                               WHERE
+                               ((BIM LIKE '%'||:pText||'%')
+                                   OR (UPPER(DESCRIPCIO_BIM) LIKE '%'||:pText||'%')
+                                   OR (UPPER(DENOMINACIO_BIM) LIKE '%'||:pText||'%')
+                                   OR (UPPER(REF_CADASTRE_BIM) LIKE '%'||:pText||'%'))
+                               AND (ROWNUM < 100)'''
+
+    # Consulta que obté informació de ZAFT_0003 a partir del codi BIM
+    CONSULTA_INFO_BIM_Z3 = '''SELECT TIPUS_VIA, NOM_VIA, NUM_INI,
+                               LLETRA_INI, NUM_FI, LLETRA_FI, DISTRICTE, BARRI, MUNICIPI, CP,
+                               PROVINCIA, TIPUS
+                               FROM ZAFT_0003
+                               WHERE
+                               ((BIM LIKE '%'||:pText||'%') AND (ROWNUM<100))'''
+
+    CONSULTA_INFO_BIM_Z13 = '''SELECT PROPIETARI_SOL, PROPIETARI_CONS, SUP_REGISTRAL_SOL, SUP_REGISTRAL_CONS
+                                FROM ZAFT_0013
+                                WHERE
+                                ((BIM LIKE '%'||:pText||'%') AND (ROWNUM<100))'''
+
+    CONSULTA_INFO_BIM_Z11 = '''SELECT FINCA, NUM_REGISTRE, MUNICIPI, SECCIO, TOM, LLIBRE, FOLI, INSCRIP, CRU, SUP_REGISTRAL_SOL, SUP_REGISTRAL_CONS
+                                FROM ZAFT_0011
+                                WHERE
+                                ((BIM LIKE '%'||:pText||'%') AND (ROWNUM<100))'''
 
 
 # això estaria millor dins de la classe Consulta, però no va
@@ -128,21 +128,27 @@ class Consulta(Singleton):
         else:
             # missatge avisant de que no funciona, que tornin a intentar-ho
             pass
+
+    # ACTUALMENT NO FA RES
+    # Serviria per si no podem desar l'usuari i la contrasenya en el codi, que el propi usuari pugui introduir-los durant l'execució
+    # Es conserva per si fes falta
     def obte_camps_restants(self):
         while self.dbMaBIM['UserName'] in (None, ''):
             self.dbMaBIM['UserName'], _ = QtWidgets.QInputDialog.getText(None,'Usuari de la base de dades',f"Introduïu el nom d'usuari de la base de dades {self.dbMaBIM['DatabaseName']}")
         while self.dbMaBIM['Password'] in (None, ''):
             self.dbMaBIM['Password'], _ = QtWidgets.QInputDialog.getText(None,'Contrasenya de la base de dades',f"Introduïu la contrasenya de la base de dades {self.dbMaBIM['DatabaseName']}",QtWidgets.QLineEdit.Password)
+
     @connexio
     def consulta(self, consulta: str, binds: dict = {}, camps: Sequence[int]=None):
         """
         Realitza una consulta a la base de dades
 
         Arguments:
-            consulta {str} -- Consulta que volem executar
-        
+            consulta {str} -- Consulta SQL que volem executar
+
         Keyword Arguments:
-            binds {dict} -- Arguments que volem lligar a la consulta. Per exemple, 
+            binds {dict} -- Arguments que volem lligar a la consulta.
+            camps {Sequence[int]} -- Columnes que volem quedar-nos del resultat de la consulta
 
         """
         res = []
@@ -153,13 +159,12 @@ class Consulta(Singleton):
         query.exec()
         res = []
         while query.next():
-            # vals = query.value(0), query.value(1), query.value(2)
             if camps is None:
                 camps = range(query.record().count())
             vals = [query.value(i) for i in camps]
             res.append(vals)
         return res
-    
+
     def OBRE_DB(self):
         if self.dbMaBIM is None:
             self.connectaDB()
@@ -195,9 +200,9 @@ class Completador(QtWidgets.QCompleter):
     def update(self, text):
         # actualitza el contingut del completer en funció del text cercat
         # fa la consulta a la base de dades, i ordena el resultat
-        self.llista=Consulta().consulta(CONSULTA_CERCADOR,{':pText':text.upper()},(0,1,2))
+        self.llista=Consulta().consulta(ConstantsMaBIM.CONSULTA_CERCADOR,{':pText':text.upper()},(0,1,2))
         self.m_word = text
-        # converteix el resultat de la consulta 
+        # converteix el resultat de la consulta
         #  (llista de llistes, amb els camps de la base de dades)
         #  en una llista de strings, que conté els camps no nuls separats per espais
         res = [' '.join([str(y) for y in x if str(y).upper()!='NULL']) for x in self.llista]
@@ -213,12 +218,12 @@ class Completador(QtWidgets.QCompleter):
         return [path]
 
 class QvSeleccioBIM(QgsMapTool):
-    """Aquesta clase és un QgsMapTool que selecciona l'element clickat. 
+    """Aquesta clase és un QgsMapTool que selecciona l'element clickat.
 
        Si la llegenda no té un layer actiu, és treballa amb el primer visible al canvas.
     """
 
-    elementsSeleccionats = QtCore.pyqtSignal('PyQt_PyObject') # layer, features
+    elementsSeleccionats = QtCore.pyqtSignal('PyQt_PyObject')
 
     def __init__(self, canvas, llegenda, radi=10):
         """[summary]
@@ -228,9 +233,7 @@ class QvSeleccioBIM(QgsMapTool):
             llegenda {QvLlegenda} -- La llegenda de la app
 
         Keyword Arguments:
-            radi {int} -- [El radi de tolerancia de la seleccio (default: 20)
-            senyal {bool} -- False: mostra fitxa del(s) element(s) seleccionat(s)
-                             True: llença un senyal (default: False)
+            radi {int} -- [El radi de tolerancia de la seleccio (default: 10)
         """
 
         super().__init__(canvas)
@@ -239,18 +242,7 @@ class QvSeleccioBIM(QgsMapTool):
         self.radi = radi
         self.setCursor(QvConstants.cursorDit())
 
-    def keyPressEvent(self, event):
-        """ Defineix les actuacions del QvMapeta en funció de la tecla apretada.
-        """
-        if event.key() == QtCore.Qt.Key_Escape:
-            pass
-
-    def canvasPressEvent(self, event):
-        pass
-
-    def canvasMoveEvent(self, event):
-        pass
-
+    # Funció de conveniència per mostrar missatges informatius 
     def missatgeCaixa(self, textTitol, textInformacio):
         msgBox = QMessageBox()
         msgBox.setText(textTitol)
@@ -277,7 +269,6 @@ class QvSeleccioBIM(QgsMapTool):
             node = self.llegenda.nodePerNom('Inventari municipal')
             for nodeLayer in node.findLayers():
                 layer = nodeLayer.layer()
-            # for layer in self.llegenda.capes():
                 if layer.type()==QgsMapLayer.VectorLayer and 'BIM' in layer.fields().names():
                     # la funció getFeatures retorna un iterable. Volem una llista
                     featsAct = [(feat, layer) for feat in layer.getFeatures(QgsFeatureRequest().setFilterRect(rect).setFlags(QgsFeatureRequest.ExactIntersect))]
@@ -297,9 +288,7 @@ class FormulariAtributs(QvFitxesAtributs):
         self.ui.buttonBox.removeButton(self.ui.buttonBox.buttons()[0])
         self.ui.bSeleccionar = self.ui.buttonBox.addButton('Seleccionar', QtWidgets.QDialogButtonBox.ActionRole)
         self.ui.bSeleccionar.clicked.connect(self.selecciona)
-        # self.ui.stackedWidget.setStyleSheet('background: transparent; color: black; font-size: 14px')
         self.ui.buttonBox.setFixedWidth(300)
-        # self.ui.buttonBox.hide()
         for x in (self.ui.bNext, self.ui.bPrev, *self.ui.buttonBox.buttons()):
             x.setStyleSheet('QAbstractButton{font-size: 14px; padding: 2px}')
             x.setFixedSize(100,30)
@@ -310,9 +299,11 @@ class FormulariAtributs(QvFitxesAtributs):
         self.parentWidget().leCercador.setText(codi)
         self.parentWidget().consulta()
         self.close()
-    
+
 
 class Cercador:
+    """Classe de conveniència per encapsular el cercador (lineedits, icona i funcions que fan la cerca)
+    """
     MIDALBLCARRER = 400, 40
     MIDALBLNUMERO = 80, 40
     MIDALBLICONA = 20, 20
@@ -325,14 +316,11 @@ class Cercador:
         self.leNumero = leNumero
         self.leNumero.setPlaceholderText('Número')
         self.lblIcona = lblIcona
-        # pix = QtGui.QPixmap('imatges/MaBIM/cercador-icona.png')
-        # self.lblIcona.setPixmap(pix.scaledToHeight(self.MIDALBLICONA[0]))
         self.cercador = QCercadorAdreca(self.leCarrer, self.leNumero, 'SQLITE')
         self.marcaLlocPosada = False
-        # self.setStyleSheet('font-size: 14px;')
 
         self.cercador.sHanTrobatCoordenades.connect(self.resultatCercador)
-    
+
     def resultatCercador(self, codi, info):
         if codi == 0:
             self.canvas.setCenter(self.cercador.coordAdreca)
@@ -343,7 +331,7 @@ class Cercador:
             self.marcaLloc.setCenter( self.cercador.coordAdreca )
             self.marcaLloc.setColor(QtGui.QColor(255, 0, 0))
             self.marcaLloc.setIconSize(15)
-            self.marcaLloc.setIconType(QgsVertexMarker.ICON_BOX) # or ICON_CROSS, ICON_X
+            self.marcaLloc.setIconType(QgsVertexMarker.ICON_BOX)
             self.marcaLloc.setPenWidth(3)
             self.marcaLloc.show()
             self.marcaLlocPosada = True
@@ -353,30 +341,6 @@ class Cercador:
         if self.marcaLlocPosada:
             self.canvas.scene().removeItem(self.marcaLloc)
             self.marcaLlocPosada = False
-    
-    # def resizeEvent(self, event):
-    #     self.leCarrer.setFixedSize(*self.MIDALBLCARRER)
-    #     self.leNumero.setFixedSize(*self.MIDALBLNUMERO)
-    #     self.lblIcona.setFixedSize(*self.MIDALBLICONA)
-    #     self.setFixedSize(self.MIDALBLCARRER[0]+self.MIDALBLNUMERO[0]+self.MIDALBLICONA[0], 50)
-    #     self.move(self.parentWidget().width()-self.width()-2, 2)
-    #     super().resizeEvent(event)
-    
-    # def cerca(self):
-    #     txt = self.leCercador.text()
-    #     print(txt)
-    #     self.leCercador.clear()
-
-# class FavoritsMaBIM(QvFavorits):
-#     dadesDB = {}
-
-#     dadesTaula = {'nomCampInfo':'BIM',
-#                   'nomTaula':'Favorits',
-#                   'nomCampId':'iduser'}
-#     def configuraBD(self):
-#         self.db = QSqlDatabase.addDatabase('QSQLITE','FAVMABIM')
-#         self.db.setDatabaseName('C:/temp/qVista/dades/favoritsMaBIM.sqlite')
-#         # self.db.setConnectOptions("QSQLITE_OPEN_READONLY")
 
 class FavoritsMaBIM(QvFavorits):
     dadesDB = ConstantsMaBIM.DB_MABIM_PRO
@@ -401,7 +365,6 @@ class FavoritsMaBIM(QvFavorits):
         res=[]
         while query.next():
             res.append((query.value(0), query.value(1)))
-        #Consulta
         self.__DESCONNECTA_BASE_DADES__(usuari,False)
         return res
     def afegeixFavorit(self,favorit,observacio=None,usuari=getpass.getuser().upper()):
@@ -415,7 +378,7 @@ class FavoritsMaBIM(QvFavorits):
         query.bindValue(':OBSERVACIONS', observacio)
         executada = query.exec()
         self.__DESCONNECTA_BASE_DADES__(usuari)
-        if not executada: 
+        if not executada:
             self.mostra_error(QMessageBox.Warning, 'Atenció', "No s'ha pogut afegir a favorits. Intenteu-ho més tard, si us plau", None, self.db.lastError.text())
         return executada
     def actualitzaObservacio(self,favorit,observacio,usuari=getpass.getuser().upper()):
@@ -429,7 +392,7 @@ class FavoritsMaBIM(QvFavorits):
         query.bindValue(':OBSERVACIONS', observacio)
         executada = query.exec()
         self.__DESCONNECTA_BASE_DADES__(usuari)
-        if not executada: 
+        if not executada:
             self.mostra_error(QMessageBox.Warning, 'Atenció', "No s'ha pogut afegir a favorits. Intenteu-ho més tard, si us plau", None, self.db.lastError.text())
         return executada
 
@@ -438,7 +401,7 @@ class QMaBIM(QtWidgets.QMainWindow):
     def __init__(self, projecte, *args,**kwargs):
         super().__init__(*args, **kwargs)
         uic.loadUi(ConstantsMaBIM.rutaUI,self)
-        
+
         self.llistaBotons = (self.bFavorits, self.bBIMs, self.bPIP, self.bProjectes, self.bConsultes)
 
         self.connectBotons()
@@ -460,12 +423,8 @@ class QMaBIM(QtWidgets.QMainWindow):
         self.statusBar().afegirWidget('lblSIT',QtWidgets.QLabel("SIT - Sistemes d'Informació Territorial"),0,0)
         self.statusBar().afegirWidget('lblSIT',QtWidgets.QLabel("Direcció de Patrimoni"),0,1)
         self.statusBar().afegirWidget('spacer',QtWidgets.QWidget(),1,2)
-    
+
         self.bObrirQGIS.clicked.connect(self.obrirEnQGIS)
-        # La senyal "clicked" passa un paràmetre a la funció a la que es connecta
-        # La funció "setFavorit" permet passar-li paràmetres, però en aquest cas concret no en volem cap
-        # Per tal de que no li passi, fem la trampa d'una lambda sense paràmetres
-        # self.bAfegirFavorit.clicked.connect(lambda: self.setFavorit())
         self.bAfegirFavorit.clicked.connect(self.dialegSetFavorit)
         self.bAfegirFavorit.clicked.connect(self.mostraFavorits)
         self.bAfegirFavorit.hide()
@@ -476,13 +435,13 @@ class QMaBIM(QtWidgets.QMainWindow):
 
         if len(QgsGui.editorWidgetRegistry().factories()) == 0:
             QgsGui.editorWidgetRegistry().initEditors()
-    
+
     def mostraMesures(self):
         self.wMesuraGrafica.show()
-    
+
     def dialegSetFavorit(self):
         if self.bAfegirFavorit.isChecked():
-            text, ok = QtWidgets.QInputDialog.getText(self, 'Afegir com a favorit', "Observacions")
+            text, ok = QtWidgets.QInputDialog.getText(self, 'Afegir com a favorit', "Observacions", flags=QtCore.Qt.WindowSystemMenuHint | QtCore.Qt.WindowTitleHint)
             if ok:
                 self.setFavorit(observacio=text)
         else:
@@ -493,33 +452,21 @@ class QMaBIM(QtWidgets.QMainWindow):
         self.favObs = dict(favorits)
         self.favorits = set(self.favObs.keys())
         pass
-        
+
     def setFavorit(self, BIM=None, fav=None, observacio=''):
         if BIM is None:
             if not hasattr(self,'dadesLabelsDades'):
                 return
             BIM = self.dadesLabelsDades[0]
         if fav is None:
-            # fav = self.bAfegirFavorit.isChecked()
             fav = not BIM in self.favorits
-        # BIM = self.dadesLabelsDades[0]
-        # if self.bAfegirFavorit.isChecked():
         if fav:
             FavoritsMaBIM().afegeixFavorit(BIM, observacio)
-            # if FavoritsMaBIM().afegeixFavorit(BIM, observacio):
-            #     self.actualitzaLlistaFavorits()
-            # else:
-            #     self.bAfegirFavorit.setChecked(False)
         else:
             FavoritsMaBIM().eliminaFavorit(BIM)
-            # if FavoritsMaBIM().eliminaFavorit(BIM):
-            #     self.actualitzaLlistaFavorits()
-            # else:
-            #     self.bAfegirFavorit.setChecked(True)
         self.actualitzaLlistaFavorits()
         self.actualitzaBotoFavorit()
-        # self.mostraFavorits()
-    
+
     def actualitzaBotoFavorit(self):
         if hasattr(self,'dadesLabelsDades'):
             self.bAfegirFavorit.setChecked(self.dadesLabelsDades[0].replace('0000','') in self.favorits)
@@ -537,24 +484,23 @@ class QMaBIM(QtWidgets.QMainWindow):
 
         for ruta in possiblesRutes:
             executables = [rutaExe for rutaExe in (f'{ruta}/{nomExe}' for nomExe in ('qgis-ltr.bat','qgis.bat')) if os.path.isfile(rutaExe)]
-            if len(executables)!=0:            
+            if len(executables)!=0:
                 extensio = self.canvasA.extent()
                 cmd = executables[0], '--project', ConstantsMaBIM.rutaProjecteEdicio, '--extent', f'{extensio.xMinimum()},{extensio.yMinimum()},{extensio.xMaximum()},{extensio.yMaximum()}'
                 p = subprocess.Popen(cmd, env=os.environ, shell=False, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT, creationflags=subprocess.CREATE_NO_WINDOW)
                 return
-        
+
         # Si arribem aquí, ens queixem
     def showEvent(self, e):
         super().showEvent(e)
         self.tabCentral.setCurrentIndex(2)
-    
+
     def seleccioGrafica(self, feats):
         form = FormulariAtributs(self.getCapaBIMs(), feats, self)
-        # form.setStyleSheet('QWidget{font-size: 12pt}')
         form.moveWid(self.width()-form.width(),(self.height()-form.height())//2)
         form.exec()
         self.canvasA.bPanning.click()
-    
+
     def setIcones(self):
         self.setIconesBotons()
         # Qt com a tal no permet fer  una label amb imatge i text. HTML sí que ho permet
@@ -562,11 +508,9 @@ class QMaBIM(QtWidgets.QMainWindow):
         # doncs posem un mini HTML amb la imatge i el text
         self.lblLogoMaBIM.setFixedSize(275,60)
         self.lblLogoMaBIM.setText(f"""<html><img src=imatges/MaBIM/MaBIM-text.png height={self.lblLogoMaBIM.height()}><span style="font-size:18pt; color:#ffffff;"></span></html>""")
-        # self.lblLogoAjuntament.setFixedSize(275,82)
         self.lblLogoAjuntament.setFixedHeight(82)
         self.lblLogoAjuntament.setPixmap(QtGui.QPixmap(ConstantsMaBIM.rutaLogoAjuntament).scaledToHeight(82))
-        # self.lblLogoMaBIM.setFixedWidth(275)
-    
+
     def setIconesBotons(self):
         # afegir les icones des del designer donava problemes
         # per tant, les afegim aquí i té un comportament més consistent
@@ -583,7 +527,6 @@ class QMaBIM(QtWidgets.QMainWindow):
     def connectaDB(self):
         pass
     def connectaCercador(self):
-        # self.leCercador.editingFinished.connect(self.consulta)
         completer = Completador()
         self.leCercador.setCompleter(completer)
         completer.activated.connect(self.consulta)
@@ -594,32 +537,30 @@ class QMaBIM(QtWidgets.QMainWindow):
         txt = self.leCercador.text().split(' ')[0]
         cons = Consulta()
         try:
-            self.dadesLabelsDades = cons.consulta(CONSULTA_INFO_BIM_Z2,{':pText':txt})[0]
-            self.dadesTaula = cons.consulta(CONSULTA_INFO_BIM_Z3,{':pText':txt})
-            self.dadesTitularitat = cons.consulta(CONSULTA_INFO_BIM_Z13, {':pText':txt})[0]
-            self.dadesFinquesRegistrals = cons.consulta(CONSULTA_INFO_BIM_Z11, {':pText':txt})
+            self.dadesLabelsDades = cons.consulta(ConstantsMaBIM.CONSULTA_INFO_BIM_Z2,{':pText':txt})[0]
+            self.dadesTaula = cons.consulta(ConstantsMaBIM.CONSULTA_INFO_BIM_Z3,{':pText':txt})
+            self.dadesTitularitat = cons.consulta(ConstantsMaBIM.CONSULTA_INFO_BIM_Z13, {':pText':txt})[0]
+            self.dadesFinquesRegistrals = cons.consulta(ConstantsMaBIM.CONSULTA_INFO_BIM_Z11, {':pText':txt})
         except IndexError:
             # la consulta no funciona :(
             return
         self.recarregaLabelsDades()
-        
+
     def recarregaLabelsDades(self):
         # un cop hem obtingut la nova informació, recarreguem la informació de les labels i taules
 
         # Eliminem la marca del cercador
         self.cerca1.eliminaMarcaLloc()
         self.dadesLabelsDades[0] = self.dadesLabelsDades[0].replace('0000', ' ').lstrip()
-        # self.lCapcaleraBIM.setText(f'BIM {self.dadesLabelsDades[0]}  {self.dadesLabelsDades[3]}')
 
         self.bAfegirFavorit.show()
         self.bAfegirFavorit.setChecked(self.dadesLabelsDades[0] in self.favorits)
         # Labels pestanya "Dades Identificatives"
-        labels = (self.lNumBIM, self.lEstatBIM, self.lBIMAdscrit, 
-                  self.lDescripcioBIM, self.lDenominacioBIM, 
+        labels = (self.lNumBIM, self.lEstatBIM, self.lBIMAdscrit,
+                  self.lDescripcioBIM, self.lDenominacioBIM,
                   self.lTipologiaReal, self.lSubtipologiaReal, self.lTipusBeReal, self.lQualificacioJuridica)
         # totes les labels tindran la mateixa font. Per tant, agafem la d'una qualsevol
         font = self.lNumBIM.font()
-        # font.setBold(True)
         for (lbl,txt) in zip(labels, self.dadesLabelsDades):
             if str(txt).upper()!='NULL':
                 lbl.setText(txt)
@@ -666,7 +607,7 @@ class QMaBIM(QtWidgets.QMainWindow):
         self.twFinquesRegistrals.resizeColumnsToContents()
 
         cerca = f"BIM LIKE '0000{self.dadesLabelsDades[0]}'"
-        
+
         layers = self.getCapesBIMs()
         for layer in layers:
             layer.setSubsetString(cerca)
@@ -692,7 +633,7 @@ class QMaBIM(QtWidgets.QMainWindow):
     def configuraPlanols(self):
         root = QgsProject.instance().layerTreeRoot()
         planolA = self.tabCentral.widget(2)
-        
+
         mapetaPng = "mapesOffline/default.png"
         botons = ['panning', 'streetview', 'zoomIn', 'zoomOut', 'centrar']
 
@@ -714,7 +655,7 @@ class QMaBIM(QtWidgets.QMainWindow):
 
         # instanciem el mapeta
         self.mapetaA = QvMapetaBrujulado(mapetaPng, self.canvasA, pare=self.canvasA)
-        
+
         self.cerca1 = Cercador(self.canvasA, self.leCarrer, self.leNumero, self.lblIcona)
         self.cerca1.cercador.sHanTrobatCoordenades.connect(lambda: self.tabCentral.setCurrentIndex(2))
 
@@ -757,7 +698,7 @@ class QMaBIM(QtWidgets.QMainWindow):
             }'''
         self.canvasA.setStyleSheet(estilCanvas)
 
-        
+
 
 
         self.tabCentral.currentChanged.connect(self.canviaTab)
@@ -766,10 +707,9 @@ class QMaBIM(QtWidgets.QMainWindow):
         self.canvasA.setExtent(ConstantsMaBIM.rangBarcelona)
         self.canvasA.refresh()
         self.canvasA.bCentrar.setChecked(False)
-    
+
     @QvFuncions.cronometraDebug
     def inicialitzaProjecte(self, projecte):
-        # QgsProject.instance().read('L:/DADES/SIT/qVista/CATALEG/MAPES PRIVATS/Patrimoni/PPM_CatRegles_geopackage.qgs')
         self.llegenda.readProject(projecte)
         self.centrarMapa()
 
@@ -791,11 +731,10 @@ class QMaBIM(QtWidgets.QMainWindow):
 
         self.cbBaixesVisibles.clicked.connect(self.swapVisibilitatBaixes)
         self.cbRegistresPropietat.clicked.connect(self.swapVisibilitatRegistre)
-    
+
     def canviVisibilitatLlegenda(self,node):
         if node in self.nodesBaixes:
             visibles = [x.data(QtCore.Qt.CheckStateRole)==QtCore.Qt.Checked for x in self.nodesBaixes]
-            # visibles = [x.flags().testFlag(QtCore.Qt.ItemIsEnabled) for x in self.nodesBaixes]
             if all(visibles):
                 self.cbBaixesVisibles.setTristate(False)
                 self.cbBaixesVisibles.setCheckState(QtCore.Qt.Checked)
@@ -808,7 +747,7 @@ class QMaBIM(QtWidgets.QMainWindow):
                 self.cbBaixesVisibles.setChecked(False)
         elif node==self.nodeRegistrals:
             self.cbRegistresPropietat.setChecked(node.isVisible())
-    
+
     def swapVisibilitatBaixes(self,check):
         self.cbBaixesVisibles.setTristate(False)
         if check:
@@ -817,11 +756,11 @@ class QMaBIM(QtWidgets.QMainWindow):
         else:
             for x in self.nodesBaixes:
                 x.setData(QtCore.Qt.Unchecked, QtCore.Qt.CheckStateRole)
-    
+
     def swapVisibilitatRegistre(self,check):
         capa = self.llegenda.capaPerNom('SECCIONS_REGISTRALS')
         self.llegenda.setLayerVisible(capa, check)
-    
+
     def getCapaBIMs(self):
         # Retorna una capa amb camp de BIMs
         #  nota: millor evitar-la, això només per quan ens veiem forçats a passar una única capa
@@ -829,33 +768,31 @@ class QMaBIM(QtWidgets.QMainWindow):
         return self.getCapesBIMs()[0]
     def getCapesBIMs(self):
         return [capa for capa in self.llegenda.capes() if 'BIM' in capa.fields().names()]
-    
+
     def canviaTab(self):
+        # abans s'utilitzava per mostrar i ocultar la llegenda
+        # queda la funció buida per si en algun moment cal fer alguna cosa en canviar de pestanya
         return
-        i = self.tabCentral.currentIndex()
-        if i==2:
-            self.llegenda.show()
-            self.cerca1.show()
-    
+
     def selecciona(self, BIM):
         self.leCercador.setText(BIM)
         self.consulta()
         self.actualitzaLlistaFavorits()
         self.bAfegirFavorit.setChecked(BIM in self.favorits)
         self.bBIMs.click()
-    
+
     def actualitzaFav(self,fila, columna):
         BIM = self.tFavorits.item(fila,0).text()
         observacio = self.tFavorits.item(fila,5).text()
         self.setFavorit(BIM, not BIM in self.favorits, observacio)
-        
+
 
     def mostraFavorits(self):
         self.actualitzaLlistaFavorits()
         self.tFavorits.blockSignals(True)
         self.tFavorits.setRowCount(len(self.favorits))
         for (i,x) in enumerate(self.favorits):
-            info = Consulta().consulta(CONSULTA_CERCADOR,{':pText':x},(0,1,2))
+            info = Consulta().consulta(ConstantsMaBIM.CONSULTA_CERCADOR,{':pText':x},(0,1,2))
             if len(info)==0 or len(info[0])==0: continue
             info[0][0]=info[0][0].replace('0000','')
             for (j, elem) in enumerate(info[0]):
@@ -883,15 +820,12 @@ class QMaBIM(QtWidgets.QMainWindow):
             self.tFavorits.setCellWidget(i,4,cbDesmarcaFav)
             observacio = self.favObs[BIM]
             self.tFavorits.setItem(i,5,QtWidgets.QTableWidgetItem(observacio if isinstance(observacio,str) else ''))
-            # self.tFavorits.item(i,5).setFlags(self.tFavorits.item(i,5).flags()&~QtCore.Qt.ItemIsEditable)
-            # info = Consulta().consulta(CONSULTA_CERCADOR)
         self.tFavorits.resizeColumnsToContents()
         self.tFavorits.blockSignals(False)
-    
+
     def favoritsCelaDobleClick(self, fila, columna):
         if columna==5:
             pass
-            # self.tFavorits.item(fila, columna).setFlags(QtCore.Qt.ItemIsEditable)
         else:
             BIM = self.tFavorits.item(fila, 0).text()
             self.selecciona(BIM)
@@ -938,7 +872,6 @@ def main():
         main = QMaBIM(args.projecte)
         splash.finish(main)
         main.showMaximized()
-        # main.inicialitzaProjecte()
 
 if __name__ == '__main__':
     main()

@@ -842,6 +842,7 @@ class QvMascaraEinaPlantilla(QgsMapTool):
     # les rubberbands de totes les instàncies seran compartides
     # això permet que, quan es canvia d'eina, es conservin fins que es fa una nova selecció
     rubberbands = [] 
+    markers = []
     def __init__(self, wSeleccioGrafica, projecte, canvas, llegenda, **kwargs):
         QgsMapTool.__init__(self, canvas)
         self.wSeleccioGrafica = wSeleccioGrafica
@@ -921,6 +922,8 @@ class QvMascaraEinaPlantilla(QgsMapTool):
 
     def eliminaRubberbands(self):
         for x in self.rubberbands:
+            x.hide()
+        for x in self.markers:
             x.hide()
     def __del__(self):
         self.eliminaRubberbands()
@@ -1110,7 +1113,6 @@ class QvMascaraEinaCercle(QvMascaraEinaPlantilla):
         self.centre = None
         self.cercleFixe = False
         self.radiCercle = 0
-        self.markers = []
         if layer is None and self.seleccionar:
             self.missatgeCaixa('Cal tenir seleccionat un nivell per poder fer una selecció',
                                'Marqueu un nivell a la llegenda sobre el que aplicar la consulta.')
@@ -1201,10 +1203,7 @@ class QvMascaraEinaCercle(QvMascaraEinaPlantilla):
                 center.x()+r*math.cos(theta), center.y()+r*math.sin(theta)))
         return QgsGeometry.fromPolygonXY([llistaPunts[:-2]]), llistaPunts
     
-    def eliminaRubberbands(self, *args, **kwargs):
-        super().eliminaRubberbands(*args, **kwargs)
-        for x in self.markers:
-            x.hide()
+
 
 
 class QvMesuraMultiLinia(QgsMapTool):
