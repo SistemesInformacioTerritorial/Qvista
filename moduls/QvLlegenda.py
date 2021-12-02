@@ -188,10 +188,16 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
     def readProject(self, fileName):
         if self.anotacions is not None:
             self.anotacions.removeAnnotations()
-        ok = self.project.read(fileName)
-        if not ok:
-            print(f"readProject: {self.project.error()}")
-        return ok
+        self.project.read(fileName)
+        msg = ''
+        for capa in self.capes():
+            if not capa.isValid():
+                msg += '- Capa ' + capa.name() + ':\n'
+                msg += capa.error().summary() + '\n'
+        if msg:
+            qtWdg.QMessageBox.warning(self, "Capes amb errors", msg)
+            return False
+        return True
 
     def setTitol(self, titol=TITOL_INICIAL):
         self.setWindowTitle(titol)
