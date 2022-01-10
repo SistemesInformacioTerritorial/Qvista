@@ -144,32 +144,35 @@ def stopMovie(player):
     player.hide()
     player.mediaPlayer.pause()
 
-def escollirNivellQlr(projecte, llegenda):
+def escollirNivellQlr(llegenda):
     """Carrega una capa Qlr escollida amb el diàleg que s'obre
 
     Arguments:
-        project {QgsMapProject} -- Projecte amb el que estem treballant
         llegenda {QvLlegenda} -- Llegenda que estem fent servir
     """
     nfile,_ = QFileDialog.getOpenFileName(None, "Obrir fitxer QLR", ".", "QLR (*.qlr)")
 
     if nfile:
-        afegirQlr(nfile)
+        afegirQlr(nfile, llegenda)
 
-def afegirQlr(nom, project, llegenda): 
+def afegirQlr(nom, llegenda): 
     """Afegeix la capa del Qlr indicat
 
     Arguments:
         nom {str} -- Nom de l'arxiu que volem carregar
-        project {QgsMapProject} -- Projecte amb el que estem treballant
         llegenda {QvLlegenda} -- Llegenda que estem fent servir
     """
     #per raons que escapen al meu coneixement la funció loadLayerDefinition canvia el directori de treball
     #Com que no el volem canviar i a la funció li és igual, el que fem és desar-lo i tornar-lo a posar
     dir=os.getcwd()
-
-    ok, txt = QgsLayerDefinition().loadLayerDefinition(nom, project, llegenda.root)
+    ok, txt = QgsLayerDefinition().loadLayerDefinition(nom, llegenda.project, llegenda.root)
     os.chdir(dir)
+
+    msg = llegenda.msgErrorlayers()
+    if msg:
+        from qgis.PyQt.QtWidgets import QMessageBox
+        QMessageBox.warning(llegenda, "Capes amb errors", msg)
+
 
 def afegirNivellSHP(project):
     """Afegeix capa SHP triant-la des del
