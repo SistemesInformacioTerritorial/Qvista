@@ -196,6 +196,9 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
                         msg += '\n'
                     else:
                         msg += ':\n' + err.summary() + '\n'
+                    p = capa.dataProvider()
+                    if p is not None and not p.isValid():
+                        msg += p.lastError() + '\n'
         except:
             msg = ''
         return msg
