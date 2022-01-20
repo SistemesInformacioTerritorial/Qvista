@@ -604,7 +604,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         """
 
         self.wCataleg=QvCatalegCapes(self)
-        self.wCataleg.afegirCapa.connect(lambda x: QvFuncions.afegirQlr(x,self.project,self.llegenda))
+        self.wCataleg.afegirCapa.connect(lambda x: QvFuncions.afegirQlr(x, self.llegenda))
 
         self.dwCataleg = QvDockWidget( "Catàleg de capes", self )
         self.dwCataleg.setContextMenuPolicy(Qt.PreventContextMenu)
@@ -1964,7 +1964,7 @@ class QVista(QMainWindow, Ui_MainWindow):
     def carregarCapa(self,nfile):
         ext = Path(nfile).suffix.lower()
         if ext=='.qlr':
-            QvFuncions.afegirQlr(nfile, self.project, self.llegenda)
+            QvFuncions.afegirQlr(nfile, self.llegenda)
         elif ext=='.shp':
             layer = QgsVectorLayer(nfile, os.path.basename(nfile), "ogr")
             if not layer.isValid():

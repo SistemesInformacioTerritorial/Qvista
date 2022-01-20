@@ -169,6 +169,34 @@ class QvApp:
         else:
             return default
 
+    def testUrbanisme(self):
+        from urllib.parse import unquote, urlencode
+        from qgis.core import QgsRasterLayer, QgsProject, QgsRasterDataProvider
+        from qgis.PyQt.QtWidgets import QMessageBox
+
+        params = {
+            "service": "WMS",
+            "version": "1.3.0",
+            "request": "GetMap",
+            "layers": "Urbanisme",
+            "crs": "EPSG:25831",
+            "format": "image/png",
+            "styles": "Default",
+            "url": "http://w133.bcn.cat/WMSURBANISME/service.svc/get?"
+        }
+        uri = unquote(urlencode(params))
+        capa = QgsRasterLayer(uri, "WMS_Urbanisme", "wms")
+        QgsProject().instance().addMapLayer(capa)
+        if not capa.isValid():
+            msg = 'Capa ' + capa.name() + '\n'
+            err = capa.error()
+            if not err.isEmpty():
+                msg += err.summary() + '\n'
+            p = capa.dataProvider()
+            if p is not None and not p.isValid():
+                msg += p.lastError() + '\n'
+            QMessageBox.warning(None, "ERROR", msg)
+
     def setProxy(self):
         try:
             proxy = None

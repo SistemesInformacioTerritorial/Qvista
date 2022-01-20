@@ -315,6 +315,8 @@ class QvStatusBar(QStatusBar):
         elif command == 'mapificacio':
             from moduls.QvMapForms import QvFormNovaMapificacio
             QvFormNovaMapificacio.executa(self.llegenda)
+        elif command == 'testurbanisme':
+            QvApp().testUrbanisme()
         elif command == 'carrilsbici':
             from moduls.QvVistacad import QvVistacad
             QvVistacad.carregaProjecte('341')
