@@ -200,11 +200,11 @@ class QvMapificacio(QObject):
         except Exception:
             return False
 
-    def valorCampAdreca(self, fila: csv.OrderedDict, num: int) -> str:
+    def valorCampAdreca(self, fila: dict, num: int) -> str:
         """ Retorna el valor de uno de los campos de la lista que componen la dirección postal.
         
         Arguments:
-            fila {csv.OrderedDict} -- Fila leída del CSV
+            fila {dict} -- Fila leída del CSV
             num {int} -- Número de orden del campo de dirección postal
         
         Returns:
