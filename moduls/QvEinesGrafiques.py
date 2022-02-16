@@ -1560,11 +1560,11 @@ class QvSeleccioElement(QgsMapTool):
             pnt= QgsPointXY(x,y) 
             alfa=180+45  # 45, para que sea cuadrado, 180 por distinto punto origen angulos
             pntEsquerraDalt = pnt.project(self.radi, alfa - self.canvas.rotation())
-            esquerraDalt = self.canvas.getCoordinateTransform().toMapCoordinates(pntEsquerraDalt.x(),  pntEsquerraDalt.y())
+            esquerraDalt = self.canvas.getCoordinateTransform().toMapCoordinates(round(pntEsquerraDalt.x()),  round(pntEsquerraDalt.y()))
 
             alfa=alfa+180
             pntDretaBaix = pnt.project(self.radi, alfa - self.canvas.rotation())
-            dretaBaix = self.canvas.getCoordinateTransform().toMapCoordinates(pntDretaBaix.x(), pntDretaBaix.y())
+            dretaBaix = self.canvas.getCoordinateTransform().toMapCoordinates(round(pntDretaBaix.x()), round(pntDretaBaix.y()))
 
             marcaLloc = QgsVertexMarker(self.canvas)
             marcaLloc.setCenter( point )
@@ -1576,8 +1576,7 @@ class QvSeleccioElement(QgsMapTool):
           
 
             rect = QgsRectangle(point.x() - self.radi, point.y() - self.radi, point.x() + self.radi, point.y() + self.radi)
-            rect = QgsRectangle(
-                esquerraDalt.x(), esquerraDalt.y(), dretaBaix.x(), dretaBaix.y())
+            rect = QgsRectangle(esquerraDalt.x(), esquerraDalt.y(), dretaBaix.x(), dretaBaix.y())
 
             rb = QgsRubberBand(self.canvas, True)
             rb.setToGeometry(QgsGeometry().fromRect(rect))

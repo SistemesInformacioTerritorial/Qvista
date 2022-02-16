@@ -146,6 +146,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.cAdrec= None
         self.catalegMapes = None
         self.numCanvasAux = []
+        self.sortida = True # para gestioSortida
 
         #Preparem el mapeta abans de les accions, ja que el necessitarem allà
         self.preparacioMapeta()
@@ -172,7 +173,10 @@ class QVista(QMainWindow, Ui_MainWindow):
         # self.preparacioGrafiques() ???
         self.preparacioSeleccio()
         # self.preparacioEntorns()
-        self.preparacioCrearMapeta()
+
+        # CrearMapeta - Comentado porque hay un error al salir en la 3.16
+        # 
+        # self.preparacioCrearMapeta()
         
         # Definició dels labels de la statusBar 
         self.definirLabelsStatus()  
@@ -774,41 +778,45 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.mapeta  = QvMapetaBrujulado(self.mapetaDefaultPng, self.canvas,  pare=self.canvas, mapeta_default="mapesOffline/default.png")
 
         self.mapeta.setGraphicsEffect(QvConstants.ombra(self,radius=10,color=QvConstants.COLOROMBRA))
-        self.mapeta.Sig_MuestraMapeta.connect(self.editarOrientacio)
-        
+
+        # CrearMapeta - Comentado porque hay un error al salir en la 3.16
+        #
+        # self.mapeta.Sig_MuestraMapeta.connect(self.editarOrientacio)
 
         self.mapeta.setParent(self.canvas)
         self.mapeta.move(20,20)
         self.mapeta.show()
         self.mapetaVisible = True
    
-    def preparacioCrearMapeta(self):
-        self.crearMapetaConBotones = QvCrearMapetaConBotones(self.canvas)
-        self.crearMapetaConBotones.setGraphicsEffect(QvConstants.ombra(self,radius=30,color=QvConstants.COLOROMBRA))
-        self.crearMapetaConBotones.setParent(self.canvas)  #vaya sitio!!!
+    # CrearMapeta - Comentado porque hay un error al salir en la 3.16
+    #
+    # def preparacioCrearMapeta(self):
+    #     self.crearMapetaConBotones = QvCrearMapetaConBotones(self.canvas)
+    #     self.crearMapetaConBotones.setGraphicsEffect(QvConstants.ombra(self,radius=30,color=QvConstants.COLOROMBRA))
+    #     self.crearMapetaConBotones.setParent(self.canvas)  #vaya sitio!!!
 
-        self.crearMapetaConBotones.Sig_MapetaTemporal.connect(self.enviarMapetaTemporal)
+    #     self.crearMapetaConBotones.Sig_MapetaTemporal.connect(self.enviarMapetaTemporal)
 
-        """
-        Amb aquesta linia:
-        crearMapeta.show()
-        es veuria el widget suelto, separat del canvas.
-        Les següents línies mostren com integrar el widget 'crearMapeta' com a dockWidget.
-        """
-        # Creem un dockWdget i definim les característiques
-        self.dwcrearMapeta = QDockWidget( "CrearMapeta", self )
-        self.dwcrearMapeta.setContextMenuPolicy(Qt.PreventContextMenu)
-        self.dwcrearMapeta.setAllowedAreas( Qt.RightDockWidgetArea | Qt.LeftDockWidgetArea )
-        self.dwcrearMapeta.setContentsMargins ( 1, 1, 1, 1 )
+    #     """
+    #     Amb aquesta linia:
+    #     crearMapeta.show()
+    #     es veuria el widget suelto, separat del canvas.
+    #     Les següents línies mostren com integrar el widget 'crearMapeta' com a dockWidget.
+    #     """
+    #     # Creem un dockWdget i definim les característiques
+    #     self.dwcrearMapeta = QDockWidget( "CrearMapeta", self )
+    #     self.dwcrearMapeta.setContextMenuPolicy(Qt.PreventContextMenu)
+    #     self.dwcrearMapeta.setAllowedAreas( Qt.RightDockWidgetArea | Qt.LeftDockWidgetArea )
+    #     self.dwcrearMapeta.setContentsMargins ( 1, 1, 1, 1 )
         
-        # AÑADIMOS  nuestra instancia al dockwidget
-        self.dwcrearMapeta.setWidget(self.crearMapetaConBotones)
+    #     # AÑADIMOS  nuestra instancia al dockwidget
+    #     self.dwcrearMapeta.setWidget(self.crearMapetaConBotones)
 
-        # Coloquem el dockWidget al costat esquerra de la finestra
-        self.addDockWidget( Qt.LeftDockWidgetArea, self.dwcrearMapeta)
+    #     # Coloquem el dockWidget al costat esquerra de la finestra
+    #     self.addDockWidget( Qt.LeftDockWidgetArea, self.dwcrearMapeta)
 
-        # Fem visible el dockWidget
-        self.dwcrearMapeta.hide()  #atencion
+    #     # Fem visible el dockWidget
+    #     self.dwcrearMapeta.hide()  #atencion
 
     def preparacioLlegenda(self):
         """Es genera un dockWidget a la dreta, amb la llegenda del projecte.
@@ -846,7 +854,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.dwLlegenda.setContentsMargins ( 0,0,0,0)
 
         # El 230 de la següent instrucció és empiric, i caldria fer-lo dependre de la'amplada de la llegenda que es carrega.
-        self.dwLlegenda.setMinimumWidth(230*QvApp().zoomFactor())
+        self.dwLlegenda.setMinimumWidth(round(230*QvApp().zoomFactor()))
         self.dwLlegenda.setMaximumWidth(9999)
         self.addDockWidget( Qt.LeftDockWidgetArea , self.dwLlegenda )
         self.dwLlegenda.setWidget(self.llegenda)
@@ -1462,7 +1470,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         def desplaca(x,y):
             if self.maximitzada:
                 self.restaurarFunc()
-            self.move(self.x()+x-self.oldPos.x(),self.y()+y-self.oldPos.y())
+            self.move(round(self.x()+x-self.oldPos.x()), round(self.y()+y-self.oldPos.y()))
         
         def posCanviada(p):
             self.oldPos=p
@@ -1682,7 +1690,7 @@ class QVista(QMainWindow, Ui_MainWindow):
             self.actualitzaWindowFlags()
             amplada=self.width()
             alcada=self.height()
-            self.resize(0.8*amplada,0.8*alcada)
+            self.resize(round(0.8*amplada), round(0.8*alcada))
             self.show()
             self.botoRestaurar.setIcon(self.iconaRestaurar2)
         else:
@@ -1912,14 +1920,15 @@ class QVista(QMainWindow, Ui_MainWindow):
         # self.statusbar.addPermanentWidget( self.wScale, 0 )
     
 
-    def editarOrientacio(self):
-        # puenteo funcion para probar crear mapeta
-        if self.dwcrearMapeta.isHidden():
-            self.dwcrearMapeta.show()
-        else:
-            self.dwcrearMapeta.hide()
-        self.canvas.refresh()
-
+    # CrearMapeta - Comentado porque hay un error al salir en la 3.16
+    #
+    # def editarOrientacio(self):
+    #     # puenteo funcion para probar crear mapeta
+    #     if self.dwcrearMapeta.isHidden():
+    #         self.dwcrearMapeta.show()
+    #     else:
+    #         self.dwcrearMapeta.hide()
+    #     self.canvas.refresh()
 
     def obrirLlegenda(self):
         if self.dwLlegenda.isHidden():
@@ -2018,7 +2027,7 @@ class QVista(QMainWindow, Ui_MainWindow):
             Protecció dels projectes read-only: tres vies:
         -       Variable del projecte qV_readOnly=’True’
         -       Ubicació en una carpeta de només-lectura
-        -       Ubicació en una de les subcarpetes de N:\SITEB\APL\PyQgis\qVista
+        -       Ubicació en una de les subcarpetes de N:\\SITEBAPL\PyQgis\qVista
         -       Ubicació en una de les subcarpetes de N:\9SITEB\Publicacions\qVista
         """
         self.teCanvisPendents()
@@ -2156,6 +2165,10 @@ class QVista(QMainWindow, Ui_MainWindow):
             self.mapesRecents.insert(0,ultim)
 
     def gestioSortida(self):
+        if self.sortida:
+            self.sortida = False
+        else:
+            return
         try:
             if self.ubicacions is not None:
                 self.ubicacions.ubicacionsFi()
