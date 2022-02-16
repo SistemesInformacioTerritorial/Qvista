@@ -41,8 +41,8 @@ class QvMapetaBrujulado(QFrame):
         # print("ancho_mapeta", ancho_mapeta)
 
         # calcular el margen
-        self.margen= ancho_mapeta/7
-        ancho_mapetaBrujulado = ancho_mapeta + self.margen*2
+        self.margen= round(ancho_mapeta/7)
+        ancho_mapetaBrujulado = round(ancho_mapeta + self.margen*2)
 
         # dimensionar mapeta brujulado a ancho+margen
         self.setGeometry(0,0,ancho_mapetaBrujulado,ancho_mapetaBrujulado)
@@ -109,7 +109,7 @@ class QvMapetaBrujulado(QFrame):
         # print("ancho_mapeta", ancho_mapeta)
 
         # calcular el margen
-        self.margen= ancho_mapeta/7
+        self.margen= round(ancho_mapeta/7)
         ancho_mapetaBrujulado = ancho_mapeta + self.margen*2
 
         # dimensionar mapeta brujulado a ancho+margen
@@ -169,7 +169,7 @@ class QvMapetaBrujulado(QFrame):
             E=float(wld.readlines(4)[0])
             C=float(wld.readlines(5)[0])
             F=float(wld.readlines(6)[0])
-            wld.close
+            wld.close()
             x=heigthPNG;             y=widthPWG
             x1= A*x + B*y + C;       y1 =D*x + E*y + F
             xmin= C;            ymin= F
@@ -200,10 +200,10 @@ class QvMapetaBrujulado(QFrame):
         contextMenu.addSeparator()
 
         chColors= contextMenu.addAction("Cambiar colors")
-        mapetaDefault= contextMenu.addAction("Mapeta default")
-        crearMapetas= contextMenu.addAction("Crear/cargar /salvar/ mapeta")
-
-        
+        # CrearMapeta - Comentado porque hay un error al salir en la 3.16
+        #
+        # mapetaDefault= contextMenu.addAction("Mapeta default")
+        # crearMapetas= contextMenu.addAction("Crear/cargar /salvar/ mapeta")
 
         action = contextMenu.exec_(self.mapToGlobal(event.pos()))
         if action == martoAct:
@@ -219,15 +219,18 @@ class QvMapetaBrujulado(QFrame):
             self.showDialogColor()
             self.qvCompass.colorMarcasCompass=self.colorMarcas
             self.qvMapeta.colorMarcasMapeta=self.colorMarcas 
-        elif action == mapetaDefault:
-            # cargar mapeta default
-            ficheroMapeta= self.mapeta_default
-            self.PngPgwDroped_MB([ficheroMapeta])
-            QTimer.singleShot(1000, self.continuar)
-            pass
-        elif action == crearMapetas:
-            print("en construccion")
-            self.Sig_MuestraMapeta.emit()
+        # CrearMapeta - Comentado porque hay un error al salir en la 3.16
+        #
+        # elif action == mapetaDefault:
+        #     # cargar mapeta default
+        #     ficheroMapeta= self.mapeta_default
+        #     self.PngPgwDroped_MB([ficheroMapeta])
+        #     QTimer.singleShot(1000, self.continuar)
+        #     pass
+        # elif action == crearMapetas:
+        #     print("en construccion")
+        #     self.Sig_MuestraMapeta.emit()
+
             # QTimer.singleShot(0, self.continuar)
             # if self.parent.dwcrearMapeta.isHidden():
             #     self.parent.dwcrearMapeta.show()

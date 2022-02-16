@@ -126,25 +126,25 @@ class QvCatalegCapes(QWidget):
             self.models[-1].setNameFilterDisables(False)
             self.models[-1].setNameFilters(['*.qlr'])
             self.models[-1].setReadOnly(True)
-        try:
-            # Aquesta classe existeix a partir de Qt 5.13. La idea és que quan s'actualitzi a aquesta versió, funcionarà. 
-            self.model = QConcatenateTablesProxyModel()
-            for mod in self.models:
-                self.model.addSourceModel(mod)
-            self.treeCataleg.setModel(self.model)
-        except:
-            # Estem en una versió de Qt menor de la 5.13. Farem servir una combobox per variar entre els diferents QTreeView
-            if len(paths)>1:
-                def canviModel(i):
-                    self.treeCataleg.setModel(self.models[i])
-                    self.treeCataleg.setRootIndex(self.rootPaths[i])
-                    self.canviaFiltre()
-                    self.models[i].layoutChanged.emit()
-                cbModel = QComboBox()
-                cbModel.addItems(map(os.path.basename, paths))
-                cbModel.currentIndexChanged.connect(canviModel)
-                self.layout.addWidget(cbModel)
-            self.treeCataleg.setModel(self.models[0])
+        # try:
+        #     # Aquesta classe existeix a partir de Qt 5.13. La idea és que quan s'actualitzi a aquesta versió, funcionarà. 
+        #     self.model = QConcatenateTablesProxyModel()
+        #     for mod in self.models:
+        #         self.model.addSourceModel(mod)
+        #     self.treeCataleg.setModel(self.model)
+        # except:
+        #     # Estem en una versió de Qt menor de la 5.13. Farem servir una combobox per variar entre els diferents QTreeView
+        if len(paths)>1:
+            def canviModel(i):
+                self.treeCataleg.setModel(self.models[i])
+                self.treeCataleg.setRootIndex(self.rootPaths[i])
+                self.canviaFiltre()
+                self.models[i].layoutChanged.emit()
+            cbModel = QComboBox()
+            cbModel.addItems(map(os.path.basename, paths))
+            cbModel.currentIndexChanged.connect(canviModel)
+            self.layout.addWidget(cbModel)
+        self.treeCataleg.setModel(self.models[0])
         
         self.treeCataleg.selectionModel().selectionChanged.connect(self.actualitzaMetadades)
         self.treeCataleg.setRootIndex(self.rootPaths[0])
@@ -263,7 +263,7 @@ class PreviewCapa(QWidget):
         self.bInfo.clicked.connect(self.obrirInfo)
         self.bInfo.setStyleSheet(stylesheet)
         try:
-            with open(self.nomBase+'.txt') as arxiu:
+            with open(self.nomBase+'.txt', encoding='cp1252') as arxiu:
                 self.titol=arxiu.readline()
                 self.text=arxiu.read()
         except:
@@ -606,7 +606,7 @@ class QvCreadorCatalegCapes(QDialog):
                 return
 
         # Desem l'arxiu de text
-        with open(fRes+'.txt', 'w') as f:
+        with open(fRes+'.txt', 'w', encoding='cp1252') as f:
             f.write(self._leTitol.text()+'\n')
             f.write(self._teText.toPlainText())
         # Desem el projecte
@@ -661,7 +661,7 @@ class QvCreadorCatalegCapes(QDialog):
         lay.addWidget(bDesar, alignment=QtCore.Qt.AlignRight)
 
         def desarMetadades():
-            with open(fRes+'.htm', 'w') as f:
+            with open(fRes+'.htm', 'w', encoding='cp1252') as f:
                 dades = (teFormat, teResum, teEscales, teContingut, tePropietari)
                 dades = (x.toPlainText().replace('\n','<br>') for x in dades)
                 f.write(plantillaMetadades %

@@ -714,7 +714,8 @@ class MapaCataleg(QFrame):
         self.lblImatge.setToolTip("Obrir mapa en qVista")
         self.layout.addWidget(self.lblImatge)
         try:
-            with open(dir+'.txt') as text:
+            with open(dir+'.txt', encoding='cp1252') as text:
+                # Defalut encoding: locale.getpreferredencoding(False)
                 self.titol = text.readline()
 
                 self.text = text.read()
@@ -1162,7 +1163,7 @@ class QvCreadorCataleg(QDialog):
                 return
 
         # Desem l'arxiu de text
-        with open(fRes+'.txt', 'w') as f:
+        with open(fRes+'.txt', 'w', encoding='cp1252') as f:
             f.write(self._leTitol.text()+'\n')
             f.write(self._teText.toPlainText())
         # Desem el projecte
@@ -1203,7 +1204,7 @@ class QvCreadorCataleg(QDialog):
         lay.addWidget(bDesar, alignment=QtCore.Qt.AlignRight)
 
         def desarMetadades():
-            with open(fRes+'.htm', 'w') as f:
+            with open(fRes+'.htm', 'w', encoding='cp1252') as f:
                 cont = teContingut.toPlainText().replace('\n', '<br>')
                 prop = tePropietari.toPlainText().replace('\n', '<br>')
                 font = teFont.toPlainText().replace('\n', '<br>')

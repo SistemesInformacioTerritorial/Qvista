@@ -315,6 +315,10 @@ class QvStatusBar(QStatusBar):
         elif command == 'mapificacio':
             from moduls.QvMapForms import QvFormNovaMapificacio
             QvFormNovaMapificacio.executa(self.llegenda)
+        # elif command == 'readgpkg':
+        #     self.llegenda.readProject('geopackage:D:/qVista/Dades/Activitats.gpkg?projectName=Activitats')
+        # elif command == 'writegpkg':
+        #     self.llegenda.project.write()
         elif command == 'testurbanisme':
             QvApp().testUrbanisme()
         elif command == 'carrilsbici':
@@ -365,7 +369,7 @@ class QvStatusBar(QStatusBar):
             text = le.text()
         font = le.font()
         fm = QFontMetrics(font)
-        le.setFixedWidth(fm.width(text)*QvApp().zoomFactor())
+        le.setFixedWidth(round(fm.width(text)*QvApp().zoomFactor()))
     def showPB(self):
         self.sbCarregantCanvas.show()
     def hidePB(self):

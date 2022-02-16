@@ -83,7 +83,7 @@ class QvMapeta(QFrame):
         self.xmax_0 = datos_mapeta[3];  self.ymax_0 = datos_mapeta[4]
         # ancho, alto PNG
         self.xTamany = datos_mapeta[5];   self.yTamany = datos_mapeta[6]
-        self.radio= self.xTamany/2
+        self.radio= round(self.xTamany/2)
         self.centroMapeta=QPoint(self.radio,self.radio)
         # De entrada cargo el mapeta no girado, angulo=0
         self.seno_antigiro = 0;            self.coseno_antigiro = 1
@@ -162,7 +162,7 @@ class QvMapeta(QFrame):
             E=float(wld.readlines(4)[0])
             C=float(wld.readlines(5)[0])
             F=float(wld.readlines(6)[0])
-            wld.close
+            wld.close()
             x=heigthPNG;             y=widthPNG
             x1= A*x + B*y + C;       y1 =D*x + E*y + F
             xmin= C;            ymin= F
@@ -203,7 +203,7 @@ class QvMapeta(QFrame):
 
 
 
-        self.radio= self.xTamany/2
+        self.radio= round(self.xTamany/2)
         self.centroMapeta=QPoint(self.radio,self.radio)
         self.setGeometry(0, 0, self.xTamany, self.yTamany)   # Actualizo tamaño mapeta (aqui??)  
         # self.move(20,20) 
@@ -228,8 +228,8 @@ class QvMapeta(QFrame):
             a= centro.x()
             b= centro.y()
             y=  math.sqrt(math.pow(radio, 2) - math.pow((x-a), 2)) + b
-            Ymenor= 2*b-y
-            Ymayor= y
+            Ymenor= round(2*b-y)
+            Ymayor= round(y)
 
             return QPoint(x,Ymenor),QPoint(x,Ymayor)
         
@@ -238,8 +238,8 @@ class QvMapeta(QFrame):
             a= centro.x()
             b= centro.y()
             x=  math.sqrt(math.pow(radio, 2) - math.pow((y-b), 2)) + a
-            Xmenor= 2*b-x
-            Xmayor= x
+            Xmenor= round(2*b-x)
+            Xmayor= round(x)
 
             return QPoint(Xmenor,y),QPoint(Xmayor,y)            
     def discrimimar_caso_H(self,P1, PW, PE):
@@ -279,8 +279,10 @@ class QvMapeta(QFrame):
             a= centro.x()
             b= centro.y()
             y=  math.sqrt(math.pow(radio, 2) - math.pow((x-a), 2)) + b
-            Ymenor= 2*b-y;        Ymayor= y
-            PN= QPoint(x,Ymenor);       PS= QPoint(x,Ymayor)
+            Ymenor= round(2*b-y)
+            Ymayor= round(y)
+            PN= QPoint(x,Ymenor)
+            PS= QPoint(x,Ymayor)
 
             caso1 = self.discrimimar_caso_V(P1, PN, PS)
             caso2 = self.discrimimar_caso_V(P2, PN, PS)
@@ -308,8 +310,10 @@ class QvMapeta(QFrame):
             except :
                 pass
             
-            Xmenor= 2*b-x;              Xmayor= x
-            PW= QPoint(Xmenor,y);       PE= QPoint(Xmayor,y)
+            Xmenor= round(2*b-x)
+            Xmayor= round(x)
+            PW= QPoint(Xmenor,y)
+            PE= QPoint(Xmayor,y)
             caso1 = self.discrimimar_caso_H(P1, PW, PE)
             caso2 = self.discrimimar_caso_H(P2, PW, PE)
             if caso1== "casoW":
@@ -345,8 +349,8 @@ class QvMapeta(QFrame):
         rot_pixmap = pixmap.transformed(QTransform().rotate(angulo_rotacion),Qt.SmoothTransformation)
         # Recorto la imagen al tamaño establecido en el PGW
         hp= rot_pixmap.height()
-        pc=(hp-self.xTamany)/2
-        rect= QRect(pc, pc, self.xTamany, self.yTamany)
+        pc=round((hp-self.xTamany)/2)
+        rect= QRect(pc, pc, round(self.xTamany), round(self.yTamany))
         self.cropped_pixmap = rot_pixmap.copy(rect) 
 
         #TODO:paso FEO (salvar a disco) para recargar la imagen. Seguramente causa retardos
@@ -494,8 +498,8 @@ class QvMapeta(QFrame):
         Par1.x=  ((xx-(self.xTamany/2) ) * self.coseno_antigiro - (yy -(self.xTamany/2) ) * self.seno_antigiro )   + (self.xTamany/2) 
         Par1.y=  ((xx-(self.xTamany/2) ) *  self.seno_antigiro   + (yy -(self.xTamany/2)) * self.coseno_antigiro ) + (self.xTamany/2) 
         # centro ventana
-        self.centro_v.setX(Par1.x)
-        self.centro_v.setY(Par1.y)
+        self.centro_v.setX(round(Par1.x))
+        self.centro_v.setY(round(Par1.y))
 
 
 
@@ -507,8 +511,10 @@ class QvMapeta(QFrame):
 
   
         # xmin, ymin, xmax, ymax para que las vea el paintEvent
-        xMin = min(Par1.x,Par2.x,Par3.x,Par4.x);   yMin = min(Par1.y,Par2.y,Par3.y,Par4.y)
-        xMax = max(Par1.x,Par2.x,Par3.x,Par4.x);   yMax = max(Par1.y,Par2.y,Par3.y,Par4.y)   
+        xMin = round(min(Par1.x,Par2.x,Par3.x,Par4.x))
+        yMin = round(min(Par1.y,Par2.y,Par3.y,Par4.y))
+        xMax = round(max(Par1.x,Par2.x,Par3.x,Par4.x))
+        yMax = round(max(Par1.y,Par2.y,Par3.y,Par4.y))
         self.begin = QPoint(xMin,yMin);            self.end = QPoint(xMax,yMax) 
         
 
@@ -591,7 +597,7 @@ class QvMapeta(QFrame):
 
         # Pinto el rectangulo como 4 segmentos recortados si es necesario NUEVO
         radio= self.xTamany/2
-        centro=QPoint(self.xTamany/2,self.yTamany/2)  
+        centro=QPoint(round(self.xTamany/2),round(self.yTamany/2))
 
         # 
         P_xmin_ymin=  QPoint(begin_.x, end_.y)
@@ -626,10 +632,10 @@ class QvMapeta(QFrame):
         qp.setPen(pen)
         #region Pinto CRUZ RECORTADA por el circulo NUEVO --> ok')
         try:
-            P1=  QPoint(begin_.x +(end_.x-begin_.x)/2, 0)
-            P2=  QPoint(begin_.x +(end_.x-begin_.x)/2,self.yTamany)
-            P3=  QPoint(0, begin_.y +(end_.y-begin_.y)/2)
-            P4=  QPoint(self.xTamany,begin_.y +(end_.y-begin_.y)/2)
+            P1=  QPoint(round(begin_.x +(end_.x-begin_.x)/2), 0)
+            P2=  QPoint(round(begin_.x +(end_.x-begin_.x)/2), round(self.yTamany))
+            P3=  QPoint(0, round(begin_.y +(end_.y-begin_.y)/2))
+            P4=  QPoint(round(self.xTamany), round(begin_.y + (end_.y-begin_.y)/2))
 
             # Calculo interseccion de linea horizontal con circulo (P1 arriba P2 abajo)
             P1R, P2R=  self.SegmentoEnCirculo(P1,P2,centro,radio)
@@ -675,13 +681,13 @@ class QvMapeta(QFrame):
         self.begin = event.pos()
         self.the_data =event.pos()
         # averiguo si el punto ha de enviarse a compass
-        radio= self.width()/2;    centroMapeta= QPoint(radio,radio)
+        radio= round(self.width()/2);    centroMapeta= QPoint(radio,radio)
         if self.enCirculo(self.the_data,radio,centroMapeta)==False:   # fuera
             self.puntoParaCompass = True
             # print("Mapeta >> mousePressEvent emito event",event.pos())  
             margen= self.parent().parent().margen
-            self.the_data.setX(event.pos().x()+margen)
-            self.the_data.setY(event.pos().y()+margen)
+            self.the_data.setX(round(event.pos().x()+margen))
+            self.the_data.setY(round(event.pos().y()+margen))
             # print("Mapeta >> mousePressEvent emito the_data",self.the_data)  
             self.Sig_dadoPNT.emit(self.the_data)
             return
@@ -729,8 +735,8 @@ class QvMapeta(QFrame):
         ## Cambio origen de coordenadas "Y" poniendolo abajo-izquierda. Acorde con sistema del Mapa')
         self.xIn = self.begin.x();      self.yIn = self.yTamany - self.begin.y()   
         self.xFi = self.end.x();        self.yFi = self.yTamany - self.end.y()
-        self.centro_v.setX((self.xFi-self.xIn)/2 + self.xIn)
-        self.centro_v.setY((self.yFi-self.yIn)/2 + self.yIn)
+        self.centro_v.setX(round((self.xFi-self.xIn)/2 + self.xIn))
+        self.centro_v.setY(round((self.yFi-self.yIn)/2 + self.yIn))
        # Convierto las coordenadas del mapeta girado 44 a coordenadas de mapeta no girado para buscar la utm')
  
         #  En el mapeta (girado o no) he señalado una ventana. Calculo su tamaño
