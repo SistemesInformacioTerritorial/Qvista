@@ -297,13 +297,32 @@ class QVista(QMainWindow, Ui_MainWindow):
                 return
         self.obrirProjecteAmbRang(projecte)
 
+    def projecteGpkg(self, file):
+        try:
+            type = "geopackage"
+            projectStorage = QvApp().appQgis.projectStorageRegistry().projectStorageFromType(type)
+            projectsList = projectStorage.listProjects(file)
+            if projectsList and len(projectsList) > 0:
+                projectName = projectsList[0]
+            else:
+                QMessageBox.warning(self, "Mapa inexistent", f"L'arxiu {type} '{file}' no conté cap mapa definit")
+                return None
+            return f"{type}:{file}?projectName={projectName}"
+        except Exception as e:
+            QMessageBox.warning(self, f"Error al obrir mapa de arxiu {type}", f"No es pot obrir el mapa de l'arxiu '{file}'")
+            print(str(e))
+            return None
+
     def obrirProjecteAmbRang(self, projecte):
         """Obre un projecte passant-li el rang que tingui el projecte actual
 
         Arguments:
             projecte {str} -- Ruta del projecte que volem obrir
         """
-        self.obrirProjecte(projecte, self.canvas.extent())
+        if Path(projecte).suffix.lower() == '.gpkg':
+            projecte = self.projecteGpkg(projecte)
+        if projecte is not None:
+            self.obrirProjecte(projecte, self.canvas.extent())
 
     def obrirProjecte(self, projecte, rang = None, nou=False):
         """Obre un projecte passat com a parametre, amb un possible rang predeterminat.
@@ -1965,7 +1984,8 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         dialegObertura=QFileDialog()
         dialegObertura.setDirectoryUrl(QUrl('../dades/projectes/'))
-        nfile,_ = dialegObertura.getOpenFileName(None,"Obrir mapa Qgis", "../dades/projectes/", "Tots els mapes acceptats (*.qgs *.qgz);; Mapes Qgis (*.qgs);;Mapes Qgis comprimits (*.qgz)")
+        nfile,_ = dialegObertura.getOpenFileName(None, "Obrir mapa Qgis", "../dades/projectes/",
+            "Tots els mapes acceptats (*.qgs *.qgz *.gpkg);; Mapes Qgis (*.qgs);;Mapes Qgis comprimits (*.qgz);;Mapes GeoPackage (*.gpkg)")
 
         if nfile is not None:
             self.obrirProjecteAmbRang(nfile)
