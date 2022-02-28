@@ -297,19 +297,30 @@ class QVista(QMainWindow, Ui_MainWindow):
                 return
         self.obrirProjecteAmbRang(projecte)
 
+    def formProjecteGPKG(self, projectsList):
+        from QvFormMapesGPKG import QvFormMapesGPKG
+        formMapes = QvFormMapesGPKG(projectsList)
+        formMapes.exec()
+        return formMapes.mapa
+
     def projecteGpkg(self, file):
         try:
             type = "geopackage"
             projectStorage = QvApp().appQgis.projectStorageRegistry().projectStorageFromType(type)
             projectsList = projectStorage.listProjects(file)
-            if projectsList and len(projectsList) > 0:
-                projectName = projectsList[0]
-            else:
+            if projectsList is None or len(projectsList) == 0:
                 QMessageBox.warning(self, "Mapa inexistent", f"L'arxiu {type} '{file}' no conté cap mapa definit")
                 return None
-            return f"{type}:{file}?projectName={projectName}"
+            if len(projectsList) == 1:
+                projectName = projectsList[0]
+            else:
+                projectName = self.formProjecteGPKG(projectsList)
+            if projectName is None:
+                return None
+            else:
+                return f"{type}:{file}?projectName={projectName}"
         except Exception as e:
-            QMessageBox.warning(self, f"Error al obrir mapa de arxiu {type}", f"No es pot obrir el mapa de l'arxiu '{file}'")
+            QMessageBox.warning(self, f"Error al obrir mapa d'arxiu {type}", f"No es pot obrir el mapa de l'arxiu '{file}'")
             print(str(e))
             return None
 
