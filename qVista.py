@@ -297,12 +297,6 @@ class QVista(QMainWindow, Ui_MainWindow):
                 return
         self.obrirProjecteAmbRang(projecte)
 
-    def formProjecteGPKG(self, projectsList):
-        from QvFormMapesGPKG import QvFormMapesGPKG
-        formMapes = QvFormMapesGPKG(projectsList)
-        formMapes.exec()
-        return formMapes.mapa
-
     def projecteGpkg(self, file):
         try:
             type = "geopackage"
@@ -314,7 +308,8 @@ class QVista(QMainWindow, Ui_MainWindow):
             if len(projectsList) == 1:
                 projectName = projectsList[0]
             else:
-                projectName = self.formProjecteGPKG(projectsList)
+                from QvFormMapesGPKG import QvFormMapesGPKG
+                projectName = QvFormMapesGPKG.executa(projectsList)
             if projectName is None:
                 return None
             else:

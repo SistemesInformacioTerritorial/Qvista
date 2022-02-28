@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from PyQt5 import QtCore, QtWidgets
+from qgis.PyQt import QtWidgets
 
 class QvFormMapesGPKG(QtWidgets.QDialog):
     def __init__(self, mapes):
@@ -32,4 +32,10 @@ class QvFormMapesGPKG(QtWidgets.QDialog):
     def cancel(self):
         self.mapa = None
         self.hide()
+
+    @classmethod
+    def executa(cls, mapes):
+        fMap = cls(mapes)
+        fMap.exec()
+        return fMap.mapa
 
