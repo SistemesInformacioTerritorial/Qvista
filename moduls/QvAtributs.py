@@ -222,7 +222,23 @@ class QvAtributs(QTabWidget):
         except Exception as e:
             print(str(e))
 
-    def desarCSV(self, layer, selected=False):
+    def formatAttributes(self, feature):
+        # Hay que tratar de forma especial los campos de tipo fecha
+
+        def removeSuffix(s, suffix):
+            if suffix and s.endswith(suffix):
+                return s[:-len(suffix)]
+            return s
+
+        row = feature.attributes()
+        for i, field in enumerate(feature.fields()):
+            if field.isDateOrTime():
+                data = row[i]
+                # Si llega fecha con hora a 0, dejamos solo la fecha
+                row[i] = removeSuffix(data.toString(Qt.ISODate), 'T00:00:00')
+        return row
+
+    def desarCSV(self, layer, selected=False):        
         try:
             path, _ = QtWidgets.QFileDialog.getSaveFileName(
                 self, 'Desa dades a arxiu', '', 'CSV (*.csv)')
@@ -237,7 +253,7 @@ class QvAtributs(QTabWidget):
                     else:
                         iterator = layer.getFeatures
                     for feature in iterator():
-                        writer.writerow(feature.attributes())
+                        writer.writerow(self.formatAttributes(feature))
             return path
         except Exception as e:
             print(str(e))
