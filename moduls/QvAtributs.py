@@ -234,8 +234,9 @@ class QvAtributs(QTabWidget):
         for i, field in enumerate(feature.fields()):
             if field.isDateOrTime():
                 data = row[i]
-                # Si llega fecha con hora a 0, dejamos solo la fecha
-                row[i] = removeSuffix(data.toString(Qt.ISODate), 'T00:00:00')
+                if not data.isNull():
+                    # Si llega fecha con hora a 0, dejamos solo la fecha
+                    row[i] = removeSuffix(data.toString(Qt.ISODate), 'T00:00:00')
         return row
 
     def desarCSV(self, layer, selected=False):        
@@ -243,7 +244,7 @@ class QvAtributs(QTabWidget):
             path, _ = QtWidgets.QFileDialog.getSaveFileName(
                 self, 'Desa dades a arxiu', '', 'CSV (*.csv)')
             if path is not None:
-                with open(path, 'w', newline='') as stream:
+                with open(path, 'w', encoding="utf-8", newline='') as stream:
                     writer = csv.writer(
                         stream, delimiter=';', quotechar='¨',
                         quoting=csv.QUOTE_MINIMAL)
@@ -256,6 +257,7 @@ class QvAtributs(QTabWidget):
                         writer.writerow(self.formatAttributes(feature))
             return path
         except Exception as e:
+            QMessageBox.warning(self, "Error al desar l'arxiu CSV", f"No s'ha pogut desar correctament l'arxiu {path}")
             print(str(e))
             return None
 
