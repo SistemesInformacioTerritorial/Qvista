@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from qgis.core import QgsProject
 from qgis.gui import QgsAttributeForm, QgsAttributeDialog, QgsActionMenu, QgsAttributeEditorContext, QgsGui
 from qgis.PyQt.QtWidgets import QDialog, QMenuBar, QDialogButtonBox, QPushButton
 
@@ -38,8 +39,12 @@ class QvFormAtributs:
 class QvFitxesAtributs(QDialog):
 
     def __init__(self, layer, features, parent=None, attributes=None, new=False):
+        # Inicialización de editores para formularios
         if len(QgsGui.editorWidgetRegistry().factories()) == 0:
             QgsGui.editorWidgetRegistry().initEditors()
+        # Borrado de las relaciones para mantener formularios simples
+        relManager = QgsProject().instance().relationManager()
+        relManager.clear()
         QDialog.__init__(self, parent)
         self.initUI()
         self.layer = layer
@@ -62,6 +67,14 @@ class QvFitxesAtributs(QDialog):
         self.ui.setupUi(self)
         self.finished.connect(self.finish)
         self.ui.buttonBox.accepted.connect(self.accept)
+
+    # def layerForm(self, layer):
+    #     relManager = QgsProject().instance().relationManager()        
+    #     if relManager:
+    #         hijo = relManager.referencedRelations(layer)[0]
+    #         if hijo:
+    #             context = QgsAttributeEditorContext(QgsAttributeEditorContext(), QgsAttributeEditorContext.Embed)
+    #             form = QgsAttributeForm(layer, feature, context) ...
 
     def consulta(self):
         layersDiferents = set()
