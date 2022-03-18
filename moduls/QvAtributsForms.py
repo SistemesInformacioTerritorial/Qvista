@@ -43,8 +43,13 @@ class QvFitxesAtributs(QDialog):
         if len(QgsGui.editorWidgetRegistry().factories()) == 0:
             QgsGui.editorWidgetRegistry().initEditors()
         # Borrado de las relaciones para mantener formularios simples
-        relManager = QgsProject().instance().relationManager()
-        relManager.clear()
+        # relManager = QgsProject().instance().relationManager()
+        # relManager.clear()
+        # Pruebas con proyecto TestRelaciones.qgs
+        # - Generado con versión 3.16 LTR
+        # - Capas GPKG marcadas como solo lectura
+        # - Relaciones de 1 y 2 niveles
+        # - Editados expresión de muestra y campo invisible
         QDialog.__init__(self, parent)
         self.initUI()
         self.layer = layer
@@ -68,20 +73,24 @@ class QvFitxesAtributs(QDialog):
         self.finished.connect(self.finish)
         self.ui.buttonBox.accepted.connect(self.accept)
 
-    # def layerForm(self, layer):
-    #     relManager = QgsProject().instance().relationManager()        
-    #     if relManager:
-    #         hijo = relManager.referencedRelations(layer)[0]
-    #         if hijo:
-    #             context = QgsAttributeEditorContext(QgsAttributeEditorContext(), QgsAttributeEditorContext.Embed)
-    #             form = QgsAttributeForm(layer, feature, context) ...
+    def layerRelations(self, layer):
+        relManager = QgsProject().instance().relationManager()        
+        if relManager:
+            rels = relManager.referencedRelations(layer)
+            if rels: return len(rels)
+        return 0
 
     def consulta(self):
+        resized = False
         layersDiferents = set()
         for feature in self.features:
             layer = self.capesCorresponents[feature]
-            form = QgsAttributeForm(layer, feature)
             layersDiferents.add(layer)
+            # print('Capa', layer.name(), '-', self.layerRelations(layer), 'referenced relations')
+            if not resized and self.layerRelations(layer) > 0:
+                self.resize(900, 800)
+                resized = True
+            form = QgsAttributeForm(layer, feature)
             # form.setMode(QgsAttributeEditorContext.IdentifyMode)
             self.ui.stackedWidget.addWidget(form)
         # baseTitol = self.layer.name() if len(layersDiferents)==1 else 'Consulta multicapa'

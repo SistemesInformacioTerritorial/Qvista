@@ -886,7 +886,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.dwLlegenda.setWindowFlag(Qt.Window)
         self.dwLlegenda.show()
 
-        if QvApp().testVersioQgis(3, 10):
+        if self.llegenda.digitize is not None:
             self.addDockWidget( Qt.LeftDockWidgetArea , self.llegenda.digitize.widget )
 
     def preparacioEntorns(self):             
