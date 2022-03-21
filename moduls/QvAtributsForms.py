@@ -75,25 +75,25 @@ class QvFitxesAtributs(QDialog):
 
     def layerRelations(self, layer):
         relManager = QgsProject().instance().relationManager()        
-        if relManager:
-            rels = relManager.referencedRelations(layer)
-            if rels: return len(rels)
-        return 0
+        return relManager.referencedRelations(layer)
+
+    def formResize(self, layer):
+        numRelations = len(self.layerRelations(layer))
+        if numRelations == 0: w = 700
+        elif numRelations == 1: w = 900
+        else: w = 1100
+        self.resize(w, 800)
 
     def consulta(self):
-        resized = False
-        layersDiferents = set()
+        first = True
         for feature in self.features:
-            layer = self.capesCorresponents[feature]
-            layersDiferents.add(layer)
-            # print('Capa', layer.name(), '-', self.layerRelations(layer), 'referenced relations')
-            if not resized and self.layerRelations(layer) > 0:
-                self.resize(900, 800)
-                resized = True
+            if first:
+                layer = self.capesCorresponents[feature]
+                self.formResize(layer)
+                first = False
             form = QgsAttributeForm(layer, feature)
             # form.setMode(QgsAttributeEditorContext.IdentifyMode)
             self.ui.stackedWidget.addWidget(form)
-        # baseTitol = self.layer.name() if len(layersDiferents)==1 else 'Consulta multicapa'
         baseTitol = '{}'
         if self.total > 1:
             self.title = baseTitol + " - Consulta fitxa elements"
