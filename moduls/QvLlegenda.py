@@ -396,7 +396,8 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
         return visible
 
     def setMenuEdicio(self, menu):
-        self.menuEdicio = self.digitize.setMenu(menu)
+        if self.digitize is not None:
+            self.menuEdicio = self.digitize.setMenu(menu)
         self.menuEdicioVisible(False)
 
     def nouProjecte(self):

@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from qgis.core import QgsProject
 from qgis.gui import QgsAttributeForm, QgsAttributeDialog, QgsActionMenu, QgsAttributeEditorContext, QgsGui
 from qgis.PyQt.QtWidgets import QDialog, QMenuBar, QDialogButtonBox, QPushButton
 
@@ -38,8 +39,17 @@ class QvFormAtributs:
 class QvFitxesAtributs(QDialog):
 
     def __init__(self, layer, features, parent=None, attributes=None, new=False):
+        # Inicialización de editores para formularios
         if len(QgsGui.editorWidgetRegistry().factories()) == 0:
             QgsGui.editorWidgetRegistry().initEditors()
+        # Borrado de las relaciones para mantener formularios simples
+        # relManager = QgsProject().instance().relationManager()
+        # relManager.clear()
+        # Pruebas con proyecto TestRelaciones.qgs
+        # - Generado con versión 3.16 LTR
+        # - Capas GPKG marcadas como solo lectura
+        # - Relaciones de 1 y 2 niveles
+        # - Editados expresión de muestra y campo invisible
         QDialog.__init__(self, parent)
         self.initUI()
         self.layer = layer
@@ -63,15 +73,27 @@ class QvFitxesAtributs(QDialog):
         self.finished.connect(self.finish)
         self.ui.buttonBox.accepted.connect(self.accept)
 
+    def layerRelations(self, layer):
+        relManager = QgsProject().instance().relationManager()        
+        return relManager.referencedRelations(layer)
+
+    def formResize(self, layer):
+        numRelations = len(self.layerRelations(layer))
+        if numRelations == 0: w = 700
+        elif numRelations == 1: w = 900
+        else: w = 1100
+        self.resize(w, 800)
+
     def consulta(self):
-        layersDiferents = set()
+        first = True
         for feature in self.features:
-            layer = self.capesCorresponents[feature]
+            if first:
+                layer = self.capesCorresponents[feature]
+                self.formResize(layer)
+                first = False
             form = QgsAttributeForm(layer, feature)
-            layersDiferents.add(layer)
             # form.setMode(QgsAttributeEditorContext.IdentifyMode)
             self.ui.stackedWidget.addWidget(form)
-        # baseTitol = self.layer.name() if len(layersDiferents)==1 else 'Consulta multicapa'
         baseTitol = '{}'
         if self.total > 1:
             self.title = baseTitol + " - Consulta fitxa elements"
