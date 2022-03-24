@@ -60,6 +60,8 @@ class ConstantsMaBIM:
 
     # Consulta a partir del text escrit al camp de cerca.
     # Obté el codi BIM, la descripció i la denominació.
+    CONSULTA_DATA_DADES = '''SELECT DATA FROM DATES_PROCESSOS WHERE (PROCES LIKE '%'||:pText||'%')'''
+    
     CONSULTA_CERCADOR = '''SELECT BIM, DESCRIPCIO_BIM, DENOMINACIO_BIM
                             FROM
                             ZAFT_0002
@@ -68,7 +70,7 @@ class ConstantsMaBIM:
                                 OR (UPPER(DESCRIPCIO_BIM) LIKE '%'||:pText||'%')
                                 OR (UPPER(DENOMINACIO_BIM) LIKE '%'||:pText||'%')
                                 OR (UPPER(REF_CADASTRE_BIM) LIKE '%'||:pText||'%'))
-                            AND (ROWNUM < 100)''' #aquesta consulta haurà d'estar en un arxiu, però ja es farà
+                            AND (ROWNUM < 100)''' #aquesta consulta haurà d'estar en un arxiu, però ja es farà'''
 
 
     CONSULTA_INFO_BIM_Z2 = '''SELECT BIM, ESTAT, ADSCRIT,
@@ -409,7 +411,7 @@ class QMaBIM(QtWidgets.QMainWindow):
         self.configuraPlanols()
         self.inicialitzaProjecte(projecte)
         self.connectaDB()
-        self.setIcones()
+        self.setIcones() 
 
         self.einaSeleccio = QvSeleccioBIM(self.canvasA, self.llegenda)
         self.einaSeleccio.elementsSeleccionats.connect(self.seleccioGrafica)
@@ -417,7 +419,6 @@ class QMaBIM(QtWidgets.QMainWindow):
         self.wMesuraGrafica = QvMesuraGrafica(self.canvasA, self.llegenda, self.canvasA)
         self.wMesuraGrafica.setWindowFlag(QtCore.Qt.WindowStaysOnTopHint)
         self.wMesuraGrafica.setWindowTitle('Mesures gràfiques')
-
 
         self.setStatusBar(QvStatusBar(self,['progressBar',('coordenades',1), 'escala'],self.canvasA,self.llegenda))
         self.statusBar().afegirWidget('lblSIT',QtWidgets.QLabel("SIT - Sistemes d'Informació Territorial"),0,0)
@@ -435,9 +436,31 @@ class QMaBIM(QtWidgets.QMainWindow):
 
         if len(QgsGui.editorWidgetRegistry().factories()) == 0:
             QgsGui.editorWidgetRegistry().initEditors()
+         
+        cons = Consulta()
+        txt1 = 'Generació de CSV'
+        txt2 = 'Càrrega de CSV'
+        txt3 = 'Tall de fulls'
 
+        res1 = cons.consulta(ConstantsMaBIM.CONSULTA_DATA_DADES,{':pText':txt1})[0][0].toString(QtCore.Qt.ISODate)
+        res2 = cons.consulta(ConstantsMaBIM.CONSULTA_DATA_DADES,{':pText':txt2})[0][0].toString(QtCore.Qt.ISODate)
+        # res3 = cons.consulta(ConstantsMaBIM.CONSULTA_DATA_DADES,{':pText':txt3})[0][0].toString(QtCore.Qt.ISODate)
+        font = QtGui.QFont()
+        font.setFamily("Segoe UI Light")
+        font.setPointSize(5)
+
+        self.l_DataCSV.setFont(font)
+        self.l_DataCarregaCSV.setFont(font)
+        self.l_DataCSV.setText(self.replace(res1, 'T', ' - '))
+        self.l_DataCarregaCSV.setText(self.replace(res2, 'T', ' - '))
+
+    # function to convert qdatetime to text
     def mostraMesures(self):
         self.wMesuraGrafica.show()
+
+    # function to replace a string in a string
+    def replace(self, text, buscar, reempla):
+        return reempla.join(text.split(buscar))
 
     def dialegSetFavorit(self):
         if self.bAfegirFavorit.isChecked():
@@ -466,6 +489,7 @@ class QMaBIM(QtWidgets.QMainWindow):
             FavoritsMaBIM().eliminaFavorit(BIM)
         self.actualitzaLlistaFavorits()
         self.actualitzaBotoFavorit()
+    
 
     def actualitzaBotoFavorit(self):
         if hasattr(self,'dadesLabelsDades'):
@@ -546,6 +570,7 @@ class QMaBIM(QtWidgets.QMainWindow):
             return
         self.recarregaLabelsDades()
 
+
     def recarregaLabelsDades(self):
         # un cop hem obtingut la nova informació, recarreguem la informació de les labels i taules
 
@@ -588,6 +613,7 @@ class QMaBIM(QtWidgets.QMainWindow):
 
         # Labels pestanya "Titularitat i Registral"
         labels = (self.lPropietariSol, self.lPropietariCons, self.lSupSolReg, self.lSupConsReg)
+
         for (lbl,txt) in zip(labels, self.dadesTitularitat):
             if str(txt).upper()!='NULL':
                 lbl.setText(str(txt))
@@ -596,6 +622,7 @@ class QMaBIM(QtWidgets.QMainWindow):
                 lbl.setWordWrap(True)
             else:
                 lbl.setText('')
+
 
         self.twFinquesRegistrals.setRowCount(len(self.dadesFinquesRegistrals))
         for (i,x) in enumerate(self.dadesFinquesRegistrals):
