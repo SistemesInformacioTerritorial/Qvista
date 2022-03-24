@@ -937,7 +937,7 @@ QToolButton:disabled{
              <item>
               <widget class="QLabel" name="label_2">
                <property name="text">
-                <string>Edició</string>
+                <string/>
                </property>
               </widget>
              </item>
@@ -963,6 +963,9 @@ QToolButton:disabled{
              </item>
              <item>
               <widget class="QLabel" name="label_3">
+               <property name="enabled">
+                <bool>true</bool>
+               </property>
                <property name="sizePolicy">
                 <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
                  <horstretch>0</horstretch>
@@ -973,6 +976,8 @@ QToolButton:disabled{
                 <font>
                  <family>verdana</family>
                  <pointsize>11</pointsize>
+                 <weight>75</weight>
+                 <bold>true</bold>
                 </font>
                </property>
                <property name="text">
@@ -997,7 +1002,31 @@ QToolButton:disabled{
               </widget>
              </item>
              <item>
+              <spacer name="verticalSpacer_7">
+               <property name="orientation">
+                <enum>Qt::Vertical</enum>
+               </property>
+               <property name="sizeType">
+                <enum>QSizePolicy::Fixed</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>20</width>
+                 <height>30</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+             <item>
               <widget class="QLabel" name="label_4">
+               <property name="font">
+                <font>
+                 <family>verdana</family>
+                 <pointsize>11</pointsize>
+                 <weight>75</weight>
+                 <bold>true</bold>
+                </font>
+               </property>
                <property name="text">
                 <string>Carrega CSVs</string>
                </property>
@@ -1018,8 +1047,14 @@ QToolButton:disabled{
              </item>
              <item>
               <widget class="QLabel" name="label_6">
+               <property name="font">
+                <font>
+                 <family>verdana</family>
+                 <pointsize>11</pointsize>
+                </font>
+               </property>
                <property name="text">
-                <string>Teseles gràfiques</string>
+                <string/>
                </property>
               </widget>
              </item>
@@ -1887,22 +1922,6 @@ QScrollBar::handle{
                  </layout>
                 </item>
                 <item>
-                 <spacer name="verticalSpacer_6">
-                  <property name="orientation">
-                   <enum>Qt::Vertical</enum>
-                  </property>
-                  <property name="sizeType">
-                   <enum>QSizePolicy::Fixed</enum>
-                  </property>
-                  <property name="sizeHint" stdset="0">
-                   <size>
-                    <width>20</width>
-                    <height>40</height>
-                   </size>
-                  </property>
-                 </spacer>
-                </item>
-                <item>
                  <widget class="QLabel" name="label_8">
                   <property name="styleSheet">
                    <string notr="true">background: lightgray; padding: 2px</string>
@@ -2012,6 +2031,22 @@ QScrollBar::handle{
                    </property>
                   </column>
                  </widget>
+                </item>
+                <item>
+                 <spacer name="verticalSpacer_6">
+                  <property name="orientation">
+                   <enum>Qt::Vertical</enum>
+                  </property>
+                  <property name="sizeType">
+                   <enum>QSizePolicy::Fixed</enum>
+                  </property>
+                  <property name="sizeHint" stdset="0">
+                   <size>
+                    <width>20</width>
+                    <height>40</height>
+                   </size>
+                  </property>
+                 </spacer>
                 </item>
                </layout>
               </widget>

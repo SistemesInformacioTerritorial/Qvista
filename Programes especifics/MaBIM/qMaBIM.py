@@ -454,6 +454,7 @@ class QMaBIM(QtWidgets.QMainWindow):
         self.l_DataCSV.setText(self.replace(res1, 'T', ' - '))
         self.l_DataCarregaCSV.setText(self.replace(res2, 'T', ' - '))
 
+
     # function to convert qdatetime to text
     def mostraMesures(self):
         self.wMesuraGrafica.show()
