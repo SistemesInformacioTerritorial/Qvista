@@ -1559,7 +1559,7 @@ class QvSeleccioElement(QgsMapTool):
                 return
             if layer.geometryType() == QgsWkbTypes.NullGeometry:
                 QMessageBox.warning(self.canvas, "Capa activa sense geometria",
-                                    "Seleccioni una capa amb geometria a la llegenda abans de clicar al mapa")
+                                    "Seleccioni una capa amb geometria a la llegenda abans de clicar sobre el mapa")
                 return
 
             point = self.canvas.getCoordinateTransform().toMapCoordinates(x, y)

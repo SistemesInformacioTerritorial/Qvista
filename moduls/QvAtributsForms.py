@@ -59,7 +59,7 @@ class QvFitxesAtributs(QDialog):
         self.capesCorresponents = {x[0]:x[1] for x in capesAux}
         self.features = list(self.capesCorresponents.keys())
         self.attributes = attributes
-        self.mode = None
+        self.mode = -1
         # self.selectFeature = self.layer.selectedFeatureCount() == 0
         if self.attributes is not None and self.attributes.llegenda is not None and self.attributes.llegenda.editing(layer):
             self.edicion(new)
@@ -161,7 +161,7 @@ class QvFitxesAtributs(QDialog):
             self.setWindowTitle(titolAct)
 
     def setMenu(self, n):
-        if self.mode is None: # Consulta
+        if self.mode < 0: # Consulta
             # Al añadir el menú, cambia el tamaño del form.
             # Hay que guardarlo y restaurarlo
             size = self.size()

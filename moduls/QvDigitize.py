@@ -36,7 +36,7 @@ class QvSnapping:
 
     def projectConfig(self):
         config = self.project.snappingConfig()
-        config.setEnabled(True)
+        config.setEnabled(False)
         self.canvas.snappingUtils().setConfig(config)
 
     # def config(self, enabled=True):
