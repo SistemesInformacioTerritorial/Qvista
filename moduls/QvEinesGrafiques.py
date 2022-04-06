@@ -8,6 +8,7 @@ from moduls.QvConstants import QvConstants
 from moduls.QVDistrictesBarris import QVDistrictesBarris
 from moduls import QvFuncions
 from qgis.gui import QgsMapTool, QgsRubberBand
+from qgis.core import QgsWkbTypes
 import math
 import csv
 import itertools
@@ -1553,7 +1554,13 @@ class QvSeleccioElement(QgsMapTool):
         try:
             layer = self.llegenda.currentLayer()
             if layer is None:
-                layer = self.canvas.layers()[0]
+                QMessageBox.warning(self.canvas, "No hi ha capa activa",
+                                    "S'ha de seleccionar una capa a la llegenda per poder veure l'informació del seus objectes")
+                return
+            if layer.geometryType() == QgsWkbTypes.NullGeometry:
+                QMessageBox.warning(self.canvas, "Capa activa sense geometria",
+                                    "Seleccioni una capa amb geometria a la llegenda abans de clicar sobre el mapa")
+                return
 
             point = self.canvas.getCoordinateTransform().toMapCoordinates(x, y)
 

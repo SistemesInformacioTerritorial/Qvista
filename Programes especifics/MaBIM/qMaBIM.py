@@ -522,7 +522,7 @@ class QMaBIM(QtWidgets.QMainWindow):
 
     def seleccioGrafica(self, feats):
         form = FormulariAtributs(self.getCapaBIMs(), feats, self)
-        form.moveWid(self.width()-form.width(),(self.height()-form.height())//2)
+        form.move(self.width()-form.width(),(self.height()-form.height())//2)
         form.exec()
         self.canvasA.bPanning.click()
 

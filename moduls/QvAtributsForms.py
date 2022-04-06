@@ -59,7 +59,7 @@ class QvFitxesAtributs(QDialog):
         self.capesCorresponents = {x[0]:x[1] for x in capesAux}
         self.features = list(self.capesCorresponents.keys())
         self.attributes = attributes
-        self.mode = None
+        self.mode = -1
         # self.selectFeature = self.layer.selectedFeatureCount() == 0
         if self.attributes is not None and self.attributes.llegenda is not None and self.attributes.llegenda.editing(layer):
             self.edicion(new)
@@ -84,6 +84,20 @@ class QvFitxesAtributs(QDialog):
         else: w = 1100
         self.resize(w, 800)
 
+    def setMenuBar(self, feature):
+        # Al añadir el menú, cambia el tamaño del form.
+        # Hay que guardarlo y restaurarlo
+        size = self.size()
+        self.menuBar = QMenuBar()
+        self.menu = QgsActionMenu(self.layer, feature, 'Feature')
+        if self.menu is not None and not self.menu.isEmpty():
+            self.menuBar.addMenu(self.menu)
+            self.menuBar.setVisible(True)
+        else:
+            self.menuBar.setVisible(False)
+        self.layout().setMenuBar(self.menuBar)
+        self.resize(size)
+
     def consulta(self):
         first = True
         for feature in self.features:
@@ -97,12 +111,13 @@ class QvFitxesAtributs(QDialog):
         baseTitol = '{}'
         if self.total > 1:
             self.title = baseTitol + " - Consulta fitxa elements"
-            self.ui.bPrev.clicked.connect(lambda: self.move(-1))
-            self.ui.bNext.clicked.connect(lambda: self.move(1))
+            self.ui.bPrev.clicked.connect(lambda: self.moveIndex(-1))
+            self.ui.bNext.clicked.connect(lambda: self.moveIndex(1))
             self.ui.groupBox.setVisible(True)
         else:
             self.title = baseTitol + " - Consulta fitxa element"
             self.ui.groupBox.setVisible(False)
+        self.setMenuBar(feature)
 
     def setDefaultValues(self, feature):
         layer = self.capesCorresponents[feature]
@@ -116,6 +131,10 @@ class QvFitxesAtributs(QDialog):
         buttonBox = form.findChild(QDialogButtonBox)
         buttonBox.addButton(bDel, QDialogButtonBox.ResetRole)
 
+    def removeMenuBar(self, form):
+        menu = form.layout().menuBar()
+        if menu is not None: menu.setVisible(False)
+
     def edicion(self, new):
         self.newFeature = None
         self.total = 1
@@ -126,10 +145,13 @@ class QvFitxesAtributs(QDialog):
             self.title = layer.name() + " - Fitxa nou element"
             self.setDefaultValues(feature)
             form = QgsAttributeDialog(layer, feature, False)
+            self.removeMenuBar(form)
         else:
             self.mode = QgsAttributeEditorContext.SingleEditMode
             self.title = layer.name() + " - Edició fitxa element"
             form = QgsAttributeDialog(layer, feature, False)
+            self.removeMenuBar(form)
+            self.setMenuBar(feature)
             self.addRemoveButton(form)
         form.setMode(self.mode)
         form.attributeForm().featureSaved.connect(self.featureSaved)
@@ -160,21 +182,6 @@ class QvFitxesAtributs(QDialog):
         else:
             self.setWindowTitle(titolAct)
 
-    def setMenu(self, n):
-        if self.mode is None: # Consulta
-            # Al añadir el menú, cambia el tamaño del form.
-            # Hay que guardarlo y restaurarlo
-            size = self.size()
-            self.menuBar = QMenuBar()
-            self.menu = QgsActionMenu(self.layer, self.features[n], 'Feature')
-            if self.menu is not None and not self.menu.isEmpty():
-                self.menuBar.addMenu(self.menu)
-                self.menuBar.setVisible(True)
-            else:
-                self.menuBar.setVisible(False)
-            self.layout().setMenuBar(self.menuBar)
-            self.resize(size)
-
     def select(self, n=None):
         # if not self.selectFeature:
         #     return
@@ -194,19 +201,11 @@ class QvFitxesAtributs(QDialog):
             self.deselect(self.ui.stackedWidget.currentIndex())
             self.select(n)
             self.setTitle(n)
-            self.setMenu(n)
             self.ui.stackedWidget.setCurrentIndex(n)
 
-    def move(self, inc):
+    def moveIndex(self, inc):
         n = (self.ui.stackedWidget.currentIndex() + inc) % self.total
         self.go(n)
-    def moveWid(self,x,y):
-        # En general, els QWidgets tenen una funció move, que serveix per moure el widget de posició
-        # En aquest cas, donat que hem fet una funció "move" que feia una altra cosa (canviar la pantalla),
-        #  necessitem una altra funció move per fer el move normal
-        # més info: https://doc.qt.io/qt-5/qwidget.html#pos-prop
-        # Nota: potser calgui fer-ne una altra per fer el move(QPoint)
-        super().move(x,y)
 
     def finish(self, int):
         self.select(None)
