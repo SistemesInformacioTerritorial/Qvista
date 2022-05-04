@@ -44,7 +44,7 @@ class QvDigitizeContext:
         Returns:
             bool: True si el proyecto es de sólo lectura.
         """
-        return qgCor.QgsExpressionContextUtils.projectScope(project).variable(nom).upper() == 'TRUE'
+        return qgCor.QgsExpressionContextUtils.projectScope(project).variable(nom) == 'True'
 
     @staticmethod
     def testUserEditable(layer: qgCor.QgsMapLayer, project: qgCor.QgsProject = qgCor.QgsProject.instance(), nom: str = 'qV_editable') -> bool:

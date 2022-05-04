@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 
-from qgis.core import QgsProject
+from qgis.core import QgsProject, QgsEditorWidgetSetup, QgsExpressionContextUtils
 from qgis.gui import QgsAttributeForm, QgsAttributeDialog, QgsActionMenu, QgsAttributeEditorContext, QgsGui
 from qgis.PyQt.QtWidgets import QDialog, QMenuBar, QDialogButtonBox, QPushButton
+from qgis.PyQt.QtCore import QVariant
 
 from moduls.Ui_AtributsForm import Ui_AtributsForm
 from moduls.QvDigitizeContext import QvDigitizeContext
@@ -98,6 +99,25 @@ class QvFitxesAtributs(QDialog):
         self.layout().setMenuBar(self.menuBar)
         self.resize(size)
 
+    def hideNullValues(self, layer, feature):
+    # Esconde los campos del formulario cuando tienen valor NULL (si la variable de capa 'qV_formulari' tiene el valor 'nonull')
+        listHidden = []
+        if QgsExpressionContextUtils.layerScope(layer).variable('qV_formulari') == 'nonull':
+            for idx, value in enumerate(feature):
+                # int, float, str, QVariant
+                if isinstance(value, QVariant) and value.isNull():
+                    # nom = layer.fields()[idx].name()
+                    listHidden.append((idx, layer.editorWidgetSetup(idx)))
+                    layer.setEditorWidgetSetup(idx, QgsEditorWidgetSetup('Hidden', {}))
+        return listHidden
+
+    def showNullValues(self, layer, listHidden):
+    # Restaura los campos escondidos del formulario una vez mostrado
+        for item in listHidden:
+            idx = item[0]
+            setup = item[1]
+            layer.setEditorWidgetSetup(idx, setup)
+
     def consulta(self):
         first = True
         for feature in self.features:
@@ -105,8 +125,10 @@ class QvFitxesAtributs(QDialog):
                 layer = self.capesCorresponents[feature]
                 self.formResize(layer)
                 first = False
+            listHidden = self.hideNullValues(layer, feature)
             form = QgsAttributeForm(layer, feature)
             # form.setMode(QgsAttributeEditorContext.IdentifyMode)
+            self.showNullValues(layer, listHidden)
             self.ui.stackedWidget.addWidget(form)
         baseTitol = '{}'
         if self.total > 1:
