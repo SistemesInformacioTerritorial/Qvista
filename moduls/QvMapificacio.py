@@ -360,86 +360,92 @@ class QvMapificacio(QObject):
         if filesGeocodificades is not None:
             self.filesGeocodificades.connect(filesGeocodificades)
 
-        self.cancel = False
-        ini = time.time()
+        try:
 
-        # Fichero CSV de entrada
-        with open(self.fDades, "r", encoding=self.codi) as csvInput:
+            self.cancel = False
+            ini = time.time()
 
-            # Fichero CSV de salida geocodificado normalizado a utf-8
-            with open(self.fZones, "w", encoding='utf-8') as csvOutput:
+            # Fichero CSV de entrada
+            with open(self.fDades, "r", encoding=self.codi) as csvInput:
 
-                # Cabeceras
-                data = csv.DictReader(csvInput, delimiter=self.separador)
-                
-                # Normaliza nombres de campos
-                self.camps = [self.netejaString(camp) for camp in self.camps]
+                # Fichero CSV de salida geocodificado normalizado a utf-8
+                with open(self.fZones, "w", encoding='utf-8') as csvOutput:
 
-                for campZona in self.campsZones:
-                    campZona = QvSqlite().getAlias(campZona)
-                    campSortida = self.prefixe + campZona
-                    if campSortida not in self.camps:
-                        self.camps.append(campSortida)
-                        self.mostraCols += self.separador + campSortida
-                
-                writer = csv.DictWriter(csvOutput, delimiter=self.separador,
-                                        fieldnames=self.camps, lineterminator='\n')
-                writer.writeheader()
-
-                # Lectura de filas y geocodificación
-                tot = num = 0
-                self.mostra = []
-                for rowOrig in data:
-                    tot += 1
+                    # Cabeceras
+                    data = csv.DictReader(csvInput, delimiter=self.separador)
+                    
                     # Normaliza nombres de campos
-                    row = {self.netejaString(k): v for k, v in rowOrig.items()}
+                    self.camps = [self.netejaString(camp) for camp in self.camps]
 
-                    val = self.db.geoCampsCarrerNum(
-                        self.campsZones,
-                        self.valorCampAdreca(rowOrig, 0), self.valorCampAdreca(rowOrig, 1),
-                        self.valorCampAdreca(rowOrig, 2), self.valorCampAdreca(rowOrig, 3),
-                        self.valorCampAdreca(rowOrig, 4), self.valorCampAdreca(rowOrig, 5))
-                    # Error en geocodificación
-                    if val is None:
-                        self.errorAdreca.emit(dict(rowOrig, **{'_fila': tot}))
-                        num += 1
-                    else:
-                        for campZona in self.campsZones:
-                            campZona = QvSqlite().getAlias(campZona)
-                            campSortida = self.prefixe + campZona
-                            campNou = (campSortida not in row.keys())
-                            if (campNou or self.substituir or
-                                    row[campSortida] is None or row[campSortida] == ''):
-                                row.update([(campSortida, val[campZona])])
-                    # Escritura de fila con campos
-                    writer.writerow(row)
+                    for campZona in self.campsZones:
+                        campZona = QvSqlite().getAlias(campZona)
+                        campSortida = self.prefixe + campZona
+                        if campSortida not in self.camps:
+                            self.camps.append(campSortida)
+                            self.mostraCols += self.separador + campSortida
+                    
+                    writer = csv.DictWriter(csvOutput, delimiter=self.separador,
+                                            fieldnames=self.camps, lineterminator='\n')
+                    writer.writeheader()
 
-                    if self.numMostra >= tot:
-                        self.mostra.append(self.separador.join(row.values()))
+                    # Lectura de filas y geocodificación
+                    tot = num = 0
+                    self.mostra = []
+                    for rowOrig in data:
+                        tot += 1
+                        # Normaliza nombres de campos
+                        row = {self.netejaString(k): v for k, v in rowOrig.items()}
 
-                    # Informe de progreso: filas y porcentaje
-                    # (cada 1% o cada fila si hay menos de 100)
+                        val = self.db.geoCampsCarrerNum(
+                            self.campsZones,
+                            self.valorCampAdreca(rowOrig, 0), self.valorCampAdreca(rowOrig, 1),
+                            self.valorCampAdreca(rowOrig, 2), self.valorCampAdreca(rowOrig, 3),
+                            self.valorCampAdreca(rowOrig, 4), self.valorCampAdreca(rowOrig, 5))
+                        # Error en geocodificación
+                        if val is None:
+                            self.errorAdreca.emit(dict(rowOrig, **{'_fila': tot}))
+                            num += 1
+                        else:
+                            for campZona in self.campsZones:
+                                campZona = QvSqlite().getAlias(campZona)
+                                campSortida = self.prefixe + campZona
+                                campNou = (campSortida not in row.keys())
+                                if (campNou or self.substituir or
+                                        row[campSortida] is None or row[campSortida] == ''):
+                                    row.update([(campSortida, val[campZona])])
+                        # Escritura de fila con campos
+                        writer.writerow(row)
+
+                        if self.numMostra >= tot:
+                            self.mostra.append(self.separador.join(row.values()))
+
+                        # Informe de progreso: filas y porcentaje
+                        # (cada 1% o cada fila si hay menos de 100)
+                        self.filesGeocodificades.emit(tot, self.files)
+                        if self.files > 0 and tot % nSignal == 0:
+                            self.percentatgeProces.emit(int(round(tot * 100 / self.files)))
+
+                        # Cancelación del proceso via slot
+                        if self.cancel:
+                            break
+
+                fin = time.time()
+                self.errors = num
+
+                # Informe de fin de proceso y segundos transcurridos
+                if self.cancel:
+                    self.msgError = "Procés geocodificació cancel·lat"
+                else:
+                    self.files = tot
                     self.filesGeocodificades.emit(tot, self.files)
-                    if self.files > 0 and tot % nSignal == 0:
-                        self.percentatgeProces.emit(int(round(tot * 100 / self.files)))
+                    self.percentatgeProces.emit(100)
+                self.procesAcabat.emit(fin - ini)
 
-                    # Cancelación del proceso via slot
-                    if self.cancel:
-                        break
-
-            fin = time.time()
-            self.errors = num
-
-            # Informe de fin de proceso y segundos transcurridos
-            if self.cancel:
-                self.msgError = "Procés geocodificació cancel·lat"
-            else:
-                self.files = tot
-                self.filesGeocodificades.emit(tot, self.files)
-                self.percentatgeProces.emit(100)
-            self.procesAcabat.emit(fin - ini)
-
-            return not self.cancel
+                return not self.cancel
+                
+        except Exception as e:
+            self.msgError = "Error al geocodificar: " + str(e)
+            return False
 
     # def calcSelect(self, camps: str = '') -> str:
     #     # Calculamos filtro
