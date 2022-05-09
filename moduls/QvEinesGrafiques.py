@@ -213,53 +213,62 @@ class QvSeleccioGrafica(QWidget):
         self.lytSeleccioGrafica.addWidget(self.gbResultats)
     
     def radiCercle(self):
-        radi = self.leRadiCercle.text()
-        if self.cbFixarRadi.isChecked() and radi!='' and int(radi)!=0:
-            self.toolSelect.cercleFixe = True
-            self.toolSelect.radiCercle = int(radi)
-        else:
-            self.toolSelect.cercleFixe = False
-            self.toolSelect.rubberbandCercle.reset(True)
+        if hasattr(self,'toolSelect'):
+            radi = self.leRadiCercle.text()
+            if self.cbFixarRadi.isChecked() and radi!='' and int(radi)!=0:
+                self.toolSelect.cercleFixe = True
+                self.toolSelect.radiCercle = int(radi)
+            else:
+                self.toolSelect.cercleFixe = False
+                self.toolSelect.rubberbandCercle.reset(True)
     
     @QvFuncions.mostraSpinner
     def crearCsv(self):
-        camps = [camp.text() for camp in self.lwFieldsSelect.selectedItems()]
-        if camps==[]:
-            # Queixar-nos de que no hi ha cap camp
-            pass
-        nfile, _ = QFileDialog.getSaveFileName(None, "Desar arxiu CSV", ".", "Arxius CSV (*.csv)")
-        if nfile=='': return
         capa = self.llegenda.currentLayer()
-        feats = capa.selectedFeatures()
-        with open(nfile,'w', newline='') as f:
-            writer = csv.DictWriter(f,fieldnames=camps, delimiter=';')
-            writer.writeheader()
-            for feat in feats:
-                d = {}
-                for camp in camps:
-                    field = capa.fields().field(camp)
-                    # pyQt és un embolcall de Qt en C++. A C++ els float eren de 32 bits
-                    # Els float utilitzen IEEE 754, que permet representar un gran ventall de números, però sense ser del tot exacte
-                    # Reproducció de l'error:
-                    #   import numpy
-                    #   num = numpy.float32(72.32)
-                    #   print(float(num)) # imprimeix 72.31999969482422
-                    # Per evitar aquest problema, fem un arrodoniment a la precisió que tenia el camp de la base de dades
-                    if 'NUMBER' in field.typeName() and not isinstance(feat[camp],QVariant):
-                        if  field.precision()>0:
-                            try:
-                                res = round(feat[camp], field.precision())
-                            except Exception as e:
-                                res = feat[camp]
+        if capa is not None:
+            camps = [camp.text() for camp in self.lwFieldsSelect.selectedItems()]
+            if camps==[]:
+                # Queixar-nos de que no hi ha cap camp
+                pass
+            nfile, _ = QFileDialog.getSaveFileName(None, "Desar arxiu CSV", ".", "Arxius CSV (*.csv)")
+            if nfile=='': return
+            feats = capa.selectedFeatures()
+            with open(nfile,'w', newline='') as f:
+                writer = csv.DictWriter(f,fieldnames=camps, delimiter=';')
+                writer.writeheader()
+                for feat in feats:
+                    d = {}
+                    for camp in camps:
+                        field = capa.fields().field(camp)
+                        # pyQt és un embolcall de Qt en C++. A C++ els float eren de 32 bits
+                        # Els float utilitzen IEEE 754, que permet representar un gran ventall de números, però sense ser del tot exacte
+                        # Reproducció de l'error:
+                        #   import numpy
+                        #   num = numpy.float32(72.32)
+                        #   print(float(num)) # imprimeix 72.31999969482422
+                        # Per evitar aquest problema, fem un arrodoniment a la precisió que tenia el camp de la base de dades
+                        if 'NUMBER' in field.typeName() and not isinstance(feat[camp],QVariant):
+                            if  field.precision()>0:
+                                try:
+                                    res = round(feat[camp], field.precision())
+                                except Exception as e:
+                                    res = feat[camp]
+                            else:
+                                try:
+                                    res = int(feat[camp])
+                                except:
+                                    res = feat[camp]
                         else:
-                            try:
-                                res = int(feat[camp])
-                            except:
-                                res = feat[camp]
-                    else:
-                        res = feat[camp]
-                    d[camp] = res
-                writer.writerow(d)
+                            res = feat[camp]
+                        d[camp] = res
+                    writer.writerow(d)
+        else:
+            # avís de que no hi ha capa seleccionada
+            # Nota: no és massa bona pràctica tenir la funció en una classe si
+            #  també s'utilitzarà des d'altres classes, però segons diu el PEP 20: 
+            #   Although practicality beats purity.
+            QvSeleccioElement.missatgeCaixa('Cal tenir seleccionat un nivell per poder exportar una selecció','Seleccioneu un nivell, realitzeu una selecció i podreu exportar-la')
+            pass
         
     
     def setPreview(self):
@@ -1027,6 +1036,8 @@ class QvMascaraEinaDibuixa(QvMascaraEinaPlantilla):
         if event.button() == Qt.RightButton:
             if len(self.points)>2:
                 self.point = self.points[0]
+            elif len(self.points)==0:
+                return
             else:
                 # netejar
                 pass
@@ -1153,6 +1164,8 @@ class QvMascaraEinaCercle(QvMascaraEinaPlantilla):
             self.wSeleccioGrafica.leRadiCercle.setText(str(int(dist)))
 
     def canvasReleaseEvent(self, event):
+        if event.button()==Qt.RightButton:
+            return
         mascara = self.getCapa()
         poligon, _ = self.getPoligon(
             self.centre, self.toMapCoordinates(event.pos()), 100)
@@ -1195,6 +1208,8 @@ class QvMascaraEinaCercle(QvMascaraEinaPlantilla):
         self.markers.append(marker)
         return marker
     def getPoligon(self, center, edgePoint, segments):
+        if center is None:
+            return
         r = math.sqrt(center.sqrDist(edgePoint))
         llistaPunts = []
         pi = 3.1416
@@ -1532,7 +1547,8 @@ class QvSeleccioElement(QgsMapTool):
         # y = event.pos().y()
         # point = self.canvas.getCoordinateTransform().toMapCoordinates(x, y)
 
-    def missatgeCaixa(self, textTitol, textInformacio):
+    @staticmethod
+    def missatgeCaixa(textTitol, textInformacio):
         msgBox = QMessageBox()
         msgBox.setText(textTitol)
         msgBox.setInformativeText(textInformacio)
