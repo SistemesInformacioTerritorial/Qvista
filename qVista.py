@@ -2356,8 +2356,12 @@ def main(argv):
         app.processEvents()
 
         # Lectura fitxer d'estil
-        with open('style.qss') as st:
-            app.setStyleSheet(st.read())
+        try:
+            with open('style.qss') as st:
+                app.setStyleSheet(st.read())
+        except FileNotFoundError:
+            # no hi ha stylesheet
+            pass
 
         # Preparació log de l'aplicació
         ok = qVapp.logInici()            # Por defecto: family='QVISTA', logname='DESKTOP'
