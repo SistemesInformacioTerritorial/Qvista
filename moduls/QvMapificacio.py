@@ -171,7 +171,7 @@ class QvMapificacio(QObject):
         if len(elems) > 0:
             return elems[0][0]
         else:
-            return ''
+            return ';'
 
     def verifCampsAdreca(self, camps: List[str]) -> bool:
         """ Verifica la lista de campos de dirección postal. Han de venir en este orden:

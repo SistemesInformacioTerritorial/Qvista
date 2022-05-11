@@ -115,8 +115,11 @@ def carregarLayerCSV(nfile, project, llegenda):
     from moduls.QvCSV import QvCarregaCsv
     if nfile: 
         qApp.setOverrideCursor(Qt.WaitCursor)
-
-        assistent=QvCarregaCsv(nfile, project, llegenda)
+        # En teoria no hauria de donar-se el cas, però si el separador inferit no és vàlid llença TypeError
+        try:
+            assistent=QvCarregaCsv(nfile, project, llegenda)
+        except TypeError as e:
+            print(e)
 
         qApp.restoreOverrideCursor()
         assistent.show()
