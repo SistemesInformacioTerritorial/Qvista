@@ -152,6 +152,31 @@ class QvMapificacio(QObject):
         with open(self.fDades, "rb") as csvInput:
             buf = csvInput.read(10000)
         val = chardet.detect(buf)
+        if val['encoding']=='ascii':
+            # tant utf-8 com iso-8859-1 són compatibles amb ascii (és a dir, els primers 127 caràcters són els mateixos)
+            # si detecta que utilitzem ascii, volem comprovar que realment és ascii i no un dels altres
+            # Per comprovar-ho, iterem totes les línies, mirem si es pot convertir al format, i si no es pot l'eliminem de la llista
+            with open(self.fDades,'rb') as csvInput:
+                possibilitats=[
+                    'ascii',
+                    # la codificació que s'hauria d'utilitzar per tot
+                    'utf-8',
+                    # per defecte, quan s'importa d'excel a csv es desen en aquesta codificació
+                    'iso-8859-1',
+                    # superconjunt de l'iso-8859-1, afegint alguns caràcters com el €
+                    'cp1252'
+                ]
+                for l in csvInput.readlines():
+                    for p in possibilitats:
+                        try:
+                            l.decode(p)
+                        except UnicodeDecodeError:
+                            possibilitats.remove(p)
+                    if len(possibilitats)==1:
+                        return possibilitats[0]
+                
+                # si totes les línies es poden convertir a més d'una codificació, agafem la primera
+                return possibilitats[0]
         return val['encoding']
 
     def infereixSeparador(self) -> str:
