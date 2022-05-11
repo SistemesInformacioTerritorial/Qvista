@@ -22,6 +22,7 @@ from moduls.QvAtributsForms import QvFormAtributs
 # import recursos
 import os
 import csv
+import functools
 # import xlwt - .xls
 
 from configuracioQvista import imatgesDir
@@ -117,7 +118,15 @@ class QvAtributs(QTabWidget):
         # Si la tabla está abierta, mostrarla y actualizar nomnbre
         if self.tabTaula(layer, True) is not None:
             return
-        layer.subsetStringChanged.connect(self.actualitzaBoto)
+        
+        # per assegurar que només es fa el connect una vegada, posem aquesta variable
+        # la següent vegada que s'entri a aquesta funció, com que la variable ja tindrà valor, no tornarà a connectar-la
+        if not hasattr(layer, '_subsetStringConnectat'):
+            # Equivalent a la crida següent
+            #  layer.subsetStringChanged.connect(lambda: self.actualitzaBoto(layer))
+            # En bucles i altres àmbits utilitzar el mètode de la lambda pot fallar. Aquí no, però per si de cas...
+            layer.subsetStringChanged.connect(functools.partial(self.actualitzaBoto,layer))
+            layer._subsetStringConnectat = True
         # Si no se ha encontrado la tabla, añadirla
         taula = QvTaulaAtributs(self, layer, self.canvas)
 
@@ -278,9 +287,12 @@ class QvAtributs(QTabWidget):
             pass
         #Mirar si està filtrat
 
-    def actualitzaBoto(self):
-        taula=self.currentWidget()
-        filtre=taula.layer.subsetString()
+    def actualitzaBoto(self, layer=None):
+        if layer is None:
+            taula=self.currentWidget()
+            layer=taula.layer
+            if layer is None: return
+        filtre=layer.subsetString()
         if filtre=='':
             self.eliminaFiltre.hide()
         else:
