@@ -2,8 +2,9 @@ from moduls.QvImports import *
 from moduls.QvCanvas import QvCanvas
 from moduls.QvCanvasAuxiliar import QvCanvasAuxiliar
 
+# Classe no utilitzada. Es conserva com a exemple de com fer una eina sense utilitzar el creador
 class DobleCanvas(QDockWidget):
-    esEinaGlobal = True
+    esEinaGlobal = False
     titol = 'Segon canvas'
     def __init__(self,parent=None):
         super().__init__('Segona vista del projecte',parent)
