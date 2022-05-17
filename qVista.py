@@ -38,6 +38,7 @@ from moduls.QvNouMapa import QvNouMapa
 from moduls.QvVisorHTML import QvVisorHTML
 from moduls.QvDocumentacio import QvDocumentacio
 from moduls.QvNouCataleg import QvNouCataleg, QvCreadorCataleg
+from moduls.QvNouCatalegCapes import QvNouCatalegCapes
 from moduls.QvCatalegCapes import QvCatalegCapes, QvCreadorCatalegCapes
 from moduls.QvSabiesQue import QvSabiesQue
 from moduls.QvMemoria import QvMemoria
@@ -635,6 +636,9 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.wCataleg=QvCatalegCapes(self)
         self.wCataleg.afegirCapa.connect(lambda x: QvFuncions.afegirQlr(x, self.llegenda))
 
+        self.wCatalegGran=QvNouCatalegCapes(self)
+        self.wCatalegGran.afegirCapa.connect(lambda x: QvFuncions.afegirQlr(x, self.llegenda))
+
         self.dwCataleg = QvDockWidget( "Catàleg de capes", self )
         self.dwCataleg.setContextMenuPolicy(Qt.PreventContextMenu)
         self.dwCataleg.setObjectName( "catalegTaula" )
@@ -1093,6 +1097,11 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.actObrirCataleg.setStatusTip("Catàleg d'Informació Territorial")
         #self.actObrirCataleg.setIcon(QIcon(os.path.join(imatgesDir,'layers_2.png')))
         self.actObrirCataleg.triggered.connect(self.obrirCataleg)
+
+        self.actObrirCatalegLateral = QAction("Catàleg lateral", self)
+        self.actObrirCatalegLateral.setStatusTip("Catàleg d'Informació Territorial")
+        #self.actObrirCataleg.setIcon(QIcon(os.path.join(imatgesDir,'layers_2.png')))
+        self.actObrirCatalegLateral.triggered.connect(self.obrirCatalegLateral)
 
         self.actCreadorCataleg = QAction('Afegir al catàleg')
         self.actCreadorCataleg.setStatusTip('Afegir entrada al catàleg de capes')
@@ -1603,6 +1612,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.menuCapes.setFont(QvConstants.FONTSUBTITOLS)
         self.menuCapes.styleStrategy = QFont.PreferAntialias or QFont.PreferQuality #???
         self.menuCapes.addAction(self.actObrirCataleg)
+        self.menuCapes.addAction(self.actObrirCatalegLateral)
         self.menuCapes.addAction(self.actCreadorCataleg)
         self.menuCapes.addSeparator()
         self.menuCapes.addAction(self.actAfegirCapa)
@@ -1963,6 +1973,11 @@ class QVista(QMainWindow, Ui_MainWindow):
             self.dwLlegenda.hide()
 
     def obrirCataleg(self):
+        try:
+            self.wCatalegGran.showMaximized()
+        except Exception as e:
+            QMessageBox.warning(self,'Error en el catàleg',"Hi ha hagut un error durant l'execució del catàleg de capes. Si l'error persisteix, contacteu amb el vostre responsable")
+    def obrirCatalegLateral(self):
         # dock widget catàleg de capes
         self.dwCataleg.show()
     def afegirCatalegCapes(self):
