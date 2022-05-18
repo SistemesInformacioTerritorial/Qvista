@@ -112,6 +112,16 @@ class CapaCataleg(QFrame):
             self.bAfegir.hide()
             self.bInfo.hide()
         self.update()
+    
+    def conteText(self,txt):
+        # pensada per si en algun moment es vol incloure als filtres algun contingut diferent del títol i la descripció
+        # EXEMPLE: 
+        # nomMetadades=self.nomBase+'.htm'
+        # if os.path.isfile(nomMetadades):
+        #     with open(nomMetadades) as f:
+        #         cont = f.read()
+        #         return txt in self.cataleg.arregla(cont)
+        return False
 
 
 if __name__ == "__main__":

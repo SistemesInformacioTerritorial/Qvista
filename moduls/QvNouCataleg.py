@@ -592,7 +592,7 @@ class QvNouCataleg(QWidget):
     def esMostra(self, widget):
         txt = self.arregla(self.leCerca.text())
 
-        return txt in self.arregla(widget.titol) or txt in self.arregla(widget.text)
+        return txt in self.arregla(widget.titol) or txt in self.arregla(widget.text) or widget.conteText(txt)
 
 
 class BotoLateral(QPushButton):
@@ -861,6 +861,10 @@ class MapaCataleg(QFrame):
 
     def getNomMapa(self):
         return self.nomMapa
+    
+    def conteText(self,txt):
+        # pensada per si en algun moment es vol incloure als filtres algun contingut diferent del títol i la descripció
+        return False
 
 
 class PointTool(QgsMapTool):
