@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 from moduls.QvImports import *
 from qgis.PyQt import QtWidgets
+from qgis.PyQt.QtCore import QTimer
 import os
 from moduls.QvConstants import QvConstants
 from moduls.QvPushButton import QvPushButton
@@ -11,7 +12,9 @@ import re
 from moduls.QvFavorits import QvFavorits
 from moduls.QvMemoria import QvMemoria
 from moduls import QvFuncions
+from moduls.QvFuncioFil import QvFuncioFil
 import subprocess
+from pathlib import Path
 
 
 class QvNouCataleg(QWidget):
@@ -197,7 +200,10 @@ class QvNouCataleg(QWidget):
         self.wBanda.setLayout(self.lBanda)
         self.sBanda.setWidget(self.wBanda)
 
-        
+        self.arxiusCarregats=False
+        self.actualitzaArxiusCataleg()
+
+    def setupUi(self):
         self.carregaBandaEsquerra()
         self.wCataleg = QWidget()
         self.layoutCataleg = QVBoxLayout()
@@ -216,6 +222,13 @@ class QvNouCataleg(QWidget):
         self.oldPos = self.pos()
         self.esPotMoure = False
         self.clickTots()
+    def showEvent(self, event):
+        if not self.arxiusCarregats:
+            QMessageBox.information(self, 'Catàleg en procés', 'El catàleg està en procés de càrrega. Espereu, si us plau...')
+            QTimer.singleShot(0, self.close)
+        else:
+            self.setupUi()
+            super().showEvent(event)
     
     def setExternal(self):
         """ Funció per a saber si el catàleg s'ha inicialitzat desde fora """
@@ -237,7 +250,42 @@ class QvNouCataleg(QWidget):
         self.setWindowFlag(Qt.WindowMaximizeButtonHint, False)
         self.setWindowFlag(Qt.WindowMinMaxButtonsHint, False)
         self.setWindowFlag(Qt.WindowCloseButtonHint, False)
+    
+    def actualitzaArxiusCataleg(self):
+        def carregarArxius():
+            res=[]
+            for y in self.DIRSCATALEGS:
+                try:
+                    # os.walk(dir) ens dóna un generador que es va recorrent tots els nivells d'un directori
+                    # Per cada nivell ens dóna tres llistes, que són l'arrel, els directoris i els arxius
+                    # Com que només ens interessa el primer nivell, enlloc de recórrer el generador, fem un next i agafem només el primer nivell
+                    # Com que només volem els directoris, no desem enlloc les altres llistes
+                    # TODO: estudiar la diferència de temps d'execució entre os.walk i os.scandir. Sembla que walk és més lenta
+                    # https://stackoverflow.com/a/40347279
+                    # _, dirs, _ = next(os.walk(y))
+                    dirs = (f.name for f in os.scandir(y) if f.is_dir())
+                except:
+                    # Si una carpeta no funciona (per exemple, l'usuari no hi té accés) simplement seguim mirant les altres
+                    continue
+                
+                dirs = sorted(dirs)
+                res.append((y,dirs))
+            print(res)
+            return res
+        self.arxiusCarregats = False
+        self.funcioFil = QvFuncioFil(carregarArxius)
+        self.funcioFil.funcioAcabada.connect(self.acabatCarregar)
+        self.funcioFil.start()
+        pass
+    def acabatCarregar(self):
+        self.arxiusCarregats=True
+        self.arxiusCataleg = self.funcioFil.resultat
+    def getArxiusCataleg(self):
+        while not self.arxiusCarregats:
+            self.funcioFil.wait()
+        return self.arxiusCataleg
 
+    @QvFuncions.cronometraDebug
     def carregaBandaEsquerra(self):
         '''Carrega els botons de la banda esquerra i, per cada directori, tots els seus mapes
         '''
@@ -268,20 +316,10 @@ class QvNouCataleg(QWidget):
         # Serà un dict on la clau serà el nom del directori, i el valor una llista de botons
         self.catalegs = {}
         self.botonsLaterals = []
-        for y in self.DIRSCATALEGS:
-            try:
-                # os.walk(dir) ens dóna un generador que es va recorrent tots els nivells d'un directori
-                # Per cada nivell ens dóna tres llistes, que són l'arrel, els directoris i els arxius
-                # Com que només ens interessa el primer nivell, enlloc de recórrer el generador, fem un next i agafem només el primer nivell
-                # Com que només volem els directoris, no desem enlloc les altres llistes
-                _, dirs, _ = next(os.walk(y))
-            except:
-                # Si una carpeta no funciona (per exemple, l'usuari no hi té accés) simplement seguim mirant les altres
-                continue
-
-            dirs = sorted(dirs)
+        # Aquest for és la immensa majoria del cost de carregar el catàleg
+        for (y,dirs) in self.getArxiusCataleg():
             for x in dirs:
-                self.catalegs[x] = self.carregaBotons(x)
+                self.catalegs[x] = self.carregaBotons(x, y)
                 privat = y in carpetaCatalegProjectesPrivats
                 local = y in QvMemoria().getCatalegsLocals()
                 boto = BotoLateral(x, self, privat, local)
@@ -290,7 +328,6 @@ class QvNouCataleg(QWidget):
                     boto.setIcon(QIcon(os.path.join(imatgesDir,'lock-clar.png')))
                 self.botonsLaterals.append(boto)
                 self.lBanda.addWidget(boto)
-
         self.tots.clicked.connect(self.clickTots)
         if self.FAVORITS:
             self.fav.clicked.connect(self.clickFavorits)
@@ -334,16 +371,22 @@ class QvNouCataleg(QWidget):
         self.indexLayoutSeleccionat = -1
         self.fav.setChecked(True)
 
-    def carregaBotons(self, dir: str):
+    def carregaBotons(self, dir: str, dirCataleg: str=None):
         f = []
-        for y in self.DIRSCATALEGS:
-            try:
-                _, _, files = next(os.walk(y+'/'+dir))
-                files = (x[:-4] for x in files if x.endswith(self.EXT))
-                files = (os.path.join(y, dir, x) for x in files)
-                f += files
-            except:
-                continue
+        if dirCataleg is not None:
+            ruta = Path(dirCataleg, dir)
+            files = (x for x in os.scandir(ruta) if x.is_file())
+            files = (x.path[:-4] for x in files if x.name.endswith(self.EXT))
+            f += files
+        else:
+            for y in self.DIRSCATALEGS:
+                try:
+                    ruta = Path(y, dir)
+                    files = (x for x in os.scandir(ruta) if x.is_file())
+                    files = (x.path[:-4] for x in files if x.name.endswith(self.EXT))
+                    f += files
+                except:
+                    continue
         botons = [self.ENTRADACATALEG(x, self) for x in f]
         for x in botons:
             if self.FAVORITS and x.getNomMapa() in self.favorits:
@@ -416,14 +459,16 @@ class QvNouCataleg(QWidget):
         '''Obre el projecte amb QGis. El copia al directori temporal, per si l'usuari modifica alguna cosa'''
         #Copiem el projecte al directori temporal, per si l'usuari modifica alguna cosa
         shutil.copy2(dir,tempdir)
-        copiat=os.path.join(tempdir,os.path.basename(dir))
-        while not os.path.exists(copiat):
+        # copiat=os.path.join(tempdir,os.path.basename(dir))
+        copiat = Path(tempdir, Path(dir).name)
+        while not copiat.exists():
+        # while not os.path.exists(copiat):
             sleep(1)
         os.startfile(copiat)
 
     def obrirInfo(self, dir: str):
         '''Mostra l'arxiu HTML que conté la informació associada al mapa'''
-        if os.path.exists(dir):
+        if Path(dir).exists():
             visor = QvVisorHTML(dir, 'Informació mapa', parent=self)
             visor.exec()
         else:
@@ -707,10 +752,16 @@ class MapaCataleg(QFrame):
     -Obrir amb QGis: Obre el mapa amb QGis. Cal tenir-lo instal·lat
     -Info: Mostra la informació associada al mapa
     '''
+    iconaFavDesmarcat=None
+    iconaFavMarcat=None
+    iconaObrir=None
+    iconaQgis=None
+    iconaInfo=None
 
     # Dir ha de contenir la ruta de l'arxiu (absoluta o relativa) i no només el seu nom. Ha de ser sense extensió
     def __init__(self, dir: str, cataleg: QvNouCataleg = None):
         super().__init__()
+        self.setIcones()
         self.setFrameStyle(QFrame.Panel)
         self.setCursor(QvConstants.cursorClick())
         self.checked = False
@@ -763,8 +814,6 @@ class MapaCataleg(QFrame):
             }
         '''
         self.favorit=False
-        self.iconaFavDesmarcat=QIcon(os.path.join(imatgesDir,'cm_bookmark_off.png'))
-        self.iconaFavMarcat=QIcon(os.path.join(imatgesDir,'cm_bookmark_on.png'))
         self.botoFav=QPushButton(parent=self)
         self.botoFav.setIcon(self.iconaFavDesmarcat)
         self.botoFav.move(280, 16)
@@ -773,7 +822,7 @@ class MapaCataleg(QFrame):
         self.botoFav.setToolTip("Marcar/Desmarcar Favorit")
         self.botoFav.clicked.connect(self.switchFavorit)
         self.botoObre=QPushButton(parent=self)
-        self.botoObre.setIcon(QIcon(os.path.join(imatgesDir,'cm_play.png')))
+        self.botoObre.setIcon(self.iconaObrir)
         self.botoObre.move(280,100)
         self.botoObre.setToolTip("Obrir el mapa en qVista")
         self.obreQVista = lambda: cataleg.obreProjecte(
@@ -782,14 +831,14 @@ class MapaCataleg(QFrame):
         self.botoObre.setIconSize(QSize(24,24))
         self.botoObre.setFixedSize(24,24)
         self.botoQGis=QPushButton(parent=self)
-        self.botoQGis.setIcon(QIcon(os.path.join(imatgesDir,'cm_qgis.png')))
+        self.botoQGis.setIcon(self.iconaQgis)
         self.botoQGis.move(280,160)
         self.botoQGis.setIconSize(QSize(24,24))
         self.botoQGis.clicked.connect(lambda: cataleg.obrirEnQGis(dir+'.qgs'))
         self.botoQGis.setFixedSize(24, 24)
         self.botoQGis.setToolTip("Obrir el mapa en QGis")
         self.botoInfo=QPushButton(parent=self)
-        self.botoInfo.setIcon(QIcon(os.path.join(imatgesDir,'cm_info.png')))
+        self.botoInfo.setIcon(self.iconaInfo)
         self.botoInfo.move(280,130)
         self.botoInfo.setIconSize(QSize(24,24))
         self.botoInfo.clicked.connect(lambda: cataleg.obrirInfo(dir+'.htm'))
@@ -802,6 +851,13 @@ class MapaCataleg(QFrame):
         self.botoInfo.setStyleSheet(stylesheet)
 
         self.setChecked(False)
+    def setIcones(self):
+        if self.iconaFavDesmarcat is None:
+            self.iconaFavDesmarcat=QIcon(os.path.join(imatgesDir,'cm_bookmark_off.png'))
+            self.iconaFavMarcat=QIcon(os.path.join(imatgesDir,'cm_bookmark_on.png'))
+            self.iconaObrir=QIcon(os.path.join(imatgesDir,'cm_play.png'))
+            self.iconaQgis=QIcon(os.path.join(imatgesDir,'cm_qgis.png'))
+            self.iconaInfo=QIcon(os.path.join(imatgesDir,'cm_info.png'))
 
     def mousePressEvent(self, event):
         if event.buttons() & Qt.LeftButton:

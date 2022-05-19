@@ -37,8 +37,10 @@ def cronometra(func):
     """
     def embolcall(*args, **kwargs):
         t=time.process_time()
+        t2 = time.time()
         res=func(*args, **kwargs)
-        print(f'DEBUG: Temps per executar {str(func)}: {time.process_time()-t}')
+        print(f'DEBUG: Temps de procés per executar {str(func)}: {time.process_time()-t}')
+        print(f'DEBUG: Temps total per executar {str(func)}: {time.time()-t2}')
         return res
     return embolcall
 

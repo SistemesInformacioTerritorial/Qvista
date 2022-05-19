@@ -145,7 +145,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.prepararCercador = True
         self.ubicacions= None
         self.cAdrec= None
-        self.catalegMapes = None
+        self.catalegMapes = QvNouCataleg(self)
         self.numCanvasAux = []
         self.sortida = True # para gestioSortida
 
@@ -1122,7 +1122,6 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         #@QvFuncions.ignoraArgs
         @QvFuncions.mostraSpinner
-        @QvFuncions.cronometraDebug
         def activaCataleg():
             if self.catalegMapes is None:
                 # self.startMovie()
@@ -1133,6 +1132,7 @@ class QVista(QMainWindow, Ui_MainWindow):
                 self.catalegMapes.showMaximized()
             self.catalegMapes.activateWindow()
 
+        self.catalegMapes = QvNouCataleg(self)
         self.actCataleg.triggered.connect(lambda _: activaCataleg())
 
         self.actAfegirCataleg = QAction('Afegir al catàleg',self)
