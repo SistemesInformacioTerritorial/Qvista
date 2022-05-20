@@ -275,13 +275,14 @@ class QvNouCataleg(QWidget):
                 # Com que només ens interessa el primer nivell, enlloc de recórrer el generador, fem un next i agafem només el primer nivell
                 # Com que només volem els directoris, no desem enlloc les altres llistes
                 _, dirs, _ = next(os.walk(y))
+                # dirs = [x.name for x in os.scandir(y) if x.is_dir()]
             except:
                 # Si una carpeta no funciona (per exemple, l'usuari no hi té accés) simplement seguim mirant les altres
                 continue
 
             dirs = sorted(dirs)
             for x in dirs:
-                self.catalegs[x] = self.carregaBotons(x)
+                self.catalegs[x] = self.carregaBotons(x, y)
                 privat = y in carpetaCatalegProjectesPrivats
                 local = y in QvMemoria().getCatalegsLocals()
                 boto = BotoLateral(x, self, privat, local)
@@ -334,16 +335,11 @@ class QvNouCataleg(QWidget):
         self.indexLayoutSeleccionat = -1
         self.fav.setChecked(True)
 
-    def carregaBotons(self, dir: str):
-        f = []
-        for y in self.DIRSCATALEGS:
-            try:
-                _, _, files = next(os.walk(y+'/'+dir))
-                files = (x[:-4] for x in files if x.endswith(self.EXT))
-                files = (os.path.join(y, dir, x) for x in files)
-                f += files
-            except:
-                continue
+    def carregaBotons(self, dir: str, dirCataleg: str):
+        ruta = Path(dirCataleg, dir)
+        files = (x for x in os.scandir(ruta) if x.is_file())
+        files = (x.path[:-4] for x in files if x.name.endswith(self.EXT))
+        f = list(files)
         botons = [self.ENTRADACATALEG(x, self) for x in f]
         for x in botons:
             if self.FAVORITS and x.getNomMapa() in self.favorits:
