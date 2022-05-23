@@ -1,7 +1,12 @@
-from moduls.QvNouCataleg import QvNouCataleg, DraggableLabel
+from moduls.QvNouCataleg import QvNouCataleg, DraggableLabel, CarregadorCataleg
 from moduls.QvImports import *
 from moduls.QvVisorHTML import QvVisorHTML
 from moduls.QvConstants import QvConstants
+
+# com que CarregadorCataleg és un Singleton, si utilitzéssim la mateixa classe tindríem solapaments
+# creant una nova classe que hereti d'ella podem tenir un carregador independent per cada catàleg
+class CarregadorCatalegCapes(CarregadorCataleg):
+    pass
 
 class QvNouCatalegCapes(QvNouCataleg):
     #ENTRADACATALEG=CapaCataleg
@@ -9,14 +14,13 @@ class QvNouCatalegCapes(QvNouCataleg):
     DIRSCATALEGS=[x for x in carpetaCatalegLlista if os.path.isdir(x)]
     FAVORITS=False
     WINDOWTITLE='Catàleg de capes'
+    CARREGADOR=CarregadorCatalegCapes
     afegirCapa=pyqtSignal(str)
     def __init__(self,*args, **kwargs):
         self.ENTRADACATALEG=CapaCataleg
         super().__init__(*args, **kwargs)
     def afegeixCapa(self, nomCapa):
         self.afegirCapa.emit(nomCapa)
-
-
 
 class CapaCataleg(QFrame):
     '''La preview concreta que mostrem
@@ -36,11 +40,12 @@ class CapaCataleg(QFrame):
         self.setLayout(self.layout)
         self.nomBase=capa
 
-        self.imatge=QPixmap(self.nomBase+'.png')
+        # self.imatge=QPixmap(self.nomBase+'.png')
+        self.imatge = QPixmap()
         # self.lblImatge=QLabel()
         lbl = QLabel()
         self.lblImatge=DraggableLabel(lbl,self.imatge,self.nomBase+'.qlr')
-        self.lblImatge.setPixmap(self.imatge)
+        # self.lblImatge.setPixmap(self.imatge)
         self.layout.addWidget(self.lblImatge)
 
         stylesheet='''
@@ -67,17 +72,35 @@ class CapaCataleg(QFrame):
         self.bInfo.setCursor(QvConstants.cursorClick())
         self.bInfo.clicked.connect(self.obrirInfo)
         self.bInfo.setStyleSheet(stylesheet)
-        try:
-            with open(self.nomBase+'.txt', encoding='cp1252') as arxiu:
-                self.titol=arxiu.readline()
-                self.text=arxiu.read()
-        except Exception as e:
-            self.titol="Títol no disponible"
-            self.text="Text no disponible"
-        self.lblText=QLabel('<p><strong><span style="color: #38474f; font-family: arial, helvetica, sans-serif; font-size: 10pt;">%s<br /></span></strong><span style="color: #38474f; font-family: arial, helvetica, sans-serif; font-size: 8pt;">%s</span></p>'%(self.titol,self.text))
+        # try:
+        #     with open(self.nomBase+'.txt', encoding='cp1252') as arxiu:
+        #         self.titol=arxiu.readline()
+        #         self.text=arxiu.read()
+        # except Exception as e:
+        #     self.titol="Títol no disponible"
+        #     self.text="Text no disponible"
+        # self.lblText=QLabel('<p><strong><span style="color: #38474f; font-family: arial, helvetica, sans-serif; font-size: 10pt;">%s<br /></span></strong><span style="color: #38474f; font-family: arial, helvetica, sans-serif; font-size: 8pt;">%s</span></p>'%(self.titol,self.text))
+        self.titol, self.text = '', ''
+        self.lblText=QLabel('<p><strong><span style="color: #38474f; font-family: arial, helvetica, sans-serif; font-size: 10pt;">Carregant títol<br /></span></strong><span style="color: #38474f; font-family: arial, helvetica, sans-serif; font-size: 8pt;">Carregant descripció...</span></p>')
         self.lblText.setWordWrap(True)
         self.lblText.setStyleSheet('background: transparent')
         self.layout.addWidget(self.lblText)
+        CarregadorCatalegCapes().afegeix(self,self.nomBase)
+
+    def metadadesLlegides(self, titol, text):
+        self.titol = titol
+        self.text = text
+
+        if titol!='':
+            self.lblText.setText('<p><strong><span style="color: #38474f; font-family: arial, helvetica, sans-serif; font-size: 10pt;">%s<br /></span></strong><span style="color: #38474f; font-family: arial, helvetica, sans-serif; font-size: 8pt;">%s</span></p>'%(self.titol,self.text))
+            pass
+        else:
+            self.lblText.setText('<p><strong><span style="color: #38474f; font-family: arial, helvetica, sans-serif; font-size: 10pt;">Títol no disponible<br /></span></strong><span style="color: #38474f; font-family: arial, helvetica, sans-serif; font-size: 8pt;">Descripció no disponible</span></p>')
+
+    def imatgeLlegida(self, img):
+        self.imatge.loadFromData(img)
+        self.lblImatge.setPixmap(self.imatge)
+
     def mouseDoubleClickEvent(self,event):
         super().mouseDoubleClickEvent(event)
         self.obrir()

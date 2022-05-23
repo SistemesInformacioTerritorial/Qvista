@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 from moduls.QvImports import *
+from moduls.QvSingleton import Singleton
 from qgis.PyQt import QtWidgets
 import os
 from moduls.QvConstants import QvConstants
@@ -11,8 +12,46 @@ import re
 from moduls.QvFavorits import QvFavorits
 from moduls.QvMemoria import QvMemoria
 from moduls import QvFuncions
+from moduls.QvFuncioFil import QvFuncioFil
 import subprocess
+from PyQt5.QtCore import pyqtSignal
 
+
+# Aquesta classe carregarà en paral·lel les dades que són lentes 
+#  (per exemple, les que depenen d'unitats de xarxa, que amb determinats sistemes de VPN van MOLT lentes)
+# En la seva implementació estàndard s'utilitza així:
+#
+# EN EL WIDGET DEL CATÀLEG:
+#  CarregadorCataleg().afegeix(self, ruta)
+# En qualsevol lloc, quan volguem començar la càrrega:
+#  CarregadorCataleg().start()
+# El widget que utilitzem ha de tenir les funcions metadadesLlegides(str,str) i imatgeLlegida(bytes)
+class CarregadorCataleg(Singleton):
+    def __init__(self):
+        if hasattr(self,'llistaRutesCarregar'):
+            return
+        self.llistaRutesCarregar=[]
+    def afegeix(self, wid, ruta):
+        self.llistaRutesCarregar.append((wid,ruta))
+    def itera(self):
+        for (wid, ruta) in self.llistaRutesCarregar:
+            try:
+                with open(ruta+'.txt', encoding='cp1252') as f:
+                    titol = f.readline()
+                    text = f.read()
+            except FileNotFoundError:
+                titol, text= '',''
+            try:
+                with open(ruta+'.png','rb') as f:
+                    cont = f.read()
+            except FileNotFoundError:
+                cont=b''
+            wid.metadadesLlegides(titol, text)
+            wid.imatgeLlegida(cont)
+        delattr(self,'llistaRutesCarregar')
+    def start(self):
+        self.func = QvFuncioFil(self.itera)
+        self.func.start()
 
 class QvNouCataleg(QWidget):
     # Senyal per obrir un projecte. Passa un string (ruta de l'arxiu), un booleà (si aquell era favorit o no) i un widget (el botó al qual s'ha fet click).
@@ -21,6 +60,9 @@ class QvNouCataleg(QWidget):
     external = False
     FAVORITS=True
     WINDOWTITLE='Catàleg de mapes'
+    # El carregador que utilitzarem per carregar les dades
+    # Això permet utilitzar-ne un per cada catàleg diferent
+    CARREGADOR=CarregadorCataleg
 
     #ENTRADACATALEG=MapaCataleg
     EXT='.qgs'
@@ -216,6 +258,8 @@ class QvNouCataleg(QWidget):
         self.oldPos = self.pos()
         self.esPotMoure = False
         self.clickTots()
+
+        self.CARREGADOR().start()
     
     def setExternal(self):
         """ Funció per a saber si el catàleg s'ha inicialitzat desde fora """
@@ -227,6 +271,7 @@ class QvNouCataleg(QWidget):
         self.carregaBandaEsquerra()
         self.clickTots()
         self.setCursor(QvConstants.cursorFletxa())
+        self.CARREGADOR().start()
 
     def actualitzaWindowFlags(self):
         self.setWindowFlag(Qt.Window)
@@ -666,7 +711,7 @@ class BotoLateral(QPushButton):
 class DraggableLabel(QLabel):
     def __init__(self,parent,image, dir):
         super(QLabel,self).__init__(parent)
-        self.setPixmap(QPixmap(image))
+        self.setPixmap(image)
         self.dir = dir
         #self.dir = dir.replace(r"\",'/')
         self.show()
@@ -692,6 +737,8 @@ class DraggableLabel(QLabel):
         drag.setPixmap(pixmap)
         drag.setHotSpot(event.pos())
         drag.exec_(Qt.LinkAction)
+
+
 
 class MapaCataleg(QFrame):
     '''Widget que representa la preview del mapa
@@ -721,31 +768,37 @@ class MapaCataleg(QFrame):
         self.layout.setContentsMargins(6, 0, 6, 0)
         self.layout.setSpacing(0)
 
-        self.imatge = QPixmap(dir)
+        self.imatge = QPixmap()
         aux = QLabel()
         self.lblImatge = DraggableLabel(aux, self.imatge, dir+'.qgs')
         self.lblImatge.setPixmap(self.imatge)
+        CarregadorCataleg().afegeix(self,dir)
         # La mida que volem, restant-li el que ocuparà el border
         self.lblImatge.setFixedSize(300, 180)
         self.lblImatge.setScaledContents(True)
         self.lblImatge.setToolTip("Obrir mapa en qVista")
         self.layout.addWidget(self.lblImatge)
-        try:
-            with open(dir+'.txt', encoding='cp1252') as text:
-                # Defalut encoding: locale.getpreferredencoding(False)
-                self.titol = text.readline()
+        self.lblText = QLabel('<p><strong><span style="color: #38474f; font-family: arial, helvetica, sans-serif; font-size: 10pt;">Carregant títol...<br /></span></strong><span style="color: #38474f; font-family: arial, helvetica, sans-serif; font-size: 8pt;">Carregant descripció</span></p>')
+        self.layout.addWidget(self.lblText)
+        self.titol=''
+        self.text=''
+        # try:
+        #     with open(dir+'.txt', encoding='cp1252') as text:
+        #         # Defalut encoding: locale.getpreferredencoding(False)
+        #         self.titol = text.readline()
 
-                self.text = text.read()
-                self.lblText = QLabel(
-                    '<p><strong><span style="color: #38474f; font-family: arial, helvetica, sans-serif; font-size: 10pt;">%s<br /></span></strong><span style="color: #38474f; font-family: arial, helvetica, sans-serif; font-size: 8pt;">%s</span></p>' % (self.titol, self.text))
-                self.lblText.setWordWrap(True)
-                self.layout.addWidget(self.lblText)
-        except:
-            self.titol = ''
-            self.text = ''
-            self.lblText = QLabel('<p><strong><span style="color: #38474f; font-family: arial, helvetica, sans-serif; font-size: 10pt;">Títol no disponible<br /></span></strong><span style="color: #38474f; font-family: arial, helvetica, sans-serif; font-size: 8pt;">Descripció no disponible</span></p>')
-            self.layout.addWidget(self.lblText)
+        #         self.text = text.read()
+        #         self.lblText = QLabel(
+        #             '<p><strong><span style="color: #38474f; font-family: arial, helvetica, sans-serif; font-size: 10pt;">%s<br /></span></strong><span style="color: #38474f; font-family: arial, helvetica, sans-serif; font-size: 8pt;">%s</span></p>' % (self.titol, self.text))
+        #         self.lblText.setWordWrap(True)
+        #         self.layout.addWidget(self.lblText)
+        # except:
+        #     self.titol = ''
+        #     self.text = ''
+        #     self.lblText = QLabel('<p><strong><span style="color: #38474f; font-family: arial, helvetica, sans-serif; font-size: 10pt;">Títol no disponible<br /></span></strong><span style="color: #38474f; font-family: arial, helvetica, sans-serif; font-size: 8pt;">Descripció no disponible</span></p>')
+        #     self.layout.addWidget(self.lblText)
         self.lblImatge.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Ignored)
+        self.lblText.setWordWrap(True)
         self.lblText.setAlignment(Qt.AlignTop)
         self.lblText.setFixedHeight(66)
         self.lblText.setAlignment(Qt.AlignTop)
@@ -798,6 +851,21 @@ class MapaCataleg(QFrame):
         self.botoInfo.setStyleSheet(stylesheet)
 
         self.setChecked(False)
+    
+    def metadadesLlegides(self, titol, text):
+        self.titol = titol
+        self.text = text
+
+        if titol!='':
+            self.lblText.setText('<p><strong><span style="color: #38474f; font-family: arial, helvetica, sans-serif; font-size: 10pt;">%s<br /></span></strong><span style="color: #38474f; font-family: arial, helvetica, sans-serif; font-size: 8pt;">%s</span></p>' % (self.titol, self.text))
+            pass
+        else:
+            self.lblText.setText('<p><strong><span style="color: #38474f; font-family: arial, helvetica, sans-serif; font-size: 10pt;">Títol no disponible<br /></span></strong><span style="color: #38474f; font-family: arial, helvetica, sans-serif; font-size: 8pt;">Descripció no disponible</span></p>')
+
+    
+    def imatgeLlegida(self, img):
+        self.imatge.loadFromData(img)
+        self.lblImatge.setPixmap(self.imatge)
 
     def mousePressEvent(self, event):
         if event.buttons() & Qt.LeftButton:
