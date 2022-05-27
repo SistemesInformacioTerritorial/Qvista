@@ -53,6 +53,7 @@ class CarregadorCataleg(Singleton):
         self.func = QvFuncioFil(self.itera)
         self.func.start()
 
+@QvFuncions.cronometraFuncionsLlargues(2)
 class QvNouCataleg(QWidget):
     # Senyal per obrir un projecte. Passa un string (ruta de l'arxiu), un booleà (si aquell era favorit o no) i un widget (el botó al qual s'ha fet click).
     # El segon i el tercer només calen si volem poder gestionar els favorits des de fora del catàleg
@@ -62,7 +63,7 @@ class QvNouCataleg(QWidget):
     WINDOWTITLE='Catàleg de mapes'
     # El carregador que utilitzarem per carregar les dades
     # Això permet utilitzar-ne un per cada catàleg diferent
-    CARREGADOR=CarregadorCataleg
+    CARREGADOR=CarregadorCataleg()
 
     #ENTRADACATALEG=MapaCataleg
     EXT='.qgs'
@@ -259,7 +260,7 @@ class QvNouCataleg(QWidget):
         self.esPotMoure = False
         self.clickTots()
 
-        self.CARREGADOR().start()
+        self.CARREGADOR.start()
     
     def setExternal(self):
         """ Funció per a saber si el catàleg s'ha inicialitzat desde fora """
@@ -271,7 +272,7 @@ class QvNouCataleg(QWidget):
         self.carregaBandaEsquerra()
         self.clickTots()
         self.setCursor(QvConstants.cursorFletxa())
-        self.CARREGADOR().start()
+        self.CARREGADOR.start()
 
     def actualitzaWindowFlags(self):
         self.setWindowFlag(Qt.Window)

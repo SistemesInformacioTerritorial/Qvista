@@ -14,7 +14,7 @@ class QvNouCatalegCapes(QvNouCataleg):
     DIRSCATALEGS=[x for x in carpetaCatalegLlista if os.path.isdir(x)]
     FAVORITS=False
     WINDOWTITLE='Catàleg de capes'
-    CARREGADOR=CarregadorCatalegCapes
+    CARREGADOR=CarregadorCatalegCapes()
     afegirCapa=pyqtSignal(str)
     def __init__(self,*args, **kwargs):
         self.ENTRADACATALEG=CapaCataleg

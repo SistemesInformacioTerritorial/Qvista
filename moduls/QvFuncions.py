@@ -113,9 +113,9 @@ def cronometraFuncionsLlargues(temps):
     # inspirada en https://stackoverflow.com/a/6307868
     def decorate(cls):
         if QvApp.QvApp().paramCfg('Debug','False')=='True':
-            for attr in cls.__dict__: # there's propably a better way to do this
-                if callable(getattr(cls, attr)):
-                    setattr(cls, attr, decorador(getattr(cls, attr)))
+            # for attr in cls.__dict__:
+            for attr, _ in inspect.getmembers(cls,inspect.isfunction):
+                setattr(cls, attr, decorador(getattr(cls, attr)))
         return cls
     return decorate
 
