@@ -11,6 +11,10 @@ from moduls import QvApp
 if sys.platform == 'win32':
     from moduls.QvFuncionsWin32 import *
 
+def debugging():
+    # True si se está ejecutando el programa en modo debug
+    return sys.gettrace() is not None
+
 def setDPI():
     from qgis.PyQt import QtCore
     from qgis.PyQt.QtWidgets import QApplication

@@ -7,6 +7,8 @@ from qgis.PyQt.QtCore import QVariant
 
 from moduls.Ui_AtributsForm import Ui_AtributsForm
 from moduls.QvDigitizeContext import QvDigitizeContext
+from moduls import QvFuncions
+from moduls.QvApp import QvApp
 
 class QvFormAtributs:
 
@@ -62,6 +64,8 @@ class QvFitxesAtributs(QDialog):
         self.attributes = attributes
         self.mode = -1
         # self.selectFeature = self.layer.selectedFeatureCount() == 0
+        self.paramsFormulari = QgsExpressionContextUtils.layerScope(layer).variable('qV_formulari')
+        if QvFuncions.debugging() and self.paramsFormulari is not None: print(f'qV_formulari de capa {layer.name()}: {self.paramsFormulari}')
         if self.attributes is not None and self.attributes.llegenda is not None and self.attributes.llegenda.editing(layer):
             self.edicion(new)
         else:
@@ -99,24 +103,41 @@ class QvFitxesAtributs(QDialog):
         self.layout().setMenuBar(self.menuBar)
         self.resize(size)
 
-    def hideNullValues(self, layer, feature):
-    # Esconde los campos del formulario cuando tienen valor NULL (si la variable de capa 'qV_formulari' tiene el valor 'nonull')
+    def noNullValues(self, layer, feature):
+        # Esconde los campos del formulario cuando tienen valor NULL (si la variable de capa 'qV_formulari' tiene el valor 'nonull')
         listHidden = []
-        if QgsExpressionContextUtils.layerScope(layer).variable('qV_formulari') == 'nonull':
+        if self.paramsFormulari == 'nonull':
             for idx, value in enumerate(feature):
                 # int, float, str, QVariant
                 if isinstance(value, QVariant) and value.isNull():
                     # nom = layer.fields()[idx].name()
                     listHidden.append((idx, layer.editorWidgetSetup(idx)))
                     layer.setEditorWidgetSetup(idx, QgsEditorWidgetSetup('Hidden', {}))
+                    # layer.setEditorWidgetSetup(idx, QgsEditorWidgetSetup('TextEdit', {'IsMultiline': False, 'UseHtml': False}))
         return listHidden
 
-    def showNullValues(self, layer, listHidden):
-    # Restaura los campos escondidos del formulario una vez mostrado
+    def emptyNullValues(self, layer):
+        # Vacía los campos del formulario cuando tienen valor NULL (si la variable de capa 'qV_formulari' tiene el valor 'emptynull')
+        nullStr = None
+        if self.paramsFormulari == 'emptynull':
+            nullStr = QvApp().appQgis.nullRepresentation()
+            QvApp().appQgis.setNullRepresentation('')
+        return nullStr
+
+    def hideNullValues(self, layer, feature):
+        # Tratamiento de campos a NULL del formulario segun variable de capa 'qV_formulari'
+        listHidden = self.noNullValues(layer, feature)
+        nullStr = self.emptyNullValues(layer)
+        return listHidden, nullStr
+
+    def showNullValues(self, layer, listHidden, nullStr):
+        # Restaura los campos a NULL escondidos del formulario segun variable de capa 'qV_formulari'
         for item in listHidden:
             idx = item[0]
             setup = item[1]
             layer.setEditorWidgetSetup(idx, setup)
+        if nullStr is not None:
+            QvApp().appQgis.setNullRepresentation(nullStr)
 
     def consulta(self):
         first = True
@@ -125,10 +146,10 @@ class QvFitxesAtributs(QDialog):
                 layer = self.capesCorresponents[feature]
                 self.formResize(layer)
                 first = False
-            listHidden = self.hideNullValues(layer, feature)
+            listHidden, nullStr = self.hideNullValues(layer, feature)
             form = QgsAttributeForm(layer, feature)
             # form.setMode(QgsAttributeEditorContext.IdentifyMode)
-            self.showNullValues(layer, listHidden)
+            self.showNullValues(layer, listHidden, nullStr)
             self.ui.stackedWidget.addWidget(form)
         baseTitol = '{}'
         if self.total > 1:

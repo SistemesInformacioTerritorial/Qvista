@@ -2380,7 +2380,7 @@ def main(argv):
 
         # Preparació log de l'aplicació
         ok = qVapp.logInici()            # Por defecto: family='QVISTA', logname='DESKTOP'
-        if not ok:
+        if not ok and not QvFuncions.debugging():
             print('ERROR LOG >>', qVapp.logError())
        
         # Estil visual de l'aplicació
