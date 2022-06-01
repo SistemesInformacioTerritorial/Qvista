@@ -22,12 +22,28 @@ def setDPI():
     #setDPIScaling()
     os.environ["QT_AUTO_SCREEN_SCALE_FACTOR"] = "1" #QT < 5.14
     os.environ["QT_ENABLE_HIGHDPI_SCALING"] = "1" #QT >= 5.14
+
+    try:
+        QApplication.setHighDpiScaleFactorRoundingPolicy(QtCore.Qt.HighDpiScaleFactorRoundingPolicy.RoundPreferFloor)
+    except AttributeError:
+        # la versió de Qt que tenim encara no incorpora aquesta característica
+        pass
     
     if hasattr(QtCore.Qt, 'AA_UseHighDpiPixmaps'):
         QApplication.setAttribute(QtCore.Qt.AA_UseHighDpiPixmaps, True)
 
     if hasattr(QtCore.Qt, 'AA_EnableHighDpiScaling'):
         QApplication.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling, True)
+
+def modeDebug():
+    return QvApp.QvApp().paramCfg('Debug','False')=='True'
+
+def printDebug(*args, **kwargs):
+    """Funció equivalent al print, però que només imprimeix si qVista està en mode debug
+    Es poden utilitzar tots els paràmetres del print, i funcionen exactament igual
+    """
+    if modeDebug():
+        print(*args, **kwargs)
 
 def cronometra(func):
     """Funció decoradora que cronometra la funció passada com a paràmetre i imprimeix el temps per pantalla
@@ -65,7 +81,7 @@ def cronometraDebug(func):
     Returns:
         Callable -- Una funció que internament executa func i retorna el mateix resultat. Si el mode debug està desactivat, no fa res més. Si està activat, imprimeix per pantalla el temps requerit per executar-la
     """
-    if QvApp.QvApp().paramCfg('Debug','False')=='True':
+    if modeDebug():
         return cronometra(func)
     return func
 
@@ -109,8 +125,8 @@ def cronometraFuncionsLlargues(temps):
             t = time.process_time()-t
             t2 = time.time()-t2
             if t2>=temps:
-                print(f'DEBUG: Temps de processador per executar {str(f)}: {t}')
-                print(f'DEBUG: Temps total per executar {str(f)}: {t2}')
+                printDebug(f'DEBUG: Temps de processador per executar {str(f)}: {t}')
+                printDebug(f'DEBUG: Temps total per executar {str(f)}: {t2}')
             return res
         return embolcall
 
