@@ -620,6 +620,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.distBarris = QVDistrictesBarris()
         self.distBarris.view.clicked.connect(self.clickArbre)
     
+    @QvFuncions.mostraSpinner
     def preparacioCataleg(self):
         """ 
         Genera el catàleg de capes del qVista i l'incorpora a un docWidget.
@@ -638,7 +639,7 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         # self.wCatalegGran=QvNouCatalegCapes(self)
         # self.wCatalegGran.afegirCapa.connect(lambda x: QvFuncions.afegirQlr(x, self.llegenda))
-        self.wCatalegGran = None
+        
 
         self.dwCataleg = QvDockWidget( "Catàleg de capes", self )
         self.dwCataleg.setContextMenuPolicy(Qt.PreventContextMenu)
@@ -1974,7 +1975,7 @@ class QVista(QMainWindow, Ui_MainWindow):
             self.dwLlegenda.hide()
 
     def obrirCataleg(self):
-        if self.wCatalegGran is None:
+        if not hasattr(self, 'wCatalegGran') or self.wCatalegGran is None:
             self.wCatalegGran=QvNouCatalegCapes(self)
             self.wCatalegGran.afegirCapa.connect(lambda x: QvFuncions.afegirQlr(x, self.llegenda))
         try:
