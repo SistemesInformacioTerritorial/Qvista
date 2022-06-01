@@ -166,7 +166,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.preparacioTaulaAtributs()
         self.preparacioLlegenda()
         self.preparacioArbreDistrictes()
-        self.preparacioCataleg()
+        # self.preparacioCataleg()
        
         # self.preparacioMapTips() ???
         self.preparacioImpressio()
@@ -619,7 +619,7 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         self.distBarris = QVDistrictesBarris()
         self.distBarris.view.clicked.connect(self.clickArbre)
-
+    
     def preparacioCataleg(self):
         """ 
         Genera el catàleg de capes del qVista i l'incorpora a un docWidget.
@@ -1983,6 +1983,8 @@ class QVista(QMainWindow, Ui_MainWindow):
             QMessageBox.warning(self,'Error en el catàleg',"Hi ha hagut un error durant l'execució del catàleg de capes. Si l'error persisteix, contacteu amb el vostre responsable")
     def obrirCatalegLateral(self):
         # dock widget catàleg de capes
+        if not hasattr(self,'dwCataleg'):
+            self.preparacioCataleg()
         self.dwCataleg.show()
     def afegirCatalegCapes(self):
         nodes = self.llegenda.selectedNodes()
