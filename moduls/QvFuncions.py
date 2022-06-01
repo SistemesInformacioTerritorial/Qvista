@@ -7,6 +7,12 @@ from moduls.QvVideo import QvVideo
 from moduls.QvImports import *
 from moduls.QvConstants import QvConstants
 from moduls import QvApp
+from datetime import datetime
+
+dirPrint = Path('C:/temp/qVista/cronometres')
+dirPrint.mkdir(parents=True, exist_ok=True)
+rutaPrint = Path(dirPrint,f'{datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}.txt')
+sortida = open(rutaPrint,'w')
 
 if sys.platform == 'win32':
     from moduls.QvFuncionsWin32 import *
@@ -24,6 +30,15 @@ def setDPI():
 
     if hasattr(QtCore.Qt, 'AA_EnableHighDpiScaling'):
         QApplication.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling, True)
+
+def cronometraFile(func):
+    def embolcall(*args, **kwargs):
+        t=time.time()
+        res=func(*args, **kwargs)
+        print(f'DEBUG: Temps per executar {str(func)}: {time.time()-t}', file=sortida)
+        sortida.flush()
+        return res
+    return embolcall
 
 def cronometra(func):
     """Funció decoradora que cronometra la funció passada com a paràmetre i imprimeix el temps per pantalla

@@ -619,6 +619,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.distBarris = QVDistrictesBarris()
         self.distBarris.view.clicked.connect(self.clickArbre)
 
+    @QvFuncions.cronometraFile
     def preparacioCataleg(self):
         """ 
         Genera el catàleg de capes del qVista i l'incorpora a un docWidget.
@@ -2338,7 +2339,7 @@ def main(argv):
     # Ajustes de pantalla ANTES de crear la aplicación
     QvFuncions.setDPI()
 
-    with qgisapp(sysexit=False) as app: 
+    with qgisapp() as app: 
         
         # Se instancia QvApp al principio para el control de errores e idioma
         qVapp = QvApp()
@@ -2405,6 +2406,8 @@ def main(argv):
 
         # Gestió de la sortida
         app.aboutToQuit.connect(qV.gestioSortida)
+        qV.close()
+        sys.exit()
 
 
 # Arranque de l'aplicació qVista
