@@ -11,7 +11,7 @@ if len(sys.argv)==2:
     except:
         pass
 
-os.chdir('..')
+os.chdir('../..')
 
 while True:
     print('Comencem execució:',datetime.now())

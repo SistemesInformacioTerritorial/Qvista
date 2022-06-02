@@ -35,7 +35,7 @@ def cronometraFile(func):
     def embolcall(*args, **kwargs):
         t=time.time()
         res=func(*args, **kwargs)
-        print(f'DEBUG: Temps per executar {str(func)}: {time.time()-t}', file=sortida)
+        print(f'{func.__name__}: {time.time()-t}', file=sortida)
         sortida.flush()
         return res
     return embolcall

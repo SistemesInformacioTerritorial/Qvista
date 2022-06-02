@@ -85,6 +85,7 @@ class QVista(QMainWindow, Ui_MainWindow):
     dicCanvasDw ={}
     dicNumCanvas = {}
 
+    @QvFuncions.cronometraFile
     def __init__(self,app, prjInicial, titleFinestra):
         """  Inicialització de QVista.
         
@@ -2332,6 +2333,7 @@ def qvSplashScreen(imatge):
     return splash
 
 # Cos de la funció principal  d'arranque de qVista
+
 def main(argv):
     # Definició 
     global qV
