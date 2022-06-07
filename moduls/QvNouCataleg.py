@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 from moduls.QvImports import *
+from moduls.QvSingleton import Singleton
 from qgis.PyQt import QtWidgets
 import os
 from moduls.QvConstants import QvConstants
@@ -11,14 +12,62 @@ import re
 from moduls.QvFavorits import QvFavorits
 from moduls.QvMemoria import QvMemoria
 from moduls import QvFuncions
+from moduls.QvFuncioFil import QvFuncioFil
 import subprocess
+from PyQt5.QtCore import pyqtSignal
 
 
+# Aquesta classe carregarà en paral·lel les dades que són lentes 
+#  (per exemple, les que depenen d'unitats de xarxa, que amb determinats sistemes de VPN van MOLT lentes)
+# En la seva implementació estàndard s'utilitza així:
+#
+# EN EL WIDGET DEL CATÀLEG:
+#  CarregadorCataleg().afegeix(self, ruta)
+# En qualsevol lloc, quan volguem començar la càrrega:
+#  CarregadorCataleg().start()
+# El widget que utilitzem ha de tenir les funcions metadadesLlegides(str,str) i imatgeLlegida(bytes)
+class CarregadorCataleg(Singleton):
+    def __init__(self):
+        if hasattr(self,'llistaRutesCarregar'):
+            return
+        self.llistaRutesCarregar=[]
+    def afegeix(self, wid, ruta):
+        self.llistaRutesCarregar.append((wid,ruta))
+    def itera(self):
+        for (wid, ruta) in self.llistaRutesCarregar:
+            try:
+                with open(ruta+'.txt', encoding='cp1252') as f:
+                    titol = f.readline()
+                    text = f.read()
+            except FileNotFoundError:
+                titol, text= '',''
+            try:
+                with open(ruta+'.png','rb') as f:
+                    cont = f.read()
+            except FileNotFoundError:
+                cont=b''
+            wid.metadadesLlegides(titol, text)
+            wid.imatgeLlegida(cont)
+        delattr(self,'llistaRutesCarregar')
+    def start(self):
+        self.func = QvFuncioFil(self.itera)
+        self.func.start()
+
+@QvFuncions.cronometraFuncionsLlargues(2)
 class QvNouCataleg(QWidget):
     # Senyal per obrir un projecte. Passa un string (ruta de l'arxiu), un booleà (si aquell era favorit o no) i un widget (el botó al qual s'ha fet click).
     # El segon i el tercer només calen si volem poder gestionar els favorits des de fora del catàleg
     obrirProjecte = pyqtSignal(str, bool, QWidget)
     external = False
+    FAVORITS=True
+    WINDOWTITLE='Catàleg de mapes'
+    # El carregador que utilitzarem per carregar les dades
+    # Això permet utilitzar-ne un per cada catàleg diferent
+    CARREGADOR=CarregadorCataleg()
+
+    #ENTRADACATALEG=MapaCataleg
+    EXT='.qgs'
+    DIRSCATALEGS=carpetaCatalegProjectesLlista+QvMemoria().getCatalegsLocals()
     def __init__(self, parent: QtWidgets.QWidget = None):
         '''Construeix el catàleg
         El codi és més o menys el mateix que s'utilitza per construir moltes altres finestres frameless. 
@@ -27,11 +76,13 @@ class QvNouCataleg(QWidget):
         El cos conté una botonera lateral a l'esquerra, amb un botó per cada carpeta del catàleg, i un layout redimensionable que mostra el contingut dels directoris seleccionats
         '''
         super().__init__()
+        if not hasattr(self,'ENTRADACATALEG'):
+            self.ENTRADACATALEG=MapaCataleg # Això seria millor com a variable de classe. No obstant, falla perquè tenim referències creuades
         
         self.parent = parent
         self.setWindowFlags(Qt.FramelessWindowHint)
         self.actualitzaWindowFlags()
-        self.setWindowTitle('Catàleg de mapes')
+        self.setWindowTitle(self.WINDOWTITLE)
         # Layout gran. Tot a dins
         self.layout = QVBoxLayout(self)
 
@@ -44,7 +95,7 @@ class QvNouCataleg(QWidget):
         self.lblLogo=QLabel()
         self.lblLogo.setPixmap(QPixmap(os.path.join(imatgesDir,'qVistaLogo_text_40_old.png')))
         self.lblCapcalera=QLabel(objectName='fosca')
-        self.lblCapcalera.setText('Catàleg de mapes')
+        self.lblCapcalera.setText(self.WINDOWTITLE)
         self.lblCapcalera.setStyleSheet(
             'background-color: %s;' % QvConstants.COLORFOSCHTML)
         self.lblCapcalera.setFont(QvConstants.FONTTITOLS)
@@ -208,6 +259,8 @@ class QvNouCataleg(QWidget):
         self.oldPos = self.pos()
         self.esPotMoure = False
         self.clickTots()
+
+        self.CARREGADOR.start()
     
     def setExternal(self):
         """ Funció per a saber si el catàleg s'ha inicialitzat desde fora """
@@ -219,6 +272,7 @@ class QvNouCataleg(QWidget):
         self.carregaBandaEsquerra()
         self.clickTots()
         self.setCursor(QvConstants.cursorFletxa())
+        self.CARREGADOR.start()
 
     def actualitzaWindowFlags(self):
         self.setWindowFlag(Qt.Window)
@@ -241,35 +295,40 @@ class QvNouCataleg(QWidget):
             del x
             x=self.lBanda.takeAt(0)
         
-        self.favorits = QvFavorits().getFavorits()
 
         self.tots=BotoLateral('Tots',self)
         self.tots.setIcon(QIcon(os.path.join(imatgesDir,'cm_check_all.png')))
         self.tots.setCheckable(True)
         self.lBanda.addWidget(self.tots)
 
-        self.fav=BotoLateral('Favorits',self)
-        self.fav.setIcon(QIcon(os.path.join(imatgesDir,'star.png')))
-        self.fav.setCheckable(True)
-        self.lBanda.addWidget(self.fav)
+        if self.FAVORITS:
+            self.fav=BotoLateral('Favorits',self)
+            self.fav.setIcon(QIcon(os.path.join(imatgesDir,'star.png')))
+            self.fav.setCheckable(True)
+            self.lBanda.addWidget(self.fav)
+            self.favorits = QvFavorits().getFavorits()
+        else:
+            # en diverses ocasions es comprova si un botó és el botó de fav. Posant-lo a None no fallarà si no està definit
+            self.fav=None
 
         # Serà un dict on la clau serà el nom del directori, i el valor una llista de botons
         self.catalegs = {}
         self.botonsLaterals = []
-        for y in carpetaCatalegProjectesLlista+QvMemoria().getCatalegsLocals():
+        for y in self.DIRSCATALEGS:
             try:
                 # os.walk(dir) ens dóna un generador que es va recorrent tots els nivells d'un directori
                 # Per cada nivell ens dóna tres llistes, que són l'arrel, els directoris i els arxius
                 # Com que només ens interessa el primer nivell, enlloc de recórrer el generador, fem un next i agafem només el primer nivell
                 # Com que només volem els directoris, no desem enlloc les altres llistes
                 _, dirs, _ = next(os.walk(y))
+                # dirs = [x.name for x in os.scandir(y) if x.is_dir()]
             except:
                 # Si una carpeta no funciona (per exemple, l'usuari no hi té accés) simplement seguim mirant les altres
                 continue
 
             dirs = sorted(dirs)
             for x in dirs:
-                self.catalegs[x] = self.carregaBotons(x)
+                self.catalegs[x] = self.carregaBotons(x, y)
                 privat = y in carpetaCatalegProjectesPrivats
                 local = y in QvMemoria().getCatalegsLocals()
                 boto = BotoLateral(x, self, privat, local)
@@ -280,13 +339,15 @@ class QvNouCataleg(QWidget):
                 self.lBanda.addWidget(boto)
 
         self.tots.clicked.connect(self.clickTots)
-        self.fav.clicked.connect(self.clickFavorits)
+        if self.FAVORITS:
+            self.fav.clicked.connect(self.clickFavorits)
         self.lBanda.addStretch()
 
     def clickTots(self):
         for x in self.botonsLaterals:
             x.setChecked(True)
-        self.fav.setChecked(False)
+        if self.FAVORITS:
+            self.fav.setChecked(False)
         self.mostraMapes()
 
     def clickFavorits(self):
@@ -320,19 +381,14 @@ class QvNouCataleg(QWidget):
         self.indexLayoutSeleccionat = -1
         self.fav.setChecked(True)
 
-    def carregaBotons(self, dir: str):
-        f = []
-        for y in carpetaCatalegProjectesLlista+QvMemoria().getCatalegsLocals():
-            try:
-                _, _, files = next(os.walk(y+'/'+dir))
-                files = (x[:-4] for x in files if x.endswith('.qgs'))
-                files = (os.path.join(y, dir, x) for x in files)
-                f += files
-            except:
-                continue
-        botons = [MapaCataleg(x, self) for x in f]
+    def carregaBotons(self, dir: str, dirCataleg: str):
+        ruta = Path(dirCataleg, dir)
+        files = (x for x in os.scandir(ruta) if x.is_file())
+        files = (x.path[:-4] for x in files if x.name.endswith(self.EXT))
+        f = list(files)
+        botons = [self.ENTRADACATALEG(x, self) for x in f]
         for x in botons:
-            if x.getNomMapa() in self.favorits:
+            if self.FAVORITS and x.getNomMapa() in self.favorits:
                 # No actualitzem la base de dades perquè no estem modificant-la
                 x.setFavorit(True, actualitza=False)
         return botons
@@ -438,26 +494,32 @@ class QvNouCataleg(QWidget):
         if event.buttons() & Qt.LeftButton:
             self.restaurarFunc()
 
-    def keyPressEvent(self, event):
+    # Utilitzem el release perquè amb el press a vegades feia salts dobles
+    def keyReleaseEvent(self, event):
         '''Esc tanca.
         Amb les fletxes ens podem moure
         També ens podem moure amb les tecles HJKL, com al Vim
+        Com a referència gamer, també es poden utilitzar les tecles WASD
         El botó d'enter i de return obren el projecte seleccionat amb qVista '''
-        if event.key() == Qt.Key_Escape:
-            self.close()
-        elif event.key() == Qt.Key_Left or event.key() == Qt.Key_H:
-            self.mouEsquerra()
-        elif event.key() == Qt.Key_Down or event.key() == Qt.Key_J:
-            self.mouBaix()
-        elif event.key() == Qt.Key_Up or event.key() == Qt.Key_K:
-            self.mouDalt()
-        elif event.key() == Qt.Key_Right or event.key() == Qt.Key_L:
-            self.mouDreta()
-        elif event.key() == Qt.Key_Return or event.key() == Qt.Key_Enter:
-            if hasattr(self, 'widgetSeleccionat'):
-                self.widgetSeleccionat.obreQVista()
-        elif event.key() == Qt.Key_F5:
-            self.recarrega()
+        try:
+            if event.key() == Qt.Key_Escape:
+                self.close()
+            elif event.key() in (Qt.Key_Left, Qt.Key_H, Qt.Key_A):
+                self.mouEsquerra()
+            elif event.key() in (Qt.Key_Down, Qt.Key_J, Qt.Key_S):
+                self.mouBaix()
+            elif event.key() in (Qt.Key_Up, Qt.Key_K, Qt.Key_W):
+                self.mouDalt()
+            elif event.key() in (Qt.Key_Right, Qt.Key_L, Qt.Key_D):
+                self.mouDreta()
+            elif event.key() in (Qt.Key_Return, Qt.Key_Enter):
+                if hasattr(self, 'widgetSeleccionat'):
+                    self.widgetSeleccionat.obreQVista()
+            elif event.key() == Qt.Key_F5:
+                self.recarrega()
+        except Exception as e:
+            print(repr(e))
+            pass
 
     def seleccionaElement(self, widget, teclat=False):
         if widget is None:
@@ -477,6 +539,7 @@ class QvNouCataleg(QWidget):
     def mouHoritzontal(self, despl: int):
         if self.indexLayoutSeleccionat != -1:
             nlayout = self.nlayouts[self.indexLayoutSeleccionat]
+            aux = nlayout.indexsOf(self.widgetSeleccionat)
             i, j = nlayout.indexsOf(self.widgetSeleccionat)
             j += despl
             if j >= nlayout.x(i):
@@ -571,7 +634,7 @@ class QvNouCataleg(QWidget):
     def esMostra(self, widget):
         txt = self.arregla(self.leCerca.text())
 
-        return txt in self.arregla(widget.titol) or txt in self.arregla(widget.text)
+        return txt in self.arregla(widget.titol) or txt in self.arregla(widget.text) or widget.conteText(txt)
 
 
 class BotoLateral(QPushButton):
@@ -604,7 +667,7 @@ class BotoLateral(QPushButton):
         if self == self.cataleg.tots:
             super().mousePressEvent(event)
             self.setChecked(False)
-        elif self == self.cataleg.fav:
+        elif self.cataleg.FAVORITS and self == self.cataleg.fav:
             super().mousePressEvent(event)
             self.setIcon(QIcon(os.path.join(imatgesDir,'star-blanc.png')))
             # self.setChecked(True)
@@ -620,12 +683,12 @@ class BotoLateral(QPushButton):
                     continue
                 x.setChecked(False)
             self.cataleg.tots.setChecked(False)
-            if self != self.cataleg.fav:
+            if self.cataleg.FAVORITS and self != self.cataleg.fav:
                 self.cataleg.fav.setChecked(False)
             self.setChecked(True)
         self.cataleg.leCerca.setText('')
         self.cataleg.mostraMapes()
-        if self!=self.cataleg.fav:
+        if self.cataleg.FAVORITS and self!=self.cataleg.fav:
             self.cataleg.fav.setIcon(QIcon(os.path.join(imatgesDir,'star.png')))
     def setChecked(self,checked=True):
         super().setChecked(checked)
@@ -649,7 +712,7 @@ class BotoLateral(QPushButton):
 class DraggableLabel(QLabel):
     def __init__(self,parent,image, dir):
         super(QLabel,self).__init__(parent)
-        self.setPixmap(QPixmap(image))
+        self.setPixmap(image)
         self.dir = dir
         #self.dir = dir.replace(r"\",'/')
         self.show()
@@ -675,6 +738,8 @@ class DraggableLabel(QLabel):
         drag.setPixmap(pixmap)
         drag.setHotSpot(event.pos())
         drag.exec_(Qt.LinkAction)
+
+
 
 class MapaCataleg(QFrame):
     '''Widget que representa la preview del mapa
@@ -704,31 +769,37 @@ class MapaCataleg(QFrame):
         self.layout.setContentsMargins(6, 0, 6, 0)
         self.layout.setSpacing(0)
 
-        self.imatge = QPixmap(dir)
+        self.imatge = QPixmap()
         aux = QLabel()
         self.lblImatge = DraggableLabel(aux, self.imatge, dir+'.qgs')
         self.lblImatge.setPixmap(self.imatge)
+        CarregadorCataleg().afegeix(self,dir)
         # La mida que volem, restant-li el que ocuparà el border
         self.lblImatge.setFixedSize(300, 180)
         self.lblImatge.setScaledContents(True)
         self.lblImatge.setToolTip("Obrir mapa en qVista")
         self.layout.addWidget(self.lblImatge)
-        try:
-            with open(dir+'.txt', encoding='cp1252') as text:
-                # Defalut encoding: locale.getpreferredencoding(False)
-                self.titol = text.readline()
+        self.lblText = QLabel('<p><strong><span style="color: #38474f; font-family: arial, helvetica, sans-serif; font-size: 10pt;">Carregant títol...<br /></span></strong><span style="color: #38474f; font-family: arial, helvetica, sans-serif; font-size: 8pt;">Carregant descripció</span></p>')
+        self.layout.addWidget(self.lblText)
+        self.titol=''
+        self.text=''
+        # try:
+        #     with open(dir+'.txt', encoding='cp1252') as text:
+        #         # Defalut encoding: locale.getpreferredencoding(False)
+        #         self.titol = text.readline()
 
-                self.text = text.read()
-                self.lblText = QLabel(
-                    '<p><strong><span style="color: #38474f; font-family: arial, helvetica, sans-serif; font-size: 10pt;">%s<br /></span></strong><span style="color: #38474f; font-family: arial, helvetica, sans-serif; font-size: 8pt;">%s</span></p>' % (self.titol, self.text))
-                self.lblText.setWordWrap(True)
-                self.layout.addWidget(self.lblText)
-        except:
-            self.titol = ''
-            self.text = ''
-            self.lblText = QLabel('<p><strong><span style="color: #38474f; font-family: arial, helvetica, sans-serif; font-size: 10pt;">Títol no disponible<br /></span></strong><span style="color: #38474f; font-family: arial, helvetica, sans-serif; font-size: 8pt;">Descripció no disponible</span></p>')
-            self.layout.addWidget(self.lblText)
+        #         self.text = text.read()
+        #         self.lblText = QLabel(
+        #             '<p><strong><span style="color: #38474f; font-family: arial, helvetica, sans-serif; font-size: 10pt;">%s<br /></span></strong><span style="color: #38474f; font-family: arial, helvetica, sans-serif; font-size: 8pt;">%s</span></p>' % (self.titol, self.text))
+        #         self.lblText.setWordWrap(True)
+        #         self.layout.addWidget(self.lblText)
+        # except:
+        #     self.titol = ''
+        #     self.text = ''
+        #     self.lblText = QLabel('<p><strong><span style="color: #38474f; font-family: arial, helvetica, sans-serif; font-size: 10pt;">Títol no disponible<br /></span></strong><span style="color: #38474f; font-family: arial, helvetica, sans-serif; font-size: 8pt;">Descripció no disponible</span></p>')
+        #     self.layout.addWidget(self.lblText)
         self.lblImatge.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Ignored)
+        self.lblText.setWordWrap(True)
         self.lblText.setAlignment(Qt.AlignTop)
         self.lblText.setFixedHeight(66)
         self.lblText.setAlignment(Qt.AlignTop)
@@ -781,14 +852,34 @@ class MapaCataleg(QFrame):
         self.botoInfo.setStyleSheet(stylesheet)
 
         self.setChecked(False)
+    
+    def metadadesLlegides(self, titol, text):
+        self.titol = titol
+        self.text = text
+
+        if titol!='':
+            self.lblText.setText('<p><strong><span style="color: #38474f; font-family: arial, helvetica, sans-serif; font-size: 10pt;">%s<br /></span></strong><span style="color: #38474f; font-family: arial, helvetica, sans-serif; font-size: 8pt;">%s</span></p>' % (self.titol, self.text))
+            pass
+        else:
+            self.lblText.setText('<p><strong><span style="color: #38474f; font-family: arial, helvetica, sans-serif; font-size: 10pt;">Títol no disponible<br /></span></strong><span style="color: #38474f; font-family: arial, helvetica, sans-serif; font-size: 8pt;">Descripció no disponible</span></p>')
+
+    
+    def imatgeLlegida(self, img):
+        self.imatge.loadFromData(img)
+        self.lblImatge.setPixmap(self.imatge)
 
     def mousePressEvent(self, event):
         if event.buttons() & Qt.LeftButton:
             self.cataleg.seleccionaElement(self)
 
     def enterEvent(self, event):
-        super().enterEvent(event)
-        self.cataleg.seleccionaElement(self)
+        try:
+            super().enterEvent(event)
+            self.cataleg.seleccionaElement(self)
+        except RecursionError as e:
+            # per alguna raó, en determinades situacions podem tenir un recursionError
+            # Si passa això, per evitar que peti simplement capturem l'excepció
+            print(repr(e))
 
     def mouseDoubleClickEvent(self, event):
         self.obreQVista()
@@ -835,6 +926,10 @@ class MapaCataleg(QFrame):
 
     def getNomMapa(self):
         return self.nomMapa
+    
+    def conteText(self,txt):
+        # pensada per si en algun moment es vol incloure als filtres algun contingut diferent del títol i la descripció
+        return False
 
 
 class PointTool(QgsMapTool):

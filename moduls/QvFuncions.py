@@ -11,6 +11,10 @@ from moduls import QvApp
 if sys.platform == 'win32':
     from moduls.QvFuncionsWin32 import *
 
+def debugging():
+    # True si se está ejecutando el programa en modo debug
+    return sys.gettrace() is not None
+
 def setDPI():
     from qgis.PyQt import QtCore
     from qgis.PyQt.QtWidgets import QApplication
@@ -18,12 +22,28 @@ def setDPI():
     #setDPIScaling()
     os.environ["QT_AUTO_SCREEN_SCALE_FACTOR"] = "1" #QT < 5.14
     os.environ["QT_ENABLE_HIGHDPI_SCALING"] = "1" #QT >= 5.14
+
+    try:
+        QApplication.setHighDpiScaleFactorRoundingPolicy(QtCore.Qt.HighDpiScaleFactorRoundingPolicy.RoundPreferFloor)
+    except AttributeError:
+        # la versió de Qt que tenim encara no incorpora aquesta característica
+        pass
     
     if hasattr(QtCore.Qt, 'AA_UseHighDpiPixmaps'):
         QApplication.setAttribute(QtCore.Qt.AA_UseHighDpiPixmaps, True)
 
     if hasattr(QtCore.Qt, 'AA_EnableHighDpiScaling'):
         QApplication.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling, True)
+
+def modeDebug():
+    return QvApp.QvApp().paramCfg('Debug','False')=='True'
+
+def printDebug(*args, **kwargs):
+    """Funció equivalent al print, però que només imprimeix si qVista està en mode debug
+    Es poden utilitzar tots els paràmetres del print, i funcionen exactament igual
+    """
+    if modeDebug():
+        print(*args, **kwargs)
 
 def cronometra(func):
     """Funció decoradora que cronometra la funció passada com a paràmetre i imprimeix el temps per pantalla
@@ -37,8 +57,10 @@ def cronometra(func):
     """
     def embolcall(*args, **kwargs):
         t=time.process_time()
+        t2 = time.time()
         res=func(*args, **kwargs)
-        print(f'DEBUG: Temps per executar {str(func)}: {time.process_time()-t}')
+        print(f'DEBUG: Temps de processador per executar {str(func)}: {time.process_time()-t}')
+        print(f'DEBUG: Temps total per executar {str(func)}: {time.time()-t2}')
         return res
     return embolcall
 
@@ -59,9 +81,63 @@ def cronometraDebug(func):
     Returns:
         Callable -- Una funció que internament executa func i retorna el mateix resultat. Si el mode debug està desactivat, no fa res més. Si està activat, imprimeix per pantalla el temps requerit per executar-la
     """
-    if QvApp.QvApp().paramCfg('Debug','False')=='True':
+    if modeDebug():
         return cronometra(func)
     return func
+
+# Una aproximació millor seria utilitzant metaclasses.
+# El problema de les metaclasses és que és més difícil posar-les i treure-les, 
+#  i això permet decorar la classe que veiem que és lenta i treure-li el decorador quan lcoalitzem el problema
+def cronometraFuncionsLlargues(temps):
+    """Equivalent al cronometraDebug, però pensat per decorar les funcions d'una classe
+    Permet obtenir totes les funcions que triguen X segons o més en executar-se
+    Està pensat per poder examinar quines són les funcions que triguen en un codi
+
+    NOTA: si una funció és modal (espera una interacció de l'usuari per acabar) també poden aparèixer
+
+        EXEMPLE:
+        cronometraFuncionsLlargues(5)
+        class Foo:
+            def __init__(self):
+                self.funcio_llarga()
+            def funcio_llarga(self):
+                time.sleep(10)
+            def funcio_curta(self):
+                print(':D')
+        
+        foo = Foo()
+        foo.funcio_curta()
+
+        RESULTAT:
+            DEBUG: Temps de processador per executar Foo.funcio_llarga: 5.0001
+            DEBUG: Temps total per executar Foo.funcio_llarga: 5.0005
+            DEBUG: Temps de processador per executar Foo.__init__: 5.0002
+            DEBUG: Temps total per executar Foo.__init__: 5.0006
+
+    Args:
+        temps (float): temps que han de superar o igualar les funcions per ser tingudes en compte
+    """
+    def decorador(f):
+        def embolcall(*args, **kwargs):
+            t=time.process_time()
+            t2 = time.time()
+            res=f(*args, **kwargs)
+            t = time.process_time()-t
+            t2 = time.time()-t2
+            if t2>=temps:
+                printDebug(f'DEBUG: Temps de processador per executar {str(f)}: {t}')
+                printDebug(f'DEBUG: Temps total per executar {str(f)}: {t2}')
+            return res
+        return embolcall
+
+    # inspirada en https://stackoverflow.com/a/6307868
+    def decorate(cls):
+        if QvApp.QvApp().paramCfg('Debug','False')=='True':
+            # for attr in cls.__dict__:
+            for attr, _ in inspect.getmembers(cls,inspect.isfunction):
+                setattr(cls, attr, decorador(getattr(cls, attr)))
+        return cls
+    return decorate
 
 def mostraSpinner(func):
     """Funció decoradora que mostra un spinner de càrrega mentre l'executa

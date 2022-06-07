@@ -38,6 +38,7 @@ from moduls.QvNouMapa import QvNouMapa
 from moduls.QvVisorHTML import QvVisorHTML
 from moduls.QvDocumentacio import QvDocumentacio
 from moduls.QvNouCataleg import QvNouCataleg, QvCreadorCataleg
+from moduls.QvNouCatalegCapes import QvNouCatalegCapes
 from moduls.QvCatalegCapes import QvCatalegCapes, QvCreadorCatalegCapes
 from moduls.QvSabiesQue import QvSabiesQue
 from moduls.QvMemoria import QvMemoria
@@ -165,7 +166,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.preparacioTaulaAtributs()
         self.preparacioLlegenda()
         self.preparacioArbreDistrictes()
-        self.preparacioCataleg()
+        # self.preparacioCataleg()
        
         # self.preparacioMapTips() ???
         self.preparacioImpressio()
@@ -535,7 +536,8 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         self.canvas.setCanvasColor(QColor(253,253,255))
 
-        self.canvas.mapCanvasRefreshed.connect(self.canvasRefrescat)
+        # self.canvas.mapCanvasRefreshed.connect(self.canvasRefrescat)
+        self.canvas.extentsChanged.connect(self.eliminaMarcaCercador)
         self.layout = QVBoxLayout(self.frameCentral)
     
         self.layout.setContentsMargins(0,0,0,0)
@@ -586,6 +588,7 @@ class QVista(QMainWindow, Ui_MainWindow):
             self.botoDesarProjecte.setIcon(self.iconaSenseCanvisPendents)
 
     def canvasRefrescat(self):
+        return # hem canviat això de lloc
         if self.marcaLlocPosada:
             self.marcaLlocPosada = False
             self.canvas.scene().removeItem(self.marcaLloc)
@@ -595,6 +598,10 @@ class QVista(QMainWindow, Ui_MainWindow):
             #     self.canvas.scene().removeItem(self.marcaLloc)
             # except Exception as e:
             #     print(e)
+    def eliminaMarcaCercador(self):
+        if hasattr(self,'marcaLlocPosada') and self.marcaLlocPosada:
+            self.marcaLlocPosada = False
+            self.canvas.scene().removeItem(self.marcaLloc)
 
     def preparacioUbicacions(self): #???
         """
@@ -618,7 +625,8 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         self.distBarris = QVDistrictesBarris()
         self.distBarris.view.clicked.connect(self.clickArbre)
-
+    
+    @QvFuncions.mostraSpinner
     def preparacioCataleg(self):
         """ 
         Genera el catàleg de capes del qVista i l'incorpora a un docWidget.
@@ -634,6 +642,10 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         self.wCataleg=QvCatalegCapes(self)
         self.wCataleg.afegirCapa.connect(lambda x: QvFuncions.afegirQlr(x, self.llegenda))
+
+        # self.wCatalegGran=QvNouCatalegCapes(self)
+        # self.wCatalegGran.afegirCapa.connect(lambda x: QvFuncions.afegirQlr(x, self.llegenda))
+        
 
         self.dwCataleg = QvDockWidget( "Catàleg de capes", self )
         self.dwCataleg.setContextMenuPolicy(Qt.PreventContextMenu)
@@ -1093,6 +1105,11 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.actObrirCataleg.setStatusTip("Catàleg d'Informació Territorial")
         #self.actObrirCataleg.setIcon(QIcon(os.path.join(imatgesDir,'layers_2.png')))
         self.actObrirCataleg.triggered.connect(self.obrirCataleg)
+
+        self.actObrirCatalegLateral = QAction("Catàleg lateral", self)
+        self.actObrirCatalegLateral.setStatusTip("Catàleg d'Informació Territorial")
+        #self.actObrirCataleg.setIcon(QIcon(os.path.join(imatgesDir,'layers_2.png')))
+        self.actObrirCatalegLateral.triggered.connect(self.obrirCatalegLateral)
 
         self.actCreadorCataleg = QAction('Afegir al catàleg')
         self.actCreadorCataleg.setStatusTip('Afegir entrada al catàleg de capes')
@@ -1603,6 +1620,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.menuCapes.setFont(QvConstants.FONTSUBTITOLS)
         self.menuCapes.styleStrategy = QFont.PreferAntialias or QFont.PreferQuality #???
         self.menuCapes.addAction(self.actObrirCataleg)
+        self.menuCapes.addAction(self.actObrirCatalegLateral)
         self.menuCapes.addAction(self.actCreadorCataleg)
         self.menuCapes.addSeparator()
         self.menuCapes.addAction(self.actAfegirCapa)
@@ -1963,7 +1981,17 @@ class QVista(QMainWindow, Ui_MainWindow):
             self.dwLlegenda.hide()
 
     def obrirCataleg(self):
+        if not hasattr(self, 'wCatalegGran') or self.wCatalegGran is None:
+            self.wCatalegGran=QvNouCatalegCapes(self)
+            self.wCatalegGran.afegirCapa.connect(lambda x: QvFuncions.afegirQlr(x, self.llegenda))
+        try:
+            self.wCatalegGran.showMaximized()
+        except Exception as e:
+            QMessageBox.warning(self,'Error en el catàleg',"Hi ha hagut un error durant l'execució del catàleg de capes. Si l'error persisteix, contacteu amb el vostre responsable")
+    def obrirCatalegLateral(self):
         # dock widget catàleg de capes
+        if not hasattr(self,'dwCataleg'):
+            self.preparacioCataleg()
         self.dwCataleg.show()
     def afegirCatalegCapes(self):
         nodes = self.llegenda.selectedNodes()
@@ -2365,7 +2393,7 @@ def main(argv):
 
         # Preparació log de l'aplicació
         ok = qVapp.logInici()            # Por defecto: family='QVISTA', logname='DESKTOP'
-        if not ok:
+        if not ok and not QvFuncions.debugging():
             print('ERROR LOG >>', qVapp.logError())
        
         # Estil visual de l'aplicació

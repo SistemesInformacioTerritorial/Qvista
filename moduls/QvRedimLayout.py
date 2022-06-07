@@ -131,8 +131,8 @@ class QvRedimLayout(QLayout):
 
             if not testOnly:
                 item.setGeometry(QRect(QPoint(x, y), item.sizeHint()))
-                self.posicions[wid]=(i,j)
-                self.elements[i].append(wid)
+            self.posicions[wid]=(i,j)
+            self.elements[i].append(wid)
 
             x = nextX
             lineHeight = max(lineHeight, item.sizeHint().height())

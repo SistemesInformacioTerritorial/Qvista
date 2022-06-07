@@ -1645,6 +1645,11 @@ class QvSeleccioElement(QgsMapTool):
             else:
                 self.missatgeCaixa('Cal tenir seleccionat un nivell per poder fer una selecció.',
                                    'Marqueu un nivell a la llegenda sobre el que aplicar la consulta.')
+            # per alguna raó abans desapareixien sols, però ara no. Per tant, fem un hide i ja està
+            marcaLloc.hide()
+            rb.hide()
+            marcaLloc.deleteLater()
+            rb.deleteLater()
         except Exception as e:
             print(str(e))
 
