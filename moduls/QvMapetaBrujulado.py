@@ -199,7 +199,7 @@ class QvMapetaBrujulado(QFrame):
         martoAct = contextMenu.addAction("Orientació 'Martorell' (44.5º)")
         contextMenu.addSeparator()
 
-        chColors= contextMenu.addAction("Cambiar colors")
+        chColors= contextMenu.addAction("Canviar colors")
         # CrearMapeta - Comentado porque hay un error al salir en la 3.16
         #
         # mapetaDefault= contextMenu.addAction("Mapeta default")

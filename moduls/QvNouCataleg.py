@@ -622,7 +622,7 @@ class QvNouCataleg(QWidget):
 
         return txt
 
-    def filtra(self):
+    def filtra(self,_):
         txt = self.arregla(self.leCerca.text())
         if txt != '':
             self.clickTots()
