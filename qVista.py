@@ -536,7 +536,8 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         self.canvas.setCanvasColor(QColor(253,253,255))
 
-        self.canvas.mapCanvasRefreshed.connect(self.canvasRefrescat)
+        # self.canvas.mapCanvasRefreshed.connect(self.canvasRefrescat)
+        self.canvas.extentsChanged.connect(self.eliminaMarcaCercador)
         self.layout = QVBoxLayout(self.frameCentral)
     
         self.layout.setContentsMargins(0,0,0,0)
@@ -587,6 +588,7 @@ class QVista(QMainWindow, Ui_MainWindow):
             self.botoDesarProjecte.setIcon(self.iconaSenseCanvisPendents)
 
     def canvasRefrescat(self):
+        return # hem canviat això de lloc
         if self.marcaLlocPosada:
             self.marcaLlocPosada = False
             self.canvas.scene().removeItem(self.marcaLloc)
@@ -596,6 +598,10 @@ class QVista(QMainWindow, Ui_MainWindow):
             #     self.canvas.scene().removeItem(self.marcaLloc)
             # except Exception as e:
             #     print(e)
+    def eliminaMarcaCercador(self):
+        if hasattr(self,'marcaLlocPosada') and self.marcaLlocPosada:
+            self.marcaLlocPosada = False
+            self.canvas.scene().removeItem(self.marcaLloc)
 
     def preparacioUbicacions(self): #???
         """
