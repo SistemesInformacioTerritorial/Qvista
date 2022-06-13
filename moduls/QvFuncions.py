@@ -9,7 +9,7 @@ from moduls.QvConstants import QvConstants
 from moduls import QvApp
 from datetime import datetime
 
-dirPrint = Path('C:/temp/qVista/cronometres')
+dirPrint = Path('D:/Cronometres2')
 dirPrint.mkdir(parents=True, exist_ok=True)
 rutaPrint = Path(dirPrint,f'{datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}.txt')
 sortida = open(rutaPrint,'w')

@@ -5,7 +5,7 @@ def mitjana(l):
     return sum(l)/len(l)
 
 funcions={}
-for x in os.scandir(r"C:\temp\qVista\cronometres"):
+for x in os.scandir(r"d:/cronometres2"):
     if x.name.endswith('txt'):
         with open(x) as f:
             hora = x.name.split('_')[-1].replace('-',':').replace('.txt','')
