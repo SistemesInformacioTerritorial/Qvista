@@ -83,7 +83,6 @@ def campsCoords(csvPath, sep, cod):
                   'YETRS89', 'Y_ETRS89', 'ETRS89_Y', 'ETRS89Y', 'Y', 'LON', 'LONGITUD')
     with open(csvPath) as f:
         reader = csv.DictReader(f, delimiter=sep)
-
         # INTENT 1: comprovem si els camps encaixen amb els noms que tenim predefinits
         aux = list(zip(reader.fieldnames, map(lambda x: x in nomsCampsX, reader.fieldnames), map(
             lambda y: y in nomsCampsY, reader.fieldnames)))
@@ -139,7 +138,10 @@ def creaCsvAmbNums(ruta, sep, cod, campAdreca):
         writ.writeheader()
         for row in read:
             adreca = row[campAdreca].split(',')
-            row[campAdreca], row['NUM_INFERIT_QVISTA'] = ','.join(adreca[:-1]), adreca[-1]
+            if len(adreca)==1:
+                row['NUM_INFERIT_QVISTA'] = ''
+            else:
+                row[campAdreca], row['NUM_INFERIT_QVISTA'] = ','.join(adreca[:-1]), adreca[-1]
             writ.writerow(row)
     return nom_res
 
