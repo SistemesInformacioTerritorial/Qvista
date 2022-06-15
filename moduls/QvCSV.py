@@ -134,14 +134,14 @@ def creaCsvAmbNums(ruta, sep, cod, campAdreca):
     # nom_res = f'{tempdir}/{Path(ruta).name}'
     with open(ruta, encoding=cod) as f, open(nom_res,'w', encoding=cod) as ff:
         read = csv.DictReader(f, delimiter=sep)
-        writ = csv.DictWriter(ff, delimiter=sep, fieldnames=read.fieldnames+['NUM_INFERIT_QVISTA'])
+        writ = csv.DictWriter(ff, delimiter=sep, fieldnames=read.fieldnames+['CARRER_INFERIT_QVISTA','NUM_INFERIT_QVISTA'])
         writ.writeheader()
         for row in read:
             adreca = row[campAdreca].split(',')
             if len(adreca)==1:
-                row['NUM_INFERIT_QVISTA'] = ''
+                row['CARRER_INFERIT_QVISTA'], row['NUM_INFERIT_QVISTA'] = row[campAdreca], ''
             else:
-                row[campAdreca], row['NUM_INFERIT_QVISTA'] = ','.join(adreca[:-1]), adreca[-1]
+                row['CARRER_INFERIT_QVISTA'], row['NUM_INFERIT_QVISTA'] = ','.join(adreca[:-1]), adreca[-1]
             writ.writerow(row)
     return nom_res
 
@@ -537,6 +537,7 @@ class CsvAdreca(CsvPagina):
         if camps[2]=='':
             nouCsv = creaCsvAmbNums(self._carregador._csv, self._carregador._separador, self._carregador._codificacio, self._cbVia.currentText())
             self._carregador._csv = nouCsv
+            camps[1]='CARRER_INFERIT_QVISTA'
             camps[2]='NUM_INFERIT_QVISTA'
             self._carregador.loadMap()
         self.salta.emit(CsvGeocod(camps, self._carregador))
