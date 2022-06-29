@@ -159,7 +159,7 @@ def main():
                             continue
                         df.loc[index,'QVISTA_ETRS89_COORD_X'] = punt.x()
                         df.loc[index,'QVISTA_ETRS89_COORD_Y'] = punt.y()
-                sortida = args.sortida if args.sortida is not None else mapificador.fZones
+                sortida = args.sortida if args.sortida is not None else args.arxiu.replace('.csv',' out.csv')
                 df.to_csv(sortida, index=False, sep=';')
                 print(f'Arxiu desat a {sortida}')
             else:
