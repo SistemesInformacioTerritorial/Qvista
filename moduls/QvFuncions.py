@@ -7,6 +7,7 @@ from moduls.QvVideo import QvVideo
 from moduls.QvImports import *
 from moduls.QvConstants import QvConstants
 from moduls import QvApp
+from qgis.PyQt.QtWidgets import QMessageBox
 
 if sys.platform == 'win32':
     from moduls.QvFuncionsWin32 import *
@@ -191,14 +192,22 @@ def carregarLayerCSV(nfile, project, llegenda):
     from moduls.QvCSV import QvCarregaCsv
     if nfile: 
         qApp.setOverrideCursor(Qt.WaitCursor)
+        assistent=None
         # En teoria no hauria de donar-se el cas, però si el separador inferit no és vàlid llença TypeError
         try:
             assistent=QvCarregaCsv(nfile, project, llegenda)
         except TypeError as e:
             print(e)
+        except Exception as e:
+            # Quan el carregador no pugui carregar un csv, informem
+            msg = QMessageBox(QMessageBox.Warning,'Atenció', 'La càrrega de csv ha fallat. Si no sabeu per què, contacteu amb el vostre informàtic de referència i mostreu-li el següent missatge d\'error:',QMessageBox.Ok)
+            msg.setInformativeText(f'{type(e).__name__}: {str(e)}')
+            msg.exec()
+            pass
 
         qApp.restoreOverrideCursor()
-        assistent.show()
+        if assistent is not None:
+            assistent.show()
 
 def startMovie():
     """Mostra un spinner de càrrega flotant
@@ -249,7 +258,6 @@ def afegirQlr(nom, llegenda):
 
     msg = llegenda.msgErrorlayers()
     if msg:
-        from qgis.PyQt.QtWidgets import QMessageBox
         QMessageBox.warning(llegenda, "Capes amb errors", msg)
 
 
