@@ -6,6 +6,9 @@ from moduls.QvConstants import QvConstants
 # com que CarregadorCataleg és un Singleton, si utilitzéssim la mateixa classe tindríem solapaments
 # creant una nova classe que hereti d'ella podem tenir un carregador independent per cada catàleg
 class CarregadorCatalegCapes(CarregadorCataleg):
+    # pel que sigui, no s'heretava el __init__. Així, doncs, ho fem explícit
+    def __init__(self):
+        super().__init__(*args, **kwargs)
     pass
 
 class QvNouCatalegCapes(QvNouCataleg):
@@ -15,6 +18,7 @@ class QvNouCatalegCapes(QvNouCataleg):
     FAVORITS=False
     WINDOWTITLE='Catàleg de capes'
     CARREGADOR=CarregadorCatalegCapes()
+    RECURSIU=True
     afegirCapa=pyqtSignal(str)
     def __init__(self,*args, **kwargs):
         self.ENTRADACATALEG=CapaCataleg
