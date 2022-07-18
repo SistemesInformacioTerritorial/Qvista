@@ -206,17 +206,19 @@ class QvApp:
                     QNetworkProxyFactory.setUseSystemConfiguration(True)
                     proxies = QNetworkProxyFactory.systemProxyForQuery()
                     proxy = next(iter(proxies), None)
-                elif val == 'IMI':                    
+                elif val == 'IMI':
                     proxy = QNetworkProxy()
-                    proxy.setType(QNetworkProxy.DefaultProxy)
+                    proxy.setType(QNetworkProxy.HttpProxy)
                     proxy.setHostName = _PROXY_IMI['HostName']
                     proxy.setPort = _PROXY_IMI['Port']
-                if proxy is None or proxy.type() == QNetworkProxy.NoProxy:
-                    proxy = None
-                    print(f"Proxy: NO")
+                if proxy is None:
+                    print(f"Proxy: None")
                 else:
                     proxy.setApplicationProxy(proxy)
-                    print(f"Proxy: {proxy.hostName()}:{proxy.port()}")
+                    if proxy.type() == QNetworkProxy.NoProxy:
+                        print(f"Proxy: NoProxy")
+                    else:
+                        print(f"Proxy: {proxy.setHostName}:{proxy.setPort}")
             return proxy
         except Exception as err:
             self.bugException(err)
