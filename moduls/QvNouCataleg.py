@@ -68,6 +68,7 @@ class QvNouCataleg(QWidget):
     #ENTRADACATALEG=MapaCataleg
     EXT='.qgs'
     DIRSCATALEGS=carpetaCatalegProjectesLlista+QvMemoria().getCatalegsLocals()
+    RECURSIU=False
     def __init__(self, parent: QtWidgets.QWidget = None):
         '''Construeix el catàleg
         El codi és més o menys el mateix que s'utilitza per construir moltes altres finestres frameless. 
@@ -338,7 +339,7 @@ class QvNouCataleg(QWidget):
                 self.botonsLaterals.append(boto)
                 self.lBanda.addWidget(boto)
 
-        self.tots.clicked.connect(self.clickTots)
+        self.tots.clicked.connect(lambda _: self.clickTots())
         if self.FAVORITS:
             self.fav.clicked.connect(self.clickFavorits)
         self.lBanda.addStretch()
@@ -383,8 +384,24 @@ class QvNouCataleg(QWidget):
 
     def carregaBotons(self, dir: str, dirCataleg: str):
         ruta = Path(dirCataleg, dir)
-        files = (x for x in os.scandir(ruta) if x.is_file())
-        files = (x.path[:-4] for x in files if x.name.endswith(self.EXT))
+        if self.RECURSIU:
+            # OBJECTIU:
+            # 1. Agafar tots els arxius que pengen del directori i tenen extensió self.EXT
+            # 2. Eliminar-ne l'extensió, per obtenir el nom base
+
+            # Opció 1: utilitzem Path.rglob, per agafar directament els arxius amb aquella extensió
+            #  Path.rglob equival a fer Path.glob afegint al davant **/
+            #  AKA: qualsevol cosa que pengi del directori i compleixi la condició
+            files = Path(ruta).rglob(f'*{self.EXT}')
+
+            # Opció 2: iterem tots els arxius utilitzant os.walk, i ens quedem només amb els que acaben en self.EXT
+            # files = (Path(ruta, nom) for ruta, _, files in os.walk(ruta) for nom in files if nom.endswith(self.EXT))
+
+            # eliminem l'extensió
+            files = (str(x.with_suffix('')) for x in files)
+        else:
+            files = (x for x in os.scandir(ruta) if x.is_file())
+            files = (x.path[:-4] for x in files if x.name.endswith(self.EXT))
         f = list(files)
         botons = [self.ENTRADACATALEG(x, self) for x in f]
         for x in botons:

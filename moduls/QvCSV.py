@@ -81,7 +81,7 @@ def campsCoords(csvPath, sep, cod):
     # nomsCampsX=(':D')
     nomsCampsY = ('Y89AB', 'YTRETRS89A', 'COORDY', 'COORD_Y', 'YUTM', 'Y_UTM',
                   'YETRS89', 'Y_ETRS89', 'ETRS89_Y', 'ETRS89Y', 'Y', 'LON', 'LONGITUD')
-    with open(csvPath) as f:
+    with open(csvPath, encoding=cod) as f:
         reader = csv.DictReader(f, delimiter=sep)
         # INTENT 1: comprovem si els camps encaixen amb els noms que tenim predefinits
         aux = list(zip(reader.fieldnames, map(lambda x: x in nomsCampsX, reader.fieldnames), map(
@@ -114,7 +114,7 @@ def campsCoords(csvPath, sep, cod):
             return None, None
 
 def campsPref(csvPath,sep,cod,nomCamps):
-    with open(csvPath) as f:
+    with open(csvPath, encoding=cod) as f:
         reader=csv.DictReader(f,delimiter=sep)
         comencen=filter(lambda x: any(map(lambda y: x.lower().startswith(y),nomCamps)),reader.fieldnames)
         try:
@@ -397,7 +397,7 @@ class CsvCoords(CsvPagina):
         self._bMapifica = QvPushButton('Mapificar')
         self._bMapifica.setToolTip('Crea una mapificació a partir de la taula per visualitzar-la sobre el mapa')
         self._bMapifica.clicked.connect(self._mapifica)
-        with open(self._carregador._csv) as f:
+        with open(self._carregador._csv, encoding=carregador._codificacio) as f:
             self._bMapifica.setEnabled('QVISTA_' in f.readline())
         #TODO: comprovar si hi ha camps de zona
         self._layBotons.addWidget(self._bVeure)
