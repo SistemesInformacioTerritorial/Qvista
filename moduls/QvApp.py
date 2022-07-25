@@ -208,7 +208,7 @@ class QvApp:
                     proxy = next(iter(proxies), None)
                 elif val == 'IMI':
                     proxy = QNetworkProxy()
-                    proxy.setType(QNetworkProxy.HttpProxy)
+                    proxy.setType(QNetworkProxy.DefaultProxy)
                     proxy.setHostName = _PROXY_IMI['HostName']
                     proxy.setPort = _PROXY_IMI['Port']
                 if proxy is None:
