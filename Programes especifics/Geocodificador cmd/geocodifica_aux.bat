@@ -24,5 +24,6 @@ set QT_PLUGIN_PATH=%OSGEO4W_ROOT%\apps\qgis-ltr\qtplugins;%OSGEO4W_ROOT%\apps\qt
 set PYTHONPATH=%OSGEO4W_ROOT%\apps\qgis-ltr\python;%PYTHONPATH%
 popd
 set PYTHONPATH=%CD%;%PYTHONPATH%
-"%PYTHONHOME%\python" "Programes especifics\Geocodificador cmd\geocodifica.py" %*
+rem SI NO POSES EL DIRECTORI ORIGINAL EL QVAPP POT FALLAR
+"%PYTHONHOME%\python" "%CD%\Programes especifics\Geocodificador cmd\geocodifica.py" %*
 popd
