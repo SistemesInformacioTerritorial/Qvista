@@ -5,5 +5,5 @@
 @REM    geocodifica_osgeo_D.bat --help
 
 @echo off
-set PATH_QGIS="D:\OSGeo4W64\bin"
+set PATH_QGIS_BIN="D:\OSGeo4W64\bin"
 call geocodifica_aux.bat %*
