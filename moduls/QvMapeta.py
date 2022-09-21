@@ -1,25 +1,22 @@
 # https://www.qtcentre.org/threads/53745-QPixmap-as-background-of-QWidget
-from moduls.QvImports  import *
-
-from qgis.core import QgsRectangle, QgsPointXY
-
-from moduls.QvConstants import QvConstants
-from moduls.QvPushButton import QvPushButton
-from configuracioQvista import *
-
-from PyQt5.QtWidgets import QWidget, QLabel, QVBoxLayout 
-from PyQt5.QtWidgets import QHBoxLayout, QFrame
-from PyQt5.QtGui import QPixmap, QImage, QPainter, QTransform, QColor, QPen
-from PyQt5.QtGui import  QBrush, QPolygon, QPalette
-from moduls.QvDropFiles import QvDropFiles
-from PyQt5.QtCore import QRect, Qt,  QPoint, QPointF,pyqtSignal,  QTime
-
-import os.path
 import math
 import os
+import os.path
+import time
 from datetime import datetime
-import configuracioQvista
 
+from PyQt5.QtCore import QLineF, QPoint, QPointF, QRect, Qt, QTime, pyqtSignal
+from PyQt5.QtGui import (QBrush, QColor, QCursor, QImage, QPainter, QPalette,
+                         QPen, QPixmap, QPolygon, QTransform)
+from PyQt5.QtWidgets import QFrame, QHBoxLayout, QLabel, QVBoxLayout, QWidget
+from qgis.core import QgsPointXY, QgsRectangle
+from qgis.core.contextmanagers import qgisapp
+
+import configuracioQvista
+from configuracioQvista import imatgesDir
+from moduls.QvConstants import QvConstants
+from moduls.QvDropFiles import QvDropFiles
+from moduls.QvPushButton import QvPushButton
 
 # import time
 
@@ -797,12 +794,12 @@ import math
 if __name__ == "__main__":
        
     with qgisapp() as app:
-        from qgis.gui import  QgsLayerTreeMapCanvasBridge
-        from moduls.QvLlegenda import QvLlegenda
-        from qgis.gui import QgsMapCanvas
         from qgis.core import QgsProject
         from qgis.core.contextmanagers import qgisapp
-     
+        from qgis.gui import QgsLayerTreeMapCanvasBridge, QgsMapCanvas
+
+        from moduls.QvLlegenda import QvLlegenda
+
         # Canvas, projecte i bridge
         start1 = time.time()
         canvas=QgsMapCanvas()

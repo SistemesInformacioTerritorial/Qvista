@@ -1,21 +1,24 @@
-# from moduls.QvImports import *
+import math
+import time
+from time import strftime
 
-from qgis.core import QgsGeometry, QgsLayout, QgsLayoutExporter, QgsPointXY, QgsReadWriteContext, QgsVector, QgsVectorLayer
-from qgis.gui import QgsMapTool, QgsRubberBand
-
+from qgis.core import (QgsGeometry, QgsLayout, QgsLayoutExporter, QgsPointXY,
+                       QgsProject, QgsReadWriteContext, QgsVector,
+                       QgsVectorLayer)
+from qgis.core.contextmanagers import qgisapp
+from qgis.gui import (QgsLayerTreeMapCanvasBridge, QgsMapCanvas, QgsMapTool,
+                      QgsRubberBand)
 from qgis.PyQt.QtCore import QFile, QUrl
-from qgis.PyQt.QtXml import QDomDocument
-from qgis.PyQt.QtWidgets import QComboBox, QHBoxLayout, QLineEdit, QVBoxLayout, QWidget
 from qgis.PyQt.QtGui import QColor, QDesktopServices
-from qgis.PyQt.QtWebKitWidgets import QWebView , QWebPage #???
+from qgis.PyQt.QtWebKitWidgets import QWebPage, QWebView  # ???
+from qgis.PyQt.QtWidgets import (QComboBox, QHBoxLayout, QLabel, QLineEdit,
+                                 QVBoxLayout, QWidget)
+from qgis.PyQt.QtXml import QDomDocument
 
-from moduls.QvImports import *
+from configuracioQvista import pathPlantilles, tempdir
 from moduls.QvApp import QvApp
 from moduls.QvPushButton import QvPushButton
 
-import time
-from time import strftime
-import math
 projecteInicial='../dades/projectes/BCN11_nord.qgs'
 
 

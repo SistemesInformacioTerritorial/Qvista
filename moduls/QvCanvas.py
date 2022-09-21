@@ -1,22 +1,27 @@
 # coding:utf-8
 
 
-from moduls.QvEinesGrafiques import QvSeleccioElement
-from qgis.PyQt.QtCore import Qt, QSize
-from qgis.gui import QgsMapCanvas, QgsMapToolZoom, QgsMapToolPan
-from qgis.PyQt.QtWidgets import QFrame, QVBoxLayout, QHBoxLayout, QPushButton, QSpacerItem, QSizePolicy
-from qgis.PyQt.QtGui import QIcon, QPainter
-from moduls.QvImports  import *
-from qgis.core.contextmanagers import qgisapp
-from moduls.QvConstants import QvConstants
-from moduls.QvPushButton import QvPushButton
-from moduls.QvConstants import QvConstants
-from moduls.QvStreetView import *
-from moduls.QvEinesGrafiques import QvMesuraMultiLinia, QvMascaraEinaPlantilla
-from moduls.QvApp import QvApp
-import functools
-#from qVista import QVista
+import os
+import time
 
+from qgis.core import QgsProject
+from qgis.core.contextmanagers import qgisapp
+from qgis.gui import QgsMapCanvas, QgsMapToolPan, QgsMapToolZoom
+from qgis.PyQt.QtCore import QSize, Qt, pyqtSignal
+from qgis.PyQt.QtGui import QColor, QIcon, QImage, QPainter
+from qgis.PyQt.QtWidgets import (QFrame, QHBoxLayout, QLabel, QMessageBox,
+                                 QPushButton, QSizePolicy, QSpacerItem,
+                                 QVBoxLayout, qApp)
+
+import configuracioQvista
+from moduls.QvApp import QvApp
+from moduls.QvConstants import QvConstants
+from moduls.QvEinesGrafiques import (QvMascaraEinaPlantilla,
+                                     QvMesuraMultiLinia, QvSeleccioElement)
+from moduls.QvPushButton import QvPushButton
+from moduls.QvStreetView import QvStreetView
+
+# from qVista import QVista
 
 
 
@@ -26,7 +31,7 @@ class QvCanvas(QgsMapCanvas):
     mostraStreetView = pyqtSignal()
 
     Sig_QuienMeClica = pyqtSignal('QString')    #JNB
-    
+
     def __init__(self, pare = None, llistaBotons=['zoomIn', 'zoomOut', 'panning', 'centrar'], botoneraHoritzontal = True, posicioBotonera = 'NO', mapesBase = False, llegenda = None): #mapesBase (???)
         QgsMapCanvas.__init__(self)
         self.botoneraHoritzontal = botoneraHoritzontal
@@ -37,7 +42,7 @@ class QvCanvas(QgsMapCanvas):
         # self.setSelectionColor(QvConstants.COLORDESTACAT)
         self.setSelectionColor(QColor('yellow'))
         self.setAcceptDrops(True)
-        
+
         # self.setWhatsThis(QvApp().carregaAjuda(self))
 
         self._preparacioBotonsCanvas()
@@ -172,7 +177,7 @@ class QvCanvas(QgsMapCanvas):
 
     def copyToClipboard(self):
         '''Potser no és la millor manera, però el que fa és desar la imatge temporalment i copiar-la d'allà'''
-        nom=os.path.join(tempdir,str(time.time())+'.png')
+        nom=os.path.join(configuracioQvista.tempdir,str(time.time())+'.png')
         self.saveAsImage(nom)
         qApp.clipboard().setImage(QImage(nom))
 
@@ -315,7 +320,7 @@ class QvCanvas(QgsMapCanvas):
         #         # IMPORTANT: si la variable ja existia, se sobreescriurà
         #         'nom_var':'bApuntar', 
 
-        #         # La icona del botó serà {imatgesdir}/apuntar.png
+        #         # La icona del botó serà {configuracioQvista.imatgesDir}/apuntar.png
         #         'icona':'apuntar.png', 
 
         #         # El toolTip del botó
@@ -408,7 +413,7 @@ class QvCanvas(QgsMapCanvas):
             self._botons = []
             for x in self.llistaBotons:
                 info = SETUP_BOTONS[x]
-                boto = self._botoMapa(os.path.join(imatgesDir,info['icona']))
+                boto = self._botoMapa(os.path.join(configuracioQvista.imatgesDir,info['icona']))
                 setattr(self, info['nom_var'], boto)
                 boto.setToolTip(info['toolTip'])
                 boto.setCursor(QvConstants.cursorFletxa())
@@ -426,7 +431,7 @@ class QvCanvas(QgsMapCanvas):
         self.butoMostra.setMaximumWidth(80)
         self.butoMostra.setMinimumWidth(80)
 
-        icon=QIcon(os.path.join(imatgesDir,'mapeta1.png'))
+        icon=QIcon(os.path.join(configuracioQvista.imatgesDir,'mapeta1.png'))
         self.butoMostra.setIconSize(QSize(80,80))
         self.butoMostra.setIcon(icon)
 
@@ -435,7 +440,7 @@ class QvCanvas(QgsMapCanvas):
         self.butoMostra2.setMinimumHeight(80)
         self.butoMostra2.setMaximumWidth(80)
         self.butoMostra2.setMinimumWidth(80)
-        icon=QIcon(os.path.join(imatgesDir,'mapeta2.png'))
+        icon=QIcon(os.path.join(configuracioQvista.imatgesDir,'mapeta2.png'))
         self.butoMostra2.setIconSize(QSize(80,80))
         self.butoMostra2.setIcon(icon)
         self.botoneraMostres = QFrame()
@@ -456,9 +461,9 @@ class QvCanvas(QgsMapCanvas):
     
     def actualitzaBotoMaximitza(self, maximitzat):
         if maximitzat:
-            self.bMaximitza.setIcon(QIcon(os.path.join(imatgesDir,'fullscreen-exit.png')))
+            self.bMaximitza.setIcon(QIcon(os.path.join(configuracioQvista.imatgesDir,'fullscreen-exit.png')))
         else:
-            self.bMaximitza.setIcon(QIcon(os.path.join(imatgesDir,'fullscreen.png')))
+            self.bMaximitza.setIcon(QIcon(os.path.join(configuracioQvista.imatgesDir,'fullscreen.png')))
 
     def mostraBotoTemes(self):
         try:
@@ -573,9 +578,10 @@ class BotoStreetView(QPushButton):
 
 if __name__ == "__main__":
     from qgis.core import QgsProject
-    from qgis.gui import  QgsLayerTreeMapCanvasBridge
-    from qgis.PyQt.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QSpacerItem, QSizePolicy, QLabel
+    from qgis.gui import QgsLayerTreeMapCanvasBridge
     from qgis.PyQt.QtGui import QColor
+    from qgis.PyQt.QtWidgets import (QHBoxLayout, QLabel, QSizePolicy,
+                                     QSpacerItem, QVBoxLayout, QWidget)
    
 
     

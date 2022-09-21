@@ -1,8 +1,13 @@
-from moduls.QvImports import *
+import os
+
+from qgis.core import QgsProject
+from qgis.gui import QgsMapCanvas
+from qgis.PyQt.QtCore import Qt, pyqtSignal, pyqtSlot
+from qgis.PyQt.QtWidgets import QActionGroup, QComboBox, QMenu
+
+import configuracioQvista
 from moduls.QvCanvas import QvCanvas
 from moduls.QvConstants import QvConstants
-from qgis.PyQt.QtCore import Qt, pyqtSignal,  pyqtSlot
-
 
 
 class QvCanvasAuxiliar(QvCanvas):
@@ -55,7 +60,7 @@ class QvCanvasAuxiliar(QvCanvas):
             if temaInicial in self.temes:
                 self.cbTemes.setCurrentIndex(self.temes.index(temaInicial)+1)
     def botons(self):
-        self.bSincronia = self._botoMapa(os.path.join(imatgesDir,'sync.png'))
+        self.bSincronia = self._botoMapa(os.path.join(configuracioQvista.imatgesDir,'sync.png'))
         self.bSincronia.setToolTip('Sincronia amb el mapa principal')
         self.layoutBotoneraMapa.insertWidget(0,self.bSincronia)
         self.bSincronia.setCursor(QvConstants.cursorFletxa()) 

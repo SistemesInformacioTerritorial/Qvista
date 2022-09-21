@@ -1,10 +1,25 @@
-from moduls.QvImports import * 
+import os
+import re
+
+from qgis.core import (QgsGeometry, QgsLayerDefinition, QgsPoint, QgsPointXY,
+                       QgsVectorLayer)
+from qgis.gui import QgsMapTool, QgsRubberBand
+from qgis.PyQt import QtCore
+from qgis.PyQt.QtCore import QDirIterator, QSize, Qt, QVariant, pyqtSignal
+from qgis.PyQt.QtGui import QCursor, QFont, QIcon, QPixmap
+from qgis.PyQt.QtWidgets import (QComboBox, QDialog, QFileDialog,
+                                 QFileIconProvider, QFileSystemModel, QFrame,
+                                 QHBoxLayout, QLabel, QLineEdit, QMessageBox,
+                                 QPushButton, QStyledItemDelegate, QTextEdit,
+                                 QTreeView, QVBoxLayout, QWidget)
+
+import configuracioQvista
+from moduls import QvFuncions
 from moduls.QvConstants import QvConstants
-from moduls.QvVisorHTML import QvVisorHTML
 from moduls.QvMemoria import QvMemoria
 from moduls.QvPushButton import QvPushButton
-from moduls import QvFuncions
-import re
+from moduls.QvVisorHTML import QvVisorHTML
+
 
 #Hi ha una classe que es diu QFileIconProvider que el que fa és retornar la icona corresponent
 #Sobrecarregant la funció icon podem donar icones diferents
@@ -16,9 +31,9 @@ class ProveidorIcones(QFileIconProvider):
         '''Retorna la icona de la carpeta si és un directori.
         Retorna la icona de la capa si és una capa'''
         if fileInfo.isDir():
-            return QIcon(os.path.join(imatgesDir,'cc_folder.png'))
+            return QIcon(os.path.join(configuracioQvista.imatgesDir,'cc_folder.png'))
         elif fileInfo.completeSuffix()=='qlr':
-            return QIcon(os.path.join(imatgesDir,'cc_layer.png'))
+            return QIcon(os.path.join(configuracioQvista.imatgesDir,'cc_layer.png'))
         return super().icon(fileInfo)
 
 
@@ -100,7 +115,7 @@ class QvCatalegCapes(QWidget):
         self.leCercador.setStyleSheet('background: white')
         self.leCercador.setPlaceholderText('Cercar...')
         self.leCercador.textChanged.connect(self.canviaFiltre)
-        self.accioEsborra=self.leCercador.addAction(QIcon(os.path.join(imatgesDir,'cc_buidar_cercar.png')),QLineEdit.TrailingPosition)
+        self.accioEsborra=self.leCercador.addAction(QIcon(os.path.join(configuracioQvista.imatgesDir,'cc_buidar_cercar.png')),QLineEdit.TrailingPosition)
         self.accioEsborra.triggered.connect(lambda: self.leCercador.setText(''))
         self.accioEsborra.setVisible(False)
 
@@ -116,7 +131,7 @@ class QvCatalegCapes(QWidget):
         self.treeCataleg.setHeaderHidden(True)
         self.treeCataleg.setStyleSheet('background: transparent')
 
-        paths = [x for x in carpetaCatalegLlista if os.path.isdir(x)]
+        paths = [x for x in configuracioQvista.carpetaCatalegLlista if os.path.isdir(x)]
         self.models = []
         self.rootPaths = []
         for x in paths:
@@ -249,14 +264,14 @@ class PreviewCapa(QWidget):
             }
         '''
         self.bAfegir=QPushButton(parent=self.lblImatge)
-        self.bAfegir.setIcon(QIcon(os.path.join(imatgesDir,'cc_afegir.png')))
+        self.bAfegir.setIcon(QIcon(os.path.join(configuracioQvista.imatgesDir,'cc_afegir.png')))
         self.bAfegir.setFixedSize(24,24)
         self.bAfegir.setIconSize(QSize(24,24))
         self.bAfegir.move(270,120)
         self.bAfegir.clicked.connect(self.obrir)
         self.bAfegir.setStyleSheet(stylesheet)
         self.bInfo=QPushButton(parent=self.lblImatge)
-        self.bInfo.setIcon(QIcon(os.path.join(imatgesDir,'cm_info.png')))
+        self.bInfo.setIcon(QIcon(os.path.join(configuracioQvista.imatgesDir,'cm_info.png')))
         self.bInfo.setFixedSize(24,24)
         self.bInfo.setIconSize(QSize(24,24))
         self.bInfo.move(270,150)
@@ -278,7 +293,7 @@ class PreviewCapa(QWidget):
         self.obrir()
     def obrir(self):
         self.parentWidget().parentWidget().afegirQlr()
-        self.bInfo.setIcon(QIcon(os.path.join(imatgesDir,'cm_info.png')))
+        self.bInfo.setIcon(QIcon(os.path.join(configuracioQvista.imatgesDir,'cm_info.png')))
     def obrirInfo(self):
         visor=QvVisorHTML(self.nomBase+'.htm','Metadades capa',True,self)
         visor.show()
@@ -595,7 +610,7 @@ class QvCreadorCatalegCapes(QDialog):
             self._canvas.setMapTool(self._tool)
         self._toolSet = not self._toolSet
     def _desar(self):
-        ret, _ = QFileDialog.getSaveFileName(None,"Guardar capa catàleg", carpetaCatalegLocal, "Capes de QGIS (*.qlr)")
+        ret, _ = QFileDialog.getSaveFileName(None,"Guardar capa catàleg", configuracioQvista.carpetaCatalegLocal, "Capes de QGIS (*.qlr)")
         fRes = ret.replace('.qlr','')
 
         # Comprovem si existeix l'arxiu de text. Si existeix, assumim que tenim tot el projecte, i retornem

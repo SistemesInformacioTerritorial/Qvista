@@ -1,21 +1,24 @@
 # -*- coding: utf-8 -*-
 
 
+import math
+from pathlib import Path
+from typing import List, TextIO
+
 import qgis.core as qgCor
 import qgis.gui as qgGui
-import qgis.utils as qgUts
-import qgis.PyQt.QtWidgets as qtWdg
-import qgis.PyQt.QtGui as qtGui
 import qgis.PyQt.QtCore as qtCor
+import qgis.PyQt.QtGui as qtGui
 import qgis.PyQt.QtSql as qtSql
+import qgis.PyQt.QtWidgets as qtWdg
+import qgis.utils as qgUts
 
 from configuracioQvista import dadesdir
 from moduls.QvApp import QvApp
-from moduls.QvVistacadVars import *
+from moduls.QvVistacadVars import (ROTATION_FIELD, VCAD_COLORS,
+                                   VCAD_FILL_STYLES, VCAD_LINE_STYLES,
+                                   VCAD_SYMBOLS)
 
-from typing import List, TextIO
-import math
-from pathlib import Path
 
 class QvObjVcad:
     def __init__(self, db: qtSql.QSqlDatabase) -> None:
@@ -506,9 +509,10 @@ if __name__ == "__main__":
     QvApp().intranet = True
 
     from qgis.core.contextmanagers import qgisapp
+
+    import configuracioQvista as cfg
     # from moduls.QvCanvas import QvCanvas
     from moduls.QvLlegenda import QvLlegenda
-    import configuracioQvista as cfg
 
     with qgisapp(sysexit=False) as app:
 

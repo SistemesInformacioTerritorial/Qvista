@@ -1,10 +1,15 @@
-from moduls.QvImports import *
-from qgis.PyQt.QtCore import pyqtProperty #???
 from qgis.PyQt import QtWidgets
-from qgis.PyQt.QtGui import QKeySequence
+from qgis.PyQt.QtCore import QPoint, Qt, QTimer, QUrl
+from qgis.PyQt.QtGui import QKeySequence, QPalette, QPixmap
+from qgis.PyQt.QtWebKitWidgets import QWebView
+from qgis.PyQt.QtWidgets import (QDialog, QHBoxLayout, QLabel, QSizePolicy,
+                                 QSpacerItem, QVBoxLayout, QWidget)
+
+from configuracioQvista import imatgesDir, os
+from moduls.QvApp import QvApp
 from moduls.QvConstants import QvConstants
 from moduls.QvPushButton import QvPushButton
-from moduls.QvApp import QvApp
+
 
 class QvVisorHTML(QDialog):
     '''Diàleg per visualitzar les notícies (que, per extensió, podem usar sempre que vulguem per visualitzar arxius HTML)'''

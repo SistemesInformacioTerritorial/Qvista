@@ -1,11 +1,16 @@
-from qgis.PyQt.QtWidgets import QHBoxLayout, QVBoxLayout, QWidget
-from qgis.PyQt.QtGui import QDesktopServices
-from moduls.QvPushButton import QvPushButton
-from moduls.QvConstants import QvConstants
 import csv
-import chardet
 from typing import Iterable
-from moduls.QvImports import *
+
+import chardet
+from qgis.PyQt.QtCore import (QAbstractTableModel, QModelIndex, Qt, QUrl,
+                              QVariant, pyqtSignal)
+from qgis.PyQt.QtGui import QBrush, QDesktopServices
+from qgis.PyQt.QtWidgets import (QAbstractItemView, QDialog, QFileDialog,
+                                 QHBoxLayout, QHeaderView, QLabel, QSpinBox,
+                                 QTableView, QVBoxLayout, QWidget)
+
+from moduls.QvConstants import QvConstants
+from moduls.QvPushButton import QvPushButton
 
 
 class ModelCsv(QAbstractTableModel):

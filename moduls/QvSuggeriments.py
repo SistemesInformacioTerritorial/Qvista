@@ -1,9 +1,17 @@
 #!/usr/bin/env python
-from moduls.QvImports import * 
+import os
+from typing import Callable
+
 from qgis.PyQt import QtWidgets
+from qgis.PyQt.QtCore import QPoint, Qt
+from qgis.PyQt.QtGui import QPixmap
+from qgis.PyQt.QtWidgets import (QDialog, QHBoxLayout, QLabel, QSizePolicy,
+                                 QSpacerItem, QVBoxLayout, QWidget)
+
+from configuracioQvista import imatgesDir
 from moduls.QvConstants import QvConstants
 from moduls.QvPushButton import QvPushButton
-from typing import Callable
+
 
 class QvSuggeriments(QDialog):
     def __init__(self, acceptAction: Callable[[str,str],None]=QWidget.close, parent: QtWidgets.QWidget=None):

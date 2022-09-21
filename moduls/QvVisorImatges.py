@@ -1,15 +1,21 @@
 import os
-from moduls.QvImports import *
-from PyQt5.QtWidgets import QWidget, QLabel, QHBoxLayout, QPushButton
-from PyQt5.QtGui import QIcon, QPixmap
+from datetime import datetime
 
-from PyQt5.QtPrintSupport import QPrintDialog, QPrinter
 import qgis.core as qgCor
 import qgis.gui as qgGui
-import qgis.PyQt.QtWidgets as qtWdg
-import qgis.PyQt.QtGui as qtGui
 import qgis.PyQt.QtCore as qtCor
-from datetime import datetime
+import qgis.PyQt.QtGui as qtGui
+import qgis.PyQt.QtWidgets as qtWdg
+from PyQt5.QtGui import QIcon, QPixmap
+from PyQt5.QtPrintSupport import QPrintDialog, QPrinter
+from PyQt5.QtWidgets import QHBoxLayout, QLabel, QPushButton, QWidget
+from qgis.core.contextmanagers import qgisapp
+from qgis.PyQt.QtCore import QSize, Qt
+from qgis.PyQt.QtGui import QPainter
+from qgis.PyQt.QtWidgets import (QAction, QFileDialog, QMessageBox,
+                                 QScrollArea, QSizePolicy)
+
+from configuracioQvista import imatgesDir
 
 
 class QVViewer(QWidget):

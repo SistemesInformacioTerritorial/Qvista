@@ -1,15 +1,31 @@
-from moduls.QvImports import *
-from qgis.PyQt.QtWidgets import *
+import csv
 import itertools
+import os
 import shutil
-from moduls.QvMapificacio import QvMapificacio
-from moduls.QvPushButton import QvPushButton
-from moduls.QvEditorCsv import QvEditorCsv
-from moduls.QvMapForms import QvFormNovaMapificacio
-from moduls.QvConstants import QvConstants
-from moduls.QvFuncioFil import QvFuncioFil
-from moduls.QvMemoria import QvMemoria
+from pathlib import Path
+
 import qgis.core
+from qgis.core import (QgsCoordinateReferenceSystem, QgsMarkerSymbol,
+                       QgsSingleSymbolRenderer, QgsVectorFileWriter,
+                       QgsVectorLayer)
+from qgis.PyQt.QtCore import QSize, Qt, pyqtSignal
+from qgis.PyQt.QtGui import QColor, QIcon
+from qgis.PyQt.QtWidgets import (QCheckBox, QColorDialog, QComboBox, QDialog,
+                                 QFileDialog, QGridLayout, QGroupBox,
+                                 QHBoxLayout, QLabel, QLineEdit, QMessageBox,
+                                 QProgressBar, QRadioButton, QTableWidget,
+                                 QTableWidgetItem, QTabWidget, QTextEdit,
+                                 QVBoxLayout, QWidget, qApp)
+
+import configuracioQvista
+from moduls.QvApp import QvApp
+from moduls.QvConstants import QvConstants
+from moduls.QvEditorCsv import QvEditorCsv
+from moduls.QvFuncioFil import QvFuncioFil
+from moduls.QvMapForms import QvFormNovaMapificacio
+from moduls.QvMapificacio import QvMapificacio
+from moduls.QvMemoria import QvMemoria
+from moduls.QvPushButton import QvPushButton
 
 
 # Còpia de la funció definida dins de qVista.py. Millor aquí???
@@ -39,7 +55,7 @@ def nivellCsv(projecte, llegenda, fitxer: str, delimitador: str, campX: str, cam
     layer = QgsVectorLayer(uri, nomCapa, 'delimitedtext')
     layer.setCrs(QgsCoordinateReferenceSystem(
         projeccio, QgsCoordinateReferenceSystem.EpsgCrsId))
-    if layer is not None or layer is not NoneType:
+    if layer is not None:
         symbol_str=symbol
         symbol = QgsMarkerSymbol.createSimple({'name': symbol, 'color': color, 'outline_width':'0.05'})
         # if layer.renderer() is not None:
@@ -145,8 +161,8 @@ def campsNum(csvPath,sep,cod):
 
 # Actualment ja no s'utilitza
 def creaCsvAmbNums(ruta, sep, cod, campAdreca):
-    nom_res = str(Path(tempdir,Path(ruta).name))
-    # nom_res = f'{tempdir}/{Path(ruta).name}'
+    nom_res = str(Path(configuracioQvista.tempdir,Path(ruta).name))
+    # nom_res = f'{configuracioQvista.tempdir}/{Path(ruta).name}'
     with open(ruta, encoding=cod) as f, open(nom_res,'w', encoding=cod) as ff:
         read = csv.DictReader(f, delimiter=sep)
         writ = csv.DictWriter(ff, delimiter=sep, fieldnames=read.fieldnames+['CARRER_INFERIT_QVISTA','NUM_INFERIT_QVISTA'])
@@ -846,50 +862,50 @@ class CsvAfegir(CsvPagina):
         layForma = QGridLayout()
         gbForma.setLayout(layForma)
         rbCreu = QRadioButton()
-        rbCreu.setIcon(QIcon(os.path.join(imatgesDir,'crossW.png')))
+        rbCreu.setIcon(QIcon(os.path.join(configuracioQvista.imatgesDir,'crossW.png')))
         rbCreu.toggled.connect(lambda x: setForma(
             'cross_fill') if x else print(':D'))
         layForma.addWidget(rbCreu, 1, 2)
 
         rbQuadrat = QRadioButton()
-        rbQuadrat.setIcon(QIcon(os.path.join(imatgesDir,'squareW.png')))
+        rbQuadrat.setIcon(QIcon(os.path.join(configuracioQvista.imatgesDir,'squareW.png')))
         rbQuadrat.toggled.connect(lambda x: setForma(
             'square') if x else print(':D'))
         layForma.addWidget(rbQuadrat, 0, 1)
 
         rbRombe = QRadioButton()
-        rbRombe.setIcon(QIcon(os.path.join(imatgesDir,'rhombusW.png')))
+        rbRombe.setIcon(QIcon(os.path.join(configuracioQvista.imatgesDir,'rhombusW.png')))
         rbRombe.toggled.connect(lambda x: setForma(
             'diamond') if x else print(':D'))
         layForma.addWidget(rbRombe, 0, 2)
 
         rbPentagon = QRadioButton()
-        rbPentagon.setIcon(QIcon(os.path.join(imatgesDir,'pentagonW.png')))
+        rbPentagon.setIcon(QIcon(os.path.join(configuracioQvista.imatgesDir,'pentagonW.png')))
         rbPentagon.toggled.connect(lambda x: setForma(
             'pentagon') if x else print(':D'))
         layForma.addWidget(rbPentagon, 0, 3)
 
         rbEstrella = QRadioButton()
-        rbEstrella.setIcon(QIcon(os.path.join(imatgesDir,'starW.png')))
+        rbEstrella.setIcon(QIcon(os.path.join(configuracioQvista.imatgesDir,'starW.png')))
         rbEstrella.toggled.connect(lambda x: setForma(
             'star') if x else print(':D'))
         layForma.addWidget(rbEstrella, 1, 0)
 
         rbTriangle = QRadioButton()
-        rbTriangle.setIcon(QIcon(os.path.join(imatgesDir,'triangleW.png')))
+        rbTriangle.setIcon(QIcon(os.path.join(configuracioQvista.imatgesDir,'triangleW.png')))
         rbTriangle.toggled.connect(lambda x: setForma(
             'triangle') if x else print(':D'))
         layForma.addWidget(rbTriangle, 1, 1)
 
         rbCercle = QRadioButton()
-        rbCercle.setIcon(QIcon(os.path.join(imatgesDir,'circleW.png')))
+        rbCercle.setIcon(QIcon(os.path.join(configuracioQvista.imatgesDir,'circleW.png')))
         rbCercle.toggled.connect(lambda x: setForma(
             'circle') if x else print(':D'))
         rbCercle.click()
         layForma.addWidget(rbCercle, 0, 0)
 
         rbHexagon = QRadioButton()
-        rbHexagon.setIcon(QIcon(os.path.join(imatgesDir,'hexagonW.png')))
+        rbHexagon.setIcon(QIcon(os.path.join(configuracioQvista.imatgesDir,'hexagonW.png')))
         rbHexagon.toggled.connect(lambda x: setForma(
             'hexagon') if x else print(':D'))
         layForma.addWidget(rbHexagon, 1, 3)
@@ -952,10 +968,13 @@ class CsvAfegir(CsvPagina):
 
 if __name__ == '__main__':
     from qgis.core.contextmanagers import qgisapp
-    from qgis.PyQt.QtWidgets import QMainWindow, QWidget, QHBoxLayout, QVBoxLayout, QLabel, QTextEdit, QPushButton, QFileDialog
     from qgis.PyQt.QtGui import QPixmap
-    from moduls.QvDropFiles import QvDropFiles
+    from qgis.PyQt.QtWidgets import (QFileDialog, QHBoxLayout, QLabel,
+                                     QMainWindow, QPushButton, QTextEdit,
+                                     QVBoxLayout, QWidget)
+
     from moduls.QvApp import QvApp
+    from moduls.QvDropFiles import QvDropFiles
 
     gui = True
 
@@ -975,7 +994,7 @@ if __name__ == '__main__':
                     print(repr(e))
         win = QMainWindow()
         win.setWindowTitle('Geo-qVista')
-        app.setWindowIcon(QIcon(str(Path(imatgesDir,'QVistaLogo_40.png'))))
+        app.setWindowIcon(QIcon(str(Path(configuracioQvista.imatgesDir,'QVistaLogo_40.png'))))
         widCentral = QWidget()
         layCentral = QVBoxLayout()
         layCentral.setContentsMargins(0,0,0,0)
@@ -986,11 +1005,11 @@ if __name__ == '__main__':
         alcada = 40
         layH = QHBoxLayout()
         layH.setSpacing(0)
-        pix = QPixmap(str(Path(imatgesDir,'logo-ajuntament-de-barcelona-png-3.png'))).scaledToHeight(alcada, Qt.SmoothTransformation)
+        pix = QPixmap(str(Path(configuracioQvista.imatgesDir,'logo-ajuntament-de-barcelona-png-3.png'))).scaledToHeight(alcada, Qt.SmoothTransformation)
         lblLogoAjuntament = QLabel()
         lblLogoAjuntament.setPixmap(pix)
         lblLogoAjuntament.setStyleSheet('QLabel{background-color: black}')
-        pix2 = QPixmap(str(Path(imatgesDir, 'QVistaLogo_40.png'))).scaledToHeight(alcada, Qt.SmoothTransformation)
+        pix2 = QPixmap(str(Path(configuracioQvista.imatgesDir, 'QVistaLogo_40.png'))).scaledToHeight(alcada, Qt.SmoothTransformation)
         lblLogoQvista = QLabel()
         lblLogoQvista.setPixmap(pix2)
         lblLogoQvista.setStyleSheet('QLabel{background-color: black}')

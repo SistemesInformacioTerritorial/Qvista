@@ -1,24 +1,23 @@
 # https://www.qtcentre.org/threads/53745-QPixmap-as-background-of-QWidget
 # from info_ui import Informacio
+import time
 from os import putenv
 from typing import Pattern
-from moduls.QvImports  import *
 
-from qgis.core import QgsRectangle, QgsPointXY
-from qgis.gui import QgsMapTool
+from PyQt5 import QtCore
+from PyQt5.QtWidgets import (QApplication, QFrame, QHBoxLayout, QLabel,
+                             QVBoxLayout, QWidget)
+from qgis.core import (QgsCoordinateReferenceSystem, QgsCoordinateTransform,
+                       QgsPointXY, QgsProject, QgsRectangle)
+from qgis.core.contextmanagers import qgisapp
+from qgis.gui import QgsMapCanvas, QgsMapTool, QgsVertexMarker
+from qgis.PyQt.QtGui import QColor, QIcon
+from qgis.PyQt.QtWidgets import (QComboBox, QDockWidget, QLineEdit,
+                                 QMessageBox, QPushButton, QSizePolicy)
+
+from moduls import QvFuncions
 from moduls.QvConstants import QvConstants
 from moduls.QvPushButton import QvPushButton
-from configuracioQvista import *
-from PyQt5.QtWidgets import QWidget, QLabel, QVBoxLayout 
-from PyQt5.QtWidgets import QHBoxLayout, QFrame
-from PyQt5.QtWidgets import  QApplication
-from PyQt5 import QtCore 
-from moduls import QvFuncions
-
-
-# import time
-
-
 
 
 class PointTool(QgsMapTool):   
@@ -349,12 +348,12 @@ class EinaCoordenades(QWidget):
 
 if __name__ == "__main__":
        with qgisapp() as app:
-        from qgis.gui import  QgsLayerTreeMapCanvasBridge
-        from moduls.QvLlegenda import QvLlegenda
-        from qgis.gui import QgsMapCanvas
         from qgis.core import QgsProject
         from qgis.core.contextmanagers import qgisapp
-     
+        from qgis.gui import QgsLayerTreeMapCanvasBridge
+
+        from moduls.QvLlegenda import QvLlegenda
+
         # Canvas, projecte i bridge
         start1 = time.time()
         canvas=QgsMapCanvas()

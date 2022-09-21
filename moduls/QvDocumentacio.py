@@ -1,12 +1,22 @@
-from moduls.QvImports import *
+import os
+import shutil
+import sys
+import time
+from pathlib import Path
+
 from qgis.PyQt import QtWidgets
-from qgis.PyQt.QtWidgets import QVBoxLayout, QHBoxLayout, QFileSystemModel, QTreeView, QWidget
+from qgis.PyQt.QtCore import QPoint, Qt, pyqtSignal
+from qgis.PyQt.QtGui import QIcon
+from qgis.PyQt.QtWidgets import (QDialog, QFileDialog, QFileSystemModel,
+                                 QHBoxLayout, QLabel, QTreeView, QVBoxLayout,
+                                 QWidget)
+
+import configuracioQvista
 from moduls.QvConstants import QvConstants
+from moduls.QvMemoria import QvMemoria
 from moduls.QvPushButton import QvPushButton
 from moduls.QvVisorHTML import QvVisorHTML
-from moduls.QvMemoria import QvMemoria
-from pathlib import Path
-import shutil
+
 
 class ElMeuModel(QFileSystemModel):
     def data(self,index,role):
@@ -24,7 +34,7 @@ class ElMeuModel(QFileSystemModel):
         if role==Qt.DecorationRole:
             nom=index.data()
             if Path(nom).suffix == '.url':
-                return QIcon(os.path.join(imatgesDir,'doc-web.png'))
+                return QIcon(os.path.join(configuracioQvista.imatgesDir,'doc-web.png'))
         # Si el rol és de mostrar, podem tunejar el nom
         # Problema: si eliminem l'extensió, com distingim el tipus de l'arxiu???
         # elif role==Qt.DisplayRole:
@@ -49,12 +59,12 @@ class QvDocumentacio(QDialog):
 
         self.qModel=ElMeuModel(self)
         self.lblExplicacio=QLabel()
-        if os.path.isdir(carpetaDocuments):
+        if os.path.isdir(configuracioQvista.carpetaDocuments):
             self.lblExplicacio.setText('Esteu visualitzant la documentació corporativa completa')
-            rootPath=self.qModel.setRootPath(carpetaDocuments)
+            rootPath=self.qModel.setRootPath(configuracioQvista.carpetaDocuments)
         else:
             self.lblExplicacio.setText('No teniu accés a la documentació corporativa. Esteu visualitzant una còpia local que pot no estar actualitzada.')
-            rootPath=self.qModel.setRootPath(carpetaDocumentsLocal)
+            rootPath=self.qModel.setRootPath(configuracioQvista.carpetaDocumentsLocal)
         self.treeView=QTreeView(self)
         self.treeView.setModel(self.qModel)
         self.treeView.setRootIndex(rootPath)

@@ -1,14 +1,19 @@
-from moduls.QvImports import *
-from qgis.core import QgsPointXY
-from qgis.PyQt import QtCore
-from qgis.PyQt.QtCore import QObject, pyqtSignal
-from qgis.PyQt.QtGui import QValidator
-from qgis.PyQt.QtWidgets import QCompleter
-import sys
 import collections
-import unicodedata
 import re
-from qgis.PyQt.QtSql import *
+import sys
+import unicodedata
+
+from qgis.core import QgsPointXY, QgsProject
+from qgis.core.contextmanagers import qgisapp
+from qgis.gui import QgsLayerTreeMapCanvasBridge, QgsVertexMarker
+from qgis.PyQt import QtCore
+from qgis.PyQt.QtCore import QObject, Qt, pyqtSignal
+from qgis.PyQt.QtGui import QColor, QValidator
+from qgis.PyQt.QtSql import QSqlQuery
+from qgis.PyQt.QtWidgets import (QCompleter, QHBoxLayout, QLineEdit,
+                                 QMessageBox, QStyleFactory, QVBoxLayout,
+                                 QWidget)
+
 from moduls.QvApp import QvApp
 
 
