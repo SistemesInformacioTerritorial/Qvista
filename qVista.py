@@ -2456,7 +2456,6 @@ def main(argv):
 
 # Arranque de l'aplicació qVista
 if __name__ == "__main__":
-    print(len(globals()))
     try:
         main(sys.argv)
         

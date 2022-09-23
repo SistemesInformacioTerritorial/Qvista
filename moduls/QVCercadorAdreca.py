@@ -1,4 +1,6 @@
 import collections
+import json
+import functools
 import re
 import sys
 import unicodedata
@@ -92,6 +94,11 @@ def variant(sub, string, variants):
         return sub in x
     return any(map(sub_in_x,variants.split(',')))
 
+# per utilitzar la funció functools.lru_cache cal que tots els paràmetres siguin hashables
+# ja que Python no té un diccionari immutable per defecte, fem això
+class DiccionariHashable(dict):
+    def __hash__(self):
+        return hash(json.dumps(self))
 
 class CompleterAdreces(QCompleter):
     def __init__(self, elems, widget):
@@ -99,14 +106,14 @@ class CompleterAdreces(QCompleter):
         # self.elements=elems
         # Tindrem un diccionari on la clau serà el carrer i el valor les variants
         aux = [x.split(chr(29)) for x in elems]
-        self.variants = {x[0]: x[1].lower() for x in aux}
-        self.elements = list(self.variants.keys())
+        self.variants = DiccionariHashable({x[0]: x[1].lower() for x in aux})
+        self.elements = tuple(self.variants.keys())
         self.le = widget
         # Aparellem cada carrer amb el rang del seu codi
         aux = zip(self.obteRangCodis(), self.elements)
         # Creem un diccionari que conté com a clau el nom del carrer i com a valor el codi
         # Així podrem ordenar els carrers en funció d'aquests codis
-        self.dicElems = {y: y[x[0]:x[1]] for x, y in aux}
+        self.dicElems = DiccionariHashable({y: y[x[0]:x[1]] for x, y in aux})
         self.popup().selectionModel().selectionChanged.connect(self.seleccioCanviada)
         self.modelCanviat = False
 
@@ -121,15 +128,10 @@ class CompleterAdreces(QCompleter):
             text = text[:ind-1]
         self.le.setText(text.strip())
         # print(text)
-
-    def update(self, word):
-        '''Funció que actualitza els elements'''
-        if len(word) < 3 and self.modelCanviat:
-            self.model().setStringList(self.elements)
-            self.modelCanviat = False
-            return
-        self.word = word.lower()
-
+    
+    @staticmethod
+    @functools.lru_cache(maxsize=None)
+    def cerca(word,elements,dicElems, vars):
         # Volem dividir la llista en cinc llistes
         # -Carrers on un dels elements cercats encaixen amb una paraula del carrer
         # -Carrers on una de les paraules del carrer comencen per un dels elements cercats
@@ -139,23 +141,42 @@ class CompleterAdreces(QCompleter):
         # Podria semblar que la millor manera és crear quatre llistes, fer un for, una cadena if-then-else i posar cada element en una de les quatre. Però això és molt lent
         # Aprofitant-nos de que les coses definides per python són molt ràpides (ja que es programen en C) podem resoldre el problema utilitzant funcions d'ordre superior i operacions sobre sets
         # Bàsicament farem servir filter per filtrar els elements que compleixen la funció, desar-los, i els extreurem dels restants.
+        altres = set(elements)
+        if len(word)<3:
+            encaixen = set()
+            comencen = set(filter(lambda x: comenca(word, x), altres))
+            contenen = set()
+            altres = set()
+            variants = set()
+        else:
+            encaixen = set(filter(lambda x: encaixa(word, x), altres))
+            altres = altres-encaixen
+            comencen = set(filter(lambda x: comenca(word, x), altres))
+            altres = altres-comencen
+            contenen = set(filter(lambda x: conte(word, x), altres))
+            altres = altres-contenen
+            variants = set(filter(lambda x: variant(
+                word, x, vars[x]), altres))
 
-        altres = set(self.elements)
-        encaixen = set(filter(lambda x: encaixa(self.word, x), altres))
-        altres = altres-encaixen
-        comencen = set(filter(lambda x: comenca(self.word, x), altres))
-        altres = altres-comencen
-        contenen = set(filter(lambda x: conte(self.word, x), altres))
-        altres = altres-contenen
-        variants = set(filter(lambda x: variant(
-            self.word, x, self.variants[x]), altres))
-
-        def ordenacio(x): return self.dicElems[x]
+        def ordenacio(x): return dicElems[x]
         # No mola posar-li les variants al string, però el completer ho necessita
-        encaixen = [x+chr(29)+self.variants[x] for x in sorted(encaixen, key=ordenacio)]
-        comencen = [x+chr(29)+self.variants[x] for x in sorted(comencen, key=ordenacio)]
-        contenen = [x+chr(29)+self.variants[x] for x in sorted(contenen, key=ordenacio)]
-        variants = ['(var) '+x+chr(29)+self.variants[x] for x in sorted(variants, key=ordenacio)]
+        encaixen = [x+chr(29)+vars[x] for x in sorted(encaixen, key=ordenacio)]
+        comencen = [x+chr(29)+vars[x] for x in sorted(comencen, key=ordenacio)]
+        contenen = [x+chr(29)+vars[x] for x in sorted(contenen, key=ordenacio)]
+        variants = ['(var) '+x+chr(29)+vars[x] for x in sorted(variants, key=ordenacio)]
+
+        return encaixen, comencen, contenen, variants
+
+    def update(self, word):
+        '''Funció que actualitza els elements'''
+        if len(word) < 3 and self.modelCanviat:
+            self.model().setStringList(self.elements)
+            self.modelCanviat = False
+            return
+        self.word = word.lower()
+
+
+        encaixen, comencen, contenen, variants = self.cerca(self.word, self.elements, self.dicElems, self.variants)
         self.model().setStringList(encaixen+comencen+contenen+variants)
         self.m_word = word
         self.complete()
