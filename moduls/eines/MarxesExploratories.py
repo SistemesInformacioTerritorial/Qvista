@@ -1,6 +1,10 @@
-from moduls.QvImports import *
+from qgis.PyQt.QtCore import Qt, QUrl
+from qgis.PyQt.QtGui import QDesktopServices, QFont
+from qgis.PyQt.QtWidgets import (QDockWidget, QFrame, QLabel, QSizePolicy,
+                                 QSpacerItem, QVBoxLayout)
+
 from moduls.QvPushButton import QvPushButton
-from qgis.PyQt.QtGui import QFont, QDesktopServices
+
 
 class MarxesExploratories(QDockWidget):
     titol = 'Marxes exploratòries de ciutat'

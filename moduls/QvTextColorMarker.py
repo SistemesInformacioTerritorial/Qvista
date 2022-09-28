@@ -12,10 +12,14 @@ punt.hide()
 
 #imports
 import xml.etree.ElementTree as ET
+
 import requests
-from moduls.QvImports import *
-from qgis.core import QgsPointXY
-from qgis.gui import QgsMapCanvas, QgsRubberBand
+from qgis.core import (QgsMarkerSymbol, QgsPointXY, QgsSvgMarkerSymbolLayer,
+                       QgsTextAnnotation)
+from qgis.gui import QgsMapCanvas, QgsMapCanvasAnnotationItem, QgsRubberBand
+from qgis.PyQt.QtCore import QPointF
+from qgis.PyQt.QtGui import QColor, QFont, QTextDocument
+
 
 class QvTextColorMarker:
     #canvas

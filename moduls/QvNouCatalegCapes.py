@@ -1,7 +1,16 @@
-from moduls.QvNouCataleg import QvNouCataleg, DraggableLabel, CarregadorCataleg
-from moduls.QvImports import *
-from moduls.QvVisorHTML import QvVisorHTML
+import os
+
+from qgis.core import QgsProject
+from qgis.core.contextmanagers import qgisapp
+from qgis.PyQt.QtCore import QSize, Qt, pyqtSignal
+from qgis.PyQt.QtGui import QIcon, QPixmap
+from qgis.PyQt.QtWidgets import QFrame, QLabel, QPushButton, QVBoxLayout
+
+from configuracioQvista import carpetaCatalegLlista, imatgesDir
 from moduls.QvConstants import QvConstants
+from moduls.QvNouCataleg import CarregadorCataleg, DraggableLabel, QvNouCataleg
+from moduls.QvVisorHTML import QvVisorHTML
+
 
 # com que CarregadorCataleg és un Singleton, si utilitzéssim la mateixa classe tindríem solapaments
 # creant una nova classe que hereti d'ella podem tenir un carregador independent per cada catàleg
@@ -153,8 +162,8 @@ class CapaCataleg(QFrame):
 
 if __name__ == "__main__":
     import configuracioQvista
-    from moduls.QvCanvas import QvCanvas
     from moduls.QvAtributs import QvAtributs
+    from moduls.QvCanvas import QvCanvas
     from moduls.QvLlegenda import QvLlegenda
     with qgisapp() as app:
         with open('style.qss') as f:

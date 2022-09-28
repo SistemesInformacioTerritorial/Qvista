@@ -1,5 +1,10 @@
-from moduls.QvImports import *
+from qgis.PyQt.QtCore import Qt
+from qgis.PyQt.QtWebKit import QWebSettings
+from qgis.PyQt.QtWebKitWidgets import QWebView
+from qgis.PyQt.QtWidgets import QDockWidget, QFrame, QVBoxLayout
+
 from moduls.QvPushButton import QvPushButton
+
 
 class DockPavim(QDockWidget):
     def __init__(self, parent):

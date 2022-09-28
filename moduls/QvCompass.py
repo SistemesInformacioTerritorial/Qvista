@@ -1,12 +1,14 @@
-from moduls.QvImports  import *
+import numpy as np
 from qgis.core import QgsRectangle
+from qgis.core.contextmanagers import qgisapp
+from qgis.PyQt.QtCore import QLine, QPoint, QSize, Qt, pyqtSlot
+from qgis.PyQt.QtGui import (QBrush, QColor, QCursor, QFont, QFontMetricsF,
+                             QPainter, QPalette, QPen, QPixmap, QPolygon)
+from qgis.PyQt.QtWidgets import QDoubleSpinBox, QFrame, QLineEdit, QSpinBox
+
+import configuracioQvista
 from moduls.QvConstants import QvConstants
 from moduls.QvPushButton import QvPushButton
-from configuracioQvista import *
-from PyQt5.QtWidgets import QFrame, QSpinBox, QLineEdit
-from PyQt5.QtGui import QPainter, QBrush, QPen, QPolygon
-import numpy as np
-
 
 # https://wiki.python.org/moin/PyQt/Compass%20widget
 
@@ -180,7 +182,7 @@ class QvCompass(QFrame):
         '''
         poner cursor
         '''
-        self.setCursor(QCursor(QPixmap(imatgesDir+'/cruz.cur')))     
+        self.setCursor(QCursor(QPixmap(configuracioQvista.imatgesDir+'/cruz.cur')))     
     def sizeHint(self):
         return QSize(150, 150)
     def angle(self):
@@ -198,16 +200,17 @@ class QvCompass(QFrame):
         
 
 import math
+
 if __name__ == "__main__":
 
     with qgisapp() as app:
 
-        from qgis.gui import  QgsLayerTreeMapCanvasBridge
-        from moduls.QvLlegenda import QvLlegenda
-        from qgis.gui import QgsMapCanvas
         from qgis.core import QgsProject
         from qgis.core.contextmanagers import qgisapp
-     
+        from qgis.gui import QgsLayerTreeMapCanvasBridge, QgsMapCanvas
+
+        from moduls.QvLlegenda import QvLlegenda
+
         # Canvas, projecte i bridge
         canvas=QgsMapCanvas()
         

@@ -1,10 +1,18 @@
 #imports
 import xml.etree.ElementTree as ET
+
 import requests
-from moduls.QvImports import *
-from qgis.core import QgsPointXY
-from qgis.gui import QgsMapCanvas, QgsRubberBand
+from qgis.core import (QgsGeometry, QgsPoint, QgsPointXY, QgsProject,
+                       QgsTextAnnotation)
+from qgis.core.contextmanagers import qgisapp
+from qgis.gui import (QgsLayerTreeMapCanvasBridge, QgsMapCanvas,
+                      QgsMapCanvasAnnotationItem, QgsRubberBand)
+from qgis.PyQt.QtCore import QPointF
+from qgis.PyQt.QtGui import QColor
+from qgis.PyQt.QtWidgets import QTextDocument
+
 from moduls import QvFuncions
+
 
 class Gir():
     descripcio = ""

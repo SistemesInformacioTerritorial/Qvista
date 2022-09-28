@@ -1,18 +1,18 @@
-# from moduls.QvImports import *
-from qgis.PyQt.QtGui import QStandardItemModel, QStandardItem, QIcon, QPixmap
-
-from qgis.core import QgsPointXY, QgsProject, QgsRectangle
-from qgis.gui import QgsMapCanvas,QgsLayerTreeMapCanvasBridge,  QgsVertexMarker
-# from qgis.PyQt import QtGui, QtCore, QtWidgets
-from qgis.PyQt.QtCore import QModelIndex, Qt
-from qgis.PyQt.QtWidgets import QAbstractItemView, QAction, QDockWidget, QHBoxLayout, QLabel, QLineEdit, QMainWindow, QMessageBox, QTreeView, QVBoxLayout, QWidget
-
+import os.path
 import pickle
 from collections import deque
-import os.path
-from qgis.core.contextmanagers import qgisapp
 
-from qgis.PyQt.QtGui import QColor
+from qgis.core import QgsPointXY, QgsProject, QgsRectangle
+from qgis.core.contextmanagers import qgisapp
+from qgis.gui import QgsLayerTreeMapCanvasBridge, QgsMapCanvas, QgsVertexMarker
+# from qgis.PyQt import QtGui, QtCore, QtWidgets
+from qgis.PyQt.QtCore import QModelIndex, Qt
+from qgis.PyQt.QtGui import (QColor, QIcon, QPixmap, QStandardItem,
+                             QStandardItemModel)
+from qgis.PyQt.QtWidgets import (QAbstractItemView, QAction, QDockWidget,
+                                 QHBoxLayout, QLabel, QLineEdit, QMainWindow,
+                                 QMessageBox, QTreeView, QVBoxLayout, QWidget)
+
 import configuracioQvista
 
 tempdir=configuracioQvista.configdir

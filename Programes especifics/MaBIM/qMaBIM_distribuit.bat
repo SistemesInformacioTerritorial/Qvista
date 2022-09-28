@@ -5,5 +5,5 @@
 @REM    geocodifica_distribuit.bat --help
 
 @echo off
-set PATH_QGIS="C:\OSGeo4W\bin"
+set PATH_QGIS_BIN="C:\OSGeo4W\bin"
 call qMaBIM_aux.bat %*

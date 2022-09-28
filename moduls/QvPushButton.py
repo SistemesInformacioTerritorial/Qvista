@@ -1,8 +1,9 @@
-from moduls.QvImports import * 
-from moduls.QvConstants import QvConstants
-from qgis.PyQt.QtCore import Qt, QMimeData
-from qgis.PyQt.QtGui import QDrag
 
+from qgis.PyQt.QtCore import QMimeData, Qt
+from qgis.PyQt.QtGui import QDrag, QIcon
+from qgis.PyQt.QtWidgets import QPushButton, QSizePolicy, QWidget
+
+from moduls.QvConstants import QvConstants
 
 
 #Classe per crear botons amb l'estil qVista
@@ -41,7 +42,7 @@ class QvPushButton(QPushButton):
         self.setDestacat(destacat)
         self.setDiscret(discret)
         self.setDragable(False)
-    
+
     def formata(self,destacat: bool, discret: bool):
         if self.flat: return
         if self.isEnabled():
@@ -84,10 +85,10 @@ class QvPushButton(QPushButton):
     def showEvent(self,event):
         super().showEvent(event)
         self.formata(self.destacat,self.discret)
-    
+
     def setDragable(self,drag=True):
         self.drag=drag
-    
+
     def mouseMoveEvent(self,e):
         '''Arrosseguem el botó. Per exemple, per emular el funcionament de la Google Street View
         '''

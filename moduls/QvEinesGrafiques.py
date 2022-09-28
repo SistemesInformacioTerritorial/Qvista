@@ -1,17 +1,30 @@
-from types import prepare_class
-from moduls.QvImports import *
-from moduls.QvAtributsForms import QvFormAtributs
-from moduls.QvApp import QvApp
-from moduls.QvPushButton import QvPushButton
-from moduls.QvMemoria import QvMemoria
-from moduls.QvConstants import QvConstants
-from moduls.QVDistrictesBarris import QVDistrictesBarris
-from moduls import QvFuncions
-from qgis.gui import QgsMapTool, QgsRubberBand
-from qgis.core import QgsWkbTypes
-import math
 import csv
 import itertools
+import math
+import os
+from types import prepare_class
+
+from qgis.core import (QgsFeature, QgsFeatureRequest, QgsGeometry, QgsMapLayer,
+                       QgsPointXY, QgsRectangle, QgsVector, QgsVectorLayer,
+                       QgsWkbTypes)
+from qgis.gui import QgsMapTool, QgsRubberBand, QgsVertexMarker
+from qgis.PyQt.QtCore import QSize, Qt, QVariant, pyqtSignal
+from qgis.PyQt.QtGui import QColor, QIcon, QIntValidator, QPolygonF
+from qgis.PyQt.QtWidgets import (QAbstractItemView, QAction, QCheckBox,
+                                 QColorDialog, QFileDialog, QFrame, QGroupBox,
+                                 QHBoxLayout, QLabel, QLineEdit, QListWidget,
+                                 QMessageBox, QRadioButton, QSizePolicy,
+                                 QSlider, QTableWidget, QTableWidgetItem,
+                                 QToolBox, QVBoxLayout, QWidget)
+
+import configuracioQvista
+from moduls import QvFuncions
+from moduls.QvApp import QvApp
+from moduls.QvAtributsForms import QvFormAtributs
+from moduls.QvConstants import QvConstants
+from moduls.QVDistrictesBarris import QVDistrictesBarris
+from moduls.QvMemoria import QvMemoria
+from moduls.QvPushButton import QvPushButton
 
 
 class QvSeleccioGrafica(QWidget):
@@ -38,19 +51,19 @@ class QvSeleccioGrafica(QWidget):
 
         self.bs1 = QvPushButton(flat=True)
         # self.bs1.setCheckable(True)
-        self.bs1.setIcon(QIcon(os.path.join(imatgesDir,'apuntar.png')))
+        self.bs1.setIcon(QIcon(os.path.join(configuracioQvista.imatgesDir,'apuntar.png')))
         self.bs1.setToolTip('Seleccionar elements de la capa activa')
         self.bs2 = QvPushButton(flat=True)
         # self.bs2.setCheckable(True)
-        self.bs2.setIcon(QIcon(os.path.join(imatgesDir,'shape-polygon-plus.png')))
+        self.bs2.setIcon(QIcon(os.path.join(configuracioQvista.imatgesDir,'shape-polygon-plus.png')))
         self.bs2.setToolTip('Dibuixar un polígon')
         self.bs3 = QvPushButton(flat=True)
         # self.bs3.setCheckable(True)
-        self.bs3.setIcon(QIcon(os.path.join(imatgesDir,'vector-circle-variant.png')))
+        self.bs3.setIcon(QIcon(os.path.join(configuracioQvista.imatgesDir,'vector-circle-variant.png')))
         self.bs3.setToolTip('Dibuixar un cercle')
         self.bs4 = QvPushButton('Netejar')
         # self.bs4.setCheckable(True)
-        # self.bs4.setIcon(QIcon(imatgesDir+'trash-can-outline.png'))
+        # self.bs4.setIcon(QIcon(configuracioQvista.imatgesDir+'trash-can-outline.png'))
 
         # self.lblNombreElementsSeleccionats = QLabel('No hi ha elements seleccionats.')
         self.lblCapaSeleccionada = QLabel('No hi capa seleccionada.')
@@ -1668,12 +1681,12 @@ class QvSeleccioElement(QgsMapTool):
 
 
 if __name__ == "__main__":
-    from qgis.gui import QgsLayerTreeMapCanvasBridge
-    from moduls.QvLlegenda import QvLlegenda
-    from moduls.QvCanvas import QvCanvas
-    from qgis.gui import QgsMapCanvas
     from qgis.core import QgsProject
     from qgis.core.contextmanagers import qgisapp
+    from qgis.gui import QgsLayerTreeMapCanvasBridge, QgsMapCanvas
+
+    from moduls.QvCanvas import QvCanvas
+    from moduls.QvLlegenda import QvLlegenda
     with qgisapp() as app:
         # canvas = QgsMapCanvas()
         canvas = QvCanvas(llistaBotons=["panning","zoomIn","zoomOut"])

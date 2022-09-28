@@ -7,15 +7,17 @@
 
 
 
-# from  moduls.QvImports import *
-from qgis.core import QgsRectangle
-from qgis.PyQt.QtCore import QObject, QModelIndex, Qt
-from qgis.PyQt.QtGui import QStandardItemModel, QStandardItem
-from qgis.PyQt.QtWidgets import QTreeView, QAction, QApplication
-import sys, csv
+import csv
+import sys
 
-from moduls.QvImports  import *
+from qgis.core import QgsRectangle, QgsVectorLayer
+from qgis.core.contextmanagers import qgisapp
+from qgis.PyQt.QtCore import QModelIndex, QObject, Qt
+from qgis.PyQt.QtGui import QStandardItem, QStandardItemModel
+from qgis.PyQt.QtWidgets import QAction, QApplication, QTreeView
+
 from moduls import QvFuncions
+
 
 class QVDistrictesBarris(QObject):
 

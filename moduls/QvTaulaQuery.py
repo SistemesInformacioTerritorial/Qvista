@@ -1,5 +1,9 @@
-from moduls.QvImports import *
+from qgis.core import QgsProject, QgsRectangle
+from qgis.core.contextmanagers import qgisapp
+from qgis.gui import QgsLayerTreeMapCanvasBridge, QgsMapCanvas
+from qgis.PyQt import QtSql
 from qgis.PyQt.QtSql import QSqlDatabase
+from qgis.PyQt.QtWidgets import QTableView, QVBoxLayout, QWidget
 
 projecteInicial='../dades/projectes/BCN11_nord.qgs'
 

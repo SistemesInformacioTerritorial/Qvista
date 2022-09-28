@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-
 from qgis.core import QgsVectorLayer, QgsExpressionContextUtils
 from qgis.PyQt.QtCore import QDate, QObject, pyqtSignal, pyqtSlot
 from qgis.PyQt.QtWidgets import QDialog
@@ -11,7 +10,7 @@ import time
 import chardet
 import collections
 import re
-from typing import List
+from typing import List, Callable
 
 from moduls.QvApp import QvApp
 from moduls.QvSqlite import QvSqlite
@@ -244,6 +243,23 @@ class QvMapificacio(QObject):
         except Exception:
             return ''
 
+    def calcValorsAdreca(self, fila: dict) -> List[str]:
+        """ Retorna la lista de 6 valores que componen la dirección postal.
+        
+        Arguments:
+            fila {dict} -- Fila leída del CSV
+        
+        Returns:
+            List -- Valores de la dirección postal
+        """
+        try:
+            valors = []
+            for num in range(6): 
+                valors.append(self.valorCampAdreca(fila, num))
+            return valors
+        except Exception:
+            return []
+
     def verifZones(self, zones: List[str]) -> bool:
         """ Verifica la lista de zonas según el diccionario MAP_ZONES_COORD.
         
@@ -298,23 +314,24 @@ class QvMapificacio(QObject):
     def geocodificacio(self, campsAdreca: List[str], zones: List[str], fZones: str = '',
                        substituir: bool = True, percentatgeProces: pyqtSignal = None,
                        procesAcabat: pyqtSignal = None, errorAdreca: pyqtSignal = None,
-                       filesGeocodificades: pyqtSignal = None) -> bool:
+                       filesGeocodificades: pyqtSignal = None,
+                       fCalcValorsAdreca: Callable[[dict], List[str]] = None) -> bool:
         """Añade coordenadas y códigos de zona a cada uno de los registros del CSV,
            a partir de los campos de dirección postal
 
         Arguments:
             campsAdreca {List[str]} -- Nombre de los campos que definen la dirección postal,
-                                       en este orden:
-                                       TipusVia, Variant, NumIni, LletraIni,
-                                       NumFi, LletraFi (mínimo 2º y 3º)
+                                       en este orden: TipusVia, Variant, NumIni, LletraIni,
+                                       NumFi, LletraFi (obligatorios 2º y 3º)
+                                       (actúa junto a la función self.calcValorsAdreca siempre
+                                       que no se suministre el parámetro fCalcValorsAdreca)
             zones List[str] -- Nombre de las zonas a añadir (ver MAP_ZONES_COORD en QvMapVars.py)
         
         Keyword Arguments:
             fZones {str} -- Nombre del fichero CSV de salida. Si no se indica, se usa el nombre
                             del fichero de entrada añadiendo el sufijo '_Geo' (default: {''})
-            substituir {bool} -- En el caso de que el campo de código de zona ya exista
-                                 y tenga un valor, indica si se ha de machacar
-                                 o no su contenido (default: {True})
+            substituir {bool} -- En el caso de que el campo de código de zona ya exista y tenga 
+                                 un valor, indica si se ha de sobreescribir o no (default: {True})
             percentatgeProces {pyqtSignal} -- Señal de progreso con el porcentaje transcurrido
                                               (default: {None})
             procesAcabat {pyqtSignal} -- Señal de finalización con tiempo transcurrido
@@ -322,6 +339,9 @@ class QvMapificacio(QObject):
             errorAdreca {pyqtSignal} -- Señal con registro erróneo (default: {None})
             filesGeocodificades {pyqtSignal} -- Señal de progreso con número de filas procesadas
                                                 sobre el total (default: {None})
+            fCalcValorsAdreca {Callable[[dict], List[str]]} -- función de cálculo de los 6 valores que
+                                                               definen la dirección postal a partir de
+                                                               cada fila del fichero CSV (default: {None})
 
         Returns:
             bool -- True si ha ido bien, False si hay errores o se canceló el proceso
@@ -351,11 +371,16 @@ class QvMapificacio(QObject):
         self.errors = 0
         self.msgError = ''
 
-        if self.verifCampsAdreca(campsAdreca):
-            self.campsAdreca = campsAdreca
+        # Se puede definir la dirección postal con los campos del csv indicados en el parámetro campsAdreca
+        # o bien con los 6 valores calculados por la función fCalcValorsAdreca pasada como parámetro
+        self.campsAdreca = campsAdreca
+        if fCalcValorsAdreca is not None:
+            self.fCalcValorsAdreca = fCalcValorsAdreca
         else:
-            self.msgError = "Error als camps d'adreça"
-            return False
+            if not self.verifCampsAdreca(self.campsAdreca):
+                self.msgError = "Error als camps d'adreça"
+                return False
+            self.fCalcValorsAdreca = self.calcValorsAdreca
 
         if not self.verifZones(zones):
             self.msgError = "Error paràmetre de zones"
@@ -420,23 +445,23 @@ class QvMapificacio(QObject):
                         tot += 1
                         # Normaliza nombres de campos
                         row = {self.netejaString(k): v for k, v in rowOrig.items()}
-
+                        # Geocodificación
+                        valors = self.fCalcValorsAdreca(rowOrig)
                         val = self.db.geoCampsCarrerNum(
                             self.campsZones,
-                            self.valorCampAdreca(rowOrig, 0), self.valorCampAdreca(rowOrig, 1),
-                            self.valorCampAdreca(rowOrig, 2), self.valorCampAdreca(rowOrig, 3),
-                            self.valorCampAdreca(rowOrig, 4), self.valorCampAdreca(rowOrig, 5))
-                        # Error en geocodificación
+                            valors[0], valors[1], valors[2], valors[3], valors[4], valors[5])
                         if val is None:
+                            # Error en geocodificación
                             self.errorAdreca.emit(dict(rowOrig, **{'_fila': tot}))
                             num += 1
                         else:
+                            # Resultado en campos
                             for campZona in self.campsZones:
                                 campZona = QvSqlite().getAlias(campZona)
                                 campSortida = self.prefixe + campZona
                                 campNou = (campSortida not in row.keys())
                                 if (campNou or self.substituir or
-                                        row[campSortida] is None or row[campSortida] == ''):
+                                    row[campSortida] is None or row[campSortida] == ''):
                                     row.update([(campSortida, val[campZona])])
                         # Escritura de fila con campos
                         writer.writerow(row)
@@ -917,6 +942,35 @@ if __name__ == "__main__":
 
     gui = True
 
+    class Test:
+        def __init__(self):
+            self.campsAdreca = ('', 'NOM_CARRER_GPL', 'NUM_I_GPL', '', 'NUM_F_GPL')
+
+        def valorCampAdreca(self, fila: dict, num: int) -> str:
+            try:
+                camp = self.campsAdreca[num]
+                if camp is None or camp == '':
+                    return ''
+                else:
+                    return fila[camp]
+            except Exception:
+                return ''
+
+        def userCalcValorsAdreca(self, fila: dict) -> List[str]:
+            try:
+                valors = []
+                for num in range(6): 
+                    valors.append(self.valorCampAdreca(fila, num))
+                return valors
+            except Exception:
+                return []
+
+        # def __init__(self, mapificacio):
+        #     self.mapificacio = mapificacio
+
+        # def userCalcValorsAdreca(self, fila: dict) -> List[str]:
+        #     return self.mapificacio.calcValorsAdreca(fila)
+
     with qgisapp(guienabled=gui) as app:
 
         from moduls.QvApp import QvApp
@@ -963,10 +1017,13 @@ if __name__ == "__main__":
 
         # zones = ('Coordenada', 'Districte', 'Barri', 'Codi postal', "Illa", "Solar", "Àrea estadística bàsica", "Secció censal")
         zones = ('Coordenada', 'Districte')
+        test = Test()
         ok = z.geocodificacio(campsAdreca, zones,
             percentatgeProces=lambda n: print('... Procesado', str(n), '% ...'),
             errorAdreca=lambda f: print('Fila sin geocodificar -', f),
-            procesAcabat=lambda n: print('Zonas', z.zones, 'procesadas en', str(n), 'segs. en ' + z.fZones + ' -', str(z.files), 'registros,', str(z.errors), 'errores'))
+            procesAcabat=lambda n: print('Zonas', z.zones, 'procesadas en', str(n), 'segs. en ' + z.fZones + ' -', str(z.files), 'registros,', str(z.errors), 'errores')
+            # ,fCalcValorsAdreca=test.userCalcValorsAdreca
+        )
             
         if ok:
             # w = QvFormMostra(z)

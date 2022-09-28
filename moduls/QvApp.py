@@ -4,7 +4,7 @@ from qgis.PyQt.QtSql import QSqlDatabase, QSqlQuery, QSql
 from qgis.PyQt.QtCore import QTranslator, QLibraryInfo, QLocale
 from qgis.PyQt.QtWidgets import QApplication
 from qgis.PyQt.QtNetwork import QNetworkProxy, QNetworkProxyFactory
-from qgis.core import QgsPythonRunner, Qgis
+from qgis.core import QgsPythonRunner, Qgis, QgsSettings, QgsNetworkAccessManager
 from moduls.QvSingleton import singleton
 from moduls.QvPythonRunner import QvPythonRunner
 from moduls.QvGithub import QvGithub
@@ -60,6 +60,7 @@ def _fatalError(type, value, tb):
 class QvApp:
     def __init__(self, produccio=None):
         self.gh = None
+        self.appQgis = None
         self.ruta, self.rutaBase = self.calcRuta()  # Path de la aplicación
         self.cfg = self.readCfg()                   # Config de instalación
         val = self.paramCfg("Debug", "False")       # Errores no controlados
@@ -110,7 +111,6 @@ class QvApp:
         self.familyLog = None
         self.nameLog = None
         self.queryGeo = None
-        self.appQgis = None
         self.idioma = None
         self.qtTranslator = None
         self.qgisTranslator = None
@@ -197,28 +197,71 @@ class QvApp:
                 msg += p.lastError() + '\n'
             QMessageBox.warning(None, "ERROR", msg)
 
+    # def printProxySettings(self, s):
+    #     print('Proxy Settings:')
+    #     print('- Global settings path:', s.globalSettingsPath())
+    #     proxyEnabled = s.value("proxy/proxyEnabled", None)
+    #     print('- proxyEnabled:', proxyEnabled)
+    #     if proxyEnabled == 'true':
+    #         proxyExcludedUrls = s.value("proxy/proxyExcludedUrls", None)
+    #         print('- proxyExcludedUrls:', proxyExcludedUrls)
+    #         noProxyUrls = s.value("proxy/noProxyUrls", None)
+    #         print('- noProxyUrls:', noProxyUrls)
+    #         proxyHost = s.value("proxy/proxyHost", None)
+    #         print('- proxyHost:', proxyHost)
+    #         proxyPort = s.value("proxy/proxyPort", None)
+    #         print('- proxyPort:', proxyPort)
+    #         proxyUser = s.value("proxy/proxyUser", None)
+    #         print('- proxyUser:', proxyUser)
+    #         proxyPassword = s.value("proxy/proxyPassword", None)
+    #         print('- proxyPassword:', proxyPassword)
+    #         proxyType = s.value("proxy/proxyType", None)
+    #         print('- proxyType:', proxyType)
+
+    # def setProxyIMI(self, s):
+    #     return
+    #     s.setValue("proxy/proxyEnabled", True)
+    #     s.setValue("proxy/proxyExcludedUrls", None)
+    #     s.setValue("proxy/noProxyUrls", None)
+    #     s.setValue("proxy/proxyHost", _PROXY_IMI['HostName'])
+    #     s.setValue("proxy/proxyPort", _PROXY_IMI['Port'])
+    #     s.setValue("proxy/proxyUser", None)
+    #     s.setValue("proxy/proxyPassword", None)
+    #     s.setValue("proxy/proxyType", 'HttpProxy')
+
     def setProxy(self):
         try:
             proxy = None
-            if self.intranet:
+            if self.intranet and self.appQgis is not None:
+                # QgsSettings.setGlobalSettingsPath('C:/OSGeo4W/apps/qgis-ltr/resources/qgis_global_settings.ini')
+                # s = QgsSettings()
+                # # self.setProxyIMI(s)
+                # self.printProxySettings(s)
+                # QgsNetworkAccessManager.instance().setupDefaultProxyAndCache()
+                # return
                 val = self.paramCfg('Proxy', 'False')
                 if val == 'True':
                     QNetworkProxyFactory.setUseSystemConfiguration(True)
                     proxies = QNetworkProxyFactory.systemProxyForQuery()
                     proxy = next(iter(proxies), None)
+                    print(f"Proxy: Default")
                 elif val == 'IMI':
                     proxy = QNetworkProxy()
                     proxy.setType(QNetworkProxy.HttpProxy)
-                    proxy.setHostName = _PROXY_IMI['HostName']
-                    proxy.setPort = _PROXY_IMI['Port']
+                    proxy.setHostName(_PROXY_IMI['HostName'])
+                    proxy.setPort(_PROXY_IMI['Port'])
                 if proxy is None:
                     print(f"Proxy: None")
                 else:
-                    proxy.setApplicationProxy(proxy)
+                    QNetworkProxy.setApplicationProxy(proxy)
+                    # proxy.setApplicationProxy(proxy)
+                    # mgr = QgsNetworkAccessManager.instance()
+                    # mgr.setupDefaultProxyAndCache()
+                    # mgr.setFallbackProxyAndExcludes(proxy, [], [])
                     if proxy.type() == QNetworkProxy.NoProxy:
                         print(f"Proxy: NoProxy")
                     else:
-                        print(f"Proxy: {proxy.setHostName}:{proxy.setPort}")
+                        print(f"Proxy: {proxy.hostName()}:{proxy.port()}")
             return proxy
         except Exception as err:
             self.bugException(err)
@@ -252,6 +295,8 @@ class QvApp:
         app.installTranslator(self.qgisTranslator)
 
         self.locale = QLocale(self.idioma + "-ES")
+
+        self.setProxy()
 
     def llegirFitxerText(self, nomFich):
         try:

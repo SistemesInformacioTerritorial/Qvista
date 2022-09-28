@@ -1,5 +1,6 @@
+from qgis.PyQt.QtWidgets import QToolButton, QWidget
+
 from moduls.QvConstants import QvConstants
-from moduls.QvImports import * 
 
 
 class QvToolButton(QToolButton):
