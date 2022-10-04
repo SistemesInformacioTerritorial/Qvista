@@ -348,7 +348,7 @@ class QvNouCataleg(QWidget):
             dirs = sorted(dirs)
             for x in dirs:
                 self.catalegs[x] = self.carregaBotons(x, y)
-                privat = y in carpetaCatalegProjectesPrivats
+                privat = y==carpetaCatalegProjectesPrivats
                 local = y in QvMemoria().getCatalegsLocals()
                 boto = BotoLateral(x, self, privat, local)
                 boto.setCheckable(True)
