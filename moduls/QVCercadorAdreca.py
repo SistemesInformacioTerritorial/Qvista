@@ -1,4 +1,5 @@
 import collections
+import itertools
 import json
 import functools
 import re
@@ -141,31 +142,47 @@ class CompleterAdreces(QCompleter):
         # Podria semblar que la millor manera és crear quatre llistes, fer un for, una cadena if-then-else i posar cada element en una de les quatre. Però això és molt lent
         # Aprofitant-nos de que les coses definides per python són molt ràpides (ja que es programen en C) podem resoldre el problema utilitzant funcions d'ordre superior i operacions sobre sets
         # Bàsicament farem servir filter per filtrar els elements que compleixen la funció, desar-los, i els extreurem dels restants.
-        altres = set(elements)
+        def filtra(llista, func):
+            """Divideix una llista entre dues llistes, segons si compleixen la funció o no
+
+            Args:
+                llista (iterable[str]): llista que volem dividir
+                func (Callable(str) -> boolean): funció que determina si els elements de la llista inicial van a la primera o a la segona
+
+            Returns:
+                tuple[iterable[str], iterable[str]]: Les dues llistes que contenen els elements de la llista inicial dividides segons la descripció
+            """
+            # EXPLICACIÓ TÈCNICA
+            # La solució anterior (basada en sets) perdia l'ordre
+            # Això requeria una ordenació posterior, que es menjava tota l'eficiència
+            # Els diccionaris a partir de Python 3.6 conserven l'ordre. 
+            # Traslladant el que abans es feia en sets als diccionaris, aconseguim millorar l'eficiència
+            encaixen = {x:None for (i,x) in enumerate(llista) if func(x)}
+            return encaixen.keys(), (x for x in llista if x not in encaixen)
+        
         if len(word)<3:
-            encaixen = set()
-            comencen = set(filter(lambda x: comenca(word, x), altres))
-            contenen = set()
-            altres = set()
-            variants = set()
+            # Si la paraula que cerquem és curta (1 o 2 caràcters) només mirem els que comencen
+            encaixen = []
+            comencen, _ = filtra(elements, lambda x: comenca(word, x))
+            contenen = []
+            variants = []
         else:
-            encaixen = set(filter(lambda x: encaixa(word, x), altres))
-            altres = altres-encaixen
-            comencen = set(filter(lambda x: comenca(word, x), altres))
-            altres = altres-comencen
-            contenen = set(filter(lambda x: conte(word, x), altres))
-            altres = altres-contenen
-            variants = set(filter(lambda x: variant(
-                word, x, vars[x]), altres))
+            encaixen, altres = filtra(elements, lambda x: encaixa(word, x))
+            comencen, altres = filtra(altres, lambda x: comenca(word, x))
+            contenen, altres = filtra(altres, lambda x: conte(word, x))
+            variants, _ = filtra(altres, lambda x: variant(word, x, vars[x]))
 
-        def ordenacio(x): return dicElems[x]
-        # No mola posar-li les variants al string, però el completer ho necessita
-        encaixen = [x+chr(29)+vars[x] for x in sorted(encaixen, key=ordenacio)]
-        comencen = [x+chr(29)+vars[x] for x in sorted(comencen, key=ordenacio)]
-        contenen = [x+chr(29)+vars[x] for x in sorted(contenen, key=ordenacio)]
-        variants = ['(var) '+x+chr(29)+vars[x] for x in sorted(variants, key=ordenacio)]
-
-        return encaixen, comencen, contenen, variants
+        # itertools.chain(l1, l2, l3) és "equivalent" a fer l1+l2+l3
+        # en realitat no ajunta les llistes, de manera que no necessita iterar-les senceres, optimitzant una mica
+        # Als elements de les llistes encaixen, comencen i contenen els afegim les variants al final
+        # Als elements de la llista variants també li afegim, però també posem (var) al principi
+        res = (x+chr(29)+vars[x] for x in itertools.chain(encaixen, comencen, contenen))
+        res = itertools.chain(res, ('(var) '+x+chr(29)+vars[x] for x in variants))
+        # OPCIÓ 1: ENS QUEDEM NOMÉS N FILES DEL RESULTAT
+        #return list(res)[:20]
+        return [x for (x,_) in zip(res,range(20))]
+        # OPCIÓ 2: RETORNEM TOT
+        # return list(res)
 
     def update(self, word):
         '''Funció que actualitza els elements'''
@@ -176,8 +193,8 @@ class CompleterAdreces(QCompleter):
         self.word = word.lower()
 
 
-        encaixen, comencen, contenen, variants = self.cerca(self.word, self.elements, self.dicElems, self.variants)
-        self.model().setStringList(encaixen+comencen+contenen+variants)
+        resultatCerca = self.cerca(self.word, self.elements, self.dicElems, self.variants)
+        self.model().setStringList(resultatCerca)
         self.m_word = word
         self.complete()
         self.modelCanviat = True
