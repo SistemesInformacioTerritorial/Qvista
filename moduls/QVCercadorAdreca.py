@@ -139,9 +139,7 @@ class CompleterAdreces(QCompleter):
         # -Carrers que contenen les paraules cercades
         # -Carrers que tenen una variant que contingui les paraules cercades
         # -La resta
-        # Podria semblar que la millor manera és crear quatre llistes, fer un for, una cadena if-then-else i posar cada element en una de les quatre. Però això és molt lent
-        # Aprofitant-nos de que les coses definides per python són molt ràpides (ja que es programen en C) podem resoldre el problema utilitzant funcions d'ordre superior i operacions sobre sets
-        # Bàsicament farem servir filter per filtrar els elements que compleixen la funció, desar-los, i els extreurem dels restants.
+        # D'aquestes 5, el completer mostrarà les primeres 4, que són les que són interessants
         def filtra(llista, func):
             """Divideix una llista entre dues llistes, segons si compleixen la funció o no
 
@@ -157,6 +155,9 @@ class CompleterAdreces(QCompleter):
             # Això requeria una ordenació posterior, que es menjava tota l'eficiència
             # Els diccionaris a partir de Python 3.6 conserven l'ordre. 
             # Traslladant el que abans es feia en sets als diccionaris, aconseguim millorar l'eficiència
+
+            # Respecte la possibilitat basada en llistes (dues llistes, un bucle i anar posant on pertoqui) el guany és del 50%
+            # (en casos concrets hi ha pèrdues, en d'altres guanys molt grans)
             encaixen = {x:None for (i,x) in enumerate(llista) if func(x)}
             return encaixen.keys(), (x for x in llista if x not in encaixen)
         
@@ -175,7 +176,7 @@ class CompleterAdreces(QCompleter):
         # itertools.chain(l1, l2, l3) és "equivalent" a fer l1+l2+l3
         # en realitat no ajunta les llistes, de manera que no necessita iterar-les senceres, optimitzant una mica
         # Als elements de les llistes encaixen, comencen i contenen els afegim les variants al final
-        # Als elements de la llista variants també li afegim, però també posem (var) al principi
+        # Als elements de la llista variants també li afegim, però també posem (var) al principi, ja que el resultat ha sigut trobat dins d'una variant
         res = (x+chr(29)+vars[x] for x in itertools.chain(encaixen, comencen, contenen))
         res = itertools.chain(res, ('(var) '+x+chr(29)+vars[x] for x in variants))
         # OPCIÓ 1: ENS QUEDEM NOMÉS N FILES DEL RESULTAT

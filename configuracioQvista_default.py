@@ -1,4 +1,5 @@
-from pathlib import Path
+from pathlib import Path, PurePath
+import os
 
 
 class ConfigBase:
@@ -95,4 +96,13 @@ class ConfigBase:
             Path(x).mkdir(parents=True, exist_ok=True)
 
     def path(self, *args):
-        return str(Path(*args).resolve())
+        # https://discuss.python.org/t/pathlib-absolute-vs-resolve/2573/17
+        # Path.resolve falla amb les unitats de xarxa, ja que converteix el path a un path UNC
+        #  (estil "//servidor/...")
+        #  Això provoca errors en mòduls no pensats per funcionar així
+        # Path.absolute crea una ruta absoluta, però no elimina "." i ".."
+        #  Path('../dades').absolute() # D:/qVista/Codi/../dades
+        # os.path.abspath fa el que volem (resol '..' i '.', però no fa coses estranyes amb discs)
+        # return str(Path(*args).absolute())
+        # L'únic problema que té os.path.abspath és que utilitza "\". Per tant, fem un replace
+        return os.path.abspath(PurePath(*args)).replace('\\','/')
