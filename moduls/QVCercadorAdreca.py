@@ -23,31 +23,20 @@ from moduls.QvApp import QvApp
 def encaixa(sub, string):
     '''Retorna True si alguna de les paraules de sub encaixa exactament dins de string (és a dir, a sub hi ha "... xxx ..." i a string també) i la resta apareixen però no necessàriament encaixant'''
     string = string.lower()
+    sub = sub.strip()
     subs = sub.split(' ')
     words = string.split(' ')
-    # encaixaUna = False
-    # for x in subs:
-    #     if len(x) < 3:
-    #         continue  # no té sentit si escrius "av d" que et posi a dalt de tot el Carrer d'Aiguablava perquè la d encaixa exactament amb una paraula
-    #     if x not in string:
-    #         return False  # Un dels substrings de la cerca no apareix dins de l'adreça
-    #     if x in words:
-    #         encaixaUna = True  # Hem trobat una que encaixa
-    # return encaixaUna
 
     def x_in_words(x):
-        return x in words and len(x)>=3
-    return any(map(x_in_words, subs))
+        return x in words
+    return any(map(x_in_words, subs)) and conte(sub,string)
 
 
 def conte(sub, string):
     '''Retorna true si string conté tots els strings representats a subs '''
     string = string.lower()
+    sub = sub.strip()
     subs = sub.split(' ')
-    # for x in subs:
-    #     if x not in string:
-    #         return False
-    # return True
     
     def x_not_in_string(x):
         return x not in string
@@ -60,30 +49,20 @@ def comenca(sub, string):
     #cal treure els parèntesis a l'hora de fer regex donat que hi ha problemes en el moment de fer parse amb re
     string = string.replace("(","")
     string = string.replace(")","")
+    sub = sub.strip()
     subs = sub.split(' ')
-    # comencaUna = False
-    # for x in subs:
-    #     if x == '':
-    #         print(':(')
-    #         continue
-    #     trobat = (x in string)
-    #     if not trobat:
-    #         return False
-    #     # Si ja hem trobat que comença amb una no cal tornar a comprovar-ho. Seguim iterant només perquè la resta han d'estar contingudes
-    #     if not comencaUna and re.search(' '+x, ' '+string) is not None:
-    #         comencaUna = True
-    # return comencaUna
 
     def x_in_string(x):
         return x in string
     def substring_comenca_per_x(x):
         return re.search(' '+x, ' '+string) is not None
 
-    totes_hi_son = any(map(x_in_string, subs))
-    comenca_una = any(map(substring_comenca_per_x, subs))
-    # podria tenir sentit posar els any al return directament. Així, si la primera és falsa, la segona no s'arriba a mirar.
-    # guanyaríem velocitat gràcies a la lazy evaluation, però perdríem llegibilitat
-    return totes_hi_son and comenca_una
+    # totes_hi_son = all(map(x_in_string, subs))
+    # comenca_una = any(map(substring_comenca_per_x, subs))
+    # # podria tenir sentit posar els any al return directament. Així, si la primera és falsa, la segona no s'arriba a mirar.
+    # # guanyaríem velocitat gràcies a la lazy evaluation, però perdríem llegibilitat
+    # return totes_hi_son and comenca_una
+    return conte(sub,string) and any(map(substring_comenca_per_x, subs))
 
 
 def variant(sub, string, variants):
@@ -159,9 +138,9 @@ class CompleterAdreces(QCompleter):
             # Respecte la possibilitat basada en llistes (dues llistes, un bucle i anar posant on pertoqui) el guany és del 50%
             # (en casos concrets hi ha pèrdues, en d'altres guanys molt grans)
             encaixen = {x:None for (i,x) in enumerate(llista) if func(x)}
-            return encaixen.keys(), (x for x in llista if x not in encaixen)
+            return list(encaixen.keys()), (x for x in llista if x not in encaixen)
         
-        if len(word)<3:
+        if False and len(word)<3:
             # Si la paraula que cerquem és curta (1 o 2 caràcters) només mirem els que comencen
             encaixen = []
             comencen, _ = filtra(elements, lambda x: comenca(word, x))
@@ -181,16 +160,17 @@ class CompleterAdreces(QCompleter):
         res = itertools.chain(res, ('(var) '+x+chr(29)+vars[x] for x in variants))
         # OPCIÓ 1: ENS QUEDEM NOMÉS N FILES DEL RESULTAT
         #return list(res)[:20]
-        return [x for (x,_) in zip(res,range(20))]
+        res = [x for (x,_) in zip(res,range(20))]
+        return res
         # OPCIÓ 2: RETORNEM TOT
         # return list(res)
 
     def update(self, word):
         '''Funció que actualitza els elements'''
-        if len(word) < 3 and self.modelCanviat:
-            self.model().setStringList(self.elements)
-            self.modelCanviat = False
-            return
+        # if len(word) < 3 and self.modelCanviat:
+        #     self.model().setStringList(self.elements)
+        #     self.modelCanviat = False
+        #     return
         self.word = word.lower()
 
 
