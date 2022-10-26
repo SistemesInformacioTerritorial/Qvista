@@ -19,7 +19,10 @@ from qgis.PyQt.QtWidgets import (QCompleter, QHBoxLayout, QLineEdit,
 
 from moduls.QvApp import QvApp
 
-
+def arreglaCarrer(carrer):
+    res = carrer.strip()
+    res = res.replace('(','').replace(')','')
+    return res.lower()
 def encaixa(sub, string):
     '''Retorna True si alguna de les paraules de sub encaixa exactament dins de string (és a dir, a sub hi ha "... xxx ..." i a string també) i la resta apareixen però no necessàriament encaixant'''
     string = string.lower()
@@ -40,7 +43,8 @@ def conte(sub, string):
     
     def x_not_in_string(x):
         return x not in string
-    return not any(map(x_not_in_string, subs))
+    return all(x in string for x in subs)
+    # return not any(map(x_not_in_string, subs))
 
 
 def comenca(sub, string):
@@ -62,7 +66,7 @@ def comenca(sub, string):
     # # podria tenir sentit posar els any al return directament. Així, si la primera és falsa, la segona no s'arriba a mirar.
     # # guanyaríem velocitat gràcies a la lazy evaluation, però perdríem llegibilitat
     # return totes_hi_son and comenca_una
-    return conte(sub,string) and any(map(substring_comenca_per_x, subs))
+    return any(map(substring_comenca_per_x, subs)) and conte(sub,string)
 
 
 def variant(sub, string, variants):
@@ -138,7 +142,7 @@ class CompleterAdreces(QCompleter):
             # Respecte la possibilitat basada en llistes (dues llistes, un bucle i anar posant on pertoqui) el guany és del 50%
             # (en casos concrets hi ha pèrdues, en d'altres guanys molt grans)
             encaixen = {x:None for (i,x) in enumerate(llista) if func(x)}
-            return list(encaixen.keys()), (x for x in llista if x not in encaixen)
+            return list(encaixen.keys()), [x for x in llista if x not in encaixen]
         
         if False and len(word)<3:
             # Si la paraula que cerquem és curta (1 o 2 caràcters) només mirem els que comencen
