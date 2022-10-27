@@ -2192,7 +2192,10 @@ class QVista(QMainWindow, Ui_MainWindow):
             self.pathProjecteActual=proj
 
         # desem com a tal
-        self.project.write(proj)
+        # QgsProject.write(str) desaria directament el projecte a la ruta indicada
+        # En teoria canvia l'arxiu al que apunta QgsProject, però no funcionava correctament
+        self.project.setFileName(proj)
+        self.project.write()
         qApp.restoreOverrideCursor()
         qApp.processEvents()
         # Deixem de tenir canvis pendents

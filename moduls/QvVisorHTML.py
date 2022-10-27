@@ -5,10 +5,12 @@ from qgis.PyQt.QtWebKitWidgets import QWebView
 from qgis.PyQt.QtWidgets import (QDialog, QHBoxLayout, QLabel, QSizePolicy,
                                  QSpacerItem, QVBoxLayout, QWidget)
 
-from configuracioQvista import imatgesDir, os
+from configuracioQvista import imatgesDir
 from moduls.QvApp import QvApp
 from moduls.QvConstants import QvConstants
 from moduls.QvPushButton import QvPushButton
+
+import os
 
 
 class QvVisorHTML(QDialog):
