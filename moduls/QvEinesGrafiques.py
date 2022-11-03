@@ -26,6 +26,13 @@ from moduls.QVDistrictesBarris import QVDistrictesBarris
 from moduls.QvMemoria import QvMemoria
 from moduls.QvPushButton import QvPushButton
 
+def difGeom(geom1, geom2):
+    return geom1.difference(geom2).area()
+
+# Retorna True si la diferència d'àrees entre geom1 i geom2 és menor o igual a prop*geom1.area()
+# Això és perquè a vegades la geometria no està contenida del tot per una diferència molt petita
+def conteRel(geom1, geom2, prop=0.01):
+    return geom1.intersects(geom2) and difGeom(geom1, geom2) <= prop*geom1.area()
 
 class QvSeleccioGrafica(QWidget):
     '''Widget de seleccionar i emmascarar'''
@@ -35,6 +42,7 @@ class QvSeleccioGrafica(QWidget):
         self.canvas = canvas
         self.llegenda = llegenda
         self.projecte = projecte
+        self.tool=None
         self.interficie()
 
     def interficie(self):
@@ -337,11 +345,11 @@ class QvSeleccioGrafica(QWidget):
             featsPnt = layer.getFeatures(
                 QgsFeatureRequest().setFilterRect(rang))
             for f in featsPnt:
-                if self.checkOverlap:
+                if self.checkOverlap.isChecked():
                     if f.geometry().intersects(feat.geometry()):  # Within? Intersects?
                         layer.select(f.id())
                 else:
-                    if f.geometry().within(feat.geometry()):  # Within? Intersects?
+                    if conteRel(f.geometry(), feat.geometry()):
                         layer.select(f.id())
             self.calcularSeleccio()
 
