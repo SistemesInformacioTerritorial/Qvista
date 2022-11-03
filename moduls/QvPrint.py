@@ -23,9 +23,18 @@ projecteInicial='../dades/projectes/BCN11_nord.qgs'
 
 
 class PointTool(QgsMapTool):
-    def __init__(self, parent, canvas):
+    def __init__(self, parent, canvas, layer):
         QgsMapTool.__init__(self, canvas)
         self.parent = parent
+        self.canvas = canvas
+        self.layer = layer
+        self.rubberband = QgsRubberBand(self.canvas)
+        self.rubberband.setColor(QColor(0,0,0,50))
+        self.rubberband.setWidth(4)
+        self.pucMoure = True
+
+        self.activated.connect(self.rubberband.show)
+        self.deactivated.connect(self.rubberband.hide)
 
     
     def canvasMoveEvent(self, event):
@@ -35,21 +44,58 @@ class PointTool(QgsMapTool):
         # self.parent.move(x, y)
 
         # point = self.canvas.getCoordinateTransform().toMapCoordinates(x, y)
+        p = self.canvas.getCoordinateTransform().toMapCoordinates(event.pos().x(), event.pos().y()) # comprovar que sigui així
+        if self.pucMoure:
+            if self.canvas.rotation()==0:
+                self.posXY = [p.x()+self.incX/2, p.y()+self.incY/2]
+                self.rubberband.movePoint(0,QgsPointXY(p.x()+self.incX,p.y()+self.incY),0)
+                self.rubberband.movePoint(1,QgsPointXY(p.x()+self.incX,p.y()),0)
+                self.rubberband.movePoint(2,QgsPointXY(p.x(),p.y()),0)
+                self.rubberband.movePoint(3,QgsPointXY(p.x(),p.y()+self.incY),0)
+                self.rubberband.movePoint(4,QgsPointXY(p.x()+self.incX,p.y()+self.incY),0)
+            else:
+                alpha=math.radians(self.canvas.rotation())
+                beta=math.atan(self.incY/self.incX)
+                d=math.sqrt(self.incX**2+self.incY**2)
+                self.posXY = [(2*p.x()+d*math.cos(alpha+beta))/2,(2*p.y()+d*math.sin(alpha+beta))/2]
+                self.rubberband.movePoint(0,QgsPointXY(p.x()+d*math.cos(alpha+beta),p.y()+d*math.sin(alpha+beta)),0)
+                self.rubberband.movePoint(1,QgsPointXY(p.x()+self.incX*math.cos(alpha),p.y()+self.incX*math.sin(alpha)),0)
+                self.rubberband.movePoint(2,QgsPointXY(p.x(),p.y()),0)
+                self.rubberband.movePoint(3,QgsPointXY(p.x()+self.incY*math.cos(math.radians(90+45)),p.y()+self.incY*math.sin(math.radians(90+45))),0)
+                self.rubberband.movePoint(4,QgsPointXY(p.x()+d*math.cos(alpha+beta),p.y()+d*math.sin(alpha+beta)),0)
+            self.rubberband.show()
 
     def canvasReleaseEvent(self, event):
         
         self.point = self.toMapCoordinates(event.pos())
-        xMon = self.point.x() #???
-        yMon = self.point.y() #???
 
-        self.parent.pucMoure = False
+        self.potsMoure(False)
+    
+    def potsMoure(self, pucMoure=True):
+        self.pucMoure = pucMoure
+    
+    def setIncXY(self, incX, incY):
+        self.incX = incX
+        self.incY = incY
+        self.potsMoure()
+    
+    def canviOrientacio(self):
+        self.potsMoure()
+        self.incX, self.incY = self.incY, self.incX
+    
+    def pintarRectangle(self,poligon):
+        points=[QgsPointXY(0,0),QgsPointXY(0,10),QgsPointXY(10,10),QgsPointXY(0,10),QgsPointXY(0,0)]
+        poligono=QgsGeometry.fromRect(poligon)
+        self.rubberband.setToGeometry(poligono,self.layer)
+        self.rubberband.hide()
+    
         
 class QvPrint(QWidget):
     """Una classe del tipus QWidget que servirà per imprimir un area determinada.
     El widget conté un botó per imprimir, un per tornar a posicionar l'area d'impresió, i un comboBox per escollir l'escala.
     """
     
-    def __init__(self, project, canvas, poligon,parent=None):
+    def __init__(self, project, canvas, poligon, parent=None):
         """Inicialització de la clase:
             Arguments:
                 project {QgsProject().instance()} -- El projecte actiu
@@ -62,6 +108,7 @@ class QvPrint(QWidget):
         # Creating a memory layer to draw later the rubberband.
         estatDirtybit = self.parent.canvisPendents
 
+        # El rectangle serà dibuixat sobre una capa temporal
         self.layer = QgsVectorLayer('Point?crs=epsg:23031', "Capa temporal d'impressió","memory")
         project.addMapLayer(self.layer, False)
         
@@ -71,31 +118,21 @@ class QvPrint(QWidget):
         self.project = project
         self.poligon = poligon
 
-        # Offset inicial del rectangle d'impressió- TODO
-        self.incX = 100
-        self.incY = 150
-
-        # Semafor per deixar fix el rectangle un cop fet click.
-        self.pucMoure = True
-
         # Diccionari d'escales i proporcions que fixen el tamany del rectangle en pantalla.
         # Podria fer-se millor, pero Practicality beats Purity...
-        self.dictEscales = {'100':20, '200':40, '250':45, '500':100, '1000':200, '2000':400, '2500':450, '5000':1000, '10000':2000, '20000':4000, '25000':4500, '50000':10000}
+        # self.dictEscales = {'100':20, '200':40, '250':45, '500':100, '1000':200, '2000':400, '2500':450, '5000':1000, '10000':2000, '20000':4000, '25000':4500, '50000':10000}
+        # self.dictEscales = {str(x):x//5 for x in (100, 200, 250, 500, 1000, 2000, 2500, 5000, 10000, 20000, 25000, 50000)}
+        self.dictEscales = {str(int(x*y)):(x*y)//5 for y in (100, 1000, 10000) for x in (1, 2, 2.5, 5)}
 
         # We instanciate de PointTool tool, to wait for clicks
         # After that, we assign the tool to the canvas.
-        rp = PointTool(self, self.canvas)
-        canvas.setMapTool(rp)
+        self.rp = PointTool(self, self.canvas, self.layer)
+        canvas.setMapTool(self.rp)
 
         self.setupUI()
-
-        self.rubberband = QgsRubberBand(self.canvas)
-        self.rubberband.setColor(QColor(0,0,0,50))
-        self.rubberband.setWidth(4)
-        
         self.canvas.xyCoordinates.connect(self.mocMouse)
-        self.pintarRectangle(self.poligon)
-        self.rubberband.hide()
+
+        self.rp.pintarRectangle(self.poligon)
 
         self.parent.setDirtyBit(estatDirtybit)
 
@@ -172,10 +209,13 @@ class QvPrint(QWidget):
 
     def potsMoure(self):
         # self.canvas.scene().removeItem(self.rubberband)
-        self.pucMoure = True
+        # self.pucMoure = True
+        if self.canvas.mapTool()!=self.rp:
+            self.canvas.setMapTool(self.rp)
+        self.rp.potsMoure()
 
     def canviEscala(self):
-        self.pucMoure = True
+        # self.pucMoure = True
         escala = int(self.dictEscales[self.combo.currentText()])
         mida=self.cbMida.currentText()
         if mida=='A3':
@@ -187,49 +227,31 @@ class QvPrint(QWidget):
         elif mida=='A0':
             escala*=math.sqrt(2)*4
 
-
         if self.cbOrientacio.SelectedItem == "Horitzontal":
-            self.incX = escala
-            self.incY = escala * 1.5
+            incX = escala
+            incY = escala * 1.5
         else:
-            self.incX = escala * 1.5
-            self.incY = escala
+            incX = escala * 1.5
+            incY = escala
+        self.rp.setIncXY(incX, incY)
 
     def canviOrientacio(self):
-        self.pucMoure = True
+        # self.pucMoure = True
         if self.cbOrientacio.SelectedItem == "Vertical":
             self.cbOrientacio.SelectedItem = "Horitzontal"
         else:
             self.cbOrientacio.SelectedItem = "Vertical"
-        self.incX, self.incY = self.incY, self.incX
-
-    def canvasClickat(self): #???
-        print ('Clickat, si')
+        self.rp.canviOrientacio()
 
     def mocMouse(self,p):
         if not self.isVisible():
-            self.rubberband.hide()
-            self.pucMoure
+            self.canvas.unsetMapTool(self.rp)
+    
+    def closeEvent(self, e):
+        super().closeEvent(e)
+        if not self.isVisible():
+            self.canvas.unsetMapTool(self.rp)
 
-        elif self.pucMoure:
-            if self.canvas.rotation()==0:
-                self.posXY = [p.x()+self.incX/2, p.y()+self.incY/2]
-                self.rubberband.movePoint(0,QgsPointXY(p.x()+self.incX,p.y()+self.incY),0)
-                self.rubberband.movePoint(1,QgsPointXY(p.x()+self.incX,p.y()),0)
-                self.rubberband.movePoint(2,QgsPointXY(p.x(),p.y()),0)
-                self.rubberband.movePoint(3,QgsPointXY(p.x(),p.y()+self.incY),0)
-                self.rubberband.movePoint(4,QgsPointXY(p.x()+self.incX,p.y()+self.incY),0)
-            else:
-                alpha=math.radians(self.canvas.rotation())
-                beta=math.atan(self.incY/self.incX)
-                d=math.sqrt(self.incX**2+self.incY**2)
-                self.posXY = [(2*p.x()+d*math.cos(alpha+beta))/2,(2*p.y()+d*math.sin(alpha+beta))/2]
-                self.rubberband.movePoint(0,QgsPointXY(p.x()+d*math.cos(alpha+beta),p.y()+d*math.sin(alpha+beta)),0)
-                self.rubberband.movePoint(1,QgsPointXY(p.x()+self.incX*math.cos(alpha),p.y()+self.incX*math.sin(alpha)),0)
-                self.rubberband.movePoint(2,QgsPointXY(p.x(),p.y()),0)
-                self.rubberband.movePoint(3,QgsPointXY(p.x()+self.incY*math.cos(math.radians(90+45)),p.y()+self.incY*math.sin(math.radians(90+45))),0)
-                self.rubberband.movePoint(4,QgsPointXY(p.x()+d*math.cos(alpha+beta),p.y()+d*math.sin(alpha+beta)),0)
-            self.rubberband.show()
 
 
     def pintarRectangle(self,poligon):
@@ -276,7 +298,7 @@ class QvPrint(QWidget):
         timestamp = time.strftime('%d-%b-%Y_%H%M%S', t)
         sortida=tempdir+'sortida_'+timestamp
         
-        self.imprimirPlanol(self.posXY[0], self.posXY[1], int(self.combo.currentText()), rotacio, self.cbMida.currentText(), self.plantillaMapa , sortida, 'PDF')
+        self.imprimirPlanol(self.rp.posXY[0], self.rp.posXY[1], int(self.combo.currentText()), rotacio, self.cbMida.currentText(), self.plantillaMapa , sortida, 'PDF')
        
         QvApp().logRegistre('Impressió: '+self.combo.currentText() )
     
