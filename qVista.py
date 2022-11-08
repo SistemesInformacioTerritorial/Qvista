@@ -2152,7 +2152,8 @@ class QVista(QMainWindow, Ui_MainWindow):
         pathDesarPerDefecte = QvMemoria().getDirectoriDesar()
 
         # nom = re.sub(r'?a[\W_]+','',self.titolProjecte).strip()
-        nom = get_valid_filename(self.titolProjecte)
+        # nom = get_valid_filename(self.titolProjecte)
+        nom = self.project.baseName()
 
         pathOnDesem = os.path.join(pathDesarPerDefecte,nom)
         nfile,_ = QFileDialog.getSaveFileName(None,"Desar Projecte Qgis", pathOnDesem, "Projectes Qgis (*.qgs)")
