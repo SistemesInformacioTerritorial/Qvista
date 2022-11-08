@@ -42,6 +42,7 @@ class QvSeleccioGrafica(QWidget):
         self.canvas = canvas
         self.llegenda = llegenda
         self.projecte = projecte
+        # self.projecte.fileNameChanged.connect(lambda: self.esborrarSeleccio(True, True))
         self.tool=None
         self.interficie()
 
@@ -70,6 +71,7 @@ class QvSeleccioGrafica(QWidget):
         self.bs3.setIcon(QIcon(os.path.join(configuracioQvista.imatgesDir,'vector-circle-variant.png')))
         self.bs3.setToolTip('Dibuixar un cercle')
         self.bs4 = QvPushButton('Netejar')
+        self.projecte.fileNameChanged.connect(self.setNouProjecte)
         # self.bs4.setCheckable(True)
         # self.bs4.setIcon(QIcon(configuracioQvista.imatgesDir+'trash-can-outline.png'))
 
@@ -232,6 +234,9 @@ class QvSeleccioGrafica(QWidget):
         # self.lytSeleccioGrafica.addWidget(self.bs6)
         # self.lytSeleccioGrafica.addWidget(self.twResultats)
         self.lytSeleccioGrafica.addWidget(self.gbResultats)
+
+    def setNouProjecte(self, nou=True):
+        MascaraAux.nouProjecte=nou
     
     def radiCercle(self):
         if hasattr(self,'toolSelect'):
@@ -379,7 +384,7 @@ class QvSeleccioGrafica(QWidget):
         if mascara:
             try:
                 # qV.project.removeMapLayer(qV.project.mapLayersByName('Màscara')[0])
-                eliminaMascara(self.projecte)
+                eliminaMascara(self.projecte, True)
                 self.canvas.refresh()
             except Exception as e:
                 print(e)
@@ -485,7 +490,7 @@ class QvSeleccioGrafica(QWidget):
         pass
     def hideEvent(self,e):
         super().hideEvent(e)
-        self.foraEines()
+        self.foraEines() 
         if hasattr(self,'tool') and self.tool is not None:
             self.tool.eliminaRubberbands()
 
@@ -679,6 +684,7 @@ class MascaraAux:
     geom = None
     projecte = None
     canvas = None
+    nouProjecte = False
 
 
 
@@ -686,7 +692,7 @@ class MascaraAux:
 def aplicaMascara(projecte, canvas, geoms, mascara=None):
     MascaraAux.projecte = projecte
     MascaraAux.canvas = canvas
-    eliminaMascara(projecte, False)
+    eliminaMascara(projecte, MascaraAux.nouProjecte)
     mascara = obteMascara(projecte, canvas)
     mascaraAux = projecte.mapLayersByName('Màscara auxiliar')[0]
     if MascaraAux.geom is None:
@@ -740,19 +746,20 @@ def creaMascara(projecte, canvas):
     epsg = canvas.mapSettings().destinationCrs().authid()
     mascara = QgsVectorLayer('MultiPolygon?crs=%s' % epsg, 'Màscara', 'memory')
     aplicaParametresMascara(mascara, *QvMemoria().getParametresMascara())
-    if not MascaraAux.teAux:
-        mascaraAux = QgsVectorLayer(
-            'MultiPolygon?crs=%s' % epsg, 'Màscara auxiliar', 'memory')
-        rect = canvas.fullExtent()
-        geom = QgsGeometry().fromRect(rect)
-        feat = QgsFeature()
-        feat.setGeometry(geom)
 
-        pr = mascaraAux.dataProvider()
-        pr.addFeatures([feat])
-        mascaraAux.commitChanges()
-        projecte.addMapLayers([mascaraAux], False)
-        MascaraAux.teAux = True
+    mascaraAux = QgsVectorLayer(
+        'MultiPolygon?crs=%s' % epsg, 'Màscara auxiliar', 'memory')
+    rect = canvas.fullExtent()
+    geom = QgsGeometry().fromRect(rect)
+    feat = QgsFeature()
+    feat.setGeometry(geom)
+
+    pr = mascaraAux.dataProvider()
+    pr.addFeatures([feat])
+    mascaraAux.commitChanges()
+    projecte.addMapLayers([mascaraAux], False)
+    MascaraAux.teAux = True
+
     projecte.addMapLayers([mascara])
     canvas.refresh()
 
@@ -791,6 +798,7 @@ def eliminaMascara(projecte, tambeAuxiliar=True):
                 projecte.mapLayersByName('Màscara auxiliar')[0])
             MascaraAux.teAux = False
             MascaraAux.geom = None
+            MascaraAux.nouProjecte = False
     except Exception as e:
         # Si no hi ha màscara, suda
         pass
