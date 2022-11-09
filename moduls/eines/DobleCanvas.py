@@ -1,6 +1,10 @@
-from moduls.QvImports import *
+from qgis.core import QgsProject
+from qgis.gui import QgsLayerTreeMapCanvasBridge
+from qgis.PyQt.QtWidgets import QDockWidget
+
 from moduls.QvCanvas import QvCanvas
 from moduls.QvCanvasAuxiliar import QvCanvasAuxiliar
+
 
 # Classe no utilitzada. Es conserva com a exemple de com fer una eina sense utilitzar el creador
 class DobleCanvas(QDockWidget):

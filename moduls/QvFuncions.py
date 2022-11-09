@@ -1,13 +1,20 @@
+import inspect
 import os
 import sys
 import time
-import inspect
 from pathlib import Path
-from moduls.QvVideo import QvVideo
-from moduls.QvImports import *
-from moduls.QvConstants import QvConstants
+
+from qgis.core import (QgsGeometry, QgsLayerDefinition,
+                       QgsMapRendererParallelJob, QgsMapSettings, QgsProject,
+                       QgsVectorLayer)
+from qgis.gui import QgsMapCanvas
+from qgis.PyQt.QtCore import QSize, Qt
+from qgis.PyQt.QtWidgets import QDockWidget, QFileDialog, QMessageBox, qApp
+
+import configuracioQvista
 from moduls import QvApp
-from qgis.PyQt.QtWidgets import QMessageBox
+from moduls.QvConstants import QvConstants
+from moduls.QvVideo import QvVideo
 
 if sys.platform == 'win32':
     from moduls.QvFuncionsWin32 import *
@@ -19,7 +26,7 @@ def debugging():
 def setDPI():
     from qgis.PyQt import QtCore
     from qgis.PyQt.QtWidgets import QApplication
-    
+
     #setDPIScaling()
     os.environ["QT_AUTO_SCREEN_SCALE_FACTOR"] = "1" #QT < 5.14
     os.environ["QT_ENABLE_HIGHDPI_SCALING"] = "1" #QT >= 5.14
@@ -215,7 +222,7 @@ def startMovie():
     Returns:
         QvVideo -- Spinner que s'està mostrant (important guardar-lo en algun lloc)
     """
-    player = QvVideo(os.path.join(imatgesDir,"Spinner_2.gif"), 160, 160)
+    player = QvVideo(os.path.join(configuracioQvista.imatgesDir,"Spinner_2.gif"), 160, 160)
     QvConstants.afegeixOmbraWidget(player)
     player.setModal(True)
     player.activateWindow()
@@ -277,7 +284,7 @@ def esborraCarpetaTemporal():
     '''Esborra el contingut de la carpeta temporal en iniciar qVista
     '''
     #Esborrarem el contingut de la carpeta temporal
-    for file in os.scandir(tempdir):
+    for file in os.scandir(configuracioQvista.tempdir):
         try:
             #Si no podem esborrar un arxiu, doncs és igual. Deu estar obert. Ja s'esborrarà en algun moment
             os.unlink(file.path)
@@ -286,7 +293,7 @@ def esborraCarpetaTemporal():
 
 # Funcio per carregar problemes a GITHUB
 def reportarProblema(titol: str, descripcio: str=None):
-    if moduls.QvApp.QvApp().bugUser(titol, descripcio):
+    if QvApp.QvApp().bugUser(titol, descripcio):
         print ('Creat el problema {0:s}'.format(titol))
         return True
     else:
@@ -315,7 +322,7 @@ def capturarImatge(geom: QgsGeometry, canvas: QgsMapCanvas, mida: QSize = None, 
         mida = QSize(amplada, alçada)
     else:
         print(geom.boundingBox().height(), geom.boundingBox().width())
-    path = Path(tempdir, nfile).with_suffix('.png')
+    path = Path(configuracioQvista.tempdir, nfile).with_suffix('.png')
 
     # rotem la geometria
     geom.rotate(canvas.rotation(),geom.centroid().asPoint())
@@ -334,6 +341,7 @@ def capturarImatge(geom: QgsGeometry, canvas: QgsMapCanvas, mida: QSize = None, 
     img = render.renderedImage()
     img.save(str(path), "png")
     return path
+
 class creaEina:
     """Cridable (callable) per decorar la declaració d'una subclasse de QWidget i crear un QDockWidget que el contingui.
     Està pensat per fer-se servir com un decorador, i passar-li com a paràmetre

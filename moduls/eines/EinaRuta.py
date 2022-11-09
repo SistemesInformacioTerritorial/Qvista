@@ -1,18 +1,21 @@
 # https://www.qtcentre.org/threads/53745-QPixmap-as-background-of-QWidget
-from moduls.QvImports  import *
+import time
 
-from qgis.core import QgsRectangle, QgsPointXY
-from qgis.gui import QgsMapTool
-from moduls.QvConstants import QvConstants
-from moduls.QvPushButton import QvPushButton
-from configuracioQvista import *
-from PyQt5.QtWidgets import QWidget, QLabel, QVBoxLayout 
-from PyQt5.QtWidgets import QHBoxLayout, QFrame
-from PyQt5.QtWidgets import  QApplication, QMessageBox
+from PyQt5.QtWidgets import (QApplication, QFrame, QHBoxLayout, QLabel,
+                             QMessageBox, QVBoxLayout, QWidget)
+from qgis.core import QgsPointXY, QgsRectangle
+from qgis.gui import QgsMapCanvas, QgsMapTool, QgsVertexMarker
+from qgis.PyQt.QtCore import QSize
+from qgis.PyQt.QtGui import QIcon
+from qgis.PyQt.QtWidgets import QComboBox, QDockWidget, QLineEdit, QPushButton
+
 from moduls import QvFuncions
 from moduls.QVCercadorAdreca import QCercadorAdreca
-from moduls.QvRuta import *
+from moduls.QvConstants import QvConstants
+from moduls.QvPushButton import QvPushButton
 from moduls.QvReverse import QvReverse
+from moduls.QvRuta import QColor, Ruta, qgisapp
+
 
 class QAdrecaPostalLineEdit(QLineEdit):
     def focusInEvent(self, event):
@@ -427,12 +430,12 @@ class EinaRuta(QWidget):
 
 if __name__ == "__main__":
     with qgisapp() as app:
-        from qgis.gui import  QgsLayerTreeMapCanvasBridge
-        from moduls.QvLlegenda import QvLlegenda
-        from qgis.gui import QgsMapCanvas
         from qgis.core import QgsProject
         from qgis.core.contextmanagers import qgisapp
-     
+        from qgis.gui import QgsLayerTreeMapCanvasBridge, QgsMapCanvas
+
+        from moduls.QvLlegenda import QvLlegenda
+
         # Canvas, projecte i bridge
         start1 = time.time()
         canvas = QgsMapCanvas()

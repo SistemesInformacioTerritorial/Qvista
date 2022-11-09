@@ -1,18 +1,38 @@
-from types import prepare_class
-from moduls.QvImports import *
-from moduls.QvAtributsForms import QvFormAtributs
-from moduls.QvApp import QvApp
-from moduls.QvPushButton import QvPushButton
-from moduls.QvMemoria import QvMemoria
-from moduls.QvConstants import QvConstants
-from moduls.QVDistrictesBarris import QVDistrictesBarris
-from moduls import QvFuncions
-from qgis.gui import QgsMapTool, QgsRubberBand
-from qgis.core import QgsWkbTypes
-import math
 import csv
 import itertools
+import math
+import os
+from types import prepare_class
 
+from qgis.core import (QgsFeature, QgsFeatureRequest, QgsGeometry, QgsMapLayer,
+                       QgsPointXY, QgsRectangle, QgsVector, QgsVectorLayer,
+                       QgsWkbTypes)
+from qgis.gui import QgsMapTool, QgsRubberBand, QgsVertexMarker
+from qgis.PyQt.QtCore import QSize, Qt, QVariant, pyqtSignal
+from qgis.PyQt.QtGui import QColor, QIcon, QIntValidator, QPolygonF
+from qgis.PyQt.QtWidgets import (QAbstractItemView, QAction, QCheckBox,
+                                 QColorDialog, QFileDialog, QFrame, QGroupBox,
+                                 QHBoxLayout, QLabel, QLineEdit, QListWidget,
+                                 QMessageBox, QRadioButton, QSizePolicy,
+                                 QSlider, QTableWidget, QTableWidgetItem,
+                                 QToolBox, QVBoxLayout, QWidget)
+
+import configuracioQvista
+from moduls import QvFuncions
+from moduls.QvApp import QvApp
+from moduls.QvAtributsForms import QvFormAtributs
+from moduls.QvConstants import QvConstants
+from moduls.QVDistrictesBarris import QVDistrictesBarris
+from moduls.QvMemoria import QvMemoria
+from moduls.QvPushButton import QvPushButton
+
+def difGeom(geom1, geom2):
+    return geom1.difference(geom2).area()
+
+# Retorna True si la diferència d'àrees entre geom1 i geom2 és menor o igual a prop*geom1.area()
+# Això és perquè a vegades la geometria no està contenida del tot per una diferència molt petita
+def conteRel(geom1, geom2, prop=0.01):
+    return geom1.intersects(geom2) and difGeom(geom1, geom2) <= prop*geom1.area()
 
 class QvSeleccioGrafica(QWidget):
     '''Widget de seleccionar i emmascarar'''
@@ -22,6 +42,8 @@ class QvSeleccioGrafica(QWidget):
         self.canvas = canvas
         self.llegenda = llegenda
         self.projecte = projecte
+        # self.projecte.fileNameChanged.connect(lambda: self.esborrarSeleccio(True, True))
+        self.tool=None
         self.interficie()
 
     def interficie(self):
@@ -38,19 +60,20 @@ class QvSeleccioGrafica(QWidget):
 
         self.bs1 = QvPushButton(flat=True)
         # self.bs1.setCheckable(True)
-        self.bs1.setIcon(QIcon(os.path.join(imatgesDir,'apuntar.png')))
+        self.bs1.setIcon(QIcon(os.path.join(configuracioQvista.imatgesDir,'apuntar.png')))
         self.bs1.setToolTip('Seleccionar elements de la capa activa')
         self.bs2 = QvPushButton(flat=True)
         # self.bs2.setCheckable(True)
-        self.bs2.setIcon(QIcon(os.path.join(imatgesDir,'shape-polygon-plus.png')))
+        self.bs2.setIcon(QIcon(os.path.join(configuracioQvista.imatgesDir,'shape-polygon-plus.png')))
         self.bs2.setToolTip('Dibuixar un polígon')
         self.bs3 = QvPushButton(flat=True)
         # self.bs3.setCheckable(True)
-        self.bs3.setIcon(QIcon(os.path.join(imatgesDir,'vector-circle-variant.png')))
+        self.bs3.setIcon(QIcon(os.path.join(configuracioQvista.imatgesDir,'vector-circle-variant.png')))
         self.bs3.setToolTip('Dibuixar un cercle')
         self.bs4 = QvPushButton('Netejar')
+        self.projecte.fileNameChanged.connect(self.setNouProjecte)
         # self.bs4.setCheckable(True)
-        # self.bs4.setIcon(QIcon(imatgesDir+'trash-can-outline.png'))
+        # self.bs4.setIcon(QIcon(configuracioQvista.imatgesDir+'trash-can-outline.png'))
 
         # self.lblNombreElementsSeleccionats = QLabel('No hi ha elements seleccionats.')
         self.lblCapaSeleccionada = QLabel('No hi capa seleccionada.')
@@ -211,6 +234,9 @@ class QvSeleccioGrafica(QWidget):
         # self.lytSeleccioGrafica.addWidget(self.bs6)
         # self.lytSeleccioGrafica.addWidget(self.twResultats)
         self.lytSeleccioGrafica.addWidget(self.gbResultats)
+
+    def setNouProjecte(self, nou=True):
+        MascaraAux.nouProjecte=nou
     
     def radiCercle(self):
         if hasattr(self,'toolSelect'):
@@ -324,11 +350,11 @@ class QvSeleccioGrafica(QWidget):
             featsPnt = layer.getFeatures(
                 QgsFeatureRequest().setFilterRect(rang))
             for f in featsPnt:
-                if self.checkOverlap:
+                if self.checkOverlap.isChecked():
                     if f.geometry().intersects(feat.geometry()):  # Within? Intersects?
                         layer.select(f.id())
                 else:
-                    if f.geometry().within(feat.geometry()):  # Within? Intersects?
+                    if conteRel(f.geometry(), feat.geometry()):
                         layer.select(f.id())
             self.calcularSeleccio()
 
@@ -358,7 +384,7 @@ class QvSeleccioGrafica(QWidget):
         if mascara:
             try:
                 # qV.project.removeMapLayer(qV.project.mapLayersByName('Màscara')[0])
-                eliminaMascara(self.projecte)
+                eliminaMascara(self.projecte, True)
                 self.canvas.refresh()
             except Exception as e:
                 print(e)
@@ -464,7 +490,7 @@ class QvSeleccioGrafica(QWidget):
         pass
     def hideEvent(self,e):
         super().hideEvent(e)
-        self.foraEines()
+        self.foraEines() 
         if hasattr(self,'tool') and self.tool is not None:
             self.tool.eliminaRubberbands()
 
@@ -658,6 +684,7 @@ class MascaraAux:
     geom = None
     projecte = None
     canvas = None
+    nouProjecte = False
 
 
 
@@ -665,7 +692,7 @@ class MascaraAux:
 def aplicaMascara(projecte, canvas, geoms, mascara=None):
     MascaraAux.projecte = projecte
     MascaraAux.canvas = canvas
-    eliminaMascara(projecte, False)
+    eliminaMascara(projecte, MascaraAux.nouProjecte)
     mascara = obteMascara(projecte, canvas)
     mascaraAux = projecte.mapLayersByName('Màscara auxiliar')[0]
     if MascaraAux.geom is None:
@@ -719,19 +746,20 @@ def creaMascara(projecte, canvas):
     epsg = canvas.mapSettings().destinationCrs().authid()
     mascara = QgsVectorLayer('MultiPolygon?crs=%s' % epsg, 'Màscara', 'memory')
     aplicaParametresMascara(mascara, *QvMemoria().getParametresMascara())
-    if not MascaraAux.teAux:
-        mascaraAux = QgsVectorLayer(
-            'MultiPolygon?crs=%s' % epsg, 'Màscara auxiliar', 'memory')
-        rect = canvas.fullExtent()
-        geom = QgsGeometry().fromRect(rect)
-        feat = QgsFeature()
-        feat.setGeometry(geom)
 
-        pr = mascaraAux.dataProvider()
-        pr.addFeatures([feat])
-        mascaraAux.commitChanges()
-        projecte.addMapLayers([mascaraAux], False)
-        MascaraAux.teAux = True
+    mascaraAux = QgsVectorLayer(
+        'MultiPolygon?crs=%s' % epsg, 'Màscara auxiliar', 'memory')
+    rect = canvas.fullExtent()
+    geom = QgsGeometry().fromRect(rect)
+    feat = QgsFeature()
+    feat.setGeometry(geom)
+
+    pr = mascaraAux.dataProvider()
+    pr.addFeatures([feat])
+    mascaraAux.commitChanges()
+    projecte.addMapLayers([mascaraAux], False)
+    MascaraAux.teAux = True
+
     projecte.addMapLayers([mascara])
     canvas.refresh()
 
@@ -770,6 +798,7 @@ def eliminaMascara(projecte, tambeAuxiliar=True):
                 projecte.mapLayersByName('Màscara auxiliar')[0])
             MascaraAux.teAux = False
             MascaraAux.geom = None
+            MascaraAux.nouProjecte = False
     except Exception as e:
         # Si no hi ha màscara, suda
         pass
@@ -1668,12 +1697,12 @@ class QvSeleccioElement(QgsMapTool):
 
 
 if __name__ == "__main__":
-    from qgis.gui import QgsLayerTreeMapCanvasBridge
-    from moduls.QvLlegenda import QvLlegenda
-    from moduls.QvCanvas import QvCanvas
-    from qgis.gui import QgsMapCanvas
     from qgis.core import QgsProject
     from qgis.core.contextmanagers import qgisapp
+    from qgis.gui import QgsLayerTreeMapCanvasBridge, QgsMapCanvas
+
+    from moduls.QvCanvas import QvCanvas
+    from moduls.QvLlegenda import QvLlegenda
     with qgisapp() as app:
         # canvas = QgsMapCanvas()
         canvas = QvCanvas(llistaBotons=["panning","zoomIn","zoomOut"])

@@ -1,20 +1,38 @@
 #!/usr/bin/env python
-from moduls.QvImports import *
-from moduls.QvSingleton import Singleton
-from qgis.PyQt import QtWidgets
 import os
+import re
+import shutil
+import subprocess
+import sys
+import time
+from pathlib import Path
+
+from qgis.PyQt.QtWidgets import (QApplication, QComboBox, QDialog, QFileDialog,
+                             QFrame, QHBoxLayout, QLabel, QLineEdit,
+                             QMessageBox, QPushButton, QScrollArea, QTextEdit,
+                             QVBoxLayout, QWidget)
+from qgis.core import (QgsGeometry, QgsPoint, QgsPointXY, QgsProject,
+                       QgsVectorLayer)
+from qgis.core.contextmanagers import qgisapp
+from qgis.gui import QgsMapTool, QgsRubberBand, QtCore
+from qgis.PyQt import QtWidgets
+from qgis.PyQt.QtCore import (QEvent, QMimeData, QPoint, QSize, Qt, QUrl,
+                              pyqtSignal)
+from qgis.PyQt.QtGui import QCursor, QDrag, QFont, QIcon, QPainter, QPixmap
+from qgis.PyQt.QtWidgets import QSizePolicy
+
+from configuracioQvista import (carpetaCatalegProjectesLlista,
+                                carpetaCatalegProjectesPrivats, imatgesDir,
+                                tempdir)
+from moduls import QvFuncions
 from moduls.QvConstants import QvConstants
+from moduls.QvFavorits import QvFavorits
+from moduls.QvFuncioFil import QvFuncioFil
+from moduls.QvMemoria import QvMemoria
 from moduls.QvPushButton import QvPushButton
 from moduls.QvRedimLayout import QvRedimLayout
-import shutil
+from moduls.QvSingleton import Singleton
 from moduls.QvVisorHTML import QvVisorHTML
-import re
-from moduls.QvFavorits import QvFavorits
-from moduls.QvMemoria import QvMemoria
-from moduls import QvFuncions
-from moduls.QvFuncioFil import QvFuncioFil
-import subprocess
-from PyQt5.QtCore import pyqtSignal
 
 
 # Aquesta classe carregarà en paral·lel les dades que són lentes 
@@ -48,7 +66,7 @@ class CarregadorCataleg(Singleton):
                 cont=b''
             wid.metadadesLlegides(titol, text)
             wid.imatgeLlegida(cont)
-        delattr(self,'llistaRutesCarregar')
+            self.llistaRutesCarregar=[]
     def start(self):
         self.func = QvFuncioFil(self.itera)
         self.func.start()
@@ -330,7 +348,7 @@ class QvNouCataleg(QWidget):
             dirs = sorted(dirs)
             for x in dirs:
                 self.catalegs[x] = self.carregaBotons(x, y)
-                privat = y in carpetaCatalegProjectesPrivats
+                privat = y==carpetaCatalegProjectesPrivats
                 local = y in QvMemoria().getCatalegsLocals()
                 boto = BotoLateral(x, self, privat, local)
                 boto.setCheckable(True)
@@ -477,7 +495,7 @@ class QvNouCataleg(QWidget):
         shutil.copy2(dir,tempdir)
         copiat=os.path.join(tempdir,os.path.basename(dir))
         while not os.path.exists(copiat):
-            sleep(1)
+            time.sleep(1)
         os.startfile(copiat)
 
     def obrirInfo(self, dir: str):
@@ -1394,8 +1412,8 @@ class QvCreadorCataleg(QDialog):
 
 if __name__ == "__main__":
     import configuracioQvista
-    from moduls.QvCanvas import QvCanvas
     from moduls.QvAtributs import QvAtributs
+    from moduls.QvCanvas import QvCanvas
     from moduls.QvLlegenda import QvLlegenda
     with qgisapp() as app:
         with open('style.qss') as f:

@@ -1,11 +1,17 @@
 # coding:utf-8
 
-from moduls.QvImports import *
+from qgis.core import (QgsCoordinateReferenceSystem, QgsCoordinateTransform,
+                       QgsPointXY, QgsProject)
+from qgis.core.contextmanagers import qgisapp
+from qgis.gui import (QgsLayerTreeMapCanvasBridge, QgsMapCanvas, QgsMapTool,
+                      QgsVertexMarker)
+from qgis.PyQt.QtCore import QPoint, Qt, QUrl, pyqtSignal
+from qgis.PyQt.QtGui import QColor
+from qgis.PyQt.QtWebKitWidgets import QWebPage, QWebView  # QWebPage (???)
+from qgis.PyQt.QtWidgets import QFrame, QHBoxLayout, QVBoxLayout, QWidget
 
-from qgis.PyQt.QtCore import pyqtSignal
-
-from qgis.PyQt.QtWebKitWidgets import QWebView , QWebPage #QWebPage (???)
 from moduls.QvPushButton import QvPushButton
+
 
 def ignora_errors_ssl(reply, errors):
     # funció per evitar els errors de SSL que donen a vegades

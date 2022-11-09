@@ -1,9 +1,18 @@
 #!/usr/bin/env python
-from moduls.QvImports import * 
+import os
+
+from qgis.PyQt.QtCore import QPoint, QSize, Qt
+from qgis.PyQt.QtGui import QIcon, QPixmap
+from qgis.PyQt.QtWidgets import (QDialog, QHBoxLayout, QLabel, QLineEdit,
+                                 QMessageBox, QSizePolicy, QVBoxLayout,
+                                 QWidget)
+
+from configuracioQvista import docdirPlantilles, imatgesDir
+from moduls.QvApp import QvApp
 from moduls.QvConstants import QvConstants
 from moduls.QvPushButton import QvPushButton
 from moduls.QvToolButton import QvToolButton
-from moduls.QvApp import QvApp
+
 
 class QvNouMapa(QDialog):
     '''Diàleg de creació del mapa. Mostra uns mapes base i una line edit perquè l'usuari triï base i títol del projecte, i els carrega en el qVista quan sortim del diàleg'''
@@ -86,7 +95,7 @@ class QvNouMapa(QDialog):
         self.mapa2.setIcon(QIcon(os.path.join(imatgesDir,'nou_guia.png')))
         self.mapa2.setIconSize(QSize(wImage, hImage))
         self.mapa2.clicked.connect(lambda: self.botoClick(self.mapa2))
-        
+
 
         self.layoutTresBotons2=QHBoxLayout(self)
         self.mapa3=QvToolButton(self)
@@ -116,8 +125,8 @@ class QvNouMapa(QDialog):
         self.layoutTresBotons2.addWidget(self.mapa3)
         self.layoutTresBotons2.addWidget(self.mapa4)
         self.layoutTresBotons2.addWidget(self.mapa5)
-        
-        
+
+
 
         self.layoutContingut.addLayout(self.layoutTresBotons1)
         self.layoutContingut.addLayout(self.layoutTresBotons2)
@@ -164,7 +173,7 @@ class QvNouMapa(QDialog):
             adreca{str} -- Adreça a posar. Ha de ser un projecte qGis, i en teoria hauria d'equivaldre a la icona del botó a la que s'asocia
         '''
         self.adreca=adreca
-        if self.leTitol.text()!='': 
+        if self.leTitol.text()!='':
             self.botoAcceptar.setEnabled(True)
     def setTitol(self,titol):
         '''Posa títol al projecte que farem
@@ -180,7 +189,7 @@ class QvNouMapa(QDialog):
     def carrega(self):
         self.funcCarregar(self.adreca,self.titol)
         self.close()
-    
+
     def mousePressEvent(self, event):
         self.oldPos = event.globalPos()
 
@@ -195,7 +204,7 @@ class QvNouMapa(QDialog):
         if event.key() == Qt.Key_Return:
             if self.botoAcceptar.isEnabled(): #Si el botó d'acceptar està enabled, podem acceptar
                 self.carrega()
-    
+
     def exec(self):
         if QvApp().intranet:
             super().exec()

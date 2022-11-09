@@ -891,6 +891,9 @@ QToolButton:disabled{
              </item>
              <item>
               <widget class="QCheckBox" name="cbBaixesVisibles">
+               <property name="enabled">
+                <bool>true</bool>
+               </property>
                <property name="layoutDirection">
                 <enum>Qt::LeftToRight</enum>
                </property>
@@ -901,7 +904,7 @@ QToolButton:disabled{
                 <string>Baixes visibles</string>
                </property>
                <property name="checked">
-                <bool>true</bool>
+                <bool>false</bool>
                </property>
                <property name="tristate">
                 <bool>true</bool>

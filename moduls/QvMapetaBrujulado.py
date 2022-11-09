@@ -1,23 +1,21 @@
-from qgis.core import QgsRectangle
-from PyQt5.QtCore import Qt, QSize, QPoint, QRect
-from PyQt5.QtWidgets import QFrame, QSpinBox, QLineEdit, QApplication, QHBoxLayout,QColorDialog
-from PyQt5.QtGui import QPainter, QBrush, QPen, QPolygon
-from PyQt5.QtGui import QPixmap
-from PyQt5.QtCore import pyqtSignal, QSize, QTimer
-
-import sys
 import os
-from moduls.QvImports  import *
-from moduls.QvDropFiles import QvDropFiles
-from moduls.QvConstants import QvConstants
-from moduls.QvPushButton import QvPushButton
-from moduls.QvCompass import QvCompass
-from moduls.QvMapeta import QvMapeta
-from moduls.QvCrearMapeta import QvCrearMapetaConBotones
-from configuracioQvista import *
-from PyQt5.QtWidgets import QFrame, QSpinBox, QLineEdit
-from PyQt5.QtGui import QPainter, QBrush, QPen, QPolygon
+import sys
+import time
+
 import numpy as np
+from PyQt5.QtCore import QPoint, QRect, QSize, Qt, QTimer, pyqtSignal
+from PyQt5.QtGui import QBrush, QColor, QPainter, QPen, QPixmap, QPolygon
+from PyQt5.QtWidgets import (QApplication, QColorDialog, QFrame, QHBoxLayout,
+                             QLineEdit, QMainWindow, QMenu, QSpinBox)
+from qgis.core import QgsRectangle
+from qgis.core.contextmanagers import qgisapp
+
+from moduls.QvCompass import QvCompass
+from moduls.QvConstants import QvConstants
+from moduls.QvCrearMapeta import QvCrearMapetaConBotones
+from moduls.QvDropFiles import QvDropFiles
+from moduls.QvMapeta import QvMapeta
+from moduls.QvPushButton import QvPushButton
 
 
 class QvMapetaBrujulado(QFrame):
@@ -269,12 +267,12 @@ if __name__ == "__main__":
 
     with qgisapp() as app:
 
-        from qgis.gui import  QgsLayerTreeMapCanvasBridge
-        from moduls.QvLlegenda import QvLlegenda
-        from qgis.gui import QgsMapCanvas
         from qgis.core import QgsProject
         from qgis.core.contextmanagers import qgisapp
-     
+        from qgis.gui import QgsLayerTreeMapCanvasBridge, QgsMapCanvas
+
+        from moduls.QvLlegenda import QvLlegenda
+
         # Canvas, projecte i bridge
         start1 = time.time()
         canvas=QgsMapCanvas()

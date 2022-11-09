@@ -1,56 +1,33 @@
-import os
+from configuracioQvista_default import ConfigBase
+from moduls.QvSingleton import singleton
 
-#Parametres configuració inicial
-versio="0.99"
-titolFinestra = "qVista %s  Sistema d'Informació Territorial de Barcelona"%versio
 
-carpetaCataleg = "N:/9SITEB/Publicacions/qVista/Cataleg/Catàleg de capes corporatives/"
-carpetaCatalegPrivat = 'L:/DADES/SIT/qVista/CATALEG/Catàleg de capes privades/'
-carpetaCatalegLocal = os.path.abspath('../dades/Catàleg de capes local')
-carpetaCatalegLlista = [carpetaCataleg, carpetaCatalegPrivat, carpetaCatalegLocal]
-#Definim per separat els directoris de projectes públics i privats, de manera que puguem comprovar en qualsevol moment si un directori és de projectes públics o privats
-carpetaCatalegProjectesPublics=["N:/9SITEB/Publicacions/qVista/Cataleg/Mapes publics/"]
-carpetaCatalegProjectesPrivats=['L:/DADES/SIT/qVista/CATALEG/MAPES PRIVATS/']
-carpetaCatalegProjectesLlista = [*carpetaCatalegProjectesPublics,*carpetaCatalegProjectesPrivats]
+# Per canviar algun atribut definit a configuracioQvista_default, modificar aquí
+# En principi està definit per fer canvis només a les coses definides en majúscula
+# Es poden modificar altres coses, up to you
+@singleton
+class Config(ConfigBase):
+    # EXEMPLE de modificació:
+    # TITOLFINESTRA = "qVista versio {} - {}"
+    # def GETTITOLFINESTRA(self):
+    #     return self.TITOLFINESTRA.format(self.VERSIO, datetime.date.today().strftime("%d/%m/%Y"))
+    pass
 
-projecteInicial = os.path.abspath('mapesOffline/qVista default map.qgs')
-# projecteInicial = os.path.abspath('mapesOffline/00 Mapa TM - Situació rr QPKG.qgs')
 
-pathPlantilles = "plantillesMapes/"
-
-estatConnexio = "Xarxa municipal: Connectat"
-
-dirTemp='C:/temp/'
-QvTempdir=os.path.join(dirTemp,'qVista/')
-tempdir=os.path.join(QvTempdir,'temp/') #Seran els arxius temporals de qVista que no s'han de guardar entre execucions
-dadesdir=os.path.join(QvTempdir,'dades/') #Arxius temporals que volem conservar
-configdir=os.path.join(QvTempdir+'config/') #Configuracions i coses
-
-docdir='n:/siteb/apl/pyqgis/qvista/dades/'
-imatgesDir = os.path.abspath('Imatges/')
-docdirPlantilles=os.path.join(docdir,'plantilles/')
-
-arxiuAvis=os.path.join(docdir,'Avisos.htm')
-arxiuNews=os.path.join(docdir,'Noticies.htm')
-carpetaDocuments=os.path.join(docdir,'Documentacio/')
-carpetaDocumentsLocal=os.path.abspath('documentacio/')
-arxiuInfoQVista=os.path.join(docdir,'InfoQVista.pdf')
-
-widthLlegenda = 250 #percentatge
-
-#Per defecte desarem els arxius al directori home de l'usuari, si no ens indica una altra cosa
-# Un cop desi un arxiu, qVista recordarà el directori on l'ha desat i intentarà desar el següent allà
-# try:
-#     pathDesarPerDefecte=str(Path.home().resolve())
-# except:
-#     pathDesarPerDefecte='.'
-
-for x in (dirTemp, QvTempdir, tempdir, dadesdir, configdir, carpetaCatalegLocal):
-    if not os.path.exists(x):
+# NO TOCAR. 
+# Intercepta l'accés als atributs del mòdul per anar directament als de Config
+# EXEMPLE:
+# import configuracioQvista
+# print(configuracioQvista.versio) # imprimeix configuracioQvista.Config().versio
+def __getattr__(nom):
+    if nom == 'Config':
+        return Config
+    try:
+        return getattr(Config(), nom)
+    except AttributeError:
         try:
-            os.mkdir(x)
-        except:
-            print('ERROR. No he pogut crear el directori temporal ',x)
-
-if not os.path.isdir(carpetaCataleg):
-    estatConnexio = "Xarxa municipal: Desconnectat"
+            return globals()[nom]
+        except KeyError:
+            pass
+    
+    raise AttributeError(f"configuracioQvista no té definit l'atribut {nom}")

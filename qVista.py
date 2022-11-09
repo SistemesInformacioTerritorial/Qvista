@@ -5,58 +5,85 @@ import time
 
 startGlobal = time.time()
 
+start = time.time()
 # Fitxer principal de importació de llibreries
-from moduls.QvImports import *
+from qgis.core import (QgsExpressionContextUtils, QgsMapLayer, QgsProject,
+                       QgsRasterLayer, QgsVectorLayer)
+from qgis.core.contextmanagers import qgisapp, sys
+from qgis.gui import (QgsGui, QgsLayerTreeMapCanvasBridge, QgsRubberBand,
+                      QgsVertexMarker)
+from qgis.PyQt import QtCore
+from qgis.PyQt.QtCore import (QCoreApplication, QDateTime, QProcess, QSize, Qt,
+                              QUrl, pyqtSignal)
+from qgis.PyQt.QtGui import (QColor, QDesktopServices, QFont, QIcon,
+                             QKeySequence, QPainter, QPen, QPixmap)
+from qgis.PyQt.QtWidgets import (QAction, QCheckBox, QDialog, QDockWidget,
+                                 QFileDialog, QFrame, QHBoxLayout, QLabel,
+                                 QLineEdit, QMainWindow, QMenu, QMessageBox,
+                                 QShortcut, QSizePolicy, QSpacerItem,
+                                 QSplashScreen, QSplitter, QStyleFactory,
+                                 QToolButton, QVBoxLayout, QWhatsThis, QWidget,
+                                 qApp)
+
+from configuracioQvista import (QvTempdir, arxiuInfoQVista,
+                                carpetaCatalegProjectesLlista, configdir,
+                                dadesdir, imatgesDir, projecteInicial,
+                                titolFinestra, versio)
+from cubista3 import Ui_MainWindow
+from info_ui import Ui_Informacio
+
+print ('QvImports: ',time.time()-start)
 
 # Carrega de moduls Qv
 iniciTempsModuls = time.time()
 
 
-from moduls.QvUbicacions import QvUbicacions
-from moduls.QvPrint import QvPrint
-from moduls.QvCanvas import QvCanvas
-from moduls.QvEinesGrafiques import QvSeleccioGrafica, carregaMascara, QvMesuraGrafica
-from moduls.QvLlegenda import QvLlegenda
-from moduls.QvAtributs import QvAtributs
-from moduls.QvMapetaBrujulado import QvMapetaBrujulado
-from moduls.QvCrearMapeta import QvCrearMapetaConBotones
-from moduls.QVCercadorAdreca import QCercadorAdreca
-from moduls.QVDistrictesBarris import QVDistrictesBarris
-from moduls.QvApp import QvApp
-from moduls.QvPavimentacio import DockPavim
-# from moduls.QvMarxesCiutat import MarxesCiutat
-from moduls.QvToolTip import QvToolTip
-from moduls.QvDropFiles import QvDropFiles
-from moduls.QvNews import QvNews
-from moduls.QvPushButton import QvPushButton
-from moduls.QvSuggeriments import QvSuggeriments
-from moduls.QvConstants import QvConstants
-from moduls.QvAvis import QvAvis
-from moduls.QvToolButton import QvToolButton
-from moduls.QvMenuBar import QvMenuBar
-from moduls.QvNouMapa import QvNouMapa
-from moduls.QvVisorHTML import QvVisorHTML
-from moduls.QvDocumentacio import QvDocumentacio
-from moduls.QvNouCataleg import QvNouCataleg, QvCreadorCataleg
-from moduls.QvNouCatalegCapes import QvNouCatalegCapes
-from moduls.QvCatalegCapes import QvCatalegCapes, QvCreadorCatalegCapes
-from moduls.QvSabiesQue import QvSabiesQue
-from moduls.QvMemoria import QvMemoria
-from moduls.QvBafarada import QvBafarada
-from moduls.QvCarregadorGPKG import QvCarregadorGPKG
-from moduls.QvVisualitzacioCapa import QvVisualitzacioCapa
-from moduls.QvSobre import QvSobre
-from moduls import QvFuncions
-from moduls.QvEines import QvEines
-from moduls.QvCanvasAuxiliar import QvCanvasAuxiliar
-from moduls.QvStatusBar import QvStatusBar
-import os        
+import functools  # Eines de funcions, per exemple per avaluar-ne parcialment una
 import importlib
 import itertools
+import os
 import re
-
 from pathlib import Path
-import functools #Eines de funcions, per exemple per avaluar-ne parcialment una
+
+from moduls import QvFuncions
+from moduls.QvApp import QvApp
+from moduls.QvAtributs import QvAtributs
+from moduls.QvAvis import QvAvis
+from moduls.QvBafarada import QvBafarada
+from moduls.QvCanvas import QvCanvas
+from moduls.QvCanvasAuxiliar import QvCanvasAuxiliar
+from moduls.QvCarregadorGPKG import QvCarregadorGPKG
+from moduls.QvCatalegCapes import QvCatalegCapes, QvCreadorCatalegCapes
+from moduls.QVCercadorAdreca import QCercadorAdreca
+from moduls.QvConstants import QvConstants
+from moduls.QvCrearMapeta import QvCrearMapetaConBotones
+from moduls.QVDistrictesBarris import QVDistrictesBarris
+from moduls.QvDocumentacio import QvDocumentacio
+from moduls.QvDropFiles import QvDropFiles
+from moduls.QvEines import QvEines
+from moduls.QvEinesGrafiques import (QvMesuraGrafica, QvSeleccioGrafica,
+                                     carregaMascara, eliminaMascara)
+from moduls.QvLlegenda import QvLlegenda
+from moduls.QvMapetaBrujulado import QvMapetaBrujulado
+from moduls.QvMemoria import QvMemoria
+from moduls.QvMenuBar import QvMenuBar
+from moduls.QvNews import QvNews
+from moduls.QvNouCataleg import QvCreadorCataleg, QvNouCataleg
+from moduls.QvNouCatalegCapes import QvNouCatalegCapes
+from moduls.QvNouMapa import QvNouMapa
+from moduls.QvPavimentacio import DockPavim
+from moduls.QvPrint import QvPrint
+from moduls.QvPushButton import QvPushButton
+from moduls.QvSabiesQue import QvSabiesQue
+from moduls.QvSobre import QvSobre
+from moduls.QvStatusBar import QvStatusBar
+from moduls.QvSuggeriments import QvSuggeriments
+from moduls.QvToolButton import QvToolButton
+# from moduls.QvMarxesCiutat import MarxesCiutat
+from moduls.QvToolTip import QvToolTip
+from moduls.QvUbicacions import QvUbicacions
+from moduls.QvVisorHTML import QvVisorHTML
+from moduls.QvVisualitzacioCapa import QvVisualitzacioCapa
 
 # Impressió del temps de carrega dels moduls Qv
 print ('Temps de carrega dels moduls Qv:', time.time()-iniciTempsModuls)
@@ -784,14 +811,6 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.marcaLloc.setPenWidth(3)
         self.marcaLloc.show()
         self.marcaLlocPosada = True
-        try:
-            import what3words
-
-            geocoder = what3words.Geocoder("HTD7LNB9")
-            palabras = geocoder.convert_to_3wa(what3words.Coordinates(self.puntTransformat.y(), self.puntTransformat.y()), language='es')
-            print(palabras[words])
-        except:
-            print('No va 3 words')
 
     def preparacioTaulaAtributs(self):
         """ 
@@ -916,8 +935,8 @@ class QVista(QMainWindow, Ui_MainWindow):
                 exec('self.act{}.triggered.connect(self.prepararDash({}))'.format(nom, nom))
                 exec('self.menuEntorns.addAction(self.act{})'.format(nom))
         
-        self.menuEntorns.addAction(self.actPavimentacio)
-        self.menuEntorns.addAction(self.actMarxesCiutat)
+        # self.menuEntorns.addAction(self.actPavimentacio)
+        # self.menuEntorns.addAction(self.actMarxesCiutat)
     
     def streetViewTancat(self):
         if self.dwSV.isHidden():
@@ -1159,9 +1178,9 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.actPavimentacio.setStatusTip("Pavimentació")
         self.actPavimentacio.triggered.connect(self.pavimentacio)
 
-        self.actMarxesCiutat = QAction("Marxes de Ciutat", self)
-        self.actMarxesCiutat.setStatusTip("Marxes de Ciutat")
-        self.actMarxesCiutat.triggered.connect(self.marxesCiutat)
+        # self.actMarxesCiutat = QAction("Marxes de Ciutat", self)
+        # self.actMarxesCiutat.setStatusTip("Marxes de Ciutat")
+        # self.actMarxesCiutat.triggered.connect(self.marxesCiutat)
 
         self.actPropietatsLayer = QAction("Opcions de visualització", self)
         self.actPropietatsLayer.setStatusTip("Opcions de visualització")
@@ -2133,7 +2152,8 @@ class QVista(QMainWindow, Ui_MainWindow):
         pathDesarPerDefecte = QvMemoria().getDirectoriDesar()
 
         # nom = re.sub(r'?a[\W_]+','',self.titolProjecte).strip()
-        nom = get_valid_filename(self.titolProjecte)
+        # nom = get_valid_filename(self.titolProjecte)
+        nom = self.project.baseName()
 
         pathOnDesem = os.path.join(pathDesarPerDefecte,nom)
         nfile,_ = QFileDialog.getSaveFileName(None,"Desar Projecte Qgis", pathOnDesem, "Projectes Qgis (*.qgs)")
@@ -2173,7 +2193,10 @@ class QVista(QMainWindow, Ui_MainWindow):
             self.pathProjecteActual=proj
 
         # desem com a tal
-        self.project.write(proj)
+        # QgsProject.write(str) desaria directament el projecte a la ruta indicada
+        # En teoria canvia l'arxiu al que apunta QgsProject, però no funcionava correctament
+        self.project.setFileName(proj)
+        self.project.write()
         qApp.restoreOverrideCursor()
         qApp.processEvents()
         # Deixem de tenir canvis pendents
@@ -2251,10 +2274,10 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.addDockWidget( Qt.RightDockWidgetArea, self.dwPavim)
         self.dwPavim.show()    
         
-    def marxesCiutat(self): 
-        self.dwMarxes = MarxesCiutat(self)
-        self.addDockWidget( Qt.RightDockWidgetArea, self.dwMarxes)
-        self.dwMarxes.show()    
+    # def marxesCiutat(self): 
+    #     self.dwMarxes = MarxesCiutat(self)
+    #     self.addDockWidget( Qt.RightDockWidgetArea, self.dwMarxes)
+    #     self.dwMarxes.show()    
 
     
 

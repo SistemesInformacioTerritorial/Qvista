@@ -1,20 +1,27 @@
 # https://www.qtcentre.org/threads/53745-QPixmap-as-background-of-QWidget
-from moduls.QvImports  import *
-
-from qgis.core import QgsRectangle, QgsPointXY
-from qgis.gui import QgsMapTool
-from moduls.QvConstants import QvConstants
-from moduls.QvPushButton import QvPushButton
-from configuracioQvista import *
-from PyQt5.QtWidgets import QWidget, QLabel, QVBoxLayout, QHBoxLayout, QFrame, QApplication, QMessageBox
 from PyQt5 import QtSvg
+from PyQt5.QtWidgets import (QApplication, QFrame, QHBoxLayout, QLabel,
+                             QMessageBox, QVBoxLayout, QWidget)
+from qgis.core import QgsPointXY, QgsRectangle
+from qgis.gui import QgsMapTool
+from qgis.PyQt.QtCore import QDir, Qt, pyqtSignal
+from qgis.PyQt.QtGui import QIcon, QPixmap
+from qgis.PyQt.QtWidgets import (QCheckBox, QFileDialog, QGroupBox, QLineEdit,
+                                 QPushButton, QRadioButton, QScrollArea,
+                                 QStackedLayout)
+
+import moduls.imported.simplekml.kml as simplekml
 from moduls import QvFuncions
 from moduls.QVCercadorAdreca import QCercadorAdreca
-from moduls.QvMultiruta import *
+from moduls.QvConstants import QvConstants
+from moduls.QvMultiruta import (QColor, QgsCoordinateReferenceSystem,
+                                QgsCoordinateTransform, QgsMapCanvas,
+                                QgsProject, QvMultiruta)
+from moduls.QvPushButton import QvPushButton
 from moduls.QvReverse import QvReverse
-from moduls.QvTextColorMarker import QvTextColorMarker
 from moduls.QVStepsOSRM import QVStepsOSRM
-import moduls.imported.simplekml.kml as simplekml
+from moduls.QvTextColorMarker import QvTextColorMarker
+
 
 class QAdrecaPostalLineEdit(QLineEdit):
     def focusInEvent(self, event):
@@ -731,11 +738,11 @@ class EinaMultiruta(QWidget):
         # self.resize(self.minimumSizeHint())
 
 if __name__ == "__main__":
-    from qgis.gui import  QgsLayerTreeMapCanvasBridge
-    from moduls.QvLlegenda import QvLlegenda
-    from qgis.gui import QgsMapCanvas
     from qgis.core import QgsProject
     from qgis.core.contextmanagers import qgisapp
+    from qgis.gui import QgsLayerTreeMapCanvasBridge, QgsMapCanvas
+
+    from moduls.QvLlegenda import QvLlegenda
 
     projecteInicial = 'MapesOffline/qVista default map.qgs'
 

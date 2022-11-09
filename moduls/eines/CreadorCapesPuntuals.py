@@ -1,5 +1,16 @@
-from moduls.QvImports  import *
+import time
+
+from qgis.core import (QgsFeature, QgsField, QgsGeometry, QgsProject,
+                       QgsVectorLayer)
+from qgis.core.contextmanagers import qgisapp
+from qgis.gui import QgsMapCanvas, QgsMapTool
+from qgis.PyQt.QtCore import QVariant
+from qgis.PyQt.QtWidgets import (QComboBox, QHBoxLayout, QLineEdit,
+                                 QPushButton, QSizePolicy, QTableWidget,
+                                 QTableWidgetItem, QVBoxLayout, QWidget)
+
 from moduls import QvFuncions
+
 
 @QvFuncions.creaEina(titol="Creador de capes puntuals", esEinaGlobal = False, apareixDockat = False)
 class CreadorCapesPuntuals(QWidget):
@@ -114,12 +125,12 @@ class CreadorCapesPuntuals(QWidget):
 if __name__ == "__main__":
        
     with qgisapp() as app:
-        from qgis.gui import  QgsLayerTreeMapCanvasBridge
-        from moduls.QvLlegenda import QvLlegenda
-        from qgis.gui import QgsMapCanvas
         from qgis.core import QgsProject
         from qgis.core.contextmanagers import qgisapp
-     
+        from qgis.gui import QgsLayerTreeMapCanvasBridge, QgsMapCanvas
+
+        from moduls.QvLlegenda import QvLlegenda
+
         # Canvas, projecte i bridge
         start1 = time.time()
         canvas=QgsMapCanvas()

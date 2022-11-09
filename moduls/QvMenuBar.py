@@ -1,5 +1,10 @@
-from moduls.QvImports import *
+from qgis.PyQt.QtCore import QPoint, QRect, Qt, pyqtSignal
+from qgis.PyQt.QtGui import QCursor
+from qgis.PyQt.QtWidgets import QMenuBar, QWidget
+
 from moduls.QvConstants import QvConstants
+
+
 class QvMenuBar(QMenuBar):
     '''
     Classe per fer que la menubar del qVista faci arrossegable el programa

@@ -1,3 +1,4 @@
+print('CODI OBSOLET. No utilitzar QvImports.py!')
 import time
 start = time.time()
 from qgis.core import *

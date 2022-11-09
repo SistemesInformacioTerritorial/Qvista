@@ -109,7 +109,10 @@ class QvStatusBar(QStatusBar):
             if x == 'nomProjecte':
                 wid = QLabel(f'QGS: {Path(QgsProject.instance().fileName()).stem}', self)
                 wid.setToolTip(f'{Path(QgsProject.instance().fileName())}')
-                QgsProject.instance().readProject.connect(self.canviPathProjecte)
+                # QgsProject.instance().readProject.connect(self.canviPathProjecte)
+                # Si canvia el nom i/o la ruta actualitzem la statusbar
+                QgsProject.instance().fileNameChanged.connect(self.canviPathProjecte)
+                QgsProject.instance().homePathChanged.connect(self.canviPathProjecte)
                 nomWid = 'lblProjecte'
             elif x == 'connexio':
                 wid = QLabel(configuracioQvista.estatConnexio, self)

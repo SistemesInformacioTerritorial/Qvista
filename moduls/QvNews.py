@@ -1,15 +1,19 @@
 #!/usr/bin/env python
-from moduls.QvImports import *
-from qgis.PyQt import QtWidgets
 import os
-from moduls.QvVisorHTML import QvVisorHTML
+
+from qgis.PyQt import QtWidgets
+from qgis.PyQt.QtCore import QTimer
+from qgis.PyQt.QtGui import QIcon
+
+from configuracioQvista import arxiuNews, imatgesDir
 from moduls.QvMemoria import QvMemoria
+from moduls.QvVisorHTML import QvVisorHTML
 
 
 class QvNews(QtWidgets.QAction):
     '''Acció de les notícies. Ella mateixa comprova si hi ha notícies noves, i si hi són, les mostra'''
 
-    def __init__(self, parent: QWidget = None):
+    def __init__(self, parent: QtWidgets.QWidget = None):
         self.ICONA = QIcon(os.path.join(imatgesDir,'News.png'))
         self.ICONADESTACADA = QIcon(os.path.join(imatgesDir,'NewsDestacada.png'))
         # QtWidgets.QAction.__init__(self,self.ICONA,'Notícies',parent)
@@ -43,7 +47,7 @@ class QvNews(QtWidgets.QAction):
     def mostraNoticies(self):
         '''Obre l'arxiu de notícies i les mostra'''
         if not os.path.isfile(arxiuNews):
-            msg=QMessageBox()
+            msg=QtWidgets.QMessageBox()
             msg.setText("No s'ha pogut accedir a les notícies      ")
             msg.setWindowTitle('qVista')
             msg.exec_()
@@ -73,7 +77,7 @@ if __name__ == '__main__':
     import sys
     app = QtWidgets.QApplication(sys.argv)
     news = QvNews()
-    menu = QMenu()
+    menu = QtWidgets.QMenu()
     menu.addAction(news)
     menu.show()
     sys.exit(app.exec_())

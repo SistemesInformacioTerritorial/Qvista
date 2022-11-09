@@ -1,9 +1,13 @@
 # "Constants" útils
-from qgis.PyQt.QtGui import QFont, QColor
-from qgis.PyQt.QtWidgets import QGraphicsDropShadowEffect, QWidget
-from moduls.QvImports import * 
+import os
 # Per poder indicar a una funció que rep una seqüència (tupla, llista)
 from typing import Sequence
+
+from qgis.PyQt.QtCore import Qt
+from qgis.PyQt.QtGui import QColor, QCursor, QFont, QPixmap
+from qgis.PyQt.QtWidgets import QGraphicsDropShadowEffect, QWidget
+
+import configuracioQvista
 
 
 class QvConstants:
@@ -120,22 +124,22 @@ class QvConstants:
     @staticmethod
     def cursorZoomIn():
         if QvConstants.CURSORZOOMIN is None:
-            QvConstants.CURSORZOOMIN=QCursor(QPixmap(os.path.join(imatgesDir,'zoom_in.cur')))
+            QvConstants.CURSORZOOMIN=QCursor(QPixmap(os.path.join(configuracioQvista.imatgesDir,'zoom_in.cur')))
         return QvConstants.CURSORZOOMIN
     @staticmethod
     def cursorZoomOut():
         if QvConstants.CURSORZOOMOUT is None:
-            QvConstants.CURSORZOOMOUT=QCursor(QPixmap(os.path.join(imatgesDir,'zoom_out.cur')))
+            QvConstants.CURSORZOOMOUT=QCursor(QPixmap(os.path.join(configuracioQvista.imatgesDir,'zoom_out.cur')))
         return QvConstants.CURSORZOOMOUT
     @staticmethod
     def cursorDit():
         if QvConstants.CURSORDIT is None:
-            QvConstants.CURSORDIT=QCursor(QPixmap(os.path.join(imatgesDir,'dedo.cur')))
+            QvConstants.CURSORDIT=QCursor(QPixmap(os.path.join(configuracioQvista.imatgesDir,'dedo.cur')))
         return QvConstants.CURSORDIT
     @staticmethod
     def cursorAnotacio():
         if QvConstants.CURSORANOTACIO is None:
-           QvConstants.CURSORANOTACIO=QCursor(QPixmap(os.path.join(imatgesDir,'anotacions.ico')), 0, 23)
+           QvConstants.CURSORANOTACIO=QCursor(QPixmap(os.path.join(configuracioQvista.imatgesDir,'anotacions.ico')), 0, 23)
         return QvConstants.CURSORANOTACIO
     @staticmethod
     def cursorFletxa():

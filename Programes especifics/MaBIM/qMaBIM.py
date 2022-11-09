@@ -454,6 +454,8 @@ class QMaBIM(QtWidgets.QMainWindow):
         self.l_DataCSV.setText(self.replace(res1, 'T', ' - '))
         self.l_DataCarregaCSV.setText(self.replace(res2, 'T', ' - '))
 
+        self.swapVisibilitatBaixes(self.cbBaixesVisibles.isChecked())
+
 
     # function to convert qdatetime to text
     def mostraMesures(self):
@@ -642,7 +644,7 @@ class QMaBIM(QtWidgets.QMainWindow):
         # Si no hi ha cap feature després d'aplicar el filtre, eliminem el filtre i mostrem tota l'extensió
         if sum(layer.featureCount() for layer in layers)==0:
             self.netejaFiltre()
-            QtWidgets.QMessageBox.warning(self,"Atenció!", "No s'ha pogut localitzar el BIM en el mapa.")
+            QtWidgets.QMessageBox.warning(self,"Atenció!", "No s'ha pogut localitzar el BIM en el mapa. Comproveu que la capa corresponent sigui visible")
         self.canvasA.setExtent(layer.extent())
 
         # Si intentes eliminar el contingut d'un QLineEdit que té un QCompleter associat,
