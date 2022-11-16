@@ -61,8 +61,7 @@ from moduls.QVDistrictesBarris import QVDistrictesBarris
 from moduls.QvDocumentacio import QvDocumentacio
 from moduls.QvDropFiles import QvDropFiles
 from moduls.QvEines import QvEines
-from moduls.QvEinesGrafiques import (QvMesuraGrafica, QvSeleccioGrafica,
-                                     carregaMascara, eliminaMascara)
+from moduls.QvEinesGrafiques import QvMesuraGrafica, QvSeleccioGrafica
 from moduls.QvLlegenda import QvLlegenda
 from moduls.QvMapetaBrujulado import QvMapetaBrujulado
 from moduls.QvMemoria import QvMemoria
@@ -434,7 +433,6 @@ class QVista(QMainWindow, Ui_MainWindow):
         else:
             self.botoMetadades.hide()
 
-        carregaMascara(self)
 
         # if len(self.llegenda.temes())>0:
         #     self.cbEstil.show()
@@ -1894,7 +1892,6 @@ class QVista(QMainWindow, Ui_MainWindow):
             pass
         if mascara:
             try:
-                eliminaMascara(qV)
                 self.canvas.refresh()
             except Exception as e:
                 print(e)

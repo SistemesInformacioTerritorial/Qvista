@@ -43,8 +43,17 @@ class QvSeleccioGrafica(QWidget):
         self.llegenda = llegenda
         self.projecte = projecte
         # self.projecte.fileNameChanged.connect(lambda: self.esborrarSeleccio(True, True))
-        self.tool=None
         self.interficie()
+
+        self.einaClick = QvMascaraEinaClick(self, self.projecte, self.canvas, self.llegenda, **self.getParametres())
+        self.einaDibuixa = QvMascaraEinaDibuixa(self, self.projecte, self.canvas, self.llegenda, **self.getParametres())
+        self.einaCercle = QvMascaraEinaCercle(self, self.projecte, self.canvas, self.llegenda, **self.getParametres())
+        for x in (self.einaClick, self.einaDibuixa, self.einaCercle):
+            x.selecciona.connect(self.seleccionar)
+            x.emmascara.connect(self.aplicaMascara)
+        self.tool = None
+
+        self.geomMascara = None # Aquí anirem acumulant la màscara aplicada
 
     def interficie(self):
         self.color = QColor('white')
@@ -71,7 +80,7 @@ class QvSeleccioGrafica(QWidget):
         self.bs3.setIcon(QIcon(os.path.join(configuracioQvista.imatgesDir,'vector-circle-variant.png')))
         self.bs3.setToolTip('Dibuixar un cercle')
         self.bs4 = QvPushButton('Netejar')
-        self.projecte.fileNameChanged.connect(self.setNouProjecte)
+        # self.projecte.fileNameChanged.connect(self.setNouProjecte)
         # self.bs4.setCheckable(True)
         # self.bs4.setIcon(QIcon(configuracioQvista.imatgesDir+'trash-can-outline.png'))
 
@@ -176,10 +185,11 @@ class QvSeleccioGrafica(QWidget):
         self.checkSeleccio.toggled.connect(self.actualitzaTool)
         self.checkMascara.toggled.connect(self.actualitzaTool)
         self.sliderOpacitat.valueChanged.connect(self.actualitzaTool)
-        self.bs1.clicked.connect(lambda x: seleccioClicks(self))
-        self.bs2.clicked.connect(lambda x: seleccioLliure(self))
-        self.bs3.clicked.connect(lambda x: seleccioCercle(self))
-        self.bs4.clicked.connect(lambda: self.esborrarSeleccio(True, True))
+        self.bs1.clicked.connect(self.setEinaClick)
+        self.bs2.clicked.connect(self.setEinaDibuixa)
+        self.bs3.clicked.connect(self.setEinaCercle)
+        self.bs4.clicked.connect(lambda: self.esborrarSeleccio(True))
+        self.bs4.clicked.connect(lambda: self.esborrarMascara(True))
 
         self.lytBotonsSeleccio.addWidget(self.bs1)
         self.lytBotonsSeleccio.addWidget(self.bs2)
@@ -234,19 +244,54 @@ class QvSeleccioGrafica(QWidget):
         # self.lytSeleccioGrafica.addWidget(self.bs6)
         # self.lytSeleccioGrafica.addWidget(self.twResultats)
         self.lytSeleccioGrafica.addWidget(self.gbResultats)
-
-    def setNouProjecte(self, nou=True):
-        MascaraAux.nouProjecte=nou
     
+    def checkTool(self, tool):
+        # Comprovem que l'eina es pugui utilitzar.
+        # Si no es pot, informem de per què
+        esPot, err = tool.checkTool()
+        if not esPot:
+            QMessageBox.warning(self, 'Atenció',err)
+            # Mostrar error
+            pass
+            
+        return esPot
+
+    # Cal netejar les rubberbands???
+    def setEinaClick(self):
+        # self.foraEines()
+        if self.checkTool(self.einaClick):
+            self.tool = self.einaClick
+            self.canvas.setMapTool(self.tool)
+            
+            self.leRadiCercle.hide()
+            self.cbFixarRadi.hide()
+
+    def setEinaDibuixa(self):
+        # self.foraEines()
+        if self.checkTool(self.einaDibuixa):
+            self.tool = self.einaDibuixa
+            self.canvas.setMapTool(self.tool)
+            
+            self.leRadiCercle.hide()
+            self.cbFixarRadi.hide()
+
+    def setEinaCercle(self):
+        # self.foraEines()
+        if self.checkTool(self.einaCercle):
+            self.tool = self.einaCercle
+            self.canvas.setMapTool(self.tool)
+            
+            self.leRadiCercle.show()
+            self.cbFixarRadi.show()
+
     def radiCercle(self):
-        if hasattr(self,'toolSelect'):
-            radi = self.leRadiCercle.text()
-            if self.cbFixarRadi.isChecked() and radi!='' and int(radi)!=0:
-                self.toolSelect.cercleFixe = True
-                self.toolSelect.radiCercle = int(radi)
-            else:
-                self.toolSelect.cercleFixe = False
-                self.toolSelect.rubberbandCercle.reset(True)
+        radi = self.leRadiCercle.text()
+        if self.cbFixarRadi.isChecked() and radi!='' and int(radi)!=0:
+            self.einaCercle.cercleFixe = True
+            self.einaCercle.radiCercle = int(radi)
+        else:
+            self.einaCercle.cercleFixe = False
+            self.einaCercle.rubberbandCercle.reset(True)
     
     @QvFuncions.mostraSpinner
     def crearCsv(self):
@@ -359,12 +404,10 @@ class QvSeleccioGrafica(QWidget):
             self.calcularSeleccio()
 
         else:
-            eliminaMascara(self.projecte)
-            # mascara=obteMascara(self)
-            aplicaMascara(self.projecte, self.canvas, [
-                          x.geometry() for x in feats])
+            self.esborrarMascara(False)
+            self.aplicaMascara([x.geometry() for x in feats])
 
-    def esborrarSeleccio(self, tambePanCanvas=True, mascara=False):
+    def esborrarSeleccio(self, tambePanCanvas=True):
         'Esborra les seleccions (no els elements) de qualsevol layer del canvas.'
         layers = self.canvas.layers()
         for layer in layers:
@@ -381,15 +424,15 @@ class QvSeleccioGrafica(QWidget):
         except:
             pass
         self.calcularSeleccio()
-        if mascara:
-            try:
-                # qV.project.removeMapLayer(qV.project.mapLayersByName('Màscara')[0])
-                eliminaMascara(self.projecte, True)
-                self.canvas.refresh()
-            except Exception as e:
-                print(e)
         if self.tool is not None:
             self.tool.eliminaRubberbands()
+    
+    def esborrarMascara(self, tambePanCanvas=True):
+        self.eliminaMascara()
+        self.geomMascara = None
+        if tambePanCanvas:
+            self.foraEines()
+        self.canvas.refreshAllLayers()
 
     def foraEines(self):
         self.canvas.panCanvas()
@@ -403,18 +446,15 @@ class QvSeleccioGrafica(QWidget):
                 'emmascarar': self.checkMascara.isChecked()
                 }
 
-    def setTool(self, tool):
-        self.tool = tool
-
     def actualitzaTool(self):
         QvMemoria().setParametresMascara(self.color, self.sliderOpacitat.value())
-        if hasattr(self,'tool') and self.tool is not None:
-            self.tool.setParametres(self.checkMascara.isChecked(), self.checkSeleccio.isChecked(), self.checkOverlap.isChecked())
+        for tool in (self.einaClick, self.einaCercle, self.einaDibuixa):
+            tool.setParametres(self.checkMascara.isChecked(), self.checkSeleccio.isChecked(), self.checkOverlap.isChecked())
         self.gbOverlap.setVisible(self.checkSeleccio.isChecked())
         self.frameColorOpacitat.setVisible(self.checkMascara.isChecked())
-        masc = obteMascara(self.projecte, self.canvas)
+        masc = self.obteMascara()
         pars = QvMemoria().getParametresMascara()
-        aplicaParametresMascara(masc, *pars)
+        self.aplicaParametresMascara(masc, *pars)
 
     def setVisible(self, visible):
         super().setVisible(visible)
@@ -430,9 +470,7 @@ class QvSeleccioGrafica(QWidget):
         if layerActiu is None:
             return
         taula = self.twResultats
-        numeroFields = 0  # ???
         fila = 0
-        columna = 0  # ???
         
         taula.setColumnCount(3)
         taula.setHorizontalHeaderLabels(['', 'Total', 'Mitjana'])
@@ -447,7 +485,7 @@ class QvSeleccioGrafica(QWidget):
         #     nombreFieldsSeleccionats = nombreFieldsSeleccionats+1
         nombreFieldsSeleccionats = len(itemsNumerics)
         taula.setRowCount(nombreFieldsSeleccionats+1)
-        
+
         for a in itemsNumerics:
             total = 0
             item = QTableWidgetItem(a.text())
@@ -493,6 +531,79 @@ class QvSeleccioGrafica(QWidget):
         self.foraEines() 
         if hasattr(self,'tool') and self.tool is not None:
             self.tool.eliminaRubberbands()
+    
+    def obteMascara(self):
+        mascares = self.projecte.mapLayersByName('Màscara')
+        if len(mascares) == 0:
+            return self.creaMascara()
+        return mascares[0]
+    def creaMascara(self):
+        epsg = self.canvas.mapSettings().destinationCrs().authid()
+        mascara = QgsVectorLayer('MultiPolygon?crs=%s' % epsg, 'Màscara', 'memory')
+        self.aplicaParametresMascara(mascara, *QvMemoria().getParametresMascara())
+
+        mascaraAux = QgsVectorLayer(
+            'MultiPolygon?crs=%s' % epsg, 'Màscara auxiliar', 'memory')
+        rect = self.canvas.fullExtent()
+        geom = QgsGeometry().fromRect(rect)
+        feat = QgsFeature()
+        feat.setGeometry(geom)
+
+        pr = mascaraAux.dataProvider()
+        pr.addFeatures([feat])
+        mascaraAux.commitChanges()
+        self.projecte.addMapLayers([mascaraAux], False)
+
+        self.projecte.addMapLayers([mascara])
+
+        return mascara
+    def aplicaParametresMascara(self, mascara, color, opacitat):
+        if opacitat > 1:
+            opacitat /= 100  # Si és més que 1 vol dir que està en %
+        mascara.startEditing()
+        mascara.renderer().symbol().setColor(color)
+        mascara.renderer().symbol().symbolLayer(0).setStrokeColor(color)
+        mascara.setOpacity(opacitat)
+        mascara.commitChanges()
+    
+    def aplicaMascara(self, geoms):
+        self.eliminaMascara()
+        mascara = self.obteMascara()
+        mascaraAux = self.projecte.mapLayersByName('Màscara auxiliar')[0]
+        mascara.startEditing()
+        if self.geomMascara is None:
+            primera_feature = next(mascaraAux.getFeatures())
+            self.geomMascara = primera_feature.geometry()
+        for x in geoms:
+            dif = self.geomMascara.difference(x)
+            self.geomMascara = self.geomMascara.difference(x)
+        feat = QgsFeature()
+        feat.setGeometry(self.geomMascara)
+        pr = mascara.dataProvider()
+
+        pr.addFeatures([feat])
+        mascara.commitChanges()
+    
+    # Elimina la màscara, però desa la geometria definida anteriorment
+    # Si es vol eliminar també la geometria, cridar a esborrarMascara
+    def eliminaMascara(self):
+        try:
+            self.projecte.removeMapLayer(self.projecte.mapLayersByName('Màscara')[0])
+            self.projecte.removeMapLayer(self.projecte.mapLayersByName('Màscara auxiliar')[0])
+        except Exception as e:
+            # Si no hi ha màscara, passem
+            pass
+
+    def seleccionar(self, ids):
+        layer = self.llegenda.currentLayer()
+        seleccionats = set(layer.selectedFeatureIds())
+        ids = set(ids)
+        if ids<=seleccionats:
+            aSeleccionar = list(seleccionats-ids)
+        else:
+            aSeleccionar = list(seleccionats | ids)
+        layer.selectByIds(aSeleccionar)
+        self.calcularSeleccio()
 
 
 class QvMesuraGrafica(QWidget):
@@ -678,203 +789,6 @@ class QvMesuraGrafica(QWidget):
 # A partir d'aquí, no caldria utilitzar-ho. Se suposa que tot això ho han de gestionar els widgets corresponents. No obstant, en certes situacions pot ser útil tenir les eines i/o les funcions sense els widgets
 
 
-class MascaraAux:
-    # Una classe per encapsular variables i coses
-    teAux = False
-    geom = None
-    projecte = None
-    canvas = None
-    nouProjecte = False
-
-
-
-
-def aplicaMascara(projecte, canvas, geoms, mascara=None):
-    MascaraAux.projecte = projecte
-    MascaraAux.canvas = canvas
-    eliminaMascara(projecte, MascaraAux.nouProjecte)
-    mascara = obteMascara(projecte, canvas)
-    mascaraAux = projecte.mapLayersByName('Màscara auxiliar')[0]
-    if MascaraAux.geom is None:
-        primera_feature = next(mascaraAux.getFeatures())
-        MascaraAux.geom = primera_feature.geometry()
-    for x in geoms:
-        MascaraAux.geom = MascaraAux.geom.difference(x)
-    feat = QgsFeature()
-    feat.setGeometry(MascaraAux.geom)
-    pr = mascara.dataProvider()
-
-    pr.addFeatures([feat])
-    mascara.commitChanges()
-    projecte.addMapLayers([mascara])
-    canvas.refresh()
-
-
-def obteMascara(projecte, canvas):
-    MascaraAux.projecte = projecte
-    mascares = projecte.mapLayersByName('Màscara')
-    if len(mascares) == 0:
-        return creaMascara(projecte, canvas)
-    return mascares[0]
-
-
-# Inutilitzada
-def filtraMascara(qV):
-    # OCULTAR EL QUE NO ESTIGUI DINS LA MÀSCARA
-    layer = qV.llegenda.currentLayer()
-    if layer is not None:
-        subsetAnt = layer.subsetString()
-        layer.setSubsetString('')
-        featsPnt = layer.getFeatures(
-            QgsFeatureRequest().setFilterRect(MascaraAux.geom.boundingBox()))
-        featsPnt = (x if x.geometry().within(
-            MascaraAux.geom) else None for x in featsPnt)
-        featsPnt = filter(lambda x: x is not None, featsPnt)
-        ids = [str(x.attribute('fid')) for x in featsPnt]
-
-        # Obtenim un string de l'estil 'fid not in (id1, id2, id3,...)'. La llista seran les ids que formen part de la màscara, de manera
-        subs = 'fid NOT IN (%s)' % ', '.join(ids)
-        if subsetAnt != '':
-            subs = '('+subsetAnt+')'+' AND '+'('+subs+')'
-        layer.setSubsetString(subs)
-        qV.llegenda.actIconaFiltre(layer)
-
-
-def creaMascara(projecte, canvas):
-    MascaraAux.projecte = projecte
-    MascaraAux.canvas = canvas
-    epsg = canvas.mapSettings().destinationCrs().authid()
-    mascara = QgsVectorLayer('MultiPolygon?crs=%s' % epsg, 'Màscara', 'memory')
-    aplicaParametresMascara(mascara, *QvMemoria().getParametresMascara())
-
-    mascaraAux = QgsVectorLayer(
-        'MultiPolygon?crs=%s' % epsg, 'Màscara auxiliar', 'memory')
-    rect = canvas.fullExtent()
-    geom = QgsGeometry().fromRect(rect)
-    feat = QgsFeature()
-    feat.setGeometry(geom)
-
-    pr = mascaraAux.dataProvider()
-    pr.addFeatures([feat])
-    mascaraAux.commitChanges()
-    projecte.addMapLayers([mascaraAux], False)
-    MascaraAux.teAux = True
-
-    projecte.addMapLayers([mascara])
-    canvas.refresh()
-
-    return mascara
-
-
-def carregaMascara(projecte):
-    MascaraAux.projecte = projecte
-    try:
-        rutaMasc = projecte.absoluteFilePath()[:-4]+'mascara'+'.gpkg'
-        if not os.path.exists(rutaMasc):
-            return
-        mascara = QgsVectorLayer(rutaMasc, 'Màscara', 'ogr')
-        color, opacitat = QvMemoria().getParametresMascara()
-        aplicaParametresMascara(mascara, color, opacitat/100)
-        projecte.addMapLayers([mascara])
-    except:
-        pass
-
-
-def aplicaParametresMascara(mascara, color, opacitat):
-    if opacitat > 1:
-        opacitat /= 100  # Si és més que 1 vol dir que està en %
-    mascara.renderer().symbol().setColor(color)
-    mascara.renderer().symbol().symbolLayer(0).setStrokeColor(color)
-    mascara.setOpacity(opacitat)
-    MascaraAux.canvas.refreshAllLayers()
-
-
-def eliminaMascara(projecte, tambeAuxiliar=True):
-    MascaraAux.projecte = projecte
-    try:
-        projecte.removeMapLayer(projecte.mapLayersByName('Màscara')[0])
-        if tambeAuxiliar:
-            projecte.removeMapLayer(
-                projecte.mapLayersByName('Màscara auxiliar')[0])
-            MascaraAux.teAux = False
-            MascaraAux.geom = None
-            MascaraAux.nouProjecte = False
-    except Exception as e:
-        # Si no hi ha màscara, suda
-        pass
-
-
-def seleccioCercle(wSeleccioGrafica):
-    seleccioClick()
-    wSeleccioGrafica.leRadiCercle.show()
-    wSeleccioGrafica.cbFixarRadi.show()
-    try:
-        wSeleccioGrafica.canvas.scene().removeItem(
-            wSeleccioGrafica.toolSelect.rubberband)
-    except:
-        pass
-    try:
-        wSeleccioGrafica.toolSelect = QvMascaraEinaCercle(
-            wSeleccioGrafica, wSeleccioGrafica.projecte, wSeleccioGrafica.canvas, wSeleccioGrafica.llegenda, **wSeleccioGrafica.getParametres())
-        wSeleccioGrafica.setTool(wSeleccioGrafica.toolSelect)
-        wSeleccioGrafica.canvas.setMapTool(wSeleccioGrafica.toolSelect)
-    except Exception as e:
-        print(e)
-        pass
-
-
-def seleccioClicks(wSeleccioGrafica):
-    seleccioClick()
-    wSeleccioGrafica.leRadiCercle.hide()
-    wSeleccioGrafica.cbFixarRadi.hide()
-    try:
-        wSeleccioGrafica.canvas.scene().removeItem(
-            wSeleccioGrafica.toolSelect.rubberband)
-    except:
-        pass
-
-    try:
-        tool = QvMascaraEinaClick(wSeleccioGrafica, wSeleccioGrafica.projecte, wSeleccioGrafica.canvas,
-                                  wSeleccioGrafica.llegenda, **wSeleccioGrafica.getParametres())
-        wSeleccioGrafica.setTool(tool)
-        wSeleccioGrafica.canvas.setMapTool(tool)
-    except Exception as e:
-        print(e)
-        pass
-
-
-def seleccioLliure(wSeleccioGrafica):
-    # qV.markers.hide()
-    # try:
-    #     # Això no hauria de funcionar
-    #     wSeleccioGrafica.esborrarSeleccio()
-    # except:
-    #     pass
-    wSeleccioGrafica.leRadiCercle.hide()
-    wSeleccioGrafica.cbFixarRadi.hide()
-
-    try:
-        wSeleccioGrafica.actionMapSelect = QAction(
-            'Seleccionar dibuixant', wSeleccioGrafica)
-        # qV.toolSelect = QvSeleccioPerPoligon(qV,qV.canvas, layer)
-        wSeleccioGrafica.tool = QvMascaraEinaDibuixa(
-            wSeleccioGrafica, wSeleccioGrafica.projecte, wSeleccioGrafica.canvas, wSeleccioGrafica.llegenda, **wSeleccioGrafica.getParametres())
-        wSeleccioGrafica.setTool(wSeleccioGrafica.tool)
-
-        # qV.tool.setOverlap(qV.checkOverlap.checkState())
-
-        wSeleccioGrafica.tool.setAction(wSeleccioGrafica.actionMapSelect)
-        wSeleccioGrafica.canvas.setMapTool(wSeleccioGrafica.tool)
-        # taulaAtributs('Seleccionats', layer)
-    except:
-        pass
-
-
-def seleccioClick():
-    try:
-        self.esborrarMesures()
-    except:
-        pass
 
 
 class QvMascaraEinaPlantilla(QgsMapTool):
@@ -882,6 +796,9 @@ class QvMascaraEinaPlantilla(QgsMapTool):
     # això permet que, quan es canvia d'eina, es conservin fins que es fa una nova selecció
     rubberbands = [] 
     markers = []
+    # Posem "object" com a tipus genèric. Ha de ser algun tipus d'iterable
+    selecciona = pyqtSignal(object) # S'emetrà quan s'hagi de seleccionar, amb una llista d'ids
+    emmascara = pyqtSignal(object) # s'emetrà quan s'hagi d'emmascarar, amb una llista de geometries
     def __init__(self, wSeleccioGrafica, projecte, canvas, llegenda, **kwargs):
         QgsMapTool.__init__(self, canvas)
         self.wSeleccioGrafica = wSeleccioGrafica
@@ -890,9 +807,6 @@ class QvMascaraEinaPlantilla(QgsMapTool):
         self.llegenda = llegenda
         self.setParametres(**kwargs)
         # self.rubberbands = []
-
-    def canvasPressEvent(self, event):
-        pass
 
     def canvasMoveEvent(self, event):
         x = event.pos().x()
@@ -909,26 +823,18 @@ class QvMascaraEinaPlantilla(QgsMapTool):
         msgBox.setText(textTitol)
         msgBox.setInformativeText(textInformacio)
         msgBox.exec()
-
+    
     def getCapa(self):
-        if not self.emmascarar:
-            layer = self.llegenda.currentLayer()
-            if layer is None or layer.type() != QgsMapLayer.VectorLayer:
-                self.missatgeCaixa('Cal tenir seleccionat un nivell per poder fer una selecció.',
-                                   'Marqueu un nivell a la llegenda sobre el que aplicar la consulta.')
-                return None
-            return layer
-        self.mascara = obteMascara(self.projecte, self.canvas)
-        return self.mascara
+        return self.wSeleccioGrafica.obteMascara()
 
     def actualitza(self):
+        return
         try:
             if self.emmascarar and hasattr(self, 'mascara'):
                 self.mascara = self.getCapa()
                 self.mascara.updateExtents()
                 aplicaParametresMascara(
                     self.mascara, self.color, self.opacitat)
-            # self.canvas.refreshAllLayers()
         except Exception as e:
             print(e)
 
@@ -966,30 +872,23 @@ class QvMascaraEinaPlantilla(QgsMapTool):
             x.hide()
     def __del__(self):
         self.eliminaRubberbands()
-    def selecciona(self, ids):
-        layer = self.llegenda.currentLayer()
-        seleccionats = set(layer.selectedFeatureIds())
-        ids = set(ids)
-        if ids<=seleccionats:
-            aSeleccionar = list(seleccionats-ids)
-        else:
-            aSeleccionar = list(seleccionats | ids)
-        layer.selectByIds(aSeleccionar)
-        self.wSeleccioGrafica.calcularSeleccio()
 
 
 
 class QvMascaraEinaClick(QvMascaraEinaPlantilla):
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    # def __init__(self, *args, **kwargs):
+    #     super().__init__(*args, **kwargs)
+    
+    def checkTool(self):
         layer = self.llegenda.currentLayer()
         if layer is None or layer.type() != QgsMapLayer.VectorLayer:
-            self.missatgeCaixa('Cal tenir seleccionat un nivell per poder fer una selecció.',
-                               'Marqueu un nivell a la llegenda sobre el que aplicar la consulta.')
-            # TODO: Crear una altra excepció més específica
-            raise Exception("No hi havia nivell seleccionat")
-        super().__init__(*args, **kwargs)
+            check = False
+            err = "Cal tenir una capa seleccionada per poder seleccionar o emmascarar fent clicks"
+        else:
+            check = True
+            err = ''
+        return check, err
 
     def canvasReleaseEvent(self, event):
         # Get the click
@@ -1012,15 +911,14 @@ class QvMascaraEinaClick(QvMascaraEinaPlantilla):
             try:
                 if self.emmascarar:
                     mascara = self.getCapa()
-                    geoms = (x.geometry() for x in items)
+                    geoms = [x.geometry() for x in items]
 
-                    aplicaMascara(self.projecte, self.canvas,
-                                  geoms, self.getCapa())
+                    self.emmascara.emit(geoms)
                 if self.seleccionar:
                     # seleccionats = layer.selectedFeatureIds()
                     # layer.selectByIds(seleccionats+ids)
                     # self.wSeleccioGrafica.calcularSeleccio()
-                    self.selecciona(ids)
+                    self.selecciona.emit(ids)
                 # La part d'eliminar funciona màgicament. No existeix cap raó lògica que ens digui que s'eliminarà, però ho fa
                 self.actualitza()
             except Exception as e:
@@ -1031,21 +929,6 @@ class QvMascaraEinaClick(QvMascaraEinaPlantilla):
             # TODO: Crear una altra excepció més específica
             raise Exception("No hi havia nivell seleccionat")
 
-    # def activate(self): #???
-    #     pass
-
-    # def deactivate(self): #???
-    #     pass
-
-    # def isZoomTool(self): #???
-    #     return False
-
-    # def isTransient(self): #???
-    #     return False
-
-    # def isEditTool(self): #???
-    #     return True
-
 
 class QvMascaraEinaDibuixa(QvMascaraEinaPlantilla):
 
@@ -1054,12 +937,16 @@ class QvMascaraEinaDibuixa(QvMascaraEinaPlantilla):
         self.points = []
         self.point = None
         self.rubberband = self.novaRubberband()
+    
+    def checkTool(self):
         layer = self.llegenda.currentLayer()
         if layer is None and self.seleccionar:
-            self.missatgeCaixa('Cal tenir seleccionat un nivell per poder fer una selecció',
-                               'Marqueu un nivell a la llegenda sobre el que aplicar la consulta.')
-            # TODO: Crear una altra excepció més específica
-            raise Exception("No hi havia nivell seleccionat")
+            check = False
+            err = 'Cal tenir una capa seleccionada per poder fer seleccions'
+        else:
+            check = True
+            err = ''
+        return check, err
 
     def canvasPressEvent(self, event):
         if event.button() == Qt.RightButton:
@@ -1097,15 +984,13 @@ class QvMascaraEinaDibuixa(QvMascaraEinaPlantilla):
         try:
 
             list_polygon = []
-            mascara = self.getCapa()
             self.selectPoly()
             self.points = self.points[:-1]
             for x in self.points:
                 list_polygon.append(QgsPointXY(x))
             geom = QgsGeometry.fromPolygonXY([list_polygon])
             if self.emmascarar:
-                aplicaMascara(self.projecte, self.canvas,
-                              [geom], self.getCapa())
+                self.emmascara.emit([geom])
             layer = self.llegenda.currentLayer()
             if self.seleccionar and layer is not None:
                 # Seleccionem coses
@@ -1119,10 +1004,10 @@ class QvMascaraEinaDibuixa(QvMascaraEinaPlantilla):
                 #         if featPnt.geometry().within(geom):
                 #             layer.select(featPnt.id())
                 if self.overlap:
-                    ids = [featPnt.id() for featPnt in featsPnt if featPnt.geometry().intersects(geom)]
+                    ids = (featPnt.id() for featPnt in featsPnt if featPnt.geometry().intersects(geom))
                 else:
-                    ids = [featPnt.id() for featPnt in featsPnt if featPnt.geometry().within(geom)]
-                self.selecciona(ids)
+                    ids = (featPnt.id() for featPnt in featsPnt if featPnt.geometry().within(geom))
+                self.selecciona.emit(ids)
                 # self.wSeleccioGrafica.calcularSeleccio()
             # self.rubberband.hide()
             # self.rubberband = self.novaRubberband()
@@ -1134,7 +1019,6 @@ class QvMascaraEinaDibuixa(QvMascaraEinaPlantilla):
 
     def selectPoly(self):
         try:
-
             poligono = QgsGeometry.fromPolylineXY(self.points)
             self.rubberband.setToGeometry(
                 poligono, self.getCapa())  # falta establir la layer
@@ -1150,15 +1034,19 @@ class QvMascaraEinaCercle(QvMascaraEinaPlantilla):
         super().__init__(*args, **kwargs)
         # self.rubberbandRadi = self.novaRubberband()
         self.rubberbandCercle = self.novaRubberband()
-        layer = self.llegenda.currentLayer()
         self.centre = None
         self.cercleFixe = False
         self.radiCercle = 0
+    
+    def checkTool(self):
+        layer = self.llegenda.currentLayer()
         if layer is None and self.seleccionar:
-            self.missatgeCaixa('Cal tenir seleccionat un nivell per poder fer una selecció',
-                               'Marqueu un nivell a la llegenda sobre el que aplicar la consulta.')
-            # TODO: Crear una altra excepció més específica
-            raise Exception("No hi havia nivell seleccionat")
+            check = False
+            err = 'Cal tenir seleccionat un nivell per poder fer una selecció'
+        else:
+            check = True
+            err = ''
+        return check, err
 
     def canvasPressEvent(self, event):
         if event.button() == Qt.RightButton:
@@ -1171,9 +1059,9 @@ class QvMascaraEinaCercle(QvMascaraEinaPlantilla):
             # self.rbcircle(centre, centre+QgsVector(self.radiCercle,0))
             self.rubberbandCercle = self.novaRubberband()
             if self.emmascarar:
-                self.emmascaraPoligon(poligon)
+                self.emmascara.emit([poligon])
             if self.seleccionar:
-                self.seleccionaPoligon(poligon)
+                self.selecciona.emit([poligon])
             
         elif self.centre is None:
             self.rubberbandCercle = self.novaRubberband()
@@ -1195,30 +1083,28 @@ class QvMascaraEinaCercle(QvMascaraEinaPlantilla):
     def canvasReleaseEvent(self, event):
         if event.button()==Qt.RightButton:
             return
-        mascara = self.getCapa()
-        poligon, _ = self.getPoligon(
-            self.centre, self.toMapCoordinates(event.pos()), 100)
+        poligon, _ = self.getPoligon(self.centre, self.toMapCoordinates(event.pos()), 100)
         if self.emmascarar:
-            self.emmascaraPoligon(poligon)
+            self.emmascara.emit([poligon])
+            # self.emmascaraPoligon(poligon)
         
         if self.seleccionar:
+            # self.selecciona.emit([poligon])
             self.seleccionaPoligon(poligon)
         self.centre = None
         self.actualitza()
         # self.rubberbandCercle.hide()
 
-    def emmascaraPoligon(self,poligon):
-        aplicaMascara(self.projecte, self.canvas,[poligon], self.getCapa())
     def seleccionaPoligon(self,poligon):
         layer = self.llegenda.currentLayer()
         if layer is not None:
             featsPnt = layer.getFeatures(
                 QgsFeatureRequest().setFilterRect(poligon.boundingBox()))
             if self.overlap:
-                ids = [featPnt.id() for featPnt in featsPnt if featPnt.geometry().intersects(poligon)]
+                ids = (featPnt.id() for featPnt in featsPnt if featPnt.geometry().intersects(poligon))
             else:
-                ids = [featPnt.id() for featPnt in featsPnt if featPnt.geometry().within(poligon)]
-            self.selecciona(ids)
+                ids = (featPnt.id() for featPnt in featsPnt if featPnt.geometry().within(poligon))
+            self.selecciona.emit(ids)
 
     def rbcircle(self, center, edgePoint, segments=100):
         try:
