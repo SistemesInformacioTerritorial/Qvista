@@ -2,7 +2,7 @@ import csv
 import itertools
 import os
 import shutil
-from pathlib import Path
+from pathlib import Path, PurePath
 
 import qgis.core
 from qgis.core import (QgsCoordinateReferenceSystem, QgsMarkerSymbol,
@@ -22,19 +22,24 @@ from moduls.QvApp import QvApp
 from moduls.QvConstants import QvConstants
 from moduls.QvEditorCsv import QvEditorCsv
 from moduls.QvFuncioFil import QvFuncioFil
+from moduls import QvFuncions
 from moduls.QvMapForms import QvFormNovaMapificacio
-from moduls.QvMapificacio import QvMapificacio
+from moduls.QvMapificacio import QvMapificacio, PANDAS_ENABLED
 from moduls.QvMemoria import QvMemoria
 from moduls.QvPushButton import QvPushButton
 
-
+def generaNomNouFitxer(nomBase, appendix=None):
+    if appendix is None:
+        appendix = '_'
+    p = PurePath(nomBase)
+    return str(p.with_suffix(''))+appendix+p.suffix
 # Còpia de la funció definida dins de qVista.py. Millor aquí???
 # Té aquest nom des del 2019 o abans, ara ja no li canviarem
 def nivellCsv(projecte, llegenda, fitxer: str, delimitador: str, campX: str, campY: str, projeccio: int = 25831, nomCapa: str = 'Capa sense nom', color='red', symbol='circle', separadorDec='.', standalone=False):
     if projeccio<0:
-        try:
+        if PANDAS_ENABLED:
             import pandas as pd
-        except ModuleNotFoundError:
+        else:
             return False
 
         # si és -X, serà que són coordenades reduïdes en format X.
@@ -44,18 +49,39 @@ def nivellCsv(projecte, llegenda, fitxer: str, delimitador: str, campX: str, cam
         nouFitxer = str(Path(fitxer).with_suffix('.coordenades_completes.csv')).replace('.coordenades_completes','_coordenades_completes')
         df[nouCampX]=df[campX]/1000+400000
         df[nouCampY]=df[campY]/1000+4500000
-        df.to_csv(nouFitxer, sep=delimitador)
+        df.to_csv(nouFitxer, sep=delimitador, index=False)
         
         campX, campY = nouCampX, nouCampY
         fitxer = nouFitxer
         projeccio = -projeccio
+    # # revisem els noms de camps
+    # if PANDAS_ENABLED:
+        
+    #     import pandas as pd
+    #     import re
+    #     df = pd.read_csv(fitxer, engine='python', sep=delimitador)
+    #     canvis = {}
+    #     for col in df.columns:
+    #         permeses='abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_'
+    #         novacol = ''.join(x if x in permeses else '_' for x in QvFuncions.eliminaAccents(col))
+    #         if novacol!=col:
+    #             canvis[col]=novacol
+    #             if campX==col:
+    #                 campX=novacol
+    #             if campY==col:
+    #                 campY=novacol
+    #     if len(canvis)!=0:
+    #         df = df.rename(columns=canvis)
+    #         nouFitxer = generaNomNouFitxer(fitxer, '_columnes_arreglades')
+    #         df.to_csv(nouFitxer, sep=delimitador, index=False)
+
         
     # uri = "file:///"+fitxer + "?type=csv&delimiter=%s&xField=%s&yField=%s" % (delimitador, campX, campY)
     uri = fr'file:///{fitxer}?type=csv&delimiter={delimitador}&xField={campX}&yField={campY}&decimalPoint={separadorDec}'
     layer = QgsVectorLayer(uri, nomCapa, 'delimitedtext')
-    layer.setCrs(QgsCoordinateReferenceSystem(
-        projeccio, QgsCoordinateReferenceSystem.EpsgCrsId))
+    # if layer is not None and layer.renderer() is not None:
     if layer is not None:
+        layer.setCrs(QgsCoordinateReferenceSystem(projeccio, QgsCoordinateReferenceSystem.EpsgCrsId))
         symbol_str=symbol
         symbol = QgsMarkerSymbol.createSimple({'name': symbol, 'color': color, 'outline_width':'0.05'})
         # if layer.renderer() is not None:
@@ -65,6 +91,7 @@ def nivellCsv(projecte, llegenda, fitxer: str, delimitador: str, campX: str, cam
             nom, _ = QFileDialog.getSaveFileName(None,'Desar capa com a GPKG',f'{QvMemoria().getDirectoriDesar()}/{fitxer[:-4]}.gpkg',"(*.gpkg)")
             writer=QgsVectorFileWriter.writeAsVectorFormat(layer,nom[:-5],pr.encoding(),pr.crs(),symbologyExport=QgsVectorFileWriter.SymbolLayerSymbology)
             capaGpkg=QgsVectorLayer(nom,nomCapa,'ogr')
+            if capaGpkg.renderer() is None: return False
             renderer = QgsSingleSymbolRenderer(symbol)
             capaGpkg.setRenderer(renderer)
             s = qgis.core.QgsSettings()
@@ -75,6 +102,7 @@ def nivellCsv(projecte, llegenda, fitxer: str, delimitador: str, campX: str, cam
         else:
             writer=QgsVectorFileWriter.writeAsVectorFormat(layer,fitxer[:-4],pr.encoding(),pr.crs(),symbologyExport=QgsVectorFileWriter.SymbolLayerSymbology)
             capaGpkg=QgsVectorLayer(fitxer[:-4]+'.gpkg',nomCapa,'ogr')
+            if capaGpkg.renderer() is None: return False
             capaGpkg.renderer().setSymbol(symbol)
             projecte.addMapLayer(capaGpkg)
             llegenda.saveStyleToGeoPackage(capaGpkg)
