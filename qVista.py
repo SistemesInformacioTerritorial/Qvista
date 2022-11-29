@@ -1121,7 +1121,11 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.actObrirCataleg = QAction("Catàleg", self)
         self.actObrirCataleg.setStatusTip("Catàleg d'Informació Territorial")
         #self.actObrirCataleg.setIcon(QIcon(os.path.join(imatgesDir,'layers_2.png')))
-        self.actObrirCataleg.triggered.connect(self.obrirCataleg)
+        # quan una acció és triggered, crida la funció passant-li un paràmetre (un booleà que indica si està checked)
+        # self.obrirCataleg no rep paràmetres
+        # Si féssim connect(self.obrirCataleg), funciona sempre que no tinguem cap embolcall
+        # Donat que hem d'embolcallar-la per posar un spinner de càrrega, ho resolem amb aquesta lambda
+        self.actObrirCataleg.triggered.connect(lambda: self.obrirCataleg())
 
         self.actObrirCatalegLateral = QAction("Catàleg lateral", self)
         self.actObrirCatalegLateral.setStatusTip("Catàleg d'Informació Territorial")
@@ -1474,7 +1478,8 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.layout.addWidget(dashboard)
 
     def obrirEnQgis(self):
-        path = os.path.join(QvTempdir,'tempQgis.qgs')
+        # path = os.path.join(QvTempdir,'tempQgis.qgs')
+        path = str(Path(QvTempdir, 'tempQgis.qgs')).replace('\\','/')
         self.project.write(path)
         QDesktopServices().openUrl(QUrl(path))
 
@@ -1996,12 +2001,14 @@ class QVista(QMainWindow, Ui_MainWindow):
         else:
             self.dwLlegenda.hide()
 
+    @QvFuncions.mostraSpinner
     def obrirCataleg(self):
         if not hasattr(self, 'wCatalegGran') or self.wCatalegGran is None:
             self.wCatalegGran=QvNouCatalegCapes(self)
             self.wCatalegGran.afegirCapa.connect(lambda x: QvFuncions.afegirQlr(x, self.llegenda))
         try:
             self.wCatalegGran.showMaximized()
+            self.wCatalegGran.activateWindow()
         except Exception as e:
             QMessageBox.warning(self,'Error en el catàleg',"Hi ha hagut un error durant l'execució del catàleg de capes. Si l'error persisteix, contacteu amb el vostre responsable")
     def obrirCatalegLateral(self):

@@ -410,10 +410,26 @@ class QvNouCataleg(QWidget):
             # Opció 1: utilitzem Path.rglob, per agafar directament els arxius amb aquella extensió
             #  Path.rglob equival a fer Path.glob afegint al davant **/
             #  AKA: qualsevol cosa que pengi del directori i compleixi la condició
-            files = Path(ruta).rglob(f'*{self.EXT}')
+            # files = Path(ruta).rglob(f'*{self.EXT}')
 
             # Opció 2: iterem tots els arxius utilitzant os.walk, i ens quedem només amb els que acaben en self.EXT
             # files = (Path(ruta, nom) for ruta, _, files in os.walk(ruta) for nom in files if nom.endswith(self.EXT))
+
+            # Opció 3: utilitzem una comanda de Windows, ja que el procés de llegir recursivament arxius de xarxa és molt lent
+            # En experiments duts a terme el 28/11/2022 sobre les 12:00, la versió que redirigeix a un arxiu triga uns 10s, i la del popen uns 30s
+            rutaAux = os.path.join(tempdir, 'tmpCataleg.txt')
+            cmdRedirect = f'dir /s /b "{str(ruta)}\\*{self.EXT}" >{rutaAux} 2>nul'
+            cmd = f'dir /s /b "{str(ruta)}\\*{self.EXT}" 2>nul'
+            # forcem l'ús de cp1252, que és la de Windows per Europa
+            import ctypes
+            kernel32 = ctypes.WinDLL('kernel32', use_last_error=True)
+            kernel32.SetConsoleCP(1252)
+            kernel32.SetConsoleOutputCP(1252)
+            with os.popen(cmd) as f:
+                files = [Path(x) for x in f]
+            # os.system(cmdRedirect)
+            # with open(rutaAux, encoding='cp1252') as f:
+            #     files = [Path(x) for x in f]
 
             # eliminem l'extensió
             files = (str(x.with_suffix('')) for x in files)
