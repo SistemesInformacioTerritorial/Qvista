@@ -2,6 +2,7 @@ import inspect
 import os
 import sys
 import time
+import unicodedata
 from pathlib import Path
 
 from qgis.core import (QgsGeometry, QgsLayerDefinition,
@@ -52,6 +53,11 @@ def printDebug(*args, **kwargs):
     """
     if modeDebug():
         print(*args, **kwargs)
+
+def eliminaAccents(txt):
+    # https://stackoverflow.com/a/518232/19238937
+   return ''.join(c for c in unicodedata.normalize('NFD', txt)
+                  if unicodedata.category(c) != 'Mn')
 
 def cronometra(func):
     """Funció decoradora que cronometra la funció passada com a paràmetre i imprimeix el temps per pantalla

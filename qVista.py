@@ -61,8 +61,7 @@ from moduls.QVDistrictesBarris import QVDistrictesBarris
 from moduls.QvDocumentacio import QvDocumentacio
 from moduls.QvDropFiles import QvDropFiles
 from moduls.QvEines import QvEines
-from moduls.QvEinesGrafiques import (QvMesuraGrafica, QvSeleccioGrafica,
-                                     carregaMascara, eliminaMascara)
+from moduls.QvEinesGrafiques import QvMesuraGrafica, QvSeleccioGrafica
 from moduls.QvLlegenda import QvLlegenda
 from moduls.QvMapetaBrujulado import QvMapetaBrujulado
 from moduls.QvMemoria import QvMemoria
@@ -434,7 +433,6 @@ class QVista(QMainWindow, Ui_MainWindow):
         else:
             self.botoMetadades.hide()
 
-        carregaMascara(self)
 
         # if len(self.llegenda.temes())>0:
         #     self.cbEstil.show()
@@ -1123,7 +1121,11 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.actObrirCataleg = QAction("Catàleg", self)
         self.actObrirCataleg.setStatusTip("Catàleg d'Informació Territorial")
         #self.actObrirCataleg.setIcon(QIcon(os.path.join(imatgesDir,'layers_2.png')))
-        self.actObrirCataleg.triggered.connect(self.obrirCataleg)
+        # quan una acció és triggered, crida la funció passant-li un paràmetre (un booleà que indica si està checked)
+        # self.obrirCataleg no rep paràmetres
+        # Si féssim connect(self.obrirCataleg), funciona sempre que no tinguem cap embolcall
+        # Donat que hem d'embolcallar-la per posar un spinner de càrrega, ho resolem amb aquesta lambda
+        self.actObrirCataleg.triggered.connect(lambda: self.obrirCataleg())
 
         self.actObrirCatalegLateral = QAction("Catàleg lateral", self)
         self.actObrirCatalegLateral.setStatusTip("Catàleg d'Informació Territorial")
@@ -1476,7 +1478,8 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.layout.addWidget(dashboard)
 
     def obrirEnQgis(self):
-        path = os.path.join(QvTempdir,'tempQgis.qgs')
+        # path = os.path.join(QvTempdir,'tempQgis.qgs')
+        path = str(Path(QvTempdir, 'tempQgis.qgs')).replace('\\','/')
         self.project.write(path)
         QDesktopServices().openUrl(QUrl(path))
 
@@ -1894,7 +1897,6 @@ class QVista(QMainWindow, Ui_MainWindow):
             pass
         if mascara:
             try:
-                eliminaMascara(qV)
                 self.canvas.refresh()
             except Exception as e:
                 print(e)
@@ -1999,12 +2001,14 @@ class QVista(QMainWindow, Ui_MainWindow):
         else:
             self.dwLlegenda.hide()
 
+    @QvFuncions.mostraSpinner
     def obrirCataleg(self):
         if not hasattr(self, 'wCatalegGran') or self.wCatalegGran is None:
             self.wCatalegGran=QvNouCatalegCapes(self)
             self.wCatalegGran.afegirCapa.connect(lambda x: QvFuncions.afegirQlr(x, self.llegenda))
         try:
             self.wCatalegGran.showMaximized()
+            self.wCatalegGran.activateWindow()
         except Exception as e:
             QMessageBox.warning(self,'Error en el catàleg',"Hi ha hagut un error durant l'execució del catàleg de capes. Si l'error persisteix, contacteu amb el vostre responsable")
     def obrirCatalegLateral(self):
@@ -2152,7 +2156,8 @@ class QVista(QMainWindow, Ui_MainWindow):
         pathDesarPerDefecte = QvMemoria().getDirectoriDesar()
 
         # nom = re.sub(r'?a[\W_]+','',self.titolProjecte).strip()
-        nom = get_valid_filename(self.titolProjecte)
+        # nom = get_valid_filename(self.titolProjecte)
+        nom = self.project.baseName()
 
         pathOnDesem = os.path.join(pathDesarPerDefecte,nom)
         nfile,_ = QFileDialog.getSaveFileName(None,"Desar Projecte Qgis", pathOnDesem, "Projectes Qgis (*.qgs)")
