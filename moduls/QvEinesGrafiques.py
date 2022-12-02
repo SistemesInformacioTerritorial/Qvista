@@ -1061,7 +1061,7 @@ class QvMascaraEinaCercle(QvMascaraEinaPlantilla):
             if self.emmascarar:
                 self.emmascara.emit([poligon])
             if self.seleccionar:
-                self.selecciona.emit([poligon])
+                self.seleccionaPoligon(poligon)
             
         elif self.centre is None:
             self.rubberbandCercle = self.novaRubberband()
