@@ -2,7 +2,7 @@
 
 from qgis.core import QgsProject, QgsEditorWidgetSetup, QgsExpressionContextUtils
 from qgis.gui import QgsAttributeForm, QgsAttributeDialog, QgsActionMenu, QgsAttributeEditorContext, QgsGui
-from qgis.PyQt.QtWidgets import QDialog, QMenuBar, QDialogButtonBox, QPushButton
+from qgis.PyQt.QtWidgets import QWidget, QDialog, QMenuBar, QDialogButtonBox, QPushButton, QMessageBox
 from qgis.PyQt.QtCore import QVariant
 
 from moduls.Ui_AtributsForm import Ui_AtributsForm
@@ -19,7 +19,9 @@ class QvFormAtributs:
 
         Args:
             layer (QgsVectorLayer): Capa vectorial
-            features (QgsFeature o [QgsFeature]): Elemento o lista de elementos
+            features (QgsFeature o [QgsFeature]): Elemento o lista de elementos. Tambien puede contener, en lugar
+                                                  de elementos, duplas compuestas de elemento y su capa correspondiente
+                                                  (para consultas multicapa -> MABIM)
             parent (QWidget, optional): Widget padre del formulario creado. Defaults to None.
             attributes (QvAtributs, optional): Widget con las tablas de atributos. Defaults to None.
             new (bool, optional): Indica que se trata de un alta cuando se está en modo edición.
@@ -27,7 +29,14 @@ class QvFormAtributs:
         Returns:
             QDialog: Formulario de alta / modificación / consulta de elemento(s)
         """
-        return QvFitxesAtributs(layer, features, parent, attributes, new)
+        try:
+            return QvFitxesAtributs(layer, features, parent, attributes, new)
+        except Exception as e:
+            QMessageBox.warning(parent, "Error al crear formulari",
+                f"No s'ha pogut mostrar la fitxa del element seleccionat\n\nError intern: {e}")
+            print(str(e))
+            return None
+
 
     @staticmethod
     def toList(var):
@@ -56,18 +65,23 @@ class QvFitxesAtributs(QDialog):
         QDialog.__init__(self, parent)
         self.initUI()
         self.layer = layer
-        self.features, self.total = QvFormAtributs.toList(features)
+        featuresList, self.total = QvFormAtributs.toList(features)
         # Donat que fer un if-else en una dict comprehension és molt estrany, fem primer un generador amb el contingut, i després ho passem al diccionari
-        capesAux = ((feat[0],feat[1]) if isinstance(feat, tuple) else (feat,layer) for feat in self.features)
+        capesAux = ((feat[0],feat[1]) if isinstance(feat, tuple) else (feat,layer) for feat in featuresList)
         self.capesCorresponents = {x[0]:x[1] for x in capesAux}
         self.features = list(self.capesCorresponents.keys())
         self.attributes = attributes
         self.mode = -1
+        self.autoCommit = False
         # self.selectFeature = self.layer.selectedFeatureCount() == 0
         self.paramsFormulari = QgsExpressionContextUtils.layerScope(layer).variable('qV_formulari')
         if QvFuncions.debugging() and self.paramsFormulari is not None: print(f'qV_formulari de capa {layer.name()}: {self.paramsFormulari}')
-        if self.attributes is not None and self.attributes.llegenda is not None and self.attributes.llegenda.editing(layer):
-            self.edicion(new)
+        if any([isinstance(feat, tuple) for feat in featuresList]) or self.attributes is None or self.attributes.llegenda is None:
+            self.consulta()
+        elif self.attributes.llegenda.editing(self.layer):
+            self.edicion(new) # Altas, bajas y modificaciones
+        elif self.attributes.llegenda.isLayerEditForm(self.layer):
+            self.edicionForm() # Solo modificaciones
         else:
             self.consulta()
         self.go(0)
@@ -77,6 +91,9 @@ class QvFitxesAtributs(QDialog):
         self.ui.setupUi(self)
         self.finished.connect(self.finish)
         self.ui.buttonBox.accepted.connect(self.accept)
+
+    def getLayerFromFeature(self, feature):
+        return self.capesCorresponents[feature]
 
     def layerRelations(self, layer):
         relManager = QgsProject().instance().relationManager()        
@@ -140,10 +157,11 @@ class QvFitxesAtributs(QDialog):
             QvApp().appQgis.setNullRepresentation(nullStr)
 
     def consulta(self):
+        self.autoCommit = False
         first = True
         for feature in self.features:
             if first:
-                layer = self.capesCorresponents[feature]
+                layer = self.getLayerFromFeature(feature)
                 self.formResize(layer)
                 first = False
             listHidden, nullStr = self.hideNullValues(layer, feature)
@@ -163,7 +181,7 @@ class QvFitxesAtributs(QDialog):
         self.setMenuBar(feature)
 
     def setDefaultValues(self, feature):
-        layer = self.capesCorresponents[feature]
+        layer = self.getLayerFromFeature(feature)
         for idx in layer.attributeList():
             vDef = layer.defaultValue(idx, feature)
             feature.setAttribute(idx, vDef)
@@ -179,10 +197,11 @@ class QvFitxesAtributs(QDialog):
         if menu is not None: menu.setVisible(False)
 
     def edicion(self, new):
+        self.autoCommit = False
         self.newFeature = None
         self.total = 1
         feature = self.features[0]
-        layer = self.capesCorresponents[feature]
+        layer = self.getLayerFromFeature(feature)
         if new:
             self.mode = QgsAttributeEditorContext.AddFeatureMode 
             self.title = layer.name() + " - Fitxa nou element"
@@ -199,10 +218,24 @@ class QvFitxesAtributs(QDialog):
         form.setMode(self.mode)
         form.attributeForm().featureSaved.connect(self.featureSaved)
         form.accepted.connect(self.formAccepted)
-        form.rejected.connect(self.close)
+        form.rejected.connect(self.formRejected)
         self.ui.stackedWidget.addWidget(form)
         self.ui.groupBox.setVisible(False)
         self.ui.buttonBox.setVisible(False)
+    
+    def commit(self, ok):
+        # Método para cerrar los autoCommits
+        if self.autoCommit:
+            if ok:
+                self.layer.commitChanges()
+            else:
+                self.layer.rollBack()
+            self.autoCommit = False
+
+    def hideEvent(self, event):
+        # Para capturar las salidas del formulario con tecla ESC o pulsando la cruz de cerrar ventana
+        self.commit(False)
+        QWidget.hideEvent(self, event)
 
     def featureSaved(self, feature):
         self.newFeature = feature
@@ -210,16 +243,44 @@ class QvFitxesAtributs(QDialog):
     def formAccepted(self):
         if self.newFeature is not None:
             self.attributes.tabTaula(self.layer, True, self.newFeature.id())
+        self.commit(True)
         self.close()
 
+    def formRejected(self):
+        self.commit(False)
+        self.close()
+        
     def remove(self, feature):
         taula = self.attributes.tabTaula(self.layer)
         if taula is not None:
             taula.removeFeature(feature)
+        self.commit(True)
         self.close()
 
+    def edicionForm(self):
+        if self.layer.startEditing():
+            self.autoCommit = True
+            self.newFeature = None
+            self.total = 1
+            feature = self.features[0]
+            layer = self.getLayerFromFeature(feature)
+            self.mode = QgsAttributeEditorContext.SingleEditMode
+            self.title = layer.name() + " - Modificació fitxa element"
+            form = QgsAttributeDialog(layer, feature, False)
+            self.removeMenuBar(form)
+            self.setMenuBar(feature)
+            form.setMode(self.mode)
+            form.attributeForm().featureSaved.connect(self.featureSaved)
+            form.accepted.connect(self.formAccepted)
+            form.rejected.connect(self.formRejected)
+            self.ui.stackedWidget.addWidget(form)
+            self.ui.groupBox.setVisible(False)
+            self.ui.buttonBox.setVisible(False)
+        else:
+            self.consulta()
+
     def setTitle(self, n):
-        titolAct = self.title.format(self.capesCorresponents[self.features[n]].name())
+        titolAct = self.title.format(self.getLayerFromFeature(self.features[n]).name())
         if self.total > 1:
             self.setWindowTitle(titolAct + ' (' + str(n+1) + ' de ' + str(self.total) + ')')
         else:
@@ -232,11 +293,11 @@ class QvFitxesAtributs(QDialog):
             for layer in self.capesCorresponents.values():
                 layer.removeSelection()
         else:
-            layer = self.capesCorresponents[self.features[n]]
+            layer = self.getLayerFromFeature(self.features[n])
             QvDigitizeContext.selectAndScrollFeature(self.features[n].id(), layer, self.attributes)
     
     def deselect(self,n):
-        layer = self.capesCorresponents[self.features[n]]
+        layer = self.getLayerFromFeature(self.features[n])
         layer.removeSelection()
 
     def go(self, n):
