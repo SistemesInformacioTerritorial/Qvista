@@ -224,13 +224,12 @@ class QvFitxesAtributs(QDialog):
         self.ui.buttonBox.setVisible(False)
     
     def commit(self, ok):
-        # Método para cerrar los autoCommits
-        if self.autoCommit:
-            if ok:
-                self.layer.commitChanges()
-            else:
-                self.layer.rollBack()
-            self.autoCommit = False
+        # Para cerrar los auto-commits y controlar los errores (ok a True, commit; a False, rollback)
+        if not self.autoCommit: return
+        if ok and not self.layer.commitChanges():
+            QMessageBox.warning(self, "Error al modificar fitxa d'element", "\n".join(self.layer.commitErrors()))
+        self.layer.rollBack()
+        self.autoCommit = False
 
     def hideEvent(self, event):
         # Para capturar las salidas del formulario con tecla ESC o pulsando la cruz de cerrar ventana
@@ -254,7 +253,6 @@ class QvFitxesAtributs(QDialog):
         taula = self.attributes.tabTaula(self.layer)
         if taula is not None:
             taula.removeFeature(feature)
-        self.commit(True)
         self.close()
 
     def edicionForm(self):
