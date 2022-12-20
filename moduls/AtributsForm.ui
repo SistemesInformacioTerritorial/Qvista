@@ -33,7 +33,7 @@
           <x>0</x>
           <y>0</y>
           <width>578</width>
-          <height>584</height>
+          <height>579</height>
          </rect>
         </property>
         <layout class="QVBoxLayout" name="verticalLayout_3">
@@ -86,57 +86,60 @@
        <property name="lineWidth">
         <number>0</number>
        </property>
-       <widget class="QPushButton" name="bPrev">
-        <property name="geometry">
-         <rect>
-          <x>0</x>
-          <y>6</y>
-          <width>100</width>
-          <height>23</height>
-         </rect>
-        </property>
-        <property name="minimumSize">
-         <size>
-          <width>100</width>
-          <height>23</height>
-         </size>
-        </property>
-        <property name="maximumSize">
-         <size>
-          <width>100</width>
-          <height>23</height>
-         </size>
-        </property>
-        <property name="text">
-         <string>Anterior</string>
-        </property>
-       </widget>
-       <widget class="QPushButton" name="bNext">
-        <property name="geometry">
-         <rect>
-          <x>110</x>
-          <y>6</y>
-          <width>100</width>
-          <height>23</height>
-         </rect>
-        </property>
-        <property name="minimumSize">
-         <size>
-          <width>100</width>
-          <height>23</height>
-         </size>
-        </property>
-        <property name="maximumSize">
-         <size>
-          <width>100</width>
-          <height>23</height>
-         </size>
-        </property>
-        <property name="text">
-         <string>Següent</string>
-        </property>
-       </widget>
+       <layout class="QHBoxLayout" name="horizontalLayout_2">
+        <item>
+         <widget class="QPushButton" name="bPrev">
+          <property name="minimumSize">
+           <size>
+            <width>100</width>
+            <height>23</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>100</width>
+            <height>23</height>
+           </size>
+          </property>
+          <property name="text">
+           <string>Anterior</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="bNext">
+          <property name="minimumSize">
+           <size>
+            <width>100</width>
+            <height>23</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>100</width>
+            <height>23</height>
+           </size>
+          </property>
+          <property name="text">
+           <string>Següent</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
       </widget>
+     </item>
+     <item>
+      <spacer name="horizontalSpacer">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
      </item>
      <item>
       <widget class="QDialogButtonBox" name="buttonBox">

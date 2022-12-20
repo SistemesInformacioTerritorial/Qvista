@@ -2,7 +2,7 @@
 
 from qgis.core import QgsProject, QgsEditorWidgetSetup, QgsExpressionContextUtils
 from qgis.gui import QgsAttributeForm, QgsAttributeDialog, QgsActionMenu, QgsAttributeEditorContext, QgsGui
-from qgis.PyQt.QtWidgets import QWidget, QDialog, QMenuBar, QDialogButtonBox, QPushButton, QMessageBox
+from qgis.PyQt.QtWidgets import QWidget, QDialog, QMenuBar, QDialogButtonBox, QPushButton, QMessageBox, QScrollArea, QFrame
 from qgis.PyQt.QtCore import QVariant
 
 from moduls.Ui_AtributsForm import Ui_AtributsForm
@@ -159,16 +159,24 @@ class QvFitxesAtributs(QDialog):
     def consulta(self):
         self.autoCommit = False
         first = True
+        layers = set(self.getLayerFromFeature(feature) for feature in self.features)
         for feature in self.features:
+            layer = self.getLayerFromFeature(feature)
             if first:
-                layer = self.getLayerFromFeature(feature)
                 self.formResize(layer)
                 first = False
             listHidden, nullStr = self.hideNullValues(layer, feature)
             form = QgsAttributeForm(layer, feature)
             # form.setMode(QgsAttributeEditorContext.IdentifyMode)
             self.showNullValues(layer, listHidden, nullStr)
-            self.ui.stackedWidget.addWidget(form)
+            if len(layers)>1:
+                scroll = QScrollArea()
+                scroll.setWidget(form)
+                scroll.setWidgetResizable(True)
+                scroll.setFrameStyle(QFrame.NoFrame)
+                self.ui.stackedWidget.addWidget(scroll)
+            else:
+                self.ui.stackedWidget.addWidget(form)
         baseTitol = '{}'
         if self.total > 1:
             self.title = baseTitol + " - Consulta fitxa elements"
