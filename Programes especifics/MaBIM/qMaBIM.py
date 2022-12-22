@@ -13,7 +13,7 @@ import configuracioQvista
 from moduls import QvFuncions
 from moduls.QvApp import QvApp
 from moduls.QvAtributs import QvAtributs
-from moduls.QvAtributsForms import QvFitxesAtributs
+from moduls.QvAtributsForms import QvFitxesAtributs, QvFormAtributs
 from moduls.QvCanvas import QvCanvas
 from moduls.QvCanvasAuxiliar import QvCanvasAuxiliar
 from moduls.QVCercadorAdreca import QCercadorAdreca
@@ -28,7 +28,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets, uic
 from PyQt5.QtSql import QSqlDatabase, QSqlQuery
 from qgis.core import (QgsCoordinateReferenceSystem, QgsFeatureRequest,
                        QgsGeometry, QgsMapLayer, QgsPointXY, QgsProject,
-                       QgsRectangle, QgsVectorLayer)
+                       QgsRectangle, QgsVectorLayer, QgsExpressionContextUtils)
 from qgis.core.contextmanagers import qgisapp
 from qgis.gui import (QgsGui, QgsLayerTreeMapCanvasBridge, QgsMapTool,
                       QgsRubberBand, QgsVertexMarker)
@@ -54,6 +54,7 @@ class ConstantsMaBIM:
     nomCapaPV = 'Entitats en PV'
 
     nomsCapes = [nomCapaPH, nomCapaPV]
+    nomCapaRegistrals = 'Registrals'
 
     rangBarcelona = QgsRectangle(QgsPointXY(405960, 4572210), QgsPointXY(452330 , 4595090))
 
@@ -102,6 +103,7 @@ class ConstantsMaBIM:
                                 FROM ZAFT_0011
                                 WHERE
                                 ((BIM LIKE '%'||:pText||'%') AND (ROWNUM<100))'''
+    campEditorsQGIS = 'qMaBIM_QGISEditors'
 
 
 # això estaria millor dins de la classe Consulta, però no va
@@ -221,8 +223,6 @@ class Completador(QtWidgets.QCompleter):
 
 class QvSeleccioBIM(QgsMapTool):
     """Aquesta clase és un QgsMapTool que selecciona l'element clickat.
-
-       Si la llegenda no té un layer actiu, és treballa amb el primer visible al canvas.
     """
 
     elementsSeleccionats = QtCore.pyqtSignal('PyQt_PyObject')
@@ -275,6 +275,11 @@ class QvSeleccioBIM(QgsMapTool):
                     # la funció getFeatures retorna un iterable. Volem una llista
                     featsAct = [(feat, layer) for feat in layer.getFeatures(QgsFeatureRequest().setFilterRect(rect).setFlags(QgsFeatureRequest.ExactIntersect))]
                     features.extend(featsAct)
+            layer = self.llegenda.capaPerNom(ConstantsMaBIM.nomCapaRegistrals)
+            if layer is not None and layer.type()==QgsMapLayer.VectorLayer and self.llegenda.capaVisible(layer):
+                # la funció getFeatures retorna un iterable. Volem una llista
+                featsAct = [(feat, layer) for feat in layer.getFeatures(QgsFeatureRequest().setFilterRect(rect).setFlags(QgsFeatureRequest.ExactIntersect))]
+                features.extend(featsAct)
 
             if len(features) > 0:
                     self.elementsSeleccionats.emit(features)
@@ -285,15 +290,21 @@ class FormulariAtributs(QvFitxesAtributs):
     """Formulari d'atributs del qVista, ampliat per tenir un botó extra de seleccionar
         Per fer-ho, bàsicament a la funció __init__ afegim el botó
     """
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self, llegenda, features, *args, **kwargs):
+        super().__init__(features[0][1], features, *args, **kwargs)
+        self.llegenda = llegenda
+        self.layersPerFeats = {x:y for (x,y) in features}
         self.ui.buttonBox.removeButton(self.ui.buttonBox.buttons()[0])
         self.ui.bSeleccionar = self.ui.buttonBox.addButton('Seleccionar', QtWidgets.QDialogButtonBox.ActionRole)
         self.ui.bSeleccionar.clicked.connect(self.selecciona)
         self.ui.buttonBox.setFixedWidth(300)
+        self.ui.bEditar = self.ui.buttonBox.addButton('Editar', QtWidgets.QDialogButtonBox.ActionRole)
+        self.ui.bEditar.clicked.connect(self.edita)
+        self.updateBotoEditar()
         for x in (self.ui.bNext, self.ui.bPrev, *self.ui.buttonBox.buttons()):
             x.setStyleSheet('QAbstractButton{font-size: 14px; padding: 2px}')
             x.setFixedSize(100,30)
+        self.ui.stackedWidget.adjustSize()
     def selecciona(self):
         index = self.ui.stackedWidget.currentIndex()
         feature = self.features[index]
@@ -301,6 +312,26 @@ class FormulariAtributs(QvFitxesAtributs):
         self.parentWidget().leCercador.setText(codi)
         self.parentWidget().consulta()
         self.close()
+    def edita(self):
+        index = self.ui.stackedWidget.currentIndex()
+        feature = self.features[index]
+        self.layersPerFeats[feature].updateFeature(feature)
+        form = QvFormAtributs.create(self.layersPerFeats[feature], feature, parent=self, attributes=self.llegenda.atributs)  
+        form.exec()
+        self.ui.stackedWidget.currentWidget().widget().refreshFeature()
+        # self.refresh()   
+    def updateBotoEditar(self):
+        n = self.ui.stackedWidget.currentIndex()
+        if hasattr(self, 'layersPerFeats'):
+            feature = self.features[n]
+            capa = self.layersPerFeats[feature]
+            self.ui.bEditar.setVisible(self.llegenda.isLayerEditForm(capa))
+            self.ui.bSeleccionar.setVisible('BIM' in capa.fields().names())
+            # self.formResize(capa)
+
+    def go(self, n):
+        super().go(n)
+        self.updateBotoEditar()
 
 
 class Cercador:
@@ -426,6 +457,20 @@ class QMaBIM(QtWidgets.QMainWindow):
         self.statusBar().afegirWidget('spacer',QtWidgets.QWidget(),1,2)
 
         self.bObrirQGIS.clicked.connect(self.obrirEnQGIS)
+        # només podrà veure el botó qui aparegui a la llista d'editors
+        # TODO: si no hi ha editors definits, pot veure-ho tothom? Ningú? (comportament actual: ningú)
+        # TODO: Cal permetre posar '*' per tothom? Cal permetre posar wildcards? ("DE*", per exemple)
+        editors = QgsExpressionContextUtils.projectScope(QgsProject.instance()).variable(ConstantsMaBIM.campEditorsQGIS)
+        if editors is not None and QvApp().usuari in editors:
+            self.bObrirQGIS.show()
+        else:
+            self.bObrirQGIS.hide()
+        # capaPerNom retorna False si no existeix. Si alguna és falsa, vol dir que no existeix
+        capaRegistrals = self.llegenda.capaPerNom(ConstantsMaBIM.nomCapaRegistrals)
+        if capaRegistrals:
+            self.cbRegistralsVisibles.show()
+        else:
+            self.cbRegistralsVisibles.hide()
         self.bAfegirFavorit.clicked.connect(self.dialegSetFavorit)
         self.bAfegirFavorit.clicked.connect(self.mostraFavorits)
         self.bAfegirFavorit.hide()
@@ -523,7 +568,7 @@ class QMaBIM(QtWidgets.QMainWindow):
         self.tabCentral.setCurrentIndex(2)
 
     def seleccioGrafica(self, feats):
-        form = FormulariAtributs(self.getCapaBIMs(), feats, self)
+        form = FormulariAtributs(self.llegenda, feats, self)
         form.move(self.width()-form.width(),(self.height()-form.height())//2)
         form.exec()
         self.canvasA.bPanning.click()
@@ -757,10 +802,16 @@ class QMaBIM(QtWidgets.QMainWindow):
         for x in self.nodesBaixes:
             x.dataChanged.connect(lambda: self.canviVisibilitatLlegenda(x))
 
-        self.nodeRegistrals = QgsProject.instance().layerTreeRoot().findLayer(self.llegenda.capaPerNom('SECCIONS_REGISTRALS').id())
+        self.nodeSeccionsRegistrals = QgsProject.instance().layerTreeRoot().findLayer(self.llegenda.capaPerNom('SECCIONS_REGISTRALS').id())
+        if self.llegenda.capaPerNom(ConstantsMaBIM.nomCapaRegistrals):
+            self.nodeRegistrals = QgsProject.instance().layerTreeRoot().findLayer(self.llegenda.capaPerNom(ConstantsMaBIM.nomCapaRegistrals).id())
+        else:
+            self.nodeRegistrals = None
 
         self.cbBaixesVisibles.clicked.connect(self.swapVisibilitatBaixes)
         self.cbRegistresPropietat.clicked.connect(self.swapVisibilitatRegistre)
+        self.cbRegistralsVisibles.clicked.connect(self.swapVisibilitatRegistrals)
+        self.swapVisibilitatRegistrals(False)
 
     def canviVisibilitatLlegenda(self,node):
         if node in self.nodesBaixes:
@@ -775,8 +826,10 @@ class QMaBIM(QtWidgets.QMainWindow):
             else:
                 self.cbBaixesVisibles.setTristate(False)
                 self.cbBaixesVisibles.setChecked(False)
-        elif node==self.nodeRegistrals:
+        elif node==self.nodeSeccionsRegistrals:
             self.cbRegistresPropietat.setChecked(node.isVisible())
+        elif node==self.nodeRegistrals:
+            self.cbRegistralsVisibles.setChecked(node.isVisible())
 
     def swapVisibilitatBaixes(self,check):
         self.cbBaixesVisibles.setTristate(False)
@@ -790,6 +843,10 @@ class QMaBIM(QtWidgets.QMainWindow):
     def swapVisibilitatRegistre(self,check):
         capa = self.llegenda.capaPerNom('SECCIONS_REGISTRALS')
         self.llegenda.setLayerVisible(capa, check)
+    def swapVisibilitatRegistrals(self, check):
+        capa = self.llegenda.capaPerNom(ConstantsMaBIM.nomCapaRegistrals)
+        if capa:
+            self.llegenda.setLayerVisible(capa, check)
 
     def getCapaBIMs(self):
         # Retorna una capa amb camp de BIMs

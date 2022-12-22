@@ -8,8 +8,7 @@ from qgis.core.contextmanagers import qgisapp
 from qgis.gui import (QgsLayerTreeMapCanvasBridge, QgsMapCanvas,
                       QgsMapCanvasAnnotationItem, QgsRubberBand)
 from qgis.PyQt.QtCore import QPointF
-from qgis.PyQt.QtGui import QColor
-from qgis.PyQt.QtWidgets import QTextDocument
+from qgis.PyQt.QtGui import QColor, QTextDocument
 
 from moduls import QvFuncions
 

@@ -17,6 +17,7 @@ from moduls.QvDiagrama import QvDiagrama
 from moduls.QvTema import QvTema
 from moduls.QvAnotacions import QvMapToolAnnotation
 from moduls.QvCatalegCapes import QvCreadorCatalegCapes
+from moduls.QvDigitizeContext import QvDigitizeContext
 from moduls.QvApp import QvApp
 from moduls import QvFuncions
 
@@ -131,6 +132,10 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
         self.iconaRequired = qgGui.QgsLayerTreeViewIndicator()
         self.iconaRequired.setIcon(qtGui.QIcon(':/images/themes/default/mIndicatorNonRemovable.svg'))
         self.iconaRequired.setToolTip('Capa necessària per al mapa')
+
+        self.iconaEditForm = qgGui.QgsLayerTreeViewIndicator()
+        self.iconaEditForm.setIcon(qtGui.QIcon(os.path.join(imatgesDir, 'edit_form.png')))
+        self.iconaEditForm.setToolTip('Capa amb modificació de la fitxa dels elements')
 
         if self.digitize is not None:
             self.iconaEditOff = qgGui.QgsLayerTreeViewIndicator()
@@ -335,6 +340,7 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
                 self.removeIndicator(node, self.iconaFiltre)
                 self.removeIndicator(node, self.iconaMap)
                 self.removeIndicator(node, self.iconaRequired)
+                self.removeIndicator(node, self.iconaEditForm)
                 if self.digitize is not None:
                     self.removeIndicator(node, self.iconaEditOn)
                     self.removeIndicator(node, self.iconaEditOff)
@@ -360,6 +366,9 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
                                 self.addIndicator(node, self.iconaEditOn)
                         else:
                             self.addIndicator(node, self.iconaEditOff)
+                # Modificación atributos
+                if self.isLayerEditForm(capa):
+                    self.addIndicator(node, self.iconaEditForm)
                 if modif:
                     capa.nameChanged.emit()
 
@@ -661,6 +670,12 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
         dP = capa.dataProvider()
         if dP is None: return False
         return self.testFlags(dP.capabilities(), qgCor.QgsVectorDataProvider.EditingCapabilities)
+
+    def isLayerEditForm(self, capa=None):
+        if capa is None: capa = self.currentLayer()
+        if capa is None: return False
+        if not self.isLayerEditable(capa): return False
+        return QvDigitizeContext.testUserEditable(capa, nom='qV_editForm') and not QvDigitizeContext.testUserEditable(capa)
 
     def setMenuAccions(self):
         # Menú dinámico según tipo de elemento sobre el que se clicó

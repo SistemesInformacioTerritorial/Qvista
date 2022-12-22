@@ -407,29 +407,45 @@ class QvNouCataleg(QWidget):
             # 1. Agafar tots els arxius que pengen del directori i tenen extensió self.EXT
             # 2. Eliminar-ne l'extensió, per obtenir el nom base
 
-            # Opció 1: utilitzem Path.rglob, per agafar directament els arxius amb aquella extensió
-            #  Path.rglob equival a fer Path.glob afegint al davant **/
-            #  AKA: qualsevol cosa que pengi del directori i compleixi la condició
-            # files = Path(ruta).rglob(f'*{self.EXT}')
-
-            # Opció 2: iterem tots els arxius utilitzant os.walk, i ens quedem només amb els que acaben en self.EXT
-            # files = (Path(ruta, nom) for ruta, _, files in os.walk(ruta) for nom in files if nom.endswith(self.EXT))
-
-            # Opció 3: utilitzem una comanda de Windows, ja que el procés de llegir recursivament arxius de xarxa és molt lent
-            # En experiments duts a terme el 28/11/2022 sobre les 12:00, la versió que redirigeix a un arxiu triga uns 10s, i la del popen uns 30s
+            # Opció final: utilitzem una comanda de Windows, ja que el procés de llegir recursivament arxius de xarxa és molt lent
+            # Si llegim així, *sembla* que ens estalviem crides i va bastant més ràpid que llegir amb les funcions de Python
+            # Sobre si redirigir a un arxiu o llegir la stdout des d'aquí:
+            #  Els experiments no mostren res concloent (a vegades és millor redirigir, a vegades no). 
+            #  Per evitar escriure arxius innecessaris, es deixa així
+            files = None
             rutaAux = os.path.join(tempdir, 'tmpCataleg.txt')
-            cmdRedirect = f'dir /s /b "{str(ruta)}\\*{self.EXT}" >{rutaAux} 2>nul'
-            cmd = f'dir /s /b "{str(ruta)}\\*{self.EXT}" 2>nul'
-            # forcem l'ús de cp1252, que és la de Windows per Europa
-            import ctypes
-            kernel32 = ctypes.WinDLL('kernel32', use_last_error=True)
-            kernel32.SetConsoleCP(1252)
-            kernel32.SetConsoleOutputCP(1252)
-            with os.popen(cmd) as f:
-                files = [Path(x) for x in f]
-            # os.system(cmdRedirect)
-            # with open(rutaAux, encoding='cp1252') as f:
-            #     files = [Path(x) for x in f]
+            if sys.platform == 'win32':
+                # cmdRedirect = f'dir /s /b "{str(ruta)}\\*{self.EXT}" >{rutaAux} 2>nul'
+                cmd = f'dir /s /b "{str(ruta)}\\*{self.EXT}" 2>nul'
+                # forcem l'ús de cp1252, que és la de Windows per l'alfabet llatí 
+                # Si aquesta no funciona, utilitzem cp65001 (UTF-8)
+                # En el moment on una d'elles funcioni, sortim del bucle
+                # En el moment de fer aquest codi:
+                #  QGIS 3.10: funciona només CP1252
+                #  QGIS 3.16: funciona CP1252 i CP65001
+                #  QGIS 3.22: funciona només CP65001
+                import ctypes
+                kernel32 = ctypes.WinDLL('kernel32', use_last_error=True)
+                for x in (1252, 65001):
+                    try:
+                        kernel32.SetConsoleCP(x)
+                        kernel32.SetConsoleOutputCP(x)
+                        with os.popen(cmd) as f:
+                            files = [Path(x) for x in f]
+                    except UnicodeDecodeError as e:
+                        pass
+                    else:
+                        break
+            # Si es vol migrar a Linux o altres plataformes, valorar si afegir un elif millora el rendiment
+            # elif [ALTRES PLATAFORMES]
+            if files is None:
+                # Opció de rescat: utilitzem Path.rglob, per agafar directament els arxius amb aquella extensió
+                #  És l'opció habitual en Python, però a la xarxa corporativa funciona bastant lenta
+                #  Per això es deixa només pels casos on no s'hagi pogut fer amb la comanda batch
+                #  Path.rglob equival a fer Path.glob afegint al davant **/
+                #  AKA: qualsevol cosa que pengi del directori i compleixi la condició
+                files = Path(ruta).rglob(f'*{self.EXT}')
+                # Avisar de l'error, ja que pel que sigui no està funcionant la lectura mitjançant la comanda (?)
 
             # eliminem l'extensió
             files = (str(x.with_suffix('')) for x in files)
