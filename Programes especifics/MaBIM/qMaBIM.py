@@ -54,7 +54,8 @@ class ConstantsMaBIM:
     nomCapaPV = 'Entitats en PV'
 
     nomsCapes = [nomCapaPH, nomCapaPV]
-    nomCapaRegistrals = 'Registrals'
+    # nomCapaRegistrals = 'Registrals'
+    nomGrupRegistrals = 'Registrals'
 
     rangBarcelona = QgsRectangle(QgsPointXY(405960, 4572210), QgsPointXY(452330 , 4595090))
 
@@ -275,11 +276,15 @@ class QvSeleccioBIM(QgsMapTool):
                     # la funció getFeatures retorna un iterable. Volem una llista
                     featsAct = [(feat, layer) for feat in layer.getFeatures(QgsFeatureRequest().setFilterRect(rect).setFlags(QgsFeatureRequest.ExactIntersect))]
                     features.extend(featsAct)
-            layer = self.llegenda.capaPerNom(ConstantsMaBIM.nomCapaRegistrals)
-            if layer is not None and layer.type()==QgsMapLayer.VectorLayer and self.llegenda.capaVisible(layer):
-                # la funció getFeatures retorna un iterable. Volem una llista
-                featsAct = [(feat, layer) for feat in layer.getFeatures(QgsFeatureRequest().setFilterRect(rect).setFlags(QgsFeatureRequest.ExactIntersect))]
-                features.extend(featsAct)
+
+            node = self.llegenda.nodePerNom(ConstantsMaBIM.nomGrupRegistrals)
+            if node is not None:
+                for nodeLayer in node.findLayers():
+                    layer = nodeLayer.layer()
+                    if layer.type()==QgsMapLayer.VectorLayer and self.llegenda.capaVisible(layer):
+                        # la funció getFeatures retorna un iterable. Volem una llista
+                        featsAct = [(feat, layer) for feat in layer.getFeatures(QgsFeatureRequest().setFilterRect(rect).setFlags(QgsFeatureRequest.ExactIntersect))]
+                        features.extend(featsAct)
 
             if len(features) > 0:
                     self.elementsSeleccionats.emit(features)
@@ -318,7 +323,10 @@ class FormulariAtributs(QvFitxesAtributs):
         self.layersPerFeats[feature].updateFeature(feature)
         form = QvFormAtributs.create(self.layersPerFeats[feature], feature, parent=self, attributes=self.llegenda.atributs)  
         form.exec()
-        self.ui.stackedWidget.currentWidget().widget().refreshFeature()
+        wid = self.ui.stackedWidget.currentWidget()
+        if isinstance(wid, QtWidgets.QScrollArea):
+            wid = wid.widget()
+        wid.refreshFeature()
         # self.refresh()   
     def updateBotoEditar(self):
         n = self.ui.stackedWidget.currentIndex()
@@ -465,9 +473,8 @@ class QMaBIM(QtWidgets.QMainWindow):
             self.bObrirQGIS.show()
         else:
             self.bObrirQGIS.hide()
-        # capaPerNom retorna False si no existeix. Si alguna és falsa, vol dir que no existeix
-        capaRegistrals = self.llegenda.capaPerNom(ConstantsMaBIM.nomCapaRegistrals)
-        if capaRegistrals:
+        node = self.llegenda.nodePerNom(ConstantsMaBIM.nomGrupRegistrals)
+        if node is not None and len(node.findLayers())>0:
             self.cbRegistralsVisibles.show()
         else:
             self.cbRegistralsVisibles.hide()
@@ -803,8 +810,9 @@ class QMaBIM(QtWidgets.QMainWindow):
             x.dataChanged.connect(lambda: self.canviVisibilitatLlegenda(x))
 
         self.nodeSeccionsRegistrals = QgsProject.instance().layerTreeRoot().findLayer(self.llegenda.capaPerNom('SECCIONS_REGISTRALS').id())
-        if self.llegenda.capaPerNom(ConstantsMaBIM.nomCapaRegistrals):
-            self.nodeRegistrals = QgsProject.instance().layerTreeRoot().findLayer(self.llegenda.capaPerNom(ConstantsMaBIM.nomCapaRegistrals).id())
+        node = self.llegenda.nodePerNom(ConstantsMaBIM.nomGrupRegistrals)
+        if node is not None:
+            self.nodesRegistrals = node.findLayers()
         else:
             self.nodeRegistrals = None
 
@@ -828,7 +836,7 @@ class QMaBIM(QtWidgets.QMainWindow):
                 self.cbBaixesVisibles.setChecked(False)
         elif node==self.nodeSeccionsRegistrals:
             self.cbRegistresPropietat.setChecked(node.isVisible())
-        elif node==self.nodeRegistrals:
+        elif node in self.nodesRegistrals:
             self.cbRegistralsVisibles.setChecked(node.isVisible())
 
     def swapVisibilitatBaixes(self,check):
@@ -844,9 +852,11 @@ class QMaBIM(QtWidgets.QMainWindow):
         capa = self.llegenda.capaPerNom('SECCIONS_REGISTRALS')
         self.llegenda.setLayerVisible(capa, check)
     def swapVisibilitatRegistrals(self, check):
-        capa = self.llegenda.capaPerNom(ConstantsMaBIM.nomCapaRegistrals)
-        if capa:
-            self.llegenda.setLayerVisible(capa, check)
+        node = self.llegenda.nodePerNom(ConstantsMaBIM.nomGrupRegistrals)
+        if node is not None:
+            for nodeLayer in node.findLayers():
+                capa = nodeLayer.layer()
+                self.llegenda.setLayerVisible(capa, check)
 
     def getCapaBIMs(self):
         # Retorna una capa amb camp de BIMs
