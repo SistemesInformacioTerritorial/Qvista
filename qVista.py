@@ -8,7 +8,7 @@ startGlobal = time.time()
 start = time.time()
 # Fitxer principal de importació de llibreries
 from qgis.core import (QgsExpressionContextUtils, QgsMapLayer, QgsProject,
-                       QgsRasterLayer, QgsVectorLayer)
+                       QgsRasterLayer, QgsVectorLayer, QgsPointXY)
 from qgis.core.contextmanagers import qgisapp, sys
 from qgis.gui import (QgsGui, QgsLayerTreeMapCanvasBridge, QgsRubberBand,
                       QgsVertexMarker)
@@ -627,6 +627,18 @@ class QVista(QMainWindow, Ui_MainWindow):
         if hasattr(self,'marcaLlocPosada') and self.marcaLlocPosada:
             self.marcaLlocPosada = False
             self.canvas.scene().removeItem(self.marcaLloc)
+    def marcaCoordenades(self, coordX, coordY):
+        if hasattr(self,'marcaLlocPosada') and self.marcaLlocPosada:
+            self.canvas.scene().removeItem(self.marcaLloc)
+        self.marcaLloc = QgsVertexMarker(self.canvas)
+        self.marcaLloc.setCenter(QgsPointXY(coordX, coordY))
+        self.marcaLloc.setColor(QColor(255, 0, 0))
+        self.marcaLloc.setIconSize(15)
+        self.marcaLloc.setIconType(QgsVertexMarker.ICON_X) # ICON_BOX, ICON_CROSS, ICON_X
+        self.marcaLloc.setPenWidth(3)
+        self.marcaLloc.show()
+        self.marcaLlocPosada = True
+
 
     def preparacioUbicacions(self): #???
         """
@@ -1972,6 +1984,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         #Afegim tots els widgets de cop
         #Així fer una reordenació serà més senzill
         self.statusbar = QvStatusBar(self,['nomProjecte','capaSeleccionada',('seleccioExpressio',1), 'progressBar', 'connexio',('coordenades',1),'projeccio', 'escala'],self.canvas,self.llegenda)
+        self.statusbar.coordsCanviades.connect(self.marcaCoordenades)
         self.setStatusBar(self.statusbar)
         self.statusbar.setStyleSheet('QLabel{border: 1px solid black}')
         # self.statusbar.addPermanentWidget( self.lblProjecte, 0 )

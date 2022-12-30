@@ -218,17 +218,24 @@ class QvSeleccioGrafica(QWidget):
         self.frameColorOpacitat.setFrameStyle(QFrame.StyledPanel)
 
         self.leRadiCercle = QLineEdit()
+        self.leFixarCentre = QLineEdit()
+        self.canvas.xyCoordinates.connect(self.showXY)
         val = QIntValidator()
         val.setBottom(0)
         self.leRadiCercle.setValidator(val)
         self.leRadiCercle.returnPressed.connect(self.radiCercle)
+        self.leFixarCentre.returnPressed.connect(self.cercleCentreFixe)
         self.cbFixarRadi = QCheckBox('Fixar radi')
         self.cbFixarRadi.stateChanged.connect(self.radiCercle)
         layRadi = QHBoxLayout()
         layRadi.addWidget(self.leRadiCercle)
         layRadi.addWidget(self.cbFixarRadi)
+        layCentre = QHBoxLayout()
+        layCentre.addWidget(self.leFixarCentre)
         self.lytSeleccioGrafica.addLayout(layRadi)
+        self.lytSeleccioGrafica.addLayout(layCentre)
         self.leRadiCercle.hide()
+        self.leFixarCentre.hide()
         self.cbFixarRadi.hide()
 
         self.gbOverlap = QGroupBox()
@@ -292,6 +299,50 @@ class QvSeleccioGrafica(QWidget):
         else:
             self.einaCercle.cercleFixe = False
             self.einaCercle.rubberbandCercle.reset(True)
+        self.leFixarCentre.setVisible(self.einaCercle.cercleFixe)
+    
+    # inspirat en el funcionament de leXY a QvStatusBar
+    def cercleCentreFixe(self):
+        coordenades = self.leFixarCentre.text()
+        try:
+            coordX, coordY = coordenades.split(';')
+            x, xOk = QvApp().locale.toFloat(coordX)
+            y, yOk = QvApp().locale.toFloat(coordY)
+            dist, distOk = QvApp().locale.toFloat(self.leRadiCercle.text())
+            if xOk and yOk and distOk:
+                punt = QgsPointXY(x, y)
+                vora = punt+QgsVector(dist, 0)
+                # punt2 = QgsPointXY(x+dist, y)
+
+                # poligon, _ = self.tool.getPoligon(punt, punt2, 100)
+                poligon, _ = self.tool.getPoligon(punt, vora, 100)
+                self.tool.rbcircle(punt, vora, segments=100)
+                self.tool.rubberbandCercle = self.tool.novaRubberband()
+                # self.tool.rubberbandCercle.setToGeometry(poligon, self.tool.getCapa())
+                if self.checkMascara.isChecked():
+                    self.aplicaMascara([poligon])
+                else:
+                    # rb = self.tool.novaRubberband()
+                    # rb = QgsRubberBand(self.canvas, False)
+                    # rb.setToGeometry(poligon, self.llegenda.currentLayer())
+                    self.tool.seleccionaPoligon(poligon)
+                self.canvas.setCenter(punt)
+                self.canvas.refresh()
+            # print(coordX, coordY)
+        except Exception as e:
+            pass
+
+    def getXY(self, p, numDec=3):
+        text = QvApp().locale.toString(p.x(), 'f', numDec) + ';' + \
+                QvApp().locale.toString(p.y(), 'f', numDec)
+        return text
+
+    def showXY(self, p, numDec=3):
+        try:
+            text = self.getXY(p,numDec)
+            self.leFixarCentre.setText(text)
+        except Exception as e:
+            pass
     
     @QvFuncions.mostraSpinner
     def crearCsv(self):
