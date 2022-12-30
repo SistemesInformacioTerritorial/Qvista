@@ -810,9 +810,9 @@ class QMaBIM(QtWidgets.QMainWindow):
             x.dataChanged.connect(lambda: self.canviVisibilitatLlegenda(x))
 
         self.nodeSeccionsRegistrals = QgsProject.instance().layerTreeRoot().findLayer(self.llegenda.capaPerNom('SECCIONS_REGISTRALS').id())
-        node = self.llegenda.nodePerNom(ConstantsMaBIM.nomGrupRegistrals)
-        if node is not None:
-            self.nodesRegistrals = node.findLayers()
+        self.nodeGrupRegistrals = self.llegenda.nodePerNom(ConstantsMaBIM.nomGrupRegistrals)
+        if self.nodeGrupRegistrals is not None:
+            self.nodesRegistrals = self.nodeGrupRegistrals.findLayers()
         else:
             self.nodeRegistrals = None
 
@@ -836,7 +836,7 @@ class QMaBIM(QtWidgets.QMainWindow):
                 self.cbBaixesVisibles.setChecked(False)
         elif node==self.nodeSeccionsRegistrals:
             self.cbRegistresPropietat.setChecked(node.isVisible())
-        elif node in self.nodesRegistrals:
+        elif node==self.nodeGrupRegistrals:
             self.cbRegistralsVisibles.setChecked(node.isVisible())
 
     def swapVisibilitatBaixes(self,check):
@@ -854,9 +854,10 @@ class QMaBIM(QtWidgets.QMainWindow):
     def swapVisibilitatRegistrals(self, check):
         node = self.llegenda.nodePerNom(ConstantsMaBIM.nomGrupRegistrals)
         if node is not None:
-            for nodeLayer in node.findLayers():
-                capa = nodeLayer.layer()
-                self.llegenda.setLayerVisible(capa, check)
+            node.setItemVisibilityChecked(check)
+            # for nodeLayer in node.findLayers():
+            #     capa = nodeLayer.layer()
+            #     self.llegenda.setLayerVisible(capa, check)
 
     def getCapaBIMs(self):
         # Retorna una capa amb camp de BIMs
