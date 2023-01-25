@@ -738,6 +738,9 @@ class QMaBIM(QtWidgets.QMainWindow):
 
         # instanciem el mapeta
         self.mapetaA = QvMapetaBrujulado(mapetaPng, self.canvasA, pare=self.canvasA)
+        self.mapetaA.setGraphicsEffect(QvConstants.ombra(self,radius=10,color=QvConstants.COLOROMBRA))
+        # Copiem la part que ens interessa del stylesheet del qVista
+        self.mapetaA.setStyleSheet('''QMenu{background-color: #DDDDDD;color: #38474F;}QMenu::item:selected{background-color: #FF6215;color: #F9F9F9;}''')
 
         self.cerca1 = Cercador(self.canvasA, self.leCarrer, self.leNumero, self.lblIcona)
         self.cerca1.cercador.sHanTrobatCoordenades.connect(lambda: self.tabCentral.setCurrentIndex(2))
