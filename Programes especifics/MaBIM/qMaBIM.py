@@ -270,12 +270,13 @@ class QvSeleccioBIM(QgsMapTool):
 
             features = []
             node = self.llegenda.nodePerNom('Inventari municipal')
-            for nodeLayer in node.findLayers():
-                layer = nodeLayer.layer()
-                if layer.type()==QgsMapLayer.VectorLayer and 'BIM' in layer.fields().names():
-                    # la funció getFeatures retorna un iterable. Volem una llista
-                    featsAct = [(feat, layer) for feat in layer.getFeatures(QgsFeatureRequest().setFilterRect(rect).setFlags(QgsFeatureRequest.ExactIntersect))]
-                    features.extend(featsAct)
+            if node is not None:
+                for nodeLayer in node.findLayers():
+                    layer = nodeLayer.layer()
+                    if layer.type()==QgsMapLayer.VectorLayer and 'BIM' in layer.fields().names():
+                        # la funció getFeatures retorna un iterable. Volem una llista
+                        featsAct = [(feat, layer) for feat in layer.getFeatures(QgsFeatureRequest().setFilterRect(rect).setFlags(QgsFeatureRequest.ExactIntersect))]
+                        features.extend(featsAct)
 
             node = self.llegenda.nodePerNom(ConstantsMaBIM.nomGrupRegistrals)
             if node is not None:
@@ -737,6 +738,9 @@ class QMaBIM(QtWidgets.QMainWindow):
 
         # instanciem el mapeta
         self.mapetaA = QvMapetaBrujulado(mapetaPng, self.canvasA, pare=self.canvasA)
+        self.mapetaA.setGraphicsEffect(QvConstants.ombra(self,radius=10,color=QvConstants.COLOROMBRA))
+        # Copiem la part que ens interessa del stylesheet del qVista
+        self.mapetaA.setStyleSheet('''QMenu{background-color: #DDDDDD;color: #38474F;}QMenu::item:selected{background-color: #FF6215;color: #F9F9F9;}''')
 
         self.cerca1 = Cercador(self.canvasA, self.leCarrer, self.leNumero, self.lblIcona)
         self.cerca1.cercador.sHanTrobatCoordenades.connect(lambda: self.tabCentral.setCurrentIndex(2))
@@ -801,7 +805,7 @@ class QMaBIM(QtWidgets.QMainWindow):
             return 'baixa' in nomNode or 'baixes' in nomNode
         model = self.llegenda.model
         capes = (self.llegenda.capaPerNom(nomCapa) for nomCapa in ConstantsMaBIM.nomsCapes)
-        nodesCapes = (QgsProject.instance().layerTreeRoot().findLayer(capa.id()) for capa in capes)
+        nodesCapes = (QgsProject.instance().layerTreeRoot().findLayer(capa.id()) for capa in capes if capa is not None)
         self.nodesBaixes = [node for nodeCapa in nodesCapes for node in model.layerLegendNodes(nodeCapa) if nodeConteBaixa(node)]
 
 
@@ -809,7 +813,7 @@ class QMaBIM(QtWidgets.QMainWindow):
         for x in self.nodesBaixes:
             x.dataChanged.connect(lambda: self.canviVisibilitatLlegenda(x))
 
-        self.nodeSeccionsRegistrals = QgsProject.instance().layerTreeRoot().findLayer(self.llegenda.capaPerNom('SECCIONS_REGISTRALS').id())
+        self.nodeSeccionsRegistrals = self.llegenda.nodePerNom('SECCIONS_REGISTRALS')
         self.nodeGrupRegistrals = self.llegenda.nodePerNom(ConstantsMaBIM.nomGrupRegistrals)
         if self.nodeGrupRegistrals is not None:
             self.nodesRegistrals = self.nodeGrupRegistrals.findLayers()
@@ -947,6 +951,10 @@ class QMaBIM(QtWidgets.QMainWindow):
                 x.setChecked(False)
             else:
                 x.setChecked(True)
+    
+    def closeEvent(self, e):
+        super().closeEvent(e)
+        sys.exit(0)
 
 def splashScreen():
     splash_pix = QtGui.QPixmap('imatges/MABIM/MABIMSplash.png')
