@@ -3,7 +3,7 @@ import os
 
 
 class ConfigBase:
-    VERSIO = "0.99"
+    VERSIO = "1.00"
     TITOLFINESTRA = "qVista {}  Sistema d'Informació Territorial de Barcelona"
     CATALEGSCAPES = {
         'públic': "N:/9SITEB/Publicacions/qVista/Cataleg/Catàleg de capes corporatives/",
