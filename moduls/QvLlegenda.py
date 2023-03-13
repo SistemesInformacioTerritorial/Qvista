@@ -429,7 +429,7 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
             if self.digitize is not None:
                 self.digitize.altaInfoCapa(capa)
 
-            if capa.type() == qgCor.QgsMapLayer.RasterLayer and self.capaMarcada(capa):
+            if self.capaMarcada(capa) and (capa.type() == qgCor.QgsMapLayer.RasterLayer or capa.providerType() == "WFS"):
                 node = self.root.findLayer(capa.id())
                 # self.restoreExtent = 2
                 # print('restoreExtent', self.restoreExtent)
