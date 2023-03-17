@@ -383,7 +383,10 @@ class QvStatusBar(QStatusBar):
             text = le.text()
         font = le.font()
         fm = QFontMetrics(font)
-        le.setFixedWidth(round(fm.width(text)*QvApp().zoomFactor()))
+        mida = round(fm.width(text)*QvApp().zoomFactor())
+        # le.setFixedWidth(round(fm.width(text)*QvApp().zoomFactor()))
+        le.setMinimumWidth(mida)
+        le.setMaximumWidth(mida+10)
     def showPB(self):
         self.sbCarregantCanvas.show()
     def hidePB(self):

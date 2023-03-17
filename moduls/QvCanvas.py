@@ -480,13 +480,16 @@ class QvCanvas(QgsMapCanvas):
         
 
     def dropEvent(self, e):
-        position = e.pos()
-        self.qvSv.rp.llevameP(position)
-        self.mostraStreetView.emit()
-        # self.button.move(position)
+        if hasattr(self, 'bstreetview') and e.source() == self.bstreetview:
+            position = e.pos()
+            self.qvSv.rp.llevameP(position)
+            self.mostraStreetView.emit()
+            # self.button.move(position)
 
-        e.setDropAction(Qt.MoveAction)
-        e.accept()
+            e.setDropAction(Qt.MoveAction)
+            e.accept()
+        else:
+            super().dropEvent(e)
 
     def setMapTool(self,tool):
         if isinstance(tool,QvMascaraEinaPlantilla):

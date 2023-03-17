@@ -340,7 +340,10 @@ class FormulariAtributs(QvFitxesAtributs):
 
     def go(self, n):
         super().go(n)
+        feat = self.features[n]
+        if hasattr(self, 'layersPerFeats'): self.layer = self.layersPerFeats[feat]
         self.updateBotoEditar()
+        self.setMenuBar(feat)
 
 
 class Cercador:
@@ -971,6 +974,7 @@ def arguments():
     return parser.parse_args()
 def main():
     with qgisapp(sysexit=False) as app:
+        QvApp().carregaIdioma(app, 'ca')
         args = arguments()
         app.setWindowIcon(QtGui.QIcon('imatges/MaBIM/MaBIM vermell.png'))
         splash = splashScreen()

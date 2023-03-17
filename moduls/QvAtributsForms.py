@@ -110,6 +110,8 @@ class QvFitxesAtributs(QDialog):
         # Al añadir el menú, cambia el tamaño del form.
         # Hay que guardarlo y restaurarlo
         size = self.size()
+        if hasattr(self, 'menuBar'):
+            self.menuBar.deleteLater()
         self.menuBar = QMenuBar()
         self.menu = QgsActionMenu(self.layer, feature, 'Feature')
         if self.menu is not None and not self.menu.isEmpty():
