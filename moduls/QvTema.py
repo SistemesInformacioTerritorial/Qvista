@@ -155,16 +155,18 @@ class QvTema:
             act.setCheckable(True)
             act.setChecked(actiu is not None and actiu == tema)
             act.triggered.connect(self.menuAplicaTema)
-        if self.llegenda.editable:
-            self.menu.addSeparator()
-            if actiu is None:  # or actiu == TEMA_INICIAL:
-                if self.numTemes() > 0:
-                    self.menu.addAction('Afegeix o modifica tema', self.menuNouTema)
-                else:
-                    self.menu.addAction('Afegeix tema', self.menuNouTema)
-            else:
-                self.menu.addAction(f"Canvia nom '{actiu}'", self.menuCanviaNomTema)
-                self.menu.addAction(f"Esborra '{actiu}'", self.menuEsborraTema)
+        # No tiene sentido mofificar los temas desde qVista 
+        # porque no se puden guardar estilos con nombre
+        # if self.llegenda.editable:
+        #     self.menu.addSeparator()
+        #     if actiu is None:  # or actiu == TEMA_INICIAL:
+        #         if self.numTemes() > 0:
+        #             self.menu.addAction('Afegeix o modifica tema', self.menuNouTema)
+        #         else:
+        #             self.menu.addAction('Afegeix tema', self.menuNouTema)
+        #     else:
+        #         self.menu.addAction(f"Canvia nom '{actiu}'", self.menuCanviaNomTema)
+        #         self.menu.addAction(f"Esborra '{actiu}'", self.menuEsborraTema)
         if self.menu.isEmpty():
             return None
         else:

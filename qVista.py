@@ -1389,8 +1389,7 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         # Guardo el titulo creado para poder añadirle el tema
         tituloCurrent = dwCanvas.windowTitle() 
-        aConservar = tituloCurrent[0 :tituloCurrent.find(')')+1] 
-        nuevoTitulo = aConservar + " Tema: " + canvas.currentTeme
+        nuevoTitulo = self.nouTitol(tituloCurrent, canvas.currentTeme)
         dwCanvas.setWindowTitle(nuevoTitulo)
         # Añado a diccionario, el id del canvas y de su dw
         self.dicCanvasDw.setdefault(str(id(canvas)),str(id(dwCanvas)))
@@ -1400,6 +1399,11 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.addDockWidget(Qt.RightDockWidgetArea, dwCanvas)
         dwCanvas.setFloating(True)
 
+    def nouTitol(self, actTitol, actTema):
+        nuevoTitulo = actTitol[0 :actTitol.find(')')+1] 
+        if actTema != '' and actTema != 'Sense Tema':
+            nuevoTitulo += " - Tema " + actTema
+        return nuevoTitulo
 
     def actualizoDiccionarios(self,num):
         print("borro: ",num)
@@ -1413,9 +1417,7 @@ class QVista(QMainWindow, Ui_MainWindow):
             suDw = int(self.dicCanvasDw.get(idenCanvas))
             import _ctypes
             tituloCurrent = _ctypes.PyObj_FromPtr(suDw).windowTitle() 
-            
-            aConservar = tituloCurrent[0 :tituloCurrent.find(')')+1] 
-            nuevoTitulo = aConservar + " Tema " + tema
+            nuevoTitulo = self.nouTitol(tituloCurrent, tema)
             _ctypes.PyObj_FromPtr(suDw).setWindowTitle(nuevoTitulo)        
             
         except Exception as ee:
