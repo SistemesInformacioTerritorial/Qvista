@@ -4,14 +4,14 @@
 import os
 import time
 
-from qgis.core import QgsProject
+from qgis.core import QgsProject, QgsMapThemeCollection
 from qgis.core.contextmanagers import qgisapp
 from qgis.gui import QgsMapCanvas, QgsMapToolPan, QgsMapToolZoom
 from qgis.PyQt.QtCore import QSize, Qt, pyqtSignal
 from qgis.PyQt.QtGui import QColor, QIcon, QImage, QPainter
 from qgis.PyQt.QtWidgets import (QFrame, QHBoxLayout, QLabel, QMessageBox,
                                  QPushButton, QSizePolicy, QSpacerItem,
-                                 QVBoxLayout, qApp)
+                                 QVBoxLayout, qApp, QComboBox)
 
 import configuracioQvista
 from moduls.QvApp import QvApp
@@ -52,6 +52,33 @@ class QvCanvas(QgsMapCanvas):
             self.panCanvas()
             self.panCanvas()
         self.preparacioStreetView()
+
+        QgsProject.instance().readProject.connect(self.actualitzaTemes)
+    
+    def actualitzaTemes(self):
+        if self.llegenda is not None:
+            # IMPORTANT: aquesta línia ha d'estar aquí. Si es mou més avall, falla
+            self.llegenda.tema.temaInicial(True)
+            self.cbTemes.clear()
+            temes = self.llegenda.tema.temes()
+            self.cbTemes.addItems(temes)
+            if len(temes)==1:
+                self.cbTemes.hide()
+            else:
+                self.cbTemes.show()
+    def canviTema(self, i):
+        temes = self.llegenda.tema.temes()
+        if i<len(temes):
+            try:
+                self.llegenda.tema.aplicaTema(temes[i])
+            except IndexError as e:
+                print(i)
+    
+    def temaActualitzatLlegenda(self, act):
+        # self.canviTema(self.llegenda.tema.menu.actions().index(act))
+        i = self.llegenda.tema.menu.actions().index(act)
+        if i!=self.cbTemes.currentIndex():
+            self.cbTemes.setCurrentIndex(i)
 
     def focusInEvent(self,event):  # JNB prueba detectar que canvas tiene foco
         # print("QvCanvas >> focusInEvent "+ str(id(self)))
@@ -183,6 +210,7 @@ class QvCanvas(QgsMapCanvas):
 
     def setLlegenda(self, llegenda):
         self.llegenda = llegenda
+        self.llegenda.tema.menu.triggered.connect(self.temaActualitzatLlegenda)
     def preparacioStreetView(self):
         self.qvSv = QvStreetView(self, self)
         # self.setMapTool(self.qvSv.rp)
@@ -424,6 +452,11 @@ class QvCanvas(QgsMapCanvas):
                 self._botons.append(boto)
         # spacer = QSpacerItem(0, 50, QSizePolicy.Expanding, QSizePolicy.Maximum)
         # self.layoutBotoneraMapa.addSpacerItem(spacer)
+
+        self.cbTemes = QComboBox()
+        self.cbTemes.currentIndexChanged.connect(self.canviTema)
+        self.cbTemes.setCursor(QvConstants.cursorFletxa())
+        self.layoutBotoneraMapa.insertWidget(0,self.cbTemes)
 
         self.butoMostra = QvPushButton(flat=True)
         self.butoMostra.setMaximumHeight(80)

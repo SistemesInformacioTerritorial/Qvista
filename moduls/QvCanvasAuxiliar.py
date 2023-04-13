@@ -51,14 +51,17 @@ class QvCanvasAuxiliar(QvCanvas):
     def preparaCbTemes(self, temaInicial):
         self.temes = QgsProject.instance().mapThemeCollection().mapThemes()
         if len(self.temes)>0:
+            # Cal eliminar la combobox dels temes, ja que la del canvas auxiliar funciona una mica diferent
+            if hasattr(self, 'cbTemes'):
+                self.layoutBotoneraMapa.removeWidget(self.cbTemes)
             self.cbTemes = QComboBox()
-            self.cbTemes.addItem('Sense tema')
+            # self.cbTemes.addItem('Sense tema')
             self.cbTemes.addItems(self.temes)
             self.cbTemes.currentIndexChanged.connect(self.canviTema)
             self.layoutBotoneraMapa.insertWidget(0,self.cbTemes)
 
             if temaInicial in self.temes:
-                self.cbTemes.setCurrentIndex(self.temes.index(temaInicial)+1)
+                self.cbTemes.setCurrentIndex(self.temes.index(temaInicial))
     def botons(self):
         self.bSincronia = self._botoMapa(os.path.join(configuracioQvista.imatgesDir,'sync.png'))
         self.bSincronia.setToolTip('Sincronia amb el mapa principal')
@@ -108,16 +111,29 @@ class QvCanvasAuxiliar(QvCanvas):
         self.actSincCentre.triggered.connect(self.swapSincronies)
         self.actSincRotacio.triggered.connect(self.swapSincroniaRotacio)
 
+        self.actSincRotacio.setChecked(True)
+        self.actSincZoom.setChecked(False)
+        self.actSincExt.trigger()
+        self.actSincRotacio.setVisible(False)
+        self.actSincZoom.setVisible(False)
+
         self.bSincronia.setMenu(menuBoto)
 
 
     def canviTema(self, i):
-        if i==0:
-            self.setTheme('')
-            elTema = 'Sense Tema'
-        else:
-            self.setTheme(self.temes[i-1])
-            elTema = self.temes[i-1]
+        self.currentTeme = self.temes[i]
+        self.setTheme(self.currentTeme)
+        elIdCanvas = str(id(self))
+        try:
+            self.Sig_canviTema.emit(elIdCanvas, self.currentTeme)
+        except Exception as ee:
+            pass
+        # if i==0:
+        #     self.setTheme('')
+        #     elTema = 'Sense Tema'
+        # else:
+        #     self.setTheme(self.temes[i-1])
+        #     elTema = self.temes[i-1]
 
        
 
@@ -125,12 +141,12 @@ class QvCanvasAuxiliar(QvCanvas):
 
 
 
-        self.currentTeme = elTema
-        elIdCanvas = str(id(self))
-        try:
-            self.Sig_canviTema.emit(elIdCanvas, elTema)
-        except Exception as ee:
-            pass
+        # self.currentTeme = elTema
+        # elIdCanvas = str(id(self))
+        # try:
+        #     self.Sig_canviTema.emit(elIdCanvas, elTema)
+        # except Exception as ee:
+        #     pass
             
             
     def sincronitzaExtensio(self, canv: QgsMapCanvas):
