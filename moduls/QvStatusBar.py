@@ -362,7 +362,7 @@ class QvStatusBar(QStatusBar):
                     if self.leSeleccioExpressio.text()!='':
                         for field in layer.fields():
                             if field.typeName()=='String' or field.typeName()=='text'  or field.typeName()[0:4]=='VARC':
-                                textCercat = textCercat + field.name()+" LIKE '%" + self.leSeleccioExpressio.text()+ "%'"
+                                textCercat = textCercat + '"' + field.name() + '"' +" LIKE '%" + self.leSeleccioExpressio.text()+ "%'"
                                 textCercat = textCercat + ' OR '
                         textCercat=textCercat[:-4]
                     # layer.setSubsetString(textCercat)
