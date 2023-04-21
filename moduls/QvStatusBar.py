@@ -362,45 +362,60 @@ class QvStatusBar(QStatusBar):
             elif command == 'afegircatalegcapes':
                 self.afegirCataleg()
             else:
-            # Búsqueda de texto en uno o varios campos
+            # Búsqueda de texto en un campo o en todos los campos tipo string de los elementos de una capa
+
+                # Verificaciones de capa y del texto entrado
                 layer = self.llegenda.currentLayer()
-                if layer is not None and layer.type() == QgsMapLayer.VectorLayer:
-                    textCercat = ''
-                    inputTxt = self.leSeleccioExpressio.text()
-                    if inputTxt != '':
-                        campos = self.campsCapa(layer)
-                        for sep in ['==', '=']:
-                            campo, valor = self.llegirCampValor(campos, inputTxt, sep)
-                            if campo != '': break
-                        if campo == '':
-                            for item in campos:
-                                if textCercat != '': textCercat += ' OR '
-                                textCercat += self.compCamp(item, valor)
-                        else:
-                            textCercat += self.compCamp(campo, valor, sep)
-
-                        # for field in layer.fields():
-                        #     # if field.typeName()=='String' or field.typeName()=='text'  or field.typeName()[0:4]=='VARC':
-                        #     if field.type() == QVariant.String:
-                        #         if textCercat != '': textCercat += ' OR '
-                        #         textCercat += '"' + field.name() + '"' +" LIKE '%" + inputTxt + "%'"
-
-                    # layer.setSubsetString(textCercat)
-                    layer.selectByExpression(textCercat)
-                    self.llegenda.actIconaFiltre(layer)
-                    # ids = [feature.id() for feature in layer.getFeatures()]
-                    # self.canvas.zoomToFeatureIds(layer, ids)
-                    if layer.selectedFeatureCount() == 0:
-                        if inputTxt.strip() != '':
-                            if campo == '':
-                                msg = f"No hi ha cap element que contingui el substring '{inputTxt}' en el seus camps."
-                            else:
-                                msg = f"No hi ha cap element amb '{valor}' en el camp '{campo}'."
-                            QMessageBox.information(self, "No s'ha trobat cap element", msg)
-                    else:
-                        self.canvas.setExtent(layer.boundingBoxOfSelected())
-                else:
+                inputTxt = self.leSeleccioExpressio.text()
+                if layer is None or layer.type() != QgsMapLayer.VectorLayer:
                     QMessageBox.information(self,'Cal tenir seleccionat una capa vectorial per poder fer una selecció.', 'Marqueu una capa vectorial a la llegenda sobre la que aplicar la consulta.')
+                    return
+                if inputTxt.strip() == '':
+                    if layer.selectedFeatureCount() > 0: layer.selectByExpression(None)
+                    return
+
+                # Busqueda de elementos
+                textCercat = ''
+                campos = self.campsCapa(layer)
+                for sep in ['==', '=']:
+                    campo, valor = self.llegirCampValor(campos, inputTxt, sep)
+                    if campo != '': break
+                if campo == '':
+                    for item in campos:
+                        if textCercat != '': textCercat += ' OR '
+                        textCercat += self.compCamp(item, valor)
+                else:
+                    textCercat += self.compCamp(campo, valor, sep)
+                layer.selectByExpression(textCercat)
+
+                # for field in layer.fields():
+                #     # if field.typeName()=='String' or field.typeName()=='text'  or field.typeName()[0:4]=='VARC':
+                #     if field.type() == QVariant.String:
+                #         if textCercat != '': textCercat += ' OR '
+                #         textCercat += '"' + field.name() + '"' +" LIKE '%" + inputTxt + "%'"
+
+                # layer.setSubsetString(textCercat)
+
+                # layer.selectByExpression(textCercat)
+                # self.llegenda.actIconaFiltre(layer)
+
+                # ids = [feature.id() for feature in layer.getFeatures()]
+                # self.canvas.zoomToFeatureIds(layer, ids)
+
+                # Encuadramos elementos seleccionados o mostramos mensaje si no se encuentra ningúno
+                if layer.selectedFeatureCount() > 0:
+                    self.canvas.setExtent(layer.boundingBoxOfSelected())
+                else:
+                    if inputTxt.strip() != '':
+                        if campo == '':
+                            msg = f"No hi ha cap element que contingui el substring '{inputTxt}' en el seus camps de tipus string."
+                        else:
+                            if sep == '==':
+                                msg = f"No hi ha cap element amb el camp '{campo}' igual a '{valor}'."
+                            else: # sep == '=':
+                                msg = f"No hi ha cap element que contingui el substring '{valor}' en el camp '{campo}'."
+                        QMessageBox.information(self, "No s'ha seleccionat cap element", msg)
+
             #    self.expressioInferior.emit(command)
         finally:
             self.semaforoBuscador = True
