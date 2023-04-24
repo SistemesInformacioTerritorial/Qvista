@@ -1,8 +1,8 @@
 from qgis.core.contextmanagers import qgisapp
 from qgis.PyQt.QtWidgets import QStatusBar, QLineEdit, QMainWindow, QLabel, QProgressBar, QMessageBox, QMenu, QAction, QCompleter
-from qgis.core import QgsProject, QgsPointXY
+from qgis.core import QgsProject, QgsPointXY, QgsMapLayer
 from qgis.gui import QgsLayerTreeMapCanvasBridge
-from qgis.PyQt.QtCore import pyqtSignal, QPoint, Qt, QStringListModel
+from qgis.PyQt.QtCore import pyqtSignal, QPoint, Qt, QStringListModel, QVariant
 from qgis.PyQt.QtGui import QFontMetrics, QIntValidator
 from pathlib import Path
 from moduls.QvCanvas import QvCanvas
@@ -85,6 +85,7 @@ class QvLineEditPS(QLineEdit):
 class QvStatusBar(QStatusBar):
     coordsCanviades = pyqtSignal(float, float)
     expressioInferior = pyqtSignal(str)
+    semaforoBuscador=True
     def __init__(self, parent, llistaWidgets=[], canvas=None, llegenda=None):
         super().__init__(parent)
         parent.setStatusBar(self)
@@ -124,7 +125,7 @@ class QvStatusBar(QStatusBar):
             elif x == 'seleccioExpressio':
                 wid = QLineEdit(self)
                 wid.returnPressed.connect(self.seleccioExpressio)
-                wid.setPlaceholderText('Introduïu un text per filtrar elements a la capa seleccionada')
+                wid.setPlaceholderText('Introduïu un text per seleccionar elements a la capa activa')
                 nomWid = 'leSeleccioExpressio'
             elif x == 'progressBar':
                 wid = QProgressBar(self)
@@ -312,69 +313,135 @@ class QvStatusBar(QStatusBar):
         escala = self.leEscala.text()
         self.canvas.zoomScale(int(escala))
     def seleccioExpressio(self):
-        command=self.leSeleccioExpressio.text().lower()
-        if command == 'help':
-            self.infoQVista()
-        elif command == 'mapificacio':
-            from moduls.QvMapForms import QvFormNovaMapificacio
-            QvFormNovaMapificacio.executa(self.llegenda)
-        elif command == 'etiquetas':
-            if QvApp().usuari == 'DE1717':
-                # from qgis.core import QgsApplication
-                # dir = QgsApplication.qgisSettingsDirPath()
-                import importlib.util
-                modSpec = importlib.util.spec_from_file_location("etiquetas", "C:/Users/de1717/AppData/Roaming/QGIS/QGIS3/profiles/default/misEtiquetas.py")
-                mod = importlib.util.module_from_spec(modSpec)
-                modSpec.loader.exec_module(mod)    
-                from qgis.core import QgsExpression
-                QgsExpression.registerFunction(mod.gestionEtiquetas)
-
-        # elif command == 'readgpkg':
-        #     self.llegenda.readProject('geopackage:D:/qVista/Dades/Activitats.gpkg?projectName=Activitats')
-        # elif command == 'writegpkg':
-        #     self.llegenda.project.write()
-        elif command == 'testurbanisme':
-            QvApp().testUrbanisme()
-        elif command == 'carrilsbici':
-            from moduls.QvVistacad import QvVistacad
-            QvVistacad.carregaProjecte('341')
-        elif command == 'vistacad':
-            from moduls.QvVistacad import QvVistacad
-            QvVistacad.formulariProjectes()
-        elif command == 'masklabels':
-            self.llegenda.setMask(self.llegenda.capaPerNom("MaskLabels"), 1)
-        elif command == 'qvtemps':
-            QMessageBox.information(self,'Temps per arrancar:', str('%.1f'%self.tempsTotal))
-        # elif command=='mascara':
-        #     self.emmascaraDivisions=True
-        # elif command=='filtramascara':
-        #     filtraMascara(self)
-        elif command in ('versio', 'versió'):
-            QMessageBox.information(self,'Versió de QGIS',f'La versió de QGIS actual és la {QvApp().versioQgis()}')
-        elif command == 'afegircatalegcapes':
-            self.afegirCataleg()
+        # Semáforo para prevenir reentrada en este método
+        if self.semaforoBuscador:
+            self.semaforoBuscador = False
         else:
-            layer=self.llegenda.currentLayer()
-            if layer is not None:
-                textCercat=""
-                layer=self.llegenda.currentLayer()
-                if layer is not None:
-                    if self.leSeleccioExpressio.text()!='':
-                        for field in layer.fields():
-                            if field.typeName()=='String' or field.typeName()=='text'  or field.typeName()[0:4]=='VARC':
-                                textCercat = textCercat + field.name()+" LIKE '%" + self.leSeleccioExpressio.text()+ "%'"
-                                textCercat = textCercat + ' OR '
-                        textCercat=textCercat[:-4]
-                    # layer.setSubsetString(textCercat)
-                    layer.selectByExpression(textCercat)
-                    self.llegenda.actIconaFiltre(layer)
-                    # ids = [feature.id() for feature in layer.getFeatures()]
-                    # self.canvas.zoomToFeatureIds(layer, ids)
-                    if layer.selectedFeatureCount() != 0:
-                        self.canvas.setExtent(layer.boundingBoxOfSelected())
+            return
+        try:
+            # Comando a ejecutar
+            command=self.leSeleccioExpressio.text().lower()
+            if command == 'help':
+                self.infoQVista()
+            elif command == 'mapificacio':
+                from moduls.QvMapForms import QvFormNovaMapificacio
+                QvFormNovaMapificacio.executa(self.llegenda)
+            elif command == 'etiquetas':
+                if QvApp().usuari == 'DE1717':
+                    # from qgis.core import QgsApplication
+                    # dir = QgsApplication.qgisSettingsDirPath()
+                    import importlib.util
+                    modSpec = importlib.util.spec_from_file_location("etiquetas", "C:/Users/de1717/AppData/Roaming/QGIS/QGIS3/profiles/default/misEtiquetas.py")
+                    mod = importlib.util.module_from_spec(modSpec)
+                    modSpec.loader.exec_module(mod)    
+                    from qgis.core import QgsExpression
+                    QgsExpression.registerFunction(mod.gestionEtiquetas)
+
+            # elif command == 'readgpkg':
+            #     self.llegenda.readProject('geopackage:D:/qVista/Dades/Activitats.gpkg?projectName=Activitats')
+            # elif command == 'writegpkg':
+            #     self.llegenda.project.write()
+            elif command == 'testurbanisme':
+                QvApp().testUrbanisme()
+            elif command == 'carrilsbici':
+                from moduls.QvVistacad import QvVistacad
+                QvVistacad.carregaProjecte('341')
+            elif command == 'vistacad':
+                from moduls.QvVistacad import QvVistacad
+                QvVistacad.formulariProjectes()
+            elif command == 'masklabels':
+                self.llegenda.setMask(self.llegenda.capaPerNom("MaskLabels"), 1)
+            elif command == 'qvtemps':
+                QMessageBox.information(self,'Temps per arrancar:', str('%.1f'%self.tempsTotal))
+            # elif command=='mascara':
+            #     self.emmascaraDivisions=True
+            # elif command=='filtramascara':
+            #     filtraMascara(self)
+            elif command in ('versio', 'versió'):
+                QMessageBox.information(self,'Versió de QGIS',f'La versió de QGIS actual és la {QvApp().versioQgis()}')
+            elif command == 'afegircatalegcapes':
+                self.afegirCataleg()
             else:
-                QMessageBox.warning(self,'Cal tenir seleccionat un nivell per poder fer una selecció.','Marqueu un nivell a la llegenda sobre el que aplicar la consulta.')
-        self.expressioInferior.emit(command)
+            # Búsqueda de texto en un campo o en todos los campos tipo string de los elementos de una capa
+
+                # Verificaciones de capa y del texto entrado
+                layer = self.llegenda.currentLayer()
+                inputTxt = self.leSeleccioExpressio.text()
+                if layer is None or layer.type() != QgsMapLayer.VectorLayer:
+                    QMessageBox.information(self,'Cal tenir seleccionat una capa vectorial per poder fer una selecció.', 'Marqueu una capa vectorial a la llegenda sobre la que aplicar la consulta.')
+                    return
+                if inputTxt.strip() == '':
+                    if layer.selectedFeatureCount() > 0: layer.selectByExpression(None)
+                    return
+
+                # Busqueda de elementos
+                textCercat = ''
+                campos = self.campsCapa(layer)
+                for sep in ['==', '=']:
+                    campo, valor = self.llegirCampValor(campos, inputTxt, sep)
+                    if campo != '': break
+                if campo == '':
+                    for item in campos:
+                        if textCercat != '': textCercat += ' OR '
+                        textCercat += self.compCamp(item, valor)
+                else:
+                    textCercat += self.compCamp(campo, valor, sep)
+                layer.selectByExpression(textCercat)
+
+                # for field in layer.fields():
+                #     # if field.typeName()=='String' or field.typeName()=='text'  or field.typeName()[0:4]=='VARC':
+                #     if field.type() == QVariant.String:
+                #         if textCercat != '': textCercat += ' OR '
+                #         textCercat += '"' + field.name() + '"' +" LIKE '%" + inputTxt + "%'"
+
+                # layer.setSubsetString(textCercat)
+
+                # layer.selectByExpression(textCercat)
+                # self.llegenda.actIconaFiltre(layer)
+
+                # ids = [feature.id() for feature in layer.getFeatures()]
+                # self.canvas.zoomToFeatureIds(layer, ids)
+
+                # Encuadramos elementos seleccionados o mostramos mensaje si no se encuentra ningúno
+                if layer.selectedFeatureCount() > 0:
+                    self.canvas.setExtent(layer.boundingBoxOfSelected())
+                else:
+                    if inputTxt.strip() != '':
+                        if campo == '':
+                            msg = f"No hi ha cap element que contingui el substring '{inputTxt}' en el seus camps de tipus string."
+                        else:
+                            if sep == '==':
+                                msg = f"No hi ha cap element amb el camp '{campo}' igual a '{valor}'."
+                            else: # sep == '=':
+                                msg = f"No hi ha cap element que contingui el substring '{valor}' en el camp '{campo}'."
+                        QMessageBox.information(self, "No s'ha seleccionat cap element", msg)
+
+            #    self.expressioInferior.emit(command)
+        finally:
+            self.semaforoBuscador = True
+
+    def campsCapa(self, layer):
+        lista = []
+        for field in layer.fields():
+            if field.type() == QVariant.String:
+                lista.append(field.name().strip().upper())
+        return lista
+
+    def llegirCampValor(self, campos, txt, sep='='):
+        lista = txt.split(sep)
+        if len(lista) > 1:
+            campo = lista[0].strip().upper()
+            if campo in campos:
+                return campo, sep.join(lista[1:])
+        return '', txt
+    
+    def compCamp(self, campo, valor, sep='='):
+        c = 'UPPER("' + campo + '")'
+        if sep == '==':
+            return c + " = '" + valor.upper() + "'"
+        else: # sep == '='
+            return c +" LIKE '%" + valor.upper() + "%'"
+        
     @staticmethod
     def fixaMidaNecessariaLE(le):
         if isinstance(le, QvLineEditPS):
