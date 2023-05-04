@@ -94,6 +94,7 @@ class QvTema:
             self.llegenda.setTitol()
 
     def aplicaTema(self, tema):
+        self.llegenda.expandAll(False)
         self.llegenda.project.mapThemeCollection().applyTheme(tema, self.llegenda.root,
                                                               self.llegenda.model)
         self.titolTema(tema)

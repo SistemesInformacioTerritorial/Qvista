@@ -870,6 +870,10 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
             item = self.model.index2node(index)
             yield from recurse(item, 0)
 
+    def expandAll(self, switch=True):
+        for item in self.items():
+            item.expandir(switch)
+
 
 if __name__ == "__main__":
 
@@ -962,13 +966,23 @@ if __name__ == "__main__":
                     nomCapa = '-'
                 else:
                     nomCapa = capa.name()
+                expandit = item.esExpandit()
+                if expandit is None:
+                    txtExpandit = ''
+                elif expandit:
+                    txtExpandit = '(expandido)'
+                else:
+                    txtExpandit = '(no expandido)'
                 print('  ' * item.nivell, '-',
                       'Tipo:', item.tipus,
+                       txtExpandit,
                       'Nivel:', item.nivell,
                       'Capa:', nomCapa,
                       'Nombre:', item.nom(),
                       'Visible:', item.esVisible(),
                       'Marcado:', item.esMarcat())
+
+            leyenda.expandAll()
 
         def salutacions():
             qtWdg.QMessageBox().information(None, 'qVista', 'Salutacions ' + QvApp().usuari)

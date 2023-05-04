@@ -82,6 +82,16 @@ class QvItemLlegenda:
                 if children:
                     self.item.layerNode().setItemVisibilityCheckedRecursive(True)
 
+    def esExpandit(self):
+        if self.tipus in ('layer', 'group'):
+            return self.item.isExpanded()
+        else:
+            return None
+
+    def expandir(self, switch=True):
+        if self.tipus in ('layer', 'group'):
+            self.item.setExpanded(switch)
+
 
 class QvModelLlegenda(qgCor.QgsLegendModel):
     def __init__(self, root):
