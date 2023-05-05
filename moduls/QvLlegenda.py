@@ -554,6 +554,16 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
 
     def setAccions(self):
         act = qtWdg.QAction()
+        act.setText("Expandir llegenda")
+        act.triggered.connect(self.expandLegend)
+        self.accions.afegirAccio('expandLegend', act)
+
+        act = qtWdg.QAction()
+        act.setText("Contraure llegenda")
+        act.triggered.connect(self.collapseLegend)
+        self.accions.afegirAccio('collapseLegend', act)
+
+        act = qtWdg.QAction()
         act.setText("Defineix grup")
         act.triggered.connect(self.addGroup)
         self.accions.afegirAccio('addGroup', act)
@@ -710,6 +720,7 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
                     self.menuAccions += ['removeGroupOrLayer']
             self.menuAccions += ['saveLayersToFile', 'addCatalogueLayers']
         elif tipo == 'none':
+            self.menuAccions += ['expandLegend', 'collapseLegend', 'separator']
             if self.editable:
                 self.menuAccions += ['addGroup', 'addLayersFromFile']
             if self.anotacions and \
@@ -741,6 +752,12 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
                 if self.editing(capa):
                     return True
         return False
+
+    def expandLegend(self):
+        self.expandAll(True)
+
+    def collapseLegend(self):
+        self.expandAll(False)
 
     def addGroup(self):
         self.defaultActions().addGroup()
