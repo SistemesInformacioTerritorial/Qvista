@@ -207,16 +207,57 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
         except:
             msg = ''
         return msg
-        
+    
+
+    # Función estandar para leer proyecto dentro de qVista
     def readProject(self, fileName):
         if self.anotacions is not None:
             self.anotacions.removeAnnotations()
         self.project.read(fileName)
+        self.projectMacros('qVopenProject')
         msg = self.msgErrorlayers()
         if msg:
             qtWdg.QMessageBox.warning(self, "Capes amb errors", msg)
             return False
         return True
+
+    # Macros de proyecto: openProject()
+    # - Para que actúe solo desde QGIS, codificar solo openProject():
+    #   def openProject():
+    #       [código que puede usar iface]
+    # - Para que actúe solo desde qVista, codificar solo qVopenProject():
+    #   def openProject():
+    #       pass
+    #   ...
+    #   def qVopenProject():
+    #       [código sin iface]
+    # - Para que actúe igual tanto en QGIS como en qVista, codificar función qVopenProject() y llamarla desde openProject()
+    #   def openProject():
+    #       qVopenProject()
+    #   ...
+    #   def qVopenProject():
+    #       [código sin iface]
+    # - Por último, también podrían actuar las dos con comportamientos diferentes
+    def projectMacros(self, funcion):
+        rc = False
+        try:
+            macros, ok = self.project.readEntry("Macros", "/pythonCode")
+            if ok and funcion in macros:
+                ret = qtWdg.QMessageBox.question(self, 'Atenció: macro de Python',
+                                                 "Aquest mapa conté una macro amb un programa Python.\n\n" \
+                                                 "Si esteu segur de que s'executi, premeu 'Sí'.\n" \
+                                                 "Si en teniu dubtes, premeu 'No' i consulteu l'equip de suport de qVista.",
+                                                 defaultButton=qtWdg.QMessageBox.No)
+                if ret == qtWdg.QMessageBox.Yes:
+                    exec(macros)
+                    f = locals().get(funcion, '')
+                    if str(type(f)) == "<class 'function'>":
+                        exec(funcion + '()')
+                        rc = True
+        except Exception as e:
+            print(str(e))
+        finally:
+            return rc
 
     def setTitol(self, titol=TITOL_INICIAL):
         self.setWindowTitle(titol)
