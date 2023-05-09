@@ -554,6 +554,16 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
 
     def setAccions(self):
         act = qtWdg.QAction()
+        act.setText("Expandir llegenda")
+        act.triggered.connect(self.expandLegend)
+        self.accions.afegirAccio('expandLegend', act)
+
+        act = qtWdg.QAction()
+        act.setText("Contraure llegenda")
+        act.triggered.connect(self.collapseLegend)
+        self.accions.afegirAccio('collapseLegend', act)
+
+        act = qtWdg.QAction()
         act.setText("Defineix grup")
         act.triggered.connect(self.addGroup)
         self.accions.afegirAccio('addGroup', act)
@@ -710,6 +720,7 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
                     self.menuAccions += ['removeGroupOrLayer']
             self.menuAccions += ['saveLayersToFile', 'addCatalogueLayers']
         elif tipo == 'none':
+            self.menuAccions += ['expandLegend', 'collapseLegend', 'separator']
             if self.editable:
                 self.menuAccions += ['addGroup', 'addLayersFromFile']
             if self.anotacions and \
@@ -741,6 +752,12 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
                 if self.editing(capa):
                     return True
         return False
+
+    def expandLegend(self):
+        self.expandAll(True)
+
+    def collapseLegend(self):
+        self.expandAll(False)
 
     def addGroup(self):
         self.defaultActions().addGroup()
@@ -870,6 +887,10 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
             item = self.model.index2node(index)
             yield from recurse(item, 0)
 
+    def expandAll(self, switch=True):
+        for item in self.items():
+            item.expandir(switch)
+
 
 if __name__ == "__main__":
 
@@ -962,13 +983,23 @@ if __name__ == "__main__":
                     nomCapa = '-'
                 else:
                     nomCapa = capa.name()
+                expandit = item.esExpandit()
+                if expandit is None:
+                    txtExpandit = ''
+                elif expandit:
+                    txtExpandit = '(expandido)'
+                else:
+                    txtExpandit = '(no expandido)'
                 print('  ' * item.nivell, '-',
                       'Tipo:', item.tipus,
+                       txtExpandit,
                       'Nivel:', item.nivell,
                       'Capa:', nomCapa,
                       'Nombre:', item.nom(),
                       'Visible:', item.esVisible(),
                       'Marcado:', item.esMarcat())
+
+            leyenda.expandAll()
 
         def salutacions():
             qtWdg.QMessageBox().information(None, 'qVista', 'Salutacions ' + QvApp().usuari)
