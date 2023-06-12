@@ -83,7 +83,7 @@ class QvAtributs(QTabWidget):
         self.menuAccions += ['separator']
         if QvDiagrama.capaAmbDiagrama(layer) != '':
             self.menuAccions += ['showBarChart']
-        self.menuAccions += ['filterElements']
+        self.menuAccions += ['updateData', 'filterElements']
         if layer.subsetString() != '':
             self.menuAccions += ['removeFilter']
         self.menuAccions += ['saveToCSV']
@@ -255,7 +255,7 @@ class QvAtributs(QTabWidget):
             if path is not None:
                 with open(path, 'w', encoding="utf-8", newline='') as stream:
                     writer = csv.writer(
-                        stream, delimiter=';', quotechar='¨',
+                        stream, delimiter=';', quotechar='"',
                         quoting=csv.QUOTE_MINIMAL)
                     writer.writerow(layer.fields().names())
                     if selected:
@@ -417,6 +417,12 @@ class QvTaulaAtributs(QgsAttributeTableView):
         self.accions.afegirAccio('filterElements', act)
 
         act = QAction()
+        act.setText("Actualitza dades")
+        # act.setIcon(QIcon(':/Icones/ic_file_upload_black_48dp.png'))
+        act.triggered.connect(self.updateData)
+        self.accions.afegirAccio('updateData', act)
+
+        act = QAction()
         act.setText("Suprimeix filtre")
         # act.setIcon(QIcon(':/Icones/ic_file_upload_black_48dp.png'))
         act.triggered.connect(self.removeFilter)
@@ -530,6 +536,12 @@ class QvTaulaAtributs(QgsAttributeTableView):
         #     self.parent.modificatFiltreCapa.emit(self.layer)
         # except Exception as e:
         #     print(str(e))
+
+    def updateData(self):
+        try:
+            self.layer.dataProvider().reloadData()
+        except Exception as e:
+            print(str(e))
 
     def removeFilter(self):
         self.parent.filtrarCapa(self.layer, False)
