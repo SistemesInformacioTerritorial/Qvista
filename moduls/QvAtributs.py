@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from qgis.core import QgsMapLayer, QgsVectorLayerCache
+from qgis.core import QgsMapLayer, QgsVectorLayerCache, QgsExpressionContextUtils
 from qgis.PyQt import QtWidgets  # , uic
 from qgis.PyQt.QtCore import Qt, pyqtSignal, QSize, pyqtSlot
 from qgis.PyQt.QtGui import QCursor, QIcon
@@ -341,6 +341,27 @@ class QvTaulaAtributs(QgsAttributeTableView):
         # Edition
         if readOnly:
             self.setEditTriggers(QAbstractItemView.NoEditTriggers)
+
+        # Actualización automática
+        self.timer = self.autoRecarrega()
+
+        self.resizeColumnsToContents()
+
+    def autoRecarrega(self):
+        return None
+        prm = QgsExpressionContextUtils.layerScope(self.layer).variable('qV_autoRecarrega')
+        prm = '5'
+        seg = 0
+        if prm is not None:
+            try:
+                seg = int(prm)
+            except:
+                None
+        if seg > 0:
+            print('Activar timer')
+            return True
+        else:
+            return False
 
     # def setHidenColumns(self, prefijo='__'):
     #     changed = False
