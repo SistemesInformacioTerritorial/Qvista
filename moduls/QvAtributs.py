@@ -2,7 +2,7 @@
 
 from qgis.core import QgsMapLayer, QgsVectorLayerCache, QgsExpressionContextUtils
 from qgis.PyQt import QtWidgets  # , uic
-from qgis.PyQt.QtCore import Qt, pyqtSignal, QSize, pyqtSlot
+from qgis.PyQt.QtCore import Qt, pyqtSignal, QSize, QTimer, pyqtSlot
 from qgis.PyQt.QtGui import QCursor, QIcon
 from qgis.PyQt.QtWidgets import QAction, QHBoxLayout, QTabWidget, QWidget, QMenu, QMessageBox, QAbstractItemView
 
@@ -339,29 +339,25 @@ class QvTaulaAtributs(QgsAttributeTableView):
         self.setModel(self.filter)
 
         # Edition
-        if readOnly:
-            self.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        if readOnly: self.setEditTriggers(QAbstractItemView.NoEditTriggers)
 
         # Actualización automática
-        self.timer = self.autoRecarrega()
+        self.timer = QTimer()
+        self.autoRecarrega()
 
+        # Apariencia
         self.resizeColumnsToContents()
 
     def autoRecarrega(self):
-        return None
-        prm = QgsExpressionContextUtils.layerScope(self.layer).variable('qV_autoRecarrega')
-        prm = '5'
-        seg = 0
-        if prm is not None:
-            try:
+        try:
+            prm = QgsExpressionContextUtils.layerScope(self.layer).variable('qV_autoRecarrega')
+            if prm is not None:
                 seg = int(prm)
-            except:
-                None
-        if seg > 0:
-            print('Activar timer')
-            return True
-        else:
-            return False
+                if seg > 0:
+                    self.timer.timeout.connect(self.updateData)
+                    self.timer.start(seg * 1000)
+        except Exception as e:
+            print(str(e))
 
     # def setHidenColumns(self, prefijo='__'):
     #     changed = False
