@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-from qgis.core import QgsMapLayer, QgsVectorLayerCache
+from qgis.core import QgsMapLayer, QgsVectorLayerCache, QgsExpressionContextUtils
 from qgis.PyQt import QtWidgets  # , uic
-from qgis.PyQt.QtCore import Qt, pyqtSignal, QSize, pyqtSlot
+from qgis.PyQt.QtCore import Qt, pyqtSignal, QSize, QTimer, pyqtSlot
 from qgis.PyQt.QtGui import QCursor, QIcon
 from qgis.PyQt.QtWidgets import QAction, QHBoxLayout, QTabWidget, QWidget, QMenu, QMessageBox, QAbstractItemView
 
@@ -83,7 +83,7 @@ class QvAtributs(QTabWidget):
         self.menuAccions += ['separator']
         if QvDiagrama.capaAmbDiagrama(layer) != '':
             self.menuAccions += ['showBarChart']
-        self.menuAccions += ['filterElements']
+        self.menuAccions += ['updateData', 'filterElements']
         if layer.subsetString() != '':
             self.menuAccions += ['removeFilter']
         self.menuAccions += ['saveToCSV']
@@ -255,7 +255,7 @@ class QvAtributs(QTabWidget):
             if path is not None:
                 with open(path, 'w', encoding="utf-8", newline='') as stream:
                     writer = csv.writer(
-                        stream, delimiter=';', quotechar='¨',
+                        stream, delimiter=';', quotechar='"',
                         quoting=csv.QUOTE_MINIMAL)
                     writer.writerow(layer.fields().names())
                     if selected:
@@ -339,8 +339,25 @@ class QvTaulaAtributs(QgsAttributeTableView):
         self.setModel(self.filter)
 
         # Edition
-        if readOnly:
-            self.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        if readOnly: self.setEditTriggers(QAbstractItemView.NoEditTriggers)
+
+        # Actualización automática
+        self.timer = QTimer()
+        self.autoRecarrega()
+
+        # Apariencia
+        self.resizeColumnsToContents()
+
+    def autoRecarrega(self):
+        try:
+            prm = QgsExpressionContextUtils.layerScope(self.layer).variable('qV_autoRecarrega')
+            if prm is not None:
+                seg = int(prm)
+                if seg > 0:
+                    self.timer.timeout.connect(self.updateData)
+                    self.timer.start(seg * 1000)
+        except Exception as e:
+            print(str(e))
 
     # def setHidenColumns(self, prefijo='__'):
     #     changed = False
@@ -415,6 +432,12 @@ class QvTaulaAtributs(QgsAttributeTableView):
         # act.setIcon(QIcon(':/Icones/ic_file_upload_black_48dp.png'))
         act.triggered.connect(self.filterElements)
         self.accions.afegirAccio('filterElements', act)
+
+        act = QAction()
+        act.setText("Actualitza dades")
+        # act.setIcon(QIcon(':/Icones/ic_file_upload_black_48dp.png'))
+        act.triggered.connect(self.updateData)
+        self.accions.afegirAccio('updateData', act)
 
         act = QAction()
         act.setText("Suprimeix filtre")
@@ -530,6 +553,12 @@ class QvTaulaAtributs(QgsAttributeTableView):
         #     self.parent.modificatFiltreCapa.emit(self.layer)
         # except Exception as e:
         #     print(str(e))
+
+    def updateData(self):
+        try:
+            self.layer.dataProvider().reloadData()
+        except Exception as e:
+            print(str(e))
 
     def removeFilter(self):
         self.parent.filtrarCapa(self.layer, False)
