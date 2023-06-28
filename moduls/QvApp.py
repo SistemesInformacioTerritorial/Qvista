@@ -69,7 +69,8 @@ class QvApp:
 
         self.entorn = self.calcEntorn(produccio)       # 'DSV' o 'PRO'
 
-        self.usuari = getpass.getuser().upper()     # Id de usuario
+        self.usuari = getpass.getuser().strip().upper()     # Id de usuario
+        print(f'USERNAME: [{self.usuari}]') 
         self.sessio = str(uuid.uuid1())             # Id único de sesión
 
         self.intranet = self.calcIntranet()         # True si en la intranet
