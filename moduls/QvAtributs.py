@@ -2,7 +2,7 @@
 
 from qgis.core import QgsMapLayer, QgsVectorLayerCache, QgsExpressionContextUtils
 from qgis.PyQt import QtWidgets  # , uic
-from qgis.PyQt.QtCore import Qt, pyqtSignal, QSize, QTimer, pyqtSlot
+from qgis.PyQt.QtCore import Qt, pyqtSignal, QSize, QTimer, QVariant, pyqtSlot
 from qgis.PyQt.QtGui import QCursor, QIcon
 from qgis.PyQt.QtWidgets import QAction, QHBoxLayout, QTabWidget, QWidget, QMenu, QMessageBox, QAbstractItemView
 
@@ -17,6 +17,7 @@ from moduls.QvApp import QvApp
 from moduls.QvPushButton import QvPushButton
 from moduls.QvDiagrama import QvDiagrama
 from moduls.QvAtributsForms import QvFormAtributs
+from moduls.QvFuncions import startMovie, stopMovie
 
 # import images_rc  # NOQA
 # import recursos
@@ -232,7 +233,7 @@ class QvAtributs(QTabWidget):
             print(str(e))
 
     def formatAttributes(self, feature):
-        # Hay que tratar de forma especial los campos de tipo fecha
+        # Hay que tratar de forma especial los campos de tipo fecha y los float
 
         def removeSuffix(s, suffix):
             if suffix and s.endswith(suffix):
@@ -240,23 +241,40 @@ class QvAtributs(QTabWidget):
             return s
 
         row = feature.attributes()
-        for i, field in enumerate(feature.fields()):
-            if field.isDateOrTime():
-                data = row[i]
-                if not data.isNull():
-                    # Si llega fecha con hora a 0, dejamos solo la fecha
-                    row[i] = removeSuffix(data.toString(Qt.ISODate), 'T00:00:00')
-        return row
-
-    def desarCSV(self, layer, selected=False):        
         try:
-            path, _ = QtWidgets.QFileDialog.getSaveFileName(
-                self, 'Desa dades a arxiu', '', 'CSV (*.csv)')
-            if path is not None:
+            for i, field in enumerate(feature.fields()):
+                data = row[i]
+
+                # Si llega fecha con hora a 0, dejamos solo la fecha
+                if field.isDateOrTime() and not data.isNull():
+                    row[i] = removeSuffix(data.toString(Qt.ISODate), 'T00:00:00')
+
+                # Ajustamos los decimales de los float
+                elif field.type() == QVariant.Double and type(data) == float:
+                    if field.precision() > 0:
+                        row[i] = round(data, field.precision())
+                    elif data.is_integer():
+                        row[i] = int(data)
+
+        except Exception as e:
+            print(str(e))
+        finally:
+            return row
+
+    def desarCSV(self, layer):  # selected=False):
+        path = ''
+        player = None
+        selected = (layer.selectedFeatureCount() > 0)
+        if selected:
+            sel = "només els elements seleccionats"
+        else:
+            sel = "tots els elements"
+        try:
+            path, _ = QtWidgets.QFileDialog.getSaveFileName(self, f"Desa {sel} a arxiu", '', 'CSV (*.csv)')
+            if path:
+                player = startMovie()
                 with open(path, 'w', encoding="utf-8", newline='') as stream:
-                    writer = csv.writer(
-                        stream, delimiter=';', quotechar='"',
-                        quoting=csv.QUOTE_MINIMAL)
+                    writer = csv.writer(stream, delimiter=';', quotechar='"', quoting=csv.QUOTE_MINIMAL)
                     writer.writerow(layer.fields().names())
                     if selected:
                         iterator = layer.getSelectedFeatures
@@ -264,11 +282,15 @@ class QvAtributs(QTabWidget):
                         iterator = layer.getFeatures
                     for feature in iterator():
                         writer.writerow(self.formatAttributes(feature))
-            return path
         except Exception as e:
-            QMessageBox.warning(self, "Error al desar l'arxiu CSV", f"No s'ha pogut desar correctament l'arxiu {path}")
+            QMessageBox.warning(self, "Error al desar l'arxiu CSV", f"No s'ha pogut desar correctament l'arxiu:\n{path}")
             print(str(e))
-            return None
+            path = ''
+        finally:
+            if player is not None: stopMovie(player)
+            if path: 
+                QMessageBox.information(self, "Arxiu CSV desat correctament", f"S'han desat {sel} a l'arxiu: \n{path}")
+            return path
 
     def setCurrentIndex(self,i):
         super().setCurrentIndex(i)
@@ -616,9 +638,9 @@ class QvTaulaAtributs(QgsAttributeTableView):
 
     def saveToCSV(self):
         self.parent.desarCSV(
-            self.layer,
-            self.filter.filterMode() ==
-            QgsAttributeTableFilterModel.ShowSelected)
+            self.layer)
+#            self.filter.filterMode() == QgsAttributeTableFilterModel.ShowSelected)
+        
     def __len__(self):
         return max(0,self.layer.featureCount())
 

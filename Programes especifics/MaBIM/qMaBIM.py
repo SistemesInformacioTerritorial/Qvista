@@ -247,7 +247,7 @@ class QvSeleccioBIM(QgsMapTool):
 
     # Funció de conveniència per mostrar missatges informatius 
     def missatgeCaixa(self, textTitol, textInformacio):
-        msgBox = QMessageBox()
+        msgBox = QtWidgets.QMessageBox()
         msgBox.setText(textTitol)
         msgBox.setInformativeText(textInformacio)
         msgBox.exec()
@@ -334,7 +334,7 @@ class FormulariAtributs(QvFitxesAtributs):
         if hasattr(self, 'layersPerFeats'):
             feature = self.features[n]
             capa = self.layersPerFeats[feature]
-            self.ui.bEditar.setVisible(self.llegenda.isLayerEditForm(capa))
+            self.ui.bEditar.setVisible(self.llegenda.isLayerEditForm(capa, True))
             self.ui.bSeleccionar.setVisible('BIM' in capa.fields().names())
             # self.formResize(capa)
 
@@ -414,7 +414,7 @@ class FavoritsMaBIM(QvFavorits):
         return res
     def afegeixFavorit(self,favorit,observacio=None,usuari=getpass.getuser().upper()):
         if not self.__CONNECTA_BASE_DADES__(usuari):
-            self.mostra_error(QMessageBox.Warning, 'Atenció', "No s'ha pogut afegir a favorits. Intenteu-ho més tard, si us plau", None, self.db.lastError().text())
+            self.mostra_error(QtWidgets.QMessageBox.Warning, 'Atenció', "No s'ha pogut afegir a favorits. Intenteu-ho més tard, si us plau", None, self.db.lastError().text())
             return False
         query=QSqlQuery(self.db)
         query.prepare(self.consultaAfegeix.format(**self.dadesTaula))
@@ -424,11 +424,11 @@ class FavoritsMaBIM(QvFavorits):
         executada = query.exec()
         self.__DESCONNECTA_BASE_DADES__(usuari)
         if not executada:
-            self.mostra_error(QMessageBox.Warning, 'Atenció', "No s'ha pogut afegir a favorits. Intenteu-ho més tard, si us plau", None, self.db.lastError.text())
+            self.mostra_error(QtWidgets.QMessageBox.Warning, 'Atenció', "No s'ha pogut afegir a favorits. Intenteu-ho més tard, si us plau", None, self.db.lastError.text())
         return executada
     def actualitzaObservacio(self,favorit,observacio,usuari=getpass.getuser().upper()):
         if not self.__CONNECTA_BASE_DADES__(usuari):
-            self.mostra_error(QMessageBox.Warning, 'Atenció', "No s'ha pogut afegir a favorits. Intenteu-ho més tard, si us plau", None, self.db.lastError().text())
+            self.mostra_error(QtWidgets.QMessageBox.Warning, 'Atenció', "No s'ha pogut afegir a favorits. Intenteu-ho més tard, si us plau", None, self.db.lastError().text())
             return False
         query=QSqlQuery(self.db)
         query.prepare(self.consultaUpdate.format(**self.dadesTaula))
@@ -438,7 +438,7 @@ class FavoritsMaBIM(QvFavorits):
         executada = query.exec()
         self.__DESCONNECTA_BASE_DADES__(usuari)
         if not executada:
-            self.mostra_error(QMessageBox.Warning, 'Atenció', "No s'ha pogut afegir a favorits. Intenteu-ho més tard, si us plau", None, self.db.lastError.text())
+            self.mostra_error(QtWidgets.QMessageBox.Warning, 'Atenció', "No s'ha pogut afegir a favorits. Intenteu-ho més tard, si us plau", None, self.db.lastError.text())
         return executada
 
 
