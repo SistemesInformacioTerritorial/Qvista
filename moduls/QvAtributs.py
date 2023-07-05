@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-from qgis.core import QgsMapLayer, QgsVectorLayerCache, QgsExpressionContextUtils
+from qgis.core import QgsMapLayer, QgsVectorLayerCache, QgsExpressionContextUtils, QgsFeatureRequest
 from qgis.PyQt import QtWidgets  # , uic
-from qgis.PyQt.QtCore import Qt, pyqtSignal, QSize, QTimer, pyqtSlot
+from qgis.PyQt.QtCore import Qt, pyqtSignal, QSize, QTimer, QVariant, pyqtSlot
 from qgis.PyQt.QtGui import QCursor, QIcon
 from qgis.PyQt.QtWidgets import QAction, QHBoxLayout, QTabWidget, QWidget, QMenu, QMessageBox, QAbstractItemView
 
@@ -17,6 +17,7 @@ from moduls.QvApp import QvApp
 from moduls.QvPushButton import QvPushButton
 from moduls.QvDiagrama import QvDiagrama
 from moduls.QvAtributsForms import QvFormAtributs
+from moduls.QvFuncions import startMovie, stopMovie
 
 # import images_rc  # NOQA
 # import recursos
@@ -232,7 +233,7 @@ class QvAtributs(QTabWidget):
             print(str(e))
 
     def formatAttributes(self, feature):
-        # Hay que tratar de forma especial los campos de tipo fecha
+        # Hay que tratar de forma especial los campos de tipo fecha y los float
 
         def removeSuffix(s, suffix):
             if suffix and s.endswith(suffix):
@@ -240,35 +241,67 @@ class QvAtributs(QTabWidget):
             return s
 
         row = feature.attributes()
-        for i, field in enumerate(feature.fields()):
-            if field.isDateOrTime():
-                data = row[i]
-                if not data.isNull():
-                    # Si llega fecha con hora a 0, dejamos solo la fecha
-                    row[i] = removeSuffix(data.toString(Qt.ISODate), 'T00:00:00')
-        return row
-
-    def desarCSV(self, layer, selected=False):        
         try:
-            path, _ = QtWidgets.QFileDialog.getSaveFileName(
-                self, 'Desa dades a arxiu', '', 'CSV (*.csv)')
-            if path is not None:
+            for i, field in enumerate(feature.fields()):
+                data = row[i]
+
+                # Si llega fecha con hora a 0, dejamos solo la fecha
+                if field.isDateOrTime() and not data.isNull():
+                    row[i] = removeSuffix(data.toString(Qt.ISODate), 'T00:00:00')
+
+                # Ajustamos los decimales de los float
+                elif field.type() == QVariant.Double and type(data) == float:
+                    if field.precision() > 0:
+                        row[i] = round(data, field.precision())
+                    elif data.is_integer():
+                        row[i] = int(data)
+
+        except Exception as e:
+            print(str(e))
+        finally:
+            return row
+
+    def desarCSV(self, layer, colOrder):
+        path = ''
+        player = None
+        selected = (layer.selectedFeatureCount() > 0)
+        filtered = (layer.subsetString() != '')
+        if selected:
+            sel = "els elements seleccionats"
+        elif filtered:
+            sel = "els elements filtrats"
+        else:
+            sel = "tots els elements"
+        colNum, colName, asc = colOrder
+        if colNum is None:
+            request = QgsFeatureRequest()
+        else:
+            request = QgsFeatureRequest().addOrderBy(colName, asc, asc)
+
+        try:
+            path, _ = QtWidgets.QFileDialog.getSaveFileName(self, f"Desa {sel} a arxiu", '', 'CSV (*.csv)')
+            if path:
+                player = startMovie()
+                numElems = 0
                 with open(path, 'w', encoding="utf-8", newline='') as stream:
-                    writer = csv.writer(
-                        stream, delimiter=';', quotechar='"',
-                        quoting=csv.QUOTE_MINIMAL)
+                    writer = csv.writer(stream, delimiter=';', quotechar='"', quoting=csv.QUOTE_MINIMAL)
                     writer.writerow(layer.fields().names())
                     if selected:
-                        iterator = layer.getSelectedFeatures
+                            iterator = layer.getSelectedFeatures
                     else:
-                        iterator = layer.getFeatures
-                    for feature in iterator():
+                            iterator = layer.getFeatures
+                    for feature in iterator(request):
                         writer.writerow(self.formatAttributes(feature))
-            return path
+                        numElems += 1
         except Exception as e:
-            QMessageBox.warning(self, "Error al desar l'arxiu CSV", f"No s'ha pogut desar correctament l'arxiu {path}")
+            QMessageBox.warning(self, "Error al desar l'arxiu CSV", f"No s'ha pogut desar correctament l'arxiu: \n\n{path}")
             print(str(e))
-            return None
+            path = ''
+        finally:
+            if player is not None: stopMovie(player)
+            if path: 
+                QMessageBox.information(self, "Arxiu CSV desat correctament", f"S'han desat {sel} ({numElems}) a l'arxiu: \n\n{path}")
+            return path
 
     def setCurrentIndex(self,i):
         super().setCurrentIndex(i)
@@ -346,6 +379,8 @@ class QvTaulaAtributs(QgsAttributeTableView):
         self.autoRecarrega()
 
         # Apariencia
+        self.header = self.horizontalHeader()
+        # self.header.setSortIndicatorClearable(True) # Qt 6.1
         self.resizeColumnsToContents()
 
     def autoRecarrega(self):
@@ -614,11 +649,29 @@ class QvTaulaAtributs(QgsAttributeTableView):
         else:
             self.layerTab()
 
+    def colOrder(self):
+        # Si se ha establecido un orden por columna, devuelve tres valores:
+        # - Número de la columna ordenada
+        # - Nombre de la columna ordenada
+        # - True si el orden es ascendente, False si es descendente
+        # Si no hay orden de columna establacido, devueve tres None.
+
+        config = self.layer.attributeTableConfig()
+        cols = config.columns()
+        if self.header.isSortIndicatorShown():
+            section = self.header.sortIndicatorSection()
+            name = cols[section].name
+            order = self.header.sortIndicatorOrder()
+            return (section, name, True if order == 0 else False)
+        else:
+            return (None, None, None)
+
+        # self.sortByColumn(2,0) # Ordena por columa 2 ascendente
+        # header.count() # numero columnas
+
     def saveToCSV(self):
-        self.parent.desarCSV(
-            self.layer,
-            self.filter.filterMode() ==
-            QgsAttributeTableFilterModel.ShowSelected)
+        self.parent.desarCSV(self.layer, self.colOrder())
+        
     def __len__(self):
         return max(0,self.layer.featureCount())
 

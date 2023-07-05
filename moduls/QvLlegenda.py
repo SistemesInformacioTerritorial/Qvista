@@ -722,11 +722,27 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
         if dP is None: return False
         return self.testFlags(dP.capabilities(), qgCor.QgsVectorDataProvider.EditingCapabilities)
 
-    def isLayerEditForm(self, capa=None):
+    def isLayerEditForm(self, capa=None, depurar=False):
         if capa is None: capa = self.currentLayer()
         if capa is None: return False
-        if not self.isLayerEditable(capa): return False
-        return QvDigitizeContext.testUserEditable(capa, nom='qV_editForm') and not QvDigitizeContext.testUserEditable(capa)
+        if not depurar:
+            if not self.isLayerEditable(capa): return False
+            return QvDigitizeContext.testUserEditable(capa, nom='qV_editForm') and not QvDigitizeContext.testUserEditable(capa)
+        else:
+            ret = self.isLayerEditable(capa)
+            if not ret: 
+                print(f'Capa {capa.name()} no editable: por definición')
+                return False
+            ret = QvDigitizeContext.testUserEditable(capa, nom='qV_editForm')
+            if not ret:
+                print(f'Capa {capa.name()} no editable: usuario no está en qV_editForm')
+                return False
+            ret = QvDigitizeContext.testUserEditable(capa)
+            if ret:
+                print(f'Capa {capa.name()} no editable: usuario está en qV_editable')
+                return False
+            print(f'Capa {capa.name()} EDITABLE')
+            return True
 
     def setMenuAccions(self):
         # Menú dinámico según tipo de elemento sobre el que se clicó
