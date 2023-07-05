@@ -265,8 +265,11 @@ class QvAtributs(QTabWidget):
         path = ''
         player = None
         selected = (layer.selectedFeatureCount() > 0)
+        filtered = (layer.subsetString() != '')
         if selected:
-            sel = "només els elements seleccionats"
+            sel = "els elements seleccionats"
+        elif filtered:
+            sel = "els elements filtrats"
         else:
             sel = "tots els elements"
         colNum, colName, asc = colOrder
