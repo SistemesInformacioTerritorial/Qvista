@@ -142,9 +142,10 @@ class QvAtributs(QTabWidget):
         self.setCurrentIndex(i)
         self.setTabText(i,self.tabText(i))
 
-    def setTabText(self,i,text):
-        l=len(self.widget(i))
-        super().setTabText(i,text+(' (%i)'%l if l!=0 else ''))
+    def setTabText(self, i, text):
+        l = len(self.widget(i))
+        if l >= 0: text += f" [{QvApp().locale.toString(l)}]"
+        super().setTabText(i, text)
 
     def removeTab(self, i):
         super().removeTab(i)
@@ -300,7 +301,7 @@ class QvAtributs(QTabWidget):
         finally:
             if player is not None: stopMovie(player)
             if path: 
-                QMessageBox.information(self, "Arxiu CSV desat correctament", f"S'han desat {sel} ({numElems}) a l'arxiu: \n\n{path}")
+                QMessageBox.information(self, "Arxiu CSV desat correctament", f"S'han desat {sel} ({QvApp().locale.toString(numElems)}) a l'arxiu: \n\n{path}")
             return path
 
     def setCurrentIndex(self,i):
@@ -618,7 +619,7 @@ class QvTaulaAtributs(QgsAttributeTableView):
         if num == 0:
             txt = self.layer.name()
         else:
-            txt = self.layer.name() + ' [' + str(num) + ']'
+            txt = self.layer.name() + ' (' + QvApp().locale.toString(num) + ')'
         return txt
 
     def layerTab(self):
