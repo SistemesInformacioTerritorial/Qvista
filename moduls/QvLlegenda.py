@@ -656,8 +656,8 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
 
         act = qtWdg.QAction()
         act.setText("Mostra contador elements")
-        act.triggered.connect(self.defaultActions().showFeatureCount)
-        self.accions.afegirAccio('showFeatureCount', act)
+        act.triggered.connect(self.showLayerCounter)
+        self.accions.afegirAccio('showLayerCounter', act)
 
         act = qtWdg.QAction()
         act.setText("Mostra diagrama barres")
@@ -761,7 +761,7 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
                     self.menuAccions += ['showFeatureTable']
                     if self.editable:
                         self.menuAccions += ['filterElements']
-                self.menuAccions += ['showFeatureCount']
+                self.menuAccions += ['showLayerCounter']
             if capa is not None and self.canvas is not None:
                 self.menuAccions += ['showLayerMap']
             self.menuAccions += ['separator']
@@ -882,6 +882,19 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
                 self.canvas.setExtent(extent)
                 self.canvas.refresh()
 
+    def showLayerCounter(self):
+        self.defaultActions().showFeatureCount()
+        # La primera vez que se muestran los contadores de las categorías, lo hace bien,
+        # sea con filtro o no. Si se modifica el filtro después, los contadores de las
+        # categorías no se actualizan.
+
+        # index = self.model.currentIndex()
+        # item = self.model.index2node(index)
+        # self.model.refreshLayerLegend(item)
+        # lista = self.model.layerLegendNodes(item, True)
+        # for item in lista:
+        #     print(item.evaluateLabel())
+
     def showBarChart(self):
         self.diagrama = QvDiagrama.barres(self.currentLayer())
         if self.diagrama is not None:
@@ -929,6 +942,10 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
                 return node
         return None
 
+    def expandAll(self, switch=True):
+        for item in self.items():
+            item.expandir(switch)
+
     def items(self):
         def recurse(item, level):
             yield QvItemLlegenda(item, level)
@@ -944,9 +961,35 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
             item = self.model.index2node(index)
             yield from recurse(item, 0)
 
-    def expandAll(self, switch=True):
+    def printItems(self, soloCapa=None):
+        print('Items Llegenda:')
+        seguir = soloCapa is None
         for item in self.items():
-            item.expandir(switch)
+            capa = item.capa()
+            if capa is None:
+                nomCapa = '-'
+            else:
+                nomCapa = capa.name()
+            if item.tipus == 'layer':
+                seguir = soloCapa is not None and soloCapa.id() == capa.id()
+            elif item.tipus == 'group':
+                seguir = False
+            if not seguir: continue
+            expandit = item.esExpandit()
+            if expandit is None:
+                txtExpandit = ''
+            elif expandit:
+                txtExpandit = '(expandido)'
+            else:
+                txtExpandit = '(no expandido)'
+            print('  ' * item.nivell, '-',
+                    'Tipo:', item.tipus,
+                    txtExpandit,
+                    'Nivel:', item.nivell,
+                    'Capa:', nomCapa,
+                    'Nombre:', item.nom(),
+                    'Visible:', item.esVisible(),
+                    'Marcado:', item.esMarcat())
 
 
 if __name__ == "__main__":
@@ -1032,30 +1075,7 @@ if __name__ == "__main__":
 
         def test():
             # QvApp().logRegistre('Menú Test')
-
-            print('Items Llegenda:')
-            for item in leyenda.items():
-                capa = item.capa()
-                if capa is None:
-                    nomCapa = '-'
-                else:
-                    nomCapa = capa.name()
-                expandit = item.esExpandit()
-                if expandit is None:
-                    txtExpandit = ''
-                elif expandit:
-                    txtExpandit = '(expandido)'
-                else:
-                    txtExpandit = '(no expandido)'
-                print('  ' * item.nivell, '-',
-                      'Tipo:', item.tipus,
-                       txtExpandit,
-                      'Nivel:', item.nivell,
-                      'Capa:', nomCapa,
-                      'Nombre:', item.nom(),
-                      'Visible:', item.esVisible(),
-                      'Marcado:', item.esMarcat())
-
+            leyenda.printItems()
             leyenda.expandAll()
 
         def salutacions():

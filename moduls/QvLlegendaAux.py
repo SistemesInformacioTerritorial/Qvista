@@ -4,6 +4,7 @@ import qgis.PyQt.QtCore as qtCor
 import qgis.PyQt.QtGui as qtGui
 import qgis.core as qgCor
 import qgis.gui as qgGui
+from moduls.QvApp import QvApp
 
 
 class QvItemLlegenda:
@@ -113,7 +114,8 @@ class QvModelLlegenda(qgCor.QgsLegendModel):
         return None
 
     def data(self, index, role):
-        # Tratamiento de capas con visibilidad controlada por escala
+
+        # *** Tratamiento de capas con visibilidad controlada por escala
         # - Texto en itálica cuando la capa no se ve
         if index.isValid() and role == qtCor.Qt.FontRole:
             inScale = self.layerInScale(index)
@@ -133,8 +135,47 @@ class QvModelLlegenda(qgCor.QgsLegendModel):
                 brush = super().data(index, role)
                 brush.setColor(color)
                 return brush
-        # - Resto
+
+        # *** Muestra contador de elementos de capa para v.3.22
+        if QvApp().testVersioQgis(3, 22) and index.isValid() and role == qtCor.Qt.DisplayRole:
+            node = self.index2node(index)
+            if qgCor.QgsLayerTree.isLayer(node):
+                layer = node.layer()
+                if layer:
+                    name = layer.name()
+                    status = node.customProperty("showFeatureCount")
+                    if status is None: status = False
+                    if status and name[-1] != ']':
+                        sign = ''
+                        if layer.dataProvider() and qgCor.QgsDataSourceUri(layer.dataProvider().dataSourceUri()).useEstimatedMetadata(): sign = '≈'
+                        num = 'N/A'
+                        count = layer.featureCount()
+                        if count >= 0: num = QvApp().locale.toString(count)
+                        name = f"{name} [{sign}{num}]"
+                        return name
+
+        # *** Resto
         return super().data(index, role)
+
+    #   QgsLayerTreeModel.cpp
+    #
+    #   QgsLayerTreeNode *node = index2node( index );
+    # if ( QgsLayerTree::isLayer( node ) )
+    # {
+    #   QgsLayerTreeLayer *nodeLayer = QgsLayerTree::toLayer( node );
+    #   QString name = nodeLayer->name();
+    #   QgsVectorLayer *vlayer = qobject_cast<QgsVectorLayer *>( nodeLayer->layer() );
+    #   if ( vlayer && nodeLayer->customProperty( QStringLiteral( "showFeatureCount" ), 0 ).toInt() && role == Qt::DisplayRole )
+    #   {
+    #     const bool estimatedCount = vlayer->dataProvider() ? QgsDataSourceUri( vlayer->dataProvider()->dataSourceUri() ).useEstimatedMetadata() : false;
+    #     const qlonglong count = vlayer->featureCount();
+
+    #     // if you modify this line, please update QgsSymbolLegendNode::updateLabel
+    #     name += QStringLiteral( " [%1%2]" ).arg(
+    #               estimatedCount ? QStringLiteral( "≈" ) : QString(),
+    #               count != -1 ? QLocale().toString( count ) : tr( "N/A" ) );
+    #   }
+    #   return name;
     
 class QvMenuLlegenda(qgGui.QgsLayerTreeViewMenuProvider):
 
