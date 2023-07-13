@@ -592,7 +592,10 @@ class QvTaulaAtributs(QgsAttributeTableView):
 
     def updateData(self):
         try:
-            self.layer.dataProvider().reloadData()
+            if QvApp().testVersioQgis(3, 22):
+                self.layer.dataProvider().reloadData()
+            else:
+                self.layer.dataProvider().forceReload()
         except Exception as e:
             print(str(e))
 
