@@ -227,6 +227,7 @@ class QvAtributs(QTabWidget):
 
             if nuevoFiltro != filtro:
                 layer.setSubsetString(nuevoFiltro)
+                # self.llegenda.refreshLayerSymbology(layer.id())
                 self.tabTaula(layer)
                 self.modificatFiltreCapa.emit(layer)
 
@@ -390,7 +391,7 @@ class QvTaulaAtributs(QgsAttributeTableView):
             if prm is not None:
                 seg = int(prm)
                 if seg > 0:
-                    self.timer.timeout.connect(self.updateData)
+                    self.timer.timeout.connect(lambda: self.updateData(False))
                     self.timer.start(seg * 1000)
         except Exception as e:
             print(str(e))
@@ -472,7 +473,7 @@ class QvTaulaAtributs(QgsAttributeTableView):
         act = QAction()
         act.setText("Actualitza dades")
         # act.setIcon(QIcon(':/Icones/ic_file_upload_black_48dp.png'))
-        act.triggered.connect(self.updateData)
+        act.triggered.connect(lambda: self.updateData(True))
         self.accions.afegirAccio('updateData', act)
 
         act = QAction()
@@ -590,14 +591,17 @@ class QvTaulaAtributs(QgsAttributeTableView):
         # except Exception as e:
         #     print(str(e))
 
-    def updateData(self):
+    def updateData(self, msgError=True):
         try:
             if QvApp().testVersioQgis(3, 22):
                 self.layer.dataProvider().reloadData()
             else:
                 self.layer.dataProvider().forceReload()
         except Exception as e:
-            print(str(e))
+            if msgError:
+                QMessageBox.warning(self, "Error al actualitzar taula de dades", str(e))
+            else:
+                print(str(e))
 
     def removeFilter(self):
         self.parent.filtrarCapa(self.layer, False)
