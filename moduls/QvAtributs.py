@@ -227,7 +227,8 @@ class QvAtributs(QTabWidget):
 
             if nuevoFiltro != filtro:
                 layer.setSubsetString(nuevoFiltro)
-                # self.llegenda.refreshLayerSymbology(layer.id())
+                # Hay que forzar la actualización de los contadores de las categorías, si existen
+                self.llegenda.updateLayerSymb(layer)
                 self.tabTaula(layer)
                 self.modificatFiltreCapa.emit(layer)
 
@@ -597,6 +598,8 @@ class QvTaulaAtributs(QgsAttributeTableView):
                 self.layer.dataProvider().reloadData()
             else:
                 self.layer.dataProvider().forceReload()
+            # Hay que forzar la actualización de los contadores de las categorías, si existen
+            self.parent.llegenda.updateLayerSymb(self.layer)
         except Exception as e:
             if msgError:
                 QMessageBox.warning(self, "Error al actualitzar taula de dades", str(e))

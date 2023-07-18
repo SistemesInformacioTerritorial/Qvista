@@ -529,6 +529,56 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
         canvas.setSegmentationTolerance(0.01745)
         canvas.setSegmentationToleranceType(qgCor.QgsAbstractGeometry.MaximumAngle)
 
+    def isFeatureVisible(self, renderer, ctx, feature):
+        ctx.expressionContext().setFeature(feature)
+        return renderer.willRenderFeature(feature, ctx)
+        # return renderer.capabilities().testFlag(qgCor.QgsFeatureRenderer.Filter) or renderer.willRenderFeature(feature, ctx)
+
+    def getLayerVisibleFeatures(self, layer, selected=True, request=qgCor.QgsFeatureRequest(), max=0):
+    # Iterador de elementos de capa visibles
+        num = 0
+        if layer.type() != qgCor.QgsMapLayerType.VectorLayer: return None
+        # if self.canvas is not None and layer.hasScaleBasedVisibility() and not layer.isInScaleRange(self.canvas.scale()): return None
+        renderer = layer.renderer()
+        if renderer is None:
+            return None
+        else:
+            renderer = renderer.clone()
+        ctx = qgCor.QgsRenderContext()
+        renderer.startRender(ctx, qgCor.QgsFields())
+        if selected:
+            iterator = layer.getSelectedFeatures
+        else:
+            iterator = layer.getFeatures
+        for feature in iterator(request):
+            if self.isFeatureVisible(renderer, ctx, feature):
+                yield feature
+                num += 1
+                if max > 0 and num >= max: break
+        renderer.stopRender(ctx)
+
+    def numLayerVisibleFeatures(self, layer, selected=True, request=qgCor.QgsFeatureRequest()):
+    # Contador de elementos de capa visibles
+        num = 0
+        if layer.type() != qgCor.QgsMapLayerType.VectorLayer: return num
+        # if self.canvas is not None and layer.hasScaleBasedVisibility() and not layer.isInScaleRange(self.canvas.scale()): return num
+        renderer = layer.renderer()
+        if renderer is None:
+            return num
+        else:
+            renderer = renderer.clone()
+        ctx = qgCor.QgsRenderContext()
+        renderer.startRender(ctx, qgCor.QgsFields())
+        if selected:
+            iterator = layer.getSelectedFeatures
+        else:
+            iterator = layer.getFeatures
+        for feature in iterator(request):
+            if self.isFeatureVisible(renderer, ctx, feature):
+                num += 1
+        renderer.stopRender(ctx)
+        return num
+
     def capaPerNom(self, nomCapa):
         """
         Devuelve el primer layer con el nombre especificado.
@@ -592,6 +642,8 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
         if node is not None:
             return node.itemVisibilityChecked()
         return False
+    
+
 
     def setAccions(self):
         act = qtWdg.QAction()
@@ -886,14 +938,14 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
         self.defaultActions().showFeatureCount()
         # La primera vez que se muestran los contadores de las categorías, lo hace bien,
         # sea con filtro o no. Si se modifica el filtro después, los contadores de las
-        # categorías no se actualizan.
+        # categorías no se actualizan, hay que forzarlo con updateLayerSymb()
 
-        # index = self.model.currentIndex()
-        # item = self.model.index2node(index)
-        # self.model.refreshLayerLegend(item)
-        # lista = self.model.layerLegendNodes(item, True)
-        # for item in lista:
-        #     print(item.evaluateLabel())
+    def updateLayerSymb(self, layer=None):
+        if layer is None: layer = self.currentLayer()
+        if layer is not None and layer.type() == qgCor.QgsMapLayer.VectorLayer:
+            r = layer.renderer()
+            if type(r) == qgCor.QgsCategorizedSymbolRenderer:
+                layer.setRenderer(r.clone())
 
     def showBarChart(self):
         self.diagrama = QvDiagrama.barres(self.currentLayer())

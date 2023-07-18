@@ -99,7 +99,7 @@ class QvSeleccioGrafica(QWidget):
 
         # Tool Box de resultats, on afegirem múltiples pestanyes
         self.tbResultats = QToolBox()
-        self.gbResultats = QGroupBox('0 elements seleccionats')
+        self.gbResultats = QGroupBox('0 elements seleccionats visibles')
         layGB = QVBoxLayout() # Layout d'un únic element, per posar la taula dins d'una Group Box
         layGB.addWidget(self.tbResultats)
         self.gbResultats.setLayout(layGB)
@@ -117,7 +117,7 @@ class QvSeleccioGrafica(QWidget):
         # Taula de les previsualitzacions (no implementada)
         self.twPreview = QTableWidget()
         layPreview = QVBoxLayout()
-        lblPreview = QLabel('Previsualització del contingut seleccionat. En aquesta taula es visualitzen els 20 primers elements seleccionats')
+        lblPreview = QLabel('Taula de previsualització del contingut seleccionat. Com a màxim es mostren els 20 primers elements.')
         lblPreview.setWordWrap(True)
         layPreview.addWidget(lblPreview)
         layPreview.addWidget(self.twPreview)
@@ -129,7 +129,7 @@ class QvSeleccioGrafica(QWidget):
         self.distBarrisSelMasc.view.clicked.connect(self.clickArbreSelMasc)
 
         layCamps = QVBoxLayout()
-        lblCamps = QLabel('Seleccioneu els camps dels que voleu fer-ne una extracció a un arxiu CSV')
+        lblCamps = QLabel('Seleccioneu els camps dels que voleu fer-ne una extracció a un arxiu CSV.')
         lblCamps.setWordWrap(True)
         layCamps.addWidget(lblCamps)
         layCamps.addWidget(self.lwFieldsSelect)
@@ -354,11 +354,12 @@ class QvSeleccioGrafica(QWidget):
                 pass
             nfile, _ = QFileDialog.getSaveFileName(None, "Desar arxiu CSV", ".", "Arxius CSV (*.csv)")
             if nfile=='': return
-            feats = capa.selectedFeatures()
+            # feats = capa.selectedFeatures()
             with open(nfile,'w', newline='') as f:
                 writer = csv.DictWriter(f,fieldnames=camps, delimiter=';')
                 writer.writeheader()
-                for feat in feats:
+                # for feat in feats:
+                for feat in self.llegenda.getLayerVisibleFeatures(capa):
                     d = {}
                     for camp in camps:
                         field = capa.fields().field(camp)
@@ -401,7 +402,8 @@ class QvSeleccioGrafica(QWidget):
         # feats = list(capa.selectedFeatures())[:20]
         # Això ens donaria també els 20 primers elements, però amb un cost molt més gran
         # en cas que tinguéssim molts elements seleccionats, ja que primer fem una llista enorme i després la partim
-        feats = list(itertools.islice(capa.selectedFeatures(),20))
+        # feats = list(itertools.islice(capa.selectedFeatures(),20))
+        feats = list(self.llegenda.getLayerVisibleFeatures(capa, max=20))
         self.twPreview.setColumnCount(len(camps))
         self.twPreview.setRowCount(len(feats))
         self.twPreview.setHorizontalHeaderLabels(camps)
@@ -517,6 +519,12 @@ class QvSeleccioGrafica(QWidget):
         self.lblCapaSeleccionada.setText(txtSelec)
 
     def calcularSeleccio(self):
+
+# CPC
+# Limpiar si hay cambio de capa activa: qVista.canviLayer()
+# Recalcular si hay cambio de visualización en la capa activa: visibilityChanged()
+# Coordinar con selección alfanumérica
+
         layerActiu = self.llegenda.currentLayer()
         if layerActiu is None:
             return
@@ -529,7 +537,8 @@ class QvSeleccioGrafica(QWidget):
 
         if len(self.lwFieldsSelect.selectedItems())==0: # Si no hi ha cap item seleccionat, se seleccionen tots
             self.lwFieldsSelect.selectAll()
-        nombreElements = len(layerActiu.selectedFeatures())
+        # nombreElements = len(layerActiu.selectedFeatures())
+        nombreElements = self.llegenda.numLayerVisibleFeatures(layerActiu)
         campsNumerics = [field.name() for field in layerActiu.fields() if field.typeName() in ('Integer64','Real')]
         itemsNumerics = [x for x in self.lwFieldsSelect.selectedItems() if x.text() in campsNumerics]
         # for a in itemsNumerics:
@@ -545,9 +554,10 @@ class QvSeleccioGrafica(QWidget):
             #     calcul = feature.attributes(
             #     )[layer.fields().lookupField(a.text())]
             #     total = total+calcul
-            total = sum(feature.attributes()[layerActiu.fields().lookupField(a.text())] for feature in layerActiu.selectedFeatures())
+            # total = sum(feature.attributes()[layerActiu.fields().lookupField(a.text())] for feature in layerActiu.selectedFeatures())
             if nombreElements > 0:
-                mitjana = total/nombreElements
+                total = sum(feature.attributes()[layerActiu.fields().lookupField(a.text())] for feature in self.llegenda.getLayerVisibleFeatures(layerActiu))
+                mitjana = total / nombreElements
             else:
                 mitjana = 0
             item = QTableWidgetItem(str('% 12.2f' % total))
@@ -561,7 +571,11 @@ class QvSeleccioGrafica(QWidget):
         item = QTableWidgetItem(str(nombreElements))
         taula.setItem(0, 1, item)
         self.bs6.setText(f'Crear CSV ({nombreElements} seleccionats)')
-        self.gbResultats.setTitle(f'{nombreElements} elements seleccionats')
+        if nombreElements > 0 and layerActiu.hasScaleBasedVisibility():
+            aviso = " (s'ignoran els filtres d'escala)"
+        else:
+            aviso = ""
+        self.gbResultats.setTitle(f'{nombreElements} elements seleccionats visibles{aviso}')
         taula.resizeColumnsToContents()
 
         self.setPreview()
@@ -1637,7 +1651,7 @@ if __name__ == "__main__":
     from qgis.core import QgsProject
     from qgis.core.contextmanagers import qgisapp
     from qgis.gui import QgsLayerTreeMapCanvasBridge, QgsMapCanvas
-
+    from qgis.PyQt.QtGui import QPushButton
     from moduls.QvCanvas import QvCanvas
     from moduls.QvLlegenda import QvLlegenda
     with qgisapp() as app:
@@ -1654,7 +1668,7 @@ if __name__ == "__main__":
         llegenda.show()
         canvas.show()
         wSeleccio = QvSeleccioGrafica(canvas,project,llegenda)
-        wMesures = QvMesuraGrafica(canvas,llegenda,bSeleccio)
+        wMesures = QvMesuraGrafica(canvas,llegenda,wSeleccio)
 
         lay = QHBoxLayout()
         layV = QVBoxLayout()
