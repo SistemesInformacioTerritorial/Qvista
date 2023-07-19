@@ -171,6 +171,11 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
         # self.fSignal = lambda: self.projecteModificat.emit('canvasLayersChanged')
 
         self.iniSignal = False
+        self.timerData = qtCor.QTimer() # Timer para auto recarga de datos de proyecto (por capas)
+        self.timerData.timeout.connect(self.updateProjectData)
+        # self.timerGraph = qtCor.QTimer() # Timer para auto recarga gráfica de proyecto (por capas)
+        # self.timerGraph.timeout.connect(self.updateProjectGraph)
+
 
     def qVista(self):
         try:
@@ -211,6 +216,10 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
 
     # Función estandar para leer proyecto dentro de qVista
     def readProject(self, fileName):
+        if self.timerData.isActive():
+            self.timerData.stop()
+        # if self.timerGraph.isActive():
+        #     self.timerGraph.stop()
         if self.anotacions is not None:
             self.anotacions.removeAnnotations()
         self.project.read(fileName)
@@ -485,6 +494,8 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
 
         self.tema.temaInicial()
 
+        self.autoRecarrega()
+
     def connectaCanviCapaActiva(self, canviCapaActiva):
         if canviCapaActiva is not None:
             self.currentLayerChanged.connect(canviCapaActiva)
@@ -528,6 +539,56 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
         canvas.setMapUpdateInterval(250)
         canvas.setSegmentationTolerance(0.01745)
         canvas.setSegmentationToleranceType(qgCor.QgsAbstractGeometry.MaximumAngle)
+
+    def isFeatureVisible(self, renderer, ctx, feature):
+        ctx.expressionContext().setFeature(feature)
+        return renderer.willRenderFeature(feature, ctx)
+        # return renderer.capabilities().testFlag(qgCor.QgsFeatureRenderer.Filter) or renderer.willRenderFeature(feature, ctx)
+
+    def getLayerVisibleFeatures(self, layer, selected=True, request=qgCor.QgsFeatureRequest(), max=0):
+    # Iterador de elementos de capa visibles
+        num = 0
+        if layer.type() != qgCor.QgsMapLayerType.VectorLayer: return None
+        # if self.canvas is not None and layer.hasScaleBasedVisibility() and not layer.isInScaleRange(self.canvas.scale()): return None
+        renderer = layer.renderer()
+        if renderer is None:
+            return None
+        else:
+            renderer = renderer.clone()
+        ctx = qgCor.QgsRenderContext()
+        renderer.startRender(ctx, qgCor.QgsFields())
+        if selected:
+            iterator = layer.getSelectedFeatures
+        else:
+            iterator = layer.getFeatures
+        for feature in iterator(request):
+            if self.isFeatureVisible(renderer, ctx, feature):
+                yield feature
+                num += 1
+                if max > 0 and num >= max: break
+        renderer.stopRender(ctx)
+
+    def numLayerVisibleFeatures(self, layer, selected=True, request=qgCor.QgsFeatureRequest()):
+    # Contador de elementos de capa visibles
+        num = 0
+        if layer.type() != qgCor.QgsMapLayerType.VectorLayer: return num
+        # if self.canvas is not None and layer.hasScaleBasedVisibility() and not layer.isInScaleRange(self.canvas.scale()): return num
+        renderer = layer.renderer()
+        if renderer is None:
+            return num
+        else:
+            renderer = renderer.clone()
+        ctx = qgCor.QgsRenderContext()
+        renderer.startRender(ctx, qgCor.QgsFields())
+        if selected:
+            iterator = layer.getSelectedFeatures
+        else:
+            iterator = layer.getFeatures
+        for feature in iterator(request):
+            if self.isFeatureVisible(renderer, ctx, feature):
+                num += 1
+        renderer.stopRender(ctx)
+        return num
 
     def capaPerNom(self, nomCapa):
         """
@@ -592,6 +653,8 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
         if node is not None:
             return node.itemVisibilityChecked()
         return False
+    
+
 
     def setAccions(self):
         act = qtWdg.QAction()
@@ -886,14 +949,52 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
         self.defaultActions().showFeatureCount()
         # La primera vez que se muestran los contadores de las categorías, lo hace bien,
         # sea con filtro o no. Si se modifica el filtro después, los contadores de las
-        # categorías no se actualizan.
+        # categorías no se actualizan, hay que forzarlo con updateLayerSymb()
 
-        # index = self.model.currentIndex()
-        # item = self.model.index2node(index)
-        # self.model.refreshLayerLegend(item)
-        # lista = self.model.layerLegendNodes(item, True)
-        # for item in lista:
-        #     print(item.evaluateLabel())
+    def autoRecarrega(self):
+        try:
+            seg = 0
+            prm = qgCor.QgsExpressionContextUtils.projectScope(self.project).variable('qV_autoRecarrega')
+            if prm is not None: 
+                seg = int(prm)
+            if seg > 0:
+                self.timerData.start(seg * 1000)
+                print('autoProjectUpdate: ', str(seg), 'seg.')
+        except Exception as e:
+            print(str(e))
+
+    def updateProjectData(self):
+        for layer in self.capes():
+            prm = qgCor.QgsExpressionContextUtils.layerScope(layer).variable('qV_autoRecarrega')
+            if prm is not None:
+                self.updateLayerData(layer, False)
+
+    # def updateProjectGraph(self):
+    #     for layer in self.capes():
+    #         prm = qgCor.QgsExpressionContextUtils.layerScope(self.layer).variable('qV_autoRecarrega')
+    #         if prm is not None:
+    #             layer.triggerRepaint()
+
+    def updateLayerData(self, layer, msgError=True):
+        try:
+            if layer is not None and layer.isValid() and layer.type() == qgCor.QgsMapLayer.VectorLayer:
+                if QvApp().testVersioQgis(3, 22):
+                    layer.dataProvider().reloadData()
+                else:   
+                    layer.dataProvider().forceReload()
+                # Hay que forzar la actualización de los contadores de las categorías, si existen
+                self.updateLayerSymb(layer)
+        except Exception as e:
+            if msgError:
+                qtWdg.QMessageBox.warning(self, "Error al actualitzar dades de capa", layer.name(), str(e))
+            else:
+                print(str(e))
+
+    def updateLayerSymb(self, layer):
+        if layer is not None and layer.isValid() and layer.type() == qgCor.QgsMapLayer.VectorLayer:
+            r = layer.renderer()
+            if type(r) in (qgCor.QgsCategorizedSymbolRenderer, qgCor.QgsRuleBasedRenderer, qgCor.QgsGraduatedSymbolRenderer):
+                layer.setRenderer(r.clone())
 
     def showBarChart(self):
         self.diagrama = QvDiagrama.barres(self.currentLayer())
