@@ -378,24 +378,24 @@ class QvTaulaAtributs(QgsAttributeTableView):
         if readOnly: self.setEditTriggers(QAbstractItemView.NoEditTriggers)
 
         # Actualización automática
-        self.timer = QTimer()
-        self.autoRecarrega()
+        # self.timer = QTimer()
+        # self.autoRecarrega()
 
         # Apariencia
         self.header = self.horizontalHeader()
         # self.header.setSortIndicatorClearable(True) # Qt 6.1
         self.resizeColumnsToContents()
 
-    def autoRecarrega(self):
-        try:
-            prm = QgsExpressionContextUtils.layerScope(self.layer).variable('qV_autoRecarrega')
-            if prm is not None:
-                seg = int(prm)
-                if seg > 0:
-                    self.timer.timeout.connect(lambda: self.updateData(False))
-                    self.timer.start(seg * 1000)
-        except Exception as e:
-            print(str(e))
+    # def autoRecarrega(self):
+    #     try:
+    #         prm = QgsExpressionContextUtils.layerScope(self.layer).variable('qV_autoRecarrega')
+    #         if prm is not None:
+    #             seg = int(prm)
+    #             if seg > 0:
+    #                 self.timer.timeout.connect(lambda: self.updateData(False))
+    #                 self.timer.start(seg * 1000)
+    #     except Exception as e:
+    #         print(str(e))
 
     # def setHidenColumns(self, prefijo='__'):
     #     changed = False
@@ -474,7 +474,7 @@ class QvTaulaAtributs(QgsAttributeTableView):
         act = QAction()
         act.setText("Actualitza dades")
         # act.setIcon(QIcon(':/Icones/ic_file_upload_black_48dp.png'))
-        act.triggered.connect(lambda: self.updateData(True))
+        act.triggered.connect(self.updateData)
         self.accions.afegirAccio('updateData', act)
 
         act = QAction()
@@ -592,19 +592,22 @@ class QvTaulaAtributs(QgsAttributeTableView):
         # except Exception as e:
         #     print(str(e))
 
-    def updateData(self, msgError=True):
-        try:
-            if QvApp().testVersioQgis(3, 22):
-                self.layer.dataProvider().reloadData()
-            else:
-                self.layer.dataProvider().forceReload()
-            # Hay que forzar la actualización de los contadores de las categorías, si existen
-            self.parent.llegenda.updateLayerSymb(self.layer)
-        except Exception as e:
-            if msgError:
-                QMessageBox.warning(self, "Error al actualitzar taula de dades", str(e))
-            else:
-                print(str(e))
+    # def updateData(self, msgError=True):
+    #     try:
+    #         if QvApp().testVersioQgis(3, 22):
+    #             self.layer.dataProvider().reloadData()
+    #         else:
+    #             self.layer.dataProvider().forceReload()
+    #         # Hay que forzar la actualización de los contadores de las categorías, si existen
+    #         self.parent.llegenda.updateLayerSymb(self.layer)
+    #     except Exception as e:
+    #         if msgError:
+    #             QMessageBox.warning(self, "Error al actualitzar taula de dades", str(e))
+    #         else:
+    #             print(str(e))
+
+    def updateData(self):
+        self.parent.llegenda.updateLayerData(self.layer, True)
 
     def removeFilter(self):
         self.parent.filtrarCapa(self.layer, False)

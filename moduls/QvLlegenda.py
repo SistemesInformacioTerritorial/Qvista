@@ -171,6 +171,9 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
         # self.fSignal = lambda: self.projecteModificat.emit('canvasLayersChanged')
 
         self.iniSignal = False
+        self.timer = qtCor.QTimer() # Timer para autorecarga de datos de proyecto (por capas)
+        self.timer.timeout.connect(self.updateProjectData)
+
 
     def qVista(self):
         try:
@@ -211,6 +214,8 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
 
     # Función estandar para leer proyecto dentro de qVista
     def readProject(self, fileName):
+        if self.timer.isActive():
+            self.timer.stop()
         if self.anotacions is not None:
             self.anotacions.removeAnnotations()
         self.project.read(fileName)
@@ -484,6 +489,8 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
         self.botoQgisVisible(not visible)
 
         self.tema.temaInicial()
+
+        self.autoRecarrega()
 
     def connectaCanviCapaActiva(self, canviCapaActiva):
         if canviCapaActiva is not None:
@@ -940,11 +947,43 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
         # sea con filtro o no. Si se modifica el filtro después, los contadores de las
         # categorías no se actualizan, hay que forzarlo con updateLayerSymb()
 
-    def updateLayerSymb(self, layer=None):
-        if layer is None: layer = self.currentLayer()
-        if layer is not None and layer.type() == qgCor.QgsMapLayer.VectorLayer:
+    def autoRecarrega(self):
+        try:
+            ms = 0
+            prm = qgCor.QgsExpressionContextUtils.projectScope(self.project).variable('qV_autoRecarrega')
+            if prm is not None: 
+                ms = int(prm)
+            if ms > 0:
+                self.timer.start(ms * 1000)
+                print('autoProjectUpdate: ', str(ms * 1000), 'seg.')
+        except Exception as e:
+            print(str(e))
+
+    def updateProjectData(self):
+        for layer in self.capes():
+            prm = qgCor.QgsExpressionContextUtils.layerScope(self.layer).variable('qV_autoRecarrega')
+            if prm is not None:
+                self.updateLayerData(layer, False)
+
+    def updateLayerData(self, layer, msgError=True):
+        try:
+            if layer is not None and layer.isValid() and layer.type() == qgCor.QgsMapLayer.VectorLayer:
+                if QvApp().testVersioQgis(3, 22):
+                    layer.dataProvider().reloadData()
+                else:
+                    layer.dataProvider().forceReload()
+                # Hay que forzar la actualización de los contadores de las categorías, si existen
+                self.updateLayerSymb(layer)
+        except Exception as e:
+            if msgError:
+                qtWdg.QMessageBox.warning(self, "Error al actualitzar dades de capa", layer.name(), str(e))
+            else:
+                print(str(e))
+
+    def updateLayerSymb(self, layer):
+        if layer is not None and layer.isValid() and layer.type() == qgCor.QgsMapLayer.VectorLayer:
             r = layer.renderer()
-            if type(r) == qgCor.QgsCategorizedSymbolRenderer:
+            if type(r) in (qgCor.QgsCategorizedSymbolRenderer, qgCor.QgsGraduatedSymbolRenderer):
                 layer.setRenderer(r.clone())
 
     def showBarChart(self):
