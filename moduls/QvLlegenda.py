@@ -171,8 +171,10 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
         # self.fSignal = lambda: self.projecteModificat.emit('canvasLayersChanged')
 
         self.iniSignal = False
-        self.timer = qtCor.QTimer() # Timer para autorecarga de datos de proyecto (por capas)
-        self.timer.timeout.connect(self.updateProjectData)
+        self.timerData = qtCor.QTimer() # Timer para auto recarga de datos de proyecto (por capas)
+        self.timerData.timeout.connect(self.updateProjectData)
+        # self.timerGraph = qtCor.QTimer() # Timer para auto recarga gráfica de proyecto (por capas)
+        # self.timerGraph.timeout.connect(self.updateProjectGraph)
 
 
     def qVista(self):
@@ -214,8 +216,10 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
 
     # Función estandar para leer proyecto dentro de qVista
     def readProject(self, fileName):
-        if self.timer.isActive():
-            self.timer.stop()
+        if self.timerData.isActive():
+            self.timerData.stop()
+        # if self.timerGraph.isActive():
+        #     self.timerGraph.stop()
         if self.anotacions is not None:
             self.anotacions.removeAnnotations()
         self.project.read(fileName)
@@ -949,28 +953,34 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
 
     def autoRecarrega(self):
         try:
-            ms = 0
+            seg = 0
             prm = qgCor.QgsExpressionContextUtils.projectScope(self.project).variable('qV_autoRecarrega')
             if prm is not None: 
-                ms = int(prm)
-            if ms > 0:
-                self.timer.start(ms * 1000)
-                print('autoProjectUpdate: ', str(ms * 1000), 'seg.')
+                seg = int(prm)
+            if seg > 0:
+                self.timerData.start(seg * 1000)
+                print('autoProjectUpdate: ', str(seg), 'seg.')
         except Exception as e:
             print(str(e))
 
     def updateProjectData(self):
         for layer in self.capes():
-            prm = qgCor.QgsExpressionContextUtils.layerScope(self.layer).variable('qV_autoRecarrega')
+            prm = qgCor.QgsExpressionContextUtils.layerScope(layer).variable('qV_autoRecarrega')
             if prm is not None:
                 self.updateLayerData(layer, False)
+
+    # def updateProjectGraph(self):
+    #     for layer in self.capes():
+    #         prm = qgCor.QgsExpressionContextUtils.layerScope(self.layer).variable('qV_autoRecarrega')
+    #         if prm is not None:
+    #             layer.triggerRepaint()
 
     def updateLayerData(self, layer, msgError=True):
         try:
             if layer is not None and layer.isValid() and layer.type() == qgCor.QgsMapLayer.VectorLayer:
                 if QvApp().testVersioQgis(3, 22):
                     layer.dataProvider().reloadData()
-                else:
+                else:   
                     layer.dataProvider().forceReload()
                 # Hay que forzar la actualización de los contadores de las categorías, si existen
                 self.updateLayerSymb(layer)
@@ -983,7 +993,7 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
     def updateLayerSymb(self, layer):
         if layer is not None and layer.isValid() and layer.type() == qgCor.QgsMapLayer.VectorLayer:
             r = layer.renderer()
-            if type(r) in (qgCor.QgsCategorizedSymbolRenderer, qgCor.QgsGraduatedSymbolRenderer):
+            if type(r) in (qgCor.QgsCategorizedSymbolRenderer, qgCor.QgsRuleBasedRenderer, qgCor.QgsGraduatedSymbolRenderer):
                 layer.setRenderer(r.clone())
 
     def showBarChart(self):
