@@ -71,6 +71,11 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
         # self.restoreExtent = 0
         # print('restoreExtent', self.restoreExtent)
 
+        self.timerDataSecs = 0
+        self.timerData = qtCor.QTimer() # Timer para auto recarga de datos de proyecto (por capas)
+        self.timerData.timeout.connect(self.updateProjectData)
+        # self.timerGraph = qtCor.QTimer() # Timer para auto recarga gráfica de proyecto (por capas)
+        # self.timerGraph.timeout.connect(self.updateProjectGraph)
         
         # L'opertura de projectes Oracle va lenta si és la primera
         # Obrim un arxiu "inútil", i així s'obren més ràpid
@@ -171,11 +176,6 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
         # self.fSignal = lambda: self.projecteModificat.emit('canvasLayersChanged')
 
         self.iniSignal = False
-        self.timerData = qtCor.QTimer() # Timer para auto recarga de datos de proyecto (por capas)
-        self.timerData.timeout.connect(self.updateProjectData)
-        # self.timerGraph = qtCor.QTimer() # Timer para auto recarga gráfica de proyecto (por capas)
-        # self.timerGraph.timeout.connect(self.updateProjectGraph)
-
 
     def qVista(self):
         try:
@@ -494,7 +494,7 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
 
         self.tema.temaInicial()
 
-        self.autoRecarrega()
+        self.timerDataSecs = self.autoRecarrega()
 
     def connectaCanviCapaActiva(self, canviCapaActiva):
         if canviCapaActiva is not None:
@@ -694,6 +694,12 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
         self.accions.afegirAccio('viewAnnotations', act)
 
         act = qtWdg.QAction()
+        act.setText("Recàrrega de dades")
+        act.setCheckable(True)
+        act.triggered.connect(self.autoUpdate)
+        self.accions.afegirAccio('autoUpdate', act)
+
+        act = qtWdg.QAction()
         act.setText("Canvia nom")
         act.triggered.connect(self.renameGroupOrLayer)  # , type = Qt.DirectConnection)
         self.accions.afegirAccio('renameGroupOrLayer', act)
@@ -846,6 +852,10 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
             if self.anotacions and \
                self.anotacions.menuVisible(self.accions.accio('viewAnnotations')):
                 self.menuAccions += ['separator', 'viewAnnotations']
+            if self.timerDataSecs > 0:
+                self.accions.accio('autoUpdate').setText(f"Recàrrega de dades ({self.timerDataSecs} segs.)")
+                self.accions.accio('autoUpdate').setChecked(self.timerData.isActive())
+                self.menuAccions += ['separator', 'autoUpdate']
         else:  # 'symb'
             pass
         return tipo
@@ -917,6 +927,14 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
     def viewAnnotations(self):
         self.sender().setChecked(self.anotacions.toggleAnnotations())
 
+    def autoUpdate(self):
+        if self.timerData.isActive():
+            self.timerData.stop()
+            self.sender().setChecked(False)
+        else:
+            self.timerData.start(self.timerDataSecs * 1000)
+            self.sender().setChecked(True)
+
     def saveStyleToGeoPackage(self, capa, nom="", desc="", default=True):
         s = qgCor.QgsSettings()
         s.setValue("qgis/overwriteStyle", True)
@@ -952,8 +970,8 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
         # categorías no se actualizan, hay que forzarlo con updateLayerSymb()
 
     def autoRecarrega(self):
+        seg = 0
         try:
-            seg = 0
             prm = qgCor.QgsExpressionContextUtils.projectScope(self.project).variable('qV_autoRecarrega')
             if prm is not None: 
                 seg = int(prm)
@@ -962,6 +980,8 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
                 print('autoProjectUpdate: ', str(seg), 'seg.')
         except Exception as e:
             print(str(e))
+        finally:
+            return seg
 
     def updateProjectData(self):
         for layer in self.capes():
@@ -984,6 +1004,7 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
                     layer.dataProvider().forceReload()
                 # Hay que forzar la actualización de los contadores de las categorías, si existen
                 self.updateLayerSymb(layer)
+                if QvFuncions.debugging(): print('updateLayerData', layer.name())
         except Exception as e:
             if msgError:
                 qtWdg.QMessageBox.warning(self, "Error al actualitzar dades de capa", layer.name(), str(e))
