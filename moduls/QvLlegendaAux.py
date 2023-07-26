@@ -190,8 +190,17 @@ class QvMenuLlegenda(qgGui.QgsLayerTreeViewMenuProvider):
         return self.llegenda.accions.menuAccions(self.llegenda.menuAccions)
 
 class QvRecarregaLlegenda:
+    """ Clase que gestiona para la leyenda la recarga automática de capas de un proyecto, tanto de datos
+    como de gráficos. Se activa para cada proyecto llamando al método autoRecarrega. Los métodos que realizan
+    efectivamente la recarga son updateProjectData para datos y updateProjectGraph para gráficos.
+    """
 
     def __init__(self, llegenda):
+        """ Define los dos timers que controlan la actualización gráfica y la de datos.
+
+        Args:
+            llegenda (QvLlegenda): leyenda de qVista
+        """
         self.llegenda = llegenda
         self.timerData = qtCor.QTimer() # Timer para auto recarga de datos de proyecto (por capas)
         self.timerData.timeout.connect(self.updateProjectData)
@@ -203,6 +212,8 @@ class QvRecarregaLlegenda:
         self.updateGraphLayers = []
 
     def resetTimers(self):
+        """ Reinicializa los timers
+        """
         if self.timerData.isActive():
             self.timerData.stop()
             self.timerDataSecs = 0
@@ -213,12 +224,34 @@ class QvRecarregaLlegenda:
             self.updateGraphLayers = []
 
     def isUpdateDataLayer(self, layer):
+        """ Comprueba si los datos de la capa indicada se está actualizando automáticamente
+
+        Args:
+            layer (QgsVectorLayr): capa
+
+        Returns:
+            bool: True si se está actualizando 
+        """
         return self.timerData.isActive() and layer in self.updateDataLayers
 
     def isUpdateGraphLayer(self, layer):
+        """ Comprueba si la representación gráfica de la capa indicada se está actualizando automáticamente
+
+        Args:
+            layer (QgsVectorLayr): capa
+
+        Returns:
+            bool: True si se está actualizando 
+        """
         return self.timerGraph.isActive() and layer in self.updateGraphLayers
 
     def toggleUpdateData(self, sender):
+        """ Cambia el estado del timer de datos (activo o parado), del check de la entrada del menú asociado y de
+        los iconos de la capa en la leyenda
+
+        Args:
+            sender (QMenu): entrada de menú asociada
+        """
         if self.timerData.isActive():
             self.timerData.stop()
             sender.setChecked(False)
@@ -228,6 +261,12 @@ class QvRecarregaLlegenda:
         self.llegenda.actIcones()
 
     def toggleUpdateGraph(self, sender):
+        """ Cambia el estado del timer gráfico (activo o parado), del check de la entrada del menú asociado y de
+        los iconos de la capa en la leyenda
+
+        Args:
+            sender (QMenu): entrada de menú asociada
+        """
         if self.timerGraph.isActive():
             self.timerGraph.stop()
             sender.setChecked(False)
@@ -237,6 +276,11 @@ class QvRecarregaLlegenda:
         self.llegenda.actIcones()
 
     def autoRecarrega(self):
+        """ Inicializa la recarga automática para un nuevo proyecto según la variable de proyecto 'qV_autoRecarrega'.
+        Esta variable puede contener dos valores: n1, n2. El primero, n1, será el número de segundos entre recargas
+        automáticas de datos, y n2 lo mismo para gráficos. Solo se activa la auto-recarga si la variable y los
+        valores descritos están definidos
+        """
         segData = segGraph = 0
         self.updateDataLayers = []
         self.updateGraphLayers = []
@@ -267,9 +311,11 @@ class QvRecarregaLlegenda:
             print(str(e))
         finally:
            self.timerDataSecs, self.timerGraphSecs = segData, segGraph
-        #  return segData, segGraph
 
     def getActiveUpdateLayers(self):
+        """ Calcula la lista de capas que van a ser actualizadas automáticamente, tanto gráfica como alfanuméricamente.
+        Para eso, tiene que existir la variable de capa 'qV_autoRecarrega' en cada una de ellas
+        """
         self.updateDataLayers = []
         self.updateGraphLayers = []
         for layer in self.llegenda.capes():
@@ -281,6 +327,8 @@ class QvRecarregaLlegenda:
                 self.updateGraphLayers.append(layer)
 
     def updateProjectGraph(self):
+        """ Actualiza gráficamente las capas según lo indicado por las variables 'qV_autoRecarrega'
+        """
         self.getActiveUpdateLayers()
         if QvFuncions.debugging(): print('update Graph Layers', self.updateGraphLayers)
         for layer in self.updateGraphLayers:
@@ -289,6 +337,8 @@ class QvRecarregaLlegenda:
         self.llegenda.actIcones()
 
     def updateProjectData(self):
+        """ Actualiza los datos de las capas según lo indicado por las variables 'qV_autoRecarrega'
+        """
         self.getActiveUpdateLayers()
         if QvFuncions.debugging(): print('update Data Layers', self.updateDataLayers)
         for layer in self.updateDataLayers:
@@ -297,6 +347,12 @@ class QvRecarregaLlegenda:
         self.llegenda.actIcones()
 
     def updateLayerData(self, layer, msgError=True):
+        """ Actualiza los datos de una capa
+
+        Args:
+            layer (QgsVectorLayer): capa
+            msgError (bool, optional): Indica si se muestran los mensajes de error. Defaults to True.
+        """
         try:
             if QvApp().testVersioQgis(3, 22):
                 layer.dataProvider().reloadData()
@@ -311,6 +367,11 @@ class QvRecarregaLlegenda:
                 print(str(e))
 
     def updateLayerSymb(self, layer):
+        """ Actualiza los contadores de la leyenda de una capa con simbología por categorías
+
+        Args:
+            layer (QgsVectorLayer): capa
+        """
         if layer is not None and layer.isValid() and layer.type() == qgCor.QgsMapLayer.VectorLayer:
             r = layer.renderer()
             if type(r) in (qgCor.QgsCategorizedSymbolRenderer, qgCor.QgsRuleBasedRenderer, qgCor.QgsGraduatedSymbolRenderer):
