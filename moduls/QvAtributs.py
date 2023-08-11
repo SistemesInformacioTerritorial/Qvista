@@ -228,7 +228,8 @@ class QvAtributs(QTabWidget):
             if nuevoFiltro != filtro:
                 layer.setSubsetString(nuevoFiltro)
                 # Hay que forzar la actualización de los contadores de las categorías, si existen
-                self.llegenda.updateLayerSymb(layer)
+                self.llegenda.recarrega.updateLayerSymb(layer)
+                # self.llegenda.updateLayerSymb(layer)
                 self.tabTaula(layer)
                 self.modificatFiltreCapa.emit(layer)
 
@@ -607,7 +608,7 @@ class QvTaulaAtributs(QgsAttributeTableView):
     #             print(str(e))
 
     def updateData(self):
-        self.parent.llegenda.updateLayerData(self.layer, True)
+        self.parent.llegenda.recarrega.updateLayerData(self.layer, True)
 
     def removeFilter(self):
         self.parent.filtrarCapa(self.layer, False)

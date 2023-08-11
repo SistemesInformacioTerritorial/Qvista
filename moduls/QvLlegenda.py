@@ -11,7 +11,7 @@ from moduls.QvAtributs import QvAtributs
 from moduls.QvVideo import QvVideo
 from moduls.QvEscala import QvEscala
 from moduls.QvMapForms import QvFormSimbMapificacio
-from moduls.QvLlegendaAux import QvModelLlegenda, QvItemLlegenda, QvMenuLlegenda
+from moduls.QvLlegendaAux import QvModelLlegenda, QvItemLlegenda, QvMenuLlegenda, QvRecarregaLlegenda
 from moduls.QvLlegendaMascara import QvLlegendaMascara
 from moduls.QvDiagrama import QvDiagrama
 from moduls.QvTema import QvTema
@@ -62,8 +62,8 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
         self.lastExtent = None
         self.escales = None
         self.directory = '.'
-        self.mask = None
         self.renaming = None
+        self.mask = None
         self.removing = False
         self.tema = QvTema(self)
         self.anotacions = None
@@ -71,12 +71,7 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
         # self.restoreExtent = 0
         # print('restoreExtent', self.restoreExtent)
 
-        self.timerDataSecs = 0
-        self.timerData = qtCor.QTimer() # Timer para auto recarga de datos de proyecto (por capas)
-        self.timerData.timeout.connect(self.updateProjectData)
-        self.timerGraphSecs = 0
-        self.timerGraph = qtCor.QTimer() # Timer para auto recarga gráfica de proyecto (por capas)
-        self.timerGraph.timeout.connect(self.updateProjectGraph)
+        self.recarrega = QvRecarregaLlegenda(self)
         
         # L'opertura de projectes Oracle va lenta si és la primera
         # Obrim un arxiu "inútil", i així s'obren més ràpid
@@ -129,6 +124,18 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
         self.iconaFiltre.setIcon(qtGui.QIcon(os.path.join(imatgesDir, 'filter.png')))
         self.iconaFiltre.setToolTip('Filtre actiu')
         self.iconaFiltre.clicked.connect(self.filterElements)
+
+        self.iconaRecarregaD = qgGui.QgsLayerTreeViewIndicator()
+        self.iconaRecarregaD.setIcon(qtGui.QIcon(os.path.join(imatgesDir, 'update_time.png')))
+        self.iconaRecarregaD.setToolTip('Recàrrega automàtica de dades')
+
+        self.iconaRecarregaG = qgGui.QgsLayerTreeViewIndicator()
+        self.iconaRecarregaG.setIcon(qtGui.QIcon(os.path.join(imatgesDir, 'update_time.png')))
+        self.iconaRecarregaG.setToolTip('Recàrrega gràfica automàtica')
+
+        self.iconaRecarregaDG = qgGui.QgsLayerTreeViewIndicator()
+        self.iconaRecarregaDG.setIcon(qtGui.QIcon(os.path.join(imatgesDir, 'update_time.png')))
+        self.iconaRecarregaDG.setToolTip('Recàrrega automàtica de dades i gràfica')
 
         self.iconaMap = qgGui.QgsLayerTreeViewIndicator()
         self.iconaMap.setIcon(qtGui.QIcon(os.path.join(imatgesDir, 'categories2.png')))
@@ -217,12 +224,7 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
 
     # Función estandar para leer proyecto dentro de qVista
     def readProject(self, fileName):
-        if self.timerData.isActive():
-            self.timerData.stop()
-            self.timerDataSecs = 0
-        if self.timerGraph.isActive():
-            self.timerGraph.stop()
-            self.timerGraphSecs = 0
+        self.recarrega.resetTimers()
         if self.anotacions is not None:
             self.anotacions.removeAnnotations()
         self.project.read(fileName)
@@ -391,6 +393,9 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
             node = self.root.findLayer(capa.id())
             if node is not None:
                 self.removeIndicator(node, self.iconaFiltre)
+                self.removeIndicator(node, self.iconaRecarregaD)
+                self.removeIndicator(node, self.iconaRecarregaG)
+                self.removeIndicator(node, self.iconaRecarregaDG)
                 self.removeIndicator(node, self.iconaMap)
                 self.removeIndicator(node, self.iconaRequired)
                 self.removeIndicator(node, self.iconaEditForm)
@@ -404,6 +409,17 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
                 # Filtro
                 if capa.subsetString() != '':
                     self.addIndicator(node, self.iconaFiltre)
+                # Recarga automática
+                rd = self.recarrega.isUpdateDataLayer(capa)
+                rg = self.recarrega.isUpdateGraphLayer(capa)
+                if rd:
+                    if rg:
+                        self.addIndicator(node, self.iconaRecarregaDG)
+                    else:
+                        self.addIndicator(node, self.iconaRecarregaD)
+                else:
+                    if rg:
+                        self.addIndicator(node, self.iconaRecarregaG)
                 # Mapificación
                 var = QvDiagrama.capaAmbMapificacio(capa)
                 if var is not None and self.capaLocal(capa) and self.editable:
@@ -497,7 +513,7 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
 
         self.tema.temaInicial()
 
-        self.timerDataSecs, self.timerGraphSecs = self.autoRecarrega()
+        self.recarrega.autoRecarrega()
 
     def connectaCanviCapaActiva(self, canviCapaActiva):
         if canviCapaActiva is not None:
@@ -862,15 +878,15 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
                self.anotacions.menuVisible(self.accions.accio('viewAnnotations')):
                 self.menuAccions += ['separator', 'viewAnnotations']
             # Auto recarga
-            if self.timerDataSecs > 0 or self.timerGraphSecs > 0:
+            if self.recarrega.timerDataSecs > 0 or self.recarrega.timerGraphSecs > 0:
                 self.menuAccions += ['separator']
-            if self.timerDataSecs > 0:
-                self.accions.accio('autoUpdateData').setText(f"Recàrrega de dades ({self.timerDataSecs}s)")
-                self.accions.accio('autoUpdateData').setChecked(self.timerData.isActive())
+            if self.recarrega.timerDataSecs > 0:
+                self.accions.accio('autoUpdateData').setText(f"Recàrrega de dades ({self.recarrega.timerDataSecs}s)")
+                self.accions.accio('autoUpdateData').setChecked(self.recarrega.timerData.isActive())
                 self.menuAccions += ['autoUpdateData']
-            if self.timerGraphSecs > 0:
-                self.accions.accio('autoUpdateGraph').setText(f"Refresc gràfic ({self.timerGraphSecs}s)")
-                self.accions.accio('autoUpdateGraph').setChecked(self.timerGraph.isActive())
+            if self.recarrega.timerGraphSecs > 0:
+                self.accions.accio('autoUpdateGraph').setText(f"Refresc gràfic ({self.recarrega.timerGraphSecs}s)")
+                self.accions.accio('autoUpdateGraph').setChecked(self.recarrega.timerGraph.isActive())
                 self.menuAccions += ['autoUpdateGraph']
 
         else:  # 'symb'
@@ -945,20 +961,10 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
         self.sender().setChecked(self.anotacions.toggleAnnotations())
 
     def autoUpdateData(self):
-        if self.timerData.isActive():
-            self.timerData.stop()
-            self.sender().setChecked(False)
-        else:
-            self.timerData.start(self.timerDataSecs * 1000)
-            self.sender().setChecked(True)
+        self.recarrega.toggleUpdateData(self.sender())
 
     def autoUpdateGraph(self):
-        if self.timerGraph.isActive():
-            self.timerGraph.stop()
-            self.sender().setChecked(False)
-        else:
-            self.timerGraph.start(self.timerGraphSecs * 1000)
-            self.sender().setChecked(True)
+        self.recarrega.toggleUpdateGraph(self.sender())
 
     def saveStyleToGeoPackage(self, capa, nom="", desc="", default=True):
         s = qgCor.QgsSettings()
@@ -994,68 +1000,10 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
         # sea con filtro o no. Si se modifica el filtro después, los contadores de las
         # categorías no se actualizan, hay que forzarlo con updateLayerSymb()
 
-    def autoRecarrega(self):
-        segData = segGraph = 0
-        try:
-            var = qgCor.QgsExpressionContextUtils.projectScope(self.project).variable('qV_autoRecarrega')
-            var = QvDigitizeContext.varClear(var)
-            if var is not None and var != '':
-                prms = QvDigitizeContext.varList(var, str)
-                if prms is not None: 
-                    try:
-                        segData = int(prms[0])
-                    except:
-                        segData = 0
-                    if segData > 0:
-                        self.timerData.start(segData * 1000)
-                        print('autoProjectUpdateData: ', str(segData), 's')
-                    try:
-                        segGraph = int(prms[1])
-                    except:
-                        segGraph = 0
-                    if segGraph > 0:
-                        self.timerGraph.start(segGraph * 1000)
-                        print('autoProjectUpdateGraph: ', str(segGraph), 's')
-        except Exception as e:
-            print(str(e))
-        finally:
-           return segData, segGraph
 
-    def updateProjectGraph(self):
-        for layer in self.capes():
-            prm = qgCor.QgsExpressionContextUtils.layerScope(layer).variable('qV_autoRecarrega')
-            if prm is not None:
-                if layer is not None and layer.isValid() and layer.isSpatial() and layer.type() == qgCor.QgsMapLayer.VectorLayer:
-                    layer.triggerRepaint(False)
-                    if QvFuncions.debugging(): print('updateLayerGraph', layer.name())
 
-    def updateProjectData(self):
-        for layer in self.capes():
-            prm = qgCor.QgsExpressionContextUtils.layerScope(layer).variable('qV_autoRecarrega')
-            if prm is not None:
-                self.updateLayerData(layer, False)
 
-    def updateLayerData(self, layer, msgError=True):
-        try:
-            if layer is not None and layer.isValid() and layer.type() == qgCor.QgsMapLayer.VectorLayer:
-                if QvApp().testVersioQgis(3, 22):
-                    layer.dataProvider().reloadData()
-                else:   
-                    layer.dataProvider().forceReload()
-                # Hay que forzar la actualización de los contadores de las categorías, si existen
-                self.updateLayerSymb(layer)
-                if QvFuncions.debugging(): print('updateLayerData', layer.name())
-        except Exception as e:
-            if msgError:
-                qtWdg.QMessageBox.warning(self, "Error al actualitzar dades de capa", layer.name(), str(e))
-            else:
-                print(str(e))
 
-    def updateLayerSymb(self, layer):
-        if layer is not None and layer.isValid() and layer.type() == qgCor.QgsMapLayer.VectorLayer:
-            r = layer.renderer()
-            if type(r) in (qgCor.QgsCategorizedSymbolRenderer, qgCor.QgsRuleBasedRenderer, qgCor.QgsGraduatedSymbolRenderer):
-                layer.setRenderer(r.clone())
 
     def showBarChart(self):
         self.diagrama = QvDiagrama.barres(self.currentLayer())
