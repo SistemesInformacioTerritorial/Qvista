@@ -23,6 +23,7 @@ from moduls.QvApp import QvApp
 from moduls.QvAtributsForms import QvFormAtributs
 from moduls.QvConstants import QvConstants
 from moduls.QVDistrictesBarris import QVDistrictesBarris
+from moduls.QvLlegendaMascara import QvLlegendaMascara
 from moduls.QvMemoria import QvMemoria
 from moduls.QvPushButton import QvPushButton
 
@@ -481,6 +482,8 @@ class QvSeleccioGrafica(QWidget):
             self.tool.eliminaRubberbands()
     
     def esborrarMascara(self, tambePanCanvas=True):
+        self.llegenda.mask.maskSwitch(False)
+        self.llegenda.mask = None
         self.eliminaMascara()
         self.geomMascara = None
         if tambePanCanvas:
@@ -648,6 +651,9 @@ class QvSeleccioGrafica(QWidget):
 
         pr.addFeatures([feat])
         mascara.commitChanges()
+
+        self.llegenda.mask = QvLlegendaMascara(self.llegenda, mascara, 1)
+        self.llegenda.mask.maskSwitch(True)
     
     # Elimina la màscara, però desa la geometria definida anteriorment
     # Si es vol eliminar també la geometria, cridar a esborrarMascara

@@ -1435,6 +1435,7 @@ class QVista(QMainWindow, Ui_MainWindow):
                 pass
             elif ret == QMessageBox.DestructiveRole:
                 return
+        self.llegenda.mask = None
         if hasattr(self,'mapaCataleg'):
             self.obrirProjecteCataleg(self.pathProjecteActual,self.favorit,self.widgetAssociat)
         else:

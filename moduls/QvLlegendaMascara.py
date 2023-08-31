@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 
 import qgis.core as qgCor
+from qgis.core import QgsRuleBasedLabeling, QgsVectorLayer, QgsProperty, QgsPalLayerSettings, QgsPropertyCollection
 
 _TEMPLATES = dict = {
-    "centroid": "within(centroid($geometry), geometry(get_feature_by_id('{}', {})))",
-    "intersects": "intersects($geometry, geometry(get_feature_by_id('{}', {})))"
+    "centroid": "NOT within(centroid($geometry), geometry(get_feature_by_id('{}', {})))",
+    "intersects": "NOT intersects($geometry, geometry(get_feature_by_id('{}', {})))"
 }
 
 _DEF_TEMPLATE = "centroid"
@@ -23,6 +24,7 @@ class QvLlegendaMascara:
         self.labels = None
         self.sets = None
         self.props = None
+        self.memoryRules = {}
         self.maskInit()
 
     def setTemplate(self, template):
@@ -59,21 +61,68 @@ class QvLlegendaMascara:
                prop.expressionString() == self.calcExpression()):
                 return True
         return False
+    
+    @staticmethod
+    def addExpressionProperty(property, expression):
+        if property.expressionString() == '':
+            return expression
+        return f'({property.expressionString()}) AND {expression}'
 
     def switch(self, layer, active=None):
         if not self.getLabelsProps(layer):
             return
         if active is None:
             active = not self.isActive(layer)
-        if active:
-            prop = qgCor.QgsProperty()
-            prop.setExpressionString(self.calcExpression())
-            self.props.setProperty(self.key, prop)
+
+        labeling = layer.labeling()
+
+        if isinstance(labeling, QgsRuleBasedLabeling):
+            if layer not in self.memoryRules:
+                self.memoryRules[layer] = {}
+            root_rule = labeling.rootRule().clone()
+            for (i, rule) in enumerate(root_rule.children()):
+                settings = rule.settings()
+                properties = settings.dataDefinedProperties()
+                name = properties.name
+
+                if active:
+                    if properties.hasProperty(self.key) and i not in self.memoryRules[layer]:
+                        self.memoryRules[layer][i] = properties.property(self.key)
+                    exp = self.addExpressionProperty(properties.property(self.key), self.calcExpression())
+                    prop = QgsProperty()
+                    prop.setExpressionString(exp)
+                    properties.setProperty(self.key, prop)
+                else:
+                    if i in self.memoryRules[layer]:
+                        properties.setProperty(self.key, self.memoryRules[layer][i])
+                    else:
+                        properties.setProperty(self.key, None)
+
+                settings.setDataDefinedProperties(properties)
+                rule.setSettings(settings)
+
+            new_labeling = QgsRuleBasedLabeling(root_rule)
+            layer.setLabeling(new_labeling)
         else:
-            self.props.setProperty(self.key, None)
-        self.sets.setDataDefinedProperties(self.props)
-        self.labels.setSettings(self.sets)
-        layer.setLabeling(self.labels)
+            if active:
+                # si ja teníem un valor, el desem abans de modificar-lo, per poder-lo recuperar
+                if self.props.hasProperty(self.key) and layer not in self.memoryRules:
+                    self.memoryRules[layer] = self.props.property(self.key)
+                exp = self.addExpressionProperty(self.props.property(self.key), self.calcExpression())
+                prop = QgsProperty()
+                prop.setExpressionString(self.calcExpression())
+                self.props.setProperty(self.key, prop)
+            else:
+                if layer in self.memoryRules:
+                    self.props.setProperty(self.key, self.memoryRules[layer])
+                else:
+                    self.props.setProperty(self.key, None)
+
+            self.sets.setDataDefinedProperties(self.props)
+            self.labels.setSettings(self.sets)
+            layer.setLabeling(self.labels)
+
+        layer.triggerRepaint()
 
     # Funciones generales
 
