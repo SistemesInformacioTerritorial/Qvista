@@ -482,12 +482,16 @@ class QvSeleccioGrafica(QWidget):
             self.tool.eliminaRubberbands()
     
     def esborrarMascara(self, tambePanCanvas=True):
-        self.llegenda.mask.maskSwitch(False)
-        self.llegenda.mask = None
+        if self.llegenda.mask is not None:
+            self.llegenda.mask.maskSwitch(False)
+            self.llegenda.mask = None
         self.eliminaMascara()
         self.geomMascara = None
         if tambePanCanvas:
             self.foraEines()
+        if self.tool is not None:
+            for x in [*self.tool.rubberbands, *self.tool.markers]:
+                self.canvas.scene().removeItem(x)
         self.canvas.refreshAllLayers()
 
     def foraEines(self):
