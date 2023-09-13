@@ -11,7 +11,7 @@ from moduls.QvAtributs import QvAtributs
 from moduls.QvVideo import QvVideo
 from moduls.QvEscala import QvEscala
 from moduls.QvMapForms import QvFormSimbMapificacio
-from moduls.QvLlegendaAux import QvModelLlegenda, QvItemLlegenda, QvMenuLlegenda
+from moduls.QvLlegendaAux import QvModelLlegenda, QvItemLlegenda, QvMenuLlegenda, QvRecarregaLlegenda
 from moduls.QvLlegendaMascara import QvLlegendaMascara
 from moduls.QvDiagrama import QvDiagrama
 from moduls.QvTema import QvTema
@@ -62,8 +62,8 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
         self.lastExtent = None
         self.escales = None
         self.directory = '.'
-        self.mask = None
         self.renaming = None
+        self.mask = None
         self.removing = False
         self.tema = QvTema(self)
         self.anotacions = None
@@ -71,6 +71,7 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
         # self.restoreExtent = 0
         # print('restoreExtent', self.restoreExtent)
 
+        self.recarrega = QvRecarregaLlegenda(self)
         
         # L'opertura de projectes Oracle va lenta si és la primera
         # Obrim un arxiu "inútil", i així s'obren més ràpid
@@ -123,6 +124,18 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
         self.iconaFiltre.setIcon(qtGui.QIcon(os.path.join(imatgesDir, 'filter.png')))
         self.iconaFiltre.setToolTip('Filtre actiu')
         self.iconaFiltre.clicked.connect(self.filterElements)
+
+        self.iconaRecarregaD = qgGui.QgsLayerTreeViewIndicator()
+        self.iconaRecarregaD.setIcon(qtGui.QIcon(os.path.join(imatgesDir, 'update_time.png')))
+        self.iconaRecarregaD.setToolTip('Recàrrega automàtica de dades')
+
+        self.iconaRecarregaG = qgGui.QgsLayerTreeViewIndicator()
+        self.iconaRecarregaG.setIcon(qtGui.QIcon(os.path.join(imatgesDir, 'update_time.png')))
+        self.iconaRecarregaG.setToolTip('Recàrrega gràfica automàtica')
+
+        self.iconaRecarregaDG = qgGui.QgsLayerTreeViewIndicator()
+        self.iconaRecarregaDG.setIcon(qtGui.QIcon(os.path.join(imatgesDir, 'update_time.png')))
+        self.iconaRecarregaDG.setToolTip('Recàrrega automàtica de dades i gràfica')
 
         self.iconaMap = qgGui.QgsLayerTreeViewIndicator()
         self.iconaMap.setIcon(qtGui.QIcon(os.path.join(imatgesDir, 'categories2.png')))
@@ -207,16 +220,58 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
         except:
             msg = ''
         return msg
-        
+    
+
+    # Función estandar para leer proyecto dentro de qVista
     def readProject(self, fileName):
+        self.recarrega.resetTimers()
         if self.anotacions is not None:
             self.anotacions.removeAnnotations()
         self.project.read(fileName)
+        self.projectMacros('qVopenProject')
         msg = self.msgErrorlayers()
         if msg:
             qtWdg.QMessageBox.warning(self, "Capes amb errors", msg)
             return False
         return True
+
+    # Macros de proyecto: openProject()
+    # - Para que actúe solo desde QGIS, codificar solo openProject():
+    #   def openProject():
+    #       [código que puede usar iface]
+    # - Para que actúe solo desde qVista, codificar solo qVopenProject():
+    #   def openProject():
+    #       pass
+    #   ...
+    #   def qVopenProject():
+    #       [código sin iface]
+    # - Para que actúe igual tanto en QGIS como en qVista, codificar función qVopenProject() y llamarla desde openProject()
+    #   def openProject():
+    #       qVopenProject()
+    #   ...
+    #   def qVopenProject():
+    #       [código sin iface]
+    # - Por último, también podrían actuar las dos con comportamientos diferentes
+    def projectMacros(self, funcion):
+        rc = False
+        try:
+            macros, ok = self.project.readEntry("Macros", "/pythonCode")
+            if ok and funcion in macros:
+                ret = qtWdg.QMessageBox.question(self, 'Atenció: macro de Python',
+                                                 "Aquest mapa conté una macro amb un programa Python.\n\n" \
+                                                 "Si esteu segur de que s'executi, premeu 'Sí'.\n" \
+                                                 "Si en teniu dubtes, premeu 'No' i consulteu l'equip de suport de qVista.",
+                                                 defaultButton=qtWdg.QMessageBox.No)
+                if ret == qtWdg.QMessageBox.Yes:
+                    exec(macros)
+                    f = locals().get(funcion, '')
+                    if str(type(f)) == "<class 'function'>":
+                        exec(funcion + '()')
+                        rc = True
+        except Exception as e:
+            print(str(e))
+        finally:
+            return rc
 
     def setTitol(self, titol=TITOL_INICIAL):
         self.setWindowTitle(titol)
@@ -338,6 +393,9 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
             node = self.root.findLayer(capa.id())
             if node is not None:
                 self.removeIndicator(node, self.iconaFiltre)
+                self.removeIndicator(node, self.iconaRecarregaD)
+                self.removeIndicator(node, self.iconaRecarregaG)
+                self.removeIndicator(node, self.iconaRecarregaDG)
                 self.removeIndicator(node, self.iconaMap)
                 self.removeIndicator(node, self.iconaRequired)
                 self.removeIndicator(node, self.iconaEditForm)
@@ -351,6 +409,17 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
                 # Filtro
                 if capa.subsetString() != '':
                     self.addIndicator(node, self.iconaFiltre)
+                # Recarga automática
+                rd = self.recarrega.isUpdateDataLayer(capa)
+                rg = self.recarrega.isUpdateGraphLayer(capa)
+                if rd:
+                    if rg:
+                        self.addIndicator(node, self.iconaRecarregaDG)
+                    else:
+                        self.addIndicator(node, self.iconaRecarregaD)
+                else:
+                    if rg:
+                        self.addIndicator(node, self.iconaRecarregaG)
                 # Mapificación
                 var = QvDiagrama.capaAmbMapificacio(capa)
                 if var is not None and self.capaLocal(capa) and self.editable:
@@ -444,6 +513,8 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
 
         self.tema.temaInicial()
 
+        self.recarrega.autoRecarrega()
+
     def connectaCanviCapaActiva(self, canviCapaActiva):
         if canviCapaActiva is not None:
             self.currentLayerChanged.connect(canviCapaActiva)
@@ -487,6 +558,56 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
         canvas.setMapUpdateInterval(250)
         canvas.setSegmentationTolerance(0.01745)
         canvas.setSegmentationToleranceType(qgCor.QgsAbstractGeometry.MaximumAngle)
+
+    def isFeatureVisible(self, renderer, ctx, feature):
+        ctx.expressionContext().setFeature(feature)
+        return renderer.willRenderFeature(feature, ctx)
+        # return renderer.capabilities().testFlag(qgCor.QgsFeatureRenderer.Filter) or renderer.willRenderFeature(feature, ctx)
+
+    def getLayerVisibleFeatures(self, layer, selected=True, request=qgCor.QgsFeatureRequest(), max=0):
+    # Iterador de elementos de capa visibles
+        num = 0
+        if layer.type() != qgCor.QgsMapLayerType.VectorLayer: return None
+        # if self.canvas is not None and layer.hasScaleBasedVisibility() and not layer.isInScaleRange(self.canvas.scale()): return None
+        renderer = layer.renderer()
+        if renderer is None:
+            return None
+        else:
+            renderer = renderer.clone()
+        ctx = qgCor.QgsRenderContext()
+        renderer.startRender(ctx, qgCor.QgsFields())
+        if selected:
+            iterator = layer.getSelectedFeatures
+        else:
+            iterator = layer.getFeatures
+        for feature in iterator(request):
+            if self.isFeatureVisible(renderer, ctx, feature):
+                yield feature
+                num += 1
+                if max > 0 and num >= max: break
+        renderer.stopRender(ctx)
+
+    def numLayerVisibleFeatures(self, layer, selected=True, request=qgCor.QgsFeatureRequest()):
+    # Contador de elementos de capa visibles
+        num = 0
+        if layer.type() != qgCor.QgsMapLayerType.VectorLayer: return num
+        # if self.canvas is not None and layer.hasScaleBasedVisibility() and not layer.isInScaleRange(self.canvas.scale()): return num
+        renderer = layer.renderer()
+        if renderer is None:
+            return num
+        else:
+            renderer = renderer.clone()
+        ctx = qgCor.QgsRenderContext()
+        renderer.startRender(ctx, qgCor.QgsFields())
+        if selected:
+            iterator = layer.getSelectedFeatures
+        else:
+            iterator = layer.getFeatures
+        for feature in iterator(request):
+            if self.isFeatureVisible(renderer, ctx, feature):
+                num += 1
+        renderer.stopRender(ctx)
+        return num
 
     def capaPerNom(self, nomCapa):
         """
@@ -551,6 +672,8 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
         if node is not None:
             return node.itemVisibilityChecked()
         return False
+    
+
 
     def setAccions(self):
         act = qtWdg.QAction()
@@ -590,6 +713,18 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
         self.accions.afegirAccio('viewAnnotations', act)
 
         act = qtWdg.QAction()
+        act.setText("Recàrrega de dades")
+        act.setCheckable(True)
+        act.triggered.connect(self.autoUpdateData)
+        self.accions.afegirAccio('autoUpdateData', act)
+
+        act = qtWdg.QAction()
+        act.setText("Refresc gràfic")
+        act.setCheckable(True)
+        act.triggered.connect(self.autoUpdateGraph)
+        self.accions.afegirAccio('autoUpdateGraph', act)
+
+        act = qtWdg.QAction()
         act.setText("Canvia nom")
         act.triggered.connect(self.renameGroupOrLayer)  # , type = Qt.DirectConnection)
         self.accions.afegirAccio('renameGroupOrLayer', act)
@@ -615,8 +750,8 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
 
         act = qtWdg.QAction()
         act.setText("Mostra contador elements")
-        act.triggered.connect(self.defaultActions().showFeatureCount)
-        self.accions.afegirAccio('showFeatureCount', act)
+        act.triggered.connect(self.showLayerCounter)
+        self.accions.afegirAccio('showLayerCounter', act)
 
         act = qtWdg.QAction()
         act.setText("Mostra diagrama barres")
@@ -681,11 +816,27 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
         if dP is None: return False
         return self.testFlags(dP.capabilities(), qgCor.QgsVectorDataProvider.EditingCapabilities)
 
-    def isLayerEditForm(self, capa=None):
+    def isLayerEditForm(self, capa=None, depurar=False):
         if capa is None: capa = self.currentLayer()
         if capa is None: return False
-        if not self.isLayerEditable(capa): return False
-        return QvDigitizeContext.testUserEditable(capa, nom='qV_editForm') and not QvDigitizeContext.testUserEditable(capa)
+        if not depurar:
+            if not self.isLayerEditable(capa): return False
+            return QvDigitizeContext.testUserEditable(capa, nom='qV_editForm') and not QvDigitizeContext.testUserEditable(capa)
+        else:
+            ret = self.isLayerEditable(capa)
+            if not ret: 
+                print(f'Capa {capa.name()} no editable: por definición')
+                return False
+            ret = QvDigitizeContext.testUserEditable(capa, nom='qV_editForm')
+            if not ret:
+                print(f'Capa {capa.name()} no editable: usuario no está en qV_editForm')
+                return False
+            ret = QvDigitizeContext.testUserEditable(capa)
+            if ret:
+                print(f'Capa {capa.name()} no editable: usuario está en qV_editable')
+                return False
+            print(f'Capa {capa.name()} EDITABLE')
+            return True
 
     def setMenuAccions(self):
         # Menú dinámico según tipo de elemento sobre el que se clicó
@@ -704,7 +855,7 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
                     self.menuAccions += ['showFeatureTable']
                     if self.editable:
                         self.menuAccions += ['filterElements']
-                self.menuAccions += ['showFeatureCount']
+                self.menuAccions += ['showLayerCounter']
             if capa is not None and self.canvas is not None:
                 self.menuAccions += ['showLayerMap']
             self.menuAccions += ['separator']
@@ -726,6 +877,18 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
             if self.anotacions and \
                self.anotacions.menuVisible(self.accions.accio('viewAnnotations')):
                 self.menuAccions += ['separator', 'viewAnnotations']
+            # Auto recarga
+            if self.recarrega.timerDataSecs > 0 or self.recarrega.timerGraphSecs > 0:
+                self.menuAccions += ['separator']
+            if self.recarrega.timerDataSecs > 0:
+                self.accions.accio('autoUpdateData').setText(f"Recàrrega de dades ({self.recarrega.timerDataSecs}s)")
+                self.accions.accio('autoUpdateData').setChecked(self.recarrega.timerData.isActive())
+                self.menuAccions += ['autoUpdateData']
+            if self.recarrega.timerGraphSecs > 0:
+                self.accions.accio('autoUpdateGraph').setText(f"Refresc gràfic ({self.recarrega.timerGraphSecs}s)")
+                self.accions.accio('autoUpdateGraph').setChecked(self.recarrega.timerGraph.isActive())
+                self.menuAccions += ['autoUpdateGraph']
+
         else:  # 'symb'
             pass
         return tipo
@@ -797,6 +960,12 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
     def viewAnnotations(self):
         self.sender().setChecked(self.anotacions.toggleAnnotations())
 
+    def autoUpdateData(self):
+        self.recarrega.toggleUpdateData(self.sender())
+
+    def autoUpdateGraph(self):
+        self.recarrega.toggleUpdateGraph(self.sender())
+
     def saveStyleToGeoPackage(self, capa, nom="", desc="", default=True):
         s = qgCor.QgsSettings()
         s.setValue("qgis/overwriteStyle", True)
@@ -824,6 +993,17 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
                 extent = layer.extent()
                 self.canvas.setExtent(extent)
                 self.canvas.refresh()
+
+    def showLayerCounter(self):
+        self.defaultActions().showFeatureCount()
+        # La primera vez que se muestran los contadores de las categorías, lo hace bien,
+        # sea con filtro o no. Si se modifica el filtro después, los contadores de las
+        # categorías no se actualizan, hay que forzarlo con updateLayerSymb()
+
+
+
+
+
 
     def showBarChart(self):
         self.diagrama = QvDiagrama.barres(self.currentLayer())
@@ -872,6 +1052,10 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
                 return node
         return None
 
+    def expandAll(self, switch=True):
+        for item in self.items():
+            item.expandir(switch)
+
     def items(self):
         def recurse(item, level):
             yield QvItemLlegenda(item, level)
@@ -887,9 +1071,35 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
             item = self.model.index2node(index)
             yield from recurse(item, 0)
 
-    def expandAll(self, switch=True):
+    def printItems(self, soloCapa=None):
+        print('Items Llegenda:')
+        seguir = soloCapa is None
         for item in self.items():
-            item.expandir(switch)
+            capa = item.capa()
+            if capa is None:
+                nomCapa = '-'
+            else:
+                nomCapa = capa.name()
+            if item.tipus == 'layer':
+                seguir = soloCapa is not None and soloCapa.id() == capa.id()
+            elif item.tipus == 'group':
+                seguir = False
+            if not seguir: continue
+            expandit = item.esExpandit()
+            if expandit is None:
+                txtExpandit = ''
+            elif expandit:
+                txtExpandit = '(expandido)'
+            else:
+                txtExpandit = '(no expandido)'
+            print('  ' * item.nivell, '-',
+                    'Tipo:', item.tipus,
+                    txtExpandit,
+                    'Nivel:', item.nivell,
+                    'Capa:', nomCapa,
+                    'Nombre:', item.nom(),
+                    'Visible:', item.esVisible(),
+                    'Marcado:', item.esMarcat())
 
 
 if __name__ == "__main__":
@@ -975,30 +1185,7 @@ if __name__ == "__main__":
 
         def test():
             # QvApp().logRegistre('Menú Test')
-
-            print('Items Llegenda:')
-            for item in leyenda.items():
-                capa = item.capa()
-                if capa is None:
-                    nomCapa = '-'
-                else:
-                    nomCapa = capa.name()
-                expandit = item.esExpandit()
-                if expandit is None:
-                    txtExpandit = ''
-                elif expandit:
-                    txtExpandit = '(expandido)'
-                else:
-                    txtExpandit = '(no expandido)'
-                print('  ' * item.nivell, '-',
-                      'Tipo:', item.tipus,
-                       txtExpandit,
-                      'Nivel:', item.nivell,
-                      'Capa:', nomCapa,
-                      'Nombre:', item.nom(),
-                      'Visible:', item.esVisible(),
-                      'Marcado:', item.esMarcat())
-
+            leyenda.printItems()
             leyenda.expandAll()
 
         def salutacions():

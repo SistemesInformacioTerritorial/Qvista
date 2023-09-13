@@ -268,13 +268,21 @@ class QCercadorAdreca(QObject):
 
     def prepararCompleterNumero(self):
         self.dictNumerosFiltre = self.dictNumeros[self.codiCarrer]
+        # afegim el 0 com a "número postal"
+        # fa referència a ' ', però alguns usuaris esperen trobar-s'ho en un 0
+        if ' ' in self.dictNumerosFiltre:
+            self.dictNumerosFiltre['0'] = self.dictNumerosFiltre[' ']
         self.completerNumero = QCompleter(
             self.dictNumerosFiltre, self.leNumero)
         self.completerNumero.activated.connect(self.activatNumero)
         self.completerNumero.setFilterMode(QtCore.Qt.MatchStartsWith)
         self.completerNumero.setCaseSensitivity(QtCore.Qt.CaseInsensitive)
         self.leNumero.setCompleter(self.completerNumero)
-        # self.leNumero.setValidator(ValidadorNums(self.dictNumeros[self.codiCarrer],self))
+        # El ' ' fa referència al centre del carrer
+        # Si només tenim aquest, anem directament allà sense necessitar número
+        #  (mirem que len sigui ==2 perquè hem afegit el '0')
+        if len(self.dictNumerosFiltre)==2 and ' ' in self.dictNumerosFiltre:
+            self.activatNumero(' ')
 
     def iniAdreca(self):
         self.iniAdrecaCarrer()
