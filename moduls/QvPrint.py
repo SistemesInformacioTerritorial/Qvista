@@ -228,12 +228,12 @@ class QvPrint(QWidget):
         self.nota.setWordWrap(True)
 
 
-        self.layout.addLayout(self.layoutTitol)
         self.layout.addLayout(self.layoutCategoria)
         self.layout.addLayout(self.layoutPlantilla)
         self.layout.addLayout(self.layEscales)
         self.layout.addLayout(self.layoutCBmida)
         self.layout.addLayout(self.layoutCBOrientacio)
+        self.layout.addLayout(self.layoutTitol)
         self.layout.addWidget(self.boto2)
         self.layout.addWidget(self.boto)
         self.layout.addWidget(self.nota)
@@ -363,9 +363,34 @@ class QvPrint(QWidget):
             incX = escala * 1.5
             incY = escala
         self.rp.setIncXY(incX, incY)
+    
+    def plantillaTeVariable(self, var):
+        templateFile = self.getPlantillaActual()
+        if templateFile is None:
+            return False
+        template = QFile(templateFile)
+        doc = QDomDocument()
+        doc.setContent(template, False)
+        layout = QgsLayout(self.project)
+        context = QgsReadWriteContext()
+        [items, ok] = layout.loadFromTemplate(doc, context)
+        return layout.itemById(var) is not None
+
+    
+    def plantillaTeTitol(self):
+        return self.plantillaTeVariable('idNomMapa')
+    
+    def plantillaTeData(self):
+        return self.plantillaTeVariable('idData')
 
     def canviOrientacio(self):
         self.rp.canviOrientacio()
+        if self.plantillaTeTitol():
+            self.lblTitol.show()
+            self.leTitol.show()
+        else:
+            self.lblTitol.hide()
+            self.leTitol.hide()
 
     def mocMouse(self,p):
         if not self.isVisible():
@@ -385,18 +410,23 @@ class QvPrint(QWidget):
     
     @staticmethod
     def nomArxiu(plantilla, orientacio, mida):
+        if mida=='' or orientacio=='': return None
         orientacio = orientacio[0].upper()
         return plantilla.replace('.qpt','')+mida+orientacio+'.qpt'
+    
+    def getPlantillaActual(self):
+        orientacio = self.getOrientacio()
+        mida = self.getMida()
+        pathPlantilla = self.dirsPlantilles[self.getCategoria()][self.getPlantilla()]
+        nomArxiu = self.nomArxiu(Path(pathPlantilla).name, orientacio, mida)
+        if nomArxiu is not None: return str(Path(pathPlantilla, nomArxiu))
         
 
     def printPlanol(self):
         rotacio=self.canvas.rotation()
-        orientacio = self.getOrientacio()
         mida = self.getMida()
         escala = self.getEscala()
-        pathPlantilla = self.dirsPlantilles[self.getCategoria()][self.getPlantilla()]
-        nomArxiu = self.nomArxiu(Path(pathPlantilla).name, orientacio, mida)
-        self.plantillaMapa = str(Path(pathPlantilla, nomArxiu))
+        self.plantillaMapa = self.getPlantillaActual()
 
         t = time.localtime()
         timestamp = time.strftime('%d-%b-%Y_%H%M%S', t)
@@ -431,17 +461,16 @@ class QvPrint(QWidget):
         if ok:
             refMap = layout.referenceMap()
 
-            titol=layout.itemById('idNomMapa')
-            dataMapa=layout.itemById('idData')
-            if self.leTitol.text()!='':
-                titol.setText(self.leTitol.text()) #comentat pk peta
-            else:
-                titol.setText('')
-            try:
+            if self.plantillaTeTitol():
+                titol=layout.itemById('idNomMapa')
+                if self.leTitol.text()!='':
+                    titol.setText(self.leTitol.text()) #comentat pk peta
+                else:
+                    titol.setText('')
+            if self.plantillaTeData():
+                dataMapa=layout.itemById('idData')
                 t = time.localtime()
                 dataMapa.setText(strftime('%b-%d-%Y %H:%M', t))
-            except:
-                pass
 
         
             rect = refMap.extent()
