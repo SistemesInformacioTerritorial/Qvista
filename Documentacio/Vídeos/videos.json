@@ -1,0 +1,19 @@
+{
+    "Tutorials": {
+        "Com funciona la legenda del qVista?": {
+            "titol": "Com funciona la legenda del qVista?", 
+            "descripcio": "On s'explica com funciona la llegenda del qVista, i es desvetllen els secrets que amaga.", 
+            "url": "https://www.youtube.com/watch?v=BakUGKD7zQ8", 
+            "tags": "llegenda, qVista, filtre",
+            "thumbnail":"https://img.youtube.com/vi/BakUGKD7zQ8/0.jpg"
+        }
+    },
+    "Conferències": {
+        "Qvista sistema de informacion territorial del ayto de BCN en PyQGis/ Jordi Cebrian y Noemí Rodríguez": {
+            "titol": "Qvista sistema de informacion territorial del ayto de BCN en PyQGis/ Jordi Cebrian y Noemí Rodríguez", 
+            "descripcio": "", 
+            "url": "https://www.youtube.com/watch?v=TOKXCx8Ef50",
+            "tags": ""
+        }
+    }
+}
