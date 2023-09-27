@@ -1,6 +1,10 @@
+import glob
 import math
 import time
 from time import strftime
+from pathlib import Path
+import os
+import re
 
 from qgis.core import (QgsGeometry, QgsLayout, QgsLayoutExporter, QgsPointXY,
                        QgsProject, QgsReadWriteContext, QgsVector,
@@ -16,8 +20,10 @@ from qgis.PyQt.QtWidgets import (QComboBox, QHBoxLayout, QLabel, QLineEdit,
 from qgis.PyQt.QtXml import QDomDocument
 
 from configuracioQvista import pathPlantilles, tempdir
+import configuracioQvista
 from moduls.QvApp import QvApp
 from moduls.QvPushButton import QvPushButton
+from moduls import QvFuncions
 
 projecteInicial='../dades/projectes/BCN11_nord.qgs'
 
@@ -95,6 +101,7 @@ class QvPrint(QWidget):
     El widget conté un botó per imprimir, un per tornar a posicionar l'area d'impresió, i un comboBox per escollir l'escala.
     """
     
+    @QvFuncions.mostraSpinner
     def __init__(self, project, canvas, poligon, parent=None):
         """Inicialització de la clase:
             Arguments:
@@ -124,11 +131,26 @@ class QvPrint(QWidget):
         # self.dictEscales = {str(x):x//5 for x in (100, 200, 250, 500, 1000, 2000, 2500, 5000, 10000, 20000, 25000, 50000)}
         self.dictEscales = {str(int(x*y)):(x*y)//5 for y in (100, 1000, 10000) for x in (1, 2, 2.5, 5)}
 
+        # S'assignen a la funció llegeixDirsPlantilles()
+        # self.dirsPlantilles té la forma següent
+        # {
+        #     'NomCategoria' :{'NomPlantilla1':ruta1, 'NomPlantilla2':ruta2...},
+        #     'NomCategoria2':{'NomPlantilla3':ruta3, 'NomPlantilla4':ruta4...}
+        # }
+        self.dirsPlantilles = {}
+        # self.mides té la forma següent
+        # {
+        #     ruta1:{mida1:['H','V'], mida2:['H','V'], mida3:['H']...},
+        #     ruta2:{mida4:['V']...}
+        # }
+        self.mides = {}
+
         # We instanciate de PointTool tool, to wait for clicks
         # After that, we assign the tool to the canvas.
         self.rp = PointTool(self, self.canvas, self.layer)
         canvas.setMapTool(self.rp)
 
+        self.llegeixDirsPlantilles()
         self.setupUI()
         self.canvas.xyCoordinates.connect(self.mocMouse)
 
@@ -150,10 +172,22 @@ class QvPrint(QWidget):
         self.layoutTitol.addWidget(self.lblTitol)
         self.layoutTitol.addWidget(self.leTitol)
 
+        self.layoutCategoria = QHBoxLayout()
+        self.lblCategoria = QLabel('Categoria: ')
+        self.cbCategoria = QComboBox(self)
+        self.cbCategoria.addItems(self.dirsPlantilles.keys())
+        self.cbCategoria.currentTextChanged.connect(self.canviCategoria)
+        self.layoutCategoria.addWidget(self.lblCategoria)
+        self.layoutCategoria.addWidget(self.cbCategoria)
+
+        self.layoutPlantilla = QHBoxLayout()
+        self.lblPlantilla = QLabel('Plantilla: ')
+        self.cbPlantilla = QComboBox(self)
+        self.cbPlantilla.currentTextChanged.connect(self.canviPlantilla)
+        self.layoutPlantilla.addWidget(self.lblPlantilla)
+        self.layoutPlantilla.addWidget(self.cbPlantilla)
+
         self.cbOrientacio=QComboBox(self)
-        self.cbOrientacio.addItems(['Vertical', 'Horitzontal'])
-        self.cbOrientacio.SelectedItem = "Vertical"
-        self.cbOrientacio.setCurrentIndex(1)
         self.cbOrientacio.currentTextChanged.connect(self.canviOrientacio)
         self.lblCBOrientacio = QLabel("Orientació: ")
         self.layoutCBOrientacio = QHBoxLayout()
@@ -170,9 +204,8 @@ class QvPrint(QWidget):
         self.layEscales.addWidget(self.combo)
 
         self.cbMida=QComboBox(self)
-        self.cbMida.addItems(['A0','A1','A2','A3','A4'])
         self.cbMida.currentTextChanged.connect(self.canviEscala)
-        self.cbMida.setCurrentIndex(4)
+        self.cbMida.currentTextChanged.connect(self.actualitzaCBOrientacio)
         self.lblCBmida = QLabel("Paper: ")
         self.layoutCBmida = QHBoxLayout()
         self.layoutCBmida.addWidget(self.lblCBmida)
@@ -195,10 +228,12 @@ class QvPrint(QWidget):
         self.nota.setWordWrap(True)
 
 
-        self.layout.addLayout(self.layoutTitol)
+        self.layout.addLayout(self.layoutCategoria)
+        self.layout.addLayout(self.layoutPlantilla)
         self.layout.addLayout(self.layEscales)
         self.layout.addLayout(self.layoutCBmida)
         self.layout.addLayout(self.layoutCBOrientacio)
+        self.layout.addLayout(self.layoutTitol)
         self.layout.addWidget(self.boto2)
         self.layout.addWidget(self.boto)
         self.layout.addWidget(self.nota)
@@ -206,6 +241,50 @@ class QvPrint(QWidget):
         # self.layout.addWidget(self.rbVertical)
         # self.layout.addWidget(self.rbHoritzontal)
         self.layout.addStretch()
+        self.actualitzaCBPlantilles()
+    
+    @staticmethod
+    def nomPlantillaCorrecte(nomPlantilla, nomBase):
+        aux = nomPlantilla.replace(nomBase,'').replace('.qpt','')
+        pattern = re.compile(r'A[0-9][VH]')
+        return pattern.fullmatch(aux)
+
+    def llegeixDirsPlantilles(self):
+        self.dirsPlantilles = {
+            'Plantilla per defecte':{'plantillaMapa':str(Path(pathPlantilles,'plantillaMapa'))}
+        }
+
+        dirCataleg = configuracioQvista.carpetaCatalegProjectesPrivats
+        try:
+            base, dirs, _ = next(os.walk(dirCataleg))
+        except BaseException as e:
+            # Si l'usuari no veu cap directori privat, no fem res
+            dirs = []
+        for d in dirs:
+            p = Path(base, d, 'plantilles')
+            if p.exists():
+                self.dirsPlantilles[d] = {}
+                basePlantilla, plantilles, _ = next(os.walk(p))
+                for plantilla in plantilles:
+                    self.dirsPlantilles[d][plantilla] = str(Path(basePlantilla, plantilla))
+        # Tindrem un diccionari on la clau serà la ruta de la plantilla, 
+        #  i el valor un diccionari on la clau seran les mides (A0, A1...) 
+        #  i els valors una llista que podrà contenir "H" i/o "V"
+        self.mides = {}
+        for grup in self.dirsPlantilles.values():
+            for (nom, ruta) in grup.items():
+                self.mides[ruta] = {}
+                arxius_qpt = glob.glob(os.path.join(ruta, '*.qpt'))
+                for arxiu in arxius_qpt:
+                    nomArxiu = Path(arxiu).name
+                    if self.nomPlantillaCorrecte(nomArxiu, nom):
+                        aux = nomArxiu.replace(nom, '')
+                        mida = aux[:2]
+                        orientacio = aux[2]
+                        if mida not in self.mides[ruta]:
+                            self.mides[ruta][mida] = []
+                        self.mides[ruta][mida].append(orientacio)
+
 
     def potsMoure(self):
         # self.canvas.scene().removeItem(self.rubberband)
@@ -213,11 +292,61 @@ class QvPrint(QWidget):
         if self.canvas.mapTool()!=self.rp:
             self.canvas.setMapTool(self.rp)
         self.rp.potsMoure()
+        
+    def getCategoria(self):
+        return self.cbCategoria.currentText()
+
+    def getPlantilla(self):
+        return self.cbPlantilla.currentText()
+    
+    def getMida(self):
+        return self.cbMida.currentText()
+    
+    def getOrientacio(self):
+        return self.cbOrientacio.currentText()
+    
+    def getEscala(self):
+        return self.combo.currentText()
+
+    def actualitzaCBPlantilles(self):
+        self.cbPlantilla.clear()
+        plantilles = self.dirsPlantilles[self.getCategoria()]
+        self.cbPlantilla.addItems(plantilles)
+
+    def actualitzaCBOrientacio(self):
+        categoria = self.getCategoria()
+        plantilla = self.getPlantilla()
+        mida = self.getMida()
+        if mida!='':
+            self.cbOrientacio.clear()
+            plantilla = self.dirsPlantilles[categoria][plantilla]
+            orientacions = self.mides[plantilla][mida]
+            orientacionsAux = ['Horitzontal' if x=='H' else 'Vertical' for x in orientacions]
+            self.cbOrientacio.addItems(orientacionsAux)
+            self.canviEscala()
+
+    def actualitzaCBMida(self):
+        categoria = self.getCategoria()
+        plantilla = self.getPlantilla()
+        if plantilla!='':
+            self.cbMida.clear()
+            plantilla = self.dirsPlantilles[categoria][plantilla]
+            mides = list(self.mides[plantilla].keys())
+            self.cbMida.addItems(mides)
+
+            # Posem per defecte la mida més petita
+            self.cbMida.setCurrentText(mides[-1])
+    
+    def canviCategoria(self):
+        self.actualitzaCBPlantilles()
+    
+    def canviPlantilla(self):
+        self.actualitzaCBMida()
 
     def canviEscala(self):
         # self.pucMoure = True
-        escala = int(self.dictEscales[self.combo.currentText()])
-        mida=self.cbMida.currentText()
+        escala = int(self.dictEscales[self.getEscala()])
+        mida = self.getMida()
         if mida=='A3':
             escala*=math.sqrt(2)
         elif mida=='A2':
@@ -227,21 +356,41 @@ class QvPrint(QWidget):
         elif mida=='A0':
             escala*=math.sqrt(2)*4
 
-        if self.cbOrientacio.SelectedItem == "Horitzontal":
+        if self.getOrientacio() != "Horitzontal":
             incX = escala
             incY = escala * 1.5
         else:
             incX = escala * 1.5
             incY = escala
         self.rp.setIncXY(incX, incY)
+    
+    def plantillaTeVariable(self, var):
+        templateFile = self.getPlantillaActual()
+        if templateFile is None:
+            return False
+        template = QFile(templateFile)
+        doc = QDomDocument()
+        doc.setContent(template, False)
+        layout = QgsLayout(self.project)
+        context = QgsReadWriteContext()
+        [items, ok] = layout.loadFromTemplate(doc, context)
+        return layout.itemById(var) is not None
+
+    
+    def plantillaTeTitol(self):
+        return self.plantillaTeVariable('idNomMapa')
+    
+    def plantillaTeData(self):
+        return self.plantillaTeVariable('idData')
 
     def canviOrientacio(self):
-        # self.pucMoure = True
-        if self.cbOrientacio.SelectedItem == "Vertical":
-            self.cbOrientacio.SelectedItem = "Horitzontal"
-        else:
-            self.cbOrientacio.SelectedItem = "Vertical"
         self.rp.canviOrientacio()
+        if self.plantillaTeTitol():
+            self.lblTitol.show()
+            self.leTitol.show()
+        else:
+            self.lblTitol.hide()
+            self.leTitol.hide()
 
     def mocMouse(self,p):
         if not self.isVisible():
@@ -258,49 +407,34 @@ class QvPrint(QWidget):
         points=[QgsPointXY(0,0),QgsPointXY(0,10),QgsPointXY(10,10),QgsPointXY(0,10),QgsPointXY(0,0)]
         poligono=QgsGeometry.fromRect(self.poligon)
         self.rubberband.setToGeometry(poligono,self.layer)
-        
+    
+    @staticmethod
+    def nomArxiu(plantilla, orientacio, mida):
+        if mida=='' or orientacio=='': return None
+        orientacio = orientacio[0].upper()
+        return plantilla.replace('.qpt','')+mida+orientacio+'.qpt'
+    
+    def getPlantillaActual(self):
+        orientacio = self.getOrientacio()
+        mida = self.getMida()
+        pathPlantilla = self.dirsPlantilles[self.getCategoria()][self.getPlantilla()]
+        nomArxiu = self.nomArxiu(Path(pathPlantilla).name, orientacio, mida)
+        if nomArxiu is not None: return str(Path(pathPlantilla, nomArxiu))
         
 
     def printPlanol(self):
-        #
-        # if self.checkRotacio.checkState():
-        #     rotacio=44.75
-        # else:
-        #     rotacio=0
-        
-
         rotacio=self.canvas.rotation()
-        if self.cbOrientacio.currentText() == "Vertical":
-            if self.cbMida.currentText() == "A4":
-                self.plantillaMapa = pathPlantilles+'plantillaMapa.qpt'
-            elif self.cbMida.currentText() == "A3":
-                self.plantillaMapa = pathPlantilles+'plantillaMapaA3.qpt'
-            elif self.cbMida.currentText() == "A2":
-                self.plantillaMapa = pathPlantilles+'plantillaMapaA2.qpt'
-            elif self.cbMida.currentText() == "A1":
-                self.plantillaMapa = pathPlantilles+'plantillaMapaA1.qpt'
-            elif self.cbMida.currentText() == "A0":
-                self.plantillaMapa = pathPlantilles+'plantillaMapaA0.qpt'
-            
-        else:
-            if self.cbMida.currentText() == "A4":
-                self.plantillaMapa = pathPlantilles+'plantillaMapaH.qpt'
-            elif self.cbMida.currentText() == "A3":
-                self.plantillaMapa = pathPlantilles+'plantillaMapaA3H.qpt'
-            elif self.cbMida.currentText() == "A2":
-                self.plantillaMapa = pathPlantilles+'plantillaMapaA2H.qpt'
-            elif self.cbMida.currentText() == "A1":
-                self.plantillaMapa = pathPlantilles+'plantillaMapaA1H.qpt'
-            elif self.cbMida.currentText() == "A0":
-                self.plantillaMapa = pathPlantilles+'plantillaMapaA0H.qpt'  
+        mida = self.getMida()
+        escala = self.getEscala()
+        self.plantillaMapa = self.getPlantillaActual()
 
         t = time.localtime()
         timestamp = time.strftime('%d-%b-%Y_%H%M%S', t)
         sortida=tempdir+'sortida_'+timestamp
         
-        self.imprimirPlanol(self.rp.posXY[0], self.rp.posXY[1], int(self.combo.currentText()), rotacio, self.cbMida.currentText(), self.plantillaMapa , sortida, 'PDF')
+        self.imprimirPlanol(self.rp.posXY[0], self.rp.posXY[1], int(escala), rotacio, mida, self.plantillaMapa, sortida, 'PDF')
        
-        QvApp().logRegistre('Impressió: '+self.combo.currentText() )
+        QvApp().logRegistre('Impressió: '+self.getEscala())
     
     def imprimirPlanol(self,x, y, escala, rotacion, midaPagina, templateFile, fitxerSortida, tipusSortida):
         tInicial=time.time()
@@ -327,17 +461,16 @@ class QvPrint(QWidget):
         if ok:
             refMap = layout.referenceMap()
 
-            titol=layout.itemById('idNomMapa')
-            dataMapa=layout.itemById('idData')
-            if self.leTitol.text()!='':
-                titol.setText(self.leTitol.text()) #comentat pk peta
-            else:
-                titol.setText('')
-            try:
+            if self.plantillaTeTitol():
+                titol=layout.itemById('idNomMapa')
+                if self.leTitol.text()!='':
+                    titol.setText(self.leTitol.text()) #comentat pk peta
+                else:
+                    titol.setText('')
+            if self.plantillaTeData():
+                dataMapa=layout.itemById('idData')
                 t = time.localtime()
                 dataMapa.setText(strftime('%b-%d-%Y %H:%M', t))
-            except:
-                pass
 
         
             rect = refMap.extent()

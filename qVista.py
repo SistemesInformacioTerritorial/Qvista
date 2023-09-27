@@ -368,6 +368,8 @@ class QVista(QMainWindow, Ui_MainWindow):
         """
         self.botoFavorits.hide()
         if hasattr(self,'mapaCataleg'): delattr(self,'mapaCataleg')
+        if hasattr(self.llegenda, 'mask'): self.llegenda.mask = None
+        self.wSeleccioGrafica.esborrarMascara()
         if projecte.strip()=='': return
         # Obrir el projecte i col.locarse en rang
         # Se utiliza la función readProject() de la leyenda
