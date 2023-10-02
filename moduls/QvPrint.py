@@ -350,17 +350,17 @@ class QvPrint(QWidget):
         if mida=='A3':
             escala*=math.sqrt(2)
         elif mida=='A2':
-            escala*=math.sqrt(2)*2
+            escala*=2
         elif mida=='A1':
-            escala*=math.sqrt(2)*3
+            escala*=math.sqrt(2)*2
         elif mida=='A0':
-            escala*=math.sqrt(2)*4
+            escala*=4
 
         if self.getOrientacio() != "Horitzontal":
             incX = escala
-            incY = escala * 1.5
+            incY = escala * math.sqrt(2)
         else:
-            incX = escala * 1.5
+            incX = escala * math.sqrt(2)
             incY = escala
         self.rp.setIncXY(incX, incY)
     
