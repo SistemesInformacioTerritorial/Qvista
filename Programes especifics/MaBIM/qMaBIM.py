@@ -500,15 +500,17 @@ class QMaBIM(QtWidgets.QMainWindow):
 
         res1 = cons.consulta(ConstantsMaBIM.CONSULTA_DATA_DADES,{':pText':txt1})[0][0].toString(QtCore.Qt.ISODate)
         res2 = cons.consulta(ConstantsMaBIM.CONSULTA_DATA_DADES,{':pText':txt2})[0][0].toString(QtCore.Qt.ISODate)
-        # res3 = cons.consulta(ConstantsMaBIM.CONSULTA_DATA_DADES,{':pText':txt3})[0][0].toString(QtCore.Qt.ISODate)
+        res3 = cons.consulta(ConstantsMaBIM.CONSULTA_DATA_DADES,{':pText':txt3})[0][0].toString(QtCore.Qt.ISODate)
         font = QtGui.QFont()
         font.setFamily("Segoe UI Light")
         font.setPointSize(5)
 
         self.l_DataCSV.setFont(font)
         self.l_DataCarregaCSV.setFont(font)
+        self.l_DataGrafic.setFont(font)
         self.l_DataCSV.setText(self.replace(res1, 'T', ' - '))
         self.l_DataCarregaCSV.setText(self.replace(res2, 'T', ' - '))
+        self.l_DataGrafic.setText(self.replace(res3, 'T', ' - '))
 
         self.swapVisibilitatBaixes(self.cbBaixesVisibles.isChecked())
 
