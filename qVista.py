@@ -81,6 +81,7 @@ from moduls.QvToolButton import QvToolButton
 # from moduls.QvMarxesCiutat import MarxesCiutat
 from moduls.QvToolTip import QvToolTip
 from moduls.QvUbicacions import QvUbicacions
+from moduls.QvVideoDoc import QvVideoDoc
 from moduls.QvVisorHTML import QvVisorHTML
 from moduls.QvVisualitzacioCapa import QvVisualitzacioCapa
 
@@ -192,6 +193,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.preparacioTaulaAtributs()
         self.preparacioLlegenda()
         self.preparacioArbreDistrictes()
+        self.preparacioCatalegVideos()
         # self.preparacioCataleg()
        
         # self.preparacioMapTips() ???
@@ -694,6 +696,17 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.dwCataleg.setContentsMargins ( 0,0,0,0 )
         self.dwCataleg.hide()
         self.addDockWidget( Qt.LeftDockWidgetArea, self.dwCataleg)
+    
+    def preparacioCatalegVideos(self):
+
+        self.dwVideo = QvDockWidget("Catàleg de vídeos", self)
+        self.dwVideo.setAllowedAreas(Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea)
+
+        tree = QvVideoDoc()
+        self.dwVideo.setWidget(tree)
+        self.addDockWidget(Qt.RightDockWidgetArea, self.dwVideo)
+        self.dwVideo.hide()
+        self.dwVideo.setAllowedAreas(Qt.RightDockWidgetArea | Qt.LeftDockWidgetArea)
 
     def preparacioCercadorPostal(self):
     
@@ -1131,6 +1144,10 @@ class QVista(QMainWindow, Ui_MainWindow):
         icon=QIcon(os.path.join(imatgesDir,'bug.png'))
         self.actBug.setIcon(icon)
         self.actBug.triggered.connect(self.suggeriments.show)
+
+        self.actCatalegVideos = QAction("Vídeos d'ajuda", self)
+        # Truc: self.dwVideo encara no s'ha definit. Així no es queixa
+        self.actCatalegVideos.triggered.connect(lambda: self.dwVideo.show())
 
         self.actObrirCataleg = QAction("Catàleg", self)
         self.actObrirCataleg.setStatusTip("Catàleg d'Informació Territorial")
@@ -1683,6 +1700,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.menuAjuda.setFont(QvConstants.FONTSUBTITOLS)
         self.menuAjuda.addAction(self.actHelp)
         self.menuAjuda.addAction(self.actBug)
+        self.menuAjuda.addAction(self.actCatalegVideos)
         self.menuAjuda.addSeparator()
         self.menuAjuda.addAction(self.actSobre)
 

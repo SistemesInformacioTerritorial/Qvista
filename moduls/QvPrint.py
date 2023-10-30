@@ -38,6 +38,7 @@ class PointTool(QgsMapTool):
         self.rubberband.setColor(QColor(0,0,0,50))
         self.rubberband.setWidth(4)
         self.pucMoure = True
+        self.incX, self.incY = None, None
 
         self.activated.connect(self.rubberband.show)
         self.deactivated.connect(self.rubberband.hide)
@@ -125,11 +126,8 @@ class QvPrint(QWidget):
         self.project = project
         self.poligon = poligon
 
-        # Diccionari d'escales i proporcions que fixen el tamany del rectangle en pantalla.
-        # Podria fer-se millor, pero Practicality beats Purity...
-        # self.dictEscales = {'100':20, '200':40, '250':45, '500':100, '1000':200, '2000':400, '2500':450, '5000':1000, '10000':2000, '20000':4000, '25000':4500, '50000':10000}
-        # self.dictEscales = {str(x):x//5 for x in (100, 200, 250, 500, 1000, 2000, 2500, 5000, 10000, 20000, 25000, 50000)}
-        self.dictEscales = {str(int(x*y)):(x*y)//5 for y in (100, 1000, 10000) for x in (1, 2, 2.5, 5)}
+        # Escales de la combobox (100, 200, 250, 500, 1000, 2000... 50000)
+        self.llistaEscales = [str(int(x*y)) for y in (100, 1000, 10000) for x in (1, 2, 2.5, 5)]
 
         # S'assignen a la funció llegeixDirsPlantilles()
         # self.dirsPlantilles té la forma següent
@@ -195,8 +193,7 @@ class QvPrint(QWidget):
         self.layoutCBOrientacio.addWidget(self.cbOrientacio)
 
         self.combo = QComboBox(self)
-        llistaEscales = [key for key in self.dictEscales]
-        self.combo.addItems(llistaEscales)
+        self.combo.addItems(self.llistaEscales)
         self.combo.currentTextChanged.connect(self.canviEscala)
         self.lblEscales = QLabel("Escales")
         self.layEscales = QHBoxLayout()
@@ -344,47 +341,57 @@ class QvPrint(QWidget):
         self.actualitzaCBMida()
 
     def canviEscala(self):
-        # self.pucMoure = True
-        escala = int(self.dictEscales[self.getEscala()])
-        mida = self.getMida()
-        if mida=='A3':
-            escala*=math.sqrt(2)
-        elif mida=='A2':
-            escala*=math.sqrt(2)*2
-        elif mida=='A1':
-            escala*=math.sqrt(2)*3
-        elif mida=='A0':
-            escala*=math.sqrt(2)*4
+        escala = int(self.getEscala())
+        mides = self.getMidesMapa()
+        if mides is None:
+            return
+        amplada, alcada = mides
 
-        if self.getOrientacio() != "Horitzontal":
-            incX = escala
-            incY = escala * 1.5
-        else:
-            incX = escala * 1.5
-            incY = escala
+        # amplada i alcada representen les dimensions del mapa en mm
+        # escala és l'escala que volem (si és 1:100, escala=100)
+        # incX i incY han d'estar en metres, així que multipliquem i convertim a metres
+        incX = amplada*escala/1000
+        incY = alcada*escala/1000
         self.rp.setIncXY(incX, incY)
     
-    def plantillaTeVariable(self, var):
-        templateFile = self.getPlantillaActual()
-        if templateFile is None:
-            return False
-        template = QFile(templateFile)
-        doc = QDomDocument()
-        doc.setContent(template, False)
-        layout = QgsLayout(self.project)
-        context = QgsReadWriteContext()
-        [items, ok] = layout.loadFromTemplate(doc, context)
-        return layout.itemById(var) is not None
+    def variablePerId(self, var):
+        layout, ok = self.getLayout()
+        if not ok:
+            return None
+        return layout.itemById(var)
 
-    
+    def plantillaTeVariable(self, var):
+        return self.variablePerId(var) is not None
+
     def plantillaTeTitol(self):
         return self.plantillaTeVariable('idNomMapa')
     
     def plantillaTeData(self):
         return self.plantillaTeVariable('idData')
+    
+    def getLayout(self):
+        templateFile = self.getPlantillaActual()
+        if templateFile is None:
+            return None, False
+        template = QFile(templateFile)
+        doc = QDomDocument()
+        doc.setContent(template, False)
+        layout = QgsLayout(self.project)
+        context = QgsReadWriteContext()
+        items, ok = layout.loadFromTemplate(doc, context)
+        return layout, ok
+    
+    def getMidesMapa(self):
+        layout, ok = self.getLayout()
+
+        if not ok:
+            return None
+
+        mapa = layout.referenceMap()
+        return mapa.rect().width(), mapa.rect().height()
 
     def canviOrientacio(self):
-        self.rp.canviOrientacio()
+        self.canviEscala()
         if self.plantillaTeTitol():
             self.lblTitol.show()
             self.leTitol.show()
@@ -444,19 +451,7 @@ class QvPrint(QWidget):
         doc = QDomDocument()
         doc.setContent(template, False)
 
-        layout = QgsLayout(self.project)
-        # page=QgsLayoutItemPage(layout)
-        # page.setPageSize(midaPagina)
-        # layout.pageCollection().addPage(page)
-
-        # layout.initializeDefaults()
-        # p=layout.pageCollection().pages()[0]
-        # p.setPageSize(midaPagina)
-
-        context = QgsReadWriteContext()
-        [items, ok] = layout.loadFromTemplate(doc, context)
-        # p=layout.pageCollection().pages()[0]
-        # p.setPageSize(midaPagina)
+        layout, ok = self.getLayout()
    
         if ok:
             refMap = layout.referenceMap()
