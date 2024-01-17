@@ -489,7 +489,7 @@ class QvMapificacio(QObject):
                     self.files = tot
                     self.filesGeocodificades.emit(tot, self.files)
                     self.percentatgeProces.emit(100)
-                self.procesAcabat.emit(fin - ini)
+                self.procesAcabat.emit(round(fin - ini))
 
                 return not self.cancel
                 
@@ -992,10 +992,9 @@ if __name__ == "__main__":
         leyenda.setWindowTitle('Llegenda')
         leyenda.show()
 
+        fCSV = 'D:/qVista/FME/CarrecsUTF8.csv'
 
-        # z = QvMapificacio('U:/QUOTA/Comu_imi/Becaris/CarrecsAnsi100.csv')
-        z = QvMapificacio('C:/temp/qVista/Dades Usuari/CarrecsUTF8.csv')
-        # z = QvMapificacio('C:/temp/qVista/dades/Terrasses.csv')
+        z = QvMapificacio(fCSV)
 
         if z.msgError != '':
             print('Error:', z.msgError)
@@ -1012,8 +1011,9 @@ if __name__ == "__main__":
         # w.show()
 
         # campsAdreca = ('Tipus de via', 'Via', 'Número')
-        campsAdreca = ('', 'NOM_CARRER_GPL', 'NUM_I_GPL', '', 'NUM_F_GPL')
+        # campsAdreca = ('', 'NOM_CARRER_GPL', 'NUM_I_GPL', '', 'NUM_F_GPL')
         # campsAdreca = ('Tipus via', 'Carrer', 'Numero')
+        campsAdreca = ('', 'NOM_CARRER_GPL', 'NUM_I_GPL', '', '')
 
         # zones = ('Coordenada', 'Districte', 'Barri', 'Codi postal', "Illa", "Solar", "Àrea estadística bàsica", "Secció censal")
         zones = ('Coordenada', 'Districte')
