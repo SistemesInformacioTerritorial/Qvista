@@ -697,13 +697,17 @@ class CsvGeocod(CsvPagina):
             self._lblExplicativa.show()
         # if self._cancelat:
         #     self._carregador.loadMap()
-        func = self.obte_valors_camps if self._inferirNum else None
-        self.fil=QvFuncioFil(lambda: self._carregador._mapificador.geocodificacio(self._camps, ('Coordenada', 'Districte', 'Barri', 'Codi postal', "Illa", "Solar", "Àrea estadística bàsica",
-                                                                      "Secció censal"), percentatgeProces=self._canviPercentatge, procesAcabat=self.acabat, errorAdreca=self._unErrorMes, filesGeocodificades=self._filesGeocod, fCalcValorsAdreca=func))
-        self.fil.funcioAcabada.connect(lambda: self.acabat(-1))
-        self.fil.start()
-        # self._carregador._mapificador.geocodificacio(self._camps, ('Coordenada', 'Districte', 'Barri', 'Codi postal', "Illa", "Solar", "Àrea estadística bàsica",
-        #                                                               "Secció censal"), percentatgeProces=self._canviPercentatge, procesAcabat=self.acabat)
+
+        # func = self.obte_valors_camps if self._inferirNum else None
+        # self.fil=QvFuncioFil(lambda: self._carregador._mapificador.geocodificacio(self._camps, ('Coordenada', 'Districte', 'Barri', 'Codi postal', "Illa", "Solar", "Àrea estadística bàsica",
+        #                                                               "Secció censal"), percentatgeProces=self._canviPercentatge, procesAcabat=self.acabat, errorAdreca=self._unErrorMes, filesGeocodificades=self._filesGeocod, fCalcValorsAdreca=func))
+        # self.fil.funcioAcabada.connect(lambda: self.acabat(-1))
+        # self.fil.start()
+
+        self._carregador._mapificador.geocodificacio(self._camps, ('Coordenada', 'Districte', 'Barri', 'Codi postal', "Illa", "Solar", "Àrea estadística bàsica",
+                                                     "Secció censal"), percentatgeProces=self._canviPercentatge, procesAcabat=self.acabat, errorAdreca=self._unErrorMes, 
+                                                     filesGeocodificades=self._filesGeocod) # fCalcValorsAdreca=func)
+
         qApp.processEvents()
     def _canviPercentatge(self,p):
         self._progress.setValue(p)

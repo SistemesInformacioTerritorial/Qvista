@@ -16,6 +16,7 @@ from moduls.QvApp import QvApp
 from moduls.QvSqlite import QvSqlite
 from moduls.QvMapRenderer import QvMapRendererParams
 import moduls.QvMapVars as mv
+from moduls import QvFuncions
 
 from configuracioQvista import dadesdir
 
@@ -83,6 +84,7 @@ class QvMapificacio(QObject):
         self.msgError = ''
         self.cancel = False
         self.db = None
+        self.direccionUnida = False
         self.iniDades(separador)
 
     def iniDades(self, sep: str) -> None:
@@ -200,7 +202,7 @@ class QvMapificacio(QObject):
     def verifCampsAdreca(self, camps: List[str]) -> bool:
         """ Verifica la lista de campos de dirección postal. Han de venir en este orden:
             (Tipus_via, *Nombre_via, *Número_inicial, Letra_inicial, Número_final, Letra_final)
-            Los precedidos por * son obligatorios.
+            Los 2 campos precedidos por * son obligatorios, aunque el 2º es calculable desde el 1º
             
         Arguments:
             camps {List[str]} -- Lista de campos que componen la dirección postal
@@ -214,8 +216,13 @@ class QvMapificacio(QObject):
             num = 0
             for camp in camps:
                 num += 1
-                if num in (2, 3):  # Obligatorio
+                if num == 2:  # Obligatorio
                     if camp is None or camp not in self.camps:
+                        return False
+                if num == 3:  # Obligatorio pero calculable
+                    if camp is None or camp == '':
+                        self.direccionUnida = True
+                    elif camp is not None and camp != '' and camp not in self.camps:
                         return False
                 else:  # Opcional
                     if camp is not None and camp != '' and camp not in self.camps:
@@ -256,9 +263,30 @@ class QvMapificacio(QObject):
             valors = []
             for num in range(6): 
                 valors.append(self.valorCampAdreca(fila, num))
+                if self.direccionUnida:
+                    valors[1], valors[2] = self.separaDireccion(valors[1])
             return valors
         except Exception:
             return []
+
+    def separaDireccion(self, direccion: str) -> (str, str):
+        # Si la dirección viene en un solo campo, la separa en dos partes: nombre y numeros postales
+        # - El nombre irá separado de los numeros por coma o espacio
+        # - Si hay dos números (cada uno con sus digitos y una posible letra), estarán separados por un guión
+        nombre = txt = direccion.strip()
+        nums = ''
+        r = r"[0-9]+\s*[a-z|A-Z]?\s*\-+\s*[0-9]+\s*[a-z|A-Z]?$" # 2 nums. (con letra o no) separados por un guión
+        s = re.search(r, txt)
+        if s is None:
+            r = r"[0-9]+\s*[a-z|A-Z]?$" # 1 número (con letra o no)
+            s = re.search(r, txt)
+        if s is not None:
+            nombre = txt[0:s.span()[0]].strip()
+            if nombre != '' and nombre[-1] == ',': # Eliminar coma separadora si la hay
+                nombre = nombre[:-1].strip()
+            nums = txt[s.span()[0]:].strip()
+        if QvFuncions.debugging(): print('***', nombre, '|', nums)
+        return (nombre, nums)
 
     def verifZones(self, zones: List[str]) -> bool:
         """ Verifica la lista de zonas según el diccionario MAP_ZONES_COORD.
@@ -310,6 +338,27 @@ class QvMapificacio(QObject):
     #     async_result = pool.apply_async(self.geocodificacio, (campsAdreca, zones,
     #         fZones, substituir, percentatgeProces, procesAcabat, errorAdreca))
     #     return async_result.get()
+
+
+    # def prueba_regex(self, txt, f=None):
+    #     import re
+    #     nombre = txt = txt.strip()
+    #     nums = ''
+    #     r = r"[0-9]+\s*[a-z|A-Z]?\s*\-+\s*[0-9]+\s*[a-z|A-Z]?$" # 2 nums. (con letra o no) separados por un guión
+    #     s = re.search(r, txt)
+    #     if s is None:
+    #         r = r"[0-9]+\s*[a-z|A-Z]?$" # 1 número (con letra o no)
+    #         s = re.search(r, txt)
+    #     if s is not None:
+    #         nombre = txt[0:s.span()[0]].strip()
+    #         if nombre != '' and nombre[-1] == ',': # Eliminar coma separadora si la hay
+    #             nombre = nombre[:-1].strip()
+    #         nums = txt[s.span()[0]:].strip()
+    #     if f:
+    #         f.write(nombre + ' | ' + nums + '\n')
+    #     else:
+    #         print('*', nombre, '|' , nums)
+
 
     def geocodificacio(self, campsAdreca: List[str], zones: List[str], fZones: str = '',
                        substituir: bool = True, percentatgeProces: pyqtSignal = None,
@@ -374,6 +423,7 @@ class QvMapificacio(QObject):
         # Se puede definir la dirección postal con los campos del csv indicados en el parámetro campsAdreca
         # o bien con los 6 valores calculados por la función fCalcValorsAdreca pasada como parámetro
         self.campsAdreca = campsAdreca
+        self.direccionUnida = False
         if fCalcValorsAdreca is not None:
             self.fCalcValorsAdreca = fCalcValorsAdreca
         else:
@@ -441,12 +491,18 @@ class QvMapificacio(QObject):
                     # Lectura de filas y geocodificación
                     tot = num = 0
                     self.mostra = []
+
+                    # f = open('D:/qVista/prueba_regex.txt', 'w')
+
                     for rowOrig in data:
                         tot += 1
                         # Normaliza nombres de campos
                         row = {self.netejaString(k): v for k, v in rowOrig.items()}
                         # Geocodificación
                         valors = self.fCalcValorsAdreca(rowOrig)
+
+                        # self.prueba_regex(valors[1], f)
+
                         val = self.db.geoCampsCarrerNum(
                             self.campsZones,
                             valors[0], valors[1], valors[2], valors[3], valors[4], valors[5])
@@ -478,6 +534,8 @@ class QvMapificacio(QObject):
                         # Cancelación del proceso via slot
                         if self.cancel:
                             break
+
+                # f.close()
 
                 fin = time.time()
                 self.errors = num
