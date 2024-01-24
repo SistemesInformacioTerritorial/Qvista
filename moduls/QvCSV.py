@@ -7,9 +7,10 @@ from pathlib import Path, PurePath
 import qgis.core
 from qgis.core import (QgsCoordinateReferenceSystem, QgsMarkerSymbol,
                        QgsSingleSymbolRenderer, QgsVectorFileWriter,
-                       QgsVectorLayer)
-from qgis.PyQt.QtCore import QSize, Qt, pyqtSignal
-from qgis.PyQt.QtGui import QColor, QIcon
+                       QgsVectorLayer, QgsFeature, QgsGeometry, QgsPointXY, QgsField,
+                       QgsLineSymbol, QgsFillSymbol)
+from qgis.PyQt.QtCore import QSize, Qt, pyqtSignal, QVariant
+from qgis.PyQt.QtGui import QColor, QIcon, QDoubleValidator
 from qgis.PyQt.QtWidgets import (QCheckBox, QColorDialog, QComboBox, QDialog,
                                  QFileDialog, QGridLayout, QGroupBox,
                                  QHBoxLayout, QLabel, QLineEdit, QMessageBox,
@@ -33,85 +34,94 @@ def generaNomNouFitxer(nomBase, appendix=None):
         appendix = '_'
     p = PurePath(nomBase)
     return str(p.with_suffix(''))+appendix+p.suffix
+
+def crearQuadrat(centre, mida=1):
+    semi = mida / 2
+    return QgsGeometry.fromPolygonXY([
+        [QgsPointXY(centre.x() - semi, centre.y() - semi),
+         QgsPointXY(centre.x() + semi, centre.y() - semi),
+         QgsPointXY(centre.x() + semi, centre.y() + semi),
+         QgsPointXY(centre.x() - semi, centre.y() + semi),
+         QgsPointXY(centre.x() - semi, centre.y() - semi)]
+    ])
+
+def crearLinia(centre, longitud=1):
+    semi = longitud / 2
+    return QgsGeometry.fromPolylineXY([
+        QgsPointXY(centre.x() - semi, centre.y()),
+        QgsPointXY(centre.x() + semi, centre.y())
+    ])
+
+
 # Còpia de la funció definida dins de qVista.py. Millor aquí???
 # Té aquest nom des del 2019 o abans, ara ja no li canviarem
-def nivellCsv(projecte, llegenda, fitxer: str, delimitador: str, campX: str, campY: str, projeccio: int = 25831, nomCapa: str = 'Capa sense nom', color='red', symbol='circle', separadorDec='.', standalone=False):
-    if projeccio<0:
-        if PANDAS_ENABLED:
-            import pandas as pd
-        else:
-            return False
-
-        # si és -X, serà que són coordenades reduïdes en format X.
-        df = pd.read_csv(fitxer, engine='python', sep=delimitador)
-        nouCampX = f'{campX}_COMPLET'
-        nouCampY = f'{campY}_COMPLET'
-        nouFitxer = str(Path(fitxer).with_suffix('.coordenades_completes.csv')).replace('.coordenades_completes','_coordenades_completes')
-        df[nouCampX]=df[campX]/1000+400000
-        df[nouCampY]=df[campY]/1000+4500000
-        df.to_csv(nouFitxer, sep=delimitador, index=False)
-        
-        campX, campY = nouCampX, nouCampY
-        fitxer = nouFitxer
-        projeccio = -projeccio
-    # # revisem els noms de camps
-    # if PANDAS_ENABLED:
-        
-    #     import pandas as pd
-    #     import re
-    #     df = pd.read_csv(fitxer, engine='python', sep=delimitador)
-    #     canvis = {}
-    #     for col in df.columns:
-    #         permeses='abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_'
-    #         novacol = ''.join(x if x in permeses else '_' for x in QvFuncions.eliminaAccents(col))
-    #         if novacol!=col:
-    #             canvis[col]=novacol
-    #             if campX==col:
-    #                 campX=novacol
-    #             if campY==col:
-    #                 campY=novacol
-    #     if len(canvis)!=0:
-    #         df = df.rename(columns=canvis)
-    #         nouFitxer = generaNomNouFitxer(fitxer, '_columnes_arreglades')
-    #         df.to_csv(nouFitxer, sep=delimitador, index=False)
-
-        
-    # uri = "file:///"+fitxer + "?type=csv&delimiter=%s&xField=%s&yField=%s" % (delimitador, campX, campY)
-    uri = fr'file:///{fitxer}?type=csv&delimiter={delimitador}&xField={campX}&yField={campY}&decimalPoint={separadorDec}'
-    layer = QgsVectorLayer(uri, nomCapa, 'delimitedtext')
-    # if layer is not None and layer.renderer() is not None:
-    if layer is not None:
-        layer.setCrs(QgsCoordinateReferenceSystem(projeccio, QgsCoordinateReferenceSystem.EpsgCrsId))
-        symbol_str=symbol
-        symbol = QgsMarkerSymbol.createSimple({'name': symbol, 'color': color, 'outline_width':'0.05'})
-        # if layer.renderer() is not None:
-        #     layer.renderer().setSymbol(symbol)
-        pr=layer.dataProvider()
-        if standalone:
-            nom, _ = QFileDialog.getSaveFileName(None,'Desar capa com a GPKG',f'{QvMemoria().getDirectoriDesar()}/{fitxer[:-4]}.gpkg',"(*.gpkg)")
-            writer=QgsVectorFileWriter.writeAsVectorFormat(layer,nom[:-5],pr.encoding(),pr.crs(),symbologyExport=QgsVectorFileWriter.SymbolLayerSymbology)
-            capaGpkg=QgsVectorLayer(nom,nomCapa,'ogr')
-            if capaGpkg.renderer() is None: return False
-            renderer = QgsSingleSymbolRenderer(symbol)
-            capaGpkg.setRenderer(renderer)
-            s = qgis.core.QgsSettings()
-            s.setValue("qgis/overwriteStyle", True)
-            capaGpkg.saveStyleToDatabase(name=color+' '+symbol_str,description="", useAsDefault=True, uiFileContent="")
-            return True
-
-        else:
-            writer=QgsVectorFileWriter.writeAsVectorFormat(layer,fitxer[:-4],pr.encoding(),pr.crs(),symbologyExport=QgsVectorFileWriter.SymbolLayerSymbology)
-            capaGpkg=QgsVectorLayer(fitxer[:-4]+'.gpkg',nomCapa,'ogr')
-            if capaGpkg.renderer() is None: return False
-            capaGpkg.renderer().setSymbol(symbol)
-            projecte.addMapLayer(capaGpkg)
-            llegenda.saveStyleToGeoPackage(capaGpkg)
-            # qV.project.addMapLayer(layer)
-            # qV.setDirtyBit(True)
-            return True
+def nivellCsv(projecte, llegenda, fitxer: str, delimitador: str, campX: str, campY: str, projeccio: int = 25831, nomCapa: str = 'Capa sense nom', color='red', symbol='circle', separadorDec='.', standalone=False, tipusGeometria='punts', mida=None, gruix=1):
+    if PANDAS_ENABLED:
+        import pandas as pd
     else:
-        print("no s'ha pogut afegir la nova layer")
         return False
+    df = pd.read_csv(fitxer, engine='python', sep=delimitador)
+    layer = None
+
+    tipusGeometria = tipusGeometria.lower()
+
+    if mida is None or mida=='':
+        mida = 1
+    else:
+        mida = float(mida)
+
+    if tipusGeometria == 'punts':
+        uri = fr'file:///{fitxer}?type=csv&delimiter={delimitador}&xField={campX}&yField={campY}&decimalPoint={separadorDec}'
+        layer = QgsVectorLayer(uri, nomCapa, 'delimitedtext')
+
+    elif tipusGeometria in ['polígons', 'multipolígons', 'línies']:
+        if tipusGeometria in ['polígons', 'multipolígons']:
+            layerType = "Polygon"
+        elif tipusGeometria == 'línies':
+            layerType = "LineString"
+        
+        layer = QgsVectorLayer(f"{layerType}?crs=epsg:{projeccio}", nomCapa, "memory")
+        pr = layer.dataProvider()
+
+        # Afegir camps del CSV a la capa
+        for col in df.columns:
+            pr.addAttributes([QgsField(col, QVariant.String)])
+        layer.updateFields()
+
+        for idx, row in df.iterrows():
+            centre = QgsPointXY(row[campX], row[campY])
+            geom = None
+            if tipusGeometria in ['polígons', 'multipolígons']:
+                geom = crearQuadrat(centre, mida)
+            elif tipusGeometria == 'línies':
+                geom = crearLinia(centre, mida)
+            
+            feat = QgsFeature()
+            feat.setGeometry(geom)
+
+            # Assignar valors de camps
+            feat.setFields(layer.fields())
+            for col in df.columns:
+                feat.setAttribute(col, row[col])
+
+            pr.addFeature(feat)
+        if tipusGeometria in ['polígons', 'multipolígons']:
+            # Crear un símbol de polígon amb un contorn específic
+            symbol = QgsFillSymbol.createSimple({
+                'color': '255,255,255,0',  # color de farciment transparent
+                'outline_color': str(color),   # color del contorn
+                'outline_width': str(gruix),    # amplada del contorn
+            })
+            layer.renderer().setSymbol(symbol)
+        elif tipusGeometria == 'línies':
+            symbol = QgsLineSymbol.createSimple({'line_width': str(gruix), 'line_color': str(color)})  # Pots canviar el gruix ('line_width') i el color ('line_color') aquí
+            layer.renderer().setSymbol(symbol)
+
+    if layer is not None:
+        layer.updateExtents()
+        projecte.addMapLayer(layer)
+
+    return layer is not None
 
 
 def esCoordAux(coord, rangs):
@@ -452,11 +462,11 @@ class CsvCoords(CsvPagina):
         self._bVeure.setToolTip("Premeu aquest botó per visualitzar l'arxiu csv")
         self._bVeure.clicked.connect(self._mostraTaula)
         if self._carregador._standalone:
-            txtAfegir = 'Convertir a capa de punts'
-            txtAfegirTooltip = 'Converteix el CSV en un Geopackage representant les entrades del mapa com a punts'
+            txtAfegir = 'Convertir a capapunts'
+            txtAfegirTooltip = 'Converteix el CSV en un Geopackage representant les entrades del mapa'
         else:
-            txtAfegir = 'Afegir com a capa de punts'
-            txtAfegirTooltip = 'Afegeix al mapa com a capa de punts'
+            txtAfegir = 'Afegir com a capa'
+            txtAfegirTooltip = 'Afegeix al mapa com a capa'
         self._bAfegir = QvPushButton(txtAfegir)
         self._bAfegir.setToolTip(txtAfegirTooltip)
         self._bAfegir.clicked.connect(self.afegir)
@@ -793,8 +803,8 @@ class CsvGeocodificatBase(CsvPagina):
 class CsvGeocodificat(CsvGeocodificatBase):
     def __init__(self, errors, temps, carregador, parent=None):
         super().__init__(errors, temps, carregador, parent)
-        self._bAfegir = QvPushButton('Afegir com a capa de punts')
-        self._bAfegir.setToolTip('Afegeix al mapa com a capa de punts')
+        self._bAfegir = QvPushButton('Afegir com a capa')
+        self._bAfegir.setToolTip('Afegeix al mapa com a capa')
         self._bAfegir.clicked.connect(lambda: self.salta.emit(CsvAfegir(
             'QVISTA_ETRS89_COORD_X', 'QVISTA_ETRS89_COORD_Y', 25831, self._carregador)))
         # self._bAfegir.clicked.connect()
@@ -806,8 +816,8 @@ class CsvGeocodificat(CsvGeocodificatBase):
 
 class CsvGeocodificatStandalone(CsvGeocodificatBase):
     def __init__(self, errors, temps, carregador, parent=None):
-        self._bAfegir = QvPushButton('Desar capa de punts')
-        self._bAfegir.setToolTip("Desa la capa de punts, triant-ne l'estil")
+        self._bAfegir = QvPushButton('Desar capa')
+        self._bAfegir.setToolTip("Desa la capa, triant-ne l'estil")
         self._bAfegir.clicked.connect(lambda: self.salta.emit(CsvAfegir(
             'QVISTA_ETRS89_COORD_X', 'QVISTA_ETRS89_COORD_Y', 25831, self._carregador)))
         super().__init__(errors, temps, carregador, parent)
@@ -827,7 +837,7 @@ class CsvGeocodificatStandalone(CsvGeocodificatBase):
 class CsvAfegir(CsvPagina):
     def __init__(self, campCoordX, campCoordY, projeccio, carregador, parent=None):
         super().__init__(carregador, parent)
-        self._setTitol('Afegir com a capa de punts')
+        self._setTitol('Afegir com a capa')
         self._campCoordX = campCoordX
         self._campCoordY = campCoordY
         self._projeccio = projeccio
@@ -849,9 +859,13 @@ class CsvAfegir(CsvPagina):
         # layColor = QHBoxLayout()
         lblColor = QLabel('Color: ')
         lblColor.setAlignment(Qt.AlignRight)
+        lblMida = QLabel('Mida (en metres): ')
         layLbls.addWidget(lblColor)
         layLbls.addWidget(QLabel())
         layLbls.addWidget(QLabel())
+        layLbls.addWidget(QLabel("Tipus de geometria"))
+        layLbls.addWidget(lblMida)
+        lblMida.hide()
 
         def setColorBoto():
             self._bColor.setStyleSheet(
@@ -875,8 +889,19 @@ class CsvAfegir(CsvPagina):
         setColorBoto()
         self.cbDesaCsv = QCheckBox('Desar CSV geocodificat')
         self.cbDesaGpkg = QCheckBox('Desar capa resultant en arxiu GPKG')
+        self.cbGeometria = QComboBox()
+        self.cbGeometria.addItems(['Punts', 'Línies', 'Polígons'])
+        self.cbGeometria.setToolTip("Tipus de geometria de la capa resultant. Si trieu línies o polígons, haureu d'editar posteriorment les geometries.")
+        self.leMida = QLineEdit()
+        val = QDoubleValidator(0.01, 1000, 2)
+        self.leMida.setValidator(val)
+        self.cbGeometria.currentTextChanged.connect(lambda x: self.leMida.setVisible(x!='Punts'))
+        self.cbGeometria.currentTextChanged.connect(lambda x: lblMida.setVisible(x!='Punts'))
         layTries.addWidget(self.cbDesaCsv)
         layTries.addWidget(self.cbDesaGpkg)
+        layTries.addWidget(self.cbGeometria)
+        layTries.addWidget(self.leMida)
+        self.leMida.hide()
         if self._carregador._standalone:
             self.cbDesaGpkg.hide()
         # self._lay.addLayout(layColor)
@@ -937,15 +962,16 @@ class CsvAfegir(CsvPagina):
         rbHexagon.toggled.connect(lambda x: setForma(
             'hexagon') if x else print(':D'))
         layForma.addWidget(rbHexagon, 1, 3)
+        self.cbGeometria.currentTextChanged.connect(lambda text: gbForma.setVisible(text=='Punts'))
         # Afegim els botons
         layBotons = QHBoxLayout()
         layBotons.addStretch()
         if carregador._standalone:
-            txtAfegir = 'Desar capa de punts'
-            txtAfegirTooltip = "Desa la capa de punts amb l'estil triat"
+            txtAfegir = 'Desar capa'
+            txtAfegirTooltip = "Desa la capa amb l'estil triat"
         else:
-            txtAfegir = 'Afegir com a capa de punts'
-            txtAfegirTooltip = 'Afegeix al mapa com a capa de punts'
+            txtAfegir = 'Afegir com a capa'
+            txtAfegirTooltip = 'Afegeix al mapa com a capa'
         self._bAfegir = QvPushButton(txtAfegir, destacat=True)
         self._bAfegir.setToolTip(txtAfegirTooltip)
         self._bAfegir.clicked.connect(self.afegir)
@@ -980,7 +1006,7 @@ class CsvAfegir(CsvPagina):
             except:
                 return ''
     def afegir(self):
-        if not nivellCsv(self._carregador._projecte, self._carregador._llegenda, self._carregador._csv, self._carregador._separador, self._campCoordX, self._campCoordY, self._projeccio, self._leNomCapa.text(), self._color, symbol=self._forma, separadorDec=self.calculaSeparadorDec(), standalone=self._carregador._standalone):
+        if not nivellCsv(self._carregador._projecte, self._carregador._llegenda, self._carregador._csv, self._carregador._separador, self._campCoordX, self._campCoordY, self._projeccio, self._leNomCapa.text(), self._color, symbol=self._forma, separadorDec=self.calculaSeparadorDec(), standalone=self._carregador._standalone, tipusGeometria=self.cbGeometria.currentText(), mida=self.leMida.text()):
             QMessageBox.warning(self,"No s'ha pogut afegir la capa","No s'ha pogut afegir aquest arxiu. Contacteu amb la persona de referència")
         nomBase = str(Path(self._carregador._csv).stem)
         if self.cbDesaCsv.isChecked():
