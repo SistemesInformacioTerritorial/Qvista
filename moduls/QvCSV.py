@@ -52,6 +52,19 @@ def crearLinia(centre, longitud=1):
         QgsPointXY(centre.x() + semi, centre.y())
     ])
 
+TIPUS_COLUMNES_CSVT = {
+    "CARRER_INFERIT_QVISTA":"String",
+    "NUM_INFERIT_QVISTA":"String",
+    "QVISTA_ETRS89_COORD_X":"Real",
+    "QVISTA_ETRS89_COORD_Y":"Real",
+    "QVISTA_DISTRICTE":"Integer",
+    "QVISTA_BARRI":"Integer",
+    "QVISTA_CODI_POSTAL":"Integer",
+    "QVISTA_ILLA":"Integer",
+    "QVISTA_SOLAR":"Integer",
+    "QVISTA_AEB":"Integer",
+    "QVISTA_SECCIO_CENSAL":"Integer"
+}
 
 # Còpia de la funció definida dins de qVista.py. Millor aquí???
 # Té aquest nom des del 2019 o abans, ara ja no li canviarem
@@ -742,6 +755,26 @@ class CsvGeocod(CsvPagina):
             # Aquí saltar al resultat
             arxiuNet=str(Path(self._carregador._csv).parent)+'\\'+self._carregador._mapificador.netejaString(Path(self._carregador._csv).stem,True)+'.csv'
             QvMemoria().setGeocodificat(self._carregador._csv, arxiuNet)
+            try:
+                csvt_orig = Path(self._carregador._csv).with_suffix('.csvt')
+                if csvt_orig.exists():
+                    with open(self._carregador._mapificador.fZones) as f:
+                        reader = csv.DictReader(f, delimiter=self._carregador._separador)
+                        noves_columnes = [col for col in reader.fieldnames if col in TIPUS_COLUMNES_CSVT]
+                    csvt_nou = Path((self._carregador._mapificador.fZones)).with_suffix('.csvt')
+                    with open(csvt_orig) as f, open(csvt_nou, 'w', newline='') as ff:
+                        reader = csv.reader(f)
+                        writer = csv.writer(ff)
+
+                        tipus_orig = next(reader)
+
+                        tipus_nous = [TIPUS_COLUMNES_CSVT[x] for x in noves_columnes]
+
+                        writer.writerow(tipus_orig+tipus_nous)
+            except BaseException as e:
+                # Si falla la creació del csvt, passem. Vol dir que l'original tampoc era vàlid i per tant QGIS tampoc el carregaria
+                pass
+
             self._carregador.setCsv(self._carregador._mapificador.fZones)
             # self._carregador._csv=self._carregador._mapificador.fDades
             if self._carregador._standalone:
