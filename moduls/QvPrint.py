@@ -193,6 +193,7 @@ class QvPrint(QWidget):
         self.layoutCBOrientacio.addWidget(self.cbOrientacio)
 
         self.combo = QComboBox(self)
+        self.combo.setEditable(True)
         self.combo.addItems(self.llistaEscales)
         self.combo.currentTextChanged.connect(self.canviEscala)
         self.lblEscales = QLabel("Escales")
@@ -210,10 +211,14 @@ class QvPrint(QWidget):
 
         self.boto = QvPushButton(text='Generar PDF',destacat=True, parent=self)
         self.boto.clicked.connect(self.printPlanol)
-        self.boto.setFixedWidth(220)
+        self.boto.setFixedWidth(240)
         self.boto2 = QvPushButton(text='Emmarcar zona a imprimir',parent=self)
         self.boto2.clicked.connect(self.potsMoure)
-        self.boto2.setFixedWidth(220)
+        self.boto2.setFixedWidth(240)
+        self.boto3 = QvPushButton(text='Generar PNG',destacat=True, parent=self)
+        self.boto3.clicked.connect(self.printPlanolPNG)
+        self.boto3.setFixedWidth(240)
+
 
         self.nota = QLabel("NOTA: Alguns navegadors web alteren l'escala d'impressió dels PDFs. Per màxima exactitud imprimiu des de l'Adobe Acrobat.")
         styleheetLabel='''
@@ -221,7 +226,7 @@ class QvPrint(QWidget):
                 color: grey;
             }'''
         self.nota.setStyleSheet(styleheetLabel)
-        self.nota.setMaximumWidth(200)
+        self.nota.setMaximumWidth(240)
         self.nota.setWordWrap(True)
 
 
@@ -232,6 +237,7 @@ class QvPrint(QWidget):
         self.layout.addLayout(self.layoutCBOrientacio)
         self.layout.addLayout(self.layoutTitol)
         self.layout.addWidget(self.boto2)
+        self.layout.addWidget(self.boto3)
         self.layout.addWidget(self.boto)
         self.layout.addWidget(self.nota)
         # self.layout.addWidget(self.wFormat)
@@ -442,7 +448,21 @@ class QvPrint(QWidget):
         self.imprimirPlanol(self.rp.posXY[0], self.rp.posXY[1], int(escala), rotacio, mida, self.plantillaMapa, sortida, 'PDF')
        
         QvApp().logRegistre('Impressió: '+self.getEscala())
-    
+
+    def printPlanolPNG(self):
+        rotacio=self.canvas.rotation()
+        mida = self.getMida()
+        escala = self.getEscala()
+        self.plantillaMapa = self.getPlantillaActual()
+
+        t = time.localtime()
+        timestamp = time.strftime('%d-%b-%Y_%H%M%S', t)
+        sortida=tempdir+'sortida_'+timestamp
+        
+        self.imprimirPlanol(self.rp.posXY[0], self.rp.posXY[1], int(escala), rotacio, mida, self.plantillaMapa, sortida, 'PNG')
+       
+        QvApp().logRegistre('Impressió: '+self.getEscala())   
+
     def imprimirPlanol(self,x, y, escala, rotacion, midaPagina, templateFile, fitxerSortida, tipusSortida):
         tInicial=time.time()
 
