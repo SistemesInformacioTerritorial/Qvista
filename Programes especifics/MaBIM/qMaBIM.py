@@ -443,7 +443,7 @@ class FavoritsMaBIM(QvFavorits):
 
 
 class QMaBIM(QtWidgets.QMainWindow):
-    def __init__(self, projecte, *args,**kwargs):
+    def __init__(self, projecte, BIM, *args,**kwargs):
         super().__init__(*args, **kwargs)
         uic.loadUi(ConstantsMaBIM.rutaUI,self)
 
@@ -513,6 +513,11 @@ class QMaBIM(QtWidgets.QMainWindow):
         self.l_DataGrafic.setText(self.replace(res3, 'T', ' - '))
 
         self.swapVisibilitatBaixes(self.cbBaixesVisibles.isChecked())
+
+        if BIM is not None:
+            # en principi serà un string sempre, però per si de cas
+            self.leCercador.setText(str(BIM))
+            self.consulta()
 
 
     # function to convert qdatetime to text
@@ -973,6 +978,7 @@ def splashScreen():
 def arguments():
     parser = argparse.ArgumentParser(description='')
     parser.add_argument('--projecte',help='Ruta del projecte del MaBIM', default=ConstantsMaBIM.rutaProjecte)
+    parser.add_argument('--codi-bim', help='Codi BIM que es vol obrir', default=None)
     return parser.parse_args()
 def main():
     with qgisapp(sysexit=False) as app:
@@ -981,7 +987,7 @@ def main():
         app.setWindowIcon(QtGui.QIcon('imatges/MaBIM/MaBIM vermell.png'))
         splash = splashScreen()
         app.processEvents()
-        main = QMaBIM(args.projecte)
+        main = QMaBIM(args.projecte, args.codi_bim)
         splash.finish(main)
         main.showMaximized()
 

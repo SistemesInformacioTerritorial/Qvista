@@ -572,8 +572,11 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
         renderer = layer.renderer()
         if renderer is None:
             return None
-        else:
+        try:
             renderer = renderer.clone()
+        except Exception as e:
+            print(str(e))
+            return None
         ctx = qgCor.QgsRenderContext()
         renderer.startRender(ctx, qgCor.QgsFields())
         if selected:

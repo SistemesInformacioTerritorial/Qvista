@@ -168,7 +168,7 @@ class QvSqlite:
         if num == '':
             return '0'
         else:
-            return num
+            return num.upper()
 
     def coordsCarrerNum(self, codiCarrer, num='0'):
         if self.db is None or codiCarrer is None or codiCarrer == '' or num is None or num == '':
