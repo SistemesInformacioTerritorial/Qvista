@@ -133,7 +133,7 @@ class QvEditorCsv(QDialog):
         self.resize(800, 600)
         # Declaració d'atributs de l'objecte
         self._arxiu = arxiu
-        self._codificacio = codificacio
+        self._codificacio = 'utf-8' # codificacio
         self._errors = sorted(errors)
         self._separador = separador
         self._i = 0

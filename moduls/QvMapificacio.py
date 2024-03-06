@@ -2,7 +2,7 @@
 
 from qgis.core import QgsVectorLayer, QgsExpressionContextUtils
 from qgis.PyQt.QtCore import QDate, QObject, pyqtSignal, pyqtSlot
-from qgis.PyQt.QtWidgets import QDialog
+from qgis.PyQt.QtWidgets import QDialog, QMessageBox
 
 import os
 import csv
@@ -681,12 +681,16 @@ class QvMapificacio(QObject):
 
     def testExtensioArxiu(self, campExtensio):
         if PANDAS_ENABLED:
-            import numpy as np
-            import pandas as pd
+            try:
+                import numpy as np
+                import pandas as pd
+            except Exception as e:
+                self.msgError = PANDAS_ERROR
+                return False
         else:
             self.msgError = PANDAS_ERROR
             return False
-
+        
         if campExtensio == '' or (campExtensio[0] == '<'):
             return False
 
@@ -724,9 +728,13 @@ class QvMapificacio(QObject):
             bool -- True si se generó la capa con el  mapa correctamente
         """
         if PANDAS_ENABLED:
-            import numpy as np
-            import pandas as pd
-            import geopandas as gpd
+            try:
+                import numpy as np
+                import pandas as pd
+                import geopandas as gpd
+            except Exception as e:
+                self.msgError = PANDAS_ERROR
+                return False
         else:
             self.msgError = PANDAS_ERROR
             return False
