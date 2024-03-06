@@ -262,9 +262,15 @@ class QvMapificacio(QObject):
         try:
             valors = []
             for num in range(6): 
-                valors.append(self.valorCampAdreca(fila, num))
                 if self.direccionUnida:
-                    valors[1], valors[2] = QvNumPostal.separaDireccion(valors[1])
+                    if num == 1: # Calcular calle por un lado y números por otro
+                        calle, nums = QvNumPostal.separaDireccion(self.valorCampAdreca(fila, num))
+                        valors.append(calle)
+                        valors.append(nums)
+                    elif num != 2:
+                        valors.append(self.valorCampAdreca(fila, num))
+                else:
+                    valors.append(self.valorCampAdreca(fila, num))
             return valors
         except Exception:
             return []
@@ -1031,7 +1037,8 @@ if __name__ == "__main__":
         leyenda.setWindowTitle('Llegenda')
         leyenda.show()
 
-        fCSV = 'D:/qVista/FME/CarrecsUTF8.csv'
+        # fCSV = 'D:/qVista/FME/CarrecsUTF8.csv'
+        fCSV = r"D:\qVista\F5_BCNPIC_LOG.csv"
 
         z = QvMapificacio(fCSV)
 
@@ -1052,7 +1059,8 @@ if __name__ == "__main__":
         # campsAdreca = ('Tipus de via', 'Via', 'Número')
         # campsAdreca = ('', 'NOM_CARRER_GPL', 'NUM_I_GPL', '', 'NUM_F_GPL')
         # campsAdreca = ('Tipus via', 'Carrer', 'Numero')
-        campsAdreca = ('', 'NOM_CARRER_GPL', 'NUM_I_GPL', '', '')
+        # campsAdreca = ('', 'NOM_CARRER_GPL', 'NUM_I_GPL', '', '')
+        campsAdreca = ('', 'ADDRESS', '', '', '')
 
         # zones = ('Coordenada', 'Districte', 'Barri', 'Codi postal', "Illa", "Solar", "Àrea estadística bàsica", "Secció censal")
         zones = ('Coordenada', 'Districte')
