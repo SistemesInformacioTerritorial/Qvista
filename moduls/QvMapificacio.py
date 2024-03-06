@@ -16,7 +16,7 @@ from moduls.QvApp import QvApp
 from moduls.QvSqlite import QvSqlite
 from moduls.QvMapRenderer import QvMapRendererParams
 import moduls.QvMapVars as mv
-from moduls import QvFuncions
+from moduls import QvNumPostal
 
 from configuracioQvista import dadesdir
 
@@ -264,29 +264,10 @@ class QvMapificacio(QObject):
             for num in range(6): 
                 valors.append(self.valorCampAdreca(fila, num))
                 if self.direccionUnida:
-                    valors[1], valors[2] = self.separaDireccion(valors[1])
+                    valors[1], valors[2] = QvNumPostal.separaDireccion(valors[1])
             return valors
         except Exception:
             return []
-
-    def separaDireccion(self, direccion: str) -> (str, str):
-        # Si la dirección viene en un solo campo, la separa en dos partes: nombre y numeros postales
-        # - El nombre irá separado de los numeros por coma o espacio
-        # - Si hay dos números (cada uno con sus digitos y una posible letra), estarán separados por un guión
-        nombre = txt = direccion.strip()
-        nums = ''
-        r = r"[0-9]+\s*[a-z|A-Z]?\s*\-+\s*[0-9]+\s*[a-z|A-Z]?$" # 2 nums. (con letra o no) separados por un guión
-        s = re.search(r, txt)
-        if s is None:
-            r = r"[0-9]+\s*[a-z|A-Z]?$" # 1 número (con letra o no)
-            s = re.search(r, txt)
-        if s is not None:
-            nombre = txt[0:s.span()[0]].strip()
-            if nombre != '' and nombre[-1] == ',': # Eliminar coma separadora si la hay
-                nombre = nombre[:-1].strip()
-            nums = txt[s.span()[0]:].strip()
-        if QvFuncions.debugging(): print('***', nombre, '|', nums)
-        return (nombre, nums)
 
     def verifZones(self, zones: List[str]) -> bool:
         """ Verifica la lista de zonas según el diccionario MAP_ZONES_COORD.
