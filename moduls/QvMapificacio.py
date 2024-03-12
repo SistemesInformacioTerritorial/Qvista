@@ -681,12 +681,8 @@ class QvMapificacio(QObject):
 
     def testExtensioArxiu(self, campExtensio):
         if PANDAS_ENABLED:
-            try:
-                import numpy as np
-                import pandas as pd
-            except Exception as e:
-                self.msgError = PANDAS_ERROR
-                return False
+            import numpy as np
+            import pandas as pd
         else:
             self.msgError = PANDAS_ERROR
             return False
@@ -728,13 +724,9 @@ class QvMapificacio(QObject):
             bool -- True si se generó la capa con el  mapa correctamente
         """
         if PANDAS_ENABLED:
-            try:
-                import numpy as np
-                import pandas as pd
-                import geopandas as gpd
-            except Exception as e:
-                self.msgError = PANDAS_ERROR
-                return False
+            import numpy as np
+            import pandas as pd
+            import geopandas as gpd
         else:
             self.msgError = PANDAS_ERROR
             return False
