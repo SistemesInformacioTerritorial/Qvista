@@ -2139,8 +2139,8 @@ class QVista(QMainWindow, Ui_MainWindow):
             Protecció dels projectes read-only: tres vies:
         -       Variable del projecte qV_readOnly=’True’
         -       Ubicació en una carpeta de només-lectura
-        -       Ubicació en una de les subcarpetes de N:\\SITEBAPL\PyQgis\qVista
-        -       Ubicació en una de les subcarpetes de N:\9SITEB\Publicacions\qVista
+        -       Ubicació en una de les subcarpetes de N:\\SITEBAPL\\PyQgis\\qVista
+        -       Ubicació en una de les subcarpetes de N:\\9SITEB\\Publicacions\\qVista
         """
         self.teCanvisPendents()
         if QgsExpressionContextUtils.projectScope(self.project).variable('qV_readOnly') == 'True':
@@ -2286,11 +2286,15 @@ class QVista(QMainWindow, Ui_MainWindow):
         else:
             return
         try:
+            if self.llegenda is not None:
+                self.llegenda.removing = True
+        except Exception  as ee:
+            print(str(ee))
+        try:
             if self.ubicacions is not None:
                 self.ubicacions.ubicacionsFi()
         except Exception  as ee:
             print(str(ee))
-
         try:
             if self.cAdrec is not None:
                 self.cAdrec.cercadorAdrecaFi()
