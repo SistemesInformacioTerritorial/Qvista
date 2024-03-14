@@ -39,4 +39,3 @@ En aquest moment el project es troba en fase de desenvolupament. Aixó vol dir q
 
 Posteriorment documentarem quina estructura han de tenir el catàleg, les notícies i aquestes coses
 
-prova
