@@ -149,6 +149,17 @@ class QvPrint(QWidget):
         canvas.setMapTool(self.rp)
 
         self.llegeixDirsPlantilles()
+        self.titols = [
+            {
+                "id":"titol",
+                "text":"Títol 1: "
+            },
+            {
+                "id":"titol",
+                "text":"Títol2: "
+            }
+        ]
+
         self.setupUI()
         self.canvas.xyCoordinates.connect(self.mocMouse)
 
@@ -163,12 +174,14 @@ class QvPrint(QWidget):
         self.layout.setSpacing(14)
         # self.layout.setAlignment(Qt.AlignTop)
 
-        self.layoutTitol = QHBoxLayout()
-        self.lblTitol = QLabel("Títol: ")
-        self.leTitol = QLineEdit(self)
-        self.leTitol.setText(self.parent.titolProjecte)
-        self.layoutTitol.addWidget(self.lblTitol)
-        self.layoutTitol.addWidget(self.leTitol)
+        for element in self.titols:
+            element["layoutTitol"] = QHBoxLayout()
+            element["lblTitol"] = QLabel(element.get("text"))
+            element["leTitol"] = QLineEdit(self)
+            element["leTitol"].setText(self.parent.titolProjecte)
+
+            element["layoutTitol"].addWidget(element["lblTitol"])
+            element["layoutTitol"].addWidget(element["leTitol"])
 
         self.layoutCategoria = QHBoxLayout()
         self.lblCategoria = QLabel('Categoria: ')
@@ -235,7 +248,14 @@ class QvPrint(QWidget):
         self.layout.addLayout(self.layEscales)
         self.layout.addLayout(self.layoutCBmida)
         self.layout.addLayout(self.layoutCBOrientacio)
-        self.layout.addLayout(self.layoutTitol)
+
+        for element in self.titols:
+            self.layout.addLayout(element["layoutTitol"])
+
+        #self.layout.addLayout(self.titols[0]["layoutTitol"])
+        #self.layout.addLayout(self.titols[1]["layoutTitol"])
+        #self.layout.addLayout(self.layoutTitol)
+
         self.layout.addWidget(self.boto2)
         self.layout.addWidget(self.boto3)
         self.layout.addWidget(self.boto)
