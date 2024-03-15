@@ -240,7 +240,11 @@ class QvCarregaCsv(QDialog):
     def setSeparador(self):
         self._separador = self._mapificador.separador
     def getPrimeraPantalla(self):
-        aux=QvMemoria().getCampsGeocod(self.parentWidget()._primerCsv)
+        parentW = self.parentWidget()
+        if parentW is None:
+            aux = None
+        else:
+            aux = QvMemoria().getCampsGeocod(parentW._primerCsv)
         if aux is not None:
             if aux['teCoords']:
                 return CsvCoords(self,self,**aux['camps'])

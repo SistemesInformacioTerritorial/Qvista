@@ -52,3 +52,13 @@ if __name__ == "__main__":
         nom, num = separaDireccion(str)
         str = ''
         pass
+
+
+if __name__ == '__main__':
+
+    from qgis.PyQt.QtCore import QRegularExpression
+
+    for r in _EXP_NUM_LST:
+        exp = r[0]
+        regexp = QRegularExpression(exp)
+        print('Exp:', exp, '- Valid:', regexp.isValid())

@@ -40,7 +40,7 @@ _TRANS_ALL = str.maketrans("ÁÉÍÓÚáéíóúÀÈÌÒÙàèìòùÂÊÎÔÛâ
 _TRANS_MINI = str.maketrans(" \'\"",
                             "___")
 
-RUTA_LOCAL = dadesdir
+RUTA_LOCAL = dadesdir + '/'
 RUTA_DADES = os.path.abspath('Dades').replace('\\', '/') + '/'
 CAMP_QVISTA = 'QVISTA_'
 
