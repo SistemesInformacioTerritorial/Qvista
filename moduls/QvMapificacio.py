@@ -2,7 +2,7 @@
 
 from qgis.core import QgsVectorLayer, QgsExpressionContextUtils
 from qgis.PyQt.QtCore import QDate, QObject, pyqtSignal, pyqtSlot
-from qgis.PyQt.QtWidgets import QDialog
+from qgis.PyQt.QtWidgets import QDialog, QMessageBox
 
 import os
 import csv
@@ -16,6 +16,7 @@ from moduls.QvApp import QvApp
 from moduls.QvSqlite import QvSqlite
 from moduls.QvMapRenderer import QvMapRendererParams
 import moduls.QvMapVars as mv
+from moduls import QvNumPostal
 
 from configuracioQvista import dadesdir
 
@@ -39,7 +40,7 @@ _TRANS_ALL = str.maketrans("ÁÉÍÓÚáéíóúÀÈÌÒÙàèìòùÂÊÎÔÛâ
 _TRANS_MINI = str.maketrans(" \'\"",
                             "___")
 
-RUTA_LOCAL = dadesdir
+RUTA_LOCAL = dadesdir + '/'
 RUTA_DADES = os.path.abspath('Dades').replace('\\', '/') + '/'
 CAMP_QVISTA = 'QVISTA_'
 
@@ -83,6 +84,7 @@ class QvMapificacio(QObject):
         self.msgError = ''
         self.cancel = False
         self.db = None
+        self.direccionUnida = False
         self.iniDades(separador)
 
     def iniDades(self, sep: str) -> None:
@@ -200,7 +202,7 @@ class QvMapificacio(QObject):
     def verifCampsAdreca(self, camps: List[str]) -> bool:
         """ Verifica la lista de campos de dirección postal. Han de venir en este orden:
             (Tipus_via, *Nombre_via, *Número_inicial, Letra_inicial, Número_final, Letra_final)
-            Los precedidos por * son obligatorios.
+            Los 2 campos precedidos por * son obligatorios, aunque el 2º es calculable desde el 1º
             
         Arguments:
             camps {List[str]} -- Lista de campos que componen la dirección postal
@@ -214,8 +216,13 @@ class QvMapificacio(QObject):
             num = 0
             for camp in camps:
                 num += 1
-                if num in (2, 3):  # Obligatorio
+                if num == 2:  # Obligatorio
                     if camp is None or camp not in self.camps:
+                        return False
+                if num == 3:  # Obligatorio pero calculable
+                    if camp is None or camp == '':
+                        self.direccionUnida = True
+                    elif camp is not None and camp != '' and camp not in self.camps:
                         return False
                 else:  # Opcional
                     if camp is not None and camp != '' and camp not in self.camps:
@@ -255,7 +262,15 @@ class QvMapificacio(QObject):
         try:
             valors = []
             for num in range(6): 
-                valors.append(self.valorCampAdreca(fila, num))
+                if self.direccionUnida:
+                    if num == 1: # Calcular calle por un lado y números por otro
+                        calle, nums = QvNumPostal.separaDireccion(self.valorCampAdreca(fila, num))
+                        valors.append(calle)
+                        valors.append(nums)
+                    elif num != 2:
+                        valors.append(self.valorCampAdreca(fila, num))
+                else:
+                    valors.append(self.valorCampAdreca(fila, num))
             return valors
         except Exception:
             return []
@@ -310,6 +325,27 @@ class QvMapificacio(QObject):
     #     async_result = pool.apply_async(self.geocodificacio, (campsAdreca, zones,
     #         fZones, substituir, percentatgeProces, procesAcabat, errorAdreca))
     #     return async_result.get()
+
+
+    # def prueba_regex(self, txt, f=None):
+    #     import re
+    #     nombre = txt = txt.strip()
+    #     nums = ''
+    #     r = r"[0-9]+\s*[a-z|A-Z]?\s*\-+\s*[0-9]+\s*[a-z|A-Z]?$" # 2 nums. (con letra o no) separados por un guión
+    #     s = re.search(r, txt)
+    #     if s is None:
+    #         r = r"[0-9]+\s*[a-z|A-Z]?$" # 1 número (con letra o no)
+    #         s = re.search(r, txt)
+    #     if s is not None:
+    #         nombre = txt[0:s.span()[0]].strip()
+    #         if nombre != '' and nombre[-1] == ',': # Eliminar coma separadora si la hay
+    #             nombre = nombre[:-1].strip()
+    #         nums = txt[s.span()[0]:].strip()
+    #     if f:
+    #         f.write(nombre + ' | ' + nums + '\n')
+    #     else:
+    #         print('*', nombre, '|' , nums)
+
 
     def geocodificacio(self, campsAdreca: List[str], zones: List[str], fZones: str = '',
                        substituir: bool = True, percentatgeProces: pyqtSignal = None,
@@ -374,6 +410,7 @@ class QvMapificacio(QObject):
         # Se puede definir la dirección postal con los campos del csv indicados en el parámetro campsAdreca
         # o bien con los 6 valores calculados por la función fCalcValorsAdreca pasada como parámetro
         self.campsAdreca = campsAdreca
+        self.direccionUnida = False
         if fCalcValorsAdreca is not None:
             self.fCalcValorsAdreca = fCalcValorsAdreca
         else:
@@ -441,12 +478,18 @@ class QvMapificacio(QObject):
                     # Lectura de filas y geocodificación
                     tot = num = 0
                     self.mostra = []
+
+                    # f = open('D:/qVista/prueba_regex.txt', 'w')
+
                     for rowOrig in data:
                         tot += 1
                         # Normaliza nombres de campos
                         row = {self.netejaString(k): v for k, v in rowOrig.items()}
                         # Geocodificación
                         valors = self.fCalcValorsAdreca(rowOrig)
+
+                        # self.prueba_regex(valors[1], f)
+
                         val = self.db.geoCampsCarrerNum(
                             self.campsZones,
                             valors[0], valors[1], valors[2], valors[3], valors[4], valors[5])
@@ -478,6 +521,8 @@ class QvMapificacio(QObject):
                         # Cancelación del proceso via slot
                         if self.cancel:
                             break
+
+                # f.close()
 
                 fin = time.time()
                 self.errors = num
@@ -641,7 +686,7 @@ class QvMapificacio(QObject):
         else:
             self.msgError = PANDAS_ERROR
             return False
-
+        
         if campExtensio == '' or (campExtensio[0] == '<'):
             return False
 
@@ -992,7 +1037,8 @@ if __name__ == "__main__":
         leyenda.setWindowTitle('Llegenda')
         leyenda.show()
 
-        fCSV = 'D:/qVista/FME/CarrecsUTF8.csv'
+        # fCSV = 'D:/qVista/FME/CarrecsUTF8.csv'
+        fCSV = r"D:\qVista\F5_BCNPIC_LOG.csv"
 
         z = QvMapificacio(fCSV)
 
@@ -1013,7 +1059,8 @@ if __name__ == "__main__":
         # campsAdreca = ('Tipus de via', 'Via', 'Número')
         # campsAdreca = ('', 'NOM_CARRER_GPL', 'NUM_I_GPL', '', 'NUM_F_GPL')
         # campsAdreca = ('Tipus via', 'Carrer', 'Numero')
-        campsAdreca = ('', 'NOM_CARRER_GPL', 'NUM_I_GPL', '', '')
+        # campsAdreca = ('', 'NOM_CARRER_GPL', 'NUM_I_GPL', '', '')
+        campsAdreca = ('', 'ADDRESS', '', '', '')
 
         # zones = ('Coordenada', 'Districte', 'Barri', 'Codi postal', "Illa", "Solar", "Àrea estadística bàsica", "Secció censal")
         zones = ('Coordenada', 'Districte')
