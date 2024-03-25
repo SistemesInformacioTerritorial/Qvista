@@ -302,7 +302,10 @@ class QvPrint(QWidget):
         context = QgsReadWriteContext()
         items, _ = layout.loadFromTemplate(doc, context)
 
-        return [{"id":item.id(),"text": item.text()} for item in items if isinstance(item, QgsLayoutItemLabel)]
+        return [
+            {"id":item.id(),"text": item.text()}
+            for item in items
+            if isinstance(item, QgsLayoutItemLabel) and item.id().startswith("qV_") ]
 
     def llegeixDirsPlantilles(self):
         self.dirsPlantilles = {
