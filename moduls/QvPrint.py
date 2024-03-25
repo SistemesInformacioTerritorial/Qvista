@@ -155,16 +155,7 @@ class QvPrint(QWidget):
         canvas.setMapTool(self.rp)
 
         self.llegeixDirsPlantilles()
-        self.titols = [
-            {
-                "id":"titol",
-                "text":"Títol 1: "
-            },
-            {
-                "id":"titol",
-                "text":"Títol2: "
-            }
-        ]
+        self.titols = []
 
         self.setupUI()
         self.canvas.xyCoordinates.connect(self.mocMouse)
