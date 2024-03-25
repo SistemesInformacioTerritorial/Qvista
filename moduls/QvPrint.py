@@ -241,7 +241,9 @@ class QvPrint(QWidget):
         for input_id in input_ids:
             self.inputs[input_id] = {}
             self.inputs[input_id]["layoutTitol"] = QHBoxLayout()
-            self.inputs[input_id]["lblTitol"] = QLabel(self.inputs[input_id].get("text","Titol"))
+            lbl_text = input_id.replace("qV_", "").capitalize()
+
+            self.inputs[input_id]["lblTitol"] = QLabel(lbl_text)
             self.inputs[input_id]["leTitol"] = QLineEdit(self)
             self.inputs[input_id]["leTitol"].setText(self.parent.titolProjecte)
 
@@ -274,7 +276,8 @@ class QvPrint(QWidget):
 
         for entry in self.inputs_fitxers.values():
             for input_properties in entry:
-                ids.append(input_properties["id"])
+                if input_properties["id"].startswith("qV_"):
+                    ids.append(input_properties["id"])
 
 
         return list(set(ids))
@@ -350,19 +353,19 @@ class QvPrint(QWidget):
         if self.canvas.mapTool()!=self.rp:
             self.canvas.setMapTool(self.rp)
         self.rp.potsMoure()
-        
+
     def getCategoria(self):
         return self.cbCategoria.currentText()
 
     def getPlantilla(self):
         return self.cbPlantilla.currentText()
-    
+
     def getMida(self):
         return self.cbMida.currentText()
-    
+
     def getOrientacio(self):
         return self.cbOrientacio.currentText()
-    
+
     def getEscala(self):
         return self.combo.currentText()
 
