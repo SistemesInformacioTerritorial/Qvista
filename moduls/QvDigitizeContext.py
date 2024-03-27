@@ -33,21 +33,21 @@ class QvDigitizeContext:
         layer.selectByIds([fid])
 
     @staticmethod
-    def testReadOnly(project: qgCor.QgsProject = qgCor.QgsProject.instance(), nom: str = 'qV_readOnly') -> bool:
+    def testReadOnly(nom: str = 'qV_readOnly') -> bool:
         """Comprueba si un proyecto QGIS está en modo de sólo lectura para qVista.
         Esto es así si existe una variable de proyecto llamada 'qV_readOnly' con el valor True.
 
         Args:
-            project (QgsProject, optional): Instancia del proyecto. Defaults to QgsProject.instance().
             nom (str, optional): Nombre de variable. Defaults to 'qV_readOnly'.
 
         Returns:
             bool: True si el proyecto es de sólo lectura.
         """
+        project = qgCor.QgsProject.instance()
         return qgCor.QgsExpressionContextUtils.projectScope(project).variable(nom) == 'True'
 
     @staticmethod
-    def testUserEditable(layer: qgCor.QgsMapLayer, project: qgCor.QgsProject = qgCor.QgsProject.instance(), nom: str = 'qV_editable') -> bool:
+    def testUserEditable(layer: qgCor.QgsMapLayer, nom: str = 'qV_editable') -> bool:
         """Comprueba si una capa puede editarse desde qVista por un usuario determinado.
         Para que una capa pueda ser modificada, ha de ser de tipo vectorial. Además, es necesario definir en QGIS una
         variable de capa; esta puede contener una lista de los códigos de usuario que tienen permitida la edición,
