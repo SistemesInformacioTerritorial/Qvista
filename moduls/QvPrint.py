@@ -46,7 +46,7 @@ class PointTool(QgsMapTool):
         self.activated.connect(self.rubberband.show)
         self.deactivated.connect(self.rubberband.hide)
 
-    
+
     def canvasMoveEvent(self, event):
         self.parent.dockX = event.pos().x()
         self.parent.dockY = event.pos().y()
@@ -379,18 +379,19 @@ class QvPrint(QWidget):
 
     def actualitzaInputsPlantilla(self):
         plantilla = self.getPlantillaActual()
-        input_ids_actuals = self.inputs_fitxers[plantilla]
+        if plantilla is not None:
+            input_ids_actuals = self.inputs_fitxers[plantilla]
 
-        for input_obj in self.inputs.values():
-            input_obj["lblTitol"].hide()
-            input_obj["leTitol"].hide()
+            for input_obj in self.inputs.values():
+                input_obj["lblTitol"].hide()
+                input_obj["leTitol"].hide()
 
-        for input_info in input_ids_actuals:
-            input_id = input_info["id"]
-            self.inputs[input_id]["lblTitol"].show()
-            self.inputs[input_id]["leTitol"].show()
-            if plantilla:
-                self.inputs[input_id]["leTitol"].setText(self.getInputText(plantilla, input_id))
+            for input_info in input_ids_actuals:
+                input_id = input_info["id"]
+                self.inputs[input_id]["lblTitol"].show()
+                self.inputs[input_id]["leTitol"].show()
+                if plantilla:
+                    self.inputs[input_id]["leTitol"].setText(self.getInputText(plantilla, input_id))
 
     def actualitzaCBOrientacio(self):
         categoria = self.getCategoria()
@@ -437,22 +438,26 @@ class QvPrint(QWidget):
         incX = amplada*escala/1000
         incY = alcada*escala/1000
         self.rp.setIncXY(incX, incY)
-    
+
     def variablePerId(self, var):
         layout, ok = self.getLayout()
-        if not ok:
+        if not ok or layout is None:
             return None
         return layout.itemById(var)
 
-    def plantillaTeVariable(self, var):
+    def plantillaTeVariable(self, var) -> bool:
         return self.variablePerId(var) is not None
 
-    def plantillaTeTitol(self):
-        return self.plantillaTeVariable('idNomMapa')
-    
+
+    def plantillaTeTitol(self) -> bool:
+        """
+        Returns if the plantilla has a title
+        """
+        return len(self.inputs.keys()) > 0
+
     def plantillaTeData(self):
         return self.plantillaTeVariable('idData')
-    
+
     def getLayout(self):
         templateFile = self.getPlantillaActual()
         if templateFile is None:
@@ -464,11 +469,11 @@ class QvPrint(QWidget):
         context = QgsReadWriteContext()
         items, ok = layout.loadFromTemplate(doc, context)
         return layout, ok
-    
+
     def getMidesMapa(self):
         layout, ok = self.getLayout()
 
-        if not ok:
+        if not ok or layout is None:
             return None
 
         mapa = layout.referenceMap()
@@ -559,21 +564,22 @@ class QvPrint(QWidget):
 
         layout, ok = self.getLayout()
 
-        if ok:
+        if ok and layout is not None:
             refMap = layout.referenceMap()
 
             if self.plantillaTeTitol():
-                titol = layout.itemById('idNomMapa')
-                if self.inputs["idNomMapa"]["leTitol"]:
-                    titol.setText(self.inputs["idNomMapa"]["leTitol"].text())
-                else:
-                    titol.setText('')
+                for input_id, _ in self.inputs.items():
+                    titol = layout.itemById(input_id)
+                    if self.inputs[input_id]["leTitol"]:
+                        titol.setText(self.inputs[input_id]["leTitol"].text())
+                    else:
+                        titol.setText('')
             if self.plantillaTeData():
                 dataMapa=layout.itemById('idData')
                 t = time.localtime()
                 dataMapa.setText(strftime('%b-%d-%Y %H:%M', t))
 
-        
+
             rect = refMap.extent()
             vector = QgsVector(x - rect.center().x(), y - rect.center().y())
             rect += vector
