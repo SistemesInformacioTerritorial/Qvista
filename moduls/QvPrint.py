@@ -570,10 +570,11 @@ class QvPrint(QWidget):
             if self.plantillaTeTitol():
                 for input_id, _ in self.inputs.items():
                     titol = layout.itemById(input_id)
-                    if self.inputs[input_id]["leTitol"]:
-                        titol.setText(self.inputs[input_id]["leTitol"].text())
-                    else:
-                        titol.setText('')
+                    if titol:
+                        if self.inputs[input_id]["leTitol"]:
+                            titol.setText(self.inputs[input_id]["leTitol"].text())
+                        else:
+                            titol.setText('')
             if self.plantillaTeData():
                 dataMapa=layout.itemById('idData')
                 t = time.localtime()
