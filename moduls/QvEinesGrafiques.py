@@ -1638,7 +1638,7 @@ class QvSeleccioElement(QgsMapTool):
             # per alguna raó abans desapareixien sols, però ara no. Per tant, fem un hide i ja està
             marcaLloc.hide()
             rb.hide()
-            marcaLloc.deleteLater()
+            # marcaLloc.deleteLater()
             rb.deleteLater()
         except Exception as e:
             print(str(e))

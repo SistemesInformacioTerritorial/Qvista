@@ -263,7 +263,11 @@ class QvCarregaCsv(QDialog):
     def setSeparador(self):
         self._separador = self._mapificador.separador
     def getPrimeraPantalla(self):
-        aux=QvMemoria().getCampsGeocod(self.parentWidget()._primerCsv)
+        parentW = self.parentWidget()
+        if parentW is None:
+            aux = None
+        else:
+            aux = QvMemoria().getCampsGeocod(parentW._primerCsv)
         if aux is not None:
             if aux['teCoords']:
                 return CsvCoords(self,self,**aux['camps'])
@@ -710,7 +714,6 @@ class CsvGeocod(CsvPagina):
         if len(aux)==2:
             l[1:2] = aux
         return l
-        
 
     def showEvent(self, e):
         super().showEvent(e)
@@ -720,14 +723,17 @@ class CsvGeocod(CsvPagina):
             self._lblExplicativa.show()
         # if self._cancelat:
         #     self._carregador.loadMap()
-        func = self.obte_valors_camps if self._inferirNum else None
-        self.fil=QvFuncioFil(lambda: self._carregador._mapificador.geocodificacio(self._camps, ('Coordenada', 'Districte', 'Barri', 'Codi postal', "Illa", "Solar", "Àrea estadística bàsica",
-                                                                      "Secció censal"), percentatgeProces=self._canviPercentatge, procesAcabat=self.acabat, errorAdreca=self._unErrorMes, filesGeocodificades=self._filesGeocod, fCalcValorsAdreca=func))
+        # func = self.obte_valors_camps if self._inferirNum else None
+        self.fil=QvFuncioFil(lambda: self._carregador._mapificador.geocodificacio(
+            self._camps, ('Coordenada', 'Districte', 'Barri', 'Codi postal', "Illa", "Solar", "Àrea estadística bàsica", "Secció censal"), 
+            percentatgeProces=self._canviPercentatge, procesAcabat=self.acabat, errorAdreca=self._unErrorMes, filesGeocodificades=self._filesGeocod)) # fCalcValorsAdreca=func))
         self.fil.funcioAcabada.connect(lambda: self.acabat(-1))
         self.fil.start()
-        # self._carregador._mapificador.geocodificacio(self._camps, ('Coordenada', 'Districte', 'Barri', 'Codi postal', "Illa", "Solar", "Àrea estadística bàsica",
-        #                                                               "Secció censal"), percentatgeProces=self._canviPercentatge, procesAcabat=self.acabat)
+        # self._carregador._mapificador.geocodificacio(
+        #     self._camps, ('Coordenada', 'Districte', 'Barri', 'Codi postal', "Illa", "Solar", "Àrea estadística bàsica", "Secció censal"), 
+        #     percentatgeProces=self._canviPercentatge, procesAcabat=self.acabat, errorAdreca=self._unErrorMes, filesGeocodificades=self._filesGeocod) # fCalcValorsAdreca=func)
         qApp.processEvents()
+
     def _canviPercentatge(self,p):
         self._progress.setValue(p)
         # qApp.processEvents()
@@ -786,7 +792,7 @@ class CsvGeocodificatBase(CsvPagina):
     def __init__(self, errors, temps, carregador, parent=None):
         super().__init__(carregador, parent)
         self._setTitol('Geocodificat')
-        if temps!=0: 
+        if temps > 0: 
             self._lay.addWidget(QLabel('Temps requerit per la geocodificació: %i segons'%temps))
             self._lay.addWidget(QLabel('Geocodificat a una velocitat de %.2f files per segon'%(self._carregador._mapificador.files/temps)))
         self._textEditErrors = QTextEdit()
