@@ -5,19 +5,37 @@ import functools
 import re
 import sys
 import unicodedata
+import copy
 
+from PyQt5.QtSql import QSqlDatabase
 from qgis.core import QgsPointXY, QgsProject
 from qgis.core.contextmanagers import qgisapp
 from qgis.gui import QgsLayerTreeMapCanvasBridge, QgsVertexMarker
 from qgis.PyQt import QtCore
 from qgis.PyQt.QtCore import QObject, Qt, pyqtSignal
 from qgis.PyQt.QtGui import QColor, QValidator
-from qgis.PyQt.QtSql import QSqlQuery
+from qgis.PyQt.QtSql import QSqlQuery,QSqlDatabase
 from qgis.PyQt.QtWidgets import (QCompleter, QHBoxLayout, QLineEdit,
                                  QMessageBox, QStyleFactory, QVBoxLayout,
                                  QWidget)
 
 from moduls.QvApp import QvApp
+from typing import List,Optional
+
+
+def mostrarError(self, e: Exception) -> None:
+    """
+    Mostra un error en una finestra de diàleg.
+
+    Args:
+        e (Exception): Excepció que es vol mostrar en la finestra de diàleg.
+    """
+    msg = QMessageBox()
+    msg.setIcon(QMessageBox.Warning)
+    msg.setText(f"ERROR: {str(e)}")
+    msg.setWindowTitle("qVista >> QVCercadorAdreca >> trobatCantonada")
+    msg.setStandardButtons(QMessageBox.Close)
+    msg.exec_()
 
 def arreglaCarrer(carrer):
     res = carrer.strip()
@@ -209,7 +227,7 @@ class ValidadorNums(QValidator):
 class QCercadorAdreca(QObject):
     sHanTrobatCoordenades = pyqtSignal(int, 'QString')  # atencion
 
-    def __init__(self, lineEditCarrer, lineEditNumero, origen='SQLITE'):
+    def __init__(self, lineEditCarrer, lineEditNumero, comboTipusCerca=None, origen='SQLITE'):
         super().__init__()
 
         # self.pare= pare
@@ -217,11 +235,15 @@ class QCercadorAdreca(QObject):
         self.origen = origen
         self.leCarrer = lineEditCarrer
         self.leNumero = lineEditNumero
+        self.tipusCerca = comboTipusCerca
+
         self.connectarLineEdits()
+
         self.carrerActivat = False
 
         self.dictCarrers = {}
         self.dictNumeros = collections.defaultdict(dict)
+        self.dictCantonades = collections.defaultdict(dict)
 
         # self.db.setConnectOptions("QSQLITE_OPEN_READONLY")
         self.numClick=0
@@ -244,14 +266,26 @@ class QCercadorAdreca(QObject):
 
     def habilitaLeNum(self):
         self.carrerActivat = False
-        return  # De moment no es desactivarà mai
-        # Hauria de funcionar només amb la primera condició, però per raons que escapen al meu coneixement, no anava :()
+        print(f"calle_con_acentos: '{self.calle_con_acentos}'")
+        #print(f"txto: '{self.txto}'")
         self.leNumero.setEnabled(
             self.calle_con_acentos != '' or self.txto != '')
 
     def cercadorAdrecaFi(self):
         if self.db.isOpen():
             self.db.close()
+
+    def prepararCompleterCantonada(self):
+        self.dictCantonadesFiltre = self.dictCantonades[self.codiCarrer]
+        self.completerCantonada = QCompleter(
+            self.dictCantonadesFiltre, self.leNumero)
+        # Determino funcionamiento del completer
+        self.completerCantonada.setFilterMode(QtCore.Qt.MatchContains)
+        self.completerCantonada.setCaseSensitivity(QtCore.Qt.CaseInsensitive)
+        # Funcion que se ejecutará cuando
+        self.completerCantonada.activated.connect(self.activatCantonada)
+        # Asigno el completer al lineEdit
+        self.leNumero.setCompleter(self.completerCantonada)
 
     def prepararCompleterCarrer(self):
         # creo instancia de completer que relaciona diccionario de calles con lineEdit
@@ -293,10 +327,16 @@ class QCercadorAdreca(QObject):
         self.codiCarrer = ''
 
     def iniAdrecaNumero(self):
-        self.numeroCarrer = ''
-        self.coordAdreca = None
-        self.infoAdreca = None
-        self.NumeroOficial = ''
+        self.numeroCarrer = '' #104
+        self.coordAdreca = None #adreça (carrer... 104)
+        self.infoAdreca = None #element del diccionari (104)
+        self.NumeroOficial = '' #103-105
+
+    def iniAdrecaCantonada(self):
+        self.carrerOriginalCantonada = ''
+        self.coordCantonada = None
+        self.infoCantonada = None
+        self.carrerCantonada = ''
 
     def connectarLineEdits(self):
         self.leCarrer.textChanged.connect(self.esborrarNumero)
@@ -306,7 +346,13 @@ class QCercadorAdreca(QObject):
         # self.leCarrer.mouseDoubleClickEvent = self.SeleccPalabraOTodoEnFrase
         self.leCarrer.setAlignment(Qt.AlignLeft)
 
-        self.leNumero.editingFinished.connect(self.trobatNumero)
+        if self.tipusCerca.currentText() == 'Numero': 
+            self.leNumero.editingFinished.connect(self.trobatNumero)
+        else:
+            self.leNumero.editingFinished.connect(self.trobatCantonada)
+
+        # self.leNumero.editingFinished.connect(self.trobatNumero) 
+
         # self.leNumero.returnPressed.connect(self.trobatNumero)
 
     def SeleccPalabraOTodoEnFrase(self, event):
@@ -341,8 +387,101 @@ class QCercadorAdreca(QObject):
     #     self.leNumero.clear()
     #     self.leCarrer.clear()
 
+
+    # Obtenir les dades de les cantonades+numeros associats a un carrer
+
+    def getCarrerNumeros(self):
+        """
+        Obté els números del carrer de la base de dades.
+
+        Realitza una consulta a la base de dades per aconseguir els números corresponents al carrer actual.
+
+        Retorna:
+        None
+        """
+
+        #TODO: Fromatar consulta
+        self.query.prepare(f"""
+            SELECT codi,
+                CASE num_lletra_post 
+                    WHEN '0' THEN ' ' 
+                    ELSE num_lletra_post 
+                END,
+                etrs89_coord_x,
+                etrs89_coord_y,
+                num_oficial
+            FROM Numeros
+            WHERE codi = :codiCarrer""")
+        self.query.bindValue(":codiCarrer", self.codiCarrer)
+
+        if not self.query.exec_():
+            print(self.query.lastError().text())
+
+        """ try:
+            self.query.exec_()
+        except Exception as e:
+            print(f"Error executing query: {e}")
+            return """
+
+        while self.query.next():
+            row = collections.OrderedDict()
+            row['NUM_LLETRA_POST'] = self.query.value(1)  # Numero y Letra
+            row['ETRS89_COORD_X'] = self.query.value(2)  # coor x
+            row['ETRS89_COORD_Y'] = self.query.value(3)  # coor y
+            row['NUM_OFICIAL'] = self.query.value(4)  # numero oficial
+
+            self.dictNumeros[self.codiCarrer][self.query.value(1)] = row
+
+        self.query.finish()
+
+    def getCarrerCantonades(self):
+        """
+        Obté les cantonades del carrer de la base de dades.
+
+        Realitza una consulta a la base de dades per aconseguir les cantonades corresponents al carrer actual.
+
+        Retorna:
+        None
+        """
+        self.query.prepare(f"""
+            SELECT Cantons.CODI_CANTO, 
+                Carrers.NOM_OFICIAL, 
+                Cantons.ETRS89_COORD_X, 
+                Cantons.ETRS89_COORD_Y
+            FROM Cantons 
+            JOIN Carrers ON Cantons.CODI_CANTO = Carrers.CODI 
+            WHERE Cantons.CODI = :codiCarrer""")
+        self.query.bindValue(":codiCarrer", self.codiCarrer)
+
+        if not self.query.exec_():
+            print("Error getting order with: ", self.query.lastError().text())
+            return
+
+        while self.query.next():
+            row = collections.OrderedDict()
+            row['CODI_CANTO'] = self.query.value(0)
+            row['CARRER CANTO'] = self.query.value(1)
+            row['ETRS89_COORD_X'] = self.query.value(2)
+            row['ETRS89_COORD_Y'] = self.query.value(3)
+
+            self.dictCantonades[self.codiCarrer][self.query.value(1) + "   (" + str(self.query.value(0)) + ")"] = row 
+            
+        self.query.finish()
+
     # Venimos del completer, un click en desplegable ....
-    def activatCarrer(self, carrer):
+    #TODO: Posar tipat
+    def activatCarrer(self, carrer: str) -> Optional[bool]:
+        """
+        Aquesta funció processa el carrer proporcionat, neteja el nom del carrer i estableix l'adreça si el carrer existeix.
+        Si el carrer no existeix o si hi ha hagut un error durant el processament, la funció retorna False.  
+        
+        Args:
+            carrer (str): Nom del carrer a processar.
+        
+        Returns:
+            bool: Retorna None si s'ha pogut processar el carrer, fals altrament.
+        """
+
         self.carrerActivat = True
         # print(carrer)
 
@@ -359,6 +498,7 @@ class QCercadorAdreca(QObject):
         self.calle_con_acentos = ss.rstrip()
 
         self.leCarrer.setAlignment(Qt.AlignLeft)
+        print(f"Text asignat 2: {self.calle_con_acentos}")
         self.leCarrer.setText(self.calle_con_acentos)
 
         # self.leCarrer.setText(carrer)
@@ -368,30 +508,16 @@ class QCercadorAdreca(QObject):
             self.codiCarrer = self.dictCarrers[self.nomCarrer]
 
             try:
-                index = 0
-                # self.query = QSqlQuery() # Intancia del Query
-                # self.query.exec_("select codi, num_lletra_post, etrs89_coord_x, etrs89_coord_y, num_oficial  from Numeros where codi = '" + self.codiCarrer +"'")
 
-                self.query.exec_(
-                    "select codi,case num_lletra_post when '0' then ' ' else num_lletra_post end,  etrs89_coord_x, etrs89_coord_y, num_oficial  from Numeros   where codi = '" + self.codiCarrer + "'")
-                # self.query.exec_("select codi,case num_lletra_post when '0' then ' ' else num_lletra_post end,  etrs89_coord_x, etrs89_coord_y, case num_oficial when '0' then ' ' else num_oficial end  from Numeros   where codi = '" + self.codiCarrer +"'")
-
-                while self.query.next():
-                    row = collections.OrderedDict()
-                    row['NUM_LLETRA_POST'] = self.query.value(
-                        1)  # Numero y Letra
-                    row['ETRS89_COORD_X'] = self.query.value(2)  # coor x
-                    row['ETRS89_COORD_Y'] = self.query.value(3)  # coor y
-                    row['NUM_OFICIAL'] = self.query.value(4)  # numero oficial
-
-                    self.dictNumeros[self.codiCarrer][self.query.value(
-                        1)] = row
-                    index += 1
-
-                self.query.finish()
+                self.getCarrerCantonades()
+                self.getCarrerNumeros()
                 # self.db.close()
 
-                self.prepararCompleterNumero()
+                if self.tipusCerca.currentText() == 'Numero': 
+                    self.prepararCompleterNumero()
+                else: 
+                    self.prepararCompleterCantonada()
+                    
                 self.focusANumero()
 
             except Exception as e:
@@ -414,11 +540,22 @@ class QCercadorAdreca(QObject):
         else:
             info = "ERROR >> [1]"
             self.sHanTrobatCoordenades.emit(1, info)  # adreça vacia
+        
         self.habilitaLeNum()
         # self.prepararCompleterNumero()
-        # self.focusANumero()
+        self.focusANumero()
 
-    def trobatCarrer(self):
+    def trobatCarrer(self) -> Optional[bool]:
+        """
+        Aquesta funció processa l'actual text del carrer, neteja el nom del carrer i busca l'adreça.
+        Si l'adreça no es troba, s'inicialitza l'adreça.
+        Si es produeix algun error durant el processament, es gestiona l'excepció i la funció retorna False.
+        
+        Returns:
+            bool: Retorna None si s'ha pogut processar l'adreça, fals altrament.
+        """
+        print("inici")
+
         if self.leCarrer.text() == '':
             self.leNumero.setCompleter(None)
             return
@@ -441,11 +578,17 @@ class QCercadorAdreca(QObject):
             # ss=ss.replace('(var) ','')
 
             # ss= self.txto[0:nn-1]
+            print(f"ss abans de rstrip: '{ss}'")
             self.calle_con_acentos = ss.rstrip()
+            print(f"calle_con_acentos després de rstrip: '{self.calle_con_acentos}'")
 
             self.leCarrer.setAlignment(Qt.AlignLeft)
-            self.leCarrer.setText(self.calle_con_acentos)
 
+            print(f"Text asignat: '{self.calle_con_acentos}'")
+            if self.calle_con_acentos:
+                self.leCarrer.setText(self.calle_con_acentos)
+
+            print(f"calle_con_acentos després de rstrip3: '{self.calle_con_acentos}'")
             self.iniAdreca()
             if self.txto != self.nomCarrer:
                 # self.iniAdreca()
@@ -455,31 +598,16 @@ class QCercadorAdreca(QObject):
                     self.focusANumero()
 
                     try:
-                        index = 0
-                        # self.query = QSqlQuery() # Intancia del Query
-                        # self.query.exec_("select codi, num_lletra_post, etrs89_coord_x, etrs89_coord_y, num_oficial  from Numeros where codi = '" + self.codiCarrer +"'")
-                        self.query.exec_(
-                            "select codi,case num_lletra_post when '0' then ' ' else num_lletra_post end,  etrs89_coord_x, etrs89_coord_y, num_oficial  from Numeros   where codi = '" + self.codiCarrer + "'")
+                        self.getCarrerCantonades()
+                        self.getCarrerNumeros()
+                        #self.db.close()
 
-                        while self.query.next():
-                            row = collections.OrderedDict()
-                            row['NUM_LLETRA_POST'] = self.query.value(
-                                1)  # Numero y Letra
-                            row['ETRS89_COORD_X'] = self.query.value(
-                                2)  # coor x
-                            row['ETRS89_COORD_Y'] = self.query.value(
-                                3)  # coor y
-                            row['NUM_OFICIAL'] = self.query.value(
-                                4)  # numero oficial
+                        if self.tipusCerca.currentText() == 'Numero': 
+                            self.prepararCompleterNumero()
+                            self.focusANumero()
+                        else: 
+                            self.prepararCompleterCantonada()
 
-                            self.dictNumeros[self.codiCarrer][self.query.value(
-                                1)] = row
-                            index += 1
-
-                        self.query.finish()
-                        # self.db.close()
-                        self.prepararCompleterNumero()
-                        self.focusANumero()
 
                     except Exception as e:
                         print(str(e))
@@ -507,7 +635,106 @@ class QCercadorAdreca(QObject):
         else:
             info = "ERROR >> [4]"
             self.sHanTrobatCoordenades.emit(4, info)  # adreça vac
+        
         self.habilitaLeNum()
+
+    def obtenirTextCompletat(self) -> str:
+        """
+        Retorna el text completat a partir del completerCarrer.
+
+        Returna:
+            str: Text completat després de revisar si és buit o no i treure qualsevol ocurrença de '(var)' i espais en blanc.
+        """
+        textCompletat = self.completerCarrer.popup().currentIndex().data()
+
+        if textCompletat is None:
+            textCompletat = self.completerCarrer.currentCompletion()
+
+        return textCompletat.replace('(var)', '').strip()
+
+    def establirCantonadaMapa(self, cantonada: str) -> None:
+        """
+        Estableix una cantonada al mapa en funció de la cantonada proporcionada.
+
+        Args:
+            cantonada (str): La cantonada a establir en el mapa.
+        """
+        self.numeroCarrer = cantonada
+        self.infoAdreca = self.dictCantonadesFiltre[self.numeroCarrer]
+        self.coordAdreca = QgsPointXY(float(self.infoAdreca['ETRS89_COORD_X']), 
+                                    float(self.infoAdreca['ETRS89_COORD_Y']))
+        self.leNumero.clearFocus()
+        self.sHanTrobatCoordenades.emit(0, "[0]")
+
+        if self.leNumero.text() == ' ':
+            self.leNumero.clear()
+
+    def comprovarCantonadesCarrer(self, cantonada: str) -> None:
+        """
+        Comprova la cantonada d'un carrer i llança excepcions si no es troba als carrers especificats o en el filtre d'ubicacions.
+
+        Args:
+            cantonada (str): La cantonada del carrer a comprovar.
+
+        Raises:
+            ValueError: Si el carrer no es troba als carrers especificats o si la cantonada no es troba en el filtre d'ubicacions.
+        """
+        self.txto = self.obtenirTextCompletat()
+        if self.txto not in self.dictCarrers:
+            self.leNumero.clear()
+            raise ValueError(f"ERROR >> [9]: El carrer {self.txto} no es troba als carrers especificats.")
+
+        if cantonada not in self.dictCantonadesFiltre:
+            raise ValueError(f"ERROR >> [8]: La cantonada {cantonada} no es troba en el filtre d'ubicacions.")
+
+    def activatCantonada(self, cantonada: str) -> None:
+        """
+        Activa una cantonada específica passada com a argument. 
+
+        Args:
+            cantonada (str): El nom de la cantonada a activar.
+        """
+        try:
+            self.leNumero.setText(cantonada)
+            self.iniAdrecaCantonada() 
+
+            self.comprovarCantonadesCarrer(cantonada)
+            self.establirCantonadaMapa(cantonada)
+        except Exception as e:
+            self.mostrarError(e)
+    
+    def trobatCantonada(self) -> None:
+        """
+        Gestiona la selecció o introducció d'una cantonada.
+
+        Retorna:
+            None si no es troben errors.
+            False si es troba una excepció inesperada o un error mentre es realitza la consulta SQL.
+        """
+        if not self.leCarrer.text():
+            self.leNumero.setCompleter(None)
+            return
+            
+        if not self.leNumero.text():
+            return
+
+        try:
+            cantonada = self.leNumero.text()
+            self.comprovarCantonadesCarrer(cantonada)
+
+            if cantonada:
+                self.iniAdrecaCantonada()
+                if not self.nomCarrer:
+                    raise ValueError("ERROR >> [7]: Empty address.")
+            
+                if cantonada in self.dictCantonadesFiltre and self.nomCarrer:
+                    self.establirCantonadaMapa(cantonada)
+
+            else:
+                raise ValueError("ERROR >> [6]: La cantonada no és al diccionari.")
+        except Exception as e:
+            self.mostrarError(e)
+        
 
     def llegirAdreces(self):
         if self.origen == 'SQLITE':

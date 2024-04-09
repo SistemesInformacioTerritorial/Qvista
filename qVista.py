@@ -17,7 +17,7 @@ from qgis.PyQt.QtCore import (QCoreApplication, QDateTime, QProcess, QSize, Qt,
                               QUrl, pyqtSignal)
 from qgis.PyQt.QtGui import (QColor, QDesktopServices, QFont, QIcon,
                              QKeySequence, QPainter, QPen, QPixmap)
-from qgis.PyQt.QtWidgets import (QAction, QCheckBox, QDialog, QDockWidget,
+from qgis.PyQt.QtWidgets import (QComboBox, QAction, QCheckBox, QDialog, QDockWidget,
                                  QFileDialog, QFrame, QHBoxLayout, QLabel,
                                  QLineEdit, QMainWindow, QMenu, QMessageBox,
                                  QShortcut, QSizePolicy, QSpacerItem,
@@ -1219,6 +1219,20 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.actPropietatsLayer.setStatusTip("Opcions de visualització")
         self.actPropietatsLayer.triggered.connect(self.propietatsLayer)
 
+    def canviarTextLeNumCerca(self, index: int) -> None:
+        """
+        Canvia el text de placeholder de l'objecte QLineEdit leNumCerca en funció de la selecció de tipus 
+        feta a l'objecte QComboBox comboTipusCerca.
+
+        Args:
+            index (int): Índex de la selecció actual del QComboBox comboTipusCerca
+        """
+        tipus_seleccionat = self.comboTipusCerca.itemText(index)
+        if tipus_seleccionat == 'Numero':
+            self.leNumCerca.setPlaceholderText('Num...')
+        elif tipus_seleccionat == 'Cantonada':
+            self.leNumCerca.setPlaceholderText('Carrer/Plaça...')
+
     def definicioBotons(self):
         self.frame_15.setContentsMargins(0,0,12,0)
         stylesheetLineEdits="""
@@ -1228,17 +1242,24 @@ class QVista(QMainWindow, Ui_MainWindow):
             border-radius: 2px;
             padding: 1px"""%(QvConstants.COLORCERCADORHTML, QvConstants.COLORFOSCHTML, QvConstants.COLORCERCADORHTML)
         
+        self.comboTipusCerca.setStyleSheet(stylesheetLineEdits)
+        self.comboTipusCerca.setFont(QvConstants.FONTTEXT)
+        self.comboTipusCerca.addItems(['Numero', 'Cantonada'])
+        self.comboTipusCerca.setFixedWidth(140)
+
         self.leCercaPerAdreca.setStyleSheet(stylesheetLineEdits)
         self.leCercaPerAdreca.setFont(QvConstants.FONTTEXT)
         self.leCercaPerAdreca.setPlaceholderText('Carrer, plaça...')
         self.leCercaPerAdreca.setFixedWidth(320)
+        #self.leCercaPerAdreca.textChanged.connect(lambda text: self.handleTextChange(text))
 
         self.leNumCerca.setStyleSheet(stylesheetLineEdits)
         self.leNumCerca.setFont(QvConstants.FONTTEXT)
-        self.leNumCerca.setPlaceholderText('Núm...')
-        self.leNumCerca.setFixedWidth(80)
+        self.leNumCerca.setPlaceholderText('Num...')
+        self.leNumCerca.setFixedWidth(320)
+        self.comboTipusCerca.currentIndexChanged.connect(self.canviarTextLeNumCerca)
 
-        self.cAdrecSup=QCercadorAdreca(self.leCercaPerAdreca, self.leNumCerca,'SQLITE')    # SQLITE o CSV
+        self.cAdrecSup=QCercadorAdreca(self.leCercaPerAdreca, self.leNumCerca, self.comboTipusCerca, 'SQLITE')    # SQLITE o CSV
         self.bCercaPerAdreca.clicked.connect(lambda: self.leCercaPerAdreca.setText(''))
         self.bCercaPerAdreca.clicked.connect(self.leCercaPerAdreca.setFocus)
         self.bCercaPerAdreca.setCursor(QvConstants.cursorClick())
