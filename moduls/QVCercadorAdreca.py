@@ -62,7 +62,6 @@ def conte(sub, string):
     def x_not_in_string(x):
         return x not in string
     return all(x in string for x in subs)
-    # return not any(map(x_not_in_string, subs))
 
 
 def comenca(sub, string):
@@ -79,8 +78,6 @@ def comenca(sub, string):
     def substring_comenca_per_x(x):
         return re.search(' '+x, ' '+string) is not None
 
-    # totes_hi_son = all(map(x_in_string, subs))
-    # comenca_una = any(map(substring_comenca_per_x, subs))
     # # podria tenir sentit posar els any al return directament. Així, si la primera és falsa, la segona no s'arriba a mirar.
     # # guanyaríem velocitat gràcies a la lazy evaluation, però perdríem llegibilitat
     # return totes_hi_son and comenca_una
@@ -88,9 +85,6 @@ def comenca(sub, string):
 
 
 def variant(sub, string, variants):
-    # for x in variants.split(','):
-    #     if sub in x: return True
-    # return False
 
     def sub_in_x(x):
         return sub in x
@@ -105,7 +99,6 @@ class DiccionariHashable(dict):
 class CompleterAdreces(QCompleter):
     def __init__(self, elems, widget):
         super().__init__(elems, widget)
-        # self.elements=elems
         # Tindrem un diccionari on la clau serà el carrer i el valor les variants
         aux = [x.split(chr(29)) for x in elems]
         self.variants = DiccionariHashable({x[0]: x[1].lower() for x in aux})
@@ -129,7 +122,6 @@ class CompleterAdreces(QCompleter):
         if ind != -1:
             text = text[:ind-1]
         self.le.setText(text.strip())
-        # print(text)
     
     @staticmethod
     @functools.lru_cache(maxsize=None)
@@ -174,25 +166,16 @@ class CompleterAdreces(QCompleter):
             contenen, altres = filtra(altres, lambda x: conte(word, x))
             variants, _ = filtra(altres, lambda x: variant(word, x, vars[x]))
 
-        # itertools.chain(l1, l2, l3) és "equivalent" a fer l1+l2+l3
-        # en realitat no ajunta les llistes, de manera que no necessita iterar-les senceres, optimitzant una mica
         # Als elements de les llistes encaixen, comencen i contenen els afegim les variants al final
         # Als elements de la llista variants també li afegim, però també posem (var) al principi, ja que el resultat ha sigut trobat dins d'una variant
         res = (x+chr(29)+vars[x] for x in itertools.chain(encaixen, comencen, contenen))
         res = itertools.chain(res, ('(var) '+x+chr(29)+vars[x] for x in variants))
-        # OPCIÓ 1: ENS QUEDEM NOMÉS N FILES DEL RESULTAT
-        #return list(res)[:20]
+
         res = [x for (x,_) in zip(res,range(20))]
         return res
-        # OPCIÓ 2: RETORNEM TOT
-        # return list(res)
 
     def update(self, word):
         '''Funció que actualitza els elements'''
-        # if len(word) < 3 and self.modelCanviat:
-        #     self.model().setStringList(self.elements)
-        #     self.modelCanviat = False
-        #     return
         self.word = word.lower()
 
 
@@ -225,12 +208,10 @@ class ValidadorNums(QValidator):
 
 
 class QCercadorAdreca(QObject):
-    sHanTrobatCoordenades = pyqtSignal(int, 'QString')  # atencion
+    sHanTrobatCoordenades = pyqtSignal(int, 'QString')
 
-    def __init__(self, lineEditCarrer, lineEditNumero, comboTipusCerca=None, origen='SQLITE'):
+    def __init__(self, lineEditCarrer, lineEditNumero, origen='SQLITE', comboTipusCerca=None):
         super().__init__()
-
-        # self.pare= pare
 
         self.origen = origen
         self.leCarrer = lineEditCarrer
@@ -245,15 +226,14 @@ class QCercadorAdreca(QObject):
         self.dictNumeros = collections.defaultdict(dict)
         self.dictCantonades = collections.defaultdict(dict)
 
-        # self.db.setConnectOptions("QSQLITE_OPEN_READONLY")
         self.numClick=0
         self.db = QvApp().dbGeo
 
-        if self.db is None:  # not self.db.open(): # En caso de que no se abra
+        if self.db is None:
             QMessageBox.critical(None, "Error al abrir la base de datos.\n\n"
                                  "Click para cancelar y salir.", QMessageBox.Cancel)
 
-        self.query = QSqlQuery(self.db)  # Intancia del Query
+        self.query = QSqlQuery(self.db)
         self.txto = ''
         self.calle_con_acentos = ''
         self.habilitaLeNum()
@@ -261,13 +241,10 @@ class QCercadorAdreca(QObject):
         self.iniAdreca()
 
         if self.llegirAdreces():
-            # si se ha podido leer las direciones... creando el diccionario...
             self.prepararCompleterCarrer()
 
     def habilitaLeNum(self):
         self.carrerActivat = False
-        print(f"calle_con_acentos: '{self.calle_con_acentos}'")
-        #print(f"txto: '{self.txto}'")
         self.leNumero.setEnabled(
             self.calle_con_acentos != '' or self.txto != '')
 
@@ -279,31 +256,23 @@ class QCercadorAdreca(QObject):
         self.dictCantonadesFiltre = self.dictCantonades[self.codiCarrer]
         self.completerCantonada = QCompleter(
             self.dictCantonadesFiltre, self.leNumero)
-        # Determino funcionamiento del completer
         self.completerCantonada.setFilterMode(QtCore.Qt.MatchContains)
         self.completerCantonada.setCaseSensitivity(QtCore.Qt.CaseInsensitive)
-        # Funcion que se ejecutará cuando
         self.completerCantonada.activated.connect(self.activatCantonada)
-        # Asigno el completer al lineEdit
         self.leNumero.setCompleter(self.completerCantonada)
 
     def prepararCompleterCarrer(self):
         # creo instancia de completer que relaciona diccionario de calles con lineEdit
-        # self.completerCarrer = QCompleter(self.dictCarrers, self.leCarrer)
         self.completerCarrer = CompleterAdreces(
             self.dictCarrers, self.leCarrer)
-        # Determino funcionamiento del completer
         self.completerCarrer.setFilterMode(QtCore.Qt.MatchContains)
         self.completerCarrer.setCaseSensitivity(QtCore.Qt.CaseInsensitive)
-        # Funcion que se ejecutará cuando
         self.completerCarrer.activated.connect(self.activatCarrer)
-        # Asigno el completer al lineEdit
         self.leCarrer.setCompleter(self.completerCarrer)
 
     def prepararCompleterNumero(self):
         self.dictNumerosFiltre = self.dictNumeros[self.codiCarrer]
-        # afegim el 0 com a "número postal"
-        # fa referència a ' ', però alguns usuaris esperen trobar-s'ho en un 0
+        # afegim el 0 com a "número postal" --> fa referencia a ' '
         if ' ' in self.dictNumerosFiltre:
             self.dictNumerosFiltre['0'] = self.dictNumerosFiltre[' ']
         self.completerNumero = QCompleter(
@@ -314,7 +283,6 @@ class QCercadorAdreca(QObject):
         self.leNumero.setCompleter(self.completerNumero)
         # El ' ' fa referència al centre del carrer
         # Si només tenim aquest, anem directament allà sense necessitar número
-        #  (mirem que len sigui ==2 perquè hem afegit el '0')
         if len(self.dictNumerosFiltre)==2 and ' ' in self.dictNumerosFiltre:
             self.activatNumero(' ')
 
@@ -327,10 +295,10 @@ class QCercadorAdreca(QObject):
         self.codiCarrer = ''
 
     def iniAdrecaNumero(self):
-        self.numeroCarrer = '' #104
-        self.coordAdreca = None #adreça (carrer... 104)
-        self.infoAdreca = None #element del diccionari (104)
-        self.NumeroOficial = '' #103-105
+        self.numeroCarrer = ''
+        self.coordAdreca = None
+        self.infoAdreca = None
+        self.NumeroOficial = '' 
 
     def iniAdrecaCantonada(self):
         self.carrerOriginalCantonada = ''
@@ -341,19 +309,20 @@ class QCercadorAdreca(QObject):
     def connectarLineEdits(self):
         self.leCarrer.textChanged.connect(self.esborrarNumero)
         self.leCarrer.editingFinished.connect(self.trobatCarrer)
-        # CUARENTENA
-        # self.leCarrer.mouseDoubleClickEvent = self.clear_leNumero_leCarrer
-        # self.leCarrer.mouseDoubleClickEvent = self.SeleccPalabraOTodoEnFrase
         self.leCarrer.setAlignment(Qt.AlignLeft)
 
         if self.tipusCerca.currentText() == 'Numero': 
+            try:
+                self.leNumero.editingFinished.disconnect(self.trobatCantonada)
+            except:
+                pass
             self.leNumero.editingFinished.connect(self.trobatNumero)
         else:
+            try:
+                self.leNumero.editingFinished.disconnect(self.trobatNumero)
+            except:
+                pass
             self.leNumero.editingFinished.connect(self.trobatCantonada)
-
-        # self.leNumero.editingFinished.connect(self.trobatNumero) 
-
-        # self.leNumero.returnPressed.connect(self.trobatNumero)
 
     def SeleccPalabraOTodoEnFrase(self, event):
         """
@@ -380,12 +349,7 @@ class QCercadorAdreca(QObject):
             # selecciona palabra en frase por posicion
             self.leCarrer.setSelection(self.inicio+1,self.fin-self.inicio-1)
             
-        self.numClick += 1  
-    # CUARENTENA
-    # def clear_leNumero_leCarrer(self, carrer):
-    #     self.carrerActivat = False
-    #     self.leNumero.clear()
-    #     self.leCarrer.clear()
+        self.numClick += 1
 
 
     # Obtenir les dades de les cantonades+numeros associats a un carrer
@@ -400,7 +364,6 @@ class QCercadorAdreca(QObject):
         None
         """
 
-        #TODO: Fromatar consulta
         self.query.prepare(f"""
             SELECT codi,
                 CASE num_lletra_post 
@@ -416,12 +379,6 @@ class QCercadorAdreca(QObject):
 
         if not self.query.exec_():
             print(self.query.lastError().text())
-
-        """ try:
-            self.query.exec_()
-        except Exception as e:
-            print(f"Error executing query: {e}")
-            return """
 
         while self.query.next():
             row = collections.OrderedDict()
@@ -469,7 +426,6 @@ class QCercadorAdreca(QObject):
         self.query.finish()
 
     # Venimos del completer, un click en desplegable ....
-    #TODO: Posar tipat
     def activatCarrer(self, carrer: str) -> Optional[bool]:
         """
         Aquesta funció processa el carrer proporcionat, neteja el nom del carrer i estableix l'adreça si el carrer existeix.
@@ -483,7 +439,6 @@ class QCercadorAdreca(QObject):
         """
 
         self.carrerActivat = True
-        # print(carrer)
 
         carrer=carrer.replace('(var) ','')
         # if chr(29) in carrer:
@@ -498,7 +453,6 @@ class QCercadorAdreca(QObject):
         self.calle_con_acentos = ss.rstrip()
 
         self.leCarrer.setAlignment(Qt.AlignLeft)
-        print(f"Text asignat 2: {self.calle_con_acentos}")
         self.leCarrer.setText(self.calle_con_acentos)
 
         # self.leCarrer.setText(carrer)
@@ -526,10 +480,9 @@ class QCercadorAdreca(QObject):
                 msg.setIcon(QMessageBox.Warning)
 
                 msg.setText(str(sys.exc_info()[1]))
-                # msg.setInformativeText("OK para salir del programa \nCANCEL para seguir en el programa")
                 msg.setWindowTitle("qVista ERROR")
                 msg.setStandardButtons(QMessageBox.Close)
-                retval = msg.exec_()  # No fem res amb el valor de retorn (???)
+                retval = msg.exec_()
 
                 print('QCercadorAdreca.iniAdreca(): ',
                       sys.exc_info()[0], sys.exc_info()[1])
@@ -542,7 +495,6 @@ class QCercadorAdreca(QObject):
             self.sHanTrobatCoordenades.emit(1, info)  # adreça vacia
         
         self.habilitaLeNum()
-        # self.prepararCompleterNumero()
         self.focusANumero()
 
     def trobatCarrer(self) -> Optional[bool]:
@@ -554,20 +506,17 @@ class QCercadorAdreca(QObject):
         Returns:
             bool: Retorna None si s'ha pogut processar l'adreça, fals altrament.
         """
-        print("inici")
 
         if self.leCarrer.text() == '':
             self.leNumero.setCompleter(None)
             return
         if not self.carrerActivat:
-            # print(self.leCarrer.text())
             # així obtenim el carrer on estàvem encara que no l'haguem seleccionat explícitament
             self.txto = self.completerCarrer.popup().currentIndex().data()
             if self.txto is None:
                 self.txto = self.completerCarrer.currentCompletion()
             if self.txto == '':
                 return
-            # self.txto=self.txto.split(chr(29))[0]
 
             nn = self.txto.find(chr(30))
             self.txto=self.txto.replace('(var) ','')
@@ -575,23 +524,12 @@ class QCercadorAdreca(QObject):
                 ss = self.txto
             else:
                 ss = self.txto[0:nn-1]
-            # ss=ss.replace('(var) ','')
 
-            # ss= self.txto[0:nn-1]
-            print(f"ss abans de rstrip: '{ss}'")
             self.calle_con_acentos = ss.rstrip()
-            print(f"calle_con_acentos després de rstrip: '{self.calle_con_acentos}'")
-
             self.leCarrer.setAlignment(Qt.AlignLeft)
-
-            print(f"Text asignat: '{self.calle_con_acentos}'")
-            if self.calle_con_acentos:
-                self.leCarrer.setText(self.calle_con_acentos)
-
-            print(f"calle_con_acentos després de rstrip3: '{self.calle_con_acentos}'")
+            self.leCarrer.setText(self.calle_con_acentos)
             self.iniAdreca()
             if self.txto != self.nomCarrer:
-                # self.iniAdreca()
                 if self.txto in self.dictCarrers:
                     self.nomCarrer = self.txto
                     self.codiCarrer = self.dictCarrers[self.nomCarrer]
@@ -600,14 +538,12 @@ class QCercadorAdreca(QObject):
                     try:
                         self.getCarrerCantonades()
                         self.getCarrerNumeros()
-                        #self.db.close()
 
                         if self.tipusCerca.currentText() == 'Numero': 
                             self.prepararCompleterNumero()
-                            self.focusANumero()
                         else: 
                             self.prepararCompleterCantonada()
-
+                        self.focusANumero()
 
                     except Exception as e:
                         print(str(e))
@@ -615,10 +551,9 @@ class QCercadorAdreca(QObject):
                         msg.setIcon(QMessageBox.Warning)
 
                         msg.setText(str(sys.exc_info()[1]))
-                        # msg.setInformativeText("OK para salir del programa \nCANCEL para seguir en el programa")
                         msg.setWindowTitle("qVista ERROR")
                         msg.setStandardButtons(QMessageBox.Close)
-                        retval = msg.exec_()  # No fem res amb el valor de retorn (???)
+                        retval = msg.exec_()
 
                         print('QCercadorAdreca.iniAdreca(): ',
                               sys.exc_info()[0], sys.exc_info()[1])
@@ -746,7 +681,6 @@ class QCercadorAdreca(QObject):
     def llegirAdrecesSQlite(self):
         try:
             index = 0
-            # self.query = QSqlQuery() # Intancia del Query
             self.query.exec_(
                 "select codi , nom_oficial , variants  from Carrers")
 
@@ -756,7 +690,6 @@ class QCercadorAdreca(QObject):
                 variants = self.query.value(2).lower()  # Variants del nom
                 nombre_sin_acentos = self.remove_accents(nombre)
                 if nombre == nombre_sin_acentos:
-                    # clave= nombre + "  (" + codi_carrer + ")"
                     clave = nombre + \
                         "  (" + codi_carrer + \
                         ")                                                  " + \
@@ -772,7 +705,6 @@ class QCercadorAdreca(QObject):
                 index += 1
 
             self.query.finish()
-            # self.db.close()
             return True
         except Exception as e:
             print(str(e))
@@ -780,10 +712,9 @@ class QCercadorAdreca(QObject):
             msg.setIcon(QMessageBox.Warning)
 
             msg.setText(str(sys.exc_info()[1]))
-            # msg.setInformativeText("OK para salir del programa \nCANCEL para seguir en el programa")
             msg.setWindowTitle("qVista ERROR")
             msg.setStandardButtons(QMessageBox.Close)
-            retval = msg.exec_()  # No fem res amb el valor de retorn (???)
+            retval = msg.exec_()
 
             print('QCercadorAdreca.llegirAdrecesSQlite(): ',
                   sys.exc_info()[0], sys.exc_info()[1])
@@ -799,8 +730,6 @@ class QCercadorAdreca(QObject):
     def activatNumero(self, txt):
         self.leNumero.setText(txt)
         self.iniAdrecaNumero()
-        # if self.leCarrer.text() in self.dictCarrers:
-        # self.txto = self.completerCarrer.currentCompletion()
         self.txto = self.completerCarrer.popup().currentIndex().data()
         if self.txto is None:
             self.txto = self.completerCarrer.currentCompletion()
@@ -826,14 +755,15 @@ class QCercadorAdreca(QObject):
             self.sHanTrobatCoordenades.emit(5, info)  # numero
 
     def trobatNumero(self):
+        if self.tipusCerca.currentText() != 'Numero': 
+            return None
+        
         # Si no hi ha carrer, eliminem el completer del número
         if self.leCarrer.text() == '':
             self.leNumero.setCompleter(None)
         if self.leNumero.text() == '':
             return
-        # self.txto = self.completerCarrer.currentCompletion()
         try:
-            # if self.leCarrer.text() in self.dictCarrers:
             self.txto = self.completerCarrer.popup().currentIndex().data()
             if self.txto is None:
                 self.txto = self.completerCarrer.currentCompletion()
@@ -844,12 +774,11 @@ class QCercadorAdreca(QObject):
                     txt = self.completerNumero.popup().currentIndex().data()
                     if txt is None:
                         txt = self.completerNumero.currentCompletion()
-                    # txt = self.completerNumero.currentCompletion()
                     self.leNumero.setText(txt)
                 else:
                     txt = ' '
 
-                if txt != '':  # and txt != self.numeroCarrer:
+                if txt != '':
                     self.iniAdrecaNumero()
                     if self.nomCarrer != '':
                         if txt in self.dictNumerosFiltre:
@@ -882,25 +811,21 @@ class QCercadorAdreca(QObject):
                 info = "ERROR >> [9]"
                 self.sHanTrobatCoordenades.emit(9, info)  # numero en blanco
         except:
-            return
             msg = QMessageBox()
             msg.setIcon(QMessageBox.Warning)
             info_rsc = 'ERROR: ' + str(sys.exc_info()[0])
             msg.setText(info_rsc)
-            # msg.setInformativeText("OK para salir del programa \nCANCEL para seguir en el programa")
             msg.setWindowTitle("qVista >> QVCercadorAdreca>> trobatNumero")
 
             msg.setStandardButtons(QMessageBox.Close)
-            retval = msg.exec_()  # No fem res amb el valor de retorn (???)
+            retval = msg.exec_()
 
     def focusANumero(self):
         self.leNumero.setFocus()
 
     def esborrarNumero(self):
-        # self.carrerActivat = False
         self.calle_con_acentos = ''
         self.leNumero.clear()
-        # self.leNumero.setCompleter(None)
 
 
 if __name__ == "__main__":

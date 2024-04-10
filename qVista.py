@@ -1251,7 +1251,6 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.leCercaPerAdreca.setFont(QvConstants.FONTTEXT)
         self.leCercaPerAdreca.setPlaceholderText('Carrer, plaça...')
         self.leCercaPerAdreca.setFixedWidth(320)
-        #self.leCercaPerAdreca.textChanged.connect(lambda text: self.handleTextChange(text))
 
         self.leNumCerca.setStyleSheet(stylesheetLineEdits)
         self.leNumCerca.setFont(QvConstants.FONTTEXT)
@@ -1259,7 +1258,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.leNumCerca.setFixedWidth(320)
         self.comboTipusCerca.currentIndexChanged.connect(self.canviarTextLeNumCerca)
 
-        self.cAdrecSup=QCercadorAdreca(self.leCercaPerAdreca, self.leNumCerca, self.comboTipusCerca, 'SQLITE')    # SQLITE o CSV
+        self.cAdrecSup=QCercadorAdreca(self.leCercaPerAdreca, self.leNumCerca, 'SQLITE', self.comboTipusCerca)    # SQLITE o CSV
         self.bCercaPerAdreca.clicked.connect(lambda: self.leCercaPerAdreca.setText(''))
         self.bCercaPerAdreca.clicked.connect(self.leCercaPerAdreca.setFocus)
         self.bCercaPerAdreca.setCursor(QvConstants.cursorClick())
