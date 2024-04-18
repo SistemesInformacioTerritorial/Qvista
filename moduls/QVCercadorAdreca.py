@@ -22,6 +22,8 @@ from qgis.PyQt.QtWidgets import (QCompleter, QHBoxLayout, QLineEdit,
 from moduls.QvApp import QvApp
 from typing import List,Optional
 
+from PyQt5.QtCore import QTimer
+
 
 def mostrarError(self, e: Exception) -> None:
     """
@@ -218,6 +220,9 @@ class QCercadorAdreca(QObject):
         self.leNumero = lineEditNumero
         self.tipusCerca = comboTipusCerca
 
+        # Establir una connexió per quan canviï l'índex selecció de comboTipusCerca
+        self.tipusCerca.currentIndexChanged.connect(self.connectarLineEdits)
+
         self.connectarLineEdits()
 
         self.carrerActivat = False
@@ -231,7 +236,7 @@ class QCercadorAdreca(QObject):
 
         if self.db is None:
             QMessageBox.critical(None, "Error al abrir la base de datos.\n\n"
-                                 "Click para cancelar y salir.", QMessageBox.Cancel)
+                                "Click para cancelar y salir.", QMessageBox.Cancel)
 
         self.query = QSqlQuery(self.db)
         self.txto = ''
@@ -242,6 +247,35 @@ class QCercadorAdreca(QObject):
 
         if self.llegirAdreces():
             self.prepararCompleterCarrer()
+            super().__init__()
+
+            self.origen = origen
+            self.leCarrer = lineEditCarrer
+            self.leNumero = lineEditNumero
+            self.tipusCerca = comboTipusCerca
+
+            self.carrerActivat = False
+
+            self.dictCarrers = {}
+            self.dictNumeros = collections.defaultdict(dict)
+            self.dictCantonades = collections.defaultdict(dict)
+
+            self.numClick=0
+            self.db = QvApp().dbGeo
+
+            if self.db is None:
+                QMessageBox.critical(None, "Error al abrir la base de datos.\n\n"
+                                    "Click para cancelar y salir.", QMessageBox.Cancel)
+
+            self.query = QSqlQuery(self.db)
+            self.txto = ''
+            self.calle_con_acentos = ''
+            self.habilitaLeNum()
+
+            self.iniAdreca()
+
+            if self.llegirAdreces():
+                self.prepararCompleterCarrer()
 
     def habilitaLeNum(self):
         self.carrerActivat = False
@@ -305,21 +339,28 @@ class QCercadorAdreca(QObject):
         self.coordCantonada = None
         self.infoCantonada = None
         self.carrerCantonada = ''
-
+        
     def connectarLineEdits(self):
         self.leCarrer.textChanged.connect(self.esborrarNumero)
-        self.leCarrer.editingFinished.connect(self.trobatCarrer)
+        try:
+            self.leCarrer.editingFinished.connect(self.trobatCarrer)
+        except ValueError as e:
+            self.mostrarError(e)
         self.leCarrer.setAlignment(Qt.AlignLeft)
 
         if self.tipusCerca.currentText() == 'Numero': 
             try:
                 self.leNumero.editingFinished.disconnect(self.trobatCantonada)
+                self.getCarrerNumeros()
+                self.prepararCompleterNumero()
             except:
                 pass
             self.leNumero.editingFinished.connect(self.trobatNumero)
         else:
             try:
                 self.leNumero.editingFinished.disconnect(self.trobatNumero)
+                self.getCarrerCantonades()
+                self.prepararCompleterCantonada()
             except:
                 pass
             self.leNumero.editingFinished.connect(self.trobatCantonada)
@@ -441,21 +482,16 @@ class QCercadorAdreca(QObject):
         self.carrerActivat = True
 
         carrer=carrer.replace('(var) ','')
-        # if chr(29) in carrer:
-        #     carrer=carrer.split(chr(29))[0]
         nn = carrer.find(chr(30))
         if nn == -1:
             ss = carrer
         else:
             ss = carrer[0:nn-1]
-        # ss=ss.replace('(var) ','')
 
         self.calle_con_acentos = ss.rstrip()
 
         self.leCarrer.setAlignment(Qt.AlignLeft)
         self.leCarrer.setText(self.calle_con_acentos)
-
-        # self.leCarrer.setText(carrer)
         self.iniAdreca()
         if carrer in self.dictCarrers:
             self.nomCarrer = carrer
@@ -465,7 +501,6 @@ class QCercadorAdreca(QObject):
 
                 self.getCarrerCantonades()
                 self.getCarrerNumeros()
-                # self.db.close()
 
                 if self.tipusCerca.currentText() == 'Numero': 
                     self.prepararCompleterNumero()
@@ -475,25 +510,11 @@ class QCercadorAdreca(QObject):
                 self.focusANumero()
 
             except Exception as e:
-                print(str(e))
-                msg = QMessageBox()
-                msg.setIcon(QMessageBox.Warning)
-
-                msg.setText(str(sys.exc_info()[1]))
-                msg.setWindowTitle("qVista ERROR")
-                msg.setStandardButtons(QMessageBox.Close)
-                retval = msg.exec_()
-
-                print('QCercadorAdreca.iniAdreca(): ',
-                      sys.exc_info()[0], sys.exc_info()[1])
-                return False
-            else:
-                pass
+                self.mostrarError(e)
 
         else:
             info = "ERROR >> [1]"
             self.sHanTrobatCoordenades.emit(1, info)  # adreça vacia
-        
         self.habilitaLeNum()
         self.focusANumero()
 
@@ -546,18 +567,7 @@ class QCercadorAdreca(QObject):
                         self.focusANumero()
 
                     except Exception as e:
-                        print(str(e))
-                        msg = QMessageBox()
-                        msg.setIcon(QMessageBox.Warning)
-
-                        msg.setText(str(sys.exc_info()[1]))
-                        msg.setWindowTitle("qVista ERROR")
-                        msg.setStandardButtons(QMessageBox.Close)
-                        retval = msg.exec_()
-
-                        print('QCercadorAdreca.iniAdreca(): ',
-                              sys.exc_info()[0], sys.exc_info()[1])
-                        return False
+                        self.mostrarError(e)
 
                 else:
                     info = "ERROR >> [2]"
@@ -707,18 +717,7 @@ class QCercadorAdreca(QObject):
             self.query.finish()
             return True
         except Exception as e:
-            print(str(e))
-            msg = QMessageBox()
-            msg.setIcon(QMessageBox.Warning)
-
-            msg.setText(str(sys.exc_info()[1]))
-            msg.setWindowTitle("qVista ERROR")
-            msg.setStandardButtons(QMessageBox.Close)
-            retval = msg.exec_()
-
-            print('QCercadorAdreca.llegirAdrecesSQlite(): ',
-                  sys.exc_info()[0], sys.exc_info()[1])
-            return False
+            self.mostrarError(e)
 
     # Normalización caracteres quitando acentos
 
@@ -811,14 +810,7 @@ class QCercadorAdreca(QObject):
                 info = "ERROR >> [9]"
                 self.sHanTrobatCoordenades.emit(9, info)  # numero en blanco
         except:
-            msg = QMessageBox()
-            msg.setIcon(QMessageBox.Warning)
-            info_rsc = 'ERROR: ' + str(sys.exc_info()[0])
-            msg.setText(info_rsc)
-            msg.setWindowTitle("qVista >> QVCercadorAdreca>> trobatNumero")
-
-            msg.setStandardButtons(QMessageBox.Close)
-            retval = msg.exec_()
+            self.mostrarError(info)
 
     def focusANumero(self):
         self.leNumero.setFocus()

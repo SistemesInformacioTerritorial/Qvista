@@ -1221,8 +1221,8 @@ class QVista(QMainWindow, Ui_MainWindow):
 
     def canviarTextLeNumCerca(self, index: int) -> None:
         """
-        Canvia el text de placeholder de l'objecte QLineEdit leNumCerca en funció de la selecció de tipus 
-        feta a l'objecte QComboBox comboTipusCerca.
+        Canvia el text de placeholder de l'objecte QlineEdit leNumCerca en funció de la selecció de tipus 
+        feta a l'objecte QComboBox comboTipusCerca. Netega el contingut actual de leNumCerca.
 
         Args:
             index (int): Índex de la selecció actual del QComboBox comboTipusCerca
@@ -1232,6 +1232,13 @@ class QVista(QMainWindow, Ui_MainWindow):
             self.leNumCerca.setPlaceholderText('Num...')
         elif tipus_seleccionat == 'Cantonada':
             self.leNumCerca.setPlaceholderText('Carrer/Plaça...')
+        self.leNumCerca.clear()  # Netejar el camp
+
+    def activarODesactivarNumCerca(self):
+        if self.leCercaPerAdreca.text() == '':
+            self.leNumCerca.setReadOnly(True)
+        else:
+            self.leNumCerca.setReadOnly(False)
 
     def definicioBotons(self):
         self.frame_15.setContentsMargins(0,0,12,0)
@@ -1246,7 +1253,8 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.comboTipusCerca.setFont(QvConstants.FONTTEXT)
         self.comboTipusCerca.addItems(['Numero', 'Cantonada'])
         self.comboTipusCerca.setFixedWidth(140)
-
+        self.leCercaPerAdreca.textChanged.connect(lambda: self.leNumCerca.setReadOnly(True) if self.leCercaPerAdreca.text() == '' else self.leNumCerca.setReadOnly(False))
+        
         self.leCercaPerAdreca.setStyleSheet(stylesheetLineEdits)
         self.leCercaPerAdreca.setFont(QvConstants.FONTTEXT)
         self.leCercaPerAdreca.setPlaceholderText('Carrer, plaça...')
@@ -1264,6 +1272,8 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.bCercaPerAdreca.setCursor(QvConstants.cursorClick())
         self.leCercaPerAdreca.textChanged.connect(lambda x: self.bCercaPerAdreca.setIcon(QIcon(os.path.join(imatgesDir,('magnify.png' if x=='' else 'cp_elimina.png')))))
         self.cAdrecSup.sHanTrobatCoordenades.connect(self.trobatNumero_oNoSup)
+        self.leNumCerca.setReadOnly(True if self.leCercaPerAdreca.text() == '' else False)
+
 
         self.lSpacer.setText("")
         self.lSpacer.setFixedWidth(24)
