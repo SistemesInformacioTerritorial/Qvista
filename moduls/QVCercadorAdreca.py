@@ -25,7 +25,7 @@ from typing import List,Optional
 from PyQt5.QtCore import QTimer
 
 
-def mostrarError(self, e: Exception) -> None:
+def mostrarError(e: Exception) -> None:
     """
     Mostra un error en una finestra de diàleg.
 
@@ -345,7 +345,7 @@ class QCercadorAdreca(QObject):
         try:
             self.leCarrer.editingFinished.connect(self.trobatCarrer)
         except ValueError as e:
-            self.mostrarError(e)
+            mostrarError(e)
         self.leCarrer.setAlignment(Qt.AlignLeft)
 
         if self.tipusCerca.currentText() == 'Numero': 
@@ -510,7 +510,7 @@ class QCercadorAdreca(QObject):
                 self.focusANumero()
 
             except Exception as e:
-                self.mostrarError(e)
+                mostrarError(e)
 
         else:
             info = "ERROR >> [1]"
@@ -567,7 +567,7 @@ class QCercadorAdreca(QObject):
                         self.focusANumero()
 
                     except Exception as e:
-                        self.mostrarError(e)
+                        mostrarError(e)
 
                 else:
                     info = "ERROR >> [2]"
@@ -646,7 +646,7 @@ class QCercadorAdreca(QObject):
             self.comprovarCantonadesCarrer(cantonada)
             self.establirCantonadaMapa(cantonada)
         except Exception as e:
-            self.mostrarError(e)
+            mostrarError(e)
     
     def trobatCantonada(self) -> None:
         """
@@ -678,7 +678,7 @@ class QCercadorAdreca(QObject):
             else:
                 raise ValueError("ERROR >> [6]: La cantonada no és al diccionari.")
         except Exception as e:
-            self.mostrarError(e)
+            mostrarError(e)
         
 
     def llegirAdreces(self):
@@ -717,7 +717,7 @@ class QCercadorAdreca(QObject):
             self.query.finish()
             return True
         except Exception as e:
-            self.mostrarError(e)
+            mostrarError(e)
 
     # Normalización caracteres quitando acentos
 
@@ -810,7 +810,7 @@ class QCercadorAdreca(QObject):
                 info = "ERROR >> [9]"
                 self.sHanTrobatCoordenades.emit(9, info)  # numero en blanco
         except:
-            self.mostrarError(info)
+            mostrarError(info)
 
     def focusANumero(self):
         self.leNumero.setFocus()
