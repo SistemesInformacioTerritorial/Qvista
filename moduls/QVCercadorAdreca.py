@@ -35,7 +35,7 @@ def mostrarError(e: Exception) -> None:
     msg = QMessageBox()
     msg.setIcon(QMessageBox.Warning)
     msg.setText(f"ERROR: {str(e)}")
-    msg.setWindowTitle("qVista >> QVCercadorAdreca >> trobatCantonada")
+    msg.setWindowTitle("No s'ha trobat el resultat")
     msg.setStandardButtons(QMessageBox.Close)
     msg.exec_()
 
@@ -513,7 +513,7 @@ class QCercadorAdreca(QObject):
                 mostrarError(e)
 
         else:
-            info = "ERROR >> [1]"
+            info = "L'adreça és buida. Codi d'error 1"
             self.sHanTrobatCoordenades.emit(1, info)  # adreça vacia
         self.habilitaLeNum()
         self.focusANumero()
@@ -570,15 +570,15 @@ class QCercadorAdreca(QObject):
                         mostrarError(e)
 
                 else:
-                    info = "ERROR >> [2]"
+                    info = "La direcció no és al diccionari. Codi d'error 2"
                     # direccion no está en diccicionario
                     self.sHanTrobatCoordenades.emit(2, info)
                     self.iniAdreca()
             else:
-                info = "ERROR >> [3]"
+                info = "Codi d'error 3"
                 self.sHanTrobatCoordenades.emit(3, info)  # nunca
         else:
-            info = "ERROR >> [4]"
+            info = "Adreça buida. Codi d'error 4"
             self.sHanTrobatCoordenades.emit(4, info)  # adreça vac
         
         self.habilitaLeNum()
@@ -627,10 +627,10 @@ class QCercadorAdreca(QObject):
         self.txto = self.obtenirTextCompletat()
         if self.txto not in self.dictCarrers:
             self.leNumero.clear()
-            raise ValueError(f"ERROR >> [9]: El carrer {self.txto} no es troba als carrers especificats.")
+            raise ValueError(f"El carrer {self.txto} no es troba als carrers especificats. Codi d'error 9")
 
         if cantonada not in self.dictCantonadesFiltre:
-            raise ValueError(f"ERROR >> [8]: La cantonada {cantonada} no es troba en el filtre d'ubicacions.")
+            raise ValueError(f"La cantonada {cantonada} no es troba en el filtre d'ubicacions. Codi d'error 8")
 
     def activatCantonada(self, cantonada: str) -> None:
         """
@@ -670,13 +670,13 @@ class QCercadorAdreca(QObject):
             if cantonada:
                 self.iniAdrecaCantonada()
                 if not self.nomCarrer:
-                    raise ValueError("ERROR >> [7]: Empty address.")
+                    raise ValueError("Adreça buida. Codi d'error 7")
             
                 if cantonada in self.dictCantonadesFiltre and self.nomCarrer:
                     self.establirCantonadaMapa(cantonada)
 
             else:
-                raise ValueError("ERROR >> [6]: La cantonada no és al diccionari.")
+                raise ValueError("La cantonada no és al diccionari. Codi d'error 6")
         except Exception as e:
             mostrarError(e)
         
@@ -750,7 +750,7 @@ class QCercadorAdreca(QObject):
                     self.leNumero.clear()
 
         else:
-            info = "ERROR >> [5]"
+            info = "Número de carrer buit. Codi d'error 5"
             self.sHanTrobatCoordenades.emit(5, info)  # numero
 
     def trobatNumero(self):
@@ -794,20 +794,20 @@ class QCercadorAdreca(QObject):
                                 self.leNumero.clear()
 
                         else:
-                            info = "ERROR >> [6]"
+                            info = "El número no és al diccionari. Codi d'error 6"
                             # numero no está en diccicionario
                             self.sHanTrobatCoordenades.emit(6, info)
                     else:
-                        info = "ERROR >> [7]"
+                        info = "L'adreça és buida. Codi d'error 7"
                         self.sHanTrobatCoordenades.emit(
                             7, info)  # adreça vacia  nunca
                 else:
-                    info = "ERROR >> [8]"
+                    info = "El número de carrer és en blanc. Codi d'error 8"
                     self.sHanTrobatCoordenades.emit(
                         8, info)  # numero en blanco
             else:
                 self.leNumero.clear()
-                info = "ERROR >> [9]"
+                info = "El número de carrer és en blanc. Codi d'error 9"
                 self.sHanTrobatCoordenades.emit(9, info)  # numero en blanco
         except:
             mostrarError(info)
