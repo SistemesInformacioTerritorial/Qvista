@@ -21,6 +21,7 @@ from qgis.PyQt.QtWidgets import (QCompleter, QHBoxLayout, QLineEdit,
 
 from moduls.QvApp import QvApp
 from typing import List,Optional
+from moduls.constants import TipusCerca
 
 from PyQt5.QtCore import QTimer
 
@@ -220,8 +221,9 @@ class QCercadorAdreca(QObject):
         self.leNumero = lineEditNumero
         self.tipusCerca = comboTipusCerca
 
-        # Establir una connexió per quan canviï l'índex selecció de comboTipusCerca
         self.tipusCerca.currentIndexChanged.connect(self.connectarLineEdits)
+        self.leNumero.returnPressed.connect(self.trobatCantonada)
+        # self.leNumero.returnPressed.connect(self.trobatNumero)
 
         self.connectarLineEdits()
 
@@ -348,7 +350,7 @@ class QCercadorAdreca(QObject):
             mostrarError(e)
         self.leCarrer.setAlignment(Qt.AlignLeft)
 
-        if self.tipusCerca.currentText() == 'Numero': 
+        if self.tipusCerca.currentText() == TipusCerca.ADRECAPOSTAL.value: 
             try:
                 self.leNumero.editingFinished.disconnect(self.trobatCantonada)
                 self.getCarrerNumeros()
@@ -502,7 +504,7 @@ class QCercadorAdreca(QObject):
                 self.getCarrerCantonades()
                 self.getCarrerNumeros()
 
-                if self.tipusCerca.currentText() == 'Numero': 
+                if self.tipusCerca.currentText() == TipusCerca.ADRECAPOSTAL.value: 
                     self.prepararCompleterNumero()
                 else: 
                     self.prepararCompleterCantonada()
@@ -560,7 +562,7 @@ class QCercadorAdreca(QObject):
                         self.getCarrerCantonades()
                         self.getCarrerNumeros()
 
-                        if self.tipusCerca.currentText() == 'Numero': 
+                        if self.tipusCerca.currentText() == TipusCerca.ADRECAPOSTAL.value: 
                             self.prepararCompleterNumero()
                         else: 
                             self.prepararCompleterCantonada()
@@ -650,35 +652,24 @@ class QCercadorAdreca(QObject):
     
     def trobatCantonada(self) -> None:
         """
-        Gestiona la selecció o introducció d'una cantonada.
-
-        Retorna:
-            None si no es troben errors.
-            False si es troba una excepció inesperada o un error mentre es realitza la consulta SQL.
+        Gestiona la selecció o introducció d'una cantonada només quan l'usuari prem enter.
         """
-        if not self.leCarrer.text():
-            self.leNumero.setCompleter(None)
-            return
-            
-        if not self.leNumero.text():
-            return
+        if self.comboTipusCerca.currentText() == TipusCerca.CRUILLA.value and self.leNumero.hasFocus():
+            try:
+                cantonada = self.leNumero.text()
+                self.comprovarCantonadesCarrer(cantonada)
 
-        try:
-            cantonada = self.leNumero.text()
-            self.comprovarCantonadesCarrer(cantonada)
-
-            if cantonada:
-                self.iniAdrecaCantonada()
-                if not self.nomCarrer:
-                    raise ValueError("Adreça buida. Codi d'error 7")
-            
-                if cantonada in self.dictCantonadesFiltre and self.nomCarrer:
-                    self.establirCantonadaMapa(cantonada)
-
-            else:
-                raise ValueError("La cantonada no és al diccionari. Codi d'error 6")
-        except Exception as e:
-            mostrarError(e)
+                if cantonada:
+                    self.iniAdrecaCantonada()
+                    if not self.nomCarrer:
+                        raise ValueError("Adreça buida. Codi d'error 7")
+                
+                    if cantonada in self.dictCantonadesFiltre and self.nomCarrer:
+                        self.establirCantonadaMapa(cantonada)
+                else:
+                    raise ValueError("La cantonada no és al diccionari. Codi d'error 6")
+            except Exception as e:
+                mostrarError(e)
         
 
     def llegirAdreces(self):
@@ -754,7 +745,7 @@ class QCercadorAdreca(QObject):
             self.sHanTrobatCoordenades.emit(5, info)  # numero
 
     def trobatNumero(self):
-        if self.tipusCerca.currentText() != 'Numero': 
+        if self.tipusCerca.currentText() != TipusCerca.ADRECAPOSTAL.value: 
             return None
         
         # Si no hi ha carrer, eliminem el completer del número

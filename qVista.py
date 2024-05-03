@@ -84,6 +84,7 @@ from moduls.QvUbicacions import QvUbicacions
 from moduls.QvVideoDoc import QvVideoDoc
 from moduls.QvVisorHTML import QvVisorHTML
 from moduls.QvVisualitzacioCapa import QvVisualitzacioCapa
+from moduls.constants import TipusCerca
 
 # Impressió del temps de carrega dels moduls Qv
 print ('Temps de carrega dels moduls Qv:', time.time()-iniciTempsModuls)
@@ -1228,11 +1229,12 @@ class QVista(QMainWindow, Ui_MainWindow):
             index (int): Índex de la selecció actual del QComboBox comboTipusCerca
         """
         tipus_seleccionat = self.comboTipusCerca.itemText(index)
-        if tipus_seleccionat == 'Numero':
-            self.leNumCerca.setPlaceholderText('Num...')
-        elif tipus_seleccionat == 'Cantonada':
-            self.leNumCerca.setPlaceholderText('Carrer/Plaça...')
-        self.leNumCerca.clear()  # Netejar el camp
+        if tipus_seleccionat == TipusCerca.ADRECAPOSTAL.value: #Adreça Postal
+            self.leNumCerca.setPlaceholderText('Número')
+        elif tipus_seleccionat == TipusCerca.CRUILLA.value: #Cruïlla
+            self.leNumCerca.setPlaceholderText('Carrer, Plaça...')
+        # self.leCercaPerAdreca.clear()
+        self.leNumCerca.clear()
 
     def activarODesactivarNumCerca(self):
         if self.leCercaPerAdreca.text() == '':
@@ -1251,18 +1253,18 @@ class QVista(QMainWindow, Ui_MainWindow):
         
         self.comboTipusCerca.setStyleSheet(stylesheetLineEdits)
         self.comboTipusCerca.setFont(QvConstants.FONTTEXT)
-        self.comboTipusCerca.addItems(['Numero', 'Cantonada'])
+        self.comboTipusCerca.addItems([TipusCerca.ADRECAPOSTAL.value, TipusCerca.CRUILLA.value])
         self.comboTipusCerca.setFixedWidth(140)
         self.leCercaPerAdreca.textChanged.connect(lambda: self.leNumCerca.setReadOnly(True) if self.leCercaPerAdreca.text() == '' else self.leNumCerca.setReadOnly(False))
         
         self.leCercaPerAdreca.setStyleSheet(stylesheetLineEdits)
         self.leCercaPerAdreca.setFont(QvConstants.FONTTEXT)
-        self.leCercaPerAdreca.setPlaceholderText('Carrer, plaça...')
+        self.leCercaPerAdreca.setPlaceholderText('Carrer, Plaça...')
         self.leCercaPerAdreca.setFixedWidth(320)
 
         self.leNumCerca.setStyleSheet(stylesheetLineEdits)
         self.leNumCerca.setFont(QvConstants.FONTTEXT)
-        self.leNumCerca.setPlaceholderText('Num...')
+        self.leNumCerca.setPlaceholderText('Número...')
         self.leNumCerca.setFixedWidth(320)
         self.comboTipusCerca.currentIndexChanged.connect(self.canviarTextLeNumCerca)
 
