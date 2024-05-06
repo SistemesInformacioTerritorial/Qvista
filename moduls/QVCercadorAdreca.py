@@ -654,7 +654,7 @@ class QCercadorAdreca(QObject):
         """
         Gestiona la selecció o introducció d'una cantonada només quan l'usuari prem enter.
         """
-        if self.comboTipusCerca.currentText() == TipusCerca.CRUILLA.value and self.leNumero.hasFocus():
+        if self.tipusCerca.currentText() == TipusCerca.CRUILLA.value and self.leNumero.hasFocus():
             try:
                 cantonada = self.leNumero.text()
                 self.comprovarCantonadesCarrer(cantonada)
