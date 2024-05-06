@@ -1229,11 +1229,10 @@ class QVista(QMainWindow, Ui_MainWindow):
             index (int): Índex de la selecció actual del QComboBox comboTipusCerca
         """
         tipus_seleccionat = self.comboTipusCerca.itemText(index)
-        if tipus_seleccionat == TipusCerca.ADRECAPOSTAL.value: #Adreça Postal
+        if tipus_seleccionat == TipusCerca.ADRECAPOSTAL.value:
             self.leNumCerca.setPlaceholderText('Número')
-        elif tipus_seleccionat == TipusCerca.CRUILLA.value: #Cruïlla
+        elif tipus_seleccionat == TipusCerca.CRUILLA.value:
             self.leNumCerca.setPlaceholderText('Carrer, Plaça...')
-        # self.leCercaPerAdreca.clear()
         self.leNumCerca.clear()
 
     def activarODesactivarNumCerca(self):

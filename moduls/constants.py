@@ -10,7 +10,6 @@ class Resultat(Enum):
     NUMERO_NO_AL_DICCIONARI=5
     NUMERO_BLANC=6
     NUMERO_NO_COINCIDENT=7
-    #...
 
 class TipusCerca(Enum):
     ADRECAPOSTAL = "Adreça Postal"

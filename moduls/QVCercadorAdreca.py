@@ -223,7 +223,6 @@ class QCercadorAdreca(QObject):
 
         self.tipusCerca.currentIndexChanged.connect(self.connectarLineEdits)
         self.leNumero.returnPressed.connect(self.trobatCantonada)
-        # self.leNumero.returnPressed.connect(self.trobatNumero)
 
         self.connectarLineEdits()
 
@@ -281,8 +280,9 @@ class QCercadorAdreca(QObject):
 
     def habilitaLeNum(self):
         self.carrerActivat = False
-        self.leNumero.setEnabled(
-            self.calle_con_acentos != '' or self.txto != '')
+        condicio_per_habilitar = (self.calle_con_acentos != '' or self.txto != '' or self.leCarrer.text().strip() != '')
+        self.leNumero.setEnabled(condicio_per_habilitar)
+
 
     def cercadorAdrecaFi(self):
         if self.db.isOpen():
