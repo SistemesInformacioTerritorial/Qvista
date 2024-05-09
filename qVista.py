@@ -3,12 +3,14 @@
 # Inici del cronòmetre
 import time
 
+from matplotlib.patches import Rectangle
+
 startGlobal = time.time()
 
 start = time.time()
 # Fitxer principal de importació de llibreries
 from qgis.core import (QgsExpressionContextUtils, QgsMapLayer, QgsProject,
-                       QgsRasterLayer, QgsVectorLayer, QgsPointXY)
+                       QgsRasterLayer, QgsVectorLayer, QgsPointXY, QgsRectangle, QgsGeometry, QgsPolygon, QgsLineString, QgsWkbTypes)
 from qgis.core.contextmanagers import qgisapp, sys
 from qgis.gui import (QgsGui, QgsLayerTreeMapCanvasBridge, QgsRubberBand,
                       QgsVertexMarker)
@@ -84,6 +86,9 @@ from moduls.QvUbicacions import QvUbicacions
 from moduls.QvVideoDoc import QvVideoDoc
 from moduls.QvVisorHTML import QvVisorHTML
 from moduls.QvVisualitzacioCapa import QvVisualitzacioCapa
+from moduls.constants import Resultat,TipusCerca
+
+# PREFIX_SEARCH = 'qV_search'
 
 # Impressió del temps de carrega dels moduls Qv
 print ('Temps de carrega dels moduls Qv:', time.time()-iniciTempsModuls)
@@ -174,6 +179,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.cAdrec= None
         self.catalegMapes = None
         self.numCanvasAux = []
+        # self.tipusCerques = []
         self.sortida = True # para gestioSortida
 
         #Preparem el mapeta abans de les accions, ja que el necessitarem allà
@@ -215,8 +221,8 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.canvas.panCanvas()
 
         # Preparació d'una marca sobre el mapa. S'utilitzarà per cerca d'adreces i street view
-        self.marcaLloc = QgsVertexMarker(self.canvas)
-        self.marcaLlocPosada = False
+        self.marca_geometria = QgsVertexMarker(self.canvas)
+        self.marcaLlocGeometria = False
 
         # Guardem el dashboard actiu per poder activar/desactivar després els dashboards
         # Ara no ho utilitzem, però permetria canviar la disposició dels elements de la app, i retornar-hi
@@ -393,6 +399,8 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.canvas.refresh()
         # self.showXY(self.canvas.center())
 
+        #
+
         for x in self.findChildren(QvDockWidget):
             if isinstance(x.widget(),QvCanvas):
                 if x.isVisible():
@@ -421,6 +429,16 @@ class QVista(QMainWindow, Ui_MainWindow):
         # Caldria generalitzar-ho i treure-ho d'aquesta funció
 
         self.carregaEntorns()
+        
+        if self.cAdrec:
+            self.cAdrec.set_projecte(self.project)
+            self.cAdrec.carregarTipusCerques()
+        
+        if self.cAdrecSup:
+            self.cAdrecSup.set_projecte(self.project)
+            self.cAdrecSup.carregarTipusCerques()
+        # self.carregarTipusCerques()
+
         # if entorn == "'MarxesExploratories'":
         #     self.marxesCiutat()
 
@@ -618,31 +636,32 @@ class QVista(QMainWindow, Ui_MainWindow):
 
     def canvasRefrescat(self):
         return # hem canviat això de lloc
-        if self.marcaLlocPosada:
-            self.marcaLlocPosada = False
-            self.canvas.scene().removeItem(self.marcaLloc)
+        if self.marcaLlocGeometria:
+            self.marcaLlocGeometria = False
+            self.canvas.scene().removeItem(self.marca_geometria)
         else:
             pass
             # try:
             #     self.canvas.scene().removeItem(self.marcaLloc)
             # except Exception as e:
             #     print(e)
-    def eliminaMarcaCercador(self):
-        if hasattr(self,'marcaLlocPosada') and self.marcaLlocPosada:
-            self.marcaLlocPosada = False
-            self.canvas.scene().removeItem(self.marcaLloc)
-    def marcaCoordenades(self, coordX, coordY):
-        if hasattr(self,'marcaLlocPosada') and self.marcaLlocPosada:
-            self.canvas.scene().removeItem(self.marcaLloc)
-        self.marcaLloc = QgsVertexMarker(self.canvas)
-        self.marcaLloc.setCenter(QgsPointXY(coordX, coordY))
-        self.marcaLloc.setColor(QColor(255, 0, 0))
-        self.marcaLloc.setIconSize(15)
-        self.marcaLloc.setIconType(QgsVertexMarker.ICON_X) # ICON_BOX, ICON_CROSS, ICON_X
-        self.marcaLloc.setPenWidth(3)
-        self.marcaLloc.show()
-        self.marcaLlocPosada = True
 
+    def eliminaMarcaCercador(self):
+        if hasattr(self,'marcaLlocGeometria') and self.marcaLlocGeometria:
+            self.marcaLlocGeometria = False
+            self.canvas.scene().removeItem(self.marca_geometria)
+
+    def marcaCoordenades(self, coordX, coordY):
+        if hasattr(self,'marcaLlocGeometria') and self.marcaLlocGeometria:
+            self.canvas.scene().removeItem(self.marca_geometria)
+        self.marca_geometria = QgsVertexMarker(self.canvas)
+        self.marca_geometria.setCenter(QgsPointXY(coordX, coordY))
+        self.marca_geometria.setColor(QColor(255, 0, 0))
+        self.marca_geometria.setIconSize(15)
+        self.marca_geometria.setIconType(QgsVertexMarker.ICON_X) # ICON_BOX, ICON_CROSS, ICON_X
+        self.marca_geometria.setPenWidth(3)
+        self.marca_geometria.show()
+        self.marcaLlocGeometria = True
 
     def preparacioUbicacions(self): #???
         """
@@ -788,7 +807,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         # Activem la clase de cerca d'adreces
         self.cAdrec=QCercadorAdreca(self.leCarrer, self.leNumero,'SQLITE')    # SQLITE o CSV
           
-        self.cAdrec.sHanTrobatCoordenades.connect(self.trobatNumero_oNoLat) 
+        self.cAdrec.coordenades_trobades.connect(self.trobatNumero_oNoLat) 
 
         # creamos DockWidget
         self.dwCercador = QvDockWidget( "Cercador", self )
@@ -827,15 +846,15 @@ class QVista(QMainWindow, Ui_MainWindow):
         if self.dwSV.isHidden():
             self.dwSV.show()
         self.qvSv.rp.llevame(xx,yy)
-        self.canvas.scene().removeItem(self.marcaLloc)
-        self.marcaLloc = QgsVertexMarker(self.canvas)
-        self.marcaLloc.setCenter( self.cAdrec.coordAdreca )
-        self.marcaLloc.setColor(QColor(255, 0, 0))
-        self.marcaLloc.setIconSize(15)
-        self.marcaLloc.setIconType(QgsVertexMarker.ICON_BOX) # or ICON_CROSS, ICON_X
-        self.marcaLloc.setPenWidth(3)
-        self.marcaLloc.show()
-        self.marcaLlocPosada = True
+        self.canvas.scene().removeItem(self.marca_geometria)
+        self.marca_geometria = QgsVertexMarker(self.canvas)
+        self.marca_geometria.setCenter( self.cAdrec.coordAdreca )
+        self.marca_geometria.setColor(QColor(255, 0, 0))
+        self.marca_geometria.setIconSize(15)
+        self.marca_geometria.setIconType(QgsVertexMarker.ICON_BOX) # or ICON_CROSS, ICON_X
+        self.marca_geometria.setPenWidth(3)
+        self.marca_geometria.show()
+        self.marcaLlocGeometria = True
 
     def preparacioTaulaAtributs(self):
         """ 
@@ -968,26 +987,151 @@ class QVista(QMainWindow, Ui_MainWindow):
             self.canvas.panCanvas()
             self.canvas.scene().removeItem(self.qvSv.m)
 
-    def trobatNumero_oNo(self,rsc,info_rsc,cercador):
-        if rsc==0:
+    def trobatNumero_oNo(self, rsc, info_rsc, cercador):
+        if rsc == Resultat.CORRECTE.value:
             self.canvas.setCenter(cercador.coordAdreca)
             self.canvas.zoomScale(1000)
-            self.canvas.scene().removeItem(self.marcaLloc)
+            self.eliminar_marques()
 
-            self.marcaLloc = QgsVertexMarker(self.canvas)
-            self.marcaLloc.setCenter( cercador.coordAdreca )
-            self.marcaLloc.setColor(QColor(255, 0, 0))
-            self.marcaLloc.setIconSize(15)
-            self.marcaLloc.setIconType(QgsVertexMarker.ICON_BOX) # or ICON_CROSS, ICON_X
-            self.marcaLloc.setPenWidth(3)
-            self.marcaLloc.show()
-            self.marcaLlocPosada = True
+            self.marca_geometria = QgsVertexMarker(self.canvas)
+            self.marca_geometria.setCenter(cercador.coordAdreca)
+            self.marca_geometria.setColor(QColor(255, 0, 0))
+            self.marca_geometria.setIconSize(15)
+            self.marca_geometria.setIconType(QgsVertexMarker.ICON_BOX)  # or ICON_CROSS, ICON_X
+            self.marca_geometria.setPenWidth(3)
+            self.marca_geometria.show()
+            self.marcaLlocGeometria = True
+
+    def eliminar_marques(self):
+        if hasattr(self, 'marca_geometria') and self.marca_geometria:
+            self.canvas.scene().removeItem(self.marca_geometria)
+
+    def crea_marca_geometria(self):
+        """Crea un nou QgsRubberBand per a polígons i línies amb les propietats de visualització definides.
+        Elimino la marca d'àrea anterior del canvas si existeix"""
+        self.eliminar_marques()
+        self.eliminaMarcaCercador()
+        self.marca_geometria = QgsRubberBand(self.canvas, True)
+        self.marca_geometria.setColor(QColor(255, 0, 0))
+        self.marca_geometria.setFillColor(QColor(255, 0, 0, 100))
+        self.marca_geometria.setWidth(3)
+
+    def afegir_buffer_geometria(self, cercador):
+        """
+        Ajusta l'extensió del canvas per incloure la geometria amb un marge addicional.
+        Estableix un zoom mínim per evitar un zoom excessiu en geometries petites.
+
+        Args:
+            cercador (Cercador): Objecte que conté la geometria.
+        """
+        extensio = cercador.coordAdreca.boundingBox()
+        buffer = 0.25  # percentatge d'espai addicional
+        x_min = extensio.xMinimum() - (extensio.width() * buffer)
+        x_max = extensio.xMaximum() + (extensio.width() * buffer)
+        y_min = extensio.yMinimum() - (extensio.height() * buffer)
+        y_max = extensio.yMaximum() + (extensio.height() * buffer)
+
+        # Establir l'extensió amb el buffer
+        nova_extensio = QgsRectangle(x_min, y_min, x_max, y_max)
+        self.canvas.setExtent(nova_extensio)
+
+        # Comprovar si l'escala resultant és menor que l'escala mínima desitjada
+        escala_actual = self.canvas.scale()
+        escala_minima = 1000
+        if escala_actual < escala_minima:
+            self.canvas.zoomScale(escala_minima)
+
+        self.canvas.refresh()
+
+
+    def afegeix_punts_marca_area(self, cercador):
+        """Afegeix punts al QgsRubberBand creat per representar el polígon.
+
+        Args:
+            cercador (Cercador): Objecte que conté la geometria del polígon.
+        """
+        self.marca_geometria.reset(QgsWkbTypes.PolygonGeometry)
+        self.marca_geometria.setFillColor(QColor(0,0,0,0))
+        if cercador.coordAdreca.isMultipart():
+            multi_poligon = cercador.coordAdreca.asMultiPolygon()
+            for poligon in multi_poligon:
+                for anell in poligon:
+                    punts_anell = [QgsPointXY(punt.x(), punt.y()) for punt in anell]
+                    self.marca_geometria.addGeometry(QgsGeometry.fromPolygonXY([punts_anell]), None)
+        else:
+            punts_poligon = cercador.coordAdreca.asPolygon()
+            for anell in punts_poligon:
+                punts_anell = [QgsPointXY(punt.x(), punt.y()) for punt in anell]
+                self.marca_geometria.addGeometry(QgsGeometry.fromPolygonXY([punts_anell]), None)
+
+        self.marcaLlocGeometria = True
+        self.marca_geometria.show()
+
+
+    def afegeix_punts_marca_linia(self, cercador):
+        """Afegeix punts al QgsRubberBand creat per representar la línia.
+
+        Args:
+            cercador (Cercador): Objecte que conté la geometria de la línia.
+        """
+        if cercador.coordAdreca.isMultipart():
+            multi_linia = cercador.coordAdreca.asMultiPolyline()
+            for linia in multi_linia:
+                for punt in linia:
+                    self.marca_geometria.addPoint(QgsPointXY(punt.x(), punt.y()), False)
+        else:
+            punts_linia = cercador.coordAdreca.asPolyline()
+            for punt in punts_linia:
+                self.marca_geometria.addPoint(QgsPointXY(punt.x(), punt.y()), False)
+        
+        self.marcaLlocGeometria = True
+        self.marca_geometria.show()
+
+
+    def processar_cerca_area(self, rsc, info_rsc, cercador):
+        """Processa la cerca d'àrea i actualitza la visualització al canvas.
+
+        Args:
+            rsc (int): Codi de resultat de la cerca.
+            info_rsc (dict): Informació addicional sobre el resultat de la cerca.
+            cercador (Cercador): Objecte que conté la geometria del polígon.
+        """
+        if rsc == Resultat.CORRECTE.value:
+            self.crea_marca_geometria() 
+            self.afegir_buffer_geometria(cercador)
+            self.afegeix_punts_marca_area(cercador)
+
+    def processar_cerca_linia(self,rsc,info_rsc,cercador):
+        """Processa la cerca de línia i actualitza la visualització al canvas.
+
+        Args:
+            rsc (int): Codi de resultat de la cerca.
+            info_rsc (dict): Informació addicional sobre el resultat de la cerca.
+            cercador (Cercador): Objecte que conté la geometria del polígon.
+        """
+        if rsc == Resultat.CORRECTE.value:
+            self.crea_marca_geometria()
+            self.afegir_buffer_geometria(cercador)
+            self.afegeix_punts_marca_linia(cercador)
+
     
     def trobatNumero_oNoLat(self, rsc,info_rsc):
         self.trobatNumero_oNo(rsc,info_rsc,self.cAdrec)
 
     def trobatNumero_oNoSup(self,rsc,info_rsc):
         self.trobatNumero_oNo(rsc,info_rsc,self.cAdrecSup)
+
+    def processar_cerca_area_lateral(self, rsc,info_rsc):
+        self.processar_cerca_area(rsc,info_rsc,self.cAdrec)
+
+    def processar_cerca_area_superior(self,rsc,info_rsc):
+        self.processar_cerca_area(rsc,info_rsc,self.cAdrecSup)
+
+    def processar_cerca_linia_lateral(self, rsc,info_rsc):
+        self.processar_cerca_linia(rsc,info_rsc,self.cAdrec)
+
+    def processar_cerca_linia_superior(self,rsc,info_rsc):
+        self.processar_cerca_linia(rsc,info_rsc,self.cAdrecSup)
 
     def adreces(self):
         if self.prepararCercador:
@@ -1219,29 +1363,29 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.actPropietatsLayer.setStatusTip("Opcions de visualització")
         self.actPropietatsLayer.triggered.connect(self.propietatsLayer)
 
-    def canviarTextLeNumCerca(self, index: int) -> None:
+    def canviarInfoCerca(self, index=0) -> None:
         """
-        Canvia el text de placeholder de l'objecte QlineEdit leNumCerca en funció de la selecció de tipus 
-        feta a l'objecte QComboBox comboTipusCerca. Netega el contingut actual de leNumCerca.
+        Canvia el text de placeholder de l'objecte QlineEdit leNumCerca/leCercaAdreca en funció de la selecció de tipus 
+        feta a l'objecte QComboBox comboTipusCerca. Neteja el contingut actual de leNumCerca.
 
         Args:
             index (int): Índex de la selecció actual del QComboBox comboTipusCerca
         """
         tipus_seleccionat = self.comboTipusCerca.itemText(index)
-        if tipus_seleccionat == 'Numero':
-            self.leNumCerca.setPlaceholderText('Num...')
-        elif tipus_seleccionat == 'Cantonada':
-            self.leNumCerca.setPlaceholderText('Carrer/Plaça...')
-        self.leNumCerca.clear()  # Netejar el camp
-
-    def activarODesactivarNumCerca(self):
-        if self.leCercaPerAdreca.text() == '':
-            self.leNumCerca.setReadOnly(True)
+        self.leNumCerca.setPlaceholderText(tipus_seleccionat)
+        self.leNumCerca.clear()
+        self.leCercaPerAdreca.clear()
+        if tipus_seleccionat not in [TipusCerca.ADRECAPOSTAL.value, TipusCerca.CRUILLA.value]:
+            self.leNumCerca.hide()
+            self.leCercaPerAdreca.setPlaceholderText(tipus_seleccionat)
         else:
-            self.leNumCerca.setReadOnly(False)
+            self.leNumCerca.show()
+            self.leCercaPerAdreca.setPlaceholderText('Carrer, plaça...')
+        
 
     def definicioBotons(self):
         self.frame_15.setContentsMargins(0,0,12,0)
+        #print(QgsExpressionContextUtils.projectScope(self.project).variable('qV_readOnly'))
         stylesheetLineEdits="""
             background-color:%s;
             color: %s;
@@ -1251,27 +1395,30 @@ class QVista(QMainWindow, Ui_MainWindow):
         
         self.comboTipusCerca.setStyleSheet(stylesheetLineEdits)
         self.comboTipusCerca.setFont(QvConstants.FONTTEXT)
-        self.comboTipusCerca.addItems(['Numero', 'Cantonada'])
+        self.comboTipusCerca.addItems([TipusCerca.ADRECAPOSTAL.value, TipusCerca.CRUILLA.value])
         self.comboTipusCerca.setFixedWidth(140)
         self.leCercaPerAdreca.textChanged.connect(lambda: self.leNumCerca.setReadOnly(True) if self.leCercaPerAdreca.text() == '' else self.leNumCerca.setReadOnly(False))
         
         self.leCercaPerAdreca.setStyleSheet(stylesheetLineEdits)
         self.leCercaPerAdreca.setFont(QvConstants.FONTTEXT)
-        self.leCercaPerAdreca.setPlaceholderText('Carrer, plaça...')
         self.leCercaPerAdreca.setFixedWidth(320)
 
         self.leNumCerca.setStyleSheet(stylesheetLineEdits)
         self.leNumCerca.setFont(QvConstants.FONTTEXT)
-        self.leNumCerca.setPlaceholderText('Num...')
         self.leNumCerca.setFixedWidth(320)
-        self.comboTipusCerca.currentIndexChanged.connect(self.canviarTextLeNumCerca)
+        self.canviarInfoCerca()
+        self.comboTipusCerca.currentIndexChanged.connect(self.canviarInfoCerca)
 
-        self.cAdrecSup=QCercadorAdreca(self.leCercaPerAdreca, self.leNumCerca, 'SQLITE', self.comboTipusCerca)    # SQLITE o CSV
+        # print(self.tipusCerques)
+
+        self.cAdrecSup=QCercadorAdreca(self.leCercaPerAdreca, self.project, 'SQLITE', self.leNumCerca, self.comboTipusCerca)    # SQLITE o CSV
         self.bCercaPerAdreca.clicked.connect(lambda: self.leCercaPerAdreca.setText(''))
         self.bCercaPerAdreca.clicked.connect(self.leCercaPerAdreca.setFocus)
         self.bCercaPerAdreca.setCursor(QvConstants.cursorClick())
         self.leCercaPerAdreca.textChanged.connect(lambda x: self.bCercaPerAdreca.setIcon(QIcon(os.path.join(imatgesDir,('magnify.png' if x=='' else 'cp_elimina.png')))))
-        self.cAdrecSup.sHanTrobatCoordenades.connect(self.trobatNumero_oNoSup)
+        self.cAdrecSup.coordenades_trobades.connect(self.trobatNumero_oNoSup)
+        self.cAdrecSup.area_trobada.connect(self.processar_cerca_area_superior)
+        self.cAdrecSup.punt_trobat.connect(self.processar_cerca_linia_superior)
         self.leNumCerca.setReadOnly(True if self.leCercaPerAdreca.text() == '' else False)
 
 
@@ -1802,6 +1949,41 @@ class QVista(QMainWindow, Ui_MainWindow):
                         self.menuEines.addAction(act)
         except Exception as e:
             print(e)
+
+
+    # def carregarTipusCerques(self) -> None:
+    
+    #     variableNames = QgsExpressionContextUtils.projectScope(self.project).variableNames()
+
+    #     searchVariables = [name for name in variableNames if name.startswith(PREFIX_SEARCH)]
+    #     searchVariables = sorted(searchVariables)
+
+    #     self.comboTipusCerca.clear()
+
+    #     layerRegex = re.compile(r'layer="([^"]*)"')
+    #     fieldRegex = re.compile(r'field="([^"]*)"')
+    #     descRegex = re.compile(r'desc="([^"]*)"')
+
+    #     for var in searchVariables:
+    #         rawValue = QgsExpressionContextUtils.projectScope(self.project).variable(var)
+            
+    #         layerMatch = layerRegex.search(rawValue)
+    #         fieldMatch = fieldRegex.search(rawValue)
+    #         descMatch = descRegex.search(rawValue)
+            
+    #         if layerMatch and fieldMatch and descMatch:
+    #             values_dict = {
+    #                 'layer': layerMatch.group(1),
+    #                 'field': fieldMatch.group(1),
+    #                 'desc': descMatch.group(1)
+    #             }
+    #             self.tipusCerques.append(values_dict)
+
+    #             descValue = descMatch.group(1)
+    #             self.comboTipusCerca.addItem(descValue)
+
+        # print(tipusCerques)
+
     def obreEina(self,eina):
         dockWidgets = self.findChildren(eina)
         if len(dockWidgets)>0:

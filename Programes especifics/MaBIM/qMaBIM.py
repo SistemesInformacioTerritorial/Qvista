@@ -355,37 +355,37 @@ class Cercador:
     def __init__(self, canvas, leCarrer, leNumero, lblIcona):
         super().__init__()
         self.canvas = canvas
-        self.marcaLloc = None
+        self.marca_geometria = None
         self.leCarrer = leCarrer
         self.leCarrer.setPlaceholderText('Carrer')
         self.leNumero = leNumero
         self.leNumero.setPlaceholderText('Número')
         self.lblIcona = lblIcona
         self.cercador = QCercadorAdreca(self.leCarrer, self.leNumero, 'SQLITE')
-        self.marcaLlocPosada = False
+        self.marcaLlocGeometria = False
 
-        self.cercador.sHanTrobatCoordenades.connect(self.resultatCercador)
+        self.cercador.coordenades_trobades.connect(self.resultatCercador)
 
     def resultatCercador(self, codi, info):
         if codi == 0:
             self.canvas.setCenter(self.cercador.coordAdreca)
             self.canvas.zoomScale(1000)
-            self.canvas.scene().removeItem(self.marcaLloc)
+            self.canvas.scene().removeItem(self.marca_geometria)
 
-            self.marcaLloc = QgsVertexMarker(self.canvas)
-            self.marcaLloc.setCenter( self.cercador.coordAdreca )
-            self.marcaLloc.setColor(QtGui.QColor(255, 0, 0))
-            self.marcaLloc.setIconSize(15)
-            self.marcaLloc.setIconType(QgsVertexMarker.ICON_BOX)
-            self.marcaLloc.setPenWidth(3)
-            self.marcaLloc.show()
-            self.marcaLlocPosada = True
+            self.marca_geometria = QgsVertexMarker(self.canvas)
+            self.marca_geometria.setCenter( self.cercador.coordAdreca )
+            self.marca_geometria.setColor(QtGui.QColor(255, 0, 0))
+            self.marca_geometria.setIconSize(15)
+            self.marca_geometria.setIconType(QgsVertexMarker.ICON_BOX)
+            self.marca_geometria.setPenWidth(3)
+            self.marca_geometria.show()
+            self.marcaLlocGeometria = True
             self.leCarrer.clear()
             self.leNumero.clear()
     def eliminaMarcaLloc(self):
-        if self.marcaLlocPosada:
-            self.canvas.scene().removeItem(self.marcaLloc)
-            self.marcaLlocPosada = False
+        if self.marcaLlocGeometria:
+            self.canvas.scene().removeItem(self.marca_geometria)
+            self.marcaLlocGeometria = False
 
 class FavoritsMaBIM(QvFavorits):
     dadesDB = ConstantsMaBIM.DB_MABIM_PRO
@@ -753,7 +753,7 @@ class QMaBIM(QtWidgets.QMainWindow):
         self.mapetaA.setStyleSheet('''QMenu{background-color: #DDDDDD;color: #38474F;}QMenu::item:selected{background-color: #FF6215;color: #F9F9F9;}''')
 
         self.cerca1 = Cercador(self.canvasA, self.leCarrer, self.leNumero, self.lblIcona)
-        self.cerca1.cercador.sHanTrobatCoordenades.connect(lambda: self.tabCentral.setCurrentIndex(2))
+        self.cerca1.cercador.coordenades_trobades.connect(lambda: self.tabCentral.setCurrentIndex(2))
 
         botoSelecciona = self.canvasA.afegirBotoCustom('botoSelecciona', 'imatges/apuntar.png', 'Selecciona BIM gràficament', 1)
         def setEinaSeleccionar():
