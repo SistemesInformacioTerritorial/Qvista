@@ -1379,6 +1379,8 @@ class QVista(QMainWindow, Ui_MainWindow):
         else:
             self.leNumCerca.show()
             self.leCercaPerAdreca.setPlaceholderText('Carrer, plaça...')
+            if tipus_seleccionat == TipusCerca.CRUILLA.value:
+                self.leNumCerca.setPlaceholderText('Carrer, plaça...')
         
 
     def definicioBotons(self):
