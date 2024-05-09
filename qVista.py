@@ -1025,17 +1025,15 @@ class QVista(QMainWindow, Ui_MainWindow):
             cercador (Cercador): Objecte que conté la geometria.
         """
         extensio = cercador.coordAdreca.boundingBox()
-        buffer = 0.25  # percentatge d'espai addicional
+        buffer = 0.25 
         x_min = extensio.xMinimum() - (extensio.width() * buffer)
         x_max = extensio.xMaximum() + (extensio.width() * buffer)
         y_min = extensio.yMinimum() - (extensio.height() * buffer)
         y_max = extensio.yMaximum() + (extensio.height() * buffer)
 
-        # Establir l'extensió amb el buffer
         nova_extensio = QgsRectangle(x_min, y_min, x_max, y_max)
         self.canvas.setExtent(nova_extensio)
 
-        # Comprovar si l'escala resultant és menor que l'escala mínima desitjada
         escala_actual = self.canvas.scale()
         escala_minima = 1000
         if escala_actual < escala_minima:
@@ -1949,40 +1947,6 @@ class QVista(QMainWindow, Ui_MainWindow):
                         self.menuEines.addAction(act)
         except Exception as e:
             print(e)
-
-
-    # def carregarTipusCerques(self) -> None:
-    
-    #     variableNames = QgsExpressionContextUtils.projectScope(self.project).variableNames()
-
-    #     searchVariables = [name for name in variableNames if name.startswith(PREFIX_SEARCH)]
-    #     searchVariables = sorted(searchVariables)
-
-    #     self.comboTipusCerca.clear()
-
-    #     layerRegex = re.compile(r'layer="([^"]*)"')
-    #     fieldRegex = re.compile(r'field="([^"]*)"')
-    #     descRegex = re.compile(r'desc="([^"]*)"')
-
-    #     for var in searchVariables:
-    #         rawValue = QgsExpressionContextUtils.projectScope(self.project).variable(var)
-            
-    #         layerMatch = layerRegex.search(rawValue)
-    #         fieldMatch = fieldRegex.search(rawValue)
-    #         descMatch = descRegex.search(rawValue)
-            
-    #         if layerMatch and fieldMatch and descMatch:
-    #             values_dict = {
-    #                 'layer': layerMatch.group(1),
-    #                 'field': fieldMatch.group(1),
-    #                 'desc': descMatch.group(1)
-    #             }
-    #             self.tipusCerques.append(values_dict)
-
-    #             descValue = descMatch.group(1)
-    #             self.comboTipusCerca.addItem(descValue)
-
-        # print(tipusCerques)
 
     def obreEina(self,eina):
         dockWidgets = self.findChildren(eina)
