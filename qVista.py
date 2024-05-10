@@ -1370,17 +1370,18 @@ class QVista(QMainWindow, Ui_MainWindow):
             index (int): Índex de la selecció actual del QComboBox comboTipusCerca
         """
         tipus_seleccionat = self.comboTipusCerca.itemText(index)
-        self.leNumCerca.setPlaceholderText(tipus_seleccionat)
         self.leNumCerca.clear()
         self.leCercaPerAdreca.clear()
         if tipus_seleccionat not in [TipusCerca.ADRECAPOSTAL.value, TipusCerca.CRUILLA.value]:
             self.leNumCerca.hide()
-            self.leCercaPerAdreca.setPlaceholderText(tipus_seleccionat)
+            self.leCercaPerAdreca.setPlaceholderText('')
         else:
             self.leNumCerca.show()
             self.leCercaPerAdreca.setPlaceholderText('Carrer, plaça...')
             if tipus_seleccionat == TipusCerca.CRUILLA.value:
                 self.leNumCerca.setPlaceholderText('Carrer, plaça...')
+            else:
+                self.leNumCerca.setPlaceholderText('Num')
         
 
     def definicioBotons(self):
