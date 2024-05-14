@@ -6,7 +6,6 @@ import math
 import os
 import subprocess
 import sys
-import datetime
 from pathlib import Path
 from typing import Sequence
 
@@ -502,9 +501,6 @@ class QMaBIM(QtWidgets.QMainWindow):
         res1 = cons.consulta(ConstantsMaBIM.CONSULTA_DATA_DADES,{':pText':txt1})[0][0].toString(QtCore.Qt.ISODate)
         res2 = cons.consulta(ConstantsMaBIM.CONSULTA_DATA_DADES,{':pText':txt2})[0][0].toString(QtCore.Qt.ISODate)
         res3 = cons.consulta(ConstantsMaBIM.CONSULTA_DATA_DADES,{':pText':txt3})[0][0].toString(QtCore.Qt.ISODate)
-        # res1 = str(datetime.datetime.now())
-        # res2 = str(datetime.datetime.now())
-        # res3 = str(datetime.datetime.now())
 
         font = QtGui.QFont()
         font.setFamily("Segoe UI Light")
