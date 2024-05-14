@@ -1412,7 +1412,7 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         # print(self.tipusCerques)
 
-        self.cAdrecSup=QCercadorAdreca(self.leCercaPerAdreca, self.project, 'SQLITE', self.leNumCerca, self.comboTipusCerca)    # SQLITE o CSV
+        self.cAdrecSup=QCercadorAdreca(self.leCercaPerAdreca, 'SQLITE', self.leNumCerca, self.project, self.comboTipusCerca)    # SQLITE o CSV
         self.bCercaPerAdreca.clicked.connect(lambda: self.leCercaPerAdreca.setText(''))
         self.bCercaPerAdreca.clicked.connect(self.leCercaPerAdreca.setFocus)
         self.bCercaPerAdreca.setCursor(QvConstants.cursorClick())
