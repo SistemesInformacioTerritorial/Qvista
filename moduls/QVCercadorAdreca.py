@@ -216,8 +216,8 @@ class ValidadorNums(QValidator):
 
 
 class QCercadorAdreca(QObject):
-    coordenades_trobades = pyqtSignal(int, 'QString') #canviar a coordenades_trobades
-    area_trobada = pyqtSignal(int, 'QString') #canviat a area_trobada
+    coordenades_trobades = pyqtSignal(int, 'QString')
+    area_trobada = pyqtSignal(int, 'QString')
     punt_trobat = pyqtSignal(int, 'QString')
 
     def __init__(self, lineEditCarrer, origen='SQLITE', lineEditNumero=None, project=None, comboTipusCerca=None):
@@ -235,25 +235,16 @@ class QCercadorAdreca(QObject):
             except ValueError as e:
                 print("Error")
         
-        
-        
-
-        
         self.leNumero.returnPressed.connect(self.trobatCantonada)
         self.leCarrer.textChanged.connect(lambda: self.habilitaLeNum(self.leCarrer.text()))
 
-        self.llistaCerques = []
-
-
         self.carrerActivat = False
-
+        self.llistaCerques = []
         self.dictCarrers = {}
         self.dictNumeros = collections.defaultdict(dict)
         self.dictCantonades = collections.defaultdict(dict)
         self.dictCapa = collections.defaultdict(dict)
         self.dictCapes = collections.defaultdict(dict)
-
-        # self.carregarTipusCerques()
 
         self.numClick=0
         self.db = QvApp().dbGeo
@@ -300,7 +291,7 @@ class QCercadorAdreca(QObject):
                 layer_name = layer_match.group(1)
                 layers = QgsProject.instance().mapLayersByName(layer_name)
                 if layers:
-                    layer_id = layers[0].id()  # Agafem l'ID de la primera capa trobada
+                    layer_id = layers[0].id()
                     desc_value = desc_match.group(1)
                     values_dict = {
                         'layer': layer_name,
@@ -310,7 +301,7 @@ class QCercadorAdreca(QObject):
 
                     self.llistaCerques.append(values_dict)
                     self.combo_tipus_cerca.addItem(desc_value)
-                    self.obtenirVariablesQVSearch(layer_id)  # Passem l'ID de la capa
+                    self.obtenirVariablesQVSearch(layer_id)
                 else:
                     print(f"No existeix la capa {layer_name}")
 
@@ -350,7 +341,6 @@ class QCercadorAdreca(QObject):
     def habilitaLeNum(self, valorAntic):
         self.carrerActivat = False
         condicio_per_habilitar = valorAntic in self.dictCarrers
-        # condicio_per_habilitar = (self.txto != '' or self.calle_con_acentos != '' or self.leCarrer.text().strip() != '')
         self.leNumero.setEnabled(condicio_per_habilitar)
 
     def cercadorAdrecaFi(self):
@@ -618,10 +608,10 @@ class QCercadorAdreca(QObject):
 
         while self.query.next():
             row = collections.OrderedDict()
-            row['NUM_LLETRA_POST'] = self.query.value(1)  # Numero y Letra
-            row['ETRS89_COORD_X'] = self.query.value(2)  # coor x
-            row['ETRS89_COORD_Y'] = self.query.value(3)  # coor y
-            row['NUM_OFICIAL'] = self.query.value(4)  # numero oficial
+            row['NUM_LLETRA_POST'] = self.query.value(1)
+            row['ETRS89_COORD_X'] = self.query.value(2)
+            row['ETRS89_COORD_Y'] = self.query.value(3)
+            row['NUM_OFICIAL'] = self.query.value(4)
 
             self.dictNumeros[self.codiCarrer][self.query.value(1)] = row
 
@@ -753,7 +743,7 @@ class QCercadorAdreca(QObject):
 
         else:
             info = "L'adreça és buida. Codi d'error 1"
-            self.coordenades_trobades.emit(1, info)  # adreça vacia
+            self.coordenades_trobades.emit(1, info)
         self.habilitaLeNum(carrerAntic)
         self.focusANumero()
 
@@ -787,12 +777,10 @@ class QCercadorAdreca(QObject):
             self.leNumero.setCompleter(None)
             return
         if not self.carrerActivat:
-            # així obtenim el carrer on estàvem encara que no l'haguem seleccionat explícitament
             self.txto = self.completerCarrer.popup().currentIndex().data()
             txtoAntic = self.txto
             if self.txto is None:
                 return
-                # self.txto = self.completerCarrer.currentCompletion()
             if self.txto == '':
                 return
 
@@ -828,15 +816,14 @@ class QCercadorAdreca(QObject):
 
                 else:
                     info = "La direcció no és al diccionari. Codi d'error 2"
-                    # direccion no está en diccicionario
                     self.coordenades_trobades.emit(2, info)
                     self.iniAdreca()
             else:
                 info = "Codi d'error 3"
-                self.coordenades_trobades.emit(3, info)  # nunca
+                self.coordenades_trobades.emit(3, info)
         else:
             info = "L'adreça és buida. Codi d'error 1"
-            self.coordenades_trobades.emit(1, info)  # adreça vac
+            self.coordenades_trobades.emit(1, info)
         
         self.habilitaLeNum(txtoAntic)
 
@@ -868,8 +855,6 @@ class QCercadorAdreca(QObject):
         self.leNumero.clearFocus()
         self.coordenades_trobades.emit(0, "[0]")
 
-        # if self.leNumero.text() == ' ':
-        #     self.leNumero.clear()
         self.leNumero.clear()
 
     def comprovarCantonadesCarrer(self, cantonada: str) -> None:
@@ -942,9 +927,9 @@ class QCercadorAdreca(QObject):
                 "select codi , nom_oficial , variants  from Carrers")
 
             while self.query.next():
-                codi_carrer = self.query.value(0)  # Codigo calle
-                nombre = self.query.value(1)  # numero oficial
-                variants = self.query.value(2).lower()  # Variants del nom
+                codi_carrer = self.query.value(0)
+                nombre = self.query.value(1)
+                variants = self.query.value(2).lower()
                 nombre_sin_acentos = self.remove_accents(nombre)
                 if nombre == nombre_sin_acentos:
                     clave = nombre + \
@@ -979,7 +964,6 @@ class QCercadorAdreca(QObject):
         self.txto = self.completerCarrer.popup().currentIndex().data()
         if self.txto is None:
             self.txto = ''
-            # self.txto = self.completerCarrer.currentCompletion()
         else:
             self.txto=self.txto.replace('(var) ','')
         if self.txto in self.dictCarrers:
@@ -996,18 +980,15 @@ class QCercadorAdreca(QObject):
                 info = "[0]"
                 self.coordenades_trobades.emit(0, info)
                 self.leNumero.clear()
-                # if self.leNumero.text() == ' ':
-                #     self.leNumero.clear()
 
         else:
             info = "El número és buit. Codi d'error 4"
-            self.coordenades_trobades.emit(4, info)  # numero
+            self.coordenades_trobades.emit(4, info)
 
     def trobatNumero(self):
         if self.get_tipus_cerca() != TipusCerca.ADRECAPOSTAL.value: 
             return None
         
-        # Si no hi ha carrer, eliminem el completer del número
         if self.leCarrer.text() == '':
             self.leNumero.setCompleter(None)
         if self.leNumero.text() == '':
@@ -1016,7 +997,6 @@ class QCercadorAdreca(QObject):
             self.txto = self.completerCarrer.popup().currentIndex().data()
             if self.txto is None:
                 self.txto = ''
-                # self.txto = self.completerCarrer.currentCompletion()
             else:
                 self.txto=self.txto.replace('(var) ','')
             if self.txto in self.dictCarrers:
@@ -1043,24 +1023,21 @@ class QCercadorAdreca(QObject):
                             info = "[0]"
                             self.coordenades_trobades.emit(0, info)
                             self.leNumero.clear()
-                            # if self.leNumero.text() == ' ':
-                            #     self.leNumero.clear()
 
                         else:
                             info = "El número no és al diccionari. Codi d'error 5"
-                            # numero no está en diccicionario
                             self.coordenades_trobades.emit(5, info)
                     else:
                         info = "El número és buit. Codi d'error 4"
                         self.coordenades_trobades.emit(
-                            4, info)  # adreça vacia  nunca
+                            4, info)
                 else:
                     info = "El número està en blanc. Codi d'error 6"
-                    self.coordenades_trobades.emit(6, info)  # numero en blanco
+                    self.coordenades_trobades.emit(6, info)
             else:
                 self.leNumero.clear()
                 info = "El número és en blanc. Codi d'error 6"
-                self.coordenades_trobades.emit(6, info)  # numero en blanco
+                self.coordenades_trobades.emit(6, info)
         except:
             mostrar_error(info)
 

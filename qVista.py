@@ -88,7 +88,6 @@ from moduls.QvVisorHTML import QvVisorHTML
 from moduls.QvVisualitzacioCapa import QvVisualitzacioCapa
 from moduls.constants import Resultat,TipusCerca
 
-# PREFIX_SEARCH = 'qV_search'
 
 # Impressió del temps de carrega dels moduls Qv
 print ('Temps de carrega dels moduls Qv:', time.time()-iniciTempsModuls)
@@ -437,7 +436,6 @@ class QVista(QMainWindow, Ui_MainWindow):
         if self.cAdrecSup:
             self.cAdrecSup.set_projecte(self.project)
             self.cAdrecSup.carregarTipusCerques()
-        # self.carregarTipusCerques()
 
         # if entorn == "'MarxesExploratories'":
         #     self.marxesCiutat()
@@ -1409,8 +1407,6 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.leNumCerca.setFixedWidth(320)
         self.canviarInfoCerca()
         self.comboTipusCerca.currentIndexChanged.connect(self.canviarInfoCerca)
-
-        # print(self.tipusCerques)
 
         self.cAdrecSup=QCercadorAdreca(self.leCercaPerAdreca, 'SQLITE', self.leNumCerca, self.project, self.comboTipusCerca)    # SQLITE o CSV
         self.bCercaPerAdreca.clicked.connect(lambda: self.leCercaPerAdreca.setText(''))
