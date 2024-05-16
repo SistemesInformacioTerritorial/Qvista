@@ -221,7 +221,8 @@ class QCercadorAdreca(QObject):
         self.leNumero = lineEditNumero
         self.tipusCerca = comboTipusCerca
 
-        self.tipusCerca.currentIndexChanged.connect(self.connectarLineEdits)
+        if self.tipusCerca:
+            self.tipusCerca.currentIndexChanged.connect(self.connectarLineEdits)
         self.leNumero.returnPressed.connect(self.trobatCantonada)
 
         self.connectarLineEdits()
@@ -334,14 +335,27 @@ class QCercadorAdreca(QObject):
         self.numeroCarrer = ''
         self.coordAdreca = None
         self.infoAdreca = None
-        self.NumeroOficial = '' 
+        self.NumeroOficial = ''
 
     def iniAdrecaCantonada(self):
         self.carrerOriginalCantonada = ''
         self.coordCantonada = None
         self.infoCantonada = None
         self.carrerCantonada = ''
-        
+
+    def get_tipus_cerca(self) -> Optional[str]:
+        """
+        Intenta obtenir el text actual del comboBox. Si el comboBox no existeix,
+        retorna el valor predeterminat de TipusCerca.ADRECAPOSTAL.
+        Returns:
+            str: El tipus de cerca actual. Si el comboBox no està definit,
+                retorna el valor `ADRECAPOSTAL` de l'enumeració `TipusCerca`.
+        """
+        try:
+            return self.combo_tipus_cerca.currentText()
+        except AttributeError:
+            return TipusCerca.ADRECAPOSTAL.value
+
     def connectarLineEdits(self):
         self.leCarrer.textChanged.connect(self.esborrarNumero)
         try:
@@ -350,7 +364,7 @@ class QCercadorAdreca(QObject):
             mostrarError(e)
         self.leCarrer.setAlignment(Qt.AlignLeft)
 
-        if self.tipusCerca.currentText() == TipusCerca.ADRECAPOSTAL.value: 
+        if self.get_tipus_cerca() == TipusCerca.ADRECAPOSTAL.value:
             try:
                 self.leNumero.editingFinished.disconnect(self.trobatCantonada)
                 self.getCarrerNumeros()
@@ -504,11 +518,11 @@ class QCercadorAdreca(QObject):
                 self.getCarrerCantonades()
                 self.getCarrerNumeros()
 
-                if self.tipusCerca.currentText() == TipusCerca.ADRECAPOSTAL.value: 
+                if self.get_tipus_cerca() == TipusCerca.ADRECAPOSTAL.value:
                     self.prepararCompleterNumero()
-                else: 
+                else:
                     self.prepararCompleterCantonada()
-                    
+
                 self.focusANumero()
 
             except Exception as e:
@@ -562,9 +576,9 @@ class QCercadorAdreca(QObject):
                         self.getCarrerCantonades()
                         self.getCarrerNumeros()
 
-                        if self.tipusCerca.currentText() == TipusCerca.ADRECAPOSTAL.value: 
+                        if self.get_tipus_cerca() == TipusCerca.ADRECAPOSTAL.value:
                             self.prepararCompleterNumero()
-                        else: 
+                        else:
                             self.prepararCompleterCantonada()
                         self.focusANumero()
 
@@ -636,25 +650,25 @@ class QCercadorAdreca(QObject):
 
     def activatCantonada(self, cantonada: str) -> None:
         """
-        Activa una cantonada específica passada com a argument. 
+        Activa una cantonada específica passada com a argument.
 
         Args:
             cantonada (str): El nom de la cantonada a activar.
         """
         try:
             self.leNumero.setText(cantonada)
-            self.iniAdrecaCantonada() 
+            self.iniAdrecaCantonada()
 
             self.comprovarCantonadesCarrer(cantonada)
             self.establirCantonadaMapa(cantonada)
         except Exception as e:
             mostrarError(e)
-    
+
     def trobatCantonada(self) -> None:
         """
         Gestiona la selecció o introducció d'una cantonada només quan l'usuari prem enter.
         """
-        if self.tipusCerca.currentText() == TipusCerca.CRUILLA.value and self.leNumero.hasFocus():
+        if self.get_tipus_cerca() == TipusCerca.CRUILLA.value and self.leNumero.hasFocus():
             try:
                 cantonada = self.leNumero.text()
                 self.comprovarCantonadesCarrer(cantonada)
@@ -745,9 +759,9 @@ class QCercadorAdreca(QObject):
             self.sHanTrobatCoordenades.emit(5, info)  # numero
 
     def trobatNumero(self):
-        if self.tipusCerca.currentText() != TipusCerca.ADRECAPOSTAL.value: 
+        if self.get_tipus_cerca() != TipusCerca.ADRECAPOSTAL.value:
             return None
-        
+
         # Si no hi ha carrer, eliminem el completer del número
         if self.leCarrer.text() == '':
             self.leNumero.setCompleter(None)
