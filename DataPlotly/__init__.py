@@ -31,10 +31,8 @@ def classFactory(iface):  # pylint: disable=invalid-name
     :type iface: QgsInterface
     """
     # pylint: disable=import-outside-toplevel
-    # from .data_plotly import DataPlotly
-    # return DataPlotly(iface)
-    from .QvDataPlotly import QvDataPlotly
-    return QvDataPlotly()
+    from .data_plotly import DataPlotly
+    return DataPlotly(iface)
 
 
 def serverClassFactory(server_iface):
