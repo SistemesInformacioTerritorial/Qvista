@@ -1,0 +1,54 @@
+[general]
+name=Data Plotly
+qgisMinimumVersion=3.4
+qgisMaximumVersion=3.98
+description=D3 Plots for QGIS
+author=Matteo Ghetta (Faunalia)
+email=matteo.ghetta@gmail.com
+
+about=Draw D3 plots in QGIS
+
+tracker=https://github.com/ghtmtt/DataPlotly/issues
+repository=https://github.com/ghtmtt/DataPlotly
+# End of mandatory metadata
+
+# Done by qgis-plugin-ci
+version=4.0.0
+changelog=
+ Version 4.0.0:
+ - multiple plot docks thanks to @jdlom
+ - add a pie hole parameter to have donuts like charts thanks to @jdlom
+
+ Version 3.9.2:
+ - test added for Processing
+ - Processing algorithm refactored using plotly.express (scatter plot)
+ - fix stacktrace when removing all the plots from the layout
+ - fix signal not updating the fields in the data defined buttons automatically
+
+ Version 3.9.1:
+ - Add custom function to have plot color the same as map color
+ - Fix #237 add data-driven color to Polar Plot marker color. Kudos to @jmonticolo
+ - Fix "Build a generic plot" processing algorithm. Kudos to @agiudiceandrea
+
+
+commitNumber=1
+commitSha1=121f43d042e8321381efe867e2d4bf366f61363b
+dateTime=2023-04-17T09:47:58Z
+# End of qgis-plugin-ci
+
+# Recommended items:
+
+# Tags are comma separated with spaces allowed
+tags=python, d3, plots, vector, graphs, datavis, dataviz, dataplotly
+
+homepage=https://github.com/ghtmtt/DataPlotly
+category=Plugins
+icon=icon.png
+# experimental flag
+experimental=False
+
+# deprecated flag (applies to the whole plugin, not just a single version)
+deprecated=False
+
+hasProcessingProvider=yes
+server=True

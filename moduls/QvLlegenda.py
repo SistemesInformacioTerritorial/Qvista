@@ -18,6 +18,7 @@ from moduls.QvTema import QvTema
 from moduls.QvAnotacions import QvMapToolAnnotation
 from moduls.QvCatalegCapes import QvCreadorCatalegCapes
 from moduls.QvDigitizeContext import QvDigitizeContext
+from moduls.QvReports import QvReports
 from moduls.QvApp import QvApp
 from moduls import QvFuncions
 
@@ -71,6 +72,7 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
         # self.restoreExtent = 0
         # print('restoreExtent', self.restoreExtent)
 
+        self.reports = QvReports(self)
         self.recarrega = QvRecarregaLlegenda(self)
         
         # L'opertura de projectes Oracle va lenta si és la primera
@@ -844,9 +846,9 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
     def setMenuAccions(self):
         # Menú dinámico según tipo de elemento sobre el que se clicó
         self.menuAccions = []
-        menu = self.tema.setMenu()
-        if menu is not None:
-            self.accions.afegirAccio('menuTema', menu)
+        menuTemas = self.tema.setMenu()
+        if menuTemas is not None:
+            self.accions.afegirAccio('menuTema', menuTemas)
             self.menuAccions += ['menuTema', 'separator']
         tipo = self.calcTipusMenu()
         if tipo == 'layer':
@@ -880,6 +882,11 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
             if self.anotacions and \
                self.anotacions.menuVisible(self.accions.accio('viewAnnotations')):
                 self.menuAccions += ['separator', 'viewAnnotations']
+            # Informes
+            menuInformes = self.reports.setMenu()
+            if menuInformes is not None:
+                self.accions.afegirAccio('menuInforme', menuInformes)
+                self.menuAccions += ['separator', 'menuInforme']
             # Auto recarga
             if self.recarrega.timerDataSecs > 0 or self.recarrega.timerGraphSecs > 0:
                 self.menuAccions += ['separator']
