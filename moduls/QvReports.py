@@ -10,6 +10,9 @@ import os
 
 class QvReports(QvDataPlotly):
 
+    DataPlotlyVersion = QvDataPlotly.VERSION
+    PathInformes = 'C:/temp/qVista/dades'
+
     ExportMsgs = [
         'L\'exportació ha estat exitosa.',
         'L\'exportació ha estat cancel·lada.',
@@ -20,7 +23,7 @@ class QvReports(QvDataPlotly):
         'Error en iterar sobre el disseny.'
     ]
 
-    def __init__(self, llegenda, path='C:/temp/qVista/dades', settings=None):
+    def __init__(self, llegenda, path=PathInformes, settings=None):
         super().__init__()
         self.initGui()
         self.llegenda = llegenda
@@ -36,6 +39,12 @@ class QvReports(QvDataPlotly):
         layoutManager = QgsProject.instance().layoutManager()
         return [layout.name() for layout in layoutManager.layouts()]
 
+    def exportMsg(self, result):
+        if result in range(len(QvReports.ExportMsgs)):
+            return QvReports.ExportMsgs[result]
+        else:
+            return "Error en la generació de l'informe"
+
     def exportToPdf(self, name):
         try: 
             layoutManager = QgsProject.instance().layoutManager()
@@ -48,13 +57,13 @@ class QvReports(QvDataPlotly):
         try:        
             pdfPath = self.path + '/' + name + '.pdf'
             if type(layout) is QgsReport:
-                result, msg = QgsLayoutExporter.exportToPdf(layout, pdfPath, self.settings)
-                if result == 0:
-                    msg = QvReports.ExportMsgs[0]
+                # Informes compuestos
+                result, _ = QgsLayoutExporter.exportToPdf(layout, pdfPath, self.settings)
             else:
+                # Informes sencilos
                 exporter = QgsLayoutExporter(layout)
                 result = exporter.exportToPdf(pdfPath, self.settings)
-                msg = QvReports.ExportMsgs[result]
+            msg = self.exportMsg(result)
             if result == 0:
                 self.lastPdf = pdfPath
             return result, msg
@@ -63,8 +72,8 @@ class QvReports(QvDataPlotly):
             return -1, "Error en l'exportació  - " + str(e)
 
     def menuReport(self):
+        QApplication.instance().setOverrideCursor(Qt.WaitCursor)
         try:
-            QApplication.instance().setOverrideCursor(Qt.WaitCursor)
             report = self.llegenda.sender().text()
             result, msg = self.exportToPdf(report)
             if result == 0:
@@ -72,11 +81,10 @@ class QvReports(QvDataPlotly):
                 QApplication.instance().restoreOverrideCursor()
             else:
                 QApplication.instance().restoreOverrideCursor()
-                QMessageBox.warning(None, "ERROR a l'informe " + report, msg)
+                QMessageBox.warning(None, f"ERROR a l'informe '{report}'", msg)
         except Exception as e:
-            print(str(e))
-        finally:
             QApplication.instance().restoreOverrideCursor()
+            QMessageBox.warning(None, f"ERROR a l'informe '{report}'", str(e))
 
     def setMenu(self, title='Informes PDF'):
         self.menu.clear()
@@ -87,8 +95,10 @@ class QvReports(QvDataPlotly):
         if self.menu.isEmpty():
             return None
         else:
+            self.menu.addSeparator()
+            act = self.menu.addAction("Carpeta d'informes")
+            act.triggered.connect(lambda: os.startfile(self.path))
             return self.menu
-
 
 if __name__ == "__main__":
 
