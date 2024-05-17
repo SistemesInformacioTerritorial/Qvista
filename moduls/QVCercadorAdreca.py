@@ -263,30 +263,31 @@ class QCercadorAdreca(QObject):
     def set_projecte(self,project):
         self.project = project
 
-    def carregarTipusCerques(self) -> None:
-        """
-        Aquesta funció carrega els tipus de cerques disponibles a partir de les variables del projecte que comencen amb un prefix específic.
-        Utilitza expressions regulars per extreure la capa, el camp i la descripció de cada variable de cerca.
-        Afegeix cada conjunt de valors a la llista de cerques i afegeix la descripció al comboBox de tipus de cerca.
-        Finalment, crida a la funció `carregarCapes` per processar les capes carregades.
 
+    def obtenir_variables_cerca(self) -> List[str]:
+        """
+        Aquesta funció obté les variables de cerca del projecte que comencen amb un prefix específic.
         """
         variable_names = QgsExpressionContextUtils.projectScope(self.project).variableNames()
-
         search_variables = [name for name in variable_names if name.startswith(PREFIX_SEARCH)]
-        search_variables = sorted(search_variables)
+        return sorted(search_variables)
 
+    def processar_variables_cerca(self, search_variables: List[str]) -> None:
+        """
+        Aquesta funció processa les variables de cerca, utilitzant expressions regulars per extreure la capa, el camp i la descripció de cada variable.
+        Afegeix cada conjunt de valors a la llista de cerques i afegeix la descripció al comboBox de tipus de cerca.
+        """
         layer_regex = re.compile(r'layer="([^"]*)"')
         field_regex = re.compile(r'field="([^"]*)"')
         desc_regex = re.compile(r'desc="([^"]*)"')
 
         for var in search_variables:
             raw_value = QgsExpressionContextUtils.projectScope(self.project).variable(var)
-            
+
             layer_match = layer_regex.search(raw_value)
             field_match = field_regex.search(raw_value)
             desc_match = desc_regex.search(raw_value)
-            
+
             if layer_match and field_match and desc_match:
                 layer_name = layer_match.group(1)
                 layers = QgsProject.instance().mapLayersByName(layer_name)
@@ -305,6 +306,35 @@ class QCercadorAdreca(QObject):
                 else:
                     print(f"No existeix la capa {layer_name}")
 
+    def carregar_totes_capes(self) -> None:
+        """
+        Aquesta funció carrega totes les capes del projecte de QGIS que encara no s'han afegit a la llista de cerques.
+        """
+        for layer in QgsProject.instance().mapLayers().values():
+            layer_name = layer.name()
+            layer_id = layer.id()
+
+            if not any(search['layer'] == layer_name for search in self.llistaCerques):
+                camel_case_field = ''.join(word.title() for word in layer_name.split())
+                values_dict = {
+                    'layer': layer_name,
+                    'field': camel_case_field,
+                    'desc': layer_name,
+                }
+                self.llistaCerques.append(values_dict)
+                self.combo_tipus_cerca.addItem(layer_name)
+                self.obtenirVariablesQVSearch(layer_id)
+
+    def carregarTipusCerques(self) -> None:
+        """
+        Aquesta funció carrega els tipus de cerques disponibles a partir de les variables del projecte que comencen amb un prefix específic.
+        Utilitza expressions regulars per extreure la capa, el camp i la descripció de cada variable de cerca.
+        Afegeix cada conjunt de valors a la llista de cerques i afegeix la descripció al comboBox de tipus de cerca.
+        Finalment, crida a la funció `carregarCapes` per processar les capes carregades.
+        """
+        search_variables = self.obtenir_variables_cerca()
+        self.processar_variables_cerca(search_variables)
+        self.carregar_totes_capes()
         self.carregarCapes()
 
     def obtenirVariablesQVSearch(self, id_capa) -> None:
