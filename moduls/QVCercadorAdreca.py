@@ -264,6 +264,18 @@ class QCercadorAdreca(QObject):
         self.project = project
 
 
+    def afegir_cerca(self, layer_name:str, field_name:str, desc_value:str) -> None:
+        """
+        Aquesta funció afegeix una nova cerca a la llista de cerques i al comboBox de tipus de cerca.
+        """
+        values_dict = {
+            'layer': layer_name,
+            'field': field_name,
+            'desc': desc_value
+        }
+        self.llistaCerques.append(values_dict)
+        self.combo_tipus_cerca.addItem(desc_value)
+
     def obtenir_variables_cerca(self) -> List[str]:
         """
         Aquesta funció obté les variables de cerca del projecte que comencen amb un prefix específic.
@@ -272,11 +284,13 @@ class QCercadorAdreca(QObject):
         search_variables = [name for name in variable_names if name.startswith(PREFIX_SEARCH)]
         return sorted(search_variables)
 
-    def processar_variables_cerca(self, search_variables: List[str]) -> None:
+    def processar_variables_cerca(self) -> None:
         """
         Aquesta funció processa les variables de cerca, utilitzant expressions regulars per extreure la capa, el camp i la descripció de cada variable.
         Afegeix cada conjunt de valors a la llista de cerques i afegeix la descripció al comboBox de tipus de cerca.
         """
+        search_variables = self.obtenir_variables_cerca()
+        
         layer_regex = re.compile(r'layer="([^"]*)"')
         field_regex = re.compile(r'field="([^"]*)"')
         desc_regex = re.compile(r'desc="([^"]*)"')
@@ -293,15 +307,7 @@ class QCercadorAdreca(QObject):
                 layers = QgsProject.instance().mapLayersByName(layer_name)
                 if layers:
                     layer_id = layers[0].id()
-                    desc_value = desc_match.group(1)
-                    values_dict = {
-                        'layer': layer_name,
-                        'field': field_match.group(1),
-                        'desc': desc_value
-                    }
-
-                    self.llistaCerques.append(values_dict)
-                    self.combo_tipus_cerca.addItem(desc_value)
+                    self.afegir_cerca(layer_id, field_match.group(1), desc_match.group(1))
                     self.obtenirVariablesQVSearch(layer_id)
                 else:
                     print(f"No existeix la capa {layer_name}")
@@ -314,30 +320,12 @@ class QCercadorAdreca(QObject):
             layer_name = layer.name()
             layer_id = layer.id()
 
-            if not any(search['layer'] == layer_name for search in self.llistaCerques):
+            if not any(search['layer'] == layer_id for search in self.llistaCerques):
                 camel_case_field = ''.join(word.title() for word in layer_name.split())
-                values_dict = {
-                    'layer': layer_name,
-                    'field': camel_case_field,
-                    'desc': layer_name,
-                }
-                self.llistaCerques.append(values_dict)
-                self.combo_tipus_cerca.addItem(layer_name)
+                self.afegir_cerca(layer_id, camel_case_field, layer_name)
                 self.obtenirVariablesQVSearch(layer_id)
 
-    def carregarTipusCerques(self) -> None:
-        """
-        Aquesta funció carrega els tipus de cerques disponibles a partir de les variables del projecte que comencen amb un prefix específic.
-        Utilitza expressions regulars per extreure la capa, el camp i la descripció de cada variable de cerca.
-        Afegeix cada conjunt de valors a la llista de cerques i afegeix la descripció al comboBox de tipus de cerca.
-        Finalment, crida a la funció `carregarCapes` per processar les capes carregades.
-        """
-        search_variables = self.obtenir_variables_cerca()
-        self.processar_variables_cerca(search_variables)
-        self.carregar_totes_capes()
-        self.carregarCapes()
-
-    def obtenirVariablesQVSearch(self, id_capa) -> None:
+    def obtenirVariablesQVSearch(self, id_capa:str) -> None:
         """
         Modificat per utilitzar l'identificador únic de la capa.
         """
@@ -357,20 +345,41 @@ class QCercadorAdreca(QObject):
                 desc_match = desc_regex.search(valor_variable)
 
                 if id_capa and field_match and desc_match:
-                    desc_value = desc_match.group(1)
-                    values_dict = {
-                        'layer': capa.name(),
-                        'field': field_match.group(1),
-                        'desc': desc_value
-                    }
-                    self.llistaCerques.append(values_dict)
-                    self.combo_tipus_cerca.addItem(desc_value)
+                    self.afegir_cerca(capa.name(), field_match.group(1), desc_match.group(1))
+
+    def carregarTipusCerques(self) -> None:
+        """
+        Aquesta funció carrega els tipus de cerques disponibles a partir de les variables del projecte que comencen amb un prefix específic.
+        """
+        self.processar_variables_cerca()
+        self.carregar_totes_capes()
+        self.carregar_elements_capes()
+
+    def carregar_elements_capes(self):
+        """
+        Aquesta funció carrega les capes especificades en la llista de cerques.
+        Per a cada element de la llista, crida a `getElementsCapa` amb el nom de la capa i l'identificador 'fid'.
+        També manté un comptador de la posició que s'incrementa amb cada iteració.
+        """
+        posicio = 1
+        for element in self.llistaCerques:
+            # self.getElementsCapa(element['layer'], 'fid', posicio)
+            capa = QgsProject.instance().mapLayers().get(element['layer'])
+            if not capa:
+                return False  # Si no es troba la capa, retorna False
+
+            dict_capa_local = {}
+            for element in capa.getFeatures():
+                id_element = str(element.id())
+                atribut_element = element.attribute('fid')
+                dict_capa_local[id_element] = atribut_element
+            self.dictCapes[posicio] = dict_capa_local
+            posicio += 1
 
 
-
-    def habilitaLeNum(self, valorAntic):
+    def habilitaLeNum(self, valor_antic):
         self.carrerActivat = False
-        condicio_per_habilitar = valorAntic in self.dictCarrers
+        condicio_per_habilitar = valor_antic in self.dictCarrers
         self.leNumero.setEnabled(condicio_per_habilitar)
 
     def cercadorAdrecaFi(self):
@@ -438,18 +447,6 @@ class QCercadorAdreca(QObject):
         self.infoCantonada = None
         self.carrerCantonada = ''
 
-    def carregarCapes(self):
-        """
-        Aquesta funció carrega les capes especificades en la llista de cerques.
-        Per a cada element de la llista, crida a `getElementsCapa` amb el nom de la capa i l'identificador 'fid'.
-        També manté un comptador de la posició que s'incrementa amb cada iteració.
-
-        """
-        posicio = 1
-        for element in self.llistaCerques:
-            self.getElementsCapa(element['layer'], 'fid', posicio)
-            posicio += 1
-
     def connectarLineEdits(self):
         """
         Aquesta funció estableix les connexions necessàries pels LineEdits de carrers i números.
@@ -505,7 +502,7 @@ class QCercadorAdreca(QObject):
         elif self.get_tipus_cerca() != '':
             try:
                 self.iniAdreca()
-                index_tipus_cerca = self.obtPosicio()
+                index_tipus_cerca = self.obt_posicio_capa()
                 self.dictCapa = self.dictCapes[index_tipus_cerca]
                 self.prepararCompleterAltres()
             except ValueError as e:
@@ -542,10 +539,9 @@ class QCercadorAdreca(QObject):
 
 
                 
-    def obtPosicio(self):
+    def obt_posicio_capa(self):
         """
-        Aquesta funció cerca dins de la llista de cerques i retorna la posició de l'element que coincideix amb el text actual seleccionat en el combo de tipus de cerca.
-        Si no es troba cap coincidència, la funció continua incrementant la posició fins que s'ha recorregut tota la llista.
+        Aquesta funció cerca dins de la llista de cerques (qComboBox) i retorna la posició de l'element a dictCapes (que és on es carreguen els elements de les capes)
 
         Returns:
             int: La posició de l'element coincident dins de la llista de cerques, o None si no es troba cap coincidència.
@@ -562,11 +558,6 @@ class QCercadorAdreca(QObject):
         """
         Retorna el nom de la capa associada amb la descripció seleccionada al comboBox.
 
-        Aquest mètode itera sobre la llista de cerques per trobar una correspondència entre
-        el text actual del comboBox `combo_tipus_cerca` i la descripció (`desc`) dins de
-        `llistaCerques`. Si es troba una coincidència, retorna el nom de la capa (`layer`)
-        associada amb aquesta descripció.
-
         Retorna:
         - str: El nom de la capa si es troba una coincidència.
         - None: Si no es troba cap coincidència després d'iterar sobre tota la llista.
@@ -574,7 +565,8 @@ class QCercadorAdreca(QObject):
         index = 0
         while index < len(self.llistaCerques):
             if self.get_tipus_cerca() == self.llistaCerques[index]['desc']:
-                return self.llistaCerques[index]['layer']
+                id_capa = self.llistaCerques[index]['layer']
+                return QgsProject.instance().mapLayers().get(id_capa).name()
             index += 1
         return None
 
@@ -646,28 +638,6 @@ class QCercadorAdreca(QObject):
             self.dictNumeros[self.codiCarrer][self.query.value(1)] = row
 
         self.query.finish()
-
-
-    def getElementsCapa(self, layer: str, atribut: str, posicio: int):
-        """
-        Processa el nom de la capa proporcionat, neteja el nom del carrer i estableix l'adreça si el carrer existeix.
-        Si el carrer no existeix o si hi ha hagut un error durant el processament, la funció retorna False.
-        
-        Args:
-            layer (str): Nom de la capa a processar (ex: Noms de carrer)
-            atribut (str): Nom de l'element a extreure (ex: fid)
-            posicio (int): Posició que ocuparà la capa
-        """
-        start = time.time()
-        capa = self.project.mapLayersByName(layer)[0]
-        dict_capa_local = {}
-        for element in capa.getFeatures():
-            id_element = str(element.id())
-            atribut_element = element.attribute(atribut)
-            dict_capa_local[id_element] = atribut_element
-        self.dictCapes[posicio] = dict_capa_local
-        end = time.time()
-
 
     def getCarrerCantonades(self):
         """
