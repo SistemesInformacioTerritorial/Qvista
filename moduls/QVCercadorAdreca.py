@@ -263,6 +263,11 @@ class QCercadorAdreca(QObject):
     def set_projecte(self,project):
         self.project = project
 
+    def reset_cerca(self):
+        self.llistaCerques = []
+        self.combo_tipus_cerca.clear()
+        self.combo_tipus_cerca.addItems([TipusCerca.ADRECAPOSTAL.value, TipusCerca.CRUILLA.value])
+
 
     def afegir_cerca(self, layer_name:str, field_name:str, desc_value:str) -> None:
         """
@@ -274,7 +279,6 @@ class QCercadorAdreca(QObject):
             'desc': desc_value
         }
         self.llistaCerques.append(values_dict)
-        self.combo_tipus_cerca.addItem(desc_value)
 
     def obtenir_variables_cerca(self) -> List[str]:
         """
@@ -308,6 +312,7 @@ class QCercadorAdreca(QObject):
                 if layers:
                     layer_id = layers[0].id()
                     self.afegir_cerca(layer_id, field_match.group(1), desc_match.group(1))
+                    self.combo_tipus_cerca.addItem(desc_match.group(1))
                     self.obtenirVariablesQVSearch(layer_id)
                 else:
                     print(f"No existeix la capa {layer_name}")
@@ -345,12 +350,15 @@ class QCercadorAdreca(QObject):
                 desc_match = desc_regex.search(valor_variable)
 
                 if id_capa and field_match and desc_match:
-                    self.afegir_cerca(capa.name(), field_match.group(1), desc_match.group(1))
+                    self.afegir_cerca(id_capa, field_match.group(1), desc_match.group(1))
+                    self.combo_tipus_cerca.addItem(desc_match.group(1))
+
 
     def carregarTipusCerques(self) -> None:
         """
         Aquesta funció carrega els tipus de cerques disponibles a partir de les variables del projecte que comencen amb un prefix específic.
         """
+        self.reset_cerca()
         self.processar_variables_cerca()
         self.carregar_totes_capes()
         self.carregar_elements_capes()
