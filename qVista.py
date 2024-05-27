@@ -31,6 +31,7 @@ from configuracioQvista import (QvTempdir, arxiuInfoQVista,
                                 titolFinestra, versio)
 from cubista3 import Ui_MainWindow
 from info_ui import Ui_Informacio
+from moduls.utils import te_enllac
 
 print ('QvImports: ',time.time()-start)
 
@@ -72,6 +73,7 @@ from moduls.QvNouCatalegCapes import QvNouCatalegCapes
 from moduls.QvNouMapa import QvNouMapa
 from moduls.QvPavimentacio import DockPavim
 from moduls.QvPrint import QvPrint
+from moduls.QvEnllac import QvEnllac
 from moduls.QvPushButton import QvPushButton
 from moduls.QvSabiesQue import QvSabiesQue
 from moduls.QvSobre import QvSobre
@@ -198,6 +200,7 @@ class QVista(QMainWindow, Ui_MainWindow):
        
         # self.preparacioMapTips() ???
         self.preparacioImpressio()
+        self.preparacioEnllac()
         self.preparacioMesura()
         # self.preparacioGrafiques() ???
         self.preparacioSeleccio()
@@ -393,6 +396,13 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.canvas.refresh()
         # self.showXY(self.canvas.center())
 
+        variables_qv_button = te_enllac()
+        self.dwEnllac.close()
+        if not variables_qv_button:
+            self.bEnllacos.setVisible(False)
+        else:
+            self.bEnllacos.setVisible(True)
+
         for x in self.findChildren(QvDockWidget):
             if isinstance(x.widget(),QvCanvas):
                 if x.isVisible():
@@ -437,7 +447,6 @@ class QVista(QMainWindow, Ui_MainWindow):
         else:
             self.botoMetadades.hide()
 
-
         # if len(self.llegenda.temes())>0:
         #     self.cbEstil.show()
         #     self.cbEstil.clear()
@@ -451,8 +460,6 @@ class QVista(QMainWindow, Ui_MainWindow):
         
     def stopMovie(self):
         QvFuncions.stopMovie()
-
-   
 
     def keyPressEvent(self, event):
         """Actuacions del qVista en funció de la tecla premuda
@@ -528,6 +535,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.bSeleccioGrafica = self.botoLateral(tamany = 25, accio=self.actSeleccioGrafica)
         self.bMesuraGrafica = self.botoLateral(tamany = 25, accio=self.actMesuraGrafica)
         self.bNouCanvas = self.botoLateral(tamany=25, accio=self.actNouCanvas)
+        self.bEnllacos = self.botoLateral(tamany=25, accio=self.actEnllacos)
 
         spacer2 = QSpacerItem(1000, 1000, QSizePolicy.Expanding,QSizePolicy.Maximum)
         self.lytBotoneraLateral.addItem(spacer2)
@@ -1018,6 +1026,18 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.dwPrint.hide()
         self.setDirtyBit(estatDirtybit)
 
+    def preparacioEnllac(self):
+        """
+        Prepara un QvDockWidget anomenat "Mostrar enllaços" i l'afegeix a l'àrea dreta de l'aplicació.
+        """
+        self.dwEnllac = QvDockWidget( "Mostrar enllaços", self )
+        self.dwEnllac.setContextMenuPolicy(Qt.PreventContextMenu)
+        self.dwEnllac.setObjectName( "Enllaços" )
+        self.dwEnllac.setAllowedAreas( Qt.RightDockWidgetArea | Qt.LeftDockWidgetArea )
+        self.dwEnllac.setContentsMargins ( 1, 1, 1, 1 )
+        self.addDockWidget(Qt.RightDockWidgetArea, self.dwEnllac)
+        self.dwEnllac.hide()
+
     def imprimir(self):
         estatDirtybit = self.canvisPendents
         # No és tant fàcil fer que només es creï un cop aquest objecte (i que funcioni bé després)
@@ -1033,6 +1053,15 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         self.dwPrint.visibilityChanged.connect(destruirQvPrint)
         self.setDirtyBit(estatDirtybit)
+
+    def nouEnllac(self):
+        """
+        Crea una nova instància de QvEnllac, l'assigna al QvDockWidget "Mostrar enllaços" i mostra aquest widget.
+        """
+        self.qv_enllac = QvEnllac()
+        self.dwEnllac.setWidget(self.qv_enllac)
+        self.dwEnllac.show()
+
     def sobre(self):
         about = QvSobre(self)
         about.exec()
@@ -1131,6 +1160,12 @@ class QVista(QMainWindow, Ui_MainWindow):
         icon=QIcon(os.path.join(imatgesDir,'map-plus.png'))
         self.actNouCanvas.setIcon(icon)
         self.actNouCanvas.triggered.connect(self.nouCanvas)
+
+        self.actEnllacos = QAction("Enllaços", self)
+        self.actEnllacos.setStatusTip('Enllaços')
+        icon=QIcon(os.path.join(imatgesDir,'doc-web.png'))
+        self.actEnllacos.setIcon(icon)
+        self.actEnllacos.triggered.connect(self.nouEnllac)
 
         self.actHelp = QAction("Contingut de l'ajuda", self)
         icon=QIcon(os.path.join(imatgesDir,'help-circle.png'))
