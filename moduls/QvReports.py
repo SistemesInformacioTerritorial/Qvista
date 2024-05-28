@@ -23,68 +23,71 @@ class QvReports(QvDataPlotly):
         'Error en iterar sobre el disseny.'
     ]
 
-    def __init__(self, llegenda, path=PathInformes, settings=None):
+    def __init__(self, llegenda, path=PathInformes):
         super().__init__()
         self.initGui()
         self.llegenda = llegenda
         self.path = path
-        if settings is None:
-            self.settings = QgsLayoutExporter.PdfExportSettings()
-        else:
-            self.settings = settings
         self.menu = QMenu()
-        self.lastPdf = ''
 
     def listReports(self):
         layoutManager = QgsProject.instance().layoutManager()
-        return [layout.name() for layout in layoutManager.layouts()]
+        for layout in layoutManager.printLayouts():
+            if layout.atlas().enabled():
+                yield layout.name()
 
-    def exportMsg(self, result):
+        # return [layout.name() for layout in layoutManager.printLayouts()]
+
+    def msgReport(self, result):
         if result in range(len(QvReports.ExportMsgs)):
             return QvReports.ExportMsgs[result]
         else:
             return "Error en la generació de l'informe"
 
-    def exportToPdf(self, name):
+    def reportToPdf(self, name):
         try: 
             layoutManager = QgsProject.instance().layoutManager()
             layout = layoutManager.layoutByName(name)
             if layout is None:
-                return -1, f"Informe {name} no trobat" 
+                return -1, "Informe no trobat", None
+            atlas = layout.atlas()
+            if not atlas.enabled():
+                return -1, "Informe desactivat", None
         except Exception as e:
-            return -1, f"Informe {name} no trobat - " + str(e)
+            return -1, "Informe no trobat - " + str(e), None
 
         try:        
-            pdfPath = self.path + '/' + name + '.pdf'
-            if type(layout) is QgsReport:
-                # Informes compuestos
-                result, _ = QgsLayoutExporter.exportToPdf(layout, pdfPath, self.settings)
+            # https://github.com/carey136/Standalone-Export-Atlas-QGIS3/blob/master/AtlasExport.py
+
+            pdf = self.path + '/' + name + '.pdf'
+            atlasLayout = atlas.layout()
+            exporter = QgsLayoutExporter(atlasLayout)
+            settings = exporter.PdfExportSettings()
+            settings.exportLayersAsSeperateFiles = False
+            result, _ = QgsLayoutExporter.exportToPdf(atlas, pdf, settings)
+            msg = self.msgReport(result)
+            if result == QgsLayoutExporter.Success:
+                return result, msg, pdf
             else:
-                # Informes sencilos
-                exporter = QgsLayoutExporter(layout)
-                result = exporter.exportToPdf(pdfPath, self.settings)
-            msg = self.exportMsg(result)
-            if result == 0:
-                self.lastPdf = pdfPath
-            return result, msg
-        
+                return result, msg, None
+
         except Exception as e:
-            return -1, "Error en l'exportació  - " + str(e)
+            return -1, "Error en la generació  - " + str(e), None
 
     def menuReport(self):
         QApplication.instance().setOverrideCursor(Qt.WaitCursor)
         try:
             report = self.llegenda.sender().text()
-            result, msg = self.exportToPdf(report)
-            if result == 0:
-                os.startfile(self.lastPdf)
+            result, msg, pdf = self.reportToPdf(report)
+            if result == QgsLayoutExporter.Success:
+                os.startfile(pdf)
                 QApplication.instance().restoreOverrideCursor()
             else:
                 QApplication.instance().restoreOverrideCursor()
-                QMessageBox.warning(None, f"ERROR a l'informe '{report}'", msg)
+                QMessageBox.warning(None, f"ERROR a l'informe {report}", msg)
         except Exception as e:
             QApplication.instance().restoreOverrideCursor()
-            QMessageBox.warning(None, f"ERROR a l'informe '{report}'", str(e))
+            QMessageBox.warning(None, f"ERROR a l'informe {report}", str(e))
 
     def setMenu(self, title='Informes PDF'):
         self.menu.clear()
@@ -113,6 +116,8 @@ if __name__ == "__main__":
     
     import sys
 
+
+
     with qgisapp() as app:
 
         qApp = QvApp()
@@ -124,7 +129,8 @@ if __name__ == "__main__":
 
         llegenda = QvLlegenda(canvas, atributs)
 
-        # sys.path.append('C:/Users/de1717.CORPPRO/AppData/Roaming/QGIS/QGIS3/profiles/default/python/plugins')
+        # sys.path.append(r'C:\OSGeo4W\apps\qgis-ltr\python\plugins')
+        # import processing
 
         # nAlgs = QgsNativeAlgorithms()
         # nAlgs.loadAlgorithms()
@@ -158,22 +164,26 @@ if __name__ == "__main__":
 
         print(f"Composiciones de {llegenda.project.fileName()}")
         # Itera sobre las composiciones existentes
-        for layout in layoutManager.layouts():
+        for layout in layoutManager.printLayouts():
             name = layout.name()
             print(f"- {name}")
 
             # Define la ruta de salida para el archivo PDF
-            pdfPath = llegenda.project.homePath() + '/Test' + name + '.pdf'
+            pdf = llegenda.project.homePath() + '/Test' + name + '.pdf'
 
             # Exporta la composición a PDF
-            if type(layout) is QgsReport:
-                result, error = QgsLayoutExporter.exportToPdf(layout, pdfPath, settings)
-            else:
-                exporter = QgsLayoutExporter(layout)
-                result = exporter.exportToPdf(pdfPath, settings)
+            exporter = QgsLayoutExporter(layout)
+            result = exporter.exportToPdf(pdf, settings)
 
-            if result == 0:
-                print(f"  Informe '{name}' exportado a: {pdfPath}")
+            # # Exporta la composición a PDF
+            # if type(layout) is QgsReport:
+            #     result, error = QgsLayoutExporter.exportToPdf(layout, pdfPath, settings)
+            # else:
+            #     exporter = QgsLayoutExporter(layout)
+            #     result = exporter.exportToPdf(pdfPath, settings)
+
+            if result == QgsLayoutExporter.Success:
+                print(f"  Informe '{name}' exportado a: {pdf}")
             else:
                 print(f"  Error al exportar el informe '{name}': {result}")
 
