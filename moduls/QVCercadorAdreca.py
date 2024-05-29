@@ -352,7 +352,7 @@ class QCercadorAdreca(QObject):
                 retorna el valor `ADRECAPOSTAL` de l'enumeració `TipusCerca`.
         """
         try:
-            return self.combo_tipus_cerca.currentText()
+            return self.tipusCerca.currentText()
         except AttributeError:
             return TipusCerca.ADRECAPOSTAL.value
 
