@@ -31,7 +31,7 @@ from configuracioQvista import (QvTempdir, arxiuInfoQVista,
                                 titolFinestra, versio)
 from cubista3 import Ui_MainWindow
 from info_ui import Ui_Informacio
-from moduls.utils import te_enllac
+from moduls.utils import get_links
 
 print ('QvImports: ',time.time()-start)
 
@@ -396,12 +396,9 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.canvas.refresh()
         # self.showXY(self.canvas.center())
 
-        variables_qv_button = te_enllac()
+        self.llista_enllacos = get_links()
         self.dwEnllac.close()
-        if not variables_qv_button:
-            self.bEnllacos.setVisible(False)
-        else:
-            self.bEnllacos.setVisible(True)
+        self.bEnllacos.setVisible(bool(self.llista_enllacos))
 
         for x in self.findChildren(QvDockWidget):
             if isinstance(x.widget(),QvCanvas):
@@ -1058,7 +1055,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         """
         Crea una nova instància de QvEnllac, l'assigna al QvDockWidget "Mostrar enllaços" i mostra aquest widget.
         """
-        self.qv_enllac = QvEnllac()
+        self.qv_enllac = QvEnllac(self.llista_enllacos)
         self.dwEnllac.setWidget(self.qv_enllac)
         self.dwEnllac.show()
 
