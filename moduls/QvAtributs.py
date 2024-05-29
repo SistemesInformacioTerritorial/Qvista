@@ -371,8 +371,10 @@ class QvTaulaAtributs(QgsAttributeTableView):
         self.model.loadLayer()
 
         # Filter y view
+        self.config = self.layer.attributeTableConfig()
         self.filter = QgsAttributeTableFilterModel(self.canvas, self.model)
         self.filter.setFilterMode(QgsAttributeTableFilterModel.ShowAll)
+        self.filter.setAttributeTableConfig(self.config)
         self.setModel(self.filter)
 
         # Edition
