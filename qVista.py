@@ -17,7 +17,7 @@ from qgis.PyQt.QtCore import (QCoreApplication, QDateTime, QProcess, QSize, Qt,
                               QUrl, pyqtSignal)
 from qgis.PyQt.QtGui import (QColor, QDesktopServices, QFont, QIcon,
                              QKeySequence, QPainter, QPen, QPixmap)
-from qgis.PyQt.QtWidgets import (QAction, QCheckBox, QDialog, QDockWidget,
+from qgis.PyQt.QtWidgets import (QComboBox, QAction, QCheckBox, QDialog, QDockWidget,
                                  QFileDialog, QFrame, QHBoxLayout, QLabel,
                                  QLineEdit, QMainWindow, QMenu, QMessageBox,
                                  QShortcut, QSizePolicy, QSpacerItem,
@@ -84,6 +84,7 @@ from moduls.QvUbicacions import QvUbicacions
 from moduls.QvVideoDoc import QvVideoDoc
 from moduls.QvVisorHTML import QvVisorHTML
 from moduls.QvVisualitzacioCapa import QvVisualitzacioCapa
+from moduls.constants import TipusCerca
 
 # Impressió del temps de carrega dels moduls Qv
 print ('Temps de carrega dels moduls Qv:', time.time()-iniciTempsModuls)
@@ -1219,6 +1220,27 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.actPropietatsLayer.setStatusTip("Opcions de visualització")
         self.actPropietatsLayer.triggered.connect(self.propietatsLayer)
 
+    def canviarTextLeNumCerca(self, index: int) -> None:
+        """
+        Canvia el text de placeholder de l'objecte QlineEdit leNumCerca en funció de la selecció de tipus 
+        feta a l'objecte QComboBox comboTipusCerca. Netega el contingut actual de leNumCerca.
+
+        Args:
+            index (int): Índex de la selecció actual del QComboBox comboTipusCerca
+        """
+        tipus_seleccionat = self.comboTipusCerca.itemText(index)
+        if tipus_seleccionat == TipusCerca.ADRECAPOSTAL.value:
+            self.leNumCerca.setPlaceholderText('Número')
+        elif tipus_seleccionat == TipusCerca.CRUILLA.value:
+            self.leNumCerca.setPlaceholderText('Carrer, Plaça...')
+        self.leNumCerca.clear()
+
+    def activarODesactivarNumCerca(self):
+        if self.leCercaPerAdreca.text() == '':
+            self.leNumCerca.setReadOnly(True)
+        else:
+            self.leNumCerca.setReadOnly(False)
+
     def definicioBotons(self):
         self.frame_15.setContentsMargins(0,0,12,0)
         stylesheetLineEdits="""
@@ -1228,22 +1250,31 @@ class QVista(QMainWindow, Ui_MainWindow):
             border-radius: 2px;
             padding: 1px"""%(QvConstants.COLORCERCADORHTML, QvConstants.COLORFOSCHTML, QvConstants.COLORCERCADORHTML)
         
+        self.comboTipusCerca.setStyleSheet(stylesheetLineEdits)
+        self.comboTipusCerca.setFont(QvConstants.FONTTEXT)
+        self.comboTipusCerca.addItems([TipusCerca.ADRECAPOSTAL.value, TipusCerca.CRUILLA.value])
+        self.comboTipusCerca.setFixedWidth(140)
+        self.leCercaPerAdreca.textChanged.connect(lambda: self.leNumCerca.setReadOnly(True) if self.leCercaPerAdreca.text() == '' else self.leNumCerca.setReadOnly(False))
+        
         self.leCercaPerAdreca.setStyleSheet(stylesheetLineEdits)
         self.leCercaPerAdreca.setFont(QvConstants.FONTTEXT)
-        self.leCercaPerAdreca.setPlaceholderText('Carrer, plaça...')
+        self.leCercaPerAdreca.setPlaceholderText('Carrer, Plaça...')
         self.leCercaPerAdreca.setFixedWidth(320)
 
         self.leNumCerca.setStyleSheet(stylesheetLineEdits)
         self.leNumCerca.setFont(QvConstants.FONTTEXT)
-        self.leNumCerca.setPlaceholderText('Núm...')
-        self.leNumCerca.setFixedWidth(80)
+        self.leNumCerca.setPlaceholderText('Número...')
+        self.leNumCerca.setFixedWidth(320)
+        self.comboTipusCerca.currentIndexChanged.connect(self.canviarTextLeNumCerca)
 
-        self.cAdrecSup=QCercadorAdreca(self.leCercaPerAdreca, self.leNumCerca,'SQLITE')    # SQLITE o CSV
+        self.cAdrecSup=QCercadorAdreca(self.leCercaPerAdreca, self.leNumCerca, 'SQLITE', self.comboTipusCerca)    # SQLITE o CSV
         self.bCercaPerAdreca.clicked.connect(lambda: self.leCercaPerAdreca.setText(''))
         self.bCercaPerAdreca.clicked.connect(self.leCercaPerAdreca.setFocus)
         self.bCercaPerAdreca.setCursor(QvConstants.cursorClick())
         self.leCercaPerAdreca.textChanged.connect(lambda x: self.bCercaPerAdreca.setIcon(QIcon(os.path.join(imatgesDir,('magnify.png' if x=='' else 'cp_elimina.png')))))
         self.cAdrecSup.sHanTrobatCoordenades.connect(self.trobatNumero_oNoSup)
+        self.leNumCerca.setReadOnly(True if self.leCercaPerAdreca.text() == '' else False)
+
 
         self.lSpacer.setText("")
         self.lSpacer.setFixedWidth(24)
