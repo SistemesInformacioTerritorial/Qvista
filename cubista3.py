@@ -85,6 +85,11 @@ class Ui_MainWindow(object):
 "text-align: left;")
         self.lblTitolProjecte.setObjectName("lblTitolProjecte")
         self.horizontalLayout_4.addWidget(self.lblTitolProjecte)
+
+        self.comboTipusCerca = QtWidgets.QComboBox(self.frame_15)
+        self.comboTipusCerca.setObjectName("comboTipusCerca")
+        self.horizontalLayout_4.addWidget(self.comboTipusCerca)
+
         self.leCercaPerAdreca = QtWidgets.QLineEdit(self.frame_15)
         self.leCercaPerAdreca.setObjectName("leCercaPerAdreca")
         self.horizontalLayout_4.addWidget(self.leCercaPerAdreca)
