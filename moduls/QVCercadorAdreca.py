@@ -10,7 +10,7 @@ import copy
 
 from PyQt5.QtSql import QSqlDatabase
 from moduls.imported.simplekml.featgeom import Geometry
-from qgis.core import QgsPointXY, QgsProject, QgsExpressionContextUtils, QgsGeometry, QgsWkbTypes
+from qgis.core import QgsPointXY, QgsProject, QgsExpressionContextUtils, QgsVectorLayer, QgsWkbTypes, QgsFeature
 from qgis.core.contextmanagers import qgisapp
 from qgis.gui import QgsLayerTreeMapCanvasBridge, QgsVertexMarker
 from qgis.PyQt import QtCore,QtWidgets
@@ -259,11 +259,57 @@ class QCercadorAdreca(QObject):
 
         if self.llegirAdreces():
             self.prepararCompleterCarrer()
+        
+        QTimer.singleShot(0, self.connectLayersRemoved)
+        QTimer.singleShot(0, self.connectLayersAdded)
 
     def set_projecte(self,project):
         self.project = project
 
+    def connectLayersAdded(self):
+        """
+        Connecta el senyal de l'afegit de capes al mètode de gestió corresponent.
+        """
+        QgsProject.instance().layersAdded.connect(self.layersAdded)
+
+    def layersAdded(self, layer_ids:list):
+        """
+        Gestiona l'afegit de noves capes al projecte, afegint les capes pertinents a la cerca.
+        
+        Args:
+            layer_ids (list): Llista d'identificadors de les capes afegides.
+        """
+        for layer_id in layer_ids:
+            obtenir_capes = self.obtenir_variables_qvSearch(layer_id)
+            for capa in obtenir_capes:
+                self.afegir_cerca(layer_id.id(),capa[0],capa[1])
+                self.combo_tipus_cerca.addItem(capa[1])
+
+    def connectLayersRemoved(self):
+        """
+        Connecta el senyal de la retirada de capes al mètode de gestió corresponent.
+        """
+        QgsProject.instance().layersRemoved.connect(self.layersRemoved)
+
+    def layersRemoved(self, layer_ids:list) -> None:
+        """
+        Gestiona la retirada de capes del projecte, eliminant les capes pertinents de la cerca.
+        
+        Args:
+            layer_ids (list): Llista d'identificadors de les capes retirades.
+        """
+        layer_str = layer_ids[0]
+        for element in self.llistaCerques.copy():
+            if element['layer'] == layer_str:
+                index = self.combo_tipus_cerca.findText(element['desc'])
+                if index >= 0:
+                    self.combo_tipus_cerca.removeItem(index)
+                self.llistaCerques.remove(element)
+
     def reset_cerca(self):
+        """
+        Reinicia la llista de cerques i el combo box de tipus de cerca als valors per defecte.
+        """
         self.llistaCerques = []
         self.combo_tipus_cerca.clear()
         self.combo_tipus_cerca.addItems([TipusCerca.ADRECAPOSTAL.value, TipusCerca.CRUILLA.value])
@@ -288,7 +334,7 @@ class QCercadorAdreca(QObject):
         search_variables = [name for name in variable_names if name.startswith(PREFIX_SEARCH)]
         return sorted(search_variables)
 
-    def processar_variables_cerca(self) -> None:
+    def processar_variables_projecte(self) -> None:
         """
         Aquesta funció processa les variables de cerca, utilitzant expressions regulars per extreure la capa, el camp i la descripció de cada variable.
         Afegeix cada conjunt de valors a la llista de cerques i afegeix la descripció al comboBox de tipus de cerca.
@@ -313,7 +359,7 @@ class QCercadorAdreca(QObject):
                     layer_id = layers[0].id()
                     self.afegir_cerca(layer_id, field_match.group(1), desc_match.group(1))
                     self.combo_tipus_cerca.addItem(desc_match.group(1))
-                    self.obtenirVariablesQVSearch(layer_id)
+                    self.afegir_elements_capa_qvSearch(layer_id)
                 else:
                     print(f"No existeix la capa {layer_name}")
 
@@ -326,32 +372,55 @@ class QCercadorAdreca(QObject):
             layer_id = layer.id()
 
             if not any(search['layer'] == layer_id for search in self.llistaCerques):
-                camel_case_field = ''.join(word.title() for word in layer_name.split())
-                self.afegir_cerca(layer_id, camel_case_field, layer_name)
-                self.obtenirVariablesQVSearch(layer_id)
+                self.afegir_elements_capa_qvSearch(layer_id)
 
-    def obtenirVariablesQVSearch(self, id_capa:str) -> None:
+    def obtenir_variables_qvSearch(self, capa: QgsVectorLayer) -> Optional[tuple[str,str]]:
         """
-        Modificat per utilitzar l'identificador únic de la capa.
+        Obté totes les variables que comencen amb PREFIX_SEARCH d'una capa donada.
+        
+        Args:
+            capa (QgsVectorLayer): La capa de la qual obtenir les variables.
+        
+        Returns:
+            Optional[tuple[str,str]]: Una llista de tuples amb les parelles (field, desc) de les variables trobades,
+                                    o None si no es troba cap variable que comenci amb PREFIX_SEARCH.
         """
-        capa = QgsProject.instance().mapLayer(id_capa)
-        if not capa:
-            return None
 
         totes_variables = QgsExpressionContextUtils.layerScope(capa).variableNames()
+        resultats = []  # Llista per emmagatzemar els parells trobats
 
         for nom_variable in totes_variables:
             if nom_variable.startswith(PREFIX_SEARCH):
                 valor_variable = QgsExpressionContextUtils.layerScope(capa).variable(nom_variable)
-                
+
                 field_regex = re.compile(r'field="([^"]*)"')
                 desc_regex = re.compile(r'desc="([^"]*)"')
                 field_match = field_regex.search(valor_variable)
                 desc_match = desc_regex.search(valor_variable)
 
-                if id_capa and field_match and desc_match:
-                    self.afegir_cerca(id_capa, field_match.group(1), desc_match.group(1))
-                    self.combo_tipus_cerca.addItem(desc_match.group(1))
+                if field_match and desc_match:
+                    # Afegir el parell trobat a la llista de resultats
+                    resultats.append((field_match.group(1), desc_match.group(1)))
+
+        return resultats if resultats else None
+
+    def afegir_elements_capa_qvSearch(self, id_capa:str) -> None:
+        """
+        Afegeix elements d'una capa específica a la llista de cerques i al combo box de tipus de cerca.
+        
+        Args:
+            id_capa (str): Identificador de la capa de la qual s'han d'afegir els elements.
+        """
+        capa = QgsProject.instance().mapLayer(id_capa)
+        if not capa:
+            return
+        resultats = self.obtenir_variables_qvSearch(capa)
+        if not resultats:
+            return
+        for resultat in resultats:
+            self.afegir_cerca(id_capa, resultat[0], resultat[1])
+            self.combo_tipus_cerca.addItem(resultat[1])
+            
 
 
     def carregarTipusCerques(self) -> None:
@@ -359,11 +428,11 @@ class QCercadorAdreca(QObject):
         Aquesta funció carrega els tipus de cerques disponibles a partir de les variables del projecte que comencen amb un prefix específic.
         """
         self.reset_cerca()
-        self.processar_variables_cerca()
+        self.processar_variables_projecte()
         self.carregar_totes_capes()
         self.carregar_elements_capes()
 
-    def carregar_elements_capes(self):
+    def carregar_elements_capes(self) -> None:
         """
         Aquesta funció carrega les capes especificades en la llista de cerques.
         Per a cada element de la llista, crida a `getElementsCapa` amb el nom de la capa i l'identificador 'fid'.
@@ -377,9 +446,10 @@ class QCercadorAdreca(QObject):
                 return False  # Si no es troba la capa, retorna False
 
             dict_capa_local = {}
+            element_cerca = element['field']
             for element in capa.getFeatures():
                 id_element = str(element.id())
-                atribut_element = element.attribute('fid')
+                atribut_element = element.attribute(element_cerca)
                 dict_capa_local[id_element] = atribut_element
             self.dictCapes[posicio] = dict_capa_local
             posicio += 1
@@ -395,7 +465,11 @@ class QCercadorAdreca(QObject):
             self.db.close()
 
     def prepararCompleterAltres(self):
-        self.completerAltres = QCompleter(self.dictCapa, self.leCarrer)
+        """
+        Prepara el completador per a la caixa de text de la cerca, basant-se en les claus del diccionari invers de capes.
+        """
+        self.dictCapaInvers = {str(valor).replace('<br>', ' '): clau for clau, valor in self.dictCapa.items()}
+        self.completerAltres = QCompleter(list(self.dictCapaInvers.keys()), self.leCarrer)
         self.completerAltres.setFilterMode(QtCore.Qt.MatchContains)
         self.completerAltres.setCaseSensitivity(QtCore.Qt.CaseInsensitive)
         self.completerAltres.activated.connect(self.activatAltres)
@@ -694,10 +768,10 @@ class QCercadorAdreca(QObject):
             bool: Retorna True si l'element està en `dictCapa` i s'ha activat correctament, False altrament.
         """
         self.carrerActivat = True
-        self.leCarrer.setAlignment(Qt.AlignLeft)
-        self.leCarrer.setText(element)
-        self.iniAdreca()
         if element in self.dictCapa:
+            self.leCarrer.setAlignment(Qt.AlignLeft)
+            self.leCarrer.setText(element)
+            self.iniAdreca()
             self.txto = element
             self.get_tipus_geometria()
 
@@ -1058,11 +1132,7 @@ class QCercadorAdreca(QObject):
 
     def get_tipus_geometria(self):
         """
-        Determina la geometria de l'element seleccionat i actualitza les coordenades d'adreça.
-        
-        Aquest mètode crida a les funcions modulars per obtenir la capa actual, recuperar la característica
-        basada en l'índex proporcionat, i determinar el tipus de geometria de la característica.
-        Si la geometria és un polígon o un punt, actualitza les coordenades d'adreça i emet un senyal corresponent.
+        Determina la geometria de l'element seleccionat a partir de l'index i actualitza les coordenades d'adreça.
         
         Raises:
             ValueError: Si 'self.txto' no es pot convertir a enter o si l'índex està fora de rang.
@@ -1078,13 +1148,12 @@ class QCercadorAdreca(QObject):
             mostrar_error(e)
 
 
-    def get_layer(self):
+    def get_layer(self) -> QgsVectorLayer:
         """
         Obté la capa actual del projecte.
         
         Returns:
             QgsMapLayer: La capa actual del projecte.
-        
         Raises:
             ValueError: Si no es troba cap capa amb el nom proporcionat.
         """
@@ -1093,12 +1162,12 @@ class QCercadorAdreca(QObject):
             mostrar_error("No s'ha trobat cap capa amb el nom proporcionat.")
         return self.project.mapLayersByName(layer_name)[0]
 
-    def get_feature(self, layer):
+    def get_feature(self, layer:QgsVectorLayer) -> QgsFeature:
         """
         Recupera la característica de la capa basada en l'índex proporcionat.
         
         Args:
-            layer (QgsMapLayer): La capa de la qual recuperar la característica.
+            layer (QgsVectorLayer): La capa de la qual recuperar la característica.
         
         Returns:
             QgsFeature: La característica recuperada.
@@ -1106,18 +1175,15 @@ class QCercadorAdreca(QObject):
         Raises:
             ValueError: Si 'self.txto' no es pot convertir a enter o si l'índex està fora de rang.
         """
-        try:
-            index = int(self.txto) - 1
-        except ValueError as e:
-            mostrar_error(e)
-        
+        index = int(self.dictCapaInvers.get(self.txto)) - 1
+
         features = list(layer.getFeatures())
-        if index < 0 or index >= len(features):
+        if index < -1 or index >= len(features):
             mostrar_error("L'índex està fora de rang.")
         
         return features[index]
 
-    def update_address_coordinates(self, feature):
+    def update_address_coordinates(self, feature: QgsFeature):
         """
         Actualitza les coordenades d'adreça basant-se en la geometria de la característica.
         
@@ -1134,10 +1200,16 @@ class QCercadorAdreca(QObject):
         elif geometria.type() == QgsWkbTypes.LineGeometry:
             self.coordAdreca = geometria
             self.punt_trobat.emit(0,"")
-        elif geometria.type() == QgsWkbTypes.PointGeometry:
+        elif geometria.wkbType() == QgsWkbTypes.Point:
             punt = geometria.asPoint()
             self.coordAdreca = QgsPointXY(punt.x(), punt.y())
             self.coordenades_trobades.emit(0, "")
+        elif geometria.wkbType() == QgsWkbTypes.MultiPoint:
+            punts = geometria.asMultiPoint()
+            if punts:
+                punt = punts[0]
+                self.coordAdreca = QgsPointXY(punt.x(), punt.y())
+                self.coordenades_trobades.emit(0, "")
         else:
             mostrar_error("Tipus de geometria no reconegut")
 
