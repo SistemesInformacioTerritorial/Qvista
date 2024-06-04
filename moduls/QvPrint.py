@@ -5,10 +5,13 @@ from time import strftime
 from pathlib import Path
 import os
 import re
+from functools import reduce
+from typing import List, Optional
+
 
 from qgis.core import (QgsGeometry, QgsLayout, QgsLayoutExporter, QgsPointXY,
                        QgsProject, QgsReadWriteContext, QgsVector,
-                       QgsVectorLayer)
+                       QgsVectorLayer, QgsLayoutItemLabel)
 from qgis.core.contextmanagers import qgisapp
 from qgis.gui import (QgsLayerTreeMapCanvasBridge, QgsMapCanvas, QgsMapTool,
                       QgsRubberBand)
@@ -43,7 +46,7 @@ class PointTool(QgsMapTool):
         self.activated.connect(self.rubberband.show)
         self.deactivated.connect(self.rubberband.hide)
 
-    
+
     def canvasMoveEvent(self, event):
         self.parent.dockX = event.pos().x()
         self.parent.dockY = event.pos().y()
@@ -143,12 +146,17 @@ class QvPrint(QWidget):
         # }
         self.mides = {}
 
+        self.inputs_fitxer = {}
+        self.inputs = {}
+
         # We instanciate de PointTool tool, to wait for clicks
         # After that, we assign the tool to the canvas.
         self.rp = PointTool(self, self.canvas, self.layer)
         canvas.setMapTool(self.rp)
 
         self.llegeixDirsPlantilles()
+        self.titols = []
+
         self.setupUI()
         self.canvas.xyCoordinates.connect(self.mocMouse)
 
@@ -162,13 +170,6 @@ class QvPrint(QWidget):
         self.layout.setContentsMargins(10,20,10,20)
         self.layout.setSpacing(14)
         # self.layout.setAlignment(Qt.AlignTop)
-
-        self.layoutTitol = QHBoxLayout()
-        self.lblTitol = QLabel("Títol: ")
-        self.leTitol = QLineEdit(self)
-        self.leTitol.setText(self.parent.titolProjecte)
-        self.layoutTitol.addWidget(self.lblTitol)
-        self.layoutTitol.addWidget(self.leTitol)
 
         self.layoutCategoria = QHBoxLayout()
         self.lblCategoria = QLabel('Categoria: ')
@@ -229,13 +230,30 @@ class QvPrint(QWidget):
         self.nota.setMaximumWidth(240)
         self.nota.setWordWrap(True)
 
-
         self.layout.addLayout(self.layoutCategoria)
         self.layout.addLayout(self.layoutPlantilla)
         self.layout.addLayout(self.layEscales)
         self.layout.addLayout(self.layoutCBmida)
         self.layout.addLayout(self.layoutCBOrientacio)
-        self.layout.addLayout(self.layoutTitol)
+
+        input_ids = self.getInputIds()
+
+        for input_id in input_ids:
+            self.inputs[input_id] = {}
+            self.inputs[input_id]["layoutTitol"] = QHBoxLayout()
+            lbl_text = input_id.replace("qV_", "").capitalize()
+
+            self.inputs[input_id]["lblTitol"] = QLabel(lbl_text)
+            self.inputs[input_id]["leTitol"] = QLineEdit(self)
+            self.inputs[input_id]["leTitol"].setText(self.parent.titolProjecte)
+
+            self.inputs[input_id]["layoutTitol"].addWidget(self.inputs[input_id]["lblTitol"])
+            self.inputs[input_id]["layoutTitol"].addWidget(self.inputs[input_id]["leTitol"])
+
+
+        for element in self.inputs.values():
+            self.layout.addLayout(element["layoutTitol"])
+
         self.layout.addWidget(self.boto2)
         self.layout.addWidget(self.boto3)
         self.layout.addWidget(self.boto)
@@ -245,12 +263,49 @@ class QvPrint(QWidget):
         # self.layout.addWidget(self.rbHoritzontal)
         self.layout.addStretch()
         self.actualitzaCBPlantilles()
-    
+
+    def getInputText(self, fitxer:str, input_id:str) -> Optional[str]:
+        for element in self.inputs_fitxers[fitxer]:
+            if element["id"] == input_id:
+                return element["text"]
+
+        return None
+
+    def getInputIds(self)->List[str]:
+        ids = []
+
+        for entry in self.inputs_fitxers.values():
+            for input_properties in entry:
+                if input_properties["id"].startswith("qV_"):
+                    ids.append(input_properties["id"])
+
+
+        return list(set(ids))
+
     @staticmethod
     def nomPlantillaCorrecte(nomPlantilla, nomBase):
         aux = nomPlantilla.replace(nomBase,'').replace('.qpt','')
         pattern = re.compile(r'A[0-9][VH]')
         return pattern.fullmatch(aux)
+
+    def getPlantillaFields(self, plantilla:str) -> Optional[List] :
+        """
+        Retorna els labels de la plantilla
+        """
+
+        temp_projecte = QgsProject.instance()
+        template = QFile(plantilla)
+        doc = QDomDocument()
+        doc.setContent(template, False)
+
+        layout = QgsLayout(temp_projecte)
+        context = QgsReadWriteContext()
+        items, _ = layout.loadFromTemplate(doc, context)
+
+        return [
+            {"id":item.id(),"text": item.text()}
+            for item in items
+            if isinstance(item, QgsLayoutItemLabel) and item.id().startswith("qV_") ]
 
     def llegeixDirsPlantilles(self):
         self.dirsPlantilles = {
@@ -270,10 +325,14 @@ class QvPrint(QWidget):
                 basePlantilla, plantilles, _ = next(os.walk(p))
                 for plantilla in plantilles:
                     self.dirsPlantilles[d][plantilla] = str(Path(basePlantilla, plantilla))
-        # Tindrem un diccionari on la clau serà la ruta de la plantilla, 
-        #  i el valor un diccionari on la clau seran les mides (A0, A1...) 
+        # Tindrem un diccionari on la clau serà la ruta de la plantilla,
+        #  i el valor un diccionari on la clau seran les mides (A0, A1...)
         #  i els valors una llista que podrà contenir "H" i/o "V"
         self.mides = {}
+
+        self.inputs_fitxers = {}
+        self.inputs = {}
+
         for grup in self.dirsPlantilles.values():
             for (nom, ruta) in grup.items():
                 self.mides[ruta] = {}
@@ -287,6 +346,8 @@ class QvPrint(QWidget):
                         if mida not in self.mides[ruta]:
                             self.mides[ruta][mida] = []
                         self.mides[ruta][mida].append(orientacio)
+                        self.inputs_fitxers[arxiu] = self.getPlantillaFields(arxiu)
+
 
 
     def potsMoure(self):
@@ -295,19 +356,19 @@ class QvPrint(QWidget):
         if self.canvas.mapTool()!=self.rp:
             self.canvas.setMapTool(self.rp)
         self.rp.potsMoure()
-        
+
     def getCategoria(self):
         return self.cbCategoria.currentText()
 
     def getPlantilla(self):
         return self.cbPlantilla.currentText()
-    
+
     def getMida(self):
         return self.cbMida.currentText()
-    
+
     def getOrientacio(self):
         return self.cbOrientacio.currentText()
-    
+
     def getEscala(self):
         return self.combo.currentText()
 
@@ -315,6 +376,22 @@ class QvPrint(QWidget):
         self.cbPlantilla.clear()
         plantilles = self.dirsPlantilles[self.getCategoria()]
         self.cbPlantilla.addItems(plantilles)
+
+    def actualitzaInputsPlantilla(self):
+        plantilla = self.getPlantillaActual()
+        if plantilla is not None:
+            input_ids_actuals = self.inputs_fitxers[plantilla]
+
+            for input_obj in self.inputs.values():
+                input_obj["lblTitol"].hide()
+                input_obj["leTitol"].hide()
+
+            for input_info in input_ids_actuals:
+                input_id = input_info["id"]
+                self.inputs[input_id]["lblTitol"].show()
+                self.inputs[input_id]["leTitol"].show()
+                if plantilla:
+                    self.inputs[input_id]["leTitol"].setText(self.getInputText(plantilla, input_id))
 
     def actualitzaCBOrientacio(self):
         categoria = self.getCategoria()
@@ -327,6 +404,8 @@ class QvPrint(QWidget):
             orientacionsAux = ['Horitzontal' if x=='H' else 'Vertical' for x in orientacions]
             self.cbOrientacio.addItems(orientacionsAux)
             self.canviEscala()
+        self.actualitzaInputsPlantilla()
+
 
     def actualitzaCBMida(self):
         categoria = self.getCategoria()
@@ -359,22 +438,26 @@ class QvPrint(QWidget):
         incX = amplada*escala/1000
         incY = alcada*escala/1000
         self.rp.setIncXY(incX, incY)
-    
+
     def variablePerId(self, var):
         layout, ok = self.getLayout()
-        if not ok:
+        if not ok or layout is None:
             return None
         return layout.itemById(var)
 
-    def plantillaTeVariable(self, var):
+    def plantillaTeVariable(self, var) -> bool:
         return self.variablePerId(var) is not None
 
-    def plantillaTeTitol(self):
-        return self.plantillaTeVariable('idNomMapa')
-    
+
+    def plantillaTeTitol(self) -> bool:
+        """
+        Returns if the plantilla has a title
+        """
+        return len(self.inputs.keys()) > 0
+
     def plantillaTeData(self):
         return self.plantillaTeVariable('idData')
-    
+
     def getLayout(self):
         templateFile = self.getPlantillaActual()
         if templateFile is None:
@@ -386,11 +469,11 @@ class QvPrint(QWidget):
         context = QgsReadWriteContext()
         items, ok = layout.loadFromTemplate(doc, context)
         return layout, ok
-    
+
     def getMidesMapa(self):
         layout, ok = self.getLayout()
 
-        if not ok:
+        if not ok or layout is None:
             return None
 
         mapa = layout.referenceMap()
@@ -399,16 +482,19 @@ class QvPrint(QWidget):
     def canviOrientacio(self):
         self.canviEscala()
         if self.plantillaTeTitol():
-            self.lblTitol.show()
-            self.leTitol.show()
+            self.actualitzaInputsPlantilla()
+            #for input_obj in self.inputs.values():
+            #    input_obj["lblTitol"].show()
+            #    input_obj["leTitol"].show()
         else:
-            self.lblTitol.hide()
-            self.leTitol.hide()
+            for input_obj in self.inputs.values():
+                input_obj["lblTitol"].hide()
+                input_obj["leTitol"].hide()
 
     def mocMouse(self,p):
         if not self.isVisible():
             self.canvas.unsetMapTool(self.rp)
-    
+
     def closeEvent(self, e):
         super().closeEvent(e)
         if not self.isVisible():
@@ -420,20 +506,25 @@ class QvPrint(QWidget):
         points=[QgsPointXY(0,0),QgsPointXY(0,10),QgsPointXY(10,10),QgsPointXY(0,10),QgsPointXY(0,0)]
         poligono=QgsGeometry.fromRect(self.poligon)
         self.rubberband.setToGeometry(poligono,self.layer)
-    
+
     @staticmethod
     def nomArxiu(plantilla, orientacio, mida):
         if mida=='' or orientacio=='': return None
         orientacio = orientacio[0].upper()
         return plantilla.replace('.qpt','')+mida+orientacio+'.qpt'
-    
-    def getPlantillaActual(self):
+
+    def getPlantillaActual(self) -> Optional[str]:
         orientacio = self.getOrientacio()
         mida = self.getMida()
-        pathPlantilla = self.dirsPlantilles[self.getCategoria()][self.getPlantilla()]
+        pathPlantilla = self.dirsPlantilles.get(self.getCategoria(), {}).get(self.getPlantilla())
+        if pathPlantilla is None:
+            return None
         nomArxiu = self.nomArxiu(Path(pathPlantilla).name, orientacio, mida)
-        if nomArxiu is not None: return str(Path(pathPlantilla, nomArxiu))
-        
+        if nomArxiu is not None:
+            return str(Path(pathPlantilla, nomArxiu))
+        else:
+            return None
+
 
     def printPlanol(self):
         rotacio=self.canvas.rotation()
@@ -472,22 +563,24 @@ class QvPrint(QWidget):
         doc.setContent(template, False)
 
         layout, ok = self.getLayout()
-   
-        if ok:
+
+        if ok and layout is not None:
             refMap = layout.referenceMap()
 
             if self.plantillaTeTitol():
-                titol=layout.itemById('idNomMapa')
-                if self.leTitol.text()!='':
-                    titol.setText(self.leTitol.text()) #comentat pk peta
-                else:
-                    titol.setText('')
+                for input_id, _ in self.inputs.items():
+                    titol = layout.itemById(input_id)
+                    if titol:
+                        if self.inputs[input_id]["leTitol"]:
+                            titol.setText(self.inputs[input_id]["leTitol"].text())
+                        else:
+                            titol.setText('')
             if self.plantillaTeData():
                 dataMapa=layout.itemById('idData')
                 t = time.localtime()
                 dataMapa.setText(strftime('%b-%d-%Y %H:%M', t))
 
-        
+
             rect = refMap.extent()
             vector = QgsVector(x - rect.center().x(), y - rect.center().y())
             rect += vector

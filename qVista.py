@@ -726,31 +726,31 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.dwVideo.setAllowedAreas(Qt.RightDockWidgetArea | Qt.LeftDockWidgetArea)
 
     def preparacioCercadorPostal(self):
-    
+
         """
         Un frame suelto, de prova, sobre el que van dos lineEdits, pel carrer i el número.
-        Després instanciem el cercador d'adreces. 
+        Després instanciem el cercador d'adreces.
         Connectem la senyal sHanTrobatCoordenades a trobatNumero_oNo.
         """
 
-        # instanciamos clases necesarias    
+        # instanciamos clases necesarias
 
         self.fCercador=QFrame()
         self.bottomWidget = QWidget()
         self.ubicacions = QvUbicacions(self.canvas, pare=self)
-        self.splitter = QSplitter(Qt.Vertical)             
-        self.layoutAdreca = QHBoxLayout()                  
-        self.layoutCercador = QVBoxLayout(self.fCercador)  
-        self.layoutbottom = QVBoxLayout()                  
+        self.splitter = QSplitter(Qt.Vertical)
+        self.layoutAdreca = QHBoxLayout()
+        self.layoutCercador = QVBoxLayout(self.fCercador)
+        self.layoutbottom = QVBoxLayout()
         #Elementos para layout H, del cercador
-        self.lblCercadorCarrer = QLabel('    Carrer:')    
-        self.lblCercadorNum = QLabel('Num:')                      
-        self.leCarrer=QLineEdit()                           
+        self.lblCercadorCarrer = QLabel('    Carrer:')
+        self.lblCercadorNum = QLabel('Num:')
+        self.leCarrer=QLineEdit()
         self.leCarrer.setToolTip('Introdueix adreça i selecciona de la llista')
-        self.leCarrer.setMinimumWidth(200) 
-        self.leNumero=QLineEdit()                           
+        self.leCarrer.setMinimumWidth(200)
+        self.leNumero=QLineEdit()
         self.leNumero.setToolTip('Introdueix número, selecciona de la llista i prem RETURN')
-        self.leNumero.setMaximumWidth(50)                   
+        self.leNumero.setMaximumWidth(50)
         self.leNumero.setMinimumWidth(50)
 
         self.boton_bajar= QvPushButton(flat=True)
@@ -1163,7 +1163,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         # No és tant fàcil fer que només es creï un cop aquest objecte (i que funcioni bé després)
         self.qvPrint = QvPrint(self.project, self.canvas, self.canvas.extent(), parent = self)
         self.dwPrint.setWidget(self.qvPrint)
-        self.qvPrint.leTitol.setText(self.titolProjecte) #el titol pot haver canviat (o el projecte)
+        #self.qvPrint.leTitol.setText(self.titolProjecte) #el titol pot haver canviat (o el projecte)
         self.dwPrint.show()
         self.qvPrint.pucMoure = True #Mala idea modificar atributs des d'aquí
 

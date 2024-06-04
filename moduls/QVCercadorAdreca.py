@@ -66,7 +66,7 @@ def conte(sub, string):
     string = string.lower()
     sub = sub.strip()
     subs = sub.split(' ')
-    
+
     def x_not_in_string(x):
         return x not in string
     return all(x in string for x in subs)
@@ -130,7 +130,7 @@ class CompleterAdreces(QCompleter):
         if ind != -1:
             text = text[:ind-1]
         self.le.setText(text.strip())
-    
+
     @staticmethod
     @functools.lru_cache(maxsize=None)
     def cerca(word,elements,dicElems, vars):
@@ -154,14 +154,14 @@ class CompleterAdreces(QCompleter):
             # EXPLICACIÓ TÈCNICA
             # La solució anterior (basada en sets) perdia l'ordre
             # Això requeria una ordenació posterior, que es menjava tota l'eficiència
-            # Els diccionaris a partir de Python 3.6 conserven l'ordre. 
+            # Els diccionaris a partir de Python 3.6 conserven l'ordre.
             # Traslladant el que abans es feia en sets als diccionaris, aconseguim millorar l'eficiència
 
             # Respecte la possibilitat basada en llistes (dues llistes, un bucle i anar posant on pertoqui) el guany és del 50%
             # (en casos concrets hi ha pèrdues, en d'altres guanys molt grans)
             encaixen = {x:None for (i,x) in enumerate(llista) if func(x)}
             return list(encaixen.keys()), [x for x in llista if x not in encaixen]
-        
+
         if False and len(word)<3:
             # Si la paraula que cerquem és curta (1 o 2 caràcters) només mirem els que comencen
             encaixen = []
@@ -521,7 +521,7 @@ class QCercadorAdreca(QObject):
         self.numeroCarrer = ''
         self.coordAdreca = None
         self.infoAdreca = None
-        self.NumeroOficial = '' 
+        self.NumeroOficial = ''
 
     def iniAdrecaCantonada(self):
         self.carrerOriginalCantonada = ''
@@ -658,7 +658,7 @@ class QCercadorAdreca(QObject):
         """
           Funcion conectada al dobleclick.
           Si se dobleclica 1 vez---> selecciona la palabra (lo que hay entre dos blancos)
-          Se se dobleclica 2 veces---> selecciona toda la frase 
+          Se se dobleclica 2 veces---> selecciona toda la frase
         """
         self.carrerActivat=False
         #  self.numClick en def __init__ se inicializa a 0
@@ -668,17 +668,17 @@ class QCercadorAdreca(QObject):
         else:      # primer doble click selecciona la palabra
             # Limite de la palabra por la izquierda (blanco o inicio por izquierda)
             self.ii = self.leCarrer.cursorPosition() - 1
-            while self.ii >=0 and self.leCarrer.text()[self.ii] != ' ': 
+            while self.ii >=0 and self.leCarrer.text()[self.ii] != ' ':
                 self.ii -= 1 ;   self.inicio= self.ii
 
             # Limite de la palabra por la derecha (blanco o fin por derecha)
-            self.ii= self.leCarrer.cursorPosition() - 1 
-            while self.ii < len(self.leCarrer.text()) and self.leCarrer.text()[self.ii] != ' ': 
-                self.ii += 1 ;   self.fin= self.ii                
+            self.ii= self.leCarrer.cursorPosition() - 1
+            while self.ii < len(self.leCarrer.text()) and self.leCarrer.text()[self.ii] != ' ':
+                self.ii += 1 ;   self.fin= self.ii
 
             # selecciona palabra en frase por posicion
             self.leCarrer.setSelection(self.inicio+1,self.fin-self.inicio-1)
-            
+
         self.numClick += 1
 
 
@@ -696,9 +696,9 @@ class QCercadorAdreca(QObject):
 
         self.query.prepare(f"""
             SELECT codi,
-                CASE num_lletra_post 
-                    WHEN '0' THEN ' ' 
-                    ELSE num_lletra_post 
+                CASE num_lletra_post
+                    WHEN '0' THEN ' '
+                    ELSE num_lletra_post
                 END,
                 etrs89_coord_x,
                 etrs89_coord_y,
@@ -731,12 +731,12 @@ class QCercadorAdreca(QObject):
         None
         """
         self.query.prepare(f"""
-            SELECT Cantons.CODI_CANTO, 
-                Carrers.NOM_OFICIAL, 
-                Cantons.ETRS89_COORD_X, 
+            SELECT Cantons.CODI_CANTO,
+                Carrers.NOM_OFICIAL,
+                Cantons.ETRS89_COORD_X,
                 Cantons.ETRS89_COORD_Y
-            FROM Cantons 
-            JOIN Carrers ON Cantons.CODI_CANTO = Carrers.CODI 
+            FROM Cantons
+            JOIN Carrers ON Cantons.CODI_CANTO = Carrers.CODI
             WHERE Cantons.CODI = :codiCarrer""")
         self.query.bindValue(":codiCarrer", self.codiCarrer)
 
@@ -751,8 +751,8 @@ class QCercadorAdreca(QObject):
             row['ETRS89_COORD_X'] = self.query.value(2)
             row['ETRS89_COORD_Y'] = self.query.value(3)
 
-            self.dictCantonades[self.codiCarrer][self.query.value(1) + "   (" + str(self.query.value(0)) + ")"] = row 
-            
+            self.dictCantonades[self.codiCarrer][self.query.value(1) + "   (" + str(self.query.value(0)) + ")"] = row
+
         self.query.finish()
 
 
@@ -780,11 +780,11 @@ class QCercadorAdreca(QObject):
     def activatCarrer(self, carrer: str) -> Optional[bool]:
         """
         Aquesta funció processa el carrer proporcionat, neteja el nom del carrer i estableix l'adreça si el carrer existeix.
-        Si el carrer no existeix o si hi ha hagut un error durant el processament, la funció retorna False.  
-        
+        Si el carrer no existeix o si hi ha hagut un error durant el processament, la funció retorna False.
+
         Args:
             carrer (str): Nom del carrer a processar.
-        
+
         Returns:
             bool: Retorna None si s'ha pogut processar el carrer, fals altrament.
         """
@@ -815,9 +815,9 @@ class QCercadorAdreca(QObject):
 
                 if self.get_tipus_cerca() == TipusCerca.ADRECAPOSTAL.value: 
                     self.prepararCompleterNumero()
-                else: 
+                else:
                     self.prepararCompleterCantonada()
-                    
+
                 self.focusANumero()
 
             except Exception as e:
@@ -849,7 +849,7 @@ class QCercadorAdreca(QObject):
         Aquesta funció processa l'actual text del carrer, neteja el nom del carrer i busca l'adreça.
         Si l'adreça no es troba, s'inicialitza l'adreça.
         Si es produeix algun error durant el processament, es gestiona l'excepció i la funció retorna False.
-        
+
         Returns:
             bool: Retorna None si s'ha pogut processar l'adreça, fals altrament.
         """
@@ -889,7 +889,7 @@ class QCercadorAdreca(QObject):
 
                         if self.get_tipus_cerca() == TipusCerca.ADRECAPOSTAL.value: 
                             self.prepararCompleterNumero()
-                        else: 
+                        else:
                             self.prepararCompleterCantonada()
                         self.focusANumero()
 
@@ -932,7 +932,7 @@ class QCercadorAdreca(QObject):
         """
         self.numeroCarrer = cantonada
         self.infoAdreca = self.dictCantonadesFiltre[self.numeroCarrer]
-        self.coordAdreca = QgsPointXY(float(self.infoAdreca['ETRS89_COORD_X']), 
+        self.coordAdreca = QgsPointXY(float(self.infoAdreca['ETRS89_COORD_X']),
                                     float(self.infoAdreca['ETRS89_COORD_Y']))
         self.leNumero.clearFocus()
         self.coordenades_trobades.emit(0, "[0]")
@@ -959,14 +959,14 @@ class QCercadorAdreca(QObject):
 
     def activatCantonada(self, cantonada: str) -> None:
         """
-        Activa una cantonada específica passada com a argument. 
+        Activa una cantonada específica passada com a argument.
 
         Args:
             cantonada (str): El nom de la cantonada a activar.
         """
         try:
             self.leNumero.setText(cantonada)
-            self.iniAdrecaCantonada() 
+            self.iniAdrecaCantonada()
 
             self.comprovarCantonadesCarrer(cantonada)
             self.establirCantonadaMapa(cantonada)
