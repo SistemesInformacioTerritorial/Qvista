@@ -198,6 +198,9 @@ text-align: left;</string>
               </widget>
              </item>
              <item>
+              <widget class="QComboBox" name="comboTipusCerca"/>
+             </item>
+             <item>
               <widget class="QLineEdit" name="leCercaPerAdreca"/>
              </item>
              <item>
