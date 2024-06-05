@@ -260,19 +260,19 @@ class QCercadorAdreca(QObject):
         if self.llegirAdreces():
             self.prepararCompleterCarrer()
         
-        QTimer.singleShot(0, self.connectLayersRemoved)
-        QTimer.singleShot(0, self.connectLayersAdded)
+        QTimer.singleShot(0, self.connect_layers_removed)
+        QTimer.singleShot(0, self.connect_layers_added)
 
     def set_projecte(self,project):
         self.project = project
 
-    def connectLayersAdded(self):
+    def connect_layers_added(self):
         """
         Connecta el senyal de l'afegit de capes al mètode de gestió corresponent.
         """
-        QgsProject.instance().layersAdded.connect(self.layersAdded)
+        QgsProject.instance().layersAdded.connect(self.layers_added)
 
-    def layersAdded(self, layer_ids:list):
+    def layers_added(self, layer_ids:list):
         """
         Gestiona l'afegit de noves capes al projecte, afegint les capes pertinents a la cerca.
         
@@ -285,13 +285,13 @@ class QCercadorAdreca(QObject):
                 self.afegir_cerca(layer_id.id(),capa[0],capa[1])
                 self.combo_tipus_cerca.addItem(capa[1])
 
-    def connectLayersRemoved(self):
+    def connect_layers_removed(self):
         """
         Connecta el senyal de la retirada de capes al mètode de gestió corresponent.
         """
-        QgsProject.instance().layersRemoved.connect(self.layersRemoved)
+        QgsProject.instance().layersRemoved.connect(self.layers_removed)
 
-    def layersRemoved(self, layer_ids:list) -> None:
+    def layers_removed(self, layer_ids:list) -> None:
         """
         Gestiona la retirada de capes del projecte, eliminant les capes pertinents de la cerca.
         
@@ -362,13 +362,15 @@ class QCercadorAdreca(QObject):
                     self.afegir_elements_capa_qvSearch(layer_id)
                 else:
                     print(f"No existeix la capa {layer_name}")
+            else:
+                print(f"Error en carregar el contingut de la capa {var}")
+
 
     def carregar_totes_capes(self) -> None:
         """
         Aquesta funció carrega totes les capes del projecte de QGIS que encara no s'han afegit a la llista de cerques.
         """
         for layer in QgsProject.instance().mapLayers().values():
-            layer_name = layer.name()
             layer_id = layer.id()
 
             if not any(search['layer'] == layer_id for search in self.llistaCerques):
@@ -387,7 +389,7 @@ class QCercadorAdreca(QObject):
         """
 
         totes_variables = QgsExpressionContextUtils.layerScope(capa).variableNames()
-        resultats = []  # Llista per emmagatzemar els parells trobats
+        resultats = []
 
         for nom_variable in totes_variables:
             if nom_variable.startswith(PREFIX_SEARCH):
@@ -399,8 +401,9 @@ class QCercadorAdreca(QObject):
                 desc_match = desc_regex.search(valor_variable)
 
                 if field_match and desc_match:
-                    # Afegir el parell trobat a la llista de resultats
                     resultats.append((field_match.group(1), desc_match.group(1)))
+                else:
+                    print(f"Error amb en carregar la variable {nom_variable}")
 
         return resultats if resultats else None
 
@@ -423,7 +426,7 @@ class QCercadorAdreca(QObject):
             
 
 
-    def carregarTipusCerques(self) -> None:
+    def carregar_tipus_cerques(self) -> None:
         """
         Aquesta funció carrega els tipus de cerques disponibles a partir de les variables del projecte que comencen amb un prefix específic.
         """
@@ -440,10 +443,9 @@ class QCercadorAdreca(QObject):
         """
         posicio = 1
         for element in self.llistaCerques:
-            # self.getElementsCapa(element['layer'], 'fid', posicio)
             capa = QgsProject.instance().mapLayers().get(element['layer'])
             if not capa:
-                return False  # Si no es troba la capa, retorna False
+                return
 
             dict_capa_local = {}
             element_cerca = element['field']
