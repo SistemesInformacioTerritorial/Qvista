@@ -281,9 +281,10 @@ class QCercadorAdreca(QObject):
         """
         for layer_id in layer_ids:
             obtenir_capes = self.obtenir_variables_qvSearch(layer_id)
-            for capa in obtenir_capes:
-                self.afegir_cerca(layer_id.id(),capa[0],capa[1])
-                self.combo_tipus_cerca.addItem(capa[1])
+            if obtenir_capes:
+                for field, desc in obtenir_capes:
+                    self.afegir_cerca(layer_id.id(),field,desc)
+                    self.combo_tipus_cerca.addItem(desc)
         self.carregar_elements_capes()
 
     def connect_layers_removed(self):
