@@ -431,11 +431,11 @@ class QVista(QMainWindow, Ui_MainWindow):
         
         if self.cAdrec:
             self.cAdrec.set_projecte(self.project)
-            self.cAdrec.carregarTipusCerques()
+            self.cAdrec.carregar_tipus_cerques()
         
         if self.cAdrecSup:
             self.cAdrecSup.set_projecte(self.project)
-            self.cAdrecSup.carregarTipusCerques()
+            self.cAdrecSup.carregar_tipus_cerques()
 
         # if entorn == "'MarxesExploratories'":
         #     self.marxesCiutat()

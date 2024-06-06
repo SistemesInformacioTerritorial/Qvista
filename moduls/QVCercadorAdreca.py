@@ -284,6 +284,7 @@ class QCercadorAdreca(QObject):
             for capa in obtenir_capes:
                 self.afegir_cerca(layer_id.id(),capa[0],capa[1])
                 self.combo_tipus_cerca.addItem(capa[1])
+        self.carregar_elements_capes()
 
     def connect_layers_removed(self):
         """
@@ -442,13 +443,13 @@ class QCercadorAdreca(QObject):
         També manté un comptador de la posició que s'incrementa amb cada iteració.
         """
         posicio = 1
-        for element in self.llistaCerques:
-            capa = QgsProject.instance().mapLayers().get(element['layer'])
+        for variable in self.llistaCerques:
+            capa = QgsProject.instance().mapLayers().get(variable['layer'])
             if not capa:
                 return
 
             dict_capa_local = {}
-            element_cerca = element['field']
+            element_cerca = variable['field']
             for element in capa.getFeatures():
                 id_element = str(element.id())
                 atribut_element = element.attribute(element_cerca)
@@ -770,7 +771,7 @@ class QCercadorAdreca(QObject):
             bool: Retorna True si l'element està en `dictCapa` i s'ha activat correctament, False altrament.
         """
         self.carrerActivat = True
-        if element in self.dictCapa:
+        if element in self.dictCapaInvers:
             self.leCarrer.setAlignment(Qt.AlignLeft)
             self.leCarrer.setText(element)
             self.iniAdreca()
