@@ -236,6 +236,7 @@ class QCercadorAdreca(QObject):
                 print("Error")
         
         self.leNumero.returnPressed.connect(self.trobatCantonada)
+        self.leNumero.returnPressed.connect(self.trobatNumero)
         self.leCarrer.textChanged.connect(lambda: self.habilitaLeNum(self.leCarrer.text()))
 
         self.carrerActivat = False
