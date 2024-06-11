@@ -318,8 +318,17 @@ class QvSqlite:
         except Exception:
             return None
 
+    def puntEspecial(self, numIni, lenNum):
+        num = numIni[1:]
+        return numIni[0] + num.zfill(lenNum)
+
     def numPostal(self, numIni, lletraIni, numFi, lletraFi):
-        numIni = numIni.strip()
+        numIni = numIni.strip().upper()
+        if numIni != '': 
+            if numIni[0] == 'K':
+                return self.puntEspecial(numIni, 4)
+            elif numIni[0] == 'S':
+                return self.puntEspecial(numIni, 2)
         lletraIni = lletraIni.strip().upper()
         numFi = numFi.strip()
         lletraFi = lletraFi.strip().upper()
