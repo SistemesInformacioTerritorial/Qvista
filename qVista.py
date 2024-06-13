@@ -1230,8 +1230,10 @@ class QVista(QMainWindow, Ui_MainWindow):
         """
         tipus_seleccionat = self.comboTipusCerca.itemText(index)
         if tipus_seleccionat == TipusCerca.ADRECAPOSTAL.value:
-            self.leNumCerca.setPlaceholderText('Número')
+            self.leCercaPerAdreca.setPlaceholderText('Carrer, Plaça, E.A....')
+            self.leNumCerca.setPlaceholderText('Número, Km, E/S...')
         elif tipus_seleccionat == TipusCerca.CRUILLA.value:
+            self.leCercaPerAdreca.setPlaceholderText('Carrer, Plaça...')
             self.leNumCerca.setPlaceholderText('Carrer, Plaça...')
         self.leNumCerca.clear()
 
@@ -1258,13 +1260,15 @@ class QVista(QMainWindow, Ui_MainWindow):
         
         self.leCercaPerAdreca.setStyleSheet(stylesheetLineEdits)
         self.leCercaPerAdreca.setFont(QvConstants.FONTTEXT)
-        self.leCercaPerAdreca.setPlaceholderText('Carrer, Plaça...')
+        # self.leCercaPerAdreca.setPlaceholderText('Carrer, Plaça...')
         self.leCercaPerAdreca.setFixedWidth(320)
 
         self.leNumCerca.setStyleSheet(stylesheetLineEdits)
         self.leNumCerca.setFont(QvConstants.FONTTEXT)
-        self.leNumCerca.setPlaceholderText('Número...')
+        # self.leNumCerca.setPlaceholderText('Número...')
         self.leNumCerca.setFixedWidth(320)
+
+        self.canviarTextLeNumCerca(self.comboTipusCerca.currentIndex())
         self.comboTipusCerca.currentIndexChanged.connect(self.canviarTextLeNumCerca)
 
         self.cAdrecSup=QCercadorAdreca(self.leCercaPerAdreca, self.leNumCerca, 'SQLITE', self.comboTipusCerca)    # SQLITE o CSV
