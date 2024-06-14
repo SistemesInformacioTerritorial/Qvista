@@ -60,6 +60,8 @@ class QvConstants:
     CURSORANOTACIO=None
     CURSOROCUPAT=Qt.WaitCursor
 
+    STYLESHEETQTOOLTIP="QToolTip{ color: #38474F; background-color: #F0F0F0; }"
+
     @staticmethod
     def afegeixOmbraWidget(widget: QWidget):
         """Afegeix una ombra de widget (offset x=3, y=3) al widget rebut
