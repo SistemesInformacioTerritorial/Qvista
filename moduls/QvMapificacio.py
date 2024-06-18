@@ -143,7 +143,8 @@ class QvMapificacio(QObject):
         if self.separador == '':
             self.msgError = 'Cal establir un caracter separador dels camps'
         else:
-            self.camps = self.mostraCols.split(self.separador)
+            items = self.mostraCols.split(self.separador)
+            self.camps = [item.strip('"') for item in items]
 
     def infereixCodi(self) -> str:
         '''Infereix la codificació d'un arxiu csv
@@ -1038,7 +1039,8 @@ if __name__ == "__main__":
         leyenda.show()
 
         # fCSV = 'D:/qVista/FME/CarrecsUTF8.csv'
-        fCSV = r"D:\qVista\F5_BCNPIC_LOG.csv"
+        # fCSV = r"D:\qVista\F5_BCNPIC_LOG.csv"
+        fCSV = r"D:\qVista\Geocod\mostra_dades_radars_ZBE_K.csv"
 
         z = QvMapificacio(fCSV)
 
@@ -1060,7 +1062,9 @@ if __name__ == "__main__":
         # campsAdreca = ('', 'NOM_CARRER_GPL', 'NUM_I_GPL', '', 'NUM_F_GPL')
         # campsAdreca = ('Tipus via', 'Carrer', 'Numero')
         # campsAdreca = ('', 'NOM_CARRER_GPL', 'NUM_I_GPL', '', '')
-        campsAdreca = ('', 'ADDRESS', '', '', '')
+        # campsAdreca = ('', 'ADDRESS', '', '', '')
+        # campsAdreca = ('', 'Codi carrer infracció', 'Num carrer infracció', '', '')
+        campsAdreca = ('', 'Nom dispositiu', '', '', '')
 
         # zones = ('Coordenada', 'Districte', 'Barri', 'Codi postal', "Illa", "Solar", "Àrea estadística bàsica", "Secció censal")
         zones = ('Coordenada', 'Districte')
