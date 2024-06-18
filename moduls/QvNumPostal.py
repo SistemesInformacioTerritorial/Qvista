@@ -4,11 +4,14 @@ import re
 
 from moduls import QvFuncions
 
-_EXP_NUM = r"[0-9]+\s*[a-z|A-Z]?" # expresión regular de número postal con o sin letra
+#  https://regex101.com/
+
+_EXP_NUM = r"[0-9]+\s*[a-z|A-Z]?"  # expresión regular de número postal con o sin letra
+_EXP_PNT = r"[K|k|E|e|S|s][0-9]+"  # expresion regular de punto kilométrico, entrada y salida
 
 def separaString(txt: str, s: re.Match) -> tuple[str, str]:
     str1 = txt[0:s.span()[0]].strip()
-    str2 = txt[s.span()[0]:].strip()
+    str2 = txt[s.span()[0]:].strip().lstrip(',')
     return str1, str2
 
 def incluirGuion(nums: str) -> str:
@@ -19,9 +22,13 @@ def incluirGuion(nums: str) -> str:
     else:
         return nums
 
-_EXP_NUM_LST = [(_EXP_NUM + r"\s*\-+\s*" + _EXP_NUM + "$", None),    # 2 nums. al final (con o sin letra) separados por un guión
-                (_EXP_NUM + r"\s+" + _EXP_NUM + "$", incluirGuion),  # 2 nums. al final (con o sin letra) separados por espacios con funcion de añadir guión
-                (_EXP_NUM + "$", None)]                              # 1 número al final (con o sin letra)
+# El orden es importante:
+_EXP_LST = [
+    (_EXP_PNT + "$", None),                             # 1 punto especial (Km, E/S) al final
+    (_EXP_NUM + r"\s*\-+\s*" + _EXP_NUM + "$", None),   # 2 nums. al final (con o sin letra) separados por un guión
+    (_EXP_NUM + r"\s+" + _EXP_NUM + "$", incluirGuion), # 2 nums. al final (con o sin letra) separados por espacios con funcion de añadir guión
+    (_EXP_NUM + "$", None),                             # 1 número al final (con o sin letra)
+]
 
 def separaDireccion(direccion: str) -> tuple[str, str]:
     # Si la dirección viene en un solo campo, la separa en dos partes: nombre y numeros postales
@@ -31,7 +38,7 @@ def separaDireccion(direccion: str) -> tuple[str, str]:
     nums = ''
     s = None
     f = None
-    for r in _EXP_NUM_LST:
+    for r in _EXP_LST:
         s = re.search(r[0], txt)
         if s:
             f = r[1]
@@ -45,6 +52,7 @@ def separaDireccion(direccion: str) -> tuple[str, str]:
     if QvFuncions.debugging(): print('***', nombre, '|', nums)
     return nombre, nums
 
+
 if __name__ == "__main__":
     
     str = "calle de numancia, 85 89a"
@@ -53,12 +61,9 @@ if __name__ == "__main__":
         str = ''
         pass
 
-
-if __name__ == '__main__':
-
     from qgis.PyQt.QtCore import QRegularExpression
 
-    for r in _EXP_NUM_LST:
+    for r in _EXP_LST:
         exp = r[0]
         regexp = QRegularExpression(exp)
         print('Exp:', exp, '- Valid:', regexp.isValid())

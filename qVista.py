@@ -1230,9 +1230,17 @@ class QVista(QMainWindow, Ui_MainWindow):
         """
         tipus_seleccionat = self.comboTipusCerca.itemText(index)
         if tipus_seleccionat == TipusCerca.ADRECAPOSTAL.value:
-            self.leNumCerca.setPlaceholderText('Número')
+            self.comboTipusCerca.setToolTip("Cerca d'una adreça postal al mapa")
+            self.leCercaPerAdreca.setPlaceholderText('Carrer, Plaça, E.A....')
+            self.leCercaPerAdreca.setToolTip("Introdueix el nom d'una via pública (un carrer, plaça, avinguda, etc.) o\nd'una entitat autoidentificativa, es a dir, un lloc rellevant de la ciutat")
+            self.leNumCerca.setPlaceholderText('Número, Km, E/S...')
+            self.leNumCerca.setToolTip('Introdueix el número postal; en les rondes, també es pot indicar\nun punt quilomètric o una entrada o sortida')
         elif tipus_seleccionat == TipusCerca.CRUILLA.value:
+            self.comboTipusCerca.setToolTip("Cerca d'una cruïlla de carrers al mapa")
+            self.leCercaPerAdreca.setPlaceholderText('Carrer, Plaça...')
+            self.leCercaPerAdreca.setToolTip("Introdueix el nom d'una via pública (un carrer, plaça, avinguda, etc.)")
             self.leNumCerca.setPlaceholderText('Carrer, Plaça...')
+            self.leNumCerca.setToolTip("Introdueix el nom d'una via pública (un carrer, plaça, avinguda, etc.)")
         self.leNumCerca.clear()
 
     def activarODesactivarNumCerca(self):
@@ -1243,12 +1251,14 @@ class QVista(QMainWindow, Ui_MainWindow):
 
     def definicioBotons(self):
         self.frame_15.setContentsMargins(0,0,12,0)
-        stylesheetLineEdits="""
+        stylesheetLineEdits = QvConstants.STYLESHEETQTOOLTIP + """
+        QComboBox, QLineEdit {
             background-color:%s;
             color: %s;
             border: 1px solid %s;
             border-radius: 2px;
-            padding: 1px"""%(QvConstants.COLORCERCADORHTML, QvConstants.COLORFOSCHTML, QvConstants.COLORCERCADORHTML)
+            padding: 1px;
+        }"""%(QvConstants.COLORCERCADORHTML, QvConstants.COLORFOSCHTML, QvConstants.COLORCERCADORHTML)
         
         self.comboTipusCerca.setStyleSheet(stylesheetLineEdits)
         self.comboTipusCerca.setFont(QvConstants.FONTTEXT)
@@ -1258,13 +1268,13 @@ class QVista(QMainWindow, Ui_MainWindow):
         
         self.leCercaPerAdreca.setStyleSheet(stylesheetLineEdits)
         self.leCercaPerAdreca.setFont(QvConstants.FONTTEXT)
-        self.leCercaPerAdreca.setPlaceholderText('Carrer, Plaça...')
         self.leCercaPerAdreca.setFixedWidth(320)
 
         self.leNumCerca.setStyleSheet(stylesheetLineEdits)
         self.leNumCerca.setFont(QvConstants.FONTTEXT)
-        self.leNumCerca.setPlaceholderText('Número...')
         self.leNumCerca.setFixedWidth(320)
+
+        self.canviarTextLeNumCerca(self.comboTipusCerca.currentIndex())
         self.comboTipusCerca.currentIndexChanged.connect(self.canviarTextLeNumCerca)
 
         self.cAdrecSup=QCercadorAdreca(self.leCercaPerAdreca, self.leNumCerca, 'SQLITE', self.comboTipusCerca)    # SQLITE o CSV
@@ -1280,18 +1290,14 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.lSpacer.setFixedWidth(24)
 
         #Hem de definir les accions o el que sigui
-        stylesheetBotons='''
+        stylesheetBotons = QvConstants.STYLESHEETQTOOLTIP + """
             QPushButton{
                 margin: 0px;
                 background: transparent;
                 border: 0px;
                 padding: 0px;
             }
-            QToolTip{
-                color: #38474F;
-                background-color: #F0F0F0;
-            }
-        '''
+        """
         self.botoVeureLlegenda.setIcon(QIcon(os.path.join(imatgesDir,'map-legend.png')))
         self.botoVeureLlegenda.setStyleSheet(stylesheetBotons)
         self.botoVeureLlegenda.setIconSize(QSize(24, 24))
