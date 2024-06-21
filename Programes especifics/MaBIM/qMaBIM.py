@@ -77,7 +77,8 @@ class ConstantsMaBIM:
 
     CONSULTA_INFO_BIM_Z2 = '''SELECT BIM, ESTAT, ADSCRIT,
                                DESCRIPCIO_BIM, DENOMINACIO_BIM,
-                               TIPOLOGIA_BIM, SUBTIPOLOGIA_BIM, TIPUS_IMMOBLE, QUALIFICACIO_JURIDICA
+                               TIPOLOGIA_BIM, SUBTIPOLOGIA_BIM, TIPUS_IMMOBLE, QUALIFICACIO_JURIDICA,
+                               ESTAT_OCUPACIO_BIM, GRUP_BIM, SUBGRUP_BIM
                                FROM
                                ZAFT_0002
                                WHERE
@@ -649,7 +650,8 @@ class QMaBIM(QtWidgets.QMainWindow):
         # Labels pestanya "Dades Identificatives"
         labels = (self.lNumBIM, self.lEstatBIM, self.lBIMAdscrit,
                   self.lDescripcioBIM, self.lDenominacioBIM,
-                  self.lTipologiaReal, self.lSubtipologiaReal, self.lTipusBeReal, self.lQualificacioJuridica)
+                  self.lTipologiaReal, self.lSubtipologiaReal, self.lTipusBeReal, self.lQualificacioJuridica,
+                  self.lEstatOcupacio, self.lGrup, self.lSubGrup)
         # totes les labels tindran la mateixa font. Per tant, agafem la d'una qualsevol
         font = self.lNumBIM.font()
         for (lbl,txt) in zip(labels, self.dadesLabelsDades):
@@ -660,12 +662,6 @@ class QMaBIM(QtWidgets.QMainWindow):
                 lbl.setWordWrap(True)
             else:
                 lbl.setText('')
-        self.lTipologiaRegistral.setText(self.lTipologiaReal.text())
-        self.lSubtipologiaRegistral.setText(self.lSubtipologiaReal.text())
-        self.lTipusBeRegistral.setText(self.lTipusBeReal.text())
-        self.lTipologiaRegistral.setFont(font)
-        self.lSubtipologiaRegistral.setFont(font)
-        self.lTipusBeRegistral.setFont(font)
 
         # Taula pestanya "Dades Identificatives"
         self.twDadesBIM.setRowCount(len(self.dadesTaula))

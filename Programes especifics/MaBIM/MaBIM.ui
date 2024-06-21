@@ -1345,12 +1345,12 @@ QScrollBar::handle{
                         <string notr="true">color: grey</string>
                        </property>
                        <property name="text">
-                        <string>Tipologia registral</string>
+                        <string>Tipologia</string>
                        </property>
                       </widget>
                      </item>
                      <item>
-                      <widget class="QLabel" name="lTipologiaRegistral">
+                      <widget class="QLabel" name="lTipologiaReal">
                        <property name="text">
                         <string/>
                        </property>
@@ -1655,12 +1655,12 @@ QScrollBar::handle{
                         <string notr="true">color: grey</string>
                        </property>
                        <property name="text">
-                        <string>Subtipologia real</string>
+                        <string>Adscrit</string>
                        </property>
                       </widget>
                      </item>
                      <item>
-                      <widget class="QLabel" name="lSubtipologiaReal">
+                      <widget class="QLabel" name="lBIMAdscrit">
                        <property name="text">
                         <string/>
                        </property>
@@ -1682,34 +1682,7 @@ QScrollBar::handle{
                         <string notr="true">color: grey</string>
                        </property>
                        <property name="text">
-                        <string>Tipus bé immoble registral</string>
-                       </property>
-                      </widget>
-                     </item>
-                     <item>
-                      <widget class="QLabel" name="lTipusBeRegistral">
-                       <property name="text">
-                        <string/>
-                       </property>
-                      </widget>
-                     </item>
-                    </layout>
-                   </item>
-                   <item row="6" column="3">
-                    <layout class="QVBoxLayout" name="verticalLayout_17">
-                     <item>
-                      <widget class="QLabel" name="label_20">
-                       <property name="font">
-                        <font>
-                         <family>verdana</family>
-                         <pointsize>10</pointsize>
-                        </font>
-                       </property>
-                       <property name="styleSheet">
-                        <string notr="true">color: grey</string>
-                       </property>
-                       <property name="text">
-                        <string>Tipus bé immoble real</string>
+                        <string>Tipus bé immoble</string>
                        </property>
                       </widget>
                      </item>
@@ -1736,12 +1709,39 @@ QScrollBar::handle{
                         <string notr="true">color: grey</string>
                        </property>
                        <property name="text">
-                        <string>Tipologia real</string>
+                        <string>Grup</string>
                        </property>
                       </widget>
                      </item>
                      <item>
-                      <widget class="QLabel" name="lTipologiaReal">
+                      <widget class="QLabel" name="lGrup">
+                       <property name="text">
+                        <string/>
+                       </property>
+                      </widget>
+                     </item>
+                    </layout>
+                   </item>
+                   <item row="6" column="1">
+                    <layout class="QVBoxLayout" name="verticalLayout_15">
+                     <item>
+                      <widget class="QLabel" name="label_18">
+                       <property name="font">
+                        <font>
+                         <family>verdana</family>
+                         <pointsize>10</pointsize>
+                        </font>
+                       </property>
+                       <property name="styleSheet">
+                        <string notr="true">color: grey</string>
+                       </property>
+                       <property name="text">
+                        <string>Subgrup</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QLabel" name="lSubGrup">
                        <property name="text">
                         <string/>
                        </property>
@@ -1790,12 +1790,12 @@ QScrollBar::handle{
                         <string notr="true">color: grey</string>
                        </property>
                        <property name="text">
-                        <string>Subtipologia registral</string>
+                        <string>Subtipologia</string>
                        </property>
                       </widget>
                      </item>
                      <item>
-                      <widget class="QLabel" name="lSubtipologiaRegistral">
+                      <widget class="QLabel" name="lSubtipologiaReal">
                        <property name="text">
                         <string/>
                        </property>
@@ -1865,12 +1865,12 @@ QScrollBar::handle{
                         <string notr="true">color: grey</string>
                        </property>
                        <property name="text">
-                        <string>Adscrit</string>
+                        <string>Qualificació jurídica</string>
                        </property>
                       </widget>
                      </item>
                      <item>
-                      <widget class="QLabel" name="lBIMAdscrit">
+                      <widget class="QLabel" name="lQualificacioJuridica">
                        <property name="text">
                         <string/>
                        </property>
@@ -1892,12 +1892,12 @@ QScrollBar::handle{
                         <string notr="true">color: grey</string>
                        </property>
                        <property name="text">
-                        <string>Qualificació jurídica</string>
+                        <string>Tipus de situació BIM</string>
                        </property>
                       </widget>
                      </item>
                      <item>
-                      <widget class="QLabel" name="lQualificacioJuridica">
+                      <widget class="QLabel" name="lEstatOcupacio">
                        <property name="text">
                         <string/>
                        </property>
