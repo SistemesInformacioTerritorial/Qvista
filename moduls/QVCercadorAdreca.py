@@ -405,7 +405,9 @@ class QCercadorAdreca(QObject):
         if layers_trobat:
             matches['layer'] = layers_trobat[0].id()
             self.llista_cerques.append(matches)
+            index = self.combo_tipus_cerca.count()
             self.combo_tipus_cerca.addItem(matches['desc'])
+            self.combo_tipus_cerca.setItemData(index, layers_trobat[0].name(), Qt.ToolTipRole)
         else:
             print(f"No existeix la capa {matches['layer']}")
 
@@ -455,8 +457,9 @@ class QCercadorAdreca(QObject):
             return
         for resultat in resultats:
             self.llista_cerques.append(resultat)
+            index = self.combo_tipus_cerca.count()
             self.combo_tipus_cerca.addItem(resultat['desc'])
-            
+            self.combo_tipus_cerca.setItemData(index, capa.name(), Qt.ToolTipRole)
 
 
     def carregar_tipus_cerques(self) -> None:
