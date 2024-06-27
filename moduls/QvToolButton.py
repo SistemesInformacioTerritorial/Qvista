@@ -5,7 +5,7 @@ from moduls.QvConstants import QvConstants
 
 class QvToolButton(QToolButton):
     '''Classe senzilla per implementar enterEvent i leaveEvent del QToolButton, per fer que el ratolí canviï quan es pugui fer click'''
-    stylesheetDefault='''
+    stylesheetDefault = QvConstants.STYLESHEETQTOOLTIP + '''
         QvToolButton{
             background-color: transparent;
             color: #38474F;
@@ -13,20 +13,12 @@ class QvToolButton(QToolButton):
             padding: 2px 2px;
             margin: 0px;
         }
-        QToolTip{
-            color: #38474F;
-            background-color: #F0F0F0;
-        }
     '''
-    stylesheetMarcat='''
+    stylesheetMarcat = QvConstants.STYLESHEETQTOOLTIP + '''
         QvToolButton{
             border: 2px solid %s;
             padding: 0px 0px;
             margin: 0px;
-        }
-        QToolTip{
-            color: #38474F;
-            background-color: #F0F0F0;
         }
     '''%QvConstants.COLORDESTACATHTML
     def __init__(self, parent: QWidget=None):
