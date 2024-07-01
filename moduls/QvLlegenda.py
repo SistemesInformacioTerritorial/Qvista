@@ -222,8 +222,11 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
         return msg
     
 
-    # Función estandar para leer proyecto dentro de qVista
+    # 
     def readProject(self, fileName):
+        """
+        Lee proyecto dentro de qVista
+        """
         self.recarrega.resetTimers()
         if self.anotacions is not None:
             self.anotacions.removeAnnotations()
