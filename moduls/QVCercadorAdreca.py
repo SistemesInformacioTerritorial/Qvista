@@ -1242,13 +1242,15 @@ class QCercadorAdreca(QObject):
             ValueError: Si 'self.txto' no es pot convertir a enter o si l'índex està fora de rang.
         """
 
-        index = int(self.dict_capa_invers.get(self.txto)) - 1
+        index = self.dict_capa_invers.get(self.txto)
+        limits_indexs = int(index)
+        llista_posicions = list(self.dict_capa_invers.values()).index(index)
 
         features = list(layer.getFeatures())
-        if index < -1 or index >= len(features):
+        if limits_indexs < -1 or limits_indexs >= len(features):
             mostrar_error("L'índex està fora de rang.")
         
-        return features[index]
+        return features[llista_posicions]
 
     def update_address_coordinates(self, feature: QgsFeature):
         """
