@@ -339,6 +339,8 @@ class QCercadorAdreca(QObject):
         self.llista_cerques = []
         self.combo_tipus_cerca.clear()
         self.combo_tipus_cerca.addItems([TipusCerca.ADRECAPOSTAL.value, TipusCerca.CRUILLA.value])
+        self.combo_tipus_cerca.setItemData(0, "Cerca per adreça postal", Qt.ToolTipRole)
+        self.combo_tipus_cerca.setItemData(1, "Cerca per cruilla", Qt.ToolTipRole)
 
     def obtenir_variables_projecte(self) -> List[str]:
         """
@@ -407,7 +409,7 @@ class QCercadorAdreca(QObject):
             self.llista_cerques.append(matches)
             index = self.combo_tipus_cerca.count()
             self.combo_tipus_cerca.addItem(matches['desc'])
-            self.combo_tipus_cerca.setItemData(index, layers_trobat[0].name(), Qt.ToolTipRole)
+            self.combo_tipus_cerca.setItemData(index, f"Capa: {layers_trobat[0].name()}", Qt.ToolTipRole)
         else:
             print(f"No existeix la capa {matches['layer']}")
 
@@ -459,7 +461,7 @@ class QCercadorAdreca(QObject):
             self.llista_cerques.append(resultat)
             index = self.combo_tipus_cerca.count()
             self.combo_tipus_cerca.addItem(resultat['desc'])
-            self.combo_tipus_cerca.setItemData(index, capa.name(), Qt.ToolTipRole)
+            self.combo_tipus_cerca.setItemData(index, f"Capa: {capa.name()}", Qt.ToolTipRole)
 
 
     def carregar_tipus_cerques(self) -> None:
