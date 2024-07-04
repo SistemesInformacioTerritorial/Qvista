@@ -1243,13 +1243,8 @@ class QCercadorAdreca(QObject):
         """
 
         index = self.dict_capa_invers.get(self.txto)
-        limits_indexs = int(index)
         llista_posicions = list(self.dict_capa_invers.values()).index(index)
-
         features = list(layer.getFeatures())
-        if limits_indexs < -1 or limits_indexs >= len(features):
-            mostrar_error("L'índex està fora de rang.")
-        
         return features[llista_posicions]
 
     def update_address_coordinates(self, feature: QgsFeature):
