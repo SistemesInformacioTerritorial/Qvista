@@ -1383,6 +1383,13 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.leNumCerca.clear()
         self.leCercaPerAdreca.clear()
         if tipus_seleccionat not in [TipusCerca.ADRECAPOSTAL.value, TipusCerca.CRUILLA.value]:
+            field_info = [(item['fieldtext'], item['field']) for item in self.cAdrecSup.llista_cerques if item['desc'] == tipus_seleccionat]
+            fieldtext, field = field_info[0] if field_info else (None, None)
+            if fieldtext is not None and field is not None:
+                self.leCercaPerAdreca.setToolTip(f'Introdueix el {field.lower()} i selecciona el {fieldtext.lower()} corresponent')
+            elif fieldtext is None and field is not None:
+                self.leCercaPerAdreca.setToolTip(f'Introdueix el {field.lower()} i selecciona el {field.lower()} corresponent')
+            self.comboTipusCerca.setToolTip(f"Cerca per: {tipus_seleccionat}")
             self.leNumCerca.hide()
             self.leCercaPerAdreca.setPlaceholderText('')
         else:
