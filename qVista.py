@@ -803,7 +803,7 @@ class QVista(QMainWindow, Ui_MainWindow):
 
         self.setTabOrder(self.leCarrer, self.leNumero)
         # Activem la clase de cerca d'adreces
-        self.cAdrec=QCercadorAdreca(self.leCarrer, self.leNumero,'SQLITE')    # SQLITE o CSV
+        self.cAdrec=QCercadorAdreca(self.leCarrer, 'SQLITE', self.leNumero)    # SQLITE o CSV
 
         self.cAdrec.coordenades_trobades.connect(self.trobatNumero_oNoLat)
 
