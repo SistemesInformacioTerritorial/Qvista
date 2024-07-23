@@ -357,12 +357,12 @@ class QCercadorAdreca(QObject):
         """
         search_variables = self.obtenir_variables_projecte()
         
-
+        numresultat = 0
         for var in search_variables:
             raw_value = QgsExpressionContextUtils.projectScope(self.project).variable(var) #Obtenir el valor de la variable
             matches = self.regex_variables(raw_value)
             if matches['layer'] and matches['field'] and matches['desc']:
-                self.carregar_variables_projecte(matches)
+                numresultat = self.carregar_variables_projecte(matches,numresultat)
 
     def regex_variables(self, variable: str, id_capa: str = None) -> Dict[str, str]:
         """
@@ -395,23 +395,38 @@ class QCercadorAdreca(QObject):
             "fieldtext": fieldtext_match.group(1) if fieldtext_match else None
         }
 
-    def carregar_variables_projecte(self, matches: Dict[str, str]) -> None:
+    def carregar_variables_projecte(self, matches: Dict[str, str], resultat:int) -> int:
         """
-        Actualitza la llista de cerques i el comboBox de tipus de cerca amb el que hem obtingut
-        
+        Carrega les variables de projecte especificades en 'matches' i actualitza la llista de cerques i la interfície d'usuari.
+
         Args:
-            matches (Dict[str,str]): Diccionari amb el contingut obtingut de cada variable (de capa o de projecte)
+            matches (Dict[str, str]): Diccionari amb les dades de la cerca, incloent la capa, el camp, la descripció i el camp de text.
+            resultat (int): Índex que indica la posició actual en la llista de cerques.
+
+        Returns:
+            int: El nou índex actualitzat després de processar la cerca, incrementat en 1 si hi ha hagut errors.
         """
 
+        error = {}
+        hi_ha_error = False
         layers_trobat = QgsProject.instance().mapLayersByName(matches['layer'])
         if layers_trobat:
-            matches['layer'] = layers_trobat[0].id()
-            self.llista_cerques.append(matches)
-            index = self.combo_tipus_cerca.count()
-            self.combo_tipus_cerca.addItem(matches['desc'])
-            self.combo_tipus_cerca.setItemData(index, f"Capa: {layers_trobat[0].name()}", Qt.ToolTipRole)
+            hi_ha_error = self.hi_ha_error_carregar_variable(matches, layers_trobat[0], resultat)
+            if not hi_ha_error:
+                matches['layer'] = layers_trobat[0].id()
+                self.llista_cerques.append(matches)
+                index = self.combo_tipus_cerca.count()
+                self.combo_tipus_cerca.addItem(matches['desc'])
+                self.combo_tipus_cerca.setItemData(index, f"Capa: {layers_trobat[0].name()}", Qt.ToolTipRole)
+            else:
+                hi_ha_error=True
         else:
-            print(f"No existeix la capa {matches['layer']}")
+            error['layer'] = f"No existeix la capa {matches['layer']}"
+            self.errors_de_carrega[resultat] = error
+            hi_ha_error=True
+        if hi_ha_error:
+            return resultat+1
+        return resultat
 
 
     def carregar_totes_capes(self) -> None:
@@ -457,44 +472,104 @@ class QCercadorAdreca(QObject):
         resultats = self.obtenir_variables_capa(capa)
         if not resultats:
             return
+        numresultat=len(self.errors_de_carrega)
         for resultat in resultats:
-            self.llista_cerques.append(resultat)
-            index = self.combo_tipus_cerca.count()
-            self.combo_tipus_cerca.addItem(resultat['desc'])
-            self.combo_tipus_cerca.setItemData(index, f"Capa: {capa.name()}", Qt.ToolTipRole)
+            hi_ha_error = self.hi_ha_error_carregar_variable(resultat, capa, numresultat)
+            if not hi_ha_error:
+                self.llista_cerques.append(resultat)
+                index = self.combo_tipus_cerca.count()
+                self.combo_tipus_cerca.addItem(resultat['desc'])
+                self.combo_tipus_cerca.setItemData(index, f"Capa: {capa.name()}", Qt.ToolTipRole)
+            else:
+                numresultat+=1
 
 
     def carregar_tipus_cerques(self) -> None:
         """
         Aquesta funció carrega els tipus de cerques disponibles a partir de les variables del projecte que comencen amb un prefix específic.
         """
+        self.errors_de_carrega = {}
         self.reset_cerca()
         self.processar_variables_projecte()
         self.carregar_totes_capes()
         self.carregar_elements_capes()
 
+    def hi_ha_error_carregar_variable(self, variable:Dict[str,str], capa:QgsVectorLayer, numresultat:int) -> bool:
+        """
+        Comprova si hi ha errors en carregar una variable d'una capa vectorial de QGIS.
+
+        Args:
+            variable (Dict[str,str]): Diccionari que conté informació sobre la variable, incloent els camps 'field' i 'fieldtext'.
+            capa (QgsVectorLayer): La capa vectorial de QGIS de la qual es volen obtenir els valors.
+            numresultat (int): Índex per emmagatzemar els errors en un diccionari d'errors.
+
+        Returns:
+            bool: True si hi ha errors, False en cas contrari.
+        """
+        error = {}
+        hi_ha_error = False
+        try:
+            next(capa.getFeatures()).attribute(variable['field'])
+        except KeyError as e:
+            error["error_field"] = f"Error al processar l'atribut field: {e} de la capa amb descripció {variable['desc']}"
+            hi_ha_error = True
+
+        if not variable.get('desc'):
+            error["desc"] = "Error en introduïr la descripció"
+        
+        if variable.get('fieldtext'):
+            try:
+                next(capa.getFeatures()).attribute(variable['fieldtext'])
+            except KeyError as e:
+                error["error_fieldtext"] = f"Error al processar l'atribut fieldtext: {e} de la capa amb descripció {variable['desc']}"
+                hi_ha_error = True
+        
+        if error:
+            self.errors_de_carrega[numresultat] = error
+
+        return hi_ha_error
+        
+
+    def obtenir_valors_capes(self, variable: str, capa: QgsVectorLayer) -> Dict[str, Union[str, Tuple[str, str]]]:
+        """
+        Obté els valors d'una variable específica de les entitats d'una capa vectorial de QGIS.
+
+        Args:
+            variable (str): Un diccionari amb 'field' amb el nom del camp a obtenir,
+                            i opcionalment amb 'fieldtext' amb el nom d'un segon camp a obtenir.
+            capa (QgsVectorLayer): La capa vectorial de QGIS de la qual s'obtenen els valors.
+
+        Returns:
+            Dict[str, Union[str, Tuple[str, str]]]: Diccionari amb els valors dels camps especificats.
+        """
+        dict_capa_local = {}
+
+        for element in capa.getFeatures():
+            id_element = str(element.id())
+            field_value = element.attribute(variable['field'])
+
+            if variable.get('fieldtext'):
+                fieldtext_value = element.attribute(variable['fieldtext'])
+                dict_capa_local[id_element] = (field_value, fieldtext_value)
+            else:
+                dict_capa_local[id_element] = field_value
+        return dict_capa_local
+
+
     def carregar_elements_capes(self) -> None:
         """
-        Aquesta funció carrega les capes especificades en la llista de cerques.
-        Per a cada element de la llista, crida a `getElementsCapa` amb el nom de la capa i l'identificador 'fid'.
-        També manté un comptador de la posició que s'incrementa amb cada iteració.
+        Carrega els elements de les capes especificades en la llista de cerques de la instància.
         """
+        hi_ha_error=False
         posicio = 1
         for variable in self.llista_cerques:
             capa = QgsProject.instance().mapLayers().get(variable['layer'])
             if not capa:
                 return
-
-            dict_capa_local = {}
-            for element in capa.getFeatures():
-                id_element = str(element.id())
-                if variable.get('fieldtext'):
-                    dict_capa_local[id_element] = (element.attribute(variable['field']),element.attribute(variable['fieldtext']))
-                else:
-                    dict_capa_local[id_element] = element.attribute(variable['field'])
+            
+            dict_capa_local = self.obtenir_valors_capes(variable, capa)
             self.dict_capes[posicio] = dict_capa_local
             posicio += 1
-
 
     def habilitaLeNum(self, valor_antic):
         self.carrerActivat = False

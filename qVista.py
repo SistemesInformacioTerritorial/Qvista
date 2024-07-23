@@ -2675,7 +2675,7 @@ def main(argv):
 
         # Avisos de l'aplicació
         try:
-            QvAvis()
+            QvAvis(qV.cAdrecSup.errors_de_carrega)
         except:
             print('no es pot accedir als avisos')
 
