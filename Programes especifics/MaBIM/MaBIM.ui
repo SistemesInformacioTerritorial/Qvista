@@ -1345,12 +1345,12 @@ QScrollBar::handle{
                         <string notr="true">color: grey</string>
                        </property>
                        <property name="text">
-                        <string>Tipologia</string>
+                        <string>Grup</string>
                        </property>
                       </widget>
                      </item>
                      <item>
-                      <widget class="QLabel" name="lTipologiaReal">
+                      <widget class="QLabel" name="lGrup">
                        <property name="text">
                         <string/>
                        </property>
@@ -1709,12 +1709,12 @@ QScrollBar::handle{
                         <string notr="true">color: grey</string>
                        </property>
                        <property name="text">
-                        <string>Grup</string>
+                        <string>Tipologia</string>
                        </property>
                       </widget>
                      </item>
                      <item>
-                      <widget class="QLabel" name="lGrup">
+                      <widget class="QLabel" name="lTipologiaReal">
                        <property name="text">
                         <string/>
                        </property>
@@ -1736,12 +1736,12 @@ QScrollBar::handle{
                         <string notr="true">color: grey</string>
                        </property>
                        <property name="text">
-                        <string>Subgrup</string>
+                        <string>Subtipologia</string>
                        </property>
                       </widget>
                      </item>
                      <item>
-                      <widget class="QLabel" name="lSubGrup">
+                      <widget class="QLabel" name="lSubtipologiaReal">
                        <property name="text">
                         <string/>
                        </property>
@@ -1790,12 +1790,12 @@ QScrollBar::handle{
                         <string notr="true">color: grey</string>
                        </property>
                        <property name="text">
-                        <string>Subtipologia</string>
+                        <string>Subgrup</string>
                        </property>
                       </widget>
                      </item>
                      <item>
-                      <widget class="QLabel" name="lSubtipologiaReal">
+                      <widget class="QLabel" name="lSubGrup">
                        <property name="text">
                         <string/>
                        </property>
