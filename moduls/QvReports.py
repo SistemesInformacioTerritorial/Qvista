@@ -32,11 +32,11 @@ class QvReports(QvDataPlotly):
 
     def listReports(self):
         layoutManager = QgsProject.instance().layoutManager()
-        for layout in layoutManager.printLayouts():
-            if layout.atlas().enabled():
-                yield layout.name()
+        return [layout.name() for layout in layoutManager.printLayouts()]
 
-        # return [layout.name() for layout in layoutManager.printLayouts()]
+        # for layout in layoutManager.printLayouts():
+        #     if layout.atlas().enabled():
+        #         yield layout.name()
 
     def msgReport(self, result):
         if result in range(len(QvReports.ExportMsgs)):
@@ -50,9 +50,8 @@ class QvReports(QvDataPlotly):
             layout = layoutManager.layoutByName(name)
             if layout is None:
                 return -1, "Informe no trobat", None
-            atlas = layout.atlas()
-            if not atlas.enabled():
-                return -1, "Informe desactivat", None
+            # if not atlas.enabled():
+            #     return -1, "Informe desactivat", None
         except Exception as e:
             return -1, "Informe no trobat - " + str(e), None
 
@@ -60,11 +59,19 @@ class QvReports(QvDataPlotly):
             # https://github.com/carey136/Standalone-Export-Atlas-QGIS3/blob/master/AtlasExport.py
 
             pdf = self.path + '/' + name + '.pdf'
-            atlasLayout = atlas.layout()
-            exporter = QgsLayoutExporter(atlasLayout)
-            settings = exporter.PdfExportSettings()
-            settings.exportLayersAsSeperateFiles = False
-            result, _ = QgsLayoutExporter.exportToPdf(atlas, pdf, settings)
+
+            atlas = layout.atlas()
+            if atlas.enabled():
+                atlasLayout = atlas.layout()
+                exporter = QgsLayoutExporter(atlasLayout)
+                settings = exporter.PdfExportSettings()
+                settings.exportLayersAsSeperateFiles = False
+                result, _ = QgsLayoutExporter.exportToPdf(atlas, pdf, settings)
+            else:
+                exporter = QgsLayoutExporter(layout)
+                settings = exporter.PdfExportSettings()
+                result = exporter.exportToPdf(pdf, settings)
+
             msg = self.msgReport(result)
             if result == QgsLayoutExporter.Success:
                 return result, msg, pdf
@@ -140,7 +147,7 @@ if __name__ == "__main__":
         dp.initGui()
 
         # llegenda.project.read('projectes/Illes.qgs')
-        llegenda.project.read("D:/qVista/Zonas/Diagramas.3.22.qgs")
+        llegenda.project.read("D:/qVista/DataPlotly/Diagramas.qgs")
 
         llegenda.setWindowTitle('Llegenda')
         llegenda.setGeometry(50, 50, 300, 400)
