@@ -357,12 +357,14 @@ class QCercadorAdreca(QObject):
         """
         search_variables = self.obtenir_variables_projecte()
         
-        numresultat = 0
         for var in search_variables:
-            raw_value = QgsExpressionContextUtils.projectScope(self.project).variable(var) #Obtenir el valor de la variable
+            raw_value = QgsExpressionContextUtils.projectScope(self.project).variable(var)
             matches = self.regex_variables(raw_value)
-            if matches['layer'] and matches['field'] and matches['desc']:
-                numresultat = self.carregar_variables_projecte(matches,numresultat)
+            matches['nom_variable'] = var
+            #Cal ficar-lo perquè si venim de capa layer_net!=layer i cal per carregar capa si variable capa, malgrat que aqui sigui igual
+            matches['layer_net'] = matches['layer']
+            if matches['layer'] and matches['field']:
+                self.carregar_variables_projecte(matches)
 
     def regex_variables(self, variable: str, id_capa: str = None) -> Dict[str, str]:
         """
@@ -395,38 +397,29 @@ class QCercadorAdreca(QObject):
             "fieldtext": fieldtext_match.group(1) if fieldtext_match else None
         }
 
-    def carregar_variables_projecte(self, matches: Dict[str, str], resultat:int) -> int:
+    def carregar_variables_projecte(self, variable: Dict[str, str]) -> None:
         """
         Carrega les variables de projecte especificades en 'matches' i actualitza la llista de cerques i la interfície d'usuari.
 
         Args:
             matches (Dict[str, str]): Diccionari amb les dades de la cerca, incloent la capa, el camp, la descripció i el camp de text.
-            resultat (int): Índex que indica la posició actual en la llista de cerques.
-
-        Returns:
-            int: El nou índex actualitzat després de processar la cerca, incrementat en 1 si hi ha hagut errors.
         """
 
         error = {}
         hi_ha_error = False
-        layers_trobat = QgsProject.instance().mapLayersByName(matches['layer'])
-        if layers_trobat:
-            hi_ha_error = self.hi_ha_error_carregar_variable(matches, layers_trobat[0], resultat)
+        capa = QgsProject.instance().mapLayersByName(variable['layer'])
+        clau_errors_de_carrega = 'projecte' + '-' + variable['layer_net'] + '-' + variable['nom_variable']
+        if capa:
+            hi_ha_error = self.hi_ha_error_carregar_variable(variable, capa[0], clau_errors_de_carrega, 'projecte')
             if not hi_ha_error:
-                matches['layer'] = layers_trobat[0].id()
-                self.llista_cerques.append(matches)
+                variable['layer'] = capa[0].id()
+                self.llista_cerques.append(variable)
                 index = self.combo_tipus_cerca.count()
-                self.combo_tipus_cerca.addItem(matches['desc'])
-                self.combo_tipus_cerca.setItemData(index, f"Capa: {layers_trobat[0].name()}", Qt.ToolTipRole)
-            else:
-                hi_ha_error=True
+                self.combo_tipus_cerca.addItem(variable['desc'])
+                self.combo_tipus_cerca.setItemData(index, f"Capa: {capa[0].name()}", Qt.ToolTipRole)
         else:
-            error['layer'] = f"No existeix la capa {matches['layer']}"
-            self.errors_de_carrega[resultat] = error
-            hi_ha_error=True
-        if hi_ha_error:
-            return resultat+1
-        return resultat
+            error['layer'] = f"Error en carregar la variable {variable['nom_variable']} ja que no existeix el layer {variable['layer']} que és una capa de PROJECTE"
+            self.errors_de_carrega[clau_errors_de_carrega] = error
 
 
     def carregar_totes_capes(self) -> None:
@@ -455,7 +448,11 @@ class QCercadorAdreca(QObject):
         for nom_variable in totes_variables:
             if nom_variable.startswith(PREFIX_SEARCH):
                 valor_variable = QgsExpressionContextUtils.layerScope(capa).variable(nom_variable)
-                resultats.append(self.regex_variables(valor_variable, capa.id()))
+                conjunt_elements = self.regex_variables(valor_variable, capa.id())
+                conjunt_elements['nom_variable'] = nom_variable
+                conjunt_elements['layer_net'] = capa.name()
+                resultats.append(conjunt_elements)
+
 
         return resultats if resultats else None
 
@@ -472,16 +469,14 @@ class QCercadorAdreca(QObject):
         resultats = self.obtenir_variables_capa(capa)
         if not resultats:
             return
-        numresultat=len(self.errors_de_carrega)
-        for resultat in resultats:
-            hi_ha_error = self.hi_ha_error_carregar_variable(resultat, capa, numresultat)
+        for variable in resultats:
+            clau_errors_de_carrega = 'projecte' + '-' + variable['layer_net'] + '-' + variable['nom_variable']
+            hi_ha_error = self.hi_ha_error_carregar_variable(variable, capa, clau_errors_de_carrega, 'capa')
             if not hi_ha_error:
-                self.llista_cerques.append(resultat)
+                self.llista_cerques.append(variable)
                 index = self.combo_tipus_cerca.count()
-                self.combo_tipus_cerca.addItem(resultat['desc'])
+                self.combo_tipus_cerca.addItem(variable['desc'])
                 self.combo_tipus_cerca.setItemData(index, f"Capa: {capa.name()}", Qt.ToolTipRole)
-            else:
-                numresultat+=1
 
 
     def carregar_tipus_cerques(self) -> None:
@@ -494,40 +489,38 @@ class QCercadorAdreca(QObject):
         self.carregar_totes_capes()
         self.carregar_elements_capes()
 
-    def hi_ha_error_carregar_variable(self, variable:Dict[str,str], capa:QgsVectorLayer, numresultat:int) -> bool:
+    def hi_ha_error_carregar_variable(self, variable:Dict[str,str], capa:QgsVectorLayer, clau_errors_de_carrega:str, procedencia:str) -> bool:
         """
         Comprova si hi ha errors en carregar una variable d'una capa vectorial de QGIS.
 
         Args:
             variable (Dict[str,str]): Diccionari que conté informació sobre la variable, incloent els camps 'field' i 'fieldtext'.
             capa (QgsVectorLayer): La capa vectorial de QGIS de la qual es volen obtenir els valors.
-            numresultat (int): Índex per emmagatzemar els errors en un diccionari d'errors.
+            clau_errors_de_carrega (str): La clau del diccionari que omplirem si hi ha cap error.
+            procedencia(str): Capa si és variable de capa o projecte si és variable de projecte.
 
         Returns:
             bool: True si hi ha errors, False en cas contrari.
         """
         error = {}
-        hi_ha_error = False
         try:
             next(capa.getFeatures()).attribute(variable['field'])
         except KeyError as e:
-            error["error_field"] = f"Error al processar l'atribut field: {e} de la capa amb descripció {variable['desc']}"
-            hi_ha_error = True
+            error['error_field'] = f"Error en carregar la variable {variable['nom_variable']} amb layer: {variable['layer_net']} que és una capa de {procedencia.upper()}, en el paràmetre FIELD on hi ha introduït {e}"
 
         if not variable.get('desc'):
-            error["desc"] = "Error en introduïr la descripció"
+            error["desc"] = f"Error en carregar la variable {variable['nom_variable']} amb layer: {variable['layer_net']} que és una capa de {procedencia.upper()}, en el paràmetre DESCRIPCIÓ que està buit"
         
         if variable.get('fieldtext'):
             try:
                 next(capa.getFeatures()).attribute(variable['fieldtext'])
             except KeyError as e:
-                error["error_fieldtext"] = f"Error al processar l'atribut fieldtext: {e} de la capa amb descripció {variable['desc']}"
-                hi_ha_error = True
-        
-        if error:
-            self.errors_de_carrega[numresultat] = error
+                error['error_fieldtext'] = f"Error en carregar la variable {variable['nom_variable']} amb layer: {variable['layer_net']} que és una capa de {procedencia.upper()}, en el paràmetre FIELDTEXT on hi ha introduït {e}"
 
-        return hi_ha_error
+        if error:
+            self.errors_de_carrega[clau_errors_de_carrega] = error
+            return True
+        return False
         
 
     def obtenir_valors_capes(self, variable: str, capa: QgsVectorLayer) -> Dict[str, Union[str, Tuple[str, str]]]:
@@ -563,7 +556,7 @@ class QCercadorAdreca(QObject):
         hi_ha_error=False
         posicio = 1
         for variable in self.llista_cerques:
-            capa = QgsProject.instance().mapLayers().get(variable['layer'])
+            capa = QgsProject.instance().mapLayers().get(variable['layer']) #si ho fessim amb variable['layer_net'], ERROR
             if not capa:
                 return
             
