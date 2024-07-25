@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from qgis.core import QgsProject, QgsLayoutExporter, QgsReport
+from qgis.core import QgsProject, QgsLayoutExporter, QgsReport, QgsFeedback
 from qgis.PyQt.QtCore import Qt
 from qgis.PyQt.QtWidgets import QMenu, QMessageBox, QApplication
 
@@ -44,6 +44,12 @@ class QvReports(QvDataPlotly):
         else:
             return "Error en la generació de l'informe"
 
+    def progressReport(self, porcentaje=None, txt='Generant informe' ):
+        if porcentaje is None:
+            print(txt, '...')
+        else:
+            print(txt, round(porcentaje), '%')
+
     def reportToPdf(self, name):
         try: 
             layoutManager = QgsProject.instance().layoutManager()
@@ -66,10 +72,14 @@ class QvReports(QvDataPlotly):
                 exporter = QgsLayoutExporter(atlasLayout)
                 settings = exporter.PdfExportSettings()
                 settings.exportLayersAsSeperateFiles = False
-                result, _ = QgsLayoutExporter.exportToPdf(atlas, pdf, settings)
+                self.progressReport()
+                self.feedback = QgsFeedback()
+                self.feedback.progressChanged.connect(self.progressReport)
+                result, _ = QgsLayoutExporter.exportToPdf(atlas, pdf, settings, self.feedback)
             else:
                 exporter = QgsLayoutExporter(layout)
                 settings = exporter.PdfExportSettings()
+                self.progressReport()
                 result = exporter.exportToPdf(pdf, settings)
 
             msg = self.msgReport(result)
