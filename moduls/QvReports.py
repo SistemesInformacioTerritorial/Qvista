@@ -2,7 +2,7 @@
 
 from qgis.core import QgsProject, QgsLayoutExporter, QgsReport, QgsFeedback
 from qgis.PyQt.QtCore import Qt
-from qgis.PyQt.QtWidgets import QMenu, QMessageBox, QApplication
+from qgis.PyQt.QtWidgets import QMenu, QMessageBox, QApplication, QProgressDialog
 
 from DataPlotly.QvDataPlotly import QvDataPlotly
 
@@ -29,6 +29,7 @@ class QvReports(QvDataPlotly):
         self.llegenda = llegenda
         self.path = path
         self.menu = QMenu()
+        self.progressBar = None
 
     def listReports(self):
         layoutManager = QgsProject.instance().layoutManager()
@@ -46,9 +47,23 @@ class QvReports(QvDataPlotly):
 
     def progressReport(self, porcentaje=None, txt='Generant informe' ):
         if porcentaje is None:
-            print(txt, '...')
+            msg = txt + ' ...'
+            print(msg)
+            self.progressBar = QProgressDialog(msg, "Cancel·la", 0, 100)
+            self.progressBar.setWindowTitle('Informe PDF')
+            self.progressBar.setMinimumWidth(400)
+            self.progressBar.setMinimumHeight(150)
+            self.progressBar.setWindowModality(Qt.WindowModal)
+            self.progressBar.setWindowFlags(Qt.WindowStaysOnTopHint)
+            self.progressBar.show()
+            self.progressBar.setLabelText(msg)
+            self.progressBar.setValue(0)
         else:
-            print(txt, round(porcentaje), '%')
+            num = round(porcentaje)
+            msg = txt + ' ' + str(num) + ' %'
+            print(msg)
+            if self.progressBar is not None:
+                self.progressBar.setValue(num)
 
     def reportToPdf(self, name):
         try: 
@@ -72,14 +87,13 @@ class QvReports(QvDataPlotly):
                 exporter = QgsLayoutExporter(atlasLayout)
                 settings = exporter.PdfExportSettings()
                 settings.exportLayersAsSeperateFiles = False
-                self.progressReport()
-                self.feedback = QgsFeedback()
-                self.feedback.progressChanged.connect(self.progressReport)
-                result, _ = QgsLayoutExporter.exportToPdf(atlas, pdf, settings, self.feedback)
+                self.progressReport(txt='Generant informe ' + name )
+                feedback = QgsFeedback()
+                feedback.progressChanged.connect(self.progressReport)
+                result, _ = QgsLayoutExporter.exportToPdf(atlas, pdf, settings, feedback)
             else:
                 exporter = QgsLayoutExporter(layout)
                 settings = exporter.PdfExportSettings()
-                self.progressReport()
                 result = exporter.exportToPdf(pdf, settings)
 
             msg = self.msgReport(result)
@@ -174,6 +188,39 @@ if __name__ == "__main__":
         atributs.setWindowTitle('Atributs')
         atributs.setGeometry(50, 500, 1050, 250)
         llegenda.obertaTaulaAtributs.connect(atributs.show)
+
+        # INI Prueba QProgressDialog
+        # 
+        # m = ""
+
+        # bar = QProgressDialog(m, "Cancel", 0, 100)
+        # import time
+
+        # bar.setWindowModality(Qt.WindowModal)
+        # bar.setWindowFlags(Qt.WindowStaysOnTopHint)
+
+        # m = "Operation 1 in progress"
+        # bar.setLabelText(m)
+
+        # for i in range(101):
+        #     time.sleep(0.05)
+        #     bar.setValue(i)
+
+        # m = "Operation 2 in progress"
+        # bar.setLabelText(m)
+
+        # for i in range(101):
+        #     time.sleep(0.05)
+        #     bar.setValue(i)
+
+        # m = "Operation 3 in progress"
+        # bar.setLabelText(m)
+
+        # for i in range(101):
+        #     time.sleep(0.05)
+        #     bar.setValue(i)
+        # 
+        # FIN Prueba QProgressDialog
 
         # Obtiene el administrador de composiciones
         layoutManager = llegenda.project.layoutManager()
