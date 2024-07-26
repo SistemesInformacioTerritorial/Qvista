@@ -418,7 +418,7 @@ class QCercadorAdreca(QObject):
                 self.combo_tipus_cerca.addItem(variable['desc'])
                 self.combo_tipus_cerca.setItemData(index, f"Capa: {capa[0].name()}", Qt.ToolTipRole)
         else:
-            error['layer'] = f"Error en carregar la variable {variable['nom_variable']} ja que no existeix el layer {variable['layer']} que és una capa de PROJECTE"
+            error['layer'] = f"Error en carregar la variable {variable['nom_variable']}, que és una variable de PROJECTE, ja que no existeix la capa {variable['layer']}"
             self.errors_de_carrega[clau_errors_de_carrega] = error
 
 
@@ -506,16 +506,16 @@ class QCercadorAdreca(QObject):
         try:
             next(capa.getFeatures()).attribute(variable['field'])
         except KeyError as e:
-            error['error_field'] = f"Error en carregar la variable {variable['nom_variable']} amb layer: {variable['layer_net']} que és una capa de {procedencia.upper()}, en el paràmetre FIELD on hi ha introduït {e}"
+            error['error_field'] = f"Error en carregar la variable {variable['nom_variable']} de la capa: {variable['layer_net']} que és una variable de {procedencia.upper()}, en el paràmetre FIELD que té el valor de {e}, i aquesta columna no existeix"
 
         if not variable.get('desc'):
-            error["desc"] = f"Error en carregar la variable {variable['nom_variable']} amb layer: {variable['layer_net']} que és una capa de {procedencia.upper()}, en el paràmetre DESCRIPCIÓ que està buit"
+            error["desc"] = f"Error en carregar la variable {variable['nom_variable']} amb layer: {variable['layer_net']} que és una variable de {procedencia.upper()}, i té el paràmetre de DESCRIPCIÓ buit"
         
         if variable.get('fieldtext'):
             try:
                 next(capa.getFeatures()).attribute(variable['fieldtext'])
             except KeyError as e:
-                error['error_fieldtext'] = f"Error en carregar la variable {variable['nom_variable']} amb layer: {variable['layer_net']} que és una capa de {procedencia.upper()}, en el paràmetre FIELDTEXT on hi ha introduït {e}"
+                error['error_fieldtext'] = f"Error en carregar la variable {variable['nom_variable']} de la capa: {variable['layer_net']} que és una variable de {procedencia.upper()}, en el paràmetre FIELDTEXT que té el valor de {e}, i aquesta columna no existeix"
 
         if error:
             self.errors_de_carrega[clau_errors_de_carrega] = error
