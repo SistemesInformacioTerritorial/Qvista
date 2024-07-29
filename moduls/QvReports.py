@@ -2,10 +2,11 @@
 
 from qgis.core import QgsProject, QgsLayoutExporter, QgsReport, QgsFeedback
 from qgis.PyQt.QtCore import Qt
-from qgis.PyQt.QtWidgets import QMenu, QMessageBox, QApplication, QProgressDialog
+from qgis.PyQt.QtWidgets import QMenu, QMessageBox, QApplication, QProgressDialog, QProgressBar, QPushButton, QShortcut 
 
 from DataPlotly.QvDataPlotly import QvDataPlotly
 
+from moduls.QvFuncions import debugging
 import os 
 
 class QvReports(QvDataPlotly):
@@ -46,18 +47,39 @@ class QvReports(QvDataPlotly):
             return "Error en la generació de l'informe"
 
     def cancelReport(self):
-        print("Informe cancel·lat")
+        if debugging(): print("Informe cancel·lat")
         self.feedback.cancel()
 
-    def progressReport(self, porcentaje, name=''):
-        txt = "Generant informe"
+    def progressDialog(self, cancel=True, title="Informe PDF"):
+        progressBar = QProgressDialog()
+        if cancel:
+            progressBar.canceled.connect(self.cancelReport)
+        else:
+            for w in progressBar.children():
+                if isinstance(w, QProgressBar):
+                    w.hide()
+                elif isinstance(w, QPushButton):
+                    w.setEnabled(False)
+                    w.hide()
+                elif isinstance(w, QShortcut):
+                    w.setEnabled(False)
+        progressBar.setRange(0, 100)
+        progressBar.setWindowTitle(title)
+        progressBar.setMinimumWidth(400)
+        progressBar.setMinimumHeight(150)
+        progressBar.setWindowModality(Qt.WindowModal)
+        progressBar.setWindowFlags(Qt.WindowStaysOnTopHint)
+        progressBar.setMinimumDuration(0)
+        return progressBar
+
+    def progressReport(self, porcentaje, name='', txt="Generant informe"):
         num = round(porcentaje)
         if num == 0:
             msg = txt + " " + name + " ..."
             self.progressBar.setLabelText(msg)
         else:            
             msg = txt + " " + str(num) + " %"
-        print(msg)
+        if debugging(): print(msg)
         if self.progressBar.wasCanceled():
             self.progressBar.setValue(100)
         else:
@@ -88,29 +110,21 @@ class QvReports(QvDataPlotly):
                 settings.exportLayersAsSeperateFiles = False
                 # Progreso
                 self.feedback = QgsFeedback()
-                self.progressLabel = "Generant informe"
-                self.progressBar = QProgressDialog()
-                self.progressBar.canceled.connect(self.cancelReport)
-                self.progressBar.setWindowTitle("Informe PDF")
-                self.progressBar.setMinimumWidth(400)
-                self.progressBar.setMinimumHeight(150)
-                self.progressBar.setWindowModality(Qt.WindowModal)
-                self.progressBar.setWindowFlags(Qt.WindowStaysOnTopHint)
+                self.progressBar = self.progressDialog()
                 self.feedback.progressChanged.connect(self.progressReport)
                 self.progressReport(0.0, name)
-                self.progressBar.setMinimumDuration(0)                
                 # Exportación
                 result, _ = QgsLayoutExporter.exportToPdf(atlas, pdf, settings, self.feedback)
             else:
-                QApplication.instance().setOverrideCursor(Qt.WaitCursor)
-                try:
-                    # Parámetros
-                    exporter = QgsLayoutExporter(layout)
-                    settings = exporter.PdfExportSettings()
-                    # Exportación
-                    result = exporter.exportToPdf(pdf, settings)
-                finally:
-                    QApplication.instance().restoreOverrideCursor()
+                # Parámetros
+                exporter = QgsLayoutExporter(layout)
+                settings = exporter.PdfExportSettings()
+                # Progreso sin cancel
+                self.progressBar = self.progressDialog(False)
+                self.progressReport(0.0, name)
+                # Exportación
+                result = exporter.exportToPdf(pdf, settings)
+                self.progressBar.reset()
 
             msg = self.msgReport(result)
             if result == QgsLayoutExporter.Success:
@@ -120,6 +134,9 @@ class QvReports(QvDataPlotly):
 
         except Exception as e:
             return -1, "Error en la generació  - " + str(e), None
+        finally:
+            if self.progressBar is not None: 
+                self.progressBar.reset()
 
     def menuReport(self):
         # QApplication.instance().setOverrideCursor(Qt.WaitCursor)
