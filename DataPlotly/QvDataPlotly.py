@@ -31,7 +31,7 @@ from qgis.gui import QgsGui
 
 # Import the code for the dialog
 # from DataPlotly.gui.dock import DataPlotlyDockManager
-from DataPlotly.gui.gui_utils import GuiUtils
+# from DataPlotly.gui.gui_utils import GuiUtils
 
 # import processing provider
 from DataPlotly.processing.dataplotly_provider import DataPlotlyProvider

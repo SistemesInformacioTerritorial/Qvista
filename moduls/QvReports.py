@@ -30,15 +30,32 @@ class QvReports(QvDataPlotly):
         self.llegenda = llegenda
         self.path = path
         self.menu = QMenu()
-        self.progressBar = None
+        self.progressDialog = None
 
     def listReports(self):
         layoutManager = QgsProject.instance().layoutManager()
-        return [layout.name() for layout in layoutManager.printLayouts()]
+        return [layout.name() for layout in layoutManager.layouts()]
 
-        # for layout in layoutManager.printLayouts():
-        #     if layout.atlas().enabled():
-        #         yield layout.name()
+    def progressCancel(self):
+        if debugging(): print("Informe cancel·lat")
+        self.feedback.cancel()
+
+    def progressChange(self, progress, txt="Generant informe"):
+        num = round(progress)
+        if num == 0:
+            msg = txt + " ..."
+            self.progressDialog.setLabelText(msg)
+        elif num > 100:
+            num = num // 100
+            msg = txt + " - Secció " + str(num) + " ..."
+            self.progressDialog.setLabelText(msg)
+        else:
+            msg = txt + " " + str(num)
+        if debugging(): print(msg)
+        if self.progressDialog.wasCanceled():
+            self.progressDialog.setValue(100)
+        else:
+            self.progressDialog.setValue(num)
 
     def msgReport(self, result):
         if result in range(len(QvReports.ExportMsgs)):
@@ -46,44 +63,27 @@ class QvReports(QvDataPlotly):
         else:
             return "Error en la generació de l'informe"
 
-    def cancelReport(self):
-        if debugging(): print("Informe cancel·lat")
-        self.feedback.cancel()
-
-    def progressDialog(self, cancel=True, title="Informe PDF"):
-        progressBar = QProgressDialog()
+    def progressInit(self, name, cancel=True, bar=True, quick=True, title="Informe PDF"):
+        pDialog = QProgressDialog()
         if cancel:
-            progressBar.canceled.connect(self.cancelReport)
-        else:
-            for w in progressBar.children():
-                if isinstance(w, QProgressBar):
-                    w.hide()
-                elif isinstance(w, QPushButton):
-                    w.setEnabled(False)
-                    w.hide()
-                elif isinstance(w, QShortcut):
-                    w.setEnabled(False)
-        progressBar.setRange(0, 100)
-        progressBar.setWindowTitle(title)
-        progressBar.setMinimumWidth(400)
-        progressBar.setMinimumHeight(150)
-        progressBar.setWindowModality(Qt.WindowModal)
-        progressBar.setWindowFlags(Qt.WindowStaysOnTopHint)
-        progressBar.setMinimumDuration(0)
-        return progressBar
-
-    def progressReport(self, porcentaje, name='', txt="Generant informe"):
-        num = round(porcentaje)
-        if num == 0:
-            msg = txt + " " + name + " ..."
-            self.progressBar.setLabelText(msg)
-        else:            
-            msg = txt + " " + str(num) + " %"
-        if debugging(): print(msg)
-        if self.progressBar.wasCanceled():
-            self.progressBar.setValue(100)
-        else:
-            self.progressBar.setValue(num)
+            pDialog.canceled.connect(self.progressCancel)
+        for w in pDialog.children():
+            if isinstance(w, QProgressBar) and not bar:
+                w.hide()
+            elif isinstance(w, QPushButton) and not cancel:
+                w.setEnabled(False)
+                w.hide()
+            elif isinstance(w, QShortcut) and not cancel:
+                w.setEnabled(False)
+        pDialog.setRange(0, 100)
+        pDialog.setWindowTitle(title + " - " + name)
+        pDialog.setMinimumWidth(400)
+        pDialog.setMinimumHeight(150)
+        pDialog.setWindowModality(Qt.WindowModal)
+        pDialog.setWindowFlags(Qt.WindowStaysOnTopHint)
+        if quick:
+            pDialog.setMinimumDuration(0)
+        return pDialog
 
     def reportToPdf(self, name):
         try: 
@@ -91,40 +91,53 @@ class QvReports(QvDataPlotly):
             layout = layoutManager.layoutByName(name)
             if layout is None:
                 return -1, "Informe no trobat", None
-            # if not atlas.enabled():
-            #     return -1, "Informe desactivat", None
         except Exception as e:
             return -1, "Informe no trobat - " + str(e), None
 
-        try:        
-            # https://github.com/carey136/Standalone-Export-Atlas-QGIS3/blob/master/AtlasExport.py
+        try: # https://github.com/carey136/Standalone-Export-Atlas-QGIS3/blob/master/AtlasExport.py
 
             pdf = self.path + '/' + name + '.pdf'
 
-            atlas = layout.atlas()
-            if atlas.enabled():
+            if layout.layoutType() == layout.PrintLayout: # static layouts y atlas layouts
+                atlas = layout.atlas()
+                if atlas.enabled():
+                    # Atlas layout
+                    # Parámetros
+                    atlasLayout = atlas.layout()
+                    exporter = QgsLayoutExporter(atlasLayout)
+                    settings = exporter.PdfExportSettings()
+                    settings.exportLayersAsSeperateFiles = False
+                    # Progreso
+                    self.feedback = QgsFeedback()
+                    self.progressDialog = self.progressInit(name)
+                    self.feedback.progressChanged.connect(self.progressChange)
+                    self.progressChange(0.0)
+                    # Exportación
+                    result, _ = QgsLayoutExporter.exportToPdf(atlas, pdf, settings, self.feedback)
+                else:
+                    # Static layout
+                    # Parámetros
+                    exporter = QgsLayoutExporter(layout)
+                    settings = exporter.PdfExportSettings()
+                    # Progreso (sin cancel)
+                    self.progressDialog = self.progressInit(name, cancel=False, bar=False)
+                    self.progressChange(0.0)
+                    # Exportación
+                    result = exporter.exportToPdf(pdf, settings)
+                    self.progressDialog.reset()
+
+            else: # layout.layoutType() == layout.Report
+                # Report layout                
                 # Parámetros
-                atlasLayout = atlas.layout()
-                exporter = QgsLayoutExporter(atlasLayout)
-                settings = exporter.PdfExportSettings()
+                settings = QgsLayoutExporter.PdfExportSettings() # default settings
                 settings.exportLayersAsSeperateFiles = False
                 # Progreso
                 self.feedback = QgsFeedback()
-                self.progressBar = self.progressDialog()
-                self.feedback.progressChanged.connect(self.progressReport)
-                self.progressReport(0.0, name)
+                self.progressDialog = self.progressInit(name, bar=False, quick=False)
+                self.feedback.progressChanged.connect(self.progressChange)
+                self.progressChange(0.0)
                 # Exportación
-                result, _ = QgsLayoutExporter.exportToPdf(atlas, pdf, settings, self.feedback)
-            else:
-                # Parámetros
-                exporter = QgsLayoutExporter(layout)
-                settings = exporter.PdfExportSettings()
-                # Progreso sin cancel
-                self.progressBar = self.progressDialog(False)
-                self.progressReport(0.0, name)
-                # Exportación
-                result = exporter.exportToPdf(pdf, settings)
-                self.progressBar.reset()
+                result, _ = QgsLayoutExporter.exportToPdf(layout, pdf, settings, self.feedback)
 
             msg = self.msgReport(result)
             if result == QgsLayoutExporter.Success:
@@ -135,22 +148,18 @@ class QvReports(QvDataPlotly):
         except Exception as e:
             return -1, "Error en la generació  - " + str(e), None
         finally:
-            if self.progressBar is not None: 
-                self.progressBar.reset()
+            if self.progressDialog is not None: 
+                self.progressDialog.reset()
 
     def menuReport(self):
-        # QApplication.instance().setOverrideCursor(Qt.WaitCursor)
         try:
             report = self.llegenda.sender().text()
             result, msg, pdf = self.reportToPdf(report)
             if result == QgsLayoutExporter.Success:
                 os.startfile(pdf)
-                # QApplication.instance().restoreOverrideCursor()
             else:
-                # QApplication.instance().restoreOverrideCursor()
                 QMessageBox.warning(None, f"No s'ha generat l'informe {report}", msg)
         except Exception as e:
-            # QApplication.instance().restoreOverrideCursor()
             QMessageBox.warning(None, f"ERROR a l'informe {report}", str(e))
 
     def setMenu(self, title='Informes PDF'):
