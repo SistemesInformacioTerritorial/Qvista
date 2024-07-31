@@ -29,7 +29,7 @@ class QvReports(QvDataPlotly):
         self.initGui()
         self.llegenda = llegenda
         self.path = path
-        self.menu = QMenu()
+        self.menu = None
         self.progressDialog = None
 
     def listReports(self):
@@ -63,11 +63,11 @@ class QvReports(QvDataPlotly):
         else:
             return "Error en la generació de l'informe"
 
-    def progressInit(self, name, cancel=True, bar=True, quick=True, title="Informe PDF"):
-        pDialog = QProgressDialog()
+    def progressInit(self, name, cancel=True, bar=True, title="Informe PDF"):
+        self.progressDialog = QProgressDialog()
         if cancel:
-            pDialog.canceled.connect(self.progressCancel)
-        for w in pDialog.children():
+            self.progressDialog.canceled.connect(self.progressCancel)
+        for w in self.progressDialog.children():
             if isinstance(w, QProgressBar) and not bar:
                 w.hide()
             elif isinstance(w, QPushButton) and not cancel:
@@ -75,15 +75,14 @@ class QvReports(QvDataPlotly):
                 w.hide()
             elif isinstance(w, QShortcut) and not cancel:
                 w.setEnabled(False)
-        pDialog.setRange(0, 100)
-        pDialog.setWindowTitle(title + " - " + name)
-        pDialog.setMinimumWidth(400)
-        pDialog.setMinimumHeight(150)
-        pDialog.setWindowModality(Qt.WindowModal)
-        pDialog.setWindowFlags(Qt.WindowStaysOnTopHint)
-        if quick:
-            pDialog.setMinimumDuration(0)
-        return pDialog
+        self.progressDialog.setRange(0, 100)
+        self.progressDialog.setWindowTitle(title + " - " + name)
+        self.progressDialog.setMinimumWidth(400)
+        self.progressDialog.setMinimumHeight(150)
+        self.progressDialog.setWindowModality(Qt.WindowModal)
+        self.progressDialog.setWindowFlags(Qt.WindowStaysOnTopHint)
+        self.progressChange(0.0)
+        return self.progressDialog
 
     def reportToPdf(self, name):
         try: 
@@ -109,9 +108,8 @@ class QvReports(QvDataPlotly):
                     settings.exportLayersAsSeperateFiles = False
                     # Progreso
                     self.feedback = QgsFeedback()
-                    self.progressDialog = self.progressInit(name)
+                    self.progressInit(name)
                     self.feedback.progressChanged.connect(self.progressChange)
-                    self.progressChange(0.0)
                     # Exportación
                     result, _ = QgsLayoutExporter.exportToPdf(atlas, pdf, settings, self.feedback)
                 else:
@@ -119,9 +117,8 @@ class QvReports(QvDataPlotly):
                     # Parámetros
                     exporter = QgsLayoutExporter(layout)
                     settings = exporter.PdfExportSettings()
-                    # Progreso (sin cancel)
-                    self.progressDialog = self.progressInit(name, cancel=False, bar=False)
-                    self.progressChange(0.0)
+                    # Progreso (sin cancel y sin barra)
+                    self.progressInit(name, cancel=False, bar=False)
                     # Exportación
                     result = exporter.exportToPdf(pdf, settings)
                     self.progressDialog.reset()
@@ -131,11 +128,10 @@ class QvReports(QvDataPlotly):
                 # Parámetros
                 settings = QgsLayoutExporter.PdfExportSettings() # default settings
                 settings.exportLayersAsSeperateFiles = False
-                # Progreso
+                # Progreso (sin barra)
                 self.feedback = QgsFeedback()
-                self.progressDialog = self.progressInit(name, bar=False, quick=False)
+                self.progressInit(name, bar=False)
                 self.feedback.progressChanged.connect(self.progressChange)
-                self.progressChange(0.0)
                 # Exportación
                 result, _ = QgsLayoutExporter.exportToPdf(layout, pdf, settings, self.feedback)
 
@@ -163,7 +159,7 @@ class QvReports(QvDataPlotly):
             QMessageBox.warning(None, f"ERROR a l'informe {report}", str(e))
 
     def setMenu(self, title='Informes PDF'):
-        self.menu.clear()
+        self.menu = QMenu()
         self.menu.setTitle(title)
         for report in self.listReports():
             act = self.menu.addAction(report)
