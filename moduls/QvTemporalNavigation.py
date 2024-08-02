@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
 # from qgis.core import QgsProject, QgsLayoutExporter, QgsReport, QgsFeedback
-# from qgis.PyQt.QtCore import Qt
 
+from qgis.PyQt.QtCore import Qt
 from qgis.gui import QgsTemporalControllerWidget
 
 from moduls.QvFuncions import debugging
@@ -53,7 +53,7 @@ if __name__ == "__main__":
         canvas.setWindowTitle('Mapa')
         canvas.setGeometry(400, 50, 700, 400)
         canvas.show()
-
+        
         # Abrimos una tabla de atributos
         # layer = llegenda.capaPerNom('Illes')
         # atributs.obrirTaula(layer)
@@ -61,6 +61,9 @@ if __name__ == "__main__":
         # atributs.setWindowTitle('Atributs')
         # atributs.setGeometry(50, 500, 1050, 250)
         # llegenda.obertaTaulaAtributs.connect(atributs.show)
+
+
+    def navegacioTemporal(self):
 
         controller = QgsTemporalControllerWidget() 
         controler_to_be_used_by_canvas =  controller.temporalController()
