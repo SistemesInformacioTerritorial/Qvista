@@ -2499,13 +2499,9 @@ def main(argv):
         app.aboutToQuit.connect(qV.gestioSortida)
 
         # Prueba navegacion temporal
-        try:
-            from moduls.QvFuncions import debugging
-            if debugging():
-                from moduls.QvTemporalNavigation import navegacioTemporal
-                navegacioTemporal(qV)
-        except:
-            pass
+        if QvFuncions.debugging():
+            from moduls.QvTemporalNavigation import navegacioTemporal
+            navegacioTemporal(qV)
 
 # Arranque de l'aplicació qVista
 if __name__ == "__main__":
