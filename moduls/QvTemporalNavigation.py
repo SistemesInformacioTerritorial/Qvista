@@ -8,6 +8,28 @@ from qgis.gui import QgsTemporalControllerWidget
 from moduls.QvFuncions import debugging
 import os 
 
+def navegacioTemporal(parent):
+
+    from qgis.gui import QgsTemporalControllerWidget
+
+    # Como widget
+    parent.wNavegacioTemporal = QgsTemporalControllerWidget() 
+    tempControler =  parent.wNavegacioTemporal.temporalController()
+    parent.canvas.setTemporalController(tempControler)
+    parent.wNavegacioTemporal.setWindowTitle('Navegació temporal')
+    parent.wNavegacioTemporal.setGeometry(50, 500, 1050, 150)
+    parent.wNavegacioTemporal.show()
+
+    # Como dock widget
+    # wController = QgsTemporalControllerWidget() 
+    # tempControler = wController.temporalController()
+    # self.canvas.setTemporalController(tempControler)
+    # wController.resize(1000, 150)
+    # self.dwNavegacioTemporal = QvDockWidget()
+    # self.dwNavegacioTemporal.setWidget(wController)
+    # self.dwNavegacioTemporal.setWindowTitle('Navegació temporal')
+    # self.addDockWidget(Qt.BottomDockWidgetArea, self.dwNavegacioTemporal)
+    # self.dwNavegacioTemporal.show()    
 
 if __name__ == "__main__":
 
@@ -22,8 +44,6 @@ if __name__ == "__main__":
     from qgis.PyQt.QtWidgets import QWidget, QHBoxLayout, QPushButton
     
     import sys
-
-
 
     with qgisapp() as app:
 
@@ -62,20 +82,3 @@ if __name__ == "__main__":
         # atributs.setGeometry(50, 500, 1050, 250)
         # llegenda.obertaTaulaAtributs.connect(atributs.show)
 
-
-    def navegacioTemporal(self):
-
-        controller = QgsTemporalControllerWidget() 
-        controler_to_be_used_by_canvas =  controller.temporalController()
-        canvas.setTemporalController(controler_to_be_used_by_canvas)
-        controller.setWindowTitle('Navegació temporal')
-        controller.setGeometry(50, 500, 1050, 150)
-        controller.show()
-
-        # widget = QWidget()
-        # push_button = QPushButton("Click me!")
-        # layout = QHBoxLayout()
-        # layout.addWidget(controller)        
-        # widget.setLayout(layout)
-        # widget.setWindowTitle('Navegació temporal')
-        # widget.show()

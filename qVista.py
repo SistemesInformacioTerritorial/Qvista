@@ -2322,29 +2322,6 @@ class QVista(QMainWindow, Ui_MainWindow):
     #     self.addDockWidget( Qt.RightDockWidgetArea, self.dwMarxes)
     #     self.dwMarxes.show()    
     
-    def navegacioTemporal(self):
-
-        from qgis.gui import QgsTemporalControllerWidget
-
-        # Como widget
-        self.wNavegacioTemporal = QgsTemporalControllerWidget() 
-        tempControler =  self.wNavegacioTemporal.temporalController()
-        self.canvas.setTemporalController(tempControler)
-        self.wNavegacioTemporal.setWindowTitle('Navegació temporal')
-        self.wNavegacioTemporal.setGeometry(50, 500, 1050, 150)
-        self.wNavegacioTemporal.show()
-
-        # Como dock widget
-        # wController = QgsTemporalControllerWidget() 
-        # tempControler = wController.temporalController()
-        # self.canvas.setTemporalController(tempControler)
-        # wController.resize(1000, 150)
-        # self.dwNavegacioTemporal = QvDockWidget()
-        # self.dwNavegacioTemporal.setWidget(wController)
-        # self.dwNavegacioTemporal.setWindowTitle('Navegació temporal')
-        # self.addDockWidget(Qt.BottomDockWidgetArea, self.dwNavegacioTemporal)
-        # self.dwNavegacioTemporal.show()    
-
     def nouMapa(self):
         if self.teCanvisPendents(): #Posar la comprovació del dirty bit
             ret = self.missatgeDesar(titol='Crear un nou mapa',txtCancelar='Cancel·lar')
@@ -2521,11 +2498,14 @@ def main(argv):
         # Gestió de la sortida
         app.aboutToQuit.connect(qV.gestioSortida)
 
-        from moduls.QvFuncions import debugging
-
         # Prueba navegacion temporal
-        if debugging(): qV.navegacioTemporal()
-
+        try:
+            from moduls.QvFuncions import debugging
+            if debugging():
+                from moduls.QvTemporalNavigation import navegacioTemporal
+                navegacioTemporal(qV)
+        except:
+            pass
 
 # Arranque de l'aplicació qVista
 if __name__ == "__main__":
