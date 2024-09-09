@@ -39,6 +39,7 @@ def navegacioTemporal(qV, docked=True):
         qV.canvas.setTemporalController(tempControler)
         qV.dwNavegacioTemporal.setWindowTitle('Navegació temporal')
         qV.dwNavegacioTemporal.setGeometry(100, 500, 1000, 150)
+        qV.dwNavegacioTemporal.setWindowFlags(Qt.WindowStaysOnTopHint)
         qV.dwNavegacioTemporal.show()
 
 
@@ -92,4 +93,5 @@ if __name__ == "__main__":
         # atributs.setWindowTitle('Atributs')
         # atributs.setGeometry(50, 500, 1050, 250)
         # llegenda.obertaTaulaAtributs.connect(atributs.show)
+
 

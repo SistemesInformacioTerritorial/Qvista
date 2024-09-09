@@ -21,6 +21,7 @@ from moduls.QvDigitizeContext import QvDigitizeContext
 from moduls.QvReports import QvReports
 from moduls.QvApp import QvApp
 from moduls import QvFuncions
+from moduls.QvFuncions import debugging
 
 if QvApp().testVersioQgis(3, 10):
     from moduls.QvDigitize import QvDigitize
@@ -933,6 +934,14 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
         self.expandAll(False)
 
     def addGroup(self):
+        if debugging():
+            # TEST QvProcess
+            from moduls.QvProcess import QvProcess
+            process = QvProcess('soroll') # Con progreso
+            # process = QvProcess('soroll', False) # Sin progreso
+            process.execute()
+            return
+
         self.defaultActions().addGroup()
         self.modificacioProjecte('addGroup')
 
