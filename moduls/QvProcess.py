@@ -36,28 +36,28 @@ Processing.initialize()
 # soroll;Àrees d'interès;Clustering,Envelop,Buffering;N
 
 # CÓDIGO DE EJECUCIÓN:
-# El archivo que contiene el código a ejecutar se llamará soroll_processing.py
-# No puede contener ninguna referencia a iface
+# Para soroll, el archivo que contiene el código a ejecutar se llamará soroll_processing.py
+# Han de eliminarse las referencias a iface (no compatible con qVista)
 # Para que funcione tanto en qVista como en QGIS, el import de processing tendrá esta forma:
 # try:
 #     from .processing import *    # qVista
 # except:
 #     from qgis import processing  # QGIS
-# De ese módulo solo se usará la función run: result = processing.run(algorithm, parameters)
-# Para controlar los errores, ha de chequear el resultado de cada processing.run()
+# Del módulo processing solo se usará la función run: res = processing.run(algorithm, params)
+# Para controlar los errores, se ha de chequear el resultado de cada processing.run()
 
 # FUNCIONES DE EJECUCIÓN:
 # soroll_processing.py puede contener dos funciones para ser llamadas desde qVista:
-# - soroll_processing() para ejecución directa sin formulario
-# - soroll_dialog() si se presenta al usuario un formulario de parámetros
-# Si existe, se ejecutará soroll_dialog(); si no, soroll_processing()
+# - soroll_dialog(), que presenta al usuario un formulario de parámetros del proceso
+# - soroll_processing(), para ejecución directa sin formulario
+# Si existe, se ejecuta soroll_dialog() y si no, soroll_processing(), ambas sin parámetros
 
 # EJECUCIÓN CON FORMULARIO:
 # La función soroll_dialog() presentará el formulario para recoger los parámetros
 # Si va bien, la función retornará el QDialog creado; si no, devolverá None
-# Al aceptar el usuario, el formulario invocará Areas(), función de soroll_processing.py
-# La función interna, en este caso, Areas(), llamará a processing.run() 
-# Tambien tendrá un control de las excepciones para que no llegen a qVista
+# Al aceptar el usuario, el formulario invocará a una función de soroll_processing.py
+# En el caso de soroll es la función Areas(), encargada de las llamadas a processing.run() 
+# Esta función tambien tendrá un control de las excepciones para que no llegen a qVista
 
 # EJECUCIÓN SIN FORMULARIO:
 # La función soroll_processing() contendrá las llamadas a processing.run()
