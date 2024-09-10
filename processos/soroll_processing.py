@@ -263,7 +263,7 @@ def soroll_processing():
 
 from .soroll_dialog import sorollDialog
 
-def soroll_dialog_():
+def soroll_dialog():
 
     dlg = None
 

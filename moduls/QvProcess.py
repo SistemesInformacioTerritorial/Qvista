@@ -28,12 +28,15 @@ Processing.initialize()
 # Esto posibilita que el usuario reciba información del progreso del proceso y de sus errores
 
 # CATÁLOGO EN FICHERO CSV:
-# En processing.csv cada línea define un proceso, con información que se mostrará al usuario
-# Incluye el campo TITLE y opcionalmente sus STEPS (uno por cada llamada a processing.run()): 
-# GLOBAL es para indicar si el proceso puede usarse desde cualquier proyecto o no
+# En processing.csv cada línea define un proceso, con varios campos:
+# - NAME: identificador del proceso (en el ejemplo, 'soroll')
+# - TITLE: texto corto descriptivo del proceso
+# - STEPS: una etiqueta por cada llamada a processing.run(), separadas por comas
+# - DIALOG: indica si se lanza el diálogo de parámetros o no (por defecto, 'S')
+# - GENERAL: indica si el proceso puede usarse desde cualquier proyecto o no (por defecto, 'N')
 # Ejemplo para "soroll", proceso con 3 pasos:
-# NAME;TITLE;STEPS;GLOBAL
-# soroll;Àrees d'interès;Clustering,Envelop,Buffering;N
+# NAME;TITLE;STEPS;DIALOG;GENERAL
+# soroll;Àrees d'interès;Clustering,Envelop,Buffering;S;N
 
 # CÓDIGO DE EJECUCIÓN:
 # Para soroll, el archivo que contiene el código a ejecutar se llamará soroll_processing.py
@@ -47,10 +50,10 @@ Processing.initialize()
 # Para controlar los errores, se ha de chequear el resultado de cada processing.run()
 
 # FUNCIONES DE EJECUCIÓN:
-# soroll_processing.py puede contener dos funciones para ser llamadas desde qVista:
+# soroll_processing.py puede incluir dos funciones sin parémetros para ser llamadas desde qVista:
 # - soroll_dialog(), que presenta al usuario un formulario de parámetros del proceso
 # - soroll_processing(), para ejecución directa sin formulario
-# Si existe, se ejecuta soroll_dialog() y si no, soroll_processing(), ambas sin parámetros
+# Se ejecutará una u otra dependiendo del contenido del campo DIALOG del fichero csv
 
 # EJECUCIÓN CON FORMULARIO:
 # La función soroll_dialog() presentará el formulario para recoger los parámetros
@@ -88,8 +91,10 @@ class QvProcessProgress:
         self.title = None
         self.msg = None
         self.steps = []
+        self.dialog = True
+        self.general = False
         self.canceled = False
-
+        
     def setName(self, name):
         self.title = name
         if len(self.steps) == 0:
@@ -180,9 +185,18 @@ class QvProcess:
     def __init__(self, process, showProgress=True):
         self.showProgress = showProgress
         self.progress = QvProcessProgress(self.showProgress)
-        self.process, self.modeDialog, self.processFunction = self.prepare(process)
+        self.process, self.processFunction = self.prepare(process)
         self.processDialog = None
     
+    def snParam(self, value, default):
+        value = value.upper()
+        if value == 'S':
+            return True
+        elif value == 'N':
+            return False
+        else:
+            return default
+
     def readParams(self, process):
         params = {}
         try:
@@ -195,6 +209,9 @@ class QvProcess:
                         for field in row:
                             val = row[field].strip()
                             if field == 'NAME': val = val.lower()
+                            if field == 'STEPS': val = val.split(',')
+                            if field == 'DIALOG': val = self.snParam(val, True)
+                            if field == 'GENERAL': val = self.snParam(val, False)
                             params[field] = val
                         break
         except Exception as e:
@@ -212,14 +229,11 @@ class QvProcess:
         i = __import__("processos." + moduleName, globals(), locals(), [], 0)
         # Modulo _processing
         m = getattr(i, moduleName)
-        # Primero se busca la función _dialog; si no está, la función _processing
-        try:
-            func =  getattr(m, dialogName)
-            return True, func
-        except:
-            pass
-        func =  getattr(m, moduleName)
-        return False, func
+        # Se busca la función _dialog o la función _processing, según el csv
+        if self.progress.dialog:
+            return getattr(m, dialogName)
+        else:
+            return getattr(m, moduleName)
     
     def prepareProgress(self):
         if self.progress is not None:
@@ -229,26 +243,27 @@ class QvProcess:
 
     def prepare(self, process):
         func = None
-        mode = None
         try:
             process = process.lower()
             params = self.readParams(process)
             if params is not None:
                 # Parámetros del CSV
                 self.progress.setName(params['TITLE'])
-                self.progress.setSteps(params['STEPS'].split(','))
+                self.progress.setSteps(params['STEPS'])
+                self.progress.dialog = params['DIALOG']
+                self.progress.general = params['GENERAL']
                 # Enlace con modulo processing
                 import processos.processing as modulProcs
                 modulProcs.processingClass = self
                 # Se obtiene la funcion de proceso
-                mode, func = self.getFunction(process)
+                func = self.getFunction(process)
             else:
                 process = None
         except Exception as e:
             print(str(e))
             process = None
         finally:
-            return process, mode, func
+            return process, func
 
     def cancel(self):
         if self.processDialog is not None: self.processDialog.hide()
@@ -274,7 +289,7 @@ class QvProcess:
             if res is None and not self.canceled():
                 self.errorMsg("S'ha produït un error intern al procés")
                 return False
-            if self.modeDialog:
+            if self.progress.dialog:
                 self.processDialog = res
             else:
                 self.cancel()
