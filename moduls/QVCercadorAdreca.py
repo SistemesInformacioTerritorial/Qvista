@@ -3,10 +3,7 @@ import itertools
 import json
 import functools
 import re
-import sys
-import time
 import unicodedata
-import copy
 
 from moduls.imported.simplekml.featgeom import Geometry
 from qgis.core import QgsPointXY, QgsProject, QgsExpressionContextUtils, QgsVectorLayer, QgsWkbTypes, QgsFeature
@@ -1362,12 +1359,12 @@ if __name__ == "__main__":
         canvas.setCanvasColor(QColor(10, 10, 10))
         le1 = QLineEdit()
         le1.setPlaceholderText('Carrer')
-        le2 = QLineEdit()
-        le2.setPlaceholderText('Número')
+        leNumero = QLineEdit()
+        leNumero.setPlaceholderText('Número')
 
         layCerc=QHBoxLayout()
         layCerc.addWidget(le1)
-        layCerc.addWidget(le2)
+        layCerc.addWidget(leNumero)
         lay=QVBoxLayout()
         lay.setContentsMargins(0,0,0,0)
         lay.addLayout(layCerc)
@@ -1395,7 +1392,7 @@ if __name__ == "__main__":
         #  - Un enter, amb un codi d'error. Si és 0, tot ha anat bé. La resta, es poden veure al codi
         #  - Un text, amb la informació de l'error
         # Per accedir a les coordenades es pot fer mitjançant l'atribut coordAdreca del cercador, que s'haurà actualitzat quan les hagi trobat
-        cercador=QCercadorAdreca(le1, le2)
+        cercador=QCercadorAdreca(le1, lineEditNumero=leNumero)
         cercador.coordenades_trobades.connect(trobat)
         cercador.area_trobada.connect(trobat)
 
