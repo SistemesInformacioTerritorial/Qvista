@@ -17,70 +17,6 @@ del os.sys.path[0]
 from processing.core.Processing import Processing
 Processing.initialize()
 
-# **************************************************************************************************
-
-# CARPETA DE INSTALACIÓN:
-# Se identifica un proceso por un nombre en minúsculas; por ejemplo: "soroll"
-# Los nombres de los archivos relacionados con este proceso comenzaran con el prefijo "soroll"
-# Se colocaran esos ficheros en la carpeta qVista\Codi\processos
-# En esa carpeta estarán processing.py y processing.csv, necesarios para la ejecución desde qVista
-# La función processing.run() está recubierta en proccessing.py para que qVista la controle
-# Esto posibilita que el usuario reciba información del progreso del proceso y de sus errores
-
-# CATÁLOGO EN FICHERO CSV:
-# En processing.csv cada línea define un proceso, con varios campos:
-# - NAME: identificador del proceso (en el ejemplo, 'soroll')
-# - TITLE: texto corto descriptivo del proceso
-# - STEPS: una etiqueta por cada llamada a processing.run(), separadas por comas
-# - DIALOG: indica si se lanza el diálogo de parámetros o no (por defecto, 'S')
-# - GENERAL: indica si el proceso puede usarse desde cualquier proyecto o no (por defecto, 'N')
-# Ejemplo para "soroll", proceso con 3 pasos:
-# NAME;TITLE;STEPS;DIALOG;GENERAL
-# soroll;Àrees d'interès;Clustering,Envelop,Buffering;S;N
-
-# CÓDIGO DE EJECUCIÓN:
-# Para soroll, el archivo que contiene el código a ejecutar se llamará soroll_processing.py
-# Han de eliminarse las referencias a iface (no compatible con qVista)
-# Para que funcione tanto en qVista como en QGIS, el import de processing tendrá esta forma:
-# try:
-#     from .processing import *    # qVista
-# except:
-#     from qgis import processing  # QGIS
-# Del módulo processing solo se usará la función run: res = processing.run(algorithm, params)
-# Para controlar los errores, se ha de chequear el resultado de cada processing.run()
-
-# FUNCIONES DE EJECUCIÓN:
-# soroll_processing.py puede incluir dos funciones sin parémetros para ser llamadas desde qVista:
-# - soroll_dialog(), que presenta al usuario un formulario de parámetros del proceso
-# - soroll_processing(), para ejecución directa sin formulario
-# Se ejecutará una u otra dependiendo del contenido del campo DIALOG del fichero csv
-
-# EJECUCIÓN CON FORMULARIO:
-# La función soroll_dialog() presentará el formulario para recoger los parámetros
-# Si va bien, la función retornará el QDialog creado; si no, devolverá None
-# Al aceptar el usuario, el formulario invocará a una función de soroll_processing.py
-# En el caso de soroll es la función Areas(), encargada de las llamadas a processing.run() 
-# Esta función tambien tendrá un control de las excepciones para que no llegen a qVista
-
-# EJECUCIÓN SIN FORMULARIO:
-# La función soroll_processing() contendrá las llamadas a processing.run()
-# En caso de error o excepción, retornará None
-# Si termina con éxito, devolverá el resultado del último processing.run()
-
-# EJEMPLOS DE USO:
-# Ejemplo del uso común desde qVista, con diálogos que informan del progreso de la ejecución:
-# from moduls.QvProcess import QvProcess
-# process = QvProcess('soroll')
-# process.execute()
-# La función process.execute() devuelve True o False para indicar si el proceso acabó bien o no
-# Para ejecutar en modo silencioso (sin información del progreso), cambiar la segunda línea por:
-# process = QvProcess('soroll', False)
-
-# DOCS QGIS PROCESSING:
-# https://docs.qgis.org/3.22/en/docs/user_manual/processing/index.html
-
-# **************************************************************************************************
-
 class QvProcessProgress:
     def __init__(self, showProgress=True):
         self.numProceso = 1
@@ -225,10 +161,8 @@ class QvProcess:
     def getFunction(self, process):
         moduleName = process + "_processing"
         dialogName = process + "_dialog"
-        # Modulo namespace
-        i = __import__("processos." + moduleName, globals(), locals(), [], 0)
-        # Modulo _processing
-        m = getattr(i, moduleName)
+        import importlib
+        m = importlib.import_module(f"processos.{process}.{process}_processing")
         # Se busca la función _dialog o la función _processing, según el csv
         if self.progress.dialog:
             return getattr(m, dialogName)

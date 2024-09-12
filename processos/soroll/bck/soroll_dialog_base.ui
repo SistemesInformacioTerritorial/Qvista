@@ -1,0 +1,279 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>sorollDialogBase</class>
+ <widget class="QDialog" name="sorollDialogBase">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>494</width>
+    <height>323</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>soroll</string>
+  </property>
+  <layout class="QGridLayout" name="gridLayout">
+   <item row="6" column="1" colspan="2">
+    <widget class="QLabel" name="label_8">
+     <property name="text">
+      <string>3 - DenunciesAlcoholCarrer</string>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="2">
+    <widget class="QLabel" name="label_5">
+     <property name="text">
+      <string>numero_puntos</string>
+     </property>
+    </widget>
+   </item>
+   <item row="7" column="2">
+    <widget class="QLabel" name="label_7">
+     <property name="text">
+      <string>numerp_puntos</string>
+     </property>
+    </widget>
+   </item>
+   <item row="5" column="4">
+    <widget class="QLineEdit" name="buf2">
+     <property name="text">
+      <string>60</string>
+     </property>
+    </widget>
+   </item>
+   <item row="8" column="4">
+    <widget class="QLineEdit" name="buf3">
+     <property name="text">
+      <string>60</string>
+     </property>
+    </widget>
+   </item>
+   <item row="11" column="3">
+    <widget class="QLabel" name="label_12">
+     <property name="text">
+      <string>Distancia puntos</string>
+     </property>
+    </widget>
+   </item>
+   <item row="11" column="4">
+    <widget class="QLabel" name="label_16">
+     <property name="text">
+      <string>buf</string>
+     </property>
+    </widget>
+   </item>
+   <item row="8" column="3">
+    <widget class="QLineEdit" name="dis3">
+     <property name="text">
+      <string>60</string>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="4">
+    <widget class="QLabel" name="label_14">
+     <property name="text">
+      <string>buf</string>
+     </property>
+    </widget>
+   </item>
+   <item row="7" column="3">
+    <widget class="QLabel" name="label_9">
+     <property name="text">
+      <string>Distancia puntos</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="5">
+    <widget class="QPushButton" name="areas1">
+     <property name="text">
+      <string>Crear areas</string>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="3">
+    <widget class="QLabel" name="label_6">
+     <property name="text">
+      <string>Distancia puntos</string>
+     </property>
+    </widget>
+   </item>
+   <item row="7" column="4">
+    <widget class="QLabel" name="label_15">
+     <property name="text">
+      <string>buf</string>
+     </property>
+    </widget>
+   </item>
+   <item row="8" column="5">
+    <widget class="QPushButton" name="areas3">
+     <property name="text">
+      <string>Crear areas</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="2">
+    <widget class="QLineEdit" name="npun1">
+     <property name="text">
+      <string>100</string>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="1">
+    <widget class="QLabel" name="label">
+     <property name="text">
+      <string>1 - Mycellium</string>
+     </property>
+    </widget>
+   </item>
+   <item row="12" column="3">
+    <widget class="QLineEdit" name="dis4">
+     <property name="text">
+      <string>100</string>
+     </property>
+    </widget>
+   </item>
+   <item row="8" column="2">
+    <widget class="QLineEdit" name="npun3">
+     <property name="text">
+      <string>250</string>
+     </property>
+    </widget>
+   </item>
+   <item row="5" column="2">
+    <widget class="QLineEdit" name="npun2">
+     <property name="text">
+      <string>50</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="4">
+    <widget class="QLineEdit" name="buf1">
+     <property name="text">
+      <string>60</string>
+     </property>
+    </widget>
+   </item>
+   <item row="11" column="2">
+    <widget class="QLabel" name="label_10">
+     <property name="text">
+      <string>numerp_puntos</string>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="1">
+    <widget class="QLabel" name="label_2">
+     <property name="text">
+      <string>2 - IrisSoroll</string>
+     </property>
+    </widget>
+   </item>
+   <item row="5" column="3">
+    <widget class="QLineEdit" name="dis2">
+     <property name="text">
+      <string>60</string>
+     </property>
+    </widget>
+   </item>
+   <item row="5" column="5">
+    <widget class="QPushButton" name="areas2">
+     <property name="text">
+      <string>Crear areas</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="3">
+    <widget class="QLineEdit" name="dis1">
+     <property name="text">
+      <string>60</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="3">
+    <widget class="QLabel" name="label_4">
+     <property name="text">
+      <string>Distancia puntos</string>
+     </property>
+    </widget>
+   </item>
+   <item row="12" column="2">
+    <widget class="QLineEdit" name="npun4">
+     <property name="text">
+      <string>100</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="2">
+    <widget class="QLabel" name="label_3">
+     <property name="text">
+      <string>numero_puntos</string>
+     </property>
+    </widget>
+   </item>
+   <item row="12" column="5">
+    <widget class="QPushButton" name="areas4">
+     <property name="text">
+      <string>Crear areas</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="4">
+    <widget class="QLabel" name="label_13">
+     <property name="text">
+      <string>buf</string>
+     </property>
+    </widget>
+   </item>
+   <item row="9" column="1" colspan="2">
+    <widget class="QLabel" name="label_11">
+     <property name="text">
+      <string>4 - DenunciesSorollCarrer</string>
+     </property>
+    </widget>
+   </item>
+   <item row="12" column="4">
+    <widget class="QLineEdit" name="buf4">
+     <property name="text">
+      <string>100</string>
+     </property>
+    </widget>
+   </item>
+   <item row="14" column="3">
+    <widget class="QPushButton" name="barraEscala">
+     <property name="text">
+      <string>Cambiar</string>
+     </property>
+    </widget>
+   </item>
+   <item row="14" column="2">
+    <widget class="QLineEdit" name="medidaBarraEscala">
+     <property name="text">
+      <string>60</string>
+     </property>
+    </widget>
+   </item>
+   <item row="14" column="1">
+    <widget class="QLabel" name="label_17">
+     <property name="text">
+      <string>Medida barra escala</string>
+     </property>
+    </widget>
+   </item>
+   <item row="13" column="1" colspan="2">
+    <spacer name="verticalSpacer">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>40</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

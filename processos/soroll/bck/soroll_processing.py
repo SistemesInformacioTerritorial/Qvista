@@ -6,9 +6,9 @@ from qgis.core import QgsProject, QgsVectorLayer
 #  from qgis.core import *
 
 try:
-    from .processing import *    # qVista
+    from processos.processing import *  # qVista
 except:
-    from qgis import processing  # QGIS
+    from qgis import processing         # QGIS
 
 def perform_dbscan_clustering(input_path, min_size, eps,  area_id):
     """
@@ -140,6 +140,8 @@ def activarFeaturesCount(capa_activa):
     if nodo_capa is not None:
         nodo_capa.setCustomProperty("showFeatureCount", True)        
 
+# L:\DADES\SIT\Pla Endreca
+ 
 def Areas(area_id, layer_name, npun, dis, buf):
     """ Generalized function to process areas """
     try:
