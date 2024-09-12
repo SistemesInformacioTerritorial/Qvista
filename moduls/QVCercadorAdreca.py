@@ -45,6 +45,7 @@ def arreglaCarrer(carrer):
     res = carrer.strip()
     res = res.replace('(','').replace(')','')
     return res.lower()
+
 def encaixa(sub, string):
     '''Retorna True si alguna de les paraules de sub encaixa exactament dins de string (és a dir, a sub hi ha "... xxx ..." i a string també) i la resta apareixen però no necessàriament encaixant'''
     string = string.lower()
@@ -95,14 +96,8 @@ def variant(sub, string, variants):
     return any(map(sub_in_x,variants.split(',')))
 
 class CarrerCompleterModel(QSortFilterProxyModel):
-    def __init__(self, dict_capa_tupla: dict, parent: QObject = None):
-        """
-        Inicialitza el model de filtrat per al completador amb un diccionari de carrers.
 
-        Args:
-            dict_capa_tupla (dict): Diccionari que relaciona identificadors de carrers (str) amb noms de carrers (str).
-            parent (QObject, optional): Widget pare del model. Defaults to None.
-        """
+    def __init__(self, dict_capa_tupla: dict, parent: QObject = None):
         super().__init__(parent)
         self.dict_capa_tupla = dict_capa_tupla
         self.last_returned = None
@@ -176,7 +171,7 @@ class CompleterAdreces(QCompleter):
 
     @staticmethod
     @functools.lru_cache(maxsize=None)
-    def cerca(word,elements,dicElems, vars):
+    def cerca(word,elements, dicElems, vars):
         # Volem dividir la llista en cinc llistes
         # -Carrers on un dels elements cercats encaixen amb una paraula del carrer
         # -Carrers on una de les paraules del carrer comencen per un dels elements cercats
@@ -185,7 +180,8 @@ class CompleterAdreces(QCompleter):
         # -La resta
         # D'aquestes 5, el completer mostrarà les primeres 4, que són les que són interessants
         def filtra(llista, func):
-            """Divideix una llista entre dues llistes, segons si compleixen la funció o no
+            """
+            Divideix una llista entre dues llistes, segons si compleixen la funció o no
 
             Args:
                 llista (iterable[str]): llista que volem dividir
@@ -226,7 +222,9 @@ class CompleterAdreces(QCompleter):
         return res
 
     def update(self, word):
-        '''Funció que actualitza els elements'''
+        """
+        Funció que actualitza els elements
+        """
         self.word = word.lower()
 
 
@@ -240,23 +238,6 @@ class CompleterAdreces(QCompleter):
         self.update(path)
         res = path.split(' ')
         return [res[-1]]
-
-
-class ValidadorNums(QValidator):
-    '''NO UTILITZADA. Serviria per poder impedir que es posin números no existents per l'adreça'''
-
-    def __init__(self, elems, parent):
-        super().__init__(parent)
-        self.permesos = elems.keys()
-
-    def validate(self, input, pos):
-        if input in self.permesos:
-            return QValidator.Acceptable, input, pos
-        filt = filter(lambda x: x.startswith(input), self.permesos)
-        if any(True for _ in filt):
-            return QValidator.Intermediate, input, pos
-        return QValidator.Invalid, input, pos
-
 
 class QCercadorAdreca(QObject):
     coordenades_trobades = pyqtSignal(int, 'QString')
@@ -308,7 +289,7 @@ class QCercadorAdreca(QObject):
         QTimer.singleShot(0, self.connect_layers_removed)
         QTimer.singleShot(0, self.connect_layers_added)
 
-    def set_projecte(self,project):
+    def set_projecte(self, project):
         self.project = project
 
     def connect_layers_added(self):
@@ -463,10 +444,12 @@ class QCercadorAdreca(QObject):
         """
         capa = QgsProject.instance().mapLayer(id_capa)
         if not capa:
-            return
+            return None
+
         resultats = self.obtenir_variables_capa(capa)
         if not resultats:
-            return
+            return None
+
         for variable in resultats:
             clau_errors_de_carrega = 'projecte' + '-' + variable['layer_net'] + '-' + variable['nom_variable']
             hi_ha_error = self.hi_ha_error_carregar_variable(variable, capa, clau_errors_de_carrega, 'capa')
@@ -551,7 +534,7 @@ class QCercadorAdreca(QObject):
         """
         Carrega els elements de les capes especificades en la llista de cerques de la instància.
         """
-        hi_ha_error=False
+        hi_ha_error = False
         posicio = 1
         for variable in self.llista_cerques:
             capa = QgsProject.instance().mapLayers().get(variable['layer']) #si ho fessim amb variable['layer_net'], ERROR
@@ -720,7 +703,6 @@ class QCercadorAdreca(QObject):
                 mostrar_error(e)
             self.leCarrer.editingFinished.connect(self.trobat_altres)
 
-
     def connectarLineEditsNumero(self):
         """
         Configura els connectadors per als LineEdits de números basant-se en el tipus de cerca seleccionat.
@@ -775,8 +757,6 @@ class QCercadorAdreca(QObject):
                 return QgsProject.instance().mapLayers().get(id_capa).name()
         return None
 
-
-
     def SeleccPalabraOTodoEnFrase(self, event):
         """
         Funcion conectada al dobleclick.
@@ -803,9 +783,6 @@ class QCercadorAdreca(QObject):
             self.leCarrer.setSelection(self.inicio+1,self.fin-self.inicio-1)
 
         self.numClick += 1
-
-
-    # Obtenir les dades de les cantonades+numeros associats a un carrer
 
     def getCarrerNumeros(self):
         """
@@ -878,7 +855,6 @@ class QCercadorAdreca(QObject):
 
         self.query.finish()
 
-
     def activatAltres(self, element: str):
         """
         Activa l'element especificat, actualitza l'interfície d'usuari per reflectir l'element actiu i inicialitza l'adreça.
@@ -898,8 +874,6 @@ class QCercadorAdreca(QObject):
             self.txto = element
             self.get_tipus_geometria()
 
-
-    # Venimos del completer, un click en desplegable ....
     def activatCarrer(self, carrer: str) -> Optional[bool]:
         """
         Processa el carrer proporcionat, neteja el nom del carrer i estableix l'adreça si el carrer existeix.
@@ -1167,9 +1141,10 @@ class QCercadorAdreca(QObject):
         except Exception as e:
             mostrar_error(e)
 
-    # Normalización caracteres quitando acentos
-
     def remove_accents(self, input_str):
+        """
+        Normalización caracteres quitando acentos
+        """
         nfkd_form = unicodedata.normalize('NFKD', input_str)
         only_ascii = nfkd_form.encode('ASCII', 'ignore')
         return only_ascii.decode("utf8")
