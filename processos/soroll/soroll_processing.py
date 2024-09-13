@@ -1,4 +1,6 @@
-from qgis.core import QgsProject, QgsVectorLayer
+# -*- coding: utf-8 -*-
+
+from qgis.core import QgsProject
 
 try:
     from processos.processing import *  # qVista
@@ -214,9 +216,9 @@ def Areas(area_id, layer_name, npun, dis, buf):
 
         alias = output_layer_name
         # layer = self.iface.addVectorLayer(geometry_output_path, alias, 'ogr')
-        layer = QgsVectorLayer(geometry_output_path, alias, 'ogr')
-        QgsProject.instance().addMapLayer(layer)
-
+        layer = iface.addVectorLayer(geometry_output_path, alias, 'ogr')
+        if layer is None:
+            raise Exception("Error al carregar capa de contorn") 
 
         layer.startEditing()
         primer_elemento = next(layer.getFeatures())
@@ -232,8 +234,9 @@ def Areas(area_id, layer_name, npun, dis, buf):
 
         buffer_alias = buffer_layer_name
         # buffer_layer = self.iface.addVectorLayer(buffer_output_path, buffer_alias, 'ogr')
-        buffer_layer = QgsVectorLayer(buffer_output_path, buffer_alias, 'ogr')
-        QgsProject.instance().addMapLayer(buffer_layer)
+        buffer_layer = iface.addVectorLayer(buffer_output_path, buffer_alias, 'ogr')
+        if buffer_layer is None:
+            raise Exception("Error al carregar capa de buffer") 
 
         activarFeaturesCount(buffer_layer)
         borra_capa_bien(output_layer_name)
@@ -245,6 +248,7 @@ def Areas(area_id, layer_name, npun, dis, buf):
 # *************************************************************************************************
 
 from qgis.PyQt.QtCore import Qt
+
 from .soroll_dialog import sorollDialog
 
 def soroll_dialog(dlg=None):
@@ -255,8 +259,8 @@ def soroll_dialog(dlg=None):
 
         dlg.setWindowFlags(Qt.WindowStaysOnTopHint)
         
-        # dlg.barraEscala.clicked.connect(barraEscala)  
-        # QMessageBox.warning(None, "Avis", "Funcionalitat no disponible a qVista")
+        if _Q_VISTA:
+            dlg.barraEscala.setEnabled(False)
         
 
         dlg.areas1.clicked.connect(lambda: Areas(

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
-from moduls.QvFuncions import debugging
+# Modulo para recubrir métodos del iface para uso desde qVista
+from processos.iface import iface
 
 # QvProcess
 processingClass = None
@@ -9,6 +10,7 @@ class QvProcessing:
 
     @staticmethod
     def run(name, params):
+        from moduls.QvFuncions import debugging
         try:
             if debugging(): print("RUN processing", name)
             if processingClass is None: return None
