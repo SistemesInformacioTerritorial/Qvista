@@ -3,10 +3,7 @@ import itertools
 import json
 import functools
 import re
-import sys
-import time
 import unicodedata
-import copy
 
 from moduls.imported.simplekml.featgeom import Geometry
 from qgis.core import QgsPointXY, QgsProject, QgsExpressionContextUtils, QgsVectorLayer, QgsWkbTypes, QgsFeature
@@ -48,6 +45,7 @@ def arreglaCarrer(carrer):
     res = carrer.strip()
     res = res.replace('(','').replace(')','')
     return res.lower()
+
 def encaixa(sub, string):
     '''Retorna True si alguna de les paraules de sub encaixa exactament dins de string (és a dir, a sub hi ha "... xxx ..." i a string també) i la resta apareixen però no necessàriament encaixant'''
     string = string.lower()
@@ -98,14 +96,8 @@ def variant(sub, string, variants):
     return any(map(sub_in_x,variants.split(',')))
 
 class CarrerCompleterModel(QSortFilterProxyModel):
+
     def __init__(self, dict_capa_tupla: dict, parent: QObject = None):
-        """
-        Inicialitza el model de filtrat per al completador amb un diccionari de carrers.
-        
-        Args:
-            dict_capa_tupla (dict): Diccionari que relaciona identificadors de carrers (str) amb noms de carrers (str).
-            parent (QObject, optional): Widget pare del model. Defaults to None.
-        """
         super().__init__(parent)
         self.dict_capa_tupla = dict_capa_tupla
         self.last_returned = None
@@ -113,11 +105,11 @@ class CarrerCompleterModel(QSortFilterProxyModel):
     def filterAcceptsRow(self, source_row: int, source_parent: QModelIndex) -> bool:
         """
         Determina si la fila especificada ha de ser inclosa en el model.
-        
+
         Args:
             source_row (int): Índex de la fila a comprovar.
             source_parent (QModelIndex): Índex del pare de la fila a comprovar.
-        
+
         Returns:
             bool: True si el nom del carrer està present en el diccionari de carrers, False en cas contrari.
         """
@@ -128,11 +120,11 @@ class CarrerCompleterModel(QSortFilterProxyModel):
     def data(self, index: QModelIndex, role: int) -> tuple[str]:
         """
         Proporciona les dades del carrer corresponent per a l'índex i rol especificats.
-        
+
         Args:
             index (QModelIndex): Índex de la dada a retornar.
             role (int): Rol de les dades a retornar.
-        
+
         Returns:
             str: El nom del carrer associat a l'identificador si el rol és DisplayRole, en cas contrari, retorna el valor per defecte.
         """
@@ -179,7 +171,7 @@ class CompleterAdreces(QCompleter):
 
     @staticmethod
     @functools.lru_cache(maxsize=None)
-    def cerca(word,elements,dicElems, vars):
+    def cerca(word,elements, dicElems, vars):
         # Volem dividir la llista en cinc llistes
         # -Carrers on un dels elements cercats encaixen amb una paraula del carrer
         # -Carrers on una de les paraules del carrer comencen per un dels elements cercats
@@ -188,7 +180,8 @@ class CompleterAdreces(QCompleter):
         # -La resta
         # D'aquestes 5, el completer mostrarà les primeres 4, que són les que són interessants
         def filtra(llista, func):
-            """Divideix una llista entre dues llistes, segons si compleixen la funció o no
+            """
+            Divideix una llista entre dues llistes, segons si compleixen la funció o no
 
             Args:
                 llista (iterable[str]): llista que volem dividir
@@ -229,7 +222,9 @@ class CompleterAdreces(QCompleter):
         return res
 
     def update(self, word):
-        '''Funció que actualitza els elements'''
+        """
+        Funció que actualitza els elements
+        """
         self.word = word.lower()
 
 
@@ -243,23 +238,6 @@ class CompleterAdreces(QCompleter):
         self.update(path)
         res = path.split(' ')
         return [res[-1]]
-
-
-class ValidadorNums(QValidator):
-    '''NO UTILITZADA. Serviria per poder impedir que es posin números no existents per l'adreça'''
-
-    def __init__(self, elems, parent):
-        super().__init__(parent)
-        self.permesos = elems.keys()
-
-    def validate(self, input, pos):
-        if input in self.permesos:
-            return QValidator.Acceptable, input, pos
-        filt = filter(lambda x: x.startswith(input), self.permesos)
-        if any(True for _ in filt):
-            return QValidator.Intermediate, input, pos
-        return QValidator.Invalid, input, pos
-
 
 class QCercadorAdreca(QObject):
     coordenades_trobades = pyqtSignal(int, 'QString')
@@ -281,7 +259,7 @@ class QCercadorAdreca(QObject):
                 self.combo_tipus_cerca.currentIndexChanged.connect(self.connectarLineEdits)
             except ValueError as e:
                 print("Error")
-        
+
         self.leNumero.returnPressed.connect(self.trobatCantonada)
         self.leNumero.returnPressed.connect(self.trobatNumero)
         self.leCarrer.textChanged.connect(lambda: self.habilitaLeNum(self.leCarrer.text()))
@@ -307,11 +285,11 @@ class QCercadorAdreca(QObject):
 
         if self.llegirAdreces():
             self.prepararCompleterCarrer()
-        
+
         QTimer.singleShot(0, self.connect_layers_removed)
         QTimer.singleShot(0, self.connect_layers_added)
 
-    def set_projecte(self,project):
+    def set_projecte(self, project):
         self.project = project
 
     def connect_layers_added(self):
@@ -337,14 +315,15 @@ class QCercadorAdreca(QObject):
         Reinicia la llista de cerques i el combo box de tipus de cerca als valors per defecte.
         """
         self.llista_cerques = []
-        self.combo_tipus_cerca.clear()
-        self.combo_tipus_cerca.addItems([TipusCerca.ADRECAPOSTAL.value, TipusCerca.CRUILLA.value])
-        self.combo_tipus_cerca.setItemData(0, "Cerca per adreça postal", Qt.ToolTipRole)
-        self.combo_tipus_cerca.setItemData(1, "Cerca per cruilla", Qt.ToolTipRole)
+        if hasattr(self, "combo_tipus_cerca"):
+            self.combo_tipus_cerca.clear()
+            self.combo_tipus_cerca.addItems([TipusCerca.ADRECAPOSTAL.value, TipusCerca.CRUILLA.value])
+            self.combo_tipus_cerca.setItemData(0, "Cerca per adreça postal", Qt.ToolTipRole)
+            self.combo_tipus_cerca.setItemData(1, "Cerca per cruilla", Qt.ToolTipRole)
 
     def obtenir_variables_projecte(self) -> List[str]:
         """
-        Aquesta funció obté les variables de cerca del projecte que comencen amb un prefix específic.
+        Obté les variables de cerca del projecte que comencen amb un prefix específic.
         """
         variable_names = QgsExpressionContextUtils.projectScope(self.project).variableNames()
         search_variables = [name for name in variable_names if name.startswith(PREFIX_SEARCH)]
@@ -352,26 +331,28 @@ class QCercadorAdreca(QObject):
 
     def processar_variables_projecte(self) -> None:
         """
-        Aquesta funció processa les variables de cerca, utilitzant expressions regulars per extreure la capa, el camp i la descripció de cada variable.
+        Processa les variables de cerca, utilitzant expressions regulars per extreure la capa, el camp i la descripció de cada variable.
         Afegeix cada conjunt de valors a la llista de cerques i afegeix la descripció al comboBox de tipus de cerca.
         """
         search_variables = self.obtenir_variables_projecte()
-        
 
         for var in search_variables:
-            raw_value = QgsExpressionContextUtils.projectScope(self.project).variable(var) #Obtenir el valor de la variable
+            raw_value = QgsExpressionContextUtils.projectScope(self.project).variable(var)
             matches = self.regex_variables(raw_value)
-            if matches['layer'] and matches['field'] and matches['desc']:
+            matches['nom_variable'] = var
+            #Cal ficar-lo perquè si venim de capa layer_net!=layer i cal per carregar capa si variable capa, malgrat que aqui sigui igual
+            matches['layer_net'] = matches['layer']
+            if matches['layer'] and matches['field']:
                 self.carregar_variables_projecte(matches)
 
     def regex_variables(self, variable: str, id_capa: str = None) -> Dict[str, str]:
         """
         Retorna una diccionari a partir de l'obtingut sobre un text via regex
-        
+
         Args:
             value (str): Text on es buscaran els patrons.
             id_capa (str): Id de la capa si hi és
-            
+
         Returns:
             Dict[str, str]: Diccionari amb el contingut obtingut via regex
         """
@@ -395,28 +376,34 @@ class QCercadorAdreca(QObject):
             "fieldtext": fieldtext_match.group(1) if fieldtext_match else None
         }
 
-    def carregar_variables_projecte(self, matches: Dict[str, str]) -> None:
+    def carregar_variables_projecte(self, variable: Dict[str, str]) -> None:
         """
-        Actualitza la llista de cerques i el comboBox de tipus de cerca amb el que hem obtingut
-        
+        Carrega les variables de projecte especificades en 'matches' i actualitza la llista de cerques i la interfície d'usuari.
+
         Args:
-            matches (Dict[str,str]): Diccionari amb el contingut obtingut de cada variable (de capa o de projecte)
+            matches (Dict[str, str]): Diccionari amb les dades de la cerca, incloent la capa, el camp, la descripció i el camp de text.
         """
 
-        layers_trobat = QgsProject.instance().mapLayersByName(matches['layer'])
-        if layers_trobat:
-            matches['layer'] = layers_trobat[0].id()
-            self.llista_cerques.append(matches)
-            index = self.combo_tipus_cerca.count()
-            self.combo_tipus_cerca.addItem(matches['desc'])
-            self.combo_tipus_cerca.setItemData(index, f"Capa: {layers_trobat[0].name()}", Qt.ToolTipRole)
+        error = {}
+        hi_ha_error = False
+        capa = QgsProject.instance().mapLayersByName(variable['layer'])
+        clau_errors_de_carrega = 'projecte' + '-' + variable['layer_net'] + '-' + variable['nom_variable']
+        if capa:
+            hi_ha_error = self.hi_ha_error_carregar_variable(variable, capa[0], clau_errors_de_carrega, 'projecte')
+            if not hi_ha_error:
+                variable['layer'] = capa[0].id()
+                self.llista_cerques.append(variable)
+                index = self.combo_tipus_cerca.count()
+                self.combo_tipus_cerca.addItem(variable['desc'])
+                self.combo_tipus_cerca.setItemData(index, f"Capa: {capa[0].name()}", Qt.ToolTipRole)
         else:
-            print(f"No existeix la capa {matches['layer']}")
+            error['layer'] = f"Error en carregar la variable {variable['nom_variable']}, que és una variable de PROJECTE, ja que no existeix la capa {variable['layer']}"
+            self.errors_de_carrega[clau_errors_de_carrega] = error
 
 
     def carregar_totes_capes(self) -> None:
         """
-        Aquesta funció carrega totes les capes del projecte de QGIS que encara no s'han afegit a la llista de cerques.
+        Carrega totes les capes del projecte de QGIS que encara no s'han afegit a la llista de cerques.
         """
         for layer in QgsProject.instance().mapLayers().values():
             layer_id = layer.id()
@@ -425,11 +412,11 @@ class QCercadorAdreca(QObject):
     def obtenir_variables_capa(self, capa: QgsVectorLayer) -> Optional[List[Dict[str,str]]]:
         """
         Obté totes les variables que comencen amb PREFIX_SEARCH d'una capa donada.
-        
+
         Args:
             capa (QgsVectorLayer): La capa de la qual obtenir les variables.
             id_capa (str): El nom de la capa on afegim les variables
-        
+
         Returns:
             Optional[list[Dict[str,str]]]: Una llista de diccionaris amb layer,field,desc,field_nom o None si no trobem cap variable que comenci per PREFIX_SEARCH.
         """
@@ -440,61 +427,123 @@ class QCercadorAdreca(QObject):
         for nom_variable in totes_variables:
             if nom_variable.startswith(PREFIX_SEARCH):
                 valor_variable = QgsExpressionContextUtils.layerScope(capa).variable(nom_variable)
-                resultats.append(self.regex_variables(valor_variable, capa.id()))
+                conjunt_elements = self.regex_variables(valor_variable, capa.id())
+                conjunt_elements['nom_variable'] = nom_variable
+                conjunt_elements['layer_net'] = capa.name()
+                resultats.append(conjunt_elements)
+
 
         return resultats if resultats else None
 
     def afegir_elements_capa_qvSearch(self, id_capa:str) -> None:
         """
         Afegeix elements d'una capa específica a la llista de cerques i al combo box de tipus de cerca.
-        
+
         Args:
             id_capa (str): Identificador de la capa de la qual s'han d'afegir els elements.
         """
         capa = QgsProject.instance().mapLayer(id_capa)
         if not capa:
-            return
+            return None
+
         resultats = self.obtenir_variables_capa(capa)
         if not resultats:
-            return
-        for resultat in resultats:
-            self.llista_cerques.append(resultat)
-            index = self.combo_tipus_cerca.count()
-            self.combo_tipus_cerca.addItem(resultat['desc'])
-            self.combo_tipus_cerca.setItemData(index, f"Capa: {capa.name()}", Qt.ToolTipRole)
+            return None
+
+        for variable in resultats:
+            clau_errors_de_carrega = 'projecte' + '-' + variable['layer_net'] + '-' + variable['nom_variable']
+            hi_ha_error = self.hi_ha_error_carregar_variable(variable, capa, clau_errors_de_carrega, 'capa')
+            if not hi_ha_error:
+                self.llista_cerques.append(variable)
+                index = self.combo_tipus_cerca.count()
+                self.combo_tipus_cerca.addItem(variable['desc'])
+                self.combo_tipus_cerca.setItemData(index, f"Capa: {capa.name()}", Qt.ToolTipRole)
 
 
     def carregar_tipus_cerques(self) -> None:
         """
-        Aquesta funció carrega els tipus de cerques disponibles a partir de les variables del projecte que comencen amb un prefix específic.
+        Carrega els tipus de cerques disponibles a partir de les variables del projecte que comencen amb un prefix específic.
         """
+        self.errors_de_carrega = {}
         self.reset_cerca()
         self.processar_variables_projecte()
         self.carregar_totes_capes()
         self.carregar_elements_capes()
 
+    def hi_ha_error_carregar_variable(self, variable:Dict[str,str], capa:QgsVectorLayer, clau_errors_de_carrega:str, procedencia:str) -> bool:
+        """
+        Comprova si hi ha errors en carregar una variable d'una capa vectorial de QGIS.
+
+        Args:
+            variable (Dict[str,str]): Diccionari que conté informació sobre la variable, incloent els camps 'field' i 'fieldtext'.
+            capa (QgsVectorLayer): La capa vectorial de QGIS de la qual es volen obtenir els valors.
+            clau_errors_de_carrega (str): La clau del diccionari que omplirem si hi ha cap error.
+            procedencia(str): Capa si és variable de capa o projecte si és variable de projecte.
+
+        Returns:
+            bool: True si hi ha errors, False en cas contrari.
+        """
+        error = {}
+        try:
+            next(capa.getFeatures()).attribute(variable['field'])
+        except KeyError as e:
+            error['error_field'] = f"Error en carregar la variable {variable['nom_variable']} de la capa: {variable['layer_net']} que és una variable de {procedencia.upper()}, en el paràmetre FIELD que té el valor de {e}, i aquesta columna no existeix"
+
+        if not variable.get('desc'):
+            error["desc"] = f"Error en carregar la variable {variable['nom_variable']} amb layer: {variable['layer_net']} que és una variable de {procedencia.upper()}, i té el paràmetre de DESCRIPCIÓ buit"
+
+        if variable.get('fieldtext'):
+            try:
+                next(capa.getFeatures()).attribute(variable['fieldtext'])
+            except KeyError as e:
+                error['error_fieldtext'] = f"Error en carregar la variable {variable['nom_variable']} de la capa: {variable['layer_net']} que és una variable de {procedencia.upper()}, en el paràmetre FIELDTEXT que té el valor de {e}, i aquesta columna no existeix"
+
+        if error:
+            self.errors_de_carrega[clau_errors_de_carrega] = error
+            return True
+        return False
+
+
+    def obtenir_valors_capes(self, variable: str, capa: QgsVectorLayer) -> Dict[str, Union[str, Tuple[str, str]]]:
+        """
+        Obté els valors d'una variable específica de les entitats d'una capa vectorial de QGIS.
+
+        Args:
+            variable (str): Un diccionari amb 'field' amb el nom del camp a obtenir,
+                            i opcionalment amb 'fieldtext' amb el nom d'un segon camp a obtenir.
+            capa (QgsVectorLayer): La capa vectorial de QGIS de la qual s'obtenen els valors.
+
+        Returns:
+            Dict[str, Union[str, Tuple[str, str]]]: Diccionari amb els valors dels camps especificats.
+        """
+        dict_capa_local = {}
+
+        for element in capa.getFeatures():
+            id_element = str(element.id())
+            field_value = element.attribute(variable['field'])
+
+            if variable.get('fieldtext'):
+                fieldtext_value = element.attribute(variable['fieldtext'])
+                dict_capa_local[id_element] = (field_value, fieldtext_value)
+            else:
+                dict_capa_local[id_element] = field_value
+        return dict_capa_local
+
+
     def carregar_elements_capes(self) -> None:
         """
-        Aquesta funció carrega les capes especificades en la llista de cerques.
-        Per a cada element de la llista, crida a `getElementsCapa` amb el nom de la capa i l'identificador 'fid'.
-        També manté un comptador de la posició que s'incrementa amb cada iteració.
+        Carrega els elements de les capes especificades en la llista de cerques de la instància.
         """
+        hi_ha_error = False
         posicio = 1
         for variable in self.llista_cerques:
-            capa = QgsProject.instance().mapLayers().get(variable['layer'])
+            capa = QgsProject.instance().mapLayers().get(variable['layer']) #si ho fessim amb variable['layer_net'], ERROR
             if not capa:
                 return
 
-            dict_capa_local = {}
-            for element in capa.getFeatures():
-                id_element = str(element.id())
-                if variable.get('fieldtext'):
-                    dict_capa_local[id_element] = (element.attribute(variable['field']),element.attribute(variable['fieldtext']))
-                else:
-                    dict_capa_local[id_element] = element.attribute(variable['field'])
+            dict_capa_local = self.obtenir_valors_capes(variable, capa)
             self.dict_capes[posicio] = dict_capa_local
             posicio += 1
-
 
     def habilitaLeNum(self, valor_antic):
         self.carrerActivat = False
@@ -514,10 +563,10 @@ class QCercadorAdreca(QObject):
 
         self.dict_capa_invers = {}
         self.dict_capa_tupla = {}
-        
-        dict_value = next(iter(self.dict_capa.values())) 
+
+        dict_value = next(iter(self.dict_capa.values()))
         self.te_field_text = isinstance(dict_value, tuple)
-        
+
         for clau, valor in self.dict_capa.items():
             if isinstance(valor, tuple):
                 self.dict_capa_invers[str(valor[0]).replace('<br>', ' ')] = clau
@@ -594,7 +643,7 @@ class QCercadorAdreca(QObject):
 
     def connectarLineEdits(self):
         """
-        Aquesta funció estableix les connexions necessàries pels LineEdits de carrers i números.
+        Estableix les connexions necessàries pels LineEdits de carrers i números.
         Connecta el senyal 'textChanged' del LineEdit de carrers amb la funció `esborrarNumero`.
         Després crida a `connectarLineEditsCarrer` per establir connexions addicionals basades en el tipus de cerca.
         Finalment, ajusta l'alineació del text del LineEdit de carrers a l'esquerra i crida a `connectarLineEditsNumero` per a més configuracions.
@@ -625,11 +674,11 @@ class QCercadorAdreca(QObject):
             return self.combo_tipus_cerca.currentText()
         except AttributeError:
             return TipusCerca.ADRECAPOSTAL.value
-        
+
 
     def connectarLineEditsCarrer(self):
         """
-        Aquesta funció desconnecta qualsevol senyal previ de 'editingFinished' del LineEdit de carrers i estableix una nova connexió basada en el tipus de cerca seleccionat.
+        Desconnecta qualsevol senyal previ de 'editingFinished' del LineEdit de carrers i estableix una nova connexió basada en el tipus de cerca seleccionat.
         Si el tipus de cerca és TipusCerca.ADRECAPOSTAL.value o TipusCerca.CRUILLA.value, intenta preparar l'autocompletar per a carrers.
         Si el tipus de cerca és diferent i no està buit, obté la posició del tipus de cerca, actualitza el diccionari de capes i prepara l'autocompletar per a altres tipus de cerques.
         En cas d'error, es mostra un missatge d'error.
@@ -654,10 +703,9 @@ class QCercadorAdreca(QObject):
                 mostrar_error(e)
             self.leCarrer.editingFinished.connect(self.trobat_altres)
 
-
     def connectarLineEditsNumero(self):
         """
-        Aquesta funció configura els connectadors per als LineEdits de números basant-se en el tipus de cerca seleccionat.
+        Configura els connectadors per als LineEdits de números basant-se en el tipus de cerca seleccionat.
         Si el tipus de cerca és TipusCerca.ADRECAPOSTAL.value, intenta obtenir els números del carrer i preparar l'autocompletar.
         Si es produeix un error de valor, es mostra un missatge d'error.
         Si el tipus de cerca és TipusCerca.CRUILLA.value, intenta obtenir les cantonades del carrer i preparar l'autocompletar.
@@ -667,7 +715,7 @@ class QCercadorAdreca(QObject):
             ValueError: Si hi ha un error en obtenir les dades necessàries per a l'autocompletar.
 
         """
-        if self.get_tipus_cerca() == TipusCerca.ADRECAPOSTAL.value and hasattr(self, 'codiCarrer'): 
+        if self.get_tipus_cerca() == TipusCerca.ADRECAPOSTAL.value and hasattr(self, 'codiCarrer'):
             try:
                 self.getCarrerNumeros()
                 self.prepararCompleterNumero()
@@ -681,10 +729,10 @@ class QCercadorAdreca(QObject):
             except ValueError as e:
                 mostrar_error(e)
             self.leNumero.editingFinished.connect(self.trobatCantonada)
-    
+
     def get_posicio_capa(self):
         """
-        Aquesta funció cerca dins de la llista de cerques (qComboBox) i retorna la posició de l'element a dictCapes (que és on es carreguen els elements de les capes)
+        Cerca dins de la llista de cerques (qComboBox) i retorna la posició de l'element a dictCapes (que és on es carreguen els elements de les capes)
 
         Returns:
             int: La posició de l'element coincident dins de la llista de cerques, o None si no es troba cap coincidència.
@@ -694,7 +742,7 @@ class QCercadorAdreca(QObject):
                 return index+1
         return None
 
-    
+
     def get_nom_layer(self) -> Optional[str]:
         """
         Retorna el nom de la capa associada amb la descripció seleccionada al comboBox.
@@ -709,13 +757,11 @@ class QCercadorAdreca(QObject):
                 return QgsProject.instance().mapLayers().get(id_capa).name()
         return None
 
-
-
     def SeleccPalabraOTodoEnFrase(self, event):
         """
-          Funcion conectada al dobleclick.
-          Si se dobleclica 1 vez---> selecciona la palabra (lo que hay entre dos blancos)
-          Se se dobleclica 2 veces---> selecciona toda la frase
+        Funcion conectada al dobleclick.
+        Si se dobleclica 1 vez---> selecciona la palabra (lo que hay entre dos blancos)
+        Se se dobleclica 2 veces---> selecciona toda la frase
         """
         self.carrerActivat=False
         #  self.numClick en def __init__ se inicializa a 0
@@ -737,9 +783,6 @@ class QCercadorAdreca(QObject):
             self.leCarrer.setSelection(self.inicio+1,self.fin-self.inicio-1)
 
         self.numClick += 1
-
-
-    # Obtenir les dades de les cantonades+numeros associats a un carrer
 
     def getCarrerNumeros(self):
         """
@@ -812,10 +855,9 @@ class QCercadorAdreca(QObject):
 
         self.query.finish()
 
-
     def activatAltres(self, element: str):
         """
-        Aquesta funció activa l'element especificat, actualitza l'interfície d'usuari per reflectir l'element actiu i inicialitza l'adreça.
+        Activa l'element especificat, actualitza l'interfície d'usuari per reflectir l'element actiu i inicialitza l'adreça.
         Si l'element està present en el diccionari `dictCapa`, també estableix el nom de l'element.
 
         Args:
@@ -832,11 +874,9 @@ class QCercadorAdreca(QObject):
             self.txto = element
             self.get_tipus_geometria()
 
-
-    # Venimos del completer, un click en desplegable ....
     def activatCarrer(self, carrer: str) -> Optional[bool]:
         """
-        Aquesta funció processa el carrer proporcionat, neteja el nom del carrer i estableix l'adreça si el carrer existeix.
+        Processa el carrer proporcionat, neteja el nom del carrer i estableix l'adreça si el carrer existeix.
         Si el carrer no existeix o si hi ha hagut un error durant el processament, la funció retorna False.
 
         Args:
@@ -870,7 +910,7 @@ class QCercadorAdreca(QObject):
                 self.getCarrerCantonades()
                 self.getCarrerNumeros()
 
-                if self.get_tipus_cerca() == TipusCerca.ADRECAPOSTAL.value: 
+                if self.get_tipus_cerca() == TipusCerca.ADRECAPOSTAL.value:
                     self.prepararCompleterNumero()
                 else:
                     self.prepararCompleterCantonada()
@@ -914,7 +954,7 @@ class QCercadorAdreca(QObject):
 
     def trobatCarrer(self) -> Optional[bool]:
         """
-        Aquesta funció processa l'actual text del carrer, neteja el nom del carrer i busca l'adreça.
+        Processa l'actual text del carrer, neteja el nom del carrer i busca l'adreça.
         Si l'adreça no es troba, s'inicialitza l'adreça.
         Si es produeix algun error durant el processament, es gestiona l'excepció i la funció retorna False.
 
@@ -955,7 +995,7 @@ class QCercadorAdreca(QObject):
                         self.getCarrerCantonades()
                         self.getCarrerNumeros()
 
-                        if self.get_tipus_cerca() == TipusCerca.ADRECAPOSTAL.value: 
+                        if self.get_tipus_cerca() == TipusCerca.ADRECAPOSTAL.value:
                             self.prepararCompleterNumero()
                         else:
                             self.prepararCompleterCantonada()
@@ -974,7 +1014,7 @@ class QCercadorAdreca(QObject):
         else:
             info = "L'adreça és buida. Codi d'error 1"
             self.coordenades_trobades.emit(1, info)
-        
+
         self.habilitaLeNum(txtoAntic)
 
     def obtenirTextCompletat(self) -> str:
@@ -1040,7 +1080,7 @@ class QCercadorAdreca(QObject):
             self.establirCantonadaMapa(cantonada)
         except Exception as e:
             mostrar_error(e)
-    
+
     def trobatCantonada(self) -> None:
         """
         Gestiona la selecció o introducció d'una cantonada només quan l'usuari prem enter.
@@ -1054,14 +1094,14 @@ class QCercadorAdreca(QObject):
                     self.iniAdrecaCantonada()
                     if not self.nomCarrer:
                         raise ValueError("Adreça buida. Codi d'error 7")
-                
+
                     if cantonada in self.dictCantonadesFiltre and self.nomCarrer:
                         self.establirCantonadaMapa(cantonada)
                 else:
                     raise ValueError("La cantonada no és al diccionari. Codi d'error 6")
             except Exception as e:
                 mostrar_error(e)
-        
+
 
     def llegirAdreces(self):
         if self.origen == 'SQLITE':
@@ -1101,9 +1141,10 @@ class QCercadorAdreca(QObject):
         except Exception as e:
             mostrar_error(e)
 
-    # Normalización caracteres quitando acentos
-
     def remove_accents(self, input_str):
+        """
+        Normalización caracteres quitando acentos
+        """
         nfkd_form = unicodedata.normalize('NFKD', input_str)
         only_ascii = nfkd_form.encode('ASCII', 'ignore')
         return only_ascii.decode("utf8")
@@ -1136,9 +1177,9 @@ class QCercadorAdreca(QObject):
             self.coordenades_trobades.emit(4, info)
 
     def trobatNumero(self):
-        if self.get_tipus_cerca() != TipusCerca.ADRECAPOSTAL.value: 
+        if self.get_tipus_cerca() != TipusCerca.ADRECAPOSTAL.value:
             return None
-        
+
         if self.leCarrer.text() == '':
             self.leNumero.setCompleter(None)
         if self.leNumero.text() == '':
@@ -1201,7 +1242,7 @@ class QCercadorAdreca(QObject):
     def get_tipus_geometria(self):
         """
         Determina la geometria de l'element seleccionat a partir de l'index i actualitza les coordenades d'adreça.
-        
+
         Raises:
             ValueError: Si 'self.txto' no es pot convertir a enter o si l'índex està fora de rang.
             AttributeError: Si el tipus de geometria no és reconegut o no es pot convertir adequadament.
@@ -1219,7 +1260,7 @@ class QCercadorAdreca(QObject):
     def get_layer(self) -> QgsVectorLayer:
         """
         Obté la capa actual del projecte.
-        
+
         Returns:
             QgsMapLayer: La capa actual del projecte.
         Raises:
@@ -1233,13 +1274,13 @@ class QCercadorAdreca(QObject):
     def get_feature(self, layer:QgsVectorLayer) -> QgsFeature:
         """
         Recupera la característica de la capa basada en l'índex proporcionat.
-        
+
         Args:
             layer (QgsVectorLayer): La capa de la qual recuperar la característica.
-        
+
         Returns:
             QgsFeature: La característica recuperada.
-        
+
         Raises:
             ValueError: Si 'self.txto' no es pot convertir a enter o si l'índex està fora de rang.
         """
@@ -1252,10 +1293,10 @@ class QCercadorAdreca(QObject):
     def update_address_coordinates(self, feature: QgsFeature):
         """
         Actualitza les coordenades d'adreça basant-se en la geometria de la característica.
-        
+
         Args:
             feature (QgsFeature): La característica de la qual obtenir la geometria.
-        
+
         Raises:
             AttributeError: Si el tipus de geometria no és reconegut o no es pot convertir adequadament.
         """
@@ -1293,12 +1334,12 @@ if __name__ == "__main__":
         canvas.setCanvasColor(QColor(10, 10, 10))
         le1 = QLineEdit()
         le1.setPlaceholderText('Carrer')
-        le2 = QLineEdit()
-        le2.setPlaceholderText('Número')
+        leNumero = QLineEdit()
+        leNumero.setPlaceholderText('Número')
 
         layCerc=QHBoxLayout()
         layCerc.addWidget(le1)
-        layCerc.addWidget(le2)
+        layCerc.addWidget(leNumero)
         lay=QVBoxLayout()
         lay.setContentsMargins(0,0,0,0)
         lay.addLayout(layCerc)
@@ -1326,7 +1367,7 @@ if __name__ == "__main__":
         #  - Un enter, amb un codi d'error. Si és 0, tot ha anat bé. La resta, es poden veure al codi
         #  - Un text, amb la informació de l'error
         # Per accedir a les coordenades es pot fer mitjançant l'atribut coordAdreca del cercador, que s'haurà actualitzat quan les hagi trobat
-        cercador=QCercadorAdreca(le1, le2)
+        cercador=QCercadorAdreca(le1, lineEditNumero=leNumero)
         cercador.coordenades_trobades.connect(trobat)
         cercador.area_trobada.connect(trobat)
 
