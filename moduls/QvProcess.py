@@ -30,7 +30,8 @@ class QvProcessProgress:
         self.dialog = True
         self.general = False
         self.canceled = False
-        
+        self.processDialog = None
+
     def setName(self, name):
         self.title = name
         if len(self.steps) == 0:
@@ -86,9 +87,11 @@ class QvProcessProgress:
             else:
                 self.progress.canceled.disconnect()
                 self.feedback.progressChanged.disconnect()
+                self.feedback.canceled.disconnect()
             self.progress.canceled.connect(self.cancel)
             self.change(0.0)
             self.feedback.progressChanged.connect(self.change)
+            self.feedback.canceled.connect(self.cancel)
             title, self.msg = self.calcTexts()
             self.progress.setWindowTitle(title)
         else:
@@ -99,30 +102,39 @@ class QvProcessProgress:
         self.numProceso += 1
         return self.feedback
 
-    def cancel(self):
-        if self.showProgress:
-            if debugging(): print("FIN PROCESO DIALOG")
-            # self.feedback.cancel()
-            self.canceled = True
-            if self.progress is not None: self.progress.hide()
-        else:
-            if debugging(): print("FIN PROCESO SIN DIALOG")
-            self.canceled = True
-            QApplication.instance().restoreOverrideCursor()
-
     def change(self, percent):
         if self.canceled: return
         num = round(percent)
         if num == 0:
             self.progress.setLabelText(self.msg)
+        if debugging(): print('-', self.numProceso - 1, num)
         self.progress.setValue(num)
+
+    def reset(self):
+        self.numProceso = 1
+
+    def cancel(self):
+        self.canceled = True
+        if self.showProgress:
+            if debugging(): print("FIN PROCESO DIALOG")
+            if self.progress is not None: self.progress.hide()
+        else:
+            if debugging(): print("FIN PROCESO SIN DIALOG")
+            QApplication.instance().restoreOverrideCursor()
+        if self.processDialog is not None: self.processDialog.hide()
+        self.reset()
+
+    def end(self):
+        self.change(100)
+        if self.progress is not None and self.numProceso > self.numTotal:
+            self.progress.hide()
+            self.reset()
 
 class QvProcess:
     def __init__(self, process, showProgress=True):
         self.showProgress = showProgress
         self.progress = QvProcessProgress(self.showProgress)
         self.process, self.processFunction = self.prepare(process)
-        self.processDialog = None
     
     def snParam(self, value, default):
         value = value.upper()
@@ -200,7 +212,6 @@ class QvProcess:
             return process, func
 
     def cancel(self):
-        if self.processDialog is not None: self.processDialog.hide()
         if self.progress is not None:
             self.progress.cancel()
             self.progress = None
@@ -210,6 +221,10 @@ class QvProcess:
             return self.progress.canceled
         else:
             return True
+
+    def end(self):
+        if self.progress is not None:
+            self.progress.end()
 
     def errorMsg(self, msg):
         print(msg)
@@ -224,7 +239,7 @@ class QvProcess:
                 self.errorMsg("S'ha produït un error intern al procés")
                 return False
             if self.progress.dialog:
-                self.processDialog = res
+                self.progress.processDialog = res
             else:
                 self.cancel()
             return True
@@ -235,13 +250,15 @@ class QvProcess:
     def run(self, name, params):
         res = None
         try:
-            if self.canceled(): return None
             feedback = self.prepareProgress()
             if debugging(): print("RUN - Ini")
             res = processing.run(name, params, feedback=feedback)
             if debugging(): print("RUN - Fin")
             if self.canceled(): return None
-            if res is None: self.cancel()
+            if res is None:
+                self.cancel()
+            else:
+                self.end()
             return res
         except Exception as e:
             self.errorMsg("ERROR: " + str(e))

@@ -2472,6 +2472,9 @@ def main(argv):
         # Instanciem la classe QVista i fem qV global per poder ser utilitzada arreu
         # Paso app, para que QvCanvas pueda cambiar cursores
         qV = QVista(app, iniProj, titolFinestra)
+
+        # La paso a QvApp para que esté disponible
+        qVapp.qVista = qV
        
         # Restauració del est
         qV.restoreState(qV.tempState) 

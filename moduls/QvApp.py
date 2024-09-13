@@ -61,6 +61,7 @@ class QvApp:
     def __init__(self, produccio=None):
         self.gh = None
         self.appQgis = None
+        self.qVista = None
         self.ruta, self.rutaBase = self.calcRuta()  # Path de la aplicación
         self.cfg = self.readCfg()                   # Config de instalación
         val = self.paramCfg("Debug", "False")       # Errores no controlados

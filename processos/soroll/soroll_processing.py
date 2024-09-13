@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from PyQt5.QtWidgets import QApplication
 from qgis.core import QgsProject
 
 try:
@@ -31,7 +32,7 @@ def perform_dbscan_clustering(input_path, min_size, eps,  area_id):
     cluster_output_path = path_pro + f'agrupamientos{area_id}.gpkg'
 
     # Ejecutar el proceso de clustering DBSCAN
-    processing.run("native:dbscanclustering", {
+    res = processing.run("native:dbscanclustering", {
         'INPUT': input_path,
         'MIN_SIZE': min_size,
         'EPS': eps,
@@ -41,7 +42,7 @@ def perform_dbscan_clustering(input_path, min_size, eps,  area_id):
         'OUTPUT': cluster_output_path
     })
     
-    return cluster_output_path
+    return res
 
 
 def create_buffer(area_id, output_layer_name, geometry_output_path, buffer_distance):
@@ -57,7 +58,7 @@ def create_buffer(area_id, output_layer_name, geometry_output_path, buffer_dista
     path_pro = QgsProject.instance().absolutePath() + '/'
     buffer_output_path = path_pro + f'buf{area_id}.gpkg'
     
-    processing.run("native:buffer", {
+    res = processing.run("native:buffer", {
         'INPUT': geometry_output_path + f'|layername={output_layer_name}',
         'DISTANCE': buffer_distance,
         'SEGMENTS': 5,
@@ -68,7 +69,7 @@ def create_buffer(area_id, output_layer_name, geometry_output_path, buffer_dista
         'OUTPUT': buffer_output_path
     })
     
-    return buffer_output_path
+    return res
 
 
 def create_minimum_bounding_geometry(cluster_output_path, area_id, output_layer_name):
@@ -83,14 +84,14 @@ def create_minimum_bounding_geometry(cluster_output_path, area_id, output_layer_
     path_pro = QgsProject.instance().absolutePath() + '/'
     geometry_output_path = path_pro + f'{output_layer_name}.gpkg'
     
-    processing.run("qgis:minimumboundinggeometry", {
+    res = processing.run("qgis:minimumboundinggeometry", {
         'INPUT': cluster_output_path,
         'FIELD': 'CLUSTER_ID',
         'TYPE': 3,
         'OUTPUT': geometry_output_path
     })
     
-    return geometry_output_path
+    return res
 
 
 def borra_capa_bien(nom_capa):
@@ -121,7 +122,8 @@ def borra_capa_bien(nom_capa):
 
         try:
             rsc = QgsProject.instance().removeMapLayer(layer_a_borrar.id())
-            # QApplication.processEvents() ; self.iface.mainWindow().repaint() 
+            QApplication.processEvents()
+            iface.mainWindow().repaint() 
             if QgsProject.instance().mapLayersByName(a_borrar):
                 print(f"No se pudo eliminar la capa '{a_borrar}'.")
             else:
@@ -129,15 +131,16 @@ def borra_capa_bien(nom_capa):
             
         except:
             print("error eliminacion capa")
-            # self.iface.mainWindow().repaint() 
+            iface.mainWindow().repaint() 
     except:
         print("error al borrar capa gpkg, o no existe ")
 
 
     try:
-        # QApplication.processEvents() ; self.iface.mainWindow().repaint() 
-        if os.path.exists(fic_salida):
-            os.remove(fic_salida)
+        QApplication.processEvents()
+        iface.mainWindow().repaint()
+        # if os.path.exists(fic_salida):
+        #     os.remove(fic_salida)
     except:
         print("error al borrar fichero gpkg")   
 
@@ -197,25 +200,31 @@ def Areas(area_id, layer_name, npun, dis, buf):
 
 
 
-        cluster_output_path = perform_dbscan_clustering(
+        res = perform_dbscan_clustering(
             input_path,
             min_size,
             eps,
             area_id
         )
-
-
+        if res is None:
+            return None
+        else:
+            cluster_output_path = res['OUTPUT']
 
 
 
 
         # Usar la función del módulo para crear geometría mínima de contorno
-        geometry_output_path = create_minimum_bounding_geometry(cluster_output_path, 
-                                                                    area_id, 
-                                                                    output_layer_name)
+        res = create_minimum_bounding_geometry(cluster_output_path, 
+                                               area_id, 
+                                               output_layer_name)
+        if res is None:
+            return None
+        else:
+            geometry_output_path = res['OUTPUT']
+
 
         alias = output_layer_name
-        # layer = self.iface.addVectorLayer(geometry_output_path, alias, 'ogr')
         layer = iface.addVectorLayer(geometry_output_path, alias, 'ogr')
         if layer is None:
             raise Exception("Error al carregar capa de contorn") 
@@ -227,13 +236,14 @@ def Areas(area_id, layer_name, npun, dis, buf):
         activarFeaturesCount(layer)
 
         # Usar la función del módulo para crear un buffer
-        buffer_output_path = create_buffer(area_id, 
-                                                output_layer_name, 
-                                                geometry_output_path, 
-                                                buffer_distance)
+        res = create_buffer(area_id, output_layer_name, 
+                            geometry_output_path, buffer_distance)
+        if res is None:
+            return None
+        else:
+            buffer_output_path = res['OUTPUT']
 
         buffer_alias = buffer_layer_name
-        # buffer_layer = self.iface.addVectorLayer(buffer_output_path, buffer_alias, 'ogr')
         buffer_layer = iface.addVectorLayer(buffer_output_path, buffer_alias, 'ogr')
         if buffer_layer is None:
             raise Exception("Error al carregar capa de buffer") 
