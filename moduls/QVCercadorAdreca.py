@@ -75,7 +75,7 @@ def comenca(sub, string):
     """
     string = string.lower()
     #cal treure els parèntesis a l'hora de fer regex donat que hi ha problemes en el moment de fer parse amb re
-    sub = sub.replace("(","").replace(")","")
+    sub = sub.replace("(","").replace(")","").replace("\\","")
 
     string = string.replace("(","").replace(")","")
 
