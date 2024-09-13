@@ -70,16 +70,21 @@ def conte(sub, string):
 
 
 def comenca(sub, string):
-    '''Retorna True si alguna de les paraules de string comença per alguna de les paraules de sub'''
+    """
+    Retorna True si alguna de les paraules de string comença per alguna de les paraules de sub
+    """
     string = string.lower()
     #cal treure els parèntesis a l'hora de fer regex donat que hi ha problemes en el moment de fer parse amb re
-    string = string.replace("(","")
-    string = string.replace(")","")
+    sub = sub.replace("(","").replace(")","")
+
+    string = string.replace("(","").replace(")","")
+
     sub = sub.strip()
     subs = sub.split(' ')
 
     def x_in_string(x):
         return x in string
+
     def substring_comenca_per_x(x):
         return re.search(' '+x, ' '+string) is not None
 
