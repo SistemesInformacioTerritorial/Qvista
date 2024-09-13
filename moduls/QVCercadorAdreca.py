@@ -70,16 +70,21 @@ def conte(sub, string):
 
 
 def comenca(sub, string):
-    '''Retorna True si alguna de les paraules de string comença per alguna de les paraules de sub'''
+    """
+    Retorna True si alguna de les paraules de string comença per alguna de les paraules de sub
+    """
     string = string.lower()
     #cal treure els parèntesis a l'hora de fer regex donat que hi ha problemes en el moment de fer parse amb re
-    string = string.replace("(","")
-    string = string.replace(")","")
+    sub = sub.replace("(","").replace(")","").replace("\\","")
+
+    string = string.replace("(","").replace(")","")
+
     sub = sub.strip()
     subs = sub.split(' ')
 
     def x_in_string(x):
         return x in string
+
     def substring_comenca_per_x(x):
         return re.search(' '+x, ' '+string) is not None
 
@@ -885,7 +890,7 @@ class QCercadorAdreca(QObject):
         Returns:
             bool: Retorna None si s'ha pogut processar el carrer, fals altrament.
         """
-
+        self.leNumero.clear()
         self.carrerActivat = True
 
         carrerAntic = carrer
@@ -974,6 +979,7 @@ class QCercadorAdreca(QObject):
             if self.txto == '':
                 return
 
+            self.leNumero.clear()
             nn = self.txto.find(chr(30))
             self.txto=self.txto.replace('(var) ','')
             if nn == -1:
@@ -1044,8 +1050,6 @@ class QCercadorAdreca(QObject):
                                     float(self.infoAdreca['ETRS89_COORD_Y']))
         self.leNumero.clearFocus()
         self.coordenades_trobades.emit(0, "[0]")
-
-        self.leNumero.clear()
 
     def comprovarCantonadesCarrer(self, cantonada: str) -> None:
         """
@@ -1170,8 +1174,6 @@ class QCercadorAdreca(QObject):
 
                 info = "[0]"
                 self.coordenades_trobades.emit(0, info)
-                self.leNumero.clear()
-
         else:
             info = "El número és buit. Codi d'error 4"
             self.coordenades_trobades.emit(4, info)
@@ -1213,8 +1215,6 @@ class QCercadorAdreca(QObject):
                             self.leNumero.setText(self.NumeroOficial)
                             info = "[0]"
                             self.coordenades_trobades.emit(0, info)
-                            self.leNumero.clear()
-
                         else:
                             info = "El número no és al diccionari. Codi d'error 5"
                             self.coordenades_trobades.emit(5, info)
