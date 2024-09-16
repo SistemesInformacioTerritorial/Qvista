@@ -12,22 +12,28 @@ En processing.csv cada línea define un proceso, con varios campos:
 - STEPS: una etiqueta por cada llamada a processing.run(), separadas por comas
 - DIALOG: indica si se lanza el diálogo de parámetros o no (por defecto, 'S')
 - GENERAL: indica si el proceso puede usarse desde cualquier proyecto o no (por defecto, 'N')
+Estos campos se utilizarán para informar al usuario durante la ejecución del proceso
 Ejemplo para "soroll", proceso con 3 pasos:
 NAME;TITLE;STEPS;DIALOG;GENERAL
 soroll;Àrees d'interès;Clustering,Envelop,Buffering;S;N
 
 CÓDIGO DE EJECUCIÓN:
 Para soroll, el archivo que contiene el código a ejecutar se llamará soroll_processing.py
-Han de eliminarse las referencias a iface (no compatible con qVista)
+Las llamadas al iface de QGIS no pueden utilizarse desde qVista (no están disponibles en PyQGIS)
+Las funciones necesarias del iface para el plugin, hay que implementarlas en el módulo QvIface.py
 Para que funcione tanto en qVista como en QGIS, el import de processing tendrá esta forma:
-try:
-    from processos.processing import *  # qVista
-    _Q_VISTA = True
-except:
-    from qgis import processing         # QGIS
-    _Q_VISTA = False
-Del módulo processing solo se usará la función run: res = processing.run(algorithm, params)
-Para controlar los errores, se ha de chequear el resultado de cada processing.run()
+    try:
+        from processos.processing import *  # qVista
+        _Q_VISTA = True
+    except:
+        from qgis import processing         # QGIS
+        _Q_VISTA = False
+Del módulo processing solo se usará la función run y se comprobará el retorno:
+    res = processing.run(algorithm, params)
+    if res is None:
+        return None
+    else:
+        # ...
 
 FUNCIONES DE EJECUCIÓN:
 soroll_processing.py puede incluir dos funciones sin parémetros para ser llamadas desde qVista:
@@ -38,16 +44,59 @@ Se ejecutará una u otra dependiendo del contenido del campo DIALOG del fichero 
 EJECUCIÓN CON FORMULARIO:
 La función soroll_dialog() presentará el formulario para recoger los parámetros
 Si va bien, la función retornará el QDialog creado; si no, devolverá None
+from .soroll_dialog import sorollDialog
+def soroll_dialog(dlg=None):
+    try:
+        if dlg is None: 
+            dlg = sorollDialog()
+        dlg.setWindowFlags(Qt.WindowStaysOnTopHint)       
+        if _Q_VISTA:
+            dlg.barraEscala.setEnabled(False)
+        # ... 
+        dlg.show()
+        return dlg
+    except Exception as e:
+        print(str(e))
+        if dlg is not None: dlg.hide()
+        return None
 Al aceptar el usuario, el formulario invocará a una función de soroll_processing.py
 En el caso de soroll es la función Areas(), encargada de las llamadas a processing.run() 
-Esta función tambien tendrá un control de las excepciones para que no lleguen a qVista
+En caso de error o excepción, retornará None
+Si termina con éxito, devolverá el resultado del último processing.run()
+def Areas(area_id, layer_name, npun, dis, buf):
+    try:
+        # ...
+        res = create_buffer(area_id, output_layer_name, 
+                            geometry_output_path, buffer_distance)
+        if res is None:
+            return None
+        else:
+            buffer_output_path = res['OUTPUT']
+        # ...
+        return res
+    except Exception as e:
+        print(str(e))
+        return None
 
 EJECUCIÓN SIN FORMULARIO:
 La función soroll_processing() contendrá las llamadas a processing.run()
 En caso de error o excepción, retornará None
 Si termina con éxito, devolverá el resultado del último processing.run()
+def soroll_processing():
+    from PyQt5.QtWidgets import QLineEdit
+    try:
+        area_id = "1"
+        layer_name = "Mycellium"
+        npun = QLineEdit("100")
+        dis = QLineEdit("60")
+        buf = QLineEdit("60")
+        res = Areas(area_id, layer_name, npun, dis, buf)
+        return res
+    except Exception as e:
+        print(str(e))
+        return None
 
-EJEMPLOS DE USO:
+EJEMPLOS DE USO DESDE QVISTA:
 Ejemplo del uso común desde qVista, con diálogos que informan del progreso de la ejecución:
 from moduls.QvProcess import QvProcess
 process = QvProcess('soroll')

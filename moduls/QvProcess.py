@@ -52,6 +52,12 @@ class QvProcessProgress:
         else:
             return None
 
+    def setProcessDialog(self, dlg):
+        if dlg is not None:
+            self.processDialog = dlg
+            if self.title is not None:
+                self.processDialog.setWindowTitle(self.title)
+
     def calcTexts(self):
         title = "Procés"
         msg = "Executant procés"
@@ -73,7 +79,7 @@ class QvProcessProgress:
     def prepare(self):
         if self.showProgress:
             if self.numProceso == 1:
-                if debugging(): print("INI PROCESO DIALOG")
+                if debugging(): print("INI PROCESO PROGRESO")
                 self.canceled = False
                 self.feedback = QgsProcessingFeedback()
                 self.progress = QProgressDialog()
@@ -87,55 +93,62 @@ class QvProcessProgress:
             else:
                 self.progress.canceled.disconnect()
                 self.feedback.progressChanged.disconnect()
-                self.feedback.canceled.disconnect()
+                # self.feedback.canceled.disconnect()
             self.progress.canceled.connect(self.cancel)
             self.change(0.0)
             self.feedback.progressChanged.connect(self.change)
-            self.feedback.canceled.connect(self.cancel)
+            # self.feedback.canceled.connect(self.cancel)
             title, self.msg = self.calcTexts()
             self.progress.setWindowTitle(title)
         else:
             if self.numProceso == 1:
-                if debugging(): print("INI PROCESO SIN DIALOG")
+                if debugging(): print("INI PROCESO SIN PROGRESO")
                 self.canceled = False
                 QApplication.instance().setOverrideCursor(Qt.WaitCursor)
         self.numProceso += 1
         return self.feedback
 
     def change(self, percent):
-        if self.canceled: return
+        if self.progress is None or self.canceled: return
         num = round(percent)
         if num == 0:
             self.progress.setLabelText(self.msg)
-        if debugging(): print('-', self.numProceso - 1, num)
+        # if debugging(): print('-', self.numProceso - 1, num)
         self.progress.setValue(num)
 
     def reset(self):
+        if self.showProgress:
+            if debugging(): print("FIN PROCESO PROGRESS")
+            if self.feedback is not None: self.feedback.cancel()
+            if self.progress is not None: self.progress.hide()
+        else:
+            if debugging(): print("FIN PROCESO SIN PROGRESS")
+            QApplication.instance().restoreOverrideCursor()
         self.numProceso = 1
 
     def cancel(self):
         self.canceled = True
-        if self.showProgress:
-            if debugging(): print("FIN PROCESO DIALOG")
-            if self.progress is not None: self.progress.hide()
-        else:
-            if debugging(): print("FIN PROCESO SIN DIALOG")
-            QApplication.instance().restoreOverrideCursor()
         if self.processDialog is not None: self.processDialog.hide()
         self.reset()
 
     def end(self):
         self.change(100)
-        if self.progress is not None and self.numProceso > self.numTotal:
-            self.progress.hide()
+        if self.numProceso > self.numTotal:
+            if self.progress is not None: self.progress.hide()
             self.reset()
 
 class QvProcess:
     def __init__(self, process, showProgress=True):
         self.showProgress = showProgress
+        self.process = None
+        self.processFunction = None
+        self.progress = None
+        self.init(process)
+    
+    def init(self, process=None):
         self.progress = QvProcessProgress(self.showProgress)
         self.process, self.processFunction = self.prepare(process)
-    
+
     def snParam(self, value, default):
         value = value.upper()
         if value == 'S':
@@ -239,7 +252,7 @@ class QvProcess:
                 self.errorMsg("S'ha produït un error intern al procés")
                 return False
             if self.progress.dialog:
-                self.progress.processDialog = res
+                self.progress.setProcessDialog(res)
             else:
                 self.cancel()
             return True

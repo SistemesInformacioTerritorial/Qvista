@@ -937,8 +937,8 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
         if debugging():
             # TEST QvProcess
             from moduls.QvProcess import QvProcess
-            process = QvProcess('soroll') # Con progreso
-            # process = QvProcess('soroll', False) # Sin progreso
+            # process = QvProcess('soroll') # Con progreso
+            process = QvProcess('soroll', False) # Sin progreso
             process.execute()
             return
 
