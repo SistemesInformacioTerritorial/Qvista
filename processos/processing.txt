@@ -20,14 +20,16 @@ soroll;Àrees d'interès;Clustering,Envelop,Buffering;S;N
 CÓDIGO DE EJECUCIÓN:
 Para soroll, el archivo que contiene el código a ejecutar se llamará soroll_processing.py
 Las llamadas al iface de QGIS no pueden utilizarse desde qVista (no están disponibles en PyQGIS)
-Las funciones necesarias del iface para el plugin, hay que implementarlas en el módulo QvIface.py
+Las funciones necesarias del iface para el plugin hay que implementarlas en el módulo QvIface.py
 Para que funcione tanto en qVista como en QGIS, el import de processing tendrá esta forma:
-    try:
-        from processos.processing import *  # qVista
-        _Q_VISTA = True
-    except:
-        from qgis import processing         # QGIS
-        _Q_VISTA = False
+try: # qVista
+    from processos.processing import *  
+    from moduls.QvIface import QvIface as iface
+    _Q_VISTA = True
+except: # QGIS
+    from qgis import processing
+    from qgis.utils import iface
+    _Q_VISTA = False
 Del módulo processing solo se usará la función run y se comprobará el retorno:
     res = processing.run(algorithm, params)
     if res is None:
@@ -36,10 +38,22 @@ Del módulo processing solo se usará la función run y se comprobará el retorn
         # ...
 
 FUNCIONES DE EJECUCIÓN:
-soroll_processing.py puede incluir dos funciones sin parémetros para ser llamadas desde qVista:
+soroll_processing.py puede incluir dos funciones sin parámetros para ser llamadas desde qVista:
 - soroll_dialog(), que presenta al usuario un formulario de parámetros del proceso
 - soroll_processing(), para ejecución directa sin formulario
 Se ejecutará una u otra dependiendo del contenido del campo DIALOG del fichero csv
+Hay que modificar el programa principal, soroll.py, para asegurarse de:
+- Importar el módulo que contiene las funciones: from .soroll_processing import *
+- Modificar run() para que acabe llamando a soroll_dialog():
+def run(self):
+	if self.first_start == True:
+		self.first_start = False
+		self.dlg = sorollDialog()
+
+	self.dlg.barraEscala.clicked.connect(self.barraEscala)  
+
+	soroll_dialog(self.dlg)
+
 
 EJECUCIÓN CON FORMULARIO:
 La función soroll_dialog() presentará el formulario para recoger los parámetros

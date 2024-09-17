@@ -1,9 +1,5 @@
 # -*- coding: utf-8 -*-
 
-# Modulo para recubrir métodos del iface para uso desde qVista
-# from processos.iface import iface
-from moduls.QvIface import QvIface as iface
-
 # QvProcess
 processingClass = None
 

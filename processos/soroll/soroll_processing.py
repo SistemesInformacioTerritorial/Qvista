@@ -3,11 +3,13 @@
 from PyQt5.QtWidgets import QApplication
 from qgis.core import QgsProject
 
-try:
-    from processos.processing import *  # qVista
+try: # qVista
+    from processos.processing import *  
+    from moduls.QvIface import QvIface as iface
     _Q_VISTA = True
-except:
-    from qgis import processing         # QGIS
+except: # QGIS
+    from qgis import processing
+    from qgis.utils import iface
     _Q_VISTA = False
 
 import sys
