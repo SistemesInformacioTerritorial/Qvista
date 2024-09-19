@@ -159,18 +159,22 @@ class QvReports(QvDataPlotly):
             QMessageBox.warning(None, f"ERROR a l'informe {report}", str(e))
 
     def setMenu(self, title='Informes PDF'):
-        self.menu = QMenu()
-        self.menu.setTitle(title)
-        for report in self.listReports():
-            act = self.menu.addAction(report)
-            act.triggered.connect(self.menuReport)
-        if self.menu.isEmpty():
+        try:
+            self.menu = QMenu()
+            self.menu.setTitle(title)
+            for report in self.listReports():
+                act = self.menu.addAction(report)
+                act.triggered.connect(self.menuReport)
+            if self.menu.isEmpty():
+                return None
+            else:
+                self.menu.addSeparator()
+                act = self.menu.addAction("Carpeta d'informes")
+                act.triggered.connect(lambda: os.startfile(self.path))
+                return self.menu
+        except Exception as e:
+            print(str(e))
             return None
-        else:
-            self.menu.addSeparator()
-            act = self.menu.addAction("Carpeta d'informes")
-            act.triggered.connect(lambda: os.startfile(self.path))
-            return self.menu
 
 if __name__ == "__main__":
 

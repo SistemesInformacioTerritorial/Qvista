@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 
-import os
 from qgis.PyQt.QtCore import Qt
-from qgis.PyQt.QtWidgets import QProgressDialog, QApplication, QMessageBox
+from qgis.PyQt.QtWidgets import QProgressDialog, QApplication, QMessageBox, QMenu
 from qgis.core import QgsProcessingFeedback
 from moduls.QvFuncions import debugging
+import os
+import csv
 
 # INICIALIZACIÓN ENTORNO PROCESSING
 # Añadimos (y luego quitamos) el path a plugins de python para hacer el import processing
@@ -15,32 +16,98 @@ os.sys.path.insert(0, pythonPath +  r"\plugins")
 import processing
 del os.sys.path[0]
 from processing.core.Processing import Processing
-Processing.initialize()
+
+class QvProcessCsv:
+
+    _PROCESSING_CSV = os.getcwd() + r"\processos\processing.csv"
+
+    @staticmethod
+    def snParam(value, default):
+        value = value.upper()
+        if value == 'S':
+            return True
+        elif value == 'N':
+            return False
+        else:
+            return default
+
+    @staticmethod
+    def readerCsv():
+        with open(QvProcessCsv._PROCESSING_CSV, newline='') as csvfile:
+            reader = csv.DictReader(csvfile, delimiter=';')
+            for row in reader:
+                yield row
+
+    @staticmethod
+    def rowProcess(row):
+        return row['NAME'].strip().lower()
+
+    @staticmethod
+    def rowParams(row):
+        params = {}
+        try:
+            for field in row:
+                val = row[field].strip()
+                if field == 'NAME': val = val.lower()
+                if field == 'STEPS': val = val.split(',')
+                if field == 'DIALOG': val = QvProcessCsv.snParam(val, True)
+                if field == 'PROGRESS': val = QvProcessCsv.snParam(val, True)
+                if field == 'GENERAL': val = QvProcessCsv.snParam(val, False)
+                params[field] = val
+        except Exception as e:
+            print(str(e))
+        finally:
+            if len(params) > 0:
+                return params
+            else:
+                return None
+
+    @staticmethod
+    def readParams(process):
+        params = {}
+        try:
+            # with open(_PROCESSING_CSV, newline='') as csvfile:
+            #     reader = csv.DictReader(csvfile, delimiter=';')
+            #     for row in reader:
+            #         if rowProcess() == process:
+            #             params = rowParams(row)
+            #             break
+            for row in QvProcessCsv.readerCsv():
+                if QvProcessCsv.rowProcess(row) == process:
+                    params = QvProcessCsv.rowParams(row)
+                    break
+        except Exception as e:
+            print(str(e))
+        finally:
+            if len(params) > 0:
+                return params
+            else:
+                return None
 
 class QvProcessProgress:
-    def __init__(self, showProgress=True):
+    def __init__(self):
         self.numProceso = 1
         self.numTotal = 1
         self.feedback = None
         self.progress = None
-        self.showProgress = showProgress
-        self.title = None
-        self.msg = None
-        self.steps = []
-        self.dialog = True
-        self.general = False
         self.canceled = False
         self.processDialog = None
-
-    def setName(self, name):
-        self.title = name
-        if len(self.steps) == 0:
-            self.steps.append(name)
+        self.msg = None
+        # Valores del csv:
+        self.title = None
+        self.steps = []
+        self.showDialog = True
+        self.showProgress = True
+        self.general = False
 
     def setSteps(self, steps):
         self.steps = steps
         num = len(self.steps)
-        if num == 1 and self.title is None:
+        # Si no hay steps, se añade uno con el contenido de title
+        if num == 0:
+            self.steps.append(self.title)
+        # Si no hay title, se pone el contenido del step 1
+        elif num == 1 and self.title is None:
             self.title = self.steps[0]
         elif num > 1:
             self.numTotal = num
@@ -138,58 +205,34 @@ class QvProcessProgress:
             self.reset()
 
 class QvProcess:
-    def __init__(self, process, showProgress=True):
-        self.showProgress = showProgress
+    def __init__(self, process):
         self.process = None
         self.processFunction = None
         self.progress = None
         self.init(process)
-    
+
     def init(self, process=None):
-        self.progress = QvProcessProgress(self.showProgress)
+        self.progress = QvProcessProgress()
         self.process, self.processFunction = self.prepare(process)
-
-    def snParam(self, value, default):
-        value = value.upper()
-        if value == 'S':
-            return True
-        elif value == 'N':
-            return False
-        else:
-            return default
-
-    def readParams(self, process):
-        params = {}
-        try:
-            import csv
-            nameFile = os.getcwd() + r"\processos\processing.csv"
-            with open(nameFile, newline='') as csvfile:
-                reader = csv.DictReader(csvfile, delimiter=';')
-                for row in reader:
-                    if row['NAME'].strip().lower() == process:
-                        for field in row:
-                            val = row[field].strip()
-                            if field == 'NAME': val = val.lower()
-                            if field == 'STEPS': val = val.split(',')
-                            if field == 'DIALOG': val = self.snParam(val, True)
-                            if field == 'GENERAL': val = self.snParam(val, False)
-                            params[field] = val
-                        break
-        except Exception as e:
-            print(str(e))
-        finally:
-            if len(params) > 0:
-                return params
-            else:
-                return None
+            
+    def setParams(self, params):
+        self.progress.title = params['TITLE']
+        self.progress.setSteps(params['STEPS'])
+        self.progress.showDialog = params['DIALOG']
+        self.progress.showProgress = params['PROGRESS']
+        self.progress.general = params['GENERAL']
 
     def getFunction(self, process):
+        # Enlace con la clase de proceso
+        import processos.processing as modulProcs
+        modulProcs.processingClass = self
+        # Se obtiene la funcion de proceso del modulo processing
         moduleName = process + "_processing"
         dialogName = process + "_dialog"
         import importlib
         m = importlib.import_module(f"processos.{process}.{process}_processing")
         # Se busca la función _dialog o la función _processing, según el csv
-        if self.progress.dialog:
+        if self.progress.showDialog:
             return getattr(m, dialogName)
         else:
             return getattr(m, moduleName)
@@ -204,17 +247,9 @@ class QvProcess:
         func = None
         try:
             process = process.lower()
-            params = self.readParams(process)
+            params = QvProcessCsv.readParams(process)
             if params is not None:
-                # Parámetros del CSV
-                self.progress.setName(params['TITLE'])
-                self.progress.setSteps(params['STEPS'])
-                self.progress.dialog = params['DIALOG']
-                self.progress.general = params['GENERAL']
-                # Enlace con modulo processing
-                import processos.processing as modulProcs
-                modulProcs.processingClass = self
-                # Se obtiene la funcion de proceso
+                self.setParams(params)
                 func = self.getFunction(process)
             else:
                 process = None
@@ -242,16 +277,21 @@ class QvProcess:
     def errorMsg(self, msg):
         print(msg)
         self.cancel()
-        QMessageBox.warning(None, f"Procés '{self.process}' no finalitzat correctament", msg)
+        if self.process is None:
+            QMessageBox.warning(None, f"No s'ha pogut executar el procés", msg)
+        else:
+            QMessageBox.warning(None, f"Procés '{self.process}' no finalitzat correctament", msg)
 
-    def execute(self):
-        if self.processFunction is None: return False
+    def callFunction(self):
+        if self.processFunction is None:
+            self.errorMsg("Hi ha errors a la configuració del procés")
+            return False
         try:
             res = self.processFunction()
             if res is None and not self.canceled():
                 self.errorMsg("S'ha produït un error intern al procés")
                 return False
-            if self.progress.dialog:
+            if self.progress.showDialog:
                 self.progress.setProcessDialog(res)
             else:
                 self.cancel()
@@ -259,12 +299,43 @@ class QvProcess:
         except Exception as e:
             self.errorMsg("ERROR: " + str(e))
             return False
-        
+
+    @staticmethod
+    def setMenu():
+        try:
+            menu = QMenu()
+            menu.setTitle('Processos')
+            for row in QvProcessCsv.readerCsv():
+                params = QvProcessCsv.rowParams(row)
+                process = params['NAME']
+                title = params['TITLE']
+                general = params['GENERAL']
+                if general and process is not None and not process == '':
+                    act = menu.addAction(title)
+                    act.triggered.connect(lambda: QvProcess.execute(process))
+            if menu.isEmpty():
+                return None
+            else:
+                return menu
+        except Exception as e:
+            print(str(e))
+            return None
+
+    @staticmethod
+    def execute(process):
+        try:
+            p = QvProcess(process)
+            return p.callFunction()
+        except Exception as e:
+            print(str(e))            
+            return False
+
     def run(self, name, params):
         res = None
         try:
             feedback = self.prepareProgress()
             if debugging(): print("RUN - Ini")
+            Processing.initialize()
             res = processing.run(name, params, feedback=feedback)
             if debugging(): print("RUN - Fin")
             if self.canceled(): return None

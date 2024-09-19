@@ -7,9 +7,8 @@ class QvProcessing:
 
     @staticmethod
     def run(name, params):
-        from moduls.QvFuncions import debugging
+        print("RUN processing", name)
         try:
-            if debugging(): print("RUN processing", name)
             if processingClass.canceled(): return None
             if processingClass is None: return None
             if processingClass.canceled(): return None

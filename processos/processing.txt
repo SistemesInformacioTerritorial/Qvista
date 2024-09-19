@@ -11,11 +11,12 @@ En processing.csv cada línea define un proceso, con varios campos:
 - TITLE: texto corto descriptivo del proceso
 - STEPS: una etiqueta por cada llamada a processing.run(), separadas por comas
 - DIALOG: indica si se lanza el diálogo de parámetros o no (por defecto, 'S')
+- PROGRESS: indica si se informa al usuario del progreso de la ejecución (por defecto, 'S')
 - GENERAL: indica si el proceso puede usarse desde cualquier proyecto o no (por defecto, 'N')
 Estos campos se utilizarán para informar al usuario durante la ejecución del proceso
 Ejemplo para "soroll", proceso con 3 pasos:
-NAME;TITLE;STEPS;DIALOG;GENERAL
-soroll;Àrees d'interès;Clustering,Envelop,Buffering;S;N
+NAME;TITLE;STEPS;DIALOG;PROGRESS;GENERAL
+soroll;Àrees d'interès;Clustering,Envelop,Buffering;S;S;N
 
 CÓDIGO DE EJECUCIÓN:
 Para soroll, el archivo que contiene el código a ejecutar se llamará soroll_processing.py
@@ -121,3 +122,6 @@ process = QvProcess('soroll', False)
 
 DOCS QGIS PROCESSING:
 https://docs.qgis.org/3.22/en/docs/user_manual/processing/index.html
+https://autogis-site.readthedocs.io/en/2018_/lessons/L7/processing-script.html
+https://gis.stackexchange.com/questions/279874/using-qgis-processing-algorithms-from-pyqgis-standalone-scripts-outside-of-gui
+

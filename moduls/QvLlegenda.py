@@ -19,6 +19,7 @@ from moduls.QvAnotacions import QvMapToolAnnotation
 from moduls.QvCatalegCapes import QvCreadorCatalegCapes
 from moduls.QvDigitizeContext import QvDigitizeContext
 from moduls.QvReports import QvReports
+from moduls.QvProcess import QvProcess
 from moduls.QvApp import QvApp
 from moduls import QvFuncions
 from moduls.QvFuncions import debugging
@@ -888,6 +889,11 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
             if menuInformes is not None:
                 self.accions.afegirAccio('menuInforme', menuInformes)
                 self.menuAccions += ['separator', 'menuInforme']
+            # Procesos
+            menuProcesos = QvProcess.setMenu()
+            if menuProcesos is not None:
+                self.accions.afegirAccio('menuProceso', menuProcesos)
+                self.menuAccions += ['separator', 'menuProceso']
             # Auto recarga
             if self.recarrega.timerDataSecs > 0 or self.recarrega.timerGraphSecs > 0:
                 self.menuAccions += ['separator']
@@ -934,14 +940,6 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
         self.expandAll(False)
 
     def addGroup(self):
-        if debugging():
-            # TEST QvProcess
-            from moduls.QvProcess import QvProcess
-            process = QvProcess('soroll') # Con progreso
-            # process = QvProcess('soroll', False) # Sin progreso
-            process.execute()
-            return
-
         self.defaultActions().addGroup()
         self.modificacioProjecte('addGroup')
 
