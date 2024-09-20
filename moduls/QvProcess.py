@@ -36,6 +36,9 @@ class QvProcessCsv:
         with open(QvProcessCsv._PROCESSING_CSV, newline='') as csvfile:
             reader = csv.DictReader(csvfile, delimiter=';')
             for row in reader:
+                # Saltar los registros que empiecen por #
+                # (solo despues de la línea de cabecera)
+                if row['NAME'].strip()[0] == '#': continue
                 yield row
 
     @staticmethod
@@ -301,7 +304,9 @@ class QvProcess:
             return False
 
     @staticmethod
-    def setMenu():
+    def setMenu(widget):
+    # Hay que indicar el widget donde aparece el menu para acceder al sender()
+    # De ahí recogemos el proceso a ejecutar de la propiedad 'qv_process' del widget
         try:
             menu = QMenu()
             menu.setTitle('Processos')
@@ -312,7 +317,8 @@ class QvProcess:
                 general = params['GENERAL']
                 if general and process is not None and not process == '':
                     act = menu.addAction(title)
-                    act.triggered.connect(lambda: QvProcess.execute(process))
+                    act.setProperty('qv_process', process)
+                    act.triggered.connect(lambda: QvProcess.execute(widget.sender().property('qv_process')))
             if menu.isEmpty():
                 return None
             else:

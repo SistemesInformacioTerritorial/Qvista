@@ -890,7 +890,7 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
                 self.accions.afegirAccio('menuInforme', menuInformes)
                 self.menuAccions += ['separator', 'menuInforme']
             # Procesos
-            menuProcesos = QvProcess.setMenu()
+            menuProcesos = QvProcess.setMenu(self)
             if menuProcesos is not None:
                 self.accions.afegirAccio('menuProceso', menuProcesos)
                 self.menuAccions += ['separator', 'menuProceso']
