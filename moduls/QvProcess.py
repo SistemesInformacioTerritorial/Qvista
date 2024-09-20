@@ -53,7 +53,6 @@ class QvProcessCsv:
                 val = row[field].strip()
                 if field == 'NAME': val = val.lower()
                 if field == 'STEPS': val = val.split(',')
-                if field == 'DIALOG': val = QvProcessCsv.snParam(val, True)
                 if field == 'PROGRESS': val = QvProcessCsv.snParam(val, True)
                 if field == 'GENERAL': val = QvProcessCsv.snParam(val, False)
                 params[field] = val
@@ -69,12 +68,6 @@ class QvProcessCsv:
     def readParams(process):
         params = {}
         try:
-            # with open(_PROCESSING_CSV, newline='') as csvfile:
-            #     reader = csv.DictReader(csvfile, delimiter=';')
-            #     for row in reader:
-            #         if rowProcess() == process:
-            #             params = rowParams(row)
-            #             break
             for row in QvProcessCsv.readerCsv():
                 if QvProcessCsv.rowProcess(row) == process:
                     params = QvProcessCsv.rowParams(row)
@@ -96,10 +89,10 @@ class QvProcessProgress:
         self.canceled = False
         self.processDialog = None
         self.msg = None
+        self.showDialog = None
         # Valores del csv:
         self.title = None
         self.steps = []
-        self.showDialog = True
         self.showProgress = True
         self.general = False
 
@@ -221,24 +214,34 @@ class QvProcess:
     def setParams(self, params):
         self.progress.title = params['TITLE']
         self.progress.setSteps(params['STEPS'])
-        self.progress.showDialog = params['DIALOG']
         self.progress.showProgress = params['PROGRESS']
         self.progress.general = params['GENERAL']
 
     def getFunction(self, process):
-        # Enlace con la clase de proceso
-        import processos.processing as modulProcs
-        modulProcs.processingClass = self
-        # Se obtiene la funcion de proceso del modulo processing
-        moduleName = process + "_processing"
-        dialogName = process + "_dialog"
-        import importlib
-        m = importlib.import_module(f"processos.{process}.{process}_processing")
-        # Se busca la función _dialog o la función _processing, según el csv
-        if self.progress.showDialog:
-            return getattr(m, dialogName)
-        else:
-            return getattr(m, moduleName)
+        func = None
+        self.progress.showDialog = None
+        try:
+            # Enlace con la clase de proceso
+            import processos.processing as modulProcs
+            modulProcs.processingClass = self
+            # Se obtiene la funcion de proceso del modulo processing
+            moduleName = process + "_processing"
+            dialogName = process + "_dialog"
+            import importlib
+            m = importlib.import_module(f"processos.{process}.{process}_processing")
+            # Se busca la función _dialog y la función _processing, en este orden
+            if hasattr(m, dialogName):
+                func = getattr(m, dialogName)
+                self.progress.showDialog = True
+            elif hasattr(m, moduleName):
+                func = getattr(m, moduleName)
+                self.progress.showDialog = False
+        except Exception as e:
+            print(str(e))
+            func = None
+            self.progress.showDialog = None
+        finally:
+            return func
     
     def prepareProgress(self):
         if self.progress is not None:

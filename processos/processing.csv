@@ -1,4 +1,4 @@
-NAME;TITLE;STEPS;DIALOG;PROGRESS;GENERAL
+NAME;TITLE;STEPS;PROGRESS;GENERAL
 # Procesos de prueba
-soroll;Àrees d'interès;Clustering,Envelop,Buffering;S;S;N
-soroll2;Àrees d'interès: Mycellyum;Clustering,Envelop,Buffering;N;S;N
+soroll;Àrees d'interès;Clustering,Envelop,Buffering;S;S
+soroll2;Àrees d'interès: Mycellyum;Clustering,Envelop,Buffering;S;S

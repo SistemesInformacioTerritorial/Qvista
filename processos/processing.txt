@@ -10,13 +10,12 @@ En processing.csv cada línea define un proceso, con varios campos:
 - NAME: identificador del proceso (en el ejemplo, 'soroll')
 - TITLE: texto corto descriptivo del proceso
 - STEPS: una etiqueta por cada llamada a processing.run(), separadas por comas
-- DIALOG: indica si se lanza el diálogo de parámetros o no (por defecto, 'S')
 - PROGRESS: indica si se informa al usuario del progreso de la ejecución (por defecto, 'S')
 - GENERAL: indica si el proceso puede usarse desde cualquier proyecto o no (por defecto, 'N')
 Estos campos se utilizarán para informar al usuario durante la ejecución del proceso
 Ejemplo para "soroll", proceso con 3 pasos:
-NAME;TITLE;STEPS;DIALOG;PROGRESS;GENERAL
-soroll;Àrees d'interès;Clustering,Envelop,Buffering;S;S;N
+NAME;TITLE;STEPS;PROGRESS;GENERAL
+soroll;Àrees d'interès;Clustering,Envelop,Buffering;S;N
 
 CÓDIGO DE EJECUCIÓN:
 Para soroll, el archivo que contiene el código a ejecutar se llamará soroll_processing.py
@@ -42,7 +41,7 @@ FUNCIONES DE EJECUCIÓN:
 soroll_processing.py puede incluir dos funciones sin parámetros para ser llamadas desde qVista:
 - soroll_dialog(), que presenta al usuario un formulario de parámetros del proceso
 - soroll_processing(), para ejecución directa sin formulario
-Se ejecutará una u otra dependiendo del contenido del campo DIALOG del fichero csv
+Se ejecutará soroll_dialog() si existe; si no, se llamará a soroll_processing()
 Hay que modificar el programa principal, soroll.py, para asegurarse de:
 - Importar el módulo que contiene las funciones: from .soroll_processing import *
 - Modificar run() para que acabe llamando a soroll_dialog():
