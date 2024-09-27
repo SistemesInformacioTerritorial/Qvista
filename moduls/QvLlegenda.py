@@ -940,6 +940,11 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
         self.expandAll(False)
 
     def addGroup(self):
+        if debugging():
+            from moduls.QvProcess import QvProcess
+            QvProcess.algDialog("native:dbscanclustering")
+            return
+
         self.defaultActions().addGroup()
         self.modificacioProjecte('addGroup')
 

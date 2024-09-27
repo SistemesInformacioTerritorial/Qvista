@@ -5,7 +5,7 @@ from qgis.core import QgsProject
 
 try: # qVista
     from processos.processing import *  
-    from moduls.QvIface import QvIface as iface
+    from _qgis.utils import iface
     _Q_VISTA = True
 except: # QGIS
     from qgis import processing

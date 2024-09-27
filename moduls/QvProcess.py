@@ -1,17 +1,51 @@
 # -*- coding: utf-8 -*-
 
 from qgis.PyQt.QtCore import Qt
-from qgis.PyQt.QtWidgets import QProgressDialog, QApplication, QMessageBox, QMenu
+from qgis.PyQt.QtWidgets import QProgressDialog, QApplication, QMessageBox, QMenu, QAction, QPushButton
 from qgis.core import QgsProcessingFeedback
 from moduls.QvFuncions import debugging
 import os
 import csv
 
 # INICIALIZACIÓN ENTORNO PROCESSING
+
+pythonPath = ''
+for p in os.environ.get('PYTHONPATH', '').split(os.pathsep):
+    if p.split('\\')[-1] == 'python':
+        pythonPath = p
+        break
+# pythonPath = os.environ.get('PYTHONPATH', '').split(os.pathsep)[0]
+
+# Método implicado con iface en:
+# - C:\OSGeo4W\apps\qgis-ltr\python\plugins\processing\tools\general.py
+# En ese fichero, hay que reemplazar el import
+
+def replaceGeneralPy():
+    filePath = f"{pythonPath}\\plugins\\processing\\tools\\general.py"
+    qgisImport = "from qgis.utils import iface"
+    qvistaImport = "from _qgis.utils import iface"
+    tryImport =f"try:\n\t{qvistaImport}\nexcept:\n\t{qgisImport}"
+
+    # Leer general.py
+    with open(filePath, 'r') as file:
+        fileContents = file.read()
+    # Si ya contiene el import de qvista, salir
+    if fileContents.find(qvistaImport) != -1: return True
+    # Reemplazar el import de qgis por el import combinado con try
+    updatedContents = fileContents.replace(qgisImport, tryImport, 1)
+    # Si no se ha reemplazado nada, salir
+    if updatedContents == fileContents: return True
+    # Guardar cambios en general.py
+    with open(filePath, 'w') as file:
+        file.write(updatedContents)
+        return True
+    return False
+
+_REPLACE_OK = replaceGeneralPy()
+
 # Añadimos (y luego quitamos) el path a plugins de python para hacer el import processing
 # from qgis import processing funciona, pero no from processing.core.Processing import Processing
 # Nota: la variable de entorno QGIS_WIN_APP_NAME existe al ejecutar QGIS y no con pyQGIS
-pythonPath = os.environ.get('PYTHONPATH', '').split(os.pathsep)[0]
 os.sys.path.insert(0, pythonPath +  r"\plugins")
 import processing
 del os.sys.path[0]
@@ -357,6 +391,33 @@ class QvProcess:
             self.errorMsg("ERROR: " + str(e))
             return None
 
+    # Método implicado con iface en:
+    # - C:\OSGeo4W\apps\qgis-ltr\python\plugins\processing\tools\general.py
+    # En ese fichero, hay que reemplazar:
+    # from qgis.utils import iface
+    # por:
+    # try:
+    #     from _qgis.utils import iface
+    # except:
+    #     from qgis.utils import iface
+    @staticmethod
+    def algDialog(alg, params={}):
+        try:
+            Processing.initialize()
+            msg = "No s'ha pogut iniciar l'algorisme"
+            dialog = processing.createAlgorithmDialog(alg, params)
+            if dialog is None:
+                QMessageBox.warning(None, msg, f"Algorisme {alg} no disponible a qVista")
+                return
+            # Se elimina el boton de ejecución por lotes
+            for button in dialog.findChildren(QPushButton):
+                if ' lots' in button.text():
+                    button.setDisabled(True)
+                    button.setVisible(False)
+                    break
+            dialog.show()
+        except Exception as e:
+            QMessageBox.warning(None, msg, f"Error a l'algorisme {alg}\n\n" + str(e))
 
     # # Llamada al proceso
     # def run(self, progress=True):
@@ -388,3 +449,82 @@ class QvProcess:
     #         if not progress:
     #             QApplication.instance().restoreOverrideCursor()
 
+if __name__ == "__main__":
+
+    from qgis.core.contextmanagers import qgisapp
+    from qgis.core import QgsApplication
+    from moduls.QvApp import QvApp
+    from moduls.QvCanvas import QvCanvas
+    from moduls.QvAtributs import QvAtributs
+    from moduls.QvLlegenda import QvLlegenda
+
+    with qgisapp(sysexit=False) as app:
+
+        QvApp().carregaIdioma(app, 'ca')
+        canv = QvCanvas()
+
+        atrib = QvAtributs(canv)
+
+        leyenda = QvLlegenda(canv, atrib)
+
+        leyenda.project.read("D:/soroll/GlobalSoroll.qgs.qgs")
+
+        dialog = None
+
+        # Acciones de usuario para el menú
+
+        #*****************************************************************************
+
+        def modeloProyecto():
+            Processing.initialize()
+            dialog = processing.createAlgorithmDialog("project:EmulacionPlugin", {})
+            if dialog is not None: dialog.show()
+
+        act = QAction()
+        act.setText("Modelo de proyecto")
+        act.triggered.connect(modeloProyecto)
+        leyenda.accions.afegirAccio('modeloProyecto', act)
+
+        #*****************************************************************************
+
+        def modeloPerfil():
+            Processing.initialize()
+            ret = processing.execAlgorithmDialog("model:EmulacionPlugin", {})
+            dialog = processing.createAlgorithmDialog("project:EmulacionPlugin", {})
+            if dialog is not None: dialog.show()
+
+        act = QAction()
+        act.setText("Modelo de perfil")
+        act.triggered.connect(modeloPerfil)
+        leyenda.accions.afegirAccio('modeloPerfil', act)
+
+        #*****************************************************************************
+
+        def buffer():
+            Processing.initialize()
+            dialog = processing.createAlgorithmDialog("native:buffer", {})
+            if dialog is not None: dialog.show()
+
+        act = QAction()
+        act.setText("Buffer")
+        act.triggered.connect(buffer)
+        leyenda.accions.afegirAccio('buffer', act)
+
+        #*****************************************************************************
+
+        def menuContexte(tipo):
+            if tipo == 'none':
+                # leyenda.menuAccions.append('project:EmulacionPlugin')
+                # leyenda.menuAccions.append('model:EmulacionPlugin')
+                leyenda.menuAccions.append('buffer')
+                leyenda.menuAccions.append('modeloProyecto')
+                leyenda.menuAccions.append('modeloPerfil')
+
+        leyenda.clicatMenuContexte.connect(menuContexte)
+
+        canv.show()
+        leyenda.show()
+
+        Processing.initialize()
+        for alg in QgsApplication.processingRegistry().algorithms():
+            print(alg.provider().id(), alg.id(), "->", alg.displayName())
