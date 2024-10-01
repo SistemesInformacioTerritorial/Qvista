@@ -2430,7 +2430,8 @@ def main(argv):
     # Ajustes de pantalla ANTES de crear la aplicación
     QvFuncions.setDPI()
 
-    with qgisapp(sysexit=False) as app: 
+    userPath = os.path.join(os.getenv('APPDATA'), r"QGIS\QGIS3\profiles\default")
+    with qgisapp(configpath=userPath, sysexit=False) as app: 
         
         # Se instancia QvApp al principio para el control de errores e idioma
         qVapp = QvApp()

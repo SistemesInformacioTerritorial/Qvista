@@ -2,26 +2,34 @@
 
 from qgis.PyQt.QtCore import Qt
 from qgis.PyQt.QtWidgets import QProgressDialog, QApplication, QMessageBox, QMenu, QAction, QPushButton
-from qgis.core import QgsProcessingFeedback
+from qgis.core import QgsProcessingFeedback, QgsApplication
 from moduls.QvFuncions import debugging
+from moduls.QvSingleton import singleton
 import os
 import csv
 
 # INICIALIZACIÓN ENTORNO PROCESSING
 
-pythonPath = ''
-for p in os.environ.get('PYTHONPATH', '').split(os.pathsep):
-    if p.split('\\')[-1] == 'python':
-        pythonPath = p
-        break
+def getPythonPath():
+    for p in os.environ.get('PYTHONPATH', '').split(os.pathsep):
+        if p.split('\\')[-1] == 'python':
+            return p
+    return ''
+
+_PYTHON_PATH = getPythonPath()
 # pythonPath = os.environ.get('PYTHONPATH', '').split(os.pathsep)[0]
 
-# Método implicado con iface en:
-# - C:\OSGeo4W\apps\qgis-ltr\python\plugins\processing\tools\general.py
-# En ese fichero, hay que reemplazar el import
-
 def replaceGeneralPy():
-    filePath = f"{pythonPath}\\plugins\\processing\\tools\\general.py"
+# Módulo implicado que usa iface:
+# - C:\OSGeo4W\apps\qgis-ltr\python\plugins\processing\tools\general.py
+# En ese fichero, hay que reemplazar:
+# from qgis.utils import iface
+# por:
+# try:
+#     from _qgis.utils import iface
+# except:
+#     from qgis.utils import iface
+    filePath = f"{_PYTHON_PATH}\\plugins\\processing\\tools\\general.py"
     qgisImport = "from qgis.utils import iface"
     qvistaImport = "from _qgis.utils import iface"
     tryImport =f"try:\n\t{qvistaImport}\nexcept:\n\t{qgisImport}"
@@ -41,15 +49,29 @@ def replaceGeneralPy():
         return True
     return False
 
-_REPLACE_OK = replaceGeneralPy()
+_REPLACE_PY = replaceGeneralPy()
 
 # Añadimos (y luego quitamos) el path a plugins de python para hacer el import processing
 # from qgis import processing funciona, pero no from processing.core.Processing import Processing
 # Nota: la variable de entorno QGIS_WIN_APP_NAME existe al ejecutar QGIS y no con pyQGIS
-os.sys.path.insert(0, pythonPath +  r"\plugins")
+os.sys.path.insert(0, _PYTHON_PATH +  r"\plugins")
 import processing
-del os.sys.path[0]
+# del os.sys.path[0]
 from processing.core.Processing import Processing
+
+def printAlgorithms(providersList=None):
+    for prov in QgsApplication.processingRegistry().providers():
+        print(prov.id(), "-", prov.name(), "->", prov.longName())
+        if providersList is not None and prov.id() not in providersList: continue
+        for alg in QgsApplication.processingRegistry().algorithms():
+            if alg.provider().id() == prov.id():
+                print('-', alg.provider().id(), "-", alg.id(), "->", alg.displayName())
+
+# def initializeProcessing():
+#     os.sys.path.insert(0, _PYTHON_PATH +  r"\plugins")
+#     Processing.initialize()
+#     del os.sys.path[0]
+#     printAlgorithms(('model', 'project'))
 
 class QvProcessCsv:
 
@@ -339,46 +361,12 @@ class QvProcess:
         except Exception as e:
             self.errorMsg("ERROR: " + str(e))
             return False
-
-    @staticmethod
-    def setMenu(widget):
-    # Hay que indicar el widget donde aparece el menu para acceder al sender()
-    # De ahí recogemos el proceso a ejecutar de la propiedad 'qv_process' del widget
-        try:
-            menu = QMenu()
-            menu.setTitle('Processos')
-            for row in QvProcessCsv.readerCsv():
-                params = QvProcessCsv.rowParams(row)
-                process = params['NAME']
-                title = params['TITLE']
-                general = params['GENERAL']
-                if general and process is not None and not process == '':
-                    act = menu.addAction(title)
-                    act.setProperty('qv_process', process)
-                    act.triggered.connect(lambda: QvProcess.execute(widget.sender().property('qv_process')))
-            if menu.isEmpty():
-                return None
-            else:
-                return menu
-        except Exception as e:
-            print(str(e))
-            return None
-
-    @staticmethod
-    def execute(process):
-        try:
-            p = QvProcess(process)
-            return p.callFunction()
-        except Exception as e:
-            print(str(e))            
-            return False
-
+        
     def run(self, name, params):
         res = None
         try:
             feedback = self.prepareProgress()
             if debugging(): print("RUN - Ini")
-            Processing.initialize()
             res = processing.run(name, params, feedback=feedback)
             if debugging(): print("RUN - Fin")
             if self.canceled(): return None
@@ -390,34 +378,6 @@ class QvProcess:
         except Exception as e:
             self.errorMsg("ERROR: " + str(e))
             return None
-
-    # Método implicado con iface en:
-    # - C:\OSGeo4W\apps\qgis-ltr\python\plugins\processing\tools\general.py
-    # En ese fichero, hay que reemplazar:
-    # from qgis.utils import iface
-    # por:
-    # try:
-    #     from _qgis.utils import iface
-    # except:
-    #     from qgis.utils import iface
-    @staticmethod
-    def algDialog(alg, params={}):
-        try:
-            Processing.initialize()
-            msg = "No s'ha pogut iniciar l'algorisme"
-            dialog = processing.createAlgorithmDialog(alg, params)
-            if dialog is None:
-                QMessageBox.warning(None, msg, f"Algorisme {alg} no disponible a qVista")
-                return
-            # Se elimina el boton de ejecución por lotes
-            for button in dialog.findChildren(QPushButton):
-                if ' lots' in button.text():
-                    button.setDisabled(True)
-                    button.setVisible(False)
-                    break
-            dialog.show()
-        except Exception as e:
-            QMessageBox.warning(None, msg, f"Error a l'algorisme {alg}\n\n" + str(e))
 
     # # Llamada al proceso
     # def run(self, progress=True):
@@ -449,10 +409,68 @@ class QvProcess:
     #         if not progress:
     #             QApplication.instance().restoreOverrideCursor()
 
+
+class QvProcessing:
+
+    @staticmethod
+    def setMenu(widget):
+    # Hay que indicar el widget donde aparece el menu para acceder al sender()
+    # De ahí recogemos el proceso a ejecutar de la propiedad 'qv_process' del widget
+        try:
+            menu = QMenu()
+            menu.setTitle('Processos')
+            for row in QvProcessCsv.readerCsv():
+                params = QvProcessCsv.rowParams(row)
+                process = params['NAME']
+                title = params['TITLE']
+                general = params['GENERAL']
+                if general and process is not None and not process == '':
+                    act = menu.addAction(title)
+                    act.setProperty('qv_process', process)
+                    act.triggered.connect(lambda: QvProcessing.execPlugin(widget.sender().property('qv_process')))
+            if menu.isEmpty():
+                return None
+            else:
+                return menu
+        except Exception as e:
+            print(str(e))
+            return None
+
+    @staticmethod
+    def execPlugin(process):
+        try:
+            Processing.initialize()
+            if debugging(): printAlgorithms(('model', 'project'))
+            p = QvProcess(process)
+            return p.callFunction()
+        except Exception as e:
+            print(str(e))            
+            return False
+
+    @staticmethod
+    def execAlgorithm(name, params={}):
+        try:
+            Processing.initialize()
+            if debugging(): printAlgorithms(('model', 'project'))
+            msg = "No s'ha pogut iniciar l'algorisme"
+            dialog = processing.createAlgorithmDialog(name, params)
+            if dialog is None:
+                QMessageBox.warning(None, msg, f"Algorisme {name} no disponible a qVista")
+                return
+            # Se elimina el boton de ejecución por lotes
+            for button in dialog.findChildren(QPushButton):
+                if ' lots' in button.text():
+                    button.setDisabled(True)
+                    button.setVisible(False)
+                    break
+            dialog.show()
+        except Exception as e:
+            QMessageBox.warning(None, msg, f"Error a l'algorisme {name}\n\n" + str(e))
+
+
 if __name__ == "__main__":
 
     from qgis.core.contextmanagers import qgisapp
-    from qgis.core import QgsApplication
     from moduls.QvApp import QvApp
     from moduls.QvCanvas import QvCanvas
     from moduls.QvAtributs import QvAtributs
@@ -461,6 +479,7 @@ if __name__ == "__main__":
     with qgisapp(sysexit=False) as app:
 
         QvApp().carregaIdioma(app, 'ca')
+
         canv = QvCanvas()
 
         atrib = QvAtributs(canv)
@@ -476,7 +495,7 @@ if __name__ == "__main__":
         #*****************************************************************************
 
         def modeloProyecto():
-            Processing.initialize()
+            # initializeProcessing()
             dialog = processing.createAlgorithmDialog("project:EmulacionPlugin", {})
             if dialog is not None: dialog.show()
 
@@ -488,7 +507,7 @@ if __name__ == "__main__":
         #*****************************************************************************
 
         def modeloPerfil():
-            Processing.initialize()
+            # initializeProcessing()
             ret = processing.execAlgorithmDialog("model:EmulacionPlugin", {})
             dialog = processing.createAlgorithmDialog("project:EmulacionPlugin", {})
             if dialog is not None: dialog.show()
@@ -501,7 +520,7 @@ if __name__ == "__main__":
         #*****************************************************************************
 
         def buffer():
-            Processing.initialize()
+            # initializeProcessing()
             dialog = processing.createAlgorithmDialog("native:buffer", {})
             if dialog is not None: dialog.show()
 
@@ -524,7 +543,3 @@ if __name__ == "__main__":
 
         canv.show()
         leyenda.show()
-
-        Processing.initialize()
-        for alg in QgsApplication.processingRegistry().algorithms():
-            print(alg.provider().id(), alg.id(), "->", alg.displayName())
