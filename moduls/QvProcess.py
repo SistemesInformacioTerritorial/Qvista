@@ -4,7 +4,7 @@ from qgis.PyQt.QtCore import Qt
 from qgis.PyQt.QtWidgets import QProgressDialog, QApplication, QMessageBox, QMenu, QAction, QPushButton
 from qgis.core import QgsProcessingFeedback, QgsApplication
 from moduls.QvFuncions import debugging
-from moduls.QvSingleton import singleton
+from moduls.QvApp import QvApp
 import os
 import csv
 
@@ -67,11 +67,14 @@ def printAlgorithms(providersList=None):
             if alg.provider().id() == prov.id():
                 print('-', alg.provider().id(), "-", alg.id(), "->", alg.displayName())
 
-# def initializeProcessing():
-#     os.sys.path.insert(0, _PYTHON_PATH +  r"\plugins")
-#     Processing.initialize()
-#     del os.sys.path[0]
-#     printAlgorithms(('model', 'project'))
+def initializeProcessing():
+    Processing.initialize()
+    provProject = QgsApplication.processingRegistry().providerById('project')
+    if provProject is not None:
+        provProject.model_definitions = QvApp().projectModels
+        provProject.refreshAlgorithms()
+        provProject.loadAlgorithms()
+    if debugging(): printAlgorithms(('model', 'project'))
 
 class QvProcessCsv:
 
@@ -439,8 +442,7 @@ class QvProcessing:
     @staticmethod
     def execPlugin(process):
         try:
-            Processing.initialize()
-            # if debugging(): printAlgorithms(('model', 'project'))
+            initializeProcessing()
             p = QvProcess(process)
             return p.callFunction()
         except Exception as e:
@@ -449,13 +451,12 @@ class QvProcessing:
 
     @staticmethod
     def execAlgorithm(name, params={}):
+        msg = "No s'ha pogut iniciar l'algorisme"
         try:
-            Processing.initialize()
-            # if debugging(): printAlgorithms(('model', 'project'))
-            msg = "No s'ha pogut iniciar l'algorisme"
+            initializeProcessing()
             dialog = processing.createAlgorithmDialog(name, params)
             if dialog is None:
-                QMessageBox.warning(None, msg, f"Algorisme {name} no disponible a qVista")
+                QMessageBox.warning(None, msg, f"Algorisme {name} no disponible")
                 return
             # Se elimina el boton de ejecución por lotes
             for button in dialog.findChildren(QPushButton):

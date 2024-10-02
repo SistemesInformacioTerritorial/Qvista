@@ -120,6 +120,8 @@ class QvApp:
 
         QgsPythonRunner.setInstance(QvPythonRunner())   # Ejecuciones Python
 
+        self.projectModels = {}                     # Del DOM (proyecto actual)
+
     def data(self):
         txt = ''
         txt += 'Nom: ' + self.paramCfg('Nom', '???') + '\n'

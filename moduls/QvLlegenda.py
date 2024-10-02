@@ -482,7 +482,29 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
             self.menuEdicio = self.digitize.setMenu(menu)
         self.menuEdicioVisible(False)
 
-    def nouProjecte(self):
+    # Copiado de ProjectProvider.py
+    def read_project(self, doc):
+        """
+        Reads the project model definitions from the project DOM document
+        :param doc: DOM document
+        """
+        from qgis.core import QgsProcessingModelAlgorithm, QgsXmlUtils
+
+        model_definitions = {}
+        project_models_nodes = doc.elementsByTagName('projectModels')
+        if project_models_nodes:
+            project_models_node = project_models_nodes.at(0)
+            model_nodes = project_models_node.childNodes()
+            for n in range(model_nodes.count()):
+                model_element = model_nodes.at(n).toElement()
+                definition = QgsXmlUtils.readVariant(model_element)
+                algorithm = QgsProcessingModelAlgorithm()
+                if algorithm.loadVariant(definition):
+                    model_definitions[algorithm.name()] = definition
+        return model_definitions
+
+    def nouProjecte(self, doc):
+        QvApp().projectModels = self.read_project(doc)
         self.setTitol()
         # Borrar tabs de atributos si existen
         if self.atributs is not None:
@@ -942,8 +964,8 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
     def addGroup(self):
         if debugging():
             from moduls.QvProcess import QvProcessing
-            # QvProcessing.execAlgorithm("project:EmulacionPlugin")
-            QvProcessing.execAlgorithm("model:EmulacionPlugin")
+            QvProcessing.execAlgorithm("project:EmulacionPlugin")
+            # QvProcessing.execAlgorithm("model:EmulacionPlugin")
             # QvProcessing.execAlgorithm("native:dbscanclustering")
             return
 
