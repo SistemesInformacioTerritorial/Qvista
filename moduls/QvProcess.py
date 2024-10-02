@@ -56,7 +56,7 @@ _REPLACE_PY = replaceGeneralPy()
 # Nota: la variable de entorno QGIS_WIN_APP_NAME existe al ejecutar QGIS y no con pyQGIS
 os.sys.path.insert(0, _PYTHON_PATH +  r"\plugins")
 import processing
-# del os.sys.path[0]
+del os.sys.path[0]
 from processing.core.Processing import Processing
 
 def printAlgorithms(providersList=None):
@@ -440,7 +440,7 @@ class QvProcessing:
     def execPlugin(process):
         try:
             Processing.initialize()
-            if debugging(): printAlgorithms(('model', 'project'))
+            # if debugging(): printAlgorithms(('model', 'project'))
             p = QvProcess(process)
             return p.callFunction()
         except Exception as e:
@@ -451,7 +451,7 @@ class QvProcessing:
     def execAlgorithm(name, params={}):
         try:
             Processing.initialize()
-            if debugging(): printAlgorithms(('model', 'project'))
+            # if debugging(): printAlgorithms(('model', 'project'))
             msg = "No s'ha pogut iniciar l'algorisme"
             dialog = processing.createAlgorithmDialog(name, params)
             if dialog is None:

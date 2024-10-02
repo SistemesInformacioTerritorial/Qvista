@@ -2430,6 +2430,9 @@ def main(argv):
     # Ajustes de pantalla ANTES de crear la aplicación
     QvFuncions.setDPI()
 
+    # La ruta del perfil de usuario por defecto es diferente en QGIS y en qVista.
+    # La calculamos y se la pasamos a qgisapp para que coincidan
+    # Puede comprobarse llamando a QgsApplication.qgisSettingsDirPath()
     userPath = os.path.join(os.getenv('APPDATA'), r"QGIS\QGIS3\profiles\default")
     with qgisapp(configpath=userPath, sysexit=False) as app: 
         
