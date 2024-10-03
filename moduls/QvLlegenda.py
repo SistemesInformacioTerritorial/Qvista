@@ -20,6 +20,7 @@ from moduls.QvCatalegCapes import QvCreadorCatalegCapes
 from moduls.QvDigitizeContext import QvDigitizeContext
 from moduls.QvReports import QvReports
 from moduls.QvProcess import QvProcessing
+from moduls.QvProviders import QvProjectProvider
 from moduls.QvApp import QvApp
 from moduls import QvFuncions
 from moduls.QvFuncions import debugging
@@ -482,29 +483,10 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
             self.menuEdicio = self.digitize.setMenu(menu)
         self.menuEdicioVisible(False)
 
-    # Copiado de ProjectProvider.py
-    def read_project(self, doc):
-        """
-        Reads the project model definitions from the project DOM document
-        :param doc: DOM document
-        """
-        from qgis.core import QgsProcessingModelAlgorithm, QgsXmlUtils
-
-        model_definitions = {}
-        project_models_nodes = doc.elementsByTagName('projectModels')
-        if project_models_nodes:
-            project_models_node = project_models_nodes.at(0)
-            model_nodes = project_models_node.childNodes()
-            for n in range(model_nodes.count()):
-                model_element = model_nodes.at(n).toElement()
-                definition = QgsXmlUtils.readVariant(model_element)
-                algorithm = QgsProcessingModelAlgorithm()
-                if algorithm.loadVariant(definition):
-                    model_definitions[algorithm.name()] = definition
-        return model_definitions
-
     def nouProjecte(self, doc):
-        QvApp().projectModels = self.read_project(doc)
+        # Lee modelos de proyecto
+        QvProjectProvider.readProject(doc)
+
         self.setTitol()
         # Borrar tabs de atributos si existen
         if self.atributs is not None:

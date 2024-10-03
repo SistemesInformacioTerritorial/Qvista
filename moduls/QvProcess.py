@@ -3,8 +3,8 @@
 from qgis.PyQt.QtCore import Qt
 from qgis.PyQt.QtWidgets import QProgressDialog, QApplication, QMessageBox, QMenu, QAction, QPushButton
 from qgis.core import QgsProcessingFeedback, QgsApplication
+from moduls.QvProviders import QvProjectProvider
 from moduls.QvFuncions import debugging
-from moduls.QvApp import QvApp
 import os
 import csv
 
@@ -69,11 +69,7 @@ def printAlgorithms(providersList=None):
 
 def initializeProcessing():
     Processing.initialize()
-    provProject = QgsApplication.processingRegistry().providerById('project')
-    if provProject is not None:
-        provProject.model_definitions = QvApp().projectModels
-        provProject.refreshAlgorithms()
-        provProject.loadAlgorithms()
+    QvProjectProvider.loadAlgorithms()
     if debugging(): printAlgorithms(('model', 'project'))
 
 class QvProcessCsv:

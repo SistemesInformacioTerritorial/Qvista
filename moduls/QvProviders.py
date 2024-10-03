@@ -1,10 +1,41 @@
 # -*- coding: utf-8 -*-
 
-from qgis.core import QgsProcessingProvider, QgsRuntimeProfiler, QgsProcessingModelAlgorithm
+from qgis.core import (QgsApplication, QgsProcessingProvider, QgsRuntimeProfiler,
+                       QgsProcessingModelAlgorithm, QgsXmlUtils)
 from qgis.PyQt.QtWidgets import QMessageBox
 import os
 
-class QvProvider(QgsProcessingProvider):
+class QvProjectProvider:
+    # Copiado de ProjectProvider.py
+
+    MODEL_DEFS = {}
+
+    @staticmethod
+    def readProject(doc):
+        # Se obtiene la informacion del DOM del qgs al abrirlo
+        QvProjectProvider.MODEL_DEFS = {}
+        project_models_nodes = doc.elementsByTagName('projectModels')
+        if project_models_nodes:
+            project_models_node = project_models_nodes.at(0)
+            model_nodes = project_models_node.childNodes()
+            for n in range(model_nodes.count()):
+                model_element = model_nodes.at(n).toElement()
+                definition = QgsXmlUtils.readVariant(model_element)
+                algorithm = QgsProcessingModelAlgorithm()
+                if algorithm.loadVariant(definition):
+                    QvProjectProvider.MODEL_DEFS[algorithm.name()] = definition
+
+    @staticmethod
+    def loadAlgorithms():
+        # Se cargan los algoritmos en el momento de utilizarlos
+        provProject = QgsApplication.processingRegistry().providerById('project')
+        if provProject is not None:
+            provProject.model_definitions = QvProjectProvider.MODEL_DEFS
+            provProject.refreshAlgorithms()
+            provProject.loadAlgorithms()
+
+
+class QvQvistaProvider(QgsProcessingProvider):
 
     MODELS_FOLDER = str(os.path.join(os.getcwd(), r"processos\models"))
 
@@ -51,7 +82,7 @@ class QvProvider(QgsProcessingProvider):
                 return
             self.isLoading = True
             self.algs = []
-            self.loadFromFolder(QvProvider.MODELS_FOLDER)
+            self.loadFromFolder(QvQvistaProvider.MODELS_FOLDER)
             for a in self.algs:
                 self.addAlgorithm(a)
             self.isLoading = False
