@@ -33,6 +33,7 @@ class QvProjectProvider:
             provProject.model_definitions = QvProjectProvider.MODEL_DEFS
             provProject.refreshAlgorithms()
             provProject.loadAlgorithms()
+        return provProject
 
 
 class QvQvistaProvider(QgsProcessingProvider):

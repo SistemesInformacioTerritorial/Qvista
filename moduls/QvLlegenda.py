@@ -19,7 +19,7 @@ from moduls.QvAnotacions import QvMapToolAnnotation
 from moduls.QvCatalegCapes import QvCreadorCatalegCapes
 from moduls.QvDigitizeContext import QvDigitizeContext
 from moduls.QvReports import QvReports
-from moduls.QvProcess import QvProcessing
+from moduls.QvProcessing import QvProcessing
 from moduls.QvProviders import QvProjectProvider
 from moduls.QvApp import QvApp
 from moduls import QvFuncions
@@ -894,7 +894,7 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
                 self.accions.afegirAccio('menuInforme', menuInformes)
                 self.menuAccions += ['separator', 'menuInforme']
             # Procesos
-            menuProcesos = QvProcessing.setMenu(self)
+            menuProcesos = QvProcessing.setMenu(self, False)
             if menuProcesos is not None:
                 self.accions.afegirAccio('menuProceso', menuProcesos)
                 self.menuAccions += ['separator', 'menuProceso']
@@ -944,13 +944,6 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
         self.expandAll(False)
 
     def addGroup(self):
-        if debugging():
-            from moduls.QvProcess import QvProcessing
-            QvProcessing.execAlgorithm("project:EmulacionPlugin")
-            # QvProcessing.execAlgorithm("model:EmulacionPlugin")
-            # QvProcessing.execAlgorithm("native:dbscanclustering")
-            return
-
         self.defaultActions().addGroup()
         self.modificacioProjecte('addGroup')
 
