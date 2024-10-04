@@ -103,7 +103,7 @@ class QvQvistaProvider(QgsProcessingProvider):
 
         This string should be short (e.g. "Lastools") and localised.
         """
-        return self.tr('Models disponibles a qVista')
+        return self.tr('Models qVista')
 
     def icon(self):
         """
@@ -119,4 +119,4 @@ class QvQvistaProvider(QgsProcessingProvider):
         (version 2.2.1)". This string should be localised. The default
         implementation returns the same string as name().
         """
-        return self.name()
+        return self.tr('Models disponibles a qVista')

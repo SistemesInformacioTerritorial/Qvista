@@ -3,7 +3,8 @@
 from qgis.PyQt.QtCore import Qt
 from qgis.PyQt.QtWidgets import QProgressDialog, QApplication, QMessageBox, QMenu, QAction, QPushButton
 from qgis.core import QgsProcessingFeedback, QgsApplication
-from moduls.QvProviders import QvProjectProvider
+from moduls.QvProviders import QvProjectProvider, QvQvistaProvider
+from moduls.QvSingleton import singleton
 from moduls.QvFuncions import debugging
 import os
 import csv
@@ -403,24 +404,47 @@ class QvProcessingMenu:
         self.widget = widget
         self.singleMenu = singleMenu
         self.menuPlugins = self.setMenuPlugins()
-        self.menuAlgorithms = self.setMenuAlgorithms()
+        self.menuAlgorithms = self.setMenuModels()
         self.menuProcesses = self.setMenuProcesses()
 
     def menu(self):
         return self.menuProcesses
     
+    def addMenuAction(self, menu, process, title, plugin=False, label=None):
+        if plugin:
+            triggerFunction = QvProcessing().execPlugin
+            if label is None: label = 'Plugin'
+        else:
+            triggerFunction = QvProcessing().execAlgorithm
+            if label is None: label = 'Algorisme'
+        toolTip = label + ' ' + process
+        act = menu.addAction(title)
+        act.setToolTip(toolTip)
+        act.setProperty('qv_process', process)
+        act.triggered.connect(lambda: triggerFunction(self.widget.sender().property('qv_process')))
+
+    def addMenuProviderActions(self, provider, menu):
+        if provider is None: return
+        for alg in provider.algorithms():
+            if provider.id() in ('model', 'project', 'qvista'):
+                label = 'Model'
+            else:
+                label = 'Algorisme'
+            process = provider.id() + ':' + alg.name()
+            title = alg.displayName()
+            self.addMenuAction(menu, process, title, False, label)
+
     def setMenuPlugins(self):
         try:
             menu = QMenu('Plugins')
+            menu.setToolTipsVisible(True)
             for row in QvPluginsCsv.readerCsv():
                 params = QvPluginsCsv.rowParams(row)
                 process = params['NAME']
                 title = params['TITLE']
                 general = params['GENERAL']
                 if general and process is not None and not process == '':
-                    act = menu.addAction(title)
-                    act.setProperty('qv_process', process)
-                    act.triggered.connect(lambda: QvProcessing.execPlugin(self.widget.sender().property('qv_process')))
+                    self.addMenuAction(menu, process, title, True)
             if menu.isEmpty():
                 return None
             else:
@@ -429,20 +453,14 @@ class QvProcessingMenu:
             print(str(e))
             return None
 
-    def setMenuAlgorithms(self):
+    def setMenuModels(self):
         try:
-            menu = QMenu('Algorismes')
-            # Del provider 'project'
-            projectProv = QvProcessing.PROJECT_PROVIDER
-            if projectProv is not None:
-                for alg in projectProv.algorithms():
-                    process = 'project:' + alg.name()
-                    title = alg.displayName()
-                    act = menu.addAction(title)
-                    act.setProperty('qv_process', process)
-                    act.triggered.connect(lambda: QvProcessing.execAlgorithm(self.widget.sender().property('qv_process')))
-            # Del provider 'qvista'
-            # ...
+            menu = QMenu('Models')
+            menu.setToolTipsVisible(True)
+            # Models provider 'project'
+            self.addMenuProviderActions(QvProcessing().projectProvider, menu)
+            # Models provider 'qvista'
+            self.addMenuProviderActions(QvProcessing().qvistaProvider, menu)
             if menu.isEmpty():
                 return None
             else:
@@ -463,6 +481,7 @@ class QvProcessingMenu:
                     return self.menuPlugins
                 else:
                     menu = QMenu(label)
+                    menu.setToolTipsVisible(True)
                     if self.singleMenu:
                         for act in self.menuPlugins.actions():
                             menu.addAction(act)
@@ -477,18 +496,23 @@ class QvProcessingMenu:
             print(str(e))
             return None
 
+@singleton
 class QvProcessing:
+    def __init__(self):
+        self.projectProvider = None
+        self.qvistaProvider = None
+        self.processingMenu = None
+        self.initializeProcessing()
 
-    PROJECT_PROVIDER = None
-
-    @staticmethod
-    def initializeProcessing():
+    def initializeProcessing(self):
         Processing.initialize()
-        QvProcessing.PROJECT_PROVIDER = QvProjectProvider.loadAlgorithms()
-        if debugging(): QvProcessing.printAlgorithms(('project', 'model', 'qvista'))
+        self.projectProvider = QvProjectProvider.loadAlgorithms()
+        if self.qvistaProvider is None:
+            self.qvistaProvider = QvQvistaProvider()
+            QgsApplication.processingRegistry().addProvider(self.qvistaProvider)
+        if debugging(): self.printAlgorithms(('project', 'model', 'qvista'))
 
-    @staticmethod
-    def printAlgorithms(providersList=None):
+    def printAlgorithms(self, providersList=None):
         for prov in QgsApplication.processingRegistry().providers():
             print(prov.id(), "-", prov.name(), "->", prov.longName())
             if providersList is not None and prov.id() not in providersList: continue
@@ -496,27 +520,24 @@ class QvProcessing:
                 if alg.provider().id() == prov.id():
                     print('-', alg.provider().id(), "-", alg.id(), "->", alg.displayName())
 
-    @staticmethod
-    def setMenu(widget, singleMenu=True):
-        QvProcessing.initializeProcessing()
-        pMenu = QvProcessingMenu(widget, singleMenu)
-        return pMenu.menu()
+    def setMenu(self, widget, singleMenu=True):
+        self.initializeProcessing()
+        self.processingMenu = QvProcessingMenu(widget, singleMenu)
+        return self.processingMenu.menu()
 
-    @staticmethod
-    def execPlugin(process):
+    def execPlugin(self, process):
         try:
-            QvProcessing.initializeProcessing()
+            self.initializeProcessing()
             p = QvProcessPlugin(process)
             return p.callFunction()
         except Exception as e:
             print(str(e))            
             return False
 
-    @staticmethod
-    def execAlgorithm(name, params={}):
+    def execAlgorithm(self, name, params={}):
         msg = "No s'ha pogut iniciar l'algorisme"
         try:
-            QvProcessing.initializeProcessing()
+            self.initializeProcessing()
             dialog = processing.createAlgorithmDialog(name, params)
             if dialog is None:
                 QMessageBox.warning(None, msg, f"Algorisme {name} no disponible")

@@ -894,7 +894,13 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
                 self.accions.afegirAccio('menuInforme', menuInformes)
                 self.menuAccions += ['separator', 'menuInforme']
             # Procesos
-            menuProcesos = QvProcessing.setMenu(self, False)
+            menuProcesos = QvProcessing().setMenu(self)
+
+            if menuProcesos is not None:
+                menuProcesos.addSeparator()
+                QvProcessing().processingMenu.addMenuAction(menuProcesos, "native:dbscanclustering", "Clustering")
+                QvProcessing().processingMenu.addMenuAction(menuProcesos, "v:dissolve", "Dissolve")
+
             if menuProcesos is not None:
                 self.accions.afegirAccio('menuProceso', menuProcesos)
                 self.menuAccions += ['separator', 'menuProceso']
