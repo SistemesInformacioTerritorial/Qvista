@@ -52,12 +52,12 @@ def replaceGeneralPy():
 
 _REPLACE_PY = replaceGeneralPy()
 
-# Añadimos (y luego quitamos) el path a plugins de python para hacer el import processing
+# Añadimos el path al directorio de plugins de python para hacer el import processing
 # from qgis import processing funciona, pero no from processing.core.Processing import Processing
+# Se ha de mantener esa ruta para que se carguen correctamente los algoritmos externos
 # Nota: la variable de entorno QGIS_WIN_APP_NAME existe al ejecutar QGIS y no con pyQGIS
 os.sys.path.insert(0, _PYTHON_PATH +  r"\plugins")
 import processing
-del os.sys.path[0]
 from processing.core.Processing import Processing
 
 class QvPluginsCsv:
@@ -500,25 +500,22 @@ class QvProcessingMenu:
 class QvProcessing:
     def __init__(self):
         self.projectProvider = None
-        self.qvistaProvider = None
+        self.qvistaProvider = QvQvistaProvider()
+        QgsApplication.processingRegistry().addProvider(self.qvistaProvider)
         self.processingMenu = None
-        self.initializeProcessing()
 
     def initializeProcessing(self):
         Processing.initialize()
         self.projectProvider = QvProjectProvider.loadAlgorithms()
-        if self.qvistaProvider is None:
-            self.qvistaProvider = QvQvistaProvider()
-            QgsApplication.processingRegistry().addProvider(self.qvistaProvider)
-        if debugging(): self.printAlgorithms(('project', 'model', 'qvista'))
+        if debugging(): self.printAlgorithms(('grass7', 'project', 'model', 'qvista'))
 
     def printAlgorithms(self, providersList=None):
+        print("*** PROVIDERS:")
         for prov in QgsApplication.processingRegistry().providers():
-            print(prov.id(), "-", prov.name(), "->", prov.longName())
+            print(prov.id(), "-", prov.name(), "->", prov.longName(), "#algs:", len(prov.algorithms()))
             if providersList is not None and prov.id() not in providersList: continue
-            for alg in QgsApplication.processingRegistry().algorithms():
-                if alg.provider().id() == prov.id():
-                    print('-', alg.provider().id(), "-", alg.id(), "->", alg.displayName())
+            for alg in prov.algorithms():
+                print('-', alg.id(), "->", alg.displayName())
 
     def setMenu(self, widget, singleMenu=True):
         self.initializeProcessing()
