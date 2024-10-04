@@ -507,7 +507,7 @@ class QvProcessing:
     def initializeProcessing(self):
         Processing.initialize()
         self.projectProvider = QvProjectProvider.loadAlgorithms()
-        if debugging(): self.printAlgorithms(('grass7', 'project', 'model', 'qvista'))
+        if debugging(): self.printAlgorithms(('project', 'model', 'qvista'))
 
     def printAlgorithms(self, providersList=None):
         print("*** PROVIDERS:")
