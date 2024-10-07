@@ -9,48 +9,52 @@ from moduls.QvFuncions import debugging
 import os
 import csv
 
+class QvProcessingInit:
+
+    @staticmethod    
+    def getPythonPath():
+        for p in os.environ.get('PYTHONPATH', '').split(os.pathsep):
+            if p.split('\\')[-1] == 'python':
+                return p
+        return ''
+
+    @staticmethod    
+    def changePythonCode():
+    # Módulo implicado que usa iface:
+    # - C:\OSGeo4W\apps\qgis-ltr\python\plugins\processing\tools\general.py
+    # En ese fichero, hay que reemplazar:
+    # from qgis.utils import iface
+    # por:
+    # try:
+    #     from _qgis.utils import iface
+    # except:
+    #     from qgis.utils import iface
+        filePath = f"{_PYTHON_PATH}\\plugins\\processing\\tools\\general.py"
+        qgisImport = "from qgis.utils import iface"
+        qvistaImport = "from _qgis.utils import iface"
+        tryImport =f"try:\n\t{qvistaImport}\nexcept:\n\t{qgisImport}"
+
+        # Leer general.py
+        with open(filePath, 'r') as file:
+            fileContents = file.read()
+        # Si ya contiene el import de qvista, salir
+        if fileContents.find(qvistaImport) != -1: return True
+        # Reemplazar el import de qgis por el import combinado con try
+        updatedContents = fileContents.replace(qgisImport, tryImport, 1)
+        # Si no se ha reemplazado nada, salir
+        if updatedContents == fileContents: return True
+        # Guardar cambios en general.py
+        with open(filePath, 'w') as file:
+            file.write(updatedContents)
+            return True
+        return False
+
 # INICIALIZACIÓN ENTORNO PROCESSING
 
-def getPythonPath():
-    for p in os.environ.get('PYTHONPATH', '').split(os.pathsep):
-        if p.split('\\')[-1] == 'python':
-            return p
-    return ''
-
-_PYTHON_PATH = getPythonPath()
-# pythonPath = os.environ.get('PYTHONPATH', '').split(os.pathsep)[0]
-
-def replaceGeneralPy():
-# Módulo implicado que usa iface:
-# - C:\OSGeo4W\apps\qgis-ltr\python\plugins\processing\tools\general.py
-# En ese fichero, hay que reemplazar:
-# from qgis.utils import iface
-# por:
-# try:
-#     from _qgis.utils import iface
-# except:
-#     from qgis.utils import iface
-    filePath = f"{_PYTHON_PATH}\\plugins\\processing\\tools\\general.py"
-    qgisImport = "from qgis.utils import iface"
-    qvistaImport = "from _qgis.utils import iface"
-    tryImport =f"try:\n\t{qvistaImport}\nexcept:\n\t{qgisImport}"
-
-    # Leer general.py
-    with open(filePath, 'r') as file:
-        fileContents = file.read()
-    # Si ya contiene el import de qvista, salir
-    if fileContents.find(qvistaImport) != -1: return True
-    # Reemplazar el import de qgis por el import combinado con try
-    updatedContents = fileContents.replace(qgisImport, tryImport, 1)
-    # Si no se ha reemplazado nada, salir
-    if updatedContents == fileContents: return True
-    # Guardar cambios en general.py
-    with open(filePath, 'w') as file:
-        file.write(updatedContents)
-        return True
-    return False
-
-_REPLACE_PY = replaceGeneralPy()
+# Primero hay que obtener la ruta de Python para los imports
+# y cambiar código python en un módulo implicado para que no use iface
+_PYTHON_PATH = QvProcessingInit.getPythonPath()
+_REPLACE_PY = QvProcessingInit.changePythonCode()
 
 # Añadimos el path al directorio de plugins de python para hacer el import processing
 # from qgis import processing funciona, pero no from processing.core.Processing import Processing
@@ -59,6 +63,7 @@ _REPLACE_PY = replaceGeneralPy()
 os.sys.path.insert(0, _PYTHON_PATH +  r"\plugins")
 import processing
 from processing.core.Processing import Processing
+Processing.initialize()
 
 class QvPluginsCsv:
 
@@ -395,7 +400,6 @@ class QvProcessPlugin:
     #     finally:
     #         if not progress:
     #             QApplication.instance().restoreOverrideCursor()
-
 
 class QvProcessingMenu:
     def __init__(self, widget, singleMenu):
