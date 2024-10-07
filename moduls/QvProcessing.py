@@ -521,6 +521,9 @@ class QvProcessing:
             for alg in prov.algorithms():
                 print('-', alg.id(), "->", alg.displayName())
 
+    def addMenuProcess(self, process, title, label=None):
+        self.processingMenu.addMenuAction(self.processingMenu.menu(), process, title, False, label)
+    
     def setMenu(self, widget, singleMenu=True):
         self.initializeProcessing()
         self.processingMenu = QvProcessingMenu(widget, singleMenu)
