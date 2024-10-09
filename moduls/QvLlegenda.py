@@ -896,10 +896,10 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
             # Procesos
             menuProcessos = QvProcessing().setMenu(self)
             # *** Pruebas
-            if menuProcessos is not None:
-                menuProcessos.addSeparator()
-                QvProcessing().addMenuProcess("native:dbscanclustering", "Clustering")
-                QvProcessing().addMenuProcess("grass7:v.to.lines", "To lines")
+            # if menuProcessos is not None:
+            #     menuProcessos.addSeparator()
+            #     QvProcessing().addMenuProcess("native:dbscanclustering", "Clustering")
+            #     QvProcessing().addMenuProcess("grass7:v.to.lines", "To lines")
             # ***
             if menuProcessos is not None:
                 self.accions.afegirAccio('menuProceso', menuProcessos)

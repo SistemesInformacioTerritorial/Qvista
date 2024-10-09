@@ -38,7 +38,11 @@ class QvProjectProvider:
 
 class QvQvistaProvider(QgsProcessingProvider):
 
+    # Directorio donde se encuentran los modelos disponibles en qVista
     MODELS_FOLDER = str(os.path.join(os.getcwd(), r"processos\models"))
+    # Nombre de grupo o lista de grupos permitidos (en minúsculas)
+    # Si es None, se permiten todos
+    MODELS_GROUPS_FILTER = ['general']
 
     def __init__(self):
         """
@@ -55,7 +59,17 @@ class QvQvistaProvider(QgsProcessingProvider):
         """
         pass
 
-    def loadFromFolder(self, folder):
+    def groupsFilter(self, alg, groupsFilter):
+        if groupsFilter is None: return True
+        algGroup = alg.group().strip().lower()
+        if type(groupsFilter) is str:
+            return algGroup == groupsFilter 
+        if type(groupsFilter) is list:
+            if len(groupsFilter) == 0: return True
+            return algGroup in groupsFilter
+        return False
+
+    def loadFromFolder(self, folder, groupsFilter=None):
         if not os.path.exists(folder):
             return
         for path, subdirs, files in os.walk(folder):
@@ -64,7 +78,7 @@ class QvQvistaProvider(QgsProcessingProvider):
                     fullpath = os.path.join(path, descriptionFile)
                     alg = QgsProcessingModelAlgorithm()
                     if alg.fromFile(fullpath):
-                        if alg.name():
+                        if alg.name() and self.groupsFilter(alg, groupsFilter):
                             alg.setSourceFilePath(fullpath)
                             self.algs.append(alg)
                     else:
@@ -83,7 +97,7 @@ class QvQvistaProvider(QgsProcessingProvider):
                 return
             self.isLoading = True
             self.algs = []
-            self.loadFromFolder(QvQvistaProvider.MODELS_FOLDER)
+            self.loadFromFolder(QvQvistaProvider.MODELS_FOLDER, QvQvistaProvider.MODELS_GROUPS_FILTER)
             for a in self.algs:
                 self.addAlgorithm(a)
             self.isLoading = False

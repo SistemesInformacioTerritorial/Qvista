@@ -477,7 +477,8 @@ class QvProcessingMenu:
         try:
             label = 'Processos'
             if self.menuPlugins is None:
-                if self.singleMenu: self.menuAlgorithms.setTitle(label)
+                if self.singleMenu and self.menuAlgorithms is not None:
+                    self.menuAlgorithms.setTitle(label)
                 return self.menuAlgorithms
             else:
                 if self.menuAlgorithms is None:
