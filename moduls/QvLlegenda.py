@@ -21,9 +21,9 @@ from moduls.QvDigitizeContext import QvDigitizeContext
 from moduls.QvReports import QvReports
 from moduls.QvProcessing import QvProcessing
 from moduls.QvProviders import QvProjectProvider
+from moduls.QvNavegacioTemporal import QvNavegacioTemporal
 from moduls.QvApp import QvApp
 from moduls import QvFuncions
-from moduls.QvFuncions import debugging
 
 if QvApp().testVersioQgis(3, 10):
     from moduls.QvDigitize import QvDigitize
@@ -141,6 +141,11 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
         self.iconaRecarregaDG = qgGui.QgsLayerTreeViewIndicator()
         self.iconaRecarregaDG.setIcon(qtGui.QIcon(os.path.join(imatgesDir, 'update_time.png')))
         self.iconaRecarregaDG.setToolTip('Recàrrega automàtica de dades i gràfica')
+
+        self.iconaTemporal = qgGui.QgsLayerTreeViewIndicator()
+        self.iconaTemporal.setIcon(qtGui.QIcon(os.path.join(imatgesDir, 'temporal.png')))
+        self.iconaTemporal.setToolTip('Navegació temporal')
+        self.iconaTemporal.clicked.connect(QvNavegacioTemporal.switch)
 
         self.iconaMap = qgGui.QgsLayerTreeViewIndicator()
         self.iconaMap.setIcon(qtGui.QIcon(os.path.join(imatgesDir, 'categories2.png')))
@@ -401,6 +406,7 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
                 self.removeIndicator(node, self.iconaRecarregaD)
                 self.removeIndicator(node, self.iconaRecarregaG)
                 self.removeIndicator(node, self.iconaRecarregaDG)
+                self.removeIndicator(node, self.iconaTemporal)
                 self.removeIndicator(node, self.iconaMap)
                 self.removeIndicator(node, self.iconaRequired)
                 self.removeIndicator(node, self.iconaEditForm)
@@ -425,6 +431,10 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
                 else:
                     if rg:
                         self.addIndicator(node, self.iconaRecarregaG)
+                # Navegación temporal
+                temporal = capa.temporalProperties()
+                if temporal is not None and temporal.isActive():
+                    self.addIndicator(node, self.iconaTemporal)
                 # Mapificación
                 var = QvDiagrama.capaAmbMapificacio(capa)
                 if var is not None and self.capaLocal(capa) and self.editable:

@@ -11,7 +11,7 @@ from qgis.core import (QgsExpressionContextUtils, QgsMapLayer, QgsProject,
                        QgsRasterLayer, QgsVectorLayer, QgsPointXY)
 from qgis.core.contextmanagers import qgisapp, sys
 from qgis.gui import (QgsGui, QgsLayerTreeMapCanvasBridge, QgsRubberBand,
-                      QgsVertexMarker)
+                      QgsVertexMarker, QgsTemporalControllerWidget)
 from qgis.PyQt import QtCore
 from qgis.PyQt.QtCore import (QCoreApplication, QDateTime, QProcess, QSize, Qt,
                               QUrl, pyqtSignal)
@@ -202,6 +202,8 @@ class QVista(QMainWindow, Ui_MainWindow):
         # self.preparacioGrafiques() ???
         self.preparacioSeleccio()
         # self.preparacioEntorns()
+
+        self.preparacioTemporal()
 
         # CrearMapeta - Comentado porque hay un error al salir en la 3.16
         # 
@@ -1336,6 +1338,15 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.addDockWidget( Qt.RightDockWidgetArea, self.dwSeleccioGrafica )
         self.dwSeleccioGrafica.hide()
         self.dwSeleccioGrafica.visibilityChanged.connect(self.foraEines)
+
+    def preparacioTemporal(self):
+        self.dwNavegacioTemporal = QgsTemporalControllerWidget() 
+        tempControler = self.dwNavegacioTemporal.temporalController()
+        self.canvas.setTemporalController(tempControler)
+        self.dwNavegacioTemporal.setWindowTitle('Navegació temporal')
+        self.dwNavegacioTemporal.setGeometry(100, 500, 1000, 150)
+        self.dwNavegacioTemporal.setWindowFlags(Qt.WindowStaysOnTopHint)
+        self.dwNavegacioTemporal.hide()
 
     #Eina de mesura sobre el mapa -nexus-foraEinaSeleccio
     def preparacioMesura(self):
@@ -2504,11 +2515,6 @@ def main(argv):
 
         # Gestió de la sortida
         app.aboutToQuit.connect(qV.gestioSortida)
-
-        # Prueba navegacion temporal
-        if QvFuncions.debugging():
-            from moduls.QvTemporalNavigation import navegacioTemporal
-            navegacioTemporal(qV)
 
 # Arranque de l'aplicació qVista
 if __name__ == "__main__":
