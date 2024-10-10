@@ -432,8 +432,7 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
                     if rg:
                         self.addIndicator(node, self.iconaRecarregaG)
                 # Navegación temporal
-                temporal = capa.temporalProperties()
-                if temporal is not None and temporal.isActive():
+                if QvNavegacioTemporal.isActive(capa):
                     self.addIndicator(node, self.iconaTemporal)
                 # Mapificación
                 var = QvDiagrama.capaAmbMapificacio(capa)

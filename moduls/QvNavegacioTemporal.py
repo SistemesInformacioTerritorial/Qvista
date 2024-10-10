@@ -29,6 +29,13 @@ class QvNavegacioTemporal:
         if widget is None: return
         widget.show()
 
+    @staticmethod
+    def isActive(layer):
+        tempProps = layer.temporalProperties()
+        if tempProps is None: return False
+        return tempProps.isActive()
+
+
 # def navegacioTemporal(docked=False):
 
 #     qV = QvApp().qVista
