@@ -53,7 +53,7 @@ class QvNavegacioTemporal:
 #         qV.dwNavegacioTemporal.setContentsMargins(0, 0, 0, 0)
 
 #         qV.dwNavegacioTemporal.setMinimumHeight(round(150*QvApp().zoomFactor()))
-#         qV.dwNavegacioTemporal.setMaximumHeight(round(150*QvApp().zoomFactor()))
+#         qV.dwNavegacioTemporal.setMaximumWidth(round(150*QvApp().zoomFactor()))
 #         qV.addDockWidget(Qt.BottomDockWidgetArea, qV.dwNavegacioTemporal)
 
 #         qV.dwNavegacioTemporal.setWidget(wController)

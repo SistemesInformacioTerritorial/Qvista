@@ -4,14 +4,15 @@ from qgis.core import QgsProject, QgsLayoutExporter, QgsReport, QgsFeedback
 from qgis.PyQt.QtCore import Qt
 from qgis.PyQt.QtWidgets import QMenu, QMessageBox, QApplication, QProgressDialog, QProgressBar, QPushButton, QShortcut 
 
-from DataPlotly.QvDataPlotly import QvDataPlotly
+from DataPlotly.data_plotly import DataPlotly
+from _qgis.utils import iface
 
 from moduls.QvFuncions import debugging
 import os 
 
-class QvReports(QvDataPlotly):
+class QvReports(DataPlotly):
 
-    DataPlotlyVersion = QvDataPlotly.VERSION
+    DataPlotlyVersion = DataPlotly.VERSION
     PathInformes = 'C:/temp/qVista/dades'
 
     ExportMsgs = [
@@ -25,7 +26,7 @@ class QvReports(QvDataPlotly):
     ]
 
     def __init__(self, llegenda, path=PathInformes):
-        super().__init__()
+        super().__init__(iface)
         self.initGui()
         self.llegenda = llegenda
         self.path = path
@@ -184,7 +185,7 @@ if __name__ == "__main__":
     from moduls.QvLlegenda import QvLlegenda
     from moduls.QvApp import QvApp
     from moduls.QvAtributs import QvAtributs
-    from DataPlotly.QvDataPlotly import QvDataPlotly
+    from DataPlotly.data_plotly import DataPlotly
     from qgis.analysis import QgsNativeAlgorithms
     
     import sys
@@ -209,7 +210,7 @@ if __name__ == "__main__":
         # nAlgs.loadAlgorithms()
         # QgsApplication.processingRegistry().addProvider(nAlgs) 
 
-        dp = QvDataPlotly()
+        dp = DataPlotly()
         dp.initGui()
 
         # llegenda.project.read('projectes/Illes.qgs')
