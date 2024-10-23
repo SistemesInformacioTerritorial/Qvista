@@ -58,7 +58,7 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
         self.atributs = atributs
         if self.atributs is not None:
             self.atributs.llegenda = self
-        self.editable = True
+        self.editable = editable
         self.lastExtent = None
         self.escales = None
         self.directory = '.'
@@ -103,7 +103,7 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
         self.model.setFlag(qgCor.QgsLegendModel.ShowLegendAsTree, True)
         if QvApp().testVersioQgis(3, 10):
             self.model.setFlag(qgCor.QgsLegendModel.UseTextFormatting, True)
-        self.editarLlegenda(editable)
+        self.editarLlegenda()
         self.setModel(self.model)
         self.model.dataChanged.connect(self.itemChanged)
 
@@ -118,7 +118,10 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
         # Acciones disponibles
         self.accions = QvAccions()
         self.setAccions()
-        self.setMenuProvider(QvMenuLlegenda(self))
+        if self.editable:
+            self.setMenuProvider(QvMenuLlegenda(self))
+        else:
+            self.setMenuProvider(None)
 
         self.iconaFiltre = qgGui.QgsLayerTreeViewIndicator()
         self.iconaFiltre.setIcon(qtGui.QIcon(os.path.join(imatgesDir, 'filter.png')))
@@ -361,12 +364,12 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
               'centro: (', str(x),
               '-', str(y), ')')
 
-    def editarLlegenda(self, on=True):
-        self.editable = on
+    def editarLlegenda(self, on=None):
+        if on is None: on = self.editable
         self.model.setFlag(qgCor.QgsLegendModel.AllowNodeReorder, on)
         self.model.setFlag(qgCor.QgsLegendModel.AllowNodeRename, on)
         self.model.setFlag(qgCor.QgsLegendModel.AllowLegendChangeState, on)
-        self.model.setFlag(qgCor.QgsLegendModel.AllowNodeChangeVisibility, True)
+        self.model.setFlag(qgCor.QgsLegendModel.AllowNodeChangeVisibility, True) # Siempre True
         self.model.setFlag(qgCor.QgsLegendModel.DeferredLegendInvalidation, on)
         # self.setAcceptDrops(on)
         # # self.setDropIndicatorShown(on)
@@ -1150,7 +1153,7 @@ if __name__ == "__main__":
 
         atrib = QvAtributs(canv)
 
-        leyenda = QvLlegenda(canv, atrib, printCapaActiva)
+        leyenda = QvLlegenda(canv, atrib, printCapaActiva, editable=False)
         leyenda.projecteModificat.connect(print)
 
         # leyenda.project.read('D:/qVista/EjemploMapSin.qgs')
@@ -1197,15 +1200,15 @@ if __name__ == "__main__":
         def salutacions():
             qtWdg.QMessageBox().information(None, 'qVista', 'Salutacions ' + QvApp().usuari)
 
-        def editable():
-            leyenda.editarLlegenda(not leyenda.editable)
+        # def editable():
+        #     leyenda.editarLlegenda(not leyenda.editable)
 
         # Acciones de usuario para el menú
 
-        act = qtWdg.QAction()
-        act.setText("Editable")
-        act.triggered.connect(editable)
-        leyenda.accions.afegirAccio('editable', act)
+        # act = qtWdg.QAction()
+        # act.setText("Editable")
+        # act.triggered.connect(editable)
+        # leyenda.accions.afegirAccio('editable', act)
 
         act = qtWdg.QAction()
         act.setText("Test")
