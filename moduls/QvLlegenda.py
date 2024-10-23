@@ -366,7 +366,7 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
         self.model.setFlag(qgCor.QgsLegendModel.AllowNodeReorder, on)
         self.model.setFlag(qgCor.QgsLegendModel.AllowNodeRename, on)
         self.model.setFlag(qgCor.QgsLegendModel.AllowLegendChangeState, on)
-        self.model.setFlag(qgCor.QgsLegendModel.AllowNodeChangeVisibility, on)
+        self.model.setFlag(qgCor.QgsLegendModel.AllowNodeChangeVisibility, True)
         self.model.setFlag(qgCor.QgsLegendModel.DeferredLegendInvalidation, on)
         # self.setAcceptDrops(on)
         # # self.setDropIndicatorShown(on)
