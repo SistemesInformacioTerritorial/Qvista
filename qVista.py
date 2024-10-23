@@ -136,7 +136,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         QMainWindow.__init__(self)
         self.setupUi(self)
         # Pasamos el objeto qVista a QvApp lo antes posible
-        QvApp().qVista = self
+        QvApp().mainApp = self
 
         # Evita docks tabulados
         self.setDockOptions(QMainWindow.AnimatedDocks)
@@ -2492,7 +2492,7 @@ def main(argv):
         qV = QVista(app, iniProj, titolFinestra)
 
         # La paso a QvApp para que esté disponible
-        qVapp.qVista = qV
+        # qVapp.mainApp = qV
        
         # Restauració del est
         qV.restoreState(qV.tempState) 

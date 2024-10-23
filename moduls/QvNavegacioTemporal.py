@@ -7,7 +7,7 @@ class QvNavegacioTemporal:
 
     @staticmethod
     def widget():
-        qV = QvApp().qVista
+        qV = QvApp().mainApp
         if qV is None: return None
         return qV.dwNavegacioTemporal
 
@@ -38,7 +38,7 @@ class QvNavegacioTemporal:
 
 # def navegacioTemporal(docked=False):
 
-#     qV = QvApp().qVista
+#     qV = QvApp().mainApp
 #     if qV is None: return
 
 #     if docked:

@@ -322,7 +322,7 @@ class QvStatusBar(QStatusBar):
             # Comando a ejecutar
             command=self.leSeleccioExpressio.text().lower().strip()
             if command == 'help':
-                QvApp().qVista.infoQVista()
+                QvApp().mainApp.infoQVista()
             elif command == 'mapificacio':
                 from moduls.QvMapForms import QvFormNovaMapificacio
                 QvFormNovaMapificacio.executa(self.llegenda)

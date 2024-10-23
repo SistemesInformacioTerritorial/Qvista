@@ -31,10 +31,14 @@ class QvIface:
             return None
         
     def mainWindow(self):
-        return QvApp().qVista
+        return QvApp().mainApp
 
     def mapCanvas(self):
-        return self.mainWindow().canvas
+        mainW = self.mainWindow()
+        if hasattr(mainW, 'canvas'):
+            return mainW.canvas
+        else:
+            return mainW
 
     def iconSize(self, dockedToolbar=False):
         if dockedToolbar:
