@@ -3,7 +3,7 @@
 # Inici del cronòmetre
 import time
 
-from matplotlib.patches import Rectangle
+# from matplotlib.patches import Rectangle
 
 startGlobal = time.time()
 
