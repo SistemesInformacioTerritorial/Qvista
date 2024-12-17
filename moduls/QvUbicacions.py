@@ -400,15 +400,15 @@ class QvUbicacions(QWidget):
             if self.model.itemFromIndex(self.arbre.currentIndex().sibling(self.arbre.currentIndex().row(), 0)).text()[0] == chr(45): # "-" :
                 if self.model.itemFromIndex(self.arbre.currentIndex().sibling(self.arbre.currentIndex().row(), 0)).text()[1] ==chr(62): #">" :
 
-                    self.canvas.scene().removeItem(self.pare.marcaLloc)
-                    self.pare.marcaLloc = QgsVertexMarker(self.pare.canvas)
-                    self.pare.marcaLloc.setCenter( QgsPointXY(float((xxmin+xxmax)/2),  float((yymin+yymax)/2)) )
-                    self.pare.marcaLloc.setColor(QColor(255, 0, 0))
-                    self.pare.marcaLloc.setIconSize(15)
-                    self.pare.marcaLloc.setIconType(QgsVertexMarker.ICON_CIRCLE) # or  ICON_NONE, ICON_CROSS, ICON_X, ICON_BOX, ICON_CIRCLE, ICON_DOUBLE_TRIANGLE 
-                    self.pare.marcaLloc.setPenWidth(3)
-                    self.pare.marcaLloc.show()
-                    self.pare.marcaLlocPosada = True
+                    self.canvas.scene().removeItem(self.pare.marca_geometria)
+                    self.pare.marca_geometria = QgsVertexMarker(self.pare.canvas)
+                    self.pare.marca_geometria.setCenter( QgsPointXY(float((xxmin+xxmax)/2),  float((yymin+yymax)/2)) )
+                    self.pare.marca_geometria.setColor(QColor(255, 0, 0))
+                    self.pare.marca_geometria.setIconSize(15)
+                    self.pare.marca_geometria.setIconType(QgsVertexMarker.ICON_CIRCLE) # or  ICON_NONE, ICON_CROSS, ICON_X, ICON_BOX, ICON_CIRCLE, ICON_DOUBLE_TRIANGLE 
+                    self.pare.marca_geometria.setPenWidth(3)
+                    self.pare.marca_geometria.show()
+                    self.pare.marcaLlocGeometria = True
         except :
             pass
         
