@@ -283,7 +283,7 @@ class EinaRuta(QWidget):
                     lay.addLayout(layoutLlocInici)
 
                     # Activem la clase de cerca d'adreces
-                    self.cercadorInici = QCercadorAdreca(self.IniciLECarrer, self.IniciLENumero,'SQLITE')
+                    self.cercadorInici = QCercadorAdreca(self.IniciLECarrer, 'SQLITE', self.IniciLENumero)
                     self.cercadorInici.coordenades_trobades.connect(self.APostaltoCoord_Inici)
 
                 def preparacioCercadorEndPoint(lay):
@@ -324,7 +324,7 @@ class EinaRuta(QWidget):
                     lay.addLayout(layoutLlocFinal)
 
                     # Activem la clase de cerca d'adreces
-                    self.cercadorFinal = QCercadorAdreca(self.FiLECarrer, self.FiLENumero,'SQLITE')
+                    self.cercadorFinal = QCercadorAdreca(self.FiLECarrer, 'SQLITE', self.FiLENumero)
                     self.cercadorFinal.coordenades_trobades.connect(self.APostaltoCoord_Final)
                 
                 def preparacioBotoInvertirRuta(lay):
