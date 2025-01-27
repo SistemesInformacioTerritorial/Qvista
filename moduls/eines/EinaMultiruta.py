@@ -302,7 +302,7 @@ class PointUI_element:
         self.layoutPunt.addWidget(self.buttonNewPoint)
         self.layoutPunt.addWidget(self.buttonRemovePoint)
 
-        self.cercador = QCercadorAdreca(self.LECarrer, self.LENumero,'SQLITE')
+        self.cercador = QCercadorAdreca(self.LECarrer, 'SQLITE', self.LENumero)
         self.cercador.coordenades_trobades.connect(lambda:eina.APostaltoCoord(self.pointNumber))
 
 class PointTool(QgsMapTool):  
