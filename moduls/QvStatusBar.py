@@ -320,22 +320,27 @@ class QvStatusBar(QStatusBar):
             return
         try:
             # Comando a ejecutar
-            command=self.leSeleccioExpressio.text().lower()
+            command=self.leSeleccioExpressio.text().lower().strip()
             if command == 'help':
-                self.infoQVista()
+                QvApp().mainApp.infoQVista()
             elif command == 'mapificacio':
                 from moduls.QvMapForms import QvFormNovaMapificacio
                 QvFormNovaMapificacio.executa(self.llegenda)
-            elif command == 'etiquetas':
-                if QvApp().usuari == 'DE1717':
-                    # from qgis.core import QgsApplication
-                    # dir = QgsApplication.qgisSettingsDirPath()
-                    import importlib.util
-                    modSpec = importlib.util.spec_from_file_location("etiquetas", "C:/Users/de1717/AppData/Roaming/QGIS/QGIS3/profiles/default/misEtiquetas.py")
-                    mod = importlib.util.module_from_spec(modSpec)
-                    modSpec.loader.exec_module(mod)    
-                    from qgis.core import QgsExpression
-                    QgsExpression.registerFunction(mod.gestionEtiquetas)
+            elif len(command) > 0 and command[0] == '#':
+                from moduls.QvProcessing import QvProcessing
+                alg = command[1:].strip()
+                if ':' in alg: QvProcessing().execAlgorithm(alg)
+
+            # elif command == 'etiquetas':
+            #     if QvApp().usuari == 'DE1717':
+            #         # from qgis.core import QgsApplication
+            #         # dir = QgsApplication.qgisSettingsDirPath()
+            #         import importlib.util
+            #         modSpec = importlib.util.spec_from_file_location("etiquetas", "C:/Users/de1717/AppData/Roaming/QGIS/QGIS3/profiles/default/misEtiquetas.py")
+            #         mod = importlib.util.module_from_spec(modSpec)
+            #         modSpec.loader.exec_module(mod)    
+            #         from qgis.core import QgsExpression
+            #         QgsExpression.registerFunction(mod.gestionEtiquetas)
 
             # elif command == 'readgpkg':
             #     self.llegenda.readProject('geopackage:D:/qVista/Dades/Activitats.gpkg?projectName=Activitats')

@@ -18,6 +18,10 @@ from moduls.QvTema import QvTema
 from moduls.QvAnotacions import QvMapToolAnnotation
 from moduls.QvCatalegCapes import QvCreadorCatalegCapes
 from moduls.QvDigitizeContext import QvDigitizeContext
+from moduls.QvReports import QvReports
+from moduls.QvProcessing import QvProcessing
+from moduls.QvProviders import QvProjectProvider
+from moduls.QvNavegacioTemporal import QvNavegacioTemporal
 from moduls.QvApp import QvApp
 from moduls import QvFuncions
 
@@ -71,6 +75,7 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
         # self.restoreExtent = 0
         # print('restoreExtent', self.restoreExtent)
 
+        self.reports = QvReports(self)
         self.recarrega = QvRecarregaLlegenda(self)
         
         # L'opertura de projectes Oracle va lenta si és la primera
@@ -139,6 +144,11 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
         self.iconaRecarregaDG = qgGui.QgsLayerTreeViewIndicator()
         self.iconaRecarregaDG.setIcon(qtGui.QIcon(os.path.join(imatgesDir, 'update_time.png')))
         self.iconaRecarregaDG.setToolTip('Recàrrega automàtica de dades i gràfica')
+
+        self.iconaTemporal = qgGui.QgsLayerTreeViewIndicator()
+        self.iconaTemporal.setIcon(qtGui.QIcon(os.path.join(imatgesDir, 'temporal.png')))
+        self.iconaTemporal.setToolTip('Navegació temporal')
+        self.iconaTemporal.clicked.connect(QvNavegacioTemporal.switch)
 
         self.iconaMap = qgGui.QgsLayerTreeViewIndicator()
         self.iconaMap.setIcon(qtGui.QIcon(os.path.join(imatgesDir, 'categories2.png')))
@@ -402,6 +412,7 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
                 self.removeIndicator(node, self.iconaRecarregaD)
                 self.removeIndicator(node, self.iconaRecarregaG)
                 self.removeIndicator(node, self.iconaRecarregaDG)
+                self.removeIndicator(node, self.iconaTemporal)
                 self.removeIndicator(node, self.iconaMap)
                 self.removeIndicator(node, self.iconaRequired)
                 self.removeIndicator(node, self.iconaEditForm)
@@ -426,6 +437,9 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
                 else:
                     if rg:
                         self.addIndicator(node, self.iconaRecarregaG)
+                # Navegación temporal
+                if QvNavegacioTemporal.isActive(capa):
+                    self.addIndicator(node, self.iconaTemporal)
                 # Mapificación
                 var = QvDiagrama.capaAmbMapificacio(capa)
                 if var is not None and self.capaLocal(capa) and self.editable:
@@ -484,7 +498,10 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
             self.menuEdicio = self.digitize.setMenu(menu)
         self.menuEdicioVisible(False)
 
-    def nouProjecte(self):
+    def nouProjecte(self, doc):
+        # Lee modelos de proyecto
+        QvProjectProvider.readProject(doc)
+
         self.setTitol()
         # Borrar tabs de atributos si existen
         if self.atributs is not None:
@@ -850,9 +867,9 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
     def setMenuAccions(self):
         # Menú dinámico según tipo de elemento sobre el que se clicó
         self.menuAccions = []
-        menu = self.tema.setMenu()
-        if menu is not None:
-            self.accions.afegirAccio('menuTema', menu)
+        menuTemas = self.tema.setMenu()
+        if menuTemas is not None:
+            self.accions.afegirAccio('menuTema', menuTemas)
             self.menuAccions += ['menuTema', 'separator']
         tipo = self.calcTipusMenu()
         if tipo == 'layer':
@@ -886,6 +903,22 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
             if self.anotacions and \
                self.anotacions.menuVisible(self.accions.accio('viewAnnotations')):
                 self.menuAccions += ['separator', 'viewAnnotations']
+            # Informes
+            menuInformes = self.reports.setMenu()
+            if menuInformes is not None:
+                self.accions.afegirAccio('menuInforme', menuInformes)
+                self.menuAccions += ['separator', 'menuInforme']
+            # Procesos
+            menuProcessos = QvProcessing().setMenu(self)
+            # *** Pruebas
+            # if menuProcessos is not None:
+            #     menuProcessos.addSeparator()
+            #     QvProcessing().addMenuProcess("native:dbscanclustering", "Clustering")
+            #     QvProcessing().addMenuProcess("grass7:v.to.lines", "To lines")
+            # ***
+            if menuProcessos is not None:
+                self.accions.afegirAccio('menuProceso', menuProcessos)
+                self.menuAccions += ['separator', 'menuProceso']
             # Auto recarga
             if self.recarrega.timerDataSecs > 0 or self.recarrega.timerGraphSecs > 0:
                 self.menuAccions += ['separator']

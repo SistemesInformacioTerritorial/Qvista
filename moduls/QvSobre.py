@@ -4,7 +4,7 @@ from qgis.PyQt.QtCore import Qt
 import os
 from moduls.QvApp import QvApp
 from moduls.QvConstants import QvConstants
-
+from moduls.QvReports import QvReports
 import configuracioQvista
 
 class QvSobre(QDialog):
@@ -23,6 +23,8 @@ class QvSobre(QDialog):
         self._creaFila('Versió de qVista:',configuracioQvista.versio)
 
         self._creaFila('Versió de QGIS:',QvApp().versioQgis())
+
+        self._creaFila('Versió de DataPlotly:', QvReports.DataPlotlyVersion)
 
         self._creaFila('Desenvolupat per:',"Sistemes d'Informació Territorial\n Institut Municipal d'Informàtica\n Ajuntament de Barcelona")
 
