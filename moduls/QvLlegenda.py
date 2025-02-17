@@ -19,7 +19,7 @@ from moduls.QvAnotacions import QvMapToolAnnotation
 from moduls.QvCatalegCapes import QvCreadorCatalegCapes
 from moduls.QvDigitizeContext import QvDigitizeContext
 from moduls.QvReports import QvReports
-from moduls.QvProcessing import QvProcessing
+# from moduls.QvProcessing import QvProcessing
 from moduls.QvProviders import QvProjectProvider
 from moduls.QvNavegacioTemporal import QvNavegacioTemporal
 from moduls.QvApp import QvApp
@@ -909,6 +909,7 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
                 self.accions.afegirAccio('menuInforme', menuInformes)
                 self.menuAccions += ['separator', 'menuInforme']
             # Procesos
+            from moduls.QvProcessing import QvProcessing
             menuProcessos = QvProcessing().setMenu(self)
             # *** Pruebas
             # if menuProcessos is not None:
