@@ -934,7 +934,7 @@ class QvMascaraEinaPlantilla(QgsMapTool):
     def novaRubberband(self, elimina=False):
         if elimina:
             self.eliminaRubberbands()
-        rb = QgsRubberBand(self.canvas, True)
+        rb = QgsRubberBand(self.canvas)
         rb.setColor(QvConstants.COLORDESTACAT)
         rb.setWidth(2)
         self.rubberbands.append(rb)
@@ -1591,7 +1591,7 @@ class QvSeleccioElement(QgsMapTool):
             rect = QgsRectangle(point.x() - self.radi, point.y() - self.radi, point.x() + self.radi, point.y() + self.radi)
             rect = QgsRectangle(esquerraDalt.x(), esquerraDalt.y(), dretaBaix.x(), dretaBaix.y())
 
-            rb = QgsRubberBand(self.canvas, True)
+            rb = QgsRubberBand(self.canvas)
             rb.setToGeometry(QgsGeometry().fromRect(rect))
 
 

@@ -506,17 +506,26 @@ class QvMapeta(QFrame):
         Par3.x= self.centro_v.x() + self.ancho/2;      Par3.y= self.centro_v.y() - self.alto/2
         Par4.x= self.centro_v.x() - self.ancho/2;      Par4.y= self.centro_v.y() - self.alto/2
 
-  
-        # xmin, ymin, xmax, ymax para que las vea el paintEvent
-        xMin = round(min(Par1.x,Par2.x,Par3.x,Par4.x))
-        yMin = round(min(Par1.y,Par2.y,Par3.y,Par4.y))
-        xMax = round(max(Par1.x,Par2.x,Par3.x,Par4.x))
-        yMax = round(max(Par1.y,Par2.y,Par3.y,Par4.y))
-        self.begin = QPoint(xMin,yMin);            self.end = QPoint(xMax,yMax) 
-        
+        # Asegurarse de que los valores no son infinitos ni nan
+        x_values = [Par1.x, Par2.x, Par3.x, Par4.x]
+        y_values = [Par1.y, Par2.y, Par3.y, Par4.y]
 
+        x_values = [x for x in x_values if not math.isinf(x) and not math.isnan(x)]
+        y_values = [y for y in y_values if not math.isinf(y) and not math.isnan(y)]
+
+        if not x_values or not y_values:
+            self.begin = QPoint(0,0)
+            self.end = QPoint(0,0) 
+        else:
+            # xmin, ymin, xmax, ymax para que las vea el paintEvent
+            xMin = round(min(x_values))
+            yMin = round(min(y_values))
+            xMax = round(max(x_values))
+            yMax = round(max(y_values))
+            self.begin = QPoint(xMin,yMin)
+            self.end = QPoint(xMax,yMax) 
+       
         self.repaint()   # Fuerzo el paintEvent   
-
 
 
         # ShowSecondsInSystemClock

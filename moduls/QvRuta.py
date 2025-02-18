@@ -184,7 +184,7 @@ class Ruta():
 
         for tram in self.tramsRuta:
             points = []
-            polyline = QgsRubberBand(canvas, False)
+            polyline = QgsRubberBand(canvas)
             polylines.append(polyline)
             for point in tram.getCoords():
                 points.append(QgsPoint(point))

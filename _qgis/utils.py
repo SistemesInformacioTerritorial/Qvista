@@ -15,7 +15,7 @@ class QvIface:
         self.init()
         self.inc = QPoint(120, 80)
         self.size = QSize(550, 500)
-        QgsProject.instance().readProject.connect(self.init)
+        # QgsProject.instance().readProject.connect(self.init)
 
     def init(self):
         self.origin = QPoint(0, 0)

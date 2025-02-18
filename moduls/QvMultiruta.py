@@ -223,7 +223,7 @@ class QvMultiruta():
         #creació polilínies a partir de routePoints. cada trip és una polilínia
         for trip in self.routePoints:
             QgsPoint_trip = self._convertPointList(trip)
-            polyline = QgsRubberBand(canvas, False)
+            polyline = QgsRubberBand(canvas)
             polyline.setToGeometry(QgsGeometry.fromPolyline(QgsPoint_trip), None)
             polyline.setColor(QColor(0, 0, 255))
             polyline.setWidth(3)

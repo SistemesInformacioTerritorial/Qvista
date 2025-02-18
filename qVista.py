@@ -1014,7 +1014,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         Elimino la marca d'àrea anterior del canvas si existeix"""
         self.eliminar_marques()
         self.eliminaMarcaCercador()
-        self.marca_geometria = QgsRubberBand(self.canvas, True)
+        self.marca_geometria = QgsRubberBand(self.canvas)
         self.marca_geometria.setColor(QColor(255, 0, 0))
         self.marca_geometria.setFillColor(QColor(255, 0, 0, 100))
         self.marca_geometria.setWidth(3)
