@@ -2617,15 +2617,23 @@ def migraConfigs():
         if os.path.isfile(aMoure):
             os.replace(aMoure,os.path.join(configdir,x))
 
-def qvSplashScreen(imatge):
-    splash_pix = QPixmap(os.path.join(imatgesDir,'SplashScreen_qVista.png'))
-    splash = QSplashScreen(splash_pix, Qt.WindowStaysOnTopHint)
-    splash.setWindowFlags(Qt.WindowStaysOnTopHint | Qt.FramelessWindowHint)
-    splash.setEnabled(True)
-    splash.showMessage("""Institut Municipal d'Informàtica (IMI) Versió """+versio+'  ',Qt.AlignRight | Qt.AlignBottom, QvConstants.COLORFOSC)
-    splash.setFont(QFont(QvConstants.NOMFONT,8))
-    splash.show()
-    return splash
+class QvSplashScreen(QSplashScreen):
+    def __init__(self, imatge):
+        super().__init__(QPixmap(imatge), Qt.WindowStaysOnTopHint | Qt.FramelessWindowHint)
+        self.setEnabled(True)
+        self.showMessage("""Institut Municipal d'Informàtica (IMI) Versió """+versio+'  ',Qt.AlignRight | Qt.AlignBottom, QvConstants.COLORFOSC)
+        self.setFont(QFont(QvConstants.NOMFONT,8))
+        self.show()
+
+# def qvSplashScreen(imatge):
+#     splash_pix = QPixmap(os.path.join(imatgesDir,'SplashScreen_qVista.png'))
+#     splash = QSplashScreen(splash_pix, Qt.WindowStaysOnTopHint)
+#     splash.setWindowFlags(Qt.WindowStaysOnTopHint | Qt.FramelessWindowHint)
+#     splash.setEnabled(True)
+#     splash.showMessage("""Institut Municipal d'Informàtica (IMI) Versió """+versio+'  ',Qt.AlignRight | Qt.AlignBottom, QvConstants.COLORFOSC)
+#     splash.setFont(QFont(QvConstants.NOMFONT,8))
+#     splash.show()
+#     return splash
 
 # Cos de la funció principal  d'arranque de qVista
 def main(argv):
@@ -2646,7 +2654,7 @@ def main(argv):
         qVapp.carregaIdioma(app, 'ca')
 
         # Splash image al començar el programa. La tancarem amb splash.finish(qV)
-        splash = qvSplashScreen(os.path.join(imatgesDir,'SplashScreen_qVista.png'))
+        splash = QvSplashScreen(os.path.join(imatgesDir,'SplashScreen_qVista.png'))
 
         # Logo de la finestra
         app.setWindowIcon(QIcon(os.path.join(imatgesDir,'QVistaLogo_256.png')))
