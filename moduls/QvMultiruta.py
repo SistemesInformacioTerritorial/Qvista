@@ -234,7 +234,7 @@ class QvMultiruta():
     def hideRoute(self):
         for line in self.polylines:
             line.hide()
-            line.reset(True)
+            line.reset()
         self.polylines.clear()
 
     #converteix array de QgsPointXY a QgsPoint

@@ -299,7 +299,7 @@ class QvSeleccioGrafica(QWidget):
             self.einaCercle.radiCercle = int(radi)
         else:
             self.einaCercle.cercleFixe = False
-            self.einaCercle.rubberbandCercle.reset(True)
+            self.einaCercle.rubberbandCercle.reset()
         self.leFixarCentre.setVisible(self.einaCercle.cercleFixe)
     
     # inspirat en el funcionament de leXY a QvStatusBar
@@ -1183,7 +1183,7 @@ class QvMascaraEinaCercle(QvMascaraEinaPlantilla):
 
     def rbcircle(self, center, edgePoint, segments=100):
         try:
-            self.rubberbandCercle.reset(True)
+            self.rubberbandCercle.reset()
         except:
             pass
         self.poligon, llistaPunts = self.getPoligon(
@@ -1320,7 +1320,7 @@ class QvMesuraMultiLinia(QgsMapTool):
         rubberband = QgsRubberBand(self.canvas)
         rubberband.setColor(self.parent.color)
         if cercle:
-            rubberband.setWidth(0.25)
+            rubberband.setWidth(2)
             rubberband.setLineStyle(Qt.DashLine)
         else:
             rubberband.setWidth(2)
@@ -1329,7 +1329,7 @@ class QvMesuraMultiLinia(QgsMapTool):
 
     def rbcircle(self, center, edgePoint, desar=False, segments=100):
         r = math.sqrt(center.sqrDist(edgePoint))
-        self.rubberbandCercle.reset(True)
+        self.rubberbandCercle.reset()
         if not self.parent.cbCercles.isChecked():
             return
         pi = 3.1416

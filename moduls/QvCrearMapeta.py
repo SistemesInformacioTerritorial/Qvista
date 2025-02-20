@@ -59,7 +59,7 @@ class QvColocacionCirculo(QgsMapTool):
 
         # self.parent.label.setPixmap(QPixmap())
         try:
-            self.rubberband.reset(True)
+            self.rubberband.reset()
         except:
             pass  
 
@@ -93,7 +93,7 @@ class QvColocacionCirculo(QgsMapTool):
         rd = math.sqrt(center.sqrDist(edgePoint))
         self.radio = rd
 
-        rb.reset(True )
+        rb.reset()
         pi =3.1416
         llistaPunts=[]
         theta = 1*(2.0 * pi/segments)
@@ -536,7 +536,7 @@ class QvCrearMapetaConBotones(QWidget):
 
         # reseterar circulo
         try:
-            self.colocoCirculo.rubberband.reset(True)
+            self.colocoCirculo.rubberband.reset()
         except :
             pass
 

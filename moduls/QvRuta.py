@@ -205,7 +205,7 @@ class Ruta():
     def ocultarRuta(self):
         for linia in self.polylines:
             linia.hide()
-            linia.reset(True)
+            linia.reset()
 
         self.polylines.clear()
 

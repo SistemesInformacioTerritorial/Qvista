@@ -55,7 +55,10 @@ class QvReverse():
             return
 
         #decodificar response (JSON)
-        response = json.loads(response)
+        try:
+            response = json.loads(response)
+        except:
+            return
 
         if "address" in response:
             if "road" in response["address"]:

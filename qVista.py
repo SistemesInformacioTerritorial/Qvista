@@ -1602,7 +1602,8 @@ class QVista(QMainWindow, Ui_MainWindow):
         num = self.numCanvasAux[-1]+1 if len(self.numCanvasAux)>0 else 1
         dwCanvas = QvDockWidget(f'Vista auxiliar del mapa ({num})')
 
-        dwCanvas.resize(self.canvas.width()/2.5,self.canvas.height()/2.5)   #JNB
+        dwCanvas.resize(round(self.canvas.width()/2.5),
+                        round(self.canvas.height()/2.5))   #JNB
 
         dwCanvas.tancat.connect(lambda: self.numCanvasAux.remove(num))
         dwCanvas.tancat.connect(lambda: self.actualizoDiccionarios(num))
