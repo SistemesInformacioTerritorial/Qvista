@@ -221,7 +221,7 @@ class Ruta():
             pGir = QgsTextAnnotation(canvas)
             pGir.setDocument(QTextDocument(gir.getDescription()))
             pGir.setMapPosition(gir.getCoord())
-            pGir.setFrameOffsetFromReferencePoint(QPointF(0, 0))
+            pGir.setFrameOffsetFromReferencePointMm(QPointF(0, 0))
             i = QgsMapCanvasAnnotationItem(pGir, canvas)
             pGirs.append(i)
         self.pGirs = pGirs
