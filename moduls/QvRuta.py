@@ -184,7 +184,7 @@ class Ruta():
 
         for tram in self.tramsRuta:
             points = []
-            polyline = QgsRubberBand(canvas, False)
+            polyline = QgsRubberBand(canvas)
             polylines.append(polyline)
             for point in tram.getCoords():
                 points.append(QgsPoint(point))
@@ -205,7 +205,7 @@ class Ruta():
     def ocultarRuta(self):
         for linia in self.polylines:
             linia.hide()
-            linia.reset(True)
+            linia.reset()
 
         self.polylines.clear()
 
@@ -221,7 +221,7 @@ class Ruta():
             pGir = QgsTextAnnotation(canvas)
             pGir.setDocument(QTextDocument(gir.getDescription()))
             pGir.setMapPosition(gir.getCoord())
-            pGir.setFrameOffsetFromReferencePoint(QPointF(0, 0))
+            pGir.setFrameOffsetFromReferencePointMm(QPointF(0, 0))
             i = QgsMapCanvasAnnotationItem(pGir, canvas)
             pGirs.append(i)
         self.pGirs = pGirs

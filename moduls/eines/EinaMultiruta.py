@@ -489,7 +489,8 @@ class EinaMultiruta(QWidget):
                 point_index = i
             
             point_name = self.pointUI.pointList[point_index].LECarrer.text().split(" (")[0] + ' ' + self.pointUI.pointList[point_index].LENumero.text()
-            municipi_name = self.pointUI.pointList[point_index].reverse.nomMunicipi
+            # municipi_name = self.pointUI.pointList[point_index].reverse.nomMunicipi
+            municipi_name = QvReverse(self.pointUI.pointList[point_index].point).nomMunicipi
 
             if (i < len(self.ruta.legs) or ( self.ruta.routeType and self.ruta.roundtrip and i == len(self.ruta.legs))):
                 point_duration = self.ruta.legs[i]["duration"]

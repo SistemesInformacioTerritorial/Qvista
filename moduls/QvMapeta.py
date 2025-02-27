@@ -424,6 +424,9 @@ class QvMapeta(QFrame):
         # anchura y altura de la cartografia del canvas en coord mundo
         anchoMundoAzul= (PPa3.x - PPa1.x);    altoMundoAzul=  (PPa3.y - PPa1.y)
 
+        if math.isinf(anchoMundoAzul) or math.isnan(anchoMundoAzul): return
+        if math.isinf(altoMundoAzul) or math.isnan(altoMundoAzul): return
+
         # Proporciones canvas
         w= self.canvas.widthMM();              h= self.canvas.heightMM()
         # ww= self.canvas.width();               hh= self.canvas.height()   # ???
@@ -506,17 +509,17 @@ class QvMapeta(QFrame):
         Par3.x= self.centro_v.x() + self.ancho/2;      Par3.y= self.centro_v.y() - self.alto/2
         Par4.x= self.centro_v.x() - self.ancho/2;      Par4.y= self.centro_v.y() - self.alto/2
 
-  
         # xmin, ymin, xmax, ymax para que las vea el paintEvent
-        xMin = round(min(Par1.x,Par2.x,Par3.x,Par4.x))
-        yMin = round(min(Par1.y,Par2.y,Par3.y,Par4.y))
-        xMax = round(max(Par1.x,Par2.x,Par3.x,Par4.x))
-        yMax = round(max(Par1.y,Par2.y,Par3.y,Par4.y))
-        self.begin = QPoint(xMin,yMin);            self.end = QPoint(xMax,yMax) 
-        
-
+        x_values = [Par1.x, Par2.x, Par3.x, Par4.x]
+        y_values = [Par1.y, Par2.y, Par3.y, Par4.y]
+        xMin = round(min(x_values))
+        yMin = round(min(y_values))
+        xMax = round(max(x_values))
+        yMax = round(max(y_values))
+        self.begin = QPoint(xMin,yMin)
+        self.end = QPoint(xMax,yMax) 
+       
         self.repaint()   # Fuerzo el paintEvent   
-
 
 
         # ShowSecondsInSystemClock

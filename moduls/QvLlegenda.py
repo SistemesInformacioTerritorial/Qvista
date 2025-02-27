@@ -502,6 +502,9 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
         # Lee modelos de proyecto
         QvProjectProvider.readProject(doc)
 
+        from _qgis.utils import iface
+        iface.init()
+
         self.setTitol()
         # Borrar tabs de atributos si existen
         if self.atributs is not None:

@@ -1014,7 +1014,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         Elimino la marca d'àrea anterior del canvas si existeix"""
         self.eliminar_marques()
         self.eliminaMarcaCercador()
-        self.marca_geometria = QgsRubberBand(self.canvas, True)
+        self.marca_geometria = QgsRubberBand(self.canvas)
         self.marca_geometria.setColor(QColor(255, 0, 0))
         self.marca_geometria.setFillColor(QColor(255, 0, 0, 100))
         self.marca_geometria.setWidth(3)
@@ -1602,7 +1602,8 @@ class QVista(QMainWindow, Ui_MainWindow):
         num = self.numCanvasAux[-1]+1 if len(self.numCanvasAux)>0 else 1
         dwCanvas = QvDockWidget(f'Vista auxiliar del mapa ({num})')
 
-        dwCanvas.resize(self.canvas.width()/2.5,self.canvas.height()/2.5)   #JNB
+        dwCanvas.resize(round(self.canvas.width()/2.5),
+                        round(self.canvas.height()/2.5))   #JNB
 
         dwCanvas.tancat.connect(lambda: self.numCanvasAux.remove(num))
         dwCanvas.tancat.connect(lambda: self.actualizoDiccionarios(num))
@@ -2617,15 +2618,23 @@ def migraConfigs():
         if os.path.isfile(aMoure):
             os.replace(aMoure,os.path.join(configdir,x))
 
-def qvSplashScreen(imatge):
-    splash_pix = QPixmap(os.path.join(imatgesDir,'SplashScreen_qVista.png'))
-    splash = QSplashScreen(splash_pix, Qt.WindowStaysOnTopHint)
-    splash.setWindowFlags(Qt.WindowStaysOnTopHint | Qt.FramelessWindowHint)
-    splash.setEnabled(True)
-    splash.showMessage("""Institut Municipal d'Informàtica (IMI) Versió """+versio+'  ',Qt.AlignRight | Qt.AlignBottom, QvConstants.COLORFOSC)
-    splash.setFont(QFont(QvConstants.NOMFONT,8))
-    splash.show()
-    return splash
+class QvSplashScreen(QSplashScreen):
+    def __init__(self, imatge):
+        super().__init__(QPixmap(imatge), Qt.WindowStaysOnTopHint | Qt.FramelessWindowHint)
+        self.setEnabled(True)
+        self.showMessage("""Institut Municipal d'Informàtica (IMI) Versió """+versio+'  ',Qt.AlignRight | Qt.AlignBottom, QvConstants.COLORFOSC)
+        self.setFont(QFont(QvConstants.NOMFONT,8))
+        self.show()
+
+# def qvSplashScreen(imatge):
+#     splash_pix = QPixmap(os.path.join(imatgesDir,'SplashScreen_qVista.png'))
+#     splash = QSplashScreen(splash_pix, Qt.WindowStaysOnTopHint)
+#     splash.setWindowFlags(Qt.WindowStaysOnTopHint | Qt.FramelessWindowHint)
+#     splash.setEnabled(True)
+#     splash.showMessage("""Institut Municipal d'Informàtica (IMI) Versió """+versio+'  ',Qt.AlignRight | Qt.AlignBottom, QvConstants.COLORFOSC)
+#     splash.setFont(QFont(QvConstants.NOMFONT,8))
+#     splash.show()
+#     return splash
 
 # Cos de la funció principal  d'arranque de qVista
 def main(argv):
@@ -2646,7 +2655,7 @@ def main(argv):
         qVapp.carregaIdioma(app, 'ca')
 
         # Splash image al començar el programa. La tancarem amb splash.finish(qV)
-        splash = qvSplashScreen(os.path.join(imatgesDir,'SplashScreen_qVista.png'))
+        splash = QvSplashScreen(os.path.join(imatgesDir,'SplashScreen_qVista.png'))
 
         # Logo de la finestra
         app.setWindowIcon(QIcon(os.path.join(imatgesDir,'QVistaLogo_256.png')))
