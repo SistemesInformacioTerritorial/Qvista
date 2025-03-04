@@ -1639,7 +1639,7 @@ class QvSeleccioElement(QgsMapTool):
             marcaLloc.hide()
             rb.hide()
             # marcaLloc.deleteLater()
-            rb.deleteLater()
+            # rb.deleteLater()
         except Exception as e:
             print(str(e))
 

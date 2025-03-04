@@ -24,7 +24,8 @@ class QvSobre(QDialog):
 
         self._creaFila('Versió de QGIS:',QvApp().versioQgis())
 
-        self._creaFila('Versió de DataPlotly:', QvReports.DataPlotlyVersion)
+        if QvReports.DataPlotlyVersion is not None:
+            self._creaFila('Versió de DataPlotly:', QvReports.DataPlotlyVersion)
 
         self._creaFila('Desenvolupat per:',"Sistemes d'Informació Territorial\n Institut Municipal d'Informàtica\n Ajuntament de Barcelona")
 

@@ -243,7 +243,11 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
         self.recarrega.resetTimers()
         if self.anotacions is not None:
             self.anotacions.removeAnnotations()
+        self.removing = True
+        # self.project.clear()
         self.project.read(fileName)
+        self.removing = False
+        self.actIcones()
         self.projectMacros('qVopenProject')
         msg = self.msgErrorlayers()
         if msg:
@@ -1187,10 +1191,11 @@ if __name__ == "__main__":
                 print('Capa activa: None')
 
         canv = qgGui.QgsMapCanvas()
+        QvApp().mainApp = canv
 
         atrib = QvAtributs(canv)
 
-        leyenda = QvLlegenda(canv, atrib, printCapaActiva, editable=False)
+        leyenda = QvLlegenda(canv, atrib, printCapaActiva, editable=True)
         leyenda.projecteModificat.connect(print)
 
         # leyenda.project.read('D:/qVista/EjemploMapSin.qgs')

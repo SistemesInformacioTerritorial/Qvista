@@ -4,15 +4,22 @@ from qgis.core import QgsProject, QgsLayoutExporter, QgsReport, QgsFeedback
 from qgis.PyQt.QtCore import Qt
 from qgis.PyQt.QtWidgets import QMenu, QMessageBox, QApplication, QProgressDialog, QProgressBar, QPushButton, QShortcut 
 
-from DataPlotly.data_plotly import DataPlotly
-from _qgis.utils import iface
-
+from moduls.QvApp import QvApp
 from moduls.QvFuncions import debugging
 import os 
 
-class QvReports(DataPlotly):
+# from DataPlotly.data_plotly import DataPlotly
+# from _qgis.utils import iface
+# _DataPlotly = DataPlotly(iface)
+# _DataPlotly.initGui()
+_DataPlotly = None
 
-    DataPlotlyVersion = DataPlotly.VERSION
+class QvReports:
+
+    if _DataPlotly is not None:
+        DataPlotlyVersion = _DataPlotly.VERSION
+    else:
+        DataPlotlyVersion = None
     PathInformes = 'C:/temp/qVista/dades'
 
     ExportMsgs = [
@@ -26,8 +33,6 @@ class QvReports(DataPlotly):
     ]
 
     def __init__(self, llegenda, path=PathInformes):
-        super().__init__(iface)
-        self.initGui()
         self.llegenda = llegenda
         self.path = path
         self.menu = None
