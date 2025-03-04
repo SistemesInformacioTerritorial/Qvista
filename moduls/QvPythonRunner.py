@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from qgis.core import QgsPythonRunner
-from qgis.utils import clean_project_expression_functions
+
 class QvPythonRunner(QgsPythonRunner):
     """Implementa la clase QgsPythonRunner para definir
        cómo se ejecuta Python en qVista
@@ -42,14 +42,19 @@ class QvPythonRunner(QgsPythonRunner):
             Bool -- Ok o no
         """
         try:
-            # En la inicialización no actuamos sobre el comando
-            if self.first:
-                self.first = False
-            else:
-                if command == 'qgis.utils.clean_project_expression_functions()':
-                    command = 'clean_project_expression_functions()'
+            from moduls.QvApp import QvApp
+            if QvApp().testVersioQgis(3, 40):
+                # En la inicialización no actuamos sobre el comando porque se bucla ¿?
+                if self.first:
+                    self.first = False
+                else:
+                    if command == 'qgis.utils.clean_project_expression_functions()':
+                        from qgis.utils import clean_project_expression_functions
+                        command = 'clean_project_expression_functions()'
+                        exec(command, locals())
+                        return True
             exec(command, globals())
-            return True
+            return True            
         except:
             print('PythonRunner error:', command)
             return False
