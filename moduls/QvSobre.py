@@ -27,7 +27,7 @@ class QvSobre(QDialog):
         if QvReports.DataPlotlyVersion is not None:
             self._creaFila('Versió de DataPlotly:', QvReports.DataPlotlyVersion)
 
-        self._creaFila('Desenvolupat per:',"Sistemes d'Informació Territorial\n Institut Municipal d'Informàtica\n Ajuntament de Barcelona")
+        self._creaFila('Desenvolupat per:',"Sistemes d'Informació Territorial\nInstitut Municipal d'Informàtica\nAjuntament de Barcelona")
 
         # self._creaFila('Llicència:','<a href="https://www.gnu.org/licenses/gpl-3.0.ca.html">GNU GPLv3</a>')
 
