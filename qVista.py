@@ -204,7 +204,6 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.preparacioCatalegVideos()
         # self.preparacioCataleg()
 
-        # self.preparacioMapTips() ???
         self.preparacioImpressio()
         self.preparacioMesura()
         # self.preparacioGrafiques() ???
@@ -607,6 +606,8 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.leTitolProjecte.hide() #El lineEdit estarà visible només quan anem a editar
         self.lblTitolProjecte.clicked.connect(self.editarTitol)
         self.leTitolProjecte.editingFinished.connect(self.titolEditat)
+
+        self.toolTip = QvToolTip(self.canvas)
 
     def editarTitol(self):
         self.lblTitolProjecte.hide()
@@ -1146,11 +1147,6 @@ class QVista(QMainWindow, Ui_MainWindow):
             self.llegenda.menuAccions.append('separator')
             self.llegenda.menuAccions.append("Opcions de visualització")
 
-    def preparacioMapTips(self):
-        layer = self.llegenda.currentLayer()
-        self.my_tool_tip = QvToolTip(self.canvas,layer)
-        self.my_tool_tip.createMapTips()
-
     def preparacioImpressio(self):
         estatDirtybit = self.canvisPendents
         self.dwPrint = QvDockWidget( "Imprimir a PDF", self )
@@ -1562,8 +1558,8 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.wSeleccioGrafica.calcularSeleccio()
 
     def canviLayer(self):
-        self.preparacioMapTips()
         self.layerActiu = self.llegenda.currentLayer()
+        self.canvas.setCurrentLayer(self.layerActiu)
         self.wSeleccioGrafica.lwFieldsSelect.clear()
         # self.esborrarSeleccio(True)
         self.esborrarMesures(True)

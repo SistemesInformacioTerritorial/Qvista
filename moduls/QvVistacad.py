@@ -395,7 +395,7 @@ class QvVistacad:
             if gpkgLayer.isValid():
                 res = gpkgLayer.loadNamedStyle(qmlFile)
                 if res:
-                    s = qgCor.QgsSettings()
+                    s = QvApp().settings
                     s.setValue("qgis/overwriteStyle", True)
                     txt = gpkgLayer.saveStyleToDatabase("vistacad", "", True, "")
                     if txt != '':

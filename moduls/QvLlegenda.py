@@ -1017,7 +1017,7 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
         self.recarrega.toggleUpdateGraph(self.sender())
 
     def saveStyleToGeoPackage(self, capa, nom="", desc="", default=True):
-        s = qgCor.QgsSettings()
+        s = QvApp().settings
         s.setValue("qgis/overwriteStyle", True)
         return capa.saveStyleToDatabase(nom, desc, default, "")
 

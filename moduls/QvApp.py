@@ -118,7 +118,11 @@ class QvApp:
         self.qgisTranslator = None
         self.locale = QLocale("ca-ES")
 
-        QgsPythonRunner.setInstance(QvPythonRunner())   # Ejecuciones Python
+        # Configuración QGIS
+        QgsSettings.setGlobalSettingsPath(os.getenv('APPDATA') + '\\QGIS\\QGIS3\\profiles\\default\\QGIS\\QGIS3.ini')
+        self.settings = QgsSettings()
+        # Ejecuciones Python
+        QgsPythonRunner.setInstance(QvPythonRunner())   
 
     def data(self):
         txt = ''
