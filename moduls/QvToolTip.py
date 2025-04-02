@@ -1,5 +1,6 @@
+# -*- coding: utf-8 -*-
+
 from qgis.PyQt import QtCore
-from qgis.core import QgsSettings
 from qgis.gui import QgsMapTip
 from moduls.QvApp import QvApp
 from moduls.QvFuncions import debugging
@@ -11,6 +12,7 @@ class QvToolTip:
     """
     def __init__(self, canvas):
         self.canvas = canvas
+        self.layer = None
         self.settings = QvApp().settings
         self.mapTipsVisible = self.settings.value("qgis/enableMapTips", defaultValue=True, type=bool)
         if debugging(): print("qgis/enableMapTips:", self.mapTipsVisible)
@@ -25,6 +27,10 @@ class QvToolTip:
         self.mapTipsTimer.setSingleShot(True)
         self.mapTip = QgsMapTip()
 
+    def clear(self):
+        """Necesario para que los MapTips no se queden en la pantalla en la versión 3.40"""
+        self.canvas.setCenter(self.canvas.center())
+
     def toggleMapTips(self, enabled):
         self.mapTipsVisible = enabled
         if not self.mapTipsVisible:
@@ -32,29 +38,28 @@ class QvToolTip:
             self.mapTip.clear(self.canvas)
             if QvApp().testVersioQgis(3, 40): self.clear()
 
+    def checkCurrentLayer(self):
+        self.layer = self.canvas.currentLayer()
+        return self.layer is not None and (not QvApp().testVersioQgis(3, 40) or self.layer.hasMapTips())
+
+    def checkMapTip(self):
+        return self.mapTipsVisible and self.canvas.underMouse() and self.checkCurrentLayer()
+
     def showMapTip(self):
         """ SLOT. Show MapTips on the map """
-        if self.mapTipsVisible and self.canvas.underMouse():
-            pointerPos = self.canvas.mouseLastXY()
-            layer = self.canvas.currentLayer()
-            if layer is not None and (not QvApp().testVersioQgis(3, 40) or layer.hasMapTips()):
-                self.mapTip.showMapTip(layer, self.lastMapPosition, pointerPos, self.canvas)
-
-    def clear(self):
-        """Necesario para que los MapTips no se queden en la pantalla en la versión 3.40"""
-        self.canvas.setCenter(self.canvas.center())
+        if self.checkMapTip():
+            self.mapTip.showMapTip(self.layer, self.lastMapPosition, self.canvas.mouseLastXY(), self.canvas)
 
     def saveLastMousePosition(self, p):
         """ SLOT. Initialize the Timer to show MapTips on the map """
-        if self.mapTipsVisible:
+        if self.checkMapTip():
             self.lastMapPosition = p
-            if self.canvas.underMouse():
-                if QvApp().testVersioQgis(3, 40):
-                    interval = min(300, self.mapTipsTimer.interval())
-                    self.mapTip.clear(self.canvas, interval)
-                    self.clear()
-                else:
-                    self.mapTip.clear(self.canvas)
-                self.mapTipsTimer.start()
+            if QvApp().testVersioQgis(3, 40):
+                interval = min(300, self.mapTipsTimer.interval())
+                self.mapTip.clear(self.canvas, interval)
+                self.clear()
+            else:
+                self.mapTip.clear(self.canvas)
+            self.mapTipsTimer.start()
 
       
