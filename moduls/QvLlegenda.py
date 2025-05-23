@@ -528,14 +528,14 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
             if self.digitize is not None:
                 self.digitize.altaInfoCapa(capa)
 
-            if self.capaMarcada(capa) and (capa.type() == qgCor.QgsMapLayer.RasterLayer or capa.providerType() == "WFS"):
-                node = self.root.findLayer(capa.id())
-                # self.restoreExtent = 2
-                # print('restoreExtent', self.restoreExtent)
-                # node.visibilityChanged.connect(self.restoreCanvasPosition)
-                # self.restoreCanvasPosition()
+            # Tratamiento especial para WMS y WFS para que se visualicen bien al cargarse el proyecto
+            # según el tipo de capa y si está visible o no
+            node = self.root.findLayer(capa.id())
+            if not self.capaMarcada(node) and (capa.providerType() == "wms"):
+                node.setItemVisibilityChecked(True)
                 node.setItemVisibilityChecked(False)
-                # # self.restoreCanvasPosition()
+            elif self.capaMarcada(node) and (capa.type() == qgCor.QgsMapLayer.RasterLayer or capa.providerType() == "WFS"):
+                node.setItemVisibilityChecked(False)
                 node.setItemVisibilityChecked(True)
 
         visible = self.menuEdicioVisible()
@@ -700,8 +700,7 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
             return v
         return False
 
-    def capaMarcada(self, capa):
-        node = self.root.findLayer(capa.id())
+    def capaMarcada(self, node):
         if node is not None:
             return node.itemVisibilityChecked()
         return False
