@@ -1,44 +1,65 @@
+# -*- coding: utf-8 -*-
+
 from qgis.PyQt import QtCore
 from qgis.gui import QgsMapTip
-from qgis.core import QgsPointXY
+from moduls.QvApp import QvApp
+from moduls.QvFuncions import debugging
+import os
 
 class QvToolTip:
-    def __init__(self, canvas, layer=None):
+    """ Class to show MapTips on the map
+        (Código tomado de qgisapp.cpp - varía según la version de QGIS)
+    """
+    def __init__(self, canvas):
         self.canvas = canvas
-        self.layer = layer
+        self.layer = None
+        self.settings = QvApp().settings
+        self.mapTipsVisible = self.settings.value("qgis/enableMapTips", defaultValue=True, type=bool)
+        if debugging(): print("qgis/enableMapTips:", self.mapTipsVisible)
+        self.createMapTips()
+        self.lastMapPosition = None
+        self.canvas.xyCoordinates.connect(self.saveLastMousePosition)
 
     def createMapTips(self):
-        """ Create MapTips on the map """
-        self.timer_map_tips = QtCore.QTimer(self.canvas)
-        self.map_tip = QgsMapTip()
-        self.canvas.xyCoordinates.connect(self.mapTipXYChanged)
-        self.timer_map_tips.timeout.connect(self.showMapTip)
+        self.mapTipsTimer = QtCore.QTimer(self.canvas)
+        self.mapTipsTimer.timeout.connect(self.showMapTip)
+        self.mapTipsTimer.setInterval(self.settings.value("qgis/mapTipsDelay", defaultValue=850, type=int))
+        self.mapTipsTimer.setSingleShot(True)
+        self.mapTip = QgsMapTip()
 
-    def mapTipXYChanged(self, p):
-        """ SLOT. Initialize the Timer to show MapTips on the map """
-        if self.canvas.underMouse():  # Only if mouse is over the map
-            # Here you could check if your custom MapTips button is active
-            self.lastMapPosition = QgsPointXY(p.x(), p.y())
-            self.map_tip.clear(self.canvas)
-            self.timer_map_tips.start(500)  # time in milliseconds
+    def clear(self):
+        """Necesario para que los MapTips no se queden en la pantalla en la versión 3.40"""
+        self.canvas.setCenter(self.canvas.center())
+
+    def toggleMapTips(self, enabled):
+        self.mapTipsVisible = enabled
+        if not self.mapTipsVisible:
+            self.mapTipsTimer.stop()
+            self.mapTip.clear(self.canvas)
+            if QvApp().testVersioQgis(3, 40): self.clear()
+
+    def checkCurrentLayer(self):
+        self.layer = self.canvas.currentLayer()
+        return self.layer is not None and (not QvApp().testVersioQgis(3, 40) or self.layer.hasMapTips())
+
+    def checkMapTip(self):
+        return self.mapTipsVisible and self.canvas.underMouse() and self.checkCurrentLayer()
 
     def showMapTip(self):
-        """ SLOT. Show  MapTips on the map """
-        self.timer_map_tips.stop()
+        """ SLOT. Show MapTips on the map """
+        if self.checkMapTip():
+            self.mapTip.showMapTip(self.layer, self.lastMapPosition, self.canvas.mouseLastXY(), self.canvas)
 
-        if self.canvas.underMouse():
-            # Here you could check if your custom MapTips button is active
-            point_qgs = self.lastMapPosition
-            point_qt = self.canvas.mouseLastXY()
-            point_qt.setX(point_qt.x()+10)
-            point_qt.setY(point_qt.y()+10)
-            if self.layer:
-                self.map_tip.showMapTip(
-                    self.layer,
-                    point_qgs,
-                    point_qt,
-                    self.canvas
-                )
+    def saveLastMousePosition(self, p):
+        """ SLOT. Initialize the Timer to show MapTips on the map """
+        if self.checkMapTip():
+            self.lastMapPosition = p
+            if QvApp().testVersioQgis(3, 40):
+                interval = min(300, self.mapTipsTimer.interval())
+                self.mapTip.clear(self.canvas, interval)
+                self.clear()
             else:
-                print ("You should set a layer")
+                self.mapTip.clear(self.canvas)
+            self.mapTipsTimer.start()
+
       

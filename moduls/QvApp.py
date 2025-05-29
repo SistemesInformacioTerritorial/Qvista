@@ -61,6 +61,7 @@ class QvApp:
     def __init__(self, produccio=None):
         self.gh = None
         self.appQgis = None
+        self.mainApp = None                         # La MainWindow o, si no, el canvas
         self.ruta, self.rutaBase = self.calcRuta()  # Path de la aplicación
         self.cfg = self.readCfg()                   # Config de instalación
         val = self.paramCfg("Debug", "False")       # Errores no controlados
@@ -117,7 +118,11 @@ class QvApp:
         self.qgisTranslator = None
         self.locale = QLocale("ca-ES")
 
-        QgsPythonRunner.setInstance(QvPythonRunner())   # Ejecuciones Python
+        # Configuración QGIS
+        QgsSettings.setGlobalSettingsPath(os.getenv('APPDATA') + '\\QGIS\\QGIS3\\profiles\\default\\QGIS\\QGIS3.ini')
+        self.settings = QgsSettings()
+        # Ejecuciones Python
+        QgsPythonRunner.setInstance(QvPythonRunner())   
 
     def data(self):
         txt = ''

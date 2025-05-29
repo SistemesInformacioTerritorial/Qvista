@@ -22,7 +22,10 @@ if sys.platform == 'win32':
 
 def debugging():
     # True si se está ejecutando el programa en modo debug
-    return sys.gettrace() is not None
+    if sys.version_info[0] >= 3 and sys.version_info[1] >= 12:
+        return sys.monitoring.get_tool(sys.monitoring.DEBUGGER_ID) is not None
+    else:
+        return sys.gettrace() is not None
 
 def setDPI():
     from qgis.PyQt import QtCore

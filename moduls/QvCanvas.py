@@ -45,7 +45,11 @@ class QvCanvas(QgsMapCanvas):
 
         # self.setWhatsThis(QvApp().carregaAjuda(self))
 
-        self._preparacioBotonsCanvas()
+        if QvApp().testVersioQgis(3, 38):
+            self._preparacioBotonsCanvasNova()
+        else:
+            self._preparacioBotonsCanvas()
+
         self.eines=[]
         self.einesBotons={}
         if self.llistaBotons is not None:
@@ -257,13 +261,51 @@ class QvCanvas(QgsMapCanvas):
         self.layoutBotoneraMapa.insertWidget(posicio, boto)
         return boto
 
-    def _preparacioBotonsCanvas(self):
+    def _preparacioBotonsCanvasNova(self):
         self.botoneraMapa = QFrame()
 
-        #self.botoneraMapa.move(90,20)#nofares
+        if self.botoneraHoritzontal:
+            self.layoutBotoneraMapa = QHBoxLayout(self.botoneraMapa)
+        else:
+            self.layoutBotoneraMapa = QVBoxLayout(self.botoneraMapa)
 
-        #self.botoneraMapa.setFrameShape(QFrame.StyledPanel)
-        #self.botoneraMapa.setFrameShadow(QFrame.Raised)
+        if self.posicioBotonera == 'NE':
+            if self.botoneraHoritzontal:
+                self.layoutBotoneraMapa.setAlignment(Qt.AlignRight) 
+            else:
+                self.layoutBotoneraMapa.setAlignment(Qt.AlignTop) 
+            self.addOverlayWidget(self.botoneraMapa, Qt.TopEdge)
+            self.layoutBotoneraMapa.setContentsMargins(3, 3, 3, 3)
+    
+        if self.posicioBotonera == 'NO':
+            if self.botoneraHoritzontal:
+                self.layoutBotoneraMapa.setAlignment(Qt.AlignLeft)
+                self.layoutBotoneraMapa.setContentsMargins(200 + 3, 3, 3, 3)
+            else:
+                self.layoutBotoneraMapa.setAlignment(Qt.AlignTop)
+                self.layoutBotoneraMapa.setContentsMargins(3, 200 + 3, 3, 3)
+            self.addOverlayWidget(self.botoneraMapa, Qt.TopEdge)
+                
+        if self.posicioBotonera == 'SE':
+            if self.botoneraHoritzontal:
+                self.layoutBotoneraMapa.setAlignment(Qt.AlignRight)
+            else:
+                self.layoutBotoneraMapa.setAlignment(Qt.AlignBottom)
+            self.addOverlayWidget(self.botoneraMapa, Qt.BottomEdge)
+            self.layoutBotoneraMapa.setContentsMargins(3, 3, 3, 3)
+
+        if self.posicioBotonera == 'SO':
+            if self.botoneraHoritzontal:
+                self.layoutBotoneraMapa.setAlignment(Qt.AlignLeft)
+            else:
+                self.layoutBotoneraMapa.setAlignment(Qt.AlignBottom)
+            self.addOverlayWidget(self.botoneraMapa, Qt.BottomEdge)
+            self.layoutBotoneraMapa.setContentsMargins(3, 3, 3, 3)
+
+        self._botonsCanvas()
+
+    def _preparacioBotonsCanvas(self):
+        self.botoneraMapa = QFrame()
 
         if self.botoneraHoritzontal:
             self.layoutCanvas = QVBoxLayout(self)
@@ -272,7 +314,7 @@ class QvCanvas(QgsMapCanvas):
             self.layoutCanvas = QHBoxLayout(self)
             self.layoutBotoneraMapa = QVBoxLayout(self.botoneraMapa)
 
-        self.layoutCanvas.setContentsMargins(15,15,15,15)
+        self.layoutCanvas.setContentsMargins(15, 15, 15, 15)
         self.layoutBotoneraMapa.setContentsMargins(0, 0, 0, 0)
         self.setLayout(self.layoutCanvas) 
 
@@ -289,8 +331,6 @@ class QvCanvas(QgsMapCanvas):
                 self.layoutBotoneraMapa.setAlignment(Qt.AlignTop) 
                 self.layoutCanvas.addSpacerItem(spacer)   
                 self.layoutCanvas.addWidget(self.botoneraMapa)  
-
-
 
         if self.posicioBotonera == 'NO':
             if self.botoneraHoritzontal:
@@ -311,8 +351,6 @@ class QvCanvas(QgsMapCanvas):
                 self.layoutCanvas.addWidget(self.botoneraMapa)  
                 self.layoutCanvas.addSpacerItem(spacer)   
                 
-
-
         if self.posicioBotonera == 'SE':
             if self.botoneraHoritzontal:
                 self.layoutBotoneraMapa.setAlignment(Qt.AlignRight)
@@ -322,7 +360,6 @@ class QvCanvas(QgsMapCanvas):
                 self.layoutBotoneraMapa.setAlignment(Qt.AlignBottom)
                 self.layoutCanvas.addSpacerItem(spacer)   
                 self.layoutCanvas.addWidget(self.botoneraMapa)                
-
 
         if self.posicioBotonera == 'SO':
             if self.botoneraHoritzontal:
@@ -334,10 +371,9 @@ class QvCanvas(QgsMapCanvas):
                 self.layoutCanvas.addWidget(self.botoneraMapa)  
                 self.layoutCanvas.addSpacerItem(spacer)   
 
-            # self.botoneraMapa.setMaximumHeight(25)
-            # self.botoneraMapa.setMinimumHeight(25)
-            # self.botoneraMapa.setMaximumWidth(9999)
-            # self.botoneraMapa.setMinimumWidth(100)
+        self._botonsCanvas()
+
+    def _botonsCanvas(self):
 
         # configuració dels possibles botons del canvas
         # és un diccionari on les claus són strings identificant el botó, i el valor un diccionari amb la configuració d'aquest botó
@@ -368,7 +404,8 @@ class QvCanvas(QgsMapCanvas):
         #         #  self.bstreetview.setDragable(True)
         #         'altres': lambda: self.bApuntar.setStyleSheet('background: purple') 
         #     }
-        # }
+        # } 
+
         SETUP_BOTONS = {
             'apuntar':{
                 'nom_var':'bApuntar',

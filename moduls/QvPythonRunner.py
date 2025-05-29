@@ -2,7 +2,6 @@
 
 from qgis.core import QgsPythonRunner
 
-
 class QvPythonRunner(QgsPythonRunner):
     """Implementa la clase QgsPythonRunner para definir
        cómo se ejecuta Python en qVista
@@ -12,6 +11,7 @@ class QvPythonRunner(QgsPythonRunner):
         """Constructor
         """
         super().__init__()
+        self.first = True
 
     def evalCommand(self, command):
         """Implementa el metodo eval en Python - No se ha probado
@@ -42,7 +42,19 @@ class QvPythonRunner(QgsPythonRunner):
             Bool -- Ok o no
         """
         try:
+            from moduls.QvApp import QvApp
+            if QvApp().testVersioQgis(3, 40):
+                # En la inicialización no actuamos sobre el comando porque se bucla ¿?
+                if self.first:
+                    self.first = False
+                else:
+                    if command == 'qgis.utils.clean_project_expression_functions()':
+                        from qgis.utils import clean_project_expression_functions
+                        command = 'clean_project_expression_functions()'
+                        exec(command, locals())
+                        return True
             exec(command, globals())
-            return True
+            return True            
         except:
+            print('PythonRunner error:', command)
             return False

@@ -211,7 +211,7 @@ class QvNouCataleg(QWidget):
                 self.actualitzaWindowFlags()
                 amplada = self.width()
                 alcada = self.height()
-                self.resize(0.8*amplada, 0.8*alcada)
+                self.resize(round(0.8*amplada), round(0.8*alcada))
                 self.move(0, 0)
                 self.show()
                 self.botoRestaurar.setIcon(iconaRestaurar2)

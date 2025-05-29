@@ -212,7 +212,7 @@ class QVViewer(QWidget):
         self.scaleFactor *= factor
         medida= self.imageLabel.pixmap().size()
         redimension= self.scaleFactor * medida
-        self.imageLabel.resize(redimension)
+        self.imageLabel.resize(round(redimension))
         self.imageLabel.setScaledContents(True)
         
         self.adjustScrollBar(self.scrollArea.horizontalScrollBar(), factor)

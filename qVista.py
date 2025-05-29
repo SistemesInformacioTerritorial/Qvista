@@ -13,7 +13,7 @@ from qgis.core import (QgsExpressionContextUtils, QgsMapLayer, QgsProject,
                        QgsRasterLayer, QgsVectorLayer, QgsPointXY, QgsRectangle, QgsGeometry, QgsPolygon, QgsLineString, QgsWkbTypes)
 from qgis.core.contextmanagers import qgisapp, sys
 from qgis.gui import (QgsGui, QgsLayerTreeMapCanvasBridge, QgsRubberBand,
-                      QgsVertexMarker)
+                      QgsVertexMarker, QgsTemporalControllerWidget)
 from qgis.PyQt import QtCore
 from qgis.PyQt.QtCore import (QCoreApplication, QDateTime, QProcess, QSize, Qt,
                               QUrl, pyqtSignal)
@@ -139,6 +139,9 @@ class QVista(QMainWindow, Ui_MainWindow):
         """
         QMainWindow.__init__(self)
         self.setupUi(self)
+        # Pasamos el objeto qVista a QvApp lo antes posible
+        QvApp().mainApp = self
+
         # Evita docks tabulados
         self.setDockOptions(QMainWindow.AnimatedDocks)
         self.tempState = self.saveState()
@@ -201,12 +204,13 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.preparacioCatalegVideos()
         # self.preparacioCataleg()
 
-        # self.preparacioMapTips() ???
         self.preparacioImpressio()
         self.preparacioMesura()
         # self.preparacioGrafiques() ???
         self.preparacioSeleccio()
         # self.preparacioEntorns()
+
+        self.preparacioTemporal()
 
         # CrearMapeta - Comentado porque hay un error al salir en la 3.16
         #
@@ -602,6 +606,8 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.leTitolProjecte.hide() #El lineEdit estarà visible només quan anem a editar
         self.lblTitolProjecte.clicked.connect(self.editarTitol)
         self.leTitolProjecte.editingFinished.connect(self.titolEditat)
+
+        self.toolTip = QvToolTip(self.canvas)
 
     def editarTitol(self):
         self.lblTitolProjecte.hide()
@@ -1009,7 +1015,7 @@ class QVista(QMainWindow, Ui_MainWindow):
         Elimino la marca d'àrea anterior del canvas si existeix"""
         self.eliminar_marques()
         self.eliminaMarcaCercador()
-        self.marca_geometria = QgsRubberBand(self.canvas, True)
+        self.marca_geometria = QgsRubberBand(self.canvas)
         self.marca_geometria.setColor(QColor(255, 0, 0))
         self.marca_geometria.setFillColor(QColor(255, 0, 0, 100))
         self.marca_geometria.setWidth(3)
@@ -1140,11 +1146,6 @@ class QVista(QMainWindow, Ui_MainWindow):
         if tipus == 'layer':
             self.llegenda.menuAccions.append('separator')
             self.llegenda.menuAccions.append("Opcions de visualització")
-
-    def preparacioMapTips(self):
-        layer = self.llegenda.currentLayer()
-        self.my_tool_tip = QvToolTip(self.canvas,layer)
-        self.my_tool_tip.createMapTips()
 
     def preparacioImpressio(self):
         estatDirtybit = self.canvisPendents
@@ -1527,6 +1528,15 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.dwSeleccioGrafica.hide()
         self.dwSeleccioGrafica.visibilityChanged.connect(self.foraEines)
 
+    def preparacioTemporal(self):
+        self.dwNavegacioTemporal = QgsTemporalControllerWidget() 
+        tempControler = self.dwNavegacioTemporal.temporalController()
+        self.canvas.setTemporalController(tempControler)
+        self.dwNavegacioTemporal.setWindowTitle('Navegació temporal')
+        self.dwNavegacioTemporal.setGeometry(100, 500, 1000, 150)
+        self.dwNavegacioTemporal.setWindowFlags(Qt.WindowStaysOnTopHint)
+        self.dwNavegacioTemporal.hide()
+
     #Eina de mesura sobre el mapa -nexus-foraEinaSeleccio
     def preparacioMesura(self):
         self.wMesuraGrafica = QvMesuraGrafica(self.canvas, self.llegenda, self.bMesuraGrafica)
@@ -1548,8 +1558,8 @@ class QVista(QMainWindow, Ui_MainWindow):
         self.wSeleccioGrafica.calcularSeleccio()
 
     def canviLayer(self):
-        self.preparacioMapTips()
         self.layerActiu = self.llegenda.currentLayer()
+        self.canvas.setCurrentLayer(self.layerActiu)
         self.wSeleccioGrafica.lwFieldsSelect.clear()
         # self.esborrarSeleccio(True)
         self.esborrarMesures(True)
@@ -1588,7 +1598,8 @@ class QVista(QMainWindow, Ui_MainWindow):
         num = self.numCanvasAux[-1]+1 if len(self.numCanvasAux)>0 else 1
         dwCanvas = QvDockWidget(f'Vista auxiliar del mapa ({num})')
 
-        dwCanvas.resize(self.canvas.width()/2.5,self.canvas.height()/2.5)   #JNB
+        dwCanvas.resize(round(self.canvas.width()/2.5),
+                        round(self.canvas.height()/2.5))   #JNB
 
         dwCanvas.tancat.connect(lambda: self.numCanvasAux.remove(num))
         dwCanvas.tancat.connect(lambda: self.actualizoDiccionarios(num))
@@ -2511,10 +2522,8 @@ class QVista(QMainWindow, Ui_MainWindow):
     # def marxesCiutat(self):
     #     self.dwMarxes = MarxesCiutat(self)
     #     self.addDockWidget( Qt.RightDockWidgetArea, self.dwMarxes)
-    #     self.dwMarxes.show()
-
-
-
+    #     self.dwMarxes.show()    
+    
     def nouMapa(self):
         if self.teCanvisPendents(): #Posar la comprovació del dirty bit
             ret = self.missatgeDesar(titol='Crear un nou mapa',txtCancelar='Cancel·lar')
@@ -2605,15 +2614,23 @@ def migraConfigs():
         if os.path.isfile(aMoure):
             os.replace(aMoure,os.path.join(configdir,x))
 
-def qvSplashScreen(imatge):
-    splash_pix = QPixmap(os.path.join(imatgesDir,'SplashScreen_qVista.png'))
-    splash = QSplashScreen(splash_pix, Qt.WindowStaysOnTopHint)
-    splash.setWindowFlags(Qt.WindowStaysOnTopHint | Qt.FramelessWindowHint)
-    splash.setEnabled(True)
-    splash.showMessage("""Institut Municipal d'Informàtica (IMI) Versió """+versio+'  ',Qt.AlignRight | Qt.AlignBottom, QvConstants.COLORFOSC)
-    splash.setFont(QFont(QvConstants.NOMFONT,8))
-    splash.show()
-    return splash
+class QvSplashScreen(QSplashScreen):
+    def __init__(self, imatge):
+        super().__init__(QPixmap(imatge), Qt.WindowStaysOnTopHint | Qt.FramelessWindowHint)
+        self.setEnabled(True)
+        self.showMessage("""Institut Municipal d'Informàtica (IMI) Versió """+versio+'  ',Qt.AlignRight | Qt.AlignBottom, QvConstants.COLORFOSC)
+        self.setFont(QFont(QvConstants.NOMFONT,8))
+        self.show()
+
+# def qvSplashScreen(imatge):
+#     splash_pix = QPixmap(os.path.join(imatgesDir,'SplashScreen_qVista.png'))
+#     splash = QSplashScreen(splash_pix, Qt.WindowStaysOnTopHint)
+#     splash.setWindowFlags(Qt.WindowStaysOnTopHint | Qt.FramelessWindowHint)
+#     splash.setEnabled(True)
+#     splash.showMessage("""Institut Municipal d'Informàtica (IMI) Versió """+versio+'  ',Qt.AlignRight | Qt.AlignBottom, QvConstants.COLORFOSC)
+#     splash.setFont(QFont(QvConstants.NOMFONT,8))
+#     splash.show()
+#     return splash
 
 # Cos de la funció principal  d'arranque de qVista
 def main(argv):
@@ -2623,14 +2640,18 @@ def main(argv):
     # Ajustes de pantalla ANTES de crear la aplicación
     QvFuncions.setDPI()
 
-    with qgisapp(sysexit=False) as app:
-
+    # La ruta del perfil de usuario por defecto es diferente en QGIS y en qVista.
+    # La calculamos y se la pasamos a qgisapp para que coincidan
+    # Puede comprobarse llamando a QgsApplication.qgisSettingsDirPath()
+    userPath = os.path.join(os.getenv('APPDATA'), r"QGIS\QGIS3\profiles\default")
+    with qgisapp(configpath=userPath, sysexit=False) as app: 
+        
         # Se instancia QvApp al principio para el control de errores e idioma
         qVapp = QvApp()
         qVapp.carregaIdioma(app, 'ca')
 
         # Splash image al començar el programa. La tancarem amb splash.finish(qV)
-        splash = qvSplashScreen(os.path.join(imatgesDir,'SplashScreen_qVista.png'))
+        splash = QvSplashScreen(os.path.join(imatgesDir,'SplashScreen_qVista.png'))
 
         # Logo de la finestra
         app.setWindowIcon(QIcon(os.path.join(imatgesDir,'QVistaLogo_256.png')))
@@ -2666,6 +2687,9 @@ def main(argv):
         # Paso app, para que QvCanvas pueda cambiar cursores
         qV = QVista(app, iniProj, titolFinestra)
 
+        # La paso a QvApp para que esté disponible
+        # qVapp.mainApp = qV
+       
         # Restauració del est
         qV.restoreState(qV.tempState)
         qV.showMaximized()
@@ -2690,7 +2714,6 @@ def main(argv):
 
         # Gestió de la sortida
         app.aboutToQuit.connect(qV.gestioSortida)
-
 
 # Arranque de l'aplicació qVista
 if __name__ == "__main__":

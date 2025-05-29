@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 
 from PyQt5 import QtCore, QtGui,QtWidgets
-from qgis.core import QgsPalLayerSettings, QgsTextFormat, QgsTextBufferSettings, QgsVectorLayerSimpleLabeling
+from qgis.core import Qgis, QgsPalLayerSettings, QgsTextFormat, QgsTextBufferSettings, QgsVectorLayerSimpleLabeling
 from PyQt5.QtGui import QFont, QColor
 
 from QvVisualitzacioCapa_ui import Ui_QvVisualitzacioCapa
@@ -19,7 +19,7 @@ class QvVisualitzacioCapa( QtWidgets.QDialog, Ui_QvVisualitzacioCapa ):
         self.chkScale.stateChanged.connect(self.chkScaleChanged)
         self.accepted.connect(self.apply )
         self.rejected.connect(self.close )
-        self.sliderTransparencia.setValue(100-self.layer.opacity()*100)
+        self.sliderTransparencia.setValue(int(100-self.layer.opacity()*100))
         self.sliderTransparencia.valueChanged.connect(self.transparencia)
         tipTemplateHTML = layer.mapTipTemplate()
         print ("Template: "+layer.mapTipTemplate())
@@ -89,8 +89,8 @@ class QvVisualitzacioCapa( QtWidgets.QDialog, Ui_QvVisualitzacioCapa ):
 
         self.initialMaxScale = self.layer.minimumScale() 
         self.initialMinScale = self.layer.maximumScale()
-        self.maxScaleSpinBox.setValue( self.layer.minimumScale() )
-        self.minScaleSpinBox.setValue( self.layer.maximumScale() )
+        self.maxScaleSpinBox.setValue( int(self.layer.minimumScale()) )
+        self.minScaleSpinBox.setValue( int(self.layer.maximumScale()) )
 
     def tipFieldCanviat(self):
         layer = self.parent.llegenda.currentLayer()
@@ -178,7 +178,7 @@ class QvVisualitzacioCapa( QtWidgets.QDialog, Ui_QvVisualitzacioCapa ):
         layer_settings.setFormat(text_format)
 
         layer_settings.fieldName = campEtiqueta
-        layer_settings.placement = 0
+        layer_settings.placement = Qgis.LabelPlacement.AroundPoint
 
         layer_settings.enabled = True
         print ("layer settings:"+layer_settings.fieldName)
