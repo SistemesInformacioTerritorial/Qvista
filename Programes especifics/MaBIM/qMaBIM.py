@@ -807,6 +807,13 @@ class QMaBIM(QtWidgets.QMainWindow):
 
     @QvFuncions.cronometraDebug
     def inicialitzaProjecte(self, projecte):
+        # L'opertura de projectes Oracle va lenta si és la primera
+        # Obrim un arxiu "inútil", i així s'obren més ràpid
+        if self.llegenda.project.homePath()=='':
+            try:
+                self.llegenda.read('mapesOffline/accelerator.qgs')
+            except:
+                pass
         self.llegenda.readProject(projecte)
         self.centrarMapa()
 
