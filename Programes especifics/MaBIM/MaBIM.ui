@@ -814,7 +814,7 @@ QToolButton:disabled{
            <item>
             <widget class="QToolButton" name="bPIP">
              <property name="enabled">
-              <bool>false</bool>
+              <bool>true</bool>
              </property>
              <property name="sizePolicy">
               <sizepolicy hsizetype="Minimum" vsizetype="Fixed">

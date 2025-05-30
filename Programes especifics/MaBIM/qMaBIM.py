@@ -33,6 +33,8 @@ from qgis.core.contextmanagers import qgisapp
 from qgis.gui import (QgsGui, QgsLayerTreeMapCanvasBridge, QgsMapTool,
                       QgsRubberBand, QgsVertexMarker)
 
+import webbrowser
+
 
 class ConstantsMaBIM:
     DB_MABIM_PRO = {
@@ -303,14 +305,31 @@ class FormulariAtributs(QvFitxesAtributs):
         self.ui.buttonBox.removeButton(self.ui.buttonBox.buttons()[0])
         self.ui.bSeleccionar = self.ui.buttonBox.addButton('Seleccionar', QtWidgets.QDialogButtonBox.ActionRole)
         self.ui.bSeleccionar.clicked.connect(self.selecciona)
+        self.ui.bMostrarPIP = self.ui.buttonBox.addButton('Mostrar PIP', QtWidgets.QDialogButtonBox.ActionRole)
+        self.ui.bMostrarPIP.clicked.connect(self.mostraPIP)
+
         self.ui.buttonBox.setFixedWidth(300)
         self.ui.bEditar = self.ui.buttonBox.addButton('Editar', QtWidgets.QDialogButtonBox.ActionRole)
         self.ui.bEditar.clicked.connect(self.edita)
+
+
+
         self.updateBotoEditar()
         for x in (self.ui.bNext, self.ui.bPrev, *self.ui.buttonBox.buttons()):
             x.setStyleSheet('QAbstractButton{font-size: 14px; padding: 2px}')
             x.setFixedSize(100,30)
         self.ui.stackedWidget.adjustSize()
+
+    def mostraPIP(self):
+        index = self.ui.stackedWidget.currentIndex()
+        feature = self.features[index]
+        codi = str(feature.attribute('BIM'))
+        #self.parentWidget().leCercador.setText(codi)
+        #self.parentWidget().consulta()
+        #self.close()
+        url = f'https://netiproa.corppro.imi.bcn:447/pip/ca/fitxa/{codi}' 
+        webbrowser.open_new(url)
+
     def selecciona(self):
         index = self.ui.stackedWidget.currentIndex()
         feature = self.features[index]
@@ -447,8 +466,10 @@ class QMaBIM(QtWidgets.QMainWindow):
         super().__init__(*args, **kwargs)
         uic.loadUi(ConstantsMaBIM.rutaUI,self)
 
+
         self.llistaBotons = (self.bFavorits, self.bBIMs, self.bPIP, self.bProjectes, self.bConsultes)
 
+        self.setCustomActions()
         self.connectBotons()
         self.connectaCercador()
         self.configuraPlanols()
@@ -591,6 +612,7 @@ class QMaBIM(QtWidgets.QMainWindow):
         form.move(self.width()-form.width(),(self.height()-form.height())//2)
         form.exec()
         self.canvasA.bPanning.click()
+        
 
     def setIcones(self):
         self.setIconesBotons()
@@ -614,6 +636,15 @@ class QMaBIM(QtWidgets.QMainWindow):
         )
         for (boto, icona) in parelles:
             boto.setIcon(QtGui.QIcon(f'Imatges/MaBIM/{icona}'))
+    
+    def setCustomActions(self):
+        #Afegim customActions per definir metodes en els clicks 
+        parelles = (
+            (self.bPIP, self.mostraPIP),  
+        )
+
+        for (boto, accio) in parelles:
+            boto.setProperty("customAction", accio)
 
     def connectaDB(self):
         pass
@@ -799,6 +830,7 @@ class QMaBIM(QtWidgets.QMainWindow):
 
 
         self.tabCentral.currentChanged.connect(self.canviaTab)
+        
 
     def centrarMapa(self):
         self.canvasA.setExtent(ConstantsMaBIM.rangBarcelona)
@@ -936,6 +968,10 @@ class QMaBIM(QtWidgets.QMainWindow):
         self.tFavorits.resizeColumnsToContents()
         self.tFavorits.blockSignals(False)
 
+    def mostraPIP(self):
+        url = 'https://netiproa.corppro.imi.bcn:447/pip/ca/' 
+        webbrowser.open_new(url)
+
     def favoritsCelaDobleClick(self, fila, columna):
         if columna==5:
             pass
@@ -953,7 +989,13 @@ class QMaBIM(QtWidgets.QMainWindow):
         self.llistaBotons[0].clicked.connect(self.mostraFavorits)
         for (i,x) in enumerate(self.llistaBotons):
             x.clicked.connect(functools.partial(self.desmarcaBotons,x))
-            x.clicked.connect(functools.partial(self.switchPantallaP,i))
+
+            executeFunction = x.property("customAction")
+            if executeFunction:
+                x.clicked.connect(executeFunction)        
+            else:
+                x.clicked.connect(functools.partial(self.switchPantallaP,i))
+
     def switchPantallaP(self,i):
         self.stackedWidget.setCurrentIndex(i)
     def desmarcaBotons(self,aExcepcio):
