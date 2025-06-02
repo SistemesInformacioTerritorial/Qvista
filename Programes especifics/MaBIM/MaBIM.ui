@@ -1925,7 +1925,7 @@ QScrollBar::handle{
                        <string notr="true">color: grey</string>
                       </property>
                       <property name="text">
-                       <string>Propietari sòl</string>
+                       <string>Propietari sòl BIM</string>
                       </property>
                      </widget>
                     </item>
@@ -1946,7 +1946,7 @@ QScrollBar::handle{
                        <string notr="true">color: grey</string>
                       </property>
                       <property name="text">
-                       <string>Propietari construcció</string>
+                       <string>Propietari construcció BIM</string>
                       </property>
                      </widget>
                     </item>
@@ -1967,12 +1967,12 @@ QScrollBar::handle{
                        <string notr="true">color: grey</string>
                       </property>
                       <property name="text">
-                       <string>Superfície sòl</string>
+                       <string>Data adquisició BIM</string>
                       </property>
                      </widget>
                     </item>
                     <item>
-                     <widget class="QLabel" name="lSupSolReg">
+                     <widget class="QLabel" name="lDataAdqBim">
                       <property name="text">
                        <string/>
                       </property>
@@ -1988,12 +1988,12 @@ QScrollBar::handle{
                        <string notr="true">color: grey</string>
                       </property>
                       <property name="text">
-                       <string>Superfície construcció</string>
+                       <string>Titol adquisició BIM</string>
                       </property>
                      </widget>
                     </item>
                     <item>
-                     <widget class="QLabel" name="lSupConsReg">
+                     <widget class="QLabel" name="lTitolAdq">
                       <property name="text">
                        <string/>
                       </property>
@@ -2001,8 +2001,123 @@ QScrollBar::handle{
                     </item>
                    </layout>
                   </item>
-                 </layout>
-                </item>
+                  
+                  <item row="1" column="0">
+                   <layout class="QVBoxLayout" name="verticalLayout_26">
+                    <item>
+                     <widget class="QLabel" name="label_31">
+                      <property name="styleSheet">
+                       <string notr="true">color: grey</string>
+                      </property>
+                      <property name="text">
+                       <string>% Estat propietat BIM</string>
+                      </property>
+                     </widget>
+                    </item>
+                    <item>
+                     <widget class="QLabel" name="lPercEstatProp">
+                      <property name="text">
+                       <string/>
+                      </property>
+                     </widget>
+                    </item>
+                   </layout>
+                  </item>
+
+                  <item row="1" column="1">
+                   <layout class="QVBoxLayout" name="verticalLayout_27">
+                    <item>
+                     <widget class="QLabel" name="label_33">
+                      <property name="styleSheet">
+                       <string notr="true">color: grey</string>
+                      </property>
+                      <property name="text">
+                       <string>Estat inscripció BIM</string>
+                      </property>
+                     </widget>
+                    </item>
+                    <item>
+                     <widget class="QLabel" name="lEstatInsc">
+                      <property name="text">
+                       <string/>
+                      </property>
+                     </widget>
+                    </item>
+                   </layout>
+                  </item>
+                 
+                 <item row="1" column="2">
+                   <layout class="QVBoxLayout" name="verticalLayout_28">
+                    <item>
+                     <widget class="QLabel" name="label_34">
+                      <property name="styleSheet">
+                       <string notr="true">color: grey</string>
+                      </property>
+                      <property name="text">
+                       <string>Data inscripció BIM</string>
+                      </property>
+                     </widget>
+                    </item>
+                    <item>
+                     <widget class="QLabel" name="lDataInsc">
+                      <property name="text">
+                       <string/>
+                      </property>
+                     </widget>
+                    </item>
+                   </layout>
+                  </item>
+                  
+                   <item row="1" column="3">
+                   <layout class="QVBoxLayout" name="verticalLayout_29">
+                    <item>
+                     <widget class="QLabel" name="label_35">
+                      <property name="styleSheet">
+                       <string notr="true">color: grey</string>
+                      </property>
+                      <property name="text">
+                       <string>Inscrit amb cartografia municipal</string>
+                      </property>
+                     </widget>
+                    </item>
+                    <item>
+                     <widget class="QLabel" name="lInscritCartoMun">
+                      <property name="text">
+                       <string/>
+                      </property>
+                     </widget>
+                    </item>
+                   </layout>
+                  </item>
+                  
+                  <item row="2" column="0">
+                   <layout class="QVBoxLayout" name="verticalLayout_30">
+                    <item>
+                     <widget class="QLabel" name="label_35">
+                      <property name="styleSheet">
+                       <string notr="true">color: grey</string>
+                      </property>
+                      <property name="text">
+                       <string>Data coordinació cartogràfica</string>
+                      </property>
+                     </widget>
+                    </item>
+                    <item>
+                     <widget class="QLabel" name="lDataCoordCart">
+                      <property name="text">
+                       <string/>
+                      </property>
+                     </widget>
+                    </item>
+                   </layout>
+                  </item>
+                    <!--Fi de layout de dades de titularitat-->
+                  </layout>
+                  </item>
+
+               
+
+
                 <item>
                  <widget class="QLabel" name="label_8">
                   <property name="styleSheet">

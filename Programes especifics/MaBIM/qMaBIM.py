@@ -103,7 +103,13 @@ class ConstantsMaBIM:
                                ((BIM LIKE '%'||:pText||'%') AND (ROWNUM<100))'''
 
     # Consulta dades titularitat
-    CONSULTA_INFO_BIM_Z13 = '''SELECT PROPIETARI_SOL, PROPIETARI_CONS, TO_CHAR(DATA_ADQ_HD, 'DD/MM/YYYY'), TITOL_ADQ_HD, PERCENT_PROP_HD,ESTAT_INSCRIPCIO
+    CONSULTA_INFO_BIM_Z13 = '''SELECT PROPIETARI_SOL, PROPIETARI_CONS, TO_CHAR(DATA_ADQ_HD, 'DD/MM/YYYY'), TITOL_ADQ_HD, PERCENT_PROP_HD,
+                                ESTAT_INSCRIPCIO,  TO_CHAR(DATA_INSCRIPCIO, 'DD/MM/YYYY'),
+                                CASE 
+                                WHEN DATA_INSCRIPCIO_CARTO IS NULL THEN 'No'
+                                ELSE 'Sí'
+                                END AS INSCRIT,
+                                TO_CHAR(DATA_INSCRIPCIO_CARTO, 'DD/MM/YYYY')
                                 FROM ZAFT_0013
                                 WHERE
                                 ((BIM LIKE '%'||:pText||'%') AND (ROWNUM<100))'''
@@ -694,7 +700,8 @@ class QMaBIM(QtWidgets.QMainWindow):
         self.twDadesBIM.resizeColumnsToContents()
 
         # Labels pestanya "Titularitat i Registral"
-        labels = (self.lPropietariSol, self.lPropietariCons, self.lSupSolReg, self.lSupConsReg)
+        labels = (self.lPropietariSol, self.lPropietariCons, self.lDataAdqBim, self.lTitolAdq,
+                  self.lPercEstatProp, self.lEstatInsc,self.lDataInsc, self.lInscritCartoMun,self.lDataCoordCart )
 
         for (lbl,txt) in zip(labels, self.dadesTitularitat):
             if str(txt).upper()!='NULL':
