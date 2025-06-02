@@ -74,20 +74,27 @@ class ConstantsMaBIM:
                                 OR (UPPER(REF_CADASTRE_BIM) LIKE '%'||:pText||'%'))
                             AND (ROWNUM < 100)''' #aquesta consulta haurà d'estar en un arxiu, però ja es farà'''
 
+    #Informacio identificativa del bim
+    CONSULTA_INFO_BIM_Z2 = '''SELECT A.BIM, A.ESTAT,A.SUBGOOD_STATUS, A.DESCRIPCIO_BIM, A.DENOMINACIO_BIM,
+                              A.TIPOLOGIA_BIM, A.SUBTIPOLOGIA_BIM, A.GRUP_BIM, A.SUBGRUP_BIM,A.TIPUS_IMMOBLE,
+                              A.QUALIFICACIO_JURIDICA,C.QUALIFICACIO_URB,
+                              E.SUP_UTILITZABLE,
+                              B.SUP_CADASTRAL_SOL,B.SUP_CADASTRAL_CONS,D.SUP_REGISTRAL_SOL,D.SUP_REGISTRAL_CONS,
+                              B.REF_CADASTRE,B.NUM_IMMOBLES,B.NUM_LOCALS,B.ESTAT_CADASTRAL
+                              FROM 
+                              ZAFT_0002 A
+                              LEFT OUTER JOIN ZAFT_0007 B 
+                              ON A.BIM = B.BIM
+                              LEFT OUTER JOIN ZAFT_0005 C
+                              ON C.BIM = A.BIM
+                              LEFT OUTER JOIN ZAFT_0013 D
+                              ON D.BIM = A.BIM
+                              LEFT OUTER JOIN ZAFT_0012 E
+                              ON E.BIM = A.BIM
+                              WHERE 
+                              ((A.BIM LIKE '%'||:pText||'%') AND (ROWNUM<100))'''
 
-    CONSULTA_INFO_BIM_Z2 = '''SELECT BIM, ESTAT, ADSCRIT,
-                               DESCRIPCIO_BIM, DENOMINACIO_BIM,
-                               TIPOLOGIA_BIM, SUBTIPOLOGIA_BIM, TIPUS_IMMOBLE, QUALIFICACIO_JURIDICA
-                               FROM
-                               ZAFT_0002
-                               WHERE
-                               ((BIM LIKE '%'||:pText||'%')
-                                   OR (UPPER(DESCRIPCIO_BIM) LIKE '%'||:pText||'%')
-                                   OR (UPPER(DENOMINACIO_BIM) LIKE '%'||:pText||'%')
-                                   OR (UPPER(REF_CADASTRE_BIM) LIKE '%'||:pText||'%'))
-                               AND (ROWNUM < 100)'''
-
-    # Consulta que obté informació de ZAFT_0003 a partir del codi BIM
+    # Consulta que obté adreces de ZAFT_0003 a partir del codi BIM
     CONSULTA_INFO_BIM_Z3 = '''SELECT TIPUS_VIA, NOM_VIA, NUM_INI,
                                LLETRA_INI, NUM_FI, LLETRA_FI, DISTRICTE, BARRI, MUNICIPI, CP,
                                PROVINCIA, TIPUS
@@ -95,15 +102,23 @@ class ConstantsMaBIM:
                                WHERE
                                ((BIM LIKE '%'||:pText||'%') AND (ROWNUM<100))'''
 
-    CONSULTA_INFO_BIM_Z13 = '''SELECT PROPIETARI_SOL, PROPIETARI_CONS, SUP_REGISTRAL_SOL, SUP_REGISTRAL_CONS
+    # Consulta dades titularitat
+    CONSULTA_INFO_BIM_Z13 = '''SELECT PROPIETARI_SOL, PROPIETARI_CONS, DATA_ADQ_HD, TITOL_ADQ_HD, PERCENT_PROP_HD,ESTAT_INSCRIPCIO
                                 FROM ZAFT_0013
                                 WHERE
                                 ((BIM LIKE '%'||:pText||'%') AND (ROWNUM<100))'''
 
-    CONSULTA_INFO_BIM_Z11 = '''SELECT FINCA, NUM_REGISTRE, MUNICIPI, SECCIO, TOM, LLIBRE, FOLI, INSCRIP, CRU, SUP_REGISTRAL_SOL, SUP_REGISTRAL_CONS
-                                FROM ZAFT_0011
-                                WHERE
-                                ((BIM LIKE '%'||:pText||'%') AND (ROWNUM<100))'''
+    # Consulta titularitat detall
+    CONSULTA_INFO_BIM_Z11 = '''SELECT A.FINCA, A.NUM_REGISTRE, B.TIPUS_PROP_FINCA_REG, B.DESCRIPCIO_FINCA_REG,
+                               A.SUP_REGISTRAL_SOL, A.SUP_REGISTRAL_CONS, A.CARREGUES
+                               FROM 
+                               ZAFT_0011 A
+                               JOIN 
+                               ZAFT_0009 B 
+                               ON A.BIM = B.BIM
+                               WHERE 
+                               ((A.BIM LIKE '%'||:pText||'%') AND (ROWNUM<100))'''
+    
     campEditorsQGIS = 'qMaBIM_QGISEditors'
 
 
