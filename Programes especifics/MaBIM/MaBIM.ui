@@ -2044,72 +2044,37 @@ QScrollBar::handle{
                   </attribute>
                   <column>
                    <property name="text">
-                    <string>Finca</string>
+                    <string>Nº FR</string>
                    </property>
                   </column>
                   <column>
                    <property name="text">
-                    <string>Núm. Registre</string>
+                    <string>Nº RP</string>
                    </property>
                   </column>
                   <column>
                    <property name="text">
-                    <string>Municipi</string>
+                    <string>Tpus FR</string>
                    </property>
                   </column>
                   <column>
                    <property name="text">
-                    <string>Secció</string>
+                    <string>Descripció FR</string>
                    </property>
                   </column>
                   <column>
                    <property name="text">
-                    <string>Tom</string>
+                    <string>Superfície Sòl FR</string>
                    </property>
                   </column>
                   <column>
                    <property name="text">
-                    <string>Llibre</string>
+                    <string>Superfície Construcció FR</string>
                    </property>
                   </column>
                   <column>
                    <property name="text">
-                    <string>Foli</string>
-                   </property>
-                  </column>
-                  <column>
-                   <property name="text">
-                    <string>Inscripció</string>
-                   </property>
-                  </column>
-                  <column>
-                   <property name="text">
-                    <string>CRU</string>
-                   </property>
-                  </column>
-                  <column>
-                   <property name="text">
-                    <string>Sup. registral sòl</string>
-                   </property>
-                  </column>
-                  <column>
-                   <property name="text">
-                    <string>Sup. Registral constr.</string>
-                   </property>
-                  </column>
-                  <column>
-                   <property name="text">
-                    <string>Província</string>
-                   </property>
-                  </column>
-                  <column>
-                   <property name="text">
-                    <string>Doble Inscripció</string>
-                   </property>
-                  </column>
-                  <column>
-                   <property name="text">
-                    <string>Núm RF</string>
+                    <string>Càrregues</string>
                    </property>
                   </column>
                  </widget>
