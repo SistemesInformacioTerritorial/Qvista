@@ -103,7 +103,7 @@ class ConstantsMaBIM:
                                ((BIM LIKE '%'||:pText||'%') AND (ROWNUM<100))'''
 
     # Consulta dades titularitat
-    CONSULTA_INFO_BIM_Z13 = '''SELECT PROPIETARI_SOL, PROPIETARI_CONS, DATA_ADQ_HD, TITOL_ADQ_HD, PERCENT_PROP_HD,ESTAT_INSCRIPCIO
+    CONSULTA_INFO_BIM_Z13 = '''SELECT PROPIETARI_SOL, PROPIETARI_CONS, TO_CHAR(DATA_ADQ_HD, 'DD/MM/YYYY'), TITOL_ADQ_HD, PERCENT_PROP_HD,ESTAT_INSCRIPCIO
                                 FROM ZAFT_0013
                                 WHERE
                                 ((BIM LIKE '%'||:pText||'%') AND (ROWNUM<100))'''
