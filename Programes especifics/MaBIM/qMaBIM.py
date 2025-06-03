@@ -45,7 +45,7 @@ class ConstantsMaBIM:
     }
 
     rutaUI= 'Programes especifics/MaBIM/MaBIM.ui'
-    rutaProjecte = 'L:/DADES/SIT/qVista/CATALEG/MAPES PRIVATS/Patrimoni/PPM_CatRegles_geopackage-proves.qgs'
+    rutaProjecte = 'L:/DADES/SIT/qVista/CATALEG/MAPES PRIVATS/Patrimoni/PPM_CatRegles_geopackage.qgs'
     rutaProjecteEdicio = 'L:/DADES/SIT/qVista/CATALEG/MAPES PRIVATS/Patrimoni/mabimEDICIO_v3.qgs'
 
     rutaLogoAjuntament = 'imatges/escutDreta.png'
