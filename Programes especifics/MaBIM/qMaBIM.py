@@ -908,8 +908,16 @@ class QMaBIM(QtWidgets.QMainWindow):
         #  nota: millor evitar-la, això només per quan ens veiem forçats a passar una única capa
         # return self.llegenda.capaPerNom('Entitats en PV')
         return self.getCapesBIMs()[0]
+
     def getCapesBIMs(self):
-        return [capa for capa in self.llegenda.capes() if 'BIM' in capa.fields().names()]
+        layers = []
+        for capa in self.llegenda.capes():
+            if capa.type() == QgsMapLayer.VectorLayer:
+                if 'BIM' in capa.fields().names():
+                    layers.append(capa)
+        return layers
+
+
 
     def canviaTab(self):
         # abans s'utilitzava per mostrar i ocultar la llegenda
