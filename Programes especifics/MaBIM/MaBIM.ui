@@ -2068,7 +2068,7 @@ QScrollBar::handle{
                    </layout>
                   </item>
                   
-                   <item row="1" column="3">
+                   <item row="2" column="0">
                    <layout class="QVBoxLayout" name="verticalLayout_29">
                     <item>
                      <widget class="QLabel" name="label_35">
@@ -2090,7 +2090,7 @@ QScrollBar::handle{
                    </layout>
                   </item>
                   
-                  <item row="2" column="0">
+                  <item row="2" column="1">
                    <layout class="QVBoxLayout" name="verticalLayout_30">
                     <item>
                      <widget class="QLabel" name="label_35">
