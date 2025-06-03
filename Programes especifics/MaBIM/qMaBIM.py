@@ -672,12 +672,16 @@ class QMaBIM(QtWidgets.QMainWindow):
         labels = (self.lNumBIM, self.lSituacio,self.ltipusSituacio,self.lDescripcioBIM,self.lDenominacio,
                   self.lTipologia,self.lSubtipologia,self.lGrup,self.lSubgrup,self.lTipusImmoble,
                   self.lQualJurd,self.lQualUrb,self.lSupTotalGestio, self.lSupCadSol,
-                  self.lSupCadCons,self.lSupRegCons)
+                  self.lSupCadCons,self.lSupRegSol, self.lSupRegCons,
+                  self.lRefCad,self.lNumImmCad, self.lNumLocCad, self.lEstatCad)
 
         # totes les labels tindran la mateixa font. Per tant, agafem la d'una qualsevol
         font = self.lNumBIM.font()
         for (lbl,txt) in zip(labels, self.dadesLabelsDades):
-            if str(txt).upper()!='NULL':
+            if type(txt)!=str:
+                    txt = str(txt)
+
+            if txt.upper()!='NULL':
                 lbl.setText(txt)
 
                 lbl.setFont(font)

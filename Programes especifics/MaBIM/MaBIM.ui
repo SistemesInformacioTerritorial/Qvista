@@ -1969,6 +1969,34 @@ QScrollBar::handle{
                         <string notr="true">color: grey</string>
                        </property>
                        <property name="text">
+                        <string>Superfície registral sòl</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QLabel" name="lSupRegSol">
+                       <property name="text">
+                        <string/>
+                       </property>
+                      </widget>
+                     </item>
+                    </layout>
+                   </item>				
+
+				<item row="3" column="4">
+                    <layout class="QVBoxLayout" name="verticalLayout_41">
+                     <item>
+                      <widget class="QLabel" name="label_16">
+                       <property name="font">
+                        <font>
+                         <family>verdana</family>
+                         <pointsize>10</pointsize>
+                        </font>
+                       </property>
+                       <property name="styleSheet">
+                        <string notr="true">color: grey</string>
+                       </property>
+                       <property name="text">
                         <string>Superfície registral construcció</string>
                        </property>
                       </widget>
@@ -1982,7 +2010,121 @@ QScrollBar::handle{
                      </item>
                     </layout>
                    </item>				   
-				  </layout>
+				
+				  <item row="4" column="0">
+                    <layout class="QVBoxLayout" name="verticalLayout_41">
+                     <item>
+                      <widget class="QLabel" name="label_16">
+                       <property name="font">
+                        <font>
+                         <family>verdana</family>
+                         <pointsize>10</pointsize>
+                        </font>
+                       </property>
+                       <property name="styleSheet">
+                        <string notr="true">color: grey</string>
+                       </property>
+                       <property name="text">
+                        <string>Referència cadastral</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QLabel" name="lRefCad">
+                       <property name="text">
+                        <string/>
+                       </property>
+                      </widget>
+                     </item>
+                    </layout>
+                   </item>
+				   
+				  <item row="4" column="1">
+                    <layout class="QVBoxLayout" name="verticalLayout_41">
+                     <item>
+                      <widget class="QLabel" name="label_16">
+                       <property name="font">
+                        <font>
+                         <family>verdana</family>
+                         <pointsize>10</pointsize>
+                        </font>
+                       </property>
+                       <property name="styleSheet">
+                        <string notr="true">color: grey</string>
+                       </property>
+                       <property name="text">
+                        <string>Número immobles cadastrals</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QLabel" name="lNumImmCad">
+                       <property name="text">
+                        <string/>
+                       </property>
+                      </widget>
+                     </item>
+                    </layout>
+                   </item>
+				   
+				  <item row="4" column="2">
+                    <layout class="QVBoxLayout" name="verticalLayout_41">
+                     <item>
+                      <widget class="QLabel" name="label_16">
+                       <property name="font">
+                        <font>
+                         <family>verdana</family>
+                         <pointsize>10</pointsize>
+                        </font>
+                       </property>
+                       <property name="styleSheet">
+                        <string notr="true">color: grey</string>
+                       </property>
+                       <property name="text">
+                        <string>Número locals cadastrals</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QLabel" name="lNumLocCad">
+                       <property name="text">
+                        <string/>
+                       </property>
+                      </widget>
+                     </item>
+                    </layout>
+                   </item>
+				   
+				  <item row="4" column="3">
+                    <layout class="QVBoxLayout" name="verticalLayout_41">
+                     <item>
+                      <widget class="QLabel" name="label_16">
+                       <property name="font">
+                        <font>
+                         <family>verdana</family>
+                         <pointsize>10</pointsize>
+                        </font>
+                       </property>
+                       <property name="styleSheet">
+                        <string notr="true">color: grey</string>
+                       </property>
+                       <property name="text">
+                        <string>Estat cadastre</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QLabel" name="lEstatCad">
+                       <property name="text">
+                        <string/>
+                       </property>
+                      </widget>
+                     </item>
+                    </layout>
+                   </item>
+
+
+				</layout>
                  </widget>
                 </item>
                </layout>
