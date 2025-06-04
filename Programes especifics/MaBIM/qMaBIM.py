@@ -75,6 +75,8 @@ class ConstantsMaBIM:
                             AND (ROWNUM < 100)''' #aquesta consulta haurà d'estar en un arxiu, però ja es farà'''
 
     #Informacio identificativa del bim
+    #Pel camp superficie utilitzable de la taula ZAFT_0012 cal agafar la divisio 0000 que agrupa les altres dues 
+
     CONSULTA_INFO_BIM_Z2 = '''SELECT A.BIM, A.ESTAT,A.SUBGOOD_STATUS, A.DESCRIPCIO_BIM, A.DENOMINACIO_BIM,
                               A.TIPOLOGIA_BIM, A.SUBTIPOLOGIA_BIM, A.GRUP_BIM, A.SUBGRUP_BIM,A.TIPUS_IMMOBLE,
                               A.QUALIFICACIO_JURIDICA,C.QUALIFICACIO_URB,
@@ -90,7 +92,7 @@ class ConstantsMaBIM:
                               LEFT OUTER JOIN ZAFT_0013 D
                               ON D.BIM = A.BIM
                               LEFT OUTER JOIN ZAFT_0012 E
-                              ON E.BIM = A.BIM
+                              ON E.BIM = A.BIM AND E.DG='000000'
                               WHERE 
                               ((A.BIM LIKE '%'||:pText||'%') AND (ROWNUM<100))'''
 
