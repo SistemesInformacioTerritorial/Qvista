@@ -33,6 +33,7 @@ from qgis.core.contextmanagers import qgisapp
 from qgis.gui import (QgsGui, QgsLayerTreeMapCanvasBridge, QgsMapTool,
                       QgsRubberBand, QgsVertexMarker)
 
+import webbrowser
 
 class ConstantsMaBIM:
     DB_MABIM_PRO = {
@@ -52,10 +53,13 @@ class ConstantsMaBIM:
 
     nomCapaPH = 'Entitats en PH'
     nomCapaPV = 'Entitats en PV'
+    urlPIP = 'https://netiproa.corppro.imi.bcn:447/pip/ca/fitxa/'
 
     nomsCapes = [nomCapaPH, nomCapaPV]
     # nomCapaRegistrals = 'Registrals'
     nomGrupRegistrals = 'Registrals'
+
+    
 
     rangBarcelona = QgsRectangle(QgsPointXY(405960, 4572210), QgsPointXY(452330 , 4595090))
 
@@ -326,6 +330,9 @@ class FormulariAtributs(QvFitxesAtributs):
         self.ui.buttonBox.removeButton(self.ui.buttonBox.buttons()[0])
         self.ui.bSeleccionar = self.ui.buttonBox.addButton('Seleccionar', QtWidgets.QDialogButtonBox.ActionRole)
         self.ui.bSeleccionar.clicked.connect(self.selecciona)
+        self.ui.bMostrarPIP = self.ui.buttonBox.addButton('Mostrar PIP', QtWidgets.QDialogButtonBox.ActionRole)
+        self.ui.bMostrarPIP.clicked.connect(self.mostraPIP)
+
         self.ui.buttonBox.setFixedWidth(300)
         self.ui.bEditar = self.ui.buttonBox.addButton('Editar', QtWidgets.QDialogButtonBox.ActionRole)
         self.ui.bEditar.clicked.connect(self.edita)
@@ -334,6 +341,17 @@ class FormulariAtributs(QvFitxesAtributs):
             x.setStyleSheet('QAbstractButton{font-size: 14px; padding: 2px}')
             x.setFixedSize(100,30)
         self.ui.stackedWidget.adjustSize()
+    
+    def mostraPIP(self):
+        index = self.ui.stackedWidget.currentIndex()
+        feature = self.features[index]
+        codi = str(feature.attribute('BIM'))
+        #self.parentWidget().leCercador.setText(codi)
+        #self.parentWidget().consulta()
+        #self.close()
+        url = ConstantsMaBIM.urlPIP + f'{codi}'
+        webbrowser.open_new(url)
+        
     def selecciona(self):
         index = self.ui.stackedWidget.currentIndex()
         feature = self.features[index]
