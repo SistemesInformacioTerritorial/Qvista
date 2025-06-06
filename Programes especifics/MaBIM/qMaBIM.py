@@ -702,8 +702,20 @@ class QMaBIM(QtWidgets.QMainWindow):
         self.twDadesBIM.resizeColumnsToContents()
 
         # Labels pestanya "Titularitat i Registral"
+        labels = (self.lNumBIM2, self.lSituacio2, self.ltipusSituacio2, self.lDescripcioBIM2,self.lDenominacio2)
+        for (lbl,txt) in zip(labels, self.dadesLabelsDades):
+            if str(txt).upper()!='NULL':
+                lbl.setText(str(txt))
+
+                lbl.setFont(font)
+                lbl.setWordWrap(True)
+            else:
+                lbl.setText('')
+        
+ 
         labels = (self.lPropietariSol, self.lPropietariCons, self.lDataAdqBim, self.lTitolAdq,
                   self.lPercEstatProp, self.lEstatInsc,self.lDataInsc, self.lInscritCartoMun,self.lDataCoordCart )
+
 
         for (lbl,txt) in zip(labels, self.dadesTitularitat):
             if str(txt).upper()!='NULL':
