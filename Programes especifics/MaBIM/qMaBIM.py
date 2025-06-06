@@ -82,7 +82,7 @@ class ConstantsMaBIM:
                               A.QUALIFICACIO_JURIDICA,C.QUALIFICACIO_URB,
                               E.SUP_UTILITZABLE,
                               B.SUP_CADASTRAL_SOL,B.SUP_CADASTRAL_CONS,D.SUP_REGISTRAL_SOL,D.SUP_REGISTRAL_CONS,
-                              B.REF_CADASTRE,B.NUM_IMMOBLES,B.NUM_LOCALS,B.ESTAT_CADASTRAL
+                              B.REF_CADASTRE,B.NUM_IMMOBLES,B.ESTAT_CADASTRAL
                               FROM 
                               ZAFT_0002 A
                               LEFT OUTER JOIN ZAFT_0007 B 
@@ -675,7 +675,7 @@ class QMaBIM(QtWidgets.QMainWindow):
                   self.lTipologia,self.lSubtipologia,self.lGrup,self.lSubgrup,self.lTipusImmoble,
                   self.lQualJurd,self.lQualUrb,self.lSupTotalGestio, self.lSupCadSol,
                   self.lSupCadCons,self.lSupRegSol, self.lSupRegCons,
-                  self.lRefCad,self.lNumImmCad, self.lNumLocCad, self.lEstatCad)
+                  self.lRefCad,self.lNumImmCad, self.lEstatCad)
 
         # totes les labels tindran la mateixa font. Per tant, agafem la d'una qualsevol
         font = self.lNumBIM.font()
