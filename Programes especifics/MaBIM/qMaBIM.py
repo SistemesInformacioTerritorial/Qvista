@@ -53,13 +53,11 @@ class ConstantsMaBIM:
 
     nomCapaPH = 'Entitats en PH'
     nomCapaPV = 'Entitats en PV'
-    urlPIP = 'https://netiproa.corppro.imi.bcn:447/pip/ca/fitxa/'
+    urlPIP = 'https://netiproa.corppro.imi.bcn:447/pip/ca/'
 
     nomsCapes = [nomCapaPH, nomCapaPV]
     # nomCapaRegistrals = 'Registrals'
     nomGrupRegistrals = 'Registrals'
-
-    
 
     rangBarcelona = QgsRectangle(QgsPointXY(405960, 4572210), QgsPointXY(452330 , 4595090))
 
@@ -345,11 +343,11 @@ class FormulariAtributs(QvFitxesAtributs):
     def mostraPIP(self):
         index = self.ui.stackedWidget.currentIndex()
         feature = self.features[index]
-        codi = str(feature.attribute('BIM'))
+        codi = str(feature.attribute('BIM')).replace('0000','')
         #self.parentWidget().leCercador.setText(codi)
         #self.parentWidget().consulta()
         #self.close()
-        url = ConstantsMaBIM.urlPIP + f'{codi}'
+        url = ConstantsMaBIM.urlPIP + f'fitxa/{codi}'
         webbrowser.open_new(url)
         
     def selecciona(self):
