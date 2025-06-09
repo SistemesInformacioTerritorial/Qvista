@@ -34,6 +34,7 @@ from qgis.gui import (QgsGui, QgsLayerTreeMapCanvasBridge, QgsMapTool,
                       QgsRubberBand, QgsVertexMarker)
 
 import webbrowser
+from PyQt5.QtWidgets import QHeaderView
 
 class ConstantsMaBIM:
     DB_MABIM_PRO = {
@@ -751,6 +752,10 @@ class QMaBIM(QtWidgets.QMainWindow):
                     if elem=='NULL': elem=''
                 self.twFinquesRegistrals.setItem(i,j,QtWidgets.QTableWidgetItem(elem))
         self.twFinquesRegistrals.resizeColumnsToContents()
+
+        #Posem mes espai a Descric
+        header = self.twFinquesRegistrals.horizontalHeader()
+        header.setSectionResizeMode(3, QHeaderView.Stretch)
 
         cerca = f"BIM LIKE '0000{self.dadesLabelsDades[0]}'"
 
