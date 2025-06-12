@@ -1638,7 +1638,7 @@ QScrollBar::handle{
                     </spacer>
                    </item>
 
-				   <item row="2" column="0">
+				   <item row="2" column="0" colspan="2">
                     <layout class="QVBoxLayout" name="verticalLayout_14">
                      <item>
                       <widget class="QLabel" name="label_16">
@@ -1665,7 +1665,7 @@ QScrollBar::handle{
                      </item>
                     </layout>
                    </item>
-				   <item row="2" column="2">
+				   <item row="2" column="2" colspan="2">
                     <layout class="QVBoxLayout" name="verticalLayout_41">
                      <item>
                       <widget class="QLabel" name="label_16">
@@ -2454,7 +2454,7 @@ QScrollBar::handle{
                    </item>
 				   
 				   
-				  <item row="2" column="0">
+				  <item row="2" column="0"  colspan="2">
                     <layout class="QVBoxLayout" name="verticalLayout_14">
                      <item>
                       <widget class="QLabel" name="label_16">
@@ -2481,7 +2481,7 @@ QScrollBar::handle{
                      </item>
                     </layout>
                    </item>
-				   <item row="2" column="2">
+				   <item row="2" column="2"  colspan="2">
                     <layout class="QVBoxLayout" name="verticalLayout_41">
                      <item>
                       <widget class="QLabel" name="label_16">
