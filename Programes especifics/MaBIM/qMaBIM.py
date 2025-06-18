@@ -753,11 +753,9 @@ class QMaBIM(QtWidgets.QMainWindow):
                 self.twFinquesRegistrals.setItem(i,j,QtWidgets.QTableWidgetItem(elem))
         #self.twFinquesRegistrals.resizeColumnsToContents()
 
+        #Posem mes espai a Descric
         self.twFinquesRegistrals.setColumnWidth(3, 450)
         self.twFinquesRegistrals.horizontalHeader().setSectionResizeMode(3, QHeaderView.Interactive)
-        
-
-        #Posem mes espai a Descric
         #header = self.twFinquesRegistrals.horizontalHeader()
         #header.setSectionResizeMode(3, QHeaderView.ResizeToContents)
 
