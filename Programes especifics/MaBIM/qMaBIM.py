@@ -751,11 +751,15 @@ class QMaBIM(QtWidgets.QMainWindow):
                     elem = str(elem)
                     if elem=='NULL': elem=''
                 self.twFinquesRegistrals.setItem(i,j,QtWidgets.QTableWidgetItem(elem))
-        self.twFinquesRegistrals.resizeColumnsToContents()
+        #self.twFinquesRegistrals.resizeColumnsToContents()
+
+        self.twFinquesRegistrals.setColumnWidth(3, 450)
+        self.twFinquesRegistrals.horizontalHeader().setSectionResizeMode(3, QHeaderView.Interactive)
+        
 
         #Posem mes espai a Descric
-        header = self.twFinquesRegistrals.horizontalHeader()
-        header.setSectionResizeMode(3, QHeaderView.Stretch)
+        #header = self.twFinquesRegistrals.horizontalHeader()
+        #header.setSectionResizeMode(3, QHeaderView.ResizeToContents)
 
         cerca = f"BIM LIKE '0000{self.dadesLabelsDades[0]}'"
 

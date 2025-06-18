@@ -2778,7 +2778,7 @@ QScrollBar::handle{
                    <number>33</number>
                   </attribute>
                   <attribute name="horizontalHeaderDefaultSectionSize">
-                   <number>125</number>
+                   <number>180</number>
                   </attribute>
                   <attribute name="horizontalHeaderStretchLastSection">
                    <bool>false</bool>
