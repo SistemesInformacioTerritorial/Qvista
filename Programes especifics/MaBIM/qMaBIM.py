@@ -33,6 +33,8 @@ from qgis.core.contextmanagers import qgisapp
 from qgis.gui import (QgsGui, QgsLayerTreeMapCanvasBridge, QgsMapTool,
                       QgsRubberBand, QgsVertexMarker)
 
+import webbrowser
+from PyQt5.QtWidgets import QHeaderView
 
 class ConstantsMaBIM:
     DB_MABIM_PRO = {
@@ -52,6 +54,7 @@ class ConstantsMaBIM:
 
     nomCapaPH = 'Entitats en PH'
     nomCapaPV = 'Entitats en PV'
+    urlPIP = 'https://netiproa.corppro.imi.bcn:447/pip/ca/'
 
     nomsCapes = [nomCapaPH, nomCapaPV]
     # nomCapaRegistrals = 'Registrals'
@@ -74,20 +77,29 @@ class ConstantsMaBIM:
                                 OR (UPPER(REF_CADASTRE_BIM) LIKE '%'||:pText||'%'))
                             AND (ROWNUM < 100)''' #aquesta consulta haurà d'estar en un arxiu, però ja es farà'''
 
+    #Informacio identificativa del bim
+    #Pel camp superficie utilitzable de la taula ZAFT_0012 cal agafar la divisio 0000 que agrupa les altres dues 
 
-    CONSULTA_INFO_BIM_Z2 = '''SELECT BIM, ESTAT, ADSCRIT,
-                               DESCRIPCIO_BIM, DENOMINACIO_BIM,
-                               TIPOLOGIA_BIM, SUBTIPOLOGIA_BIM, TIPUS_IMMOBLE, QUALIFICACIO_JURIDICA
-                               FROM
-                               ZAFT_0002
-                               WHERE
-                               ((BIM LIKE '%'||:pText||'%')
-                                   OR (UPPER(DESCRIPCIO_BIM) LIKE '%'||:pText||'%')
-                                   OR (UPPER(DENOMINACIO_BIM) LIKE '%'||:pText||'%')
-                                   OR (UPPER(REF_CADASTRE_BIM) LIKE '%'||:pText||'%'))
-                               AND (ROWNUM < 100)'''
+    CONSULTA_INFO_BIM_Z2 = '''SELECT A.BIM, A.ESTAT,A.SUBGOOD_STATUS, A.DESCRIPCIO_BIM, A.DENOMINACIO_BIM,
+                              A.TIPOLOGIA_BIM, A.SUBTIPOLOGIA_BIM, A.GRUP_BIM, A.SUBGRUP_BIM,A.TIPUS_IMMOBLE,
+                              A.QUALIFICACIO_JURIDICA,C.QUALIFICACIO_URB,
+                              E.SUP_UTILITZABLE,
+                              B.SUP_CADASTRAL_SOL,B.SUP_CADASTRAL_CONS,D.SUP_REGISTRAL_SOL,D.SUP_REGISTRAL_CONS,
+                              B.REF_CADASTRE,B.NUM_IMMOBLES,B.ESTAT_CADASTRAL
+                              FROM 
+                              ZAFT_0002 A
+                              LEFT OUTER JOIN ZAFT_0007 B 
+                              ON A.BIM = B.BIM
+                              LEFT OUTER JOIN ZAFT_0005 C
+                              ON C.BIM = A.BIM
+                              LEFT OUTER JOIN ZAFT_0013 D
+                              ON D.BIM = A.BIM
+                              LEFT OUTER JOIN ZAFT_0012 E
+                              ON E.BIM = A.BIM AND E.DG='000000'
+                              WHERE 
+                              ((A.BIM LIKE '%'||:pText||'%') AND (ROWNUM<100))'''
 
-    # Consulta que obté informació de ZAFT_0003 a partir del codi BIM
+    # Consulta que obté adreces de ZAFT_0003 a partir del codi BIM
     CONSULTA_INFO_BIM_Z3 = '''SELECT TIPUS_VIA, NOM_VIA, NUM_INI,
                                LLETRA_INI, NUM_FI, LLETRA_FI, DISTRICTE, BARRI, MUNICIPI, CP,
                                PROVINCIA, TIPUS
@@ -95,15 +107,29 @@ class ConstantsMaBIM:
                                WHERE
                                ((BIM LIKE '%'||:pText||'%') AND (ROWNUM<100))'''
 
-    CONSULTA_INFO_BIM_Z13 = '''SELECT PROPIETARI_SOL, PROPIETARI_CONS, SUP_REGISTRAL_SOL, SUP_REGISTRAL_CONS
+    # Consulta dades titularitat
+    CONSULTA_INFO_BIM_Z13 = '''SELECT PROPIETARI_SOL, PROPIETARI_CONS, TO_CHAR(DATA_ADQ_HD, 'DD/MM/YYYY'), TITOL_ADQ_HD, PERCENT_PROP_HD,
+                                ESTAT_INSCRIPCIO,  TO_CHAR(DATA_INSCRIPCIO, 'DD/MM/YYYY'),
+                                CASE 
+                                WHEN DATA_INSCRIPCIO_CARTO IS NULL THEN 'No'
+                                ELSE 'Sí'
+                                END AS INSCRIT,
+                                TO_CHAR(DATA_INSCRIPCIO_CARTO, 'DD/MM/YYYY')
                                 FROM ZAFT_0013
                                 WHERE
                                 ((BIM LIKE '%'||:pText||'%') AND (ROWNUM<100))'''
 
-    CONSULTA_INFO_BIM_Z11 = '''SELECT FINCA, NUM_REGISTRE, MUNICIPI, SECCIO, TOM, LLIBRE, FOLI, INSCRIP, CRU, SUP_REGISTRAL_SOL, SUP_REGISTRAL_CONS
-                                FROM ZAFT_0011
-                                WHERE
-                                ((BIM LIKE '%'||:pText||'%') AND (ROWNUM<100))'''
+    # Consulta titularitat detall
+    CONSULTA_INFO_BIM_Z11 = '''SELECT A.FINCA, A.NUM_REGISTRE, B.TIPUS_PROP_FINCA_REG, B.DESCRIPCIO_FINCA_REG,
+                               A.SUP_REGISTRAL_SOL, A.SUP_REGISTRAL_CONS, A.CARREGUES
+                               FROM 
+                               ZAFT_0011 A
+                               JOIN 
+                               ZAFT_0009 B 
+                               ON A.BIM = B.BIM
+                               WHERE 
+                               ((A.BIM LIKE '%'||:pText||'%') AND (ROWNUM<100))'''
+    
     campEditorsQGIS = 'qMaBIM_QGISEditors'
 
 
@@ -303,6 +329,9 @@ class FormulariAtributs(QvFitxesAtributs):
         self.ui.buttonBox.removeButton(self.ui.buttonBox.buttons()[0])
         self.ui.bSeleccionar = self.ui.buttonBox.addButton('Seleccionar', QtWidgets.QDialogButtonBox.ActionRole)
         self.ui.bSeleccionar.clicked.connect(self.selecciona)
+        self.ui.bMostrarPIP = self.ui.buttonBox.addButton('Mostrar PIP', QtWidgets.QDialogButtonBox.ActionRole)
+        self.ui.bMostrarPIP.clicked.connect(self.mostraPIP)
+
         self.ui.buttonBox.setFixedWidth(300)
         self.ui.bEditar = self.ui.buttonBox.addButton('Editar', QtWidgets.QDialogButtonBox.ActionRole)
         self.ui.bEditar.clicked.connect(self.edita)
@@ -311,6 +340,17 @@ class FormulariAtributs(QvFitxesAtributs):
             x.setStyleSheet('QAbstractButton{font-size: 14px; padding: 2px}')
             x.setFixedSize(100,30)
         self.ui.stackedWidget.adjustSize()
+    
+    def mostraPIP(self):
+        index = self.ui.stackedWidget.currentIndex()
+        feature = self.features[index]
+        codi = str(feature.attribute('BIM')).replace('0000','')
+        #self.parentWidget().leCercador.setText(codi)
+        #self.parentWidget().consulta()
+        #self.close()
+        url = ConstantsMaBIM.urlPIP + f'fitxa/{codi}'
+        webbrowser.open_new(url)
+        
     def selecciona(self):
         index = self.ui.stackedWidget.currentIndex()
         feature = self.features[index]
@@ -648,26 +688,26 @@ class QMaBIM(QtWidgets.QMainWindow):
         self.bAfegirFavorit.show()
         self.bAfegirFavorit.setChecked(self.dadesLabelsDades[0] in self.favorits)
         # Labels pestanya "Dades Identificatives"
-        labels = (self.lNumBIM, self.lEstatBIM, self.lBIMAdscrit,
-                  self.lDescripcioBIM, self.lDenominacioBIM,
-                  self.lTipologiaReal, self.lSubtipologiaReal, self.lTipusBeReal, self.lQualificacioJuridica)
+        labels = (self.lNumBIM, self.lSituacio,self.ltipusSituacio,self.lDescripcioBIM,self.lDenominacio,
+                  self.lTipologia,self.lSubtipologia,self.lGrup,self.lSubgrup,self.lTipusImmoble,
+                  self.lQualJurd,self.lQualUrb,self.lSupTotalGestio, self.lSupCadSol,
+                  self.lSupCadCons,self.lSupRegSol, self.lSupRegCons,
+                  self.lRefCad,self.lNumImmCad, self.lEstatCad)
+
         # totes les labels tindran la mateixa font. Per tant, agafem la d'una qualsevol
         font = self.lNumBIM.font()
         for (lbl,txt) in zip(labels, self.dadesLabelsDades):
-            if str(txt).upper()!='NULL':
+            if type(txt)!=str:
+                    txt = str(txt)
+
+            if txt.upper()!='NULL':
                 lbl.setText(txt)
 
                 lbl.setFont(font)
                 lbl.setWordWrap(True)
             else:
                 lbl.setText('')
-        self.lTipologiaRegistral.setText(self.lTipologiaReal.text())
-        self.lSubtipologiaRegistral.setText(self.lSubtipologiaReal.text())
-        self.lTipusBeRegistral.setText(self.lTipusBeReal.text())
-        self.lTipologiaRegistral.setFont(font)
-        self.lSubtipologiaRegistral.setFont(font)
-        self.lTipusBeRegistral.setFont(font)
-
+        
         # Taula pestanya "Dades Identificatives"
         self.twDadesBIM.setRowCount(len(self.dadesTaula))
         for (i,x) in enumerate(self.dadesTaula):
@@ -679,7 +719,20 @@ class QMaBIM(QtWidgets.QMainWindow):
         self.twDadesBIM.resizeColumnsToContents()
 
         # Labels pestanya "Titularitat i Registral"
-        labels = (self.lPropietariSol, self.lPropietariCons, self.lSupSolReg, self.lSupConsReg)
+        labels = (self.lNumBIM2, self.lSituacio2, self.ltipusSituacio2, self.lDescripcioBIM2,self.lDenominacio2)
+        for (lbl,txt) in zip(labels, self.dadesLabelsDades):
+            if str(txt).upper()!='NULL':
+                lbl.setText(str(txt))
+
+                lbl.setFont(font)
+                lbl.setWordWrap(True)
+            else:
+                lbl.setText('')
+        
+ 
+        labels = (self.lPropietariSol, self.lPropietariCons, self.lDataAdqBim, self.lTitolAdq,
+                  self.lPercEstatProp, self.lEstatInsc,self.lDataInsc, self.lInscritCartoMun,self.lDataCoordCart )
+
 
         for (lbl,txt) in zip(labels, self.dadesTitularitat):
             if str(txt).upper()!='NULL':
@@ -698,7 +751,13 @@ class QMaBIM(QtWidgets.QMainWindow):
                     elem = str(elem)
                     if elem=='NULL': elem=''
                 self.twFinquesRegistrals.setItem(i,j,QtWidgets.QTableWidgetItem(elem))
-        self.twFinquesRegistrals.resizeColumnsToContents()
+        #self.twFinquesRegistrals.resizeColumnsToContents()
+
+        #Posem mes espai a Descric
+        self.twFinquesRegistrals.setColumnWidth(3, 450)
+        self.twFinquesRegistrals.horizontalHeader().setSectionResizeMode(3, QHeaderView.Interactive)
+        #header = self.twFinquesRegistrals.horizontalHeader()
+        #header.setSectionResizeMode(3, QHeaderView.ResizeToContents)
 
         cerca = f"BIM LIKE '0000{self.dadesLabelsDades[0]}'"
 
