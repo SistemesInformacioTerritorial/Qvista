@@ -1331,89 +1331,9 @@ QScrollBar::handle{
 }</string>
                   </property>
                   <layout class="QGridLayout" name="gridLayout_2">
-                   <item row="8" column="0">
-                    <layout class="QVBoxLayout" name="verticalLayout_19">
-                     <item>
-                      <widget class="QLabel" name="label_26">
-                       <property name="font">
-                        <font>
-                         <family>verdana</family>
-                         <pointsize>10</pointsize>
-                        </font>
-                       </property>
-                       <property name="styleSheet">
-                        <string notr="true">color: grey</string>
-                       </property>
-                       <property name="text">
-                        <string>Tipologia registral</string>
-                       </property>
-                      </widget>
-                     </item>
-                     <item>
-                      <widget class="QLabel" name="lTipologiaRegistral">
-                       <property name="text">
-                        <string/>
-                       </property>
-                      </widget>
-                     </item>
-                    </layout>
-                   </item>
-                   <item row="4" column="0">
-                    <layout class="QVBoxLayout" name="verticalLayout_13">
-                     <item>
-                      <widget class="QLabel" name="label_15">
-                       <property name="font">
-                        <font>
-                         <family>verdana</family>
-                         <pointsize>10</pointsize>
-                        </font>
-                       </property>
-                       <property name="styleSheet">
-                        <string notr="true">color: grey</string>
-                       </property>
-                       <property name="text">
-                        <string>Descripció BIM</string>
-                       </property>
-                      </widget>
-                     </item>
-                     <item>
-                      <widget class="QLabel" name="lDescripcioBIM">
-                       <property name="text">
-                        <string/>
-                       </property>
-                      </widget>
-                     </item>
-                    </layout>
-                   </item>
-                   <item row="4" column="2">
-                    <layout class="QVBoxLayout" name="verticalLayout_14">
-                     <item>
-                      <widget class="QLabel" name="label_16">
-                       <property name="font">
-                        <font>
-                         <family>verdana</family>
-                         <pointsize>10</pointsize>
-                        </font>
-                       </property>
-                       <property name="styleSheet">
-                        <string notr="true">color: grey</string>
-                       </property>
-                       <property name="text">
-                        <string>Denominació BIM</string>
-                       </property>
-                      </widget>
-                     </item>
-                     <item>
-                      <widget class="QLabel" name="lDenominacioBIM">
-                       <property name="text">
-                        <string/>
-                       </property>
-                      </widget>
-                     </item>
-                    </layout>
-                   </item>
-                   <item row="1" column="0">
-                    <layout class="QVBoxLayout" name="verticalLayout_10">
+                  
+                   <item row="0" column="0">
+				   <layout class="QVBoxLayout" name="verticalLayout_10">
                      <item>
                       <widget class="QLabel" name="label_12">
                        <property name="palette">
@@ -1641,10 +1561,12 @@ QScrollBar::handle{
                      </item>
                     </layout>
                    </item>
-                   <item row="6" column="2">
-                    <layout class="QVBoxLayout" name="verticalLayout_16">
+                   
+                   
+				   <item row="0" column="1">
+                    <layout class="QVBoxLayout" name="verticalLayout_19">
                      <item>
-                      <widget class="QLabel" name="label_19">
+                      <widget class="QLabel" name="label_26">
                        <property name="font">
                         <font>
                          <family>verdana</family>
@@ -1655,12 +1577,12 @@ QScrollBar::handle{
                         <string notr="true">color: grey</string>
                        </property>
                        <property name="text">
-                        <string>Subtipologia real</string>
+                        <string>Situació BIM</string>
                        </property>
                       </widget>
                      </item>
                      <item>
-                      <widget class="QLabel" name="lSubtipologiaReal">
+                      <widget class="QLabel" name="lSituacio">
                        <property name="text">
                         <string/>
                        </property>
@@ -1668,10 +1590,13 @@ QScrollBar::handle{
                      </item>
                     </layout>
                    </item>
-                   <item row="8" column="3">
-                    <layout class="QVBoxLayout" name="verticalLayout_21">
+                   
+				  
+  				   <item row="0" column="2">
+
+                    <layout class="QVBoxLayout" name="verticalLayout_13">
                      <item>
-                      <widget class="QLabel" name="label_28">
+                      <widget class="QLabel" name="label_15">
                        <property name="font">
                         <font>
                          <family>verdana</family>
@@ -1682,12 +1607,12 @@ QScrollBar::handle{
                         <string notr="true">color: grey</string>
                        </property>
                        <property name="text">
-                        <string>Tipus bé immoble registral</string>
+                        <string>Tipus Situació</string>
                        </property>
                       </widget>
                      </item>
                      <item>
-                      <widget class="QLabel" name="lTipusBeRegistral">
+                      <widget class="QLabel" name="ltipusSituacio">
                        <property name="text">
                         <string/>
                        </property>
@@ -1695,131 +1620,8 @@ QScrollBar::handle{
                      </item>
                     </layout>
                    </item>
-                   <item row="6" column="3">
-                    <layout class="QVBoxLayout" name="verticalLayout_17">
-                     <item>
-                      <widget class="QLabel" name="label_20">
-                       <property name="font">
-                        <font>
-                         <family>verdana</family>
-                         <pointsize>10</pointsize>
-                        </font>
-                       </property>
-                       <property name="styleSheet">
-                        <string notr="true">color: grey</string>
-                       </property>
-                       <property name="text">
-                        <string>Tipus bé immoble real</string>
-                       </property>
-                      </widget>
-                     </item>
-                     <item>
-                      <widget class="QLabel" name="lTipusBeReal">
-                       <property name="text">
-                        <string/>
-                       </property>
-                      </widget>
-                     </item>
-                    </layout>
-                   </item>
-                   <item row="6" column="0">
-                    <layout class="QVBoxLayout" name="verticalLayout_15">
-                     <item>
-                      <widget class="QLabel" name="label_18">
-                       <property name="font">
-                        <font>
-                         <family>verdana</family>
-                         <pointsize>10</pointsize>
-                        </font>
-                       </property>
-                       <property name="styleSheet">
-                        <string notr="true">color: grey</string>
-                       </property>
-                       <property name="text">
-                        <string>Tipologia real</string>
-                       </property>
-                      </widget>
-                     </item>
-                     <item>
-                      <widget class="QLabel" name="lTipologiaReal">
-                       <property name="text">
-                        <string/>
-                       </property>
-                      </widget>
-                     </item>
-                    </layout>
-                   </item>
-                   <item row="1" column="1">
-                    <layout class="QVBoxLayout" name="verticalLayout_11">
-                     <item>
-                      <widget class="QLabel" name="label_11">
-                       <property name="font">
-                        <font>
-                         <family>verdana</family>
-                         <pointsize>10</pointsize>
-                        </font>
-                       </property>
-                       <property name="styleSheet">
-                        <string notr="true">color: grey</string>
-                       </property>
-                       <property name="text">
-                        <string>Estat</string>
-                       </property>
-                      </widget>
-                     </item>
-                     <item>
-                      <widget class="QLabel" name="lEstatBIM">
-                       <property name="text">
-                        <string/>
-                       </property>
-                      </widget>
-                     </item>
-                    </layout>
-                   </item>
-                   <item row="8" column="2">
-                    <layout class="QVBoxLayout" name="verticalLayout_20">
-                     <item>
-                      <widget class="QLabel" name="label_27">
-                       <property name="font">
-                        <font>
-                         <family>verdana</family>
-                         <pointsize>10</pointsize>
-                        </font>
-                       </property>
-                       <property name="styleSheet">
-                        <string notr="true">color: grey</string>
-                       </property>
-                       <property name="text">
-                        <string>Subtipologia registral</string>
-                       </property>
-                      </widget>
-                     </item>
-                     <item>
-                      <widget class="QLabel" name="lSubtipologiaRegistral">
-                       <property name="text">
-                        <string/>
-                       </property>
-                      </widget>
-                     </item>
-                    </layout>
-                   </item>
-                   <item row="5" column="0">
-                    <spacer name="verticalSpacer_4">
-                     <property name="orientation">
-                      <enum>Qt::Vertical</enum>
-                     </property>
-                     <property name="sizeType">
-                      <enum>QSizePolicy::Fixed</enum>
-                     </property>
-                     <property name="sizeHint" stdset="0">
-                      <size>
-                       <width>20</width>
-                       <height>20</height>
-                      </size>
-                     </property>
-                    </spacer>
-                   </item>
-                   <item row="2" column="0">
+	
+				   <item row="1" column="0">
                     <spacer name="verticalSpacer_3">
                      <property name="orientation">
                       <enum>Qt::Vertical</enum>
@@ -1835,8 +1637,65 @@ QScrollBar::handle{
                      </property>
                     </spacer>
                    </item>
-                   <item row="7" column="0">
-                    <spacer name="verticalSpacer_5">
+
+				   <item row="2" column="0" colspan="2">
+                    <layout class="QVBoxLayout" name="verticalLayout_14">
+                     <item>
+                      <widget class="QLabel" name="label_16">
+                       <property name="font">
+                        <font>
+                         <family>verdana</family>
+                         <pointsize>10</pointsize>
+                        </font>
+                       </property>
+                       <property name="styleSheet">
+                        <string notr="true">color: grey</string>
+                       </property>
+                       <property name="text">
+                        <string>Descripció</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QLabel" name="lDescripcioBIM">
+                       <property name="text">
+                        <string/>
+                       </property>
+                      </widget>
+                     </item>
+                    </layout>
+                   </item>
+				   <item row="2" column="2" colspan="2">
+                    <layout class="QVBoxLayout" name="verticalLayout_41">
+                     <item>
+                      <widget class="QLabel" name="label_16">
+                       <property name="font">
+                        <font>
+                         <family>verdana</family>
+                         <pointsize>10</pointsize>
+                        </font>
+                       </property>
+                       <property name="styleSheet">
+                        <string notr="true">color: grey</string>
+                       </property>
+                       <property name="text">
+                        <string>Denominació</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QLabel" name="lDenominacio">
+                       <property name="text">
+                        <string/>
+                       </property>
+                      </widget>
+                     </item>
+                    </layout>
+                   </item>
+				   
+				   
+				   <item row="3" column="0">
+                    <spacer name="verticalSpacer_3">
                      <property name="orientation">
                       <enum>Qt::Vertical</enum>
                      </property>
@@ -1851,10 +1710,11 @@ QScrollBar::handle{
                      </property>
                     </spacer>
                    </item>
-                   <item row="1" column="3">
-                    <layout class="QVBoxLayout" name="verticalLayout_12">
+				   
+				   <item row="4" column="0">
+                    <layout class="QVBoxLayout" name="verticalLayout_41">
                      <item>
-                      <widget class="QLabel" name="label_9">
+                      <widget class="QLabel" name="label_16">
                        <property name="font">
                         <font>
                          <family>verdana</family>
@@ -1865,12 +1725,12 @@ QScrollBar::handle{
                         <string notr="true">color: grey</string>
                        </property>
                        <property name="text">
-                        <string>Adscrit</string>
+                        <string>Tipologia</string>
                        </property>
                       </widget>
                      </item>
                      <item>
-                      <widget class="QLabel" name="lBIMAdscrit">
+                      <widget class="QLabel" name="lTipologia">
                        <property name="text">
                         <string/>
                        </property>
@@ -1878,10 +1738,218 @@ QScrollBar::handle{
                      </item>
                     </layout>
                    </item>
-                   <item row="1" column="2">
-                    <layout class="QVBoxLayout" name="verticalLayout_18">
+				   <item row="4" column="1">
+                    <layout class="QVBoxLayout" name="verticalLayout_41">
                      <item>
-                      <widget class="QLabel" name="label_22">
+                      <widget class="QLabel" name="label_16">
+                       <property name="font">
+                        <font>
+                         <family>verdana</family>
+                         <pointsize>10</pointsize>
+                        </font>
+                       </property>
+                       <property name="styleSheet">
+                        <string notr="true">color: grey</string>
+                       </property>
+                       <property name="text">
+                        <string>Subtipologia</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QLabel" name="lSubtipologia">
+                       <property name="text">
+                        <string/>
+                       </property>
+                      </widget>
+                     </item>
+                    </layout>
+                   </item>			   
+				   <item row="4" column="2">
+                    <layout class="QVBoxLayout" name="verticalLayout_41">
+                     <item>
+                      <widget class="QLabel" name="label_16">
+                       <property name="font">
+                        <font>
+                         <family>verdana</family>
+                         <pointsize>10</pointsize>
+                        </font>
+                       </property>
+                       <property name="styleSheet">
+                        <string notr="true">color: grey</string>
+                       </property>
+                       <property name="text">
+                        <string>Grup</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QLabel" name="lGrup">
+                       <property name="text">
+                        <string/>
+                       </property>
+                      </widget>
+                     </item>
+                    </layout>
+                   </item>
+				   <item row="4" column="3">
+                    <layout class="QVBoxLayout" name="verticalLayout_41">
+                     <item>
+                      <widget class="QLabel" name="label_16">
+                       <property name="font">
+                        <font>
+                         <family>verdana</family>
+                         <pointsize>10</pointsize>
+                        </font>
+                       </property>
+                       <property name="styleSheet">
+                        <string notr="true">color: grey</string>
+                       </property>
+                       <property name="text">
+                        <string>Subgrup</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QLabel" name="lSubgrup">
+                       <property name="text">
+                        <string/>
+                       </property>
+                      </widget>
+                     </item>
+                    </layout>
+                   </item>
+				   <item row="4" column="4">
+                    <layout class="QVBoxLayout" name="verticalLayout_41">
+                     <item>
+                      <widget class="QLabel" name="label_16">
+                       <property name="font">
+                        <font>
+                         <family>verdana</family>
+                         <pointsize>10</pointsize>
+                        </font>
+                       </property>
+                       <property name="styleSheet">
+                        <string notr="true">color: grey</string>
+                       </property>
+                       <property name="text">
+                        <string>Tipus bé immoble</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QLabel" name="lTipusImmoble">
+                       <property name="text">
+                        <string/>
+                       </property>
+                      </widget>
+                     </item>
+                    </layout>
+                   </item>
+
+
+				<item row="5" column="0">
+                    <spacer name="verticalSpacer_3">
+                     <property name="orientation">
+                      <enum>Qt::Vertical</enum>
+                     </property>
+                     <property name="sizeType">
+                      <enum>QSizePolicy::Fixed</enum>
+                     </property>
+                     <property name="sizeHint" stdset="0">
+                      <size>
+                       <width>20</width>
+                       <height>20</height>
+                      </size>
+                     </property>
+                    </spacer>
+                   </item>
+				   
+				  <item row="6" column="0">
+                    <layout class="QVBoxLayout" name="verticalLayout_41">
+                     <item>
+                      <widget class="QLabel" name="label_16">
+                       <property name="font">
+                        <font>
+                         <family>verdana</family>
+                         <pointsize>10</pointsize>
+                        </font>
+                       </property>
+                       <property name="styleSheet">
+                        <string notr="true">color: grey</string>
+                       </property>
+                       <property name="text">
+                        <string>Superfície total gestió BIM</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QLabel" name="lSupTotalGestio">
+                       <property name="text">
+                        <string/>
+                       </property>
+                      </widget>
+                     </item>
+                    </layout>
+                   </item>
+				  <item row="6" column="1">
+                    <layout class="QVBoxLayout" name="verticalLayout_41">
+                     <item>
+                      <widget class="QLabel" name="label_16">
+                       <property name="font">
+                        <font>
+                         <family>verdana</family>
+                         <pointsize>10</pointsize>
+                        </font>
+                       </property>
+                       <property name="styleSheet">
+                        <string notr="true">color: grey</string>
+                       </property>
+                       <property name="text">
+                        <string>Superfície registral sòl</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QLabel" name="lSupRegSol">
+                       <property name="text">
+                        <string/>
+                       </property>
+                      </widget>
+                     </item>
+                    </layout>
+                   </item>
+				  <item row="6" column="2">
+                    <layout class="QVBoxLayout" name="verticalLayout_41">
+                     <item>
+                      <widget class="QLabel" name="label_16">
+                       <property name="font">
+                        <font>
+                         <family>verdana</family>
+                         <pointsize>10</pointsize>
+                        </font>
+                       </property>
+                       <property name="styleSheet">
+                        <string notr="true">color: grey</string>
+                       </property>
+                       <property name="text">
+                        <string>Superfície registral construcció</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QLabel" name="lSupRegCons">
+                       <property name="text">
+                        <string/>
+                       </property>
+                      </widget>
+                     </item>
+                    </layout>
+                   </item>				   
+				  <item row="6" column="3">
+                    <layout class="QVBoxLayout" name="verticalLayout_41">
+                     <item>
+                      <widget class="QLabel" name="label_16">
                        <property name="font">
                         <font>
                          <family>verdana</family>
@@ -1897,7 +1965,7 @@ QScrollBar::handle{
                       </widget>
                      </item>
                      <item>
-                      <widget class="QLabel" name="lQualificacioJuridica">
+                      <widget class="QLabel" name="lQualJurd">
                        <property name="text">
                         <string/>
                        </property>
@@ -1905,7 +1973,174 @@ QScrollBar::handle{
                      </item>
                     </layout>
                    </item>
-                  </layout>
+				  <item row="6" column="4">
+                    <layout class="QVBoxLayout" name="verticalLayout_41">
+                     <item>
+                      <widget class="QLabel" name="label_16">
+                       <property name="font">
+                        <font>
+                         <family>verdana</family>
+                         <pointsize>10</pointsize>
+                        </font>
+                       </property>
+                       <property name="styleSheet">
+                        <string notr="true">color: grey</string>
+                       </property>
+                       <property name="text">
+                        <string>Qualificació urbanística</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QLabel" name="lQualUrb">
+                       <property name="text">
+                        <string/>
+                       </property>
+                      </widget>
+                     </item>
+                    </layout>
+                   </item>
+				  
+				  <item row="7" column="3">
+                    <layout class="QVBoxLayout" name="verticalLayout_41">
+                     <item>
+                      <widget class="QLabel" name="label_16">
+                       <property name="font">
+                        <font>
+                         <family>verdana</family>
+                         <pointsize>10</pointsize>
+                        </font>
+                       </property>
+                       <property name="styleSheet">
+                        <string notr="true">color: grey</string>
+                       </property>
+                       <property name="text">
+                        <string>Superfície cadastral sòl</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QLabel" name="lSupCadSol">
+                       <property name="text">
+                        <string/>
+                       </property>
+                      </widget>
+                     </item>
+                    </layout>
+                   </item>
+				  <item row="7" column="4">
+                    <layout class="QVBoxLayout" name="verticalLayout_41">
+                     <item>
+                      <widget class="QLabel" name="label_16">
+                       <property name="font">
+                        <font>
+                         <family>verdana</family>
+                         <pointsize>10</pointsize>
+                        </font>
+                       </property>
+                       <property name="styleSheet">
+                        <string notr="true">color: grey</string>
+                       </property>
+                       <property name="text">
+                        <string>Superfície cadastral construcció</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QLabel" name="lSupCadCons">
+                       <property name="text">
+                        <string/>
+                       </property>
+                      </widget>
+                     </item>
+                    </layout>
+                   </item>
+
+				  <item row="7" column="0">
+                    <layout class="QVBoxLayout" name="verticalLayout_41">
+                     <item>
+                      <widget class="QLabel" name="label_16">
+                       <property name="font">
+                        <font>
+                         <family>verdana</family>
+                         <pointsize>10</pointsize>
+                        </font>
+                       </property>
+                       <property name="styleSheet">
+                        <string notr="true">color: grey</string>
+                       </property>
+                       <property name="text">
+                        <string>Referència cadastral</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QLabel" name="lRefCad">
+                       <property name="text">
+                        <string/>
+                       </property>
+                      </widget>
+                     </item>
+                    </layout>
+                   </item>
+				  <item row="7" column="1">
+                    <layout class="QVBoxLayout" name="verticalLayout_41">
+                     <item>
+                      <widget class="QLabel" name="label_16">
+                       <property name="font">
+                        <font>
+                         <family>verdana</family>
+                         <pointsize>10</pointsize>
+                        </font>
+                       </property>
+                       <property name="styleSheet">
+                        <string notr="true">color: grey</string>
+                       </property>
+                       <property name="text">
+                        <string>Número immobles cadastrals</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QLabel" name="lNumImmCad">
+                       <property name="text">
+                        <string/>
+                       </property>
+                      </widget>
+                     </item>
+                    </layout>
+                   </item>
+
+				  <item row="7" column="2">
+                    <layout class="QVBoxLayout" name="verticalLayout_41">
+                     <item>
+                      <widget class="QLabel" name="label_16">
+                       <property name="font">
+                        <font>
+                         <family>verdana</family>
+                         <pointsize>10</pointsize>
+                        </font>
+                       </property>
+                       <property name="styleSheet">
+                        <string notr="true">color: grey</string>
+                       </property>
+                       <property name="text">
+                        <string>Estat cadastre</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QLabel" name="lEstatCad">
+                       <property name="text">
+                        <string/>
+                       </property>
+                      </widget>
+                     </item>
+                    </layout>
+                   </item>
+
+
+				</layout>
                  </widget>
                 </item>
                </layout>
@@ -1917,7 +2152,381 @@ QScrollBar::handle{
                <layout class="QVBoxLayout" name="verticalLayout_6">
                 <item>
                  <layout class="QGridLayout" name="gridLayout_3">
-                  <item row="0" column="0">
+                   <item row="0" column="0">
+				   <layout class="QVBoxLayout" name="verticalLayout_10">
+                     <item>
+                      <widget class="QLabel" name="label_12">
+                       <property name="palette">
+                        <palette>
+                         <active>
+                          <colorrole role="WindowText">
+                           <brush brushstyle="SolidPattern">
+                            <color alpha="255">
+                             <red>128</red>
+                             <green>128</green>
+                             <blue>128</blue>
+                            </color>
+                           </brush>
+                          </colorrole>
+                          <colorrole role="Button">
+                           <brush brushstyle="SolidPattern">
+                            <color alpha="0">
+                             <red>0</red>
+                             <green>0</green>
+                             <blue>0</blue>
+                            </color>
+                           </brush>
+                          </colorrole>
+                          <colorrole role="Text">
+                           <brush brushstyle="SolidPattern">
+                            <color alpha="255">
+                             <red>128</red>
+                             <green>128</green>
+                             <blue>128</blue>
+                            </color>
+                           </brush>
+                          </colorrole>
+                          <colorrole role="ButtonText">
+                           <brush brushstyle="SolidPattern">
+                            <color alpha="255">
+                             <red>128</red>
+                             <green>128</green>
+                             <blue>128</blue>
+                            </color>
+                           </brush>
+                          </colorrole>
+                          <colorrole role="Base">
+                           <brush brushstyle="SolidPattern">
+                            <color alpha="0">
+                             <red>0</red>
+                             <green>0</green>
+                             <blue>0</blue>
+                            </color>
+                           </brush>
+                          </colorrole>
+                          <colorrole role="Window">
+                           <brush brushstyle="SolidPattern">
+                            <color alpha="0">
+                             <red>0</red>
+                             <green>0</green>
+                             <blue>0</blue>
+                            </color>
+                           </brush>
+                          </colorrole>
+                          <colorrole role="PlaceholderText">
+                           <brush brushstyle="SolidPattern">
+                            <color alpha="255">
+                             <red>128</red>
+                             <green>128</green>
+                             <blue>128</blue>
+                            </color>
+                           </brush>
+                          </colorrole>
+                         </active>
+                         <inactive>
+                          <colorrole role="WindowText">
+                           <brush brushstyle="SolidPattern">
+                            <color alpha="255">
+                             <red>128</red>
+                             <green>128</green>
+                             <blue>128</blue>
+                            </color>
+                           </brush>
+                          </colorrole>
+                          <colorrole role="Button">
+                           <brush brushstyle="SolidPattern">
+                            <color alpha="0">
+                             <red>0</red>
+                             <green>0</green>
+                             <blue>0</blue>
+                            </color>
+                           </brush>
+                          </colorrole>
+                          <colorrole role="Text">
+                           <brush brushstyle="SolidPattern">
+                            <color alpha="255">
+                             <red>128</red>
+                             <green>128</green>
+                             <blue>128</blue>
+                            </color>
+                           </brush>
+                          </colorrole>
+                          <colorrole role="ButtonText">
+                           <brush brushstyle="SolidPattern">
+                            <color alpha="255">
+                             <red>128</red>
+                             <green>128</green>
+                             <blue>128</blue>
+                            </color>
+                           </brush>
+                          </colorrole>
+                          <colorrole role="Base">
+                           <brush brushstyle="SolidPattern">
+                            <color alpha="0">
+                             <red>0</red>
+                             <green>0</green>
+                             <blue>0</blue>
+                            </color>
+                           </brush>
+                          </colorrole>
+                          <colorrole role="Window">
+                           <brush brushstyle="SolidPattern">
+                            <color alpha="0">
+                             <red>0</red>
+                             <green>0</green>
+                             <blue>0</blue>
+                            </color>
+                           </brush>
+                          </colorrole>
+                          <colorrole role="PlaceholderText">
+                           <brush brushstyle="SolidPattern">
+                            <color alpha="255">
+                             <red>128</red>
+                             <green>128</green>
+                             <blue>128</blue>
+                            </color>
+                           </brush>
+                          </colorrole>
+                         </inactive>
+                         <disabled>
+                          <colorrole role="WindowText">
+                           <brush brushstyle="SolidPattern">
+                            <color alpha="255">
+                             <red>128</red>
+                             <green>128</green>
+                             <blue>128</blue>
+                            </color>
+                           </brush>
+                          </colorrole>
+                          <colorrole role="Button">
+                           <brush brushstyle="SolidPattern">
+                            <color alpha="0">
+                             <red>0</red>
+                             <green>0</green>
+                             <blue>0</blue>
+                            </color>
+                           </brush>
+                          </colorrole>
+                          <colorrole role="Text">
+                           <brush brushstyle="SolidPattern">
+                            <color alpha="255">
+                             <red>128</red>
+                             <green>128</green>
+                             <blue>128</blue>
+                            </color>
+                           </brush>
+                          </colorrole>
+                          <colorrole role="ButtonText">
+                           <brush brushstyle="SolidPattern">
+                            <color alpha="255">
+                             <red>128</red>
+                             <green>128</green>
+                             <blue>128</blue>
+                            </color>
+                           </brush>
+                          </colorrole>
+                          <colorrole role="Base">
+                           <brush brushstyle="SolidPattern">
+                            <color alpha="0">
+                             <red>0</red>
+                             <green>0</green>
+                             <blue>0</blue>
+                            </color>
+                           </brush>
+                          </colorrole>
+                          <colorrole role="Window">
+                           <brush brushstyle="SolidPattern">
+                            <color alpha="0">
+                             <red>0</red>
+                             <green>0</green>
+                             <blue>0</blue>
+                            </color>
+                           </brush>
+                          </colorrole>
+                          <colorrole role="PlaceholderText">
+                           <brush brushstyle="SolidPattern">
+                            <color alpha="255">
+                             <red>128</red>
+                             <green>128</green>
+                             <blue>128</blue>
+                            </color>
+                           </brush>
+                          </colorrole>
+                         </disabled>
+                        </palette>
+                       </property>
+                       <property name="font">
+                        <font>
+                         <family>verdana</family>
+                         <pointsize>10</pointsize>
+                        </font>
+                       </property>
+                       <property name="accessibleName">
+                        <string>label_12</string>
+                       </property>
+                       <property name="styleSheet">
+                        <string notr="true">color: grey</string>
+                       </property>
+                       <property name="text">
+                        <string>Número BIM</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QLabel" name="lNumBIM2">
+                       <property name="text">
+                        <string/>
+                       </property>
+                      </widget>
+                     </item>
+                    </layout>
+                   </item>
+             	   <item row="0" column="1">
+                    <layout class="QVBoxLayout" name="verticalLayout_19">
+                     <item>
+                      <widget class="QLabel" name="label_26">
+                       <property name="font">
+                        <font>
+                         <family>verdana</family>
+                         <pointsize>10</pointsize>
+                        </font>
+                       </property>
+                       <property name="styleSheet">
+                        <string notr="true">color: grey</string>
+                       </property>
+                       <property name="text">
+                        <string>Situació BIM</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QLabel" name="lSituacio2">
+                       <property name="text">
+                        <string/>
+                       </property>
+                      </widget>
+                     </item>
+                    </layout>
+                   </item>
+                   <item row="0" column="2">
+                    <layout class="QVBoxLayout" name="verticalLayout_13">
+                     <item>
+                      <widget class="QLabel" name="label_15">
+                       <property name="font">
+                        <font>
+                         <family>verdana</family>
+                         <pointsize>10</pointsize>
+                        </font>
+                       </property>
+                       <property name="styleSheet">
+                        <string notr="true">color: grey</string>
+                       </property>
+                       <property name="text">
+                        <string>Tipus Situació</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QLabel" name="ltipusSituacio2">
+                       <property name="text">
+                        <string/>
+                       </property>
+                      </widget>
+                     </item>
+                    </layout>
+                   </item>
+				   
+				 <item row="1" column="0">
+                    <spacer name="verticalSpacer_3">
+                     <property name="orientation">
+                      <enum>Qt::Vertical</enum>
+                     </property>
+                     <property name="sizeType">
+                      <enum>QSizePolicy::Fixed</enum>
+                     </property>
+                     <property name="sizeHint" stdset="0">
+                      <size>
+                       <width>20</width>
+                       <height>20</height>
+                      </size>
+                     </property>
+                    </spacer>
+                   </item>
+				   
+				   
+				  <item row="2" column="0"  colspan="2">
+                    <layout class="QVBoxLayout" name="verticalLayout_14">
+                     <item>
+                      <widget class="QLabel" name="label_16">
+                       <property name="font">
+                        <font>
+                         <family>verdana</family>
+                         <pointsize>10</pointsize>
+                        </font>
+                       </property>
+                       <property name="styleSheet">
+                        <string notr="true">color: grey</string>
+                       </property>
+                       <property name="text">
+                        <string>Descripció</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QLabel" name="lDescripcioBIM2">
+                       <property name="text">
+                        <string/>
+                       </property>
+                      </widget>
+                     </item>
+                    </layout>
+                   </item>
+				   <item row="2" column="2"  colspan="2">
+                    <layout class="QVBoxLayout" name="verticalLayout_41">
+                     <item>
+                      <widget class="QLabel" name="label_16">
+                       <property name="font">
+                        <font>
+                         <family>verdana</family>
+                         <pointsize>10</pointsize>
+                        </font>
+                       </property>
+                       <property name="styleSheet">
+                        <string notr="true">color: grey</string>
+                       </property>
+                       <property name="text">
+                        <string>Denominació</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QLabel" name="lDenominacio2">
+                       <property name="text">
+                        <string/>
+                       </property>
+                      </widget>
+                     </item>
+                    </layout>
+                   </item>
+				   
+				   <item row="3" column="0">
+                    <spacer name="verticalSpacer_3">
+                     <property name="orientation">
+                      <enum>Qt::Vertical</enum>
+                     </property>
+                     <property name="sizeType">
+                      <enum>QSizePolicy::Fixed</enum>
+                     </property>
+                     <property name="sizeHint" stdset="0">
+                      <size>
+                       <width>20</width>
+                       <height>20</height>
+                      </size>
+                     </property>
+                    </spacer>
+                   </item>
+				  
+				  <item row="4" column="0">
                    <layout class="QVBoxLayout" name="verticalLayout_9">
                     <item>
                      <widget class="QLabel" name="label_5">
@@ -1925,7 +2534,7 @@ QScrollBar::handle{
                        <string notr="true">color: grey</string>
                       </property>
                       <property name="text">
-                       <string>Propietari sòl</string>
+                       <string>Propietari sòl BIM</string>
                       </property>
                      </widget>
                     </item>
@@ -1938,7 +2547,7 @@ QScrollBar::handle{
                     </item>
                    </layout>
                   </item>
-                  <item row="0" column="1">
+                  <item row="4" column="1">
                    <layout class="QVBoxLayout" name="verticalLayout_22">
                     <item>
                      <widget class="QLabel" name="label_13">
@@ -1946,7 +2555,7 @@ QScrollBar::handle{
                        <string notr="true">color: grey</string>
                       </property>
                       <property name="text">
-                       <string>Propietari construcció</string>
+                       <string>Propietari construcció BIM</string>
                       </property>
                      </widget>
                     </item>
@@ -1959,7 +2568,7 @@ QScrollBar::handle{
                     </item>
                    </layout>
                   </item>
-                  <item row="0" column="2">
+                  <item row="4" column="2">
                    <layout class="QVBoxLayout" name="verticalLayout_24">
                     <item>
                      <widget class="QLabel" name="label_17">
@@ -1967,12 +2576,12 @@ QScrollBar::handle{
                        <string notr="true">color: grey</string>
                       </property>
                       <property name="text">
-                       <string>Superfície sòl</string>
+                       <string>Data adquisició BIM</string>
                       </property>
                      </widget>
                     </item>
                     <item>
-                     <widget class="QLabel" name="lSupSolReg">
+                     <widget class="QLabel" name="lDataAdqBim">
                       <property name="text">
                        <string/>
                       </property>
@@ -1980,7 +2589,7 @@ QScrollBar::handle{
                     </item>
                    </layout>
                   </item>
-                  <item row="0" column="3">
+                  <item row="4" column="3">
                    <layout class="QVBoxLayout" name="verticalLayout_25">
                     <item>
                      <widget class="QLabel" name="label_23">
@@ -1988,12 +2597,12 @@ QScrollBar::handle{
                        <string notr="true">color: grey</string>
                       </property>
                       <property name="text">
-                       <string>Superfície construcció</string>
+                       <string>Titol adquisició BIM</string>
                       </property>
                      </widget>
                     </item>
                     <item>
-                     <widget class="QLabel" name="lSupConsReg">
+                     <widget class="QLabel" name="lTitolAdq">
                       <property name="text">
                        <string/>
                       </property>
@@ -2001,8 +2610,140 @@ QScrollBar::handle{
                     </item>
                    </layout>
                   </item>
-                 </layout>
-                </item>
+                  
+                  <item row="4" column="4">
+                   <layout class="QVBoxLayout" name="verticalLayout_26">
+                    <item>
+                     <widget class="QLabel" name="label_31">
+                      <property name="styleSheet">
+                       <string notr="true">color: grey</string>
+                      </property>
+                      <property name="text">
+                       <string>% Estat propietat BIM</string>
+                      </property>
+                     </widget>
+                    </item>
+                    <item>
+                     <widget class="QLabel" name="lPercEstatProp">
+                      <property name="text">
+                       <string/>
+                      </property>
+                     </widget>
+                    </item>
+                   </layout>
+                  </item>
+
+				  <item row="5" column="0">
+                    <spacer name="verticalSpacer_3">
+                     <property name="orientation">
+                      <enum>Qt::Vertical</enum>
+                     </property>
+                     <property name="sizeType">
+                      <enum>QSizePolicy::Fixed</enum>
+                     </property>
+                     <property name="sizeHint" stdset="0">
+                      <size>
+                       <width>20</width>
+                       <height>20</height>
+                      </size>
+                     </property>
+                    </spacer>
+                   </item>
+
+                  <item row="6" column="0">
+                   <layout class="QVBoxLayout" name="verticalLayout_27">
+                    <item>
+                     <widget class="QLabel" name="label_33">
+                      <property name="styleSheet">
+                       <string notr="true">color: grey</string>
+                      </property>
+                      <property name="text">
+                       <string>Estat inscripció BIM</string>
+                      </property>
+                     </widget>
+                    </item>
+                    <item>
+                     <widget class="QLabel" name="lEstatInsc">
+                      <property name="text">
+                       <string/>
+                      </property>
+                     </widget>
+                    </item>
+                   </layout>
+                  </item>
+                 
+                 <item row="6" column="1">
+                   <layout class="QVBoxLayout" name="verticalLayout_28">
+                    <item>
+                     <widget class="QLabel" name="label_34">
+                      <property name="styleSheet">
+                       <string notr="true">color: grey</string>
+                      </property>
+                      <property name="text">
+                       <string>Data inscripció BIM</string>
+                      </property>
+                     </widget>
+                    </item>
+                    <item>
+                     <widget class="QLabel" name="lDataInsc">
+                      <property name="text">
+                       <string/>
+                      </property>
+                     </widget>
+                    </item>
+                   </layout>
+                  </item>
+                  
+                 <item row="6" column="2">
+                   <layout class="QVBoxLayout" name="verticalLayout_29">
+                    <item>
+                     <widget class="QLabel" name="label_35">
+                      <property name="styleSheet">
+                       <string notr="true">color: grey</string>
+                      </property>
+                      <property name="text">
+                       <string>Inscrit amb cartografia municipal</string>
+                      </property>
+                     </widget>
+                    </item>
+                    <item>
+                     <widget class="QLabel" name="lInscritCartoMun">
+                      <property name="text">
+                       <string/>
+                      </property>
+                     </widget>
+                    </item>
+                   </layout>
+                  </item>
+                 
+                 <item row="6" column="3">
+                   <layout class="QVBoxLayout" name="verticalLayout_30">
+                    <item>
+                     <widget class="QLabel" name="label_35">
+                      <property name="styleSheet">
+                       <string notr="true">color: grey</string>
+                      </property>
+                      <property name="text">
+                       <string>Data coordinació cartogràfica</string>
+                      </property>
+                     </widget>
+                    </item>
+                    <item>
+                     <widget class="QLabel" name="lDataCoordCart">
+                      <property name="text">
+                       <string/>
+                      </property>
+                     </widget>
+                    </item>
+                   </layout>
+                  </item>
+                    <!--Fi de layout de dades de titularitat-->
+                  </layout>
+                  </item>
+
+               
+
+
                 <item>
                  <widget class="QLabel" name="label_8">
                   <property name="styleSheet">
@@ -2037,79 +2778,44 @@ QScrollBar::handle{
                    <number>33</number>
                   </attribute>
                   <attribute name="horizontalHeaderDefaultSectionSize">
-                   <number>125</number>
+                   <number>180</number>
                   </attribute>
                   <attribute name="horizontalHeaderStretchLastSection">
-                   <bool>true</bool>
+                   <bool>false</bool>
                   </attribute>
                   <column>
                    <property name="text">
-                    <string>Finca</string>
+                    <string>Nº FR</string>
                    </property>
                   </column>
                   <column>
                    <property name="text">
-                    <string>Núm. Registre</string>
+                    <string>Nº RP</string>
                    </property>
                   </column>
                   <column>
                    <property name="text">
-                    <string>Municipi</string>
+                    <string>Tpus FR</string>
                    </property>
                   </column>
                   <column>
                    <property name="text">
-                    <string>Secció</string>
+                    <string>Descripció FR</string>
                    </property>
                   </column>
                   <column>
                    <property name="text">
-                    <string>Tom</string>
+                    <string>Superfície Sòl FR</string>
                    </property>
                   </column>
                   <column>
                    <property name="text">
-                    <string>Llibre</string>
+                    <string>Superfície Construcció FR</string>
                    </property>
                   </column>
                   <column>
                    <property name="text">
-                    <string>Foli</string>
-                   </property>
-                  </column>
-                  <column>
-                   <property name="text">
-                    <string>Inscripció</string>
-                   </property>
-                  </column>
-                  <column>
-                   <property name="text">
-                    <string>CRU</string>
-                   </property>
-                  </column>
-                  <column>
-                   <property name="text">
-                    <string>Sup. registral sòl</string>
-                   </property>
-                  </column>
-                  <column>
-                   <property name="text">
-                    <string>Sup. Registral constr.</string>
-                   </property>
-                  </column>
-                  <column>
-                   <property name="text">
-                    <string>Província</string>
-                   </property>
-                  </column>
-                  <column>
-                   <property name="text">
-                    <string>Doble Inscripció</string>
-                   </property>
-                  </column>
-                  <column>
-                   <property name="text">
-                    <string>Núm RF</string>
+                    <string>Càrregues</string>
                    </property>
                   </column>
                  </widget>
