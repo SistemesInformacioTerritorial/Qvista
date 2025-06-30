@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 
 from qgis.PyQt.QtCore import Qt
-from qgis.PyQt.QtWidgets import QProgressDialog, QApplication, QMessageBox, QMenu, QAction, QPushButton
+from qgis.PyQt.QtWidgets import (QProgressDialog, QApplication, QMessageBox, QMenu, QAction, QPushButton,
+                                 QDialog, QVBoxLayout, QHBoxLayout, QTreeWidget, QTreeWidgetItem)
 from qgis.core import QgsProcessingFeedback, QgsApplication
 from moduls.QvProviders import QvProjectProvider, QvQvistaProvider
 from moduls.QvSingleton import singleton
@@ -508,6 +509,7 @@ class QvProcessing:
         self.qvistaProvider = QvQvistaProvider()
         QgsApplication.processingRegistry().addProvider(self.qvistaProvider)
         self.processingMenu = None
+        self.algorithmsList = []
 
     def initializeProcessing(self):
         Processing.initialize()
@@ -522,6 +524,172 @@ class QvProcessing:
             if providersList is not None and prov.id() not in providersList: continue
             for alg in prov.algorithms():
                 print('-', alg.id(), "->", alg.displayName())
+
+    def showAlgorithms(self, providersList=None):
+        for prov in QgsApplication.processingRegistry().providers():
+            item = prov.name() + " - " + prov.longName() + ": #" + str(len(prov.algorithms()))
+            self.algorithmsList.append(item)
+            if providersList is not None and prov.id() not in providersList: continue
+            for alg in prov.algorithms():
+                item = '- ' + alg.id() + " - " + alg.displayName()
+                self.algorithmsList.append(item)
+        selected = self.selectAlgorithm('\n'.join(self.algorithmsList))
+        # Eliminar el guión y todo lo que quede a su derecha
+        if selected is not None:
+            selected = selected.split('-')[0].strip()
+        return selected
+
+    def selectAlgorithm(self, texto):
+        """
+        Muestra un diálogo para seleccionar un item de una estructura tipo:
+        Nivel 1
+        - Item 1
+        - Item 2
+        Nivel 2
+        - Item A
+        - Item B
+        """
+        # Parsear el texto
+        niveles = {}
+        nivel_actual = None
+        for linea in texto.splitlines():
+            linea = linea.strip()
+            if not linea:
+                continue
+            if linea.startswith('-'):
+                if nivel_actual:
+                    niveles[nivel_actual].append(linea[1:].strip())
+            else:
+                nivel_actual = linea
+                niveles[nivel_actual] = []
+
+        # Crear el diálogo
+        dlg = QDialog()
+        dlg.setWindowTitle("Selecciona un algorisme per executar")
+        dlg.resize(800, 500)
+        layout = QVBoxLayout(dlg)
+        tree = QTreeWidget()
+        tree.setHeaderHidden(True)
+        for nivel, items in niveles.items():
+            parent = QTreeWidgetItem([nivel])
+            parent.setFlags(parent.flags() & ~Qt.ItemIsSelectable)  # No seleccionable
+            parent.setSelected(False)
+            for item in items:
+                child = QTreeWidgetItem([item])
+                parent.addChild(child)
+            tree.addTopLevelItem(parent)
+        layout.addWidget(tree)
+        btn_layout = QHBoxLayout()
+        btn_buscar = QPushButton("🔍 Cerca")
+        btn = QPushButton("⚙️ Executa")
+        btn.setEnabled(False)  # Desactivado por defecto
+        btn_cancelar = QPushButton("❌ Tanca")
+        btn_layout.addWidget(btn_buscar)
+        btn_layout.addWidget(btn)
+        btn_layout.addWidget(btn_cancelar)
+        layout.addLayout(btn_layout)
+        btn_cancelar.setDefault(True)
+        btn_cancelar.setAutoDefault(True)
+
+        seleccion = {'item': None}
+
+        def on_tree_selection_changed():
+            item = tree.currentItem()
+            # Solo activar si es un hijo (tiene padre)
+            btn.setEnabled(item is not None and item.parent() is not None)
+
+        tree.currentItemChanged.connect(lambda curr, prev: on_tree_selection_changed())
+
+        # Deseleccionar item si su rama se cierra
+        def on_item_collapsed(item):
+            # Si el item colapsado tiene un hijo seleccionado, deseleccionarlo
+            selected = tree.currentItem()
+            if selected and selected.parent() == item:
+                tree.setCurrentItem(None)
+
+        tree.itemCollapsed.connect(on_item_collapsed)
+
+        def aceptar():
+            item = tree.currentItem()
+            if item and item.parent():
+                seleccion['item'] = item.text(0)
+                dlg.accept()
+
+        def cancelar():
+            seleccion['item'] = None
+            dlg.reject()
+
+        def buscar():
+            # Formulario flotante para buscar string
+            search_dlg = QDialog(dlg)
+            search_dlg.setWindowTitle("Cerca item")
+            search_dlg.setModal(True)
+            search_layout = QVBoxLayout(search_dlg)
+            from PyQt5.QtWidgets import QLineEdit, QLabel
+            lbl = QLabel("Introdueix el text a cercar:")
+            search_layout.addWidget(lbl)
+            txt = QLineEdit()
+            search_layout.addWidget(txt)
+            btns = QHBoxLayout()
+            btn_ok = QPushButton("🔍 Següent")
+            btn_prev = QPushButton("🔍 Anterior")
+            btn_close = QPushButton("❌ Tanca")
+            btns.addWidget(btn_ok)
+            btns.addWidget(btn_prev)
+            btns.addWidget(btn_close)
+            search_layout.addLayout(btns)
+            lbl_no_found = QLabel("")
+            search_layout.addWidget(lbl_no_found)
+
+            # Recopilar todos los items hijos en una lista para búsqueda secuencial
+            items_hijos = []
+            for i in range(tree.topLevelItemCount()):
+                parent = tree.topLevelItem(i)
+                for j in range(parent.childCount()):
+                    items_hijos.append(parent.child(j))
+
+            # Estado de búsqueda
+            estado = {'indices': [], 'actual': -1, 'last_text': ''}
+
+            def do_search(next=True):
+                texto_buscar = txt.text().strip().lower()
+                if not texto_buscar:
+                    lbl_no_found.setText("")
+                    return
+                # Si cambia el texto de búsqueda, recalcular coincidencias
+                if texto_buscar != estado['last_text']:
+                    estado['indices'] = [idx for idx, item in enumerate(items_hijos) if texto_buscar in item.text(0).lower()]
+                    estado['actual'] = -1
+                    estado['last_text'] = texto_buscar
+                if not estado['indices']:
+                    lbl_no_found.setText("No s'ha trobat cap item")
+                    return
+                # Mostrar cuántas coincidencias hay y la posición actual
+                total = len(estado['indices'])
+                actual = (estado['actual'] + 1) if estado['actual'] >= 0 else 1
+                lbl_no_found.setText(f"Coincidències: {total} ({actual}/{total})")
+                # Buscar siguiente o anterior
+                if next:
+                    estado['actual'] = (estado['actual'] + 1) % total
+                else:
+                    estado['actual'] = (estado['actual'] - 1) % total
+                idx = estado['indices'][estado['actual']]
+                item = items_hijos[idx]
+                tree.setCurrentItem(item)
+                tree.scrollToItem(item)
+
+            btn_ok.clicked.connect(lambda: do_search(True))
+            btn_prev.clicked.connect(lambda: do_search(False))
+            btn_close.clicked.connect(search_dlg.reject)
+            search_dlg.exec_()
+        btn.clicked.connect(aceptar)
+        btn_cancelar.clicked.connect(cancelar)
+        btn_buscar.clicked.connect(buscar)
+        # Por defecto, foco en Cancelar
+        btn_cancelar.setDefault(True)
+        btn_cancelar.setAutoDefault(True)
+        dlg.exec_()
+        return seleccion['item']
 
     def addMenuProcess(self, process, title, label=None):
         self.processingMenu.addMenuAction(self.processingMenu.menu(), process, title, False, label)
@@ -626,6 +794,13 @@ if __name__ == "__main__":
                 leyenda.menuAccions.append('buffer')
                 leyenda.menuAccions.append('modeloProyecto')
                 leyenda.menuAccions.append('modeloPerfil')
+
+        leyenda.clicatMenuContexte.connect(menuContexte)
+
+        canv.show()
+        leyenda.show()
+        leyenda.menuAccions.append('modeloProyecto')
+        leyenda.menuAccions.append('modeloPerfil')
 
         leyenda.clicatMenuContexte.connect(menuContexte)
 

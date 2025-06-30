@@ -328,8 +328,11 @@ class QvStatusBar(QStatusBar):
                 QvFormNovaMapificacio.executa(self.llegenda)
             elif len(command) > 0 and command[0] == '#':
                 from moduls.QvProcessing import QvProcessing
-                alg = command[1:].strip()
-                if ':' in alg: QvProcessing().execAlgorithm(alg)
+                if command == '#?':
+                    alg = QvProcessing().showAlgorithms()
+                else:
+                    alg = command[1:].strip()
+                if alg is not None and ':' in alg: QvProcessing().execAlgorithm(alg)
 
             # elif command == 'etiquetas':
             #     if QvApp().usuari == 'DE1717':
