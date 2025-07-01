@@ -580,10 +580,10 @@ class QvProcessing:
             tree.addTopLevelItem(parent)
         layout.addWidget(tree)
         btn_layout = QHBoxLayout()
-        btn_buscar = QPushButton("🔍 Cerca")
-        btn = QPushButton("⚙️ Executa")
+        btn_buscar = QPushButton("Cerca")
+        btn = QPushButton("Executa")
         btn.setEnabled(False)  # Desactivado por defecto
-        btn_cancelar = QPushButton("❌ Tanca")
+        btn_cancelar = QPushButton("Tanca")
         btn_layout.addWidget(btn_buscar)
         btn_layout.addWidget(btn)
         btn_layout.addWidget(btn_cancelar)
@@ -599,6 +599,15 @@ class QvProcessing:
             btn.setEnabled(item is not None and item.parent() is not None)
 
         tree.currentItemChanged.connect(lambda curr, prev: on_tree_selection_changed())
+
+        # Copiar al portapapeles el string hasta el primer guión al hacer doble click en un item hijo
+        def on_item_double_clicked(item, column):
+            if item and item.parent():
+                text = item.text(0)
+                text_copiar = text.split('-')[0].strip()
+                QApplication.clipboard().setText(text_copiar)
+
+        tree.itemDoubleClicked.connect(on_item_double_clicked)
 
         # Deseleccionar item si su rama se cierra
         def on_item_collapsed(item):
@@ -622,7 +631,7 @@ class QvProcessing:
         def buscar():
             # Formulario flotante para buscar string
             search_dlg = QDialog(dlg)
-            search_dlg.setWindowTitle("Cerca item")
+            search_dlg.setWindowTitle("Cerca algorisme")
             search_dlg.setModal(True)
             search_layout = QVBoxLayout(search_dlg)
             from PyQt5.QtWidgets import QLineEdit, QLabel
@@ -631,9 +640,9 @@ class QvProcessing:
             txt = QLineEdit()
             search_layout.addWidget(txt)
             btns = QHBoxLayout()
-            btn_ok = QPushButton("🔍 Següent")
-            btn_prev = QPushButton("🔍 Anterior")
-            btn_close = QPushButton("❌ Tanca")
+            btn_ok = QPushButton("Següent")
+            btn_prev = QPushButton("Anterior")
+            btn_close = QPushButton("Tanca")
             btns.addWidget(btn_ok)
             btns.addWidget(btn_prev)
             btns.addWidget(btn_close)
@@ -662,7 +671,7 @@ class QvProcessing:
                     estado['actual'] = -1
                     estado['last_text'] = texto_buscar
                 if not estado['indices']:
-                    lbl_no_found.setText("No s'ha trobat cap item")
+                    lbl_no_found.setText("No s'ha trobat cap coincidència")
                     return
                 # Mostrar cuántas coincidencias hay y la posición actual
                 total = len(estado['indices'])
