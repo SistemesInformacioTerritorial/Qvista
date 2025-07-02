@@ -53,9 +53,10 @@ class QvProcessingInit:
 # INICIALIZACIÓN ENTORNO PROCESSING
 
 # Primero hay que obtener la ruta de Python para los imports
-# y cambiar código python en un módulo implicado para que no use iface
+# y cambiar código python en un módulo implicado para que no use iface:
+# general.py en python\plugins\processing\tools
 _PYTHON_PATH = QvProcessingInit.getPythonPath()
-_REPLACE_PY = QvProcessingInit.changePythonCode()
+_REPLACE_PY = QvProcessingInit.changePythonCode() 
 
 # Añadimos el path al directorio de plugins de python para hacer el import processing
 # from qgis import processing funciona, pero no from processing.core.Processing import Processing
@@ -509,37 +510,71 @@ class QvProcessing:
         self.qvistaProvider = QvQvistaProvider()
         QgsApplication.processingRegistry().addProvider(self.qvistaProvider)
         self.processingMenu = None
-        self.algorithmsList = []
 
     def initializeProcessing(self):
         Processing.initialize()
         self.projectProvider = QvProjectProvider.loadAlgorithms()
-        if debugging():
-            self.printAlgorithms(('project', 'model', 'qvista'))
 
-    def printAlgorithms(self, providersList=None):
-        print("*** PROVIDERS:")
-        for prov in QgsApplication.processingRegistry().providers():
-            print(prov.id(), "-", prov.name(), "->", prov.longName(), "#algs:", len(prov.algorithms()))
-            if providersList is not None and prov.id() not in providersList: continue
-            for alg in prov.algorithms():
-                print('-', alg.id(), "->", alg.displayName())
+    # def printAlgorithms(self):
+    #     print("*** PROVIDERS:")
+    #     for prov in QgsApplication.processingRegistry().providers():
+    #         print(prov.id(), "-", prov.name(), "->", prov.longName(), "#algs:", len(prov.algorithms()))
+    #         for alg in prov.algorithms():
+    #             print('-', alg.id(), "->", alg.displayName())
 
-    def showAlgorithms(self, providersList=None):
+    def showAlgorithms(self):
+        algorithmsList = []
         for prov in QgsApplication.processingRegistry().providers():
             item = prov.name() + " - " + prov.longName() + ": #" + str(len(prov.algorithms()))
-            self.algorithmsList.append(item)
-            if providersList is not None and prov.id() not in providersList: continue
+            algorithmsList.append(item)
             for alg in prov.algorithms():
                 item = '- ' + alg.id() + " - " + alg.displayName()
-                self.algorithmsList.append(item)
-        selected = self.selectAlgorithm('\n'.join(self.algorithmsList))
+                algorithmsList.append(item)
+        selected = QvAlgorithmDialog.show('\n'.join(algorithmsList))
         # Eliminar el guión y todo lo que quede a su derecha
         if selected is not None:
             selected = selected.split('-')[0].strip()
         return selected
 
-    def selectAlgorithm(self, texto):
+    def addMenuProcess(self, process, title, label=None):
+        self.processingMenu.addMenuAction(self.processingMenu.menu(), process, title, False, label)
+    
+    def setMenu(self, widget, singleMenu=True):
+        self.initializeProcessing()
+        self.processingMenu = QvProcessingMenu(widget, singleMenu)
+        return self.processingMenu.menu()
+
+    def execPlugin(self, process):
+        try:
+            self.initializeProcessing()
+            p = QvProcessPlugin(process)
+            return p.callFunction()
+        except Exception as e:
+            print(str(e))            
+            return False
+
+    def execAlgorithm(self, name, params={}):
+        msg = "No s'ha pogut iniciar l'algorisme"
+        try:
+            self.initializeProcessing()
+            dialog = processing.createAlgorithmDialog(name, params)
+            if dialog is None:
+                QMessageBox.warning(None, msg, f"Algorisme {name} no disponible")
+                return
+            # Se elimina el boton de ejecución por lotes
+            for button in dialog.findChildren(QPushButton):
+                if ' lots' in button.text():
+                    button.setDisabled(True)
+                    button.setVisible(False)
+                    break
+            dialog.show()
+        except Exception as e:
+            QMessageBox.warning(None, msg, f"Error a l'algorisme {name}\n\n" + str(e))
+
+class QvAlgorithmDialog:
+
+    @staticmethod
+    def show(texto):
         """
         Muestra un diálogo para seleccionar un item de una estructura tipo:
         Nivel 1
@@ -699,42 +734,6 @@ class QvProcessing:
         btn_cancelar.setAutoDefault(True)
         dlg.exec_()
         return seleccion['item']
-
-    def addMenuProcess(self, process, title, label=None):
-        self.processingMenu.addMenuAction(self.processingMenu.menu(), process, title, False, label)
-    
-    def setMenu(self, widget, singleMenu=True):
-        self.initializeProcessing()
-        self.processingMenu = QvProcessingMenu(widget, singleMenu)
-        return self.processingMenu.menu()
-
-    def execPlugin(self, process):
-        try:
-            self.initializeProcessing()
-            p = QvProcessPlugin(process)
-            return p.callFunction()
-        except Exception as e:
-            print(str(e))            
-            return False
-
-    def execAlgorithm(self, name, params={}):
-        msg = "No s'ha pogut iniciar l'algorisme"
-        try:
-            self.initializeProcessing()
-            dialog = processing.createAlgorithmDialog(name, params)
-            if dialog is None:
-                QMessageBox.warning(None, msg, f"Algorisme {name} no disponible")
-                return
-            # Se elimina el boton de ejecución por lotes
-            for button in dialog.findChildren(QPushButton):
-                if ' lots' in button.text():
-                    button.setDisabled(True)
-                    button.setVisible(False)
-                    break
-            dialog.show()
-        except Exception as e:
-            QMessageBox.warning(None, msg, f"Error a l'algorisme {name}\n\n" + str(e))
-
 
 if __name__ == "__main__":
 
