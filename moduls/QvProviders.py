@@ -41,8 +41,7 @@ class QvQvistaProvider(QgsProcessingProvider):
     # Directorio donde se encuentran los modelos disponibles en qVista
     MODELS_FOLDER = str(os.path.join(os.getcwd(), r"processos\models"))
     # Nombre de grupo o lista de grupos permitidos (en minúsculas)
-    # Si es None, se permiten todos
-    MODELS_GROUPS_FILTER = ['general']
+    MODELS_GROUPS_FILTER = None # Se cargan todos, se pueden filtrar después
 
     def __init__(self):
         """
