@@ -320,7 +320,8 @@ class QvStatusBar(QStatusBar):
             return
         try:
             # Comando a ejecutar
-            command=self.leSeleccioExpressio.text().lower().strip()
+            texto=self.leSeleccioExpressio.text().strip()
+            command=texto.lower()
             if command == 'help':
                 QvApp().mainApp.infoQVista()
             elif command == 'mapificacio':
@@ -331,7 +332,7 @@ class QvStatusBar(QStatusBar):
                 if command == '#?':
                     alg = QvProcessing().showAlgorithms()
                 else:
-                    alg = command[1:].strip()
+                    alg = texto[1:].strip()
                 if alg is not None and ':' in alg: QvProcessing().execAlgorithm(alg)
 
             # elif command == 'etiquetas':

@@ -39,9 +39,11 @@ class QvProjectProvider:
 class QvQvistaProvider(QgsProcessingProvider):
 
     # Directorio donde se encuentran los modelos disponibles en qVista
+    # Los ficheros .model3 han de copiarse siempre a traves de GitHub
+    # para que se distribuyan con qVista
     MODELS_FOLDER = str(os.path.join(os.getcwd(), r"processos\models"))
     # Nombre de grupo o lista de grupos permitidos (en minúsculas)
-    MODELS_GROUPS_FILTER = None # Se cargan todos, se pueden filtrar después
+    MODELS_GROUPS_FILTER = None # Se cargan todos, pueden filtrarse después
 
     def __init__(self):
         """

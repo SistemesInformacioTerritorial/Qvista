@@ -67,311 +67,492 @@ import processing
 from processing.core.Processing import Processing
 Processing.initialize()
 
-class QvPluginsCsv:
+# class QvPluginsCsv:
 
-    _PLUGINS_CSV = os.getcwd() + r"\processos\plugins\processing.csv"
+#     _PLUGINS_CSV = os.getcwd() + r"\processos\plugins\processing.csv"
 
-    @staticmethod
-    def snParam(value, default):
-        value = value.upper()
-        if value == 'S':
-            return True
-        elif value == 'N':
-            return False
-        else:
-            return default
+#     @staticmethod
+#     def snParam(value, default):
+#         value = value.upper()
+#         if value == 'S':
+#             return True
+#         elif value == 'N':
+#             return False
+#         else:
+#             return default
 
-    @staticmethod
-    def readerCsv():
-        with open(QvPluginsCsv._PLUGINS_CSV, newline='') as csvfile:
-            reader = csv.DictReader(csvfile, delimiter=';')
-            for row in reader:
-                # Saltar los registros que empiecen por #
-                # (solo despues de la línea de cabecera)
-                if row['NAME'].strip()[0] == '#': continue
-                yield row
+#     @staticmethod
+#     def readerCsv():
+#         with open(QvPluginsCsv._PLUGINS_CSV, newline='') as csvfile:
+#             reader = csv.DictReader(csvfile, delimiter=';')
+#             for row in reader:
+#                 # Saltar los registros que empiecen por #
+#                 # (solo despues de la línea de cabecera)
+#                 if row['NAME'].strip()[0] == '#': continue
+#                 yield row
 
-    @staticmethod
-    def rowProcess(row):
-        return row['NAME'].strip().lower()
+#     @staticmethod
+#     def rowProcess(row):
+#         return row['NAME'].strip().lower()
 
-    @staticmethod
-    def rowParams(row):
-        params = {}
-        try:
-            for field in row:
-                val = row[field].strip()
-                if field == 'NAME': val = val.lower()
-                if field == 'STEPS': val = val.split(',')
-                if field == 'PROGRESS': val = QvPluginsCsv.snParam(val, True)
-                if field == 'GENERAL': val = QvPluginsCsv.snParam(val, False)
-                params[field] = val
-        except Exception as e:
-            print(str(e))
-        finally:
-            if len(params) > 0:
-                return params
-            else:
-                return None
+#     @staticmethod
+#     def rowParams(row):
+#         params = {}
+#         try:
+#             for field in row:
+#                 val = row[field].strip()
+#                 if field == 'NAME': val = val.lower()
+#                 if field == 'STEPS': val = val.split(',')
+#                 if field == 'PROGRESS': val = QvPluginsCsv.snParam(val, True)
+#                 if field == 'GENERAL': val = QvPluginsCsv.snParam(val, False)
+#                 params[field] = val
+#         except Exception as e:
+#             print(str(e))
+#         finally:
+#             if len(params) > 0:
+#                 return params
+#             else:
+#                 return None
 
-    @staticmethod
-    def readParams(process):
-        params = {}
-        try:
-            for row in QvPluginsCsv.readerCsv():
-                if QvPluginsCsv.rowProcess(row) == process:
-                    params = QvPluginsCsv.rowParams(row)
-                    break
-        except Exception as e:
-            print(str(e))
-        finally:
-            if len(params) > 0:
-                return params
-            else:
-                return None
+#     @staticmethod
+#     def readParams(process):
+#         params = {}
+#         try:
+#             for row in QvPluginsCsv.readerCsv():
+#                 if QvPluginsCsv.rowProcess(row) == process:
+#                     params = QvPluginsCsv.rowParams(row)
+#                     break
+#         except Exception as e:
+#             print(str(e))
+#         finally:
+#             if len(params) > 0:
+#                 return params
+#             else:
+#                 return None
 
-class QvProcessProgress:
-    def __init__(self):
-        self.numProceso = 1
-        self.numTotal = 1
-        self.feedback = None
-        self.progress = None
-        self.canceled = False
-        self.processDialog = None
-        self.msg = None
-        self.showDialog = None
-        # Valores del csv:
-        self.title = None
-        self.steps = []
-        self.showProgress = True
-        self.general = False
+# class QvProcessProgress:
+#     def __init__(self):
+#         self.numProceso = 1
+#         self.numTotal = 1
+#         self.feedback = None
+#         self.progress = None
+#         self.canceled = False
+#         self.processDialog = None
+#         self.msg = None
+#         self.showDialog = None
+#         # Valores del csv:
+#         self.title = None
+#         self.steps = []
+#         self.showProgress = True
+#         self.general = False
 
-    def setSteps(self, steps):
-        self.steps = steps
-        num = len(self.steps)
-        # Si no hay steps, se añade uno con el contenido de title
-        if num == 0:
-            self.steps.append(self.title)
-        # Si no hay title, se pone el contenido del step 1
-        elif num == 1 and self.title is None:
-            self.title = self.steps[0]
-        elif num > 1:
-            self.numTotal = num
+#     def setSteps(self, steps):
+#         self.steps = steps
+#         num = len(self.steps)
+#         # Si no hay steps, se añade uno con el contenido de title
+#         if num == 0:
+#             self.steps.append(self.title)
+#         # Si no hay title, se pone el contenido del step 1
+#         elif num == 1 and self.title is None:
+#             self.title = self.steps[0]
+#         elif num > 1:
+#             self.numTotal = num
 
-    def getStep(self):
-        index = self.numProceso - 1
-        if index >= 0 and index < len(self.steps):
-            return self.steps[index]
-        else:
-            return None
+#     def getStep(self):
+#         index = self.numProceso - 1
+#         if index >= 0 and index < len(self.steps):
+#             return self.steps[index]
+#         else:
+#             return None
 
-    def setProcessDialog(self, dlg):
-        if dlg is not None:
-            self.processDialog = dlg
-            if self.title is not None:
-                self.processDialog.setWindowTitle(self.title)
+#     def setProcessDialog(self, dlg):
+#         if dlg is not None:
+#             self.processDialog = dlg
+#             if self.title is not None:
+#                 self.processDialog.setWindowTitle(self.title)
 
-    def calcTexts(self):
-        title = "Procés"
-        msg = "Executant procés"
-        try:
-            if self.title is not None:
-                title = self.title
-            if self.numTotal > 1:
-                title += " (" + str(self.numProceso) + " de " + str(self.numTotal) + ")"
-            step = self.getStep()
-            if step is not None:
-                title += " - " + step
-                msg += " " + step
-            msg += " ..."
-        except Exception as e:
-            print(str(e))
-        finally:
-            return title, msg
+#     def calcTexts(self):
+#         title = "Procés"
+#         msg = "Executant procés"
+#         try:
+#             if self.title is not None:
+#                 title = self.title
+#             if self.numTotal > 1:
+#                 title += " (" + str(self.numProceso) + " de " + str(self.numTotal) + ")"
+#             step = self.getStep()
+#             if step is not None:
+#                 title += " - " + step
+#                 msg += " " + step
+#             msg += " ..."
+#         except Exception as e:
+#             print(str(e))
+#         finally:
+#             return title, msg
 
-    def prepare(self):
-        if self.showProgress:
-            if self.numProceso == 1:
-                if debugging(): print("INI PROCESO PROGRESO")
-                self.canceled = False
-                self.feedback = QgsProcessingFeedback()
-                self.progress = QProgressDialog()
-                self.progress.setAutoClose(False)
-                self.progress.setAutoReset(False)
-                self.progress.setRange(0, 100)
-                self.progress.setMinimumWidth(400)
-                self.progress.setMinimumHeight(150)
-                self.progress.setWindowModality(Qt.WindowModal)
-                self.progress.setWindowFlags(Qt.WindowStaysOnTopHint)
-            else:
-                self.progress.canceled.disconnect()
-                self.feedback.progressChanged.disconnect()
-                # self.feedback.canceled.disconnect()
-            self.progress.canceled.connect(self.cancel)
-            self.change(0.0)
-            self.feedback.progressChanged.connect(self.change)
-            # self.feedback.canceled.connect(self.cancel)
-            title, self.msg = self.calcTexts()
-            self.progress.setWindowTitle(title)
-        else:
-            if self.numProceso == 1:
-                if debugging(): print("INI PROCESO SIN PROGRESO")
-                self.canceled = False
-                QApplication.instance().setOverrideCursor(Qt.WaitCursor)
-        self.numProceso += 1
-        return self.feedback
+#     def prepare(self):
+#         if self.showProgress:
+#             if self.numProceso == 1:
+#                 if debugging(): print("INI PROCESO PROGRESO")
+#                 self.canceled = False
+#                 self.feedback = QgsProcessingFeedback()
+#                 self.progress = QProgressDialog()
+#                 self.progress.setAutoClose(False)
+#                 self.progress.setAutoReset(False)
+#                 self.progress.setRange(0, 100)
+#                 self.progress.setMinimumWidth(400)
+#                 self.progress.setMinimumHeight(150)
+#                 self.progress.setWindowModality(Qt.WindowModal)
+#                 self.progress.setWindowFlags(Qt.WindowStaysOnTopHint)
+#             else:
+#                 self.progress.canceled.disconnect()
+#                 self.feedback.progressChanged.disconnect()
+#                 # self.feedback.canceled.disconnect()
+#             self.progress.canceled.connect(self.cancel)
+#             self.change(0.0)
+#             self.feedback.progressChanged.connect(self.change)
+#             # self.feedback.canceled.connect(self.cancel)
+#             title, self.msg = self.calcTexts()
+#             self.progress.setWindowTitle(title)
+#         else:
+#             if self.numProceso == 1:
+#                 if debugging(): print("INI PROCESO SIN PROGRESO")
+#                 self.canceled = False
+#                 QApplication.instance().setOverrideCursor(Qt.WaitCursor)
+#         self.numProceso += 1
+#         return self.feedback
 
-    def change(self, percent):
-        if self.progress is None or self.canceled: return
-        num = round(percent)
-        if num == 0:
-            self.progress.setLabelText(self.msg)
-        # if debugging(): print('-', self.numProceso - 1, num)
-        self.progress.setValue(num)
+#     def change(self, percent):
+#         if self.progress is None or self.canceled: return
+#         num = round(percent)
+#         if num == 0:
+#             self.progress.setLabelText(self.msg)
+#         # if debugging(): print('-', self.numProceso - 1, num)
+#         self.progress.setValue(num)
 
-    def reset(self):
-        if self.showProgress:
-            if debugging(): print("FIN PROCESO PROGRESS")
-            if self.feedback is not None: self.feedback.cancel()
-            if self.progress is not None: self.progress.hide()
-        else:
-            if debugging(): print("FIN PROCESO SIN PROGRESS")
-            QApplication.instance().restoreOverrideCursor()
-        self.numProceso = 1
+#     def reset(self):
+#         if self.showProgress:
+#             if debugging(): print("FIN PROCESO PROGRESS")
+#             if self.feedback is not None: self.feedback.cancel()
+#             if self.progress is not None: self.progress.hide()
+#         else:
+#             if debugging(): print("FIN PROCESO SIN PROGRESS")
+#             QApplication.instance().restoreOverrideCursor()
+#         self.numProceso = 1
 
-    def cancel(self):
-        self.canceled = True
-        if self.processDialog is not None: self.processDialog.hide()
-        self.reset()
+#     def cancel(self):
+#         self.canceled = True
+#         if self.processDialog is not None: self.processDialog.hide()
+#         self.reset()
 
-    def end(self):
-        self.change(100)
-        if self.numProceso > self.numTotal:
-            if self.progress is not None: self.progress.hide()
-            self.reset()
+#     def end(self):
+#         self.change(100)
+#         if self.numProceso > self.numTotal:
+#             if self.progress is not None: self.progress.hide()
+#             self.reset()
 
-class QvProcessPlugin:
-    def __init__(self, process):
-        self.process = None
-        self.processFunction = None
-        self.progress = None
-        self.init(process)
+# class QvProcessPlugin:
+#     def __init__(self, process):
+#         self.process = None
+#         self.processFunction = None
+#         self.progress = None
+#         self.init(process)
 
-    def init(self, process=None):
-        self.progress = QvProcessProgress()
-        self.process, self.processFunction = self.prepare(process)
+#     def init(self, process=None):
+#         self.progress = QvProcessProgress()
+#         self.process, self.processFunction = self.prepare(process)
             
-    def setParams(self, params):
-        self.progress.title = params['TITLE']
-        self.progress.setSteps(params['STEPS'])
-        self.progress.showProgress = params['PROGRESS']
-        self.progress.general = params['GENERAL']
+#     def setParams(self, params):
+#         self.progress.title = params['TITLE']
+#         self.progress.setSteps(params['STEPS'])
+#         self.progress.showProgress = params['PROGRESS']
+#         self.progress.general = params['GENERAL']
 
-    def getFunction(self, process):
-        func = None
-        self.progress.showDialog = None
-        try:
-            # Enlace con la clase de proceso
-            import processos.plugins.processing as modulProcs
-            modulProcs.processingClass = self
-            # Se obtiene la funcion de proceso del modulo processing
-            moduleName = process + "_processing"
-            dialogName = process + "_dialog"
-            import importlib
-            m = importlib.import_module(f"processos.plugins.{process}.{process}_processing")
-            # Se busca la función _dialog y la función _processing, en este orden
-            if hasattr(m, dialogName):
-                func = getattr(m, dialogName)
-                self.progress.showDialog = True
-            elif hasattr(m, moduleName):
-                func = getattr(m, moduleName)
-                self.progress.showDialog = False
-        except Exception as e:
-            print(str(e))
-            func = None
-            self.progress.showDialog = None
-        finally:
-            return func
+#     def getFunction(self, process):
+#         func = None
+#         self.progress.showDialog = None
+#         try:
+#             # Enlace con la clase de proceso
+#             import processos.plugins.processing as modulProcs
+#             modulProcs.processingClass = self
+#             # Se obtiene la funcion de proceso del modulo processing
+#             moduleName = process + "_processing"
+#             dialogName = process + "_dialog"
+#             import importlib
+#             m = importlib.import_module(f"processos.plugins.{process}.{process}_processing")
+#             # Se busca la función _dialog y la función _processing, en este orden
+#             if hasattr(m, dialogName):
+#                 func = getattr(m, dialogName)
+#                 self.progress.showDialog = True
+#             elif hasattr(m, moduleName):
+#                 func = getattr(m, moduleName)
+#                 self.progress.showDialog = False
+#         except Exception as e:
+#             print(str(e))
+#             func = None
+#             self.progress.showDialog = None
+#         finally:
+#             return func
     
-    def prepareProgress(self):
-        if self.progress is not None:
-            return self.progress.prepare()
-        else:
-            return None
+#     def prepareProgress(self):
+#         if self.progress is not None:
+#             return self.progress.prepare()
+#         else:
+#             return None
 
-    def prepare(self, process):
-        func = None
-        try:
-            process = process.lower()
-            params = QvPluginsCsv.readParams(process)
-            if params is not None:
-                self.setParams(params)
-                func = self.getFunction(process)
-            else:
-                process = None
-        except Exception as e:
-            print(str(e))
-            process = None
-        finally:
-            return process, func
+#     def prepare(self, process):
+#         func = None
+#         try:
+#             process = process.lower()
+#             params = QvPluginsCsv.readParams(process)
+#             if params is not None:
+#                 self.setParams(params)
+#                 func = self.getFunction(process)
+#             else:
+#                 process = None
+#         except Exception as e:
+#             print(str(e))
+#             process = None
+#         finally:
+#             return process, func
 
-    def cancel(self):
-        if self.progress is not None:
-            self.progress.cancel()
-            self.progress = None
+#     def cancel(self):
+#         if self.progress is not None:
+#             self.progress.cancel()
+#             self.progress = None
 
-    def canceled(self):
-        if self.progress is not None:
-            return self.progress.canceled
-        else:
-            return True
+#     def canceled(self):
+#         if self.progress is not None:
+#             return self.progress.canceled
+#         else:
+#             return True
 
-    def end(self):
-        if self.progress is not None:
-            self.progress.end()
+#     def end(self):
+#         if self.progress is not None:
+#             self.progress.end()
 
-    def errorMsg(self, msg):
-        print(msg)
-        self.cancel()
-        if self.process is None:
-            QMessageBox.warning(None, f"No s'ha pogut executar el procés", msg)
-        else:
-            QMessageBox.warning(None, f"Procés '{self.process}' no finalitzat correctament", msg)
+#     def errorMsg(self, msg):
+#         print(msg)
+#         self.cancel()
+#         if self.process is None:
+#             QMessageBox.warning(None, f"No s'ha pogut executar el procés", msg)
+#         else:
+#             QMessageBox.warning(None, f"Procés '{self.process}' no finalitzat correctament", msg)
 
-    def callFunction(self):
-        if self.processFunction is None:
-            self.errorMsg("Hi ha errors a la configuració del procés")
-            return False
-        try:
-            res = self.processFunction()
-            if res is None and not self.canceled():
-                self.errorMsg("S'ha produït un error intern al procés")
-                return False
-            if self.progress.showDialog:
-                self.progress.setProcessDialog(res)
-            else:
-                self.cancel()
-            return True
-        except Exception as e:
-            self.errorMsg("ERROR: " + str(e))
-            return False
+#     def callFunction(self):
+#         if self.processFunction is None:
+#             self.errorMsg("Hi ha errors a la configuració del procés")
+#             return False
+#         try:
+#             res = self.processFunction()
+#             if res is None and not self.canceled():
+#                 self.errorMsg("S'ha produït un error intern al procés")
+#                 return False
+#             if self.progress.showDialog:
+#                 self.progress.setProcessDialog(res)
+#             else:
+#                 self.cancel()
+#             return True
+#         except Exception as e:
+#             self.errorMsg("ERROR: " + str(e))
+#             return False
         
-    def run(self, name, params):
-        res = None
+#     def run(self, name, params):
+#         res = None
+#         try:
+#             feedback = self.prepareProgress()
+#             if debugging(): print("RUN - Ini")
+#             res = processing.run(name, params, feedback=feedback)
+#             if debugging(): print("RUN - Fin")
+#             if self.canceled(): return None
+#             if res is None:
+#                 self.cancel()
+#             else:
+#                 self.end()
+#             return res
+#         except Exception as e:
+#             self.errorMsg("ERROR: " + str(e))
+#             return None
+
+# class QvProcessingMenu:
+#     def __init__(self, widget, singleMenu):
+#     # Hay que indicar el widget donde aparece el menu para acceder al sender()
+#     # Del widget recogemos el proceso a ejecutar de la propiedad 'qv_process' del widget
+#         self.widget = widget
+#         self.singleMenu = singleMenu
+#         # self.menuPlugins = self.setMenuPlugins()
+#         self.menuAlgorithms = self.setMenuModels()
+#         self.menuProcesses = self.setMenuProcesses()
+
+#     def menu(self):
+#         return self.menuProcesses
+    
+#     # def addMenuAction(self, menu, process, title, plugin=False, label=None):
+#     #     if plugin:
+#     #         triggerFunction = QvProcessing().execPlugin
+#     #         if label is None: label = 'Plugin'
+#     #     else:
+#     #         triggerFunction = QvProcessing().execAlgorithm
+#     #         if label is None: label = 'Algorisme'
+
+#     def addMenuAction(self, menu, process, title, label=None):
+#         triggerFunction = QvProcessing().execAlgorithm
+#         if label is None: label = 'Algorisme'
+#         toolTip = label + ' ' + process
+#         act = menu.addAction(title)
+#         act.setToolTip(toolTip)
+#         act.setProperty('qv_process', process)
+#         act.triggered.connect(lambda: triggerFunction(self.widget.sender().property('qv_process')))
+
+#     def addMenuProviderActions(self, provider, menu):
+#         if provider is None: return
+#         for alg in provider.algorithms():
+#             if provider.id() in ('model', 'project', 'qvista'):
+#                 label = 'Model'
+#             else:
+#                 label = 'Algorisme'
+#             process = provider.id() + ':' + alg.name()
+#             title = alg.displayName()
+#             self.addMenuAction(menu, process, title, False, label)
+
+#     # def setMenuPlugins(self):
+#     #     try:
+#     #         menu = QMenu('Plugins')
+#     #         menu.setToolTipsVisible(True)
+#     #         for row in QvPluginsCsv.readerCsv():
+#     #             params = QvPluginsCsv.rowParams(row)
+#     #             process = params['NAME']
+#     #             title = params['TITLE']
+#     #             general = params['GENERAL']
+#     #             if general and process is not None and not process == '':
+#     #                 self.addMenuAction(menu, process, title, True)
+#     #         if menu.isEmpty():
+#     #             return None
+#     #         else:
+#     #             return menu
+#     #     except Exception as e:
+#     #         print(str(e))
+#     #         return None
+
+#     def setMenuModels(self):
+#         try:
+#             menu = QMenu('Models')
+#             menu.setToolTipsVisible(True)
+#             # Models provider 'project'
+#             self.addMenuProviderActions(QvProcessing().projectProvider, menu)
+#             # Models provider 'qvista'
+#             self.addMenuProviderActions(QvProcessing().qvistaProvider, menu)
+#             if menu.isEmpty():
+#                 return None
+#             else:
+#                 return menu
+#         except Exception as e:
+#             print(str(e))
+#             return None
+
+#     def setMenuProcesses(self):
+#         try:
+#             label = 'Processos'
+#             if self.menuPlugins is None:
+#                 if self.singleMenu and self.menuAlgorithms is not None:
+#                     self.menuAlgorithms.setTitle(label)
+#                 return self.menuAlgorithms
+#             else:
+#                 if self.menuAlgorithms is None:
+#                     if self.singleMenu: self.menuPlugins.setTitle(label)
+#                     return self.menuPlugins
+#                 else:
+#                     menu = QMenu(label)
+#                     menu.setToolTipsVisible(True)
+#                     if self.singleMenu:
+#                         for act in self.menuPlugins.actions():
+#                             menu.addAction(act)
+#                         menu.addSeparator()
+#                         for act in self.menuAlgorithms.actions():
+#                             menu.addAction(act)
+#                     else:
+#                         menu.addMenu(self.menuPlugins)
+#                         menu.addMenu(self.menuAlgorithms)
+#                     return menu
+#         except Exception as e:
+#             print(str(e))
+#             return None
+
+@singleton
+class QvProcessing:
+    def __init__(self):
+        self.projectProvider = None
+        self.qvistaProvider = QvQvistaProvider()
+        QgsApplication.processingRegistry().addProvider(self.qvistaProvider)
+        # self.processingMenu = None
+
+    def initializeProcessing(self):
+        Processing.initialize()
+        self.projectProvider = QvProjectProvider.loadAlgorithms()
+
+    # def printAlgorithms(self):
+    #     print("*** PROVIDERS:")
+    #     for prov in QgsApplication.processingRegistry().providers():
+    #         print(prov.id(), "-", prov.name(), "->", prov.longName(), "#algs:", len(prov.algorithms()))
+    #         for alg in prov.algorithms():
+    #             print('-', alg.id(), "->", alg.displayName())
+
+    def showAlgorithms(self):
+        algorithmsList = []
+        for prov in QgsApplication.processingRegistry().providers():
+            item = prov.name() + " - " + prov.longName() + ": #" + str(len(prov.algorithms()))
+            algorithmsList.append(item)
+            for alg in prov.algorithms():
+                item = '- ' + alg.id() + " - " + alg.displayName()
+                algorithmsList.append(item)
+        selected = QvAlgorithmDialog.show('\n'.join(algorithmsList))
+        # Eliminar el guión y todo lo que quede a su derecha
+        if selected is not None:
+            selected = selected.split('-')[0].strip()
+        return selected
+
+    # def addMenuProcess(self, process, title, label=None):
+    #     self.processingMenu.addMenuAction(self.processingMenu.menu(), process, title, False, label)
+    
+    # def setMenu(self, widget, singleMenu=True):
+    #     self.initializeProcessing()
+    #     self.processingMenu = QvProcessingMenu(widget, singleMenu)
+    #     return self.processingMenu.menu()
+
+    # def execPlugin(self, process):
+    #     try:
+    #         self.initializeProcessing()
+    #         p = QvProcessPlugin(process)
+    #         return p.callFunction()
+    #     except Exception as e:
+    #         print(str(e))            
+    #         return False
+
+    def execAlgorithm(self, name, params={}, feedback=False):
+        msg = "No s'ha pogut iniciar l'algorisme"
         try:
-            feedback = self.prepareProgress()
-            if debugging(): print("RUN - Ini")
-            res = processing.run(name, params, feedback=feedback)
-            if debugging(): print("RUN - Fin")
-            if self.canceled(): return None
-            if res is None:
-                self.cancel()
+            self.initializeProcessing()
+            alg = QgsApplication.processingRegistry().algorithmById(name)
+            if alg is None:
+                QMessageBox.warning(None, msg, f"Algorisme {name} no disponible")
+                return
+            # Si hay parámetros, se crea el diálogo
+            if len(alg.parameterDefinitions()) > 0:
+                dialog = processing.createAlgorithmDialog(name, params)
+                if dialog is None:
+                    QMessageBox.warning(None, msg, f"Algorisme {name} no disponible")
+                    return
+                # Se elimina el boton de ejecución por lotes
+                for button in dialog.findChildren(QPushButton):
+                    if ' lots' in button.text():
+                        button.setDisabled(True)
+                        button.setVisible(False)
+                        break
+                dialog.show()
+            # Si no hay parámetros, se ejecuta directamente
             else:
-                self.end()
-            return res
+                processing.run(name, params, feedback=feedback)
         except Exception as e:
-            self.errorMsg("ERROR: " + str(e))
-            return None
+            QMessageBox.warning(None, msg, f"Error a l'algorisme {name}\n\n" + str(e))
 
     # # Llamada al proceso
     # def run(self, progress=True):
@@ -402,174 +583,6 @@ class QvProcessPlugin:
     #     finally:
     #         if not progress:
     #             QApplication.instance().restoreOverrideCursor()
-
-class QvProcessingMenu:
-    def __init__(self, widget, singleMenu):
-    # Hay que indicar el widget donde aparece el menu para acceder al sender()
-    # Del widget recogemos el proceso a ejecutar de la propiedad 'qv_process' del widget
-        self.widget = widget
-        self.singleMenu = singleMenu
-        self.menuPlugins = self.setMenuPlugins()
-        self.menuAlgorithms = self.setMenuModels()
-        self.menuProcesses = self.setMenuProcesses()
-
-    def menu(self):
-        return self.menuProcesses
-    
-    def addMenuAction(self, menu, process, title, plugin=False, label=None):
-        if plugin:
-            triggerFunction = QvProcessing().execPlugin
-            if label is None: label = 'Plugin'
-        else:
-            triggerFunction = QvProcessing().execAlgorithm
-            if label is None: label = 'Algorisme'
-        toolTip = label + ' ' + process
-        act = menu.addAction(title)
-        act.setToolTip(toolTip)
-        act.setProperty('qv_process', process)
-        act.triggered.connect(lambda: triggerFunction(self.widget.sender().property('qv_process')))
-
-    def addMenuProviderActions(self, provider, menu):
-        if provider is None: return
-        for alg in provider.algorithms():
-            if provider.id() in ('model', 'project', 'qvista'):
-                label = 'Model'
-            else:
-                label = 'Algorisme'
-            process = provider.id() + ':' + alg.name()
-            title = alg.displayName()
-            self.addMenuAction(menu, process, title, False, label)
-
-    def setMenuPlugins(self):
-        try:
-            menu = QMenu('Plugins')
-            menu.setToolTipsVisible(True)
-            for row in QvPluginsCsv.readerCsv():
-                params = QvPluginsCsv.rowParams(row)
-                process = params['NAME']
-                title = params['TITLE']
-                general = params['GENERAL']
-                if general and process is not None and not process == '':
-                    self.addMenuAction(menu, process, title, True)
-            if menu.isEmpty():
-                return None
-            else:
-                return menu
-        except Exception as e:
-            print(str(e))
-            return None
-
-    def setMenuModels(self):
-        try:
-            menu = QMenu('Models')
-            menu.setToolTipsVisible(True)
-            # Models provider 'project'
-            self.addMenuProviderActions(QvProcessing().projectProvider, menu)
-            # Models provider 'qvista'
-            self.addMenuProviderActions(QvProcessing().qvistaProvider, menu)
-            if menu.isEmpty():
-                return None
-            else:
-                return menu
-        except Exception as e:
-            print(str(e))
-            return None
-
-    def setMenuProcesses(self):
-        try:
-            label = 'Processos'
-            if self.menuPlugins is None:
-                if self.singleMenu and self.menuAlgorithms is not None:
-                    self.menuAlgorithms.setTitle(label)
-                return self.menuAlgorithms
-            else:
-                if self.menuAlgorithms is None:
-                    if self.singleMenu: self.menuPlugins.setTitle(label)
-                    return self.menuPlugins
-                else:
-                    menu = QMenu(label)
-                    menu.setToolTipsVisible(True)
-                    if self.singleMenu:
-                        for act in self.menuPlugins.actions():
-                            menu.addAction(act)
-                        menu.addSeparator()
-                        for act in self.menuAlgorithms.actions():
-                            menu.addAction(act)
-                    else:
-                        menu.addMenu(self.menuPlugins)
-                        menu.addMenu(self.menuAlgorithms)
-                    return menu
-        except Exception as e:
-            print(str(e))
-            return None
-
-@singleton
-class QvProcessing:
-    def __init__(self):
-        self.projectProvider = None
-        self.qvistaProvider = QvQvistaProvider()
-        QgsApplication.processingRegistry().addProvider(self.qvistaProvider)
-        self.processingMenu = None
-
-    def initializeProcessing(self):
-        Processing.initialize()
-        self.projectProvider = QvProjectProvider.loadAlgorithms()
-
-    # def printAlgorithms(self):
-    #     print("*** PROVIDERS:")
-    #     for prov in QgsApplication.processingRegistry().providers():
-    #         print(prov.id(), "-", prov.name(), "->", prov.longName(), "#algs:", len(prov.algorithms()))
-    #         for alg in prov.algorithms():
-    #             print('-', alg.id(), "->", alg.displayName())
-
-    def showAlgorithms(self):
-        algorithmsList = []
-        for prov in QgsApplication.processingRegistry().providers():
-            item = prov.name() + " - " + prov.longName() + ": #" + str(len(prov.algorithms()))
-            algorithmsList.append(item)
-            for alg in prov.algorithms():
-                item = '- ' + alg.id() + " - " + alg.displayName()
-                algorithmsList.append(item)
-        selected = QvAlgorithmDialog.show('\n'.join(algorithmsList))
-        # Eliminar el guión y todo lo que quede a su derecha
-        if selected is not None:
-            selected = selected.split('-')[0].strip()
-        return selected
-
-    def addMenuProcess(self, process, title, label=None):
-        self.processingMenu.addMenuAction(self.processingMenu.menu(), process, title, False, label)
-    
-    def setMenu(self, widget, singleMenu=True):
-        self.initializeProcessing()
-        self.processingMenu = QvProcessingMenu(widget, singleMenu)
-        return self.processingMenu.menu()
-
-    def execPlugin(self, process):
-        try:
-            self.initializeProcessing()
-            p = QvProcessPlugin(process)
-            return p.callFunction()
-        except Exception as e:
-            print(str(e))            
-            return False
-
-    def execAlgorithm(self, name, params={}):
-        msg = "No s'ha pogut iniciar l'algorisme"
-        try:
-            self.initializeProcessing()
-            dialog = processing.createAlgorithmDialog(name, params)
-            if dialog is None:
-                QMessageBox.warning(None, msg, f"Algorisme {name} no disponible")
-                return
-            # Se elimina el boton de ejecución por lotes
-            for button in dialog.findChildren(QPushButton):
-                if ' lots' in button.text():
-                    button.setDisabled(True)
-                    button.setVisible(False)
-                    break
-            dialog.show()
-        except Exception as e:
-            QMessageBox.warning(None, msg, f"Error a l'algorisme {name}\n\n" + str(e))
 
 class QvAlgorithmDialog:
 
@@ -734,6 +747,7 @@ class QvAlgorithmDialog:
         btn_cancelar.setAutoDefault(True)
         dlg.exec_()
         return seleccion['item']
+
 
 if __name__ == "__main__":
 
