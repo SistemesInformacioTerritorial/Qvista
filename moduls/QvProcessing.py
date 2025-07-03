@@ -3,7 +3,7 @@
 from qgis.PyQt.QtCore import Qt
 from qgis.PyQt.QtWidgets import (QProgressDialog, QApplication, QMessageBox, QMenu, QAction, QPushButton,
                                  QDialog, QVBoxLayout, QHBoxLayout, QTreeWidget, QTreeWidgetItem)
-from qgis.core import QgsProcessingFeedback, QgsApplication
+from qgis.core import QgsApplication
 from moduls.QvProviders import QvProjectProvider, QvQvistaProvider
 from moduls.QvSingleton import singleton
 from moduls.QvFuncions import debugging
