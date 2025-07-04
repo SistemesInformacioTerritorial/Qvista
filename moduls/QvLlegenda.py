@@ -19,8 +19,6 @@ from moduls.QvAnotacions import QvMapToolAnnotation
 from moduls.QvCatalegCapes import QvCreadorCatalegCapes
 from moduls.QvDigitizeContext import QvDigitizeContext
 from moduls.QvReports import QvReports
-# from moduls.QvProcessing import QvProcessing
-from moduls.QvProviders import QvProjectProvider
 from moduls.QvNavegacioTemporal import QvNavegacioTemporal
 from moduls.QvApp import QvApp
 from moduls import QvFuncions
@@ -503,8 +501,6 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
         self.menuEdicioVisible(False)
 
     def nouProjecte(self, doc):
-        # Lee modelos de proyecto
-        QvProjectProvider.readProject(doc)
 
         from _qgis.utils import iface
         iface.init()

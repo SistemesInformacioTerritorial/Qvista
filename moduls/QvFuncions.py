@@ -27,6 +27,12 @@ def debugging():
     else:
         return sys.gettrace() is not None
 
+def getPythonPath():
+    for p in os.environ.get('PYTHONPATH', '').split(os.pathsep):
+        if p.split('\\')[-1] == 'python':
+            return p
+    return ''
+
 def setDPI():
     from qgis.PyQt import QtCore
     from qgis.PyQt.QtWidgets import QApplication

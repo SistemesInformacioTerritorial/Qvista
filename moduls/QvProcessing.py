@@ -4,20 +4,13 @@ from qgis.PyQt.QtCore import Qt
 from qgis.PyQt.QtWidgets import (QProgressDialog, QApplication, QMessageBox, QMenu, QAction, QPushButton,
                                  QDialog, QVBoxLayout, QHBoxLayout, QTreeWidget, QTreeWidgetItem)
 from qgis.core import QgsApplication
-from moduls.QvProviders import QvProjectProvider, QvQvistaProvider
+from moduls.QvProviders import QvModelProvider
 from moduls.QvSingleton import singleton
-from moduls.QvFuncions import debugging
+from moduls.QvFuncions import debugging, getPythonPath
 import os
 import csv
 
 class QvProcessingInit:
-
-    @staticmethod    
-    def getPythonPath():
-        for p in os.environ.get('PYTHONPATH', '').split(os.pathsep):
-            if p.split('\\')[-1] == 'python':
-                return p
-        return ''
 
     @staticmethod    
     def changePythonCode():
@@ -55,7 +48,7 @@ class QvProcessingInit:
 # Primero hay que obtener la ruta de Python para los imports
 # y cambiar código python en un módulo implicado para que no use iface:
 # general.py en python\plugins\processing\tools
-_PYTHON_PATH = QvProcessingInit.getPythonPath()
+_PYTHON_PATH = getPythonPath()
 _REPLACE_PY = QvProcessingInit.changePythonCode() 
 
 # Añadimos el path al directorio de plugins de python para hacer el import processing
@@ -70,13 +63,10 @@ Processing.initialize()
 @singleton
 class QvProcessing:
     def __init__(self):
-        self.projectProvider = None
-        self.qvistaProvider = QvQvistaProvider()
-        QgsApplication.processingRegistry().addProvider(self.qvistaProvider)
-
-    def initializeProcessing(self):
-        Processing.initialize()
-        self.projectProvider = QvProjectProvider.loadAlgorithms()
+        self.qvModelProvider = QvModelProvider()
+        QgsApplication.processingRegistry().addProvider(self.qvModelProvider)
+        # self.qvScriptsProvider = QvScriptProvider('scripts', '.py')
+        # QgsApplication.processingRegistry().addProvider(self.qvScriptsProvider)
 
     def printAlgorithms(self):
         print("*** PROVIDERS:")
@@ -102,7 +92,7 @@ class QvProcessing:
     def execAlgorithm(self, name, params={}, feedback=False):
         msg = "No s'ha pogut iniciar l'algorisme"
         try:
-            self.initializeProcessing()
+            Processing.initialize()
             alg = QgsApplication.processingRegistry().algorithmById(name)
             if alg is None:
                 QMessageBox.warning(None, msg, f"Algorisme {name} no disponible")

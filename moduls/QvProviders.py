@@ -1,57 +1,24 @@
 # -*- coding: utf-8 -*-
 
-from qgis.core import (QgsApplication, QgsProcessingProvider, QgsRuntimeProfiler,
-                       QgsProcessingModelAlgorithm, QgsXmlUtils)
+from qgis.core import (QgsProcessingProvider, QgsRuntimeProfiler,
+                       QgsProcessingModelAlgorithm)
 from qgis.PyQt.QtWidgets import QMessageBox
 import os
 
-class QvProjectProvider:
-    # Copiado de C:\OSGeo4W\apps\qgis-ltr\python\plugins\processing\modeler\ProjectProvider.py
-
-    MODEL_DEFS = {}
-
-    @staticmethod
-    def readProject(doc):
-        # Se obtiene la informacion del DOM del qgs al abrirlo
-        QvProjectProvider.MODEL_DEFS = {}
-        project_models_nodes = doc.elementsByTagName('projectModels')
-        if project_models_nodes:
-            project_models_node = project_models_nodes.at(0)
-            model_nodes = project_models_node.childNodes()
-            for n in range(model_nodes.count()):
-                model_element = model_nodes.at(n).toElement()
-                definition = QgsXmlUtils.readVariant(model_element)
-                algorithm = QgsProcessingModelAlgorithm()
-                if algorithm.loadVariant(definition):
-                    QvProjectProvider.MODEL_DEFS[algorithm.name()] = definition
-
-    @staticmethod
-    def loadAlgorithms():
-        # Se cargan los algoritmos en el momento de utilizarlos
-        provProject = QgsApplication.processingRegistry().providerById('project')
-        if provProject is not None:
-            provProject.model_definitions = QvProjectProvider.MODEL_DEFS
-            provProject.refreshAlgorithms()
-            provProject.loadAlgorithms()
-        return provProject
-
-
-class QvQvistaProvider(QgsProcessingProvider):
-
-    # Directorio donde se encuentran los modelos disponibles en qVista
-    # Los ficheros .model3 han de copiarse siempre a traves de GitHub
-    # para que se distribuyan con qVista
-    MODELS_FOLDER = str(os.path.join(os.getcwd(), "models"))
-    # Nombre de grupo o lista de grupos permitidos (en minúsculas)
-    MODELS_GROUPS_FILTER = None # Se cargan todos, pueden filtrarse después
-
-    def __init__(self):
+class QvModelProvider(QgsProcessingProvider):
+    
+    def __init__(self, name='models', extension='.model3', groups=None):
         """
         Default constructor.
         """
         QgsProcessingProvider.__init__(self)
         self.algs = []
         self.isLoading = False
+        self.qvId = 'qv' + name.lower()
+        self.qvName = name.lower().title()
+        self.qvFolder = str(os.path.join(os.getcwd(), "processing", name.lower()))
+        self.qvExtension = extension
+        self.qvGroups = groups
 
     def unload(self):
         """
@@ -60,30 +27,30 @@ class QvQvistaProvider(QgsProcessingProvider):
         """
         pass
 
-    def groupsFilter(self, alg, groupsFilter):
-        if groupsFilter is None: return True
+    def groupsFilter(self, alg):
+        if self.qvGroups is None: return True
         algGroup = alg.group().strip().lower()
-        if type(groupsFilter) is str:
-            return algGroup == groupsFilter 
-        if type(groupsFilter) is list:
-            if len(groupsFilter) == 0: return True
-            return algGroup in groupsFilter
+        if type(self.qvGroups) is str:
+            return algGroup == self.qvGroups 
+        if type(self.qvGroups) is list:
+            if len(self.qvGroups) == 0: return True
+            return algGroup in self.qvGroups
         return False
 
-    def loadFromFolder(self, folder, groupsFilter=None):
-        if not os.path.exists(folder):
+    def loadFromFolder(self):
+        if not os.path.exists(self.qvFolder):
             return
-        for path, subdirs, files in os.walk(folder):
+        for path, subdirs, files in os.walk(self.qvFolder):
             for descriptionFile in files:
-                if descriptionFile.endswith('model3'):
+                if descriptionFile.endswith(self.qvExtension):
                     fullpath = os.path.join(path, descriptionFile)
                     alg = QgsProcessingModelAlgorithm()
                     if alg.fromFile(fullpath):
-                        if alg.name() and self.groupsFilter(alg, groupsFilter):
+                        if alg.name() and self.groupsFilter(alg):
                             alg.setSourceFilePath(fullpath)
                             self.algs.append(alg)
                     else:
-                        QMessageBox.warning(None, f"No s'ha pogut carregar model {descriptionFile}",
+                        QMessageBox.warning(None, f"No s'ha pogut carregar {descriptionFile}",
                                             'Processos qVista')
                         # QgsMessageLog.logMessage(self.tr('Could not load model {0}',
                         #                          'ModelerAlgorithmProvider').format(descriptionFile),
@@ -98,7 +65,7 @@ class QvQvistaProvider(QgsProcessingProvider):
                 return
             self.isLoading = True
             self.algs = []
-            self.loadFromFolder(QvQvistaProvider.MODELS_FOLDER, QvQvistaProvider.MODELS_GROUPS_FILTER)
+            self.loadFromFolder()
             for a in self.algs:
                 self.addAlgorithm(a)
             self.isLoading = False
@@ -109,7 +76,7 @@ class QvQvistaProvider(QgsProcessingProvider):
         string should be a unique, short, character only string, eg "qgis" or
         "gdal". This string should not be localised.
         """
-        return 'qvista'
+        return self.qvId
 
     def name(self):
         """
@@ -118,7 +85,7 @@ class QvQvistaProvider(QgsProcessingProvider):
 
         This string should be short (e.g. "Lastools") and localised.
         """
-        return self.tr('Models qVista')
+        return self.tr(self.qvName + ' qVista')
 
     def icon(self):
         """
@@ -134,4 +101,5 @@ class QvQvistaProvider(QgsProcessingProvider):
         (version 2.2.1)". This string should be localised. The default
         implementation returns the same string as name().
         """
-        return self.tr('Models disponibles a qVista')
+        return self.tr(self.qvName + ' disponibles a qVista')
+
