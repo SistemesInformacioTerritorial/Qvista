@@ -10,10 +10,10 @@ from moduls.QvFuncions import debugging, getPythonPath
 import os
 import csv
 
-class QvProcessingInit:
+class QvProcessingConfig:
 
     @staticmethod    
-    def changePythonCode():
+    def changePythonCode(pythonPath):
     # Módulo implicado que usa iface:
     # - C:\OSGeo4W\apps\qgis-ltr\python\plugins\processing\tools\general.py
     # En ese fichero, hay que reemplazar:
@@ -23,7 +23,7 @@ class QvProcessingInit:
     #     from _qgis.utils import iface
     # except:
     #     from qgis.utils import iface
-        filePath = f"{_PYTHON_PATH}\\plugins\\processing\\tools\\general.py"
+        filePath = f"{pythonPath}\\plugins\\processing\\tools\\general.py"
         qgisImport = "from qgis.utils import iface"
         qvistaImport = "from _qgis.utils import iface"
         tryImport =f"try:\n\t{qvistaImport}\nexcept:\n\t{qgisImport}"
@@ -43,22 +43,24 @@ class QvProcessingInit:
             return True
         return False
 
-# INICIALIZACIÓN ENTORNO PROCESSING
+    @staticmethod    
+    def init():
+        # INICIALIZACIÓN ENTORNO PROCESSING
 
-# Primero hay que obtener la ruta de Python para los imports
-# y cambiar código python en un módulo implicado para que no use iface:
-# general.py en python\plugins\processing\tools
-_PYTHON_PATH = getPythonPath()
-_REPLACE_PY = QvProcessingInit.changePythonCode() 
+        # Primero hay que obtener la ruta de Python para los imports
+        # y cambiar código python en un módulo implicado para que no use iface:
+        # general.py en python\plugins\processing\tools
+        pythonPath = getPythonPath()
+        replacePy = QvProcessingConfig.changePythonCode(pythonPath) 
 
-# Añadimos el path al directorio de plugins de python para hacer el import processing
-# from qgis import processing funciona, pero no from processing.core.Processing import Processing
-# Se ha de mantener esa ruta para que se carguen correctamente los algoritmos externos
-# Nota: la variable de entorno QGIS_WIN_APP_NAME existe al ejecutar QGIS y no con pyQGIS
-os.sys.path.insert(0, _PYTHON_PATH +  r"\plugins")
-import processing
-from processing.core.Processing import Processing
-Processing.initialize()
+        # Añadimos el path al directorio de plugins de python para hacer el import processing
+        # from qgis import processing funciona, pero no from processing.core.Processing import Processing
+        # Se ha de mantener esa ruta para que se carguen correctamente los algoritmos externos
+        # Nota: la variable de entorno QGIS_WIN_APP_NAME existe al ejecutar QGIS y no con pyQGIS
+        os.sys.path.insert(0, pythonPath +  r"\plugins")
+        import processing
+        from processing.core.Processing import Processing
+        Processing.initialize()
 
 @singleton
 class QvProcessing:
@@ -68,10 +70,11 @@ class QvProcessing:
         # self.qvScriptsProvider = QvScriptProvider('scripts', '.py')
         # QgsApplication.processingRegistry().addProvider(self.qvScriptsProvider)
 
-    def printAlgorithms(self):
+    def printAlgorithms(self, onlyProviders=True):
         print("*** PROVIDERS:")
         for prov in QgsApplication.processingRegistry().providers():
             print(prov.id(), "-", prov.name(), "->", prov.longName(), "#algs:", len(prov.algorithms()))
+            if onlyProviders: continue
             for alg in prov.algorithms():
                 print('-', alg.id(), "->", alg.displayName())
 
@@ -92,6 +95,8 @@ class QvProcessing:
     def execAlgorithm(self, name, params={}, feedback=False):
         msg = "No s'ha pogut iniciar l'algorisme"
         try:
+            import processing
+            from processing.core.Processing import Processing
             Processing.initialize()
             alg = QgsApplication.processingRegistry().algorithmById(name)
             if alg is None:
@@ -110,7 +115,7 @@ class QvProcessing:
                         button.setVisible(False)
                         break
                 dialog.show()
-            # Si no hay parámetros, se ejecuta directamente
+            # Si no hay parámetros, se ejecuta directamente sin dialogo
             else:
                 processing.run(name, params, feedback=feedback)
         except Exception as e:

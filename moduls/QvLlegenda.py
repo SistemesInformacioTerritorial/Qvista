@@ -196,6 +196,10 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
 
         self.iniSignal = False
 
+        # Activar procesos
+        from moduls.QvProcessing import QvProcessingConfig
+        QvProcessingConfig.init()
+
     def qVista(self):
         try:
             return self.parent().parent()
