@@ -47,16 +47,18 @@ class ConstantsMaBIM:
     }
 
     rutaUI= 'Programes especifics/MaBIM/MaBIM.ui'
-    rutaProjecte = 'L:/DADES/SIT/qVista/CATALEG/MAPES PRIVATS/Patrimoni/PPM_CatRegles_geopackage.qgs'
+    #rutaProjecte = 'L:/DADES/SIT/qVista/CATALEG/MAPES PRIVATS/Patrimoni/PPM_CatRegles_geopackage.qgs'
+    rutaProjecte = 'u:/Quota/comu_imi/jca/PPM_CatRegles_geopackage.qgs'
     rutaProjecteEdicio = 'L:/DADES/SIT/qVista/CATALEG/MAPES PRIVATS/Patrimoni/mabimEDICIO_v3.qgs'
 
     rutaLogoAjuntament = 'imatges/escutDreta.png'
 
     nomCapaPH = 'Entitats en PH'
     nomCapaPV = 'Entitats en PV'
+    nomCapaQuioscos = 'Altres Béns i Drets'
     urlPIP = 'https://netiproa.corppro.imi.bcn:447/pip/ca/'
 
-    nomsCapes = [nomCapaPH, nomCapaPV]
+    nomsCapes = [nomCapaPH, nomCapaPV, nomCapaQuioscos]
     # nomCapaRegistrals = 'Registrals'
     nomGrupRegistrals = 'Registrals'
 
@@ -291,7 +293,7 @@ class QvSeleccioBIM(QgsMapTool):
                 dretaBaix = self.canvas.getCoordinateTransform().toMapCoordinates(x + self.radi, y+self.radi)
             else:
                 esquerraDalt = self.canvas.getCoordinateTransform().toMapCoordinates(x-self.radi*math.sqrt(2), y-self.radi*math.sqrt(2))
-                dretaBaix = self.canvas.getCoordinateTransform().toMapCoordinates(x+self.radi*math.sqrt(2), y-self.radi*math.sqrt(2))
+                dretaBaix = self.canvas.getCoordinateTransform().toMapCoordinates(x+self.radi*math.sqrt(2), y+self.radi*math.sqrt(2))
             rect = QgsRectangle(esquerraDalt.x(), esquerraDalt.y(), dretaBaix.x(), dretaBaix.y())
 
             features = []
@@ -764,11 +766,13 @@ class QMaBIM(QtWidgets.QMainWindow):
         layers = self.getCapesBIMs()
         for layer in layers:
             layer.setSubsetString(cerca)
-        # Si no hi ha cap feature després d'aplicar el filtre, eliminem el filtre i mostrem tota l'extensió
-        if sum(layer.featureCount() for layer in layers)==0:
+        # Buscar la primera capa amb features tras aplicar el filtre
+        layer_con_features = next((l for l in layers if l.featureCount() > 0), None)
+        if layer_con_features is None:
             self.netejaFiltre()
             QtWidgets.QMessageBox.warning(self,"Atenció!", "No s'ha pogut localitzar el BIM en el mapa. Comproveu que la capa corresponent sigui visible")
-        self.canvasA.setExtent(layer.extent())
+        else:
+            self.canvasA.setExtent(layer_con_features.extent())
 
         # Si intentes eliminar el contingut d'un QLineEdit que té un QCompleter associat,
         #  el propi QCompleter torna a completar el QLineEdit, provocant que no es pugui netejar
