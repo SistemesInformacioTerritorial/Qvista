@@ -4,7 +4,7 @@ from qgis.PyQt.QtCore import Qt
 from qgis.PyQt.QtWidgets import (QProgressDialog, QApplication, QMessageBox, QMenu, QAction, QPushButton,
                                  QDialog, QVBoxLayout, QHBoxLayout, QTreeWidget, QTreeWidgetItem)
 from qgis.core import QgsApplication
-from moduls.QvProviders import QvModelProvider
+from moduls.QvProviders import QvModelProvider, QvScriptProvider
 from moduls.QvSingleton import singleton
 from moduls.QvFuncions import debugging, getPythonPath
 import os
@@ -61,14 +61,25 @@ class QvProcessingConfig:
         import processing
         from processing.core.Processing import Processing
         Processing.initialize()
+        
 
 @singleton
 class QvProcessing:
     def __init__(self):
-        self.qvModelProvider = QvModelProvider()
+        self.qvModelProvider = QvModelProvider(
+            'qvmodel',
+            'qVista models',
+            'Models disponibles a qVista',
+            str(os.path.join(os.getcwd(), "processing", "models"))
+        )
         QgsApplication.processingRegistry().addProvider(self.qvModelProvider)
-        # self.qvScriptsProvider = QvScriptProvider('scripts', '.py')
-        # QgsApplication.processingRegistry().addProvider(self.qvScriptsProvider)
+        self.qvScriptProvider = QvScriptProvider(
+            'qvscript',
+            'qVista scripts',
+            'Scripts disponibles a qVista',
+            str(os.path.join(os.getcwd(), "processing", "scripts"))
+        )
+        QgsApplication.processingRegistry().addProvider(self.qvScriptProvider)
 
     def printAlgorithms(self, onlyProviders=True):
         print("*** PROVIDERS:")
@@ -78,9 +89,13 @@ class QvProcessing:
             for alg in prov.algorithms():
                 print('-', alg.id(), "->", alg.displayName())
 
-    def showAlgorithms(self):
+    def showAlgorithms(self, providersExcluded=['grass', 'model', 'script']):
+        # Se excluyen los proveedores 'model' y 'script' porque son del perfil de usuario
+        # y tambien 'grass' porque falta ver cómo se configura para que funcione desde qVista
         algorithmsList = []
         for prov in QgsApplication.processingRegistry().providers():
+            if providersExcluded is not None and prov.id() in providersExcluded:
+                continue
             item = prov.name() + " - " + prov.longName() + ": #" + str(len(prov.algorithms()))
             algorithmsList.append(item)
             for alg in prov.algorithms():
