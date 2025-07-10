@@ -128,7 +128,8 @@ class QvProcessing:
             # Añadir los algoritmos del proveedor de procesos de proyecto
             for alg in prov.algorithms():
                 act = menu.addAction(alg.displayName())
-                act.triggered.connect(lambda: QvProcessing().execAlgorithm(alg.id()))
+                id = alg.id()
+                act.triggered.connect(lambda checked, id=id: QvProcessing().execAlgorithm(id))
             if menu.isEmpty():
                 return None # No hay algoritmos disponibles
             else:
@@ -148,22 +149,17 @@ class QvProcessing:
             if alg is None:
                 QMessageBox.warning(None, msg, f"Algorisme {name} no disponible")
                 return
-            # Si hay parámetros, se crea el diálogo
-            if len(alg.parameterDefinitions()) > 0:
-                dialog = processing.createAlgorithmDialog(name, params)
-                if dialog is None:
-                    QMessageBox.warning(None, msg, f"Algorisme {name} no disponible")
-                    return
-                # Se elimina el boton de ejecución por lotes
-                for button in dialog.findChildren(QPushButton):
-                    if ' lots' in button.text():
-                        button.setDisabled(True)
-                        button.setVisible(False)
-                        break
-                dialog.show()
-            # Si no hay parámetros, se ejecuta directamente sin dialogo
-            else:
-                processing.run(name, params, feedback=feedback)
+            dialog = processing.createAlgorithmDialog(name, params)
+            if dialog is None:
+                QMessageBox.warning(None, msg, f"Algorisme {name} no disponible")
+                return
+            # Se elimina el boton de ejecución por lotes
+            for button in dialog.findChildren(QPushButton):
+                if ' lots' in button.text():
+                    button.setDisabled(True)
+                    button.setVisible(False)
+                    break
+            dialog.show()
         except Exception as e:
             QMessageBox.warning(None, msg, f"Error a l'algorisme {name}\n\n" + str(e))
 
