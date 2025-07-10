@@ -580,7 +580,7 @@ class QMaBIM(QtWidgets.QMainWindow):
             f"Càrrega de CSV: {self.replace(res2, 'T', ' - ')}\n"
             f"Tall de fulls: {self.replace(res3, 'T', ' - ')}"
         )
-        QtWidgets.QMessageBox.information(self, "Fechas de procesos", msg)
+        QtWidgets.QMessageBox.information(self, "Dates de processos", msg)
 
         self.swapVisibilitatBaixes(self.cbBaixesVisibles.isChecked())
 
@@ -923,9 +923,11 @@ class QMaBIM(QtWidgets.QMainWindow):
         else:
             self.nodeRegistrals = None
 
+        self.cbBaixesVisibles.setChecked(False)  # Inicialmente en off
         self.cbBaixesVisibles.clicked.connect(self.swapVisibilitatBaixes)
         self.cbRegistresPropietat.clicked.connect(self.swapVisibilitatRegistre)
         self.cbRegistralsVisibles.clicked.connect(self.swapVisibilitatRegistrals)
+        self.swapVisibilitatBaixes(False)  # Asegura que las capas de baixes estén ocultas al inicio
         self.swapVisibilitatRegistrals(False)
 
     def canviVisibilitatLlegenda(self,node):
