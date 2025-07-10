@@ -198,7 +198,7 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
 
         # Activar procesos
         from moduls.QvProcessing import QvProcessingConfig
-        QvProcessingConfig.init()
+        QvProcessingConfig()
 
     def qVista(self):
         try:
@@ -914,18 +914,12 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
             if menuInformes is not None:
                 self.accions.afegirAccio('menuInforme', menuInformes)
                 self.menuAccions += ['separator', 'menuInforme']
-            # *** Pruebas procesos
-            # from moduls.QvProcessing import QvProcessing
-            # menuProcessos = QvProcessing().setMenu(self)
-            # *** Pruebas
-            # if menuProcessos is not None:
-            #     menuProcessos.addSeparator()
-            #     QvProcessing().addMenuProcess("native:dbscanclustering", "Clustering")
-            #     QvProcessing().addMenuProcess("grass7:v.to.lines", "To lines")
-            # ***
-            # if menuProcessos is not None:
-            #     self.accions.afegirAccio('menuProceso', menuProcessos)
-            #     self.menuAccions += ['separator', 'menuProceso']
+            # Procesos de proyecto
+            from moduls.QvProcessing import QvProcessing
+            menuProcessos = QvProcessing().setMenu()
+            if menuProcessos is not None:
+                self.accions.afegirAccio('menuProceso', menuProcessos)
+                self.menuAccions += ['separator', 'menuProceso']
             # Auto recarga
             if self.recarrega.timerDataSecs > 0 or self.recarrega.timerGraphSecs > 0:
                 self.menuAccions += ['separator']
