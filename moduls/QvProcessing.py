@@ -8,7 +8,6 @@ from moduls.QvProviders import QvModelProvider, QvScriptProvider
 from moduls.QvSingleton import singleton
 from moduls.QvFuncions import debugging, getPythonPath
 import os
-import csv
 
 @singleton
 class QvProcessingConfig:
@@ -86,7 +85,8 @@ class QvProcessing:
         )
         QgsApplication.processingRegistry().addProvider(self.qvScriptProvider)
 
-    def printAlgorithms(self, onlyProviders=True):
+    @staticmethod
+    def printAlgorithms(onlyProviders=True):
         # Imprime los algoritmos de procesamiento disponibles
         # Si onlyProviders es True, solo imprime los proveedores
         print("*** PROVIDERS:")
@@ -96,7 +96,8 @@ class QvProcessing:
             for alg in prov.algorithms():
                 print('-', alg.id(), "->", alg.displayName())
 
-    def showAlgorithms(self, providersExcluded=['grass', 'model', 'script']):
+    @staticmethod
+    def showAlgorithms(providersExcluded=['grass', 'model', 'script']):
         # Se excluyen los proveedores 'model' y 'script' porque son del perfil de usuario
         # y tambien 'grass' porque falta ver cómo se configura para que funcione desde qVista
         algorithmsList = []
@@ -136,7 +137,8 @@ class QvProcessing:
             print(str(e))
             return None
         
-    def execAlgorithm(self, name, params={}, feedback=False):
+    @staticmethod
+    def execAlgorithm(name, params={}, feedback=False):
         # Ejecuta un algoritmo de procesamiento
         # name: nombre del algoritmo (ej. 'native:buffer')
         msg = "No s'ha pogut iniciar l'algorisme"
