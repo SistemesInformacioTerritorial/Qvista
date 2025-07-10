@@ -548,19 +548,41 @@ class QMaBIM(QtWidgets.QMainWindow):
         font.setFamily("Segoe UI Light")
         font.setPointSize(5)
 
-        self.l_DataCSV.setFont(font)
-        self.l_DataCarregaCSV.setFont(font)
-        self.l_DataGrafic.setFont(font)
-        self.l_DataCSV.setText(self.replace(res1, 'T', ' - '))
-        self.l_DataCarregaCSV.setText(self.replace(res2, 'T', ' - '))
-        self.l_DataGrafic.setText(self.replace(res3, 'T', ' - '))
+
+        # Crear botón para mostrar las fechas en una ventana modal
+        self.bMostrarFechas = QtWidgets.QPushButton("Mostrar dates de carrega", self)
+        self.bMostrarFechas.setFont(font)
+        # Ubicar el botón donde estaban los labels (ajusta si es necesario)
+        layout = self.l_DataCSV.parentWidget().layout()
+        if layout is not None:
+            layout.addWidget(self.bMostrarFechas)
+        else:
+            self.bMostrarFechas.move(self.l_DataCSV.x(), self.l_DataCSV.y())
+        self.l_DataCSV.hide()
+        self.l_DataCarregaCSV.hide()
+        self.l_DataGrafic.hide()
+        self.bMostrarFechas.clicked.connect(self.mostrarFechasProcesos)
+
+    def mostrarFechasProcesos(self):
+        # Recuperar los textos de las fechas
+        cons = Consulta()
+        txt1 = 'Generació de CSV'
+        txt2 = 'Càrrega de CSV'
+        txt3 = 'Tall de fulls'
+        try:
+            res1 = cons.consulta(ConstantsMaBIM.CONSULTA_DATA_DADES,{':pText':txt1})[0][0].toString(QtCore.Qt.ISODate)
+            res2 = cons.consulta(ConstantsMaBIM.CONSULTA_DATA_DADES,{':pText':txt2})[0][0].toString(QtCore.Qt.ISODate)
+            res3 = cons.consulta(ConstantsMaBIM.CONSULTA_DATA_DADES,{':pText':txt3})[0][0].toString(QtCore.Qt.ISODate)
+        except Exception:
+            res1 = res2 = res3 = "-"
+        msg = (
+            f"Generació de CSV: {self.replace(res1, 'T', ' - ')}\n"
+            f"Càrrega de CSV: {self.replace(res2, 'T', ' - ')}\n"
+            f"Tall de fulls: {self.replace(res3, 'T', ' - ')}"
+        )
+        QtWidgets.QMessageBox.information(self, "Fechas de procesos", msg)
 
         self.swapVisibilitatBaixes(self.cbBaixesVisibles.isChecked())
-
-        if BIM is not None:
-            # en principi serà un string sempre, però per si de cas
-            self.leCercador.setText(str(BIM))
-            self.consulta()
 
 
     # function to convert qdatetime to text
@@ -1042,8 +1064,12 @@ class QMaBIM(QtWidgets.QMainWindow):
                 x.setChecked(True)
     
     def closeEvent(self, e):
-        super().closeEvent(e)
-        sys.exit(0)
+        # Solo cerrar la aplicación si se cierra la ventana principal
+        if self.isWindow() and self.isVisible():
+            super().closeEvent(e)
+            sys.exit(0)
+        else:
+            super().closeEvent(e)
 
 def splashScreen():
     splash_pix = QtGui.QPixmap('imatges/MABIM/MABIMSplash.png')
