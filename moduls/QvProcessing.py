@@ -8,12 +8,32 @@ from moduls.QvProviders import QvModelProvider, QvScriptProvider
 from moduls.QvSingleton import singleton
 from moduls.QvFuncions import debugging, getPythonPath
 import os
-import csv
 
+@singleton
 class QvProcessingConfig:
+    """
+    Clase para configurar el entorno de procesamiento en QGIS
+    También se encarga de cambiar el código Python en un módulo implicado
+    para evitar problemas de importación de iface en QGIS
+    """
+    def __init__(self):
+    # INICIALIZACIÓN ENTORNO PROCESSING
 
-    @staticmethod    
-    def changePythonCode(pythonPath):
+        # Primero hay que obtener la ruta de Python para los imports
+        # y cambiar código python en un módulo implicado para que no use iface:
+        # general.py en python\plugins\processing\tools
+        self.pythonPath = getPythonPath()
+        self.replacePy = self.changePythonCode() 
+
+        # Añadimos el path al directorio de plugins de python para hacer el import processing
+        # from qgis import processing funciona, pero no from processing.core.Processing import Processing
+        # Se ha de mantener esa ruta para que se carguen correctamente los algoritmos externos
+        # Nota: la variable de entorno QGIS_WIN_APP_NAME existe al ejecutar QGIS y no con pyQGIS
+        os.sys.path.insert(0, self.pythonPath +  r"\plugins")
+        from processing.core.Processing import Processing
+        Processing.initialize()
+
+    def changePythonCode(self):
     # Módulo implicado que usa iface:
     # - C:\OSGeo4W\apps\qgis-ltr\python\plugins\processing\tools\general.py
     # En ese fichero, hay que reemplazar:
@@ -23,7 +43,7 @@ class QvProcessingConfig:
     #     from _qgis.utils import iface
     # except:
     #     from qgis.utils import iface
-        filePath = f"{pythonPath}\\plugins\\processing\\tools\\general.py"
+        filePath = f"{self.pythonPath}\\plugins\\processing\\tools\\general.py"
         qgisImport = "from qgis.utils import iface"
         qvistaImport = "from _qgis.utils import iface"
         tryImport =f"try:\n\t{qvistaImport}\nexcept:\n\t{qgisImport}"
@@ -43,29 +63,13 @@ class QvProcessingConfig:
             return True
         return False
 
-    @staticmethod    
-    def init():
-        # INICIALIZACIÓN ENTORNO PROCESSING
-
-        # Primero hay que obtener la ruta de Python para los imports
-        # y cambiar código python en un módulo implicado para que no use iface:
-        # general.py en python\plugins\processing\tools
-        pythonPath = getPythonPath()
-        replacePy = QvProcessingConfig.changePythonCode(pythonPath) 
-
-        # Añadimos el path al directorio de plugins de python para hacer el import processing
-        # from qgis import processing funciona, pero no from processing.core.Processing import Processing
-        # Se ha de mantener esa ruta para que se carguen correctamente los algoritmos externos
-        # Nota: la variable de entorno QGIS_WIN_APP_NAME existe al ejecutar QGIS y no con pyQGIS
-        os.sys.path.insert(0, pythonPath +  r"\plugins")
-        import processing
-        from processing.core.Processing import Processing
-        Processing.initialize()
-        
-
 @singleton
 class QvProcessing:
+    """
+    Clase singleton para gestionar el procesamiento de QGIS en qVista
+    """
     def __init__(self):
+        # Añade los proveedores de modelos y scripts de qVista al registro de procesamiento
         self.qvModelProvider = QvModelProvider(
             'qvmodel',
             'qVista models',
@@ -81,7 +85,10 @@ class QvProcessing:
         )
         QgsApplication.processingRegistry().addProvider(self.qvScriptProvider)
 
-    def printAlgorithms(self, onlyProviders=True):
+    @staticmethod
+    def printAlgorithms(onlyProviders=True):
+        # Imprime los algoritmos de procesamiento disponibles
+        # Si onlyProviders es True, solo imprime los proveedores
         print("*** PROVIDERS:")
         for prov in QgsApplication.processingRegistry().providers():
             print(prov.id(), "-", prov.name(), "->", prov.longName(), "#algs:", len(prov.algorithms()))
@@ -89,7 +96,8 @@ class QvProcessing:
             for alg in prov.algorithms():
                 print('-', alg.id(), "->", alg.displayName())
 
-    def showAlgorithms(self, providersExcluded=['grass', 'model', 'script']):
+    @staticmethod
+    def showAlgorithms(providersExcluded=['grass', 'model', 'script']):
         # Se excluyen los proveedores 'model' y 'script' porque son del perfil de usuario
         # y tambien 'grass' porque falta ver cómo se configura para que funcione desde qVista
         algorithmsList = []
@@ -107,12 +115,35 @@ class QvProcessing:
             selected = selected.split('-')[0].strip()
         return selected
 
-    def execAlgorithm(self, name, params={}, feedback=False):
+    @staticmethod
+    def setMenu(title='Processos'):
+        # Crea un menú de procesos incrustados en el proyecto QGIS
+        # que se puede añadir a un menú de contexto o a una barra de herramientas
+        try:
+            menu = QMenu()
+            menu.setTitle(title)
+            prov = QgsApplication.processingRegistry().providerById('project')
+            if prov is None:
+                return None # No hay proveedor de procesos de proyecto
+            # Añadir los algoritmos del proveedor de procesos de proyecto
+            for alg in prov.algorithms():
+                act = menu.addAction(alg.displayName())
+                act.triggered.connect(lambda: QvProcessing().execAlgorithm(alg.id()))
+            if menu.isEmpty():
+                return None # No hay algoritmos disponibles
+            else:
+                return menu
+        except Exception as e:
+            print(str(e))
+            return None
+        
+    @staticmethod
+    def execAlgorithm(name, params={}, feedback=False):
+        # Ejecuta un algoritmo de procesamiento
+        # name: nombre del algoritmo (ej. 'native:buffer')
         msg = "No s'ha pogut iniciar l'algorisme"
         try:
             import processing
-            from processing.core.Processing import Processing
-            Processing.initialize()
             alg = QgsApplication.processingRegistry().algorithmById(name)
             if alg is None:
                 QMessageBox.warning(None, msg, f"Algorisme {name} no disponible")
