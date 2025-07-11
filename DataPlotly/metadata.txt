@@ -1,0 +1,52 @@
+[general]
+name=Data Plotly
+qgisMinimumVersion=3.28
+qgisMaximumVersion=3.98
+description=D3 Plots for QGIS
+author=Matteo Ghetta (Faunalia)
+email=matteo.ghetta@gmail.com
+
+about=Draw D3 plots in QGIS
+
+homepage=https://dataplotly-docs.readthedocs.io
+tracker=https://github.com/ghtmtt/DataPlotly/issues
+repository=https://github.com/ghtmtt/DataPlotly
+# End of mandatory metadata
+
+# Done by qgis-plugin-ci
+version=4.3.1
+changelog=
+ Version 4.3.1:
+ - Fix regression when loading projects
+
+ Version 4.3.0:
+ - New radar plot type thanks to @soaubier Oslandia
+ - Fix error with title thanks to @florianneukirchen
+ - Add help link to help menu and metadata thanks to @Gustry
+
+ Version 4.2.0:
+ - Fix loading of the plugin when used with `qgis_process`, contribution from @Gustry
+ - Fix incomplete plots when used with atlas, thanks to @nyalldawson
+ - Fix DataType in pie charts, contribution to @jdugge
+
+
+commitNumber=1
+commitSha1=4173cbcbf607294e2d266c743bcc2cbf5110476c
+dateTime=2025-07-08T05:43:24Z
+# End of qgis-plugin-ci
+
+# Recommended items:
+
+# Tags are comma separated with spaces allowed
+tags=python, d3, plots, vector, graphs, datavis, dataviz, dataplotly
+
+category=Plugins
+icon=icon.png
+# experimental flag
+experimental=False
+
+# deprecated flag (applies to the whole plugin, not just a single version)
+deprecated=False
+
+hasProcessingProvider=yes
+server=True
