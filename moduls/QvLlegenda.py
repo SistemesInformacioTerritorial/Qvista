@@ -203,15 +203,26 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
         QvProcessingConfig()
 
     def iniDataPlotly(self):
+        def dataPlotlyVersion(metadataFile):
+            try:
+                import configparser
+                config = configparser.ConfigParser()
+                config.read(metadataFile)
+                return config.get('general', 'version')
+            except Exception as e:
+                print(str(e))
+                return self.dataPlotly.VERSION
+        
         try:
-            pluginsDir = os.environ.get('APPDATA') + r"\QGIS\QGIS3\profiles\default\python\plugins"
-            os.sys.path.insert(0, pluginsDir)
+            subdirPlugins = r"\QGIS\QGIS3\profiles\default\python\plugins"
+            dirPlugins = os.environ.get('APPDATA') + subdirPlugins
+            os.sys.path.insert(0, dirPlugins)
             from DataPlotly.data_plotly import DataPlotly
             from _qgis.utils import iface
             self.dataPlotly = DataPlotly(iface)
             if self.dataPlotly is not None:
-                self.dataPlotly.initGui()
-                return self.dataPlotly.VERSION
+                self.dataPlotly.initGui()                
+                return dataPlotlyVersion(dirPlugins + r"\DataPlotly\metadata.txt")
         except Exception as e:
             print(str(e))
             self.dataPlotly = None
