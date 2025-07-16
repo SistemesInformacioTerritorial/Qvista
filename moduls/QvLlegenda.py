@@ -75,7 +75,11 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
         # print('restoreExtent', self.restoreExtent)
 
         # self.reports = QvReports(self)
-        QvLlegenda.DataPlotlyVersion = self.iniDataPlotly()
+
+        from moduls.QvDataPlotly import QvDataPlotly
+        self.dataPlotly = QvDataPlotly() # Para activar los docks de DataPlotly, poner QvDataPlotly(True)
+        QvLlegenda.DataPlotlyVersion = self.dataPlotly.versio
+
         self.recarrega = QvRecarregaLlegenda(self)
         
         # L'opertura de projectes Oracle va lenta si és la primera
@@ -201,32 +205,6 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
         # Activar procesos
         from moduls.QvProcessing import QvProcessingConfig
         QvProcessingConfig()
-
-    def iniDataPlotly(self):
-        def dataPlotlyVersion(metadataFile):
-            try:
-                import configparser
-                config = configparser.ConfigParser()
-                config.read(metadataFile)
-                return config.get('general', 'version')
-            except Exception as e:
-                print(str(e))
-                return self.dataPlotly.VERSION
-        
-        try:
-            subdirPlugins = r"\QGIS\QGIS3\profiles\default\python\plugins"
-            dirPlugins = os.environ.get('APPDATA') + subdirPlugins
-            os.sys.path.insert(0, dirPlugins)
-            from DataPlotly.data_plotly import DataPlotly
-            from _qgis.utils import iface
-            self.dataPlotly = DataPlotly(iface)
-            if self.dataPlotly is not None:
-                self.dataPlotly.initGui()                
-                return dataPlotlyVersion(dirPlugins + r"\DataPlotly\metadata.txt")
-        except Exception as e:
-            print(str(e))
-            self.dataPlotly = None
-            return None
 
     def qVista(self):
         try:

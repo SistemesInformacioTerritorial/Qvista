@@ -4,15 +4,15 @@ from qgis.core import QgsProject, QgsVectorLayer
 from qgis.gui import QgsMessageBar
 from qgis.PyQt.QtCore import Qt, QPoint, QSize
 from qgis.PyQt.QtWidgets import QMenu, QWidget
-from moduls.QvFuncions import debugging
 from moduls.QvApp import QvApp
 from moduls.QvSingleton import singleton
 
 @singleton
 class QvIface:
 
-    def __init__(self):
+    def __init__(self, docWidgets=False):
         self.init()
+        self.docWidgets = docWidgets # Si es True, se muestran los docks de qVista (DataPlotly)
         self.inc = QPoint(120, 80)
         self.size = QSize(550, 500)
         # QgsProject.instance().readProject.connect(self.init)
@@ -48,7 +48,7 @@ class QvIface:
 
     def addDockWidget(self, area, dock):
         # self.mainWindow().addDockWidget(area, dock)
-        if debugging():
+        if self.docWidgets:
             self.origin += self.inc
             dock.setGeometry(self.origin.x(), self.origin.y(), 
                             round(self.size.width() * QvApp().zoomFactor()),
@@ -59,7 +59,7 @@ class QvIface:
 
     def removeDockWidget(self, dock):
         # self.mainWindow().removeDockWidget(dock)
-        if debugging():  
+        if self.docWidgets:  
             dock.hide()
 
     # ************************ Funciones no operativas ************************

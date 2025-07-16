@@ -97,9 +97,10 @@ class QvProcessing:
                 print('-', alg.id(), "->", alg.displayName())
 
     @staticmethod
-    def showAlgorithms(providersExcluded=['grass', 'model', 'script']):
-        # Se excluyen los proveedores 'model' y 'script' porque son del perfil de usuario
-        # y tambien 'grass' porque falta ver cómo se configura para que funcione desde qVista
+    def showAlgorithms(providersExcluded=['grass', 'model', 'script', 'DataPlotly']):
+        # Se excluyen los proveedores 'model' y 'script' porque son del perfil de usuario;
+        # tambien 'grass' porque falta ver cómo se configura para que funcione desde qVista.
+        # 'DataPlotly' no se incluye porque se gestiona desde QvDataPlotly con dock widgets
         algorithmsList = []
         for prov in QgsApplication.processingRegistry().providers():
             if providersExcluded is not None and prov.id() in providersExcluded:
