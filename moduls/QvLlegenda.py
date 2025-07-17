@@ -77,7 +77,7 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
         # self.reports = QvReports(self)
 
         from moduls.QvDataPlotly import QvDataPlotly
-        self.dataPlotly = QvDataPlotly() # Para activar los docks de DataPlotly, poner QvDataPlotly(True)
+        self.dataPlotly = QvDataPlotly(True) # Para activar los docks de DataPlotly, poner QvDataPlotly(True)
         QvLlegenda.DataPlotlyVersion = self.dataPlotly.versio
 
         self.recarrega = QvRecarregaLlegenda(self)
