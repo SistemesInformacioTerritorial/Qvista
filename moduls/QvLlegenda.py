@@ -18,7 +18,7 @@ from moduls.QvTema import QvTema
 from moduls.QvAnotacions import QvMapToolAnnotation
 from moduls.QvCatalegCapes import QvCreadorCatalegCapes
 from moduls.QvDigitizeContext import QvDigitizeContext
-from moduls.QvReports import QvReports
+# from moduls.QvReports import QvReports
 from moduls.QvNavegacioTemporal import QvNavegacioTemporal
 from moduls.QvApp import QvApp
 from moduls import QvFuncions
@@ -44,6 +44,7 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
     carregantProjecte = qtCor.pyqtSignal()
     projecteCarregat = qtCor.pyqtSignal(str)
     projecteModificat = qtCor.pyqtSignal(str)
+    DataPlotlyVersion = None
 
     def __init__(self, canvas=None, atributs=None, canviCapaActiva=None,
                  anotacions=True, editable=True):
@@ -73,7 +74,12 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
         # self.restoreExtent = 0
         # print('restoreExtent', self.restoreExtent)
 
-        self.reports = QvReports(self)
+        # self.reports = QvReports(self)
+
+        from moduls.QvDataPlotly import QvDataPlotly
+        self.dataPlotly = QvDataPlotly(True) # Para activar los docks de DataPlotly, poner QvDataPlotly(True)
+        QvLlegenda.DataPlotlyVersion = self.dataPlotly.versio
+
         self.recarrega = QvRecarregaLlegenda(self)
         
         # L'opertura de projectes Oracle va lenta si és la primera
@@ -910,10 +916,10 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
                self.anotacions.menuVisible(self.accions.accio('viewAnnotations')):
                 self.menuAccions += ['separator', 'viewAnnotations']
             # Informes
-            menuInformes = self.reports.setMenu()
-            if menuInformes is not None:
-                self.accions.afegirAccio('menuInforme', menuInformes)
-                self.menuAccions += ['separator', 'menuInforme']
+            # menuInformes = self.reports.setMenu()
+            # if menuInformes is not None:
+            #     self.accions.afegirAccio('menuInforme', menuInformes)
+            #     self.menuAccions += ['separator', 'menuInforme']
             # Procesos de proyecto
             from moduls.QvProcessing import QvProcessing
             menuProcessos = QvProcessing().setMenu()
