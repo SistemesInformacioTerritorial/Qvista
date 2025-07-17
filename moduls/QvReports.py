@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+p# -*- coding: utf-8 -*-
 
 from qgis.core import QgsProject, QgsLayoutExporter, QgsReport, QgsFeedback
 from qgis.PyQt.QtCore import Qt
@@ -8,18 +8,8 @@ from moduls.QvApp import QvApp
 from moduls.QvFuncions import debugging
 import os 
 
-# from DataPlotly.data_plotly import DataPlotly
-# from _qgis.utils import iface
-# _DataPlotly = DataPlotly(iface)
-# _DataPlotly.initGui()
-_DataPlotly = None
-
 class QvReports:
 
-    if _DataPlotly is not None:
-        DataPlotlyVersion = _DataPlotly.VERSION
-    else:
-        DataPlotlyVersion = None
     PathInformes = 'C:/temp/qVista/dades'
 
     ExportMsgs = [
@@ -190,7 +180,6 @@ if __name__ == "__main__":
     from moduls.QvLlegenda import QvLlegenda
     from moduls.QvApp import QvApp
     from moduls.QvAtributs import QvAtributs
-    from DataPlotly.data_plotly import DataPlotly
     from qgis.analysis import QgsNativeAlgorithms
     
     import sys
@@ -208,15 +197,6 @@ if __name__ == "__main__":
 
         llegenda = QvLlegenda(canvas, atributs)
 
-        # sys.path.append(r'C:\OSGeo4W\apps\qgis-ltr\python\plugins')
-        # import processing
-
-        # nAlgs = QgsNativeAlgorithms()
-        # nAlgs.loadAlgorithms()
-        # QgsApplication.processingRegistry().addProvider(nAlgs) 
-
-        dp = DataPlotly()
-        dp.initGui()
 
         # llegenda.project.read('projectes/Illes.qgs')
         llegenda.project.read("D:/qVista/DataPlotly/Diagramas.qgs")
