@@ -223,21 +223,42 @@ class Completador(QtWidgets.QCompleter):
         self.setFilterMode(QtCore.Qt.MatchContains)
     @staticmethod
     def separa(llista, word):
+        # Filtra insensible a majúscules i sense espais extres
+        word = word.strip().upper()
         def comenca(x):
-            # Volem comprovar si alguna de les subparaules de x comença per word
-            # Una manera de mirar-ho és mirar si x comença per word o x conté ' 'word
-            return x.startswith(word) or f' {word}' in x
+            x_ = x.strip().upper()
+            return x_.startswith(word) or f' {word}' in x_
         def no_comenca(x):
             return not comenca(x)
         return list(filter(comenca,llista)), list(filter(no_comenca,llista))
     def update(self, text):
         # actualitza el contingut del completer en funció del text cercat
         # fa la consulta a la base de dades, i ordena el resultat
-        self.llista=Consulta().consulta(ConstantsMaBIM.CONSULTA_CERCADOR,{':pText':text.upper()},(0,1,2))
+        text = text.strip()
+        if not text:
+            self.model().setStringList([])
+            return
+        # Força la cerca a majúscules i sense espais
+        text_upper = text.upper()
+        # Consulta que busca BIMs que contengan, empiecen o sean exactamente el texto
+        consulta = '''SELECT BIM, DESCRIPCIO_BIM, DENOMINACIO_BIM
+                      FROM ZAFT_0002
+                      WHERE ((UPPER(BIM) = :pText)
+                             OR (UPPER(BIM) LIKE :pTextPrefix)
+                             OR (UPPER(BIM) LIKE :pTextAny)
+                             OR (UPPER(BIM) LIKE :pTextAny2)
+                             OR (UPPER(DESCRIPCIO_BIM) LIKE :pTextAny)
+                             OR (UPPER(DENOMINACIO_BIM) LIKE :pTextAny)
+                             OR (UPPER(REF_CADASTRE_BIM) LIKE :pTextAny))
+                      AND (ROWNUM < 100)'''
+        binds = {
+            ':pText': text_upper,
+            ':pTextPrefix': text_upper + '%',
+            ':pTextAny': '%' + text_upper + '%',
+            ':pTextAny2': '%' + text_upper
+        }
+        self.llista = Consulta().consulta(consulta, binds, (0,1,2))
         self.m_word = text
-        # converteix el resultat de la consulta
-        #  (llista de llistes, amb els camps de la base de dades)
-        #  en una llista de strings, que conté els camps no nuls separats per espais
         res = [' '.join([str(y) for y in x if str(y).upper()!='NULL']) for x in self.llista]
         comencen, contenen = self.separa(res, text)
         self.model().setStringList(comencen+contenen)
@@ -707,7 +728,8 @@ class QMaBIM(QtWidgets.QMainWindow):
 
         # Eliminem la marca del cercador
         self.cerca1.eliminaMarcaLloc()
-        self.dadesLabelsDades[0] = self.dadesLabelsDades[0].replace('0000', ' ').lstrip()
+        # No modificar el código BIM original, para que el filtro funcione con cualquier prefijo
+        # self.dadesLabelsDades[0] = self.dadesLabelsDades[0].replace('0000', ' ').lstrip()
 
         self.bAfegirFavorit.show()
         self.bAfegirFavorit.setChecked(self.dadesLabelsDades[0] in self.favorits)
@@ -783,7 +805,8 @@ class QMaBIM(QtWidgets.QMainWindow):
         #header = self.twFinquesRegistrals.horizontalHeader()
         #header.setSectionResizeMode(3, QHeaderView.ResizeToContents)
 
-        cerca = f"BIM LIKE '0000{self.dadesLabelsDades[0]}'"
+        # Ara el filtre busca el BIM permetent zeros a l'esquerra (o qualsevol prefix)
+        cerca = f"BIM LIKE '%{self.dadesLabelsDades[0]}'"
 
         layers = self.getCapesBIMs()
         for layer in layers:
