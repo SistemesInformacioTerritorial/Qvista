@@ -616,7 +616,7 @@ class QMaBIM(QtWidgets.QMainWindow):
 
     def dialegSetFavorit(self):
         if self.bAfegirFavorit.isChecked():
-            text, ok = QtWidgets.QInputDialog.getText(self, 'Afegir com a favorit', "Observacions", flags=QtCore.Qt.WindowSystemMenuHint | QtCore.Qt.WindowTitleHint)
+            text, ok = QtWidgets.QInputDialog.getText(self, 'Afegir amb a favorit', "Observacions", flags=QtCore.Qt.WindowSystemMenuHint | QtCore.Qt.WindowTitleHint)
             if ok:
                 self.setFavorit(observacio=text)
         else:
@@ -706,6 +706,9 @@ class QMaBIM(QtWidgets.QMainWindow):
         completer = Completador()
         self.leCercador.setCompleter(completer)
         completer.activated.connect(self.consulta)
+        popup = completer.popup()
+        popup.setFixedWidth(800)          # ancho fijo en píxeles
+        # o: popup.setMinimumWidth(self.leCercador.width() + 150)
     def consulta(self):
         # funció que fa les consultes a la Base de Dades, per omplir els diferents camps i taules
 
