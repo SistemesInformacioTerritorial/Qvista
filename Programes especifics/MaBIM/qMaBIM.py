@@ -734,7 +734,7 @@ class QMaBIM(QtWidgets.QMainWindow):
         # No modificar el código BIM original, para que el filtro funcione con cualquier prefijo
         # self.dadesLabelsDades[0] = self.dadesLabelsDades[0].replace('0000', ' ').lstrip()
 
-        self.bAfegirFavorit.show()
+        self.bAfegirFavorit.hide()
         self.bAfegirFavorit.setChecked(self.dadesLabelsDades[0] in self.favorits)
         # Labels pestanya "Dades Identificatives"
         labels = (self.lNumBIM, self.lSituacio,self.ltipusSituacio,self.lDescripcioBIM,self.lDenominacio,
