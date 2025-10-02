@@ -951,6 +951,8 @@ class QMaBIM(QtWidgets.QMainWindow):
 
         self.cbBaixesVisibles.setChecked(False)  # Inicialmente en off
         self.cbBaixesVisibles.clicked.connect(self.swapVisibilitatBaixes)
+        self.cbAltresBens.setChecked(False)  # Inicialmente en off
+        self.cbAltresBens.clicked.connect(self.swapVisibilitatAltresBens)
         self.cbRegistresPropietat.clicked.connect(self.swapVisibilitatRegistre)
         self.cbRegistralsVisibles.clicked.connect(self.swapVisibilitatRegistrals)
         self.swapVisibilitatBaixes(False)  # Asegura que las capas de baixes estén ocultas al inicio
@@ -993,6 +995,20 @@ class QMaBIM(QtWidgets.QMainWindow):
             # for nodeLayer in node.findLayers():
             #     capa = nodeLayer.layer()
             #     self.llegenda.setLayerVisible(capa, check)
+
+    def swapVisibilitatAltresBens(self, check):
+        """Activa o desactiva la capa 'Altres Béns i Drets' en la llegenda."""
+        try:
+            capa = self.llegenda.capaPerNom(ConstantsMaBIM.nomCapaQuioscos)
+            if capa is not None:
+                self.llegenda.setLayerVisible(capa, check)
+            else:
+                # intentar localizar por nodo si existe
+                node = self.llegenda.nodePerNom(ConstantsMaBIM.nomCapaQuioscos)
+                if node is not None:
+                    node.setItemVisibilityChecked(check)
+        except Exception:
+            pass
 
     def getCapaBIMs(self):
         # Retorna una capa amb camp de BIMs

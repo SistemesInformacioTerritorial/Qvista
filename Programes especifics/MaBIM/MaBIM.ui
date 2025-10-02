@@ -955,6 +955,13 @@ QToolButton:disabled{
                </property>
               </widget>
              </item>
+             <item>
+              <widget class="QCheckBox" name="cbAltresBens">
+               <property name="text">
+                <string>Altres béns i drets</string>
+               </property>
+              </widget>
+             </item>
             </layout>
            </item>
            <item>
