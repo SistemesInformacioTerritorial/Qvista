@@ -76,9 +76,20 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
 
         # self.reports = QvReports(self)
 
-        from moduls.QvDataPlotly import QvDataPlotly
-        self.dataPlotly = QvDataPlotly(True) # Para activar los docks de DataPlotly, poner QvDataPlotly(True)
-        QvLlegenda.DataPlotlyVersion = self.dataPlotly.versio
+        # Intentamos importar la clase QvDataPlotly pero NO la instanciamos aquí.
+        # Guardaremos la clase en self._qvdataplotly_cls para inicializarla
+        # más tarde, cuando haya un canvas válido (evita errores por iface.mapCanvas() None).
+        try:
+            from moduls.QvDataPlotly import QvDataPlotly as _QvDataPlotlyClass
+        except Exception as e:
+            print(f"DataPlotly import failed: {e}")
+            self._qvdataplotly_cls = None
+        else:
+            self._qvdataplotly_cls = _QvDataPlotlyClass
+
+        # No instanciamos todavía
+        self.dataPlotly = None
+        QvLlegenda.DataPlotlyVersion = None
 
         self.recarrega = QvRecarregaLlegenda(self)
         
@@ -98,6 +109,11 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
 
         # Asociar canvas y bridges; digitalización
         self.mapBridge(canvas)
+        # Intentar inicializar DataPlotly ahora que hemos enlazado el canvas (si procede)
+        try:
+            self._init_data_plotly()
+        except Exception as e:
+            print(f"Deferred DataPlotly initialization failed: {e}")
         if QvApp().testVersioQgis(3, 10):
             self.digitize = QvDigitize(self)
         else:
@@ -570,10 +586,35 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
         if self.canvas is None:  # Canvas principal
             self.canvasSettings(canvas)
             self.canvas = canvas
+            # Si disponemos de la clase de DataPlotly, intentamos inicializarla ahora que
+            # hay un canvas válido. Esto evita inicializar DataPlotly antes de que
+            # iface.mapCanvas() exista.
+            try:
+                self._init_data_plotly()
+            except Exception as e:
+                print(f"Deferred DataPlotly initialization inside mapBridge failed: {e}")
             self.bridge = bridge
             self.bridge.canvasLayersChanged.connect(self.maskUpdate)
         else:
             self.bridges.append((canvas, bridge))
+
+    def _init_data_plotly(self):
+        """Inicializa DataPlotly si la clase fue importada y no hay instancia creada.
+        Es seguro llamar esta función varias veces; solo hará algo la primera vez.
+        """
+        if getattr(self, 'dataPlotly', None) is not None:
+            return
+        if getattr(self, '_qvdataplotly_cls', None) is None:
+            return
+        # Intentar instanciar la clase. Puede fallar si el plugin DataPlotly espera
+        # que iface.mapCanvas() esté disponible; capturamos cualquier excepción.
+        try:
+            self.dataPlotly = self._qvdataplotly_cls(True)
+            QvLlegenda.DataPlotlyVersion = getattr(self.dataPlotly, 'versio', None)
+        except Exception as e:
+            print(f"DataPlotly deferred initialization failed: {e}")
+            self.dataPlotly = None
+            QvLlegenda.DataPlotlyVersion = None
 
     def setMask(self, layer, polygonId):
         if layer is None or polygonId is None:
