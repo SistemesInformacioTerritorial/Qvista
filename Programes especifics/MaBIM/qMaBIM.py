@@ -916,6 +916,11 @@ class QMaBIM(QtWidgets.QMainWindow):
         self.canvasA.refresh()
         self.canvasA.bCentrar.setChecked(False)
 
+    def _centrar_despres_refresc(self):
+        # Ens desconnectem per no repetir
+        self.canvasA.mapCanvasRefreshed.disconnect(self._centrar_despres_refresc)
+        self.centrarMapa()
+
     @QvFuncions.cronometraDebug
     def inicialitzaProjecte(self, projecte):
         # # L'opertura de projectes Oracle va lenta si és la primera
@@ -926,6 +931,7 @@ class QMaBIM(QtWidgets.QMainWindow):
         #     except:
         #         pass
         self.llegenda.readProject(projecte)
+        self.canvasA.mapCanvasRefreshed.connect(self._centrar_despres_refresc)
         self.centrarMapa()
 
         # cal comprovar si les capes ... i ... són visibles
