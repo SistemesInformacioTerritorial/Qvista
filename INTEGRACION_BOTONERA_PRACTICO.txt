@@ -1,0 +1,532 @@
+================================================================================
+           INTEGRACIÓN DE BOTONERA EN QVISTA - GUÍA PRÁCTICA
+================================================================================
+
+RESUMEN:
+========
+
+Este documento proporciona ejemplos prácticos y código listo para usar
+para integrar la clase Botonera.py en la aplicación qVista.py.
+
+
+OPCIÓN 1: INTEGRACIÓN SIMPLE (RECOMENDADA)
+===========================================
+
+Ventajas:
+- Mínimo cambio en qVista.py
+- Automático: busca JSON si existe, sino continúa sin botonera
+- Compatible con proyectos existentes (no requieren JSON)
+- Fácil de mantener
+
+PASO 1: Añadir import en qVista.py (línea ~65)
+-----------------------------------------------
+
+Añadir después de los otros imports de módulos:
+
+```python
+# En la sección de imports de módulos Qv (alrededor de línea 65)
+
+from moduls.eines.Botonera import Botonera  # Nuevo import
+```
+
+PASO 2: Crear método preparacioBotonera() en QVista
+----------------------------------------------------
+
+Añadir en la clase QVista, después del método preparacioSeleccio():
+
+```python
+def preparacioBotonera(self):
+    """
+    Inicializa la botonera desde JSON del proyecto actual.
+    
+    Busca automáticamente un fichero JSON con el mismo nombre
+    que el proyecto QGIS en la misma carpeta.
+    
+    Si el fichero JSON existe, crea un dock widget Botonera.
+    Si no existe, simplemente continúa sin botonera.
+    
+    Ejemplos:
+    - Proyecto: D:/Proyectos/miproyecto.qgs
+    - Busca: D:/Proyectos/miproyecto.json
+    """
+    try:
+        self.botonera = Botonera(self)
+        self.addDockWidget(Qt.RightDockWidgetArea, self.botonera)
+        self.botonera.show()
+    except Exception as e:
+        print(f"No se pudo inicializar botonera: {e}")
+        # La aplicación continúa sin botonera
+```
+
+PASO 3: Llamar a preparacioBotonera() en __init__()
+----------------------------------------------------
+
+En el método __init__() de QVista, añadir la llamada:
+
+Localizar (línea ~185):
+```python
+self.preparacioSeleccio()
+# self.preparacioEntorns()
+
+self.preparacioTemporal()
+```
+
+Modificar a:
+```python
+self.preparacioSeleccio()
+# self.preparacioEntorns()
+
+self.preparacioTemporal()
+
+# Nuevo - Preparación botonera (busca JSON automáticamente)
+self.preparacioBotonera()
+```
+
+RESULTADO: 
+- Si existe "miproyecto.json" → Se carga la botonera
+- Si NO existe → Se continúa normalmente sin botonera
+
+
+OPCIÓN 2: INTEGRACIÓN AVANZADA CON CONTROL DE DOCKS
+===================================================
+
+Ventajas:
+- Control granular sobre el estado de docks
+- Permite show/hide de botonera dinámicamente
+- Posibilidad de tener múltiples botoneras
+- Integración completa con sistema de docks
+
+PASO 1-2: Igual que Opción 1
+
+PASO 3: Crear método más completo
+----------------------------------
+
+```python
+def preparacioBotonera(self):
+    """
+    Inicializa la botonera con control completo de docks.
+    
+    Características:
+    - Busca automáticamente JSON del proyecto
+    - Almacena referencia en diccionario
+    - Permite gestionar estado del dock
+    - Compatible con save/restore de docks
+    """
+    try:
+        self.botonera = Botonera(self)
+        
+        # Añadir a diccionario de docks
+        if not hasattr(self, 'dicDocks'):
+            self.dicDocks = {}
+        self.dicDocks['Botonera'] = self.botonera
+        
+        # Añadir como dock widget
+        self.addDockWidget(Qt.RightDockWidgetArea, self.botonera)
+        
+        # Hacer visible
+        self.botonera.show()
+        
+        print(f"Botonera cargada: {self.botonera.titol}")
+        
+    except Exception as e:
+        print(f"No se pudo inicializar botonera: {e}")
+        # Continúa sin botonera
+
+
+def guardarEstadoBotonera(self):
+    """Guarda el estado actual de la botonera"""
+    if hasattr(self, 'botonera'):
+        # El estado se guarda automáticamente con saveState()
+        pass
+
+
+def restaurarEstadoBotonera(self):
+    """Restaura el estado anterior de la botonera"""
+    if hasattr(self, 'botonera'):
+        # El estado se restaura automáticamente con restoreState()
+        pass
+
+
+def mostrarOcultarBotonera(self):
+    """Alterna visibilidad de la botonera"""
+    if hasattr(self, 'botonera'):
+        self.botonera.setVisible(not self.botonera.isVisible())
+```
+
+PASO 4: Añadir acción en menú para mostrar/ocultar
+--------------------------------------------------
+
+En el método definicioAcciones() de QVista:
+
+```python
+# Añadir cerca de otras acciones de herramientas
+self.actionMostrarBotonera = QAction(
+    QIcon("..."),  # Ruta a icono si lo hay
+    "Mostrar Botonera",
+    self
+)
+self.actionMostrarBotonera.setCheckable(True)
+self.actionMostrarBotonera.setChecked(True)
+self.actionMostrarBotonera.triggered.connect(self.mostrarOcultarBotonera)
+```
+
+En el método definirMenus(), en el menú "Ver" o "Ventanas":
+
+```python
+menuVer.addAction(self.actionMostrarBotonera)
+```
+
+
+OPCIÓN 3: INTEGRACIÓN CON CALLBACK DINÁMICO
+===========================================
+
+Ventajas:
+- Botonera puede ejecutar acciones Python
+- Integración profunda con canvas y capas
+- Permite funcionalidad dinámica
+
+PASO 1-2: Igual que Opción 1
+
+PASO 3: Extender Botonera para acciones Python
+----------------------------------------------
+
+En Botonera.py, modificar _create_ui():
+
+```python
+# Buscar esta sección (alrededor de línea 240):
+if boton.action_type == 'url':
+    btn.clicked.connect(
+        lambda checked=False, url=boton.action: 
+        QDesktopServices().openUrl(QUrl(url))
+    )
+
+# Cambiar a:
+if boton.action_type == 'url':
+    btn.clicked.connect(
+        lambda checked=False, url=boton.action: 
+        QDesktopServices().openUrl(QUrl(url))
+    )
+elif boton.action_type == 'function':
+    # Obtener función del parent si existe
+    if hasattr(self.parent, boton.action):
+        func = getattr(self.parent, boton.action)
+        btn.clicked.connect(func)
+elif boton.action_type == 'method':
+    # Llamar método del parent
+    method_name = boton.action
+    btn.clicked.connect(
+        lambda checked=False, m=method_name, p=self.parent:
+        getattr(p, m)() if hasattr(p, m) else None
+    )
+```
+
+PASO 4: JSON con acciones tipo función
+---------------------------------------
+
+```json
+{
+  "widget_title": "Herramientas",
+  "sections": [
+    {
+      "title": "Acciones",
+      "collapsed": false,
+      "buttons": [
+        {
+          "text": "Zoom a Extent",
+          "action": "zoomExtent",
+          "action_type": "method"
+        },
+        {
+          "text": "Limpiar Selección",
+          "action": "limpiarSeleccion",
+          "action_type": "method"
+        },
+        {
+          "text": "Abrir Documento",
+          "action": "file:///ruta/documento.pdf",
+          "action_type": "url"
+        }
+      ]
+    }
+  ]
+}
+```
+
+PASO 5: Implementar métodos en qVista
+--------------------------------------
+
+```python
+def zoomExtent(self):
+    """Zoom a la extensión completa del proyecto"""
+    self.canvas.zoomToFullExtent()
+
+def limpiarSeleccion(self):
+    """Limpia la selección en todas las capas"""
+    for layer in QgsProject.instance().mapLayers().values():
+        if hasattr(layer, 'removeSelection'):
+            layer.removeSelection()
+    self.canvas.refresh()
+```
+
+
+OPCIÓN 4: BOTONERAS MÚLTIPLES POR PROYECTO
+===========================================
+
+Ventajas:
+- Múltiples botoneras para diferentes funcionalidades
+- Organización clara de herramientas
+
+PASO 1-2: Igual que antes
+
+PASO 3: Crear método mejorado
+-----------------------------
+
+```python
+def preparacioBotoneras(self):
+    """
+    Inicializa múltiples botoneras si existen.
+    
+    Busca ficheros JSON con patrón: {proyecto}_botonera_*.json
+    Ejemplo:
+    - miproyecto.json (botonera principal)
+    - miproyecto_docs.json (documentos adicionales)
+    - miproyecto_tools.json (herramientas)
+    """
+    from pathlib import Path
+    
+    try:
+        # Obtener carpeta del proyecto
+        project = QgsProject.instance()
+        if not project.fileName():
+            return
+        
+        project_dir = Path(project.fileName()).parent
+        project_name = Path(project.fileName()).stem
+        
+        # Buscar todas las botoneras del proyecto
+        botonera_files = list(project_dir.glob(f"{project_name}*.json"))
+        
+        if not botonera_files:
+            return
+        
+        self.dicBotoneras = {}
+        dock_area = Qt.RightDockWidgetArea
+        
+        for i, json_file in enumerate(botonera_files):
+            try:
+                botonera = Botonera(self, json_file)
+                self.addDockWidget(dock_area, botonera)
+                botonera.show()
+                
+                # Apilar docks a la derecha
+                if i > 0:
+                    self.tabifyDockWidget(
+                        self.dicBotoneras[list(self.dicBotoneras.keys())[i-1]],
+                        botonera
+                    )
+                
+                self.dicBotoneras[botonera.titol] = botonera
+                print(f"Botonera cargada: {botonera.titol}")
+                
+            except Exception as e:
+                print(f"Error cargando {json_file}: {e}")
+    
+    except Exception as e:
+        print(f"Error en preparacioBotoneras: {e}")
+```
+
+JSON para múltiples botoneras:
+
+```
+Barcelona_Urbanismo.qgs
+Barcelona_Urbanismo.json (botonera principal)
+Barcelona_Urbanismo_docs.json (documentos técnicos)
+Barcelona_Urbanismo_links.json (enlaces externos)
+```
+
+
+CONSIDERACIONES GENERALES:
+===========================
+
+1. TIMING DE CARGA
+   - Llamar preparacioBotonera() después de canvas listo
+   - En __init__(), después de preparacioTemporal()
+
+2. MANEJO DE ERRORES
+   - Siempre usar try/except
+   - Si falla botonera, aplicación continúa sin problemas
+   - Log de errores para debugging
+
+3. PERFORMANCE
+   - Botonera es lightweight
+   - No impacta significativamente en tiempo de carga
+   - Carga bajo demanda (solo si JSON existe)
+
+4. COMPATIBILIDAD
+   - Funciona con QGIS 3.x
+   - Compatible con todos los proyectos existentes
+   - No rompe funcionalidad existente
+
+5. PERSISTENCIA
+   - Estado de dock se guarda automáticamente
+   - Se restaura al reabrir proyecto
+   - No requiere código adicional
+
+6. TESTING
+   [ ] Carga normal sin JSON (no error)
+   [ ] Carga con JSON válido (funciona)
+   [ ] Cambio de proyecto (botonera actualizada)
+   [ ] Acciones de botones (ejecutan correctamente)
+   [ ] Estado de dock (se persiste)
+
+
+EJEMPLOS DE JSON COMPLETOS:
+===========================
+
+EJEMPLO 1: Botonera de Documentos
+----------------------------------
+
+```json
+{
+  "widget_title": "Documentación Técnica",
+  "sections": [
+    {
+      "title": "Normas y Estándares",
+      "collapsed": false,
+      "buttons": [
+        {
+          "text": "ISO 19115 (Metadatos)",
+          "action": "file:///P:/Normas/ISO_19115.pdf"
+        },
+        {
+          "text": "OGC WMS Specification",
+          "action": "file:///P:/Normas/OGC_WMS.pdf"
+        }
+      ]
+    },
+    {
+      "title": "Manuales Internos",
+      "collapsed": true,
+      "buttons": [
+        {
+          "text": "Manual de Bases de Datos",
+          "action": "file:///P:/Manuales/BBDD.docx"
+        },
+        {
+          "text": "Guía de Estilos",
+          "action": "file:///P:/Manuales/estilos.pdf"
+        }
+      ]
+    }
+  ]
+}
+```
+
+EJEMPLO 2: Botonera de Enlaces
+--------------------------------
+
+```json
+{
+  "widget_title": "Enlaces Útiles",
+  "sections": [
+    {
+      "title": "Portal Datos Barcelona",
+      "collapsed": false,
+      "buttons": [
+        {
+          "text": "OpenData BCN",
+          "action": "https://opendata.barcelona.cat"
+        },
+        {
+          "text": "SIG Ayuntamiento",
+          "action": "https://intranet.barcelona.cat/sig"
+        }
+      ]
+    },
+    {
+      "title": "Recursos Externos",
+      "collapsed": true,
+      "buttons": [
+        {
+          "text": "OSM - OpenStreetMap",
+          "action": "https://www.openstreetmap.org"
+        },
+        {
+          "text": "IGAC - Instituto Geográfico",
+          "action": "https://www.igac.gov.co"
+        }
+      ]
+    }
+  ]
+}
+```
+
+EJEMPLO 3: Botonera de Herramientas
+------------------------------------
+
+```json
+{
+  "widget_title": "Herramientas",
+  "sections": [
+    {
+      "title": "Visualización",
+      "collapsed": false,
+      "buttons": [
+        {
+          "text": "Zoom Completo",
+          "action": "zoomExtent",
+          "action_type": "method"
+        },
+        {
+          "text": "Limpiar Selección",
+          "action": "limpiarSeleccion",
+          "action_type": "method"
+        }
+      ]
+    },
+    {
+      "title": "Documentos",
+      "collapsed": true,
+      "buttons": [
+        {
+          "text": "Especificaciones",
+          "action": "file:///P:/specs.pdf"
+        }
+      ]
+    }
+  ]
+}
+```
+
+
+TROUBLESHOOTING:
+================
+
+Problema: "No se pudo inicializar botonera"
+Solución: 
+- Verificar que JSON existe en la carpeta del proyecto
+- Verificar sintaxis JSON (usar jsonlint.com)
+- Revisar logs de qVista.py
+
+Problema: Botonera no aparece
+Solución:
+- Verificar que preparacioBotonera() se llama en __init__
+- Verificar que self.botonera.show() se ejecuta
+- Revisar si el dock area está ocupado
+
+Problema: Botones no funcionan
+Solución:
+- Verificar que las URLs son correctas (file:// o http://)
+- Para métodos, verificar que existen en qVista
+- Revisar acción de tipos (url, method, function)
+
+Problema: Botonera tapa otras cosas
+Solución:
+- Usar tabifyDockWidget para apilar docks
+- Ajustar tamaño con setMaximumWidth/setMinimumWidth
+- Usar diferentes dock areas (Left, Right, Bottom)
+
+
+================================================================================
+FIN DE DOCUMENTO
+================================================================================

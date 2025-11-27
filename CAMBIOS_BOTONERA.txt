@@ -1,0 +1,236 @@
+================================================================================
+                    CAMBIOS REALIZADOS - BOTONERA.PY
+                              Noviembre 2025
+================================================================================
+
+RESUMEN GENERAL:
+================
+Se ha mejorado la clase Botonera para permitir que el título del widget y la 
+ubicación del fichero JSON se configuren dinámicamente según el proyecto QGIS 
+abierto. Además, se ha añadido documentación detallada de todos los métodos.
+
+
+CAMBIOS PRINCIPALES:
+====================
+
+1. TÍTULO DEL WIDGET CONFIGURABLE (botonera_config.json)
+   -------------------------------------------------------
+   
+   ANTES:
+   - El título era hardcodeado como "Botonera"
+   - No se podía cambiar sin modificar el código
+   
+   DESPUÉS:
+   - El título se define en el JSON con el campo "widget_title"
+   - Ejemplo de JSON actualizado:
+   
+     {
+       "widget_title": "Documents PEPI",
+       "sections": [
+         { ... }
+       ]
+     }
+   
+   CAMBIOS EN CÓDIGO:
+   - Clase BotonConfigLoader: Añadida lectura de widget_title del JSON
+   - Clase Botonera: Usa loader.get_widget_title() en super().__init__()
+   - Atributo self.titol se actualiza dinámicamente
+
+
+2. BÚSQUEDA AUTOMÁTICA DEL JSON EN CARPETA DEL PROYECTO QGIS
+   -----------------------------------------------------------
+   
+   ANTES:
+   - Buscaba botonera_config.json en el directorio actual
+   - No había relación con el proyecto QGIS abierto
+   
+   DESPUÉS:
+   - Estrategia de búsqueda en 3 pasos:
+   
+     Paso 1: Si se proporciona config_file explícitamente → Usa esa ruta
+     
+     Paso 2: Si hay proyecto QGIS abierto → Busca {proyecto}.json
+             Ejemplo:
+             - Proyecto: D:/Pepi/miproyecto.qgs
+             - Busca:   D:/Pepi/miproyecto.json
+     
+     Paso 3: Si no hay proyecto abierto → Fallback a botonera_config.json
+             en el directorio actual
+   
+   CAMBIOS EN CÓDIGO:
+   - Importación de QgsProject desde qgis.core
+   - Lógica mejorada en __init__ para resolver config_file
+   - Logging detallado de qué ruta se está buscando
+
+
+3. DOCUMENTACIÓN EXPANDIDA
+   ------------------------
+   
+   SE HAN AÑADIDO:
+   
+   a) Docstring de clase Botonera:
+      - Descripción completa del propósito
+      - Características principales
+      - Estructura esperada del JSON
+      - Estrategia de búsqueda de ficheros
+      - Ejemplos de uso
+   
+   b) Docstring de __init__:
+      - Explicación del algoritmo de búsqueda de JSON
+      - Pasos del flujo de inicialización
+      - Documentación completa de parámetros
+      - Ejemplos de código
+      - Notas de implementación técnica
+   
+   c) Docstring de _create_ui:
+      - Descripción del proceso de construcción de UI
+      - Comportamiento de secciones y botones
+      - Argumentos y efectos secundarios
+      - Notas técnicas sobre lambdas y espaciadores
+
+
+ARCHIVOS MODIFICADOS:
+====================
+
+1. moduls/eines/Botonera.py
+   - Línea 19: Importación de QgsProject
+   - Líneas 1-6: Docstring módulo actualizado
+   - Líneas 165-217: Docstring clase Botonera expandido
+   - Líneas 219-268: Docstring __init__ expandido
+   - Líneas 177-201: Lógica de búsqueda de JSON mejorada
+   - Líneas 230-236: Docstring _create_ui expandido
+
+2. botonera_config.json
+   - Línea 2: Añadido campo "widget_title": "Documents PEPI"
+
+
+CAMBIOS EN COMPORTAMIENTO:
+==========================
+
+ESCENARIO 1: Proyecto QGIS abierto
+-----------------------------------
+Antes:   Buscaba botonera_config.json en directorio actual
+Después: Busca {nombre_proyecto}.json en la carpeta del proyecto
+         Fallback a botonera_config.json si no existe
+
+ESCENARIO 2: Sin proyecto QGIS abierto
+---------------------------------------
+Antes y Después: Busca botonera_config.json en directorio actual
+
+ESCENARIO 3: config_file proporcionado explícitamente
+------------------------------------------------------
+Antes y Después: Usa la ruta proporcionada
+
+
+COMPATIBILIDAD:
+================
+
+✓ Código retrocompatible - Los cambios no rompen usos existentes
+✓ JSON es opcional - widget_title tiene valor por defecto "Botonera"
+✓ config_file opcional - Se puede pasar explícitamente si es necesario
+✓ QGIS 3.x - Usa APIs estándar de QGIS
+
+
+LOGGING Y DEBUGGING:
+====================
+
+Se han mejorado los logs con información detallada:
+
+- "Buscando configuración basada en proyecto QGIS: {ruta}"
+  → Indica que se encontró un proyecto QGIS abierto
+
+- "No hay proyecto QGIS abierto, usando directorio actual: {ruta}"
+  → Indica fallback a directorio actual
+
+- "Ruta configuración: {ruta}"
+  → Muestra la ruta final que se va a usar
+
+Estos logs ayudan a diagnosticar problemas de búsqueda de ficheros.
+
+
+EJEMPLO DE USO COMPLETO:
+========================
+
+Supongamos que tienes:
+  D:/Proyectos/Pepi/miproyecto.qgs
+  D:/Proyectos/Pepi/miproyecto.json
+
+Contenido de miproyecto.json:
+
+{
+  "widget_title": "Botonera del Proyecto Pepi",
+  "sections": [
+    {
+      "title": "Documentos",
+      "collapsed": false,
+      "buttons": [
+        {
+          "text": "Plano General",
+          "action": "file:///D:/Proyectos/Pepi/docs/plano.pdf"
+        },
+        {
+          "text": "Especificaciones",
+          "action": "file:///D:/Proyectos/Pepi/docs/specs.pdf"
+        }
+      ]
+    },
+    {
+      "title": "Enlaces",
+      "collapsed": true,
+      "buttons": [
+        {
+          "text": "Google Drive",
+          "action": "https://drive.google.com/folder/..."
+        }
+      ]
+    }
+  ]
+}
+
+Uso en código Python:
+
+  from moduls.eines.Botonera import Botonera
+  
+  # Sin argumentos - busca automáticamente
+  botonera = Botonera(iface.mainWindow())
+  
+  # Con ruta explícita
+  botonera = Botonera(iface.mainWindow(), Path('D:/custom.json'))
+
+
+PRÓXIMAS MEJORAS POSIBLES:
+==========================
+
+- Añadir tipos de acción adicionales (command, custom callbacks)
+- Permitir iconos personalizados para botones
+- Soporte para submenús o jerarquías más complejas
+- Recarga dinámica de configuración sin reiniciar
+- Historial de ficheros abiertos recientemente
+- Búsqueda y filtrado de botones
+
+
+NOTAS TÉCNICAS:
+================
+
+1. QgsProject.instance() devuelve la instancia del proyecto actual
+2. fileName() devuelve '' (string vacío) si no hay proyecto abierto
+3. Path.stem extrae el nombre sin extensión (.qgs → nombre)
+4. Path.parent obtiene la carpeta del fichero
+5. El logging usa logger.__name__ para identificar el módulo
+
+
+TESTING RECOMENDADO:
+====================
+
+[ ] Abrir QGIS sin proyecto - debe usar botonera_config.json
+[ ] Abrir proyecto.qgs con proyecto.json en la misma carpeta
+[ ] Cambiar widget_title en JSON y verificar que el título cambia
+[ ] Pasar config_file explícitamente
+[ ] JSON inválido o inexistente - debe mostrar mensaje de error
+[ ] Botones con URLs de ficheros PDF
+[ ] Botones con URLs de web
+[ ] Secciones colapsadas/expandidas
+
+================================================================================
+FIN DE DOCUMENTO
+================================================================================

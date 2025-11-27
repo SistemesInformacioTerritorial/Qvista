@@ -1,0 +1,149 @@
+{
+  "widget_title": "Documents PEPI",
+  "sections": [
+    {
+      "title": "1.- Documents generals 17/6",
+      "collapsed": true,
+      "buttons": [
+        {
+          "text": "Localització",
+          "action": "file:///d:/Pepi/Localització del sòl 17-6.pdf"
+        },
+        {
+          "text": "Propietat",
+          "action": "file:///d:/Pepi/Propietat del sòl 17-6.pdf"
+        },
+        {
+          "text": "Estat actual",
+          "action": "file:///d:/Pepi/Estat actal del sòl 17-6.pdf"
+        },
+        {
+          "text": "Classificació segons superfície afectada",
+          "action": "file:///d:/Pepi/Classificació del sòl 17-6 segons superfície afectada.pdf"
+        },
+        {
+          "text": "Classificació segons número de parcel·les afectades",
+          "action": "file:///d:/Pepi/Classificació del 17-6 segons parcel·les afectades.pdf"
+        },
+        {
+          "text": "Classificació segons número de propietaris",
+          "action": "file:///d:/Pepi/Classificació del 17-6 segons número de priopietaris.pdf"
+        },
+        {
+          "text": "Classificació segons ús",
+          "action": "file:///d:/Pepi/Classificació del 17-6 segons ús.pdf"
+        },
+        {
+          "text": "Classificació segons estat edificatori",
+          "action": "file:///d:/Pepi/Classificació del 17-6 segons estat edificatori.pdf"
+        },
+        {
+          "text": "Classificació segons cost total",
+          "action": "file:///d:/Pepi/Classificació del 17-6 segons cost total.pdf"
+        },
+        {
+          "text": "Classificació segons valoració",
+          "action": "file:///d:/Pepi/Classificacio del 17-6  segons valoracio.pdf"
+        }
+      ]
+    },
+    {
+      "title": "Altres qualificacions 1",
+      "collapsed": true,
+      "buttons": [
+        {
+          "text": "el Coll",
+          "action": "file:///L:/DADES/SIT/qVista/CATALEG/MAPES PRIVATS/Marxes de ciutat/PdfFitxes/02_El_coll.pdf"
+        },
+        {
+          "text": "la Salut",
+          "action": "file:///L:/DADES/SIT/qVista/CATALEG/MAPES PRIVATS/Marxes de ciutat/PdfFitxes/03_La_salut.pdf"
+        },
+        {
+          "text": "el Besós i el Maresme",
+          "action": "file:///L:/DADES/SIT/qVista/CATALEG/MAPES PRIVATS/Marxes de ciutat/PdfFitxes/12_El_Besos_el_Maresme.pdf"
+        },
+        {
+          "text": "el Bon Pastor",
+          "action": "file:///L:/DADES/SIT/qVista/CATALEG/MAPES PRIVATS/Marxes de ciutat/PdfFitxes/09_Bon_Pastor.pdf"
+        },
+        {
+          "text": "la Trinitat Nova",
+          "action": "file:///L:/DADES/SIT/qVista/CATALEG/MAPES PRIVATS/Marxes de ciutat/PdfFitxes/07_Trinitat_nova.pdf"
+        },
+        {
+          "text": "la Trinitat Vella",
+          "action": "file:///L:/DADES/SIT/qVista/CATALEG/MAPES PRIVATS/Marxes de ciutat/PdfFitxes/08_Trinitat_Vella.pdf"
+        },
+        {
+          "text": "la Vila de Gràcia",
+          "action": "file:///L:/DADES/SIT/qVista/CATALEG/MAPES PRIVATS/Marxes de ciutat/PdfFitxes/04_Vila_de_gracia.pdf"
+        },
+        {
+          "text": "Vallcarca",
+          "action": "file:///L:/DADES/SIT/qVista/CATALEG/MAPES PRIVATS/Marxes de ciutat/PdfFitxes/06_Vallcarca.pdf"
+        },
+        {
+          "text": "la Marina del Prat Vermell",
+          "action": "file:///L:/DADES/SIT/qVista/CATALEG/MAPES PRIVATS/Marxes de ciutat/PdfFitxes/11_La_Marina.pdf"
+        },
+        {
+          "text": "el Camp del Grassot",
+          "action": "file:///L:/DADES/SIT/qVista/CATALEG/MAPES PRIVATS/Marxes de ciutat/PdfFitxes/05_el_Camp_den_Grassot.pdf"
+        },
+        {
+          "text": "la Verneda i la Pau",
+          "action": "file:///L:/DADES/SIT/qVista/CATALEG/MAPES PRIVATS/Marxes de ciutat/PdfFitxes/10_La_Verneda_la_Pau.pdf"
+        }
+      ]
+    },
+    {
+      "title": "Altres qualificacions 2",
+      "collapsed": true,
+      "buttons": [
+        {
+          "text": "Districte de Gràcia (totes les marxes)",
+          "action": "file:///L:/DADES/SIT/qVista/CATALEG/MAPES PRIVATS/2.2-GRACIA-Informe resultats-Passejades_FINAL_5Barris.pdf"
+        },
+        {
+          "text": "la Trinitat Nova",
+          "action": "file:///L:/DADES/SIT/qVista/CATALEG/MAPES PRIVATS/Marxes de ciutat/PdfFitxes/2.2-F_TRINITAT NOVA_Informe Marxa Explora.pdf"
+        },
+        {
+          "text": "la Trinitat Vella",
+          "action": "file:///L:/DADES/SIT/qVista/CATALEG/MAPES PRIVATS/Marxes de ciutat/PdfFitxes/2.2-G_TRINITAT VELLA_Informe Marxa Explora.pdf"
+        },
+        {
+          "text": "el Bon Pastor",
+          "action": "file:///L:/DADES/SIT/qVista/CATALEG/MAPES PRIVATS/Marxes de ciutat/PdfFitxes/2.2-H_BON PASTOR_Informe Marxa Explora.pdf"
+        },
+        {
+          "text": "la Verneda i la Pau",
+          "action": "file:///L:/DADES/SIT/qVista/CATALEG/MAPES PRIVATS/Marxes de ciutat/PdfFitxes/2.2-J_LA VERNEDA I LA PAU_Informe Marxa Explora.pdf"
+        },
+        {
+          "text": "el Besós i el Maresme",
+          "action": "file:///L:/DADES/SIT/qVista/CATALEG/MAPES PRIVATS/Marxes de ciutat/PdfFitxes/2.2-I_BESOS MARESME_Informe Marxa Explora.pdf"
+        },
+        {
+          "text": "la Marina del Prat Vermell",
+          "action": "file:///L:/DADES/SIT/qVista/CATALEG/MAPES PRIVATS/Marxes de ciutat/PdfFitxes/2.2-I_BESOS MARESME_Informe Marxa Explora.pdf"
+        }
+      ]
+    },
+    {
+      "title": "Altres qualificacions 3",
+      "collapsed": true,
+      "buttons": [
+        {
+          "text": "la Trinittat Vella",
+          "action": "file:///L:/DADES/SIT/qVista/CATALEG/MAPES PRIVATS/Marxes de ciutat/PdfFitxes/2.3-Retorn 180710-G-Marxa Trinitat Vella-23-07-2018.pdf"
+        },
+        {
+          "text": "el Bon Pastor",
+          "action": "file:///L:/DADES/SIT/qVista/CATALEG/MAPES PRIVATS/Marxes de ciutat/PdfFitxes/2.3-Retorn-180717-H-Marxa Bon Pastor.pdf"
+        }
+      ]
+    }
+  ]
+}

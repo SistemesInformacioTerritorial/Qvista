@@ -1,9 +1,49 @@
-from qgis.PyQt.QtCore import Qt, QUrl
+from qgis.PyQt.QtCore import Qt, QUrl, pyqtSignal
 from qgis.PyQt.QtGui import QDesktopServices, QFont
 from qgis.PyQt.QtWidgets import (QDockWidget, QFrame, QLabel, QSizePolicy,
-                                 QSpacerItem, QVBoxLayout)
+                                 QSpacerItem, QVBoxLayout, QHBoxLayout, QPushButton,
+                                 QWidget, QScrollArea)
 
 from moduls.QvPushButton import QvPushButton
+
+
+class CollapsibleSection(QWidget):
+    """Widget colapsable para agrupar botones en secciones"""
+    
+    def __init__(self, title):
+        super().__init__()
+        self.title = title
+        self.is_expanded = False
+        
+        # Botón para expandir/contraer
+        self.toggle_btn = QPushButton(f"▶ {title}")
+        self.toggle_btn.setFlat(True)
+        self.toggle_btn.setStyleSheet("Text-align: left; font-weight: bold;")
+        self.toggle_btn.clicked.connect(self.toggle)
+        
+        # Container para los botones
+        self.content_widget = QFrame()
+        self.content_layout = QVBoxLayout(self.content_widget)
+        self.content_layout.setContentsMargins(20, 0, 0, 0)
+        self.content_widget.setVisible(False)  # Ocultar al inicio
+        
+        # Layout principal
+        main_layout = QVBoxLayout(self)
+        main_layout.setContentsMargins(0, 0, 0, 0)
+        main_layout.setSpacing(0)
+        main_layout.addWidget(self.toggle_btn)
+        main_layout.addWidget(self.content_widget)
+    
+    def add_button(self, button):
+        """Añade un botón a la sección"""
+        self.content_layout.addWidget(button)
+    
+    def toggle(self):
+        """Expande o contrae la sección"""
+        self.is_expanded = not self.is_expanded
+        self.content_widget.setVisible(self.is_expanded)
+        arrow = "▼" if self.is_expanded else "▶"
+        self.toggle_btn.setText(f"{arrow} {self.title}")
 
 
 class Pepi(QDockWidget):
@@ -16,47 +56,18 @@ class Pepi(QDockWidget):
         self.setContextMenuPolicy(Qt.PreventContextMenu)
         
         fMarxes = QFrame()
-        # fMarxes.setStyleSheet("QFrame {background-image: url('c:/qvistaProd/imatges/pavim.jpg');}")
         lytMarxes = QVBoxLayout(fMarxes)
         lytMarxes.setAlignment(Qt.AlignTop)
+        lytMarxes.setContentsMargins(0, 0, 0, 0)
+        lytMarxes.setSpacing(5)
 
         fMarxes.setLayout(lytMarxes)
         self.setMaximumWidth(500)
         self.setMinimumWidth(500)
-        lDocuments = QLabel('1.- Documents generals 17/6')
-        lDocuments.setAlignment(Qt.AlignLeft)
-        f = QFont()
-        f.setBold(True)
-        lDocuments.setFont(f)
-
-        lBarris = QLabel('2.- Documents de cada marxa')
-        lBarris.setAlignment(Qt.AlignCenter)
-        f = QFont()
-        f.setBold(True)
-        lBarris.setFont(f)
-
         
-        lBarris2 = QLabel('2.1- Recull informatiu de cada marxa')
-        lBarris2.setAlignment(Qt.AlignLeft)
-        f = QFont()
-        f.setBold(True)
-        lBarris2.setFont(f)
-
+        # ========== SECCIÓN 1: DOCUMENTOS GENERALES ==========
+        section1 = CollapsibleSection('1.- Documents generals 17/6')
         
-        
-        lBarris3 = QLabel('2.2- Informe de resultats de cada marxa')
-        lBarris3.setAlignment(Qt.AlignLeft)
-        f = QFont()
-        f.setBold(True)
-        lBarris3.setFont(f)
-        
-        lBarris4 = QLabel('2.3- Document de retorn')
-        lBarris4.setAlignment(Qt.AlignLeft)
-        f = QFont()
-        f.setBold(True)
-        lBarris4.setFont(f)
-
-
         bDoc1 = QvPushButton('Localització',flat=True)
         bDoc1.setStyleSheet("Text-align: left")
         bDoc2 = QvPushButton('Propietat',flat=True)
@@ -77,36 +88,32 @@ class Pepi(QDockWidget):
         bDoc9.setStyleSheet("Text-align: left")
         bDoc10 = QvPushButton('Classificació segons valoració',flat=True)
         bDoc10.setStyleSheet("Text-align: left")
-        # bMarxes = QvPushButton('Recull marxes exploratòries dones 2017-18',flat=True)
-        # bMarxes.setStyleSheet("Text-align: left")  
-      
-        bMapa = QvPushButton('1.2 Mapa de Barcelona identificant les marxes realitzades',flat=True)
-        bMapa.setStyleSheet("Text-align: left")
-
-
         
-        bDocGen = QvPushButton('1.3 Document general (guia lectura, info de cada marxa, annexos barri',flat=True)
-        bDocGen.setStyleSheet("Text-align: left")
-
-        bMapaXarxa = QvPushButton('Xarxa quotidiana',flat=True)
-        bMapaXarxa.setStyleSheet("Text-align: left")
-        bMapaXarxa.hide()
-        lytMarxes.addWidget(lDocuments) 
-        lytMarxes.addWidget(bDoc1) 
-        lytMarxes.addWidget(bDoc2) 
-        lytMarxes.addWidget(bDoc3) 
-        lytMarxes.addWidget(bDoc4) 
-        lytMarxes.addWidget(bDoc5) 
-        lytMarxes.addWidget(bDoc6) 
-        lytMarxes.addWidget(bDoc7) 
-        lytMarxes.addWidget(bDoc8) 
-        lytMarxes.addWidget(bDoc9) 
-        lytMarxes.addWidget(bDoc10) 
-        # lytMarxes.addWidget(bMarxes)
-        spacer = QSpacerItem(50, 50, QSizePolicy.Expanding,QSizePolicy.Maximum)
-        # lytMarxes.addItem(spacer)
-        # lytMarxes.addWidget(lBarris) 
-        # lytMarxes.addWidget(lBarris2) 
+        # Añadir botones a la sección 1
+        section1.add_button(bDoc1)
+        section1.add_button(bDoc2)
+        section1.add_button(bDoc3)
+        section1.add_button(bDoc4)
+        section1.add_button(bDoc5)
+        section1.add_button(bDoc6)
+        section1.add_button(bDoc7)
+        section1.add_button(bDoc8)
+        section1.add_button(bDoc9)
+        section1.add_button(bDoc10)
+        
+        # bMapa = QvPushButton('1.2 Mapa de Barcelona identificant les marxes realitzades',flat=True)
+        # bMapa.setStyleSheet("Text-align: left")
+        # section1.add_button(bMapa)
+        
+        # bDocGen = QvPushButton('1.3 Document general (guia lectura, info de cada marxa, annexos barri',flat=True)
+        # bDocGen.setStyleSheet("Text-align: left")
+        # section1.add_button(bDocGen)
+        
+        lytMarxes.addWidget(section1)
+        
+        # ========== SECCIÓN 2: RECULL INFORMATIU DE CADA MARXA ==========
+        section2 = CollapsibleSection('Altres qualificacions 1')
+        
         bMarxes1 = QvPushButton('   el Coll', flat=True)
         bMarxes1.setStyleSheet("Text-align: left")
         bMarxes2 = QvPushButton('   la Salut', flat=True)
@@ -129,67 +136,68 @@ class Pepi(QDockWidget):
         bMarxes10.setStyleSheet("Text-align: left")
         bMarxes11 = QvPushButton('   la Verneda i la Pau', flat=True)
         bMarxes11.setStyleSheet("Text-align: left")
-
+        
+        # Añadir botones a la sección 2
+        section2.add_button(bMarxes1)
+        section2.add_button(bMarxes2)
+        section2.add_button(bMarxes3)
+        section2.add_button(bMarxes4)
+        section2.add_button(bMarxes5)
+        section2.add_button(bMarxes6)
+        section2.add_button(bMarxes7)
+        section2.add_button(bMarxes8)
+        section2.add_button(bMarxes9)
+        section2.add_button(bMarxes10)
+        section2.add_button(bMarxes11)
+        
+        lytMarxes.addWidget(section2)
+        
+        # ========== SECCIÓN 3: INFORME DE RESULTATS ==========
+        section3 = CollapsibleSection('Altres qualificacions 2')
+        
         bMarxes1_1 = QvPushButton('Districte de Gràcia (totes les marxes)', flat=True)
         bMarxes1_1.setStyleSheet("Text-align: left")
-
         bMarxes1_2 = QvPushButton('la Trinitat Nova', flat=True)
         bMarxes1_2.setStyleSheet("Text-align: left")
-       
         bMarxes1_3 = QvPushButton('la Trinitat Vella', flat=True)
         bMarxes1_3.setStyleSheet("Text-align: left")
-       
         bMarxes1_4 = QvPushButton('el Bon Pastor', flat=True)
         bMarxes1_4.setStyleSheet("Text-align: left")
-
         bMarxes1_5 = QvPushButton('la Verneda i la Pau', flat=True)
         bMarxes1_5.setStyleSheet("Text-align: left")
-
         bMarxes1_6 = QvPushButton('el Besós i el Maresme', flat=True)
         bMarxes1_6.setStyleSheet("Text-align: left")
-      
-
         bMarxes1_7 = QvPushButton('la Marina del Prat Vermell', flat=True)
-
         bMarxes1_7.setStyleSheet("Text-align: left")
         
-        # Retorns
+        # Añadir botones a la sección 3
+        section3.add_button(bMarxes1_1)
+        section3.add_button(bMarxes1_2)
+        section3.add_button(bMarxes1_3)
+        section3.add_button(bMarxes1_4)
+        section3.add_button(bMarxes1_5)
+        section3.add_button(bMarxes1_6)
+        section3.add_button(bMarxes1_7)
+        
+        lytMarxes.addWidget(section3)
+        
+        # ========== SECCIÓN 4: DOCUMENTS DE RETORN ==========
+        section4 = CollapsibleSection('Altres qualificacions 3')
+        
         bMarxes2_1 = QvPushButton('la Trinittat Vella', flat=True)
         bMarxes2_1.setStyleSheet("Text-align: left")
-      
         bMarxes2_2 = QvPushButton('el Bon Pastor', flat=True)
         bMarxes2_2.setStyleSheet("Text-align: left")
-
-
-
-        # lytMarxes.addWidget(lBarris2)
-        # lytMarxes.addWidget(bMarxes1)
-        # lytMarxes.addWidget(bMarxes2)
-        # lytMarxes.addWidget(bMarxes7)
-        # lytMarxes.addWidget(bMarxes10)
-        # lytMarxes.addWidget(bMarxes8)
-        # lytMarxes.addWidget(bMarxes5)
-        # lytMarxes.addWidget(bMarxes6)
-        # lytMarxes.addWidget(bMarxes4)
-        # lytMarxes.addWidget(bMarxes11)
-        # lytMarxes.addWidget(bMarxes3)
-        # lytMarxes.addWidget(bMarxes9) 
         
-        # lytMarxes.addItem(spacer)
-        # lytMarxes.addWidget(lBarris3) 
+        # Añadir botones a la sección 4
+        section4.add_button(bMarxes2_1)
+        section4.add_button(bMarxes2_2)
         
-        # lytMarxes.addWidget(bMarxes1_1)
-        # lytMarxes.addWidget(bMarxes1_2)
-        # lytMarxes.addWidget(bMarxes1_3)
-        # lytMarxes.addWidget(bMarxes1_4)
-        # lytMarxes.addWidget(bMarxes1_5)
-        # lytMarxes.addWidget(bMarxes1_6)
-        # lytMarxes.addWidget(bMarxes1_7)
-
-        # lytMarxes.addItem(spacer)
-        # lytMarxes.addWidget(lBarris4) 
-        # lytMarxes.addWidget(bMarxes2_1)
-        # lytMarxes.addWidget(bMarxes2_2)
+        lytMarxes.addWidget(section4)
+        
+        # Espaciador al final
+        spacer = QSpacerItem(50, 50, QSizePolicy.Expanding, QSizePolicy.Expanding)
+        lytMarxes.addItem(spacer)
 
 
         bDoc1.clicked.connect(self.mostrarDoc1)
@@ -203,34 +211,32 @@ class Pepi(QDockWidget):
         bDoc9.clicked.connect(self.mostrarDoc9)
         bDoc10.clicked.connect(self.mostrarDoc10)
 
-        # bMarxes.clicked.connect(self.mostrarInstruccions)
-        bMapa.clicked.connect(self.mostrarMapa)
-        bDocGen.clicked.connect(self.mostrarDocGen)
-        bMapaXarxa.clicked.connect(self.mostrarMapaXarxa)
+        # bMapa.clicked.connect(self.mostrarMapa)
+        # bDocGen.clicked.connect(self.mostrarDocGen)
 
-        bMarxes1.clicked.connect(self.mostrarColl)
-        bMarxes2.clicked.connect(self.mostrarSalut)
-        bMarxes3.clicked.connect(self.mostrarBesos)
-        bMarxes4.clicked.connect(self.mostrarBonPastor)
-        bMarxes5.clicked.connect(self.mostrarTNova)
-        bMarxes6.clicked.connect(self.mostrarTVella)
-        bMarxes7.clicked.connect(self.mostrarGracia)
-        bMarxes8.clicked.connect(self.mostrarVallcarca)
-        bMarxes9.clicked.connect(self.mostrarMarina)
-        bMarxes10.clicked.connect(self.mostrarGrassot)
-        bMarxes11.clicked.connect(self.mostrarVerneda)
+        # bMarxes1.clicked.connect(self.mostrarColl)
+        # bMarxes2.clicked.connect(self.mostrarSalut)
+        # bMarxes3.clicked.connect(self.mostrarBesos)
+        # bMarxes4.clicked.connect(self.mostrarBonPastor)
+        # bMarxes5.clicked.connect(self.mostrarTNova)
+        # bMarxes6.clicked.connect(self.mostrarTVella)
+        # bMarxes7.clicked.connect(self.mostrarGracia)
+        # bMarxes8.clicked.connect(self.mostrarVallcarca)
+        # bMarxes9.clicked.connect(self.mostrarMarina)
+        # bMarxes10.clicked.connect(self.mostrarGrassot)
+        # bMarxes11.clicked.connect(self.mostrarVerneda)
 
         
-        bMarxes1_1.clicked.connect(self.mostrarInformeG)
-        bMarxes1_2.clicked.connect(self.mostrarInformeTN)
-        bMarxes1_3.clicked.connect(self.mostrarInformeTV)
-        bMarxes1_4.clicked.connect(self.mostrarInformeBP)
-        bMarxes1_5.clicked.connect(self.mostrarInformeVP)
-        bMarxes1_6.clicked.connect(self.mostrarInformeBM)
-        bMarxes1_7.clicked.connect(self.mostrarInformeMPV)
+        # bMarxes1_1.clicked.connect(self.mostrarInformeG)
+        # bMarxes1_2.clicked.connect(self.mostrarInformeTN)
+        # bMarxes1_3.clicked.connect(self.mostrarInformeTV)
+        # bMarxes1_4.clicked.connect(self.mostrarInformeBP)
+        # bMarxes1_5.clicked.connect(self.mostrarInformeVP)
+        # bMarxes1_6.clicked.connect(self.mostrarInformeBM)
+        # bMarxes1_7.clicked.connect(self.mostrarInformeMPV)
 
-        bMarxes2_1.clicked.connect(self.mostrarRetornTrinitatVella)
-        bMarxes2_2.clicked.connect(self.mostrarRetornBonPastor)
+        # bMarxes2_1.clicked.connect(self.mostrarRetornTrinitatVella)
+        # bMarxes2_2.clicked.connect(self.mostrarRetornBonPastor)
 
 
         # self.browserMarxes = QWebView()

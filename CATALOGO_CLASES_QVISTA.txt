@@ -1,0 +1,1302 @@
+================================================================================
+            CATÁLOGO DE CLASES - PROYECTO QVISTA
+         Explicación de funcionalidad de cada clase principal
+================================================================================
+
+ESTE DOCUMENTO CATALOGA LAS CLASES PRINCIPALES DEL PROYECTO QVISTA
+Y EXPLICA QUÉ HACE CADA UNA.
+
+Última actualización: Noviembre 2025
+
+
+TABLA DE CONTENIDOS:
+====================
+
+1. CLASES CORE (Núcleo de la aplicación)
+2. CLASES DE CANVAS Y VISUALIZACIÓN
+3. CLASES DE DATOS Y CAPAS
+4. CLASES DE UI Y WIDGETS
+5. CLASES DE HERRAMIENTAS Y UTILIDADES
+6. CLASES ESPECIALES (Barcelona)
+7. CLASES DE IMPORTACIÓN/EXPORTACIÓN
+8. RELACIONES ENTRE CLASES
+
+
+═════════════════════════════════════════════════════════════════════════════
+1. CLASES CORE (NÚCLEO DE LA APLICACIÓN)
+═════════════════════════════════════════════════════════════════════════════
+
+QvApp (moduls/QvApp.py)
+────────────────────────
+Descripción: Clase Singleton que actúa como hub central de configuración y estado.
+
+Responsabilidades:
+  • Gestión de configuración global (DSV/PRO, rutas, usuarios)
+  • Conexiones a bases de datos (Oracle BBDD QVista, SQLite Geocoding)
+  • Gestión de sesión de usuario (ID único)
+  • Cálculo de entorno (producción/desarrollo)
+  • Proxy y acceso a red
+  • Logging y manejo de errores
+  • Acceso a GitHub para actualizaciones
+  • Traducción de idiomas (Catalán, español, inglés)
+
+Atributos principales:
+  - appQgis: Referencia a QgsApplication
+  - mainApp: Referencia a la ventana principal (QVista)
+  - entorn: 'DSV' o 'PRO' (desarrollo o producción)
+  - usuari: Nombre de usuario actual
+  - sessio: ID único de sesión
+  - dbQvista: Conexión Oracle a base de datos
+  - dbGeo: Conexión SQLite a base de datos de geocodificación
+
+Métodos clave:
+  - calcEntorn(): Determina si es DSV o producción
+  - readCfg(): Lee configuración de archivo INI
+  - bugException(): Maneja excepciones no controladas
+  - logRegistre(): Registra eventos en log
+  - carregaAjuda(): Carga ayuda para componentes
+
+
+QVista (qVista.py - líneas 110-2725)
+─────────────────────────────────────
+Descripción: Clase principal de la aplicación, hereda de QMainWindow.
+Es la ventana principal que coordina todo el visor cartográfico.
+
+Responsabilidades:
+  • Inicialización de toda la aplicación
+  • Creación y gestión del canvas (mapa principal)
+  • Coordinación de módulos especializados
+  • Gestión de proyectos QGIS
+  • Sistema de menús y barras de herramientas
+  • Gestión de docks (paneles laterales)
+  • Persistencia de estado
+  • Manejo de eventos de usuario
+
+Atributos principales:
+  - canvas: QvCanvas (mapa principal)
+  - llegenda: QvLlegenda (panel de capas)
+  - atributs: QvAtributs (tabla de datos)
+  - mapeta: QvMapeta (miniatura del mapa)
+  - statusbar: QvStatusBar (información de estado)
+  - dicCanvasDw: Diccionario de canvas auxiliares
+  - proyecto: Proyecto QGIS actual
+
+Métodos clave:
+  - preparacioEntornGrafic(): Configura canvas y proyecto
+  - botoneraLateral(): Crea botonera de herramientas
+  - preparacioLlegenda(): Configura leyenda
+  - preparacioTaulaAtributs(): Configura tabla de datos
+  - definicioAcciones(): Define todas las acciones
+  - definirMenus(): Crea estructura de menús
+  - obrirProjecte(): Abre un proyecto QGIS
+  - gestioSortida(): Limpia al salir
+
+
+═════════════════════════════════════════════════════════════════════════════
+2. CLASES DE CANVAS Y VISUALIZACIÓN
+═════════════════════════════════════════════════════════════════════════════
+
+QvCanvas (moduls/QvCanvas.py)
+──────────────────────────────
+Descripción: Lienzo cartográfico principal que extiende QgsMapCanvas.
+Renderiza capas geográficas y maneja interacciones del usuario.
+
+Responsabilidades:
+  • Renderización de capas del mapa
+  • Gestión de herramientas de interacción (zoom, pan, etc.)
+  • Manejo de eventos del ratón y teclado
+  • Gestión de botonera de herramientas
+  • Integración con Street View
+  • Gestión de temas (múltiples vistas del mismo proyecto)
+  • Coordinación con leyenda
+
+Atributos principales:
+  - llistaBotons: Botones visibles en el canvas
+  - botoneraHoritzontal: Orientación de botonera
+  - posicioBotonera: Posición (NE, NO, SE, SO)
+  - cbTemes: ComboBox para selección de temas
+  - botoneraMapa: Frame con botones del canvas
+  - layoutBotoneraMapa: Layout de la botonera
+
+Métodos clave:
+  - afegirBoto(): Añade botón a la botonera
+  - panCanvas(): Activa herramienta de pan (desplazamiento)
+  - zoomIn(): Zoom aumentado
+  - zoomOut(): Zoom reducido
+  - actualitzaTemes(): Actualiza lista de temas disponibles
+  - canviTema(): Cambia tema visual
+
+
+QvCanvasAuxiliar (moduls/QvCanvasAuxiliar.py)
+──────────────────────────────────────────────
+Descripción: Canvas adicional para visualización de comparaciones.
+Se usa para mostrar dos mapas lado a lado.
+
+Responsabilidades:
+  • Canvas secundario sincronizado con el principal
+  • Comparación de dos vistas del mismo área
+  • Sincronización de zoom y pan
+
+Métodos principales:
+  - sincronitzaAmb(): Sincroniza con otro canvas
+  - sincronitza(): Aplica sincronización
+
+
+QvMapeta (moduls/QvMapeta.py)
+──────────────────────────────
+Descripción: Miniatura del mapa con brújula.
+Muestra vista general de la zona y permite navegación.
+
+Responsabilidades:
+  • Mostrar vista general (overview)
+  • Indicar zona actual del mapa principal
+  • Permitir navegación rápida
+  • Mostrar norte/orientación
+
+Métodos principales:
+  - actualitza(): Actualiza miniatura
+
+
+QvMapetaBrujulado (moduls/QvMapetaBrujulado.py)
+─────────────────────────────────────────────────
+Descripción: Miniatura con brújula integrada.
+Versión avanzada de mapeta con indicación de orientación.
+
+Responsabilidades:
+  • Mostrar norte magnético o geográfico
+  • Indicar orientación actual
+  • Navegación con brújula
+
+
+QvStreetView (moduls/QvStreetView.py)
+──────────────────────────────────────
+Descripción: Visor de imágenes de calle (Google Street View, etc.).
+Integra vistas panorámicas en el visor cartográfico.
+
+Responsabilidades:
+  • Mostrar vistas panorámicas de calle
+  • Integración con Google Street View
+  • Sincronización con ubicación del mapa
+
+
+QvCompass (moduls/QvCompass.py)
+────────────────────────────────
+Descripción: Brújula interactiva del mapa.
+Muestra orientación y permite rotación del mapa.
+
+Responsabilidades:
+  • Mostrar orientación actual
+  • Permitir rotación interactiva del mapa
+  • Indicar norte
+
+
+═════════════════════════════════════════════════════════════════════════════
+3. CLASES DE DATOS Y CAPAS
+═════════════════════════════════════════════════════════════════════════════
+
+QvLlegenda (moduls/QvLlegenda.py)
+──────────────────────────────────
+Descripción: Panel de leyenda que muestra todas las capas del proyecto.
+Extiende QgsLayerTreeView para personalización.
+
+Responsabilidades:
+  • Mostrar árbol jerárquico de capas
+  • Gestionar visibilidad de capas
+  • Menú contextual de capas
+  • Reordenar capas
+  • Filtrar capas
+  • Integración con tabla de atributos
+  • Gestión de anotaciones
+  • Soporte para temas
+  • Control de digitalización
+
+Atributos principales:
+  - root: Nodo raíz del árbol de capas
+  - canvas: Canvas asociado
+  - atributs: Tabla de atributos asociada
+  - tema: Sistema de temas
+  - anotacions: Sistema de anotaciones
+  - mask: Máscara de visualización
+
+Señales (Signals):
+  - obertaTaulaAtributs: Tabla de atributos abierta
+  - clicatMenuContexte: Menú contextual clicado
+  - projecteCarregat: Proyecto cargado
+  - projecteModificat: Proyecto modificado
+
+Métodos clave:
+  - contextMenuEvent(): Maneja menú contextual
+  - setCanvas(): Asigna canvas
+  - filtrarCapaActiva(): Filtra capas
+  - seleccionar(): Selecciona capas/elementos
+  - estadistiques(): Muestra estadísticas
+
+
+QvAtributs (moduls/QvAtributs.py)
+──────────────────────────────────
+Descripción: Tabla de atributos que muestra datos de capas vectoriales.
+Tabla editable con búsqueda y filtrado.
+
+Responsabilidades:
+  • Mostrar datos de capas en tabla
+  • Permitir edición de atributos
+  • Búsqueda de registros
+  • Filtrado de datos
+  • Sincronización con selección en mapa
+  • Estadísticas de datos
+
+Métodos clave:
+  - carregaCapaEnTabla(): Carga capa en tabla
+  - buscaRapida(): Búsqueda de texto
+  - filtrarDades(): Aplica filtro
+
+
+QvCarregadorGPKG (moduls/QvCarregadorGPKG.py)
+──────────────────────────────────────────────
+Descripción: Cargador especializado de GeoPackage (GPKG).
+Formato de datos geográficos comprimido.
+
+Responsabilidades:
+  • Cargar archivos GPKG
+  • Extraer capas del GPKG
+  • Gestionar múltiples capas en un GPKG
+
+
+QvVisualitzacioCapa (moduls/QvVisualitzacioCapa.py)
+────────────────────────────────────────────────────
+Descripción: Diálogo de propiedades y visualización de capa.
+Muestra simbología, estadísticas y propiedades de una capa.
+
+Responsabilidades:
+  • Mostrar simbología de capa
+  • Mostrar estadísticas
+  • Propiedades de capa
+  • Vista previa
+
+
+QvCatalegCapes (moduls/QvCatalegCapes.py)
+───────────────────────────────────────────
+Descripción: Catálogo de capas disponibles en la instancia de QGIS.
+Permite cargar capas desde diferentes fuentes.
+
+Responsabilidades:
+  • Listar capas disponibles
+  • Cargar capas seleccionadas
+  • Gestionar fuentes de datos (BBDD, WMS, etc.)
+  • Búsqueda de capas
+  • Favoritos de capas
+
+
+═════════════════════════════════════════════════════════════════════════════
+4. CLASES DE UI Y WIDGETS
+═════════════════════════════════════════════════════════════════════════════
+
+QvStatusBar (moduls/QvStatusBar.py)
+────────────────────────────────────
+Descripción: Barra de estado inferior que muestra información.
+Coordenadas, escala, proyecto actual, mensajes de estado.
+
+Responsabilidades:
+  • Mostrar coordenadas del cursor
+  • Mostrar escala del mapa
+  • Mostrar nombre de proyecto
+  • Mostrar mensajes de estado
+  • Mostrar progreso de operaciones
+  • Mostrar errores/advertencias
+
+Atributos principales:
+  - lblEscala: Label de escala
+  - lblCoor: Label de coordenadas
+  - lblProjecte: Label de proyecto
+  - progres: Barra de progreso
+
+
+QvMenuBar (moduls/QvMenuBar.py)
+────────────────────────────────
+Descripción: Barra de menús personalizada de qVista.
+Define toda la estructura de menús.
+
+Responsabilidades:
+  • Crear menús principales (Archivo, Editar, Ver, Herramientas, etc.)
+  • Asignar acciones a opciones de menú
+  • Gestionar submenús
+
+Menús principales:
+  - Archivo: Nuevo, Abrir, Guardar, Imprimir
+  - Editar: Deshacer, Rehacer, Copiar, Pegar
+  - Ver: Zoom, Pan, Capas, Temas
+  - Herramientas: Medida, Selección, Búsqueda
+  - Ventanas: Mostrar/Ocultar paneles
+  - Ayuda: Manual, Acerca de
+
+
+QvPushButton (moduls/QvPushButton.py)
+──────────────────────────────────────
+Descripción: Botón personalizado que sigue el estilo de qVista.
+Extiende QPushButton con estilos personalizados.
+
+Responsabilidades:
+  • Proporcionar botones consistentes
+  • Aplicar estilos de qVista
+  • Soporte para iconos
+  • Estados personalizados
+
+
+QvToolButton (moduls/QvToolButton.py)
+──────────────────────────────────────
+Descripción: Botón de toolbar personalizado.
+Versión de toolbar de QvPushButton.
+
+Responsabilidades:
+  • Botones en barras de herramientas
+  • Menús desplegables en botones
+  • Iconografía consistente
+
+
+QvToolTip (moduls/QvToolTip.py)
+────────────────────────────────
+Descripción: Tooltips personalizados con información detallada.
+Globos de ayuda mejorados.
+
+Responsabilidades:
+  • Mostrar ayuda contextual
+  • Información de herramientas
+  • Formatos ricos (HTML)
+
+
+QvBafarada (moduls/QvBafarada.py)
+──────────────────────────────────
+Descripción: Sistema de notificaciones flotantes ("bafaradas").
+Mensajes que aparecen en esquina de la pantalla.
+
+Responsabilidades:
+  • Mostrar notificaciones temporales
+  • Notificaciones de éxito/error/info
+  • Auto-ocultarse después de tiempo
+  • Cola de notificaciones
+
+
+QvAvis (moduls/QvAvis.py)
+──────────────────────────
+Descripción: Diálogo de avisos y advertencias.
+Muestra alertas importantes al usuario.
+
+Responsabilidades:
+  • Mostrar avisos críticos
+  • Avisos de carga de proyecto
+  • Errores en datos
+
+
+QvDocumentacio (moduls/QvDocumentacio.py)
+───────────────────────────────────────────
+Descripción: Visor de documentación HTML integrado.
+Muestra manuales y documentación en la aplicación.
+
+Responsabilidades:
+  • Mostrar documentación HTML
+  • Visor integrado de PDFs
+  • Links a recursos externos
+
+
+QvVideoDoc (moduls/QvVideoDoc.py)
+──────────────────────────────────
+Descripción: Reproductor de vídeos de documentación.
+Videos de tutoriales integrados en la aplicación.
+
+Responsabilidades:
+  • Reproducir vídeos de tutoriales
+  • Gestión de playlist
+  • Controles de reproducción
+
+
+QvSabiesQue (moduls/QvSabiesQue.py)
+─────────────────────────────────────
+Descripción: Panel "¿Sabías que...?" con consejos útiles.
+Tips que aparecen al iniciar la aplicación.
+
+Responsabilidades:
+  • Mostrar consejos aleatorios
+  • Tips de uso de la aplicación
+  • Educación del usuario
+
+
+QvSobre (moduls/QvSobre.py)
+───────────────────────────
+Descripción: Diálogo "Acerca de..." con información de aplicación.
+Versión, autor, licencia, etc.
+
+Responsabilidades:
+  • Mostrar información de versión
+  • Información de autores
+  • Información de licencia
+  • Links a recursos
+
+
+QvSuggeriments (moduls/QvSuggeriments.py)
+───────────────────────────────────────────
+Descripción: Gestor de sugerencias y feedback de usuarios.
+Sistema para reportar problemas o sugerencias.
+
+Responsabilidades:
+  • Capturar sugerencias de usuarios
+  • Reportar bugs
+  • Enviar feedback
+  • Gestionar reportes
+
+
+QvNews (moduls/QvNews.py)
+──────────────────────────
+Descripción: Panel de noticias y actualizaciones.
+Muestra novedades y cambios recientes.
+
+Responsabilidades:
+  • Mostrar noticias de la aplicación
+  • Actualizaciones disponibles
+  • Avisos importantes
+
+
+═════════════════════════════════════════════════════════════════════════════
+5. CLASES DE HERRAMIENTAS Y UTILIDADES
+═════════════════════════════════════════════════════════════════════════════
+
+QvEinesGrafiques (moduls/QvEinesGrafiques.py)
+───────────────────────────────────────────────
+Descripción: Herramientas gráficas interactivas en el mapa.
+Incluye medida, selección, dibujo de figuras.
+
+Clases incluidas:
+  - QvMesuraGrafica: Medición de distancias
+  - QvSeleccioElement: Selección de elementos
+  - QvMesuraMultiLinia: Medida de múltiples líneas
+
+Responsabilidades:
+  • Permitir medir distancias
+  - Seleccionar elementos gráficamente
+  • Dibujar formas temporales
+  • Cálculos geométricos
+
+
+QvMesuraGrafica (submódulo)
+────────────────────────────
+Descripción: Herramienta de medición gráfica.
+Permite medir distancias y áreas en el mapa.
+
+Responsabilidades:
+  • Dibujar líneas/polígonos para medir
+  • Calcular distancias
+  • Calcular áreas
+  • Mostrar resultados en tiempo real
+
+
+QvSeleccioGrafica (submódulo)
+──────────────────────────────
+Descripción: Herramienta de selección gráfica.
+Seleccionar elementos por forma (rectángulo, polígono, círculo).
+
+Responsabilidades:
+  • Dibujar forma de selección
+  • Seleccionar elementos dentro
+  • Mostrar elementos seleccionados
+
+
+QvPrint (moduls/QvPrint.py)
+──────────────────────────
+Descripción: Sistema de impresión cartográfica.
+Permite imprimir mapas con leyenda y escala.
+
+Responsabilidades:
+  • Configurar áreas de impresión
+  • Plantillas de impresión
+  • Exportar a PDF
+  • Gestión de márgenes y escala
+  • Previsualización
+
+
+QvDigitize (moduls/QvDigitize.py)
+──────────────────────────────────
+Descripción: Herramienta de digitalización.
+Permite crear/editar geometrías en capas.
+
+Responsabilidades:
+  • Crear nuevas geometrías
+  • Editar geometrías existentes
+  • Validación de geometrías
+  • Snapping (ajuste a vértices)
+
+
+QvDigitizeFeature (moduls/QvDigitizeFeature.py)
+─────────────────────────────────────────────────
+Descripción: Digitalización de features (elementos) individuales.
+Crea un feature único con validación.
+
+Responsabilidades:
+  • Crear un feature a la vez
+  • Validar geometría
+  • Editar atributos del feature
+
+
+QvDigitizeContext (moduls/QvDigitizeContext.py)
+─────────────────────────────────────────────────
+Descripción: Contexto de digitalización.
+Gestiona estado durante sesión de digitalización.
+
+Responsabilidades:
+  • Mantener estado de digitalización
+  • Gestionar snapeos
+  • Undo/Redo en digitalización
+
+
+QvFuncions (moduls/QvFuncions.py)
+──────────────────────────────────
+Descripción: Colección de funciones utilitarias de uso general.
+Funciones comunes reutilizables en toda la aplicación.
+
+Funciones principales:
+  - setReadOnlyFile(): Hace archivo solo lectura
+  - esborraCarpetaTemporal(): Limpia temporales
+  - debugging(): Detecta modo debug
+  - [muchas otras funciones auxiliares]
+
+
+QvConstants (moduls/QvConstants.py)
+────────────────────────────────────
+Descripción: Constantes globales de la aplicación.
+Valores que no cambian durante la ejecución.
+
+Constantes definidas:
+  - COLORDESTACAT: Color de destacado
+  - FONTTEXT: Fuente de texto
+  - Estilos de colores
+  - Tamaños de elementos
+  - Configuración visual
+
+
+QvSingleton (moduls/QvSingleton.py)
+────────────────────────────────────
+Descripción: Patrón Singleton para clases.
+Asegura que solo exista una instancia.
+
+Responsabilidades:
+  • Decorador @singleton
+  • Garantizar instancia única
+  • Acceso global a clase
+
+
+QvMemoria (moduls/QvMemoria.py)
+────────────────────────────────
+Descripción: Gestor de memoria de la aplicación.
+Monitorea y optimiza uso de memoria.
+
+Responsabilidades:
+  • Monitorear consumo de memoria
+  • Limpiar cachés
+  • Optimizar resources
+
+
+QvLog (moduls/QvLog.py)
+───────────────────────
+Descripción: Sistema de logging de la aplicación.
+Registra eventos y errores en archivo de log.
+
+Responsabilidades:
+  • Escribir logs en archivo
+  • Diferentes niveles (INFO, DEBUG, ERROR)
+  • Rotación de archivos de log
+
+
+QvDropFiles (moduls/QvDropFiles.py)
+────────────────────────────────────
+Descripción: Gestor de arrastrar y soltar archivos.
+Permite cargar datos arrastrando archivos al canvas.
+
+Responsabilidades:
+  • Detectar archivos soltados
+  • Identificar tipo de archivo
+  • Cargar automáticamente
+  • Soportar: .qgs, .shp, .csv, .gpkg, etc.
+
+
+═════════════════════════════════════════════════════════════════════════════
+6. CLASES ESPECIALES (AYUNTAMIENTO BARCELONA)
+═════════════════════════════════════════════════════════════════════════════
+
+QVDistrictesBarris (moduls/QVDistrictesBarris.py)
+───────────────────────────────────────────────────
+Descripción: Árbol de distritos y barrios de Barcelona.
+Navegación jerárquica por áreas administrativas.
+
+Responsabilidades:
+  • Mostrar estructura distrito → barrio
+  • Zoom a zona seleccionada
+  • Información de área
+  • Estadísticas por barrio
+  • Filtrado por zona
+
+
+QvPavimentacio (moduls/QvPavimentacio.py)
+───────────────────────────────────────────
+Descripción: Módulo especializado de pavimentación.
+Gestión de datos de pavimentos urbanos.
+
+Responsabilidades:
+  • Gestionar capas de pavimentación
+  • Análisis de estado de pavimento
+  • Reportes de pavimentación
+  • Integración con datos municipales
+
+
+DockPavim (submódulo)
+──────────────────────
+Descripción: Dock widget para pavimentación.
+Panel lateral específico de pavimentación.
+
+Responsabilidades:
+  • Mostrar datos de pavimentación
+  • Herramientas de análisis
+  • Reportes
+
+
+QVCercadorAdreca (moduls/QVCercadorAdreca.py)
+───────────────────────────────────────────────
+Descripción: Buscador de direcciones de Barcelona.
+Localiza dirección en el mapa por nombre.
+
+Responsabilidades:
+  • Buscar dirección por texto
+  • Geocodificación de direcciones
+  • Zoom a ubicación encontrada
+  • Mostrar múltiples resultados
+  • Historial de búsquedas
+
+
+QvNumPostal (moduls/QvNumPostal.py)
+────────────────────────────────────
+Descripción: Gestor de números postales de Barcelona.
+Información específica de códigos postales.
+
+Responsabilidades:
+  • Información de código postal
+  • Localización por CP
+  • Datos por zona postal
+
+
+QvGeocod (moduls/QvGeocod.py)
+──────────────────────────────
+Descripción: Motor de geocodificación.
+Convierte dirección ↔ coordenadas.
+
+Responsabilidades:
+  • Geocodificación (dirección → coordenadas)
+  • Geocodificación inversa (coordenadas → dirección)
+  • Base de datos de direcciones
+  • Búsqueda parcial
+
+
+GeocodSqlite3 (moduls/GeocodSqlite3.py)
+────────────────────────────────────────
+Descripción: Base de datos SQLite de geocodificación.
+Almacena datos de direcciones para búsqueda rápida.
+
+Responsabilidades:
+  • Almacenar direcciones en SQLite
+  • Búsqueda indexada rápida
+  • Actualización de datos
+
+
+QvUbicacions (moduls/QvUbicacions.py)
+───────────────────────────────────────
+Descripción: Gestor de ubicaciones favoritas.
+Guarda y gestiona direcciones favoritas.
+
+Responsabilidades:
+  • Guardar ubicaciones favoritas
+  • Listar ubicaciones guardadas
+  • Zoom a ubicación
+  • Editar/eliminar favoritos
+
+
+QvMapificacio (moduls/QvMapificacio.py)
+─────────────────────────────────────────
+Descripción: Herramienta de mapificación (simbología personalizada).
+Asigna símbolos y colores a elementos.
+
+Responsabilidades:
+  • Asignar simbología personalizada
+  • Gestionar estilos de capas
+  • Clasificación de elementos
+  • Leyenda automática
+
+
+═════════════════════════════════════════════════════════════════════════════
+7. CLASES DE IMPORTACIÓN/EXPORTACIÓN
+═════════════════════════════════════════════════════════════════════════════
+
+QvCSV (moduls/QvCSV.py)
+────────────────────────
+Descripción: Importador/exportador de datos CSV.
+Lee y escribe datos en formato CSV.
+
+Responsabilidades:
+  • Importar CSV a capa vectorial
+  • Exportar capas a CSV
+  • Gestión de separadores
+  • Detección de coordenadas
+
+
+QvEditorCsv (moduls/QvEditorCsv.py)
+─────────────────────────────────────
+Descripción: Editor de datos CSV integrado.
+Edita archivos CSV en tabla.
+
+Responsabilidades:
+  • Editar datos CSV
+  • Validar datos
+  • Guardar cambios
+  • Importar a QGIS
+
+
+QvPDF (moduls/QvPDF.py)
+───────────────────────
+Descripción: Generador de PDFs.
+Crea archivos PDF desde mapas y datos.
+
+Responsabilidades:
+  • Generar PDF de mapas
+  • Incluir leyenda
+  • Incluir tabla de datos
+  • Metadatos PDF
+
+
+QvReports (moduls/QvReports.py)
+────────────────────────────────
+Descripción: Sistema de generación de reportes.
+Crea reportes con datos y gráficos.
+
+Responsabilidades:
+  • Generar reportes en PDF
+  • Incluir gráficos
+  • Tablas de datos
+  • Estadísticas
+
+
+QvPlotly (moduls/QvPlotly.py)
+──────────────────────────────
+Descripción: Integración con Plotly para gráficos.
+Crea gráficos interactivos.
+
+Responsabilidades:
+  • Crear gráficos de datos
+  • Gráficos interactivos
+  • Exportar gráficos
+
+
+QvDataPlotly (moduls/QvDataPlotly.py)
+───────────────────────────────────────
+Descripción: Plugin de DataPlotly para QGIS.
+Crea visualizaciones de datos complejas.
+
+Responsabilidades:
+  • Gráficos estadísticos
+  • Análisis de datos
+  • Visualizaciones interactivas
+
+
+═════════════════════════════════════════════════════════════════════════════
+8. CLASES DE HERRAMIENTAS AVANZADAS
+═════════════════════════════════════════════════════════════════════════════
+
+QvRuta (moduls/QvRuta.py)
+──────────────────────────
+Descripción: Cálculo de rutas cartográficas.
+Determina ruta óptima entre dos puntos.
+
+Responsabilidades:
+  • Calcular ruta entre puntos
+  • Ruteo por diferentes algoritmos
+  • Mostrar ruta en mapa
+  • Información de distancia/tiempo
+
+
+QvMultiruta (moduls/QvMultiruta.py)
+─────────────────────────────────────
+Descripción: Cálculo de rutas con múltiples paradas.
+Optimiza ruta visitando varios puntos.
+
+Responsabilidades:
+  • Optimizar ruta con múltiples paradas
+  • Problema del viajante (TSP)
+  • Mostrar orden óptimo
+  • Estimación de tiempo
+
+
+QVStepsOSRM (moduls/QVStepsOSRM.py)
+────────────────────────────────────
+Descripción: Obtiene pasos de ruta desde OSRM.
+Detalles paso a paso de una ruta.
+
+Responsabilidades:
+  • Obtener instrucciones detalladas
+  • Giros y maniobras
+  • Distancia de cada segmento
+
+
+QvAnotacions (moduls/QvAnotacions.py)
+───────────────────────────────────────
+Descripción: Sistema de anotaciones en el mapa.
+Permite añadir notas y marcadores.
+
+Responsabilidades:
+  • Crear anotaciones
+  • Mostrar/ocultar anotaciones
+  • Editar anotaciones
+  • Guardar anotaciones
+  • Persistencia
+
+
+QvTema (moduls/QvTema.py)
+──────────────────────────
+Descripción: Sistema de temas (vistas predefinidas).
+Múltiples configuraciones visuales del proyecto.
+
+Responsabilidades:
+  • Definir temas
+  • Cambiar entre temas
+  • Guardar configuración de tema
+  • Visibilidad de capas por tema
+  • Estilos de capas por tema
+
+
+QvNavegacioTemporal (moduls/QvNavegacioTemporal.py)
+─────────────────────────────────────────────────────
+Descripción: Control temporal del mapa.
+Permite ver datos en diferentes momentos en el tiempo.
+
+Responsabilidades:
+  • Control de reproductor temporal
+  • Filtrado de datos por fecha
+  • Animación temporal
+  • Series de tiempo
+
+
+QvDiagrama (moduls/QvDiagrama.py)
+──────────────────────────────────
+Descripción: Herramienta de diagramas en el mapa.
+Muestra diagramas sobre elementos.
+
+Responsabilidades:
+  • Mostrar gráficos en elementos
+  • Diagramas de barras
+  • Gráficos circulares
+  • Distribuciones
+
+
+QvCrearMapeta (moduls/QvCrearMapeta.py)
+─────────────────────────────────────────
+Descripción: Creador de mapas (composición).
+Diseñador de composición de mapas.
+
+Responsabilidades:
+  • Crear composiciones de mapa
+  • Añadir elementos
+  • Gestionar layout
+  • Exportar composición
+
+
+QvNouMapa (moduls/QvNouMapa.py)
+────────────────────────────────
+Descripción: Asistente para crear nuevo mapa.
+Wizard de creación de proyectos.
+
+Responsabilidades:
+  • Crear nuevo proyecto
+  • Seleccionar capas iniciales
+  • Configuración básica
+  • Guardar proyecto nuevo
+
+
+QvNouCataleg (moduls/QvNouCataleg.py)
+───────────────────────────────────────
+Descripción: Asistente para crear catálogo de mapas.
+Wizard de creación de catálogos.
+
+Responsabilidades:
+  • Crear catálogo de proyectos
+  • Organizar proyectos
+  • Metadatos de proyectos
+  • Publicación de catálogo
+
+
+═════════════════════════════════════════════════════════════════════════════
+9. CLASES AUXILIARES Y MODELOS
+═════════════════════════════════════════════════════════════════════════════
+
+QvModelLlegenda (moduls/QvLlegendaAux.py)
+───────────────────────────────────────────
+Descripción: Modelo de datos para leyenda.
+Estructura jerárquica de capas.
+
+Responsabilidades:
+  • Organizar estructura de capas
+  • Nodos padre-hijo
+  • Propiedades de grupos
+
+
+QvItemLlegenda (submódulo)
+────────────────────────────
+Descripción: Item individual de leyenda.
+Representa una capa o grupo.
+
+Responsabilidades:
+  • Propiedades del item
+  • Visibilidad
+  • Orden
+
+
+QvMenuLlegenda (submódulo)
+────────────────────────────
+Descripción: Menú contextual de leyenda.
+Opciones al clic derecho en capa.
+
+Responsabilidades:
+  • Opciones de capa
+  • Submenús
+  • Acciones contextuales
+
+
+QvRecarregaLlegenda (submódulo)
+─────────────────────────────────
+Descripción: Recargador de leyenda.
+Actualiza leyenda cuando cambia proyecto.
+
+Responsabilidades:
+  • Actualizar estructura
+  • Sincronizar con proyecto
+  • Validar integridad
+
+
+QvLlegendaMascara (moduls/QvLlegendaMascara.py)
+─────────────────────────────────────────────────
+Descripción: Máscaras de visualización.
+Oculta/muestra elementos según criterios.
+
+Responsabilidades:
+  • Crear máscaras de visualización
+  • Aplicar filtros visuales
+  • Renderización selectiva
+
+
+QvLlegendaBotonera (moduls/QvLlegendaBotonera.py)
+───────────────────────────────────────────────────
+Descripción: Botonera interactiva en leyenda.
+Botones para filtrar/controlar capas.
+
+Responsabilidades:
+  • Crear botones en leyenda
+  • Filtrar capas
+  • Controlar visibilidad
+  • Acciones personalizadas
+
+
+QvAtributsForms (moduls/QvAtributsForms.py)
+──────────────────────────────────────────────
+Descripción: Formularios personalizados para atributos.
+Edición de atributos con interface mejorada.
+
+Responsabilidades:
+  • Formularios personalizados
+  • Validación de datos
+  • Tipos de widgets específicos
+  • Relaciones entre campos
+
+
+QvMapForms (moduls/QvMapForms.py)
+──────────────────────────────────
+Descripción: Formularios en mapificación.
+Formularios para edición de simbología.
+
+Responsabilidades:
+  • Edición de estilos
+  • Asignación de símbolos
+  • Vista previa
+
+
+QvGithub (moduls/QvGithub.py)
+──────────────────────────────
+Descripción: Integración con GitHub.
+Actualizaciones y versionado.
+
+Responsabilidades:
+  • Detectar nuevas versiones
+  • Descargar actualizaciones
+  • Control de versiones
+
+
+QvFMEServer (moduls/QvFMEServer.py)
+─────────────────────────────────────
+Descripción: Integración con FME Server.
+Transformación y procesamiento de datos.
+
+Responsabilidades:
+  • Enviar datos a FME
+  • Ejecutar transformaciones
+  • Recibir resultados
+
+
+QvFavorits (moduls/QvFavorits.py)
+───────────────────────────────────
+Descripción: Sistema de favoritos.
+Guarda mapas, capas y ubicaciones favoritas.
+
+Responsabilidades:
+  • Guardar favoritos
+  • Acceso rápido
+  • Gestionar lista de favoritos
+
+
+QvEscala (moduls/QvEscala.py)
+──────────────────────────────
+Descripción: Control de escalas y resoluciones.
+Gestiona escala de visualización.
+
+Responsabilidades:
+  • Definir escala de mapa
+  • Escala de impresión
+  • Selector de escala
+  • Zoom a escala específica
+
+
+═════════════════════════════════════════════════════════════════════════════
+10. HERRAMIENTAS ESPECIALIZADAS (Submódulo "eines")
+═════════════════════════════════════════════════════════════════════════════
+
+Botonera (moduls/eines/Botonera.py)
+────────────────────────────────────
+Descripción: Dock widget con secciones colapsables y botones.
+Acceso rápido a documentos y acciones.
+
+Responsabilidades:
+  • Crear botonera dinámicamente desde JSON
+  • Secciones colapsables
+  • Botones de acciones
+  • Búsqueda automática de configuración
+
+
+DobleCanvas (moduls/eines/DobleCanvas.py)
+───────────────────────────────────────────
+Descripción: Vista de dos mapas comparativos.
+Comparación lado a lado.
+
+Responsabilidades:
+  • Mostrar dos canvas sincronizados
+  • Comparación de dos vistas
+  • Sincronización de zoom/pan
+
+
+EinaCoordenades (moduls/eines/EinaCoordenades.py)
+────────────────────────────────────────────────────
+Descripción: Herramienta de entrada de coordenadas.
+Busca por coordenadas.
+
+Responsabilidades:
+  • Entrada de coordenadas manuales
+  • Zoom a coordenadas
+  • Conversión de sistemas de coordenadas
+
+
+EinaMultiruta (moduls/eines/EinaMultiruta.py)
+────────────────────────────────────────────────
+Descripción: Herramienta de multiruta.
+Interfaz para cálculo de múltiples rutas.
+
+Responsabilidades:
+  • Interface de multiruta
+  • Añadir paradas
+  • Calcular ruta óptima
+  • Mostrar resultados
+
+
+EinaRuta (moduls/eines/EinaRuta.py)
+─────────────────────────────────────
+Descripción: Herramienta de ruta simple.
+Interface para cálculo de ruta entre dos puntos.
+
+Responsabilidades:
+  • Seleccionar origen y destino
+  • Calcular ruta
+  • Mostrar alternativas
+  • Instrucciones de navegación
+
+
+SelectorParceles (moduls/eines/SelectorParceles.py)
+──────────────────────────────────────────────────────
+Descripción: Selector de parcelas catastrales.
+Selecciona parcelas por referencia catastral.
+
+Responsabilidades:
+  • Búsqueda de parcela por referencia
+  • Zoom a parcela
+  • Mostrar información catastral
+  • Selección visual
+
+
+CreadorCapesPuntuals (moduls/eines/CreadorCapesPuntuals.py)
+─────────────────────────────────────────────────────────────
+Descripción: Creador de capas de puntos.
+Asistente para crear capa de puntos.
+
+Responsabilidades:
+  • Crear capa de puntos
+  • Definir atributos
+  • Importar datos de puntos
+
+
+IntegracioPatrimoni (moduls/eines/IntegracioPatrimoni.py)
+──────────────────────────────────────────────────────────
+Descripción: Integración con base de datos de patrimonio.
+Visualización de datos patrimoniales.
+
+Responsabilidades:
+  • Conectar a BBDD patrimonio
+  • Visualizar patrimonio
+  • Información detallada
+  • Reportes de patrimonio
+
+
+MarxesExploratories (moduls/eines/MarxesExploratories.py)
+──────────────────────────────────────────────────────────
+Descripción: Módulo de "Marxes Exploratorias" (rutas exploratorias).
+Rutas temáticas por la ciudad.
+
+Responsabilidades:
+  • Mostrar rutas predefinidas
+  • Información de puntos de interés
+  • Navegación por ruta
+  • Información histórica
+
+
+Pepi (moduls/eines/Pepi.py)
+────────────────────────────
+Descripción: Módulo especializado para proyecto Pepi.
+Funcionalidades específicas de Pepi.
+
+Responsabilidades:
+  • Funcionalidades Pepi
+  • Datos Pepi
+  • Interface Pepi
+  • Reportes Pepi
+
+
+═════════════════════════════════════════════════════════════════════════════
+11. RELACIONES ENTRE CLASES
+═════════════════════════════════════════════════════════════════════════════
+
+Diagrama de dependencias principales:
+
+                         QvApp (Singleton)
+                            ▲
+                            │
+                ┌───────────┼───────────┐
+                │           │           │
+             QVista      QvCanvas    QvLlegenda
+              (Main)     (Mapa)       (Capas)
+                │           │           │
+                └───────────┼───────────┘
+                            │
+                    ┌───────┼───────┐
+                    │       │       │
+                QvAtributs  │   StatusBar
+                (Datos)     │   (Estado)
+                        QvMapeta
+                        (Miniatura)
+
+Flujo de inicialización:
+
+1. main() → crea QgsApplication
+2. QvApp().singleton inicializado
+3. QVista.__init__() comienza
+4. preparacioEntornGrafic() crea QvCanvas
+5. botoneraLateral() crea botonera
+6. preparacioLlegenda() crea QvLlegenda
+7. preparacioTaulaAtributs() crea QvAtributs
+8. obrirProjecte() carga proyecto QGIS
+9. QVista maximizado y listo
+
+
+Patrones de comunicación:
+
+QvApp:
+  ├─ mainApp = QVista (referencia principal)
+  ├─ appQgis = QgsApplication
+  ├─ dbQvista = Conexión Oracle
+  └─ dbGeo = Conexión SQLite
+
+QVista:
+  ├─ canvas = QvCanvas
+  ├─ llegenda = QvLlegenda
+  ├─ atributs = QvAtributs
+  ├─ mapeta = QvMapeta
+  └─ statusbar = QvStatusBar
+
+QvCanvas:
+  ├─ llegenda = referencia a QvLlegenda
+  ├─ llistaBotons = herramientas
+  └─ senyals → conectadas a QVista
+
+QvLlegenda:
+  ├─ canvas = referencia a QvCanvas
+  ├─ atributs = referencia a QvAtributs
+  └─ senyals → conectadas a QVista
+
+
+═════════════════════════════════════════════════════════════════════════════
+12. FLUJO DE DATOS TÍPICO
+═════════════════════════════════════════════════════════════════════════════
+
+Ejemplo: Usuario hace clic en elemento del mapa
+
+1. Usuario hace clic en QvCanvas
+2. QvCanvas genera señal (mousePress)
+3. Herramienta activa recibe señal
+4. Herramienta selecciona elemento
+5. QvCanvas emite señal de selección
+6. QvLlegenda actualiza árbol (destaca capa)
+7. QvAtributs carga datos del elemento
+8. QvStatusBar muestra información
+9. QvMapeta centra vista
+
+Ejemplo: Usuario carga proyecto
+
+1. QVista.obrirProjecte(ruta)
+2. QvApp().carregaProjecte(ruta)
+3. QgsProject.instance().read(ruta)
+4. QvLlegenda.carregaProjecte()
+5. QvCanvas actualiza capas
+6. QvAtributs prepara tabla
+7. QvStatusBar muestra proyecto
+8. Señales se conectan
+9. Proyecto listo
+
+
+═════════════════════════════════════════════════════════════════════════════
+
+CONCLUSIÓN:
+
+El proyecto qVista es una arquitectura modular compleja con:
+  • 50+ clases principales
+  • Múltiples niveles de abstracción
+  • Patrones de singleton, observer, factory
+  • Comunicación por señales (Qt signals/slots)
+  • Integración profunda con QGIS
+  • Especialización para Barcelona
+
+Cada clase tiene responsabilidad clara y se comunica con otras
+a través de interfaces bien definidas.
+
+================================================================================
+                            FIN DEL DOCUMENTO
+================================================================================
+
+Última actualización: Noviembre 2025
+Proyecto: qVista - Visor Cartográfico Personalizado
+Ubicación: Sistemas de Información Territorial, Ayuntamiento de Barcelona
+================================================================================
