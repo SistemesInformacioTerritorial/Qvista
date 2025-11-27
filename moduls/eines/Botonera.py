@@ -165,10 +165,60 @@ class BotonConfigLoader:
 
 class Botonera(QDockWidget):
     """
-    Dock widget genérico que genera una botonera a partir de JSON.
+    Dock widget genérico que genera una botonera colapsable a partir de configuración JSON.
+    
+    La clase crea dinámicamente una interfaz de usuario con secciones colapsables conteniendo
+    botones que ejecutan acciones definidas en un fichero JSON. Cada sección puede expandirse
+    o contraerse, y los botones pueden ejecutar acciones como abrir URLs o ficheros.
+    
+    Características:
+    ================
+    - Lectura dinámica de configuración desde JSON
+    - Secciones colapsables/expandibles
+    - Título del widget configurable desde JSON
+    - Búsqueda automática del JSON en la carpeta del proyecto QGIS
+    - Fallback a botonera_config.json si no hay proyecto abierto
+    - Integración con QGIS como dock widget
+    
+    Estructura del JSON:
+    ====================
+    {
+      "widget_title": "Título del Widget",
+      "sections": [
+        {
+          "title": "Nombre de Sección",
+          "collapsed": true,
+          "buttons": [
+            {
+              "text": "Texto del Botón",
+              "action": "file:///path/to/file.pdf",
+              "action_type": "url"
+            }
+          ]
+        }
+      ]
+    }
+    
+    Búsqueda de ficheros:
+    ====================
+    1. Si se proporciona config_file: usa esa ruta
+    2. Si hay proyecto QGIS abierto: busca {proyecto}.json en la misma carpeta
+       Ejemplo: para "miproyecto.qgs" → busca "miproyecto.json"
+    3. Si no hay proyecto: busca "botonera_config.json" en el directorio actual
     
     Uso:
-        botonera = Botonera(parent, Path('config.json'))
+    ====
+    # Inicialización básica (busca automáticamente según proyecto QGIS)
+    botonera = Botonera(parent_widget)
+    
+    # Inicialización con ruta específica
+    botonera = Botonera(parent_widget, Path('/ruta/config.json'))
+    
+    Atributos de clase:
+    ===================
+    - titol (str): Título del widget (compatible con QvApp)
+    - apareixDockat (bool): Indica que aparece como dock widget
+    - esEinaGeneral (bool): Marca si es una herramienta general
     """
     
     titol = 'Botonera'
@@ -177,10 +227,48 @@ class Botonera(QDockWidget):
     
     def __init__(self, parent, config_file: Optional[Path] = None):
         """
+        Inicializa el dock widget de botonera con configuración desde JSON.
+        
+        El método resuelve automáticamente la ubicación del fichero JSON siguiendo
+        esta estrategia de búsqueda:
+        
+        1. Si config_file se proporciona: usa esa ruta directamente
+        2. Si hay un proyecto QGIS abierto:
+           - Obtiene el nombre y carpeta del proyecto
+           - Busca un fichero JSON con el mismo nombre en la misma carpeta
+           - Ejemplo: "D:/Proyectos/miproyecto.qgs" → busca "D:/Proyectos/miproyecto.json"
+        3. Si no hay proyecto abierto:
+           - Fallback a "botonera_config.json" en el directorio de trabajo actual
+        
+        Una vez localizado el fichero JSON:
+        - Lo carga y valida con BotonConfigLoader
+        - Extrae el título del widget del campo "widget_title" (default: "Botonera")
+        - Crea la UI con las secciones y botones configurados
+        - Configura el dock widget (ancho, posición, márgenes)
+        
         Args:
-            parent: Widget padre (generalmente la aplicación QGIS)
-            config_file: Ruta al fichero JSON. Si no se proporciona, 
-                        busca en la carpeta del proyecto QGIS con el mismo nombre
+            parent (QWidget): Widget padre, generalmente la aplicación QGIS principal.
+                             Necesario para integrar el dock widget correctamente.
+            config_file (Optional[Path]): Ruta explícita al fichero JSON de configuración.
+                                         Si es None, usa la estrategia de búsqueda automática.
+        
+        Raises:
+            Si el fichero JSON no se encuentra o no puede parsearse, se registra un error
+            en el logger pero la aplicación continúa (fallback a título por defecto).
+        
+        Examples:
+            # Inicialización automática basada en proyecto QGIS
+            botonera = Botonera(iface.mainWindow())
+            
+            # Inicialización con ruta específica
+            config_path = Path('D:/Configs/botonera.json')
+            botonera = Botonera(iface.mainWindow(), config_path)
+        
+        Notas de implementación:
+            - La búsqueda de JSON se basa en QgsProject.instance().fileName()
+            - Se usa Path.stem para extraer el nombre sin extensión
+            - Los logs de debug permiten rastrear qué fichero se intenta cargar
+            - El dock widget se configura para aparecer en areas izquierda o derecha
         """
         # Resolver path del config file
         if config_file is None:
@@ -225,7 +313,39 @@ class Botonera(QDockWidget):
         self.show()
     
     def _create_ui(self, sections: list) -> None:
-        """Crea la interfaz a partir de las secciones configuradas"""
+        """
+        Construye la interfaz gráfica a partir de las secciones configuradas.
+        
+        Este método privado es responsable de:
+        1. Crear el frame principal y su layout
+        2. Iterar sobre cada sección de configuración
+        3. Crear widgets CollapsibleSection para cada sección
+        4. Crear botones dinámicos para cada botón configurado
+        5. Conectar las acciones a los botones según su tipo
+        6. Añadir un espaciador al final para mejor distribución visual
+        
+        Comportamiento:
+        ===============
+        - Cada sección se renderiza como un CollapsibleSection que puede expandirse
+        - Los botones se alinean a la izquierda dentro de cada sección
+        - Los botones de tipo 'url' abren URLs/ficheros con QDesktopServices.openUrl()
+        - Los botones inválidos (sin texto o acción) se saltan silenciosamente
+        - El layout se alinea al top para mejorar la presentación visual
+        
+        Args:
+            sections (list): Lista de objetos SeccionConfig con la estructura de la UI.
+                           Cada sección contiene botones configurados.
+        
+        Efectos secundarios:
+            - Modifica self.setWidget() con el frame principal
+            - Conecta señales clicked de botones a handlers de acciones
+            - Los botones se añaden directamente al widget padre (self)
+        
+        Notas técnicas:
+            - Usa lambda para capturar el valor de 'url' correctamente en el loop
+            - QvPushButton se importa de moduls.QvPushButton (estilo personalizado)
+            - El espaciador (QSpacerItem) con Expanding garantiza alineación al top
+        """
         fMain = QFrame()
         lytMain = QVBoxLayout(fMain)
         lytMain.setAlignment(Qt.AlignTop)

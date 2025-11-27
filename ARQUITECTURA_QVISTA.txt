@@ -1,0 +1,370 @@
+================================================================================
+                     ARQUITECTURA DE QVISTA.PY
+                    Script Principal del Proyecto qVista
+================================================================================
+
+DESCRIPCIÓN GENERAL:
+====================
+
+qVista.py es el script principal que inicia el visor cartográfico personalizado
+de Barcelona. Se trata de una aplicación QGIS desktop que simplifica la 
+visualización de mapas para usuarios no expertos y proporciona herramientas
+especializadas para técnicos del Ayuntamiento de Barcelona.
+
+El archivo tiene aproximadamente 2,725 líneas de código Python y es responsable
+de:
+- Inicializar la interfaz gráfica principal
+- Cargar módulos especializados
+- Gestionar proyectos QGIS (.qgs, .qgz)
+- Coordinar múltiples componentes de la aplicación
+
+
+ESTRUCTURA DEL ARCHIVO:
+======================
+
+1. IMPORTS Y CONFIGURACIÓN INICIAL (líneas 1-100)
+   -----------------------------------------------
+   - Medición de tiempo de carga (cronómetro)
+   - Importación de librerías QGIS (core, gui, PyQt)
+   - Importación de configuración desde configuracioQvista.py
+   - Importación de UI desde cubista3.py (diseño Qt Designer)
+   - Importación de múltiples módulos especializados del proyecto
+
+   Librerías QGIS principales:
+   - qgis.core: Funcionalidades cartográficas (QgsProject, QgsLayer, etc.)
+   - qgis.gui: Componentes gráficos QGIS (QgsMapCanvas, QgsLayerTreeMapCanvasBridge)
+   - qgis.PyQt: Wrapping de PyQt5 para QGIS
+
+2. CLASES AUXILIARES (líneas 100-150)
+   -----------------------------------
+   - QHLine: Frame para líneas horizontales en la UI
+
+3. CLASE PRINCIPAL QVISTA (líneas 150-2725)
+   ----------------------------------------
+   La clase QVista hereda de:
+   - QMainWindow: Ventana principal de PyQt5
+   - Ui_MainWindow: UI generada por Qt Designer (cubista3.py)
+
+   Atributos de clase:
+   - dicCanvasDw: Diccionario de canvas (múltiples mapas)
+   - dicNumCanvas: Diccionario con números de canvas
+
+   Métodos principales:
+   - __init__(): Inicialización completa
+   - obrirArxiu(): Abre archivos (proyectos o capas)
+   - obrirProjecteCataleg(): Abre proyecto desde catálogo
+   - botoneraLateral(): Crea botonera lateral
+   - preparacioLlegenda(): Inicializa leyenda
+   - preparacioTaulaAtributs(): Inicializa tabla de atributos
+   - [muchos otros métodos de preparación]
+
+4. FUNCIÓN MAIN (líneas 2650-2725)
+   --------------------------------
+   - Inicialización de la aplicación QGIS
+   - Configuración de idioma (catalán)
+   - Carga de splash screen
+   - Definición de estilos
+   - Instanciación de QVista
+   - Gestión de avisos y consejos
+
+
+FLUJO DE INICIALIZACIÓN:
+=======================
+
+1. main() crea QgsApplication y carga QGIS
+2. Se carga splash screen (SplashScreen_qVista.png)
+3. Se crea instancia de QvApp() para gestión centralizada
+4. Se crea instancia de QVista(app, proyecto_inicial, titulo)
+5. QVista.__init__() hace:
+   
+   a) Inicialización base:
+      - setupUi(self) [desde cubista3.py]
+      - Configuración de ventana (sin bordes, flags)
+      - Establecer títol de ventana
+
+   b) Preparación del entorno gráfico:
+      - Creación del canvas (mapa principal)
+      - Preparación de proyectos QGIS
+
+   c) Inicialización de módulos especializados:
+      - Botonera lateral (botoneraLateral())
+      - Tabla de atributos (preparacioTaulaAtributs())
+      - Leyenda (preparacioLlegenda())
+      - Árbol de distritos/barrios (preparacioArbreDistrictes())
+      - Catálogo de vídeos (preparacioCatalegVideos())
+      - Impresión (preparacioImpressio())
+      - Medidas gráficas (preparacioMesura())
+      - Selección (preparacioSeleccio())
+      - Control temporal (preparacioTemporal())
+
+   d) Carga del proyecto inicial:
+      - Se abre el proyecto .qgs especificado en configuración
+      - Se refresca el canvas
+      - Se mide tiempo total de carga
+
+6. Se restaura estado de docks
+7. Se muestra ventana maximizada
+8. Se cierra splash screen
+9. Se conecta gestor de salida (gestioSortida)
+
+
+MÓDULOS ESPECIALIZADOS CARGADOS:
+=================================
+
+qVista.py integra una cantidad importante de módulos personalizados:
+
+Módulos de UI:
+- QvMenuBar: Menú superior
+- QvStatusBar: Barra de estado
+- QvToolButton, QvToolTip: Elementos de toolbar
+- QvPushButton: Botones personalizados
+
+Módulos de Mapa:
+- QvCanvas: Canvas principal (basado en QgsMapCanvas)
+- QvCanvasAuxiliar: Canvas auxiliares
+- QvLlegenda: Leyenda del mapa
+- QvMapetaBrujulado: Miniatura/brújula del mapa
+
+Módulos de Datos:
+- QvAtributs: Tabla de atributos
+- QvCatalegCapes: Catálogo de capas
+- QvCarregadorGPKG: Cargador de GeoPackage
+- QvVisualitzacioCapa: Visualización de propiedades de capas
+
+Módulos de Funcionalidad:
+- QCercadorAdreca: Buscador de direcciones
+- QvUbicacions: Gestión de ubicaciones
+- QvEinesGrafiques: Herramientas gráficas (medida, selección)
+- QvPrint: Sistema de impresión
+- QvDocumentacio: Documentación e información
+- QvVideoDoc: Reproductor de vídeos
+
+Módulos Especiales (Ayuntamiento Barcelona):
+- QVDistrictesBarris: Árbol de distritos y barrios
+- QvPavimentacio: Módulo de pavimentación
+- DockPavim: Dock de pavimentación
+- MarxesCiutat: Marchas de ciudad (comentado)
+
+Módulos Auxiliares:
+- QvNouMapa, QvNouCataleg: Creadores de mapas/catálogos
+- QvDropFiles: Gestor de arrastrar/soltar archivos
+- QvMemoria: Gestión de memoria
+- QvNews: Noticias
+- QvSabiesQue: Panel "¿Sabías que...?"
+- QvSobre: Diálogo Acerca de...
+- QvSuggeriments: Gestor de sugerencias
+- QvVisorHTML: Visualizador HTML
+- QvBafarada: Gestor de notificaciones
+
+
+ESTRUCTURA DE DATOS IMPORTANTES:
+=================================
+
+Variables de clase:
+- dicCanvasDw: {id_canvas: DockWidget} - almacena canvas en docks
+- dicNumCanvas: {id_canvas: número} - numera los canvas
+
+Variables de instancia inicializadas en __init__:
+- canvisPendents: Booleano para cambios pendientes
+- titolProjecte: Título del proyecto actual
+- qvPrint: Instancia del módulo de impresión
+- mapesOberts: Flag de mapas abiertos
+- mapaMaxim: Flag si mapa está maximizado
+- layerActiu: Layer activo en ese momento
+- prepararCercador: Flag para preparación de buscador
+- ubicacions: Instancia de ubicaciones
+- cAdrec: Instancia del buscador de direcciones
+- catalegMapes: Catálogo de mapas
+- numCanvasAux: Lista de canvas auxiliares
+- marca_geometria: Marker sobre el mapa (para búsquedas)
+- dashboardActiu: Dashboard activo para cambios de disposición
+
+Variables de estado del dock:
+- tempState: Estado guardado de docks para restauración
+
+
+FLUJO DE CARGA DE TIEMPOS:
+==========================
+
+El programa mide tiempos en varios puntos:
+
+1. startGlobal: Inicio total
+2. time.time()-start: Tiempo de imports iniciales
+3. iniciTempsModuls: Inicio carga de módulos Qv
+4. time.time()-iniciTempsModuls: Tiempo carga módulos
+5. self.tempsTotal (antes de proyecto): Tiempo hasta proyecto
+6. self.tempsTotal (después de proyecto): Tiempo total
+7. Se muestra en statusbar: "Segons per arrencar: X.X"
+
+
+INTEGRACIÓN DE BOTONERA:
+=======================
+
+La clase Botonera.py que hemos desarrollado se podría integrar en qVista
+de las siguientes maneras:
+
+OPCIÓN 1: Carga automática en __init__
+---------------------------------------
+En el método __init__, después de preparacioTaulaAtributs() o similar:
+
+```python
+# En botoneraLateral() o como nuevo método
+from moduls.eines.Botonera import Botonera
+
+botonera = Botonera(self)
+self.addDockWidget(Qt.RightDockWidgetArea, botonera)
+self.dicBotoneras = {botonera.titol: botonera}
+```
+
+OPCIÓN 2: Carga condicional según proyecto
+-------------------------------------------
+En obrirProjecte(), después de cargar proyecto:
+
+```python
+# Verificar si existe JSON con mismo nombre que proyecto
+proyecto_path = Path(ruta_proyecto).parent
+config_json = proyecto_path / f"{Path(ruta_proyecto).stem}.json"
+
+if config_json.exists():
+    botonera = Botonera(self, config_json)
+    self.addDockWidget(Qt.RightDockWidgetArea, botonera)
+```
+
+OPCIÓN 3: Método específico en QVista
+--------------------------------------
+Crear método preparacioBotonera() similar a otros métodos de preparación:
+
+```python
+def preparacioBotonera(self):
+    '''Inicializa la botonera desde JSON del proyecto'''
+    from moduls.eines.Botonera import Botonera
+    
+    self.botonera = Botonera(self)
+    self.addDockWidget(Qt.RightDockWidgetArea, self.botonera)
+```
+
+Y en __init__(), después de otras preparaciones:
+```python
+self.preparacioBotonera()
+```
+
+OPCIÓN RECOMENDADA: OPCIÓN 2
+La botonera se carga automáticamente si existe un JSON con el nombre del
+proyecto. Esto permite:
+- Proyectos con botonera personalizada
+- Proyectos sin botonera (no requiere JSON)
+- Flexibilidad máxima sin modificar código
+
+
+ATRIBUTOS COMPATIBLES CON QVISTA:
+=================================
+
+Botonera tiene atributos que la hacen compatible con el sistema de QVista:
+
+- titol (str): Nombre del widget, puede usarse en diccionarios
+- apareixDockat (bool): True si aparece como dock widget
+- esEinaGeneral (bool): False, es una herramienta específica
+
+Estos atributos permiten que Botonera se integre con:
+- Sistema de herramientas de QvApp
+- Gestor de docks
+- Sistema de historial de estado
+
+
+CONSIDERACIONES DE IMPLEMENTACIÓN:
+==================================
+
+1. TIMING: Cargar Botonera después de canvas y leyenda
+   - El canvas debe estar inicializado
+   - Las acciones de botones pueden depender de capas cargadas
+
+2. ARCHIVO JSON: Debe estar en misma carpeta que .qgs
+   - Nombre del archivo JSON: {nombre_proyecto}.json
+   - Si no existe: no se carga Botonera (comportamiento graceful)
+
+3. ACCIONES: Actualmente soporta URLs
+   - Se puede extender para: comandos QGIS, funciones Python, etc.
+
+4. ESTILO: Usar estilo.qss existente
+   - Los botones herdan estilo de la aplicación
+   - Color/fuente/tamaño consistentes
+
+5. PERSISTENCIA: Estado del dock se guarda automáticamente
+   - qVista.saveState() guarda estado de docks
+   - qVista.restoreState() restaura estado
+
+
+EJEMPLO DE JSON PARA BOTONERA EN BARCELONA:
+===========================================
+
+Si tienes un proyecto "Barcelona_PavimentacionUrb.qgs", puedes crear:
+"Barcelona_PavimentacionUrb.json"
+
+{
+  "widget_title": "Herramientas de Pavimentación",
+  "sections": [
+    {
+      "title": "Documentos Técnicos",
+      "collapsed": false,
+      "buttons": [
+        {
+          "text": "Normas de Pavimentación",
+          "action": "file:///P:/Documentos/normas_pavimentacion.pdf"
+        },
+        {
+          "text": "Especificaciones Técnicas",
+          "action": "file:///P:/Documentos/especificaciones.pdf"
+        }
+      ]
+    },
+    {
+      "title": "Enlaces Útiles",
+      "collapsed": true,
+      "buttons": [
+        {
+          "text": "SIG del Ayuntamiento",
+          "action": "https://intranet.barcelona.cat/sig"
+        },
+        {
+          "text": "Portal de Datos",
+          "action": "https://opendata.barcelona.cat"
+        }
+      ]
+    }
+  ]
+}
+
+
+EXTENSIONES FUTURAS:
+====================
+
+La arquitectura de Botonera permite:
+
+1. Acciones personalizadas: Ejecución de funciones Python
+2. Búsqueda dinámica: Filtrar botones según criterios
+3. Historial: Recordar acciones frecuentes
+4. Iconos: Añadir iconos a botones
+5. Shortcuts: Atajos de teclado para botones
+6. Permisos: Control de acceso según rol de usuario
+7. Multiidioma: Traducción de títulos y botones
+8. Sincronización: Actualizar botonera según capa activa
+
+
+CONCLUSIÓN:
+===========
+
+qVista.py es una aplicación QGIS especializada que integra múltiples
+módulos para proporcionar funcionalidades específicas para Barcelona.
+
+La clase Botonera.py encaja naturalmente en esta arquitectura como
+herramienta de navegación de documentos/enlaces específicos de cada proyecto.
+
+Su diseño modular permite una integración no invasiva que:
+- No requiere modificación del código existente (JSON está fuera)
+- Se puede activar/desactivar por proyecto
+- Mantiene coherencia con el sistema de QVista
+- Permite extensiones futuras sin breaking changes
+
+================================================================================
+FIN DE DOCUMENTO
+================================================================================
