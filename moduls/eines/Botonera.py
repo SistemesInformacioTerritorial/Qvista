@@ -2,7 +2,7 @@
 Botonera genérica que lee configuración desde un fichero JSON
 y crea secciones colapsables con botones dinámicamente.
 
-El fichero JSON debe estar al mismo nivel del proyecto .qgs
+El fichero JSON debe estar en la misma carpeta que el proyecto QGIS
 y tener el mismo nombre (ej: proyecto.json para proyecto.qgs)
 """
 
@@ -16,6 +16,7 @@ from qgis.PyQt.QtGui import QDesktopServices
 from qgis.PyQt.QtWidgets import (QDockWidget, QFrame, QSizePolicy,
                                  QSpacerItem, QVBoxLayout, QPushButton,
                                  QWidget)
+from qgis.core import QgsProject
 
 from moduls.QvPushButton import QvPushButton
 
@@ -117,6 +118,7 @@ class BotonConfigLoader:
         """
         self.config_file = Path(config_file)
         self.sections = []
+        self.widget_title = "Botonera"  # Valor por defecto
         
         if self._file_exists():
             self._load_config()
@@ -136,6 +138,9 @@ class BotonConfigLoader:
             with open(self.config_file, 'r', encoding='utf-8') as f:
                 data = json.load(f)
             
+            # Cargar título del widget si está disponible
+            self.widget_title = data.get('widget_title', 'Botonera')
+            
             self.sections = [
                 SeccionConfig(sec) 
                 for sec in data.get('sections', [])
@@ -152,6 +157,10 @@ class BotonConfigLoader:
     def get_sections(self) -> list:
         """Retorna la lista de secciones configuradas"""
         return self.sections
+    
+    def get_widget_title(self) -> str:
+        """Retorna el título del widget configurado en JSON, o por defecto 'Botonera'"""
+        return self.widget_title
 
 
 class Botonera(QDockWidget):
@@ -171,22 +180,39 @@ class Botonera(QDockWidget):
         Args:
             parent: Widget padre (generalmente la aplicación QGIS)
             config_file: Ruta al fichero JSON. Si no se proporciona, 
-                        busca en el directorio actual
+                        busca en la carpeta del proyecto QGIS con el mismo nombre
         """
-        super().__init__("Botonera")
-        self.parent = parent
-        self.setContextMenuPolicy(Qt.PreventContextMenu)
-        
         # Resolver path del config file
         if config_file is None:
-            config_file = Path.cwd() / "botonera_config.json"
+            # Obtener ruta del proyecto QGIS
+            project = QgsProject.instance()
+            project_file = project.fileName()
+            
+            if project_file:
+                # Si hay proyecto abierto, buscar JSON en su carpeta
+                project_path = Path(project_file)
+                config_file = project_path.parent / f"{project_path.stem}.json"
+                logger.info(f"Buscando configuración basada en proyecto QGIS: {config_file}")
+            else:
+                # Fallback: directorio actual
+                config_file = Path.cwd() / "botonera_config.json"
+                logger.info(f"No hay proyecto QGIS abierto, usando directorio actual: {config_file}")
         else:
             config_file = Path(config_file)
         
-        logger.info(f"Buscando configuración en: {config_file}")
+        logger.info(f"Ruta configuración: {config_file}")
         
         # Cargar configuración
         loader = BotonConfigLoader(config_file)
+        
+        # Inicializar con título del JSON
+        super().__init__(loader.get_widget_title())
+        
+        # Actualizar atributo de clase para compatibilidad
+        self.titol = loader.get_widget_title()
+        
+        self.parent = parent
+        self.setContextMenuPolicy(Qt.PreventContextMenu)
         
         # Crear UI
         self._create_ui(loader.get_sections())
