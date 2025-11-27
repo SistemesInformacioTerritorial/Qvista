@@ -13,10 +13,10 @@ class CollapsibleSection(QWidget):
     def __init__(self, title):
         super().__init__()
         self.title = title
-        self.is_expanded = True
+        self.is_expanded = False
         
         # Botón para expandir/contraer
-        self.toggle_btn = QPushButton(f"▼ {title}")
+        self.toggle_btn = QPushButton(f"▶ {title}")
         self.toggle_btn.setFlat(True)
         self.toggle_btn.setStyleSheet("Text-align: left; font-weight: bold;")
         self.toggle_btn.clicked.connect(self.toggle)
@@ -25,6 +25,7 @@ class CollapsibleSection(QWidget):
         self.content_widget = QFrame()
         self.content_layout = QVBoxLayout(self.content_widget)
         self.content_layout.setContentsMargins(20, 0, 0, 0)
+        self.content_widget.setVisible(False)  # Ocultar al inicio
         
         # Layout principal
         main_layout = QVBoxLayout(self)
@@ -100,13 +101,13 @@ class Pepi(QDockWidget):
         section1.add_button(bDoc9)
         section1.add_button(bDoc10)
         
-        bMapa = QvPushButton('1.2 Mapa de Barcelona identificant les marxes realitzades',flat=True)
-        bMapa.setStyleSheet("Text-align: left")
-        section1.add_button(bMapa)
+        # bMapa = QvPushButton('1.2 Mapa de Barcelona identificant les marxes realitzades',flat=True)
+        # bMapa.setStyleSheet("Text-align: left")
+        # section1.add_button(bMapa)
         
-        bDocGen = QvPushButton('1.3 Document general (guia lectura, info de cada marxa, annexos barri',flat=True)
-        bDocGen.setStyleSheet("Text-align: left")
-        section1.add_button(bDocGen)
+        # bDocGen = QvPushButton('1.3 Document general (guia lectura, info de cada marxa, annexos barri',flat=True)
+        # bDocGen.setStyleSheet("Text-align: left")
+        # section1.add_button(bDocGen)
         
         lytMarxes.addWidget(section1)
         
@@ -210,32 +211,32 @@ class Pepi(QDockWidget):
         bDoc9.clicked.connect(self.mostrarDoc9)
         bDoc10.clicked.connect(self.mostrarDoc10)
 
-        bMapa.clicked.connect(self.mostrarMapa)
-        bDocGen.clicked.connect(self.mostrarDocGen)
+        # bMapa.clicked.connect(self.mostrarMapa)
+        # bDocGen.clicked.connect(self.mostrarDocGen)
 
-        bMarxes1.clicked.connect(self.mostrarColl)
-        bMarxes2.clicked.connect(self.mostrarSalut)
-        bMarxes3.clicked.connect(self.mostrarBesos)
-        bMarxes4.clicked.connect(self.mostrarBonPastor)
-        bMarxes5.clicked.connect(self.mostrarTNova)
-        bMarxes6.clicked.connect(self.mostrarTVella)
-        bMarxes7.clicked.connect(self.mostrarGracia)
-        bMarxes8.clicked.connect(self.mostrarVallcarca)
-        bMarxes9.clicked.connect(self.mostrarMarina)
-        bMarxes10.clicked.connect(self.mostrarGrassot)
-        bMarxes11.clicked.connect(self.mostrarVerneda)
+        # bMarxes1.clicked.connect(self.mostrarColl)
+        # bMarxes2.clicked.connect(self.mostrarSalut)
+        # bMarxes3.clicked.connect(self.mostrarBesos)
+        # bMarxes4.clicked.connect(self.mostrarBonPastor)
+        # bMarxes5.clicked.connect(self.mostrarTNova)
+        # bMarxes6.clicked.connect(self.mostrarTVella)
+        # bMarxes7.clicked.connect(self.mostrarGracia)
+        # bMarxes8.clicked.connect(self.mostrarVallcarca)
+        # bMarxes9.clicked.connect(self.mostrarMarina)
+        # bMarxes10.clicked.connect(self.mostrarGrassot)
+        # bMarxes11.clicked.connect(self.mostrarVerneda)
 
         
-        bMarxes1_1.clicked.connect(self.mostrarInformeG)
-        bMarxes1_2.clicked.connect(self.mostrarInformeTN)
-        bMarxes1_3.clicked.connect(self.mostrarInformeTV)
-        bMarxes1_4.clicked.connect(self.mostrarInformeBP)
-        bMarxes1_5.clicked.connect(self.mostrarInformeVP)
-        bMarxes1_6.clicked.connect(self.mostrarInformeBM)
-        bMarxes1_7.clicked.connect(self.mostrarInformeMPV)
+        # bMarxes1_1.clicked.connect(self.mostrarInformeG)
+        # bMarxes1_2.clicked.connect(self.mostrarInformeTN)
+        # bMarxes1_3.clicked.connect(self.mostrarInformeTV)
+        # bMarxes1_4.clicked.connect(self.mostrarInformeBP)
+        # bMarxes1_5.clicked.connect(self.mostrarInformeVP)
+        # bMarxes1_6.clicked.connect(self.mostrarInformeBM)
+        # bMarxes1_7.clicked.connect(self.mostrarInformeMPV)
 
-        bMarxes2_1.clicked.connect(self.mostrarRetornTrinitatVella)
-        bMarxes2_2.clicked.connect(self.mostrarRetornBonPastor)
+        # bMarxes2_1.clicked.connect(self.mostrarRetornTrinitatVella)
+        # bMarxes2_2.clicked.connect(self.mostrarRetornBonPastor)
 
 
         # self.browserMarxes = QWebView()
