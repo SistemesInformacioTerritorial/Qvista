@@ -111,7 +111,7 @@ class Pepi(QDockWidget):
         lytMarxes.addWidget(section1)
         
         # ========== SECCIÓN 2: RECULL INFORMATIU DE CADA MARXA ==========
-        section2 = CollapsibleSection('2.1- Recull informatiu de cada marxa')
+        section2 = CollapsibleSection('Altres qualificacions 1')
         
         bMarxes1 = QvPushButton('   el Coll', flat=True)
         bMarxes1.setStyleSheet("Text-align: left")
@@ -152,7 +152,7 @@ class Pepi(QDockWidget):
         lytMarxes.addWidget(section2)
         
         # ========== SECCIÓN 3: INFORME DE RESULTATS ==========
-        section3 = CollapsibleSection('2.2- Informe de resultats de cada marxa')
+        section3 = CollapsibleSection('Altres qualificacions 2')
         
         bMarxes1_1 = QvPushButton('Districte de Gràcia (totes les marxes)', flat=True)
         bMarxes1_1.setStyleSheet("Text-align: left")
@@ -181,7 +181,7 @@ class Pepi(QDockWidget):
         lytMarxes.addWidget(section3)
         
         # ========== SECCIÓN 4: DOCUMENTS DE RETORN ==========
-        section4 = CollapsibleSection('2.3- Document de retorn')
+        section4 = CollapsibleSection('Altres qualificacions 3')
         
         bMarxes2_1 = QvPushButton('la Trinittat Vella', flat=True)
         bMarxes2_1.setStyleSheet("Text-align: left")
