@@ -1,0 +1,1168 @@
+================================================================================
+                        DOCUMENTACIÓN CLASE QvCanvas
+                   Canvas Principal de Visualización Cartográfica
+================================================================================
+
+PROYECTO: qVista - Visor Cartográfico Personalizado
+MÓDULO: moduls/QvCanvas.py
+CLASE PRINCIPAL: QvCanvas
+LÍNEAS DE CÓDIGO: 686 líneas
+LENGUAJE: Python 3 con PyQt5 y QGIS 3.x
+ÚLTIMA ACTUALIZACIÓN: Noviembre 2025
+
+
+TABLA DE CONTENIDOS:
+====================
+
+1. Visión General
+2. Propósito y Responsabilidades
+3. Herencia y Estructura
+4. Señales (Qt Signals)
+5. Métodos Principales
+6. Atributos Principales
+7. Gestión de Herramientas de Mapa
+8. Gestión de Botones
+9. Integración con Leyenda
+10. Temas y Vistas Múltiples
+11. Casos de Uso
+12. Configuración y Personalización
+
+
+═══════════════════════════════════════════════════════════════════════════════
+1. VISIÓN GENERAL
+═══════════════════════════════════════════════════════════════════════════════
+
+¿QUÉ ES QvCanvas?
+─────────────────
+QvCanvas es la clase principal que encapsula el lienzo de visualización de QGIS
+(QgsMapCanvas) en qVista, proporcionando una interfaz mejorada con:
+
+  • Herramientas de navegación integradas (pan, zoom)
+  • Barra de herramientas personalizable (botonera)
+  • Gestión avanzada de herramientas de mapa
+  • Integración con leyenda y temas
+  • Street View
+  • Mediciones gráficas
+  • Anotaciones
+  • Copiar al portapapeles
+  • Selección de elementos
+
+
+UBICACIÓN:
+──────────
+  d:\qVista\Codi\moduls\QvCanvas.py
+
+
+DEPENDENCIAS PRINCIPALES:
+─────────────────────────
+  • qgis.gui.QgsMapCanvas (clase base)
+  • qgis.core (QgsProject, QgsMapThemeCollection)
+  • PyQt5 (QtWidgets, QtGui, QtCore)
+  • moduls.QvPushButton (botones personalizados)
+  • moduls.QvConstants (constantes y utilidades)
+  • moduls.QvStreetView (Street View)
+  • moduls.QvEinesGrafiques (herramientas gráficas)
+
+
+═══════════════════════════════════════════════════════════════════════════════
+2. PROPÓSITO Y RESPONSABILIDADES
+═══════════════════════════════════════════════════════════════════════════════
+
+PROPÓSITO PRINCIPAL:
+────────────────────
+Proporcionar un canvas (lienzo) de visualización cartográfica con todas las
+herramientas necesarias para que los usuarios puedan:
+
+  ✓ Ver y navegar por mapas
+  ✓ Hacer zoom, pan, medir distancias
+  ✓ Seleccionar elementos geográficos
+  ✓ Ver información en tiempo real
+  ✓ Cambiar entre diferentes temas/vistas
+  ✓ Anotar información
+  ✓ Usar Street View
+
+
+RESPONSABILIDADES:
+──────────────────
+
+A. RENDERIZACIÓN Y VISUALIZACIÓN:
+   • Mostrar capas del proyecto QGIS
+   • Actualizar visualización
+   • Gestionar color de fondo
+   • Aplicar temas (diferentes simbologías)
+
+B. NAVEGACIÓN:
+   • Pan (desplazamiento)
+   • Zoom In (acercarse)
+   • Zoom Out (alejarse)
+   • Centrar mapa
+   • Retroceder/avanzar en historial
+
+C. HERRAMIENTAS DE MAPA:
+   • Gestionar herramientas activas
+   • Cambiar herramientas dinámicamente
+   • Mantener pila de herramientas
+   • Sincronizar botones con herramientas
+
+D. INTERFAZ DE USUARIO:
+   • Crear y gestionar barra de herramientas (botonera)
+   • Añadir botones personalizados
+   • Mostrar/ocultar elementos
+   • Gestionar tooltips y cursores
+
+E. INTEGRACIÓN CON LEYENDA:
+   • Vincular con QvLlegenda
+   • Sincronizar capas visibles
+   • Cambiar entre temas
+
+F. HERRAMIENTAS ESPECIALIZADAS:
+   • Street View (mapeo visual)
+   • Mediciones gráficas
+   • Anotaciones
+   • Selección de elementos
+
+
+═══════════════════════════════════════════════════════════════════════════════
+3. HERENCIA Y ESTRUCTURA
+═══════════════════════════════════════════════════════════════════════════════
+
+JERARQUÍA DE CLASES:
+────────────────────
+
+    QgsMapCanvas (QGIS)
+          ↑
+          │ hereda
+          │
+       QvCanvas (qVista)
+          │
+          ├─ Señales (signals)
+          ├─ Métodos de navegación
+          ├─ Métodos de herramientas
+          ├─ Métodos de botones
+          ├─ Métodos de temas
+          └─ Métodos de utilidad
+
+
+ATRIBUTOS ESTRUCTURALES:
+─────────────────────────
+
+QvCanvas
+├── Configuración básica
+│   ├─ pare (QWidget) - Widget padre
+│   ├─ llegenda (QvLlegenda) - Leyenda vinculada
+│   ├─ llistaBotons (list) - Botones a mostrar
+│   ├─ botoneraHoritzontal (bool) - Orientación botonera
+│   └─ posicioBotonera (str) - Posición: 'NE', 'NO', 'SE', 'SO'
+│
+├── Estructura de interfaz
+│   ├─ botoneraMapa (QFrame) - Marco de botones
+│   ├─ layoutBotoneraMapa (QLayout) - Layout de botones
+│   ├─ _botons (list) - Lista de botones activos
+│   ├─ einesBotons (dict) - Mapeo herramienta→botón
+│   └─ cbTemes (QComboBox) - Selector de temas
+│
+├── Herramientas de mapa
+│   ├─ eines (list) - Pila de herramientas
+│   ├─ tool_pan - Herramienta de pan
+│   ├─ tool_zoomin - Herramienta zoom in
+│   ├─ tool_zoomout - Herramienta zoom out
+│   ├─ tool - Herramienta selección
+│   └─ qvSv (QvStreetView) - Street View
+│
+├── Street View
+│   └─ qvSv (QvStreetView) - Herramienta de Street View
+│
+└── Propiedades QGIS
+    └─ Color de selección: amarillo
+
+
+═══════════════════════════════════════════════════════════════════════════════
+4. SEÑALES (QT SIGNALS)
+═══════════════════════════════════════════════════════════════════════════════
+
+Las señales permiten que otros componentes reaccionen a eventos del canvas:
+
+SEÑAL: canviMaximitza
+───────────────────────
+  • Se emite cuando: Presiona F11 (pantalla completa)
+  • Parámetros: Ninguno
+  • Uso: Cambiar a modo pantalla completa
+  
+  Ejemplo:
+    canvas.canviMaximitza.connect(aplicacion.pantallaCopleta)
+
+
+SEÑAL: desMaximitza
+─────────────────────
+  • Se emite cuando: Presiona Escape (salir pantalla completa)
+  • Parámetros: Ninguno
+  • Uso: Salir de pantalla completa
+  
+  Ejemplo:
+    canvas.desMaximitza.connect(aplicacion.modo_ventana)
+
+
+SEÑAL: mostraStreetView
+────────────────────────
+  • Se emite cuando: Se arrastra botón Street View a posición
+  • Parámetros: Ninguno
+  • Uso: Mostrar Street View en ubicación
+  
+  Ejemplo:
+    canvas.mostraStreetView.connect(self.qvSv.show)
+
+
+SEÑAL: Sig_QuienMeClica
+──────────────────────────
+  • Se emite cuando: Canvas recibe foco (click)
+  • Parámetros: str (ID del canvas)
+  • Uso: Identificar qué canvas fue clickeado
+  • Nota: Usada en multicanvas (qMaBIM, temas)
+  
+  Ejemplo:
+    canvas.Sig_QuienMeClica.connect(manejar_foco)
+
+
+═══════════════════════════════════════════════════════════════════════════════
+5. MÉTODOS PRINCIPALES
+═══════════════════════════════════════════════════════════════════════════════
+
+CONSTRUCTOR:
+─────────────
+
+__init__(pare=None, llistaBotons=[...], botoneraHoritzontal=True,
+         posicioBotonera='NO', mapesBase=False, llegenda=None)
+
+  Inicializa el canvas con configuración personalizada.
+
+  Parámetros:
+    pare (QWidget) - Widget padre (None = ventana independiente)
+    
+    llistaBotons (list) - Botones a mostrar:
+      • 'zoomIn' - Zoom acercarse
+      • 'zoomOut' - Zoom alejarse
+      • 'panning' - Desplazamiento
+      • 'centrar' - Centrar mapa
+      • 'apuntar' - Seleccionar elemento
+      • 'enrere' - Vista anterior
+      • 'endavant' - Vista siguiente
+      • 'anotacions' - Anotaciones (QGIS 3.10+)
+      • 'streetview' - Street View
+      • 'maximitza' - Pantalla completa
+      • None = sin botonera
+    
+    botoneraHoritzontal (bool) - True: horizontal, False: vertical
+    
+    posicioBotonera (str) - Posición de la botonera:
+      • 'NE' - Esquina superior derecha
+      • 'NO' - Esquina superior izquierda
+      • 'SE' - Esquina inferior derecha
+      • 'SO' - Esquina inferior izquierda
+    
+    mapesBase (bool) - (No documentado)
+    
+    llegenda (QvLlegenda) - Leyenda para integración
+
+  Proceso de inicialización:
+    1. Configura canvas QGIS
+    2. Selecciona color amarillo para selección
+    3. Configura aceptación de drag&drop
+    4. Crea botonera según versión de QGIS
+    5. Inicializa herramientas (pan por defecto)
+    6. Prepara Street View
+    7. Conecta evento de lectura de proyecto
+
+
+MÉTODOS DE NAVEGACIÓN:
+─────────────────────
+
+panCanvas()
+  Activa herramienta de pan (desplazamiento)
+  
+  Proceso:
+  1. Verifica si botón está activado
+  2. Crea QgsMapToolPan
+  3. Establece cursor especial
+  4. Activa herramienta
+  
+  Si ya estaba activada, desactiva
+
+zoomIn()
+  Activa herramienta de zoom acercarse
+  
+  Proceso:
+  1. Crea QgsMapToolZoom con False (in)
+  2. Establece cursor especial zoom in
+  3. Activa herramienta
+
+zoomOut()
+  Activa herramienta de zoom alejarse
+  
+  Proceso:
+  1. Crea QgsMapToolZoom con True (out)
+  2. Establece cursor especial zoom out
+  3. Activa herramienta
+
+centrarMapa()
+  Centra vista y ajusta a extensión completa
+  
+  Proceso:
+  1. Llama zoomToFullExtent() (QGIS)
+  2. Refresca canvas
+  3. Desactiva botón centrar
+  
+  Equivalente a: F (en QGIS)
+
+
+MÉTODOS DE SELECCIÓN Y HERRAMIENTAS:
+──────────────────────────────────────
+
+seleccioClick()
+  Activa herramienta de selección de elementos
+  
+  Proceso:
+  1. Verifica si botón está activado
+  2. Limpia selecciones y mediciones previas
+  3. Crea QvSeleccioElement
+  4. Establece cursor especial (dedo)
+  5. Activa herramienta
+  
+  La herramienta permite:
+  • Click en elemento para seleccionarlo
+  • Doble click para ver atributos
+
+anotacions()
+  Activa herramienta de anotaciones (QGIS 3.10+)
+  
+  Proceso:
+  1. Verifica que llegenda tiene anotaciones
+  2. Si no: muestra mensaje de error
+  3. Si sí: activa herramienta
+  
+  Nota: Solo funciona en QGIS >= 3.10
+
+copyToClipboard()
+  Copia captura del mapa al portapapeles
+  
+  Proceso:
+  1. Guarda canvas como imagen PNG (temporal)
+  2. Copia imagen del portapapeles de aplicación
+  3. Elimina archivo temporal
+  
+  Permite: Ctrl+C para copiar vista
+
+
+MÉTODOS DE GESTIÓN DE HERRAMIENTAS:
+─────────────────────────────────────
+
+setMapTool(tool)
+  Establece herramienta activa y mantiene historial
+  
+  Parámetros:
+    tool (QgsMapTool) - Herramienta a activar
+  
+  Proceso:
+  1. Si es herramienta de máscara: elimina duplicados
+  2. Llama setMapTool() padre
+  3. Añade herramienta a pila (self.eines)
+  4. Activa botón asociado si existe
+  5. Desactiva otros botones
+
+unsetMapTool(eina, ultima=False)
+  Desactiva herramienta y restaura anterior
+  
+  Parámetros:
+    eina (QgsMapTool) - Herramienta a desactivar
+    ultima (bool) - Si es la última vez
+  
+  Proceso:
+  1. Desactiva herramienta en QGIS
+  2. Si es máscara: elimina rubberbands
+  3. Restaura herramienta anterior de pila
+  4. Actualiza botón
+
+unsetLastMapTool()
+  Desactiva última herramienta del historial
+  
+  Uso: Presionar Escape o clic derecho
+  
+  Restaura automáticamente la herramienta anterior
+
+uncheckBotons(aExcepcio=None)
+  Desactiva todos los botones excepto uno
+  
+  Parámetros:
+    aExcepcio (QPushButton) - Botón que no desactivar (None = todos)
+  
+  Uso: Cuando se activa una herramienta
+
+
+MÉTODOS DE LEYENDA Y TEMAS:
+──────────────────────────
+
+setLlegenda(llegenda)
+  Vincula una leyenda al canvas
+  
+  Parámetros:
+    llegenda (QvLlegenda) - Leyenda a vincular
+  
+  Proceso:
+  1. Almacena referencia
+  2. Conecta cambios de tema en leyenda
+  3. Actualiza ComboBox de temas
+
+actualitzaTemes()
+  Actualiza lista de temas disponibles
+  
+  Se llama automáticamente cuando:
+  • Se carga un proyecto
+  • Se modifican temas
+  
+  Proceso:
+  1. Obtiene lista de temas de leyenda
+  2. Rellena ComboBox
+  3. Oculta ComboBox si solo hay 1 tema
+
+canviTema(i)
+  Cambia al tema especificado
+  
+  Parámetros:
+    i (int) - Índice del tema (0-based)
+  
+  Proceso:
+  1. Obtiene nombre del tema
+  2. Aplica tema mediante leyenda
+  3. Renderiza canvas
+
+temaActualitzatLlegenda(act)
+  Sincroniza ComboBox cuando cambia tema en leyenda
+  
+  Se conecta a: llegenda.tema.menu.triggered
+
+
+MÉTODOS DE STREET VIEW:
+────────────────────────
+
+preparacioStreetView()
+  Inicializa herramienta de Street View
+  
+  Proceso:
+  1. Crea QvStreetView
+  2. La oculta inicialmente
+  3. Configura para arrastre
+
+getStreetView()
+  Obtiene referencia a herramienta Street View
+  
+  Retorna:
+    QvStreetView
+
+amagaStreetView()
+  Oculta ventana de Street View
+
+
+MÉTODOS DE BOTONES:
+────────────────────
+
+afegirBotoCustom(nomBoto, imatge=None, toolTip=None, posicio=-1)
+  Añade botón personalizado a la botonera
+  
+  Parámetros:
+    nomBoto (str) - Nombre de variable del botón
+                    Se asignará como self.{nomBoto}
+    imatge (str) - Ruta de imagen para icono
+    toolTip (str) - Texto de ayuda del botón
+    posicio (int) - Posición en botonera (-1 = final)
+  
+  Retorna:
+    QvPushButton - Botón creado
+  
+  Ejemplo:
+    boto = canvas.afegirBotoCustom('botoMiedo', 'miedo.png', 'Botón miedo')
+    boto.clicked.connect(mi_funcion)
+  
+  Nota: Evita nombres duplicados añadiendo _
+
+
+_preparacioBotonsCanvasNova()
+  Configura botonera usando API nueva de QGIS (3.38+)
+  
+  Proceso:
+  1. Crea QFrame para botonera
+  2. Crea layout (H o V)
+  3. Añade como overlay widget al canvas
+  4. Posiciona según posicioBotonera
+  5. Llama _botonsCanvas()
+
+_preparacioBotonsCanvas()
+  Configura botonera usando API clásica (QGIS < 3.38)
+  
+  Proceso:
+  1. Crea layouts para canvas y botonera
+  2. Coloca botonera en posición especificada
+  3. Añade spacers para ocupar espacio
+  4. Llama _botonsCanvas()
+
+_botonsCanvas()
+  Crea todos los botones configurados
+  
+  Proceso:
+  1. Define diccionario SETUP_BOTONS con configuración
+  2. Para cada botón en llistaBotons:
+     - Crea QvPushButton
+     - Asigna icono
+     - Asigna tooltip
+     - Conecta signal clicked
+     - Añade a layout
+  3. Crea ComboBox de temas
+  4. Crea botones de muestra
+
+
+_botoMapa(imatge=None)
+  Crea un botón base para el canvas
+  
+  Parámetros:
+    imatge (str) - Ruta de icono (None = sin icono)
+  
+  Retorna:
+    QvPushButton - Botón configurado
+  
+  Propiedades:
+  • Flat (sin borde)
+  • Checkable (se queda marcado)
+  • Fondo blanco semi-transparente
+  • Icono 24x24px
+  • Opacidad 50%
+
+
+MÉTODOS DE CONTROL DE EVENTOS:
+──────────────────────────────
+
+keyPressEvent(event)
+  Maneja presión de teclas
+  
+  Teclas especiales:
+    Escape - Desactiva herramientas
+    F11 - Alterna pantalla completa
+    F2 - Debug (imprime zoom actual)
+  
+  Proceso:
+  1. Llama keyPressEvent() padre (para herramientas)
+  2. Procesa teclas especiales
+  3. Emite señales apropiadas
+
+focusInEvent(event)
+  Se ejecuta cuando canvas recibe foco
+  
+  Proceso:
+  1. Emite Sig_QuienMeClica con ID del canvas
+  2. Usado para identificar multicanvas
+
+dragEnterEvent(e)
+  Maneja entrada de arrastre
+  
+  Acción: Acepta evento
+
+dropEvent(e)
+  Maneja suelta de elementos arrastrados
+  
+  Casos especiales:
+  • Si es Street View: coloca marca en posición
+  • Si es otro: llama dropEvent() padre
+
+
+MÉTODOS DE UTILIDAD:
+─────────────────────
+
+testDigitizeTool(eina)
+  Verifica si herramienta es de digitalización
+  
+  Parámetros:
+    eina (QgsMapTool) - Herramienta a verificar
+  
+  Retorna:
+    bool - True si es QgsMapToolDigitizeFeature
+  
+  Nota: Solo en QGIS 3.10+
+
+mousePressEvent(event)
+  Maneja clic del ratón
+  
+  Casos especiales:
+  • Clic derecho: desactiva última herramienta
+  • Si es digitalización: ignora clic derecho
+
+
+═══════════════════════════════════════════════════════════════════════════════
+6. ATRIBUTOS PRINCIPALES
+═══════════════════════════════════════════════════════════════════════════════
+
+ATRIBUTOS DE CONFIGURACIÓN:
+─────────────────────────────
+
+self.pare (QWidget)
+  Widget padre del canvas
+
+self.llegenda (QvLlegenda)
+  Leyenda vinculada (None si no hay)
+
+self.llistaBotons (list)
+  Lista de botones a mostrar
+
+self.botoneraHoritzontal (bool)
+  True = horizontal, False = vertical
+
+self.posicioBotonera (str)
+  'NE', 'NO', 'SE', 'SO'
+
+
+ATRIBUTOS DE INTERFAZ:
+──────────────────────
+
+self.botoneraMapa (QFrame)
+  Marco contenedor de botones
+
+self.layoutBotoneraMapa (QLayout)
+  Layout de botones (QHBoxLayout o QVBoxLayout)
+
+self._botons (list)
+  Lista de todos los botones activos
+
+self.cbTemes (QComboBox)
+  ComboBox para seleccionar temas
+
+self.butoMostra (QvPushButton)
+  Botón de muestra 1
+
+self.butoMostra2 (QvPushButton)
+  Botón de muestra 2
+
+
+ATRIBUTOS DE BOTONES ESTÁNDAR:
+───────────────────────────────
+
+Se crean dinámicamente según llistaBotons:
+
+self.bPanning - Botón de pan
+self.bZoomIn - Botón zoom in
+self.bZoomOut - Botón zoom out
+self.bCentrar - Botón centrar
+self.bApuntar - Botón seleccionar
+self.bEnrere - Botón vista anterior
+self.bEndavant - Botón vista siguiente
+self.bAnotacions - Botón anotaciones
+self.bstreetview - Botón Street View
+self.bMaximitza - Botón pantalla completa
+
+
+ATRIBUTOS DE HERRAMIENTAS:
+────────────────────────────
+
+self.eines (list)
+  Pila de herramientas activas
+  Última elemento = herramienta actual
+
+self.einesBotons (dict)
+  Mapeo {herramienta → botón}
+  Permite sincronizar botones con herramientas
+
+self.tool_pan (QgsMapToolPan)
+  Herramienta de pan
+
+self.tool_zoomin (QgsMapToolZoom)
+  Herramienta zoom in
+
+self.tool_zoomout (QgsMapToolZoom)
+  Herramienta zoom out
+
+self.tool (QvSeleccioElement)
+  Herramienta de selección
+
+
+ATRIBUTOS DE STREET VIEW:
+──────────────────────────
+
+self.qvSv (QvStreetView)
+  Herramienta y ventana de Street View
+
+
+═══════════════════════════════════════════════════════════════════════════════
+7. GESTIÓN DE HERRAMIENTAS DE MAPA
+═══════════════════════════════════════════════════════════════════════════════
+
+CONCEPTO:
+─────────
+QvCanvas mantiene una pila (stack) de herramientas para permitir:
+  • Cambiar de herramienta fácilmente
+  • Volver a herramienta anterior
+  • Desactivar herramientas cuando sea apropiado
+
+
+DIAGRAMA DE PILA:
+
+Inicio (pan):
+    ┌─────────────┐
+    │ QgsMapToolPan
+    └─────────────┘
+
+Usuario hace clic en Zoom In:
+    ┌─────────────────────┐
+    │ QgsMapToolZoom(in)  │ ← Actual
+    ├─────────────────────┤
+    │ QgsMapToolPan       │
+    └─────────────────────┘
+
+Usuario presiona Escape:
+    ┌─────────────┐
+    │ QgsMapToolPan
+    └─────────────┘ ← Se restaura automáticamente
+
+
+FLUJO DE CAMBIO DE HERRAMIENTA:
+
+Usuario hace clic en botón
+    ↓
+Se ejecuta método (zoomIn(), panCanvas(), etc.)
+    ↓
+Verifica si herramienta ya está activa
+    ├─ Si sí: desactiva
+    └─ Si no: crea y activa
+    ↓
+self.setMapTool(nueva_herramienta)
+    ├─ Desactiva botones actuales
+    ├─ Activa nuevo botón
+    ├─ Añade a pila (self.eines)
+    └─ Renderiza canvas
+    ↓
+Usuario ve herramienta activa
+
+
+═══════════════════════════════════════════════════════════════════════════════
+8. GESTIÓN DE BOTONES
+═══════════════════════════════════════════════════════════════════════════════
+
+BOTONES ESTÁNDAR DISPONIBLES:
+──────────────────────────────
+
+┌─ apuntar
+│  ├─ Icono: apuntar.png
+│  ├─ ToolTip: "Veure informació d'un objecte"
+│  ├─ Función: seleccioClick()
+│  ├─ Checkable: True
+│  └─ Usa: QvSeleccioElement
+
+├─ panning
+│  ├─ Icono: pan_tool_black_24x24.png
+│  ├─ ToolTip: "Desplaçar el mapa"
+│  ├─ Función: panCanvas()
+│  ├─ Checkable: True
+│  └─ Usa: QgsMapToolPan
+
+├─ centrar
+│  ├─ Icono: fit.png
+│  ├─ ToolTip: "Enquadrar el mapa complet"
+│  ├─ Función: centrarMapa()
+│  ├─ Checkable: False
+│  └─ Acción: Zoom to full extent
+
+├─ zoomIn
+│  ├─ Icono: zoom_in.png
+│  ├─ ToolTip: "Zoom per apropar-se"
+│  ├─ Función: zoomIn()
+│  ├─ Checkable: True
+│  └─ Usa: QgsMapToolZoom(False)
+
+├─ zoomOut
+│  ├─ Icono: zoom_out.png
+│  ├─ ToolTip: "Zoom per allunyar-se"
+│  ├─ Función: zoomOut()
+│  ├─ Checkable: True
+│  └─ Usa: QgsMapToolZoom(True)
+
+├─ enrere
+│  ├─ Icono: qv_vista_anterior.png
+│  ├─ ToolTip: "Retrocedir al zoom anterior"
+│  ├─ Función: zoomToPreviousExtent()
+│  ├─ Checkable: False
+│  └─ Hereda de: QgsMapCanvas
+
+├─ endavant
+│  ├─ Icono: qv_vista_seguent.png
+│  ├─ ToolTip: "Avançar al zoom següent"
+│  ├─ Función: zoomToNextExtent()
+│  ├─ Checkable: False
+│  └─ Hereda de: QgsMapCanvas
+
+├─ anotacions
+│  ├─ Icono: anotacions.png
+│  ├─ ToolTip: "Gestió d'anotacions"
+│  ├─ Función: anotacions()
+│  ├─ Checkable: True
+│  ├─ Requiere: QGIS 3.10+
+│  └─ Usa: llegenda.anotacions
+
+├─ streetview
+│  ├─ Icono: littleMan.png
+│  ├─ ToolTip: "Google Street view"
+│  ├─ Función: setDragable(True)
+│  ├─ Checkable: False
+│  ├─ Draggable: True
+│  └─ Usa: qvSv.rp.llevameP()
+
+└─ maximitza
+   ├─ Icono: fullscreen.png
+   ├─ ToolTip: "Pantalla completa (F11)"
+   ├─ Función: emit canviMaximitza
+   ├─ Checkable: False
+   └─ Actualiza icono según estado
+
+
+CREAR BOTONES PERSONALIZADOS:
+───────────────────────────────
+
+Opción 1: Usar afegirBotoCustom()
+
+    boto = canvas.afegirBotoCustom(
+        'botoMiBoton',
+        'ruta/icono.png',
+        'Tooltip',
+        posicio=2
+    )
+    boto.clicked.connect(mi_funcion)
+
+
+Opción 2: Extender SETUP_BOTONS
+
+    Modificar _botonsCanvas():
+    
+    SETUP_BOTONS['miboto'] = {
+        'nom_var': 'bMiBoto',
+        'icona': 'miicono.png',
+        'toolTip': 'Mi botón',
+        'clicked': self.miFuncion
+    }
+
+
+═══════════════════════════════════════════════════════════════════════════════
+9. INTEGRACIÓN CON LEYENDA
+═══════════════════════════════════════════════════════════════════════════════
+
+VINCULAR LEYENDA:
+─────────────────
+
+En constructor:
+    canvas = QvCanvas(llistaBotons=['...'], llegenda=leyenda)
+
+O después:
+    canvas.setLlegenda(leyenda)
+
+
+FUNCIONALIDADES INTEGRADAS:
+
+1. CAMBIO DE TEMAS:
+   
+   • Canvas muestra ComboBox de temas en botonera
+   • Cuando usuario selecciona tema:
+     ├─ ComboBox emite currentIndexChanged(i)
+     ├─ Se ejecuta canviTema(i)
+     ├─ Se ejecuta llegenda.tema.aplicaTema()
+     └─ Canvas renderiza nuevo tema
+   
+   • Si leyenda modifica tema:
+     ├─ Emite signal temaActualitzatLlegenda()
+     ├─ Canvas actualiza ComboBox
+     └─ Sincronización perfecta
+
+2. SINCRONIZACIÓN DE HERRAMIENTAS:
+
+   • Algunas herramientas dependen de leyenda
+   • Ejemplo: QvSeleccioElement necesita capas
+   • QvCanvas pasa self.llegenda a herramientas
+
+
+═══════════════════════════════════════════════════════════════════════════════
+10. TEMAS Y VISTAS MÚLTIPLES
+═══════════════════════════════════════════════════════════════════════════════
+
+¿QUÉ SON TEMAS?
+───────────────
+Diferentes simbologías del mismo proyecto QGIS.
+Permiten ver mismos datos con diferentes estilos.
+
+
+FLUJO DE TEMAS:
+
+Proyecto QGIS se carga
+    ↓
+actualitzaTemes() se ejecuta automáticamente
+    ├─ Obtiene temas de llegenda.tema.temes()
+    ├─ Rellena ComboBox con nombres
+    └─ Oculta ComboBox si solo 1 tema
+    ↓
+Usuario selecciona tema en ComboBox
+    ↓
+canviTema(i) se ejecuta
+    ├─ Obtiene nombre del tema
+    ├─ Llama llegenda.tema.aplicaTema()
+    └─ Canvas renderiza
+
+Cuando leyenda modifica tema (desde otro canvas):
+    ↓
+temaActualitzatLlegenda() se ejecuta
+    └─ Actualiza ComboBox para sincronizar
+
+
+MULTICANVAS CON TEMAS:
+
+En qMaBIM:
+    • Canvas principal + canvas temático
+    • Comparten mismo proyecto
+    • Pueden mostrar temas diferentes
+    • Se sincronizan automáticamente
+
+
+═══════════════════════════════════════════════════════════════════════════════
+11. CASOS DE USO
+═══════════════════════════════════════════════════════════════════════════════
+
+CASO 1: CREAR CANVAS BÁSICO
+────────────────────────────
+
+from moduls.QvCanvas import QvCanvas
+from qgis.gui import QgsLayerTreeMapCanvasBridge
+
+# Crear canvas
+canvas = QvCanvas(
+    llistaBotons=['panning', 'zoomIn', 'zoomOut', 'centrar'],
+    posicioBotonera='SE'
+)
+
+# Vincular a proyecto
+project = QgsProject.instance()
+root = project.layerTreeRoot()
+bridge = QgsLayerTreeMapCanvasBridge(root, canvas)
+
+# Cargar proyecto
+project.read('mapa.qgs')
+
+# Mostrar
+canvas.show()
+
+
+CASO 2: CANVAS CON LEYENDA Y ATRIBUTOS
+───────────────────────────────────────
+
+from moduls.QvCanvas import QvCanvas
+from moduls.QvLlegenda import QvLlegenda
+from moduls.QvAtributs import QvAtributs
+
+# Crear componentes
+canvas = QvCanvas(llistaBotons=['panning', 'zoomIn', 'apuntar'])
+atributs = QvAtributs(canvas)
+leyenda = QvLlegenda(canvas, atributs)
+
+# Vincular
+canvas.setLlegenda(leyenda)
+
+# Usar en aplicación
+mainWindow.setCentralWidget(canvas)
+mainWindow.addDockWidget(Qt.LeftDockWidgetArea, leyenda)
+
+
+CASO 3: AÑADIR BOTONES PERSONALIZADOS
+──────────────────────────────────────
+
+canvas = QvCanvas(llistaBotons=['panning', 'zoomIn'])
+
+# Añadir botón personalizado
+boto_medir = canvas.afegirBotoCustom(
+    'botoMedir',
+    'iconos/regla.png',
+    'Medir distancias',
+    posicio=2
+)
+
+# Conectar función
+def medir():
+    print("Midiendo...")
+
+boto_medir.clicked.connect(medir)
+
+
+CASO 4: MULTICANVAS (qMaBIM)
+─────────────────────────────
+
+# Crear canvases
+canvas_principal = QvCanvas(llistaBotons=['panning', 'zoomIn'])
+canvas_tema = QvCanvas(llistaBotons=['panning', 'zoomIn'])
+
+# Vincular misma leyenda
+leyenda = QvLlegenda(canvas_principal)
+canvas_principal.setLlegenda(leyenda)
+canvas_tema.setLlegenda(leyenda)
+
+# Ahora:
+# • Ambos muestran mismos datos
+# • Pueden tener temas diferentes
+# • Se sincronizan automáticamente
+
+
+CASO 5: MANEJAR EVENTOS DE HERRAMIENTAS
+─────────────────────────────────────────
+
+canvas = QvCanvas()
+
+# Cuando se activa herramienta de zoom
+def al_activar_zoom():
+    print("Zoom activado")
+
+# Cuando se desactiva
+def al_desactivar_zoom():
+    print("Zoom desactivado")
+
+# Conectar al botón
+canvas.bZoomIn.clicked.connect(al_activar_zoom)
+
+
+═══════════════════════════════════════════════════════════════════════════════
+12. CONFIGURACIÓN Y PERSONALIZACIÓN
+═══════════════════════════════════════════════════════════════════════════════
+
+CONFIGURACIÓN DE BOTONERA:
+──────────────────────────
+
+Orientación:
+    botoneraHoritzontal=True   # Horizontal (default)
+    botoneraHoritzontal=False  # Vertical
+
+Posición:
+    posicioBotonera='NE'  # Arriba derecha
+    posicioBotonera='NO'  # Arriba izquierda (default)
+    posicioBotonera='SE'  # Abajo derecha
+    posicioBotonera='SO'  # Abajo izquierda
+
+Botones a mostrar:
+    llistaBotons=['panning', 'zoomIn', 'zoomOut', 'centrar']
+    llistaBotons=None     # Sin botonera
+
+
+PERSONALIZACIÓN DE BOTONES:
+──────────────────────────
+
+Cambiar icono:
+    boto = canvas.bPanning
+    boto.setIcon(QIcon('nuevo_icono.png'))
+
+Cambiar tooltip:
+    canvas.bPanning.setToolTip('Nuevo tooltip')
+
+Cambiar color:
+    canvas.bPanning.setStyleSheet(
+        'background: red; color: white;'
+    )
+
+Cambiar tamaño:
+    canvas.bPanning.setIconSize(QSize(32, 32))
+
+Deshabilitar botón:
+    canvas.bPanning.setEnabled(False)
+
+
+PERSONALIZACIÓN DEL CANVAS:
+──────────────────────────
+
+Color de fondo:
+    canvas.setCanvasColor(QColor(200, 200, 200))
+
+Color de selección:
+    Configurado en __init__: amarillo
+    Para cambiar: canvas.setSelectionColor(QColor(...))
+
+Factor de magnificación:
+    canvas.magnificationFactor()
+
+CRS (Coordinate Reference System):
+    canvas.setDestinationCrs(QgsCoordinateReferenceSystem('EPSG:25831'))
+
+
+ESTILOS CSS:
+────────────
+
+Botonera personalizada:
+    canvas.setStyleSheet('''
+        QvPushButton {
+            background-color: #F9F9F9;
+            border: 1px solid gray;
+            padding: 2px;
+        }
+        QvPushButton:checked {
+            background-color: #FF6215;
+            color: white;
+        }
+    ''')
+
+
+═══════════════════════════════════════════════════════════════════════════════
+CLASES RELACIONADAS
+═══════════════════════════════════════════════════════════════════════════════
+
+QvLlegenda
+  • Leyenda vinculada
+  • Gestiona capas y temas
+  • Comunicación bidireccional
+
+QvAtributs
+  • Tabla de atributos
+  • Se vincula al canvas
+  • Muestra propiedades de elementos seleccionados
+
+QvStreetView
+  • Vista de calle
+  • Permite ver vistas de Street View
+  • Se integra como herramienta
+
+QvPushButton
+  • Botones personalizados
+  • Usados en botonera
+
+QvSeleccioElement
+  • Herramienta de selección
+  • Permite seleccionar elementos del mapa
+
+QvEinesGrafiques
+  • Herramientas gráficas avanzadas
+  • Mediciones, dibujo, etc.
+
+QvConstants
+  • Constantes de la aplicación
+  • Cursores especiales
+
+
+═══════════════════════════════════════════════════════════════════════════════
+CONCLUSIÓN
+═══════════════════════════════════════════════════════════════════════════════
+
+QvCanvas es el corazón de la visualización en qVista, proporcionando:
+
+✓ Canvas QGIS mejorado y personalizable
+✓ Herramientas de navegación integradas
+✓ Gestión avanzada de herramientas de mapa
+✓ Botonera flexible y configurable
+✓ Integración perfecta con leyenda
+✓ Soporte para múltiples temas
+✓ Street View y herramientas avanzadas
+✓ Manejo de eventos y señales
+
+La arquitectura permite fácil extensión y personalización para casos
+especializados como qMaBIM, manteniendo total compatibilidad con qVista.
+
+
+================================================================================
+                            FIN DEL DOCUMENTO
+================================================================================
+
+                    Última actualización: Noviembre 2025
+                  Proyecto qVista - Sistemas de Información Territorial
+                         Ayuntamiento de Barcelona
+
+================================================================================

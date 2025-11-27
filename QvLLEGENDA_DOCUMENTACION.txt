@@ -1,0 +1,1489 @@
+================================================================================
+                           DOCUMENTACIÓN CLASE QvLlegenda
+                    Gestor de Leyenda y Árbol de Capas en qVista
+================================================================================
+
+PROYECTO: qVista - Visor Cartográfico Personalizado
+MÓDULO: moduls/QvLlegenda.py
+CLASE PRINCIPAL: QvLlegenda
+LÍNEAS DE CÓDIGO: 1,320 líneas
+ÚLTIMA ACTUALIZACIÓN: Noviembre 2025
+
+
+TABLA DE CONTENIDOS:
+====================
+
+1. Visión General
+2. Responsabilidades Principales
+3. Estructura de la Clase
+4. Señales (Qt Signals)
+5. Métodos Clave
+6. Atributos Principales
+7. Flujo de Inicialización
+8. Integración con Otras Clases
+9. Acciones Disponibles
+10. Casos de Uso Comunes
+11. Troubleshooting
+12. Ejemplo de Uso Completo
+
+
+═══════════════════════════════════════════════════════════════════════════════
+1. VISIÓN GENERAL
+═══════════════════════════════════════════════════════════════════════════════
+
+PROPÓSITO:
+──────────
+QvLlegenda es la clase que gestiona la leyenda del proyecto QGIS en qVista.
+Hereda de QgsLayerTreeView (QGIS PyQt5) y proporciona:
+
+  • Vista jerárquica de capas (árbol de capas)
+  • Gestión de visibilidad de capas
+  • Filtrado de elementos
+  • Menú contextual dinámico
+  • Indicadores visuales (iconos) para propiedades especiales
+  • Integración con tabla de atributos
+  • Sistema de anotaciones
+  • Recarga automática de datos
+  • Digitalización de capas (edición)
+  • Temas de mapificación
+  • Navegación temporal
+
+
+UBICACIÓN:
+──────────
+  d:\qVista\Codi\moduls\QvLlegenda.py
+
+
+DEPENDENCIAS PRINCIPALES:
+─────────────────────────
+  • qgis.core (QgsProject, QgsLayerTree, QgsMapLayer)
+  • qgis.gui (QgsLayerTreeView, QgsLayerTreeMapCanvasBridge)
+  • PyQt5.QtWidgets, QtGui, QtCore
+  • moduls.QvAccions (gestor de acciones)
+  • moduls.QvAtributs (tabla de atributos)
+  • moduls.QvLlegendaAux (clases auxiliares)
+  • moduls.QvDigitize (edición de capas)
+  • moduls.QvTema (temas de mapificación)
+
+
+═══════════════════════════════════════════════════════════════════════════════
+2. RESPONSABILIDADES PRINCIPALES
+═══════════════════════════════════════════════════════════════════════════════
+
+A. GESTIÓN DE CAPAS:
+────────────────────
+  ✓ Cargar y descargar capas
+  ✓ Cambiar visibilidad de capas
+  ✓ Organizar capas en grupos
+  ✓ Renombrar capas y grupos
+  ✓ Eliminar capas y grupos
+  ✓ Exportar/importar capas (QLR)
+  ✓ Gestionar permisos de edición
+
+B. VISUALIZACIÓN:
+─────────────────
+  ✓ Mostrar árbol jerárquico de capas
+  ✓ Mostrar símbolos de categorías
+  ✓ Actualizar representación según escala
+  ✓ Mostrar/ocultar anotaciones
+  ✓ Navegar temporalmente por datos
+
+C. INTERACCIÓN DEL USUARIO:
+────────────────────────────
+  ✓ Menú contextual dinámico
+  ✓ Doble clic para acciones
+  ✓ Indicadores visuales (iconos)
+  ✓ Filtrado de elementos
+  ✓ Edición de capas (digitalización)
+
+D. INTEGRACIÓN CON CANVAS:
+──────────────────────────
+  ✓ Enlazo con QgsMapCanvas
+  ✓ Sincronización canvas-leyenda
+  ✓ Extents (áreas visibles)
+  ✓ Escalas y visibilidad por escala
+  ✓ Máscaras de visualización
+
+E. ACCIONES ESPECIALIZADAS:
+────────────────────────────
+  ✓ Mostrar tabla de atributos
+  ✓ Mostrar diagramas de barras
+  ✓ Mostrar contadores de elementos
+  ✓ Acceso a StreetView
+  ✓ Gestión de temas
+
+F. AUTOMATE:
+─────────────
+  ✓ Recarga automática de datos (timers)
+  ✓ Recarga gráfica automática
+  ✓ Ejecución de macros de proyecto
+
+
+═══════════════════════════════════════════════════════════════════════════════
+3. ESTRUCTURA DE LA CLASE
+═══════════════════════════════════════════════════════════════════════════════
+
+DEFINICIÓN:
+───────────
+
+class QvLlegenda(qgGui.QgsLayerTreeView):
+    """
+    Vista de árbol de capas para qVista.
+    
+    Hereda de QgsLayerTreeView que es el widget estándar de QGIS
+    para mostrar el árbol de capas.
+    
+    Extiende la funcionalidad con:
+    - Acciones personalizadas
+    - Indicadores visuales
+    - Filtrado dinámico
+    - Edición de capas
+    - Temas y macros
+    """
+
+
+ESTRUCTURA INTERNA:
+───────────────────
+
+QvLlegenda (hereda de QgsLayerTreeView)
+├── Propiedades Básicas
+│   ├── self.project (QgsProject)
+│   ├── self.root (QgsLayerTreeRoot)
+│   ├── self.canvas (QgsMapCanvas)
+│   ├── self.atributs (QvAtributs)
+│   └── self.editable (bool)
+│
+├── Modelo
+│   ├── self.model (QvModelLlegenda)
+│   └── self.bridge (QgsLayerTreeMapCanvasBridge)
+│
+├── Acciones
+│   ├── self.accions (QvAccions)
+│   ├── self.menuAccions (list)
+│   └── self.menuProvider (QvMenuLlegenda)
+│
+├── Indicadores Visuales
+│   ├── self.iconaFiltre
+│   ├── self.iconaRecarregaD
+│   ├── self.iconaRecarregaG
+│   ├── self.iconaRecarregaDG
+│   ├── self.iconaTemporal
+│   ├── self.iconaMap
+│   ├── self.iconaRequired
+│   ├── self.iconaEditForm
+│   ├── self.iconaEditOff
+│   ├── self.iconaEditOn
+│   └── self.iconaEditMod
+│
+├── Módulos Especializados
+│   ├── self.digitize (QvDigitize)
+│   ├── self.anotacions (QvMapToolAnnotation)
+│   ├── self.tema (QvTema)
+│   ├── self.recarrega (QvRecarregaLlegenda)
+│   ├── self.dataPlotly (QvDataPlotly)
+│   ├── self.escales (QvEscala)
+│   └── self.player (QvVideo)
+│
+└── Utilidades
+    ├── self.renaming (índice renombrando)
+    ├── self.mask (QvLlegendaMascara)
+    └── self.directory (directorio actual)
+
+
+═══════════════════════════════════════════════════════════════════════════════
+4. SEÑALES (QT SIGNALS)
+═══════════════════════════════════════════════════════════════════════════════
+
+Las señales permiten que otras clases se suscriban a eventos de la leyenda:
+
+SEÑAL: obertaTaulaAtributs
+──────────────────────────
+  • Se emite cuando: Se abre la tabla de atributos
+  • Parámetros: Ninguno
+  • Uso: Para actualizar interfaces cuando se abre tabla
+  
+  Ejemplo:
+    leyenda.obertaTaulaAtributs.connect(actualizar_interfaz)
+
+
+SEÑAL: clicatMenuContexte
+─────────────────────────
+  • Se emite cuando: Se hace clic derecho en un elemento
+  • Parámetros: str (tipo de elemento: 'group', 'layer', 'none', 'symb')
+  • Uso: Para personalizar menú contextual dinámicamente
+  
+  Ejemplo:
+    leyenda.clicatMenuContexte.connect(personalizar_menu)
+    
+    def personalizar_menu(tipo):
+        if tipo == 'layer':
+            leyenda.menuAccions += ['mostrar_tabla']
+
+
+SEÑAL: carregantProjecte
+────────────────────────
+  • Se emite cuando: Comienza la carga de un proyecto
+  • Parámetros: Ninguno
+  • Uso: Mostrar barra de progreso o animación
+  
+  Ejemplo:
+    leyenda.carregantProjecte.connect(mostrar_progreso)
+
+
+SEÑAL: projecteCarregat
+───────────────────────
+  • Se emite cuando: Finaliza la carga de un proyecto
+  • Parámetros: str (ruta del proyecto)
+  • Uso: Actualizar interfaz tras cargar
+  
+  Ejemplo:
+    leyenda.projecteCarregat.connect(lambda ruta: print(f'Cargado: {ruta}'))
+
+
+SEÑAL: projecteModificat
+────────────────────────
+  • Se emite cuando: Se modifica el proyecto (capas, filtros, visibilidad)
+  • Parámetros: str (tipo de modificación)
+  • Tipos de modificación:
+      - 'layersChanged' - Cambio en capas
+      - 'filterModified' - Filtro modificado
+      - 'renameGroupOrLayer' - Renombramiento
+      - 'removeGroupOrLayer' - Eliminación
+      - 'addGroup' - Nuevo grupo
+  • Uso: Para sincronizar cambios con otros módulos
+  
+  Ejemplo:
+    leyenda.projecteModificat.connect(guardar_cambios)
+
+
+═══════════════════════════════════════════════════════════════════════════════
+5. MÉTODOS CLAVE
+═══════════════════════════════════════════════════════════════════════════════
+
+MÉTODOS DE INICIALIZACIÓN:
+──────────────────────────
+
+__init__(canvas=None, atributs=None, canviCapaActiva=None, 
+         anotacions=True, editable=True)
+    
+    Inicializa la leyenda.
+    
+    Parámetros:
+      canvas (QgsMapCanvas) - Canvas principal (puede ser None inicialmente)
+      atributs (QvAtributs) - Tabla de atributos vinculada
+      canviCapaActiva (callable) - Función a llamar cuando cambia capa activa
+      anotacions (bool) - Habilitar anotaciones (QGIS 3.10+)
+      editable (bool) - Permitir edición de leyenda
+    
+    El constructor:
+    1. Inicializa el modelo de leyenda
+    2. Conecta señales del proyecto
+    3. Vincula canvas
+    4. Inicializa módulos especializados (digitize, anotaciones, etc.)
+    5. Crea acciones del menú
+    6. Carga proyecto inicial (si existe)
+    
+    Complejidad: O(n) donde n = número de capas en proyecto
+
+
+MÉTODOS DE CARGA DE PROYECTOS:
+──────────────────────────────
+
+readProject(fileName)
+    Lee un proyecto QGIS y lo carga en la leyenda.
+    
+    Parámetros:
+      fileName (str) - Ruta del archivo .qgs
+    
+    Retorna:
+      bool - True si se cargó correctamente, False si hay errores
+    
+    Proceso:
+      1. Detiene timers de recarga
+      2. Limpia anotaciones
+      3. Lee el proyecto
+      4. Actualiza indicadores
+      5. Ejecuta macros si existen
+      6. Muestra errores de capas
+    
+    Ejemplo:
+        ok = leyenda.readProject('ruta/proyecto.qgs')
+        if not ok:
+            print('Error cargando proyecto')
+
+
+nouProjecte(doc)
+    Inicializa/reinicializa un proyecto (llamado después de cargar).
+    
+    Proceso:
+      1. Recarga estilos de capas
+      2. Reinicia editor de capas
+      3. Ajusta visibilidad de WMS/WFS
+      4. Actualiza tema visual
+      5. Inicia recarga automática
+    
+    Nota: Se llama automáticamente cuando proyecto se carga
+
+
+MÉTODOS DE GESTIÓN DE CAPAS:
+─────────────────────────────
+
+capes()
+    Generador que devuelve todas las capas del proyecto.
+    
+    Retorna:
+      Generator[QgsMapLayer]
+    
+    Ejemplo:
+        for capa in leyenda.capes():
+            print(capa.name())
+
+
+capaPerNom(nomCapa)
+    Obtiene la primera capa con el nombre especificado.
+    
+    Parámetros:
+      nomCapa (str) - Nombre de la capa
+    
+    Retorna:
+      QgsMapLayer o None
+    
+    Ejemplo:
+        capa = leyenda.capaPerNom('Parcelas')
+        if capa:
+            leyenda.veureCapa(capa)
+
+
+veureCapa(capa, visible=True, subCapas=True)
+    Cambia la visibilidad de una capa.
+    
+    Parámetros:
+      capa (QgsMapLayer) - Capa a modificar
+      visible (bool) - True=visible, False=oculta
+      subCapas (bool) - Si True, afecta también a subcapas
+    
+    Ejemplo:
+        # Mostrar capa "Parques"
+        capa = leyenda.capaPerNom('Parques')
+        leyenda.veureCapa(capa, True)
+
+
+capaVisible(capa, escala=True)
+    Comprueba si una capa es visible.
+    
+    Parámetros:
+      capa (QgsMapLayer) - Capa a comprobar
+      escala (bool) - Si True, considera también visibilidad por escala
+    
+    Retorna:
+      bool
+    
+    Ejemplo:
+        if leyenda.capaVisible(capa):
+            print('Capa visible')
+
+
+capaMarcada(node)
+    Comprueba si un nodo está marcado (visible).
+    
+    Parámetros:
+      node (QgsLayerTreeNode) - Nodo a comprobar
+    
+    Retorna:
+      bool
+
+
+MÉTODOS DE FILTRADO:
+────────────────────
+
+filterElements()
+    Abre diálogo para filtrar elementos de la capa seleccionada.
+    
+    Usa tabla de atributos para crear expresión de filtro.
+    
+    Ejemplo:
+        leyenda.filterElements()
+        # Abre interfaz de filtrado
+
+
+removeFilter()
+    Elimina el filtro de la capa seleccionada.
+    
+    Ejemplo:
+        leyenda.removeFilter()
+        # Muestra todos los elementos
+
+
+MÉTODOS DE ICONOS/INDICADORES:
+───────────────────────────────
+
+actIconesCapa(capa, modif=True)
+    Actualiza los iconos indicadores de una capa específica.
+    
+    Los iconos muestran:
+      • Filtro activo
+      • Recarga automática (datos)
+      • Recarga automática (gráfica)
+      • Recarga automática (datos + gráfica)
+      • Navegación temporal activa
+      • Mapificación disponible
+      • Capa requerida (no se puede eliminar)
+      • Formulario de edición
+      • Edición activada/desactivada
+    
+    Parámetros:
+      capa (QgsMapLayer) - Capa a actualizar
+      modif (bool) - Si True, emite señal de modificación
+    
+    Ejemplo:
+        leyenda.actIconesCapa(capa)
+
+
+actIcones()
+    Actualiza todos los iconos de todas las capas.
+    
+    Útil después de cambios globales.
+    
+    Ejemplo:
+        leyenda.actIcones()
+
+
+actIconaFiltre(capa)
+    Actualiza icono de filtro de una capa.
+    
+    Se llama automáticamente cuando cambia filtro.
+
+
+MÉTODOS DE EDICIÓN:
+───────────────────
+
+editarLlegenda(on=None)
+    Habilita/deshabilita la edición de la leyenda.
+    
+    Parámetros:
+      on (bool) - True=editable, False=solo lectura, None=usar self.editable
+    
+    Cuando es editable, permite:
+      • Reordenar capas
+      • Renombrar capas
+      • Cambiar visibilidad
+      • Crear grupos
+    
+    Ejemplo:
+        leyenda.editarLlegenda(True)  # Editable
+        leyenda.editarLlegenda(False)  # Solo lectura
+
+
+MÉTODOS DE VERIFICACIÓN DE PERMISOS:
+─────────────────────────────────────
+
+isLayerRemovable(capa=None)
+    Comprueba si una capa puede eliminarse.
+    
+    Retorna:
+      bool
+    
+    Ejemplo:
+        if leyenda.isLayerRemovable(capa):
+            print('Puedes eliminar esta capa')
+
+
+isLayerEditable(capa=None)
+    Comprueba si una capa puede editarse.
+    
+    Condiciones:
+      • Capa tipo vector
+      • No es read-only
+      • Proveedor soporta edición
+    
+    Retorna:
+      bool
+
+
+isLayerEditForm(capa=None, depurar=False)
+    Comprueba si una capa permite edición de formulario.
+    
+    Parámetros:
+      capa (QgsMapLayer) - Capa a comprobar
+      depurar (bool) - Si True, imprime información de debugging
+    
+    Verifica:
+      • Layer editable
+      • Usuario en grupo 'qV_editForm'
+      • Usuario NO en grupo 'qV_editable'
+    
+    Retorna:
+      bool
+
+
+isGroupRemovable(node=None)
+    Comprueba si un grupo y todas sus capas pueden eliminarse.
+
+
+MÉTODOS DE ATRIBUTOS:
+─────────────────────
+
+getLayerVisibleFeatures(layer, selected=True, request=None, max=0)
+    Generador que devuelve los elementos visibles de una capa.
+    
+    Tiene en cuenta:
+      • Visibilidad de capa
+      • Escala de visualización
+      • Renderers y filtros
+      • Elementos seleccionados (opcional)
+    
+    Parámetros:
+      layer (QgsMapLayer) - Capa de origen
+      selected (bool) - True=elementos seleccionados, False=todos
+      request (QgsFeatureRequest) - Filtro adicional
+      max (int) - Máximo número de elementos (0=sin límite)
+    
+    Retorna:
+      Generator[QgsFeature]
+    
+    Ejemplo:
+        for feature in leyenda.getLayerVisibleFeatures(capa):
+            print(feature.id(), feature['nombre'])
+
+
+numLayerVisibleFeatures(layer, selected=True, request=None)
+    Cuenta elementos visibles sin iterarlos.
+    
+    Más eficiente que len(list(getLayerVisibleFeatures())).
+    
+    Retorna:
+      int
+
+
+MÉTODOS DE VISUALIZACIÓN EN CANVAS:
+────────────────────────────────────
+
+showLayerMap()
+    Ajusta la vista del canvas para mostrar la capa seleccionada.
+    
+    Ejemplo:
+        leyenda.showLayerMap()
+        # Canvas se centra en la capa
+
+
+showFeatureTable()
+    Abre la tabla de atributos de la capa seleccionada.
+    
+    Ejemplo:
+        leyenda.showFeatureTable()
+
+
+showBarChart()
+    Muestra diagrama de barras de categorías de la capa.
+    
+    Requiere que la capa tenga un diagrama configurado.
+
+
+showLayerCounter()
+    Muestra contadores de elementos por categoría.
+
+
+MÉTODOS DE TEMAS Y MAPIFICACIÓN:
+─────────────────────────────────
+
+Gestión de múltiples vistas temáticas del mismo proyecto:
+
+mapBridge(canvas)
+    Vincula un canvas adicional (para temas).
+    
+    Primera llamada: vincula canvas principal
+    Llamadas posteriores: añaden canvas a lista de temas
+    
+    Parámetros:
+      canvas (QgsMapCanvas) - Canvas a vincular
+    
+    Ejemplo:
+        leyenda.mapBridge(canvas_principal)
+        leyenda.mapBridge(canvas_tema1)
+        leyenda.mapBridge(canvas_tema2)
+
+
+MÉTODOS DE POSICIÓN EN CANVAS:
+───────────────────────────────
+
+saveCanvasPosition()
+    Guarda la extensión (extent) actual del canvas.
+    
+    Útil antes de cambiar vista, para poder restaurar.
+    
+    Ejemplo:
+        leyenda.saveCanvasPosition()
+        leyenda.cargarOtraVista()
+        leyenda.restoreCanvasPosition()
+
+
+restoreCanvasPosition()
+    Restaura la extensión guardada.
+
+
+deleteCanvasPosition()
+    Elimina la extensión guardada.
+
+
+printCanvasPosition(msg)
+    Imprime información de posición actual (debugging).
+    
+    Parámetros:
+      msg (str) - Mensaje a mostrar
+
+
+MÉTODOS DE ACCIONES:
+────────────────────
+
+setAcciones()
+    Crea todas las acciones disponibles en el menú.
+    
+    Acciones creadas:
+      • expandLegend - Expandir leyenda
+      • collapseLegend - Contraer leyenda
+      • addGroup - Crear grupo
+      • addLayersFromFile - Importar capas (.qlr)
+      • saveLayersToFile - Exportar capas (.qlr)
+      • addCatalogueLayers - Añadir al catálogo
+      • viewAnnotations - Mostrar anotaciones
+      • autoUpdateData - Recarga automática datos
+      • autoUpdateGraph - Recarga automática gráfica
+      • renameGroupOrLayer - Renombrar
+      • removeGroupOrLayer - Eliminar
+      • showLayerMap - Enquadrar
+      • showLayerCounter - Mostrar contador
+      • showBarChart - Mostrar diagrama
+      • showFeatureTable - Mostrar tabla
+      • filterElements - Filtrar
+      • removeFilter - Quitar filtro
+
+
+MÉTODOS DE MENÚ CONTEXTUAL:
+────────────────────────────
+
+setMenuAccions()
+    Construye la lista de acciones para el menú contextual.
+    
+    El menú cambia según el tipo de elemento clicado:
+    
+    Tipo 'layer':
+      • Mostrar tabla de atributos
+      • Mostrar diagrama (si tiene)
+      • Mostrar contador
+      • Filtrar elementos
+      • Enquadrar capa
+      • Renombrar, eliminar
+      • Exportar/importar
+    
+    Tipo 'group':
+      • Crear subgrupo
+      • Renombrar
+      • Importar capas en grupo
+      • Eliminar grupo
+      • Exportar/importar
+    
+    Tipo 'none' (clic en árbol vacío):
+      • Expandir/contraer leyenda
+      • Crear grupo
+      • Importar capas
+      • Anotaciones (si disponibles)
+      • Procesos (si existen)
+      • Recarga automática (si configurada)
+    
+    Retorna:
+      str - Tipo de elemento clicado ('group', 'layer', 'none', 'symb')
+
+
+MÉTODOS UTILITARIOS:
+────────────────────
+
+qVista()
+    Obtiene la aplicación principal (QVista).
+    
+    Retorna:
+      QVista o None
+
+
+editing(capa)
+    Comprueba si una capa está siendo editada.
+
+
+mapaEditable()
+    Comprueba si el mapa permite edición en general.
+
+
+nodes()
+    Generador de todos los nodos del árbol.
+
+
+items()
+    Generador de todos los elementos (capas + categorías).
+
+
+═══════════════════════════════════════════════════════════════════════════════
+6. ATRIBUTOS PRINCIPALES
+═══════════════════════════════════════════════════════════════════════════════
+
+ATRIBUTOS BÁSICOS:
+──────────────────
+
+self.project (QgsProject)
+    Referencia al proyecto QGIS actual.
+    Acceso: self.project.mapLayers(), self.project.read(), etc.
+
+self.root (QgsLayerTreeRoot)
+    Raíz del árbol de capas (acceso a la estructura jerárquica).
+
+self.canvas (QgsMapCanvas)
+    Canvas principal vinculado.
+
+self.atributs (QvAtributs)
+    Referencia a la tabla de atributos.
+
+self.editable (bool)
+    Si True, permite edición de leyenda.
+
+self.model (QvModelLlegenda)
+    Modelo de datos del árbol.
+
+self.bridge (QgsLayerTreeMapCanvasBridge)
+    Puente entre árbol y canvas.
+
+self.bridges (list)
+    Lista de puentes adicionales para temas.
+
+
+ATRIBUTOS DE MÓDULOS ESPECIALIZADOS:
+──────────────────────────────────────
+
+self.digitize (QvDigitize o None)
+    Gestor de digitalización (QGIS 3.10+).
+    Controlado por self.digitize.activaCapa(), etc.
+
+self.anotacions (QvMapToolAnnotation o None)
+    Herramienta de anotaciones.
+
+self.tema (QvTema)
+    Gestor de temas.
+
+self.recarrega (QvRecarregaLlegenda)
+    Gestor de recarga automática.
+
+self.dataPlotly (QvDataPlotly o None)
+    Generador de gráficos.
+
+self.escales (QvEscala)
+    Gestor de escalas y visibilidad por escala.
+
+self.player (QvVideo o None)
+    Reproductor de video (para cargando).
+
+
+ATRIBUTOS DE ICONOS:
+────────────────────
+
+self.iconaFiltre (QgsLayerTreeViewIndicator)
+    Icono: Filtro activo
+
+self.iconaRecarregaD (QgsLayerTreeViewIndicator)
+    Icono: Recarga automática de datos
+
+self.iconaRecarregaG (QgsLayerTreeViewIndicator)
+    Icono: Recarga gráfica automática
+
+self.iconaRecarregaDG (QgsLayerTreeViewIndicator)
+    Icono: Recarga datos + gráfica
+
+self.iconaTemporal (QgsLayerTreeViewIndicator)
+    Icono: Navegación temporal activa
+
+self.iconaMap (QgsLayerTreeViewIndicator)
+    Icono: Mapificación disponible
+
+self.iconaRequired (QgsLayerTreeViewIndicator)
+    Icono: Capa requerida
+
+self.iconaEditForm (QgsLayerTreeViewIndicator)
+    Icono: Formulario de edición disponible
+
+self.iconaEditOff (QgsLayerTreeViewIndicator)
+    Icono: Edición desactivada
+
+self.iconaEditOn (QgsLayerTreeViewIndicator)
+    Icono: Edición activada
+
+self.iconaEditMod (QgsLayerTreeViewIndicator)
+    Icono: Cambios no guardados
+
+
+ATRIBUTOS DE ACCIONES:
+──────────────────────
+
+self.accions (QvAccions)
+    Gestor de acciones (diccionario de acciones por nombre).
+
+self.menuAccions (list)
+    Lista dinámicas de acciones para el menú contextual.
+    Generada por setMenuAcciones() según elemento clicado.
+
+self.menuProvider (QvMenuLlegenda o None)
+    Proveedor del menú contextual.
+
+
+ATRIBUTOS DE UTILIDAD:
+──────────────────────
+
+self.renaming (QModelIndex o None)
+    Índice del nodo que se está renombrando.
+    Se usa para evitar múltiples emisiones de señal.
+
+self.mask (QvLlegendaMascara o None)
+    Máscara geográfica actual (si existe).
+
+self.directory (str)
+    Directorio actual para diálogos de archivo.
+
+self.lastExtent (QgsRectangle o None)
+    Última extensión guardada con saveCanvasPosition().
+
+self.projecteCapes (bool o None)
+    Estado de carga de capas del proyecto.
+
+self.player (QvVideo o None)
+    Video de cargando (si se ha configurado).
+
+self.iniSignal (bool)
+    Flag para controlar cuándo emitir señal projecteModificat.
+
+
+═══════════════════════════════════════════════════════════════════════════════
+7. FLUJO DE INICIALIZACIÓN
+═══════════════════════════════════════════════════════════════════════════════
+
+PASO A PASO DEL CONSTRUCTOR:
+─────────────────────────────
+
+1. INICIALIZACIÓN BÁSICA
+   ├─ setTitol() - Establece título por defecto
+   ├─ Obtener proyecto: self.project = QgsProject.instance()
+   ├─ Obtener raíz: self.root = self.project.layerTreeRoot()
+   └─ Inicializar flags: canvas=None, editable flag, etc.
+
+2. CARGAR PROYECTO INICIAL (opcional)
+   └─ project.read('mapesOffline/accelerator.qgs')
+      Nota: Proyecto "acelerador" para Oracle
+
+3. CONECTAR SEÑALES DE PROYECTO
+   ├─ project.readProject → nouProjecte()
+   ├─ project.legendLayersAdded → actIcones()
+   ├─ root.layerOrderChanged → actIcones()
+   └─ Permite reaccionar a cambios
+
+4. VINCULAR CANVAS
+   └─ mapBridge(canvas) - Si canvas no es None
+      ├─ Crear QgsLayerTreeMapCanvasBridge
+      ├─ Conectar señales de sincronización
+      └─ Crear QvEscala para gestionar escalas
+
+5. INICIALIZAR MÓDULOS ESPECIALIZADOS
+   ├─ QvTema(self) - Gestor de temas
+   ├─ QvDigitize(self) - Si QGIS >= 3.10
+   ├─ QvRecarregaLlegenda(self) - Recarga automática
+   ├─ QvDataPlotly(True) - Si disponible
+   └─ QvMapToolAnnotation(self) - Si QGIS >= 3.10
+
+6. CREAR MODELO Y VISTA
+   ├─ model = QvModelLlegenda(self.root)
+   ├─ model.setFlags(...) - Configurar el modelo
+   ├─ editarLlegenda() - Aplicar permisos
+   ├─ setModel(model) - Asignar modelo a vista
+   └─ Conectar señal itemChanged
+
+7. CREAR ICONOS/INDICADORES
+   ├─ 10 iconos diferentes
+   └─ Conectar eventos click
+
+8. CREAR Y REGISTRAR ACCIONES
+   ├─ setAcciones() - Registra 17+ acciones
+   ├─ setMenuProvider() - Proveedor de menú
+   └─ Si no editable, menuProvider = None
+
+9. CONECTAR EVENTOS DEL CANVAS
+   ├─ canvas.scaleChanged → connectaEscala()
+   ├─ canvas.layersChanged → modificacioProjecte()
+   ├─ canvas.renderComplete → fiProjecte()
+   └─ project.layerLoaded → iniProjecte()
+
+10. ACTIVAR PROCESAMIENTO
+    └─ QvProcessingConfig() - Procesos de QGIS
+
+RESULTADO:
+──────────
+Una leyenda completamente inicializada, lista para:
+  • Cargar proyectos
+  • Interactuar con usuario
+  • Sincronizarse con canvas
+  • Ejecutar acciones
+
+
+═══════════════════════════════════════════════════════════════════════════════
+8. INTEGRACIÓN CON OTRAS CLASES
+═══════════════════════════════════════════════════════════════════════════════
+
+RELACIÓN CON QVista (CLASE PRINCIPAL):
+──────────────────────────────────────
+  • QVista crea QvLlegenda en su __init__()
+  • QvLlegenda se agrega como dock widget en qVista
+  • QvLlegenda.projecteModificat → señal a qVista
+  • qVista llama a leyenda.readProject() para cargar proyectos
+
+
+RELACIÓN CON QvAtributs (TABLA DE ATRIBUTOS):
+──────────────────────────────────────────────
+  • Inicialmente vinculada en __init__()
+  • QvLlegenda emite obertaTaulaAtributs cuando se abre tabla
+  • Ambas se sincronizan:
+    - Cuando cambia capa en leyenda, se actualiza tabla
+    - Cuando se filtra en tabla, se actualiza icono en leyenda
+    - Cuando se edita en tabla, se emite projecteModificat
+
+
+RELACIÓN CON QvCanvas (CANVAS PRINCIPAL):
+────────────────────────────────────────────
+  • Canvas se pasa en __init__()
+  • QgsLayerTreeMapCanvasBridge sincroniza:
+    - Visibilidad de capas
+    - Orden de rendering
+    - Extent (área visible)
+  • QvLlegenda actualiza canvas cuando cambia visibilidad
+  • Canvas emite señales que actualiza leyenda:
+    - scaleChanged → actualiza visibilidad por escala
+    - renderComplete → finaliza carga
+
+
+RELACIÓN CON QvDigitize (EDICIÓN):
+───────────────────────────────────
+  • Disponible si QGIS >= 3.10
+  • Permite editar geometría y atributos
+  • QvLlegenda gestiona:
+    - Iconos de estado de edición
+    - Permisos de edición
+    - Menu de edición
+
+
+RELACIÓN CON QvTema (TEMAS):
+────────────────────────────
+  • Crea múltiples vistas temáticas
+  • Cada tema tiene su propio canvas
+  • QvLlegenda vincula todos con mapBridge()
+  • Temas comparten mismas capas pero diferentes simbologías
+
+
+RELACIÓN CON QvRecarregaLlegenda (RECARGA AUTOMÁTICA):
+────────────────────────────────────────────────────────
+  • Gestiona timers de recarga
+  • QvLlegenda muestra iconos según tipo de recarga
+  • Actualiza indicadores en actIconesCapa()
+
+
+RELACIÓN CON QvMapToolAnnotation (ANOTACIONES):
+─────────────────────────────────────────────────
+  • Añade capacidad de anotar sobre el mapa
+  • Disponible si QGIS >= 3.10
+  • QvLlegenda proporciona menú para mostrar/ocultar anotaciones
+
+
+═══════════════════════════════════════════════════════════════════════════════
+9. ACCIONES DISPONIBLES
+═══════════════════════════════════════════════════════════════════════════════
+
+RESUMEN DE ACCIONES:
+─────────────────────
+
+┌─ LEYENDA
+├─ expandLegend
+│  └─ Expande todos los grupos
+├─ collapseLegend
+│  └─ Contrae todos los grupos
+│
+├─ GESTIÓN DE CAPAS
+├─ addGroup
+│  └─ Crea nuevo grupo en la leyenda
+├─ addLayersFromFile
+│  └─ Importa capas desde archivo .qlr
+├─ saveLayersToFile
+│  └─ Exporta capas seleccionadas a archivo .qlr
+├─ addCatalogueLayers
+│  └─ Añade capas al catálogo reutilizable
+├─ renameGroupOrLayer
+│  └─ Renombra capa o grupo (requiere editable)
+├─ removeGroupOrLayer
+│  └─ Elimina capa o grupo (requiere permisos)
+│
+├─ VISUALIZACIÓN
+├─ showLayerMap
+│  └─ Ajusta vista del canvas a la capa
+├─ showLayerCounter
+│  └─ Muestra contador de elementos
+├─ showBarChart
+│  └─ Muestra diagrama de barras
+├─ showFeatureTable
+│  └─ Abre tabla de atributos
+│
+├─ FILTRADO
+├─ filterElements
+│  └─ Abre diálogo de filtrado
+├─ removeFilter
+│  └─ Elimina filtro de capa
+│
+├─ ANOTACIONES
+├─ viewAnnotations
+│  └─ Muestra/oculta anotaciones (QGIS 3.10+)
+│
+└─ RECARGA AUTOMÁTICA
+  ├─ autoUpdateData
+  │  └─ Activa/desactiva recarga de datos
+  └─ autoUpdateGraph
+     └─ Activa/desactiva recarga gráfica
+
+
+CÓMO USAR ACCIONES:
+────────────────────
+
+Obtener una acción:
+    accion = leyenda.accions.accio('showLayerMap')
+
+Ejecutar una acción:
+    accion.trigger()
+    # Equivalente a:
+    leyenda.showLayerMap()
+
+Conectar a señal:
+    accion.triggered.connect(mi_funcion)
+
+Personalizar menú contextual:
+    def personalizar_menu(tipo):
+        if tipo == 'layer':
+            # Añadir acciones personalizadas
+            leyenda.menuAccions += ['miAccion1', 'miAccion2']
+    
+    leyenda.clicatMenuContexte.connect(personalizar_menu)
+
+
+═══════════════════════════════════════════════════════════════════════════════
+10. CASOS DE USO COMUNES
+═══════════════════════════════════════════════════════════════════════════════
+
+CASO 1: CARGAR UN PROYECTO
+──────────────────────────
+
+from qgis.gui import QgsLayerTreeView, QgsMapCanvas
+from moduls.QvLlegenda import QvLlegenda
+
+# Crear canvas
+canvas = QgsMapCanvas()
+
+# Crear leyenda
+leyenda = QvLlegenda(canvas=canvas, editable=True)
+
+# Cargar proyecto
+ok = leyenda.readProject('ruta/proyecto.qgs')
+if ok:
+    print('Proyecto cargado correctamente')
+else:
+    print('Error al cargar')
+
+
+CASO 2: MOSTRAR/OCULTAR CAPAS
+──────────────────────────────
+
+# Obtener capa por nombre
+capa = leyenda.capaPerNom('Parcelas')
+
+if capa:
+    # Mostrar capa
+    leyenda.veureCapa(capa, visible=True)
+    
+    # Ocultar capa
+    leyenda.veureCapa(capa, visible=False)
+    
+    # Comprobar visibilidad
+    if leyenda.capaVisible(capa):
+        print('Capa visible')
+
+
+CASO 3: ITERAR SOBRE CAPAS
+──────────────────────────
+
+# Listar todas las capas
+for capa in leyenda.capes():
+    print(f'Capa: {capa.name()}')
+    print(f'  Tipo: {capa.type()}')
+    print(f'  Visible: {leyenda.capaVisible(capa)}')
+    print(f'  Elementos: {capa.featureCount()}')
+
+
+CASO 4: ITERAR SOBRE ELEMENTOS VISIBLES
+────────────────────────────────────────
+
+capa = leyenda.capaPerNom('Parcelas')
+
+# Iterar elementos visibles
+for feature in leyenda.getLayerVisibleFeatures(capa, selected=False):
+    geom = feature.geometry()
+    attr = feature.attributes()
+    print(f'ID: {feature.id()}, Geometría: {geom.wktType()}')
+
+
+CASO 5: CENTRAR VISTA EN UNA CAPA
+─────────────────────────────────
+
+capa = leyenda.capaPerNom('Parques')
+
+# Centrar en la capa
+if capa and leyenda.canvas:
+    leyenda.veureCapa(capa)
+    extent = capa.extent()
+    leyenda.canvas.setExtent(extent)
+    leyenda.canvas.refresh()
+
+
+CASO 6: FILTRAR ELEMENTOS
+─────────────────────────
+
+# Obtener capa
+capa = leyenda.capaPerNom('Parcelas')
+
+# Crear filtro
+filtro = "uso='Residencial'"
+
+# Aplicar filtro
+if capa and capa.type() == 1:  # Vector layer
+    capa.setSubsetString(filtro)
+    leyenda.actIconesCapa(capa)  # Actualizar iconos
+
+
+CASO 7: PERSONALIZAR MENÚ CONTEXTUAL
+─────────────────────────────────────
+
+def personalizar_menu(tipo):
+    print(f'Clic en tipo: {tipo}')
+    
+    if tipo == 'layer':
+        # Acciones para capa
+        capa = leyenda.currentLayer()
+        leyenda.menuAccions = [
+            'showLayerMap',
+            'separator',
+            'showFeatureTable',
+            'filterElements',
+            'separator',
+            'showLayerCounter'
+        ]
+    elif tipo == 'group':
+        # Acciones para grupo
+        leyenda.menuAccions = [
+            'addGroup',
+            'addLayersFromFile',
+            'separator',
+            'removeGroupOrLayer'
+        ]
+    elif tipo == 'none':
+        # Acciones para árbol vacío
+        leyenda.menuAccions = [
+            'expandLegend',
+            'collapseLegend',
+            'separator',
+            'addGroup'
+        ]
+
+leyenda.clicatMenuContexte.connect(personalizar_menu)
+
+
+CASO 8: GUARDAR Y RESTAURAR POSICIÓN DEL CANVAS
+─────────────────────────────────────────────────
+
+# Guardar posición actual
+leyenda.saveCanvasPosition()
+
+# Realizar cambios (cambiar vista, cargar otro proyecto, etc.)
+leyenda.canvas.setExtent(otra_extension)
+
+# Restaurar posición original
+leyenda.restoreCanvasPosition()
+
+
+CASO 9: REACCIONAR A CAMBIOS DE PROYECTO
+──────────────────────────────────────────
+
+def proyecto_cargado(ruta):
+    print(f'Proyecto cargado: {ruta}')
+    # Actualizar interfaz
+    # Actualizar otras vistas
+
+def proyecto_modificado(tipo):
+    print(f'Proyecto modificado: {tipo}')
+    # Guardar cambios
+    # Actualizar caché
+
+leyenda.projecteCarregat.connect(proyecto_cargado)
+leyenda.projecteModificat.connect(proyecto_modificado)
+
+
+═══════════════════════════════════════════════════════════════════════════════
+11. TROUBLESHOOTING
+═══════════════════════════════════════════════════════════════════════════════
+
+PROBLEMA: Canvas es None
+────────────────────────
+Error: AttributeError: 'NoneType' object has no attribute...
+
+Causa: QvLlegenda creada sin canvas
+
+Solución:
+    # Opción 1: Pasar canvas en construcción
+    canvas = QgsMapCanvas()
+    leyenda = QvLlegenda(canvas=canvas)
+    
+    # Opción 2: Vincular canvas posteriormente
+    leyenda.mapBridge(canvas)
+
+
+PROBLEMA: Iconos no se muestran
+────────────────────────────────
+Causa: Filtro/recarga configurados pero iconos no visibles
+
+Solución:
+    # Forzar actualización de iconos
+    leyenda.actIcones()
+    
+    # O para una capa específica
+    capa = leyenda.capaPerNom('Parcelas')
+    leyenda.actIconesCapa(capa)
+
+
+PROBLEMA: Menú contextual vacío
+────────────────────────────────
+Causa: setMenuAcciones() no se ejecutó
+
+Solución:
+    # Asegurar que se ejecuta setMenuAcciones()
+    tipo = leyenda.calcTipusMenu()
+    leyenda.setMenuAcciones()
+
+
+PROBLEMA: Capa no visible aunque está marcada
+───────────────────────────────────────────────
+Causa: Grupo padre está oculto, o escala fuera de rango
+
+Solución:
+    capa = leyenda.capaPerNom('Parcelas')
+    
+    # Comprobar visibilidad considerando escala
+    visible = leyenda.capaVisible(capa, escala=True)
+    
+    # Hacer visible y mostrar grupo padre
+    leyenda.veureCapa(capa, visible=True)
+
+
+PROBLEMA: Tabla de atributos no abre
+────────────────────────────────────
+Causa: atributs es None, o showFeatureTable() falla
+
+Solución:
+    # Comprobar que atributs está inicializado
+    if leyenda.atributs is not None:
+        leyenda.showFeatureTable()
+    else:
+        print('Atributos no inicializados')
+
+
+PROBLEMA: Proyectos lentos al cargar
+──────────────────────────────────────
+Causa: Proyectos Oracle, muchas capas, o simbología compleja
+
+Soluciones:
+    # 1. Usar proyecto acelerador (ya se hace automáticamente)
+    project.read('mapesOffline/accelerator.qgs')
+    
+    # 2. Reducir número de capas
+    # 3. Simplificar simbología
+    # 4. Usar caché
+
+
+PROBLEMA: Filtro no se aplica
+──────────────────────────────
+Causa: Expresión incorrecta, capa no vector, o permisos
+
+Solución:
+    capa = leyenda.capaPerNom('Parcelas')
+    
+    # Comprobar que es vector
+    if capa.type() != qgCor.QgsMapLayer.VectorLayer:
+        print('No es capa vector')
+        return
+    
+    # Aplicar filtro correcto
+    capa.setSubsetString("uso='Residencial'")
+    
+    # Actualizar vista
+    leyenda.canvas.refresh()
+
+
+PROBLEMA: Digitalización no funciona
+─────────────────────────────────────
+Causa: QGIS < 3.10, o permisos de usuario
+
+Solución:
+    # Comprobar versión
+    if leyenda.digitize is None:
+        print('Digitalización no disponible (QGIS < 3.10)')
+        return
+    
+    # Comprobar permisos
+    capa = leyenda.currentLayer()
+    if not leyenda.isLayerEditable(capa):
+        print('Capa no editable')
+        return
+    
+    # Activar edición
+    leyenda.digitize.activaCapa(True)
+
+
+═══════════════════════════════════════════════════════════════════════════════
+12. EJEMPLO DE USO COMPLETO
+═══════════════════════════════════════════════════════════════════════════════
+
+Este ejemplo muestra una aplicación mínima pero funcional:
+
+────────────────────────────────────────────────────────────────────────────
+
+from qgis.core.contextmanagers import qgisapp
+from qgis.gui import QgsMapCanvas
+import qgis.PyQt.QtWidgets as qtWdg
+from moduls.QvLlegenda import QvLlegenda
+from moduls.QvAtributs import QvAtributs
+
+# Inicializar QGIS
+with qgisapp(sysexit=False) as app:
+    
+    # Crear ventana principal
+    ventana = qtWdg.QMainWindow()
+    ventana.setWindowTitle('qVista - Ejemplo')
+    ventana.resize(1200, 800)
+    
+    # Crear canvas
+    canvas = QgsMapCanvas()
+    ventana.setCentralWidget(canvas)
+    
+    # Crear tabla de atributos
+    atributs = QvAtributs(canvas)
+    
+    # Crear leyenda
+    leyenda = QvLlegenda(
+        canvas=canvas,
+        atributs=atributs,
+        editable=True,
+        anotacions=True
+    )
+    
+    # Añadir leyenda como dock widget
+    dock = qtWdg.QDockWidget('Leyenda')
+    dock.setWidget(leyenda)
+    ventana.addDockWidget(qtWdg.Qt.LeftDockWidgetArea, dock)
+    
+    # Conexiones de señales
+    def proyecto_cargado(ruta):
+        ventana.setWindowTitle(f'qVista - {ruta}')
+        print(f'✓ Proyecto cargado: {ruta}')
+        
+        # Listar capas
+        for capa in leyenda.capes():
+            print(f'  - {capa.name()} ({capa.featureCount()} elementos)')
+    
+    def proyecto_modificado(tipo):
+        print(f'⚠ Proyecto modificado: {tipo}')
+    
+    leyenda.projecteCarregat.connect(proyecto_cargado)
+    leyenda.projecteModificat.connect(proyecto_modificado)
+    
+    # Personalizar menú
+    def personalizar_menu(tipo):
+        print(f'Menú para tipo: {tipo}')
+        if tipo == 'layer':
+            capa = leyenda.currentLayer()
+            print(f'  Capa: {capa.name()}')
+    
+    leyenda.clicatMenuContexte.connect(personalizar_menu)
+    
+    # Mostrar interfaz
+    ventana.show()
+    
+    # Cargar proyecto de ejemplo
+    proyecto = 'mapesOffline/qVista default map.qgs'
+    ok = leyenda.readProject(proyecto)
+    if not ok:
+        print(f'Error cargando {proyecto}')
+    
+    # Ejecutar aplicación
+    app.exec()
+
+────────────────────────────────────────────────────────────────────────────
+
+SALIDA ESPERADA:
+────────────────
+
+✓ Proyecto cargado: mapesOffline/qVista default map.qgs
+  - Capa 1 (150 elementos)
+  - Capa 2 (89 elementos)
+  - Grupo
+    - Capa 3 (45 elementos)
+⚠ Proyecto modificado: addGroup
+Menú para tipo: layer
+  Capa: Capa 1
+
+
+═══════════════════════════════════════════════════════════════════════════════
+CONCLUSIÓN
+═══════════════════════════════════════════════════════════════════════════════
+
+QvLlegenda es el corazón de la interfaz de usuario de qVista. Proporciona:
+
+✓ Gestión completa de capas y grupos
+✓ Sincronización automática con canvas
+✓ Menús contextuales dinámicos
+✓ Indicadores visuales avanzados
+✓ Integración con todas las funcionalidades de qVista
+✓ Soporte para edición, filtrado, anotaciones
+✓ Arquitectura extensible mediante señales
+
+
+RECURSOS:
+──────────
+
+Clases relacionadas:
+  • QvAtributs - Tabla de atributos
+  • QvCanvas - Canvas principal
+  • QvDigitize - Edición de geometría
+  • QvTema - Temas/vistas múltiples
+  • QvAcciones - Sistema de acciones
+
+Documentación QGIS:
+  • QgsLayerTreeView (clase base)
+  • QgsMapLayer
+  • QgsProject
+
+Archivos complementarios:
+  • QvLlegendaAux.py - Clases auxiliares (QvModelLlegenda, QvMenuLlegenda)
+  • QvLlegendaMascara.py - Máscaras geográficas
+  • QvRecarregaLlegenda.py - Recarga automática
+
+================================================================================
+                            FIN DEL DOCUMENTO
+================================================================================
+
+                    Última actualización: Noviembre 2025
+                  Proyecto qVista - Sistemas de Información Territorial
+                         Ayuntamiento de Barcelona
+
+================================================================================

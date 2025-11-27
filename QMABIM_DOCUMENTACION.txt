@@ -1,0 +1,1478 @@
+================================================================================
+                      DOCUMENTACIÓN DE qMaBIM
+         Visor Especializado de Información Patrimonial de Barcelona
+================================================================================
+
+PROYECTO: qVista - Visor Cartográfico Personalizado
+MÓDULO: Programes especifics/MaBIM/qMaBIM.py
+PROPÓSITO: Visor autónomo especializado en información patrimonial (BIM)
+LÍNEAS DE CÓDIGO: 1,151 líneas
+LENGUAJE: Python 3 con PyQt5 y QGIS 3.x
+ÚLTIMA ACTUALIZACIÓN: Noviembre 2025
+
+
+TABLA DE CONTENIDOS:
+====================
+
+1. Visión General
+2. Propósito y Alcance
+3. Componentes Principales
+4. Estructura Técnica
+5. Base de Datos
+6. Clases Principales
+7. Flujo de Trabajo
+8. Integración con qVista
+9. Funcionalidades Clave
+10. Casos de Uso
+11. Configuración
+12. Troubleshooting
+
+
+═══════════════════════════════════════════════════════════════════════════════
+1. VISIÓN GENERAL
+═══════════════════════════════════════════════════════════════════════════════
+
+¿QUÉ ES qMaBIM?
+───────────────
+qMaBIM es un visor cartográfico especializado desarrollado a partir de clases
+de qVista, dedicado exclusivamente a la consulta y gestión de información
+patrimonial del Ayuntamiento de Barcelona.
+
+MaBIM = "Mapa Base de Inmuebles Municipales"
+
+El sistema permite:
+  • Consultar información patrimonial detallada de inmuebles
+  • Visualizar ubicación geográfica en mapa
+  • Acceder a registros catastrales y registrales
+  • Gestionar favoritos por usuario
+  • Acceder a datos de titularidad y propiedad
+  • Abrir proyectos de edición en QGIS para usuarios autorizados
+
+
+UBICACIÓN:
+──────────
+  d:\qVista\Codi\Programes especifics\MaBIM\qMaBIM.py
+
+
+DEPENDENCIAS:
+─────────────
+  • qVista módulos (QvCanvas, QvLlegenda, QvAtributs, etc.)
+  • PyQt5 (interfaz gráfica)
+  • QGIS 3.x (datos geográficos)
+  • Oracle Database (datos patrimoniales)
+  • SQLite (búsqueda de direcciones locales)
+
+
+TECNOLOGÍAS:
+─────────────
+  • PyQt5 para interfaz gráfica
+  • QGIS para visualización cartográfica
+  • Oracle para datos patrimoniales
+  • QSqlDatabase para acceso a BD
+  • QgsMapTool para selección gráfica
+
+
+═══════════════════════════════════════════════════════════════════════════════
+2. PROPÓSITO Y ALCANCE
+═══════════════════════════════════════════════════════════════════════════════
+
+OBJETIVO PRINCIPAL:
+────────────────────
+Proporcionar una herramienta especializada para consultar información
+patrimonial completa de inmuebles municipales con interfaz gráfica intuitiva.
+
+PÚBLICO OBJETIVO:
+─────────────────
+  • Personal de Patrimoni (Dirección de Patrimonio)
+  • Gestores administrativos
+  • Personal SIT (Sistemas de Información Territorial)
+  • Usuarios autorizados para edición
+
+
+INFORMACIÓN QUE PROPORCIONA:
+────────────────────────────
+
+1. DATOS IDENTIFICATIVOS (Pestaña 1):
+   • Código BIM (Identificador único)
+   • Estado del inmueble
+   • Descripción BIM
+   • Denominación
+   • Tipología y subtipología
+   • Grupos y subgrupos
+   • Tipo de inmueble
+   • Cualificación jurídica y urbanística
+   • Superficies (catastral, registral, utilizable)
+   • Referencias catastrales
+   • Estado catastral
+
+2. DIRECCIONES Y UBICACIÓN:
+   • Tipo de vía
+   • Nombre de vía
+   • Números de portal (inicio/fin)
+   • Letras (si las hay)
+   • Distrito y barrio
+   • Código postal
+   • Provincia
+
+3. TITULARIDAD Y REGISTRAL (Pestaña 2):
+   • Propietarios (suelo y construcción)
+   • Datos de adquisición
+   • Título de adquisición
+   • Porcentaje de propiedad
+   • Estado de inscripción registral
+   • Datos de inscripción cartográfica
+   • Fincas registrales asociadas
+
+4. VISUALIZACIÓN GRÁFICA:
+   • Ubicación en mapa de Barcelona
+   • Herramientas de zoom, pan, medición
+   • Street View (si disponible)
+   • Plano de situación
+
+
+═══════════════════════════════════════════════════════════════════════════════
+3. COMPONENTES PRINCIPALES
+═══════════════════════════════════════════════════════════════════════════════
+
+PANTALLAS PRINCIPALES (Pestañas):
+──────────────────────────────────
+
+┌─ Tab 0: FAVORITS
+│  └─ Lista de inmuebles favoritos del usuario
+│     ├─ Código BIM
+│     ├─ Descripción
+│     ├─ Denominación
+│     ├─ Botón "Seleccionar"
+│     ├─ Checkbox "Favorito"
+│     └─ Campo de observaciones (editable)
+│
+├─ Tab 1: BIMs
+│  └─ Búsqueda y detalle de BIM
+│     ├─ Buscador (autocompleter)
+│     └─ Información en dos pestañas:
+│        ├─ Pestanya "Dades Identificatives"
+│        │  ├─ Labels con datos identificativos
+│        │  └─ Tabla con direcciones (ZAFT_0003)
+│        └─ Pestanya "Titularitat i Registral"
+│           ├─ Labels con info de titularidad
+│           └─ Tabla con finques registrals (ZAFT_0011)
+│
+├─ Tab 2: MAPA (Principal)
+│  └─ Canvas con herramientas
+│     ├─ Herramientas estándar (pan, zoom, medición)
+│     ├─ Herramienta de selección gráfica
+│     ├─ Buscador de direcciones
+│     ├─ Leyenda (capas visibles)
+│     └─ Mapeta de situación
+│
+├─ Tab 3: PROJECTES
+│  └─ (Para futuro) Gestión de proyectos
+│
+└─ Tab 4: CONSULTES
+   └─ (Para futuro) Consultas avanzadas
+
+
+ELEMENTOS DE INTERFAZ:
+──────────────────────
+
+Buscador Principal (Autocompleter):
+  • Campo de entrada para código BIM
+  • Autocompletación desde Oracle
+  • Prioriza resultados que comienzan por búsqueda
+  • Soporta búsqueda por: BIM, descripción, denominación, referencia catastral
+
+Buscador de Direcciones:
+  • Campos: Carrer (calle)
+  • Campos: Número (portal)
+  • Devuelve coordenadas
+  • Marca ubicación con punto rojo
+
+Botones de Control:
+  • Botón Favoritos: Lista de favoritos
+  • Botón BIMs: Búsqueda de BIM
+  • Botón PIP: (Portal del Patrimoni)
+  • Botón Proyectos: (Futuro)
+  • Botón Consultas: (Futuro)
+
+Controles en Mapa:
+  • Seleccionar BIM gráficamente
+  • Limpiar filtros
+  • Mostrar/ocultar leyenda
+  • Mostrar/ocultar mapeta
+  • Copiar captura de pantalla
+  • Mesuras gràfiques (mediciones)
+  • Botón "Abrir en QGIS" (solo para editores)
+
+Checkboxes:
+  • Mostrar/ocultar baixes (sótanos)
+  • Mostrar/ocultar outros béns (quioscos, etc.)
+  • Mostrar/ocultar registres de propietat (secciones)
+  • Mostrar/ocultar registrals
+
+
+═══════════════════════════════════════════════════════════════════════════════
+4. ESTRUCTURA TÉCNICA
+═══════════════════════════════════════════════════════════════════════════════
+
+ARQUITECTURA:
+──────────────
+
+    ┌─────────────────────────────────────┐
+    │         QMaBIM (QMainWindow)        │
+    │   Ventana principal de aplicación   │
+    └──────────────────┬──────────────────┘
+                       │
+        ┌──────────────┼──────────────┐
+        │              │              │
+    ┌───▼──┐      ┌───▼──┐      ┌──▼────┐
+    │Canvas│      │Legend│      │Atribs │
+    │QvCan │      │QvLleg│      │QvAtri │
+    │vas   │      │enda  │      │buts   │
+    └────┬─┘      └──┬───┘      └───┬───┘
+         │           │              │
+         └───────────┴──────────────┘
+                │
+    ┌───────────▼─────────────────┐
+    │    Consulta (Singleton)     │
+    │  Acceso a Base de Datos BD  │
+    │        ORACLE               │
+    └─────────────────────────────┘
+
+
+FLUJO DE DATOS:
+────────────────
+
+Usuario escribe en buscador
+    ↓
+Completador genera sugerencias (Consulta BD)
+    ↓
+Usuario selecciona opción
+    ↓
+QMaBIM.consulta() realiza consultas a:
+    • ZAFT_0002 (Datos identificativos)
+    • ZAFT_0003 (Direcciones)
+    • ZAFT_0013 (Titularidad registral)
+    • ZAFT_0011 (Finques registrals)
+    ↓
+QMaBIM.recarregaLabelsDades() actualiza UI
+    ↓
+Se filtra mapa mostrando BIM seleccionado
+    ↓
+Se permite seleccionar gráficamente, editar, etc.
+
+
+═══════════════════════════════════════════════════════════════════════════════
+5. BASE DE DATOS
+═══════════════════════════════════════════════════════════════════════════════
+
+CONEXIÓN A ORACLE:
+──────────────────
+
+Host: GEOPR1.imi.bcn
+Port: 1551
+Database: GEOPR1
+User: PATRIMONI_CONS
+Password: PATRIMONI_CONS
+
+Nota: Credenciales almacenadas en ConstantsMaBIM.DB_MABIM_PRO
+
+
+TABLAS UTILIZADAS:
+──────────────────
+
+ZAFT_0002 (Principal - Datos identificativos)
+├─ BIM (PK) - Código BIM
+├─ ESTAT - Estado del inmueble
+├─ SUBGOOD_STATUS - Subestado
+├─ DESCRIPCIO_BIM - Descripción
+├─ DENOMINACIO_BIM - Denominación
+├─ TIPOLOGIA_BIM - Tipología
+├─ SUBTIPOLOGIA_BIM - Subtipología
+├─ GRUP_BIM - Grupo
+├─ SUBGRUP_BIM - Subgrupo
+├─ TIPUS_IMMOBLE - Tipo inmueble
+├─ QUALIFICACIO_JURIDICA - Cualificación legal
+└─ REF_CADASTRE_BIM - Referencia catastral
+
+ZAFT_0003 (Direcciones)
+├─ BIM (FK)
+├─ TIPUS_VIA - Tipo de vía (calle, plaza, etc.)
+├─ NOM_VIA - Nombre de la vía
+├─ NUM_INI / LLETRA_INI - Número inicial y letra
+├─ NUM_FI / LLETRA_FI - Número final y letra
+├─ DISTRICTE - Código de distrito
+├─ BARRI - Código de barrio
+├─ MUNICIPI - Municipio
+├─ CP - Código postal
+├─ PROVINCIA - Provincia
+└─ TIPUS - Tipo de dirección
+
+ZAFT_0005 (Cualificación urbanística)
+├─ BIM (FK)
+└─ QUALIFICACIO_URB - Cualificación urbanística
+
+ZAFT_0007 (Datos catastrales)
+├─ BIM (FK)
+├─ SUP_CADASTRAL_SOL - Superficie catastral de suelo
+├─ SUP_CADASTRAL_CONS - Superficie catastral de construcción
+├─ REF_CADASTRE - Referencia catastral
+├─ NUM_IMMOBLES - Número de inmuebles
+└─ ESTAT_CADASTRAL - Estado catastral
+
+ZAFT_0012 (Superficies utilizables)
+├─ BIM (FK)
+├─ DG - División (0000 es el total)
+└─ SUP_UTILIZZABLE - Superficie utilizable
+
+ZAFT_0013 (Titularidad registral)
+├─ BIM (FK)
+├─ PROPIETARI_SOL - Propietario del suelo
+├─ PROPIETARI_CONS - Propietario de construcción
+├─ DATA_ADQ_HD - Data de adquisición
+├─ TITOL_ADQ_HD - Título de adquisición
+├─ PERCENT_PROP_HD - Porcentaje de propiedad
+├─ ESTAT_INSCRIPCIO - Estado de inscripción
+├─ DATA_INSCRIPCIO - Data de inscripción
+├─ DATA_INSCRIPCIO_CARTO - Data inscripción cartográfica
+└─ (y más campos de inscripción)
+
+ZAFT_0011 (Finques registrals)
+├─ BIM (FK)
+├─ FINCA - Código de finca
+├─ NUM_REGISTRE - Número de registro
+├─ SUP_REGISTRAL_SOL - Superficie registral de suelo
+├─ SUP_REGISTRAL_CONS - Superficie registral de construcción
+├─ CARREGUES - Cargas registrales
+└─ (vinculada a ZAFT_0009 para tipos)
+
+DATES_PROCESSOS (Control de actualizaciones)
+├─ PROCES - Tipo de proceso
+└─ DATA - Fecha del proceso
+
+
+CONSULTAS SQL PRINCIPALES:
+──────────────────────────
+
+1. CONSULTA_CERCADOR:
+   Búsqueda rápida por BIM, descripción, denominación o referencia catastral
+   Parámetro: :pText (texto a buscar)
+   Resultado: (BIM, DESCRIPCIO_BIM, DENOMINACIO_BIM)
+
+2. CONSULTA_INFO_BIM_Z2:
+   Datos identificativos completos (JOIN ZAFT_0002 + 0007 + 0005 + 0013 + 0012)
+   Parámetro: :pText (código BIM)
+   Resultado: 20 campos con toda la información
+
+3. CONSULTA_INFO_BIM_Z3:
+   Direcciones asociadas al BIM
+   Parámetro: :pText (código BIM)
+   Resultado: Tabla de direcciones
+
+4. CONSULTA_INFO_BIM_Z13:
+   Información de titularidad registral
+   Parámetro: :pText (código BIM)
+   Resultado: Propietarios y datos de inscripción
+
+5. CONSULTA_INFO_BIM_Z11:
+   Finques registrals detallados
+   Parámetro: :pText (código BIM)
+   Resultado: Tabla de finques con superficies y cargas
+
+
+═══════════════════════════════════════════════════════════════════════════════
+6. CLASES PRINCIPALES
+═══════════════════════════════════════════════════════════════════════════════
+
+CLASE: ConstantsMaBIM
+──────────────────────
+Propósito: Almacenar todas las constantes de la aplicación
+
+Atributos principales:
+  DB_MABIM_PRO - Credenciales de conexión Oracle
+  rutaUI - Ruta del archivo UI (.ui)
+  rutaProjecte - Ruta del proyecto QGIS (lectura)
+  rutaProjecteEdicio - Ruta del proyecto para edición
+  rutaLogoAjuntament - Logo del Ayuntamiento
+  
+  nomCapaPH - "Entitats en PH" (Patrimonio Histórico)
+  nomCapaPV - "Entitats en PV" (Patrimonio del Valo)
+  nomCapaQuioscos - "Altres Béns i Drets" (Otros bienes)
+  nomGrupRegistrals - "Registrals" (grupo de capas)
+  
+  rangBarcelona - Rectángulo con límites de Barcelona
+  
+  Consultas SQL:
+  CONSULTA_CERCADOR - Búsqueda rápida
+  CONSULTA_INFO_BIM_Z2 - Datos identificativos
+  CONSULTA_INFO_BIM_Z3 - Direcciones
+  CONSULTA_INFO_BIM_Z13 - Titularidad
+  CONSULTA_INFO_BIM_Z11 - Finques registrals
+  
+  campEditorsQGIS - Campo en proyecto QGIS con usuarios editores
+
+
+CLASE: Consulta (Singleton)
+─────────────────────────────
+Propósito: Gestionar acceso a base de datos Oracle
+
+Métodos principales:
+
+__init__()
+  • Inicializa conexión a base de datos
+  • Solo se instancia una vez (Singleton)
+  • Almacena credenciales
+
+consulta(consulta, binds={}, camps=None)
+  Realiza una consulta SQL
+
+  Parámetros:
+    consulta (str) - SQL a ejecutar
+    binds (dict) - Valores a ligar (:pText, etc.)
+    camps (Sequence[int]) - Columnas a extraer (None = todas)
+
+  Retorna:
+    List[List] - Resultados (filas con columnas)
+
+  Ejemplo:
+    res = Consulta().consulta(
+        'SELECT BIM FROM ZAFT_0002 WHERE BIM LIKE :pText',
+        {':pText': 'A1234%'},
+        (0,)  # Solo primera columna
+    )
+
+OBRE_DB()
+  Abre conexión a BD (lazy evaluation)
+  Retorna: bool
+
+TANCA_DB()
+  Cierra conexión a BD
+  Retorna: bool
+
+
+CLASE: Completador (QCompleter)
+─────────────────────────────────
+Propósito: Proporcionar autocompletación inteligente en el buscador
+
+Herencia: QtWidgets.QCompleter
+
+Métodos principales:
+
+__init__()
+  Inicializa el completador con modelo de strings
+
+update(text)
+  Actualiza sugerencias basadas en texto
+  
+  Proceso:
+  1. Consulta BD buscando BIM con múltiples patrones
+  2. Ordena resultados: primero comienzan, después contienen
+  3. Actualiza lista de sugerencias
+  
+  Parámetros:
+    text (str) - Texto que escribió el usuario
+
+splitPath(path)
+  Método de QGIS QCompleter
+  Se llama cuando se abre el completador
+  Aquí actualizamos el modelo con resultados de BD
+
+separa(llista, word)
+  Estática. Filtra y ordena lista según coincidencia
+  
+  Retorna:
+    Tuple[List, List] - (Que comienzan, que contienen)
+
+
+CLASE: QvSeleccioBIM (QgsMapTool)
+──────────────────────────────────
+Propósito: Permitir seleccionar BIMs haciendo clic en el mapa
+
+Herencia: QgsMapTool
+
+Señales:
+  elementsSeleccionats - Emite cuando se seleccionan elementos
+  
+  Parámetro: List[(QgsFeature, QgsMapLayer)]
+
+Atributos:
+  canvas - Canvas donde se hace clic
+  llegenda - Leyenda para obtener capas
+  radi - Radio de tolerancia en píxeles
+
+Métodos:
+
+__init__(canvas, llegenda, radi=10)
+  Parámetro radi: tolerancia para seleccionar (default 10px)
+
+canvasReleaseEvent(event)
+  Se ejecuta cuando se suelta el botón del ratón
+  
+  Proceso:
+  1. Obtiene posición del clic
+  2. Crea rectángulo de búsqueda (considerando rotación)
+  3. Busca en capas "Inventari municipal" y "Registrals"
+  4. Emite señal con elementos seleccionados
+
+missatgeCaixa(textTitol, textInformacio)
+  Muestra mensaje de información
+
+
+CLASE: FormulariAtributs (QvFitxesAtributs)
+──────────────────────────────────────────
+Propósito: Mostrar formulario con atributos de feature seleccionado
+
+Herencia: QvFitxesAtributs (de qVista)
+
+Extiende funcionalidad con botones adicionales:
+  • "Seleccionar" - Selecciona BIM en búsqueda
+  • "Mostrar PIP" - Abre portal patrimonial en navegador
+  • "Editar" - Abre formulario de edición (si permisos)
+
+Métodos:
+
+__init__(llegenda, features, *args, **kwargs)
+  Parámetros:
+    llegenda (QvLlegenda) - Para verificar permisos
+    features - Listado de features a mostrar
+
+mostraPIP()
+  Abre URL del Portal de Patrimoni en navegador
+  URL: https://netiproa.corppro.imi.bcn:447/pip/ca/fitxa/{codi}
+
+selecciona()
+  Simula seleccionar el BIM actual en el buscador
+  y cierra el formulario
+
+edita()
+  Abre formulario de edición (QvFormAtributs)
+  Solo si usuario tiene permisos (qV_editForm)
+
+updateBotoEditar()
+  Actualiza visibilidad del botón "Editar" según permisos
+
+
+CLASE: Cercador
+────────────────
+Propósito: Encapsular buscador de direcciones
+
+Atributos:
+  canvas - Canvas donde mostrar resultado
+  leCarrer - LineEdit para entrada de calle
+  leNumero - LineEdit para entrada de número
+  lblIcona - Label para icono
+  cercador - QCercadorAdreca (buscador de QGIS)
+  marca_geometria - Marcador visual en el mapa
+
+Métodos:
+
+__init__(canvas, leCarrer, leNumero, lblIcona)
+  Inicializa componentes del buscador
+
+resultatCercador(codi, info)
+  Se ejecuta cuando se encuentra una dirección
+  
+  Acciones:
+  1. Centra canvas en coordenada
+  2. Hace zoom a escala 1:1000
+  3. Dibuja marcador rojo
+  4. Limpia campos de entrada
+
+eliminaMarcaLloc()
+  Elimina el marcador del mapa
+
+
+CLASE: FavoritsMaBIM (QvFavorits)
+──────────────────────────────────
+Propósito: Gestionar favoritos de usuario en BD
+
+Herencia: QvFavorits (de qVista)
+
+Conexión a BD:
+  Tabla: BIMS_FAVORITS
+  Campos: IDUSER, NOM_MAPA, OBSERVACIONS
+
+Métodos:
+
+getFavorits(usuari=getpass.getuser().upper())
+  Obtiene lista de favoritos del usuario actual
+  
+  Retorna:
+    List[(nom_favorit, observacio)]
+
+afegeixFavorit(favorit, observacio=None, usuari=...)
+  Añade un nuevo favorito
+  
+  Parámetros:
+    favorit (str) - Código BIM
+    observacio (str) - Observaciones opcionales
+    usuari (str) - Usuario (default: usuario actual)
+  
+  Retorna:
+    bool - Éxito
+
+actualitzaObservacio(favorit, observacio, usuari=...)
+  Actualiza observaciones de un favorito
+  
+  Retorna:
+    bool - Éxito
+
+
+CLASE: QMaBIM (QMainWindow)
+────────────────────────────
+Propósito: Ventana principal de la aplicación
+
+Herencia: QtWidgets.QMainWindow
+
+Constructor:
+
+__init__(projecte, BIM, *args, **kwargs)
+  Parámetros:
+    projecte (str) - Ruta del proyecto QGIS
+    BIM (str) - Código BIM inicial (opcional)
+
+Proceso de inicialización:
+  1. Carga interfaz UI desde archivo .ui
+  2. Conecta botones de navegación
+  3. Conecta buscador de direcciones
+  4. Configura planols (canvas principal)
+  5. Conecta a BD
+  6. Establece iconos
+  7. Inicializa herramientas (selección, medición)
+  8. Carga proyecto QGIS
+  9. Configura visibilidad de capas según permisos
+
+
+ATRIBUTOS PRINCIPALES:
+
+self.canvasA - Canvas principal (QvCanvas)
+self.llegenda - Leyenda (QvLlegenda)
+self.atributs - Tabla de atributos (QvAtributs)
+self.mapetaA - Mapeta con brújula (QvMapetaBrujulado)
+
+self.einaSeleccio - Herramienta de selección gráfica
+self.wMesuraGrafica - Ventana de mediciones
+
+self.leCercador - LineEdit del buscador principal
+self.leCarrer - LineEdit de calle
+self.leNumero - LineEdit de número
+
+self.favorits - Set de favoritos del usuario actual
+self.favObs - Dict de observaciones de favoritos
+
+self.dadesLabelsDades - Datos actuales (ZAFT_0002)
+self.dadesTaula - Direcciones actuales (ZAFT_0003)
+self.dadesTitularitat - Titularidad actual (ZAFT_0013)
+self.dadesFinquesRegistrals - Finques actuales (ZAFT_0011)
+
+self.nodesBaixes - Nodos de capas de "baixes"
+self.nodeSeccionsRegistrals - Nodo de secciones
+self.nodeGrupRegistrals - Nodo del grupo Registrals
+
+
+MÉTODOS PRINCIPALES:
+
+consulta()
+  Realiza consultas a BD para obtener datos del BIM actual
+  
+  Obtiene:
+  • Datos identificativos (ZAFT_0002 + joins)
+  • Direcciones (ZAFT_0003)
+  • Titularidad (ZAFT_0013)
+  • Finques registrals (ZAFT_0011)
+
+recarregaLabelsDades()
+  Actualiza interfaz con datos obtenidos de BD
+  
+  Acciones:
+  1. Actualiza labels con datos identificativos
+  2. Rellena tabla de direcciones
+  3. Actualiza labels de titularidad
+  4. Rellena tabla de finques registrals
+  5. Aplica filtro en capas de mapa
+  6. Centra canvas en extensión de la capa
+
+configuraPlanols()
+  Configura el canvas principal
+  
+  Acciones:
+  1. Crea QvCanvas
+  2. Vincula leyenda y atributos
+  3. Configura herramientas de mapa
+  4. Añade botones personalizados
+  5. Configura buscador de direcciones
+
+inicialitzaProjecte(projecte)
+  Carga el proyecto QGIS inicial
+  
+  Acciones:
+  1. Lee proyecto desde ruta
+  2. Centra mapa en Barcelona
+  3. Inicializa nodos de capas especiales
+  4. Conecta eventos de visibilidad
+
+seleccioGrafica(feats)
+  Maneja selección gráfica de elementos
+  
+  Parámetros:
+    feats - List[(QgsFeature, QgsMapLayer)]
+  
+  Acciones:
+  1. Abre formulario de atributos
+  2. Permite editar o seleccionar BIM
+
+setFavorit(BIM=None, fav=None, observacio='')
+  Añade o quita BIM de favoritos
+  
+  Parámetros:
+    BIM (str) - Código BIM (default: BIM actual)
+    fav (bool) - True=añadir, False=quitar
+    observacio (str) - Observaciones
+
+mostraFavorits()
+  Rellena tabla de favoritos
+  
+  Acciones:
+  1. Obtiene lista de favoritos del usuario
+  2. Crea tabla con información de cada favorito
+  3. Añade botones de selección
+  4. Añade checkboxes para desmarcar
+
+swapVisibilitatBaixes(check)
+  Muestra/oculta capas de baixes (sótanos)
+
+swapVisibilitatAltresBens(check)
+  Muestra/oculta capa "Altres Béns i Drets"
+
+swapVisibilitatRegistrals(check)
+  Muestra/oculta grupo "Registrals"
+
+obrirEnQGIS()
+  Abre proyecto de edición en QGIS
+  
+  Acciones:
+  1. Busca instalación de QGIS/OSGeo4W
+  2. Abre proyecto con extensión actual visible
+  3. Solo para usuarios en lista de editores
+
+netejaFiltre()
+  Limpia filtro de BIM y muestra todos
+
+
+FUNCIONES GLOBALES:
+
+def connexio(func)
+  Decorador que asegura conexión a BD antes de ejecutar función
+
+def splashScreen()
+  Crea y muestra pantalla de presentación (splash screen)
+
+def arguments()
+  Procesa argumentos de línea de comandos
+  
+  Soporta:
+  --projecte: Ruta del proyecto (default: configurable)
+  --codi-bim: BIM inicial a cargar (opcional)
+
+def main()
+  Punto de entrada principal de la aplicación
+  
+  Acciones:
+  1. Inicializa QGIS
+  2. Carga idioma catalán
+  3. Muestra splash screen
+  4. Crea ventana principal (QMaBIM)
+  5. Ejecuta aplicación
+
+
+═══════════════════════════════════════════════════════════════════════════════
+7. FLUJO DE TRABAJO
+═══════════════════════════════════════════════════════════════════════════════
+
+FLUJO 1: BÚSQUEDA POR BIM
+──────────────────────────
+
+Usuario abre aplicación
+    ↓
+Splash screen → QMaBIM.__init__()
+    ├─ Carga UI
+    ├─ Configura canvas y leyenda
+    ├─ Conecta eventos
+    └─ Muestra ventana
+    ↓
+Usuario escribe en buscador (leCercador)
+    ↓
+QCompleter.update() activa:
+    ├─ Consulta BD con patrones múltiples
+    ├─ Ordena resultados
+    └─ Muestra popup con sugerencias
+    ↓
+Usuario selecciona o presiona Enter
+    ↓
+Completador.activated() → QMaBIM.consulta()
+    ├─ Obtiene código BIM
+    ├─ Realiza 4 consultas a BD:
+    │  ├─ CONSULTA_INFO_BIM_Z2 (datos identificativos)
+    │  ├─ CONSULTA_INFO_BIM_Z3 (direcciones)
+    │  ├─ CONSULTA_INFO_BIM_Z13 (titularidad)
+    │  └─ CONSULTA_INFO_BIM_Z11 (finques registrals)
+    └─ Almacena resultados
+    ↓
+QMaBIM.recarregaLabelsDades()
+    ├─ Rellena labels con datos identificativos
+    ├─ Rellena tabla de direcciones
+    ├─ Rellena tabla de titularidad
+    ├─ Rellena tabla de finques registrals
+    ├─ Aplica filtro en capas: "BIM LIKE '%BIM_SELECCIONADO'"
+    └─ Centra canvas en extensión de la capa
+    ↓
+Usuario ve resultado en interfaz y en mapa
+
+
+FLUJO 2: SELECCIÓN GRÁFICA
+──────────────────────────
+
+Usuario hace clic en botón "Selecciona BIM gràficament"
+    ↓
+Se activa QvSeleccioBIM (herramienta de mapa)
+    ↓
+Usuario hace clic en mapa
+    ↓
+QvSeleccioBIM.canvasReleaseEvent()
+    ├─ Crea rectángulo de búsqueda alrededor del clic
+    ├─ Busca en capas "Inventari municipal" y "Registrals"
+    ├─ Emite señal elementsSeleccionats
+    └─ Pasa lista de features encontradas
+    ↓
+QMaBIM.seleccioGrafica()
+    ├─ Crea FormulariAtributs con los features encontrados
+    ├─ Permite navegar entre features
+    └─ Permite seleccionar BIM, editar o ver PIP
+    ↓
+Si usuario presiona "Seleccionar":
+    ├─ Código BIM se pone en buscador
+    ├─ Se ejecuta consulta()
+    └─ Se muestran datos en interfaz
+    ↓
+Si usuario presiona "Mostrar PIP":
+    ├─ Se extrae código BIM
+    ├─ Se abre navegador con PIP
+    └─ FormulariAtributs permanece abierto
+    ↓
+Si usuario presiona "Editar":
+    ├─ Se abre formulario de edición (QvFormAtributs)
+    ├─ Permite modificar campos
+    └─ Actualiza feature en capa
+
+
+FLUJO 3: GESTIÓN DE FAVORITOS
+──────────────────────────────
+
+Usuario hace clic en pestaña "Favorits"
+    ↓
+QMaBIM.mostraFavorits()
+    ├─ Obtiene lista de favoritos de BD
+    ├─ Para cada favorito:
+    │  ├─ Consulta información de ZAFT_0002
+    │  ├─ Crea fila en tabla
+    │  ├─ Añade botón "Seleccionar"
+    │  └─ Añade checkbox para desmarcar
+    └─ Muestra tabla en interfaz
+    ↓
+Usuario hace doble clic en favorito
+    ↓
+QMaBIM.favoritsCelaDobleClick()
+    ├─ Extrae código BIM de la fila
+    ├─ Ejecuta QMaBIM.selecciona(BIM)
+    └─ Se ejecuta flujo de búsqueda normal
+    ↓
+Usuario puede añadir nuevo favorito:
+    ├─ Primero debe tener un BIM seleccionado
+    ├─ Hace clic en botón "Afegir a favorits"
+    ├─ Se abre diálogo para observaciones
+    ├─ Se añade a BD
+    └─ Se actualiza lista de favoritos
+
+
+FLUJO 4: BÚSQUEDA POR DIRECCIÓN
+────────────────────────────────
+
+Usuario escribe en campos de dirección (carrer, número)
+    ↓
+QCercadorAdreca busca en BD SQLite
+    ↓
+Se encontran coordenadas
+    ↓
+Cercador.resultatCercador()
+    ├─ Centra canvas en coordenada
+    ├─ Hace zoom a escala 1:1000
+    ├─ Dibuja marcador rojo en ubicación
+    ├─ Limpia campos de entrada
+    └─ Cambia a pestaña de mapa
+    ↓
+Usuario puede hacer clic para seleccionar BIM en esa ubicación
+
+
+═══════════════════════════════════════════════════════════════════════════════
+8. INTEGRACIÓN CON qVista
+═══════════════════════════════════════════════════════════════════════════════
+
+qMaBIM UTILIZA CLASES DE qVista:
+────────────────────────────────
+
+1. QvCanvas
+   • Canvas principal para visualización de mapa
+   • Herramientas: pan, zoom, medición
+   • Street View, mediciones gráficas
+   
+   Uso en qMaBIM:
+   self.canvasA = QvCanvas(planolA, posicioBotonera='SE', 
+                            llistaBotons=botons)
+
+2. QvLlegenda
+   • Árbol jerárquico de capas
+   • Gestión de visibilidad
+   • Menú contextual de capas
+   
+   Uso en qMaBIM:
+   self.llegenda = QvLlegenda(self.canvasA, taulesAtributs)
+
+3. QvAtributs
+   • Tabla de atributos
+   • Mostrada como ventana flotante
+   
+   Uso en qMaBIM:
+   taulesAtributs = QvAtributs(self.canvasA)
+
+4. QvMapetaBrujulado
+   • Mapeta con brújula de situación
+   • Mostrada como widget superpuesto en canvas
+   
+   Uso en qMaBIM:
+   self.mapetaA = QvMapetaBrujulado(mapetaPng, self.canvasA)
+
+5. QvMesuraGrafica
+   • Herramienta de mediciones
+   • Distancias, áreas, etc.
+   
+   Uso en qMaBIM:
+   self.wMesuraGrafica = QvMesuraGrafica(self.canvasA, self.llegenda)
+
+6. QvFitxesAtributs
+   • Formulario para mostrar atributos de features
+   • Base para FormulariAtributs
+   
+   Uso en qMaBIM:
+   FormulariAtributs extends QvFitxesAtributs
+
+7. QvFormAtributs
+   • Formulario de edición de atributos
+   • Permite modificar campos de features
+   
+   Uso en qMaBIM:
+   En FormulariAtributs.edita() para editar features
+
+8. QvStatusBar
+   • Barra de estado personalizada
+   • Muestra escala, coordenadas, progreso
+   
+   Uso en qMaBIM:
+   Se crea y personaliza en __init__()
+
+9. QCercadorAdreca
+   • Buscador de direcciones desde SQLite
+   • Devuelve coordenadas
+   
+   Uso en qMaBIM:
+   En Cercador para búsqueda por dirección
+
+10. QvFavorits
+    • Gestión de favoritos en BD
+    • Base para FavoritsMaBIM
+    
+    Uso en qMaBIM:
+    FavoritsMaBIM extends QvFavorits
+
+11. QvApp
+    • Singleton de aplicación
+    • Información de usuario, idioma, etc.
+    
+    Uso en qMaBIM:
+    Para obtener usuario actual, cargar idioma, etc.
+
+12. QvEinesGrafiques
+    • Herramientas gráficas avanzadas
+    • Mediciones, dibujo, etc.
+
+
+ARQUITECTURA:
+
+┌─ qMaBIM (Aplicación Especializada)
+│  └─ Reutiliza componentes de qVista:
+│     ├─ QvCanvas
+│     ├─ QvLlegenda  
+│     ├─ QvAtributs
+│     ├─ QvMapetaBrujulado
+│     ├─ QvMesuraGrafica
+│     ├─ QvStatusBar
+│     ├─ QvApp
+│     └─ Otras clases
+│
+├─ Extendidas en qMaBIM:
+│  ├─ FormulariAtributs (extiende QvFitxesAtributs)
+│  └─ FavoritsMaBIM (extiende QvFavorits)
+│
+└─ Nuevas en qMaBIM:
+   ├─ ConstantsMaBIM
+   ├─ Consulta
+   ├─ Completador
+   ├─ QvSeleccioBIM
+   ├─ Cercador
+   └─ QMaBIM
+
+
+═══════════════════════════════════════════════════════════════════════════════
+9. FUNCIONALIDADES CLAVE
+═══════════════════════════════════════════════════════════════════════════════
+
+1. BÚSQUEDA INTELIGENTE
+───────────────────────
+• Autocompletación desde Oracle en tiempo real
+• Búsqueda multicriterio (BIM, descripción, denominación)
+• Priorización de resultados
+• Máximo 100 resultados
+
+Implementado en:
+  Completador.update() → Consulta.consulta()
+
+
+2. INFORMACIÓN PATRIMONIAL COMPLETA
+───────────────────────────────────
+• Datos identificativos (20+ campos)
+• Direcciones asociadas
+• Información catastral
+• Información registral y de titularidad
+• Finques y cargas registrales
+
+Consultadas desde:
+  ZAFT_0002, 0003, 0005, 0007, 0012, 0013, 0011
+
+
+3. SELECCIÓN GRÁFICA
+────────────────────
+• Click en mapa para seleccionar BIM
+• Tolerancia configurable (radio)
+• Busca en múltiples capas
+• Muestra formulario con resultados
+• Permite editar o consultar
+
+Implementado en:
+  QvSeleccioBIM (QgsMapTool)
+
+
+4. BÚSQUEDA POR DIRECCIÓN
+─────────────────────────
+• Autocompleter para calle y número
+• Busca en BD SQLite local
+• Devuelve coordenadas exactas
+• Marca ubicación en mapa
+• Zoom automático
+
+Implementado en:
+  Cercador + QCercadorAdreca
+
+
+5. FAVORITOS PERSISTENTES
+──────────────────────────
+• Cada usuario tiene sus favoritos
+• Almacenados en BD Oracle
+• Permite observaciones personalizadas
+• Acceso rápido a BIMs frecuentes
+
+Implementado en:
+  FavoritsMaBIM + tabla BIMS_FAVORITS
+
+
+6. EDICIÓN DE DATOS
+───────────────────
+• Solo para usuarios autorizados
+• Verificación de permisos (qV_editForm)
+• Formulario de edición integrado
+• Actualización automática
+
+Implementado en:
+  FormulariAtributs.edita()
+  QvFormAtributs.create()
+
+
+7. VISUALIZACIÓN GRÁFICA
+────────────────────────
+• Mapa con herramientas estándar
+• Canvas principal + mapeta de situación
+• Street View disponible
+• Herramientas de medición
+• Zoom, pan, rotación
+
+Implementado en:
+  QvCanvas + QvMapetaBrujulado
+
+
+8. ABRIR EN QGIS
+────────────────
+• Solo para editores autorizados
+• Preserva extensión visible
+• Abre proyecto de edición
+• Busca OSGeo4W en rutas estándar
+
+Implementado en:
+  QMaBIM.obrirEnQGIS()
+
+
+9. ACCESO A PORTAL PATRIMONIAL
+───────────────────────────────
+• Acceso directo a PIP (Portal del Patrimoni)
+• URL segura (HTTPS)
+• Abre en navegador del usuario
+• Requiere autenticación
+
+Implementado en:
+  FormulariAtributs.mostraPIP()
+
+
+10. CONTROL DE VISIBILIDAD
+────────────────────────────
+• Checkboxes para mostrar/ocultar capas
+• Sincronización automática con leyenda
+• Estados parcialmente marcados
+• Cambios en tiempo real
+
+Implementado en:
+  swap*Visibilitat*() methods
+
+
+═══════════════════════════════════════════════════════════════════════════════
+10. CASOS DE USO
+═══════════════════════════════════════════════════════════════════════════════
+
+CASO 1: CONSULTAR INFORMACIÓN DE UN INMUEBLE CONOCIDO
+─────────────────────────────────────────────────────
+
+1. Usuario abre qMaBIM
+2. Ve buscador con campo vacío
+3. Escribe "A1234" (código BIM)
+4. Ve sugerencias ordenadas
+5. Selecciona la deseada
+6. Se rellena toda la información:
+   • Datos identificativos en pestaña 1
+   • Direcciones en tabla
+   • Información de titularidad en pestaña 2
+   • Finques registrals en tabla
+7. Mapa se centra automáticamente en la ubicación
+8. Se marca el filtro con la capa visible
+
+
+CASO 2: BUSCAR UN INMUEBLE POR UBICACIÓN
+──────────────────────────────────────────
+
+1. Usuario escribe calle "Passeig de Gràcia"
+2. Escribe número "92"
+3. Sistema centra mapa y marca ubicación
+4. Usuario ve punto rojo en el mapa
+5. Hace clic en el punto (selecciona gráficamente)
+6. Se abre formulario con BIM(s) en esa ubicación
+7. Selecciona el inmueble de interés
+8. Se ejecuta búsqueda normal con ese BIM
+
+
+CASO 3: GESTIONAR FAVORITOS
+────────────────────────────
+
+1. Usuario está consultando varios BIMs
+2. Encuentra uno importante
+3. Hace clic en "Afegir a favorits"
+4. Escribe observación: "Projecte de rehabilitació"
+5. Se guarda en BD con su usuario
+6. Después, abre pestaña "Favorits"
+7. Ve lista de todos sus favoritos
+8. Hace doble clic en uno para cargarlo rápidamente
+9. Puede editar observaciones en la tabla
+
+
+CASO 4: EDITAR INFORMACIÓN (USUARIO AUTORIZADO)
+─────────────────────────────────────────────────
+
+1. Usuario accede a pestaña "BIMs"
+2. Consulta un inmueble
+3. Hace clic en botón "Editar"
+4. Se abre formulario de edición
+5. Modifica campo "OBSERVACIONS"
+6. Guarda cambios
+7. Cambios se sincronizan en mapa y tabla
+8. Se registra el cambio en BD
+
+
+CASO 5: PREPARAR VISTA PARA PRESENTACIÓN EN QGIS
+─────────────────────────────────────────────────
+
+1. Usuario navega en qMaBIM a un área de interés
+2. Ajusta zoom a escala deseada (ej: 1:1000)
+3. Posiciona vista correctamente
+4. Hace clic en "Abrir en QGIS"
+5. Se abre QGIS automáticamente
+6. Proyecto QGIS carga con exactamente la misma extensión
+7. Usuario puede editar en QGIS con todas las herramientas
+
+
+═══════════════════════════════════════════════════════════════════════════════
+11. CONFIGURACIÓN
+═══════════════════════════════════════════════════════════════════════════════
+
+ARCHIVOS DE CONFIGURACIÓN:
+
+1. ConstantsMaBIM
+   └─ En: qMaBIM.py (líneas 37-90)
+   └─ Contiene:
+      ├─ Credenciales BD Oracle
+      ├─ Rutas de proyectos QGIS
+      ├─ Rutas de recursos (logos, iconos)
+      ├─ Nombres de capas
+      ├─ Coordenadas de límites
+      └─ Consultas SQL
+
+2. MaBIM.ui
+   └─ Archivo de interfaz de Qt Designer
+   └─ Define:
+      ├─ Ventana principal
+      ├─ Pestañas (Favorits, BIMs, Mapa, etc.)
+      ├─ Campos de entrada
+      ├─ Tablas
+      └─ Botones
+
+3. Proyecto QGIS
+   └─ PPM_CatRegles_geopackage.qgs (consulta)
+   └─ mabimEDICIO_v3.qgs (edición)
+   └─ Define:
+      ├─ Capas visibles
+      ├─ Estilos
+      ├─ Simbología
+      └─ Metadatos
+
+
+PARÁMETROS DE LÍNEA DE COMANDOS:
+
+python qMaBIM.py [opciones]
+
+Opciones:
+  --projecte RUTA
+    Ruta del proyecto QGIS a cargar
+    Default: L:/DADES/SIT/qVista/CATALEG/MAPES PRIVATS/Patrimoni/
+             PPM_CatRegles_geopackage.qgs
+
+  --codi-bim CODIGO
+    Código BIM a cargar automáticamente al iniciar
+    Default: Ninguno
+
+Ejemplos:
+  python qMaBIM.py --projecte "/ruta/proyecto.qgs"
+  python qMaBIM.py --codi-bim "A1234"
+  python qMaBIM.py --projecte "/ruta/proyecto.qgs" --codi-bim "A1234"
+
+
+VARIABLES DE ENTORNO QGIS:
+
+En el proyecto QGIS se pueden definir:
+
+qMaBIM_QGISEditors
+  └─ Campo en project scope
+  └─ Contiene: Lista de usuarios autorizados para editar
+  └─ Formato: Usuario1;Usuario2;Usuario3
+  └─ Si está vacío: Solo el actual puede ver botón "Abrir en QGIS"
+
+
+═══════════════════════════════════════════════════════════════════════════════
+12. TROUBLESHOOTING
+═══════════════════════════════════════════════════════════════════════════════
+
+PROBLEMA: No se conecta a BD Oracle
+─────────────────────────────────────
+Síntomas: Mensaje "Connection failed" o completador vacío
+
+Causas posibles:
+  • Servidor Oracle no accesible
+  • Credenciales incorrectas
+  • Puerto 1551 bloqueado
+  • Cliente Oracle no instalado
+
+Soluciones:
+  1. Verificar conectividad: ping GEOPR1.imi.bcn
+  2. Verificar credenciales en ConstantsMaBIM
+  3. Verificar puerto: telnet GEOPR1.imi.bcn 1551
+  4. Instalar cliente Oracle
+
+
+PROBLEMA: Búsqueda devuelve pocos resultados
+──────────────────────────────────────────────
+Síntomas: No aparecen todos los BIMs esperados
+
+Causas:
+  • Límite de 100 resultados en consultas
+  • Texto incompleto o mal escrito
+  • Datos no actualizados en BD
+
+Soluciones:
+  • Ser más específico en la búsqueda
+  • Aumentar ROWNUM en consultas SQL
+  • Verificar datos en ZAFT_0002
+
+
+PROBLEMA: Mapa no se centra en el BIM
+──────────────────────────────────────
+Síntomas: Canvas permanece en vista anterior
+
+Causas:
+  • Capa no tiene features con el filtro
+  • Extensión de layer está mal calculada
+  • CRS incompatible
+
+Soluciones:
+  1. Verificar que capa tiene BIM en campos
+  2. Comprobar: layer.featureCount() > 0
+  3. Verificar CRS es EPSG:25831
+
+
+PROBLEMA: Formulario de edición no aparece
+───────────────────────────────────────────
+Síntomas: Click en "Editar" no hace nada
+
+Causas:
+  • Usuario no autorizado
+  • Capa no editable
+  • qV_editForm no configurado
+
+Soluciones:
+  1. Verificar usuario en qMaBIM_QGISEditors
+  2. Verificar capa es editable (capabilities)
+  3. Crear campo qV_editForm en proyecto
+
+
+PROBLEMA: PIP no abre en navegador
+──────────────────────────────────
+Síntomas: Click en "Mostrar PIP" no hace nada
+
+Causas:
+  • URL incorrecta
+  • Código BIM mal formateado
+  • Sin acceso a HTTPS
+
+Soluciones:
+  1. Verificar URL en ConstantsMaBIM
+  2. Verificar formato BIM (elimina 0000)
+  3. Verificar conectividad a URL
+  4. Probar con navegador manualmente
+
+
+PROBLEMA: Favoritos no se guardan
+──────────────────────────────────
+Síntomas: Favorito se añade pero desaparece
+
+Causas:
+  • No hay conexión a BD al guardar
+  • Usuario vacío o incorrecto
+  • Permisos insuficientes en tabla
+
+Soluciones:
+  1. Verificar conexión BD con Consulta().OBRE_DB()
+  2. Verificar usuario: getpass.getuser()
+  3. Verificar permisos en BIMS_FAVORITS
+
+
+PROBLEMA: Qgis no se abre desde botón "Abrir en QGIS"
+──────────────────────────────────────────────────────
+Síntomas: Nada sucede al hacer clic
+
+Causas:
+  • QGIS no instalado
+  • OSGeo4W en ruta no estándar
+  • Usuario sin permisos
+
+Soluciones:
+  1. Instalar QGIS en ruta estándar
+  2. Añadir ruta a línea 814: rutesInstalacio
+  3. Verificar usuario en qMaBIM_QGISEditors
+  4. Revisar console para errores
+
+
+PROBLEMA: Rendimiento lento
+────────────────────────────
+Síntomas: Interfaz lenta, consultas tardan
+
+Causas:
+  • BD Oracle lenta o sobrecargada
+  • Muchas capas visibles
+  • Internet lenta
+
+Soluciones:
+  1. Verificar velocidad de BD: SELECT COUNT(*) FROM ZAFT_0002
+  2. Desmarcar capas innecesarias
+  3. Reducir número de features visibles
+  4. Usar filtros más específicos
+
+
+═══════════════════════════════════════════════════════════════════════════════
+CONCLUSIÓN
+═══════════════════════════════════════════════════════════════════════════════
+
+qMaBIM es una aplicación especializada que reutiliza eficientemente la
+arquitectura y componentes de qVista para crear un visor patrimonial
+completo y funcional.
+
+FORTALEZAS:
+───────────
+  ✓ Integración perfecta con qVista
+  ✓ Interfaz intuitiva y especializada
+  ✓ Acceso a BD Oracle con información completa
+  ✓ Búsqueda inteligente con autocompletación
+  ✓ Gestión de favoritos por usuario
+  ✓ Edición autorizada de datos
+  ✓ Mapas y visualización cartográfica
+  ✓ Exportación a QGIS para usuarios editores
+
+MEJORAS FUTURAS:
+─────────────────
+  • Pestaña de Proyectos (en desarrollo)
+  • Pestaña de Consultas Avanzadas (en desarrollo)
+  • Reportes y exportación de datos
+  • Más controles de visibilidad de capas
+  • Búsqueda avanzada con operadores booleanos
+  • Historial de cambios
+  • Integración con más portales
+
+
+RECURSOS:
+─────────
+
+Documentación relacionada:
+  • CATALOGO_CLASES_QVISTA.txt - Catálogo de clases qVista
+  • QvLLEGENDA_DOCUMENTACION.txt - Documentación de QvLlegenda
+  • QvCOMPONENTES_QGIS.txt - Información sobre componentes QGIS
+
+Archivos del proyecto:
+  • qMaBIM.py - Este archivo (1,151 líneas)
+  • MaBIM.ui - Interfaz gráfica (generada por Qt Designer)
+  • PPM_CatRegles_geopackage.qgs - Proyecto QGIS (consulta)
+  • mabimEDICIO_v3.qgs - Proyecto QGIS (edición)
+
+Contacto:
+  • Dirección de Patrimoni - Ayuntamiento de Barcelona
+  • SIT (Sistemas de Información Territorial)
+  • Institut Municipal d'Informàtica (IMI)
+
+
+================================================================================
+                            FIN DEL DOCUMENTO
+================================================================================
+
+                    Última actualización: Noviembre 2025
+                  Proyecto qVista - Sistemas de Información Territorial
+                         Ayuntamiento de Barcelona
+
+================================================================================
