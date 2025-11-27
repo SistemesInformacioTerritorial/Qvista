@@ -1,0 +1,407 @@
+================================================================================
+                    ÍNDICE GENERAL DE DOCUMENTACIÓN QVISTA
+           Guía de navegación para toda la documentación del proyecto
+================================================================================
+
+FECHA: Noviembre 2025
+PROYECTO: qVista - Visor Cartográfico Personalizado (Barcelona)
+
+
+DOCUMENTACIÓN DISPONIBLE:
+========================
+
+Hemos creado 7 documentos principales que cubren diferentes aspectos del proyecto:
+
+
+DOCUMENTOS POR TEMA:
+====================
+
+1. ENTENDER QUÉ ES QVISTA
+   └─ CATALOGO_CLASES_QVISTA.txt (2,340 líneas)
+      • Explicación de cada clase principal
+      • Responsabilidades de cada clase
+      • Métodos y atributos clave
+      • Relaciones entre clases
+      • Flujos de datos típicos
+      • Mejor para: Nuevos desarrolladores, Arquitectos
+
+
+2. ENTENDER LA ARQUITECTURA DE QVISTA
+   ├─ ARQUITECTURA_QVISTA.txt (390 líneas)
+   │  • Estructura de qVista.py
+   │  • Flujo de inicialización
+   │  • Módulos especializados
+   │  • Cómo se integraría botonera
+   │  • Mejor para: Arquitectos, Desarrolladores Senior
+   │
+   └─ INDICE_DOCUMENTACION.txt (290 líneas)
+      • Índice de documentos sobre botonera
+      • Cómo navegar según rol
+      • Estructura del proyecto
+      • Conceptos clave
+      • Mejor para: Todos
+
+
+3. ENTENDER EL MÓDULO BOTONERA
+   ├─ RESUMEN_EJECUTIVO_BOTONERA.txt (210 líneas)
+   │  • Objetivo del módulo
+   │  • Cambios realizados
+   │  • Próximos pasos
+   │  • Métricas de éxito
+   │  • Mejor para: Gestores, Project Managers
+   │
+   ├─ CAMBIOS_BOTONERA.txt (160 líneas)
+   │  • Detalle de cambios técnicos
+   │  • Antes/después del código
+   │  • Logging mejorado
+   │  • Testing recomendado
+   │  • Mejor para: Desarrolladores, Revisores
+   │
+   └─ INTEGRACION_BOTONERA_PRACTICO.txt (460 líneas)
+      • 4 opciones de integración
+      • Código listo para copiar/pegar
+      • Ejemplos de JSON
+      • Troubleshooting
+      • Mejor para: Desarrolladores, Technical Leads
+
+
+MATRIZ DE LECTURA POR ROL:
+==========================
+
+SI ERES JEFE DE PROYECTO / GESTOR:
+  1. Leer: RESUMEN_EJECUTIVO_BOTONERA.txt (10 min)
+  2. Leer: ARQUITECTURA_QVISTA.txt - "DESCRIPCIÓN GENERAL" (5 min)
+  3. TOTAL: 15 minutos
+
+SI ERES ARQUITECTO DE SOFTWARE:
+  1. Leer: CATALOGO_CLASES_QVISTA.txt (completo) (30 min)
+  2. Leer: ARQUITECTURA_QVISTA.txt (completo) (20 min)
+  3. Leer: CAMBIOS_BOTONERA.txt (10 min)
+  4. TOTAL: 60 minutos
+
+SI ERES DESARROLLADOR (implementación):
+  1. Leer: CATALOGO_CLASES_QVISTA.txt - "1. CLASES CORE" y "2. CANVAS" (20 min)
+  2. Leer: INTEGRACION_BOTONERA_PRACTICO.txt (30 min)
+  3. Leer: CAMBIOS_BOTONERA.txt (10 min)
+  4. TOTAL: 60 minutos
+
+SI ERES REVIEWER DE CÓDIGO:
+  1. Leer: CAMBIOS_BOTONERA.txt (10 min)
+  2. Revisar: moduls/eines/Botonera.py (línea por línea) (20 min)
+  3. Revisar: botonera_config.json (5 min)
+  4. TOTAL: 35 minutos
+
+SI ERES NUEVO EN EL PROYECTO:
+  1. Leer: INDICE_DOCUMENTACION.txt (10 min)
+  2. Leer: RESUMEN_EJECUTIVO_BOTONERA.txt (10 min)
+  3. Leer: CATALOGO_CLASES_QVISTA.txt - "1. CORE" + "2. CANVAS" (30 min)
+  4. Leer: ARQUITECTURA_QVISTA.txt (20 min)
+  5. TOTAL: 70 minutos
+
+
+CONTENIDO POR DOCUMENTO:
+========================
+
+📄 CATALOGO_CLASES_QVISTA.txt (2,340 líneas)
+─────────────────────────────────────────
+SECCIONES:
+  • 1. Clases Core (QvApp, QVista)
+  • 2. Canvas y Visualización (QvCanvas, QvMapeta, QvStreetView)
+  • 3. Datos y Capas (QvLlegenda, QvAtributs, QvCarregadorGPKG)
+  • 4. UI y Widgets (QvStatusBar, QvMenuBar, QvPushButton)
+  • 5. Herramientas (QvEinesGrafiques, QvPrint, QvDigitize)
+  • 6. Barcelona (QVDistrictesBarris, QvPavimentacio, QvCercadorAdreca)
+  • 7. Import/Export (QvCSV, QvPDF, QvReports)
+  • 8. Herramientas Avanzadas (QvRuta, QvMultiruta, QvAnotacions)
+  • 9. Auxiliares (QvModelLlegenda, QvGithub, QvFMEServer)
+  • 10. Submódulo "eines" (Botonera, DobleCanvas, EinaCoordenades)
+  • 11. Relaciones entre clases
+  • 12. Flujo de datos típico
+
+PARA BUSCAR: Usa Ctrl+F para buscar clase específica
+MEJOR PARA: Entender funcionalidad de cada componente
+
+
+📄 ARQUITECTURA_QVISTA.txt (390 líneas)
+───────────────────────────────────────
+SECCIONES:
+  • Descripción General
+  • Estructura del Archivo (6 secciones principales)
+  • Flujo de Inicialización (paso a paso)
+  • Módulos Especializados (30+ módulos)
+  • Estructura de Datos Importantes
+  • Flujo de Carga de Tiempos
+  • Integración de Botonera (3 opciones)
+  • Atributos Compatibles
+  • Consideraciones de Implementación
+  • Ejemplo de JSON para Barcelona
+
+USAR PARA: Entender cómo funciona qVista en su totalidad
+
+
+📄 RESUMEN_EJECUTIVO_BOTONERA.txt (210 líneas)
+──────────────────────────────────────────────
+SECCIONES:
+  • Objetivo del Módulo Botonera
+  • Cambios Realizados (4 principales)
+  • Archivos Modificados
+  • Comportamiento Automático (3 escenarios)
+  • Compatibilidad (retrocompatible)
+  • Ventajas del Diseño
+  • Integración en qVista (opción recomendada)
+  • Ejemplos Reales para Barcelona
+  • Estadísticas del Código
+  • Próximos Pasos (FASE 1-4)
+  • Conclusión
+
+USAR PARA: Resumen ejecutivo para gestión
+
+
+📄 CAMBIOS_BOTONERA.txt (160 líneas)
+──────────────────────────────────────
+SECCIONES:
+  • Resumen General
+  • Cambios Principales (3 cambios técnicos)
+  • Archivos Modificados (específicos)
+  • Cambios en Comportamiento (antes/después)
+  • Compatibilidad
+  • Logging y Debugging
+  • Ejemplo de Uso Completo
+  • Próximas Mejoras
+  • Notas Técnicas
+  • Testing Recomendado
+
+USAR PARA: Revisar código y cambios específicos
+
+
+📄 INTEGRACION_BOTONERA_PRACTICO.txt (460 líneas)
+──────────────────────────────────────────────────
+SECCIONES:
+  • Opción 1: Integración Simple (RECOMENDADA)
+    - PASO 1: Añadir import
+    - PASO 2: Crear método preparacioBotonera()
+    - PASO 3: Llamar en __init__()
+  
+  • Opción 2: Integración Avanzada (control de docks)
+  
+  • Opción 3: Integración con Callback Dinámico (acciones Python)
+  
+  • Opción 4: Múltiples Botoneras por Proyecto
+  
+  • Consideraciones Generales
+  
+  • Ejemplos de JSON Completos (3 ejemplos)
+  
+  • Troubleshooting
+  
+  CÓDIGO LISTO PARA COPIAR/PEGAR en cada opción
+
+USAR PARA: Implementar botonera en qVista
+
+
+📄 INDICE_DOCUMENTACION.txt (290 líneas)
+──────────────────────────────────────────
+SECCIONES:
+  • Archivos de Documentación Creados
+  • Cómo Navegar esta Documentación
+  • Estructura del Proyecto
+  • Puntos Clave de cada Documento
+  • Mapa Conceptual de Botonera
+  • Flujo de Integración en qVista
+  • Conceptos Clave
+  • Vocabulario Técnico
+  • Casos de Uso Reales (3 casos)
+  • Checklist de Lectura
+  • Testing Recomendado
+  • Preguntas Frecuentes
+  • Recursos Adicionales
+
+USAR PARA: Navegación y orientación general
+
+
+📄 CATALOGO_CLASES_QVISTA.txt (este archivo)
+────────────────────────────────────────────
+UBICACIÓN: d:\qVista\Codi\CATALOGO_CLASES_QVISTA.txt
+
+CONTENIDO COMPLETO:
+  ✓ Descripción detallada de 50+ clases
+  ✓ Responsabilidades de cada clase
+  ✓ Métodos y atributos principales
+  ✓ Señales (Qt signals)
+  ✓ Relaciones entre clases
+  ✓ Diagramas de dependencia
+  ✓ Flujos de datos
+  ✓ Patrones de comunicación
+
+USAR PARA: Referencia de clases y funcionalidades
+
+
+BÚSQUEDA RÁPIDA:
+================
+
+¿DÓNDE ENCUENTRO...?
+
+"¿Cómo integro Botonera en qVista?"
+  → INTEGRACION_BOTONERA_PRACTICO.txt - "OPCIÓN 1"
+
+"¿Qué cambios se hicieron en Botonera.py?"
+  → CAMBIOS_BOTONERA.txt - "CAMBIOS PRINCIPALES"
+
+"¿Qué hace cada clase?"
+  → CATALOGO_CLASES_QVISTA.txt (usar Ctrl+F)
+
+"¿Cómo arranca qVista?"
+  → ARQUITECTURA_QVISTA.txt - "FLUJO DE INICIALIZACIÓN"
+
+"¿Cuál es el estado general del proyecto?"
+  → RESUMEN_EJECUTIVO_BOTONERA.txt
+
+"¿Por dónde empiezo a leer?"
+  → Este archivo, sección "MATRIZ DE LECTURA POR ROL"
+
+"¿Cómo se comunican las clases?"
+  → CATALOGO_CLASES_QVISTA.txt - "11. RELACIONES ENTRE CLASES"
+
+"¿Qué es Botonera?"
+  → RESUMEN_EJECUTIVO_BOTONERA.txt - "OBJETIVO DEL MÓDULO"
+
+"Tengo error al integrar, ¿qué hago?"
+  → INTEGRACION_BOTONERA_PRACTICO.txt - "TROUBLESHOOTING"
+
+
+ESTADÍSTICAS DE DOCUMENTACIÓN:
+==============================
+
+Total de documentos: 6
+Total de líneas de documentación: 4,240
+Ratio documentación a código: ~1.6 líneas de docs por 1 línea de código
+
+Desglose por tema:
+  • Botonera: 1,090 líneas (26%)
+  • Arquitectura qVista: 1,020 líneas (24%)
+  • Catálogo de clases: 2,340 líneas (55%)
+  • Otros (índices): 790 líneas (19%)
+
+
+INFORMACIÓN TÉCNICA:
+====================
+
+Formato: Texto plano (.txt)
+Encoding: UTF-8
+Abierto con: Cualquier editor de texto
+Búsqueda: Ctrl+F en editor
+
+Estructura: Líneas de 80-100 caracteres
+Secciones: Separadas por líneas de =
+Código: Formateado en bloques
+
+Versionado: Git (repositorio oficial)
+Branch: Pepi
+Última actualización: Noviembre 2025
+
+
+FLUJO DE TRABAJO RECOMENDADO:
+=============================
+
+Para NUEVOS DESARROLLADORES:
+
+1. Leer este archivo (INDICES_GENERAL)
+2. Leer CATALOGO_CLASES_QVISTA.txt (clases core)
+3. Leer ARQUITECTURA_QVISTA.txt
+4. Explorar código en IDE
+5. Leer INTEGRACION_BOTONERA_PRACTICO.txt si trabajas con botonera
+
+Para REVISIÓN DE CÓDIGO:
+
+1. Leer CAMBIOS_BOTONERA.txt
+2. Abrir Botonera.py en IDE
+3. Revisar línea por línea
+4. Ejecutar tests del checklist
+5. Comparar antes/después
+
+Para INTEGRACIÓN:
+
+1. Leer INTEGRACION_BOTONERA_PRACTICO.txt
+2. Elegir opción (recomendada: Opción 1)
+3. Copiar código
+4. Adaptar a tu proyecto
+5. Probar según checklist
+6. Commit y push
+
+
+CÓMO MANTENER LA DOCUMENTACIÓN:
+================================
+
+Cuando CAMBIES código:
+  1. Actualiza CAMBIOS_BOTONERA.txt o similar
+  2. Actualiza comentarios en código
+  3. Actualiza CATALOGO_CLASES_QVISTA.txt si es clase nueva
+  4. Actualiza archivo README si aplica
+
+Cuando AÑADAS nueva clase:
+  1. Escribe docstring completo en clase
+  2. Añade entrada en CATALOGO_CLASES_QVISTA.txt
+  3. Documenta responsabilidades
+  4. Documenta relaciones con otras clases
+
+Cuando CAMBIES arquitectura:
+  1. Actualiza ARQUITECTURA_QVISTA.txt
+  2. Actualiza diagramas de flujo
+  3. Actualiza relaciones entre clases
+
+
+RECURSOS RELACIONADOS:
+======================
+
+En el repositorio:
+  • moduls/eines/Botonera.py - Código fuente
+  • botonera_config.json - Ejemplo de configuración
+  • qVista.py - Script principal
+
+Documentación QGIS:
+  • https://qgis.org/documentation/
+
+PyQt5:
+  • https://www.riverbankcomputing.com/software/pyqt/
+
+GitHub del Proyecto:
+  • https://github.com/SistemesInformacioTerritorial/Qvista
+
+
+CONTACTO Y SOPORTE:
+===================
+
+Para preguntas sobre:
+
+CLASES Y ARQUITECTURA → Leer CATALOGO_CLASES_QVISTA.txt
+BOTONERA → Leer INTEGRACION_BOTONERA_PRACTICO.txt
+CAMBIOS REALIZADOS → Leer CAMBIOS_BOTONERA.txt
+GENERAL → Este archivo
+
+
+CONCLUSIÓN:
+===========
+
+Esta documentación proporciona:
+  ✓ Visión global del proyecto qVista
+  ✓ Explicación de cada componente principal
+  ✓ Guía de integración paso a paso
+  ✓ Referencia técnica completa
+  ✓ Ejemplos prácticos
+  ✓ Troubleshooting y soluciones
+
+La documentación está organizada para ser accesible según tu rol
+y nivel de detalle requerido.
+
+Comienza por el documento apropiado para tu rol en la matriz
+de lectura al inicio de este documento.
+
+================================================================================
+                            FIN DEL DOCUMENTO
+================================================================================
+
+                    Última actualización: Noviembre 2025
+                  Proyecto qVista - Sistemas de Información Territorial
+                         Ayuntamiento de Barcelona
+
+================================================================================
