@@ -563,6 +563,10 @@ class QMaBIM(QtWidgets.QMainWindow):
         grupCapesFons = qtWdg.QButtonGroup(self)
         grupCapesFons.setExclusive(True)
 
+        #iniciem variable per marcar que s'està actualitzant visibilitat de capes de fons
+        self._updating_base_layers = False
+
+
         for node in self.nodes_wms:
             if node is not None:
                 check_text = node.name()
@@ -571,7 +575,7 @@ class QMaBIM(QtWidgets.QMainWindow):
                 chk.setChecked(node.isVisible())
                 #NOTA: partial(self.on_base_layer_toggled, node=node) evita el típic problema del lambda dins bucles que captura sempre l’últim valor.
                 chk.toggled.connect(partial(self.on_base_layer_toggled, node=node))
-                node.visibilityChanged.connect(partial(self.on_node_visibility_changed, chk=chk))
+                node.visibilityChanged.connect(partial(self.on_node_visibility_changed, chk=chk, node=node))
                 grupCapesFons.addButton(chk)
                 layout_grup.addWidget(chk)
 
@@ -617,39 +621,57 @@ class QMaBIM(QtWidgets.QMainWindow):
         self.l_DataGrafic.hide()
         self.bMostrarFechas.clicked.connect(self.mostrarFechasProcesos)
 
+
+    def _set_only_this_base_layer_visible(self, node):
+        """Deixa només 'node' visible i apaga la resta de nodes WMS."""
+        if self._updating_base_layers:
+            return
+
+        self._updating_base_layers = True
+        try:
+            for n in self.nodes_wms:
+                if n is None:
+                    continue
+                n.setItemVisibilityChecked(n is node)
+        finally:
+            self._updating_base_layers = False
+
     def on_base_layer_toggled(self, checked, node):
         """
-        Slot cridat quan es canvia l'estat d'un radiobutton de capa de fons.
-
-        checked: bool → estat del radiobutton (True quan s'activa)
-        node: QgsLayerTreeLayer associat a aquest radiobutton
+        Slot dels QRadioButton de capes de fons.
+        checked: estat del radiobutton
+        node: QgsLayerTreeLayer associat al radiobutton
         """
-        # Si el radiobutton s'ha desmarcat, no fem res
-        # (el que ens interessa és el que s'acaba de MARCAR)
+
+        # 1) Si el radiobutton s'ha desmarcat, no fem res
+        # (quan Qt desmarca els altres, també dispara toggled(False))
         if not checked:
             return
 
-        # Recorrem totes les capes WMS de fons
-        for n in self.nodes_wms:
-            if n is None:
-                continue
+        self._set_only_this_base_layer_visible(node)
 
-            if n is node:
-                # Activem només la capa associada al radiobutton marcat
-                n.setItemVisibilityChecked(True)
-            else:
-                # Amaguem la resta de capes
-                n.setItemVisibilityChecked(False)
 
-    def on_node_visibility_changed(self, visible, chk):
+    def on_node_visibility_changed(self, state, chk, node):
         """
         Quan canvia la visibilitat del node (des del panell de QGIS, per exemple),
-        actualitzem el checkbox.
+        actualitzem el radiobutton i, si cal, fem exclusiva la capa.
         """
-        # Evitem bucle infinit: canviar chk → canviaria node → tornaria a cridar això
-        block = chk.blockSignals(True)
+        visible = node.isVisible()   # o usa itemVisibilityChecked() si et va millor
+
+        # 1) Actualitzem el radiobutton sense disparar el seu 'toggled'
+        block = chk.blockSignals(visible)
         chk.setChecked(visible)
         chk.blockSignals(block)
+
+        # 2) Si estem en un canvi intern (cridat des de _set_only_this_base_layer_visible),
+        #    no fem res més per evitar bucles.
+        if self._updating_base_layers:
+            return
+
+        # 3) Si l'usuari ha fet visible aquesta capa al panell,
+        #    apliquem la mateixa lògica d'exclusivitat.
+        if visible:
+            self._set_only_this_base_layer_visible(node)
 
     def mostrarFechasProcesos(self):
         # Recuperar los textos de las fechas
