@@ -8,6 +8,7 @@ import subprocess
 import sys
 from pathlib import Path
 from typing import Sequence
+from functools import partial
 
 import configuracioQvista
 from moduls import QvFuncions
@@ -32,6 +33,7 @@ from qgis.core import (QgsCoordinateReferenceSystem, QgsFeatureRequest,
 from qgis.core.contextmanagers import qgisapp
 from qgis.gui import (QgsGui, QgsLayerTreeMapCanvasBridge, QgsMapTool,
                       QgsRubberBand, QgsVertexMarker)
+import qgis.PyQt.QtWidgets as qtWdg
 
 import webbrowser
 from PyQt5.QtWidgets import QHeaderView
@@ -510,7 +512,7 @@ class QMaBIM(QtWidgets.QMainWindow):
         super().__init__(*args, **kwargs)
         uic.loadUi(ConstantsMaBIM.rutaUI,self)
 
-        self.llistaBotons = (self.bFavorits, self.bBIMs, self.bPIP, self.bProjectes, self.bConsultes)
+        self.llistaBotons = (self.bFavorits, self.bBIMs, self.bPIP, self.bConsultes)
 
         self.connectBotons()
         self.connectaCercador()
@@ -531,6 +533,10 @@ class QMaBIM(QtWidgets.QMainWindow):
         self.statusBar().afegirWidget('lblSIT',QtWidgets.QLabel("Direcció de Patrimoni"),0,1)
         self.statusBar().afegirWidget('spacer',QtWidgets.QWidget(),1,2)
 
+        self.wMapesContent.setVisible(False)
+        self.tbMapesHeader.setArrowType(QtCore.Qt.RightArrow)
+        self.tbMapesHeader.toggled.connect(self.toggle_mapes_panel)
+
         self.bObrirQGIS.clicked.connect(self.obrirEnQGIS)
         # només podrà veure el botó qui aparegui a la llista d'editors
         # TODO: si no hi ha editors definits, pot veure-ho tothom? Ningú? (comportament actual: ningú)
@@ -541,10 +547,37 @@ class QMaBIM(QtWidgets.QMainWindow):
         else:
             self.bObrirQGIS.hide()
         node = self.llegenda.nodePerNom(ConstantsMaBIM.nomGrupRegistrals)
+
         if node is not None and len(node.findLayers())>0:
             self.cbRegistralsVisibles.show()
         else:
             self.cbRegistralsVisibles.hide()
+
+        #Recuperem layers wms per generar els chec
+        self.nodes_wms = self.llegenda.capesPerProveidor('wms')
+
+        layout = self.verticalLayoutMapes
+
+        layout_grup = qtWdg.QVBoxLayout()
+        layout_grup.setSpacing(10) 
+        grupCapesFons = qtWdg.QButtonGroup(self)
+        grupCapesFons.setExclusive(True)
+
+        for node in self.nodes_wms:
+            if node is not None:
+                check_text = node.name()
+                check_text = check_text if len(check_text) <= 35 else check_text[:35] + "..."
+                chk = qtWdg.QRadioButton(check_text, self)
+                chk.setChecked(node.isVisible())
+                #NOTA: partial(self.on_base_layer_toggled, node=node) evita el típic problema del lambda dins bucles que captura sempre l’últim valor.
+                chk.toggled.connect(partial(self.on_base_layer_toggled, node=node))
+                node.visibilityChanged.connect(partial(self.on_node_visibility_changed, chk=chk))
+                grupCapesFons.addButton(chk)
+                layout_grup.addWidget(chk)
+
+        layout.addLayout(layout_grup)        
+        layout.addStretch()
+
         self.bAfegirFavorit.clicked.connect(self.dialegSetFavorit)
         self.bAfegirFavorit.clicked.connect(self.mostraFavorits)
         self.bAfegirFavorit.hide()
@@ -583,6 +616,40 @@ class QMaBIM(QtWidgets.QMainWindow):
         self.l_DataCarregaCSV.hide()
         self.l_DataGrafic.hide()
         self.bMostrarFechas.clicked.connect(self.mostrarFechasProcesos)
+
+    def on_base_layer_toggled(self, checked, node):
+        """
+        Slot cridat quan es canvia l'estat d'un radiobutton de capa de fons.
+
+        checked: bool → estat del radiobutton (True quan s'activa)
+        node: QgsLayerTreeLayer associat a aquest radiobutton
+        """
+        # Si el radiobutton s'ha desmarcat, no fem res
+        # (el que ens interessa és el que s'acaba de MARCAR)
+        if not checked:
+            return
+
+        # Recorrem totes les capes WMS de fons
+        for n in self.nodes_wms:
+            if n is None:
+                continue
+
+            if n is node:
+                # Activem només la capa associada al radiobutton marcat
+                n.setItemVisibilityChecked(True)
+            else:
+                # Amaguem la resta de capes
+                n.setItemVisibilityChecked(False)
+
+    def on_node_visibility_changed(self, visible, chk):
+        """
+        Quan canvia la visibilitat del node (des del panell de QGIS, per exemple),
+        actualitzem el checkbox.
+        """
+        # Evitem bucle infinit: canviar chk → canviaria node → tornaria a cridar això
+        block = chk.blockSignals(True)
+        chk.setChecked(visible)
+        chk.blockSignals(block)
 
     def mostrarFechasProcesos(self):
         # Recuperar los textos de las fechas
@@ -694,7 +761,7 @@ class QMaBIM(QtWidgets.QMainWindow):
             (self.bFavorits, 'botonera-fav.png'),
             (self.bBIMs, 'botonera-BIM.png'),
             (self.bPIP, 'botonera-PIP.png'),
-            (self.bProjectes, 'botonera-projectes'),
+            #(self.bProjectes, 'botonera-projectes'),
             (self.bConsultes, 'botonera-consultes')
         )
         for (boto, icona) in parelles:
@@ -1098,12 +1165,23 @@ class QMaBIM(QtWidgets.QMainWindow):
             BIM = self.tFavorits.item(fila,0).text()
             if BIM in self.favorits:
                 FavoritsMaBIM().actualitzaObservacio(BIM, self.tFavorits.item(fila,5).text())
+    
+    def toggle_mapes_panel(self, checked):
+        # Mostra o amaga el contingut
+        self.wMapesContent.setVisible(checked)
 
+        # Canvia la fletxa per donar feedback visual
+        if checked:
+            self.tbMapesHeader.setArrowType(QtCore.Qt.DownArrow)
+        else:
+            self.tbMapesHeader.setArrowType(QtCore.Qt.RightArrow)
+   
     def connectBotons(self):
         self.llistaBotons[0].clicked.connect(self.mostraFavorits)
         for (i,x) in enumerate(self.llistaBotons):
             x.clicked.connect(functools.partial(self.desmarcaBotons,x))
             x.clicked.connect(functools.partial(self.switchPantallaP,i))
+        
     def switchPantallaP(self,i):
         self.stackedWidget.setCurrentIndex(i)
     def desmarcaBotons(self,aExcepcio):
