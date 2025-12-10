@@ -659,7 +659,7 @@ class QMaBIM(QtWidgets.QMainWindow):
         visible = node.isVisible()   # o usa itemVisibilityChecked() si et va millor
 
         # 1) Actualitzem el radiobutton sense disparar el seu 'toggled'
-        block = chk.blockSignals(visible)
+        block = chk.blockSignals(True)
         chk.setChecked(visible)
         chk.blockSignals(block)
 
