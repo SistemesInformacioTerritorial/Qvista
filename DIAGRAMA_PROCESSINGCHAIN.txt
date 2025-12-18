@@ -1,0 +1,481 @@
+================================================================================
+DIAGRAMA VISUAL: ProcessingChain DockWidget para qVista
+================================================================================
+
+1. ESTRUCTURA DEL DOCKWIDGET
+================================================================================
+
+┌─────────────────────────────────────────────────────────────┐
+│ 🔧 Encadenamiento de Procesos QGIS                        │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│ Algoritmo: [▼ Buffer           ]  ← ComboBox con todos    │
+│            [▼ Dissolve         ]    los algoritmos QGIS   │
+│            [▼ Centroide        ]                           │
+│            [▼ Clip             ]                           │
+│            [▼ ...              ]                           │
+│                                                             │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│ PARÁMETROS DEL ALGORITMO SELECCIONADO:                     │
+│                                                             │
+│ Capa de entrada:  [▼ Parcelas         ]  ← Combo         │
+│ Distancia:        [100        ] metros ← Spin             │
+│ Nombre salida:    [resultado_buffer] ← LineEdit           │
+│                                                             │
+│ [+ Añadir paso]                                            │
+│                                                             │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│ CADENA DE PROCESOS:                                        │
+│                                                             │
+│ ┌─────────────────────────────────────────────────────┐  │
+│ │ 1. Buffer (Parcelas, distancia 100)          [X]   │  │
+│ ├─────────────────────────────────────────────────────┤  │
+│ │ 2. Dissolve (output_1)                       [X]   │  │
+│ ├─────────────────────────────────────────────────────┤  │
+│ │ 3. Centroide (output_2)                      [X]   │  │
+│ └─────────────────────────────────────────────────────┘  │
+│                                                             │
+│ [- Eliminar paso seleccionado]                             │
+│                                                             │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│ Progreso: [████████░░░░░░░░░░░░░░░░░░░░] 45%            │
+│                                                             │
+│ Estado: Ejecutando paso 2/3: Dissolve...                  │
+│                                                             │
+│ [✓ Ejecutar cadena] [⏸ Pausar] [⏹ Cancelar]              │
+│                                                             │
+│ [Guardar cadena] [Cargar cadena] [Limpiar]               │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+
+
+2. FLUJO DE DATOS EN LA CADENA
+================================================================================
+
+Paso 1: Buffer
+  INPUT:     Parcelas (capa vectorial)
+  DISTANCE:  100
+  OUTPUT:    resultado_buffer.gpkg (en disco) o memory:
+             ↓
+             Capa con buffer
+
+Paso 2: Dissolve
+  INPUT:     resultado_buffer.gpkg (OUTPUT del paso 1)
+  FIELD:     (ninguno = disolver todo)
+  OUTPUT:    resultado_dissolve.gpkg
+             ↓
+             Capa disuelta
+
+Paso 3: Centroide
+  INPUT:     resultado_dissolve.gpkg (OUTPUT del paso 2)
+  OUTPUT:    resultado_centroide.gpkg
+             ↓
+             Puntos centroide
+
+RESULTADO FINAL: resultado_centroide.gpkg se añade al proyecto
+
+
+3. ARQUITECTURA DE CLASES
+================================================================================
+
+ProcessingChain (QDockWidget)
+    │
+    ├─ UI Components:
+    │  ├─ comboAlgoritmos: QComboBox
+    │  ├─ panelParametros: ParameterPanel
+    │  ├─ chainView: QListWidget
+    │  └─ barra progreso: QProgressBar
+    │
+    ├─ Data:
+    │  ├─ pasos: List[ProcessingStep]
+    │  └─ resultadosIntermediarios: Dict
+    │
+    └─ Methods:
+       ├─ cargarAlgoritmos()
+       ├─ mostrarParametros()
+       ├─ anadir_paso()
+       ├─ eliminar_paso()
+       ├─ ejecutar()
+       ├─ validarPasos()
+       ├─ guardarCadena()
+       └─ cargarCadena()
+
+
+ProcessingStep
+    │
+    ├─ Data:
+    │  ├─ nombreAlgo: str
+    │  ├─ parametros: Dict
+    │  └─ resultados: Dict
+    │
+    └─ Methods:
+       ├─ ejecutar(context, feedback)
+       ├─ reemplazarReferencias()
+       ├─ obtenerTiposEntrada()
+       └─ obtenerTiposSalida()
+
+
+ParameterPanel (QWidget)
+    │
+    ├─ Data:
+    │  ├─ algoritmo: QgsProcessingAlgorithm
+    │  └─ widgets_parametros: Dict[str, QWidget]
+    │
+    └─ Methods:
+       ├─ mostrar(algoritmo)
+       ├─ crearWidget(param)
+       └─ obtenerParametros()
+
+
+ProcessingChainExecutor
+    │
+    ├─ Signals:
+    │  ├─ progreso: pyqtSignal(int)
+    │  ├─ mensaje: pyqtSignal(str)
+    │  ├─ terminado: pyqtSignal()
+    │  └─ error: pyqtSignal(str)
+    │
+    └─ Methods:
+       ├─ ejecutar()
+       ├─ validarCompatibilidad()
+       ├─ guardarDebugInfo()
+       └─ agregarCapaAlProyecto()
+
+
+ProcessingThread (QThread)
+    │
+    ├─ run()
+    │
+    └─ Signals:
+       ├─ progreso: pyqtSignal(int)
+       ├─ terminado: pyqtSignal()
+       └─ error: pyqtSignal(str)
+
+
+4. SECUENCIA DE EVENTOS
+================================================================================
+
+Usuario selecciona algoritmo "Buffer":
+    │
+    ▼
+comboAlgoritmos.currentIndexChanged → mostrarParametros()
+    │
+    ▼
+ParameterPanel muestra:
+  - Capa entrada
+  - Distancia
+  - Nombre salida
+    │
+    ▼
+Usuario configura parámetros y hace clic [+ Añadir paso]
+    │
+    ▼
+anadir_paso():
+  1. Obtiene parametros del panel
+  2. Crea ProcessingStep
+  3. Añade a lista self.pasos
+  4. Muestra en chainView
+    │
+    ▼
+Usuario repite N veces hasta completar cadena
+    │
+    ▼
+Usuario hace clic [✓ Ejecutar cadena]
+    │
+    ▼
+validarPasos():
+  1. Verifica que algoritmos existen
+  2. Verifica parámetros obligatorios
+  3. Verifica compatibilidad de tipos
+  4. Retorna errores si hay
+    │
+    └─ Si hay errores → Mostrar QMessageBox y retornar
+    │
+    ▼
+Si no hay errores, crear ProcessingChainExecutor y Thread:
+    │
+    ▼
+ProcessingThread.start()
+    │
+    ▼
+En segundo plano:
+  Para cada paso en orden:
+    1. Registrar mensaje: "Ejecutando paso X"
+    2. Obtener algoritmo del registro
+    3. Reemplazar referencias output_N
+    4. Ejecutar: algoritmo.run(params, context, feedback)
+    5. Guardar resultados en cache
+    6. Emitir progreso
+    7. Si error → Emitir error y detener
+    │
+    ▼
+Si completado exitosamente:
+  1. Agregar capas finales al proyecto
+  2. Actualizar canvas
+  3. Emitir terminado
+    │
+    ▼
+Main thread recibe señales y:
+  1. Actualiza barra progreso
+  2. Muestra mensajes de estado
+  3. Habilita botones nuevamente
+  4. Muestra resultado en mapa
+
+
+5. CASOS DE USO COMUNES
+================================================================================
+
+CASO 1: Crear zonas de influencia
+─────────────────────────────────
+
+Paso 1: Buffer
+  INPUT: edificios
+  DISTANCIA: 50m
+  OUTPUT: edificios_buffer
+
+Paso 2: Dissolve
+  INPUT: edificios_buffer
+  OUTPUT: zonas_influencia
+
+RESULTADO: Capa de zonas de influencia disueltas
+
+
+CASO 2: Encontrar centroides de áreas
+────────────────────────────────────
+
+Paso 1: Buffer
+  INPUT: puntos
+  DISTANCIA: 100m
+  OUTPUT: puntos_buffer
+
+Paso 2: Dissolve
+  INPUT: puntos_buffer
+  OUTPUT: areas_buffer
+
+Paso 3: Centroide
+  INPUT: areas_buffer
+  OUTPUT: centroides
+
+
+CASO 3: Clip y estadísticas
+───────────────────────────
+
+Paso 1: Clip
+  INPUT: usos_suelo
+  CLIP: limite_estudio
+  OUTPUT: usos_suelo_clipped
+
+Paso 2: Dissolve
+  INPUT: usos_suelo_clipped
+  FIELD: tipo_uso
+  OUTPUT: usos_suelo_resumen
+
+RESULTADO: Resumen de usos de suelo dentro del límite
+
+
+CASO 4: Intersección y análisis
+───────────────────────────────
+
+Paso 1: Intersection
+  INPUT1: parcelas
+  INPUT2: zonas_estudio
+  OUTPUT: parcelas_interes
+
+Paso 2: Centroide
+  INPUT: parcelas_interes
+  OUTPUT: centros_parcelas
+
+Paso 3: Buffer
+  INPUT: centros_parcelas
+  DISTANCIA: 50m
+  OUTPUT: areas_influencia
+
+
+6. MENÚ INTELIGENTE CONTEXTUAL
+================================================================================
+
+Al hacer clic derecho en un paso:
+
+┌─────────────────────────────────────────┐
+│ ✎ Editar paso                          │
+├─────────────────────────────────────────┤
+│ ↑ Mover hacia arriba                   │
+├─────────────────────────────────────────┤
+│ ↓ Mover hacia abajo                    │
+├─────────────────────────────────────────┤
+│ ⊙ Duplicar paso                        │
+├─────────────────────────────────────────┤
+│ ✗ Eliminar paso                        │
+├─────────────────────────────────────────┤
+│ ► Ver parámetros                       │
+├─────────────────────────────────────────┤
+│ 💾 Guardar resultado intermedio        │
+├─────────────────────────────────────────┤
+│ 👁 Visualizar en mapa                  │
+└─────────────────────────────────────────┘
+
+
+7. VALIDACIÓN Y CONTROL DE ERRORES
+================================================================================
+
+VALIDACIÓN PRE-EJECUCIÓN:
+═══════════════════════════
+
+✓ Verificar que cada algoritmo existe en registro QGIS
+✓ Verificar que parámetros obligatorios están presentes
+✓ Verificar que tipos de entrada/salida son compatibles
+✓ Verificar que capas de entrada existen
+✓ Verificar que permisos de escritura en carpeta temporal
+
+MANEJO DE ERRORES DURANTE EJECUCIÓN:
+════════════════════════════════════
+
+✗ Error en paso N:
+  → Registrar información de debug
+  → Mostrar mensaje al usuario
+  → Ofrecer opción de:
+    a) Cancelar cadena
+    b) Saltar paso y continuar
+    c) Ignorar y continuar (si es opcional)
+  → Guardar capas intermediatarias para inspección
+
+
+LOGS Y DEBUG:
+═════════════
+
+Archivo: %TEMP%/qvista_processing_debug.json
+
+{
+  "timestamp": "2025-12-02T10:30:45.123456",
+  "usuario": "admin",
+  "sesion": "uuid-1234-5678",
+  "cadena": {
+    "nombre": "cadena_clip_dissolve",
+    "pasos": [...],
+    "paso_error": 2,
+    "error": "Capa entrada no existe"
+  },
+  "stack_trace": [...],
+  "capas_intermediarias": [...],
+  "memoria_usada": 1024,
+  "tiempo_total": 45.23
+}
+
+
+8. GUARDAR/CARGAR CADENAS
+================================================================================
+
+GUARDAR CADENA:
+═══════════════
+
+Archivo: carpeta_catalogo/processingchains/buffer_dissolve.json
+
+{
+  "nombre": "Buffer y Dissolve",
+  "descripcion": "Crea zonas de influencia de 50m alrededor de edificios",
+  "tags": ["buffer", "dissolve", "influencia"],
+  "fecha_creacion": "2025-12-02",
+  "autor": "admin",
+  "version": "1.0",
+  "pasos": [
+    {
+      "orden": 1,
+      "algoritmo": "qgis:buffer",
+      "parametros": {
+        "INPUT": "edificios",
+        "DISTANCE": 50,
+        "OUTPUT": "memoria:"
+      }
+    },
+    {
+      "orden": 2,
+      "algoritmo": "qgis:dissolve",
+      "parametros": {
+        "INPUT": "output_1",
+        "OUTPUT": "memoria:"
+      }
+    }
+  ]
+}
+
+CARGAR CADENA:
+════════════
+
+Menu → Arquivo → Cargar cadena de procesos
+  → Seleccionar buffer_dissolve.json
+  → Se recarga la cadena completa
+  → Usuario puede ejecutar o modificar
+
+
+9. TABLA COMPARATIVA CON ALTERNATIVAS
+================================================================================
+
+┌──────────────┬─────────────────┬─────────────────┬─────────────────┐
+│ Característica│ Diálogo Estándar│ Python Console  │ ProcessingChain│
+├──────────────┼─────────────────┼─────────────────┼─────────────────┤
+│ Facilidad    │ ✓ Muy fácil     │ ✗ Difícil       │ ✓ Fácil         │
+├──────────────┼─────────────────┼─────────────────┼─────────────────┤
+│ Encadenamiento│ ✗ No            │ ✓ Sí            │ ✓ Sí            │
+├──────────────┼─────────────────┼─────────────────┼─────────────────┤
+│ Visual       │ ✓ Diálogos      │ ✗ Código        │ ✓ Cadena gráfica│
+├──────────────┼─────────────────┼─────────────────┼─────────────────┤
+│ Flexibilidad │ ✓ Total         │ ✓ Total         │ ~ Media         │
+├──────────────┼─────────────────┼─────────────────┼─────────────────┤
+│ Persistencia │ ✗ No            │ ~ Script        │ ✓ JSON          │
+├──────────────┼─────────────────┼─────────────────┼─────────────────┤
+│ Bloqueante   │ ✓ Sí            │ ~ Según código  │ ✓ No (thread)   │
+├──────────────┼─────────────────┼─────────────────┼─────────────────┤
+│ Integración  │ ✗ Externa       │ ~ Media         │ ✓ Integrada     │
+│ qVista       │                 │                 │                 │
+├──────────────┼─────────────────┼─────────────────┼─────────────────┤
+│ Curva aprend.│ ✓ Plana         │ ✗ Pronunciada   │ ✓ Plana         │
+└──────────────┴─────────────────┴─────────────────┴─────────────────┘
+
+→ ProcessingChain es LA MEJOR OPCIÓN para usuarios finales
+
+
+10. LÍNEA DE TIEMPO ESTIMADA
+================================================================================
+
+SEMANA 1:
+  Lunes-Martes: Estructura base y UI básica (4 horas)
+  Miércoles: Carga de algoritmos (2 horas)
+  Jueves: Panel dinámico de parámetros (3 horas)
+  Viernes: Testing inicial (2 horas)
+
+SEMANA 2:
+  Lunes: Ejecución de pasos (3 horas)
+  Martes-Miércoles: Encadenamiento (4 horas)
+  Jueves: Manejo de errores (2 horas)
+  Viernes: Thread y no bloqueante (2 horas)
+
+SEMANA 3:
+  Lunes: Validación y debug (2 horas)
+  Martes-Miércoles: Persistencia (2 horas)
+  Jueves: Mejoras UI (2 horas)
+  Viernes: Testing completo y bugfixes (3 horas)
+
+TOTAL: ~32 horas (distribuidas en 3 semanas)
+
+
+================================================================================
+CONCLUSIÓN DEL DIAGRAMA
+================================================================================
+
+La propuesta de ProcessingChain es:
+
+✓ VIABLE: Usa APIs estables de QGIS
+✓ ESCALABLE: Diseño modular y extensible
+✓ INTEGRADO: Se ajusta perfectamente en qVista
+✓ AMIGABLE: UI clara e intuitiva
+✓ ROBUSTO: Manejo de errores completo
+
+Es la mejor opción para permitir que usuarios finales
+encadenen procesos QGIS sin escribir código.
+
+================================================================================
+FIN DE DIAGRAMA
+================================================================================

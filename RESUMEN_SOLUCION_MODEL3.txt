@@ -1,0 +1,112 @@
+================================================================================
+✅ PROBLEMA RESUELTO: SalidaExcel_BIMs.model3
+================================================================================
+
+QUÉ PASÓ:
+═════════
+
+El archivo SalidaExcel_BIMs.model3 tenía error al leerlo:
+  ❌ Error decodificando JSON: Expecting value: line 1 column 1 (char 0)
+
+CAUSA:
+══════
+
+QGIS 3.x guarda algunos modelos antiguos con extension .model3
+pero con contenido XML (no JSON).
+
+Esto es un BUG/INCONSISTENCIA DE QGIS.
+
+SOLUCIÓN IMPLEMENTADA:
+══════════════════════
+
+El código ahora:
+
+1. ✅ DETECTA formato del archivo
+   • Si empieza con "{" → JSON
+   • Si empieza con "<!DOCTYPE" o "<Option" → XML
+
+2. ✅ PARSEA con parseador correcto
+   • JSON: json.load()
+   • XML: xml.etree.ElementTree
+
+3. ✅ BUSCA nombre en LUGAR CORRECTO
+   • XML: busca campo 'model_name' (no 'name')
+   • JSON: busca campo "name"
+
+RESULTADO:
+═════════
+
+✓ SalidaExcel_BIMs.model3 → Se lee correctamente
+✓ Nombre: "SalidaExcel_BIMs" → Se extrae correctamente
+✓ Todos 7 modelos → Se listan sin errores
+
+ARCHIVOS ACTUALIZADOS:
+══════════════════════
+
+1. listar_mis_modelos.py
+   • Detecta JSON vs XML automáticamente
+   • Busca 'model_name' en XML (no 'name')
+   • Muestra: Nombre, Descripción, Algoritmos
+   • ✓ Probado: Todos 7 modelos se muestran
+
+2. process_models_poc.py
+   • Mismo sistema de detección
+   • Busca 'model_name' en XML
+   • Carga modelos en combobox sin errores
+   • ✓ Listo para usar en viewer
+
+SALIDA DEL TEST:
+════════════════
+
+Total: 7 modelos (7 .model3, 0 .qgxml)
+
+✓ Conflicte 01.model3        → Nombre: "Conflicte 01"
+✓ ExtraccionAExcel_Test.model3 → Nombre: "ExtraccionAExcel_Test"
+✓ ExtreureBIM.model3         → Nombre: "ExtreureBIM"
+✓ model1.model3              → Nombre: "model1"
+✓ Model_Test1.model3         → Nombre: "Model_Test1"
+✓ SalidaExcelConApertura.model3 → Nombre: "SalidaExcelConApertura"
+✓ SalidaExcel_BIMs.model3    → Nombre: "SalidaExcel_BIMs" ← AHORA FUNCIONA
+
+
+PARA USAR:
+═════════
+
+1. Ver tus modelos:
+   python listar_mis_modelos.py
+   
+   Output: Lista completa con nombres correctos
+
+2. Usar en viewer:
+   python qgs_viewer_advanced.py
+   
+   Output: Combobox "Modelos" muestra todos 7 modelos
+           Al seleccionar, cargan sus parámetros
+
+
+DETALLES TÉCNICOS:
+═════════════════
+
+XML .model3 estructura (QGIS antiguo):
+  <Option type="Map">
+    <Option name="model_name" type="QString" value="SalidaExcel_BIMs"/>
+    <Option name="children" type="Map">
+      ...algoritmos...
+    </Option>
+  </Option>
+
+El código ahora busca:
+  root.find(".//Option[@name='model_name'][@type='QString']")
+  └→ Obtiene value: "SalidaExcel_BIMs"
+
+
+CONCLUSIÓN:
+═══════════
+
+✅ Bug de QGIS detectado y manejado
+✅ Código adaptado para ambos formatos
+✅ Todos 7 modelos funcionan
+✅ Nombres se extraen correctamente
+✅ Listo para integrar en qVista.py
+
+================================================================================

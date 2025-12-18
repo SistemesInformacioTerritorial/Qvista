@@ -1,0 +1,128 @@
+================================================================================
+RESUMEN: CARGAR TUS MODELOS DESDE LA CARPETA
+================================================================================
+
+¿QUÉ CAMBIÓ?
+════════════
+
+Antes:
+  ✗ Solo leía modelos del registry de QGIS
+  ✗ Si QGIS no los había indexado, no aparecían
+
+Ahora:
+  ✓ Lee directamente los ficheros .qgxml de tu carpeta
+  ✓ Extrae nombre y descripción del XML
+  ✓ Los muestra aunque QGIS no los haya indexado
+
+
+CÓMO FUNCIONA:
+═══════════════
+
+process_models_poc.py → load_models():
+
+  1. Lee registry de QGIS
+     → Obtiene modelos conocidos por QGIS
+  
+  2. Lee carpeta de modelos
+     → C:\Users\de1703\AppData\Roaming\QGIS\QGIS3\...
+     → Busca todos los .qgxml
+     → Lee XML para extraer nombre/descripción
+  
+  3. Combina ambas
+     → Evita duplicados
+     → Ordena por nombre
+     → Muestra en combobox
+
+
+ARCHIVOS MODIFICADOS:
+═════════════════════
+
+✓ process_models_poc.py
+  • Mejorado load_models()
+  • Ahora lee también ficheros .qgxml
+
+
+ARCHIVOS NUEVOS:
+════════════════
+
+✓ listar_mis_modelos.py (NUEVO)
+  • Ver qué modelos tienes exactamente
+  • Mostrar detalles (descripción, parámetros, etc)
+
+✓ debug_modelos.py (NUEVO)
+  • Debug avanzado
+  • Ver cómo QGIS los detecta
+
+✓ CARGAR_MIS_MODELOS.txt (NUEVO)
+  • Guía completa
+
+
+PARA EMPEZAR:
+══════════════
+
+1. VER qué modelos tienes:
+   python listar_mis_modelos.py
+
+2. EJECUTAR viewer:
+   python qgs_viewer_advanced.py
+
+3. Pestaña "Modelos" → Deberías ver todos tus modelos
+
+
+ESPÉRATE A QUE:
+════════════════
+
+• Combobox muestre tus modelos
+• Selecciones uno
+• Aparezcan sus parámetros
+• Puedas ejecutarlo
+
+
+PRÓXIMOS PASOS:
+════════════════
+
+1. Ejecuta:
+   python listar_mis_modelos.py
+   
+   → Comparte output aquí si hay problema
+
+2. Si aparecen tus modelos:
+   python qgs_viewer_advanced.py
+   → Carga proyecto
+   → Pestaña "Modelos"
+   → Selecciona modelo
+   → ¡EJECUTA!
+
+3. Si ALGO FALLA:
+   python debug_modelos.py
+   → Muestra información de debug
+
+
+DATOS IMPORTANTES:
+═══════════════════
+
+Tu carpeta de modelos:
+  C:\Users\de1703\AppData\Roaming\QGIS\QGIS3\profiles\default\processing\models
+
+Extensión: .qgxml
+
+Estos ficheros contienen:
+  • Nombre del modelo
+  • Descripción
+  • Parámetros
+  • Algoritmos internos
+  • Cómo se conectan
+
+
+LISTO:
+══════
+
+El POC ahora debería cargar automáticamente todos tus modelos.
+
+Si algo no funciona:
+  python listar_mis_modelos.py
+  
+  (Esto dirá exactamente si tus modelos se detectan)
+
+
+================================================================================

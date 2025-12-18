@@ -1,0 +1,306 @@
+================================================================================
+CÓMO CREAR MODELOS DE PROCESOS EN QGIS
+================================================================================
+
+Si ya tienes modelos, salta a: "VERIFICAR MODELOS EXISTENTES"
+Si quieres crear nuevos, sigue este paso a paso.
+
+
+PASO 1: ABRIR QGIS Y CARGAR UN PROYECTO
+═════════════════════════════════════════
+
+1. Abre QGIS normalmente
+2. Carga un proyecto con capas (File → Open Project)
+3. O crea uno nuevo con capas de prueba
+
+
+PASO 2: ABRIR DISEÑADOR DE MODELOS
+════════════════════════════════════
+
+En la barra superior de QGIS:
+
+   Processing → Models → Create New Model
+   
+O también:
+
+   Processing → Models → Designer
+
+
+PASO 3: CREAR UN MODELO DE EJEMPLO
+════════════════════════════════════
+
+Vamos a crear un modelo simple: "Buffer & Centroid"
+
+En la ventana de diseño:
+
+1. Panel izquierdo:
+   Verás "Inputs" y "Algorithms"
+
+2. Drag-drop de Inputs:
+   • Haz drag de "Vector Layer" al canvas
+     → Nombre: "Input Layer"
+     → Tipo: Vector (Polygon/Line/Point)
+   
+   • Haz drag de "Number" al canvas
+     → Nombre: "Buffer Distance"
+     → Predeterminado: 100
+
+3. Drag-drop de Algoritmos:
+   • Busca "Buffer" en el panel
+   • Drag-drop al canvas
+   • Conecta:
+     - "Input Layer" → "Input layer"
+     - "Buffer Distance" → "Distance"
+
+4. Añade otro algoritmo:
+   • Busca "Centroid" en el panel
+   • Drag-drop al canvas
+   • Conecta:
+     - Salida de Buffer → "Input layer" de Centroid
+
+5. Outputs:
+   • La salida del Centroid es automáticamente output
+   • Aparecerá como resultado del modelo
+
+
+PASO 4: GUARDAR MODELO
+═══════════════════════
+
+1. En la ventana del Designer:
+   
+   Model → Save Model
+   
+   O Ctrl+S
+
+2. Aparecerá un dialog:
+   
+   Nombre: "Buffer and Centroid"
+   Grupo: (dejar en blanco o crear "Examples")
+   Descripción: "Buffer de polígonos + Centroides"
+
+3. GUARDAR
+
+4. El modelo aparecerá en:
+   Processing → Models → "Buffer and Centroid"
+
+
+PASO 5: PROBAR EL MODELO EN QGIS
+═════════════════════════════════
+
+1. En QGIS:
+   Processing → Models → "Buffer and Centroid"
+
+2. Aparecerá un dialog con:
+   • Input Layer (combobox con capas)
+   • Buffer Distance (spinbox = 100)
+
+3. Configura valores
+
+4. Click "Run"
+
+5. Verás progreso y resultado en el canvas
+
+
+PASO 6: VERIFICAR EN EL POC
+═════════════════════════════
+
+Ahora ejecuta:
+
+   python qgs_viewer_advanced.py
+
+1. Carga un proyecto QGIS (uno que tenga capas)
+
+2. Pulsa pestaña "Modelos"
+
+3. En el combobox busca "Buffer and Centroid"
+
+4. Si aparece:
+   ✓ Tu modelo fue detectado correctamente
+
+5. Selecciona los parámetros
+
+6. Click "▶ EJECUTAR MODELO"
+
+7. Verás el buffer + centroid en el canvas
+
+
+LOCALIZACIÓN DE MODELOS:
+═════════════════════════
+
+Los modelos se guardan en:
+
+Windows:
+  C:\Users\[TuUser]\AppData\Roaming\QGIS\QGIS3\profiles\default\processing\models
+
+Linux:
+  ~/.local/share/QGIS/QGIS3/profiles/default/processing/models
+
+Archivos:
+  • Nombre_del_modelo.qgxml (XML con definición)
+  • metadata.ini (información)
+
+
+CÓMO HACER MODELOS MÁS ÚTILES:
+════════════════════════════════
+
+1. AÑADIR MÚLTIPLES INPUTS
+   ─────────────────────────
+   
+   Inputs panel → Drag:
+   • Vector Layer → Input capa principal
+   • Vector Layer → Capas adicionales
+   • Number → Parámetro numérico
+   • Distance → Distancia (automáticamente en metros)
+   • String → Texto libre
+
+
+2. ENCADENAR PROCESOS
+   ──────────────────
+   
+   Algoritmo 1 (Buffer)
+        ↓ output
+   Algoritmo 2 (Dissolve)
+        ↓ output
+   Algoritmo 3 (Clip)
+        ↓ output (resultado final)
+
+
+3. PARÁMETROS CONDICIONALES
+   ──────────────────────────
+   
+   Alguns algoritmos tienen:
+   • Input type → Elegir qué tipo de capa
+   • "Optional" checkbox → Parámetro opcional
+
+
+4. NAMING
+   ──────
+   
+   Input: "Input Layer" → Aparece como "Input Layer" en UI
+   Algorithm: Naming automático
+   Output: Automático según algoritmo
+
+
+MODELOS EJEMPLO PARA EMPEZAR:
+══════════════════════════════
+
+1. "Simplificar Polígonos"
+   Processing tools:
+   • Simplify (reducir vértices)
+   Input: Vector Layer + Tolerance (número)
+   Output: Layer simplificado
+
+2. "Buffer Múltiple"
+   • Buffer (distancia 1)
+   • Buffer (distancia 2)
+   • Union (combina ambos)
+   Input: Layer + dos distancias
+   Output: Buffer unificado
+
+3. "Procesar por Categoría"
+   • Select by attribute (categoría específica)
+   • Buffer
+   • Dissolve
+   Input: Layer + Atributo + Valor
+   Output: Feature procesado
+
+
+4. "Análisis de Proximidad"
+   • Buffer (capa A)
+   • Intersect (capa B)
+   • Statistics
+   Input: 2 capas + distancia
+   Output: Análisis resultado
+
+
+TIPS IMPORTANTES:
+═════════════════
+
+1. NOMBRES CLAROS
+   No uses "input_1", "param_2"
+   Usa "Capa de polígonos", "Distancia buffer"
+
+2. DESCRIPCIÓN
+   Explica qué hace tu modelo
+   Incluye unidades (metros, km, etc)
+
+3. VALIDACIÓN
+   Prueba con datos reales
+   Verifica outputs esperados
+
+4. DOCUMENTACIÓN
+   Añade comentarios en la descripción
+   Ejemplo: "Procesa polígonos en 3 pasos: buffer, dissolve, clip"
+
+5. REUTILIZACIÓN
+   Diseña modelos genéricos
+   No hard-codees valores
+
+
+TROUBLESHOOTING:
+════════════════
+
+❌ "El algoritmo no aparece en Processing"
+   → Puede estar en un plugin no instalado
+   → En Processing → Providers, activa los que necesites
+
+❌ "Conexión roja entre elementos"
+   → Error en los tipos
+   → Ejemplo: Output "Raster" no puede conectar con Input "Vector"
+   → Verifica tipos
+
+❌ "El modelo guarda pero no aparece"
+   → Reinicia QGIS
+   → Verifica la carpeta de modelos
+
+❌ "Error al ejecutar desde POC"
+   → El modelo es incompatible con datos
+   → Prueba con datos más simples primero
+
+
+ESTRUCTURA DE UN MODELO XML:
+═════════════════════════════
+
+(Para curiosos - no necesitas tocar esto)
+
+<?xml version="1.0" encoding="UTF-8"?>
+<model>
+  <name>Buffer and Centroid</name>
+  <inputs>
+    <input name="InputLayer">
+      <type>vector</type>
+    </input>
+    <input name="BufferDistance">
+      <type>number</type>
+      <default>100</default>
+    </input>
+  </inputs>
+  <algorithms>
+    <algorithm id="qgis:buffer">
+      <param name="INPUT" value="InputLayer"/>
+      <param name="DISTANCE" value="BufferDistance"/>
+      <output name="OUTPUT" variable="BufferOutput"/>
+    </algorithm>
+    <algorithm id="qgis:centroidspolygons">
+      <param name="INPUT" value="BufferOutput"/>
+      <output name="OUTPUT" variable="CentroidOutput"/>
+    </algorithm>
+  </algorithms>
+</model>
+
+
+CONCLUSIÓN:
+═══════════
+
+Los modelos son una forma potente de:
+✓ Automatizar procesos repetitivos
+✓ Garantizar consistencia
+✓ Documentar workflows
+✓ Compartir con otros usuarios
+✓ Escalar procesamiento
+
+Una vez diseñados en QGIS, el POC los detecta automáticamente.
+Entonces solo necesitas ejecutarlos con parámetros variables.
+
+
+================================================================================

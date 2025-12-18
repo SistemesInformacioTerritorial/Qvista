@@ -1,0 +1,247 @@
+================================================================================
+QUICK START - EJECUTAR TUS MODELOS QGIS
+================================================================================
+
+REQUISITOS:
+═══════════
+✓ QGIS instalado
+✓ Modelos diseñados en QGIS (o crear uno)
+✓ Un proyecto .qgs con capas
+
+
+PASO 1: VERIFICAR QUE TIENES MODELOS
+═════════════════════════════════════
+
+Windows PowerShell:
+
+  explorer %APPDATA%\QGIS\QGIS3\profiles\default\processing\models
+
+Deberías ver ficheros .qgxml (tus modelos)
+
+Si está vacía, primero crea un modelo en QGIS:
+
+  QGIS → Processing → Models → Create New Model
+  (Añade Buffer, Dissolve, etc.)
+  Model → Save Model
+  (Da un nombre, ej: "Mi Proceso")
+
+
+PASO 2: EJECUTAR VIEWER
+═══════════════════════
+
+PowerShell:
+
+  cd d:\qVista\Codi
+  python qgs_viewer_advanced.py
+
+Deberías ver:
+  ✓ Ventana con Canvas (en blanco)
+  ✓ Panel lateral con dos pestañas: "Cadenas" y "Modelos"
+
+
+PASO 3: CARGAR PROYECTO
+═══════════════════════
+
+En la ventana:
+  1. Click botón "Abrir .qgs"
+  2. Navega a: d:\qVista\Codi\mapesOffline\
+  3. Abre: qVista default map.qgs
+  
+Deberías ver:
+  ✓ Capas dibujadas en el canvas
+  ✓ Status bar: "Proyecto cargado: 7 capas"
+
+
+PASO 4: USAR MODELOS
+════════════════════
+
+En la ventana (lado derecho):
+  1. Click en pestaña "Modelos"
+  
+Deberías ver:
+  ✓ ComboBox con lista de tus modelos
+  ✓ Descripción del modelo actual
+  ✓ Parámetros del modelo
+
+
+PASO 5: SELECCIONAR MODELO
+═════════════════════════════
+
+En el ComboBox:
+  1. Click y selecciona un modelo
+  
+Ejemplo si tienes:
+  "Buffer & Centroid"
+
+Deberías ver:
+  ✓ Descripción: "Buffer de polígonos + Centroides"
+  ✓ Parámetros:
+    - "Input Layer": ComboBox con capas
+    - "Buffer Distance": SpinBox = 100
+
+
+PASO 6: CONFIGURAR PARÁMETROS
+═══════════════════════════════
+
+Configura según el modelo:
+
+Ejemplo "Buffer & Centroid":
+  1. Input Layer: Selecciona "Polígons" (o capa que quieras)
+  2. Buffer Distance: Cambia a 200 (metros)
+
+
+PASO 7: EJECUTAR
+════════════════
+
+Click en botón:
+  "▶ EJECUTAR MODELO"
+
+Verás:
+  ✓ Progreso: Barra de progreso se llena
+  ✓ Status: "Ejecutando..." → "✓ Modelo completado"
+  ✓ Resultado: Capas nuevas en el canvas (buffer + centroid)
+
+
+PROBLEMA: NO VEO MIS MODELOS
+════════════════════════════
+
+1. Verifica que tienes modelos:
+   explorer %APPDATA%\QGIS\QGIS3\profiles\default\processing\models
+
+2. Si está vacía, crea uno en QGIS:
+   
+   QGIS → Processing → Models → Create New Model
+   • Drag "Buffer" algorithm
+   • Drag "Centroid" algorithm  
+   • Conecta: Buffer output → Centroid input
+   • Model → Save Model → "Mi Test"
+
+3. Reinicia Python:
+   cd d:\qVista\Codi
+   python qgs_viewer_advanced.py
+
+4. Pestaña "Modelos" → Busca "Mi Test"
+
+
+SI APARECE "No hay modelos específicos":
+═══════════════════════════════════════
+
+El viewer está mostrando TODOS los algoritmos disponibles.
+
+Esto es normal si:
+  ✓ No tienes modelos guardados aún
+  ✓ Quieres ver todos los algoritmos disponibles
+
+Sigue creando modelos en QGIS para que aparezcan.
+
+
+EJEMPLO RÁPIDO DE MODELO:
+═════════════════════════
+
+1. Abre QGIS
+
+2. File → New Project
+
+3. Layer → Add Layer → Add Vector Layer
+   Selecciona: mapesOffline\qVista default map.gpkg
+   Layer: Polígons
+
+4. Processing → Models → Create New Model
+
+5. En la ventana:
+   • Drag "Vector Layer" (input)
+   • Drag "Buffer" (algorithm)
+   • Drag "Dissolve" (algorithm)
+   • Conecta: Input → Buffer → Dissolve
+
+6. Model → Save Model
+   Nombre: "Buffer & Dissolve"
+   Descripción: "Crea buffer y luego disuelve"
+   
+7. Guarda
+
+8. Ahora ejecuta:
+   python qgs_viewer_advanced.py
+   
+9. Pestaña "Modelos" → "Buffer & Dissolve"
+
+10. Selecciona capa → Buffer Distance → EJECUTAR
+
+
+VENTAJA vs CADENAS:
+═══════════════════
+
+CADENAS (Pestaña anterior):
+  • Construyes proceso cada vez
+  • Buffer: 100
+  • Dissolve: ✓
+  • Clip: ✓
+  • (Muchos clicks)
+
+MODELOS (Nueva pestaña):
+  • Modelo prediseñado
+  • Solo: Layer + Distance
+  • Click "EJECUTAR"
+  • (Un click)
+
+
+ARCHIVOS DE REFERENCIA:
+═══════════════════════
+
+Si necesitas más información:
+
+✓ README_MODELOS_PROCESOS.txt
+  Explicación técnica completa
+
+✓ COMO_CREAR_MODELOS_QGIS.txt
+  Paso a paso para crear modelos
+
+✓ RESUMEN_MODELOS_POC.txt
+  Resumen arquitectura
+
+
+PRÓXIMAS CARACTERÍSTICAS (no necesario ahora):
+═══════════════════════════════════════════════
+
+□ Mostrar pasos internos del modelo
+□ Guardar favorites
+□ Histórico de ejecuciones
+□ Auto-guardar parámetros
+
+
+TROUBLESHOOTING RÁPIDO:
+═══════════════════════
+
+❌ AttributeError: module has no attribute
+   → Asegúrate de tener las importaciones correctas
+   → Ejecuta: python debug_poc.py (valida que Processing funciona)
+
+❌ ComboBox vacío
+   → Tienes modelos pero no se cargan
+   → Reinicia Python
+   → Verifica carpeta de modelos existe
+
+❌ Error al ejecutar modelo
+   → Los datos no son compatibles
+   → Prueba con otra capa
+   → O crea modelo de prueba más simple
+
+❌ Canvas no muestra resultado
+   → El modelo ejecutó pero no agrega capas
+   → Intenta hacer zoom manualmente
+   → O recarga el proyecto
+
+
+SIGUIENTE PASO:
+═══════════════
+
+1. Crea un modelo en QGIS
+2. Ejecuta: python qgs_viewer_advanced.py
+3. Pestaña "Modelos" → Tu modelo
+4. Configura + EJECUTAR
+
+
+¡Listo! Ya tienes tus procesos QGIS automatizados sin escribir código.
+
+
+================================================================================

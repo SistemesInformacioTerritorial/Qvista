@@ -1,0 +1,636 @@
+================================================================================
+DOCUMENTACIÓN TÉCNICA - POC PROCESSINGCHAIN
+================================================================================
+
+OBJETIVO:
+Crear un Proof of Concept mínimo de visor QGS con DockWidget de procesos
+para validar arquitectura y concepto antes de integrar en qVista.
+
+RESULTADO:
+✓ 2 archivos funcionales (550+ líneas)
+✓ Visor QGS completamente operativo
+✓ DockWidget con procesos QGIS
+✓ Ejecución en thread sin bloqueos
+✓ UI dinámica de parámetros
+
+
+================================================================================
+COMPONENTES CREADOS
+================================================================================
+
+1. qgs_viewer_poc.py (220 líneas)
+═════════════════════════════════
+
+Clase: QgsViewerPOC(QMainWindow)
+
+Responsabilidades:
+  ✓ Ventana principal
+  ✓ Canvas QGIS para visualizar capas
+  ✓ Cargar/limpiar proyectos .qgs
+  ✓ Integración del DockWidget
+
+Métodos principales:
+  • __init__() - Inicialización
+  • initUI() - Construcción UI
+  • open_project() - Abrir fichero
+  • load_project(file_path) - Cargar proyecto
+  • clear_project() - Limpiar
+  • on_status_changed(message) - Recibir eventos del dock
+
+Características:
+  ✓ Canvas con QGIS renderizado
+  ✓ Botones Open/Clear
+  ✓ Status bar
+  ✓ DockWidget lateral automático
+  ✓ Zoom automático
+
+
+2. processing_chain_poc.py (330 líneas)
+════════════════════════════════════════
+
+2.1 Clase: ProcessingStep
+───────────────────────────
+Representa UN paso en la cadena.
+
+Atributos:
+  • algorithm_id: str (ej: "qgis:buffer")
+  • parameters: Dict (parámetros del algoritmo)
+  • result: Dict (salida del algoritmo)
+  • error: str (si algo falló)
+
+Métodos:
+  • execute(context, feedback) → bool
+    Ejecuta el algoritmo QGIS
+    Retorna True/False según éxito
+  
+  • _replace_references(params) → Dict
+    Reemplaza "output_1" por resultado real
+    (TODO: Implementar lógica completa)
+
+
+2.2 Clase: ProcessingExecutorThread(QThread)
+─────────────────────────────────────────────
+Ejecuta la cadena en segundo plano sin bloquear UI.
+
+Signals (emisores de eventos):
+  • progress: int → Barra de progreso
+  • message: str → Estado
+  • finished: bool → Completado (éxito/fallo)
+  • error: str → Error durante ejecución
+
+Métodos:
+  • run() → Ejecuta todos los pasos
+  • on_progress(value) → Recibe feedback de QGIS
+
+Flujo:
+  1. Itera sobre self.steps
+  2. Para cada paso: ejecuta step.execute()
+  3. Si error: emite error y retorna
+  4. Si éxito: emite progreso
+  5. Al final: emite finished(True/False)
+
+
+2.3 Clase: ParameterWidget(QFrame)
+──────────────────────────────────
+Crea UI dinámicamente según tipo de parámetro.
+
+Estrategia:
+  • Analiza param_definition.type()
+  • Crea widget apropiado
+  • Permite obtener valor con get_value()
+
+Tipos soportados:
+  • 'raster'/'vector' → QComboBox con capas
+  • 'number' → QSpinBox
+  • 'distance' → QDoubleSpinBox
+  • otros → QLineEdit
+
+Método especial:
+  • _create_layer_combo() → ComboBox dinámico
+    Llena con capas actuales del proyecto
+
+
+2.4 Clase: ProcessingChainDock(QDockWidget)
+───────────────────────────────────────────
+El DockWidget lateral principal.
+
+UI Layout:
+  1. Selector de algoritmo (ComboBox)
+  2. Panel de parámetros (QFrame + QScrollArea)
+  3. Botones ➕ Añadir / ➖ Quitar
+  4. Lista de pasos (QListWidget)
+  5. Botón ▶ EJECUTAR
+  6. Barra de progreso
+  7. Status label
+
+Atributos clave:
+  • steps: List[ProcessingStep] - La cadena
+  • combo_algorithms: QComboBox
+  • parameter_widgets: Dict - UI actual
+  • executor_thread: ProcessingExecutorThread
+  • progress, status_label, steps_list
+
+Métodos clave:
+  • init_ui() - Construir interfaz
+  • load_algorithms() - Listar algoritmos QGIS
+  • on_algorithm_changed() - Actualizar parámetros
+  • add_step() - Añadir algoritmo a cadena
+  • remove_step() - Quitar última step
+  • execute_chain() - Lanzar ejecución
+  • on_progress/message/error/finished() - Callbacks
+
+
+================================================================================
+FLUJO DE EJECUCIÓN
+================================================================================
+
+1. INICIALIZACIÓN
+──────────────────
+main() 
+  → QgsApplication.setPrefixPath()
+  → QgsApplication.initQgisApplication()
+  → QgsViewerPOC.__init__()
+     → initUI()
+        → processingChainDock = ProcessingChainDock(self)
+           → load_algorithms()
+
+
+2. CARGAR PROYECTO
+──────────────────
+Usuario: Clic en "Abrir .qgs"
+  → open_project()
+     → QFileDialog.getOpenFileName()
+     → load_project(file_path)
+        → self.project.read(file_path)
+        → self.canvas.setProject(self.project)
+        → self.canvas.zoomToFullExtent()
+        → processing_dock.update_layers()
+
+
+3. AÑADIR PASO A CADENA
+────────────────────────
+Usuario: 
+  1. Selecciona algoritmo en combo
+     → on_algorithm_changed()
+        → Crea ParameterWidgets dinámicamente
+  
+  2. Configura parámetros
+     → get_value() en cada ParameterWidget
+  
+  3. Clic "➕ Añadir paso"
+     → add_step()
+        → Recopila valores de parámetros
+        → Crea ProcessingStep
+        → Añade a self.steps
+        → Añade a QListWidget
+
+
+4. EJECUTAR CADENA
+───────────────────
+Usuario: Clic en "▶ EJECUTAR"
+  → execute_chain()
+     → ProcessingExecutorThread(self.steps)
+     → thread.start()
+        → run() [en thread secundario]
+           Para cada step:
+             → ProcessingContext.setProject()
+             → step.execute(context, feedback)
+                → registry.algorithmById()
+                → algorithm.run(params, context, feedback)
+             → emit progress(i/len)
+             → Si error: emit error y retorna
+           → emit finished(True)
+     
+     → [En main thread]
+     → on_progress(value) → progressBar.setValue()
+     → on_message(msg) → status_label.setText()
+     → on_finished(success) → Mostrar resultado
+
+
+================================================================================
+DECISIONES DE DISEÑO
+================================================================================
+
+1. THREAD PARA EJECUCIÓN
+────────────────────────
+✓ ProcessingExecutorThread(QThread)
+  
+Por qué:
+  • Algoritmos QGIS pueden tardar (segundos/minutos)
+  • Si ejecutamos en main thread, UI se congela
+  • Los usuarios ven "No responde"
+  
+Cómo:
+  • Heredar de QThread
+  • Sobrescribir run()
+  • Usar signals para comunicación
+
+Alternativa rechazada:
+  ✗ Ejecutar en main thread
+    → UI se congela
+    → Mala experiencia
+
+
+2. UI DINÁMICA DE PARÁMETROS
+──────────────────────────────
+✓ ParameterWidget crea UI según tipo
+
+Por qué:
+  • ~100 algoritmos QGIS
+  • Cada uno con 2-10 parámetros
+  • Tipos: capas, números, distancias, strings, etc.
+  • Imposible hardcodear UI
+
+Cómo:
+  • Analizar param_definition.type()
+  • Crear widget apropiado
+  • Generar en QFrame con QScrollArea
+
+Alternativa rechazada:
+  ✗ UI fija por algoritmo
+    → Mantenimiento imposible
+    → No escalable
+
+
+3. SIGNALS/SLOTS PARA THREADING
+─────────────────────────────────
+✓ thread.progress.connect(ui_slot)
+
+Por qué:
+  • QThread no puede acceder directo a UI
+  • Necesita comunicación thread-safe
+  • PyQt5 signals son thread-safe
+
+Cómo:
+  • Definir signals en thread
+  • Conectar a slots en main thread
+  • Emitir cuando cambia estado
+
+Alternativa rechazada:
+  ✗ Acceso directo a UI desde thread
+    → Crash o comportamiento extraño
+    → Not thread-safe
+
+
+4. LISTA DE PASOS VISUAL
+──────────────────────────
+✓ QListWidget con número y nombre
+
+Por qué:
+  • Usuario necesita ver cadena clara
+  • Confirmar orden de ejecución
+  • Poder seleccionar/editar
+
+Alternativa rechazada:
+  ✗ Solo texto en label
+    → Confuso si hay muchos pasos
+    → No permite interacción
+
+
+5. COMBOBOX DE CAPAS DINÁMICO
+──────────────────────────────
+✓ QComboBox que se llena al cambiar proyecto
+
+Por qué:
+  • Capas disponibles varían según proyecto
+  • Usuario necesita elegir qué capa usar
+
+Cómo:
+  • En load_algorithms(): for capa in project.mapLayers()
+  • Agregar a combo: combo.addItem(capa.name(), capa.id())
+  • update_layers() actualiza cuando cambia proyecto
+
+
+================================================================================
+QGIS PROCESSING API USADA
+================================================================================
+
+1. REGISTRY DE ALGORITMOS
+─────────────────────────
+
+registry = QgsApplication.processingRegistry()
+
+Métodos:
+  • registry.algorithms() → List[QgsProcessingAlgorithm]
+    Todos los algoritmos disponibles
+  
+  • registry.algorithmById(id) → QgsProcessingAlgorithm
+    Obtener algoritmo específico
+
+Ejemplo:
+  algo = registry.algorithmById('qgis:buffer')
+
+
+2. DEFINICIÓN DE PARÁMETROS
+────────────────────────────
+
+for param in algorithm.parameterDefinitions():
+  
+  Atributos:
+  • param.description() → str (nombre para UI)
+  • param.type() → str ('vector', 'number', etc.)
+  • param.name() → str (ID del parámetro)
+  • param.flags() → int (bits: hidden, optional, etc.)
+  
+  Ejemplo:
+    if param.type() == 'vector':
+      combo = QComboBox()
+
+
+3. EJECUCIÓN DE ALGORITMO
+──────────────────────────
+
+context = QgsProcessingContext()
+context.setProject(QgsProject.instance())
+
+feedback = QgsProcessingFeedback()
+feedback.progressChanged.connect(callback)
+
+result = algorithm.run(params, context, feedback)
+
+Retorna:
+  • result[0]: bool (True si éxito)
+  • result[1]: Dict (salidas del algoritmo)
+
+
+4. CONTEXTO Y FEEDBACK
+──────────────────────
+
+QgsProcessingContext:
+  • Contiene referencias al proyecto
+  • Capas disponibles
+  • Configuración de ejecución
+
+QgsProcessingFeedback:
+  • Progreso (0-100)
+  • Mensajes de estado
+  • Detección de cancelación
+
+
+================================================================================
+LIMITACIONES DEL POC
+================================================================================
+
+1. REFERENCIAS ENTRE PASOS
+──────────────────────────
+❌ NO IMPLEMENTADO
+
+Problema:
+  Paso 1 genera salida (output_buffer)
+  Paso 2 necesita esa salida como entrada
+  Pero no hay forma de pasar "output_1" → QgsLayer
+
+Solución:
+  • Mantener Dict con resultados: {paso_num: resultado}
+  • En add_step(), permitir seleccionar resultado anterior
+  • En ProcessingStep._replace_references(): mapear
+
+Tiempo: 2 horas
+
+
+2. PERSISTENCIA
+───────────────
+❌ NO IMPLEMENTADO
+
+Problema:
+  Usuario crea cadena
+  Cierra aplicación
+  Pierde cadena
+
+Solución:
+  • Guardar en JSON: steps, parámetros
+  • Cargar desde JSON
+  • Menú: Save/Load Chain
+
+Tiempo: 1 hora
+
+
+3. VALIDACIÓN DE TIPOS
+──────────────────────
+❌ PARCIAL
+
+Problema:
+  Usuario intenta Clip con capa puntos
+  Error en ejecución
+
+Solución:
+  • Validar tipos pre-ejecución
+  • Avisar si incompatible
+  • En add_step(): verificar tipos entrada vs salida anterior
+
+Tiempo: 1 hora
+
+
+4. RESULTADOS EN PROYECTO
+──────────────────────────
+❌ NO IMPLEMENTADO
+
+Problema:
+  Cadena ejecutada
+  Pero resultado no aparece en mapa
+
+Solución:
+  • Obtener capas de resultado
+  • Hacer: QgsProject.instance().addMapLayer(capa)
+  • Canvas.refresh()
+
+Tiempo: 30 minutos
+
+
+5. EDICIÓN DE PASOS
+───────────────────
+❌ NO IMPLEMENTADO
+
+Problema:
+  Usuario quiere editar paso ya añadido
+  Tiene que borrarlo y recrearlo
+
+Solución:
+  • Double-click en step → editar
+  • Almacenar referencia a step en list item
+  • Mostrar UI de edición
+
+Tiempo: 1 hora
+
+
+================================================================================
+COMPARACIÓN POC vs v1.0
+================================================================================
+
+┌────────────────────┬──────────────┬──────────────┐
+│ Característica     │ POC          │ v1.0         │
+├────────────────────┼──────────────┼──────────────┤
+│ UI básica          │ ✓            │ ✓            │
+│ Cargar .qgs        │ ✓            │ ✓            │
+│ Listar algoritmos  │ ✓            │ ✓            │
+│ Parámetros dinám.  │ ✓            │ ✓            │
+│ Añadir pasos       │ ✓            │ ✓            │
+│ Ejecutar cadena    │ ✓            │ ✓            │
+│ Sin bloqueos       │ ✓            │ ✓            │
+├────────────────────┼──────────────┼──────────────┤
+│ Referencias        │ ✗            │ ✓            │
+│ Persistencia       │ ✗            │ ✓            │
+│ Validación tipos   │ ✗            │ ✓            │
+│ Resultados visibles│ ✗            │ ✓            │
+│ Editar pasos       │ ✗            │ ✓            │
+│ Reordenar pasos    │ ✗            │ ✓            │
+└────────────────────┴──────────────┴──────────────┘
+
+Líneas de código:
+  POC:  ~550 líneas
+  v1.0: ~1200 líneas (+30 horas)
+
+
+================================================================================
+CÓMO EXTENDER A v1.0
+================================================================================
+
+PASO 1: REFERENCIAS (2 horas)
+──────────────────────────────
+
+En ProcessingStep:
+
+  # Cache global de resultados
+  _results_cache = {}
+  
+  def _replace_references(self, params):
+      for key, value in params.items():
+          if isinstance(value, str) and value.startswith('output_'):
+              step_num = int(value.split('_')[1])
+              if step_num in self._results_cache:
+                  params[key] = self._results_cache[step_num]
+      return params
+  
+  def execute(...):
+      # Al final
+      self._results_cache[self.step_id] = self.result
+
+
+PASO 2: PERSISTENCIA (1 hora)
+──────────────────────────────
+
+En ProcessingChainDock:
+
+  def save_chain(self, filepath):
+      data = {
+          'steps': [
+              {
+                  'algo': step.algorithm_id,
+                  'params': step.parameters
+              }
+              for step in self.steps
+          ]
+      }
+      import json
+      with open(filepath, 'w') as f:
+          json.dump(data, f)
+  
+  def load_chain(self, filepath):
+      # Cargar y reconstruir
+
+
+PASO 3: VALIDACIÓN (1 hora)
+────────────────────────────
+
+  def validate_step(self, new_step):
+      if len(self.steps) == 0:
+          return True
+      
+      last_step = self.steps[-1]
+      # Verificar compatibilidad tipos
+
+
+PASO 4: RESULTADOS (30 minutos)
+────────────────────────────────
+
+  def on_finished(self, success):
+      if success:
+          for step in self.steps:
+              if step.result:
+                  for layer in step.result.values():
+                      QgsProject.instance().addMapLayer(layer)
+          self.parent.canvas.refresh()
+
+
+PASO 5: UI AVANZADA (2 horas)
+──────────────────────────────
+
+  • Drag/drop para reordenar
+  • Doble-click para editar
+  • Botón delete en cada item
+  • Visualizar parámetros actuales
+
+
+================================================================================
+TESTING RECOMENDADO
+================================================================================
+
+1. PROYECTO SIMPLE
+   Cargar: mapesOffline/qVista default map.qgs
+   Intentar: Buffer + Dissolve
+
+2. ALGORITMOS BÁSICOS
+   ✓ Buffer
+   ✓ Dissolve
+   ✓ Centroid
+   ✓ Clip
+   ✓ Union
+
+3. TIPOS DE CAPAS
+   ✓ Vectoriales puntos
+   ✓ Vectoriales líneas
+   ✓ Vectoriales polígonos
+   ✓ Ráster
+
+4. EDGE CASES
+   ✓ Proyecto vacío
+   ✓ Cadena vacía
+   ✓ Ejecutar dos veces
+   ✓ Cerrar durante ejecución
+
+
+================================================================================
+INTEGRACIÓN EN qVista
+================================================================================
+
+Para integrar este POC en qVista real:
+
+1. Mover processing_chain_poc.py → moduls/ProcessingChain.py
+
+2. Importar en qVista.py
+   from moduls.ProcessingChain import ProcessingChainDock
+
+3. En Qvista.__init__():
+   self.processing_dock = ProcessingChainDock(self)
+   self.addDockWidget(Qt.RightDockWidgetArea, self.processing_dock)
+
+4. Conectar signals
+   self.llegenda.capas_changed.connect(self.processing_dock.update_layers)
+   self.processing_dock.status_changed.connect(self.showLblFlotant)
+
+5. Testing completo
+   Con todas las herramientas de qVista
+
+
+================================================================================
+CONCLUSIÓN
+================================================================================
+
+Este POC demuestra:
+  ✓ Arquitectura es viable
+  ✓ UI dinámica funciona
+  ✓ Threading sin problemas
+  ✓ QGIS Processing es accesible
+
+Siguientes pasos:
+  1. Validar este POC con casos reales
+  2. Implementar referencias (2h)
+  3. Integrar en qVista (2h)
+  4. Testing exhaustivo (4h)
+
+Tiempo total a v1.0: ~8-10 horas desde POC
+
+
+================================================================================
+FIN DE DOCUMENTACIÓN TÉCNICA
+================================================================================

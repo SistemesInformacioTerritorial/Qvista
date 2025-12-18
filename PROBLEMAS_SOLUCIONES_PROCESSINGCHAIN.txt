@@ -1,0 +1,501 @@
+================================================================================
+PROBLEMAS ESPECÍFICOS Y SOLUCIONES DETALLADAS
+ProcessingChain para qVista
+================================================================================
+
+Este documento complementa el análisis principal con problemas específicos
+que podrías encontrar durante la implementación.
+
+================================================================================
+PROBLEMA #1: Algunos algoritmos no retornan bien en memoria:
+================================================================================
+
+SÍNTOMA:
+  El algoritmo se ejecuta sin errores, pero el resultado es None o incompleto
+  Especialmente con algoritmos como "Clip" o "Intersection"
+
+CAUSA:
+  Algunos algoritmos de QGIS esperan que 'OUTPUT' sea una ruta de fichero,
+  no aceptan bien 'memory:' como salida
+
+SOLUCIONES:
+
+Solución A - Usar ficheros temporales para TODO:
+  
+  def obtenerRutaSalida(self, paso_num):
+      import tempfile
+      temp_dir = tempfile.gettempdir()
+      return os.path.join(temp_dir, f'qvista_paso_{paso_num}.gpkg')
+  
+  # Siempre usar fichero, nunca 'memory:'
+  params['OUTPUT'] = self.obtenerRutaSalida(i)
+  
+  ✓ Ventaja: Funciona con todos los algoritmos
+  ✗ Desventaja: Más lento, ocupa disco
+
+
+Solución B - Detectar tipo de algoritmo:
+  
+  def obtenerRutaSalida(self, paso_num, algoritmo):
+      # Algunos algoritmos funcionan con memory:
+      algoritmos_memory_ok = [
+          'qgis:buffer',
+          'qgis:centroid',
+          'qgis:dissolve'
+      ]
+      
+      if algoritmo.id() in algoritmos_memory_ok:
+          return 'memory:'
+      else:
+          return self.obtenerRutaSalida_Temp(paso_num)
+  
+  ✓ Ventaja: Equilibrio velocidad/compatibilidad
+  ✗ Desventaja: Requiere lista de algoritmos conocidos
+
+
+Solución C - Try/catch con fallback:
+  
+  def ejecutarConFallback(self, algoritmo, params, context, feedback):
+      try:
+          # Intentar con memory:
+          params['OUTPUT'] = 'memory:'
+          resultado = algoritmo.run(params, context, feedback)
+          if resultado[0] and resultado[1]:
+              return resultado
+      except:
+          pass
+      
+      # Si falla, usar fichero temporal
+      params['OUTPUT'] = self.obtenerRutaSalida_Temp(0)
+      resultado = algoritmo.run(params, context, feedback)
+      return resultado
+  
+  ✓ Ventaja: Automático y robusto
+  ✗ Desventaja: Puede consumir tiempo (intentos dobles)
+
+
+RECOMENDACIÓN: Usar Solución B como estándar
+
+
+================================================================================
+PROBLEMA #2: Las capas intermedias se cargan al proyecto automáticamente
+================================================================================
+
+SÍNTOMA:
+  Después de ejecutar la cadena, aparecen todas las capas intermedias
+  en la leyenda, no solo la final
+  El proyecto se llena de capas innecesarias
+
+CAUSA:
+  Algunos algoritmos añaden automáticamente las capas al proyecto
+  cuando se carga su OUTPUT en la cadena siguiente
+
+SOLUCIÓN:
+
+  class ProcessingChainExecutor:
+      def __init__(self, parent, pasos):
+          self.capas_temporales = []
+          self.capas_finales = []
+      
+      def ejecutar(self):
+          # Guardar estado inicial del proyecto
+          capas_iniciales = set(QgsProject.instance().mapLayers().keys())
+          
+          # ... ejecutar pasos ...
+          
+          # Al final, identificar capas nuevas
+          capas_actuales = set(QgsProject.instance().mapLayers().keys())
+          capas_nuevas = capas_actuales - capas_iniciales
+          
+          # Marcar como temporales todas excepto las finales
+          for capa_id in capas_nuevas:
+              if capa_id not in self.capas_finales:
+                  capa = QgsProject.instance().mapLayer(capa_id)
+                  # Marcar como temporal (aunque no sea visible, se puede limpiar)
+                  self.capas_temporales.append(capa_id)
+          
+          # Opcionalmente, remover capas temporales al finalizar
+          if self.limpiar_temporales:
+              for capa_id in self.capas_temporales:
+                  QgsProject.instance().removeMapLayer(capa_id)
+
+
+================================================================================
+PROBLEMA #3: Referencias entre pasos no se resuelven correctamente
+================================================================================
+
+SÍNTOMA:
+  Paso 1 genera salida 'output_1'
+  Paso 2 intenta usar 'output_1' como entrada
+  Pero obtienes error: "Layer 'output_1' not found"
+
+CAUSA:
+  Las referencias string como 'output_1' no se reconocen en la API de Processing
+  QGIS espera objetos QgsVectorLayer o QgsRasterLayer, no strings
+
+SOLUCIÓN:
+
+  def reemplazarReferencias(self, params, cache_resultados):
+      for clave, valor in params.items():
+          if isinstance(valor, str):
+              # Patrón: 'output_paso_N' → buscar en cache
+              if valor.startswith('output_'):
+                  parts = valor.split('_')
+                  if len(parts) >= 2:
+                      paso_ref = int(parts[2])
+                      if paso_ref in cache_resultados:
+                          params[clave] = cache_resultados[paso_ref]
+                      else:
+                          raise Exception(f'Referencia {valor} no encontrada')
+      
+      return params
+
+
+================================================================================
+PROBLEMA #4: Cancelación de proceso no detiene el algoritmo
+================================================================================
+
+SÍNTOMA:
+  El usuario hace clic en botón "Cancelar"
+  Pero el algoritmo sigue ejecutándose en segundo plano
+  Consume CPU innecesariamente
+
+CAUSA:
+  QgsProcessingFeedback tiene mecanismo de cancelación, pero no detiene
+  automáticamente el algoritmo
+
+SOLUCIÓN:
+
+  class ProcessingFeedbackWithCancel(QgsProcessingFeedback):
+      cancelado = pyqtSignal()
+      
+      def __init__(self):
+          super().__init__()
+          self._cancel = False
+          self.cancelado.connect(self.marcarCancelado)
+      
+      def marcarCancelado(self):
+          self._cancel = True
+          # Señalizar al feedback que fue cancelado
+          self.setProgress(101)  # Triggerea cancelación interna
+      
+      def estaCancel(self):
+          return self._cancel
+  
+  # En la ejecución:
+  feedback = ProcessingFeedbackWithCancel()
+  feedback.cancelado.connect(thread.quit)
+  
+  btnCancelar.clicked.connect(feedback.marcarCancelado)
+
+
+================================================================================
+PROBLEMA #5: Algoritmos que requieren capas vectoriales específicas
+================================================================================
+
+SÍNTOMA:
+  Usuario intenta usar algoritmo de líneas sobre capa de puntos
+  Errores de tipo incompatible
+  Frustra al usuario
+
+CAUSA:
+  No hay validación pre-ejecución de tipos de geometría
+  El error solo aparece cuando intenta ejecutar
+
+SOLUCIÓN:
+
+  def validarTiposGeometria(self, paso, algoritmo):
+      # Obtener tipo requerido del algoritmo
+      params_entrada = [p for p in algoritmo.parameterDefinitions()
+                       if 'INPUT' in p.name()]
+      
+      for param in params_entrada:
+          # Algunos parámetros especifican tipo de geometría
+          if hasattr(param, 'geometryTypeString'):
+              tipo_requerido = param.geometryTypeString()
+              
+              # Obtener capa del parámetro
+              capa_id = paso.parametros.get(param.name())
+              if capa_id:
+                  capa = QgsProject.instance().mapLayer(capa_id)
+                  tipo_actual = capa.geometryType()
+                  
+                  # Validar compatibilidad
+                  if not self.tiposCompatibles(tipo_actual, tipo_requerido):
+                      raise Exception(f'Tipo incompatible en {param.name()}')
+  
+  def tiposCompatibles(self, tipo_actual, tipo_requerido):
+      # Mapeo de tipos
+      tipos = {
+          'Point': QgsWkbTypes.PointGeometry,
+          'LineString': QgsWkbTypes.LineGeometry,
+          'Polygon': QgsWkbTypes.PolygonGeometry
+      }
+      
+      return tipos.get(tipo_requerido) == tipo_actual
+
+
+================================================================================
+PROBLEMA #6: Cambios en el canvas durante la ejecución
+================================================================================
+
+SÍNTOMA:
+  Durante la ejecución de la cadena, el mapa se actualiza constantemente
+  Produce parpadeo y es distractivo
+  También ralentiza la ejecución
+
+CAUSA:
+  Cada vez que se añade una capa al proyecto, el canvas se refresca
+  Múltiples actualizaciones innecesarias
+
+SOLUCIÓN:
+
+  class ProcessingChainExecutor:
+      def ejecutar(self):
+          # Bloquear actualizaciones del canvas
+          self.parent.canvas.setRenderFlag(False)
+          self.parent.project.blockSignals(True)
+          
+          try:
+              # ... ejecutar cadena ...
+              pass
+          finally:
+              # Restaurar actualizaciones
+              self.parent.project.blockSignals(False)
+              self.parent.canvas.setRenderFlag(True)
+              self.parent.canvas.refresh()
+
+
+================================================================================
+PROBLEMA #7: Memoria se agota con capas grandes
+================================================================================
+
+SÍNTOMA:
+  Con capas de muchos MB, se agota la memoria RAM
+  La aplicación se cuelga o se mata el proceso
+  Especialmente con múltiples pasos
+
+CAUSA:
+  Usar 'memory:' para capas grandes es ineficiente
+  Cada copia en memoria duplica el uso
+
+SOLUCIÓN:
+
+  def obtenerEstrategiaSalida(self, paso_num, tamaño_esperado_mb):
+      # Umbral: si capa > 500MB, usar disco
+      if tamaño_esperado_mb > 500:
+          return self.obtenerRutaSalida_Temp(paso_num)
+      else:
+          return 'memory:'
+  
+  # Calcular tamaño esperado:
+  def estimarTamañoSalida(self, capa_entrada, factor=1.2):
+      # Aproximación: tamaño entrada * factor
+      import os
+      if hasattr(capa_entrada, 'source'):
+          ruta = capa_entrada.source()
+          if os.path.exists(ruta):
+              return os.path.getsize(ruta) * factor / (1024*1024)  # MB
+      return 0
+
+
+================================================================================
+PROBLEMA #8: Algoritmos con tiempo de ejecución impredecible
+================================================================================
+
+SÍNTOMA:
+  Un paso tarda 30 segundos
+  Otro paso tarda 5 minutos
+  El usuario no sabe si está colgado o trabajando
+
+CAUSA:
+  No hay feedback continuo del progreso del algoritmo
+  Especialmente con algoritmos complejos como "Union" o "Intersection"
+
+SOLUCIÓN:
+
+  class VerboseFeedback(QgsProcessingFeedback):
+      def __init__(self):
+          super().__init__()
+          self.last_message_time = time.time()
+          self.last_update_progress = 0
+          self.mensaje.connect(self.registrarMensaje)
+      
+      def registrarMensaje(self, msg):
+          # Emitir mensajes de debug
+          self.textChanged.emit(f'DEBUG: {msg}')
+          # Actualizar timestamp
+          self.last_message_time = time.time()
+      
+      def detectarCuelgue(self):
+          # Si no hay mensajes en los últimos 30 segundos
+          # algo podría estar colgado
+          ahora = time.time()
+          if ahora - self.last_message_time > 30:
+              # Emitir advertencia
+              self.advierte.emit('Algoritmo tardando más de 30s...')
+  
+  # En la ejecución principal:
+  feedback = VerboseFeedback()
+  feedback.advierte.connect(self.mostrarAdvertencia)
+  
+  # Chequear periódicamente
+  timer = QTimer()
+  timer.timeout.connect(feedback.detectarCuelgue)
+  timer.start(5000)  # Cada 5 segundos
+
+
+================================================================================
+PROBLEMA #9: Guardar cadena genera fichero demasiado grande
+================================================================================
+
+SÍNTOMA:
+  Fichero JSON de cadena es de 100MB
+  Se guarda lentamente
+  Se abre lentamente
+
+CAUSA:
+  Se está guardando el contenido completo de las capas intermedias
+  No solo los parámetros y referencias
+
+SOLUCIÓN:
+
+  def guardarCadenaOptimizada(self, nombre):
+      import json
+      
+      cadena_data = {
+          'nombre': nombre,
+          'timestamp': datetime.now().isoformat(),
+          'autor': self.parent.parent.usuari,
+          'qgis_version': Qgis.QGIS_VERSION,
+          'pasos': []
+      }
+      
+      for paso in self.pasos:
+          paso_data = {
+              'orden': len(cadena_data['pasos']) + 1,
+              'algoritmo': paso.nombreAlgo,
+              'parametros': {}
+          }
+          
+          # Guardar SOLO referencias, no datos completos
+          for clave, valor in paso.parametros.items():
+              if isinstance(valor, QgsVectorLayer):
+                  # Guardar solo ID, no la capa completa
+                  paso_data['parametros'][clave] = f'layer:{valor.id()}'
+              elif isinstance(valor, str) and valor.startswith('output_'):
+                  # Referencia a paso anterior
+                  paso_data['parametros'][clave] = valor
+              else:
+                  # Valores normales (números, strings)
+                  paso_data['parametros'][clave] = valor
+          
+          cadena_data['pasos'].append(paso_data)
+      
+      # Comprimir antes de guardar
+      import gzip
+      ruta = os.path.join(self.parent.parent.carpetaCataleg, 
+                         f'{nombre}.json.gz')
+      with gzip.open(ruta, 'wt') as f:
+          json.dump(cadena_data, f, indent=2)
+
+
+================================================================================
+PROBLEMA #10: Compatibilidad entre versiones de QGIS
+================================================================================
+
+SÍNTOMA:
+  Cadena creada en QGIS 3.16 no funciona en QGIS 3.28
+  Nombres de algoritmos cambiaron
+  API de Processing cambió
+
+CAUSA:
+  QGIS Evolution: APIs cambian, algoritmos se renombran
+  No hay garantía de compatibilidad
+
+SOLUCIÓN:
+
+  def validarCompatibilidad(self, cadena_data):
+      # Guardar versión de QGIS usada
+      version_guardada = cadena_data.get('qgis_version', '?')
+      version_actual = Qgis.QGIS_VERSION
+      
+      # Advertir si es diferente
+      if version_guardada != version_actual:
+          self.mostrarAdvertencia(
+              f'Cadena fue creada con QGIS {version_guardada}\n'
+              f'Ejecutando en QGIS {version_actual}\n'
+              f'Algunos algoritmos pueden no funcionar'
+          )
+      
+      # Intentar mapear algoritmos renombrados
+      mapeo_compatibilidad = {
+          'qgis:buffer_old': 'qgis:buffer',
+          'qgis:dissolve_old': 'qgis:dissolve',
+          # ... etc
+      }
+      
+      for paso in cadena_data['pasos']:
+          algo_antiguo = paso['algoritmo']
+          if algo_antiguo in mapeo_compatibilidad:
+              paso['algoritmo'] = mapeo_compatibilidad[algo_antiguo]
+              self.mostrarAdvertencia(
+                  f'Algoritmo {algo_antiguo} mapeado a {paso["algoritmo"]}'
+              )
+      
+      return cadena_data
+
+
+================================================================================
+RESUMEN DE SOLUCIONES IMPLEMENTABLES
+================================================================================
+
+PROBLEMA              │ SOLUCIÓN RECOMENDADA
+──────────────────────┼─────────────────────────────────────
+#1 Memory vs Fichero  │ Solución B: Detectar por tipo algoritmo
+#2 Capas intermedias  │ Marcar y limpiar al final
+#3 Referencias string │ Usar cache con mapeo paso → resultados
+#4 Cancelación        │ ProcessingFeedbackWithCancel
+#5 Tipos geometría    │ Validación pre-ejecución
+#6 Canvas parpadeo    │ blockSignals() y refresh al final
+#7 Memoria agotada    │ Estrategia adaptativa (tamaño→storage)
+#8 Sin feedback       │ VerboseFeedback con timer
+#9 Fichero gigante    │ Guardar referencias, no datos + gzip
+#10 Compatibilidad    │ Validar versión + mapeo algoritmos
+
+
+================================================================================
+CHECKLIST PARA IMPLEMENTACIÓN
+================================================================================
+
+Pre-Implementación:
+  ☐ Revisar compatibilidad QGIS 3.16+
+  ☐ Hacer pruebas con 10+ algoritmos comunes
+  ☐ Documentar limitaciones conocidas
+  ☐ Preparar lista de algoritmos para mapeo
+
+Implementación:
+  ☐ Clase ProcessingStep con manejo de referencias
+  ☐ ProcessingChainExecutor con thread
+  ☐ Validaciones pre-ejecución
+  ☐ Manejo de errores robusto
+  ☐ Limpieza de temporales
+
+Testing:
+  ☐ Probar con capas pequeñas
+  ☐ Probar con capas grandes (>100MB)
+  ☐ Probar cancelación a mitad
+  ☐ Probar algoritmos fallidos
+  ☐ Probar sin capas en proyecto
+  ☐ Probar después de reiniciar QGIS
+
+Documentación:
+  ☐ Guía de usuario
+  ☐ Ejemplos de cadenas
+  ☐ Limitaciones conocidas
+  ☐ Troubleshooting FAQ
+
+
+================================================================================
+FIN DE PROBLEMAS Y SOLUCIONES
+================================================================================

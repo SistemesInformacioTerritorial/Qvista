@@ -1,0 +1,135 @@
+================================================================================
+CARGAR MIS MODELOS QGIS
+================================================================================
+
+Tu carpeta de modelos:
+  C:\Users\de1703\AppData\Roaming\QGIS\QGIS3\profiles\default\processing\models
+
+El POC ahora:
+  ✓ Busca modelos en el QGIS registry
+  ✓ Y también lee DIRECTAMENTE los ficheros .qgxml de tu carpeta
+  ✓ Combina ambas fuentes para mostrar todos tus modelos
+
+
+PASO 1: VER QUÉ MODELOS TIENES
+═══════════════════════════════
+
+Ejecuta:
+  python listar_mis_modelos.py
+
+Verás una lista con:
+  ✓ Nombre de cada modelo
+  ✓ Descripción
+  ✓ Algoritmos internos
+  ✓ Parámetros de entrada
+
+
+PASO 2: EJECUTAR EL VIEWER
+═══════════════════════════
+
+Ahora ejecuta:
+  python qgs_viewer_advanced.py
+
+La pestaña "Modelos" debería mostrar:
+  ✓ Todos tus modelos de la carpeta
+  ✓ Listos para ejecutar
+
+
+PASO 3: USAR TUS MODELOS
+═════════════════════════
+
+1. Carga un proyecto .qgs
+2. Pestaña "Modelos"
+3. En combobox selecciona tu modelo
+4. Configura parámetros
+5. Click "▶ EJECUTAR MODELO"
+
+
+TROUBLESHOOTING:
+════════════════
+
+SI NO VES TUS MODELOS:
+─────────────────────
+
+1. Ejecuta primero:
+   python listar_mis_modelos.py
+   
+   → Si muestra tus modelos, es problema de QGIS
+   → Si muestra "No hay ficheros .qgxml", verifica la carpeta
+
+2. Verifica que existen ficheros .qgxml:
+   
+   Explorer → Navega a:
+   C:\Users\de1703\AppData\Roaming\QGIS\QGIS3\profiles\default\processing\models
+   
+   Deberías ver ficheros .qgxml
+
+3. Si están allí pero no aparecen:
+   
+   Ejecuta:
+   python debug_modelos.py
+   
+   Busca sección "[5]" para ver si QGIS los reconoce
+
+4. Reinicia Python y QGIS si los creaste recientemente
+
+
+MEJORAS REALIZADAS:
+═══════════════════
+
+El viewer ahora:
+
+✓ Lee ficheros .qgxml directamente
+✓ Extrae nombre y descripción del XML
+✓ Busca tanto en registry como en ficheros
+✓ Evita duplicados (mismo modelo en ambos lugares)
+✓ Muestra todos tus modelos aunque QGIS no los haya indexado
+
+
+SCRIPTS ÚTILES:
+═══════════════
+
+1. listar_mis_modelos.py
+   └─ Ver mis modelos con detalles
+   └─ Comando: python listar_mis_modelos.py
+
+2. debug_modelos.py
+   └─ Debug avanzado (registry, providers, etc)
+   └─ Comando: python debug_modelos.py
+
+3. qgs_viewer_advanced.py
+   └─ Viewer con mis modelos
+   └─ Comando: python qgs_viewer_advanced.py
+
+
+CÓMO CREAR NUEVOS MODELOS:
+═══════════════════════════
+
+Si necesitas crear más modelos:
+
+1. Abre QGIS
+2. Processing → Models → Create New Model
+3. Diseña tu proceso
+4. Model → Save Model
+   • Dale un nombre claro
+   • Añade descripción útil
+5. Se guarda en tu carpeta automáticamente
+
+Luego:
+  • Reinicia Python
+  • Ejecuta qgs_viewer_advanced.py
+  • Verás tu nuevo modelo
+
+
+CONCLUSIÓN:
+═════════════
+
+Ahora el POC debería:
+  ✓ Detectar todos tus modelos .qgxml
+  ✓ Mostrarlos en la pestaña "Modelos"
+  ✓ Permitir ejecutarlos con parámetros
+
+Sin necesidad de que estén indexados en QGIS.
+
+
+================================================================================

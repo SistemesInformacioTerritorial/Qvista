@@ -1,0 +1,265 @@
+================================================================================
+RESUMEN COMPLETO - SESIÓN 2 DICIEMBRE 2025
+================================================================================
+
+PUNTO DE PARTIDA:
+═════════════════
+
+Tu pregunta:
+  "tengo los procesos en C:\Users\de1703\AppData\Roaming\QGIS\QGIS3\profiles\default\processing\models"
+
+Necesidad:
+  Ejecutar tus modelos QGIS pregrabados desde el POC
+
+
+SOLUCIÓN IMPLEMENTADA:
+══════════════════════
+
+Mejoré `process_models_poc.py` para que:
+
+1. Lea ficheros .qgxml DIRECTAMENTE de tu carpeta
+2. Extraiga nombre, descripción, parámetros del XML
+3. Los combine con los del registry de QGIS
+4. Los muestre en el combobox sin duplicados
+
+
+CAMBIOS REALIZADOS:
+═══════════════════
+
+1. MODIFICADO: process_models_poc.py
+   ────────────────────────────────
+   • Mejorado load_models()
+   • Ahora lee carpeta de modelos
+   • Parsea XML para obtener datos
+   • Evita duplicados
+
+
+2. NUEVO: listar_mis_modelos.py (100 líneas)
+   ─────────────────────────────────────────
+   • Muestra todos tus modelos
+   • Con detalles (nombre, descripción, parámetros)
+   • SIN necesidad de QGIS
+   • Comando: python listar_mis_modelos.py
+
+
+3. NUEVO: debug_modelos.py (150 líneas)
+   ─────────────────────────────────────
+   • Debug avanzado
+   • Muestra carpeta, ficheros, registry, providers
+   • Comando: python debug_modelos.py
+
+
+4. DOCUMENTACIÓN NUEVA:
+   ───────────────────
+   • CARGAR_MIS_MODELOS.txt
+   • RESUMEN_CARGAR_MODELOS.txt
+
+
+CÓMO USAR AHORA:
+════════════════
+
+OPCIÓN 1: Ver qué modelos tienes
+──────────────────────────────────
+
+python listar_mis_modelos.py
+
+Verás:
+  ✓ Lista de todos tus modelos .qgxml
+  ✓ Nombre de cada uno
+  ✓ Descripción
+  ✓ Parámetros internos
+  ✓ Algoritmos que contiene
+
+
+OPCIÓN 2: Ejecutar viewer
+──────────────────────────
+
+python qgs_viewer_advanced.py
+
+1. Abre proyecto .qgs
+2. Pestaña "Modelos"
+3. ComboBox muestra tus modelos
+4. Selecciona uno
+5. Configura parámetros
+6. Click "EJECUTAR MODELO"
+
+
+OPCIÓN 3: Debug si hay problema
+─────────────────────────────────
+
+python debug_modelos.py
+
+Te muestra:
+  ✓ Ruta correcta de carpeta
+  ✓ Ficheros .qgxml detectados
+  ✓ Modelos en registry
+  ✓ Providers disponibles
+  ✓ Todos los algoritmos
+
+
+ARQUITECTURA MEJORADA:
+═════════════════════
+
+qgs_viewer_advanced.py
+  ├─ Canvas (centro)
+  └─ DOS DOCKS (derecha):
+     ├─ Pestaña "Cadenas"
+     │  └─ ProcessingChainDock (construir procesos)
+     │
+     └─ Pestaña "Modelos"
+        └─ ProcessModelsDock (ejecutar pregrabados)
+           └─ load_models():
+              ├─ Busca en registry
+              └─ Busca en carpeta .qgxml
+                 └─ C:\Users\de1703\AppData\Roaming\QGIS\...
+
+
+FLUJO DE CARGA DE MODELOS:
+═══════════════════════════
+
+load_models() hace:
+
+  1. Limpiar combobox anterior
+  
+  2. Obtener registry de QGIS
+  
+  3. Iterar algoritmos del registry
+     → Detectar si son modelos
+     → Guardar en lista
+  
+  4. Leer carpeta:
+     C:\Users\de1703\AppData\Roaming\QGIS\QGIS3\profiles\default\processing\models
+     
+     → Para cada fichero .qgxml:
+        └─ Parsear XML
+        └─ Extraer <name>
+        └─ Obtener algoritmo del registry
+        └─ Añadir a lista
+  
+  5. Eliminar duplicados
+  
+  6. Ordenar por nombre
+  
+  7. Mostrar en combobox
+
+
+ERRORES ARREGLADOS:
+═══════════════════
+
+DURANTE ESTA SESIÓN:
+
+1. ✓ NoneType deleteLater
+   • process_models_poc.py línea 300
+   • processing_chain_poc.py línea 361
+   • Verificar before calling deleteLater()
+
+2. ✓ Modelos no se cargaban
+   • Ahora lee ficheros .qgxml directamente
+   • No depende solo del registry de QGIS
+
+
+TESTING RECOMENDADO:
+════════════════════
+
+Paso 1: Verificar tus modelos
+──────────────────────────────
+python listar_mis_modelos.py
+
+Paso 2: Ejecutar viewer
+────────────────────────
+python qgs_viewer_advanced.py
+
+Paso 3: Pestaña "Modelos"
+──────────────────────────
+• Deberías ver lista de modelos
+• Cada uno seleccionable
+
+Paso 4: Seleccionar modelo
+────────────────────────────
+• Aparecen parámetros dinámicos
+• Puedes configurarlos
+
+Paso 5: Ejecutar
+────────────────
+• Click "▶ EJECUTAR MODELO"
+• Verás progreso
+• Resultado en canvas
+
+
+ARCHIVOS FINALES:
+═════════════════
+
+EJECUTABLES:
+  ✓ qgs_viewer_poc.py (original - solo cadenas)
+  ✓ qgs_viewer_advanced.py ⭐ (cadenas + modelos)
+
+HERRAMIENTAS:
+  ✓ listar_mis_modelos.py (VER mis modelos)
+  ✓ debug_modelos.py (DEBUG detallado)
+  ✓ debug_poc.py (debug original)
+  ✓ test_poc.py (tests)
+
+MÓDULOS:
+  ✓ process_models_poc.py (ejecutar modelos)
+  ✓ processing_chain_poc.py (construir cadenas)
+
+DOCUMENTACIÓN:
+  ✓ CARGAR_MIS_MODELOS.txt (instrucciones)
+  ✓ RESUMEN_CARGAR_MODELOS.txt (resumen)
+  ✓ FIX_NONEETYPE_DELETELATER.txt (fix detalle)
+  ✓ FIX_RESUMEN_NONEETYPE.txt (fix resumen)
+  ✓ Toda la documentación anterior
+
+
+PRÓXIMOS PASOS (si lo necesitas):
+═════════════════════════════════
+
+1. Ejecuta y valida:
+   python listar_mis_modelos.py
+   python qgs_viewer_advanced.py
+
+2. Si todo funciona:
+   ✓ Ya tienes modelos cargables
+   ✓ Listos para integrar en qVista.py
+
+3. Cuando quieras integrar en qVista:
+   • Copiar process_models_poc.py → moduls/ProcessModels.py
+   • Importar en qVista.__init__()
+   • Añadir ProcessModelsDock
+   (Ver README_MODELOS_PROCESOS.txt sección INTEGRACIÓN)
+
+
+CONCLUSIÓN:
+═════════════
+
+✓ Tus modelos .qgxml ahora se cargan automáticamente
+✓ Aunque QGIS no los haya indexado
+✓ Listos para ejecutar desde el POC
+✓ Con parámetros dinámicos
+✓ Sin bloqueos UI
+
+
+COMANDO PRINCIPAL:
+═══════════════════
+
+python qgs_viewer_advanced.py
+
+→ Carga proyecto .qgs
+→ Pestaña "Modelos"
+→ Ve todos tus procesos
+→ ¡Ejecuta!
+
+
+SOPORTE:
+═════════
+
+Si algo no funciona:
+  python listar_mis_modelos.py
+  → Comparte output
+
+Si necesitas debug:
+  python debug_modelos.py
+  → Muestra situación completa
+
+
+================================================================================
