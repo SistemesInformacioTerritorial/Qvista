@@ -565,31 +565,37 @@ class QMaBIM(QtWidgets.QMainWindow):
 
         #iniciem variable per marcar que s'està actualitzant visibilitat de capes de fons
         self._updating_base_layers = False
+        self._radio_by_node = {}
 
 
+        # Radios per node
         for node in self.nodes_wms:
-            if node is not None:
-                check_text = node.name()
-                check_text = check_text if len(check_text) <= 35 else check_text[:35] + "..."
-                chk = qtWdg.QRadioButton(check_text, self)
-                chk.setChecked(node.isVisible())
-                #NOTA: partial(self.on_base_layer_toggled, node=node) evita el típic problema del lambda dins bucles que captura sempre l’últim valor.
-                chk.toggled.connect(partial(self.on_base_layer_toggled, node=node))
-                node.visibilityChanged.connect(partial(self.on_node_visibility_changed, chk=chk, node=node))
-                grupCapesFons.addButton(chk)
-                layout_grup.addWidget(chk)
+            if node is None:
+                continue
 
-        #Finalment afegim un botó de "cap"
+            text = node.name()
+            text = text if len(text) <= 35 else text[:35] + "..."
+
+            chk = qtWdg.QRadioButton(text, self)
+            chk.toggled.connect(partial(self.on_base_layer_toggled, node=node))
+
+            # Guardem la relació node→radio
+            self._radio_by_node[node] = chk
+
+            # Un sol callback per canvis al layer tree
+            node.visibilityChanged.connect(partial(self.on_node_visibility_changed, node=node))
+
+            grupCapesFons.addButton(chk)
+            layout_grup.addWidget(chk)
+
+        # "CAP SELECCIONAT"
         self.chk_none = qtWdg.QRadioButton("Cap", self)
-        self.chk_none.setChecked(
-            not any(n is not None and n.isVisible() for n in self.nodes_wms)
-        )
-
-        self.chk_none.toggled.connect(self.cap_layer_toggled)
-
-                
+        self.chk_none.toggled.connect(self.on_none_toggled)
         grupCapesFons.addButton(self.chk_none)
         layout_grup.addWidget(self.chk_none)
+
+        # Sincronització inicial
+        self._sync_base_layer_radios()
 
         layout.addLayout(layout_grup)        
         layout.addStretch()
@@ -634,87 +640,70 @@ class QMaBIM(QtWidgets.QMainWindow):
         self.bMostrarFechas.clicked.connect(self.mostrarFechasProcesos)
 
 
-    def _set_only_this_base_layer_visible(self, node):
-        """Deixa només 'node' visible i apaga la resta de nodes WMS."""
+    def _sync_base_layer_radios(self):
+        """Sincronitza l'estat dels QRadioButton amb la visibilitat actual dels nodes."""
         if self._updating_base_layers:
             return
 
         self._updating_base_layers = True
         try:
-            for n in self.nodes_wms:
-                if n is None:
-                    continue
-                n.setItemVisibilityChecked(n is node)
+            any_visible = False
 
-            if hasattr(self, "chk_none"):
-                block = self.chk_none.blockSignals(True)
-                self.chk_none.setChecked(False)
-                self.chk_none.blockSignals(block)
+            # 1) Actualitzar radios de capes
+            for node, chk in self._radio_by_node.items():
+                visible = node.isVisible()
+                any_visible = any_visible or visible
+
+                block = chk.blockSignals(True)
+                chk.setChecked(visible)
+                chk.blockSignals(block)
+
+            # 2) Actualitzar "CAP SELECCIONAT"
+            block = self.chk_none.blockSignals(True)
+            self.chk_none.setChecked(not any_visible)
+            self.chk_none.blockSignals(block)
 
         finally:
             self._updating_base_layers = False
 
     def on_base_layer_toggled(self, checked, node):
-        """
-        Slot dels QRadioButton de capes de fons.
-        checked: estat del radiobutton
-        node: QgsLayerTreeLayer associat al radiobutton
-        """
-
-        # 1) Si el radiobutton s'ha desmarcat, no fem res
-        # (quan Qt desmarca els altres, també dispara toggled(False))
-        if not checked:
+        if not checked or self._updating_base_layers:
             return
 
-        self._set_only_this_base_layer_visible(node)
-
-    def cap_layer_toggled(self, checked):
-        """
-        Slot dels QRadioButton de "cap".
-        checked: estat del radiobutton
-        """
-        if not checked:
+        self._apply_exclusive_base_layer(node)
+        self._sync_base_layer_radios()
+        
+    def on_none_toggled(self, checked):
+        if not checked or self._updating_base_layers:
             return
 
+        self._apply_exclusive_base_layer(None)
+        self._sync_base_layer_radios()
+
+    def _apply_exclusive_base_layer(self, selected_node):
+        """
+        Si selected_node és None → apaga totes.
+        Si selected_node és un node → deixa només aquest visible.
+        """
         if self._updating_base_layers:
             return
 
         self._updating_base_layers = True
         try:
-            for n in self.nodes_wms:
-                if n is not None:
-                    n.setItemVisibilityChecked(False)
+            for node in self._radio_by_node.keys():
+                node.setItemVisibilityChecked(node is selected_node)
         finally:
             self._updating_base_layers = False
 
-
-    def on_node_visibility_changed(self, state, chk, node):
-        """
-        Quan canvia la visibilitat del node (des del panell de QGIS, per exemple),
-        actualitzem el radiobutton i, si cal, fem exclusiva la capa.
-        """
-        visible = node.isVisible()   # o usa itemVisibilityChecked() si et va millor
-
-        # 1) Actualitzem el radiobutton sense disparar el seu 'toggled'
-        block = chk.blockSignals(True)
-        chk.setChecked(visible)
-        chk.blockSignals(block)
-
-        # 2) Si estem en un canvi intern (cridat des de _set_only_this_base_layer_visible),
-        #    no fem res més per evitar bucles.
+    def on_node_visibility_changed(self, state, node):
         if self._updating_base_layers:
             return
 
-        # 3) Si l'usuari ha fet visible aquesta capa al panell,
-        #    apliquem la mateixa lògica d'exclusivitat.
-        if visible:
-            self._set_only_this_base_layer_visible(node)
+        # Si algú ha encès una capa manualment, imposar exclusivitat
+        if node.isVisible():
+            self._apply_exclusive_base_layer(node)
 
-        # Si cap capa és visible --> marcar "CAP"
-        if not any(n is not None and n.isVisible() for n in self.nodes_wms):
-            block = self.chk_none.blockSignals(True)
-            self.chk_none.setChecked(True)
-            self.chk_none.blockSignals(block)
+        self._sync_base_layer_radios()
 
     def mostrarFechasProcesos(self):
         # Recuperar los textos de las fechas
