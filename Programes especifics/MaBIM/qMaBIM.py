@@ -673,7 +673,6 @@ class QMaBIM(QtWidgets.QMainWindow):
         Slot dels QRadioButton de "cap".
         checked: estat del radiobutton
         """
-
         if not checked:
             return
 
