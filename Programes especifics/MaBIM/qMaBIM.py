@@ -579,6 +579,18 @@ class QMaBIM(QtWidgets.QMainWindow):
                 grupCapesFons.addButton(chk)
                 layout_grup.addWidget(chk)
 
+        #Finalment afegim un botó de "cap"
+        self.chk_none = qtWdg.QRadioButton("Cap", self)
+        self.chk_none.setChecked(
+            not any(n is not None and n.isVisible() for n in self.nodes_wms)
+        )
+
+        self.chk_none.toggled.connect(self.cap_layer_toggled)
+
+                
+        grupCapesFons.addButton(self.chk_none)
+        layout_grup.addWidget(self.chk_none)
+
         layout.addLayout(layout_grup)        
         layout.addStretch()
 
@@ -633,6 +645,12 @@ class QMaBIM(QtWidgets.QMainWindow):
                 if n is None:
                     continue
                 n.setItemVisibilityChecked(n is node)
+
+            if hasattr(self, "chk_none"):
+                block = self.chk_none.blockSignals(True)
+                self.chk_none.setChecked(False)
+                self.chk_none.blockSignals(block)
+
         finally:
             self._updating_base_layers = False
 
@@ -649,6 +667,26 @@ class QMaBIM(QtWidgets.QMainWindow):
             return
 
         self._set_only_this_base_layer_visible(node)
+
+    def cap_layer_toggled(self, checked):
+        """
+        Slot dels QRadioButton de "cap".
+        checked: estat del radiobutton
+        """
+
+        if not checked:
+            return
+
+        if self._updating_base_layers:
+            return
+
+        self._updating_base_layers = True
+        try:
+            for n in self.nodes_wms:
+                if n is not None:
+                    n.setItemVisibilityChecked(False)
+        finally:
+            self._updating_base_layers = False
 
 
     def on_node_visibility_changed(self, state, chk, node):
@@ -672,6 +710,12 @@ class QMaBIM(QtWidgets.QMainWindow):
         #    apliquem la mateixa lògica d'exclusivitat.
         if visible:
             self._set_only_this_base_layer_visible(node)
+
+        # Si cap capa és visible --> marcar "CAP"
+        if not any(n is not None and n.isVisible() for n in self.nodes_wms):
+            block = self.chk_none.blockSignals(True)
+            self.chk_none.setChecked(True)
+            self.chk_none.blockSignals(block)
 
     def mostrarFechasProcesos(self):
         # Recuperar los textos de las fechas
