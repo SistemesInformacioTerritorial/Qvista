@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import qgis.core as qgCor
+from qgis.core import QgsLayerTreeLayer, QgsMapLayer
 import qgis.gui as qgGui
 import qgis.PyQt.QtWidgets as qtWdg
 import qgis.PyQt.QtGui as qtGui
@@ -22,6 +23,7 @@ from moduls.QvDigitizeContext import QvDigitizeContext
 from moduls.QvNavegacioTemporal import QvNavegacioTemporal
 from moduls.QvApp import QvApp
 from moduls import QvFuncions
+
 
 if QvApp().testVersioQgis(3, 10):
     from moduls.QvDigitize import QvDigitize
@@ -1141,6 +1143,18 @@ class QvLlegenda(qgGui.QgsLayerTreeView):
             if (tipus is None or tipus == node.nodeType()) and node.name() == nom:
                 return node
         return None
+    
+    def capesPerProveidor(self, proveidor):
+
+        capes_wms = []
+        for node in self.nodes():
+            if isinstance(node, QgsLayerTreeLayer):
+                layer = node.layer()
+                if layer is not None and layer.type() == QgsMapLayer.RasterLayer and layer.providerType().lower() == proveidor:
+                    capes_wms.append(node)
+        
+        return capes_wms
+           
 
     def expandAll(self, switch=True):
         for item in self.items():

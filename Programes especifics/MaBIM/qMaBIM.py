@@ -8,6 +8,7 @@ import subprocess
 import sys
 from pathlib import Path
 from typing import Sequence
+from functools import partial
 
 import configuracioQvista
 from moduls import QvFuncions
@@ -32,6 +33,7 @@ from qgis.core import (QgsCoordinateReferenceSystem, QgsFeatureRequest,
 from qgis.core.contextmanagers import qgisapp
 from qgis.gui import (QgsGui, QgsLayerTreeMapCanvasBridge, QgsMapTool,
                       QgsRubberBand, QgsVertexMarker)
+import qgis.PyQt.QtWidgets as qtWdg
 
 import webbrowser
 from PyQt5.QtWidgets import QHeaderView
@@ -510,7 +512,7 @@ class QMaBIM(QtWidgets.QMainWindow):
         super().__init__(*args, **kwargs)
         uic.loadUi(ConstantsMaBIM.rutaUI,self)
 
-        self.llistaBotons = (self.bFavorits, self.bBIMs, self.bPIP, self.bProjectes, self.bConsultes)
+        self.llistaBotons = (self.bFavorits, self.bBIMs, self.bPIP, self.bConsultes)
 
         self.connectBotons()
         self.connectaCercador()
@@ -531,6 +533,10 @@ class QMaBIM(QtWidgets.QMainWindow):
         self.statusBar().afegirWidget('lblSIT',QtWidgets.QLabel("Direcció de Patrimoni"),0,1)
         self.statusBar().afegirWidget('spacer',QtWidgets.QWidget(),1,2)
 
+        self.wMapesContent.setVisible(False)
+        self.tbMapesHeader.setArrowType(QtCore.Qt.RightArrow)
+        self.tbMapesHeader.toggled.connect(self.toggle_mapes_panel)
+
         self.bObrirQGIS.clicked.connect(self.obrirEnQGIS)
         # només podrà veure el botó qui aparegui a la llista d'editors
         # TODO: si no hi ha editors definits, pot veure-ho tothom? Ningú? (comportament actual: ningú)
@@ -541,10 +547,59 @@ class QMaBIM(QtWidgets.QMainWindow):
         else:
             self.bObrirQGIS.hide()
         node = self.llegenda.nodePerNom(ConstantsMaBIM.nomGrupRegistrals)
+
         if node is not None and len(node.findLayers())>0:
             self.cbRegistralsVisibles.show()
         else:
             self.cbRegistralsVisibles.hide()
+
+        #Recuperem layers wms per generar els chec
+        self.nodes_wms = self.llegenda.capesPerProveidor('wms')
+
+        layout = self.verticalLayoutMapes
+
+        layout_grup = qtWdg.QVBoxLayout()
+        layout_grup.setSpacing(10) 
+        grupCapesFons = qtWdg.QButtonGroup(self)
+        grupCapesFons.setExclusive(True)
+
+        #iniciem variable per marcar que s'està actualitzant visibilitat de capes de fons
+        self._updating_base_layers = False
+        self._radio_by_node = {}
+
+
+        # Radios per node
+        for node in self.nodes_wms:
+            if node is None:
+                continue
+
+            text = node.name()
+            text = text if len(text) <= 35 else text[:35] + "..."
+
+            chk = qtWdg.QRadioButton(text, self)
+            chk.toggled.connect(partial(self.on_base_layer_toggled, node=node))
+
+            # Guardem la relació node→radio
+            self._radio_by_node[node] = chk
+
+            # Un sol callback per canvis al layer tree
+            node.visibilityChanged.connect(partial(self.on_node_visibility_changed, node=node))
+
+            grupCapesFons.addButton(chk)
+            layout_grup.addWidget(chk)
+
+        # "CAP SELECCIONAT"
+        self.chk_none = qtWdg.QRadioButton("Cap", self)
+        self.chk_none.toggled.connect(self.on_none_toggled)
+        grupCapesFons.addButton(self.chk_none)
+        layout_grup.addWidget(self.chk_none)
+
+        # Sincronització inicial
+        self._sync_base_layer_radios()
+
+        layout.addLayout(layout_grup)        
+        layout.addStretch()
+
         self.bAfegirFavorit.clicked.connect(self.dialegSetFavorit)
         self.bAfegirFavorit.clicked.connect(self.mostraFavorits)
         self.bAfegirFavorit.hide()
@@ -583,6 +638,72 @@ class QMaBIM(QtWidgets.QMainWindow):
         self.l_DataCarregaCSV.hide()
         self.l_DataGrafic.hide()
         self.bMostrarFechas.clicked.connect(self.mostrarFechasProcesos)
+
+
+    def _sync_base_layer_radios(self):
+        """Sincronitza l'estat dels QRadioButton amb la visibilitat actual dels nodes."""
+        if self._updating_base_layers:
+            return
+
+        self._updating_base_layers = True
+        try:
+            any_visible = False
+
+            # 1) Actualitzar radios de capes
+            for node, chk in self._radio_by_node.items():
+                visible = node.isVisible()
+                any_visible = any_visible or visible
+
+                block = chk.blockSignals(True)
+                chk.setChecked(visible)
+                chk.blockSignals(block)
+
+            # 2) Actualitzar "CAP SELECCIONAT"
+            block = self.chk_none.blockSignals(True)
+            self.chk_none.setChecked(not any_visible)
+            self.chk_none.blockSignals(block)
+
+        finally:
+            self._updating_base_layers = False
+
+    def on_base_layer_toggled(self, checked, node):
+        if not checked or self._updating_base_layers:
+            return
+
+        self._apply_exclusive_base_layer(node)
+        self._sync_base_layer_radios()
+        
+    def on_none_toggled(self, checked):
+        if not checked or self._updating_base_layers:
+            return
+
+        self._apply_exclusive_base_layer(None)
+        self._sync_base_layer_radios()
+
+    def _apply_exclusive_base_layer(self, selected_node):
+        """
+        Si selected_node és None → apaga totes.
+        Si selected_node és un node → deixa només aquest visible.
+        """
+        if self._updating_base_layers:
+            return
+
+        self._updating_base_layers = True
+        try:
+            for node in self._radio_by_node.keys():
+                node.setItemVisibilityChecked(node is selected_node)
+        finally:
+            self._updating_base_layers = False
+
+    def on_node_visibility_changed(self, state, node):
+        if self._updating_base_layers:
+            return
+
+        # Si algú ha encès una capa manualment, imposar exclusivitat
+        if node.isVisible():
+            self._apply_exclusive_base_layer(node)
+
+        self._sync_base_layer_radios()
 
     def mostrarFechasProcesos(self):
         # Recuperar los textos de las fechas
@@ -694,7 +815,7 @@ class QMaBIM(QtWidgets.QMainWindow):
             (self.bFavorits, 'botonera-fav.png'),
             (self.bBIMs, 'botonera-BIM.png'),
             (self.bPIP, 'botonera-PIP.png'),
-            (self.bProjectes, 'botonera-projectes'),
+            #(self.bProjectes, 'botonera-projectes'),
             (self.bConsultes, 'botonera-consultes')
         )
         for (boto, icona) in parelles:
@@ -1098,12 +1219,23 @@ class QMaBIM(QtWidgets.QMainWindow):
             BIM = self.tFavorits.item(fila,0).text()
             if BIM in self.favorits:
                 FavoritsMaBIM().actualitzaObservacio(BIM, self.tFavorits.item(fila,5).text())
+    
+    def toggle_mapes_panel(self, checked):
+        # Mostra o amaga el contingut
+        self.wMapesContent.setVisible(checked)
 
+        # Canvia la fletxa per donar feedback visual
+        if checked:
+            self.tbMapesHeader.setArrowType(QtCore.Qt.DownArrow)
+        else:
+            self.tbMapesHeader.setArrowType(QtCore.Qt.RightArrow)
+   
     def connectBotons(self):
         self.llistaBotons[0].clicked.connect(self.mostraFavorits)
         for (i,x) in enumerate(self.llistaBotons):
             x.clicked.connect(functools.partial(self.desmarcaBotons,x))
             x.clicked.connect(functools.partial(self.switchPantallaP,i))
+        
     def switchPantallaP(self,i):
         self.stackedWidget.setCurrentIndex(i)
     def desmarcaBotons(self,aExcepcio):
