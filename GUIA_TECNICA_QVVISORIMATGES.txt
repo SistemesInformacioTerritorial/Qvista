@@ -1,0 +1,508 @@
+================================================================================
+GUÍA TÉCNICA - QvVisorImatges.py
+Implementación: Escalado de imágenes con preservación de ratio de aspecto
+================================================================================
+
+INTRODUCCIÓN
+================================================================================
+Este documento proporciona una guía técnica profunda sobre los cambios 
+implementados en QvVisorImatges.py para mostrar imágenes en modo "fit" 
+manteniendo el ratio original.
+
+
+PROBLEMA ORIGINAL
+================================================================================
+
+El código original utilizaba setScaledContents(True) que causaba:
+
+1. DISTORSIÓN DE IMAGEN:
+   - QLabel.setScaledContents(True) estira la imagen a cualquier tamaño
+   - No preserva el ratio ancho/alto original
+   - Una imagen panorámica (16:9) se vuelve casi cuadrada en ventana 4:3
+
+2. ZOOM SIN CONTROL:
+   - El zoom in/out también provocaba distorsión
+   - No había forma de ver la imagen con proporciones correctas
+
+3. MALA EXPERIENCIA DE USUARIO:
+   - Contrasta con visores de imágenes modernos
+   - Las imágenes se veían antiestéticas
+
+SOLUCIÓN IMPLEMENTADA
+================================================================================
+
+Se implementó un nuevo método fitImageToWindow() que:
+
+1. Calcula dinámicamente el espacio disponible
+2. Determina el tamaño óptimo respetando el ratio
+3. Escala solo cuando es necesario
+4. Mantiene el ratio bajo cualquier circunstancia
+
+
+DESGLOSE TÉCNICO DE CAMBIOS
+================================================================================
+
+CAMBIO 1: Inicialización del Label (initUI)
+────────────────────────────────────────────
+
+PROBLEMA:
+- setScaledContents(True) permite que el label distorsione el pixmap
+- QSizePolicy.Ignored no ayuda a mantener proporciones
+
+SOLUCIÓN:
+- NO llamar a setScaledContents(True)
+- Cambiar a QSizePolicy.Expanding (se expande pero no distorsiona)
+- Dejar que fitImageToWindow() maneje el escalado
+
+CÓDIGO DETALLADO:
+
+Antes:
+    self.imageLabel = QLabel(self)
+    self.imageLabel.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Ignored)
+    self.imageLabel.setScaledContents(True)
+    
+Después:
+    self.imageLabel = QLabel(self)
+    self.imageLabel.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+    self.imageLabel.setAlignment(Qt.AlignCenter)
+
+
+CAMBIO 2: Nuevo método fitImageToWindow()
+──────────────────────────────────────────
+
+Este es el CORAZÓN de la implementación. Funciona así:
+
+PASO 1: Validación
+    if self.pixmap.isNull():
+        return
+    # Si no hay imagen cargada, no hace nada
+
+PASO 2: Obtener espacio disponible
+    availableWidth = self.scrollArea.width() - 20
+    availableHeight = self.scrollArea.height() - 20
+    
+    # Resta 20px de margen para evitar scrollbars innecesarios
+
+PASO 3: Valores por defecto
+    if availableWidth < 100 or availableHeight < 100:
+        availableWidth = 800
+        availableHeight = 600
+    
+    # Evita problemas con ventana muy pequeña
+    # Asume mínimo 800x600 disponible
+
+PASO 4: Calcular tamaño objetivo con zoom
+    originalSize = self.pixmap.size()
+    targetSize = originalSize * self.scaleFactor
+    
+    # Ejemplo:
+    # Imagen original: 1200x800
+    # scaleFactor: 2.0 (zoom 200%)
+    # targetSize: 2400x1600
+
+PASO 5: Decisión de escalado
+
+    Caso A - Imagen pequeña (cabe en ventana):
+    ──────────────────────────────────────────
+    if targetSize.width() < availableWidth and 
+       targetSize.height() < availableHeight:
+        
+        scaledPixmap = self.pixmap.scaledToWidth(
+            int(targetSize.width()),
+            Qt.SmoothTransformation
+        )
+    
+    Ejemplo:
+    - Imagen: 800x600
+    - Ventana: 1024x768
+    - Como ambos son menores, escalar a ancho de 800
+    - Altura se calcula automáticamente: 600
+    
+    
+    Caso B - Imagen grande (no cabe):
+    ──────────────────────────────────
+    else:
+        # Primero intentar escalar por ancho
+        scaledPixmap = self.pixmap.scaledToWidth(
+            int(availableWidth * self.scaleFactor),
+            Qt.SmoothTransformation
+        )
+        
+        # Si altura aún no cabe, escalar por altura
+        if scaledPixmap.height() > availableHeight * self.scaleFactor:
+            scaledPixmap = self.pixmap.scaledToHeight(
+                int(availableHeight * self.scaleFactor),
+                Qt.SmoothTransformation
+            )
+    
+    Ejemplo 1 - Imagen panorámica:
+    - Imagen: 2560x1440 (ratio 16:9)
+    - Ventana: 1024x768 (ratio 4:3)
+    - Paso 1: Escalar a ancho 1024
+      → Altura = 1024 * 1440/2560 = 576 ✓ (cabe)
+    - Resultado: 1024x576 con márgenes negros arriba/abajo
+    
+    Ejemplo 2 - Imagen muy tall:
+    - Imagen: 800x2000
+    - Ventana: 1024x768
+    - Paso 1: Escalar a ancho 1024
+      → Altura = 1024 * 2000/800 = 2560 ✗ (no cabe)
+    - Paso 2: Escalar a altura 768
+      → Ancho = 768 * 800/2000 = 307 ✓
+    - Resultado: 307x768 con márgenes negros a los lados
+
+PASO 6: Aplicar pixmap
+    self.imageLabel.setPixmap(scaledPixmap)
+    self.imageLabel.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Ignored)
+    self.imageLabel.adjustSize()
+
+
+CAMBIO 3: Función de zoom (scaleImage)
+───────────────────────────────────────
+
+Ahora simplemente multiplica el factor y llama a fitImageToWindow():
+
+Antes:
+    def scaleImage(self, factor):
+        self.scaleFactor *= factor
+        medida = self.imageLabel.pixmap().size()
+        redimension = self.scaleFactor * medida
+        self.imageLabel.resize(round(redimension))
+        self.imageLabel.setScaledContents(True)  # ← PROBLEMA
+
+Después:
+    def scaleImage(self, factor):
+        self.scaleFactor *= factor
+        self.fitImageToWindow()  # Deja que fit maneje el escalado
+        
+        # Ajusta scrollbars si la imagen es mayor que la ventana
+        self.adjustScrollBar(self.scrollArea.horizontalScrollBar(), factor)
+        self.adjustScrollBar(self.scrollArea.verticalScrollBar(), factor)
+
+FLUJO DE ZOOM:
+    1. Usuario presiona "Zoom In" (factor 1.25)
+    2. scaleFactor *= 1.25
+    3. fitImageToWindow() recalcula y escala la imagen
+    4. scrollBar se ajusta para mantener la zona visible centrada
+
+
+CAMBIO 4: Restaurar tamaño normal (normalSize)
+───────────────────────────────────────────────
+
+Ahora es mucho más simple:
+
+Antes:
+    def normalSize(self):
+        self.pixmap = QPixmap(self.cual)
+        self.imageLabel.setPixmap(self.pixmap)
+        self.imageLabel.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Ignored)
+        self.imageLabel.adjustSize()
+        self.scaleFactor = 1.0
+
+Después:
+    def normalSize(self):
+        self.pixmap = QPixmap(self.cual)
+        self.scaleFactor = 1.0
+        self.fitImageToWindow()
+
+Ventaja: Todo el escalado ahora se centraliza en fitImageToWindow()
+
+
+CAMBIO 5 y 6: Navegación entre imágenes
+────────────────────────────────────────
+
+endavant() (siguiente) y enrrera() (anterior):
+
+Ambas ahora hacen lo mismo:
+1. Cargan el nuevo pixmap
+2. Reestablecen scaleFactor = 1.0 (volver a zoom normal)
+3. Llaman a normalSize() (que escala con fit)
+
+Antes: Código duplicado, lógica esparcida
+Después: Lógica centralizada, más limpio
+
+Ejemplo endavant():
+    self.cual = self.carpeta + self.llistaImatges[self.indexImatge]
+    self.pixmap = QPixmap(self.cual)
+    self.scaleFactor = 1.0      # ← Reset zoom
+    self.normalSize()           # ← Fit a ventana
+
+
+MATEMÁTICAS DETRÁS DEL ESCALADO
+================================================================================
+
+Qt.scaledToWidth(width, mode) - Función clave
+
+Firma:
+    QPixmap.scaledToWidth(int width, TransformationMode mode) → QPixmap
+
+Comportamiento:
+    - Escala el pixmap para que el ancho sea exactamente 'width'
+    - El alto se calcula automáticamente: height = width * (original_height / original_width)
+    - Preserva SIEMPRE el ratio de aspecto
+    - 'mode' controla calidad: Qt.FastTransformation (rápido) vs Qt.SmoothTransformation (calidad)
+
+Ejemplo matemático:
+    Imagen original: 1200x800 (ratio = 800/1200 = 0.6667)
+    
+    Si llamamos scaledToWidth(800):
+        Nuevo ancho = 800
+        Nuevo alto = 800 * 0.6667 = 533.33 ≈ 533
+        Resultado = 800x533 ✓ Ratio preservado
+
+Qt.scaledToHeight(height, mode) - Función alternativa
+
+Firma:
+    QPixmap.scaledToHeight(int height, TransformationMode mode) → QPixmap
+
+Comportamiento:
+    - Escala el pixmap para que el alto sea exactamente 'height'
+    - El ancho se calcula automáticamente: width = height * (original_width / original_height)
+
+Ejemplo:
+    Imagen original: 1200x800 (ratio = 1200/800 = 1.5)
+    
+    Si llamamos scaledToHeight(600):
+        Nuevo alto = 600
+        Nuevo ancho = 600 * 1.5 = 900
+        Resultado = 900x600 ✓ Ratio preservado
+
+
+ALGORITMO DE FIT-TO-WINDOW DETALLADO
+================================================================================
+
+Pseudocódigo lógico:
+
+```
+FUNCIÓN fitImageToWindow():
+    SI imagen está nula:
+        RETORNAR
+    
+    obtener ancho_disponible = scrollArea.width() - 20
+    obtener alto_disponible = scrollArea.height() - 20
+    
+    SI ancho_disponible < 100 O alto_disponible < 100:
+        ancho_disponible = 800
+        alto_disponible = 600
+    
+    obtener tamaño_original = imagen.size()
+    calcular tamaño_objetivo = tamaño_original * scaleFactor
+    
+    SI tamaño_objetivo.width() < ancho_disponible Y 
+       tamaño_objetivo.height() < alto_disponible:
+        // Caso: Imagen cabe en ventana
+        imagen_escalada = imagen.scaledToWidth(
+            tamaño_objetivo.width(),
+            SMOOTH_TRANSFORMATION
+        )
+    SINO:
+        // Caso: Imagen no cabe, necesita ajustarse
+        
+        // Intenta escalar por ancho primero
+        imagen_escalada = imagen.scaledToWidth(
+            ancho_disponible * scaleFactor,
+            SMOOTH_TRANSFORMATION
+        )
+        
+        // Si aún no cabe en altura, escala por altura
+        SI imagen_escalada.height() > alto_disponible * scaleFactor:
+            imagen_escalada = imagen.scaledToHeight(
+                alto_disponible * scaleFactor,
+                SMOOTH_TRANSFORMATION
+            )
+    
+    mostrar imagen_escalada en label
+    ajustar tamaño del label
+```
+
+CASOS DE USO
+================================================================================
+
+Caso 1: Imagen pequeña en ventana grande
+─────────────────────────────────────────
+Imagen: 400x300 (ratio 4:3)
+Ventana: 1024x768 (ratio 4:3)
+Zoom: 1.0
+
+Proceso:
+- targetSize = 400x300 * 1.0 = 400x300
+- 400 < 1004 ✓ y 300 < 748 ✓
+- scaledToWidth(400) → 400x300
+- Resultado: Imagen en centro con márgenes negros
+
+
+Caso 2: Imagen panorámica
+──────────────────────────
+Imagen: 2560x1440 (16:9)
+Ventana: 1024x768 (4:3)
+Zoom: 1.0
+
+Proceso:
+- targetSize = 2560x1440 * 1.0 = 2560x1440
+- 2560 > 1004 ✗ (no cabe)
+- scaledToWidth(1004) → 1004x565
+- 565 < 748 ✓ (cabe)
+- Resultado: Imagen ancha con márgenes arriba/abajo
+
+
+Caso 3: Imagen vertical
+──────────────────────
+Imagen: 800x1200 (3:4)
+Ventana: 1024x768 (4:3)
+Zoom: 1.0
+
+Proceso:
+- targetSize = 800x1200 * 1.0 = 800x1200
+- 800 < 1004 ✓ pero 1200 > 748 ✗
+- scaledToWidth(1004) → 1004x1506
+- 1506 > 748 ✗ (no cabe en altura)
+- scaledToHeight(748) → 498x748
+- Resultado: Imagen vertical con márgenes a los lados
+
+
+Caso 4: Zoom in
+───────────────
+Imagen: 1000x750 (4:3)
+Ventana: 1024x768
+Zoom: 2.0 (después de hacer zoom in)
+
+Proceso:
+- targetSize = 1000x750 * 2.0 = 2000x1500
+- 2000 > 1004 ✗
+- scaledToWidth(2008) → 2008x1506
+- 1506 > 1536 ✗
+- scaledToHeight(1536) → 2048x1536
+- Resultado: Imagen grande, necesita scrollbars
+
+
+DIFERENCIAS IMPORTANTES CON ANTERIORIDAD
+================================================================================
+
+ASPECTO           | ANTES (setScaledContents) | DESPUÉS (fitImageToWindow)
+─────────────────────────────────────────────────────────────────────────
+Ratio de aspecto  | NO preservado             | SIEMPRE preservado
+Distorsión        | SIEMPRE distorsiona       | NUNCA distorsiona
+Zoom quality      | Pobre (resize + stretch)  | Excelente (smoothTransform)
+Espacios en blanco| Nunca                     | Cuando necesario
+Experiencia UX    | Amateur                   | Profesional
+Código limpieza   | Lógica esparcida          | Centralizada
+
+
+RENDIMIENTO
+================================================================================
+
+Considera Qt.SmoothTransformation vs Qt.FastTransformation:
+
+Qt.SmoothTransformation:
+- Mejor calidad de interpolación
+- Un poco más lento (para imágenes modernas, imperceptible)
+- Se recomienda para visores
+- USADO EN LA IMPLEMENTACIÓN
+
+Qt.FastTransformation:
+- Más rápido
+- Peor calidad (visible pixelado)
+- Mejor para aplicaciones en tiempo real
+
+La implementación usa Qt.SmoothTransformation porque:
+1. Las imágenes no cambian constantemente (no es video)
+2. El usuario espera calidad visual
+3. La diferencia de performance es imperceptible
+
+
+LIMITACIONES Y CONSIDERACIONES
+================================================================================
+
+1. LÍMITE DE ZOOM:
+   El código permite scaleFactor entre 0.25 (zoom out) y 4.0 (zoom in)
+   Esto se controla en scaleImage():
+   
+   self.zoomInAct.setEnabled(self.scaleFactor < 4.0)
+   self.zoomOutAct.setEnabled(self.scaleFactor > 0.25)
+
+2. IMÁGENES MUY GRANDES:
+   - Las imágenes de miles de píxeles pueden causar lag
+   - La solución es considerar tiles o niveles de detalle (pyramid)
+   - Por ahora es funcional para fotos/mapas normales
+
+3. VENTANA MUY PEQUEÑA:
+   - Si la ventana es < 100x100, asume 800x600 mínimo
+   - Esto evita divisiones por cero o valores incorrectos
+
+4. PIXMAP NULO:
+   - Si no hay imagen cargada, fitImageToWindow() retorna
+   - Esto evita errores
+
+
+CÓMO EXTENDER
+================================================================================
+
+Para agregar más modos de zoom:
+
+1. Agregar botón "Fit to Width":
+   def fitToWidth(self):
+       self.scaleFactor = 1.0
+       # Calcular factor para que ancho = availableWidth
+       self.fitImageToWindow()
+
+2. Agregar zoom con rueda del ratón:
+   def wheelEvent(self, event):
+       if event.angleDelta().y() > 0:
+           self.scaleImage(1.2)
+       else:
+           self.scaleImage(1/1.2)
+
+3. Agregar modo presentación:
+   def startSlideshow(self):
+       # Mostrar imagen actual durante N segundos
+       # Luego mostrar siguiente
+
+
+REFERENCIAS TÉCNICAS
+================================================================================
+
+Métodos PyQt5/PySide2 importantes:
+
+QPixmap:
+- isNull() → bool (¿pixmap es válido?)
+- size() → QSize (ancho y alto)
+- scaledToWidth(int width, mode) → QPixmap
+- scaledToHeight(int height, mode) → QPixmap
+
+QLabel:
+- setPixmap(QPixmap) → void
+- setSizePolicy(h, v) → void
+- setScaledContents(bool) → void
+- adjustSize() → void
+
+QScrollArea:
+- width() → int
+- height() → int
+- horizontalScrollBar() → QScrollBar
+- verticalScrollBar() → QScrollBar
+
+Qt Constants:
+- Qt.SmoothTransformation = 1
+- Qt.FastTransformation = 0
+- Qt.AlignCenter = 132
+
+
+CONCLUSIÓN
+================================================================================
+
+La nueva implementación de fitImageToWindow() proporciona:
+
+✓ Preservación de ratio de aspecto en TODO momento
+✓ Experiencia visual profesional
+✓ Código más limpio y mantenible
+✓ Compatible con zoom in/out
+✓ Manejo correcto de diferentes tamaños de imágenes
+✓ Mejor calidad de escalado
+
+El código es extensible para futuras mejoras como zoom por rueda de ratón,
+modos de zoom específicos (fit-to-width, fit-to-height), o
+presentaciones automáticas.
+
+================================================================================
+FIN DE GUÍA TÉCNICA
+================================================================================

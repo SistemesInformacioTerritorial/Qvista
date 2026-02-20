@@ -1,0 +1,976 @@
+================================================================================
+ANÁLISIS TÉCNICO: DockWidget para lanzar procesos QGIS en qVista
+Fecha: Diciembre 2025
+Scope: Encadenamiento de herramientas Processing de QGIS
+================================================================================
+
+VISIÓN GENERAL
+================================================================================
+
+Se desea crear un DockWidget que permita:
+1. Lanzar procesos de QGIS (algoritmos de Processing)
+2. Encadenar múltiples procesos en secuencia
+3. Pasar resultados de un proceso como entrada del siguiente
+4. Integrar esto de manera nativa en la interfaz de qVista
+
+Este documento analiza:
+- La arquitectura actual de qVista
+- Cómo está estructurado el sistema de herramientas
+- Cómo implementar esto de manera limpia
+- Problemas potenciales y soluciones
+
+
+================================================================================
+PARTE 1: ARQUITECTURA ACTUAL DE qVista
+================================================================================
+
+1.1 ESTRUCTURA DE HERRAMIENTAS/ENTORNOS
+────────────────────────────────────────
+
+qVista tiene un sistema elegante de herramientas llamadas "Entornos":
+
+UBICACIÓN:     moduls/eines/
+EJEMPLOS:      
+  - MarxesExploratories.py
+  - EinaRuta.py
+  - DobleCanvas.py
+  - EinaCoordenades.py
+
+PATRÓN:
+  
+  class [NombreEina](QDockWidget):
+      titol = 'Título mostrado en UI'
+      apareixDockat = True/False  # Si aparece acoplada o flotante
+      esEinaGeneral = True/False  # Si es global o específica de proyecto
+      
+      def __init__(self, parent):
+          self.parent = parent  # Referencia a qVista
+          super().__init__("Título")
+          # Construcción de UI
+          self.setWidget(frameContenido)
+          self.show()
+
+
+1.2 SISTEMA DE CARGA DINÁMICO
+──────────────────────────────
+
+En qVista.py hay dos mecanismos:
+
+A) carregaEines() - Herramientas globales
+   
+   Busca en moduls/eines/ todos los .py
+   Si la clase tiene esEinaGlobal=True:
+   - Se crea un QAction en menuEines
+   - Se conecta a self.obreEina(classe)
+
+B) carregaEntorns() - Herramientas específicas del proyecto
+   
+   Lee variable 'qV_entorn' del proyecto QGIS
+   Lee variable 'qV_eines' del proyecto QGIS
+   Cargar dinámicamente las clases mencionadas
+   Las instancia como DockWidgets
+
+
+1.3 MÉTODO obreEina()
+──────────────────────
+
+def obreEina(self, eina):
+    dockWidgets = self.findChildren(eina)
+    if len(dockWidgets) > 0:
+        for x in dockWidgets:
+            x.show()  # Si ya existe, simplemente lo muestra
+    else:
+        dwEina = eina(self)  # Instancia nueva
+        self.addDockWidget(Qt.RightDockWidgetArea, dwEina)
+        dwEina.setFloating(True)
+
+Esto permite:
+- No crear múltiples instancias del mismo DockWidget
+- Reutilizar instancias existentes
+- Flexibilidad en posicionamiento
+
+
+================================================================================
+PARTE 2: INTEGRACIÓN DE PROCESSING DE QGIS
+================================================================================
+
+2.1 QGS PROCESSING - CONCEPTOS CLAVE
+────────────────────────────────────
+
+QGIS tiene dos formas de ejecutar algoritmos:
+
+1. Mediante QgsProcessingAlgorithmDialog:
+   - Es el diálogo estándar de QGIS
+   - Interfaz completa de entrada/salida
+   - Bloqueante
+   - No permite encadenamiento fácil
+
+2. Mediante QgsProcessingContext y feedback:
+   - Control total del flujo
+   - No bloqueante
+   - Permite encadenamiento
+   - Acceso a resultados en tiempo real
+
+Para nuestro caso necesitamos OPCIÓN 2.
+
+
+2.2 ESTRUCTURA MÍNIMA DE UN PROCESO
+───────────────────────────────────
+
+from qgis.core import (
+    QgsProcessing,
+    QgsProcessingAlgorithm,
+    QgsProcessingContext,
+    QgsProcessingFeedback,
+    QgsProject
+)
+
+# Acceder a la lista de algoritmos disponibles
+from qgis.core import QgsApplication
+
+registry = QgsApplication.processingRegistry()
+algoritmo = registry.algorithmById('qgis:buffer')
+
+# O por nombre
+algoritmo = registry.createAlgorithmFromCommand('qgis:buffer')
+
+
+2.3 EJECUCIÓN BÁSICA
+────────────────────
+
+context = QgsProcessingContext()
+context.setProject(QgsProject.instance())
+
+feedback = QgsProcessingFeedback()
+feedback.progressChanged.connect(self.actualizarProgreso)
+
+params = {
+    'INPUT': capa_entrada,
+    'DISTANCE': 100,
+    'OUTPUT': 'memory:'  # En memoria
+}
+
+resultado = algoritmo.run(params, context, feedback)
+
+if resultado[0]:  # True si éxito
+    capas_salida = resultado[1]  # Dict con resultados
+
+
+================================================================================
+PARTE 3: PROPUESTA DE IMPLEMENTACIÓN
+================================================================================
+
+3.1 ESTRUCTURA DEL NUEVO DOCKWIDGET
+───────────────────────────────────
+
+Nombre: ProcessingChain.py
+Ubicación: moduls/eines/ProcessingChain.py
+
+Clase: ProcessingChain(QDockWidget)
+    titol = 'Encadenamiento de Procesos QGIS'
+    apareixDockat = False
+    esEinaGeneral = True
+
+Componentes:
+1. Lista de procesos disponibles (QComboBox)
+2. Árbol de parámetros (QTreeWidget o similar)
+3. Cadena visual de procesos (QGraphicsView o QListWidget)
+4. Panel de parámetros dinámico
+5. Barra de progreso
+6. Botones: Añadir, Eliminar, Ejecutar
+
+
+3.2 DISEÑO DE CLASES
+────────────────────
+
+ProcessingChain (DockWidget principal)
+  ├── ProcessingStep (cada paso de la cadena)
+  ├── ProcessingChainExecutor (ejecutador)
+  └── ParameterPanel (panel dinámico de parámetros)
+
+
+3.3 FLUJO DE DATOS
+──────────────────
+
+┌─────────────────────────────────────┐
+│  UI: Lista de algoritmos disponibles│
+└──────────────┬──────────────────────┘
+               │ Usuario selecciona algoritmo
+               ▼
+┌─────────────────────────────────────┐
+│  Panel dinámico de parámetros       │
+│  - Detectar tipo (layer, number...)  │
+│  - Mostrar widgets apropiados       │
+│  - Permitir vincular con salida     │
+│    de paso anterior                 │
+└──────────────┬──────────────────────┘
+               │ Usuario configura
+               ▼
+┌─────────────────────────────────────┐
+│  Cadena visual (lista de pasos)     │
+│  [Buffer] → [Dissolve] → [Centrode]│
+└──────────────┬──────────────────────┘
+               │ Usuario presiona "Ejecutar"
+               ▼
+┌─────────────────────────────────────┐
+│  ProcessingChainExecutor            │
+│  1. Obtener capa entrada            │
+│  2. Ejecutar Buffer                 │
+│  3. Usar salida como entrada Dissolve
+│  4. Usar salida como entrada Centroide
+│  5. Añadir resultado a proyecto     │
+└─────────────────────────────────────┘
+
+
+3.4 PSEUDOCÓDIGO DE IMPLEMENTACIÓN
+──────────────────────────────────────
+
+class ProcessingChain(QDockWidget):
+    def __init__(self, parent):
+        self.parent = parent
+        self.pasos = []  # Lista de ProcessingStep
+        self.resultadosIntermediarios = {}  # Caché de resultados
+        
+        self.buildUI()
+        self.conectarSeñales()
+    
+    def buildUI(self):
+        # Combobox con algoritmos disponibles
+        self.comboAlgoritmos = self.cargarAlgoritmos()
+        self.comboAlgoritmos.currentIndexChanged.connect(self.mostrarParametros)
+        
+        # Panel de parámetros dinámico
+        self.panelParametros = ParameterPanel(self.parent)
+        
+        # Lista visual de pasos (chain view)
+        self.chainView = QListWidget()
+        
+        # Botones
+        btnAnadir = QPushButton('Añadir paso')
+        btnAnadir.clicked.connect(self.anadir_paso)
+        
+        btnEliminar = QPushButton('Eliminar paso')
+        btnEliminar.clicked.connect(self.eliminar_paso)
+        
+        btnEjecutar = QPushButton('Ejecutar cadena')
+        btnEjecutar.clicked.connect(self.ejecutar)
+        
+        # Layout
+        layout = QVBoxLayout()
+        layout.addWidget(QLabel('Algoritmo:'))
+        layout.addWidget(self.comboAlgoritmos)
+        layout.addWidget(self.panelParametros)
+        layout.addWidget(btnAnadir)
+        layout.addWidget(QLabel('Cadena de procesos:'))
+        layout.addWidget(self.chainView)
+        layout.addWidget(btnEliminar)
+        layout.addWidget(btnEjecutar)
+        
+        frame = QFrame()
+        frame.setLayout(layout)
+        self.setWidget(frame)
+    
+    def cargarAlgoritmos(self):
+        registry = QgsApplication.processingRegistry()
+        algos = registry.algorithms()
+        # Filtrar y ordenar
+        return algos
+    
+    def mostrarParametros(self):
+        nombreAlgo = self.comboAlgoritmos.currentText()
+        registry = QgsApplication.processingRegistry()
+        algoritmo = registry.algorithmById(nombreAlgo)
+        
+        self.panelParametros.mostrar(algoritmo)
+    
+    def anadir_paso(self):
+        nombreAlgo = self.comboAlgoritmos.currentText()
+        parametros = self.panelParametros.obtenerParametros()
+        
+        paso = ProcessingStep(nombreAlgo, parametros, self.resultadosIntermediarios)
+        self.pasos.append(paso)
+        
+        self.chainView.addItem(nombreAlgo)
+    
+    def eliminar_paso(self):
+        idx = self.chainView.currentRow()
+        if idx >= 0:
+            self.pasos.pop(idx)
+            self.chainView.takeItem(idx)
+    
+    def ejecutar(self):
+        if not self.pasos:
+            QMessageBox.warning(self, 'Error', 'No hay procesos en la cadena')
+            return
+        
+        executor = ProcessingChainExecutor(self.parent, self.pasos)
+        executor.progreso.connect(self.actualizarProgreso)
+        executor.ejecutar()
+
+
+class ProcessingStep:
+    def __init__(self, nombreAlgo, parametros, resultadosCache):
+        self.nombreAlgo = nombreAlgo
+        self.parametros = parametros
+        self.resultados = None
+        self.resultadosCache = resultadosCache
+    
+    def ejecutar(self, context, feedback):
+        registry = QgsApplication.processingRegistry()
+        algoritmo = registry.algorithmById(self.nombreAlgo)
+        
+        # Reemplazar referencias a salidas anteriores
+        params = self.reemplazarReferencias(self.parametros)
+        
+        resultado = algoritmo.run(params, context, feedback)
+        if resultado[0]:
+            self.resultados = resultado[1]
+            self.resultadosCache[self.nombreAlgo] = self.resultados
+            return True
+        return False
+    
+    def reemplazarReferencias(self, params):
+        # Si un parámetro es "output_step_1", buscar en cache
+        for clave, valor in params.items():
+            if isinstance(valor, str) and valor.startswith('output_'):
+                paso_ref = valor.split('_')[1]
+                if paso_ref in self.resultadosCache:
+                    params[clave] = self.resultadosCache[paso_ref]
+        return params
+
+
+class ProcessingChainExecutor:
+    progreso = pyqtSignal(int)
+    mensaje = pyqtSignal(str)
+    
+    def __init__(self, parent, pasos):
+        self.parent = parent
+        self.pasos = pasos
+        self.context = QgsProcessingContext()
+        self.context.setProject(QgsProject.instance())
+    
+    def ejecutar(self):
+        feedback = QgsProcessingFeedback()
+        feedback.progressChanged.connect(self.progreso.emit)
+        
+        try:
+            for i, paso in enumerate(self.pasos):
+                self.mensaje.emit(f'Ejecutando: {paso.nombreAlgo}')
+                exito = paso.ejecutar(self.context, feedback)
+                if not exito:
+                    self.mensaje.emit(f'Error en paso: {paso.nombreAlgo}')
+                    return
+                
+                self.progreso.emit(int((i+1) / len(self.pasos) * 100))
+            
+            self.mensaje.emit('Cadena completada exitosamente')
+            
+            # Agregar resultados al proyecto
+            if self.pasos[-1].resultados:
+                for nombre, recurso in self.pasos[-1].resultados.items():
+                    if isinstance(recurso, QgsVectorLayer):
+                        QgsProject.instance().addMapLayer(recurso)
+        
+        except Exception as e:
+            self.mensaje.emit(f'Error: {str(e)}')
+
+
+class ParameterPanel(QWidget):
+    def __init__(self, parent):
+        super().__init__()
+        self.parent = parent
+        self.algoritmo = None
+        self.widgets_parametros = {}
+        
+        self.layout = QVBoxLayout()
+        self.setLayout(self.layout)
+    
+    def mostrar(self, algoritmo):
+        # Limpiar layout anterior
+        while self.layout.count():
+            self.layout.takeAt(0).widget().deleteLater()
+        
+        self.algoritmo = algoritmo
+        self.widgets_parametros = {}
+        
+        # Para cada parámetro del algoritmo
+        for param in algoritmo.parameterDefinitions():
+            if param.flags() & QgsProcessingParameterDefinition.FlagHidden:
+                continue  # Ignorar parámetros ocultos
+            
+            label = QLabel(param.description())
+            widget = self.crearWidget(param)
+            
+            self.layout.addWidget(label)
+            self.layout.addWidget(widget)
+            
+            self.widgets_parametros[param.name()] = widget
+        
+        spacer = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
+        self.layout.addItem(spacer)
+    
+    def crearWidget(self, param):
+        tipo = param.type()
+        
+        if tipo == 'raster' or tipo == 'vector':
+            # ComboBox con capas del proyecto
+            combo = QComboBox()
+            for capa in QgsProject.instance().mapLayers().values():
+                combo.addItem(capa.name(), capa.id())
+            return combo
+        
+        elif tipo == 'number':
+            spin = QDoubleSpinBox()
+            if param.minimum() is not None:
+                spin.setMinimum(param.minimum())
+            if param.maximum() is not None:
+                spin.setMaximum(param.maximum())
+            return spin
+        
+        elif tipo == 'distance':
+            spin = QDoubleSpinBox()
+            spin.setValue(100)
+            return spin
+        
+        else:
+            # Por defecto, un QLineEdit
+            line = QLineEdit()
+            return line
+    
+    def obtenerParametros(self):
+        params = {}
+        for nombre, widget in self.widgets_parametros.items():
+            if isinstance(widget, QComboBox):
+                params[nombre] = widget.currentData()
+            elif isinstance(widget, QSpinBox) or isinstance(widget, QDoubleSpinBox):
+                params[nombre] = widget.value()
+            else:
+                params[nombre] = widget.text()
+        return params
+
+
+================================================================================
+PARTE 4: PROBLEMAS POTENCIALES Y SOLUCIONES
+================================================================================
+
+4.1 PROBLEMA: Procesos bloqueantes
+───────────────────────────────────
+
+DESCRIPCIÓN:
+- Si un algoritmo tarda mucho, congela la UI
+- El usuario no puede hacer nada mientras se ejecuta
+
+SOLUCIÓN:
+- Usar QThread para ejecutar en segundo plano
+- Usar ProcessingContext.feedback para mostrar progreso
+- Mantener una cola de ejecuciones
+
+
+IMPLEMENTACIÓN:
+
+from qgis.PyQt.QtCore import QThread
+
+class ProcessingThread(QThread):
+    progreso = pyqtSignal(int)
+    mensaje = pyqtSignal(str)
+    terminado = pyqtSignal()
+    error = pyqtSignal(str)
+    
+    def __init__(self, executor):
+        super().__init__()
+        self.executor = executor
+    
+    def run(self):
+        try:
+            self.executor.ejecutar()
+            self.terminado.emit()
+        except Exception as e:
+            self.error.emit(str(e))
+
+
+# En ProcessingChain.ejecutar():
+    def ejecutar(self):
+        executor = ProcessingChainExecutor(self.parent, self.pasos)
+        thread = ProcessingThread(executor)
+        
+        executor.progreso.connect(self.actualizarProgreso)
+        executor.mensaje.connect(self.mostrarMensaje)
+        
+        thread.terminado.connect(self.procesoCompleto)
+        thread.error.connect(self.procesoError)
+        
+        thread.start()
+
+
+4.2 PROBLEMA: Referencias entre capas intermedias
+──────────────────────────────────────────────────
+
+DESCRIPCIÓN:
+- ¿Cómo pasar la salida de un algoritmo como entrada al siguiente?
+- ¿Dónde se almacenan las capas intermedias?
+- ¿Qué pasa con capas grandes en memoria?
+
+SOLUCIÓN:
+Tres estrategias:
+
+A) En Memoria (rápido, consume RAM):
+   params = {..., 'OUTPUT': 'memory:'}
+   
+   Ventaja: Muy rápido
+   Desventaja: Usa RAM, se pierden si algo falla
+
+B) En Ficheros Temporales (lento, usa disco):
+   import tempfile
+   temp_dir = tempfile.gettempdir()
+   params = {..., 'OUTPUT': f'{temp_dir}/temp_paso_1.gpkg'}
+   
+   Ventaja: No limita por RAM
+   Desventaja: Más lento
+   
+C) Mixto (inteligente):
+   - Capas pequeñas en memoria
+   - Capas grandes en disco
+   - Limpiar ficheros temporales al finalizar
+
+
+RECOMENDACIÓN:
+Usar estrategia B (ficheros temporales) por:
+- Robustez: Si falla un paso, se conservan los intermedios para debug
+- Escalabilidad: No depende de RAM disponible
+- Seguridad: Datos en disco son recuperables
+
+
+4.3 PROBLEMA: Validación de parámetros
+───────────────────────────────────────
+
+DESCRIPCIÓN:
+- ¿Qué pasa si el usuario especifica parámetros inválidos?
+- ¿Cómo validar antes de ejecutar?
+
+SOLUCIÓN:
+
+def validarPasos(self):
+    errores = []
+    para i, paso in enumerate(self.pasos):
+        # Verificar que el algoritmo existe
+        registry = QgsApplication.processingRegistry()
+        algo = registry.algorithmById(paso.nombreAlgo)
+        if not algo:
+            errores.append(f'Paso {i}: Algoritmo no existe')
+        
+        # Verificar parámetros requeridos
+        for param in algo.parameterDefinitions():
+            if not param.flags() & QgsProcessingParameterDefinition.FlagOptional:
+                if param.name() not in paso.parametros:
+                    errores.append(f'Paso {i}: Falta parámetro {param.description()}')
+    
+    return errores
+
+# En ejecutar():
+    errores = self.validarPasos()
+    if errores:
+        QMessageBox.critical(self, 'Errores de validación', '\n'.join(errores))
+        return
+
+
+4.4 PROBLEMA: Compatibilidad de tipos
+──────────────────────────────────────
+
+DESCRIPCIÓN:
+- Algoritmo A produce VectorLayer, Algoritmo B espera RasterLayer
+- Usuario intenta conectar tipos incompatibles
+
+SOLUCIÓN:
+
+class ProcessingStep:
+    def obtenerTiposEntrada(self):
+        """Retorna tipos de capa que espera como entrada"""
+        return [param.type() for param in self.algoritmo.parameterDefinitions() 
+                if 'INPUT' in param.name() and param.type() in ['raster', 'vector']]
+    
+    def obtenerTiposSalida(self):
+        """Retorna tipos que produce este algoritmo"""
+        return [param.type() for param in self.algoritmo.parameterDefinitions() 
+                if 'OUTPUT' in param.name()]
+
+# Validación:
+def validarCompatibilidad(self):
+    for i in range(1, len(self.pasos)):
+        paso_anterior = self.pasos[i-1]
+        paso_actual = self.pasos[i]
+        
+        tipos_salida = paso_anterior.obtenerTiposSalida()
+        tipos_entrada = paso_actual.obtenerTiposEntrada()
+        
+        # Verificar que hay compatibilidad
+        if not set(tipos_salida) & set(tipos_entrada):  # Intersección
+            return False, f'Incompatibilidad entre paso {i-1} y {i}'
+    
+    return True, 'Compatible'
+
+
+4.5 PROBLEMA: Gestión de capas temporales
+───────────────────────────────────────────
+
+DESCRIPCIÓN:
+- Las capas intermedias temporales quedan en el proyecto
+- Acumulación de capas innecesarias
+
+SOLUCIÓN:
+
+class ProcessingChainExecutor:
+    def __init__(self, parent, pasos):
+        self.parent = parent
+        self.pasos = pasos
+        self.capas_temporales = []  # Rastrear temporales
+    
+    def ejecutar(self):
+        try:
+            # ... ejecución ...
+        finally:
+            # Limpiar capas temporales
+            for capa_id in self.capas_temporales:
+                if capa_id in QgsProject.instance().mapLayerStore().mapLayers():
+                    QgsProject.instance().removeMapLayer(capa_id)
+    
+    def agregarCapaAlProyecto(self, capa, es_temporal=False):
+        QgsProject.instance().addMapLayer(capa)
+        if es_temporal:
+            self.capas_temporales.append(capa.id())
+
+
+4.6 PROBLEMA: Manejo de errores y debugging
+──────────────────────────────────────────────
+
+DESCRIPCIÓN:
+- Errores en algoritmos sin contexto
+- Usuario no sabe dónde falló
+- Difícil de debuggear
+
+SOLUCIÓN:
+
+class ProcessingChainExecutor:
+    def ejecutar(self):
+        feedback = QgsProcessingFeedback()
+        feedback.progressChanged.connect(self.progreso.emit)
+        feedback.messageEmitted.connect(self.registrarMensaje)
+        
+        for i, paso in enumerate(self.pasos):
+            try:
+                self.mensaje.emit(f'[{i+1}/{len(self.pasos)}] Ejecutando: {paso.nombreAlgo}')
+                
+                exito = paso.ejecutar(self.context, feedback)
+                if not exito:
+                    raise Exception(f'El algoritmo retornó False')
+                
+                self.mensaje.emit(f'  ✓ Completado')
+                
+            except Exception as e:
+                self.mensaje.emit(f'  ✗ Error: {str(e)}')
+                self.guardarDebugInfo(i, paso, e)
+                raise
+    
+    def guardarDebugInfo(self, paso_num, paso, error):
+        import json
+        debug_info = {
+            'paso': paso_num,
+            'algoritmo': paso.nombreAlgo,
+            'parametros': paso.parametros,
+            'error': str(error),
+            'timestamp': datetime.now().isoformat()
+        }
+        
+        ruta_debug = os.path.join(tempfile.gettempdir(), 'qvista_processing_debug.json')
+        with open(ruta_debug, 'w') as f:
+            json.dump(debug_info, f, indent=2)
+        
+        self.mensaje.emit(f'Info de debug guardada en: {ruta_debug}')
+
+
+4.7 PROBLEMA: Persistencia de cadenas
+──────────────────────────────────────
+
+DESCRIPCIÓN:
+- El usuario crea una cadena compleja
+- Cierra qVista
+- Pierde la cadena
+
+SOLUCIÓN:
+
+class ProcessingChain(QDockWidget):
+    def guardarCadena(self, nombre_fichero):
+        import json
+        cadena_data = {
+            'nombre': nombre_fichero,
+            'pasos': [
+                {
+                    'algoritmo': paso.nombreAlgo,
+                    'parametros': paso.parametros
+                }
+                for paso in self.pasos
+            ]
+        }
+        
+        ruta = os.path.join(self.parent.carpetaCataleg, f'{nombre_fichero}.json')
+        with open(ruta, 'w') as f:
+            json.dump(cadena_data, f, indent=2)
+    
+    def cargarCadena(self, nombre_fichero):
+        ruta = os.path.join(self.parent.carpetaCataleg, f'{nombre_fichero}.json')
+        with open(ruta, 'r') as f:
+            cadena_data = json.load(f)
+        
+        self.pasos = []
+        for paso_data in cadena_data['pasos']:
+            paso = ProcessingStep(
+                paso_data['algoritmo'],
+                paso_data['parametros'],
+                {}
+            )
+            self.pasos.append(paso)
+            self.chainView.addItem(paso.nombreAlgo)
+
+
+================================================================================
+PARTE 5: INTEGRACIÓN EN qVista
+================================================================================
+
+5.1 PASOS PARA INTEGRACIÓN
+──────────────────────────
+
+1. Crear el archivo moduls/eines/ProcessingChain.py
+
+2. Establecer propiedades:
+   
+   titol = 'Encadenamiento de Procesos QGIS'
+   apareixDockat = False  # Flotante por defecto
+   esEinaGeneral = True   # Disponible en todos los proyectos
+
+3. La clase se cargará automáticamente mediante:
+   - qVista.carregaEines() si es esEinaGlobal=True
+   - O se puede agregar a 'qV_eines' del proyecto
+
+4. Será accesible mediante:
+   Menu → Eines → Encadenamiento de Procesos QGIS
+   (automaticamente)
+
+
+5.2 ACCESO A DATOS DESDE qVista
+────────────────────────────────
+
+self.parent es una referencia a la clase principal de qVista
+
+Acceso útil:
+
+self.parent.project → QgsProject.instance()
+self.parent.canvas → Canvas principal
+self.parent.llegenda → Leyenda (lista de capas)
+self.parent.mapeta → Mapa de situación
+self.parent.carpetaCataleg → Ruta del catálogo
+self.parent.imatgesDir → Ruta de imágenes
+
+
+5.3 CONEXIÓN CON LA LEYENDA
+────────────────────────────
+
+Obtener capas seleccionadas:
+
+def obtenerCapasSeleccionadas(self):
+    capas = []
+    for capa in self.parent.project.mapLayers().values():
+        if capa in self.parent.llegenda.capasSeleccionadas():
+            capas.append(capa)
+    return capas
+
+# Usar como entrada automática si hay una sola capa seleccionada
+def obtenerCapaEntradaPorDefecto(self):
+    capas_sel = self.obtenerCapasSeleccionadas()
+    if len(capas_sel) == 1:
+        return capas_sel[0]
+    return None
+
+
+================================================================================
+PARTE 6: COMPARACIÓN CON ALTERNATIVAS
+================================================================================
+
+6.1 OPCIÓN 1: Usar diálogo estándar de QGIS
+───────────────────────────────────────────
+
+VENTAJAS:
+- Interfaz estándar, familiar para usuarios QGIS
+- Menos código que desarrollar
+- Automático con todos los algoritmos
+
+DESVENTAJAS:
+- No permite encadenamiento real
+- Bloqueante
+- Necesitar hacer clic N veces para N algoritmos
+
+CONCLUSIÓN: NO recomendado para nuestro caso
+
+
+6.2 OPCIÓN 2: Script Python (QGIS Python Console)
+──────────────────────────────────────────────────
+
+VENTAJAS:
+- Máxima flexibilidad
+- Poder total
+
+DESVENTAJAS:
+- Requiere que el usuario sepa Python
+- No es amigable
+- Difícil de aprender
+
+CONCLUSIÓN: NO recomendado por usabilidad
+
+
+6.3 OPCIÓN 3: DockWidget personalizado (NUESTRA PROPUESTA)
+──────────────────────────────────────────────────────────
+
+VENTAJAS:
+- Encadenamiento real y visual
+- Interfaz intuitiva
+- Sin código para usuarios finales
+- Persistencia de cadenas
+- Integración con qVista
+
+DESVENTAJAS:
+- Requiere desarrollo inicial
+- Manejo de edge cases
+
+CONCLUSIÓN: RECOMENDADO
+
+
+================================================================================
+PARTE 7: CRONOGRAMA ESTIMADO
+================================================================================
+
+Fase 1: Estructura básica (3-4 horas)
+  - Clases base: ProcessingChain, ProcessingStep, ParameterPanel
+  - UI básica
+  - Carga de algoritmos
+
+Fase 2: Ejecución simple (2-3 horas)
+  - ProcessingChainExecutor
+  - Ejecución de pasos sin encadenamiento
+  - Barra de progreso
+
+Fase 3: Encadenamiento (3-4 horas)
+  - Lógica de conexión entre pasos
+  - Reemplazo de referencias
+  - Validación de tipos
+
+Fase 4: Robustez (2-3 horas)
+  - Manejo de errores
+  - Thread para no bloquear UI
+  - Limpieza de temporales
+
+Fase 5: Persistencia y UI (2 horas)
+  - Guardar/Cargar cadenas
+  - Mejoras de UI
+  - Documentación
+
+TOTAL ESTIMADO: 12-17 horas
+
+
+================================================================================
+PARTE 8: RESUMEN Y RECOMENDACIONES FINALES
+================================================================================
+
+8.1 ¿ES VIABLE?
+───────────────
+
+✓ SÍ, es totalmente viable
+
+La arquitectura de qVista es ideal para esto:
+- Sistema de herramientas dinámico ya existe
+- Acceso a capas y proyecto está disponible
+- QGIS Processing es maduro y documentado
+
+
+8.2 ¿HAY PROBLEMAS GRAVES?
+──────────────────────────
+
+✗ NO hay problemas insuperables, pero hay que considerar:
+
+1. PERFORMANCE:
+   - Copiar capas entre procesos puede ser lento
+   - Usar memoria vs disco según tamaño
+   - Considerar procesamiento paralelo en futuro
+
+2. COMPATIBILIDAD DE ALGORITMOS:
+   - No todos los algoritmos se comportan igual
+   - Algunos tienen efectos secundarios
+   - Algunos no guardan bien en memoria
+
+3. VERSIONES DE QGIS:
+   - API de Processing cambió entre versiones
+   - Probar con QGIS 3.16+
+
+4. EFECTOS SECUNDARIOS:
+   - Algunos algoritmos modifican el proyecto
+   - Pueden cambiar el estado del canvas
+   - Puede ser necesario hacer rollback
+
+
+8.3 RECOMENDACIONES
+────────────────────
+
+1. EMPEZAR SIMPLE:
+   - Versión v1: Ejecución lineal sin validación compleja
+   - Versión v2: Agregar validación y manejo de errores
+   - Versión v3: Agregar persistencia
+
+2. ALGORITMOS RECOMENDADOS PARA PRUEBAS:
+   - Buffer (simple, bien documentado)
+   - Dissolve (simple)
+   - Centroide (simple)
+   - Clip (más complejo)
+   - Union (más complejo)
+
+3. DOCUMENTACIÓN:
+   - Crear guía de uso para usuarios
+   - Documentar limitaciones conocidas
+   - Ejemplos de cadenas comunes
+
+4. TESTING:
+   - Probar con diferentes tipos de capas
+   - Probar con capas grandes
+   - Probar cancelación a mitad
+   - Probar errores de algoritmos
+
+
+8.4 PRÓXIMOS PASOS
+──────────────────
+
+1. Validar esta propuesta contigo
+2. Ajustar según feedback
+3. Crear rama de desarrollo
+4. Implementar en fases
+5. Testing iterativo
+6. Beta testing con usuarios finales
+
+
+================================================================================
+CONCLUSIÓN GENERAL
+================================================================================
+
+Un DockWidget para encadenamiento de procesos QGIS en qVista es:
+
+✓ VIABLE técnicamente
+✓ ÚTIL para usuarios
+✓ INTEGRABLE de manera limpia
+✗ No trivial (12-17 horas estimadas)
+
+Los problemas potenciales son conocidos y solucionables:
+- Procesos bloqueantes → Usar QThread
+- Referencias entre capas → Usar ficheros temporales
+- Validación → Implementar sistema de validación
+- Errores → Registrar debug info
+
+Se recomienda proceder con implementación en fases.
+
+================================================================================
+FIN DEL ANÁLISIS
+================================================================================

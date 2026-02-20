@@ -1,0 +1,230 @@
+================================================================================
+RESUMEN EJECUTIVO - NUEVA FUNCIONALIDAD: MODELOS DE PROCESOS
+================================================================================
+
+ENTENDÍ MAL ANTES:
+═══════════════════
+
+Creía que querías construir cadenas de algoritmos desde cero.
+En realidad, querías ejecutar **procesos que ya diseñaste en QGIS**.
+
+
+SOLUCIÓN IMPLEMENTADA:
+══════════════════════
+
+1. NUEVO MÓDULO: process_models_poc.py (350 líneas)
+   ─────────────────────────────────────────────────
+   
+   ProcessModelsDock:
+   • Lee modelos guardados en QGIS
+   • Los lista en un combobox
+   • Muestra descripción
+   • Genera UI dinámicamente para parámetros
+   • Ejecuta sin bloquear UI
+   • Muestra progreso
+
+
+2. NUEVO VIEWER: qgs_viewer_advanced.py (200 líneas)
+   ──────────────────────────────────────────────────
+   
+   Integra AMBOS:
+   • Pestaña 1: "Cadenas" (construir desde cero)
+   • Pestaña 2: "Modelos" (ejecutar pregrabados) ← NUEVO
+   
+   Uso recomendado para el POC.
+
+
+3. MANTUVIMOS TODO ANTERIOR:
+   ──────────────────────────
+   
+   ✓ qgs_viewer_poc.py (original, sin cambios)
+   ✓ processing_chain_poc.py (original, sin cambios)
+   ✓ Toda la documentación
+   ✓ Scripts de debug
+
+
+CÓMO USAR AHORA:
+════════════════
+
+OPCIÓN A: Solo quiero ejecutar modelos (sin cadenas)
+─────────────────────────────────────────────────────
+
+1. Abre QGIS
+2. Diseña tus procesos: Processing → Models → Create New Model
+3. Guarda el modelo (automáticamente en carpeta QGIS)
+
+4. Luego, ejecuta:
+   python qgs_viewer_advanced.py
+
+5. Carga tu proyecto
+6. Pestaña "Modelos"
+7. Selecciona tu modelo
+8. Configura parámetros
+9. Click "▶ EJECUTAR MODELO"
+
+
+OPCIÓN B: Quiero ambos (cadenas + modelos)
+────────────────────────────────────────────
+
+Exactamente igual. El viewer tiene DOS pestañas:
+
+1. "Cadenas" → Construir procesos paso a paso
+2. "Modelos" → Ejecutar procesos pregrabados
+
+
+OPCIÓN C: Solo cadenas (como antes)
+────────────────────────────────────
+
+python qgs_viewer_poc.py
+
+(Sin cambios respecto a antes)
+
+
+ARQUITECTURA NUEVA:
+═══════════════════
+
+                    ┌─────────────────────────────┐
+                    │   qgs_viewer_advanced.py    │
+                    │   (MainWindow + Canvas)     │
+                    └──────────────┬──────────────┘
+                                   │
+                ┌──────────────────┼──────────────────┐
+                │                  │                  │
+        [Pestaña 1]         [Canvas]          [Pestaña 2]
+                │            Central              │
+                │                                  │
+    ┌───────────▼──────────┐      ┌───────────────▼────────┐
+    │ ProcessingChainDock  │      │  ProcessModelsDock     │
+    │ (ORIGINAL)           │      │  (NUEVO)               │
+    │                      │      │                        │
+    │ • Listar algoritmos  │      │ • Listar modelos       │
+    │ • Construir cadenas  │      │ • Mostrar parámetros   │
+    │ • Encadenar pasos    │      │ • Ejecutar directamente│
+    │ • Ejecutar secuencia │      │                        │
+    └──────────────────────┘      └────────────────────────┘
+
+
+DIFERENCIA CONCEPTUAL:
+══════════════════════
+
+PROCESSINGCHAINDOCK:
+  Algoritmo 1: Buffer (distance=100)
+  Algoritmo 2: Dissolve
+  Algoritmo 3: Clip
+  → Todo esto configuras TÚ cada vez
+
+PROCESSMODELSDOCK:
+  Modelo: "Procesar Parcelas"
+  → Incluye: Buffer + Dissolve + Clip
+  → Solo configuras: distance y capa entrada
+  → El resto es automático
+
+
+ARCHIVOS CREADOS:
+═════════════════
+
+CÓDIGO:
+  ✓ process_models_poc.py (350 líneas)
+    DockWidget para ejecutar modelos
+
+  ✓ qgs_viewer_advanced.py (200 líneas)
+    Viewer con dos docks (cadenas + modelos)
+
+
+DOCUMENTACIÓN:
+  ✓ README_MODELOS_PROCESOS.txt
+    Explicación completa de modelos
+
+  ✓ COMO_CREAR_MODELOS_QGIS.txt
+    Guía paso a paso para crear modelos en QGIS
+
+
+PRÓXIMA VERSIÓN:
+════════════════
+
+v2.0 (si lo necesitas):
+  □ Mostrar árbol de pasos internos del modelo
+  □ Auto-guardar último modelo usado
+  □ Histórico de ejecuciones
+  □ Exportar outputs a fichero
+  □ Validación pre-ejecución
+  □ Configuración de parámetros por defecto
+
+
+INTEGRACIÓN EN qVista.py:
+════════════════════════
+
+Cuando quieras añadir esto a qVista permanentemente:
+
+1. Copiar process_models_poc.py → moduls/ProcessModels.py
+
+2. En qVista.__init__() (donde añadiste ProcessingChainDock):
+   
+   from moduls.ProcessModels import ProcessModelsDock
+   
+   self.models_dock = ProcessModelsDock(self)
+   self.addDockWidget(Qt.RightDockWidgetArea, self.models_dock)
+   self.tabifyDockWidget(self.processing_dock, self.models_dock)
+
+3. En connectSignals():
+   
+   self.models_dock.status_changed.connect(self.on_status_changed)
+
+
+CÓMO VALIDAR QUE FUNCIONA:
+══════════════════════════
+
+1. Abre QGIS
+2. Crea un modelo simple:
+   Processing → Models → Create New Model
+   Drag "Buffer" algorithm al canvas
+   Configura inputs
+   Save as "Test Buffer"
+
+3. Ejecuta el POC:
+   python qgs_viewer_advanced.py
+
+4. Carga un proyecto con capas
+
+5. Pestaña "Modelos" → Debes ver "Test Buffer"
+
+6. Si NO aparece:
+   - Reinicia QGIS
+   - Verifica carpeta: %APPDATA%\QGIS\QGIS3\profiles\default\processing\models
+
+
+PRÓXIMOS PASOS:
+═══════════════
+
+1. ✓ CREAR modelos en QGIS (o ya los tienes)
+2. ✓ PROBAR qgs_viewer_advanced.py
+3. ✓ VERIFICAR que tus modelos aparecen
+4. ✓ EJECUTAR un modelo de prueba
+5. □ (Opcional) Integrar en qVista.py permanentemente
+6. □ (Opcional) Crear más modelos según necesidad
+
+
+CONCLUSIÓN:
+═════════════
+
+Ahora tienes una herramienta que:
+
+✓ Lee modelos QGIS automáticamente
+✓ Los lista y los ejecuta sin escribir código
+✓ Parámetros dinámicos (se adaptan a cada modelo)
+✓ Ejecución sin bloqueos
+✓ Integrable en qVista cuando quieras
+
+Todo lo anterior (cadenas) sigue disponible en la pestaña "Cadenas".
+
+
+TESTING RÁPIDO:
+═════════════════
+
+python qgs_viewer_advanced.py
+
+(Si tienes modelos, verás dos pestañas con contenido)
+(Si no tienes modelos, crea uno en QGIS primero)
+
+
+================================================================================

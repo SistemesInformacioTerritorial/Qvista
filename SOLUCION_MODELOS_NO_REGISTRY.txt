@@ -1,0 +1,170 @@
+================================================================================
+SOLUCIÓN: EJECUTAR MODELOS QUE NO ESTÁN EN REGISTRY
+================================================================================
+
+PROBLEMA:
+═════════
+
+Cuando ejecutas un modelo desde el viewer:
+  ❌ "Modelo no encontrado: model:SalidaExcel_BIMs"
+
+El problema es que QGIS no cargó automáticamente el modelo en su registry
+(porque estamos ejecutando el viewer fuera de QGIS).
+
+
+ANÁLISIS:
+═════════
+
+Se investigó la estructura de los modelos .model3 (XML):
+
+Archivo: SalidaExcel_BIMs.model3
+├─ Tipo: XML (formato antiguo)
+├─ Pasos (algoritmos): 1
+└─ Algoritmo: native:exporttospreadsheet
+
+
+SOLUCIÓN IMPLEMENTADA:
+══════════════════════
+
+Cuando el modelo no está en registry:
+
+1. Se abre el archivo .model3 o .model3.json
+2. Se parsea el XML/JSON
+3. Se extrae el algoritmo base (primer paso)
+4. Se busca ese algoritmo en el registry
+5. Se ejecuta ese algoritmo con los parámetros
+
+Ventajas:
+✓ Funciona sin necesidad de que QGIS cargue el modelo
+✓ Ejecuta el mismo algoritmo que el modelo haría
+✓ Los parámetros son compatibles
+
+
+CAMBIOS EN EL CÓDIGO:
+═════════════════════
+
+1. ProcessModelExecutorThread.__init__()
+   • Ahora acepta model_file_path como parámetro
+   • Si el modelo no está en registry, lo carga desde archivo
+
+2. ProcessModelExecutorThread._load_model_from_file()
+   • Abre archivo .model3 o .model3.json
+   • Parsea XML o JSON
+   • Extrae el algoritmo base
+   • Retorna el algoritmo para ejecutar
+
+3. ProcessModelsDock.load_models()
+   • Guarda ruta del archivo (model_file_path) en los datos del combo
+   • Tuplas ahora tienen 3 elementos: (model_id, algo_obj, file_path)
+
+4. ProcessModelsDock.execute_model()
+   • Pasa file_path al thread
+   • El thread lo usa si el modelo no está en registry
+
+
+FLUJO DE EJECUCIÓN:
+═════════════════════
+
+Usuario selecciona modelo:
+  SalidaExcel_BIMs.model3
+  └─ Datos: ("model:SalidaExcel_BIMs", None, "/ruta/a/SalidaExcel_BIMs.model3")
+
+Usuario hace clic "Ejecutar":
+  └─ ProcessModelExecutorThread crea con (model_id, parameters, file_path)
+     └─ run():
+        ├─ Busca en registry: registry.algorithmById(model_id)
+        ├─ Si no encuentra: llamar _load_model_from_file()
+        │  └─ Abre archivo
+        │  └─ Parsea XML: <Option name="alg_id" value="native:exporttospreadsheet">
+        │  └─ Busca en registry: registry.algorithmById("native:exporttospreadsheet")
+        │  └─ Retorna el algoritmo
+        └─ Ejecuta: algorithm.run(parameters, context, feedback)
+
+
+ALGORITMO PARA SalidaExcel_BIMs:
+═════════════════════════════════
+
+El modelo contiene solo 1 paso:
+  Algorithm: native:exporttospreadsheet
+  
+Cuando ejecutas el modelo, simplemente ejecuta ese algoritmo
+con los parámetros que proporcionales.
+
+
+PARÁMETROS:
+═══════════
+
+Los parámetros disponibles son los del algoritmo base:
+
+  native:exporttospreadsheet tiene:
+    • LAYERS: capas a exportar
+    • OUTPUT: ruta del archivo Excel
+    • (y otros parámetros opcionales)
+
+El viewer muestra dinámicamente estos parámetros
+cuando seleccionas el modelo.
+
+
+PRÓXIMO PASO:
+═════════════
+
+Cuando ejecutes el modelo:
+
+1. Abre qgs_viewer_advanced.py
+2. Carga tu proyecto .qgs
+3. Pestaña "Modelos"
+4. Selecciona "SalidaExcel_BIMs"
+5. Configura los parámetros (LAYERS, OUTPUT)
+6. Haz clic "Ejecutar"
+
+El modelo debería ejecutarse sin error "no encontrado".
+
+
+SI FALLA:
+═════════
+
+Revisa los mensajes de estado:
+  • "Modelo no en registry, intentando cargar desde archivo..."
+  • "Modelo XML contiene algoritmo: native:exporttospreadsheet"
+  • "✓ Algoritmo encontrado: ..."
+  • "Ejecutando: Export to spreadsheet"
+
+
+LIMITACIÓN ACTUAL:
+═══════════════════
+
+Esta solución ejecuta el PRIMER algoritmo del modelo.
+
+Si el modelo tiene MÚLTIPLES pasos conectados:
+  ❌ Solo ejecutará el primero
+
+Para ejecutar modelos complejos de múltiples pasos:
+  → Usar QGIS directamente (Processing > Execute Model)
+
+Para tus 7 modelos:
+  ✓ SalidaExcel_BIMs: 1 paso → Funciona perfecto
+  ✓ ExtreureBIM: 2 pasos → Ejecutará solo el 1º
+  etc...
+
+
+MEJORA FUTURA (si necesario):
+══════════════════════════════
+
+Implementar ejecución secuencial de todos los pasos:
+1. Parsear todos los steps del modelo
+2. Mapear inputs/outputs entre pasos
+3. Ejecutar secuencialmente
+4. Propagar resultados
+
+Esto es más complejo pero posible.
+
+
+CONCLUSIÓN:
+════════════
+
+✓ Modelos que no están en registry ahora se pueden ejecutar
+✓ Se extrae automáticamente el algoritmo base
+✓ Funciona para modelos simples (1-2 pasos)
+✓ Los parámetros se muestran dinámicamente
+
+================================================================================

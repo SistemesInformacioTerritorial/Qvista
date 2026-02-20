@@ -1,0 +1,125 @@
+================================================================================
+FIX: AttributeError 'NoneType' object has no attribute 'deleteLater'
+================================================================================
+
+PROBLEMA:
+═════════
+
+Error al cambiar modelo o algoritmo:
+
+  AttributeError: 'NoneType' object has no attribute 'deleteLater'
+  
+En línea:
+  self.param_layout.takeAt(0).widget().deleteLater()
+
+Esto ocurría porque:
+  • QLayout.takeAt() puede retornar None en algunos casos
+  • Si hay spacers o layouts internos
+  • O si el layout está parcialmente vacío
+
+
+CAUSA:
+══════
+
+El código asumía que takeAt() siempre retorna un QLayoutItem válido:
+
+  ANTES (INCORRECTO):
+  ───────────────────
+  
+  while self.param_layout.count():
+      self.param_layout.takeAt(0).widget().deleteLater()
+      #                          ^^^^^^
+      # Aquí widget() puede ser None
+
+
+SOLUCIÓN:
+═════════
+
+Verificar que item y widget existen antes de llamar a deleteLater():
+
+  DESPUÉS (CORRECTO):
+  ──────────────────
+  
+  while self.param_layout.count():
+      item = self.param_layout.takeAt(0)
+      if item.widget():  # ← Verifica que existe
+          item.widget().deleteLater()
+
+
+ARCHIVOS ARREGLADOS:
+════════════════════
+
+1. process_models_poc.py (línea 300)
+   - on_model_changed() method
+   - Limpiar parámetros cuando cambia modelo
+
+2. processing_chain_poc.py (línea 361)
+   - on_algorithm_changed() method
+   - Limpiar parámetros cuando cambia algoritmo
+
+
+CAMBIO ESPECÍFICO:
+═══════════════════
+
+ANTES:
+  while self.param_layout.count():
+      self.param_layout.takeAt(0).widget().deleteLater()
+
+DESPUÉS:
+  while self.param_layout.count():
+      item = self.param_layout.takeAt(0)
+      if item.widget():
+          item.widget().deleteLater()
+
+
+CÓMO FUNCIONA LA CORRECCIÓN:
+════════════════════════════
+
+1. takeAt(0) retorna QLayoutItem o None
+2. Guardamos en variable 'item'
+3. Verificamos: if item.widget()
+4. Solo si existe, llamamos deleteLater()
+5. Evita NoneType error
+
+
+AHORA:
+══════
+
+✓ No hay error al cambiar modelo
+✓ No hay error al cambiar algoritmo
+✓ Los parámetros se limpian correctamente
+✓ El programa es más robusto
+
+
+TESTING:
+════════
+
+python qgs_viewer_advanced.py
+
+1. Carga un proyecto
+2. Pestaña "Modelos"
+3. Cambia entre modelos en el combobox
+   → NO debe haber error
+
+4. Pestaña "Cadenas"
+5. Cambia entre algoritmos en el combobox
+   → NO debe haber error
+
+
+NOTA TÉCNICA:
+═════════════
+
+En PyQt, QLayout.takeAt(int) retorna:
+  • QLayoutItem si hay un item
+  • None si el layout está vacío o el índice es inválido
+
+QLayoutItem tiene método widget() que retorna:
+  • QWidget si el item es un widget
+  • None si el item es un spacer, layout, etc.
+
+Por eso necesitamos dos verificaciones:
+  1. item puede ser None
+  2. item.widget() puede ser None
+
+
+================================================================================

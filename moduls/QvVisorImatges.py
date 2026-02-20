@@ -60,9 +60,10 @@ class QVViewer(QWidget):
         self.setLayout(self.layout)
     
         self.imageLabel = QLabel(self)
-        self.imageLabel.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Ignored)
-        self.imageLabel.setScaledContents(True)
-
+        self.imageLabel.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.imageLabel.setAlignment(Qt.AlignCenter)
+        # NO establecer setScaledContents(True) para mantener ratio original
+        
         self.scrollArea = QScrollArea()
         self.scrollArea.setWidget(self.imageLabel)
         self.scrollArea.setVisible(True)
@@ -201,22 +202,20 @@ class QVViewer(QWidget):
         self.scaleImage(0.8)
 
     def normalSize(self):
+        """Muestra la imagen ajustada a la ventana manteniendo el ratio de aspecto"""
         self.pixmap = QPixmap(self.cual)
-        self.imageLabel.setPixmap(self.pixmap)
-        self.imageLabel.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Ignored)
-        self.imageLabel.adjustSize()
         self.scaleFactor = 1.0
+        self.fitImageToWindow()
         self.setWindowTitle('Zoom: {} %   {} de {}'.format(str(round(self.scaleFactor,2)*100),str(self.indexImatge +1),str(len(self.llistaImatges))))    
 
     def scaleImage(self, factor):
+        """Escala la imagen manteniendo el ratio de aspecto"""
         self.scaleFactor *= factor
-        medida= self.imageLabel.pixmap().size()
-        redimension= self.scaleFactor * medida
-        self.imageLabel.resize(round(redimension))
-        self.imageLabel.setScaledContents(True)
+        self.fitImageToWindow()
         
         self.adjustScrollBar(self.scrollArea.horizontalScrollBar(), factor)
         self.adjustScrollBar(self.scrollArea.verticalScrollBar(), factor)
+        self.setWindowTitle('Zoom: {} %   {} de {}'.format(str(round(self.scaleFactor,2)*100),str(self.indexImatge +1),str(len(self.llistaImatges))))
 
         self.zoomInAct.setEnabled(self.scaleFactor < 4.0)
         self.zoomOutAct.setEnabled(self.scaleFactor > 0.25)        
@@ -228,6 +227,49 @@ class QVViewer(QWidget):
 
     def zoomOut(self):
         self.scaleImage(0.8)
+
+    def fitImageToWindow(self):
+        """Ajusta la imagen al tamaño disponible manteniendo el ratio de aspecto"""
+        if self.pixmap.isNull():
+            return
+        
+        # Obtener tamaño disponible en la ventana
+        availableWidth = self.scrollArea.width() - 20
+        availableHeight = self.scrollArea.height() - 20
+        
+        # Si el tamaño es muy pequeño, usar valores por defecto
+        if availableWidth < 100 or availableHeight < 100:
+            availableWidth = 800
+            availableHeight = 600
+        
+        # Calcular tamaño original de la imagen
+        originalSize = self.pixmap.size()
+        
+        # Calcular tamaño escalado con el factor de zoom y manteniendo ratio
+        targetSize = originalSize * self.scaleFactor
+        
+        # Si es muy pequeño, usar el tamaño disponible
+        if targetSize.width() < availableWidth and targetSize.height() < availableHeight:
+            # Cabe en la ventana, usar tamaño escalado
+            scaledPixmap = self.pixmap.scaledToWidth(
+                int(targetSize.width()),
+                Qt.SmoothTransformation
+            )
+        else:
+            # Debe ajustarse a la ventana
+            scaledPixmap = self.pixmap.scaledToWidth(
+                int(availableWidth * self.scaleFactor),
+                Qt.SmoothTransformation
+            )
+            if scaledPixmap.height() > availableHeight * self.scaleFactor:
+                scaledPixmap = self.pixmap.scaledToHeight(
+                    int(availableHeight * self.scaleFactor),
+                    Qt.SmoothTransformation
+                )
+        
+        self.imageLabel.setPixmap(scaledPixmap)
+        self.imageLabel.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Ignored)
+        self.imageLabel.adjustSize()
 
     def updateActions(self):
         self.zoomInAct.setEnabled(False)    
@@ -248,12 +290,9 @@ class QVViewer(QWidget):
             self.indexImatge=0
         self.cual= self.carpeta+self.llistaImatges[self.indexImatge]
         self.pixmap = QPixmap(self.cual)
-        self.imageLabel.setPixmap(self.pixmap)
-        self.imageLabel.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Ignored)
+        self.scaleFactor = 1.0
         self.normalSize()
         self.setWindowTitle('Zoom: {} %   {} de {}'.format(str(round(self.scaleFactor,2)*100),str(self.indexImatge +1),str(len(self.llistaImatges))))   
-        self.resize(self.imageLabel.width()+229,self.imageLabel.height()+30)
-        
 
     def enrrera(self):
         self.showNormal()
@@ -266,12 +305,9 @@ class QVViewer(QWidget):
             self.indexImatge = len(self.llistaImatges)-1
         self.cual= self.carpeta+self.llistaImatges[self.indexImatge]
         self.pixmap = QPixmap(self.cual)
-        self.imageLabel.setPixmap(self.pixmap)
-        self.imageLabel.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Ignored)
+        self.scaleFactor = 1.0
         self.normalSize()
         self.setWindowTitle('Zoom: {} %   {} de {}'.format(str(round(self.scaleFactor,2)*100),str(self.indexImatge +1),str(len(self.llistaImatges))))             
-        self.resize(self.imageLabel.width()+229,self.imageLabel.height()+30)
-       
 
     def adjustScrollBar(self, scrollBar, factor):
         scrollBar.setValue(int(factor * scrollBar.value()
@@ -293,7 +329,7 @@ class QVViewer(QWidget):
 
 if __name__ == "__main__":
     with qgisapp() as app:
-        viewer = QVViewer('d:/tmp/fotos/')
+        viewer = QVViewer('d:/')
         # viewer = QVViewer('')
         
         viewer.show()

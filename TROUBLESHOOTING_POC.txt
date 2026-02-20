@@ -1,0 +1,146 @@
+================================================================================
+TROUBLESHOOTING - ALGORITMOS NO APARECEN EN LISTA
+================================================================================
+
+PROBLEMA:
+---------
+Al ejecutar qgs_viewer_poc.py, no aparecen algoritmos en la lista desplegable.
+
+SOLUCIONES DISPONIBLES:
+=======================
+
+1. INTENTAR RECARGAR ALGORITMOS
+═══════════════════════════════
+
+En la interfaz, hay un botón 🔄 (recargar) junto al combobox de algoritmos.
+Pulsa ese botón para intentar recargar los algoritmos.
+
+Esto es útil si:
+  ✓ La interfaz se inicializa antes de que QGIS haya cargado Processing
+  ✓ Hay un problema temporal de inicialización
+
+
+2. EJECUTAR SCRIPT DE DEBUG
+═══════════════════════════
+
+Para diagnosticar el problema, ejecuta:
+
+  python debug_poc.py
+
+Este script muestra:
+  ✓ Si Processing Registry está disponible
+  ✓ Cuántos algoritmos se encuentran
+  ✓ Si se pueden cargar algoritmos nativos
+  ✓ Si el proyecto se carga correctamente
+  ✓ Si el canvas funciona
+
+
+3. VERIFICAR INSTALACIÓN DE QGIS
+═════════════════════════════════
+
+Los algoritmos vienen con el módulo qgis.analysis.
+
+Verifica que tienes instalado:
+  ✓ qgis-core
+  ✓ qgis-analysis
+  ✓ qgis-gui
+
+Desde PowerShell, ejecuta:
+
+  python -c "from qgis.analysis import QgsNativeAlgorithms; print('✓ OK')"
+
+Si da error, QGIS Processing no está disponible.
+
+
+4. INICIALIZACIÓN MANUAL DE PROCESSING
+═══════════════════════════════════════
+
+En qgs_viewer_poc.py, después de crear la ventana, añade:
+
+  from qgis.core import QgsApplication
+  from qgis.analysis import QgsNativeAlgorithms
+  
+  registry = QgsApplication.processingRegistry()
+  registry.addProvider(QgsNativeAlgorithms())
+
+Así QGIS cargará los algoritmos de forma explícita.
+
+
+5. LOGS DE DEBUG
+════════════════
+
+El código genera logs de debug en consola. Ejecuta desde PowerShell:
+
+  python qgs_viewer_poc.py
+
+Verás mensajes como:
+  DEBUG: Providers actuales: 1
+  DEBUG: Algoritmos encontrados: 95
+
+Si ves "0 algoritmos", el problema es que Processing no se inicializó.
+
+
+SOLUCIÓN RÁPIDA:
+════════════════
+
+1. Abre qgs_viewer_poc.py con un editor
+2. En main(), después de crear QgsViewerPOC(), añade:
+
+    from qgis.analysis import QgsNativeAlgorithms
+    registry = QgsApplication.processingRegistry()
+    registry.addProvider(QgsNativeAlgorithms())
+    viewer.processing_dock.load_algorithms()  # Recargar
+
+3. Guarda y ejecuta nuevamente
+
+
+DIAGRAMA DEL FLUJO:
+═══════════════════
+
+main()
+  ↓
+with qgisapp() as app:
+  ↓
+QgsViewerPOC().__init__()
+  ↓
+ProcessingChainDock().__init__()
+  ↓
+load_algorithms()
+  ├─ registry = QgsApplication.processingRegistry()
+  ├─ algorithms = registry.algorithms()
+  │
+  └─ Si algorithms está vacía:
+      └─ Intentar agregar QgsNativeAlgorithms()
+
+
+CHECKLIST DE DEBUG:
+═══════════════════
+
+□ ¿Ejecutas desde dentro de qVista (QGIS)?
+  → Si sí, Processing ya está inicializado
+  
+□ ¿Ejecutas el POC standalone?
+  → Necesita inicialización manual de QgsNativeAlgorithms
+  
+□ ¿Ves el botón 🔄 de recargar?
+  → Púlsalo primero
+  
+□ ¿Ejecutaste debug_poc.py y viste algoritmos?
+  → El problema está en la UI, no en QGIS
+  
+□ ¿El debug_poc.py muestra "0 algoritmos"?
+  → Problema en instalación de QGIS Processing
+
+
+NEXT STEPS:
+═══════════
+
+1. Ejecuta:   python debug_poc.py
+2. Comparte output aquí
+3. Yo te diré qué está fallando exactamente
+
+Si debug_poc.py muestra algoritmos pero la UI no, entonces
+es un problema de threading o timing que puedo arreglar rápido.
+
+
+================================================================================

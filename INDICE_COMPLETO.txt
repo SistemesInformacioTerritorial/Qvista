@@ -1,0 +1,272 @@
+================================================================================
+ÍNDICE DE ARCHIVOS - POC PROCESSINGCHAIN + MODELOS
+================================================================================
+
+EJECUTABLES (Usar estos):
+═════════════════════════
+
+1. qgs_viewer_poc.py
+   └─ Viewer simple con cadenas de procesos
+   └─ "Construir procesos paso a paso"
+   └─ Comando: python qgs_viewer_poc.py
+
+2. qgs_viewer_advanced.py ⭐ RECOMENDADO
+   └─ Viewer con DOS pestañas:
+      • "Cadenas" (construir desde cero)
+      • "Modelos" (ejecutar pregrabados) ← NUEVO
+   └─ Comando: python qgs_viewer_advanced.py
+
+3. debug_poc.py
+   └─ Validar que Processing funciona
+   └─ Sin UI, solo logs de validación
+   └─ Comando: python debug_poc.py
+
+
+MÓDULOS (Importados automáticamente):
+══════════════════════════════════════
+
+1. processing_chain_poc.py
+   └─ ProcessingChainDock: Construir cadenas
+   └─ ProcessingStep: Representa un algoritmo
+   └─ ProcessingExecutorThread: Ejecución en background
+   └─ ParameterWidget: UI dinámica para parámetros
+
+2. process_models_poc.py ⭐ NUEVO
+   └─ ProcessModelsDock: Ejecutar modelos pregrabados
+   └─ ProcessModelExecutorThread: Ejecución en background
+   └─ ModelParameterWidget: UI dinámica por modelo
+
+
+DOCUMENTACIÓN - INICIO RÁPIDO:
+══════════════════════════════
+
+LEER PRIMERO (en orden):
+
+1. QUICK_START_MODELOS.txt
+   └─ Paso a paso para USAR el viewer
+   └─ Tiempo: 5 minutos
+   └─ → "Quiero empezar ya"
+
+2. RESUMEN_FINAL_MODELOS.txt
+   └─ Visión general de la nueva funcionalidad
+   └─ Tiempo: 10 minutos
+   └─ → "Entender qué cambió"
+
+
+DOCUMENTACIÓN - PROFUNDO:
+═════════════════════════
+
+3. README_MODELOS_PROCESOS.txt
+   └─ Explicación técnica de modelos
+   └─ Diferencia entre cadenas y modelos
+   └─ Tiempo: 15 minutos
+   └─ → "Entender cómo funciona"
+
+4. COMO_CREAR_MODELOS_QGIS.txt
+   └─ Paso a paso para CREAR modelos en QGIS
+   └─ Ejemplos de modelos útiles
+   └─ Tiempo: 20 minutos
+   └─ → "Crear mis propios modelos"
+
+5. RESUMEN_MODELOS_POC.txt
+   └─ Resumen ejecutivo de cambios
+   └─ Comparación antes/después
+   └─ Tiempo: 10 minutos
+   └─ → "Ver cambios arquitectura"
+
+
+DOCUMENTACIÓN - ORIGINAL (sin cambios):
+════════════════════════════════════════
+
+6. README_POC_PROCESSINGCHAIN.md
+   └─ Documentación original del POC
+   └─ Uso de cadenas
+   └─ Todavía válida
+
+7. TECNICA_POC_PROCESSINGCHAIN.txt
+   └─ Documentación técnica original
+   └─ Arquitectura del POC
+
+8. TROUBLESHOOTING_POC.txt
+   └─ Resolución de problemas generales
+   └─ Tips de debug
+
+9. FIX_ALGORITMOS.txt
+   └─ Solución de problema "algoritmos no cargan"
+
+10. FIX_QGSAPPLICATION.txt
+    └─ Solución de QgsApplication.initQgisApplication()
+
+11. RESUMEN_CAMBIOS_POC_20251202.txt
+    └─ Historial de cambios realizados
+
+
+DOCUMENTACIÓN - ANÁLISIS ANTERIOR:
+═══════════════════════════════════
+
+(Documentación exhaustiva sobre ProcessingChain de qVista)
+
+12. INDICE_PROCESSINGCHAIN.txt
+13. RESUMEN_PROCESSINGCHAIN.txt
+14. ANALISIS_PROCESSINGCHAIN_DOCKWIDGET.txt
+15. DIAGRAMA_PROCESSINGCHAIN.txt
+16. PROBLEMAS_SOLUCIONES_PROCESSINGCHAIN.txt
+17. SINTESIS_PROCESSINGCHAIN.txt
+
+
+TEST & DEBUG:
+═════════════
+
+test_poc.py
+  └─ Script de pruebas sin UI
+  └─ Comando: python test_poc.py
+
+debug_poc.py
+  └─ Validar Processing funciona
+  └─ Comando: python debug_poc.py
+
+
+GUÍA DE LECTURA POR CASO:
+═════════════════════════
+
+CASO 1: "Quiero empezar AHORA"
+──────────────────────────────
+1. QUICK_START_MODELOS.txt
+2. Ejecuta: python qgs_viewer_advanced.py
+3. ¡Listo!
+
+Tiempo: 15 minutos
+
+
+CASO 2: "Quiero entender QUÉ CAMBIÓ"
+─────────────────────────────────────
+1. RESUMEN_FINAL_MODELOS.txt
+2. README_MODELOS_PROCESOS.txt
+
+Tiempo: 20 minutos
+
+
+CASO 3: "Quiero CREAR mis modelos"
+───────────────────────────────────
+1. COMO_CREAR_MODELOS_QGIS.txt
+2. Seguir paso a paso en QGIS
+3. Ejecutar: python qgs_viewer_advanced.py
+
+Tiempo: 45 minutos
+
+
+CASO 4: "Quiero INTEGRAR en qVista.py"
+───────────────────────────────────────
+1. README_MODELOS_PROCESOS.txt (sección "INTEGRACIÓN EN qVista")
+2. Copiar process_models_poc.py → moduls/ProcessModels.py
+3. Añadir a qVista.__init__() (ver ejemplo en doc)
+
+Tiempo: 30 minutos
+
+
+CASO 5: "Tengo un PROBLEMA"
+────────────────────────────
+1. TROUBLESHOOTING_POC.txt
+2. QUICK_START_MODELOS.txt (sección "PROBLEMA")
+3. Ejecuta: python debug_poc.py
+
+Tiempo: 20 minutos
+
+
+VISTA GENERAL DE ARCHIVOS:
+═══════════════════════════
+
+Directorio actual (d:\qVista\Codi):
+
+📂 Código
+  qgs_viewer_poc.py
+  qgs_viewer_advanced.py (NUEVO)
+  processing_chain_poc.py
+  process_models_poc.py (NUEVO)
+  debug_poc.py
+  test_poc.py
+
+📂 Documentación Quick Start
+  QUICK_START_MODELOS.txt (NUEVO)
+  RESUMEN_FINAL_MODELOS.txt (NUEVO)
+  README_MODELOS_PROCESOS.txt (NUEVO)
+  COMO_CREAR_MODELOS_QGIS.txt (NUEVO)
+  RESUMEN_MODELOS_POC.txt (NUEVO)
+
+📂 Documentación Técnica Original
+  README_POC_PROCESSINGCHAIN.md
+  TECNICA_POC_PROCESSINGCHAIN.txt
+  TROUBLESHOOTING_POC.txt
+  FIX_ALGORITMOS.txt
+  FIX_QGSAPPLICATION.txt
+  RESUMEN_CAMBIOS_POC_20251202.txt
+
+📂 Análisis ProcessingChain
+  INDICE_PROCESSINGCHAIN.txt
+  RESUMEN_PROCESSINGCHAIN.txt
+  ANALISIS_PROCESSINGCHAIN_DOCKWIDGET.txt
+  DIAGRAMA_PROCESSINGCHAIN.txt
+  PROBLEMAS_SOLUCIONES_PROCESSINGCHAIN.txt
+  SINTESIS_PROCESSINGCHAIN.txt
+
+
+RECOMENDACIÓN:
+═══════════════
+
+Empieza por:
+  ✓ QUICK_START_MODELOS.txt (5 min)
+  ✓ python qgs_viewer_advanced.py (prueba)
+
+Luego, si quieres:
+  ✓ COMO_CREAR_MODELOS_QGIS.txt (crear procesos)
+  ✓ README_MODELOS_PROCESOS.txt (entender arquitectura)
+
+
+VER TAMBIÉN:
+════════════
+
+Este archivo mismo (ÍNDICE) te ayuda a:
+  ✓ Encontrar documentación rápidamente
+  ✓ Saber qué leer según tu caso
+  ✓ Ver estructura completa de archivos
+
+
+COMANDOS ÚTILES:
+════════════════
+
+# Ejecutar viewer (recomendado)
+python qgs_viewer_advanced.py
+
+# Validar que Processing funciona
+python debug_poc.py
+
+# Ver si hay cambios en git
+git status
+
+# Ver estructura de archivos
+ls -la
+
+
+PRÓXIMAS MEJORAS:
+═════════════════
+
+(Si lo necesitas en el futuro)
+
+□ Integración en qVista.py permanente
+□ Mostrar árbol de pasos del modelo
+□ Guardar favoritos
+□ Histórico de ejecuciones
+□ Exportar resultados
+
+
+RESUMEN:
+════════
+
+✓ Tienes 2 viewers (simple + advanced)
+✓ Tienes 2 módulos funcionales
+✓ Tienes documentación completa
+✓ Puedes empezar en 5 minutos
+✓ Código listo para integrar en qVista
+
+
+================================================================================

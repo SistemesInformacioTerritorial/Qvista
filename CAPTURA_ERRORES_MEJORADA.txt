@@ -1,0 +1,164 @@
+================================================================================
+MEJORA: CAPTURA Y VISUALIZACIÓN DE ERRORES
+================================================================================
+
+PROBLEMA ANTERIOR:
+═════════════════
+
+❌ "El modelo retornó error"
+   Sin detalles sobre qué falló
+
+SOLUCIÓN IMPLEMENTADA:
+══════════════════════
+
+Ahora el viewer CAPTURA y MUESTRA los errores reales:
+
+1. En la barra de estado:
+   ❌ Error: [primer línea del error, 100 caracteres]
+
+2. En un dialog detallado:
+   "Hubo un error al ejecutar el modelo:"
+   [Botón "Mostrar detalles"]
+   ↓
+   Error completo (incluyendo traceback si es excepción)
+
+
+QÚES QUE SE CAPTURAN:
+═════════════════════
+
+1. Errores del algoritmo:
+   • Parámetro inválido
+   • Archivo no encontrado
+   • Capas no disponibles
+   → Se muestra en result[1]
+
+2. Excepciones de Python:
+   • Problemas de API
+   • Acceso a archivos
+   • Errores de memoria
+   → Se muestra con traceback completo
+
+
+CÓMO FUNCIONA:
+═══════════════
+
+Ejecución:
+  algorithm.run(parameters, context, feedback)
+  └─ Retorna: (success, outputs_dict, error_messages)
+  
+Si falla (success == False):
+  1. Extrae error_messages de result[1]
+  2. Emite signal con detalles
+  3. on_error() lo muestra en dialog
+
+
+EXCEPCIONES:
+═════════════
+
+Si hay excepción Python:
+  try:
+    algorithm.run(...)
+  except Exception as e:
+    └─ Captura e imprime: str(e) + traceback.format_exc()
+
+
+EJEMPLO DE ERROR COMPLETO:
+═══════════════════════════
+
+Supongamos que ejecutas native:exporttospreadsheet
+sin especificar las capas LAYERS:
+
+Dialog mostrado:
+┌─────────────────────────────────────────┐
+│ Error ejecutando modelo                 │
+├─────────────────────────────────────────┤
+│ Hubo un error al ejecutar el modelo:    │
+│                                         │
+│ Parameter LAYERS not specified          │
+│                                         │
+│ [Mostrar detalles] [OK]                │
+└─────────────────────────────────────────┘
+
+Si clickeas "Mostrar detalles":
+┌─────────────────────────────────────────┐
+│ Parameter LAYERS not specified          │
+│                                         │
+│ Algorithm: native:exporttospreadsheet   │
+│ Provider: native                        │
+│ Required parameter: LAYERS (vector)     │
+│                                         │
+│ [OK]                                    │
+└─────────────────────────────────────────┘
+
+
+CAMBIOS EN EL CÓDIGO:
+═════════════════════
+
+1. ProcessModelExecutorThread.run()
+   ✓ Extrae result[1] si falla
+   ✓ Captura y formatea excepciones
+   ✓ Emite detalles completos
+
+2. ProcessModelsDock.on_error()
+   ✓ Trunca error para status bar (100 chars)
+   ✓ Muestra dialog con detalles completos
+   ✓ Permite expandir para ver traceback
+
+
+PARA PROBAR:
+═════════════
+
+1. Ejecuta viewer:
+   python qgs_viewer_advanced.py
+
+2. Selecciona modelo sin parámetros requeridos
+   (ej: native:exporttospreadsheet sin LAYERS)
+
+3. Haz clic "EJECUTAR"
+
+4. Verás dialog con error específico
+
+5. Clickea "Mostrar detalles" para ver traceback
+
+
+EJEMPLOS DE ERRORES ESPERADOS:
+═══════════════════════════════
+
+native:exporttospreadsheet sin LAYERS:
+  "Parameter LAYERS not specified"
+
+native:exporttospreadsheet con ruta Excel inválida:
+  "Could not create output file: [ruta]"
+  "Permission denied" o "Invalid path"
+
+Archivo modelo corrupto:
+  "Error cargando modelo desde archivo: [detalles XML]"
+
+QGIS no initializado:
+  "QgsApplication not initialized"
+
+
+PRÓXIMOS PASOS:
+════════════════
+
+Con esta mejora, cuando ejecutes un modelo:
+
+1. Si falla → Verás el ERROR EXACTO
+2. Puedes corregir parámetros
+3. Reintentar ejecutar
+
+Esto va a acelerar mucho la depuración.
+
+
+CONCLUSIÓN:
+════════════
+
+✓ Errores ahora son capturados completamente
+✓ Se muestran de forma legible
+✓ Incluyen detalles técnicos si necesarios
+✓ Dialog detallado para investigar
+
+Ahora cuando ejecutes modelos, tendrás visibilidad
+de exactamente qué salió mal.
+
+================================================================================
