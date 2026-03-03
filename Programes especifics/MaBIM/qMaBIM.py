@@ -29,14 +29,16 @@ from PyQt5 import QtCore, QtGui, QtWidgets, uic
 from PyQt5.QtSql import QSqlDatabase, QSqlQuery
 from qgis.core import (QgsCoordinateReferenceSystem, QgsFeatureRequest,
                        QgsGeometry, QgsMapLayer, QgsPointXY, QgsProject,
-                       QgsRectangle, QgsVectorLayer, QgsExpressionContextUtils)
+                       QgsRectangle, QgsVectorLayer, QgsExpressionContextUtils,
+                       QgsLayerDefinition)
 from qgis.core.contextmanagers import qgisapp
 from qgis.gui import (QgsGui, QgsLayerTreeMapCanvasBridge, QgsMapTool,
                       QgsRubberBand, QgsVertexMarker)
 import qgis.PyQt.QtWidgets as qtWdg
 
 import webbrowser
-from PyQt5.QtWidgets import QHeaderView
+from PyQt5.QtWidgets import QHeaderView, QToolButton
+from PyQt5.QtGui import QIcon
 
 class ConstantsMaBIM:
     DB_MABIM_PRO = {
@@ -512,7 +514,7 @@ class QMaBIM(QtWidgets.QMainWindow):
         super().__init__(*args, **kwargs)
         uic.loadUi(ConstantsMaBIM.rutaUI,self)
 
-        self.llistaBotons = (self.bFavorits, self.bBIMs, self.bPIP, self.bConsultes)
+        self.llistaBotons = (self.bFavorits, self.bBIMs, self.bPIP)
 
         self.connectBotons()
         self.connectaCercador()
@@ -599,6 +601,19 @@ class QMaBIM(QtWidgets.QMainWindow):
 
         layout.addLayout(layout_grup)        
         layout.addStretch()
+
+        # Inicialització del panel desplegable de Consultes
+        self.wConsultesContent.setVisible(False)
+        self.tbConsultesHeader.setArrowType(QtCore.Qt.RightArrow)
+        self.tbConsultesHeader.toggled.connect(self.toggle_consultes_panel)
+        
+        # Crear el botó Consulta1 dins del panel de Consultes
+        self.bConsulta1 = QtWidgets.QPushButton('Consulta1', self)
+        self.bConsulta1.clicked.connect(self.executarConsulta1)
+        self.verticalLayoutConsultes.addWidget(self.bConsulta1)
+        self.verticalLayoutConsultes.addStretch()
+        
+        # NO usar setTabsClosable globalmente - los botones X se agregarán solo donde sea necesario
 
         self.bAfegirFavorit.clicked.connect(self.dialegSetFavorit)
         self.bAfegirFavorit.clicked.connect(self.mostraFavorits)
@@ -816,7 +831,7 @@ class QMaBIM(QtWidgets.QMainWindow):
             (self.bBIMs, 'botonera-BIM.png'),
             (self.bPIP, 'botonera-PIP.png'),
             #(self.bProjectes, 'botonera-projectes'),
-            (self.bConsultes, 'botonera-consultes')
+            (self.tbConsultesHeader, 'botonera-consultes')
         )
         for (boto, icona) in parelles:
             boto.setIcon(QtGui.QIcon(f'Imatges/MaBIM/{icona}'))
@@ -1229,6 +1244,128 @@ class QMaBIM(QtWidgets.QMainWindow):
             self.tbMapesHeader.setArrowType(QtCore.Qt.DownArrow)
         else:
             self.tbMapesHeader.setArrowType(QtCore.Qt.RightArrow)
+
+    def toggle_consultes_panel(self, checked):
+        # Mostra o amaga el contingut
+        self.wConsultesContent.setVisible(checked)
+
+        # Canvia la fletxa per donar feedback visual
+        if checked:
+            self.tbConsultesHeader.setArrowType(QtCore.Qt.DownArrow)
+        else:
+            self.tbConsultesHeader.setArrowType(QtCore.Qt.RightArrow)
+
+    def _agregar_boto_tancament(self, index_pestanya):
+        """Agrega un botón de cierre personalizado a una pestaña específica"""
+        # Crear botón de cierre
+        btn_tanca = QToolButton()
+        btn_tanca.setText('✕')
+        btn_tanca.setStyleSheet('QToolButton { border: none; padding: 0px; background: transparent; }')
+        btn_tanca.setFixedSize(16, 16)
+        btn_tanca.clicked.connect(lambda: self.tancaPestanya(index_pestanya))
+        
+        # Agregar el botón al tab bar
+        self.tabCentral.tabBar().setTabButton(index_pestanya, QtWidgets.QTabBar.RightSide, btn_tanca)
+
+    def executarConsulta1(self):
+        # Funció per executar Consulta1
+        # Carrega la capa BimsSenseGeometria.qlr i la mostra en una taula
+        try:
+            # Obtenir la ruta de la carpeta on es troba el fitxer qMaBIM.py
+            ruta_carpeta = os.path.dirname(os.path.abspath(__file__))
+            ruta_qlr = os.path.join(ruta_carpeta, 'BimsSenseGeometria.qlr')
+            
+            # Verificar que el fitxer existeix
+            if not os.path.exists(ruta_qlr):
+                QtWidgets.QMessageBox.warning(self, "Error", f"No s'ha trobat el fitxer: {ruta_qlr}")
+                return
+            
+            # Cargar la capa QLR
+            project = QgsProject.instance()
+            
+            # Obtenir les capes actuals
+            capes_antes = set(project.mapLayers().keys())
+            
+            # Cargar usando QgsLayerDefinition
+            root = project.layerTreeRoot()
+            success = QgsLayerDefinition.loadLayerDefinition(ruta_qlr, project, root)
+            
+            if not success:
+                QtWidgets.QMessageBox.warning(self, "Error", "No s'ha pogut cargar el fitxer QLR")
+                return
+            
+            # Obtenir la capa nova (la diferencia)
+            capes_despues = set(project.mapLayers().keys())
+            capes_nuevas = capes_despues - capes_antes
+            
+            if not capes_nuevas:
+                QtWidgets.QMessageBox.warning(self, "Error", "No s'ha carregat cap capa nova")
+                return
+            
+            # Obtenir la primera capa nova
+            capa_id = list(capes_nuevas)[0]
+            capa = project.mapLayers()[capa_id]
+            
+            # Crear una taula per mostrar els dades
+            taula = QtWidgets.QTableWidget()
+            taula.setColumnCount(len(capa.fields()))
+            
+            # Establir els noms de les columnes
+            noms_camps = [field.name() for field in capa.fields()]
+            taula.setHorizontalHeaderLabels(noms_camps)
+            
+            # Omple la taula amb les features
+            features = capa.getFeatures()
+            fila = 0
+            for feature in features:
+                taula.insertRow(fila)
+                for col, campo in enumerate(noms_camps):
+                    valor = feature.attribute(campo)
+                    taula.setItem(fila, col, QtWidgets.QTableWidgetItem(str(valor)))
+                fila += 1
+            
+            taula.resizeColumnsToContents()
+            
+            # Crear una nova pestanya en el tabCentral si no existeix
+            pestanya_nom = "Consulta1"
+            
+            # Comprovar si la pestanya ja existeix
+            index_pestanya = -1
+            for i in range(self.tabCentral.count()):
+                if self.tabCentral.tabText(i) == pestanya_nom:
+                    index_pestanya = i
+                    break
+            
+            # Crear el widget amb la taula
+            widget = QtWidgets.QWidget()
+            layout = QtWidgets.QVBoxLayout(widget)
+            layout.addWidget(taula)
+            
+            if index_pestanya >= 0:
+                # Reemplazar la pestanya existent
+                self.tabCentral.removeTab(index_pestanya)
+                self.tabCentral.insertTab(index_pestanya, widget, pestanya_nom)
+                self.tabCentral.setCurrentIndex(index_pestanya)
+                # Agregar botón de cierre solo a esta pestaña
+                self._agregar_boto_tancament(index_pestanya)
+            else:
+                # Crear la nova pestanya
+                self.tabCentral.addTab(widget, pestanya_nom)
+                new_index = self.tabCentral.count() - 1
+                self.tabCentral.setCurrentWidget(widget)
+                # Agregar botón de cierre solo a esta pestaña
+                self._agregar_boto_tancament(new_index)
+            
+            QtWidgets.QMessageBox.information(self, "Consulta1", f"Dades carregades: {fila} registres")
+            
+        except Exception as e:
+            QtWidgets.QMessageBox.critical(self, "Error", f"Error al executar Consulta1: {str(e)}")
+
+    def tancaPestanya(self, index):
+        # Funció per tancar una pestanya quan es fa clic a la X
+        # Només permet tancar la pestanya Consulta1
+        if self.tabCentral.tabText(index) == "Consulta1":
+            self.tabCentral.removeTab(index)
    
     def connectBotons(self):
         self.llistaBotons[0].clicked.connect(self.mostraFavorits)
