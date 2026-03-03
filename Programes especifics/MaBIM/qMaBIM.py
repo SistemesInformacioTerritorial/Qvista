@@ -968,7 +968,137 @@ class QMaBIM(QtWidgets.QMainWindow):
         for layer in layers:
             layer.setSubsetString('')
         self.bAfegirFavorit.hide()
+    def _llegir_bims_des_de_csv(self, path: str) -> list:
+        """
+        Lee BIMs desde un CSV.
+        - Si hay cabecera y existe columna BIM/CODI_BIM, usa esa.
+        - Si no, usa la primera columna.
+        Acepta separadores típicos (, ; \t |).
+        """
+        import csv
 
+        bims = []
+        if not path or not os.path.exists(path):
+            return bims
+
+        with open(path, 'r', encoding='utf-8-sig', newline='') as f:
+            sample = f.read(4096)
+            f.seek(0)
+
+            try:
+                dialect = csv.Sniffer().sniff(sample, delimiters=";,|\t,")
+            except Exception:
+                dialect = csv.excel
+                dialect.delimiter = ';' if ';' in sample else ','
+
+            reader = csv.reader(f, dialect)
+            rows = list(reader)
+
+        if not rows:
+            return bims
+
+        header = [str(x).strip().upper() for x in rows[0]]
+        col_idx = None
+        for candidate in ("BIM", "CODI_BIM", "CODI", "CODIGO_BIM", "CODIGO"):
+            if candidate in header:
+                col_idx = header.index(candidate)
+                break
+
+        start_row = 1 if col_idx is not None else 0
+        if col_idx is None:
+            col_idx = 0
+
+        for r in rows[start_row:]:
+            if not r or col_idx >= len(r):
+                continue
+            val = str(r[col_idx]).strip()
+            if not val:
+                continue
+            val = val.strip().strip('"').strip("'").upper()
+            val = " ".join(val.split())
+            bims.append(val)
+
+        seen = set()
+        out = []
+        for x in bims:
+            if x not in seen:
+                seen.add(x)
+                out.append(x)
+        return out
+
+
+    def filtraPVPH_desdeCSV(self):
+        """
+        Botón de consulta:
+        - Seleccionas CSV con BIMs
+        - Filtra SOLO 'Entitats en PV' y 'Entitats en PH'
+        """
+        path, _ = QtWidgets.QFileDialog.getOpenFileName(
+            self,
+            "Selecciona CSV con códigos BIM",
+            "",
+            "CSV (*.csv *.txt);;Todos (*.*)"
+        )
+        if not path:
+            return
+
+        bims = self._llegir_bims_des_de_csv(path)
+        if not bims:
+            QtWidgets.QMessageBox.warning(self, "Atención", "No se han encontrado BIMs en el CSV.")
+            return
+
+        parts = []
+        for bim in bims:
+            bim_esc = bim.replace("'", "''")
+            parts.append(f"BIM LIKE '%{bim_esc}'")
+        where = " OR ".join(parts)
+
+        capas_objetivo = [ConstantsMaBIM.nomCapaPV, ConstantsMaBIM.nomCapaPH]
+        layers_filtradas = []
+        for nom in capas_objetivo:
+            layer = self.llegenda.capaPerNom(nom)
+            if layer is None:
+                for lyr in QgsProject.instance().mapLayers().values():
+                    if lyr.name() == nom:
+                        layer = lyr
+                        break
+
+            if layer is not None and layer.type() == QgsMapLayer.VectorLayer and 'BIM' in layer.fields().names():
+                layer.setSubsetString(where)
+                layers_filtradas.append(layer)
+
+        if not layers_filtradas:
+            QtWidgets.QMessageBox.warning(
+                self, "Atención",
+                "No se han encontrado las capas 'Entitats en PV' / 'Entitats en PH' (o no tienen campo BIM)."
+            )
+            return
+
+        layer_con_features = next((l for l in layers_filtradas if l.featureCount() > 0), None)
+        if layer_con_features is None:
+            QtWidgets.QMessageBox.information(
+                self, "Filtrado aplicado",
+                "Se ha aplicado el filtro, pero no hay resultados visibles en PV/PH con esos BIMs."
+            )
+            return
+
+        extent = None
+        for l in layers_filtradas:
+            if l.featureCount() <= 0:
+                continue
+            if extent is None:
+                extent = l.extent()
+            else:
+                extent.combineExtentWith(l.extent())
+
+        if extent is not None and extent.isFinite():
+            self.canvasA.setExtent(extent)
+            self.canvasA.refresh()
+
+        QtWidgets.QMessageBox.information(
+            self, "Filtrado aplicado",
+            f"Filtrado aplicado desde CSV:\n{os.path.basename(path)}\n\nBIMs: {len(bims)}"
+        )
     @QvFuncions.cronometraDebug
     def configuraPlanols(self):
         root = QgsProject.instance().layerTreeRoot()
@@ -1271,27 +1401,31 @@ class QMaBIM(QtWidgets.QMainWindow):
     def _crear_botons_consultes(self):
         """Crea dinámicamente los botones de consultas basados en la configuración"""
         for consulta in self.consultes_config.get('consultas', []):
-            nombre = consulta.get('id')
-            texto = consulta.get('texto', nombre)
+            texto = consulta.get('texto', consulta.get('id', 'Consulta'))
             funcion_nombre = consulta.get('funcion')
-            
-            # Crear botón
-            boto = QtWidgets.QPushButton(texto, self)
-            
-            # Guardar la configuración en el botón para que se accesible en la función
-            boto.consulta_config = consulta
-            
-            # Conectar con la función por nombre
-            if funcion_nombre and hasattr(self, funcion_nombre):
-                funcion = getattr(self, funcion_nombre)
-                boto.clicked.connect(lambda checked=False, config=consulta: self._ejecutar_consulta(config))
-            
-            # Agregar botón al layout
-            self.verticalLayoutConsultes.addWidget(boto)
-        
-        # Agregar espacio al final para que los botones queden en la parte superior
-        self.verticalLayoutConsultes.addStretch()
+            archivo_qlr = consulta.get('archivo_qlr')
 
+            boto = QtWidgets.QPushButton(texto, self)
+            boto.consulta_config = consulta
+
+            # 1) Si define "funcion", ejecuta método del QMaBIM
+            if funcion_nombre and hasattr(self, funcion_nombre):
+                fn = getattr(self, funcion_nombre)
+                boto.clicked.connect(lambda checked=False, fn=fn: fn())
+
+            # 2) Si define "archivo_qlr", usa el flujo actual
+            elif archivo_qlr:
+                boto.clicked.connect(lambda checked=False, config=consulta: self._ejecutar_consulta(config))
+
+            else:
+                # Config inválida
+                boto.clicked.connect(lambda: QtWidgets.QMessageBox.warning(
+                    self, "Error", "Consulta sin 'funcion' ni 'archivo_qlr' en consultes_config.json"
+                ))
+
+            self.verticalLayoutConsultes.addWidget(boto)
+
+        self.verticalLayoutConsultes.addStretch()
     def _ejecutar_consulta(self, config_consulta):
         """Ejecuta una consulta basada en su configuración usando QvTaulaAtributs"""
         try:
