@@ -1,0 +1,12 @@
+{
+  "consultas": [
+    {
+      "id": "consulta1",
+      "nombre": "Bims sense geometria",
+      "texto": "Bims sense geometria",
+      "funcion": "executarConsulta1",
+      "archivo_qlr": "BimsSenseGeometria.qlr",
+      "descripcion": "Carga la capa BimsSenseGeometria.qlr y la muestra en una tabla de atributos"
+    }
+  ]
+}

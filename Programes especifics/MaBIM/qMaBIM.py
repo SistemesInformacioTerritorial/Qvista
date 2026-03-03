@@ -2,6 +2,7 @@
 import argparse
 import functools
 import getpass
+import json
 import math
 import os
 import subprocess
@@ -13,7 +14,7 @@ from functools import partial
 import configuracioQvista
 from moduls import QvFuncions
 from moduls.QvApp import QvApp
-from moduls.QvAtributs import QvAtributs
+from moduls.QvAtributs import QvAtributs, QvTaulaAtributs
 from moduls.QvAtributsForms import QvFitxesAtributs, QvFormAtributs
 from moduls.QvCanvas import QvCanvas
 from moduls.QvCanvasAuxiliar import QvCanvasAuxiliar
@@ -607,11 +608,9 @@ class QMaBIM(QtWidgets.QMainWindow):
         self.tbConsultesHeader.setArrowType(QtCore.Qt.RightArrow)
         self.tbConsultesHeader.toggled.connect(self.toggle_consultes_panel)
         
-        # Crear el botó Consulta1 dins del panel de Consultes
-        self.bConsulta1 = QtWidgets.QPushButton('Consulta1', self)
-        self.bConsulta1.clicked.connect(self.executarConsulta1)
-        self.verticalLayoutConsultes.addWidget(self.bConsulta1)
-        self.verticalLayoutConsultes.addStretch()
+        # Cargar configuración de consultas y crear botones dinámicamente
+        self._carrega_consultes_config()
+        self._crear_botons_consultes()
         
         # NO usar setTabsClosable globalmente - los botones X se agregarán solo donde sea necesario
 
@@ -985,9 +984,9 @@ class QMaBIM(QtWidgets.QMainWindow):
         self.canvasA.setDestinationCrs(QgsCoordinateReferenceSystem('EPSG:25831'))
         self.canvasA.mostraStreetView.connect(self.canvasA.getStreetView().show)
 
-        taulesAtributs = QvAtributs(self.canvasA)
-        taulesAtributs.setWindowTitle("Taules d'atributs")
-        self.llegenda = QvLlegenda(self.canvasA, taulesAtributs)
+        self.atributs = QvAtributs(self.canvasA)
+        self.atributs.setWindowTitle("Taules d'atributs")
+        self.llegenda = QvLlegenda(self.canvasA, self.atributs)
         self.canvasA.setLlegenda(self.llegenda)
         self.llegenda.resize(500, 600)
 
@@ -1255,6 +1254,169 @@ class QMaBIM(QtWidgets.QMainWindow):
         else:
             self.tbConsultesHeader.setArrowType(QtCore.Qt.RightArrow)
 
+    def _carrega_consultes_config(self):
+        """Carga la configuración de consultas desde el archivo JSON"""
+        try:
+            ruta_config = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'consultes_config.json')
+            if os.path.exists(ruta_config):
+                with open(ruta_config, 'r', encoding='utf-8') as f:
+                    self.consultes_config = json.load(f)
+            else:
+                print(f"Archivo de configuración no encontrado: {ruta_config}")
+                self.consultes_config = {'consultas': []}
+        except Exception as e:
+            print(f"Error al cargar configuración de consultas: {e}")
+            self.consultes_config = {'consultas': []}
+
+    def _crear_botons_consultes(self):
+        """Crea dinámicamente los botones de consultas basados en la configuración"""
+        for consulta in self.consultes_config.get('consultas', []):
+            nombre = consulta.get('id')
+            texto = consulta.get('texto', nombre)
+            funcion_nombre = consulta.get('funcion')
+            
+            # Crear botón
+            boto = QtWidgets.QPushButton(texto, self)
+            
+            # Guardar la configuración en el botón para que se accesible en la función
+            boto.consulta_config = consulta
+            
+            # Conectar con la función por nombre
+            if funcion_nombre and hasattr(self, funcion_nombre):
+                funcion = getattr(self, funcion_nombre)
+                boto.clicked.connect(lambda checked=False, config=consulta: self._ejecutar_consulta(config))
+            
+            # Agregar botón al layout
+            self.verticalLayoutConsultes.addWidget(boto)
+        
+        # Agregar espacio al final para que los botones queden en la parte superior
+        self.verticalLayoutConsultes.addStretch()
+
+    def _ejecutar_consulta(self, config_consulta):
+        """Ejecuta una consulta basada en su configuración usando QvTaulaAtributs"""
+        try:
+            archivo_qlr = config_consulta.get('archivo_qlr')
+            nombre_consulta = config_consulta.get('nombre')
+            
+            if not archivo_qlr:
+                QtWidgets.QMessageBox.warning(self, "Error", "La configuración de consulta no especifica un archivo QLR")
+                return
+            
+            # Obtener la ruta del archivo QLR
+            ruta_carpeta = os.path.dirname(os.path.abspath(__file__))
+            ruta_qlr = os.path.join(ruta_carpeta, archivo_qlr)
+            
+            # Verificar que el fichero existe
+            if not os.path.exists(ruta_qlr):
+                QtWidgets.QMessageBox.warning(self, "Error", f"No s'ha trobat el fitxer: {ruta_qlr}")
+                return
+            
+            # Primero verificar si la pestaña ya existe
+            pestanya_nom = nombre_consulta
+            index_pestanya_existente = -1
+            for i in range(self.tabCentral.count()):
+                if self.tabCentral.tabText(i) == pestanya_nom:
+                    index_pestanya_existente = i
+                    break
+            
+            # Si la pestaña ya existe, simplemente mostrarla
+            if index_pestanya_existente >= 0:
+                self.tabCentral.setCurrentIndex(index_pestanya_existente)
+                return
+            
+            # Si no existe la pestaña, cargar la capa
+            project = QgsProject.instance()
+            
+            # Obtenir les capes actuals
+            capes_antes = set(project.mapLayers().keys())
+            
+            # Verificar si la capa ya existe por nombre
+            capa = None
+            for layer in project.mapLayers().values():
+                if layer.name() == nombre_consulta:
+                    capa = layer
+                    break
+            
+            # Si no existe, cargar desde el archivo QLR
+            if capa is None:
+                # Caregar usando QgsLayerDefinition
+                root = project.layerTreeRoot()
+                success = QgsLayerDefinition.loadLayerDefinition(ruta_qlr, project, root)
+                
+                if not success:
+                    QtWidgets.QMessageBox.warning(self, "Error", "No s'ha pogut cargar el fitxer QLR")
+                    return
+                
+                # Obtenir la capa nova (la diferencia)
+                capes_despues = set(project.mapLayers().keys())
+                capes_nuevas = capes_despues - capes_antes
+                
+                if not capes_nuevas:
+                    QtWidgets.QMessageBox.warning(self, "Error", "No s'ha carregat cap capa nova")
+                    return
+                
+                # Obtenir la primera capa nova
+                capa_id = list(capes_nuevas)[0]
+                capa = project.mapLayers()[capa_id]
+            
+            # Crear tabla de atributos usando QvTaulaAtributs
+            taula = QvTaulaAtributs(parent=self, layer=capa, canvas=self.canvasA, readOnly=True)
+            
+            # Crear widget contenedor
+            widget = QtWidgets.QWidget()
+            layout = QtWidgets.QVBoxLayout(widget)
+            layout.setContentsMargins(0, 0, 0, 0)
+            
+            # Crear layout horizontal para el botón
+            btn_layout = QtWidgets.QHBoxLayout()
+            btn_layout.setContentsMargins(5, 5, 5, 5)
+            
+            # Crear botón para exportar a CSV
+            btn_export_csv = QtWidgets.QPushButton("Exportar a CSV")
+            btn_export_csv.setIcon(QIcon("imatges/file-delimited.png"))
+            btn_export_csv.setMaximumHeight(32)
+            btn_export_csv.setMaximumWidth(150)
+            btn_export_csv.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+            btn_export_csv.setStyleSheet("""
+                QPushButton {
+                    background-color: #0078D4;
+                    color: white;
+                    border: 1px solid #0078D4;
+                    border-radius: 3px;
+                    padding: 5px 10px;
+                    font-weight: bold;
+                }
+                QPushButton:hover {
+                    background-color: #1084D8;
+                }
+                QPushButton:pressed {
+                    background-color: #005A9E;
+                }
+            """)
+            btn_export_csv.clicked.connect(taula.saveToCSV)
+            
+            # Agregar botón al layout horizontal (izquierda)
+            btn_layout.addWidget(btn_export_csv)
+            btn_layout.addStretch()
+            
+            # Agregar layout del botón y tabla al layout principal
+            layout.addLayout(btn_layout)
+            layout.addWidget(taula)
+            
+            # Crear la nova pestanya
+            num_features = capa.featureCount()
+            self.tabCentral.addTab(widget, pestanya_nom)
+            new_index = self.tabCentral.count() - 1
+            self.tabCentral.setCurrentWidget(widget)
+            # Agregar botón de cierre solo a esta pestaña
+            self._agregar_boto_tancament(new_index)
+            
+            # Mostrar mensaje de confirmación
+            QtWidgets.QMessageBox.information(self, nombre_consulta, f"Dades carregades: {num_features} registres")
+            
+        except Exception as e:
+            QtWidgets.QMessageBox.critical(self, "Error", f"Error al executar consulta: {str(e)}")
+
     def _agregar_boto_tancament(self, index_pestanya):
         """Agrega un botón de cierre personalizado a una pestaña específica"""
         # Crear botón de cierre
@@ -1268,104 +1430,72 @@ class QMaBIM(QtWidgets.QMainWindow):
         self.tabCentral.tabBar().setTabButton(index_pestanya, QtWidgets.QTabBar.RightSide, btn_tanca)
 
     def executarConsulta1(self):
-        # Funció per executar Consulta1
-        # Carrega la capa BimsSenseGeometria.qlr i la mostra en una taula
-        try:
-            # Obtenir la ruta de la carpeta on es troba el fitxer qMaBIM.py
-            ruta_carpeta = os.path.dirname(os.path.abspath(__file__))
-            ruta_qlr = os.path.join(ruta_carpeta, 'BimsSenseGeometria.qlr')
-            
-            # Verificar que el fitxer existeix
-            if not os.path.exists(ruta_qlr):
-                QtWidgets.QMessageBox.warning(self, "Error", f"No s'ha trobat el fitxer: {ruta_qlr}")
+        """Método legado para compatibilidad hacia atrás. Ejecuta Consulta1 desde la configuración."""
+        # Buscar la configuración de Consulta1
+        for consulta in self.consultes_config.get('consultas', []):
+            if consulta.get('id') == 'consulta1':
+                self._ejecutar_consulta(consulta)
                 return
-            
-            # Cargar la capa QLR
-            project = QgsProject.instance()
-            
-            # Obtenir les capes actuals
-            capes_antes = set(project.mapLayers().keys())
-            
-            # Cargar usando QgsLayerDefinition
-            root = project.layerTreeRoot()
-            success = QgsLayerDefinition.loadLayerDefinition(ruta_qlr, project, root)
-            
-            if not success:
-                QtWidgets.QMessageBox.warning(self, "Error", "No s'ha pogut cargar el fitxer QLR")
-                return
-            
-            # Obtenir la capa nova (la diferencia)
-            capes_despues = set(project.mapLayers().keys())
-            capes_nuevas = capes_despues - capes_antes
-            
-            if not capes_nuevas:
-                QtWidgets.QMessageBox.warning(self, "Error", "No s'ha carregat cap capa nova")
-                return
-            
-            # Obtenir la primera capa nova
-            capa_id = list(capes_nuevas)[0]
-            capa = project.mapLayers()[capa_id]
-            
-            # Crear una taula per mostrar els dades
-            taula = QtWidgets.QTableWidget()
-            taula.setColumnCount(len(capa.fields()))
-            
-            # Establir els noms de les columnes
-            noms_camps = [field.name() for field in capa.fields()]
-            taula.setHorizontalHeaderLabels(noms_camps)
-            
-            # Omple la taula amb les features
-            features = capa.getFeatures()
-            fila = 0
-            for feature in features:
-                taula.insertRow(fila)
-                for col, campo in enumerate(noms_camps):
-                    valor = feature.attribute(campo)
-                    taula.setItem(fila, col, QtWidgets.QTableWidgetItem(str(valor)))
-                fila += 1
-            
-            taula.resizeColumnsToContents()
-            
-            # Crear una nova pestanya en el tabCentral si no existeix
-            pestanya_nom = "Consulta1"
-            
-            # Comprovar si la pestanya ja existeix
-            index_pestanya = -1
-            for i in range(self.tabCentral.count()):
-                if self.tabCentral.tabText(i) == pestanya_nom:
-                    index_pestanya = i
-                    break
-            
-            # Crear el widget amb la taula
-            widget = QtWidgets.QWidget()
-            layout = QtWidgets.QVBoxLayout(widget)
-            layout.addWidget(taula)
-            
-            if index_pestanya >= 0:
-                # Reemplazar la pestanya existent
-                self.tabCentral.removeTab(index_pestanya)
-                self.tabCentral.insertTab(index_pestanya, widget, pestanya_nom)
-                self.tabCentral.setCurrentIndex(index_pestanya)
-                # Agregar botón de cierre solo a esta pestaña
-                self._agregar_boto_tancament(index_pestanya)
-            else:
-                # Crear la nova pestanya
-                self.tabCentral.addTab(widget, pestanya_nom)
-                new_index = self.tabCentral.count() - 1
-                self.tabCentral.setCurrentWidget(widget)
-                # Agregar botón de cierre solo a esta pestaña
-                self._agregar_boto_tancament(new_index)
-            
-            QtWidgets.QMessageBox.information(self, "Consulta1", f"Dades carregades: {fila} registres")
-            
-        except Exception as e:
-            QtWidgets.QMessageBox.critical(self, "Error", f"Error al executar Consulta1: {str(e)}")
+        
+        # Si no hay configuración, mostrar error
+        QtWidgets.QMessageBox.warning(self, "Error", "No se encontró la configuración de Consulta1")
 
     def tancaPestanya(self, index):
         # Funció per tancar una pestanya quan es fa clic a la X
         # Només permet tancar la pestanya Consulta1
         if self.tabCentral.tabText(index) == "Consulta1":
             self.tabCentral.removeTab(index)
+
+    def desarCSV(self, layer, colOrder):
+        """Exporta la capa a un fitxer CSV"""
+        import csv
+        from moduls.QvFuncions import startMovie, stopMovie
+        from moduls.QvApp import QvApp
+        
+        path = ''
+        player = None
+        selected = (layer.selectedFeatureCount() > 0)
+        filtered = (layer.subsetString() != '')
+        if selected:
+            sel = "els elements seleccionats"
+        elif filtered:
+            sel = "els elements filtrats"
+        else:
+            sel = "tots els elements"
+        colNum, colName, asc = colOrder
+        if colNum is None:
+            request = QgsFeatureRequest()
+        else:
+            request = QgsFeatureRequest().addOrderBy(colName, asc, asc)
+
+        numElems = 0
+        try:
+            path, _ = QtWidgets.QFileDialog.getSaveFileName(self, f"Desa {sel} a arxiu", '', 'CSV (*.csv)')
+            if path:
+                player = startMovie()
+                with open(path, 'w', encoding="utf-8", newline='') as stream:
+                    writer = csv.writer(stream, delimiter=';', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+                    writer.writerow(layer.fields().names())
+                    if selected:
+                        iterator = layer.getSelectedFeatures()
+                    else:
+                        iterator = layer.getFeatures(request)
+                    for feature in iterator:
+                        row = [str(feature.attribute(field.name())) for field in layer.fields()]
+                        writer.writerow(row)
+                        numElems += 1
+        except Exception as e:
+            QtWidgets.QMessageBox.warning(self, "Error al desar l'arxiu CSV", f"No s'ha pogut desar correctament l'arxiu: \n\n{path}")
+            print(str(e))
+            path = ''
+        finally:
+            if player is not None: 
+                stopMovie(player)
+        
+        if path: 
+            QtWidgets.QMessageBox.information(self, "Arxiu CSV desat correctament", f"S'han desat {sel} ({QvApp().locale.toString(numElems)}) a l'arxiu: \n\n{path}")
+        
+        return path
    
     def connectBotons(self):
         self.llistaBotons[0].clicked.connect(self.mostraFavorits)
