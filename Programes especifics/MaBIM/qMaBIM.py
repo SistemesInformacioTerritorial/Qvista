@@ -1,3 +1,18 @@
+# ---------------------------------------------
+# qMaBIM.py - Script principal de la aplicación MaBIM
+# ---------------------------------------------
+# Este script implementa la interfaz principal de la aplicación MaBIM,
+# basada en PyQt5 y QGIS Python API. Permite la gestión de capas,
+# consultas, visualización de atributos y herramientas GIS personalizadas
+# para la gestión de patrimonio inmobiliario del Ajuntament de Barcelona.
+#
+# Estructura principal:
+# - Clase QMaBIM: Ventana principal, gestión de UI y lógica de negocio
+# - Carga dinámica de consultas desde JSON externo
+# - Integración con QvAtributs para tablas de atributos
+# - Funciones para exportar, filtrar y gestionar capas
+# ---------------------------------------------
+
 #from MaBIM-ui import Ui_MainWindow
 import argparse
 import functools
@@ -1576,8 +1591,11 @@ class QMaBIM(QtWidgets.QMainWindow):
 
     def tancaPestanya(self, index):
         # Funció per tancar una pestanya quan es fa clic a la X
-        # Només permet tancar la pestanya Consulta1
-        if self.tabCentral.tabText(index) == "Consulta1":
+        # Només permet tancar la pestanya Consulta1 (o la que tenga el texto de la consulta1)
+        tab_text = self.tabCentral.tabText(index)
+        # Permitir cerrar tanto "Consulta1" como el nombre configurado en el JSON
+        nombres_validos = ["Consulta1", "Bims sense geometria"]
+        if tab_text in nombres_validos:
             self.tabCentral.removeTab(index)
 
     def desarCSV(self, layer, colOrder):
