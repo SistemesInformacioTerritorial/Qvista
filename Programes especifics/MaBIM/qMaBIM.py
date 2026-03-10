@@ -41,6 +41,7 @@ from moduls.QvLlegenda import QvLlegenda
 from moduls.QvMapetaBrujulado import QvMapetaBrujulado
 from moduls.QvSingleton import Singleton
 from moduls.QvStatusBar import QvStatusBar
+from MaBIM_FilterUtils import MaBIMFilterApplier, FilterDefinition
 from PyQt5 import QtCore, QtGui, QtWidgets, uic
 from PyQt5.QtSql import QSqlDatabase, QSqlQuery
 from qgis.core import (QgsCoordinateReferenceSystem, QgsFeatureRequest,
@@ -1419,28 +1420,94 @@ class QMaBIM(QtWidgets.QMainWindow):
             texto = consulta.get('texto', consulta.get('id', 'Consulta'))
             funcion_nombre = consulta.get('funcion')
             archivo_qlr = consulta.get('archivo_qlr')
+            action_type = consulta.get('action_type')
 
             boto = QtWidgets.QPushButton(texto, self)
             boto.consulta_config = consulta
 
-            # 1) Si define "funcion", ejecuta método del QMaBIM
-            if funcion_nombre and hasattr(self, funcion_nombre):
+            # 1) Si define "action_type" = "filter_qqf", ejecuta filtro desde .qqf
+            if action_type == 'filter_qqf':
+                boto.clicked.connect(lambda checked=False, config=consulta: self._ejecutar_filtro_qqf(config))
+
+            # 2) Si define "funcion", ejecuta método del QMaBIM
+            elif funcion_nombre and hasattr(self, funcion_nombre):
                 fn = getattr(self, funcion_nombre)
                 boto.clicked.connect(lambda checked=False, fn=fn: fn())
 
-            # 2) Si define "archivo_qlr", usa el flujo actual
+            # 3) Si define "archivo_qlr", usa el flujo actual
             elif archivo_qlr:
                 boto.clicked.connect(lambda checked=False, config=consulta: self._ejecutar_consulta(config))
 
             else:
                 # Config inválida
                 boto.clicked.connect(lambda: QtWidgets.QMessageBox.warning(
-                    self, "Error", "Consulta sin 'funcion' ni 'archivo_qlr' en consultes_config.json"
+                    self, "Error", "Consulta sin configuración válida en consultes_config.json"
                 ))
 
             self.verticalLayoutConsultes.addWidget(boto)
 
         self.verticalLayoutConsultes.addStretch()
+    def _ejecutar_filtro_qqf(self, config_filtro):
+        """
+        Ejecuta un filtro desde un fichero .qqf
+        
+        Args:
+            config_filtro: Diccionario de configuración del filtro con:
+                - filter_file: ruta relativa del fichero .qqf
+                - target_layers: lista de nombres de capas a filtrar
+                - descripcion: descripción del filtro
+        """
+        try:
+            # Validar configuración
+            filtro_def = FilterDefinition(config_filtro)
+            if not filtro_def.is_valid():
+                QtWidgets.QMessageBox.warning(
+                    self, "Error",
+                    "Configuración de filtro inválida en consultes_config.json"
+                )
+                return
+            
+            # Obtener ruta base de MaBIM
+            ruta_carpeta = os.path.dirname(os.path.abspath(__file__))
+            ruta_filtro = filtro_def.get_filter_path(ruta_carpeta)
+            
+            # Verificar que el fichero existe
+            if not ruta_filtro.exists():
+                QtWidgets.QMessageBox.warning(
+                    self, "Error",
+                    f"No se ha encontrado el fichero de filtro:\n{ruta_filtro}"
+                )
+                return
+            
+            # Crear aplicador de filtros
+            aplicador = MaBIMFilterApplier(QgsProject.instance())
+            
+            # Aplicar filtro
+            success = aplicador.apply_filter_by_file(
+                ruta_filtro,
+                filtro_def.target_layers,
+                show_messages=True,
+                parent_widget=self
+            )
+            
+            if success:
+                # Refrescar el canvas para ver los cambios
+                self.canvasA.refresh()
+                # Guardar referencia al aplicador por si necesitamos limpiar filtros después
+                if not hasattr(self, 'ultima_aplicacion_filtro'):
+                    self.ultima_aplicacion_filtro = aplicador
+                else:
+                    self.ultima_aplicacion_filtro = aplicador
+        
+        except Exception as e:
+            QtWidgets.QMessageBox.critical(
+                self, "Error",
+                f"Error al ejecutar filtro: {str(e)}"
+            )
+            print(f"DEBUG: Error en _ejecutar_filtro_qqf: {e}")
+            import traceback
+            traceback.print_exc()
+
     def _ejecutar_consulta(self, config_consulta):
         """Ejecuta una consulta basada en su configuración usando QvTaulaAtributs"""
         try:

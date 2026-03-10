@@ -12,6 +12,22 @@
         "id": "filtra_csv_bim",
         "texto": "Filtrar PV/PH por CSV (BIM)",
         "funcion": "filtraPVPH_desdeCSV"
+    },
+    {
+      "id": "filtro_qqf_viviendas_a",
+      "texto": "Filtrar Viviendas A",
+      "action_type": "filter_qqf",
+      "filter_file": "filtros/us.qqf",
+      "target_layers": ["Entitats en PV", "Entitats en PH"],
+      "descripcion": "Aplicar filtro de viviendas tipo A definido en .qqf"
+    },
+    {
+      "id": "filtro_qqf_viviendas_b",
+      "texto": "Filtrar Viviendas B",
+      "action_type": "filter_qqf",
+      "filter_file": "filtros/viviendas_tipo_B.qqf",
+      "target_layers": ["Entitats en PV", "Entitats en PH"],
+      "descripcion": "Aplicar filtro de viviendas tipo B definido en .qqf"
     }
   ]
 }
