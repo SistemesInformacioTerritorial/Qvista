@@ -1447,6 +1447,7 @@ class QMaBIM(QtWidgets.QMainWindow):
             self.verticalLayoutConsultes.addWidget(boto)
 
         self.verticalLayoutConsultes.addStretch()
+        
     def _ejecutar_filtro_qqf(self, config_filtro):
         """
         Ejecuta un filtro desde un fichero .qqf

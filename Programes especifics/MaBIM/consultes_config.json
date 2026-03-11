@@ -15,17 +15,17 @@
     },
     {
       "id": "filtro_qqf_viviendas_a",
-      "texto": "Filtrar Viviendas A",
+      "texto": "Immobles Ús Públic",
       "action_type": "filter_qqf",
       "filter_file": "filtros/us.qqf",
       "target_layers": ["Entitats en PV", "Entitats en PH"],
       "descripcion": "Aplicar filtro de viviendas tipo A definido en .qqf"
     },
     {
-      "id": "filtro_qqf_viviendas_b",
-      "texto": "Filtrar Viviendas B",
+      "id": "filtro_qqf_SupLliureMes100",
+      "texto": "Superficies lliure > 100m2",
       "action_type": "filter_qqf",
-      "filter_file": "filtros/viviendas_tipo_B.qqf",
+      "filter_file": "filtros/SupLliureMesGran100.qqf",
       "target_layers": ["Entitats en PV", "Entitats en PH"],
       "descripcion": "Aplicar filtro de viviendas tipo B definido en .qqf"
     }
