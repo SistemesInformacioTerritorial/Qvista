@@ -28,6 +28,14 @@
       "filter_file": "filtros/SupLliureMesGran100.qqf",
       "target_layers": ["Entitats en PV", "Entitats en PH"],
       "descripcion": "Aplicar filtro de viviendas tipo B definido en .qqf"
+    },
+    {
+      "id": "filtro_qqf_SupLliureMes1001",
+      "texto": "Locals en PH",
+      "action_type": "filter_qqf",
+      "filter_file": "filtros/LocalsPH.qqf",
+      "target_layers": ["Entitats en PV", "Entitats en PH"],
+      "descripcion": "Aplicar filtro de viviendas tipo B definido en .qqf"
     }
   ]
 }
