@@ -1,0 +1,384 @@
+═══════════════════════════════════════════════════════════════════════════════
+              DOCUMENTACIÓN TÉCNICA: SISTEMA DE FILTROS .QQF EN MABIM
+═══════════════════════════════════════════════════════════════════════════════
+
+VISIÓN GENERAL
+══════════════
+
+El sistema de filtros .QQF permite aplicar expresiones de filtro QGIS a capas
+existentes (Entitats en PV y Entitats en PH) sin necesidad de crear nuevas
+capas. Los filtros se definen en ficheros XML (.qqf) y se configuran desde
+el JSON de consultas.
+
+FLUJO DE EJECUCIÓN
+═══════════════════
+
+User hace clic en botón
+    ↓
+qMaBIM._crear_botons_consultes() → busca action_type
+    ↓
+Si action_type == 'filter_qqf':
+    ↓
+qMaBIM._ejecutar_filtro_qqf(config)
+    ↓
+MaBIM_FilterUtils.MaBIMFilterApplier.apply_filter_by_file()
+    ↓
+1. MaBIMFilterReader.read_filter_expression()
+   → Lee fichero .qqf
+   → Parsea XML
+   → Extrae expresión del <subset>
+    ↓
+2. Busca capas por nombre en QgsProject
+    ↓
+3. Para cada capa: layer.setSubsetString(expression)
+    ↓
+4. Refresca canvas
+    ↓
+Muestra mensaje de confirmación
+
+
+ARCHIVO .QQF
+════════════
+
+Formato XML básico:
+──────────────────
+
+<?xml version="1.0" encoding="UTF-8"?>
+<layerdefinition>
+  <subset>EXPRESIÓN_AQUÍ</subset>
+</layerdefinition>
+
+La expresión va entre las etiquetas <subset></subset> y debe ser válida en QGIS.
+
+
+EXPRESIONES VÁLIDAS
+═══════════════════
+
+Las expresiones son las mismas que usa QGIS en:
+  → Clic derecho en capa → Filtro
+  → Herramientas de procesamiento
+  → Query Builder
+
+Ejemplos:
+─────────
+"TIPUS_VIVENDA" = 'A'
+("TIPUS_VIVENDA" IN ('A', 'B')) AND ("SUPERFICIE" > 100)
+"ANY_CONSTRUCCIO" >= 1990
+"DENOMINACIO" LIKE '%plaça%'
+
+
+MÓDULOS INVOLUCRADOS
+════════════════════
+
+1. MaBIM_FilterUtils.py
+   ─────────────────────
+   - MaBIMFilterReader: Lee/parsea .qqf
+   - MaBIMFilterApplier: Aplica filtro a capas
+   - FilterDefinition: Valida configuración JSON
+
+2. qMaBIM.py
+   ─────────
+   - _crear_botons_consultes(): Crea botones
+   - _ejecutar_filtro_qqf(): Ejecuta el filtro
+   - _ejecutar_consulta(): Carga capas QLR (existente)
+
+3. consultes_config.json
+   ─────────────────────
+   - Define botones de consultas
+   - Incluye configuración de filtros
+
+
+CLASE: MaBIMFilterReader
+════════════════════════
+
+Responsabilidad: Leer y extraer expresiones de ficheros .qqf
+
+Métodos:
+────────
+
+1. read_filter_expression(filter_file: Path) → str
+   ───────────────────────────────────────────
+   - Detecta el formato (XML o texto plano)
+   - Parsea XML si es necesario
+   - Retorna la expresión de filtro
+   
+   Excepciones:
+   - Retorna None si el fichero no existe
+   - Retorna None si hay error al parsear XML
+   - Retorna None si no encuentra <subset>
+
+2. _parse_xml_filter(xml_content: str) → str
+   ─────────────────────────────────────────
+   - Parsea XML y busca <subset>
+   - Busca en múltiples formatos posibles
+   - Retorna texto de expresión
+
+
+CLASE: MaBIMFilterApplier
+══════════════════════════
+
+Responsabilidad: Aplicar filtros a capas del proyecto
+
+Constructor:
+────────────
+MaBIMFilterApplier(proyecto=None)
+  - Si proyecto es None, usa QgsProject.instance()
+  - Inicializa lista de capas filtradas
+
+Métodos:
+────────
+
+1. apply_filter_by_file(filter_file, target_layer_names, show_messages=True, parent_widget=None) → bool
+   ──────────────────────────────────────────────────────────────────────────────────────────────────
+   - Lee expresión del fichero
+   - Busca capas por nombre
+   - Aplica con setSubsetString()
+   - Retorna True si éxito
+   
+   Parámetros:
+   - filter_file: Path al .qqf
+   - target_layer_names: Lista de nombres de capas
+   - show_messages: Si mostrar diálogos QMessageBox
+   - parent_widget: Widget padre para diálogos
+
+2. apply_filter_expression(expression, target_layer_names, ...) → bool
+   ──────────────────────────────────────────────────────────────
+   - Similar al anterior pero con expresión directa
+   - No lee fichero
+
+3. clear_filters(layer_names=None) → None
+   ─────────────────────────────────────
+   - Elimina filtros de capas
+   - Si layer_names=None, limpia todas
+
+4. get_filter_status(layer_name: str) → str
+   ────────────────────────────────────────
+   - Retorna estado del filtro de una capa
+
+
+CLASE: FilterDefinition
+═══════════════════════
+
+Responsabilidad: Validar configuración de filtro desde JSON
+
+Constructor:
+────────────
+FilterDefinition(json_dict)
+  - Extrae campos del diccionario JSON
+  - Asigna valores por defecto si necesario
+
+Atributos:
+──────────
+- id: identificador único
+- texto: texto del botón
+- action_type: tipo de acción (siempre 'filter_qqf')
+- filter_file: ruta al fichero .qqf
+- target_layers: lista de nombres de capas
+- descripcion: descripción opcional
+
+Métodos:
+────────
+
+1. is_valid() → bool
+   ────────────────
+   - Verifica:
+     - id no es None
+     - action_type == 'filter_qqf'
+     - filter_file no es None
+     - target_layers no está vacío
+
+2. get_filter_path(base_dir=None) → Path
+   ────────────────────────────────────
+   - Resuelve ruta absoluta
+   - Si es relativa, usa base_dir
+   - Retorna Path absoluto
+
+
+INTEGRACIÓN EN qMaBIM.py
+════════════════════════
+
+Método: _crear_botons_consultes()
+─────────────────────────────────
+
+def _crear_botons_consultes(self):
+    for consulta in self.consultes_config.get('consultas', []):
+        action_type = consulta.get('action_type')
+        
+        if action_type == 'filter_qqf':
+            # Nuevo código: crear conexión con _ejecutar_filtro_qqf
+            boto.clicked.connect(lambda config=consulta: self._ejecutar_filtro_qqf(config))
+        
+        elif funcion_nombre and hasattr(self, funcion_nombre):
+            # Código existente: ejecutar función
+            ...
+        
+        elif archivo_qlr:
+            # Código existente: cargar QLR
+            ...
+
+
+Método: _ejecutar_filtro_qqf()
+───────────────────────────────
+
+def _ejecutar_filtro_qqf(self, config_filtro):
+    """Ejecuta un filtro desde un fichero .qqf"""
+    
+    # 1. Validar configuración
+    filtro_def = FilterDefinition(config_filtro)
+    if not filtro_def.is_valid():
+        mostrar error
+        return
+    
+    # 2. Resolver ruta del fichero
+    ruta_carpeta = os.path.dirname(__file__)  # Carpeta de MaBIM
+    ruta_filtro = filtro_def.get_filter_path(ruta_carpeta)
+    
+    # 3. Verificar que fichero existe
+    if not ruta_filtro.exists():
+        mostrar error
+        return
+    
+    # 4. Crear aplicador y aplicar
+    aplicador = MaBIMFilterApplier(QgsProject.instance())
+    success = aplicador.apply_filter_by_file(
+        ruta_filtro,
+        filtro_def.target_layers,
+        show_messages=True,
+        parent_widget=self
+    )
+    
+    # 5. Refrescar si éxito
+    if success:
+        self.canvasA.refresh()
+
+
+ESTRUCTURA DE FICHEROS
+══════════════════════
+
+Ejemplo de árbol de directorios:
+
+MaBIM/
+├── qMaBIM.py                           (MODIFICADO)
+│   ├── Importa MaBIMFilterApplier
+│   ├── _crear_botons_consultes()       (MODIFICADO)
+│   └── _ejecutar_filtro_qqf()           (NUEVO)
+│
+├── MaBIM_FilterUtils.py                (NUEVO)
+│   ├── MaBIMFilterReader               ┐
+│   ├── MaBIMFilterApplier              ├─ 3 clases principales
+│   └── FilterDefinition               ┘
+│
+├── consultes_config.json               (MODIFICADO)
+│   └── Nuevos campos: action_type, filter_file, target_layers
+│
+├── CONSULTES_CONFIG_README.md          (MODIFICADO)
+│   └── Documentación actualizada
+│
+├── GUIA_RAPIDA_FILTROS_QQF.txt        (NUEVO)
+│   └── Guía de usuario
+│
+├── consultes_config.EJEMPLO_COMPLETO.json (NUEVO)
+│   └── Ejemplo con todos los tipos de consultas
+│
+└── filtros/                            (NUEVA CARPETA)
+    ├── viviendas_tipo_A.qqf
+    ├── viviendas_tipo_B.qqf
+    ├── propiedades_mal_estado.qqf
+    ├── viviendas_tipos_A_B.qqf
+    ├── viviendas_grandes.qqf
+    ├── viviendas_antiguas.qqf
+    ├── EJEMPLO_EXPRESIONES_FILTROS.txt
+    └── (TUS FILTROS AQUÍ)
+
+
+ERRORES Y MANEJO
+════════════════
+
+Error: "Fichero de filtro no encontrado"
+────────────────────────────────────────
+Causa: MaBIMFilterReader.read_filter_expression() retorna None
+Solución: Verificar que:
+  - La ruta en filter_file es relativa a carpeta MaBIM
+  - El fichero existe en carpeta filtros/
+  - El nombre es exacto (sensible a mayúsculas/minúsculas)
+
+Error: "No se han encontrado las capas"
+───────────────────────────────────────
+Causa: Las capas especificadas no existen en el proyecto
+Solución:
+  - Verificar nombres exactos de capas en target_layers
+  - Los nombres son sensibles a mayúsculas/minúsculas
+  - El proyecto debe tener las capas cargadas
+
+Error: "Error al leer filtro"
+──────────────────────────────
+Causa: XML no es válido o expresión no se puede parsear
+Solución:
+  - Verificar estructura XML del .qqf
+  - Probar expresión directamente en QGIS
+  - Ver ejemplo de estructura en EJEMPLO_EXPRESIONES_FILTROS.txt
+
+Error: "La expresión no filtra nada"
+────────────────────────────────────
+Causa: La expresión es válida pero no coincide con datos
+Solución:
+  - Verificar nombres de campos (deben estar entre comillas dobles)
+  - Verificar valores (texto entre comillas simples, números sin)
+  - Testar en QGIS primero
+
+
+
+
+PRUEBAS RECOMENDADAS
+════════════════════
+
+Nivel 1: Módulo MaBIM_FilterUtils
+──────────────────────────────────
+from MaBIM_FilterUtils import MaBIMFilterReader, MaBIMFilterApplier
+from pathlib import Path
+
+# Leer fichero
+expr = MaBIMFilterReader.read_filter_expression(
+    Path("filtros/viviendas_tipo_A.qqf")
+)
+print(expr)  # Debe imprimir: "TIPUS_VIVENDA" = 'A'
+
+# Aplicar filtro
+aplicador = MaBIMFilterApplier()
+aplicador.apply_filter_by_file(
+    Path("filtros/viviendas_tipo_A.qqf"),
+    ["Entitats en PV", "Entitats en PH"]
+)
+
+
+Nivel 2: Integración en qMaBIM
+───────────────────────────────
+1. Abrir QGIS con proyecto que tenga:
+   - Capa "Entitats en PV"
+   - Capa "Entitats en PH"
+   - Campos: TIPUS_VIVENDA, ANY_CONSTRUCCIO, SUPERFICIE
+
+2. Ejecutar MaBIM
+
+3. Verificar en panel Consultes:
+   - Aparecen botones de filtros
+   - Al hacer clic se aplican filtros
+   - Capas se filtran correctamente
+   - Canvas se refresca
+
+
+EXTENSIONES FUTURAS
+═══════════════════
+
+1. Guardar/cargar estado de filtros
+2. Combinación de múltiples filtros
+3. Interfaz gráfica para crear filtros
+4. Historial de filtros aplicados
+5. Estadísticas de filtros (cuántos registros quedan)
+6. Exportar filtros personalizados like como favoritos
+
+
+═══════════════════════════════════════════════════════════════════════════════
+Última actualización: 2026-03-10
+Versión: 1.0
+═══════════════════════════════════════════════════════════════════════════════

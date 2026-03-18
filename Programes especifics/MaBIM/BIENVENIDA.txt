@@ -1,0 +1,273 @@
+╔═══════════════════════════════════════════════════════════════════════════════╗
+║                                                                               ║
+║                   🎯 SISTEMA DE FILTROS .QQF IMPLEMENTADO 🎯                 ║
+║                                                                               ║
+║                    Bienvenido a tu nueva funcionalidad en MaBIM               ║
+║                                                                               ║
+╚═══════════════════════════════════════════════════════════════════════════════╝
+
+
+✨ ¿QUÉ HAS OBTENIDO?
+════════════════════
+
+Ahora puedes aplicar filtros a las capas "Entitats en PV" y "Entitats en PH"
+mediante botones configurables en el JSON, sin necesidad de crear nuevas capas.
+
+
+📁 ARCHIVOS ENTREGADOS (en carpeta MaBIM)
+════════════════════════════════════════
+
+NUEVOS MÓDULOS:
+  ✓ MaBIM_FilterUtils.py          (El motor de los filtros)
+  ✓ filtros/                       (Carpeta con tus filtros)
+
+EJEMPLOS INCLUIDOS:
+  ✓ filtros/viviendas_tipo_A.qqf
+  ✓ filtros/viviendas_tipo_B.qqf
+  ✓ filtros/propiedades_mal_estado.qqf
+  ✓ filtros/viviendas_tipos_A_B.qqf
+  ✓ filtros/viviendas_grandes.qqf
+  ✓ filtros/viviendas_antiguas.qqf
+
+DOCUMENTACIÓN COMPLETA:
+  📖 GUIA_RAPIDA_FILTROS_QQF.txt          ← COMIENZA AQUÍ
+  📖 CONSULTES_CONFIG_README.md           (Actualizado)
+  📖 DOCUMENTACION_TECNICA_FILTROS_QQF.txt
+  📖 CHECKLIST_IMPLEMENTACION.txt
+  📖 consultes_config.EJEMPLO_COMPLETO.json
+
+REFERENCIAS:
+  📖 filtros/EJEMPLO_EXPRESIONES_FILTROS.txt
+
+
+🚀 INICIO RÁPIDO (3 PASOS)
+═════════════════════════
+
+PASO 1: Crear un fichero .qqf
+─────────────────────────────
+Abre Notepad/VS Code y crea: filtros/mi_filtro.qqf
+
+Contenido:
+┌─────────────────────────────────────────────────────┐
+│ <?xml version="1.0" encoding="UTF-8"?>              │
+│ <layerdefinition>                                   │
+│   <subset>"TIPUS_VIVENDA" = 'A'</subset>            │
+│ </layerdefinition>                                  │
+└─────────────────────────────────────────────────────┘
+
+
+PASO 2: Agregar entrada en consultes_config.json
+───────────────────────────────────────────────
+Abre consultes_config.json y agrega:
+
+┌─────────────────────────────────────────────────────┐
+│ {                                                   │
+│   "id": "mi_filtro",                                │
+│   "texto": "Mi Botón",                              │
+│   "action_type": "filter_qqf",                      │
+│   "filter_file": "filtros/mi_filtro.qqf",           │
+│   "target_layers": ["Entitats en PV",               │
+│                    "Entitats en PH"],                │
+│   "descripcion": "Descripción del filtro"           │
+│ }                                                   │
+└─────────────────────────────────────────────────────┘
+
+
+PASO 3: Usar en MaBIM
+──────────────────────
+1. Cierra MaBIM si está abierto
+2. Vuelve a abrir MaBIM
+3. Verás un nuevo botón "Mi Botón" en panel Consultes
+4. Haz clic para aplicar el filtro
+
+
+⚙️ CARACTERÍSTICAS
+══════════════════
+
+✓ Filtros simples             → "CAMP" = 'valor'
+✓ Filtros complejos           → ("CAM1" > 100) AND ("CAM2" = 'A')
+✓ Múltiples caminos           → "CAM" IN ('A', 'B', 'C')
+✓ Análisis de fechas          → "ANY" >= 1990
+✓ Búsqueda de texto           → "DESCR" LIKE '%plaça%'
+✓ Combinaciones AND/OR        → Expresiones complejas
+
+✓ Aplicación instantánea       → Sin crear capas nuevas
+✓ Retrocompatible            → No rompe funcionalidad vieja
+✓ Fácil de personalizar       → Edita JSON y .qqf
+✓ Mensajes claros            → Confirmación de filtrado
+
+
+📚 DOCUMENTACIÓN POR PERFIL
+════════════════════════════
+
+SI ERES USUARIO (no programador):
+─────────────────────────────────
+1. Lee: GUIA_RAPIDA_FILTROS_QQF.txt
+2. Crea: Tu primer fichero .qqf
+3. Prueba: El botón en MaBIM
+4. Personaliza: Agrega más filtros
+
+
+SI ERES DESARROLLADOR:
+──────────────────────
+1. Lee: DOCUMENTACION_TECNICA_FILTROS_QQF.txt
+2. Estudia: MaBIM_FilterUtils.py
+3. Revisa: Cambios en qMaBIM.py
+4. Extiende: Personaliza según necesités
+
+
+SI TIENES PROBLEMAS:
+────────────────────
+1. Lee: CHECKLIST_IMPLEMENTACION.txt
+2. Verifica: Todos los pasos
+3. Consulta: GUIA_RAPIDA_FILTROS_QQF.txt
+4. Debug: Ver sección de errores
+
+
+🎓 EJEMPLOS PRÁCTICOS
+════════════════════
+
+Ejemplo 1: Solo viviendas tipo A
+─────────────────────────────────
+<?xml version="1.0" encoding="UTF-8"?>
+<layerdefinition>
+  <subset>"TIPUS_VIVENDA" = 'A'</subset>
+</layerdefinition>
+
+
+Ejemplo 2: Viviendas grandes modernas
+──────────────────────────────────────
+<?xml version="1.0" encoding="UTF-8"?>
+<layerdefinition>
+  <subset>("SUPERFICIE" > 100) AND ("ANY_CONSTRUCCIO" >= 1990)</subset>
+</layerdefinition>
+
+
+Ejemplo 3: Propiedades en mal estado
+─────────────────────────────────────
+<?xml version="1.0" encoding="UTF-8"?>
+<layerdefinition>
+  <subset>"ESTAT" IN ('Ruinoso', 'Deteriorado')</subset>
+</layerdefinition>
+
+
+🔧 ESTRUCTURA DE CARPETAS
+══════════════════════════
+
+MaBIM/
+│
+├── qMaBIM.py                           ← Código principal
+│
+├── MaBIM_FilterUtils.py                ← 🆕 Sistema de filtros
+│
+├── consultes_config.json               ← Configuración
+│
+├── GUIA_RAPIDA_FILTROS_QQF.txt         ← 🆕 Manual de inicio
+│
+├── CONSULTES_CONFIG_README.md          ← Documentación
+│
+└── filtros/                            ← 🆕 Tus filtros aquí
+    ├── viviendas_tipo_A.qqf
+    ├── viviendas_tipo_B.qqf
+    ├── propiedades_mal_estado.qqf
+    └── (TUS FILTROS PERSONALIZADOS)
+
+
+📋 CHECKLIST ANTES DE EMPEZAR
+══════════════════════════════
+
+Verificación Rápida:
+  □ ¿Existe carpeta filtros/?
+  □ ¿Están los ejemplos .qqf en esa carpeta?
+  □ ¿Puedo abrir consultes_config.json con editor?
+  □ ¿MaBIM se abre sin errores?
+  □ ¿Aparecen los botones de filtros en Consultes?
+
+Primera Ejecución:
+  □ Abre MaBIM
+  □ Busca botón "Filtrar Viviendas A"
+  □ Haz clic
+  □ ¿Se aplica el filtro? ✓ Si funciona
+
+Problema Detectado:
+  □ Abre CHECKLIST_IMPLEMENTACION.txt
+  □ Busca tu problema
+  □ Sigue las instrucciones
+
+
+💡 TIPS Y TRUCOS
+════════════════
+
+✓ Prueba tus expresiones en QGIS primero
+  → Clic derecho en capa → Filtro
+  → Si funciona allí, funcionará en MaBIM
+
+✓ Usa paréntesis para expresiones complejas
+  → ("CAM1" = 'A') AND ("CAM2" > 100)  ← Más claro
+
+✓ Los nombres de campos son sensibles a mayúsculas
+  → "BIM" ≠ "bim"
+  → Verifica exactamente en QGIS
+
+✓ Valores de texto con comillas simples
+  → "CAMP" = 'valor'  ← Correcto
+  → "CAMP" = "valor"  ← Incorrecto
+
+✓ Números sin comillas
+  → "YEAR" = 1990  ← Correcto
+  → "YEAR" = '1990'  ← Incorrecto
+
+
+🎯 PRÓXIMOS PASOS
+═════════════════
+
+Ahora que tienes el sistema:
+
+1. Crea tus primeros filtros personalizados
+2. Prueba combinaciones complejas
+3. Comparte con tu equipo
+4. Documenta tus filtros
+5. Optimiza según uso
+
+
+❓ PREGUNTAS FRECUENTES
+═════════════════════
+
+P: ¿Puedo modificar los ejemplos?
+R: Sí, todos los .qqf son modificables. Prueba experimentar.
+
+P: ¿Qué pasa si borro un .qqf?
+R: El botón mostrará error. Restaura el archivo o borra la entrada del JSON.
+
+P: ¿Puedo combinar múltiples filtros?
+R: Sí, mediante AND/OR en la expresión dentro del .qqf.
+
+P: ¿Compatible con otros formatos?
+R: De momento solo .qqf. También soporta texto plano con expresión.
+
+P: ¿Se pierden casos al filtrar?
+R: No, es solo un filtro visual. Los datos no se pierden. Puedes limpiar.
+
+
+🆘 OBTENER AYUDA
+═════════════════
+
+Si necesitas ayuda:
+
+1. Lee GUIA_RAPIDA_FILTROS_QQF.txt           (Problemas comunes)
+2. Consulta DOCUMENTACION_TECNICA_....txt    (Arquitectura)
+3. Verifica CHECKLIST_IMPLEMENTACION.txt     (Paso a paso)
+4. Revisa EJEMPLO_EXPRESIONES_FILTROS.txt    (Sintaxis)
+
+
+═══════════════════════════════════════════════════════════════════════════════
+
+                          ¡LISTO PARA COMENZAR! 🚀
+                              
+                    Disfruta tu nuevo sistema de filtros
+
+═══════════════════════════════════════════════════════════════════════════════
+
+Versión: 1.0
+Fecha: 10 Marzo 2026
+Estado: ✓ Producción

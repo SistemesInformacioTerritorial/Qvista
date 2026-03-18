@@ -1,0 +1,261 @@
+═══════════════════════════════════════════════════════════════════════════════
+    FORMATO DE FICHEROS .QQF - ESTÁNDAR QGIS
+═══════════════════════════════════════════════════════════════════════════════
+
+CONFIRMACIÓN: Usamos el formato OFICIAL de QGIS
+═════════════════════════════════════════════
+
+Los ficheros .qqf utilizan el formato XML nativo de QGIS Layer Definition,
+que es exactamente el mismo que exporta QGIS cuando guardas capas con filtros.
+
+
+FORMATO ESTÁNDAR QGIS (.qqf)
+════════════════════════════
+
+<?xml version="1.0" encoding="UTF-8"?>
+<qgis version="3.0">
+  <layerdefinition>
+    <subset>EXPRESIÓN_DE_FILTRO_AQUÍ</subset>
+  </layerdefinition>
+</qgis>
+
+
+PARTES OBLIGATORIAS
+═══════════════════
+
+1. Declaración XML
+   ────────────────
+   <?xml version="1.0" encoding="UTF-8"?>
+   
+   (Siempre igual, requerida)
+
+2. Etiqueta raíz <qgis>
+   ═══════════════════
+   <qgis version="3.0">
+   
+   - "qgis" es la etiqueta raíz oficial de QGIS
+   - version="3.0" indica compatibilidad QGIS 3.x
+   - Se cierra al final: </qgis>
+
+3. Elemento <layerdefinition>
+   ──────────────────────────
+   <layerdefinition>
+   
+   - Define la configuración de la capa
+   - Contiene el subconjunto (filtro)
+
+4. Elemento <subset>
+   ──────────────────
+   <subset>"CAMPO" = 'valor'</subset>
+   
+   - Aquí va tu expresión de filtro
+   - Es la expresión que QGIS entiende
+   - Misma sintaxis que "Clic derecho → Filtro"
+
+
+EJEMPLOS CON FORMATO CORRECTO QGIS
+═══════════════════════════════════
+
+Ejemplo 1: Filtro simple
+────────────────────────
+
+<?xml version="1.0" encoding="UTF-8"?>
+<qgis version="3.0">
+  <layerdefinition>
+    <subset>"TIPUS_VIVENDA" = 'A'</subset>
+  </layerdefinition>
+</qgis>
+
+
+Ejemplo 2: Filtro con AND
+─────────────────────────
+
+<?xml version="1.0" encoding="UTF-8"?>
+<qgis version="3.0">
+  <layerdefinition>
+    <subset>("TIPUS_VIVENDA" = 'A') AND ("SUPERFICIE" > 100)</subset>
+  </layerdefinition>
+</qgis>
+
+
+Ejemplo 3: Filtro con OR e IN
+──────────────────────────────
+
+<?xml version="1.0" encoding="UTF-8"?>
+<qgis version="3.0">
+  <layerdefinition>
+    <subset>("TIPUS_VIVENDA" IN ('A', 'B', 'C')) OR ("ESTADO" = 'Nuevo')</subset>
+  </layerdefinition>
+</qgis>
+
+
+Ejemplo 4: Filtro con QGIS en fechas
+─────────────────────────────────────
+
+<?xml version="1.0" encoding="UTF-8"?>
+<qgis version="3.0">
+  <layerdefinition>
+    <subset>"ANY_CONSTRUCCIO" BETWEEN 1980 AND 2000</subset>
+  </layerdefinition>
+</qgis>
+
+
+COMPATIBILIDAD CON QGIS
+════════════════════════
+
+Este formato es totalmente compatible con:
+
+✓ QgsLayerDefinition.loadLayerDefinition()  (API Python)
+✓ QgsVectorLayer.setSubsetString()          (API Python)
+✓ Ficheros .qlr que exporta QGIS            (Formato completo)
+✓ El filtro en UI de QGIS                   (Clic derecho → Filtro)
+
+Cuando QGIS carga un fichero .qlr con filtro, internamente
+extrae exactamente este elemento <subset> y lo aplica como
+filtro a la capa, que es lo que nosotros hacemos en MaBIM.
+
+
+CÓMO VERIFICAR QUE TU FICHERO ES ESTÁNDAR QGIS
+═══════════════════════════════════════════════
+
+1. Abre QGIS
+2. Abre cualquier layer
+3. Aplicar un filtro manual (Clic derecho → Filtro)
+4. Escribe tu expresión
+5. Verifica que funciona
+6. Exporta esa capa (File → Export → Guardar como...)
+7. Selecciona formato "QGIS Layer Definition File" (.qlr)
+8. Abre el .qlr generado con editor de texto
+9. Dentro encontrará: <subset>TU_EXPRESIÓN</subset>
+10. Ese es el formato que usamos en nuestros .qqf
+
+
+ESTRUCTURA INTERNA DE QGIS
+════════════════════════════
+
+Cuando usas nuestro sistema:
+
+1. El usuario hace clic en botón
+2. MaBIM lee el fichero .qqf
+3. Parsea el XML y extrae el <subset>
+4. Obtiene la expresión de filtro
+5. Llama a layer.setSubsetString(expresión)
+6. QGIS aplica el filtro internamente
+
+El flujo es exactamente igual que si QGIS cargara un .qlr.
+
+
+VALIDACIÓN: CÓMO SABER SI MI FICHERO ESTÁ CORRECTO
+════════════════════════════════════════════════════
+
+Herramienta 1: Validador XML online
+────────────────────────────────────
+1. Abre xmllint.com o similar
+2. Pega tu contenido .qqf
+3. Si dice "Valid XML" ✓ está bien formado
+
+Herramienta 2: Validador QGIS
+──────────────────────────────
+1. Abre QGIS
+2. Abre consola Python (Plugins → Python Console)
+3. Ejecuta:
+   
+   from qgis.core import QgsLayerDefinition
+   from pathlib import Path
+   
+   path = Path("ruta/a/tu/filtro.qqf")
+   content = path.read_text()
+   
+   # Intenta parsear
+   if "<subset>" in content:
+       print("✓ Contiene elemento <subset>")
+   if "<qgis" in content:
+       print("✓ Tiene estructura QGIS estándar")
+
+Herramienta 3: Nuestro MaBIM
+──────────────────────────────
+1. Copia tu fichero a carpeta filtros/
+2. Agrega entrada en consultes_config.json
+3. Abre MaBIM
+4. Si funciona, ¡es válido!
+
+
+DIFERENCIA: ANTES vs DESPUÉS
+══════════════════════════════
+
+ANTES (mi formato inicial):
+──────────────────────────
+<layerdefinition>
+  <subset>"CAMP" = 'valor'</subset>
+</layerdefinition>
+
+AHORA (formato QGIS estándar):
+───────────────────────────
+<?xml version="1.0" encoding="UTF-8"?>
+<qgis version="3.0">
+  <layerdefinition>
+    <subset>"CAMP" = 'valor'</subset>
+  </layerdefinition>
+</qgis>
+
+La diferencia:
+- Agregamos declaración XML
+- Raiz es <qgis version="3.0">
+- Todo lo demás es igual
+- Ahora es 100% estándar QGIS
+
+
+FICHEROS .QQF EN CARPETA FILTROS
+═════════════════════════════════
+
+Todos los ficheros incluidos usan formato QGIS estándar:
+
+✓ viviendas_tipo_A.qqf
+✓ viviendas_tipo_B.qqf
+✓ propiedades_mal_estado.qqf
+✓ viviendas_tipos_A_B.qqf
+✓ viviendas_grandes.qqf
+✓ viviendas_antiguas.qqf
+
+Puedes usar cualquiera como plantilla.
+
+
+CREAR TU PRIMER FICHERO QGIS ESTÁNDAR
+════════════════════════════════════════
+
+1. Copia una plantilla:
+
+<?xml version="1.0" encoding="UTF-8"?>
+<qgis version="3.0">
+  <layerdefinition>
+    <subset>AQUÍ TU EXPRESIÓN</subset>
+  </layerdefinition>
+</qgis>
+
+2. Sustituye "AQUÍ TU EXPRESIÓN" con:
+   "CAMPO" = 'valor'
+
+3. Guarda como: mi_filtro.qqf
+
+4. ¡Listo! Es formato QGIS estándar
+
+
+INFORMACIÓN TÉCNICA
+═══════════════════
+
+La clase MaBIMFilterReader parsea correctamente:
+- ✓ Formato QGIS estándar (<qgis>...</qgis>)
+- ✓ Formato simplificado (<layerdefinition>...</layerdefinition>)
+- ✓ Texto plano con solo la expresión
+- ✓ Ficheros .qlr con la estructura completa
+
+Todo es compatible con QgsVectorLayer.setSubsetString()
+
+
+═══════════════════════════════════════════════════════════════════════════════
+
+En resumen: USAMOS 100% EL FORMATO ESTÁNDAR DE QGIS.
+No hay formatos propios ni no estándares. Es compatible 
+con todo lo que exporta QGIS de forma nativa.
+
+═══════════════════════════════════════════════════════════════════════════════

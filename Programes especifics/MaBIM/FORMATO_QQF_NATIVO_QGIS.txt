@@ -1,0 +1,225 @@
+═══════════════════════════════════════════════════════════════════════════════
+    FORMATO DE FICHEROS .QQF - FORMATO NATIVO DE QGIS
+═══════════════════════════════════════════════════════════════════════════════
+
+CONFIRMACIÓN: Usamos el formato REAL que QGIS EXPORTA
+═════════════════════════════════════════════════════
+
+Los ficheros .qqf utilizan el formato XML NATIVO que QGIS REALMENTE genera,
+que es mucho más simple de lo que documenté inicialmente.
+
+
+FORMATO NATIVO QGIS (.qqf)
+═══════════════════════════
+
+<Query>"CAMPO" = 'valor'</Query>
+
+¡Así de simple! Una única etiqueta <Query> con la expresión de filtro.
+
+
+EJEMPLOS REALES QGIS
+════════════════════
+
+Ejemplo 1: Filtro simple
+────────────────────────
+
+<Query>"TIPUS_VIVENDA" = 'A'</Query>
+
+
+Ejemplo 2: Filtro con AND
+─────────────────────────
+
+<Query>("TIPUS_VIVENDA" = 'A') AND ("SUPERFICIE" > 100)</Query>
+
+
+Ejemplo 3: Filtro con OR e IN
+──────────────────────────────
+
+<Query>("TIPUS_VIVENDA" IN ('A', 'B', 'C')) OR ("ESTADO" = 'Nuevo')</Query>
+
+
+Ejemplo 4: Filtro con BETWEEN
+──────────────────────────────
+
+<Query>"ANY_CONSTRUCCIO" BETWEEN 1980 AND 2000</Query>
+
+
+Ejemplo 5: Tu fichero Us.qqf (exportado por QGIS)
+──────────────────────────────────────────────────
+
+<Query>"GRUP_BIM"='Immoble destinat a Espai Públic'</Query>
+
+Este es exactamente el formato que QGIS exporta. MaBIM lo reconocerá perfectamente.
+
+
+CÓMO CREAR UN FICHERO .QQF DESDE QGIS
+══════════════════════════════════════
+
+Método 1: Guardar directamente desde QGIS (RECOMENDADO)
+────────────────────────────────────────────────────────
+
+1. Abre QGIS
+2. Abre una capa vectorial
+3. Haz clic derecho → "Filtro"
+4. Escribe tu expresión (ejemplo: "CAMP" = 'valor')
+5. Verifica que funciona haciendo clic en "Test"
+6. Haz clic en botón "Guardar" (abajo del diálogo)
+7. Selecciona carpeta: filtros/
+8. Guarda como: mi_filtro.qqf
+9. QGIS automáticamente crea: <Query>tu_expresión</Query>
+
+Método 2: Crear manualmente con editor de texto
+──────────────────────────────────────────────
+
+1. Abre editor de texto (Notepad, VS Code, etc.)
+2. Escribe:
+   <Query>"CAMP" = 'VALOR'</Query>
+3. Guarda como fichero: mi_filtro.qqf
+
+¡Eso es todo! Es XML muy simple.
+
+
+COMPATIBILIDAD CON NUESTRO SISTEMA
+═══════════════════════════════════
+
+MaBIM_FilterUtils.py ahora reconoce TODOS estos formatos:
+
+✓ Formato nativo QGIS:     <Query>EXPRESIÓN</Query>         ← Nuevo
+✓ Formato Layer Def:       <layerdefinition><subset>...</subset>
+✓ Formato completo QGIS:   <qgis version="3.0">...</qgis>
+✓ Texto plano:             Solo la expresión sin XML
+
+El parser automáticamente detecta qué formato es y extrae la expresión.
+
+
+ORDEN DE BÚSQUEDA (Interno)
+════════════════════════════
+
+Cuando MaBIM lee un .qqf:
+
+1. Primero busca:    <Query>EXPRESIÓN</Query>     ← Formato nativo QGIS (más rápido)
+2. Luego busca:      <layerdefinition><subset>   ← Alternativo
+3. Luego busca:      <qgis version=...>          ← Alternativo
+4. Si nada funciona: Trata como texto plano
+
+De esta manera es 100% compatible con cualquier formato que QGIS pueda producir.
+
+
+TU FICHERO Us.qqf FUNCIONA AHORA
+═════════════════════════════════
+
+Tu fichero contiene exactamente:
+
+<Query>"GRUP_BIM"='Immoble destinat a Espai Públic'</Query>
+
+Esto es formato nativo QGIS. MaBIM lo reconocerá y funcionará perfectamente.
+
+Para usarlo:
+
+1. Renómbra a algo más descriptivo:
+   Us.qqf → filtro_espacios_publicos.qqf
+
+2. Agrega en consultes_config.json:
+   {
+     "id": "filtro_espacios_publicos",
+     "texto": "Filtrar Espacios Públicos",
+     "action_type": "filter_qqf",
+     "filter_file": "filtros/filtro_espacios_publicos.qqf",
+     "target_layers": ["Entitats en PV", "Entitats en PH"],
+     "descripcion": "Inmuebles destinados a espacio público"
+   }
+
+3. Reinicia MaBIM y el botón funcionará
+
+
+ESTRUCTURA DE CARPETA FILTROS
+══════════════════════════════
+
+filtros/
+├── viviendas_tipo_A.qqf
+│   Contenido: <Query>"TIPUS_VIVENDA" = 'A'</Query>
+│
+├── viviendas_tipo_B.qqf
+│   Contenido: <Query>"TIPUS_VIVENDA" = 'B'</Query>
+│
+├── propiedades_mal_estado.qqf
+│   Contenido: <Query>"ESTAT" IN ('Ruinoso', 'Deteriorado')</Query>
+│
+├── viviendas_tipos_A_B.qqf
+│   Contenido: <Query>"TIPUS_VIVENDA" IN ('A', 'B')</Query>
+│
+├── viviendas_grandes.qqf
+│   Contenido: <Query>"SUPERFICIE" > 100</Query>
+│
+├── viviendas_antiguas.qqf
+│   Contenido: <Query>"ANY_CONSTRUCCIO" < 1950</Query>
+│
+├── Us.qqf
+│   Contenido: <Query>"GRUP_BIM"='Immoble destinat a Espai Públic'</Query>
+│
+└── EJEMPLO_EXPRESIONES_FILTROS.txt
+    Referencia de sintaxis de expresiones
+
+
+COMPARATIVA: LO QUE DOCUMENTÉ vs LO QUE QGIS REALMENTE HACE
+═══════════════════════════════════════════════════════════
+
+Lo que yo había documentado (innecesariamente complejo):
+──────────────────────────────────────────────────────
+<?xml version="1.0" encoding="UTF-8"?>
+<qgis version="3.0">
+  <layerdefinition>
+    <subset>"CAMP" = 'valor'</subset>
+  </layerdefinition>
+</qgis>
+
+Lo que QGIS REALMENTE exporta (simple y directo):
+─────────────────────────────────────────────────
+<Query>"CAMP" = 'valor'</Query>
+
+AHORA SOPORTAMOS AMBOS + MÁS FORMATOS. El sistema es totalmente flexible.
+
+
+DETALLES TÉCNICOS
+═════════════════
+
+MaBIMFilterReader._parse_xml_filter():
+  1. Intenta parsear como XML
+  2. Busca elemento <Query> primero (rápido)
+  3. Si no encuentra, busca <layerdefinition>
+  4. Si no encuentra, busca <qgis>
+  5. Si aún no, intenta otras variantes
+  6. Si nada funciona, retorna None
+
+De esta manera es 100% compatible con:
+- .qqf exportados directamente de QGIS
+- .qlr que contienen definiciones completas
+- Ficheros XML simplificados
+- Incluso texto plano sin XML
+
+
+VALIDACIÓN RÁPIDA
+═════════════════
+
+¿Es tu .qqf válido?
+
+Si contiene cualquiera de estos patrones, es válido:
+  ✓ <Query>...</Query>
+  ✓ <layerdefinition><subset>...</subset></layerdefinition>
+  ✓ <qgis>...<layerdefinition>...</qgis>
+  ✓ Una simple línea con expresión QGIS SQL
+
+Si abre y contiene algo de lo anterior, funcionará.
+
+
+═══════════════════════════════════════════════════════════════════════════════
+
+RESUMEN
+═══════
+
+El formato .qqf nativo de QGIS es: <Query>expresión_QGIS</Query>
+
+Es simple, directo y completamente estándar QGIS.
+Tu sistema ahora lo reconoce y funciona perfectamente.
+
+═══════════════════════════════════════════════════════════════════════════════

@@ -1,0 +1,193 @@
+═══════════════════════════════════════════════════════════════════════════════
+            SOLUCIÓN DE PROBLEMAS: FICHERO Us.qqf NO SE LEE
+═══════════════════════════════════════════════════════════════════════════════
+
+SI AÚN NO FUNCIONA, PRUEBA ESTO:
+═════════════════════════════════
+
+
+PASO 1: Ejecuta el script de prueba
+════════════════════════════════════
+
+Abre PowerShell en la carpeta MaBIM y ejecuta:
+
+    python test_filtros.py
+
+Esto te mostrará exactamente qué está pasando con cada fichero .qqf
+
+
+PASO 2: Verifica el contenido del us.qqf
+══════════════════════════════════════════
+
+Abre el fichero Us.qqf con Notepad:
+
+    Contenido esperado:
+    <Query>"GRUP_BIM"='Immoble destinat a Espai Públic'</Query>
+
+Si contiene OTRA cosa, el problema es el formato del fichero.
+
+
+PASO 3: Verifica en consola Python de QGIS
+═════════════════════════════════════════
+
+Los mensajes de error te dirán exactamente qué está mal.
+
+Si ves en consola de MaBIM algo como:
+    ERROR: Fichero de filtro no encontrado
+    ERROR parseando XML
+
+Significa que:
+1. El fichero no existe en la ruta correcta
+2. El XML está malformado
+
+
+PASO 4: Verificación manual en Python
+═══════════════════════════════════════
+
+Abre Python (en la carpeta MaBIM) y prueba:
+
+    from pathlib import Path
+    import xml.etree.ElementTree as ET
+    
+    # Leer el fichero
+    content = Path("filtros/Us.qqf").read_text(encoding='utf-8').strip()
+    print("Contenido:")
+    print(content)
+    
+    # Intentar parsear
+    try:
+        root = ET.fromstring(content)
+        print(f"\n✓ XML válido")
+        print(f"  Tag raíz: {root.tag}")
+        print(f"  Texto: {root.text}")
+    except Exception as e:
+        print(f"\n✗ Error parseando: {e}")
+
+
+PROBLEMAS COMUNES Y SOLUCIONES
+═══════════════════════════════════
+
+Problema 1: "Fichero no encontrado"
+───────────────────────────────────
+
+Solución:
+- Verifica que Us.qqf está en: Programes especifics/MaBIM/filtros/
+- Verifica que el nombre es exacto (mayúsculas/minúsculas)
+- En consultes_config.json usa: "filter_file": "filtros/Us.qqf"
+
+
+Problema 2: "No se pudo extraer expresión"
+────────────────────────────────────────
+
+El fichero existe pero el parser no lo entiende.
+
+Soluciones:
+a) Verifica que el contenido es válido XML
+   - Abre el fichero en Notepad
+   - Debe contener: <Query>...</Query>
+   
+b) Copia el contenido correcto:
+   - Abre Us.qqf
+   - Borra todo
+   - Pega exactamente:
+     <Query>"GRUP_BIM"='Immoble destinat a Espai Públic'</Query>
+   - Guarda
+
+
+Problema 3: "Error parseando XML"
+──────────────────────────────────
+
+Significa que el XML NO es válido.
+
+Soluciones:
+a) Abre Us.qqf en editor de texto con vista XML
+b) Verifica caracteres especiales (acentos, caracteres raros)
+c) Verifica que no hay espacios antes de <Query>
+d) Verifica que no hay caracteres después de </Query>
+
+
+Problema 4: Funciona en test_filtros.py pero no en MaBIM
+─────────────────────────────────────────────────────────
+
+Posibles causas:
+a) La ruta en consultes_config.json es incorrecta
+b) El JSON tienes un error de sintaxis
+c) Hay errores en qMaBIM.py
+
+Soluciones:
+1. Abre consultes_config.json y verifica:
+   {
+     "filter_file": "filtros/Us.qqf",  ← Ruta relativa correcta
+     "target_layers": ["Entitats en PV", "Entitats en PH"]
+   }
+
+2. Abre PowerShell y verifica JSON:
+   python -m json.tool consultes_config.json
+   
+   Si hay error, verifica las comas, comillas, etc.
+
+
+OPCIÓN NUCLEAR: CREAR NUEVA COPIA LIMPIA
+═════════════════════════════════════════
+
+Si nada funciona, prueba crear un nuevo fichero:
+
+1. Abre Notepad
+2. Copia EXACTAMENTE:
+   <Query>"GRUP_BIM"='Immoble destinat a Espai Públic'</Query>
+
+3. Guarda COMO NUEVO FICHERO:
+   filtros/filtro_espacios_publicos.qqf
+
+4. NO toques el Us.qqf original
+
+5. Usa en consultes_config.json:
+   "filter_file": "filtros/filtro_espacios_publicos.qqf"
+
+
+OBTENER LOGS DETALLADOS
+════════════════════════
+
+Si quieres ver exactamente qué está pasando:
+
+1. Abre qMaBIM.py
+2. En método _ejecutar_filtro_qqf(), busca:
+   print(f"DEBUG: Intentando leer {ruta_filtro}")
+   
+   Agrega ANTES:
+   print(f"DEBUG: Intentando leer {ruta_filtro}")
+   print(f"DEBUG: Existe: {ruta_filtro.exists()}")
+
+3. Cuando ejecutes MaBIM con el botón, verás los logs
+
+
+VERIFICAR QUE FUNCIONA
+═══════════════════════
+
+Test manual en Python dentro de MaBIM:
+
+1. Abre consola Python (en QGIS mientras tienes MaBIM abierto)
+2. Ejecuta:
+   
+   from MaBIM_FilterUtils import MaBIMFilterReader
+   from pathlib import Path
+   
+   result = MaBIMFilterReader.read_filter_expression(
+       Path("Programes especifics/MaBIM/filtros/Us.qqf")
+   )
+   print(f"Expresión: {result}")
+
+3. Si ves la expresión => FUNCIONA
+4. Si ves None => problema en parser
+
+
+═══════════════════════════════════════════════════════════════════════════════
+
+¿ACEPTAS AYUDA MÁS ESPECÍFICA?
+
+Intenta primero:
+1. Ejecutar: python test_filtros.py
+2. Pasteame el output
+3. Te diré exactamente qué arreglar
+
+═══════════════════════════════════════════════════════════════════════════════
