@@ -77,7 +77,7 @@ if __name__ == "__main__":
 
     with qgisapp(guienabled=gui) as app:
 
-        x, y = QvGeocod().coordsCarrerNum('C', 'SANT ANTONI MARIA CLARET', '272')
+        x, y = QvGeocod().coordsCarrerNum('C', 'SANT ANTONI MARIA CLARET, 272')
         if x is None or y is None:
             print('No coords')
         else:

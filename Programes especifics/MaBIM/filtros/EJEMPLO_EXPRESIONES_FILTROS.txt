@@ -1,0 +1,217 @@
+╔══════════════════════════════════════════════════════════════════════════════╗
+║           GUÍA DE EXPRESIONES DE FILTRO PARA FICHEROS .QQF EN MABIM          ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+ESTRUCTURA BÁSICA DE UN FICHERO .QQF:
+═════════════════════════════════════
+
+<?xml version="1.0" encoding="UTF-8"?>
+<layerdefinition>
+  <subset>EXPRESIÓN_AQUÍ</subset>
+</layerdefinition>
+
+
+EXPRESIONES SIMPLES:
+═══════════════════
+
+1. IGUALDAD (comparar campos con valores)
+   ─────────────────────────────────────
+   "TIPUS_VIVENDA" = 'A'
+   "ANY_CONSTRUCCIO" = 2015
+   "SUPERFICIE" = 85.5
+
+
+2. DESIGUALDAD
+   ────────────
+   "SUPERFICIE" > 100                    # Mayor que
+   "SUPERFICIE" < 150                    # Menor que
+   "ANY_CONSTRUCCIO" >= 1990             # Mayor o igual
+   "ANY_CONSTRUCCIO" <= 2010             # Menor o igual
+   "TIPUS_VIVENDA" != 'D'                # Distinto
+
+
+3. BÚSQUEDA DE TEXTO (LIKE)
+   ─────────────────────────
+   "DENOMINACIO" LIKE '%appartament%'    # Contiene "appartament"
+   "DENOMINACIO" LIKE 'Planta%'          # Comienza por "Planta"
+   "DENOMINACIO" LIKE '%special'         # Termina por "special"
+
+
+4. VALORES NULOS
+   ──────────────
+   "SUPERFICIE" IS NULL                  # Campo vacío
+   "SUPERFICIE" IS NOT NULL              # Campo con valor
+
+
+EXPRESS COMPLEJAS (MÚLTIPLES CONDICIONES):
+════════════════════════════════════════════
+
+1. OPERADOR AND (todas las condiciones deben cumplirse)
+   ──────────────────────────────────────────────────
+   ("TIPUS_VIVENDA" = 'A') AND ("SUPERFICIE" > 80)
+   ("ANY_CONSTRUCCIO" >= 1990) AND ("SUPERFICIE" < 150)
+
+
+2. OPERADOR OR (al menos una condición debe cumplirse)
+   ───────────────────────────────────────────────
+   ("TIPUS_VIVENDA" = 'A') OR ("TIPUS_VIVENDA" = 'B')
+   ("ESTADO" = 'Ruinoso') OR ("ESTADO" = 'Deteriorado')
+
+
+3. COMBINACIONES COMPLEJAS
+   ──────────────────────
+   (("TIPUS_VIVENDA" = 'A') OR ("TIPUS_VIVENDA" = 'B')) AND ("SUPERFICIE" > 100)
+   ("ANY_CONSTRUCCIO" >= 1990) AND (("SUPERFICIE" > 80) OR ("SUPERFICIE" < 50))
+
+
+4. OPERADOR IN (en una lista de valores)
+   ────────────────────────────────────
+   "TIPUS_VIVENDA" IN ('A', 'B', 'C')
+   "ESTADO" IN ('Ruinoso', 'Deteriorado', 'Normal')
+
+
+FUNCIONES DISPONIBLES:
+══════════════════════
+
+1. LENGTH (longitud de texto)
+   ────────────────────────
+   LENGTH("DENOMINACIO") > 20
+
+
+2. UPPER/LOWER (convertir mayúsculas/minúsculas)
+   ──────────────────────────────────────────
+   UPPER("ESTADO") = 'RUINOSO'
+   LOWER("DENOMINACIO") LIKE '%plaça%'
+
+
+3. SUBSTRING (extraer parte de texto)
+   ──────────────────────────────────
+   SUBSTRING("BIM", 1, 2) = 'AA'
+
+
+4. YEAR (extraer año de una fecha)
+   ──────────────────────────────
+   YEAR("DATA_CONSTRUCCIO") >= 1990
+
+
+5. ABS (valor absoluto)
+   ────────────────────
+   ABS("AREA") > 100
+
+
+EJEMPLOS PRÁCTICOS PARA MABIM:
+═══════════════════════════════
+
+Filtro: Viviendas tipo A construidas después de 1990
+────────────────────────────────────────────────────
+("TIPUS_VIVENDA" = 'A') AND ("ANY_CONSTRUCCIO" >= 1990)
+
+FICHERO: viviendas_tipo_A_moderno.qqf
+<?xml version="1.0" encoding="UTF-8"?>
+<layerdefinition>
+  <subset>("TIPUS_VIVENDA" = 'A') AND ("ANY_CONSTRUCCIO" >= 1990)</subset>
+</layerdefinition>
+
+
+Filtro: Propiedades en mal estado
+──────────────────────────────────
+"ESTADO" IN ('Ruinoso', 'Deteriorado', 'Deficiente')
+
+FICHERO: propiedades_mal_estado.qqf
+<?xml version="1.0" encoding="UTF-8"?>
+<layerdefinition>
+  <subset>"ESTADO" IN ('Ruinoso', 'Deteriorado', 'Deficiente')</subset>
+</layerdefinition>
+
+
+Filtro: Viviendas grandes para reformar
+─────────────────────────────────────
+("SUPERFICIE" > 150) AND ("ESTADO" IN ('Ruinoso', 'Deteriorado'))
+
+FICHERO: viviendas_grandes_reformar.qqf
+<?xml version="1.0" encoding="UTF-8"?>
+<layerdefinition>
+  <subset>("SUPERFICIE" > 150) AND ("ESTADO" IN ('Ruinoso', 'Deteriorado'))</subset>
+</layerdefinition>
+
+
+Filtro: BIMs que contienen cierta serie
+──────────────────────────────────────
+"BIM" LIKE 'XAA%'
+
+FICHERO: bim_serie_xaa.qqf
+<?xml version="1.0" encoding="UTF-8"?>
+<layerdefinition>
+  <subset>"BIM" LIKE 'XAA%'</subset>
+</layerdefinition>
+
+
+CÓMO CREAR NUEVO FICHERO .QQF:
+═════════════════════════════
+
+1. Abre un editor de texto (Notepad, VS Code, etc.)
+
+2. Copia este plantilla:
+   ──────────────────
+   <?xml version="1.0" encoding="UTF-8"?>
+   <layerdefinition>
+     <subset>TU_EXPRESIÓN_AQUÍ</subset>
+   </layerdefinition>
+
+3. Reemplaza "TU_EXPRESIÓN_AQUÍ" con tu filtro
+   ────────────────────────────────────────
+   Ejemplo: "TIPUS_VIVENDA" = 'A'
+
+4. Guarda como: mi_filtro.qqf en la carpeta "filtros/"
+
+5. Referencia en consultes_config.json:
+   ──────────────────────────────────
+   {
+     "id": "mi_filtro",
+     "texto": "Aplicar mi filtro",
+     "action_type": "filter_qqf",
+     "filter_file": "filtros/mi_filtro.qqf",
+     "target_layers": ["Entitats en PV", "Entitats en PH"],
+     "descripcion": "Descripción de mi filtro"
+   }
+
+
+DEPURACIÓN DE EXPRESIONES:
+═══════════════════════════
+
+Si tu filtro no funciona:
+
+1. Verifica los nombres de campos
+   ────────────────────────────
+   - Ve a QGIS → Click derecho en capa → Propiedades → Campos
+   - Los nombres deben estar entre comillas dobles: "NOMBRE_CAMPO"
+
+2. Verifica el tipo de datos
+   ──────────────────────────
+   - Textos: entre comillas simples: 'valor'
+   - Números: sin comillas: 123
+   - Fechas: entre comillas simples: '2020-01-01'
+
+3. Prueba en QGIS primero
+   ──────────────────────
+   - Clic derecho en capa → Filtro
+   - Escribe tu expresión
+   - Si funciona en QGIS, funcionará en .qqf
+
+4. Usa paréntesis para evitar ambigüedad
+   ──────────────────────────────────────
+   BIEN:   ("CAMPO1" = 'A') AND ("CAMPO2" > 100)
+   MALO:   "CAMPO1" = 'A' AND "CAMPO2" > 100   (ambiguo)
+
+
+NOTAS IMPORTANTES:
+════════════════
+
+- Los nombres de campos tienen COMILLAS DOBLES: "CAMPO"
+- Los valores de texto tienen COMILLAS SIMPLES: 'valor'
+- Los números NO tienen comillas: 123
+- La expresión va entre las etiquetas <subset></subset>
+- Un fichero .qqf solo puede contener una expresión de filtro
+- Para expresiones complejas, usa paréntesis para mayor claridad
+
+═════════════════════════════════════════════════════════════════════════════════

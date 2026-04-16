@@ -1,7 +1,23 @@
+# ---------------------------------------------
+# qMaBIM.py - Script principal de la aplicación MaBIM
+# ---------------------------------------------
+# Este script implementa la interfaz principal de la aplicación MaBIM,
+# basada en PyQt5 y QGIS Python API. Permite la gestión de capas,
+# consultas, visualización de atributos y herramientas GIS personalizadas
+# para la gestión de patrimonio inmobiliario del Ajuntament de Barcelona.
+#
+# Estructura principal:
+# - Clase QMaBIM: Ventana principal, gestión de UI y lógica de negocio
+# - Carga dinámica de consultas desde JSON externo
+# - Integración con QvAtributs para tablas de atributos
+# - Funciones para exportar, filtrar y gestionar capas
+# ---------------------------------------------
+
 #from MaBIM-ui import Ui_MainWindow
 import argparse
 import functools
 import getpass
+import json
 import math
 import os
 import subprocess
@@ -13,7 +29,7 @@ from functools import partial
 import configuracioQvista
 from moduls import QvFuncions
 from moduls.QvApp import QvApp
-from moduls.QvAtributs import QvAtributs
+from moduls.QvAtributs import QvAtributs, QvTaulaAtributs
 from moduls.QvAtributsForms import QvFitxesAtributs, QvFormAtributs
 from moduls.QvCanvas import QvCanvas
 from moduls.QvCanvasAuxiliar import QvCanvasAuxiliar
@@ -25,18 +41,21 @@ from moduls.QvLlegenda import QvLlegenda
 from moduls.QvMapetaBrujulado import QvMapetaBrujulado
 from moduls.QvSingleton import Singleton
 from moduls.QvStatusBar import QvStatusBar
+from MaBIM_FilterUtils import MaBIMFilterApplier, FilterDefinition
 from PyQt5 import QtCore, QtGui, QtWidgets, uic
 from PyQt5.QtSql import QSqlDatabase, QSqlQuery
 from qgis.core import (QgsCoordinateReferenceSystem, QgsFeatureRequest,
                        QgsGeometry, QgsMapLayer, QgsPointXY, QgsProject,
-                       QgsRectangle, QgsVectorLayer, QgsExpressionContextUtils)
+                       QgsRectangle, QgsVectorLayer, QgsExpressionContextUtils,
+                       QgsLayerDefinition)
 from qgis.core.contextmanagers import qgisapp
 from qgis.gui import (QgsGui, QgsLayerTreeMapCanvasBridge, QgsMapTool,
                       QgsRubberBand, QgsVertexMarker)
 import qgis.PyQt.QtWidgets as qtWdg
 
 import webbrowser
-from PyQt5.QtWidgets import QHeaderView
+from PyQt5.QtWidgets import QHeaderView, QToolButton
+from PyQt5.QtGui import QIcon
 
 class ConstantsMaBIM:
     DB_MABIM_PRO = {
@@ -512,7 +531,7 @@ class QMaBIM(QtWidgets.QMainWindow):
         super().__init__(*args, **kwargs)
         uic.loadUi(ConstantsMaBIM.rutaUI,self)
 
-        self.llistaBotons = (self.bFavorits, self.bBIMs, self.bPIP, self.bConsultes)
+        self.llistaBotons = (self.bFavorits, self.bBIMs, self.bPIP)
 
         self.connectBotons()
         self.connectaCercador()
@@ -599,6 +618,17 @@ class QMaBIM(QtWidgets.QMainWindow):
 
         layout.addLayout(layout_grup)        
         layout.addStretch()
+
+        # Inicialització del panel desplegable de Consultes
+        self.wConsultesContent.setVisible(False)
+        self.tbConsultesHeader.setArrowType(QtCore.Qt.RightArrow)
+        self.tbConsultesHeader.toggled.connect(self.toggle_consultes_panel)
+        
+        # Cargar configuración de consultas y crear botones dinámicamente
+        self._carrega_consultes_config()
+        self._crear_botons_consultes()
+        
+        # NO usar setTabsClosable globalmente - los botones X se agregarán solo donde sea necesario
 
         self.bAfegirFavorit.clicked.connect(self.dialegSetFavorit)
         self.bAfegirFavorit.clicked.connect(self.mostraFavorits)
@@ -816,7 +846,7 @@ class QMaBIM(QtWidgets.QMainWindow):
             (self.bBIMs, 'botonera-BIM.png'),
             (self.bPIP, 'botonera-PIP.png'),
             #(self.bProjectes, 'botonera-projectes'),
-            (self.bConsultes, 'botonera-consultes')
+            (self.tbConsultesHeader, 'botonera-consultes')
         )
         for (boto, icona) in parelles:
             boto.setIcon(QtGui.QIcon(f'Imatges/MaBIM/{icona}'))
@@ -954,7 +984,137 @@ class QMaBIM(QtWidgets.QMainWindow):
         for layer in layers:
             layer.setSubsetString('')
         self.bAfegirFavorit.hide()
+    def _llegir_bims_des_de_csv(self, path: str) -> list:
+        """
+        Lee BIMs desde un CSV.
+        - Si hay cabecera y existe columna BIM/CODI_BIM, usa esa.
+        - Si no, usa la primera columna.
+        Acepta separadores típicos (, ; \t |).
+        """
+        import csv
 
+        bims = []
+        if not path or not os.path.exists(path):
+            return bims
+
+        with open(path, 'r', encoding='utf-8-sig', newline='') as f:
+            sample = f.read(4096)
+            f.seek(0)
+
+            try:
+                dialect = csv.Sniffer().sniff(sample, delimiters=";,|\t,")
+            except Exception:
+                dialect = csv.excel
+                dialect.delimiter = ';' if ';' in sample else ','
+
+            reader = csv.reader(f, dialect)
+            rows = list(reader)
+
+        if not rows:
+            return bims
+
+        header = [str(x).strip().upper() for x in rows[0]]
+        col_idx = None
+        for candidate in ("BIM", "CODI_BIM", "CODI", "CODIGO_BIM", "CODIGO"):
+            if candidate in header:
+                col_idx = header.index(candidate)
+                break
+
+        start_row = 1 if col_idx is not None else 0
+        if col_idx is None:
+            col_idx = 0
+
+        for r in rows[start_row:]:
+            if not r or col_idx >= len(r):
+                continue
+            val = str(r[col_idx]).strip()
+            if not val:
+                continue
+            val = val.strip().strip('"').strip("'").upper()
+            val = " ".join(val.split())
+            bims.append(val)
+
+        seen = set()
+        out = []
+        for x in bims:
+            if x not in seen:
+                seen.add(x)
+                out.append(x)
+        return out
+
+
+    def filtraPVPH_desdeCSV(self):
+        """
+        Botón de consulta:
+        - Seleccionas CSV con BIMs
+        - Filtra SOLO 'Entitats en PV' y 'Entitats en PH'
+        """
+        path, _ = QtWidgets.QFileDialog.getOpenFileName(
+            self,
+            "Selecciona CSV con códigos BIM",
+            "",
+            "CSV (*.csv *.txt);;Todos (*.*)"
+        )
+        if not path:
+            return
+
+        bims = self._llegir_bims_des_de_csv(path)
+        if not bims:
+            QtWidgets.QMessageBox.warning(self, "Atención", "No se han encontrado BIMs en el CSV.")
+            return
+
+        parts = []
+        for bim in bims:
+            bim_esc = bim.replace("'", "''")
+            parts.append(f"BIM LIKE '%{bim_esc}'")
+        where = " OR ".join(parts)
+
+        capas_objetivo = [ConstantsMaBIM.nomCapaPV, ConstantsMaBIM.nomCapaPH]
+        layers_filtradas = []
+        for nom in capas_objetivo:
+            layer = self.llegenda.capaPerNom(nom)
+            if layer is None:
+                for lyr in QgsProject.instance().mapLayers().values():
+                    if lyr.name() == nom:
+                        layer = lyr
+                        break
+
+            if layer is not None and layer.type() == QgsMapLayer.VectorLayer and 'BIM' in layer.fields().names():
+                layer.setSubsetString(where)
+                layers_filtradas.append(layer)
+
+        if not layers_filtradas:
+            QtWidgets.QMessageBox.warning(
+                self, "Atención",
+                "No se han encontrado las capas 'Entitats en PV' / 'Entitats en PH' (o no tienen campo BIM)."
+            )
+            return
+
+        layer_con_features = next((l for l in layers_filtradas if l.featureCount() > 0), None)
+        if layer_con_features is None:
+            QtWidgets.QMessageBox.information(
+                self, "Filtrado aplicado",
+                "Se ha aplicado el filtro, pero no hay resultados visibles en PV/PH con esos BIMs."
+            )
+            return
+
+        extent = None
+        for l in layers_filtradas:
+            if l.featureCount() <= 0:
+                continue
+            if extent is None:
+                extent = l.extent()
+            else:
+                extent.combineExtentWith(l.extent())
+
+        if extent is not None and extent.isFinite():
+            self.canvasA.setExtent(extent)
+            self.canvasA.refresh()
+
+        QtWidgets.QMessageBox.information(
+            self, "Filtrado aplicado",
+            f"Filtrado aplicado desde CSV:\n{os.path.basename(path)}\n\nBIMs: {len(bims)}"
+        )
     @QvFuncions.cronometraDebug
     def configuraPlanols(self):
         root = QgsProject.instance().layerTreeRoot()
@@ -970,9 +1130,9 @@ class QMaBIM(QtWidgets.QMainWindow):
         self.canvasA.setDestinationCrs(QgsCoordinateReferenceSystem('EPSG:25831'))
         self.canvasA.mostraStreetView.connect(self.canvasA.getStreetView().show)
 
-        taulesAtributs = QvAtributs(self.canvasA)
-        taulesAtributs.setWindowTitle("Taules d'atributs")
-        self.llegenda = QvLlegenda(self.canvasA, taulesAtributs)
+        self.atributs = QvAtributs(self.canvasA)
+        self.atributs.setWindowTitle("Taules d'atributs")
+        self.llegenda = QvLlegenda(self.canvasA, self.atributs)
         self.canvasA.setLlegenda(self.llegenda)
         self.llegenda.resize(500, 600)
 
@@ -1229,6 +1389,333 @@ class QMaBIM(QtWidgets.QMainWindow):
             self.tbMapesHeader.setArrowType(QtCore.Qt.DownArrow)
         else:
             self.tbMapesHeader.setArrowType(QtCore.Qt.RightArrow)
+
+    def toggle_consultes_panel(self, checked):
+        # Mostra o amaga el contingut
+        self.wConsultesContent.setVisible(checked)
+
+        # Canvia la fletxa per donar feedback visual
+        if checked:
+            self.tbConsultesHeader.setArrowType(QtCore.Qt.DownArrow)
+        else:
+            self.tbConsultesHeader.setArrowType(QtCore.Qt.RightArrow)
+
+    def _carrega_consultes_config(self):
+        """Carga la configuración de consultas desde el archivo JSON"""
+        try:
+            ruta_config = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'consultes_config.json')
+            if os.path.exists(ruta_config):
+                with open(ruta_config, 'r', encoding='utf-8') as f:
+                    self.consultes_config = json.load(f)
+            else:
+                print(f"Archivo de configuración no encontrado: {ruta_config}")
+                self.consultes_config = {'consultas': []}
+        except Exception as e:
+            print(f"Error al cargar configuración de consultas: {e}")
+            self.consultes_config = {'consultas': []}
+
+    def _crear_botons_consultes(self):
+        """Crea dinámicamente los botones de consultas basados en la configuración"""
+        for consulta in self.consultes_config.get('consultas', []):
+            texto = consulta.get('texto', consulta.get('id', 'Consulta'))
+            funcion_nombre = consulta.get('funcion')
+            archivo_qlr = consulta.get('archivo_qlr')
+            action_type = consulta.get('action_type')
+
+            boto = QtWidgets.QPushButton(texto, self)
+            boto.consulta_config = consulta
+
+            # 1) Si define "action_type" = "filter_qqf", ejecuta filtro desde .qqf
+            if action_type == 'filter_qqf':
+                boto.clicked.connect(lambda checked=False, config=consulta: self._ejecutar_filtro_qqf(config))
+
+            # 2) Si define "funcion", ejecuta método del QMaBIM
+            elif funcion_nombre and hasattr(self, funcion_nombre):
+                fn = getattr(self, funcion_nombre)
+                boto.clicked.connect(lambda checked=False, fn=fn: fn())
+
+            # 3) Si define "archivo_qlr", usa el flujo actual
+            elif archivo_qlr:
+                boto.clicked.connect(lambda checked=False, config=consulta: self._ejecutar_consulta(config))
+
+            else:
+                # Config inválida
+                boto.clicked.connect(lambda: QtWidgets.QMessageBox.warning(
+                    self, "Error", "Consulta sin configuración válida en consultes_config.json"
+                ))
+
+            self.verticalLayoutConsultes.addWidget(boto)
+
+        self.verticalLayoutConsultes.addStretch()
+        
+    def _ejecutar_filtro_qqf(self, config_filtro):
+        """
+        Ejecuta un filtro desde un fichero .qqf
+        
+        Args:
+            config_filtro: Diccionario de configuración del filtro con:
+                - filter_file: ruta relativa del fichero .qqf
+                - target_layers: lista de nombres de capas a filtrar
+                - descripcion: descripción del filtro
+        """
+        try:
+            # Validar configuración
+            filtro_def = FilterDefinition(config_filtro)
+            if not filtro_def.is_valid():
+                QtWidgets.QMessageBox.warning(
+                    self, "Error",
+                    "Configuración de filtro inválida en consultes_config.json"
+                )
+                return
+            
+            # Obtener ruta base de MaBIM
+            ruta_carpeta = os.path.dirname(os.path.abspath(__file__))
+            ruta_filtro = filtro_def.get_filter_path(ruta_carpeta)
+            
+            # Verificar que el fichero existe
+            if not ruta_filtro.exists():
+                QtWidgets.QMessageBox.warning(
+                    self, "Error",
+                    f"No se ha encontrado el fichero de filtro:\n{ruta_filtro}"
+                )
+                return
+            
+            # Crear aplicador de filtros
+            aplicador = MaBIMFilterApplier(QgsProject.instance())
+            
+            # Aplicar filtro
+            success = aplicador.apply_filter_by_file(
+                ruta_filtro,
+                filtro_def.target_layers,
+                show_messages=True,
+                parent_widget=self
+            )
+            
+            if success:
+                # Refrescar el canvas para ver los cambios
+                self.canvasA.refresh()
+                # Guardar referencia al aplicador por si necesitamos limpiar filtros después
+                if not hasattr(self, 'ultima_aplicacion_filtro'):
+                    self.ultima_aplicacion_filtro = aplicador
+                else:
+                    self.ultima_aplicacion_filtro = aplicador
+        
+        except Exception as e:
+            QtWidgets.QMessageBox.critical(
+                self, "Error",
+                f"Error al ejecutar filtro: {str(e)}"
+            )
+            print(f"DEBUG: Error en _ejecutar_filtro_qqf: {e}")
+            import traceback
+            traceback.print_exc()
+
+    def _ejecutar_consulta(self, config_consulta):
+        """Ejecuta una consulta basada en su configuración usando QvTaulaAtributs"""
+        try:
+            archivo_qlr = config_consulta.get('archivo_qlr')
+            nombre_consulta = config_consulta.get('nombre')
+            
+            if not archivo_qlr:
+                QtWidgets.QMessageBox.warning(self, "Error", "La configuración de consulta no especifica un archivo QLR")
+                return
+            
+            # Obtener la ruta del archivo QLR
+            ruta_carpeta = os.path.dirname(os.path.abspath(__file__))
+            ruta_qlr = os.path.join(ruta_carpeta, archivo_qlr)
+            
+            # Verificar que el fichero existe
+            if not os.path.exists(ruta_qlr):
+                QtWidgets.QMessageBox.warning(self, "Error", f"No s'ha trobat el fitxer: {ruta_qlr}")
+                return
+            
+            # Primero verificar si la pestaña ya existe
+            pestanya_nom = nombre_consulta
+            index_pestanya_existente = -1
+            for i in range(self.tabCentral.count()):
+                if self.tabCentral.tabText(i) == pestanya_nom:
+                    index_pestanya_existente = i
+                    break
+            
+            # Si la pestaña ya existe, simplemente mostrarla
+            if index_pestanya_existente >= 0:
+                self.tabCentral.setCurrentIndex(index_pestanya_existente)
+                return
+            
+            # Si no existe la pestaña, cargar la capa
+            project = QgsProject.instance()
+            
+            # Obtenir les capes actuals
+            capes_antes = set(project.mapLayers().keys())
+            
+            # Verificar si la capa ya existe por nombre
+            capa = None
+            for layer in project.mapLayers().values():
+                if layer.name() == nombre_consulta:
+                    capa = layer
+                    break
+            
+            # Si no existe, cargar desde el archivo QLR
+            if capa is None:
+                # Caregar usando QgsLayerDefinition
+                root = project.layerTreeRoot()
+                success = QgsLayerDefinition.loadLayerDefinition(ruta_qlr, project, root)
+                
+                if not success:
+                    QtWidgets.QMessageBox.warning(self, "Error", "No s'ha pogut cargar el fitxer QLR")
+                    return
+                
+                # Obtenir la capa nova (la diferencia)
+                capes_despues = set(project.mapLayers().keys())
+                capes_nuevas = capes_despues - capes_antes
+                
+                if not capes_nuevas:
+                    QtWidgets.QMessageBox.warning(self, "Error", "No s'ha carregat cap capa nova")
+                    return
+                
+                # Obtenir la primera capa nova
+                capa_id = list(capes_nuevas)[0]
+                capa = project.mapLayers()[capa_id]
+            
+            # Crear tabla de atributos usando QvTaulaAtributs
+            taula = QvTaulaAtributs(parent=self, layer=capa, canvas=self.canvasA, readOnly=True)
+            
+            # Crear widget contenedor
+            widget = QtWidgets.QWidget()
+            layout = QtWidgets.QVBoxLayout(widget)
+            layout.setContentsMargins(0, 0, 0, 0)
+            
+            # Crear layout horizontal para el botón
+            btn_layout = QtWidgets.QHBoxLayout()
+            btn_layout.setContentsMargins(5, 5, 5, 5)
+            
+            # Crear botón para exportar a CSV
+            btn_export_csv = QtWidgets.QPushButton("Exportar a CSV")
+            btn_export_csv.setIcon(QIcon("imatges/file-delimited.png"))
+            btn_export_csv.setMaximumHeight(32)
+            btn_export_csv.setMaximumWidth(150)
+            btn_export_csv.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+            btn_export_csv.setStyleSheet("""
+                QPushButton {
+                    background-color: #0078D4;
+                    color: white;
+                    border: 1px solid #0078D4;
+                    border-radius: 3px;
+                    padding: 5px 10px;
+                    font-weight: bold;
+                }
+                QPushButton:hover {
+                    background-color: #1084D8;
+                }
+                QPushButton:pressed {
+                    background-color: #005A9E;
+                }
+            """)
+            btn_export_csv.clicked.connect(taula.saveToCSV)
+            
+            # Agregar botón al layout horizontal (izquierda)
+            btn_layout.addWidget(btn_export_csv)
+            btn_layout.addStretch()
+            
+            # Agregar layout del botón y tabla al layout principal
+            layout.addLayout(btn_layout)
+            layout.addWidget(taula)
+            
+            # Crear la nova pestanya
+            num_features = capa.featureCount()
+            self.tabCentral.addTab(widget, pestanya_nom)
+            new_index = self.tabCentral.count() - 1
+            self.tabCentral.setCurrentWidget(widget)
+            # Agregar botón de cierre solo a esta pestaña
+            self._agregar_boto_tancament(new_index)
+            
+            # Mostrar mensaje de confirmación
+            QtWidgets.QMessageBox.information(self, nombre_consulta, f"Dades carregades: {num_features} registres")
+            
+        except Exception as e:
+            QtWidgets.QMessageBox.critical(self, "Error", f"Error al executar consulta: {str(e)}")
+
+    def _agregar_boto_tancament(self, index_pestanya):
+        """Agrega un botón de cierre personalizado a una pestaña específica"""
+        # Crear botón de cierre
+        btn_tanca = QToolButton()
+        btn_tanca.setText('✕')
+        btn_tanca.setStyleSheet('QToolButton { border: none; padding: 0px; background: transparent; }')
+        btn_tanca.setFixedSize(16, 16)
+        btn_tanca.clicked.connect(lambda: self.tancaPestanya(index_pestanya))
+        
+        # Agregar el botón al tab bar
+        self.tabCentral.tabBar().setTabButton(index_pestanya, QtWidgets.QTabBar.RightSide, btn_tanca)
+
+    def executarConsulta1(self):
+        """Método legado para compatibilidad hacia atrás. Ejecuta Consulta1 desde la configuración."""
+        # Buscar la configuración de Consulta1
+        for consulta in self.consultes_config.get('consultas', []):
+            if consulta.get('id') == 'consulta1':
+                self._ejecutar_consulta(consulta)
+                return
+        
+        # Si no hay configuración, mostrar error
+        QtWidgets.QMessageBox.warning(self, "Error", "No se encontró la configuración de Consulta1")
+
+    def tancaPestanya(self, index):
+        # Funció per tancar una pestanya quan es fa clic a la X
+        # Només permet tancar la pestanya Consulta1 (o la que tenga el texto de la consulta1)
+        tab_text = self.tabCentral.tabText(index)
+        # Permitir cerrar tanto "Consulta1" como el nombre configurado en el JSON
+        nombres_validos = ["Consulta1", "Bims sense geometria"]
+        if tab_text in nombres_validos:
+            self.tabCentral.removeTab(index)
+
+    def desarCSV(self, layer, colOrder):
+        """Exporta la capa a un fitxer CSV"""
+        import csv
+        from moduls.QvFuncions import startMovie, stopMovie
+        from moduls.QvApp import QvApp
+        
+        path = ''
+        player = None
+        selected = (layer.selectedFeatureCount() > 0)
+        filtered = (layer.subsetString() != '')
+        if selected:
+            sel = "els elements seleccionats"
+        elif filtered:
+            sel = "els elements filtrats"
+        else:
+            sel = "tots els elements"
+        colNum, colName, asc = colOrder
+        if colNum is None:
+            request = QgsFeatureRequest()
+        else:
+            request = QgsFeatureRequest().addOrderBy(colName, asc, asc)
+
+        numElems = 0
+        try:
+            path, _ = QtWidgets.QFileDialog.getSaveFileName(self, f"Desa {sel} a arxiu", '', 'CSV (*.csv)')
+            if path:
+                player = startMovie()
+                with open(path, 'w', encoding="utf-8", newline='') as stream:
+                    writer = csv.writer(stream, delimiter=';', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+                    writer.writerow(layer.fields().names())
+                    if selected:
+                        iterator = layer.getSelectedFeatures()
+                    else:
+                        iterator = layer.getFeatures(request)
+                    for feature in iterator:
+                        row = [str(feature.attribute(field.name())) for field in layer.fields()]
+                        writer.writerow(row)
+                        numElems += 1
+        except Exception as e:
+            QtWidgets.QMessageBox.warning(self, "Error al desar l'arxiu CSV", f"No s'ha pogut desar correctament l'arxiu: \n\n{path}")
+            print(str(e))
+            path = ''
+        finally:
+            if player is not None: 
+                stopMovie(player)
+        
+        if path: 
+            QtWidgets.QMessageBox.information(self, "Arxiu CSV desat correctament", f"S'han desat {sel} ({QvApp().locale.toString(numElems)}) a l'arxiu: \n\n{path}")
+        
+        return path
    
     def connectBotons(self):
         self.llistaBotons[0].clicked.connect(self.mostraFavorits)
