@@ -8,6 +8,7 @@ y tener el mismo nombre (ej: proyecto.json para proyecto.qgs)
 
 import json
 import logging
+import xml.etree.ElementTree as ET
 from pathlib import Path
 from typing import Optional
 
@@ -15,13 +16,63 @@ from qgis.PyQt.QtCore import Qt, QUrl
 from qgis.PyQt.QtGui import QDesktopServices
 from qgis.PyQt.QtWidgets import (QDockWidget, QFrame, QSizePolicy,
                                  QSpacerItem, QVBoxLayout, QPushButton,
-                                 QWidget)
+                                 QWidget, QMessageBox)
 from qgis.core import QgsProject
 
 from moduls.QvPushButton import QvPushButton
 
 # Configurar logging
 logger = logging.getLogger(__name__)
+
+
+class QQueryFileLoader:
+    """Lee y parsea archivos de query QGIS (.qqf)"""
+    
+    @staticmethod
+    def read_filter_expression(query_file: Path) -> Optional[str]:
+        """
+        Lee un fichero .qqf (formato estándar de QGIS) y extrae la expresión de filtro.
+        
+        Formato estándar de QGIS:
+        <Query>expresión de filtro aquí</Query>
+        
+        Ejemplo:
+        <Query>"M1_DISTRICTE" = '03' OR "M3_NUM_PROP_PRIVATS" = 5</Query>
+        
+        Args:
+            query_file: Ruta al fichero .qqf
+            
+        Returns:
+            String con la expresión del filtro, o None si no se puede leer
+        """
+        if not query_file.exists():
+            logger.error(f"Fichero de query no encontrado: {query_file}")
+            return None
+        
+        try:
+            content = query_file.read_text(encoding='utf-8').strip()
+            
+            if not content:
+                logger.error(f"Fichero {query_file.name} está vacío")
+                return None
+            
+            # Parsear XML y extraer expresión del elemento <Query>
+            root = ET.fromstring(content)
+            
+            if root.tag == 'Query' and root.text:
+                expression = root.text.strip()
+                logger.info(f"Expresión extraída de {query_file.name}: {expression[:80]}...")
+                return expression
+            
+            logger.error(f"Formato de .qqf inválido: no se encontró elemento <Query> en {query_file.name}")
+            return None
+                
+        except ET.ParseError as e:
+            logger.error(f"Error parseando XML en {query_file.name}: {e}")
+            return None
+        except Exception as e:
+            logger.error(f"Error leyendo {query_file.name}: {e}")
+            return None
 
 
 class CollapsibleSection(QWidget):
@@ -76,16 +127,24 @@ class BotonConfig:
     def __init__(self, data: dict):
         self.text = data.get('text', 'Sin texto')
         self.action = data.get('action', '')
-        self.action_type = data.get('action_type', 'url')  # 'url', 'command', 'custom'
+        self.action_type = data.get('action_type', 'url')  # 'url', 'qgis_query', 'command', 'custom'
+        self.layers = data.get('layers', [])  # Para queries: lista de capas destino
     
     def validate(self) -> bool:
-        """Valida que el botón tenga configuración mínima"""
+        """Valida que el botón tenga configuración mínima según su tipo"""
         if not self.text:
             logger.warning("Botón sin texto")
             return False
         if not self.action:
             logger.warning(f"Botón '{self.text}' sin acción")
             return False
+        
+        # Validaciones específicas por tipo
+        if self.action_type == 'qgis_query':
+            if not self.layers:
+                logger.warning(f"Botón query '{self.text}' sin capas especificadas")
+                return False
+        
         return True
 
 
@@ -372,6 +431,14 @@ class Botonera(QDockWidget):
                         lambda checked=False, url=boton.action: 
                         QDesktopServices().openUrl(QUrl(url))
                     )
+                elif boton.action_type == 'qgis_query':
+                    # Para queries: capturar el archivo y las capas
+                    query_file = boton.action
+                    layers = boton.layers
+                    btn.clicked.connect(
+                        lambda checked=False, qf=query_file, lyr=layers: 
+                        self._execute_query(qf, lyr)
+                    )
                 # Aquí se pueden añadir más tipos de acciones
                 
                 section_widget.add_button(btn)
@@ -383,3 +450,131 @@ class Botonera(QDockWidget):
         lytMain.addItem(spacer)
         
         self.setWidget(fMain)
+    
+    def _execute_query(self, query_filename: str, layer_names: list) -> None:
+        """
+        Ejecuta un query QGIS (.qqf) sobre las capas especificadas.
+        
+        Este método:
+        1. Resuelve la ubicación del archivo .qqf (busca en carpeta 'queries/')
+        2. Lee el archivo y extrae la expresión de filtro
+        3. Aplica el filtro a cada capa especificada
+        4. Recarga el canvas para visualizar los cambios
+        5. Maneja errores con mensajes informativos
+        
+        Args:
+            query_filename: Nombre del archivo .qqf (ej: 'viviendas_tipo_a.qqf')
+            layer_names: Lista de nombres de capas donde aplicar el query
+                        (ej: ['Entitats en PV', 'Entitats en PH'])
+        
+        Returns:
+            None. Los resultados se visualizan en el mapa.
+        
+        Efectos secundarios:
+            - Modifica el subset string de las capas indicadas
+            - Recarga el canvas QGIS
+            - Muestra mensajes de error si hay problemas
+        """
+        try:
+            # Resolver ruta del archivo .qqf
+            project = QgsProject.instance()
+            project_file = project.fileName()
+            
+            if not project_file:
+                QMessageBox.warning(
+                    self,
+                    "Error",
+                    "No hay proyecto QGIS abierto. No se puede ejecutar query."
+                )
+                return
+            
+            # Buscar carpeta 'queries/' en el mismo directorio que el proyecto
+            project_path = Path(project_file)
+            queries_folder = project_path.parent / "queries"
+            query_file = queries_folder / query_filename
+            
+            # Verificar que el archivo existe
+            if not query_file.exists():
+                QMessageBox.warning(
+                    self,
+                    "Error: Query no encontrado",
+                    f"El archivo de query no existe:\n{query_file}\n\n"
+                    f"Asegúrese de que existe la carpeta 'queries/' "
+                    f"en el mismo directorio que su proyecto QGIS"
+                )
+                logger.error(f"Query file not found: {query_file}")
+                return
+            
+            # Leer la expresión de filtro del archivo .qqf
+            filter_expression = QQueryFileLoader.read_filter_expression(query_file)
+            
+            if not filter_expression:
+                QMessageBox.warning(
+                    self,
+                    "Error: Query inválido",
+                    f"No se pudo extraer expresión de filtro de:\n{query_file}"
+                )
+                logger.error(f"Could not extract filter expression from {query_file}")
+                return
+            
+            logger.info(f"Expresión de filtro: {filter_expression}")
+            
+            # Aplicar filtro a cada capa especificada
+            applied_to_layers = []
+            failed_layers = []
+            
+            for layer_name in layer_names:
+                layers = project.mapLayersByName(layer_name)
+                
+                if not layers:
+                    failed_layers.append(f"'{layer_name}' (no encontrada)")
+                    logger.warning(f"Layer not found: {layer_name}")
+                    continue
+                
+                layer = layers[0]  # Tomar la primera capa con ese nombre
+                
+                try:
+                    # Aplicar subset string
+                    layer.setSubsetString(filter_expression)
+                    applied_to_layers.append(layer_name)
+                    logger.info(f"Filter applied to layer: {layer_name}")
+                    
+                except Exception as e:
+                    failed_layers.append(f"'{layer_name}' (error: {str(e)[:50]})")
+                    logger.error(f"Error applying filter to {layer_name}: {e}")
+            
+            # Refrescar canvas
+            project.mapCanvas().refreshAllLayers()
+            
+            # Mostrar resultado
+            if applied_to_layers and not failed_layers:
+                QMessageBox.information(
+                    self,
+                    "Query ejecutado",
+                    f"Filtro aplicado exitosamente a:\n" +
+                    "\n".join(f"  • {l}" for l in applied_to_layers)
+                )
+            elif applied_to_layers and failed_layers:
+                QMessageBox.warning(
+                    self,
+                    "Query parcialmente aplicado",
+                    f"Filtro aplicado a:\n" +
+                    "\n".join(f"  ✓ {l}" for l in applied_to_layers) +
+                    f"\n\nNo se pudo aplicar a:\n" +
+                    "\n".join(f"  ✗ {l}" for l in failed_layers)
+                )
+            else:
+                QMessageBox.critical(
+                    self,
+                    "Error: Query no aplicado",
+                    f"No se pudo aplicar filtro a ninguna capa:\n" +
+                    "\n".join(f"  ✗ {l}" for l in failed_layers)
+                )
+        
+        except Exception as e:
+            logger.error(f"Error in _execute_query: {e}")
+            QMessageBox.critical(
+                self,
+                "Error executing query",
+                f"Error inesperado:\n{str(e)}"
+            )

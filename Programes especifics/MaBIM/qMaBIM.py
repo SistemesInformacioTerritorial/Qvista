@@ -1401,14 +1401,37 @@ class QMaBIM(QtWidgets.QMainWindow):
             self.tbConsultesHeader.setArrowType(QtCore.Qt.RightArrow)
 
     def _carrega_consultes_config(self):
-        """Carga la configuración de consultas desde el archivo JSON"""
+        """Carga la configuración de consultas desde el archivo JSON
+        
+        Estrategia de búsqueda:
+        1. Primero en la carpeta del proyecto QGIS
+        2. Luego en la carpeta de qMaBIM (donde está este archivo)
+        3. Si no existe en ninguno, usa configuración vacía por defecto
+        """
         try:
-            ruta_config = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'consultes_config.json')
-            if os.path.exists(ruta_config):
+            ruta_config = None
+            
+            # 1) Intentar cargar desde la carpeta del proyecto QGIS
+            project_path = QgsProject.instance().homePath()
+            if project_path:
+                ruta_config_proyecto = os.path.join(project_path, 'consultes_config.json')
+                if os.path.exists(ruta_config_proyecto):
+                    ruta_config = ruta_config_proyecto
+                    print(f"Cargando configuración de consultas desde proyecto: {ruta_config}")
+            
+            # 2) Si no está en la carpeta del proyecto, buscar en la carpeta de qMaBIM
+            if not ruta_config:
+                ruta_config_mabim = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'consultes_config.json')
+                if os.path.exists(ruta_config_mabim):
+                    ruta_config = ruta_config_mabim
+                    print(f"Cargando configuración de consultas desde qMaBIM: {ruta_config}")
+            
+            # 3) Cargar el archivo si se encontró
+            if ruta_config:
                 with open(ruta_config, 'r', encoding='utf-8') as f:
                     self.consultes_config = json.load(f)
             else:
-                print(f"Archivo de configuración no encontrado: {ruta_config}")
+                print("Archivo de configuración de consultas no encontrado en proyecto ni en qMaBIM")
                 self.consultes_config = {'consultas': []}
         except Exception as e:
             print(f"Error al cargar configuración de consultas: {e}")
