@@ -1,0 +1,58 @@
+{
+  "consultas": [
+    {
+      "id": "consulta1",
+      "nombre": "Bims sense geometria",
+      "texto": "Bims sense geometria",
+      "funcion": "executarConsulta1",
+      "archivo_qlr": "BimsSenseGeometria.qlr",
+      "descripcion": "Carga la capa BimsSenseGeometria.qlr y la muestra en una tabla de atributos"
+    },
+    {
+      "id": "filtra_csv_bim",
+      "texto": "Filtrar PV/PH por CSV (BIM)",
+      "funcion": "filtraPVPH_desdeCSV",
+      "descripcion": "Abre un diálogo para seleccionar un CSV con BIMs y filtra las capas"
+    },
+    {
+      "id": "filtro_qqf_viviendas_a",
+      "texto": "Filtrar Viviendas A",
+      "action_type": "filter_qqf",
+      "filter_file": "filtros/viviendas_tipo_A.qqf",
+      "target_layers": ["Entitats en PV", "Entitats en PH"],
+      "descripcion": "Muestra solo viviendas tipo A"
+    },
+    {
+      "id": "filtro_qqf_viviendas_b",
+      "texto": "Filtrar Viviendas B",
+      "action_type": "filter_qqf",
+      "filter_file": "filtros/viviendas_tipo_B.qqf",
+      "target_layers": ["Entitats en PV", "Entitats en PH"],
+      "descripcion": "Muestra solo viviendas tipo B"
+    },
+    {
+      "id": "filtro_qqf_mal_estado",
+      "texto": "Propiedades en mal estado",
+      "action_type": "filter_qqf",
+      "filter_file": "filtros/propiedades_mal_estado.qqf",
+      "target_layers": ["Entitats en PV", "Entitats en PH"],
+      "descripcion": "Muestra propiedades en estado ruinoso o deteriorado"
+    },
+    {
+      "id": "filtro_qqf_grandes",
+      "texto": "Viviendas grandes (>100m²)",
+      "action_type": "filter_qqf",
+      "filter_file": "filtros/viviendas_grandes.qqf",
+      "target_layers": ["Entitats en PV", "Entitats en PH"],
+      "descripcion": "Filtro viviendas con superficie mayor a 100m²"
+    },
+    {
+      "id": "filtro_qqf_antiguos",
+      "texto": "Viviendas antiguas (<1950)",
+      "action_type": "filter_qqf",
+      "filter_file": "filtros/viviendas_antiguas.qqf",
+      "target_layers": ["Entitats en PV", "Entitats en PH"],
+      "descripcion": "Edificios construidos anteriormente a 1950"
+    }
+  ]
+}

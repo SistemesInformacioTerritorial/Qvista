@@ -1,0 +1,207 @@
+═══════════════════════════════════════════════════════════════════════════════
+           GUÍA RÁPIDA: FILTROS .QQF EN MABIM
+═══════════════════════════════════════════════════════════════════════════════
+
+¿QUÉ ES UN FILTRO .QQF?
+═════════════════════
+
+Es un fichero que contiene una expresión de filtro que se puede aplicar a las
+capas "Entitats en PV" y "Entitats en PH" sin necesidad de crear nuevas capas.
+
+Los filtros se configuran en el JSON y se aplican con un botón.
+
+
+ESTRUCTURA DE CARPETAS
+═════════════════════
+
+MaBIM/
+├── qMaBIM.py
+├── consultes_config.json          ← Aquí se configuran los botones
+├── MaBIM_FilterUtils.py           ← Nueva utilidad para filtros
+├── MaBIM.ui
+└── filtros/                        ← Nueva carpeta
+    ├── viviendas_tipo_A.qqf        ← Ficheros de filtro
+    ├── viviendas_tipo_B.qqf
+    ├── EJEMPLO_EXPRESIONES_FILTROS.txt
+    └── TUS_FILTROS_AQUI.qqf
+
+
+PASO 1: CREAR UN FICHERO .QQF
+═════════════════════════════
+
+1. Abre un editor de texto (Notepad, VS Code, Sublime, etc.)
+
+2. Copia esto:
+   ───────────
+   <?xml version="1.0" encoding="UTF-8"?>
+   <layerdefinition>
+     <subset>TU_EXPRESIÓN_AQUÍ</subset>
+   </layerdefinition>
+
+3. Reemplaza TU_EXPRESIÓN_AQUÍ con tu filtro, por ejemplo:
+   ──────────────────────────────────────────────────────
+   "TIPUS_VIVENDA" = 'A'
+
+
+EJEMPLOS DE EXPRESIONES DE FILTRO
+══════════════════════════════════
+
+Expresión simple:
+  "TIPUS_VIVENDA" = 'A'
+
+Rango de años:
+  ("ANY_CONSTRUCCIO" >= 1980) AND ("ANY_CONSTRUCCIO" <= 2000)
+
+Superficie mínima:
+  "SUPERFICIE" > 100
+
+Múltiples valores:
+  "TIPUS_VIVENDA" IN ('A', 'B', 'C')
+
+Estado de conservación:
+  "ESTAT" IN ('Ruinoso', 'Deteriorado')
+
+Búsqueda de texto:
+  "DENOMINACIO" LIKE '%plaça%'
+
+Combinación compleja:
+  (("TIPUS_VIVENDA" = 'A') OR ("TIPUS_VIVENDA" = 'B')) 
+  AND ("SUPERFICIE" > 80) 
+  AND ("ANY_CONSTRUCCIO" >= 1990)
+
+
+PASO 2: GUARDAR EL FICHERO
+═══════════════════════════
+
+1. Guarda con nombre: "mi_filtro.qqf"  (en la carpeta filtros/)
+
+Ejemplo:
+  - viviendas_A_modernas.qqf
+  - propiedades_mal_estado.qqf
+  - TODO_tipo_A.qqf
+
+
+PASO 3: AGREGAR A CONSULTES_CONFIG.JSON
+════════════════════════════════════════
+
+Abre "consultes_config.json" y agrega una entrada como esta:
+
+{
+  "id": "filtro_viviendas_a",
+  "texto": "Viviendas Tipo A",
+  "action_type": "filter_qqf",
+  "filter_file": "filtros/viviendas_tipo_A.qqf",
+  "target_layers": ["Entitats en PV", "Entitats en PH"],
+  "descripcion": "Muestra solo viviendas tipo A"
+}
+
+IMPORTANTE:
+- "id" debe ser único
+- "texto" es lo que verá el usuario en el botón
+- "filter_file" es la ruta relativa al fichero .qqf
+- "target_layers" deben ser los nombres exactos de las capas
+
+
+PASO 4: PROBAR
+══════════════
+
+1. Cierra y vuelve a abrir MaBIM
+2. Busca el nuevo botón en el panel "Consultes"
+3. Haz clic para aplicar el filtro
+4. Verás un mensaje confirmando que se aplicó el filtro
+
+
+RESOLVER PROBLEMAS
+═══════════════════
+
+"Capa no encontrada"
+─ Verifica que los nombres en "target_layers" son exactos
+─ Los nombres son sensibles a mayúsculas/minúsculas
+
+"Error al leer filtro"
+─ Verifica que el fichero .qqf existe en la carpeta filtros/
+─ Verifica que el XML está bien formado
+
+"El filtro no oculta elementos"
+─ Abre QGIS y prueba la expresión directamente
+─ Si en QGIS funciona, funcionará en MaBIM
+─ Verifica que los nombres de campos son exactos
+
+"El botón no aparece"
+─ Verifica que consultes_config.json es JSON válido
+─ Revisa la consola de Python para ver errores
+
+
+AYUDA EXTRA
+═══════════
+
+- Ver: filtros/EJEMPLO_EXPRESIONES_FILTROS.txt
+- Contiene: Lista completa de expresiones y funciones disponibles
+- Ejemplos: Expresiones reales para casos de uso comunes
+
+
+CHEATSHEET: SINTAXIS DE FILTROS
+════════════════════════════════
+
+Comparar:           "CAMPO" = valor
+                    "CAMPO" > valor
+                    "CAMPO" < valor
+                    "CAMPO" >= valor
+                    "CAMPO" <= valor
+                    "CAMPO" != valor
+
+Texto:              "CAMPO" LIKE '%texto%'    (contiene)
+                    "CAMPO" LIKE 'texto%'     (comienza por)
+                    "CAMPO" = 'texto'         (igual)
+
+Múltiples valores:  "CAMPO" IN ('A', 'B', 'C')
+
+Vacíos:             "CAMPO" IS NULL
+                    "CAMPO" IS NOT NULL
+
+Combinar:           (COND1) AND (COND2)       (ambas)
+                    (COND1) OR (COND2)        (una o otra)
+                    NOT (CONDICIÓN)           (negación)
+
+IMPORTE:
+- Nombres de campos: entre COMILLAS DOBLES  → "CAMPO"
+- Valores texto:     entre COMILLAS SIMPLES → 'valor'
+- Números:           sin comillas             → 123
+- Usa paréntesis para claridad
+
+
+EJEMPLO COMPLETO: PASO A PASO
+══════════════════════════════
+
+Objetivo: Crear un botón para filtrar "Viviendas tipo A modernas (1990+)"
+
+1. Crea archivo: filtros/vivtipoa_1990.qqf
+   ──────────────────────────────────────
+   <?xml version="1.0" encoding="UTF-8"?>
+   <layerdefinition>
+     <subset>("TIPUS_VIVENDA" = 'A') AND ("ANY_CONSTRUCCIO" >= 1990)</subset>
+   </layerdefinition>
+
+2. Edita: consultes_config.json
+   ──────────────────────────
+   Agrega esta entrada al array "consultas":
+   
+   {
+     "id": "filtro_a_modernas",
+     "texto": "Viviendas A Modernas",
+     "action_type": "filter_qqf",
+     "filter_file": "filtros/vivtipoa_1990.qqf",
+     "target_layers": ["Entitats en PV", "Entitats en PH"],
+     "descripcion": "Tipo A construidas desde 1990"
+   }
+
+3. Reinicia MaBIM
+
+4. Verás un nuevo botón "Viviendas A Modernas"
+
+5. Haz clic y se filtrarán las capas
+
+
+═══════════════════════════════════════════════════════════════════════════════
+¿Necesitas ayuda? Revisa MaBIM_FilterUtils.py o consulta al equipo dev.
+═══════════════════════════════════════════════════════════════════════════════

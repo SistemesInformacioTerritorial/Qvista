@@ -1,0 +1,1 @@
+<Query>("TIPOLOGIA_BIM" = 'Drets sobre béns immobles a favor Ajunt.') AND ("TIPUS_IMMOBLE" = 'Local / Oficina')</Query>
