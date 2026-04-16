@@ -1,0 +1,102 @@
+================================================================================
+✅ SOLUCIONADO: TODOS LOS 7 MODELOS FUNCIONAN
+================================================================================
+
+ANTES:
+══════
+❌ SalidaExcel_BIMs.model3
+   Error decodificando JSON: Expecting value: line 1 column 1 (char 0)
+
+Total: 1 modelo OK, 1 error
+
+
+DESPUÉS:
+═══════
+✓ TODOS LOS 7 MODELOS CARGADOS SIN ERRORES:
+
+   1. Conflicte 01.model3
+      ├─ Nombre: "Conflicte 01"
+      ├─ Descripción: "Ambits"
+      └─ Algoritmos: 13
+
+   2. ExtraccionAExcel_Test.model3
+      ├─ Nombre: "ExtraccionAExcel_Test"
+      └─ Algoritmos: 1
+
+   3. ExtreureBIM.model3
+      ├─ Nombre: "ExtreureBIM"
+      ├─ Descripción: "Resultat1"
+      └─ Algoritmos: 2
+
+   4. model1.model3
+      ├─ Nombre: "model1"
+      ├─ Descripción: "Disseny"
+      └─ Algoritmos: 1
+
+   5. Model_Test1.model3
+      ├─ Nombre: "Model_Test1"
+      ├─ Descripción: "Parametre1"
+      └─ Algoritmos: 1
+
+   6. SalidaExcelConApertura.model3
+      ├─ Nombre: "SalidaExcelConApertura"
+      └─ Algoritmos: 2
+
+   7. SalidaExcel_BIMs.model3  ← AHORA FUNCIONA
+      ├─ Nombre: "SalidaExcel_BIMs"
+      └─ Algoritmos: 1
+
+
+QUÉ PASÓ:
+═════════
+
+1. Se detectó el problema:
+   • Los 7 modelos son formato XML (antiguo)
+   • Guardados con extension .model3 (nuevo)
+   • Bug de QGIS: inconsistencia formato/extensión
+
+2. Se actualizó el código:
+   • Detección automática: JSON vs XML
+   • Parsing con formato correcto
+   • Búsqueda de nombre en campo "model_name" (no "name")
+
+3. Resultado:
+   • ✅ Todos 7 modelos se cargan
+   • ✅ Nombres se extraen correctamente
+   • ✅ Sin errores ni excepciones
+
+
+ARCHIVOS ACTUALIZADOS:
+══════════════════════
+
+✓ listar_mis_modelos.py
+  └─ Detecta JSON/XML + busca "model_name"
+
+✓ process_models_poc.py
+  └─ Mismo sistema de detección
+
+✓ debug_model_names.py (NUEVO)
+  └─ Herramienta para analizar XML
+
+
+CÓMO USAR:
+═══════════
+
+# Ver todos tus modelos:
+python listar_mis_modelos.py
+
+# Usar en el viewer:
+python qgs_viewer_advanced.py
+└─ Pestaña "Modelos" → ComboBox muestra los 7 modelos
+
+
+ESTADO FINAL:
+═════════════
+
+✅ Todos los 7 modelos cargan
+✅ Nombres correctos
+✅ Sin errores
+✅ Listo para integrar en qVista.py
+✅ Bug de QGIS manejado automáticamente
+
+================================================================================

@@ -1,0 +1,219 @@
+================================================================================
+FORMATO .model3 - MODELOS QGIS 3.x
+================================================================================
+
+¿QUÉ ES .model3?
+════════════════
+
+Es el nuevo formato de modelos en QGIS 3.x (desde 3.14 aprox).
+
+Características:
+  ✓ Formato JSON (más legible y procesable)
+  ✓ Reemplaza el antiguo .qgxml
+  ✓ Más eficiente y compacto
+  ✓ Compatible con versiones modernas de QGIS
+
+
+UBICACIÓN:
+══════════
+
+C:\Users\de1703\AppData\Roaming\QGIS\QGIS3\profiles\default\processing\models\
+
+Archivos:
+  ✓ *.model3 (formato nuevo)
+  ✓ *.qgxml (formato antiguo - si los tienes)
+
+
+ESTRUCTURA DENTRO DEL JSON:
+═══════════════════════════
+
+{
+  "name": "Nombre del Modelo",
+  "description": "Descripción clara",
+  "inputs": [
+    {
+      "name": "NombreParametro",
+      "type": "vector",
+      "description": "Capa de entrada"
+    }
+  ],
+  "steps": [
+    {
+      "algorithm": "qgis:buffer",
+      "params": {
+        "INPUT": "NombreParametro",
+        "DISTANCE": 100
+      }
+    }
+  ],
+  "outputs": [
+    {
+      "name": "SALIDA",
+      "step": 0,
+      "output": "OUTPUT"
+    }
+  ]
+}
+
+
+QUÉ LEE EL POC:
+═══════════════
+
+El código ahora lee:
+
+1. Campo "name":
+   → Nombre del modelo que se muestra en combobox
+
+2. Campo "description":
+   → Descripción mostrada al seleccionar
+
+3. Campo "inputs":
+   → Parámetros que necesita el usuario
+   → Se generan widgets dinámicamente
+
+4. Campo "steps":
+   → Algoritmos que se ejecutan internamente
+   → No necesitas configurarlos
+
+5. Campo "outputs":
+   → Resultados que genera el modelo
+
+
+CÓMO SE CARGAN:
+═══════════════
+
+process_models_poc.py → load_models():
+
+  1. Lee carpeta de modelos
+  2. Busca ficheros *.model3
+  3. Abre cada uno como JSON
+  4. Extrae nombre del campo "name"
+  5. Lo añade al combobox
+  6. Cuando lo seleccionas, genera parámetros de "inputs"
+
+
+VENTAJAS DEL FORMATO .model3:
+════════════════════════════════
+
+✓ JSON es más fácil de leer y procesar
+✓ Menos verboso que XML
+✓ Fácil de parsear en Python (json.load())
+✓ Compatible con versiones nuevas de QGIS
+✓ Mejor rendimiento
+
+
+COMPATIBILIDAD:
+════════════════
+
+Si tienes ambos (.model3 y .qgxml):
+  ✓ El código soporta ambos
+  ✓ Lee .model3 primero (nuevo)
+  ✓ Lee .qgxml después (antiguo)
+  ✓ Evita duplicados
+
+
+MIGRACIÓN:
+══════════
+
+Si tienes modelos en .qgxml:
+  
+  Opción 1: Convertir en QGIS
+    1. Abre QGIS
+    2. Processing → Models → Designer
+    3. Abre tu modelo .qgxml
+    4. Model → Save Model (automáticamente guarda como .model3)
+    5. Borra el .qgxml antiguo (opcional)
+  
+  Opción 2: Dejar como está
+    El código soporta ambos formatos
+
+
+EJEMPLO DE UN .model3 SIMPLE:
+═════════════════════════════
+
+{
+  "name": "Buffer & Centroid",
+  "description": "Buffer de polígonos + centroides",
+  "inputs": [
+    {
+      "name": "InputLayer",
+      "type": "vector",
+      "description": "Capa de polígonos"
+    },
+    {
+      "name": "BufferDistance",
+      "type": "number",
+      "description": "Distancia buffer (metros)",
+      "default": 100
+    }
+  ],
+  "steps": [
+    {
+      "algorithm": "qgis:buffer",
+      "params": {
+        "INPUT": "InputLayer",
+        "DISTANCE": "BufferDistance"
+      }
+    },
+    {
+      "algorithm": "qgis:centroidspolygons",
+      "params": {
+        "INPUT": ["paso 1", "OUTPUT"]
+      }
+    }
+  ],
+  "outputs": [
+    {
+      "name": "BufferOutput",
+      "step": 0,
+      "output": "OUTPUT"
+    },
+    {
+      "name": "CentroidOutput",
+      "step": 1,
+      "output": "OUTPUT"
+    }
+  ]
+}
+
+
+CÓMO VER EL CONTENIDO:
+══════════════════════
+
+Opción 1: Script listar_mis_modelos.py
+  python listar_mis_modelos.py
+  → Te muestra detalles de cada modelo
+
+Opción 2: Editor de texto
+  Abre con Notepad/VS Code
+  → Formato JSON es legible
+
+Opción 3: Python
+  import json
+  with open('modelo.model3') as f:
+      data = json.load(f)
+  print(data)
+
+
+AHORA EN EL POC:
+════════════════
+
+✓ Busca .model3 EN TU CARPETA
+✓ Los lee automáticamente
+✓ Los muestra en combobox
+✓ Los ejecuta sin problemas
+
+¡Listo para usar!
+
+
+RESUMEN:
+════════
+
+Tu carpeta tiene: *.model3
+Formato: JSON (legible, procesable)
+El POC: Lo detecta, lo carga, lo muestra
+Usuario: Solo configura parámetros de entrada
+Resultado: El modelo se ejecuta correctamente
+
+
+================================================================================

@@ -1,0 +1,181 @@
+================================================================================
+CORRECCIÓN - QvVisorImatges.py
+Problema: Redimensionamiento automático de ventana al navegar imágenes
+Solución: Eliminar llamadas a self.resize()
+================================================================================
+
+PROBLEMA IDENTIFICADO
+================================================================================
+
+Al navegar entre imágenes (botones siguiente/anterior), la ventana se 
+redimensionaba automáticamente. Esto causaba:
+
+1. Comportamiento inesperado del usuario
+2. Pérdida de la posición de ventana en pantalla
+3. Posible interferencia con layouts de la aplicación
+4. Experiencia de usuario pobre
+
+CAUSA ROOT
+================================================================================
+
+En los métodos endavant() y enrrera(), había dos líneas que causaban esto:
+
+    self.resize(self.imageLabel.width()+229, self.imageLabel.height()+30)
+
+Esta línea redimensionaba la ventana para que se ajustara al tamaño de la 
+imagen que se acababa de cargar.
+
+PROBLEMA SECUNDARIO
+================================================================================
+
+También se encontró que el método adjustScrollBar() tenía la firma incorrecta:
+
+    def adjustScrollBar(self):  # ← INCORRECTO, falta parámetros
+        scrollBar.setValue(...)
+
+Debería ser:
+
+    def adjustScrollBar(self, scrollBar, factor):  # ← CORRECTO
+        scrollBar.setValue(...)
+
+
+SOLUCIÓN IMPLEMENTADA
+================================================================================
+
+1. ELIMINACIÓN de self.resize() en endavant()
+   ──────────────────────────────────────────
+   
+   ANTES:
+   ```python
+   self.cual= self.carpeta+self.llistaImatges[self.indexImatge]
+   self.pixmap = QPixmap(self.cual)
+   self.imageLabel.setPixmap(self.pixmap)
+   self.imageLabel.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Ignored)
+   self.normalSize()
+   self.setWindowTitle(...)
+   self.resize(self.imageLabel.width()+229,self.imageLabel.height()+30)
+   ```
+   
+   DESPUÉS:
+   ```python
+   self.cual= self.carpeta+self.llistaImatges[self.indexImatge]
+   self.pixmap = QPixmap(self.cual)
+   self.scaleFactor = 1.0
+   self.normalSize()
+   self.setWindowTitle(...)
+   # SIN self.resize()
+   ```
+
+
+2. ELIMINACIÓN de self.resize() en enrrera()
+   ──────────────────────────────────────────
+   
+   Mismo cambio que endavant()
+   
+   ANTES:
+   ```python
+   self.cual= self.carpeta+self.llistaImatges[self.indexImatge]
+   self.pixmap = QPixmap(self.cual)
+   self.imageLabel.setPixmap(self.pixmap)
+   self.imageLabel.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Ignored)
+   self.normalSize()
+   self.setWindowTitle(...)
+   self.resize(self.imageLabel.width()+229,self.imageLabel.height()+30)
+   ```
+   
+   DESPUÉS:
+   ```python
+   self.cual= self.carpeta+self.llistaImatges[self.indexImatge]
+   self.pixmap = QPixmap(self.cual)
+   self.scaleFactor = 1.0
+   self.normalSize()
+   self.setWindowTitle(...)
+   # SIN self.resize()
+   ```
+
+
+3. CORRECCIÓN de firma en adjustScrollBar()
+   ────────────────────────────────────────
+   
+   ANTES (INCORRECTO):
+   ```python
+   def adjustScrollBar(self):
+       scrollBar.setValue(int(factor * scrollBar.value()
+                              + ((factor - 1) * scrollBar.pageStep() / 2)))
+   ```
+   
+   DESPUÉS (CORRECTO):
+   ```python
+   def adjustScrollBar(self, scrollBar, factor):
+       scrollBar.setValue(int(factor * scrollBar.value()
+                              + ((factor - 1) * scrollBar.pageStep() / 2)))
+   ```
+
+
+COMPORTAMIENTO AHORA
+================================================================================
+
+✓ La ventana mantiene su tamaño establecido por el usuario
+✓ Al navegar entre imágenes, la ventana NO se redimensiona
+✓ Las imágenes se ajustan al tamaño actual de la ventana (gracias a fitImageToWindow())
+✓ El usuario tiene control total del tamaño de la ventana
+✓ La experiencia es más predecible y profesional
+
+
+NOTAS TÉCNICAS
+================================================================================
+
+1. Por qué se eliminó self.resize():
+
+   La lógica original intentaba ajustar la ventana al tamaño de cada imagen,
+   pero esto:
+   - No es amigable al usuario (ventana que salta)
+   - Es innecesario con fitImageToWindow() que escala la imagen
+   - Interfiere con layouts y geometry guardados
+   - No es estándar en visores de imágenes modernos
+
+2. Nueva estrategia de ajuste:
+
+   ANTES: Ventana se ajusta a la imagen
+   DESPUÉS: Imagen se ajusta a la ventana
+   
+   Esto es mucho más limpio y predecible.
+
+3. El método normalSize() ahora encapsula toda la lógica:
+
+   def normalSize(self):
+       self.pixmap = QPixmap(self.cual)
+       self.scaleFactor = 1.0
+       self.fitImageToWindow()  # ← La imagen se ajusta a ventana
+       
+   No hay necesidad de redimensionar ventana porque la imagen se adapta.
+
+
+VALIDACIÓN
+================================================================================
+
+✓ No hay errores de compilación
+✓ Métodos se llaman correctamente
+✓ adjustScrollBar() ahora tiene parámetros correctos
+✓ Flujo lógico es más limpio
+✓ Compatible con cambios anteriores de fitImageToWindow()
+
+
+PRUEBAS RECOMENDADAS
+================================================================================
+
+1. Abrir visor de imágenes
+2. Redimensionar ventana a tamaño específico
+3. Navegar a siguiente imagen (botón siguiente)
+   → Verificar que ventana NO cambia de tamaño
+4. Navegar a imagen anterior (botón anterior)
+   → Verificar que ventana NO cambia de tamaño
+5. Cargar carpeta con imágenes de diferentes tamaños
+   → Todas deben ajustarse al tamaño de ventana actual
+6. Probar zoom in/out
+   → Debe funcionar sin cambiar tamaño de ventana
+
+
+================================================================================
+FIN DE CORRECCIÓN
+================================================================================

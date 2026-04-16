@@ -1,0 +1,719 @@
+<!DOCTYPE qgis-layer-definition>
+<qlr>
+  <layer-tree-group expanded="1" groupLayer="" checked="Qt::Checked" name="">
+    <customproperties>
+      <Option/>
+    </customproperties>
+    <layer-tree-layer providerKey="oracle" expanded="1" legend_split_behavior="0" source="dbname='GEOPR1' host=geopr1.imi.bcn port=1551 user='patrimoni_cons' key='BIM' table=&quot;PATRIMONI_CONS&quot;.&quot;BIM_SENSE_GEOMETRIA&quot;" id="BIM_SENSE_GEOMETRIA_471603a3_7e4a_4a61_b8f6_116dd4b9bc65" legend_exp="" checked="Qt::Checked" name="BIM_SENSE_GEOMETRIA" patch_size="0,0">
+      <customproperties>
+        <Option/>
+      </customproperties>
+    </layer-tree-layer>
+  </layer-tree-group>
+  <maplayers>
+    <maplayer refreshOnNotifyEnabled="0" geometry="No geometry" hasScaleBasedVisibilityFlag="0" wkbType="NoGeometry" readOnly="0" refreshOnNotifyMessage="" autoRefreshTime="0" type="vector" maxScale="0" legendPlaceholderImage="" styleCategories="AllStyleCategories" minScale="1e+08" autoRefreshMode="Disabled">
+      <id>BIM_SENSE_GEOMETRIA_471603a3_7e4a_4a61_b8f6_116dd4b9bc65</id>
+      <datasource>dbname='GEOPR1' host=geopr1.imi.bcn port=1551 user='patrimoni_cons' password='PATRIMONI_CONS' key='BIM' table="PATRIMONI_CONS"."BIM_SENSE_GEOMETRIA"</datasource>
+      <keywordList>
+        <value></value>
+      </keywordList>
+      <layername>BIM_SENSE_GEOMETRIA</layername>
+      <srs>
+        <spatialrefsys nativeFormat="Wkt">
+          <wkt></wkt>
+          <proj4></proj4>
+          <srsid>0</srsid>
+          <srid>0</srid>
+          <authid></authid>
+          <description></description>
+          <projectionacronym></projectionacronym>
+          <ellipsoidacronym></ellipsoidacronym>
+          <geographicflag>true</geographicflag>
+        </spatialrefsys>
+      </srs>
+      <resourceMetadata>
+        <identifier></identifier>
+        <parentidentifier></parentidentifier>
+        <language></language>
+        <type></type>
+        <title></title>
+        <abstract></abstract>
+        <links/>
+        <dates/>
+        <fees></fees>
+        <encoding></encoding>
+        <crs>
+          <spatialrefsys nativeFormat="Wkt">
+            <wkt></wkt>
+            <proj4></proj4>
+            <srsid>0</srsid>
+            <srid>0</srid>
+            <authid></authid>
+            <description></description>
+            <projectionacronym></projectionacronym>
+            <ellipsoidacronym></ellipsoidacronym>
+            <geographicflag>true</geographicflag>
+          </spatialrefsys>
+        </crs>
+        <extent/>
+      </resourceMetadata>
+      <provider encoding="">oracle</provider>
+      <vectorjoins/>
+      <layerDependencies/>
+      <dataDependencies/>
+      <expressionfields/>
+      <map-layer-style-manager current="predeterminado">
+        <map-layer-style name="predeterminado"/>
+      </map-layer-style-manager>
+      <auxiliaryLayer/>
+      <metadataUrls/>
+      <flags>
+        <Identifiable>1</Identifiable>
+        <Removable>1</Removable>
+        <Searchable>1</Searchable>
+        <Private>0</Private>
+      </flags>
+      <temporal durationUnit="min" enabled="0" durationField="" limitMode="0" endExpression="" fixedDuration="0" endField="" mode="0" startExpression="" accumulate="0" startField="">
+        <fixedRange>
+          <start></start>
+          <end></end>
+        </fixedRange>
+      </temporal>
+      <elevation zoffset="0" extrusion="0" binding="Centroid" respectLayerSymbol="1" zscale="1" showMarkerSymbolInSurfacePlots="0" type="IndividualFeatures" extrusionEnabled="0" symbology="Line" clamping="Terrain">
+        <data-defined-properties>
+          <Option type="Map">
+            <Option value="" type="QString" name="name"/>
+            <Option name="properties"/>
+            <Option value="collection" type="QString" name="type"/>
+          </Option>
+        </data-defined-properties>
+        <profileLineSymbol>
+          <symbol clip_to_extent="1" force_rhr="0" alpha="1" is_animated="0" frame_rate="10" type="line" name="">
+            <data_defined_properties>
+              <Option type="Map">
+                <Option value="" type="QString" name="name"/>
+                <Option name="properties"/>
+                <Option value="collection" type="QString" name="type"/>
+              </Option>
+            </data_defined_properties>
+            <layer class="SimpleLine" enabled="1" pass="0" id="{3612b71f-3de5-4eb8-b8ca-074ef77ddb93}" locked="0">
+              <Option type="Map">
+                <Option value="0" type="QString" name="align_dash_pattern"/>
+                <Option value="square" type="QString" name="capstyle"/>
+                <Option value="5;2" type="QString" name="customdash"/>
+                <Option value="3x:0,0,0,0,0,0" type="QString" name="customdash_map_unit_scale"/>
+                <Option value="MM" type="QString" name="customdash_unit"/>
+                <Option value="0" type="QString" name="dash_pattern_offset"/>
+                <Option value="3x:0,0,0,0,0,0" type="QString" name="dash_pattern_offset_map_unit_scale"/>
+                <Option value="MM" type="QString" name="dash_pattern_offset_unit"/>
+                <Option value="0" type="QString" name="draw_inside_polygon"/>
+                <Option value="bevel" type="QString" name="joinstyle"/>
+                <Option value="133,182,111,255,rgb:0.52156862745098043,0.71372549019607845,0.43529411764705883,1" type="QString" name="line_color"/>
+                <Option value="solid" type="QString" name="line_style"/>
+                <Option value="0.6" type="QString" name="line_width"/>
+                <Option value="MM" type="QString" name="line_width_unit"/>
+                <Option value="0" type="QString" name="offset"/>
+                <Option value="3x:0,0,0,0,0,0" type="QString" name="offset_map_unit_scale"/>
+                <Option value="MM" type="QString" name="offset_unit"/>
+                <Option value="0" type="QString" name="ring_filter"/>
+                <Option value="0" type="QString" name="trim_distance_end"/>
+                <Option value="3x:0,0,0,0,0,0" type="QString" name="trim_distance_end_map_unit_scale"/>
+                <Option value="MM" type="QString" name="trim_distance_end_unit"/>
+                <Option value="0" type="QString" name="trim_distance_start"/>
+                <Option value="3x:0,0,0,0,0,0" type="QString" name="trim_distance_start_map_unit_scale"/>
+                <Option value="MM" type="QString" name="trim_distance_start_unit"/>
+                <Option value="0" type="QString" name="tweak_dash_pattern_on_corners"/>
+                <Option value="0" type="QString" name="use_custom_dash"/>
+                <Option value="3x:0,0,0,0,0,0" type="QString" name="width_map_unit_scale"/>
+              </Option>
+              <data_defined_properties>
+                <Option type="Map">
+                  <Option value="" type="QString" name="name"/>
+                  <Option name="properties"/>
+                  <Option value="collection" type="QString" name="type"/>
+                </Option>
+              </data_defined_properties>
+            </layer>
+          </symbol>
+        </profileLineSymbol>
+        <profileFillSymbol>
+          <symbol clip_to_extent="1" force_rhr="0" alpha="1" is_animated="0" frame_rate="10" type="fill" name="">
+            <data_defined_properties>
+              <Option type="Map">
+                <Option value="" type="QString" name="name"/>
+                <Option name="properties"/>
+                <Option value="collection" type="QString" name="type"/>
+              </Option>
+            </data_defined_properties>
+            <layer class="SimpleFill" enabled="1" pass="0" id="{bb583424-2263-49bf-a84b-edae7de9926b}" locked="0">
+              <Option type="Map">
+                <Option value="3x:0,0,0,0,0,0" type="QString" name="border_width_map_unit_scale"/>
+                <Option value="133,182,111,255,rgb:0.52156862745098043,0.71372549019607845,0.43529411764705883,1" type="QString" name="color"/>
+                <Option value="bevel" type="QString" name="joinstyle"/>
+                <Option value="0,0" type="QString" name="offset"/>
+                <Option value="3x:0,0,0,0,0,0" type="QString" name="offset_map_unit_scale"/>
+                <Option value="MM" type="QString" name="offset_unit"/>
+                <Option value="95,130,79,255,rgb:0.37254901960784315,0.50980392156862742,0.3109178301670863,1" type="QString" name="outline_color"/>
+                <Option value="solid" type="QString" name="outline_style"/>
+                <Option value="0.2" type="QString" name="outline_width"/>
+                <Option value="MM" type="QString" name="outline_width_unit"/>
+                <Option value="solid" type="QString" name="style"/>
+              </Option>
+              <data_defined_properties>
+                <Option type="Map">
+                  <Option value="" type="QString" name="name"/>
+                  <Option name="properties"/>
+                  <Option value="collection" type="QString" name="type"/>
+                </Option>
+              </data_defined_properties>
+            </layer>
+          </symbol>
+        </profileFillSymbol>
+        <profileMarkerSymbol>
+          <symbol clip_to_extent="1" force_rhr="0" alpha="1" is_animated="0" frame_rate="10" type="marker" name="">
+            <data_defined_properties>
+              <Option type="Map">
+                <Option value="" type="QString" name="name"/>
+                <Option name="properties"/>
+                <Option value="collection" type="QString" name="type"/>
+              </Option>
+            </data_defined_properties>
+            <layer class="SimpleMarker" enabled="1" pass="0" id="{da758d02-292c-4855-b7fd-47edbb20c936}" locked="0">
+              <Option type="Map">
+                <Option value="0" type="QString" name="angle"/>
+                <Option value="square" type="QString" name="cap_style"/>
+                <Option value="133,182,111,255,rgb:0.52156862745098043,0.71372549019607845,0.43529411764705883,1" type="QString" name="color"/>
+                <Option value="1" type="QString" name="horizontal_anchor_point"/>
+                <Option value="bevel" type="QString" name="joinstyle"/>
+                <Option value="diamond" type="QString" name="name"/>
+                <Option value="0,0" type="QString" name="offset"/>
+                <Option value="3x:0,0,0,0,0,0" type="QString" name="offset_map_unit_scale"/>
+                <Option value="MM" type="QString" name="offset_unit"/>
+                <Option value="95,130,79,255,rgb:0.37254901960784315,0.50980392156862742,0.3109178301670863,1" type="QString" name="outline_color"/>
+                <Option value="solid" type="QString" name="outline_style"/>
+                <Option value="0.2" type="QString" name="outline_width"/>
+                <Option value="3x:0,0,0,0,0,0" type="QString" name="outline_width_map_unit_scale"/>
+                <Option value="MM" type="QString" name="outline_width_unit"/>
+                <Option value="diameter" type="QString" name="scale_method"/>
+                <Option value="3" type="QString" name="size"/>
+                <Option value="3x:0,0,0,0,0,0" type="QString" name="size_map_unit_scale"/>
+                <Option value="MM" type="QString" name="size_unit"/>
+                <Option value="1" type="QString" name="vertical_anchor_point"/>
+              </Option>
+              <data_defined_properties>
+                <Option type="Map">
+                  <Option value="" type="QString" name="name"/>
+                  <Option name="properties"/>
+                  <Option value="collection" type="QString" name="type"/>
+                </Option>
+              </data_defined_properties>
+            </layer>
+          </symbol>
+        </profileMarkerSymbol>
+      </elevation>
+      <customproperties>
+        <Option type="Map">
+          <Option value="&quot;DESCRIPCIO_BIM&quot;" type="QString" name="dualview/previewExpressions"/>
+        </Option>
+      </customproperties>
+      <geometryOptions geometryPrecision="0" removeDuplicateNodes="0">
+        <activeChecks type="StringList">
+          <Option value="" type="QString"/>
+        </activeChecks>
+        <checkConfiguration/>
+      </geometryOptions>
+      <legend type="default-vector" showLabelLegend="0"/>
+      <referencedLayers/>
+      <fieldConfiguration>
+        <field configurationFlags="NoFlag" name="SOCIETAT">
+          <editWidget type="">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field configurationFlags="NoFlag" name="BIM">
+          <editWidget type="">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field configurationFlags="NoFlag" name="DESCRIPCIO_BIM">
+          <editWidget type="">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field configurationFlags="NoFlag" name="DENOMINACIO_BIM">
+          <editWidget type="">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field configurationFlags="NoFlag" name="QUALIFICACIO_JURIDICA">
+          <editWidget type="">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field configurationFlags="NoFlag" name="TIPOLOGIA_BIM">
+          <editWidget type="">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field configurationFlags="NoFlag" name="SUBTIPOLOGIA_BIM">
+          <editWidget type="">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field configurationFlags="NoFlag" name="TIPUS_IMMOBLE">
+          <editWidget type="">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field configurationFlags="NoFlag" name="ADSCRIT">
+          <editWidget type="">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field configurationFlags="NoFlag" name="ESTAT">
+          <editWidget type="">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field configurationFlags="NoFlag" name="INCORPORAT">
+          <editWidget type="">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field configurationFlags="NoFlag" name="DATA_ALTA">
+          <editWidget type="">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field configurationFlags="NoFlag" name="DATA_BAIXA">
+          <editWidget type="">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field configurationFlags="NoFlag" name="FORA_TERME">
+          <editWidget type="">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field configurationFlags="NoFlag" name="DATA_ULT_MOD">
+          <editWidget type="">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field configurationFlags="NoFlag" name="DATA_CIRCUIT">
+          <editWidget type="">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field configurationFlags="NoFlag" name="REF_CADASTRE_BIM">
+          <editWidget type="">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field configurationFlags="NoFlag" name="REVERTIBLE">
+          <editWidget type="">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field configurationFlags="NoFlag" name="SUP_LLIURE_BIM">
+          <editWidget type="">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field configurationFlags="NoFlag" name="SUP_OCUPADA_BIM">
+          <editWidget type="">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field configurationFlags="NoFlag" name="SUP_NO_UTILITZABLE_BIM">
+          <editWidget type="">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field configurationFlags="NoFlag" name="SUP_PENDENT_ASSIGNAR_BIM">
+          <editWidget type="">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field configurationFlags="NoFlag" name="ESTAT_OCUPACIO_BIM">
+          <editWidget type="">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field configurationFlags="NoFlag" name="GRUP_BIM">
+          <editWidget type="">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field configurationFlags="NoFlag" name="SUBGRUP_BIM">
+          <editWidget type="">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field configurationFlags="NoFlag" name="SUBGOOD_STATUS">
+          <editWidget type="">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field configurationFlags="NoFlag" name="DRET_SUPERFICIE">
+          <editWidget type="">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field configurationFlags="NoFlag" name="CONCESSIO">
+          <editWidget type="">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field configurationFlags="NoFlag" name="ZONA_MARITIMA_TERRESTRE">
+          <editWidget type="">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field configurationFlags="NoFlag" name="ZONA_PORTUARIA">
+          <editWidget type="">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field configurationFlags="NoFlag" name="CATALOGAT">
+          <editWidget type="">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field configurationFlags="NoFlag" name="ADSCRIT_PARCIAL">
+          <editWidget type="">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+      </fieldConfiguration>
+      <aliases>
+        <alias index="0" name="" field="SOCIETAT"/>
+        <alias index="1" name="" field="BIM"/>
+        <alias index="2" name="" field="DESCRIPCIO_BIM"/>
+        <alias index="3" name="" field="DENOMINACIO_BIM"/>
+        <alias index="4" name="" field="QUALIFICACIO_JURIDICA"/>
+        <alias index="5" name="" field="TIPOLOGIA_BIM"/>
+        <alias index="6" name="" field="SUBTIPOLOGIA_BIM"/>
+        <alias index="7" name="" field="TIPUS_IMMOBLE"/>
+        <alias index="8" name="" field="ADSCRIT"/>
+        <alias index="9" name="" field="ESTAT"/>
+        <alias index="10" name="" field="INCORPORAT"/>
+        <alias index="11" name="" field="DATA_ALTA"/>
+        <alias index="12" name="" field="DATA_BAIXA"/>
+        <alias index="13" name="" field="FORA_TERME"/>
+        <alias index="14" name="" field="DATA_ULT_MOD"/>
+        <alias index="15" name="" field="DATA_CIRCUIT"/>
+        <alias index="16" name="" field="REF_CADASTRE_BIM"/>
+        <alias index="17" name="" field="REVERTIBLE"/>
+        <alias index="18" name="" field="SUP_LLIURE_BIM"/>
+        <alias index="19" name="" field="SUP_OCUPADA_BIM"/>
+        <alias index="20" name="" field="SUP_NO_UTILITZABLE_BIM"/>
+        <alias index="21" name="" field="SUP_PENDENT_ASSIGNAR_BIM"/>
+        <alias index="22" name="" field="ESTAT_OCUPACIO_BIM"/>
+        <alias index="23" name="" field="GRUP_BIM"/>
+        <alias index="24" name="" field="SUBGRUP_BIM"/>
+        <alias index="25" name="" field="SUBGOOD_STATUS"/>
+        <alias index="26" name="" field="DRET_SUPERFICIE"/>
+        <alias index="27" name="" field="CONCESSIO"/>
+        <alias index="28" name="" field="ZONA_MARITIMA_TERRESTRE"/>
+        <alias index="29" name="" field="ZONA_PORTUARIA"/>
+        <alias index="30" name="" field="CATALOGAT"/>
+        <alias index="31" name="" field="ADSCRIT_PARCIAL"/>
+      </aliases>
+      <splitPolicies>
+        <policy policy="Duplicate" field="SOCIETAT"/>
+        <policy policy="Duplicate" field="BIM"/>
+        <policy policy="Duplicate" field="DESCRIPCIO_BIM"/>
+        <policy policy="Duplicate" field="DENOMINACIO_BIM"/>
+        <policy policy="Duplicate" field="QUALIFICACIO_JURIDICA"/>
+        <policy policy="Duplicate" field="TIPOLOGIA_BIM"/>
+        <policy policy="Duplicate" field="SUBTIPOLOGIA_BIM"/>
+        <policy policy="Duplicate" field="TIPUS_IMMOBLE"/>
+        <policy policy="Duplicate" field="ADSCRIT"/>
+        <policy policy="Duplicate" field="ESTAT"/>
+        <policy policy="Duplicate" field="INCORPORAT"/>
+        <policy policy="Duplicate" field="DATA_ALTA"/>
+        <policy policy="Duplicate" field="DATA_BAIXA"/>
+        <policy policy="Duplicate" field="FORA_TERME"/>
+        <policy policy="Duplicate" field="DATA_ULT_MOD"/>
+        <policy policy="Duplicate" field="DATA_CIRCUIT"/>
+        <policy policy="Duplicate" field="REF_CADASTRE_BIM"/>
+        <policy policy="Duplicate" field="REVERTIBLE"/>
+        <policy policy="Duplicate" field="SUP_LLIURE_BIM"/>
+        <policy policy="Duplicate" field="SUP_OCUPADA_BIM"/>
+        <policy policy="Duplicate" field="SUP_NO_UTILITZABLE_BIM"/>
+        <policy policy="Duplicate" field="SUP_PENDENT_ASSIGNAR_BIM"/>
+        <policy policy="Duplicate" field="ESTAT_OCUPACIO_BIM"/>
+        <policy policy="Duplicate" field="GRUP_BIM"/>
+        <policy policy="Duplicate" field="SUBGRUP_BIM"/>
+        <policy policy="Duplicate" field="SUBGOOD_STATUS"/>
+        <policy policy="Duplicate" field="DRET_SUPERFICIE"/>
+        <policy policy="Duplicate" field="CONCESSIO"/>
+        <policy policy="Duplicate" field="ZONA_MARITIMA_TERRESTRE"/>
+        <policy policy="Duplicate" field="ZONA_PORTUARIA"/>
+        <policy policy="Duplicate" field="CATALOGAT"/>
+        <policy policy="Duplicate" field="ADSCRIT_PARCIAL"/>
+      </splitPolicies>
+      <duplicatePolicies>
+        <policy policy="Duplicate" field="SOCIETAT"/>
+        <policy policy="Duplicate" field="BIM"/>
+        <policy policy="Duplicate" field="DESCRIPCIO_BIM"/>
+        <policy policy="Duplicate" field="DENOMINACIO_BIM"/>
+        <policy policy="Duplicate" field="QUALIFICACIO_JURIDICA"/>
+        <policy policy="Duplicate" field="TIPOLOGIA_BIM"/>
+        <policy policy="Duplicate" field="SUBTIPOLOGIA_BIM"/>
+        <policy policy="Duplicate" field="TIPUS_IMMOBLE"/>
+        <policy policy="Duplicate" field="ADSCRIT"/>
+        <policy policy="Duplicate" field="ESTAT"/>
+        <policy policy="Duplicate" field="INCORPORAT"/>
+        <policy policy="Duplicate" field="DATA_ALTA"/>
+        <policy policy="Duplicate" field="DATA_BAIXA"/>
+        <policy policy="Duplicate" field="FORA_TERME"/>
+        <policy policy="Duplicate" field="DATA_ULT_MOD"/>
+        <policy policy="Duplicate" field="DATA_CIRCUIT"/>
+        <policy policy="Duplicate" field="REF_CADASTRE_BIM"/>
+        <policy policy="Duplicate" field="REVERTIBLE"/>
+        <policy policy="Duplicate" field="SUP_LLIURE_BIM"/>
+        <policy policy="Duplicate" field="SUP_OCUPADA_BIM"/>
+        <policy policy="Duplicate" field="SUP_NO_UTILITZABLE_BIM"/>
+        <policy policy="Duplicate" field="SUP_PENDENT_ASSIGNAR_BIM"/>
+        <policy policy="Duplicate" field="ESTAT_OCUPACIO_BIM"/>
+        <policy policy="Duplicate" field="GRUP_BIM"/>
+        <policy policy="Duplicate" field="SUBGRUP_BIM"/>
+        <policy policy="Duplicate" field="SUBGOOD_STATUS"/>
+        <policy policy="Duplicate" field="DRET_SUPERFICIE"/>
+        <policy policy="Duplicate" field="CONCESSIO"/>
+        <policy policy="Duplicate" field="ZONA_MARITIMA_TERRESTRE"/>
+        <policy policy="Duplicate" field="ZONA_PORTUARIA"/>
+        <policy policy="Duplicate" field="CATALOGAT"/>
+        <policy policy="Duplicate" field="ADSCRIT_PARCIAL"/>
+      </duplicatePolicies>
+      <defaults>
+        <default expression="" applyOnUpdate="0" field="SOCIETAT"/>
+        <default expression="" applyOnUpdate="0" field="BIM"/>
+        <default expression="" applyOnUpdate="0" field="DESCRIPCIO_BIM"/>
+        <default expression="" applyOnUpdate="0" field="DENOMINACIO_BIM"/>
+        <default expression="" applyOnUpdate="0" field="QUALIFICACIO_JURIDICA"/>
+        <default expression="" applyOnUpdate="0" field="TIPOLOGIA_BIM"/>
+        <default expression="" applyOnUpdate="0" field="SUBTIPOLOGIA_BIM"/>
+        <default expression="" applyOnUpdate="0" field="TIPUS_IMMOBLE"/>
+        <default expression="" applyOnUpdate="0" field="ADSCRIT"/>
+        <default expression="" applyOnUpdate="0" field="ESTAT"/>
+        <default expression="" applyOnUpdate="0" field="INCORPORAT"/>
+        <default expression="" applyOnUpdate="0" field="DATA_ALTA"/>
+        <default expression="" applyOnUpdate="0" field="DATA_BAIXA"/>
+        <default expression="" applyOnUpdate="0" field="FORA_TERME"/>
+        <default expression="" applyOnUpdate="0" field="DATA_ULT_MOD"/>
+        <default expression="" applyOnUpdate="0" field="DATA_CIRCUIT"/>
+        <default expression="" applyOnUpdate="0" field="REF_CADASTRE_BIM"/>
+        <default expression="" applyOnUpdate="0" field="REVERTIBLE"/>
+        <default expression="" applyOnUpdate="0" field="SUP_LLIURE_BIM"/>
+        <default expression="" applyOnUpdate="0" field="SUP_OCUPADA_BIM"/>
+        <default expression="" applyOnUpdate="0" field="SUP_NO_UTILITZABLE_BIM"/>
+        <default expression="" applyOnUpdate="0" field="SUP_PENDENT_ASSIGNAR_BIM"/>
+        <default expression="" applyOnUpdate="0" field="ESTAT_OCUPACIO_BIM"/>
+        <default expression="" applyOnUpdate="0" field="GRUP_BIM"/>
+        <default expression="" applyOnUpdate="0" field="SUBGRUP_BIM"/>
+        <default expression="" applyOnUpdate="0" field="SUBGOOD_STATUS"/>
+        <default expression="" applyOnUpdate="0" field="DRET_SUPERFICIE"/>
+        <default expression="" applyOnUpdate="0" field="CONCESSIO"/>
+        <default expression="" applyOnUpdate="0" field="ZONA_MARITIMA_TERRESTRE"/>
+        <default expression="" applyOnUpdate="0" field="ZONA_PORTUARIA"/>
+        <default expression="" applyOnUpdate="0" field="CATALOGAT"/>
+        <default expression="" applyOnUpdate="0" field="ADSCRIT_PARCIAL"/>
+      </defaults>
+      <constraints>
+        <constraint constraints="0" unique_strength="0" exp_strength="0" field="SOCIETAT" notnull_strength="0"/>
+        <constraint constraints="3" unique_strength="1" exp_strength="0" field="BIM" notnull_strength="1"/>
+        <constraint constraints="0" unique_strength="0" exp_strength="0" field="DESCRIPCIO_BIM" notnull_strength="0"/>
+        <constraint constraints="0" unique_strength="0" exp_strength="0" field="DENOMINACIO_BIM" notnull_strength="0"/>
+        <constraint constraints="0" unique_strength="0" exp_strength="0" field="QUALIFICACIO_JURIDICA" notnull_strength="0"/>
+        <constraint constraints="0" unique_strength="0" exp_strength="0" field="TIPOLOGIA_BIM" notnull_strength="0"/>
+        <constraint constraints="0" unique_strength="0" exp_strength="0" field="SUBTIPOLOGIA_BIM" notnull_strength="0"/>
+        <constraint constraints="0" unique_strength="0" exp_strength="0" field="TIPUS_IMMOBLE" notnull_strength="0"/>
+        <constraint constraints="0" unique_strength="0" exp_strength="0" field="ADSCRIT" notnull_strength="0"/>
+        <constraint constraints="0" unique_strength="0" exp_strength="0" field="ESTAT" notnull_strength="0"/>
+        <constraint constraints="0" unique_strength="0" exp_strength="0" field="INCORPORAT" notnull_strength="0"/>
+        <constraint constraints="0" unique_strength="0" exp_strength="0" field="DATA_ALTA" notnull_strength="0"/>
+        <constraint constraints="0" unique_strength="0" exp_strength="0" field="DATA_BAIXA" notnull_strength="0"/>
+        <constraint constraints="0" unique_strength="0" exp_strength="0" field="FORA_TERME" notnull_strength="0"/>
+        <constraint constraints="0" unique_strength="0" exp_strength="0" field="DATA_ULT_MOD" notnull_strength="0"/>
+        <constraint constraints="0" unique_strength="0" exp_strength="0" field="DATA_CIRCUIT" notnull_strength="0"/>
+        <constraint constraints="0" unique_strength="0" exp_strength="0" field="REF_CADASTRE_BIM" notnull_strength="0"/>
+        <constraint constraints="0" unique_strength="0" exp_strength="0" field="REVERTIBLE" notnull_strength="0"/>
+        <constraint constraints="0" unique_strength="0" exp_strength="0" field="SUP_LLIURE_BIM" notnull_strength="0"/>
+        <constraint constraints="0" unique_strength="0" exp_strength="0" field="SUP_OCUPADA_BIM" notnull_strength="0"/>
+        <constraint constraints="0" unique_strength="0" exp_strength="0" field="SUP_NO_UTILITZABLE_BIM" notnull_strength="0"/>
+        <constraint constraints="0" unique_strength="0" exp_strength="0" field="SUP_PENDENT_ASSIGNAR_BIM" notnull_strength="0"/>
+        <constraint constraints="0" unique_strength="0" exp_strength="0" field="ESTAT_OCUPACIO_BIM" notnull_strength="0"/>
+        <constraint constraints="0" unique_strength="0" exp_strength="0" field="GRUP_BIM" notnull_strength="0"/>
+        <constraint constraints="0" unique_strength="0" exp_strength="0" field="SUBGRUP_BIM" notnull_strength="0"/>
+        <constraint constraints="0" unique_strength="0" exp_strength="0" field="SUBGOOD_STATUS" notnull_strength="0"/>
+        <constraint constraints="0" unique_strength="0" exp_strength="0" field="DRET_SUPERFICIE" notnull_strength="0"/>
+        <constraint constraints="0" unique_strength="0" exp_strength="0" field="CONCESSIO" notnull_strength="0"/>
+        <constraint constraints="0" unique_strength="0" exp_strength="0" field="ZONA_MARITIMA_TERRESTRE" notnull_strength="0"/>
+        <constraint constraints="0" unique_strength="0" exp_strength="0" field="ZONA_PORTUARIA" notnull_strength="0"/>
+        <constraint constraints="0" unique_strength="0" exp_strength="0" field="CATALOGAT" notnull_strength="0"/>
+        <constraint constraints="0" unique_strength="0" exp_strength="0" field="ADSCRIT_PARCIAL" notnull_strength="0"/>
+      </constraints>
+      <constraintExpressions>
+        <constraint desc="" exp="" field="SOCIETAT"/>
+        <constraint desc="" exp="" field="BIM"/>
+        <constraint desc="" exp="" field="DESCRIPCIO_BIM"/>
+        <constraint desc="" exp="" field="DENOMINACIO_BIM"/>
+        <constraint desc="" exp="" field="QUALIFICACIO_JURIDICA"/>
+        <constraint desc="" exp="" field="TIPOLOGIA_BIM"/>
+        <constraint desc="" exp="" field="SUBTIPOLOGIA_BIM"/>
+        <constraint desc="" exp="" field="TIPUS_IMMOBLE"/>
+        <constraint desc="" exp="" field="ADSCRIT"/>
+        <constraint desc="" exp="" field="ESTAT"/>
+        <constraint desc="" exp="" field="INCORPORAT"/>
+        <constraint desc="" exp="" field="DATA_ALTA"/>
+        <constraint desc="" exp="" field="DATA_BAIXA"/>
+        <constraint desc="" exp="" field="FORA_TERME"/>
+        <constraint desc="" exp="" field="DATA_ULT_MOD"/>
+        <constraint desc="" exp="" field="DATA_CIRCUIT"/>
+        <constraint desc="" exp="" field="REF_CADASTRE_BIM"/>
+        <constraint desc="" exp="" field="REVERTIBLE"/>
+        <constraint desc="" exp="" field="SUP_LLIURE_BIM"/>
+        <constraint desc="" exp="" field="SUP_OCUPADA_BIM"/>
+        <constraint desc="" exp="" field="SUP_NO_UTILITZABLE_BIM"/>
+        <constraint desc="" exp="" field="SUP_PENDENT_ASSIGNAR_BIM"/>
+        <constraint desc="" exp="" field="ESTAT_OCUPACIO_BIM"/>
+        <constraint desc="" exp="" field="GRUP_BIM"/>
+        <constraint desc="" exp="" field="SUBGRUP_BIM"/>
+        <constraint desc="" exp="" field="SUBGOOD_STATUS"/>
+        <constraint desc="" exp="" field="DRET_SUPERFICIE"/>
+        <constraint desc="" exp="" field="CONCESSIO"/>
+        <constraint desc="" exp="" field="ZONA_MARITIMA_TERRESTRE"/>
+        <constraint desc="" exp="" field="ZONA_PORTUARIA"/>
+        <constraint desc="" exp="" field="CATALOGAT"/>
+        <constraint desc="" exp="" field="ADSCRIT_PARCIAL"/>
+      </constraintExpressions>
+      <expressionfields/>
+      <attributeactions>
+        <defaultAction value="{00000000-0000-0000-0000-000000000000}" key="Canvas"/>
+      </attributeactions>
+      <attributetableconfig actionWidgetStyle="dropDown" sortOrder="0" sortExpression="&quot;BIM&quot;">
+        <columns>
+          <column hidden="0" type="field" name="SOCIETAT" width="-1"/>
+          <column hidden="0" type="field" name="BIM" width="-1"/>
+          <column hidden="0" type="field" name="DESCRIPCIO_BIM" width="194"/>
+          <column hidden="0" type="field" name="DENOMINACIO_BIM" width="444"/>
+          <column hidden="0" type="field" name="QUALIFICACIO_JURIDICA" width="-1"/>
+          <column hidden="0" type="field" name="TIPOLOGIA_BIM" width="-1"/>
+          <column hidden="0" type="field" name="SUBTIPOLOGIA_BIM" width="-1"/>
+          <column hidden="0" type="field" name="TIPUS_IMMOBLE" width="-1"/>
+          <column hidden="0" type="field" name="ADSCRIT" width="-1"/>
+          <column hidden="0" type="field" name="ESTAT" width="-1"/>
+          <column hidden="0" type="field" name="INCORPORAT" width="-1"/>
+          <column hidden="0" type="field" name="DATA_ALTA" width="-1"/>
+          <column hidden="0" type="field" name="DATA_BAIXA" width="-1"/>
+          <column hidden="0" type="field" name="FORA_TERME" width="-1"/>
+          <column hidden="0" type="field" name="DATA_ULT_MOD" width="-1"/>
+          <column hidden="0" type="field" name="REF_CADASTRE_BIM" width="-1"/>
+          <column hidden="0" type="field" name="REVERTIBLE" width="-1"/>
+          <column hidden="0" type="field" name="SUP_LLIURE_BIM" width="-1"/>
+          <column hidden="0" type="field" name="SUP_OCUPADA_BIM" width="-1"/>
+          <column hidden="0" type="field" name="SUP_NO_UTILITZABLE_BIM" width="-1"/>
+          <column hidden="0" type="field" name="SUP_PENDENT_ASSIGNAR_BIM" width="-1"/>
+          <column hidden="0" type="field" name="ESTAT_OCUPACIO_BIM" width="-1"/>
+          <column hidden="0" type="field" name="DATA_CIRCUIT" width="-1"/>
+          <column hidden="0" type="field" name="GRUP_BIM" width="-1"/>
+          <column hidden="0" type="field" name="SUBGRUP_BIM" width="-1"/>
+          <column hidden="0" type="field" name="SUBGOOD_STATUS" width="-1"/>
+          <column hidden="0" type="field" name="DRET_SUPERFICIE" width="-1"/>
+          <column hidden="0" type="field" name="CONCESSIO" width="-1"/>
+          <column hidden="0" type="field" name="ZONA_MARITIMA_TERRESTRE" width="-1"/>
+          <column hidden="0" type="field" name="ZONA_PORTUARIA" width="-1"/>
+          <column hidden="0" type="field" name="CATALOGAT" width="-1"/>
+          <column hidden="0" type="field" name="ADSCRIT_PARCIAL" width="-1"/>
+          <column hidden="1" type="actions" width="-1"/>
+        </columns>
+      </attributetableconfig>
+      <conditionalstyles>
+        <rowstyles/>
+        <fieldstyles/>
+      </conditionalstyles>
+      <storedexpressions/>
+      <editform tolerant="1"></editform>
+      <editforminit/>
+      <editforminitcodesource>0</editforminitcodesource>
+      <editforminitfilepath></editforminitfilepath>
+      <editforminitcode><![CDATA[]]></editforminitcode>
+      <featformsuppress>0</featformsuppress>
+      <editorlayout>generatedlayout</editorlayout>
+      <editable/>
+      <labelOnTop/>
+      <reuseLastValue/>
+      <dataDefinedFieldProperties/>
+      <widgets/>
+      <previewExpression>"DESCRIPCIO_BIM"</previewExpression>
+      <mapTip enabled="1"></mapTip>
+    </maplayer>
+  </maplayers>
+</qlr>

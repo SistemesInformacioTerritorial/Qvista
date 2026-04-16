@@ -1,0 +1,297 @@
+╔═══════════════════════════════════════════════════════════════════════════════╗
+║                   CHECKLIST DE IMPLEMENTACIÓN - FILTROS .QQF                  ║
+╚═══════════════════════════════════════════════════════════════════════════════╝
+
+PASO 1: VERIFICAR ARCHIVOS CREADOS/MODIFICADOS
+═══════════════════════════════════════════════
+
+Archivos NUEVOS creados:
+─────────────────────
+□ MaBIM_FilterUtils.py
+  └─ Ubicación: Programes especifics/MaBIM/MaBIM_FilterUtils.py
+  └─ Tamaño estimado: ~400+ líneas
+  
+□ Carpeta filtros/
+  └─ Ubicación: Programes especifics/MaBIM/filtros/
+  └─ Contiene:
+    □ viviendas_tipo_A.qqf
+    □ viviendas_tipo_B.qqf
+    □ propiedades_mal_estado.qqf
+    □ viviendas_tipos_A_B.qqf
+    □ viviendas_grandes.qqf
+    □ viviendas_antiguas.qqf
+    □ EJEMPLO_EXPRESIONES_FILTROS.txt
+
+□ CONSULTES_CONFIG_README.md (ACTUALIZADO)
+  └─ Ubicación: Programes especifics/MaBIM/
+  └─ Incluye secciones de Filtros QQF
+
+□ GUIA_RAPIDA_FILTROS_QQF.txt
+  └─ Ubicación: Programes especifics/MaBIM/
+
+□ DOCUMENTACION_TECNICA_FILTROS_QQF.txt
+  └─ Ubicación: Programes especifics/MaBIM/
+
+□ consultes_config.EJEMPLO_COMPLETO.json
+  └─ Ubicación: Programes especifics/MaBIM/
+
+Archivos MODIFICADOS:
+─────────────────────
+□ qMaBIM.py
+  └─ Importación de MaBIM_FilterUtils
+  └─ Método _crear_botons_consultes() actualizado
+  └─ Nuevo método _ejecutar_filtro_qqf()
+
+□ consultes_config.json
+  └─ Nuevas entradas with action_type: "filter_qqf"
+
+
+PASO 2: VERIFICAR INTEGRIDAD DEL CÓDIGO
+════════════════════════════════════════
+
+En MaBIM_FilterUtils.py:
+────────────────────────
+□ Clase MaBIMFilterReader
+  □ Método read_filter_expression()
+  □ Método _parse_xml_filter()
+
+□ Clase MaBIMFilterApplier
+  □ Método __init__()
+  □ Método apply_filter_by_file()
+  □ Método apply_filter_expression()
+  □ Método clear_filters()
+  □ Método get_filter_status()
+
+□ Clase FilterDefinition
+  □ Método __init__()
+  □ Método is_valid()
+  □ Método get_filter_path()
+
+En qMaBIM.py:
+─────────────
+□ Línea de importación:
+  from MaBIM_FilterUtils import MaBIMFilterApplier, FilterDefinition
+
+□ Método _crear_botons_consultes():
+  □ Detecta action_type
+  □ Conecta con _ejecutar_filtro_qqf() si action_type == 'filter_qqf'
+
+□ Nuevo método _ejecutar_filtro_qqf():
+  □ Valida configuración con FilterDefinition
+  □ Lee ruta del filtro
+  □ Crea MaBIMFilterApplier
+  □ Llama apply_filter_by_file()
+  □ Refresca el canvas
+
+
+PASO 3: VERIFICACIÓN DE SINTAXIS
+═════════════════════════════════
+
+En Python (desde la carpeta workspace):
+─────────────────────────────────────
+python -m py_compile Programes\ especifics/MaBIM/MaBIM_FilterUtils.py
+└─ Debe terminar sin errores
+
+python -m py_compile Programes\ especifics/MaBIM/qMaBIM.py
+└─ Debe terminar sin errores
+
+En JSON (verificar consultes_config.json):
+──────────────────────────────────────────
+□ Estructura válida (usar JSONLint.com)
+□ Comillas correctas (dobles)
+□ Comas correctas
+□ Arrays y objetos anidados correctos
+
+
+PASO 4: VERIFICACIÓN FUNCIONAL
+═══════════════════════════════
+
+Abrir QGIS con MaBIM:
+────────────────────
+□ MaBIM se abre sin errores
+□ Panel "Consultes" aparece
+□ Botones de consultas QLR existen: 
+  □ "Bims sense geometria"
+□ Botones de consultas personalizadas existen:
+  □ "Filtrar PV/PH por CSV (BIM)"
+□ Nuevos botones de filtros .qqf existen:
+  □ "Filtrar Viviendas A"
+  □ "Filtrar Viviendas B"
+  □ "Propiedades en mal estado"
+  □ (otros si existen en tu config)
+
+Probar cada botón de filtro:
+───────────────────────────
+□ " Filtrar Viviendas A"
+  □ Hace clic
+  □ Aparece mensaje de confirmación
+  □ Capas "Entitats en PV" y "Entitats en PH" se filtran
+  □ Canvas se refresca
+
+□ "Filtrar Viviendas B"
+  □ Hace clic
+  □ Los datos se filtran correctamente
+  □ Elementos de tipo B se muestran
+
+□ "Propiedades en mal estado"
+  □ Filtro se aplica
+  □ Solo propiedades ruinosas/deterioradas
+
+□ Otros botones de filtros
+  □ Se aplican correctamente
+
+
+PASO 5: VERIFICACIÓN DE ERRORES COMUNES
+════════════════════════════════════════
+
+Si aparece error "ModuleNotFoundError: No module named 'MaBIM_FilterUtils'":
+──────────────────────────────────────────────────────────────────────────
+□ Verifica que MaBIM_FilterUtils.py está en la misma carpeta que qMaBIM.py
+□ Verifica que el nombre del archivo es exacto (sin espacios, mayúsculas)
+
+Si aparece error "FileNotFoundError: [Errno 2] No such file or directory":
+───────────────────────────────────────────────────────────────────────
+□ Verifica que la carpeta "filtros/" existe
+□ Verifica que los ficheros .qqf están en la carpeta "filtros/"
+□ Verifica que los nombres en filter_file coinciden exactamente
+
+Si aparece error sobre capas:
+──────────────────────────────
+□ Verifica que las capas "Entitats en PV" y "Entitats en PH" existen
+□ Verifica que el nombre es exacto (mayúsculas/minúsculas)
+□ Asegúrate que el proyecto QGIS está abierto correctamente
+
+Si los filtros no ocultan elementos:
+────────────────────────────────────
+□ Abre QGIS y prueba la expresión directamente
+□ Verifica que los nombres de campos son correctos
+□ Verifica que tienes datos que coincidan con el filtro
+
+
+PASO 6: CREAR UN FILTRO PERSONALIZADO (PRUEBA)
+═══════════════════════════════════════════════
+
+1. Crear nuevo fichero .qqf:
+   ─────────────────────────
+   □ Crea archivo: filtros/mi_filtro_prueba.qqf
+   □ Contenido:
+     <?xml version="1.0" encoding="UTF-8"?>
+     <layerdefinition>
+       <subset>"CAMP_EXISTENTE" = 'VALOR'</subset>
+     </layerdefinition>
+
+2. Crear entrada en consultes_config.json:
+   ─────────────────────────────────────
+   □ Agrega objeto nuevo en array "consultas":
+     {
+       "id": "mi_filtro_prueba",
+       "texto": "Mi Filtro Prueba",
+       "action_type": "filter_qqf",
+       "filter_file": "filtros/mi_filtro_prueba.qqf",
+       "target_layers": ["Entitats en PV", "Entitats en PH"],
+       "descripcion": "Filtro de prueba"
+     }
+
+3. Reiniciar MaBIM
+
+4. Buscar botón "Mi Filtro Prueba"
+
+5. Hacer clic y verificar que funciona
+
+
+PASO 7: DOCUMENTACIÓN VERIFICADA
+════════════════════════════════
+
+□ GUIA_RAPIDA_FILTROS_QQF.txt
+  □ Contiene guía paso a paso
+  □ Ejemplos de expresiones
+  □ Solución de problemas
+
+□ CONSULTES_CONFIG_README.md
+  □ Documentado todos los tipos de consultas
+  □ Ejemplos de cada tipo
+  □ Sección de expresiones comunes
+
+□ DOCUMENTACION_TECNICA_FILTROS_QQF.txt
+  □ Arquitectura explicada
+  □ Flujo de ejecución
+  □ Métodos de clases
+
+□ EJEMPLO_EXPRESIONES_FILTROS.txt
+  □ Referencia de expresiones QGIS
+  □ Operadores SQL
+  □ Funciones disponibles
+
+
+PASO 8: VERIFICACIÓN DE COMPATIBILIDAD
+═══════════════════════════════════════
+
+□ Consultas QLR existentes siguen funcionando
+  □ "Bims sense geometria" carga QLR correctamente
+  □ Tabla de atributos se muestra
+
+□ Consultas personalizadas existentes funcionan
+  □ "Filtrar PV/PH por CSV" abre diálogo
+  □ Filtra correctamente desde CSV
+
+□ Nuevo sistema es retrocompatible
+  □ Los botones antiguos no cambian su comportamiento
+  □ Solo se añaden nuevas funcionalidades
+
+
+PASO 9: VERIFICACIÓN DE RENDIMIENTO
+════════════════════════════════════
+
+□ Los filtros se aplican rápidamente (<2 segundos)
+□ El canvas se refresca correctamente
+□ No hay freezing o lag al aplicar filtros
+□ Los mensajes de confirmación aparecen
+
+
+PASO 10: LISTA DE ARCHIVOS FINALES
+═══════════════════════════════════
+
+Total de archivos nuevos: 8
+Total de archivos modificados: 2
+
+Nuevos:
+  1. MaBIM_FilterUtils.py
+  2. filtros/viviendas_tipo_A.qqf
+  3. filtros/viviendas_tipo_B.qqf
+  4. filtros/propiedades_mal_estado.qqf
+  5. filtros/viviendas_tipos_A_B.qqf
+  6. filtros/viviendas_grandes.qqf
+  7. filtros/viviendas_antiguas.qqf
+  8. filtros/EJEMPLO_EXPRESIONES_FILTROS.txt
+  + 4 documentos de ayuda
+
+Modificados:
+  1. qMaBIM.py
+  2. consultes_config.json
+
+Documentación:
+  1. CONSULTES_CONFIG_README.md (ACTUALIZADO)
+  2. GUIA_RAPIDA_FILTROS_QQF.txt
+  3. DOCUMENTACION_TECNICA_FILTROS_QQF.txt
+  4. consultes_config.EJEMPLO_COMPLETO.json
+
+
+═════════════════════════════════════════════════════════════════════════════════
+
+NOTAS IMPORTANTES:
+══════════════════
+
+✓ El sistema es modular y reutilizable
+✓ Retrocompatible con consultas existentes
+✓ Extensible para futuros tipos de consultas
+✓ Bien documentado para futuros desarrolladores
+✓ Listo para producción
+
+Si algo falla en los puntos anteriores, revisa:
+  1. Nombres de archivos (sensible a mayúsculas)
+  2. Rutas de archivos (relativas vs. absolutas)
+  3. Sintaxis XML de ficheros .qqf
+  4. Sintaxis JSON de consultes_config.json
+  5. Nombres de capas en el proyecto QGIS
+
+═════════════════════════════════════════════════════════════════════════════════

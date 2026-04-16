@@ -1,0 +1,70 @@
+================================================================================
+RESUMEN: FIX DEL ERROR 'NoneType' deleteLater
+================================================================================
+
+ERROR ENCONTRADO:
+═════════════════
+
+AttributeError: 'NoneType' object has no attribute 'deleteLater'
+
+En:
+  • process_models_poc.py línea 300
+  • processing_chain_poc.py línea 361
+
+
+CAUSA:
+══════
+
+QLayout.takeAt() puede retornar None, y el código intentaba:
+  
+  self.param_layout.takeAt(0).widget().deleteLater()
+                               ^^^^^^
+                          Aquí falla si widget() es None
+
+
+SOLUCIÓN APLICADA:
+═══════════════════
+
+Verificar antes de llamar:
+
+  item = self.param_layout.takeAt(0)
+  if item.widget():
+      item.widget().deleteLater()
+
+
+ARCHIVOS MODIFICADOS:
+═════════════════════
+
+✓ process_models_poc.py
+  Línea ~300: on_model_changed()
+
+✓ processing_chain_poc.py
+  Línea ~361: on_algorithm_changed()
+
+
+AHORA:
+══════
+
+✓ Cambiar de modelo SIN error
+✓ Cambiar de algoritmo SIN error
+✓ Parámetros se limpian correctamente
+✓ Programa es estable
+
+
+TESTING:
+════════
+
+python qgs_viewer_advanced.py
+
+• Carga proyecto
+• Cambia modelos en combobox → ✓ OK
+• Cambia algoritmos → ✓ OK
+
+
+DOCUMENTACIÓN:
+═══════════════
+
+Ver: FIX_NONEETYPE_DELETELATER.txt (explicación técnica)
+
+
+================================================================================

@@ -1,0 +1,41 @@
+{
+  "consultas": [
+    {
+      "id": "consulta1",
+      "nombre": "Bims sense geometria",
+      "texto": "Bims sense geometria",
+      "funcion": "executarConsulta1",
+      "archivo_qlr": "BimsSenseGeometria.qlr",
+      "descripcion": "Carga la capa BimsSenseGeometria.qlr y la muestra en una tabla de atributos"
+    },
+    {
+        "id": "filtra_csv_bim",
+        "texto": "Filtrar PV/PH por CSV (BIM)",
+        "funcion": "filtraPVPH_desdeCSV"
+    },
+    {
+      "id": "filtro_qqf_viviendas_a",
+      "texto": "Immobles Ús Públic",
+      "action_type": "filter_qqf",
+      "filter_file": "filtros/us.qqf",
+      "target_layers": ["Entitats en PV", "Entitats en PH"],
+      "descripcion": "Aplicar filtro de viviendas tipo A definido en .qqf"
+    },
+    {
+      "id": "filtro_qqf_SupLliureMes100",
+      "texto": "Superficies lliure > 100m2",
+      "action_type": "filter_qqf",
+      "filter_file": "filtros/SupLliureMesGran100.qqf",
+      "target_layers": ["Entitats en PV", "Entitats en PH"],
+      "descripcion": "Aplicar filtro de viviendas tipo B definido en .qqf"
+    },
+    {
+      "id": "filtro_qqf_SupLliureMes1001",
+      "texto": "Locals en PH",
+      "action_type": "filter_qqf",
+      "filter_file": "filtros/LocalsPH.qqf",
+      "target_layers": ["Entitats en PV", "Entitats en PH"],
+      "descripcion": "Aplicar filtro de viviendas tipo B definido en .qqf"
+    }
+  ]
+}

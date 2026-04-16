@@ -1,0 +1,136 @@
+================================================================================
+ACTUALIZACIÓN: SOPORTE PARA .model3
+================================================================================
+
+CAMBIO IMPORTANTE:
+═══════════════════
+
+Tus modelos son .model3, NO .qgxml
+
+Eso significa que tienes el NUEVO formato de QGIS 3.x
+
+
+QUÉ PASÓ:
+═════════
+
+ANTES:
+  ✗ Código buscaba .qgxml
+  ✗ Ignoraba .model3
+
+AHORA:
+  ✓ Busca .model3 (prioritario)
+  ✓ También soporta .qgxml (compatibilidad)
+  ✓ Lee JSON directamente
+  ✓ Extrae nombre, descripción, parámetros
+
+
+ARCHIVOS ACTUALIZADOS:
+══════════════════════
+
+✓ process_models_poc.py
+  • load_models() ahora busca .model3
+  • Lee ficheros como JSON
+  • Extrae "name" del JSON
+  • También soporta .qgxml
+
+✓ listar_mis_modelos.py
+  • Ahora muestra .model3 primero
+  • Después .qgxml (si los tienes)
+  • Lee estructura JSON completa
+  • Muestra parámetros, algoritmos, salidas
+
+
+CÓMO FUNCIONA AHORA:
+════════════════════
+
+1. Busca en carpeta:
+   C:\Users\de1703\AppData\Roaming\QGIS\QGIS3\profiles\default\processing\models
+
+2. Encuentra ficheros .model3
+
+3. Abre cada uno como JSON:
+   import json
+   with open('archivo.model3') as f:
+       data = json.load(f)
+
+4. Extrae: data["name"] → "Mi Modelo"
+
+5. Extrae parámetros: data["inputs"] → [...]
+
+6. Los muestra en combobox
+
+
+PARA PROBAR:
+═════════════
+
+Paso 1: Ver tus modelos
+────────────────────────
+python listar_mis_modelos.py
+
+Deberías ver:
+  ✓ Sección "MODELOS .model3"
+  ✓ Nombre de cada uno
+  ✓ Parámetros de entrada
+  ✓ Algoritmos internos
+
+Paso 2: Ejecutar viewer
+────────────────────────
+python qgs_viewer_advanced.py
+
+1. Abre proyecto .qgs
+2. Pestaña "Modelos"
+3. ComboBox debería mostrar tus modelos
+4. Selecciona uno
+5. Aparecen parámetros
+6. ¡EJECUTA!
+
+
+FORMATO .model3 EXPLICADO:
+═══════════════════════════
+
+Es JSON con estructura:
+
+{
+  "name": "Nombre del Modelo",
+  "description": "Descripción",
+  "inputs": [
+    {"name": "InputLayer", "type": "vector"}
+  ],
+  "steps": [
+    {"algorithm": "qgis:buffer", "params": {...}}
+  ],
+  "outputs": [
+    {"name": "Resultado", "step": 0, "output": "OUTPUT"}
+  ]
+}
+
+El código lee TODO esto automáticamente.
+
+
+DOCUMENTACIÓN:
+═══════════════
+
+Ver: FORMATO_MODEL3.txt (explicación técnica)
+
+
+CONCLUSIÓN:
+════════════
+
+✓ Ahora soporta .model3 (tu formato)
+✓ También soporta .qgxml (si los tienes)
+✓ Lee JSON directamente
+✓ Extrae datos automáticamente
+✓ Listo para usar
+
+
+PRÓXIMO:
+════════
+
+python listar_mis_modelos.py
+→ Ver tus modelos
+
+python qgs_viewer_advanced.py
+→ Ejecutarlos
+
+
+================================================================================

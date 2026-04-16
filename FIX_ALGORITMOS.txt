@@ -1,0 +1,160 @@
+================================================================================
+FIX: ALGORITMOS NO CARGABAN EN LA LISTA DESPLEGABLE
+================================================================================
+
+PROBLEMA:
+═════════
+El combobox de algoritmos estaba vacío después de ejecutar qgs_viewer_poc.py
+
+CAUSA:
+══════
+El módulo QgsProcessing necesita ser inicializado explícitamente con
+QgsNativeAlgorithms antes de que se pueda acceder a los algoritmos.
+
+En el initialization anterior, se intentaba acceder a los algoritmos
+antes de que Processing estuviera completamente cargado.
+
+
+SOLUCIÓN IMPLEMENTADA:
+══════════════════════
+
+1. En qgs_viewer_poc.py - main():
+   
+   # Antes: Solo creaba la ventana
+   with qgisapp(sysexit=False) as qgs_app:
+       viewer = QgsViewerPOC()
+   
+   # Ahora: Inicializa Processing explícitamente
+   with qgisapp(sysexit=False) as qgs_app:
+       
+       from qgis.analysis import QgsNativeAlgorithms
+       registry = QgsApplication.processingRegistry()
+       
+       # Agregar algoritmos nativos
+       if len(list(registry.algorithms())) == 0:
+           registry.addProvider(QgsNativeAlgorithms())
+       
+       viewer = QgsViewerPOC()
+       viewer.show()
+       viewer.processing_dock.load_algorithms()  # Recargar
+
+
+2. En processing_chain_poc.py - load_algorithms():
+   
+   # Añadido: Inicialización con más debug
+   from qgis.analysis import QgsNativeAlgorithms
+   
+   registry = QgsApplication.processingRegistry()
+   
+   if len(algorithms) == 0:
+       native = QgsNativeAlgorithms()
+       registry.addProvider(native)
+   
+   # Con logs de debug para diagnosticar problemas
+
+
+3. En UI - Añadido botón 🔄:
+   
+   Botón "Recargar algoritmos" junto al combobox
+   Permite recargar manualmente si hay problemas
+   
+   Uso: Si la lista sale vacía, pulsa 🔄
+
+
+4. Mejorado load_project():
+   
+   # Ahora:
+   • Muestra número de capas cargadas
+   • Configura explícitamente canvas.setLayers()
+   • Hace refresh() para asegurar visualización
+   • Muestra mensaje con cantidad de capas
+
+
+CAMBIOS EN ARCHIVOS:
+════════════════════
+
+✓ qgs_viewer_poc.py:
+  - Importa QgsNativeAlgorithms
+  - Inicializa Processing en main()
+  - Llama explícitamente a load_algorithms()
+  - Mejora mensaje de status
+
+✓ processing_chain_poc.py:
+  - Limpia combo antes de recargar
+  - Añade logs de debug
+  - Maneja excepciones mejor
+  - Botón 🔄 para recargar manualmente
+
+✓ Nuevo: debug_poc.py
+  - Script sin UI para diagnosticar problemas
+  - Valida que Processing funciona
+  - Verifica carga de algoritmos
+  - Verifica carga de proyecto
+
+✓ Nuevo: TROUBLESHOOTING_POC.txt
+  - Guía de resolución de problemas
+  - Pasos de debug
+  - Checklist de verificación
+
+
+CÓMO PROBAR AHORA:
+══════════════════
+
+1. Ejecutar script de debug:
+   
+   python debug_poc.py
+   
+   Debe mostrar:
+   ✓ Processing Registry inicializado
+   ✓ ~95 algoritmos encontrados
+   ✓ Primeros 5 algoritmos listados
+   ✓ Proyecto cargado: X capas
+   ✓ Canvas configurado
+
+2. Ejecutar viewer:
+   
+   python qgs_viewer_poc.py
+   
+   Debe mostrar:
+   ✓ "[INIT] Inicializando Processing..."
+   ✓ "[INIT] Agregando QgsNativeAlgorithms..."
+   ✓ "[INIT] Algoritmos disponibles: 95"
+   ✓ Combobox con ~95 algoritmos
+   ✓ Botón 🔄 visible
+
+3. Si aún está vacía:
+   
+   • Pulsa botón 🔄 (recargar)
+   • Ejecuta debug_poc.py para validar
+   • Comparte output del debug
+
+
+SI SIGUE VACÍA:
+═══════════════
+
+Ejecuta desde PowerShell:
+
+  python debug_poc.py 2>&1 | Out-File debug_output.txt
+  
+Y comparte debug_output.txt para analizar.
+
+Los logs incluyen:
+  • Número de providers
+  • Número de algoritmos
+  • Nombres de primeros algoritmos
+  • Errores de inicialización
+
+
+BENEFICIOS DE ESTA SOLUCIÓN:
+═════════════════════════════
+
+✓ Processing se inicializa explícitamente
+✓ No depende de timing/threading
+✓ Button de recargar para casos edge
+✓ Logs de debug para diagnosticar
+✓ Validación con script separado
+✓ Mejor manejo de excepciones
+✓ Canvas muestra capas correctamente
+
+
+================================================================================

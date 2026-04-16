@@ -1,0 +1,84 @@
+================================================================================
+FIX: QgsApplication.initQgisApplication() NO EXISTE
+================================================================================
+
+PROBLEMA:
+---------
+AttributeError: 'QgsApplication' object has no attribute 'initQgisApplication'
+
+CAUSA:
+------
+El método initQgisApplication() no es estándar en QGIS 3.x.
+Es un método que solo existe en algunos entornos/versiones.
+
+SOLUCIÓN CORRECTA:
+------------------
+Usar el context manager 'qgisapp' de qgis.core.contextmanagers
+(Este es el método que usa qVista.py en producción)
+
+CAMBIOS REALIZADOS:
+-------------------
+
+1. En qgs_viewer_poc.py - ANTES:
+   
+   from qgis.core import QgsApplication, QgsProject
+   
+   def main():
+       QgsApplication.setPrefixPath("/usr", True)
+       qgs_app = QgsApplication([], True)
+       qgs_app.initQgisApplication()  ❌ NO EXISTE
+       
+       viewer = QgsViewerPOC()
+       viewer.show()
+       sys.exit(qgs_app.exec_())
+
+
+2. En qgs_viewer_poc.py - DESPUÉS:
+   
+   from qgis.core import QgsProject
+   
+   def main():
+       from qgis.core.contextmanagers import qgisapp  # ✓ Context manager
+       
+       with qgisapp(sysexit=False) as qgs_app:  # ✓ Inicialización correcta
+           viewer = QgsViewerPOC()
+           viewer.show()
+           sys.exit(qgs_app.exec_())
+
+
+VENTAJAS DEL CONTEXT MANAGER:
+-----------------------------
+
+✓ Manejo automático de recursos
+✓ Inicialización correcta de QGIS
+✓ Limpieza al salir
+✓ Compatible con todas las versiones de QGIS 3.x
+✓ Método usado en qVista.py (ya validado en producción)
+
+
+REFERENCIA:
+-----------
+
+En qVista.py (línea 2648):
+    with qgisapp(configpath=userPath, sysexit=False) as app:
+        qVapp = QvApp()
+        qV = QVista(app, projecteInicial, titolFinestra)
+
+Nosotros usamos:
+    with qgisapp(sysexit=False) as qgs_app:
+        viewer = QgsViewerPOC()
+        viewer.show()
+
+
+AHORA EL POC FUNCIONA CORRECTAMENTE:
+------------------------------------
+
+✓ qgs_viewer_poc.py - Visor QGS con ProcessingChain
+✓ processing_chain_poc.py - DockWidget de procesos
+✓ test_poc.py - Script de prueba sin GUI
+
+Para probar:
+    python qgs_viewer_poc.py
+
+
+================================================================================
